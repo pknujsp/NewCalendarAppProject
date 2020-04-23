@@ -1,0 +1,266 @@
+-- Merging decision tree log ---
+manifest
+ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:2:1-32:12
+INJECTED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:2:1-32:12
+INJECTED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:2:1-32:12
+INJECTED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:2:1-32:12
+MERGED from [com.google.android.material:material:1.1.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\material-1.1.0.aar\0ff27be1b0756b6ede30b00b31c403d8\AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.appcompat:appcompat:1.1.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\appcompat-1.1.0.aar\d77b71b3a5a5c25917d77318714edd83\AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.legacy:legacy-support-v4:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\legacy-support-v4-1.0.0.aar\18f3cb317c1e1c2709299bf118897b70\AndroidManifest.xml:17:1-22:12
+MERGED from [com.github.bumptech.glide:glide:4.11.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\glide-4.11.0.aar\bef5c137ef97058539de2da749c7a572\AndroidManifest.xml:2:1-12:12
+MERGED from [androidx.viewpager2:viewpager2:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\viewpager2-1.0.0.aar\18d69fa8b0efe60ec91899f36226b0b9\AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.recyclerview:recyclerview:1.1.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\recyclerview-1.1.0.aar\3314c48fdd9ab4cc00a48a8c8f6464b2\AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.gridlayout:gridlayout:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\gridlayout-1.0.0.aar\bf1766ae99a7c3748aaaf44d78d99491\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.cardview:cardview:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\cardview-1.0.0.aar\59c905b9076377b342c9cd458c5703f9\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.constraintlayout:constraintlayout:1.1.3] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\constraintlayout-1.1.3.aar\ee130d717a63b85d25cbce82ca7eafc6\AndroidManifest.xml:2:1-11:12
+MERGED from [androidx.room:room-ktx:2.2.3] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\room-ktx-2.2.3.aar\7b0a155fb54b4e8ecdd357c308d177f9\AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.room:room-rxjava2:2.2.3] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\room-rxjava2-2.2.3.aar\91ed54fadff6240116d038e793a8e30a\AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.room:room-guava:2.2.3] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\room-guava-2.2.3.aar\0fb5abeb47f11a20c49cabc2e5db4a0a\AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.room:room-runtime:2.2.3] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\room-runtime-2.2.3.aar\98daf0793d7a8a99775ea9095494d12d\AndroidManifest.xml:17:1-30:12
+MERGED from [androidx.media:media:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\media-1.0.0.aar\1203966f03231b41c2012eb060fa2b9b\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.legacy:legacy-support-core-ui:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\legacy-support-core-ui-1.0.0.aar\c5cf0adb8e7a8ac811a90c862b09530e\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.legacy:legacy-support-core-utils:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\legacy-support-core-utils-1.0.0.aar\ee2339ced8570dd0c07ae2640ea808c0\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.transition:transition:1.2.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\transition-1.2.0.aar\ebf922d772753a74a57dc90195a61412\AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.fragment:fragment:1.1.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\fragment-1.1.0.aar\2e676f7c29e73669f6ba74b6f557a45e\AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.loader:loader:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\loader-1.0.0.aar\82364fe9bfe955f143aad1c689dbdc52\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.viewpager:viewpager:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\viewpager-1.0.0.aar\bd9b44600e288602b0a8ec0fe0ac6603\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.drawerlayout:drawerlayout:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\drawerlayout-1.0.0.aar\7ba2a951e41793cc742a5fc3b1736c65\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.slidingpanelayout:slidingpanelayout:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\slidingpanelayout-1.0.0.aar\878d584309ce9c5e9f71f8cfacc7cb6f\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.coordinatorlayout:coordinatorlayout:1.1.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\coordinatorlayout-1.1.0.aar\4477d3392962aeed5000529ca7553a45\AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.customview:customview:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\customview-1.0.0.aar\3bfb764438a1fce92fe00f6eb3cd4656\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.swiperefreshlayout:swiperefreshlayout:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\swiperefreshlayout-1.0.0.aar\c0f8b5478771171621817d3c0b5331fb\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.asynclayoutinflater:asynclayoutinflater:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\asynclayoutinflater-1.0.0.aar\98b8b7f3c0fa331f8e7bc8a5c1275104\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.appcompat:appcompat-resources:1.1.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\appcompat-resources-1.1.0.aar\d945891db4aa5e9358c013bf10567b9e\AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.vectordrawable:vectordrawable-animated:1.1.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\vectordrawable-animated-1.1.0.aar\36186d8404b431ef48b3bf2f916419ea\AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.vectordrawable:vectordrawable:1.1.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\vectordrawable-1.1.0.aar\8abcaf9a054871851c2aa80a5c9b3abb\AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.activity:activity:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\activity-1.0.0.aar\a4cf8d74dcd26e2b9557fe0299a30f9c\AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.core:core:1.1.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\core-1.1.0.aar\7dba2bdf2c19d6580865dcb271b12b18\AndroidManifest.xml:17:1-26:12
+MERGED from [com.github.bumptech.glide:gifdecoder:4.11.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\gifdecoder-4.11.0.aar\c47236ad6b75105146365ab98ec9187c\AndroidManifest.xml:2:1-11:12
+MERGED from [androidx.exifinterface:exifinterface:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\exifinterface-1.0.0.aar\fecefe8c2e3cbd4a62a49f8940acbfa8\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.sqlite:sqlite-framework:2.0.1] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\sqlite-framework-2.0.1.aar\5c30d1a36a6eaca93cfdc0be3fcbb86e\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.sqlite:sqlite:2.0.1] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\sqlite-2.0.1.aar\e723d9fd948d51867abed4e8a6a1e6aa\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.documentfile:documentfile:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\documentfile-1.0.0.aar\4cab447746aa715da3ae5a507a142392\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.localbroadcastmanager:localbroadcastmanager:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\localbroadcastmanager-1.0.0.aar\8937d924295d8863f61769c17d5e35a0\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.print:print:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\print-1.0.0.aar\5c79e91ea0b0b4bccfead309d4b30a44\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.interpolator:interpolator:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\interpolator-1.0.0.aar\95e9c8c2b1b1af9e02b1a853652785c5\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.cursoradapter:cursoradapter:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\cursoradapter-1.0.0.aar\51565a2b6d51a2f11bb70dd1de95baa1\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.savedstate:savedstate:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\savedstate-1.0.0.aar\c91a3d07be4ee8115c7b0ae4340594a7\AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\versionedparcelable-1.1.0.aar\c4b167345dcbd877609527bf76700d34\AndroidManifest.xml:17:1-27:12
+MERGED from [androidx.lifecycle:lifecycle-livedata:2.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\lifecycle-livedata-2.0.0.aar\f3fd5d2129a410f216cca231b2eb53ea\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.lifecycle:lifecycle-livedata-core:2.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\lifecycle-livedata-core-2.0.0.aar\3ef72899c1315d21aeb21b0e950c6f9f\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.arch.core:core-runtime:2.0.1] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\core-runtime-2.0.1.aar\ef40f59b77431723a5123b4eba246b4c\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.lifecycle:lifecycle-runtime:2.1.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\lifecycle-runtime-2.1.0.aar\1da4e54bd19a30c882d84afc3b79b86b\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.lifecycle:lifecycle-viewmodel:2.1.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\lifecycle-viewmodel-2.1.0.aar\afe11106efa75f0ab95010d6853b868b\AndroidManifest.xml:17:1-22:12
+INJECTED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:2:1-32:12
+INJECTED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:2:1-32:12
+INJECTED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:2:1-32:12
+	package
+		ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:3:5-40
+		INJECTED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml
+		INJECTED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml
+	android:versionName
+		INJECTED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml
+		ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:2:1-32:12
+		INJECTED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml
+	android:versionCode
+		INJECTED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml
+		ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:2:1-32:12
+		INJECTED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml
+	xmlns:android
+		ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:2:11-69
+uses-permission#android.permission.INTERNET
+ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:5:5-67
+	android:name
+		ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:5:22-64
+uses-permission#android.permission.ACCESS_NETWORK_STATE
+ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:6:5-79
+	android:name
+		ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:6:22-76
+uses-permission#android.permission.ACCESS_FINE_LOCATION
+ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:7:5-79
+	android:name
+		ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:7:22-76
+uses-permission#android.permission.ACCESS_COARSE_LOCATION
+ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:8:5-81
+	android:name
+		ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:8:22-78
+application
+ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:10:5-30:19
+MERGED from [com.google.android.material:material:1.1.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\material-1.1.0.aar\0ff27be1b0756b6ede30b00b31c403d8\AndroidManifest.xml:22:5-20
+MERGED from [com.google.android.material:material:1.1.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\material-1.1.0.aar\0ff27be1b0756b6ede30b00b31c403d8\AndroidManifest.xml:22:5-20
+MERGED from [com.github.bumptech.glide:glide:4.11.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\glide-4.11.0.aar\bef5c137ef97058539de2da749c7a572\AndroidManifest.xml:10:5-20
+MERGED from [com.github.bumptech.glide:glide:4.11.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\glide-4.11.0.aar\bef5c137ef97058539de2da749c7a572\AndroidManifest.xml:10:5-20
+MERGED from [androidx.constraintlayout:constraintlayout:1.1.3] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\constraintlayout-1.1.3.aar\ee130d717a63b85d25cbce82ca7eafc6\AndroidManifest.xml:9:5-20
+MERGED from [androidx.constraintlayout:constraintlayout:1.1.3] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\constraintlayout-1.1.3.aar\ee130d717a63b85d25cbce82ca7eafc6\AndroidManifest.xml:9:5-20
+MERGED from [androidx.room:room-runtime:2.2.3] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\room-runtime-2.2.3.aar\98daf0793d7a8a99775ea9095494d12d\AndroidManifest.xml:24:5-28:19
+MERGED from [androidx.room:room-runtime:2.2.3] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\room-runtime-2.2.3.aar\98daf0793d7a8a99775ea9095494d12d\AndroidManifest.xml:24:5-28:19
+MERGED from [androidx.core:core:1.1.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\core-1.1.0.aar\7dba2bdf2c19d6580865dcb271b12b18\AndroidManifest.xml:24:5-89
+MERGED from [androidx.core:core:1.1.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\core-1.1.0.aar\7dba2bdf2c19d6580865dcb271b12b18\AndroidManifest.xml:24:5-89
+MERGED from [com.github.bumptech.glide:gifdecoder:4.11.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\gifdecoder-4.11.0.aar\c47236ad6b75105146365ab98ec9187c\AndroidManifest.xml:9:5-20
+MERGED from [com.github.bumptech.glide:gifdecoder:4.11.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\gifdecoder-4.11.0.aar\c47236ad6b75105146365ab98ec9187c\AndroidManifest.xml:9:5-20
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\versionedparcelable-1.1.0.aar\c4b167345dcbd877609527bf76700d34\AndroidManifest.xml:24:5-25:19
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\versionedparcelable-1.1.0.aar\c4b167345dcbd877609527bf76700d34\AndroidManifest.xml:24:5-25:19
+	android:appComponentFactory
+		ADDED from [androidx.core:core:1.1.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\core-1.1.0.aar\7dba2bdf2c19d6580865dcb271b12b18\AndroidManifest.xml:24:18-86
+	android:supportsRtl
+		ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:15:9-35
+	android:label
+		ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:13:9-41
+	android:roundIcon
+		ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:14:9-54
+	android:icon
+		ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:12:9-43
+	android:allowBackup
+		ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:11:9-35
+	android:theme
+		ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:16:9-40
+	android:usesCleartextTraffic
+		ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:17:9-44
+activity#com.zerodsoft.tripweather.NewScheduleActivity
+ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:18:9-66
+	android:name
+		ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:18:19-54
+activity#com.zerodsoft.tripweather.AreaSelectionActivity
+ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:19:9-59
+	android:name
+		ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:19:19-56
+activity#com.zerodsoft.tripweather.AddScheduleActivity
+ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:20:9-57
+	android:name
+		ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:20:19-54
+activity#com.zerodsoft.tripweather.TravelScheduleActivity
+ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:21:9-60
+	android:name
+		ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:21:19-57
+activity#com.zerodsoft.tripweather.CurrentWeatherActivity
+ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:22:9-60
+	android:name
+		ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:22:19-57
+activity#com.zerodsoft.tripweather.MainActivity
+ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:23:9-29:20
+	android:name
+		ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:23:19-47
+intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
+ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:24:13-28:29
+action#android.intent.action.MAIN
+ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:25:17-69
+	android:name
+		ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:25:25-66
+category#android.intent.category.LAUNCHER
+ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:27:17-77
+	android:name
+		ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:27:27-74
+uses-sdk
+INJECTED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml
+INJECTED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml
+MERGED from [com.google.android.material:material:1.1.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\material-1.1.0.aar\0ff27be1b0756b6ede30b00b31c403d8\AndroidManifest.xml:20:5-44
+MERGED from [com.google.android.material:material:1.1.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\material-1.1.0.aar\0ff27be1b0756b6ede30b00b31c403d8\AndroidManifest.xml:20:5-44
+MERGED from [androidx.appcompat:appcompat:1.1.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\appcompat-1.1.0.aar\d77b71b3a5a5c25917d77318714edd83\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.appcompat:appcompat:1.1.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\appcompat-1.1.0.aar\d77b71b3a5a5c25917d77318714edd83\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.legacy:legacy-support-v4:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\legacy-support-v4-1.0.0.aar\18f3cb317c1e1c2709299bf118897b70\AndroidManifest.xml:20:5-44
+MERGED from [androidx.legacy:legacy-support-v4:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\legacy-support-v4-1.0.0.aar\18f3cb317c1e1c2709299bf118897b70\AndroidManifest.xml:20:5-44
+MERGED from [com.github.bumptech.glide:glide:4.11.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\glide-4.11.0.aar\bef5c137ef97058539de2da749c7a572\AndroidManifest.xml:6:5-8:41
+MERGED from [com.github.bumptech.glide:glide:4.11.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\glide-4.11.0.aar\bef5c137ef97058539de2da749c7a572\AndroidManifest.xml:6:5-8:41
+MERGED from [androidx.viewpager2:viewpager2:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\viewpager2-1.0.0.aar\18d69fa8b0efe60ec91899f36226b0b9\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.viewpager2:viewpager2:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\viewpager2-1.0.0.aar\18d69fa8b0efe60ec91899f36226b0b9\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.recyclerview:recyclerview:1.1.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\recyclerview-1.1.0.aar\3314c48fdd9ab4cc00a48a8c8f6464b2\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.recyclerview:recyclerview:1.1.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\recyclerview-1.1.0.aar\3314c48fdd9ab4cc00a48a8c8f6464b2\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.gridlayout:gridlayout:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\gridlayout-1.0.0.aar\bf1766ae99a7c3748aaaf44d78d99491\AndroidManifest.xml:20:5-44
+MERGED from [androidx.gridlayout:gridlayout:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\gridlayout-1.0.0.aar\bf1766ae99a7c3748aaaf44d78d99491\AndroidManifest.xml:20:5-44
+MERGED from [androidx.cardview:cardview:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\cardview-1.0.0.aar\59c905b9076377b342c9cd458c5703f9\AndroidManifest.xml:20:5-44
+MERGED from [androidx.cardview:cardview:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\cardview-1.0.0.aar\59c905b9076377b342c9cd458c5703f9\AndroidManifest.xml:20:5-44
+MERGED from [androidx.constraintlayout:constraintlayout:1.1.3] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\constraintlayout-1.1.3.aar\ee130d717a63b85d25cbce82ca7eafc6\AndroidManifest.xml:5:5-7:41
+MERGED from [androidx.constraintlayout:constraintlayout:1.1.3] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\constraintlayout-1.1.3.aar\ee130d717a63b85d25cbce82ca7eafc6\AndroidManifest.xml:5:5-7:41
+MERGED from [androidx.room:room-ktx:2.2.3] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\room-ktx-2.2.3.aar\7b0a155fb54b4e8ecdd357c308d177f9\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.room:room-ktx:2.2.3] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\room-ktx-2.2.3.aar\7b0a155fb54b4e8ecdd357c308d177f9\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.room:room-rxjava2:2.2.3] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\room-rxjava2-2.2.3.aar\91ed54fadff6240116d038e793a8e30a\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.room:room-rxjava2:2.2.3] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\room-rxjava2-2.2.3.aar\91ed54fadff6240116d038e793a8e30a\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.room:room-guava:2.2.3] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\room-guava-2.2.3.aar\0fb5abeb47f11a20c49cabc2e5db4a0a\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.room:room-guava:2.2.3] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\room-guava-2.2.3.aar\0fb5abeb47f11a20c49cabc2e5db4a0a\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.room:room-runtime:2.2.3] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\room-runtime-2.2.3.aar\98daf0793d7a8a99775ea9095494d12d\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.room:room-runtime:2.2.3] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\room-runtime-2.2.3.aar\98daf0793d7a8a99775ea9095494d12d\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.media:media:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\media-1.0.0.aar\1203966f03231b41c2012eb060fa2b9b\AndroidManifest.xml:20:5-44
+MERGED from [androidx.media:media:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\media-1.0.0.aar\1203966f03231b41c2012eb060fa2b9b\AndroidManifest.xml:20:5-44
+MERGED from [androidx.legacy:legacy-support-core-ui:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\legacy-support-core-ui-1.0.0.aar\c5cf0adb8e7a8ac811a90c862b09530e\AndroidManifest.xml:20:5-44
+MERGED from [androidx.legacy:legacy-support-core-ui:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\legacy-support-core-ui-1.0.0.aar\c5cf0adb8e7a8ac811a90c862b09530e\AndroidManifest.xml:20:5-44
+MERGED from [androidx.legacy:legacy-support-core-utils:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\legacy-support-core-utils-1.0.0.aar\ee2339ced8570dd0c07ae2640ea808c0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.legacy:legacy-support-core-utils:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\legacy-support-core-utils-1.0.0.aar\ee2339ced8570dd0c07ae2640ea808c0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.transition:transition:1.2.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\transition-1.2.0.aar\ebf922d772753a74a57dc90195a61412\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.transition:transition:1.2.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\transition-1.2.0.aar\ebf922d772753a74a57dc90195a61412\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.fragment:fragment:1.1.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\fragment-1.1.0.aar\2e676f7c29e73669f6ba74b6f557a45e\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.fragment:fragment:1.1.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\fragment-1.1.0.aar\2e676f7c29e73669f6ba74b6f557a45e\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.loader:loader:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\loader-1.0.0.aar\82364fe9bfe955f143aad1c689dbdc52\AndroidManifest.xml:20:5-44
+MERGED from [androidx.loader:loader:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\loader-1.0.0.aar\82364fe9bfe955f143aad1c689dbdc52\AndroidManifest.xml:20:5-44
+MERGED from [androidx.viewpager:viewpager:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\viewpager-1.0.0.aar\bd9b44600e288602b0a8ec0fe0ac6603\AndroidManifest.xml:20:5-44
+MERGED from [androidx.viewpager:viewpager:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\viewpager-1.0.0.aar\bd9b44600e288602b0a8ec0fe0ac6603\AndroidManifest.xml:20:5-44
+MERGED from [androidx.drawerlayout:drawerlayout:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\drawerlayout-1.0.0.aar\7ba2a951e41793cc742a5fc3b1736c65\AndroidManifest.xml:20:5-44
+MERGED from [androidx.drawerlayout:drawerlayout:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\drawerlayout-1.0.0.aar\7ba2a951e41793cc742a5fc3b1736c65\AndroidManifest.xml:20:5-44
+MERGED from [androidx.slidingpanelayout:slidingpanelayout:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\slidingpanelayout-1.0.0.aar\878d584309ce9c5e9f71f8cfacc7cb6f\AndroidManifest.xml:20:5-44
+MERGED from [androidx.slidingpanelayout:slidingpanelayout:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\slidingpanelayout-1.0.0.aar\878d584309ce9c5e9f71f8cfacc7cb6f\AndroidManifest.xml:20:5-44
+MERGED from [androidx.coordinatorlayout:coordinatorlayout:1.1.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\coordinatorlayout-1.1.0.aar\4477d3392962aeed5000529ca7553a45\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.coordinatorlayout:coordinatorlayout:1.1.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\coordinatorlayout-1.1.0.aar\4477d3392962aeed5000529ca7553a45\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.customview:customview:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\customview-1.0.0.aar\3bfb764438a1fce92fe00f6eb3cd4656\AndroidManifest.xml:20:5-44
+MERGED from [androidx.customview:customview:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\customview-1.0.0.aar\3bfb764438a1fce92fe00f6eb3cd4656\AndroidManifest.xml:20:5-44
+MERGED from [androidx.swiperefreshlayout:swiperefreshlayout:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\swiperefreshlayout-1.0.0.aar\c0f8b5478771171621817d3c0b5331fb\AndroidManifest.xml:20:5-44
+MERGED from [androidx.swiperefreshlayout:swiperefreshlayout:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\swiperefreshlayout-1.0.0.aar\c0f8b5478771171621817d3c0b5331fb\AndroidManifest.xml:20:5-44
+MERGED from [androidx.asynclayoutinflater:asynclayoutinflater:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\asynclayoutinflater-1.0.0.aar\98b8b7f3c0fa331f8e7bc8a5c1275104\AndroidManifest.xml:20:5-44
+MERGED from [androidx.asynclayoutinflater:asynclayoutinflater:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\asynclayoutinflater-1.0.0.aar\98b8b7f3c0fa331f8e7bc8a5c1275104\AndroidManifest.xml:20:5-44
+MERGED from [androidx.appcompat:appcompat-resources:1.1.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\appcompat-resources-1.1.0.aar\d945891db4aa5e9358c013bf10567b9e\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.appcompat:appcompat-resources:1.1.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\appcompat-resources-1.1.0.aar\d945891db4aa5e9358c013bf10567b9e\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.vectordrawable:vectordrawable-animated:1.1.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\vectordrawable-animated-1.1.0.aar\36186d8404b431ef48b3bf2f916419ea\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.vectordrawable:vectordrawable-animated:1.1.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\vectordrawable-animated-1.1.0.aar\36186d8404b431ef48b3bf2f916419ea\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.vectordrawable:vectordrawable:1.1.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\vectordrawable-1.1.0.aar\8abcaf9a054871851c2aa80a5c9b3abb\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.vectordrawable:vectordrawable:1.1.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\vectordrawable-1.1.0.aar\8abcaf9a054871851c2aa80a5c9b3abb\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.activity:activity:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\activity-1.0.0.aar\a4cf8d74dcd26e2b9557fe0299a30f9c\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.activity:activity:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\activity-1.0.0.aar\a4cf8d74dcd26e2b9557fe0299a30f9c\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.core:core:1.1.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\core-1.1.0.aar\7dba2bdf2c19d6580865dcb271b12b18\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.core:core:1.1.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\core-1.1.0.aar\7dba2bdf2c19d6580865dcb271b12b18\AndroidManifest.xml:20:5-22:41
+MERGED from [com.github.bumptech.glide:gifdecoder:4.11.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\gifdecoder-4.11.0.aar\c47236ad6b75105146365ab98ec9187c\AndroidManifest.xml:5:5-7:41
+MERGED from [com.github.bumptech.glide:gifdecoder:4.11.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\gifdecoder-4.11.0.aar\c47236ad6b75105146365ab98ec9187c\AndroidManifest.xml:5:5-7:41
+MERGED from [androidx.exifinterface:exifinterface:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\exifinterface-1.0.0.aar\fecefe8c2e3cbd4a62a49f8940acbfa8\AndroidManifest.xml:20:5-44
+MERGED from [androidx.exifinterface:exifinterface:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\exifinterface-1.0.0.aar\fecefe8c2e3cbd4a62a49f8940acbfa8\AndroidManifest.xml:20:5-44
+MERGED from [androidx.sqlite:sqlite-framework:2.0.1] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\sqlite-framework-2.0.1.aar\5c30d1a36a6eaca93cfdc0be3fcbb86e\AndroidManifest.xml:20:5-44
+MERGED from [androidx.sqlite:sqlite-framework:2.0.1] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\sqlite-framework-2.0.1.aar\5c30d1a36a6eaca93cfdc0be3fcbb86e\AndroidManifest.xml:20:5-44
+MERGED from [androidx.sqlite:sqlite:2.0.1] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\sqlite-2.0.1.aar\e723d9fd948d51867abed4e8a6a1e6aa\AndroidManifest.xml:20:5-44
+MERGED from [androidx.sqlite:sqlite:2.0.1] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\sqlite-2.0.1.aar\e723d9fd948d51867abed4e8a6a1e6aa\AndroidManifest.xml:20:5-44
+MERGED from [androidx.documentfile:documentfile:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\documentfile-1.0.0.aar\4cab447746aa715da3ae5a507a142392\AndroidManifest.xml:20:5-44
+MERGED from [androidx.documentfile:documentfile:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\documentfile-1.0.0.aar\4cab447746aa715da3ae5a507a142392\AndroidManifest.xml:20:5-44
+MERGED from [androidx.localbroadcastmanager:localbroadcastmanager:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\localbroadcastmanager-1.0.0.aar\8937d924295d8863f61769c17d5e35a0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.localbroadcastmanager:localbroadcastmanager:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\localbroadcastmanager-1.0.0.aar\8937d924295d8863f61769c17d5e35a0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.print:print:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\print-1.0.0.aar\5c79e91ea0b0b4bccfead309d4b30a44\AndroidManifest.xml:20:5-44
+MERGED from [androidx.print:print:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\print-1.0.0.aar\5c79e91ea0b0b4bccfead309d4b30a44\AndroidManifest.xml:20:5-44
+MERGED from [androidx.interpolator:interpolator:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\interpolator-1.0.0.aar\95e9c8c2b1b1af9e02b1a853652785c5\AndroidManifest.xml:20:5-44
+MERGED from [androidx.interpolator:interpolator:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\interpolator-1.0.0.aar\95e9c8c2b1b1af9e02b1a853652785c5\AndroidManifest.xml:20:5-44
+MERGED from [androidx.cursoradapter:cursoradapter:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\cursoradapter-1.0.0.aar\51565a2b6d51a2f11bb70dd1de95baa1\AndroidManifest.xml:20:5-44
+MERGED from [androidx.cursoradapter:cursoradapter:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\cursoradapter-1.0.0.aar\51565a2b6d51a2f11bb70dd1de95baa1\AndroidManifest.xml:20:5-44
+MERGED from [androidx.savedstate:savedstate:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\savedstate-1.0.0.aar\c91a3d07be4ee8115c7b0ae4340594a7\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.savedstate:savedstate:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\savedstate-1.0.0.aar\c91a3d07be4ee8115c7b0ae4340594a7\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\versionedparcelable-1.1.0.aar\c4b167345dcbd877609527bf76700d34\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\versionedparcelable-1.1.0.aar\c4b167345dcbd877609527bf76700d34\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.lifecycle:lifecycle-livedata:2.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\lifecycle-livedata-2.0.0.aar\f3fd5d2129a410f216cca231b2eb53ea\AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-livedata:2.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\lifecycle-livedata-2.0.0.aar\f3fd5d2129a410f216cca231b2eb53ea\AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-livedata-core:2.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\lifecycle-livedata-core-2.0.0.aar\3ef72899c1315d21aeb21b0e950c6f9f\AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-livedata-core:2.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\lifecycle-livedata-core-2.0.0.aar\3ef72899c1315d21aeb21b0e950c6f9f\AndroidManifest.xml:20:5-44
+MERGED from [androidx.arch.core:core-runtime:2.0.1] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\core-runtime-2.0.1.aar\ef40f59b77431723a5123b4eba246b4c\AndroidManifest.xml:20:5-44
+MERGED from [androidx.arch.core:core-runtime:2.0.1] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\core-runtime-2.0.1.aar\ef40f59b77431723a5123b4eba246b4c\AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-runtime:2.1.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\lifecycle-runtime-2.1.0.aar\1da4e54bd19a30c882d84afc3b79b86b\AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-runtime:2.1.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\lifecycle-runtime-2.1.0.aar\1da4e54bd19a30c882d84afc3b79b86b\AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-viewmodel:2.1.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\lifecycle-viewmodel-2.1.0.aar\afe11106efa75f0ab95010d6853b868b\AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-viewmodel:2.1.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\lifecycle-viewmodel-2.1.0.aar\afe11106efa75f0ab95010d6853b868b\AndroidManifest.xml:20:5-44
+INJECTED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml
+INJECTED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml
+	android:targetSdkVersion
+		INJECTED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml
+		ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml
+		INJECTED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml
+	android:minSdkVersion
+		INJECTED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml
+		ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml
+		INJECTED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml
+service#androidx.room.MultiInstanceInvalidationService
+ADDED from [androidx.room:room-runtime:2.2.3] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\room-runtime-2.2.3.aar\98daf0793d7a8a99775ea9095494d12d\AndroidManifest.xml:25:9-27:40
+	android:exported
+		ADDED from [androidx.room:room-runtime:2.2.3] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\room-runtime-2.2.3.aar\98daf0793d7a8a99775ea9095494d12d\AndroidManifest.xml:27:13-37
+	android:name
+		ADDED from [androidx.room:room-runtime:2.2.3] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\room-runtime-2.2.3.aar\98daf0793d7a8a99775ea9095494d12d\AndroidManifest.xml:26:13-74

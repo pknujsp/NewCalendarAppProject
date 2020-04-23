@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group>
+        <item
+            android:id="@+id/btn_current_weather"
+            android:title="현재 날씨" />
+    </group>
+    <group >
+        <item
+            android:id="@+id/btn_app_settings"
+            android:title="설정" />
+    </group>
+</menu>

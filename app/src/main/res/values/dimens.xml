@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="datepicker_width">328</dimen>
+    <dimen name="datepicker_height">512</dimen>
+</resources>
