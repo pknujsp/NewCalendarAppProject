@@ -10,7 +10,7 @@ import androidx.room.Update;
 import com.zerodsoft.tripweather.Room.DTO.CWeather;
 
 @Dao
-public interface CWeatherDAO
+public interface CWeatherDao
 {
     @Query("SELECT * FROM cweather_table WHERE cweather_parent_id = :parentId")
     CWeather getCurrentWeather(String parentId);

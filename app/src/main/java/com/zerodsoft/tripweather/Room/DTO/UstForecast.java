@@ -12,10 +12,10 @@ public class UstForecast implements Serializable
     private int parentId;
 
     @ColumnInfo(name = "ustforecast_date")
-    private String date;
+    private int date;
 
     @ColumnInfo(name = "ustforecast_time")
-    private String time;
+    private int time;
 
     @ColumnInfo(name = "ustforecast_temperature")
     private String temp;
@@ -51,22 +51,22 @@ public class UstForecast implements Serializable
         this.parentId = parentId;
     }
 
-    public String getDate()
+    public int getDate()
     {
         return date;
     }
 
-    public void setDate(String date)
+    public void setDate(int date)
     {
         this.date = date;
     }
 
-    public String getTime()
+    public int getTime()
     {
         return time;
     }
 
-    public void setTime(String time)
+    public void setTime(int time)
     {
         this.time = time;
     }
