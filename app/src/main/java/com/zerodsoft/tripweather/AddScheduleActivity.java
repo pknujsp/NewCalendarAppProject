@@ -8,8 +8,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.zerodsoft.tripweather.Calendar.SelectedDate;
+import com.zerodsoft.tripweather.Room.DTO.Area;
 import com.zerodsoft.tripweather.ScheduleData.TravelSchedule;
 import com.zerodsoft.tripweather.ScheduleList.AddScheduleAdapter;
 
@@ -59,6 +62,13 @@ public class AddScheduleActivity extends AppCompatActivity
             switch (requestCode)
             {
                 case ADD_SCHEDULE:
+                    SelectedDate startDate = (SelectedDate) data.getSerializableExtra("startDate");
+                    SelectedDate endDate = (SelectedDate) data.getSerializableExtra("endDate");
+                    Area area = (Area) data.getSerializableExtra("area");
+
+                    Toast.makeText(getApplicationContext(), startDate.getYear() + "/" + startDate.getMonth() + "/" + startDate.getDay() + "\n" +
+                            endDate.getYear() + "/" + endDate.getMonth() + "/" + endDate.getDay() + "\n" +
+                            area.getX() + "," + area.getY(), Toast.LENGTH_SHORT).show();
                     break;
             }
         }

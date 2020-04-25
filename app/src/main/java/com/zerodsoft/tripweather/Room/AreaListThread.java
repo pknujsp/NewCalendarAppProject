@@ -17,7 +17,7 @@ import java.util.List;
 
 public class AreaListThread extends Thread
 {
-    private AreaDb areaDb;
+    private AppDb appDb;
     private Activity activity;
     private Context context;
     private String phase1 = null;
@@ -30,14 +30,14 @@ public class AreaListThread extends Thread
     public AreaListThread(Activity activity, Context context)
     {
         this.activity = activity;
-        this.areaDb = AreaDb.getInstance(context);
+        this.appDb = AppDb.getInstance(context);
         this.context = context;
     }
 
     public AreaListThread(Activity activity, Context context, String phase1)
     {
         this.activity = activity;
-        this.areaDb = AreaDb.getInstance(context);
+        this.appDb = AppDb.getInstance(context);
         this.context = context;
         this.phase1 = phase1;
     }
@@ -45,7 +45,7 @@ public class AreaListThread extends Thread
     public AreaListThread(Activity activity, Context context, String phase1, String phase2)
     {
         this.activity = activity;
-        this.areaDb = AreaDb.getInstance(context);
+        this.appDb = AppDb.getInstance(context);
         this.context = context;
         this.phase1 = phase1;
         this.phase2 = phase2;
@@ -54,7 +54,7 @@ public class AreaListThread extends Thread
     public AreaListThread(Activity activity, Context context, String phase1, String phase2, String phase3)
     {
         this.activity = activity;
-        this.areaDb = AreaDb.getInstance(context);
+        this.appDb = AppDb.getInstance(context);
         this.context = context;
         this.phase1 = phase1;
         this.phase2 = phase2;
@@ -68,16 +68,16 @@ public class AreaListThread extends Thread
 
         if (phase1 == null)
         {
-            phase1List = areaDb.areaDao().getPhase1();
+            phase1List = appDb.areaDao().getPhase1();
         } else if (phase2 == null)
         {
-            areaList = areaDb.areaDao().getPhase2(phase1);
+            areaList = appDb.areaDao().getPhase2(phase1);
         } else if (phase3 == null)
         {
-            areaList = areaDb.areaDao().getPhase3(phase1, phase2);
+            areaList = appDb.areaDao().getPhase3(phase1, phase2);
         } else
         {
-            area = areaDb.areaDao().getXy(phase1, phase2, phase3);
+            area = appDb.areaDao().getXy(phase1, phase2, phase3);
         }
 
         activity.runOnUiThread(new Runnable()
@@ -87,11 +87,11 @@ public class AreaListThread extends Thread
             {
                 if (area == null)
                 {
-                    AreaListAdapter adapter = new AreaListAdapter(phase1List, areaList, areaDb, activity, context);
+                    AreaListAdapter adapter = new AreaListAdapter(phase1List, areaList, appDb, activity, context);
                     AreaSelectionActivity.recyclerViewArea.setAdapter(adapter);
                 } else
                 {
-                    Intent intent = new Intent(activity, NewScheduleActivity.class);
+                    Intent intent = activity.getIntent();
                     Bundle bundle = new Bundle();
                     bundle.putSerializable("area", area);
                     intent.putExtras(bundle);

@@ -2,12 +2,16 @@ package com.zerodsoft.tripweather.Room.DTO;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.PrimaryKey;
 
 import java.io.Serializable;
 
 @Entity(tableName = "weather_update_time_table")
 public class WeatherUpdateTime implements Serializable
 {
+    @PrimaryKey(autoGenerate = true)
+    private int id;
+
     @ColumnInfo(name = "update_time_travel_parent_id")
     private String travelParentId;
 
@@ -32,6 +36,16 @@ public class WeatherUpdateTime implements Serializable
     @ColumnInfo(name = "update_time_current_time")
     private int currentTime;
 
+    public int getId()
+    {
+        return id;
+    }
+
+    public void setId(int id)
+    {
+        this.id = id;
+    }
+
     public String getTravelParentId()
     {
         return travelParentId;
@@ -42,12 +56,12 @@ public class WeatherUpdateTime implements Serializable
         this.travelParentId = travelParentId;
     }
 
-    public String getcWeatherParentId()
+    public String getCWeatherParentId()
     {
         return cWeatherParentId;
     }
 
-    public void setcWeatherParentId(String cWeatherParentId)
+    public void setCWeatherParentId(String cWeatherParentId)
     {
         this.cWeatherParentId = cWeatherParentId;
     }

@@ -85,9 +85,18 @@ public class NewScheduleActivity extends AppCompatActivity implements DatePicker
         switch (item.getItemId())
         {
             case R.id.menu_check:
-                Toast.makeText(getApplicationContext(), "SAVE \n" + textArea.getText() + ", " + textStartDate.getText() + ", " + textEndDate.getText(), Toast.LENGTH_SHORT).show();
+                Intent intent = getIntent();
+                Bundle bundle = new Bundle();
+                bundle.putSerializable("startDate", startDate);
+                bundle.putSerializable("endDate", endDate);
+                bundle.putSerializable("area", area);
+                intent.putExtras(bundle);
+
+                setResult(RESULT_OK, intent);
+                finish();
                 return true;
             case android.R.id.home:
+                setResult(RESULT_CANCELED);
                 finish();
                 return true;
             default:

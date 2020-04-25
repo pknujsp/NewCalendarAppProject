@@ -1,13 +1,18 @@
 package com.zerodsoft.tripweather.Room.DTO;
 
+import androidx.core.content.PermissionChecker;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.PrimaryKey;
 
 import java.io.Serializable;
 
 @Entity(tableName = "cweather_table")
 public class CWeather implements Serializable
 {
+    @PrimaryKey(autoGenerate = true)
+    private int id;
+
     @ColumnInfo(name = "cweather_parent_id")
     private int parentId;
 
@@ -34,6 +39,16 @@ public class CWeather implements Serializable
 
     @ColumnInfo(name = "cweather_wind_speed")
     private String windSpeed;
+
+    public int getId()
+    {
+        return id;
+    }
+
+    public void setId(int id)
+    {
+        this.id = id;
+    }
 
     public int getParentId()
     {

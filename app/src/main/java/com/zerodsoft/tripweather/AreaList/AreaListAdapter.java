@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.tripweather.AreaSelectionActivity;
 import com.zerodsoft.tripweather.R;
-import com.zerodsoft.tripweather.Room.AreaDb;
+import com.zerodsoft.tripweather.Room.AppDb;
 import com.zerodsoft.tripweather.Room.AreaListThread;
 import com.zerodsoft.tripweather.Room.DTO.Area;
 import com.zerodsoft.tripweather.WeatherData.Phase1Tuple;
@@ -27,16 +27,16 @@ public class AreaListAdapter extends RecyclerView.Adapter<AreaListAdapter.AreaVi
     public static String phase2 = null;
     public static String phase3 = null;
     public static int currentPhase = 1;
-    private AreaDb areaDb;
+    private AppDb appDb;
     private Context context;
     private Activity activity;
 
 
-    public AreaListAdapter(List<Phase1Tuple> phase1Tuples, List<Area> areaList, AreaDb areaDb, Activity activity, Context context)
+    public AreaListAdapter(List<Phase1Tuple> phase1Tuples, List<Area> areaList, AppDb appDb, Activity activity, Context context)
     {
         this.phase1Tuples = phase1Tuples;
         this.areaList = areaList;
-        this.areaDb = areaDb;
+        this.appDb = appDb;
         this.activity = activity;
         this.context = context;
     }

@@ -2,12 +2,16 @@ package com.zerodsoft.tripweather.Room.DTO;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.PrimaryKey;
 
 import java.io.Serializable;
 
 @Entity(tableName = "ustforecast_table")
 public class UstForecast implements Serializable
 {
+    @PrimaryKey(autoGenerate = true)
+    private int id;
+
     @ColumnInfo(name = "ustforecast_parent_id")
     private int parentId;
 
@@ -40,6 +44,16 @@ public class UstForecast implements Serializable
 
     @ColumnInfo(name = "ustforecast_wind_speed")
     private String windSpeed;
+
+    public int getId()
+    {
+        return id;
+    }
+
+    public void setId(int id)
+    {
+        this.id = id;
+    }
 
     public int getParentId()
     {

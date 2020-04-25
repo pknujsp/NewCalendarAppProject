@@ -1,6 +1,9 @@
 package com.zerodsoft.tripweather.Calendar;
 
-public class SelectedDate
+import java.io.Serializable;
+
+@SuppressWarnings("serial")
+public class SelectedDate implements Serializable
 {
     private String year;
     private String month;

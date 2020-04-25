@@ -1,15 +1,15 @@
 #Internal package file, do not edit.
-#Wed Apr 15 00:34:36 KST 2020
-1.base=C\:\\programming\\Android\\Android Projects\\Tripweather\\app\\build\\intermediates\\transforms\\dexMerger\\debug\\1
+#Sat Apr 25 23:42:26 KST 2020
+1.base=C\:\\programming\\Android\\Android Projects\\Tripweather\\app\\build\\intermediates\\merged_assets\\debug\\mergeDebugAssets\\out
 2.path=classes.dex
 0.baseType=DIRECTORY
 2.base=C\:\\programming\\Android\\Android Projects\\Tripweather\\app\\build\\intermediates\\transforms\\dexMerger\\debug\\0
 2.set=DEX
 1.baseType=DIRECTORY
 count=3
-1.set=DEX
-0.path=database/area_db.db
-0.set=ASSET
-0.base=C\:\\programming\\Android\\Android Projects\\Tripweather\\app\\build\\intermediates\\merged_assets\\debug\\mergeDebugAssets\\out
+1.set=ASSET
+0.path=classes.dex
+0.set=DEX
+0.base=C\:\\programming\\Android\\Android Projects\\Tripweather\\app\\build\\intermediates\\transforms\\dexMerger\\debug\\1
 2.baseType=DIRECTORY
-1.path=classes.dex
+1.path=database/appdbfile.db

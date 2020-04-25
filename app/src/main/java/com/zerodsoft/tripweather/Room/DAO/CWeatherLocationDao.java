@@ -26,7 +26,4 @@ public interface CWeatherLocationDao
 
     @Delete
     void deleteLocation(CWeatherLocation cWeatherLocation);
-
-    @Delete
-    void deleteAllLocations();
 }
