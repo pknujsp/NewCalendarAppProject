@@ -25,6 +25,7 @@ public class NewScheduleActivity extends AppCompatActivity implements DatePicker
     ImageButton btnArea, btnDate;
     Area area;
     SelectedDate startDate, endDate;
+    Intent editIntent = null;
     private static final int ADD_AREA = 30;
 
     @Override
@@ -40,7 +41,6 @@ public class NewScheduleActivity extends AppCompatActivity implements DatePicker
         btnArea = (ImageButton) findViewById(R.id.btn_edit_area);
         btnDate = (ImageButton) findViewById(R.id.btn_edit_start);
 
-
         setSupportActionBar(toolbar);
 
         ActionBar actionBar = getSupportActionBar();
@@ -48,6 +48,17 @@ public class NewScheduleActivity extends AppCompatActivity implements DatePicker
         actionBar.setDisplayShowTitleEnabled(false);
         actionBar.setDisplayHomeAsUpEnabled(true);
 
+        if (getIntent().getAction().equals("EDIT_SCHEDULE"))
+        {
+            editIntent = getIntent();
+            startDate = (SelectedDate) editIntent.getSerializableExtra("startDate");
+            endDate = (SelectedDate) editIntent.getSerializableExtra("endDate");
+            area = (Area) editIntent.getSerializableExtra("area");
+
+            textArea.setText(area.getPhase1() + " " + area.getPhase2() + " " + area.getPhase3());
+            textStartDate.setText(startDate.getYear() + "/" + startDate.getMonth() + "/" + startDate.getDay());
+            textEndDate.setText(endDate.getYear() + "/" + endDate.getMonth() + "/" + endDate.getDay());
+        }
 
         btnArea.setOnClickListener(new View.OnClickListener()
         {
@@ -85,14 +96,26 @@ public class NewScheduleActivity extends AppCompatActivity implements DatePicker
         switch (item.getItemId())
         {
             case R.id.menu_check:
-                Intent intent = getIntent();
-                Bundle bundle = new Bundle();
-                bundle.putSerializable("startDate", startDate);
-                bundle.putSerializable("endDate", endDate);
-                bundle.putSerializable("area", area);
-                intent.putExtras(bundle);
+                if (editIntent != null)
+                {
+                    Bundle bundle = new Bundle();
+                    bundle.putSerializable("startDate", startDate);
+                    bundle.putSerializable("endDate", endDate);
+                    bundle.putSerializable("area", area);
+                    editIntent.putExtras(bundle);
 
-                setResult(RESULT_OK, intent);
+                    setResult(RESULT_OK, editIntent);
+                } else
+                {
+                    Intent intent = getIntent();
+                    Bundle bundle = new Bundle();
+                    bundle.putSerializable("startDate", startDate);
+                    bundle.putSerializable("endDate", endDate);
+                    bundle.putSerializable("area", area);
+                    intent.putExtras(bundle);
+
+                    setResult(RESULT_OK, intent);
+                }
                 finish();
                 return true;
             case android.R.id.home:

@@ -97,4 +97,9 @@ public class Area implements Serializable
     {
         this.y = y;
     }
+
+    public String toString()
+    {
+        return phase1 + " " + phase2 + " " + phase3;
+    }
 }

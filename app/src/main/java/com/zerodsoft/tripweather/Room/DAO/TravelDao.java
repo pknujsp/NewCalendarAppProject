@@ -16,11 +16,12 @@ public interface TravelDao
     List<Travel> getAllTravels();
 
     @Insert
-    void insertTravel(Travel travel);
+    long insertTravel(Travel travel);
 
     @Delete
     void deleteTravel(Travel travel);
 
     @Query("DELETE FROM travel_table")
     void deleteAllTravels();
+
 }

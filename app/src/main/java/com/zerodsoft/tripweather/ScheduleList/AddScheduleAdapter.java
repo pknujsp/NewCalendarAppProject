@@ -1,8 +1,10 @@
 package com.zerodsoft.tripweather.ScheduleList;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.media.Image;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.tripweather.AddScheduleActivity;
 import com.zerodsoft.tripweather.AreaSelectionActivity;
+import com.zerodsoft.tripweather.NewScheduleActivity;
 import com.zerodsoft.tripweather.R;
 import com.zerodsoft.tripweather.ScheduleData.TravelSchedule;
 
@@ -25,32 +28,31 @@ public class AddScheduleAdapter extends RecyclerView.Adapter<AddScheduleAdapter.
 {
     private ArrayList<TravelSchedule> travelSchedules = null;
     Context context;
+    Activity activity;
     LayoutInflater layoutInflater;
     ViewGroup viewGroup;
 
     public class ViewHolder extends RecyclerView.ViewHolder
     {
-        TextView textViewTravelName, textViewTravelPeriod, textViewDestinations;
+        TextView textViewTravelPeriod, textViewDestinations;
         ImageButton btnEditSchedule, btnRemoveSchedule;
 
         ViewHolder(View itemView)
         {
             super(itemView);
 
-
-            textViewTravelName = (TextView) itemView.findViewById(R.id.text_view_schedule_name);
             textViewTravelPeriod = (TextView) itemView.findViewById(R.id.text_view_schedule_period);
             textViewDestinations = (TextView) itemView.findViewById(R.id.text_view_schedule_destinations);
 
             btnEditSchedule = (ImageButton) itemView.findViewById(R.id.btn_edit_schedule);
             btnRemoveSchedule = (ImageButton) itemView.findViewById(R.id.btn_remove_schedule);
-
         }
     }
 
-    public AddScheduleAdapter(ArrayList<TravelSchedule> travelSchedules)
+    public AddScheduleAdapter(ArrayList<TravelSchedule> travelSchedules, Activity activity)
     {
         this.travelSchedules = travelSchedules;
+        this.activity = activity;
     }
 
     @NonNull
@@ -68,22 +70,10 @@ public class AddScheduleAdapter extends RecyclerView.Adapter<AddScheduleAdapter.
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position)
     {
-        String startDate = travelSchedules.get(position).getTravelStartDate();
-        String endDate = travelSchedules.get(position).getTravelEndDate();
-        String destinations = null;
+        String startDate = travelSchedules.get(position).getStartDate().toString();
+        String endDate = travelSchedules.get(position).getEndDate().toString();
+        String destinations = travelSchedules.get(position).getTravelDestination().toString();
 
-        for (int index = 0; index < travelSchedules.get(position).getTravelDestinations().size(); ++index)
-        {
-            if (index == travelSchedules.get(position).getTravelDestinations().size() - 1)
-            {
-                destinations += travelSchedules.get(position).getTravelDestinations().get(index);
-            } else
-            {
-                destinations = travelSchedules.get(position).getTravelDestinations().get(index) + ", ";
-            }
-        }
-
-        holder.textViewTravelName.setText(travelSchedules.get(position).getTravelName());
         holder.textViewTravelPeriod.setText(startDate + " -> " + endDate);
         holder.textViewDestinations.setText(destinations);
 
@@ -92,7 +82,17 @@ public class AddScheduleAdapter extends RecyclerView.Adapter<AddScheduleAdapter.
             @Override
             public void onClick(View view)
             {
-                Toast.makeText(view.getContext(), "Edit Btn", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(context, NewScheduleActivity.class);
+                Bundle bundle = new Bundle();
+
+                bundle.putSerializable("startDate", travelSchedules.get(position).getStartDate());
+                bundle.putSerializable("endDate", travelSchedules.get(position).getEndDate());
+                bundle.putSerializable("area", travelSchedules.get(position).getTravelDestination());
+                intent.putExtra("position", position);
+                intent.setAction("EDIT_SCHEDULE");
+                intent.putExtras(bundle);
+
+                activity.startActivityForResult(intent, AddScheduleActivity.EDIT_SCHEDULE);
             }
         };
 
@@ -101,13 +101,13 @@ public class AddScheduleAdapter extends RecyclerView.Adapter<AddScheduleAdapter.
             @Override
             public void onClick(View view)
             {
-                Toast.makeText(view.getContext(), "Remove Btn", Toast.LENGTH_SHORT).show();
+                travelSchedules.remove(position);
+                AddScheduleAdapter.this.notifyDataSetChanged();
             }
         };
 
         holder.btnEditSchedule.setOnClickListener(editBtnOnClickListener);
         holder.btnRemoveSchedule.setOnClickListener(removeBtnOnClickListener);
-
     }
 
 
@@ -115,5 +115,21 @@ public class AddScheduleAdapter extends RecyclerView.Adapter<AddScheduleAdapter.
     public int getItemCount()
     {
         return travelSchedules.size();
+    }
+
+
+    public void addItem(TravelSchedule travelSchedule)
+    {
+        travelSchedules.add(travelSchedule);
+    }
+
+    public void replaceItem(TravelSchedule travelSchedule, int position)
+    {
+        travelSchedules.set(position, travelSchedule);
+    }
+
+    public ArrayList<TravelSchedule> getTravelSchedules()
+    {
+        return travelSchedules;
     }
 }

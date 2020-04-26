@@ -1595,6 +1595,7 @@ id left
 id line1
 id line3
 id linear_layout_schedule_item
+id linear_layout_travel_item
 id listMode
 id list_item
 id masked
@@ -1751,10 +1752,9 @@ id text_date
 id text_input_end_icon
 id text_input_start_icon
 id text_view_schedule_destinations
-id text_view_schedule_name
 id text_view_schedule_period
-id text_view_travel_date
-id text_view_travel_destinations
+id text_view_travel_name
+id text_view_travel_period
 id textinput_counter
 id textinput_error
 id textinput_helper_text
@@ -1769,6 +1769,7 @@ id title
 id titleDividerNoCustom
 id title_template
 id toolBar
+id toolBar_add_schedule
 id toolBar_new_schedule
 id top
 id topPanel

@@ -17,8 +17,10 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.navigation.NavigationView;
+import com.zerodsoft.tripweather.Room.TravelScheduleThread;
+import com.zerodsoft.tripweather.ScheduleData.TravelData;
 import com.zerodsoft.tripweather.ScheduleData.TravelSchedule;
-import com.zerodsoft.tripweather.ScheduleList.ScheduleListAdapter;
+import com.zerodsoft.tripweather.ScheduleList.TravelScheduleListAdapter;
 import com.zerodsoft.tripweather.ScheduleList.ViewItemDecoration;
 
 import java.util.ArrayList;
@@ -29,8 +31,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     Toolbar toolbar;
     NavigationView navigationView;
     DrawerLayout drawerLayout;
-    public static final int NEW_TRAVEL_SCHEDULE = 20;
-
+    private static final int NEW_TRAVEL_SCHEDULE = 20;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -53,26 +54,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setHomeAsUpIndicator(R.drawable.toolbar_menu_icon);
 
-        ArrayList<TravelSchedule> travelSchedules = new ArrayList<>();
-        ArrayList<String> destinations = new ArrayList<>();
-
-        destinations.add("서울");
-        destinations.add("진해");
-        destinations.add("울진");
-
-        for (int index = 0; index < 10; ++index)
-        {
-            travelSchedules.add(new TravelSchedule().setTravelName(index + 1 + "번째 여행")
-                    .setTravelStartDate("2020/04/01").setTravelEndDate("2020/04/12")
-                    .setTravelDestinations(destinations));
-        }
 
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler_view_schedule);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        ScheduleListAdapter adapter = new ScheduleListAdapter(travelSchedules);
-        recyclerView.setAdapter(adapter);
-        recyclerView.addItemDecoration(new ViewItemDecoration(16));
+        TravelScheduleThread travelScheduleThread = new TravelScheduleThread(MainActivity.this, 1);
+        travelScheduleThread.start();
     }
 
     @Override
@@ -133,5 +120,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     {
         super.onActivityResult(requestCode, resultCode, data);
 
+        if (resultCode == RESULT_OK)
+        {
+            switch (requestCode)
+            {
+                case NEW_TRAVEL_SCHEDULE:
+                    ArrayList<TravelSchedule> travelSchedules = (ArrayList<TravelSchedule>) data.getSerializableExtra("schedules");
+                    String travelName = data.getStringExtra("travelName");
+                    TravelScheduleThread travelListThread = new TravelScheduleThread(MainActivity.this, travelName, travelSchedules, 0);
+                    travelListThread.start();
+                    // DB에 데이터 저장후 adapter갱신
+                    break;
+            }
+        }
     }
 }

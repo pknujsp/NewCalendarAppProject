@@ -8,28 +8,27 @@ import android.os.Bundle;
 
 import com.zerodsoft.tripweather.ScheduleData.TravelData;
 import com.zerodsoft.tripweather.ScheduleData.TravelSchedule;
+import com.zerodsoft.tripweather.ScheduleList.ScheduleListAdapter;
 import com.zerodsoft.tripweather.ScheduleList.TravelScheduleListAdapter;
 import com.zerodsoft.tripweather.ScheduleList.ViewItemDecoration;
 
 import java.util.ArrayList;
 
-public class TravelScheduleActivity extends AppCompatActivity {
+public class TravelScheduleActivity extends AppCompatActivity
+{
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_travel_schedule);
 
-        ArrayList<TravelData> travelData = new ArrayList<>(10);
-
-        for (int index = 0; index < 10; ++index) {
-            travelData.add(new TravelData().setDestination("서울").setDate("2020/04/05"));
-        }
+        ArrayList<TravelSchedule> travelData = (ArrayList<TravelSchedule>) getIntent().getSerializableExtra("scheduleList");
 
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler_view_travel_schedule);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
 
-        TravelScheduleListAdapter adapter = new TravelScheduleListAdapter(travelData);
+        ScheduleListAdapter adapter = new ScheduleListAdapter(travelData);
         recyclerView.setAdapter(adapter);
         recyclerView.addItemDecoration(new ViewItemDecoration(8));
     }

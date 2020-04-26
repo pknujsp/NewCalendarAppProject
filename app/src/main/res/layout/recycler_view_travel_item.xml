@@ -17,14 +17,16 @@
     app:layout_constraintTop_toTopOf="parent">
 
     <LinearLayout
+        android:id="@+id/linear_layout_travel_item"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="?attr/selectableItemBackground"
         android:clickable="true"
         android:focusable="true"
         android:orientation="vertical">
 
         <TextView
-            android:id="@+id/text_view_travel_destinations"
+            android:id="@+id/text_view_travel_name"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_marginStart="8dp"
@@ -35,7 +37,7 @@
             android:textSize="16sp" />
 
         <TextView
-            android:id="@+id/text_view_travel_date"
+            android:id="@+id/text_view_travel_period"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_marginStart="8dp"

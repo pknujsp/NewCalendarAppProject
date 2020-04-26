@@ -35,16 +35,6 @@
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/text_view_schedule_name"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_marginStart="8dp"
-                android:layout_marginEnd="8dp"
-                android:layout_weight="1"
-                android:gravity="center_vertical"
-                android:text="TextView" />
-
-            <TextView
                 android:id="@+id/text_view_schedule_destinations"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
@@ -52,7 +42,9 @@
                 android:layout_marginEnd="8dp"
                 android:layout_weight="1"
                 android:gravity="center_vertical"
-                android:text="TextView" />
+                android:text="TextView"
+                android:textSize="18sp"
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/text_view_schedule_period"

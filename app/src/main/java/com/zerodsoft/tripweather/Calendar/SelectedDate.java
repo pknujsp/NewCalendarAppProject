@@ -51,4 +51,9 @@ public class SelectedDate implements Serializable
     {
         return Integer.valueOf(year).intValue() + Integer.valueOf(month).intValue() + Integer.valueOf(day).intValue();
     }
+
+    public String toString()
+    {
+        return year + "/" + month + "/" + day;
+    }
 }

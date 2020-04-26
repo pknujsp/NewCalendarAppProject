@@ -25,10 +25,10 @@ public class Schedule implements Serializable
     private String areaY;
 
     @ColumnInfo(name = "schedule_start_date")
-    private int startDate;
+    private String startDate;
 
     @ColumnInfo(name = "schedule_end_date")
-    private int endDate;
+    private String endDate;
 
     public int getSchedule_id()
     {
@@ -80,22 +80,22 @@ public class Schedule implements Serializable
         this.areaY = areaY;
     }
 
-    public int getStartDate()
+    public String getStartDate()
     {
         return startDate;
     }
 
-    public void setStartDate(int startDate)
+    public void setStartDate(String startDate)
     {
         this.startDate = startDate;
     }
 
-    public int getEndDate()
+    public String getEndDate()
     {
         return endDate;
     }
 
-    public void setEndDate(int endDate)
+    public void setEndDate(String endDate)
     {
         this.endDate = endDate;
     }
