@@ -27,8 +27,10 @@ import com.zerodsoft.tripweather.Calendar.CalendarAdapter;
 import com.zerodsoft.tripweather.Calendar.SelectedDate;
 import com.zerodsoft.tripweather.Utility.Clock;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 

@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -12,33 +13,35 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.tripweather.R;
-import com.zerodsoft.tripweather.ScheduleData.TravelSchedule;
-import com.zerodsoft.tripweather.TravelScheduleActivity;
+import com.zerodsoft.tripweather.Room.DTO.Schedule;
 
-import java.nio.BufferUnderflowException;
-import java.util.ArrayList;
+import java.util.List;
 
 public class ScheduleListAdapter extends RecyclerView.Adapter<ScheduleListAdapter.ViewHolder>
 {
-    private ArrayList<TravelSchedule> travelSchedules = null;
+    private List<Schedule> travelSchedules = null;
 
     public class ViewHolder extends RecyclerView.ViewHolder
     {
-        TextView textViewTravelPeriod, textViewDestinations;
+        TextView textViewTravelDate, textViewArea;
+        ImageView morningSky, daySky, eveningSky;
         LinearLayout linearLayout;
 
         ViewHolder(View itemView)
         {
             super(itemView);
 
-            textViewTravelPeriod = (TextView) itemView.findViewById(R.id.text_view_schedule_period);
-            textViewDestinations = (TextView) itemView.findViewById(R.id.text_view_schedule_destinations);
+            textViewTravelDate = (TextView) itemView.findViewById(R.id.text_view_travel_date);
+            textViewArea = (TextView) itemView.findViewById(R.id.text_view_travel_area);
+            morningSky = (ImageView) itemView.findViewById(R.id.image_view_morning_sky);
+            daySky = (ImageView) itemView.findViewById(R.id.image_view_day_sky);
+            eveningSky = (ImageView) itemView.findViewById(R.id.image_view_evening_sky);
             linearLayout = (LinearLayout) itemView.findViewById(R.id.linear_layout_schedule_item);
         }
     }
 
 
-    public ScheduleListAdapter(ArrayList<TravelSchedule> travelSchedules)
+    public ScheduleListAdapter(List<Schedule> travelSchedules)
     {
         this.travelSchedules = travelSchedules;
     }
@@ -60,32 +63,25 @@ public class ScheduleListAdapter extends RecyclerView.Adapter<ScheduleListAdapte
     public void onBindViewHolder(@NonNull ViewHolder holder, int position)
     {
         String destination = travelSchedules.get(position).getAreaName();
-        String period = travelSchedules.get(position).getStartDateStr() + " -> " + travelSchedules.get(position).getEndDateStr();
+        String date = travelSchedules.get(position).getDate();
 
         View.OnClickListener onClickListener = new View.OnClickListener()
         {
             @Override
             public void onClick(View view)
             {
-                Intent intent = new Intent(holder.linearLayout.getContext(), TravelScheduleActivity.class);
-                holder.linearLayout.getContext().startActivity(intent);
+
             }
         };
 
         holder.linearLayout.setOnClickListener(onClickListener);
-        holder.textViewDestinations.setText(destination);
-        holder.textViewTravelPeriod.setText(period);
+        holder.textViewArea.setText(destination);
+        holder.textViewTravelDate.setText(date);
     }
 
     @Override
     public int getItemCount()
     {
-        if (travelSchedules == null || travelSchedules.isEmpty())
-        {
-            return 0;
-        } else
-        {
-            return travelSchedules.size();
-        }
+        return travelSchedules.size();
     }
 }

@@ -23,7 +23,7 @@
         android:scrollbarSize="5dp"
         android:scrollbarThumbVertical="@color/colorPrimary"
         android:scrollbars="vertical"
-        tools:listitem="@layout/recycler_view_schedule_item"></androidx.recyclerview.widget.RecyclerView>
+        tools:listitem="@layout/recycler_view_added_schedule_item"></androidx.recyclerview.widget.RecyclerView>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_add_schedule"

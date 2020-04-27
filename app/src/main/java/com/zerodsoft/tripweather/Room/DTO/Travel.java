@@ -2,6 +2,7 @@ package com.zerodsoft.tripweather.Room.DTO;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 import java.io.Serializable;
@@ -15,6 +16,19 @@ public class Travel implements Serializable
 
     @ColumnInfo(name = "travel_name")
     private String name;
+
+    @Ignore
+    private String period;
+
+    public void setPeriod(String period)
+    {
+        this.period = period;
+    }
+
+    public String getPeriod()
+    {
+        return period;
+    }
 
     public int getId()
     {

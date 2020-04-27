@@ -11,15 +11,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.zerodsoft.tripweather.R;
 import com.zerodsoft.tripweather.Room.DAO.ScheduleDao;
 import com.zerodsoft.tripweather.Room.DAO.TravelDao;
-import com.zerodsoft.tripweather.Room.DTO.Area;
 import com.zerodsoft.tripweather.Room.DTO.Schedule;
 import com.zerodsoft.tripweather.Room.DTO.Travel;
-import com.zerodsoft.tripweather.ScheduleData.TravelData;
-import com.zerodsoft.tripweather.ScheduleData.TravelSchedule;
-import com.zerodsoft.tripweather.ScheduleList.ScheduleListAdapter;
 import com.zerodsoft.tripweather.ScheduleList.TravelScheduleListAdapter;
 import com.zerodsoft.tripweather.TravelScheduleActivity;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,7 +24,7 @@ public class TravelScheduleThread extends Thread
 {
     private AppDb appDb;
     private Activity activity;
-    private ArrayList<TravelSchedule> travelSchedules;
+    private List<Schedule> travelSchedules;
     private Travel travel;
     private int action;
     private int travelId = 0;
@@ -48,7 +45,7 @@ public class TravelScheduleThread extends Thread
     }
 
 
-    public TravelScheduleThread(Activity activity, String travelName, ArrayList<TravelSchedule> travelSchedules, int action)
+    public TravelScheduleThread(Activity activity, String travelName, List<Schedule> travelSchedules, int action)
     {
         appDb = AppDb.getInstance(activity.getApplicationContext());
         this.activity = activity;
@@ -72,31 +69,20 @@ public class TravelScheduleThread extends Thread
             // 일정 추가 완료 시
             long travelId = travelDao.insertTravel(travel);
 
-            for (TravelSchedule scheduleData : travelSchedules)
+            for (Schedule scheduleData : travelSchedules)
             {
                 Schedule schedule = new Schedule();
 
                 schedule.setParentId((int) travelId);
-                schedule.setAreaName(scheduleData.getTravelDestination().toString());
-                schedule.setAreaX(scheduleData.getTravelDestination().getX());
-                schedule.setAreaY(scheduleData.getTravelDestination().getY());
-                schedule.setStartDate(scheduleData.getStartDate().getYear() + scheduleData.getStartDate().getMonth() + scheduleData.getStartDate().getDay());
-                schedule.setEndDate(scheduleData.getEndDate().getYear() + scheduleData.getEndDate().getMonth() + scheduleData.getEndDate().getDay());
+                schedule.setAreaName(scheduleData.getArea().toString());
+                schedule.setAreaX(scheduleData.getArea().getX());
+                schedule.setAreaY(scheduleData.getArea().getY());
+                schedule.setStartDate(scheduleData.getStartDateObj().toString());
+                schedule.setEndDate(scheduleData.getEndDateObj().toString());
 
                 scheduleDao.insertSchedule(schedule);
             }
-            List<Travel> travels = travelDao.getAllTravels();
-
-            ArrayList<TravelData> data = new ArrayList<>();
-
-            for (Travel travel : travels)
-            {
-                TravelData travelData = new TravelData();
-                travelData.setTravelName(travel.getName());
-                travelData.setPeriod(travel.getName());
-                travelData.setTravelId(travel.getId());
-                data.add(travelData);
-            }
+            List<Travel> travelList = travelDao.getAllTravels();
 
             activity.runOnUiThread(new Runnable()
             {
@@ -106,7 +92,7 @@ public class TravelScheduleThread extends Thread
                     RecyclerView recyclerView = (RecyclerView) activity.findViewById(R.id.recycler_view_schedule);
                     recyclerView.setLayoutManager(new LinearLayoutManager(activity.getApplicationContext()));
 
-                    TravelScheduleListAdapter adapter = new TravelScheduleListAdapter(activity, data);
+                    TravelScheduleListAdapter adapter = new TravelScheduleListAdapter(activity, travelList);
                     recyclerView.setAdapter(adapter);
                 }
             });
@@ -115,17 +101,6 @@ public class TravelScheduleThread extends Thread
             // 앱 실행 직후
             List<Travel> travelList = travelDao.getAllTravels();
 
-            ArrayList<TravelData> data = new ArrayList<>();
-
-            for (Travel travel : travelList)
-            {
-                TravelData travelData = new TravelData();
-                travelData.setTravelName(travel.getName());
-                travelData.setPeriod(travel.getName());
-                travelData.setTravelId(travel.getId());
-                data.add(travelData);
-            }
-
             activity.runOnUiThread(new Runnable()
             {
                 @Override
@@ -134,7 +109,7 @@ public class TravelScheduleThread extends Thread
                     RecyclerView recyclerView = (RecyclerView) activity.findViewById(R.id.recycler_view_schedule);
                     recyclerView.setLayoutManager(new LinearLayoutManager(activity.getApplicationContext()));
 
-                    TravelScheduleListAdapter adapter = new TravelScheduleListAdapter(activity, data);
+                    TravelScheduleListAdapter adapter = new TravelScheduleListAdapter(activity, travelList);
                     recyclerView.setAdapter(adapter);
                 }
             });
@@ -142,19 +117,6 @@ public class TravelScheduleThread extends Thread
         {
             // 아이템을 클릭 했을때
             List<Schedule> scheduleList = scheduleDao.getAllSchedules(travelId);
-
-            ArrayList<TravelSchedule> travelSchedules = new ArrayList<>();
-
-            for (Schedule schedule : scheduleList)
-            {
-                TravelSchedule travelSchedule = new TravelSchedule();
-
-                travelSchedule.setAreaName(schedule.getAreaName());
-                travelSchedule.setStartDateStr(schedule.getStartDate());
-                travelSchedule.setEndDateStr(schedule.getEndDate());
-
-                travelSchedules.add(travelSchedule);
-            }
 
             activity.runOnUiThread(new Runnable()
             {
@@ -164,7 +126,7 @@ public class TravelScheduleThread extends Thread
                     Intent intent = new Intent(activity.getApplicationContext(), TravelScheduleActivity.class);
 
                     Bundle bundle = new Bundle();
-                    bundle.putSerializable("scheduleList", travelSchedules);
+                    bundle.putSerializable("scheduleList", (Serializable) scheduleList);
                     intent.putExtras(bundle);
 
                     activity.startActivity(intent);

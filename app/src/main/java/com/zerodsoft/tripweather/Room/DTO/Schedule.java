@@ -2,7 +2,10 @@ package com.zerodsoft.tripweather.Room.DTO;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
+
+import com.zerodsoft.tripweather.Calendar.SelectedDate;
 
 import java.io.Serializable;
 
@@ -29,6 +32,58 @@ public class Schedule implements Serializable
 
     @ColumnInfo(name = "schedule_end_date")
     private String endDate;
+
+    @Ignore
+    private SelectedDate startDateObj;
+
+    @Ignore
+    private SelectedDate endDateObj;
+
+    @Ignore
+    private Area area;
+
+    @Ignore
+    private String date;
+
+    public void setDate(String date)
+    {
+        this.date = date;
+    }
+
+    public String getDate()
+    {
+        return date;
+    }
+
+    public Area getArea()
+    {
+        return area;
+    }
+
+    public void setArea(Area area)
+    {
+        this.area = area;
+    }
+
+    public SelectedDate getStartDateObj()
+    {
+        return startDateObj;
+    }
+
+    public void setStartDateObj(SelectedDate startDateObj)
+    {
+        this.startDateObj = startDateObj;
+    }
+
+    public SelectedDate getEndDateObj()
+    {
+        return endDateObj;
+    }
+
+    public void setEndDateObj(SelectedDate endDateObj)
+    {
+        this.endDateObj = endDateObj;
+    }
 
     public int getSchedule_id()
     {

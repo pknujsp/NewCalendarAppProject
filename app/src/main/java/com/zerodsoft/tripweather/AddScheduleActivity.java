@@ -19,10 +19,12 @@ import android.widget.Toast;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.zerodsoft.tripweather.Calendar.SelectedDate;
 import com.zerodsoft.tripweather.Room.DTO.Area;
-import com.zerodsoft.tripweather.ScheduleData.TravelSchedule;
+import com.zerodsoft.tripweather.Room.DTO.Schedule;
 import com.zerodsoft.tripweather.ScheduleList.AddScheduleAdapter;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 
 public class AddScheduleActivity extends AppCompatActivity
 {
@@ -61,7 +63,7 @@ public class AddScheduleActivity extends AppCompatActivity
         });
         recyclerView.setHasFixedSize(true);
 
-        ArrayList<TravelSchedule> travelSchedules = new ArrayList<>();
+        List<Schedule> travelSchedules = new ArrayList<>();
 
         recyclerView.setLayoutManager(new LinearLayoutManager(AddScheduleActivity.this));
         adapter = new AddScheduleAdapter(travelSchedules, AddScheduleActivity.this);
@@ -75,7 +77,7 @@ public class AddScheduleActivity extends AppCompatActivity
 
         if (resultCode == RESULT_OK)
         {
-            TravelSchedule travelSchedule;
+            Schedule travelSchedule;
             SelectedDate startDate;
             SelectedDate endDate;
             Area area;
@@ -87,10 +89,10 @@ public class AddScheduleActivity extends AppCompatActivity
                     endDate = (SelectedDate) data.getSerializableExtra("endDate");
                     area = (Area) data.getSerializableExtra("area");
 
-                    travelSchedule = new TravelSchedule();
-                    travelSchedule.setStartDate(startDate);
-                    travelSchedule.setEndDate(endDate);
-                    travelSchedule.setTravelDestination(area);
+                    travelSchedule = new Schedule();
+                    travelSchedule.setStartDateObj(startDate);
+                    travelSchedule.setEndDateObj(endDate);
+                    travelSchedule.setArea(area);
 
                     adapter.addItem(travelSchedule);
                     adapter.notifyDataSetChanged();
@@ -103,10 +105,10 @@ public class AddScheduleActivity extends AppCompatActivity
                     area = (Area) data.getSerializableExtra("area");
                     int position = data.getIntExtra("position", 0);
 
-                    travelSchedule = new TravelSchedule();
-                    travelSchedule.setStartDate(startDate);
-                    travelSchedule.setEndDate(endDate);
-                    travelSchedule.setTravelDestination(area);
+                    travelSchedule = new Schedule();
+                    travelSchedule.setStartDateObj(startDate);
+                    travelSchedule.setEndDateObj(endDate);
+                    travelSchedule.setArea(area);
 
                     adapter.replaceItem(travelSchedule, position);
                     adapter.notifyDataSetChanged();
@@ -135,7 +137,7 @@ public class AddScheduleActivity extends AppCompatActivity
                 Intent intent = getIntent();
 
                 Bundle bundle = new Bundle();
-                bundle.putSerializable("schedules", adapter.getTravelSchedules());
+                bundle.putSerializable("schedules", (Serializable) adapter.getTravelSchedules());
                 intent.putExtras(bundle);
                 intent.putExtra("travelName", "My travel");
 

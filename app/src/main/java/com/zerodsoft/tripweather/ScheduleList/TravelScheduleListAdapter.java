@@ -7,20 +7,20 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.tripweather.R;
+import com.zerodsoft.tripweather.Room.DTO.Travel;
 import com.zerodsoft.tripweather.Room.TravelScheduleThread;
-import com.zerodsoft.tripweather.ScheduleData.TravelData;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class TravelScheduleListAdapter extends RecyclerView.Adapter<TravelScheduleListAdapter.ViewHolder>
 {
-    private ArrayList<TravelData> travelDataList = null;
+    private List<Travel> travelDataList = null;
     private Activity activity;
 
     public class ViewHolder extends RecyclerView.ViewHolder
@@ -39,7 +39,7 @@ public class TravelScheduleListAdapter extends RecyclerView.Adapter<TravelSchedu
         }
     }
 
-    public TravelScheduleListAdapter(Activity activity, ArrayList<TravelData> travelDataList)
+    public TravelScheduleListAdapter(Activity activity, List<Travel> travelDataList)
     {
         this.travelDataList = travelDataList;
         this.activity = activity;
@@ -60,9 +60,9 @@ public class TravelScheduleListAdapter extends RecyclerView.Adapter<TravelSchedu
     @Override
     public void onBindViewHolder(@NonNull TravelScheduleListAdapter.ViewHolder holder, int position)
     {
-        holder.textViewTravelName.setText(travelDataList.get(position).getTravelName());
+        holder.textViewTravelName.setText(travelDataList.get(position).getName());
         holder.textViewPeriod.setText(travelDataList.get(position).getPeriod());
-        holder.travelId = travelDataList.get(position).getTravelId();
+        holder.travelId = travelDataList.get(position).getId();
 
         holder.linearLayout.setOnClickListener(new View.OnClickListener()
         {

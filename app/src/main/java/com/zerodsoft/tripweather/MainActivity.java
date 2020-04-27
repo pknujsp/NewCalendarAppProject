@@ -17,11 +17,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.navigation.NavigationView;
+import com.zerodsoft.tripweather.Room.DTO.Schedule;
 import com.zerodsoft.tripweather.Room.TravelScheduleThread;
-import com.zerodsoft.tripweather.ScheduleData.TravelData;
-import com.zerodsoft.tripweather.ScheduleData.TravelSchedule;
-import com.zerodsoft.tripweather.ScheduleList.TravelScheduleListAdapter;
-import com.zerodsoft.tripweather.ScheduleList.ViewItemDecoration;
 
 import java.util.ArrayList;
 
@@ -125,7 +122,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             switch (requestCode)
             {
                 case NEW_TRAVEL_SCHEDULE:
-                    ArrayList<TravelSchedule> travelSchedules = (ArrayList<TravelSchedule>) data.getSerializableExtra("schedules");
+                    ArrayList<Schedule> travelSchedules = (ArrayList<Schedule>) data.getSerializableExtra("schedules");
                     String travelName = data.getStringExtra("travelName");
                     TravelScheduleThread travelListThread = new TravelScheduleThread(MainActivity.this, travelName, travelSchedules, 0);
                     travelListThread.start();

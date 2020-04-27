@@ -4,82 +4,110 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/card_view_schedule_item"
     android:layout_width="match_parent"
-    android:layout_height="110dp"
+    android:layout_height="90dp"
     android:layout_marginStart="8dp"
-    android:layout_marginTop="4dp"
     android:layout_marginEnd="8dp"
-    android:layout_marginBottom="4dp"
-    android:clickable="false"
-    android:elevation="4dp"
-    android:focusable="true"
-    android:focusableInTouchMode="false"
-    android:longClickable="false"
-    app:layout_constraintEnd_toEndOf="parent"
-    app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintTop_toTopOf="parent">
-
+    android:elevation="4dp">
 
     <LinearLayout
+        android:id="@+id/linear_layout_schedule_item"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="horizontal">
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true"
+        android:orientation="vertical">
 
         <LinearLayout
-            android:id="@+id/linear_layout_schedule_item"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="5"
-            android:background="?attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true"
-            android:orientation="vertical">
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
 
             <TextView
-                android:id="@+id/text_view_schedule_destinations"
+                android:id="@+id/text_view_travel_date"
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_marginStart="8dp"
-                android:layout_marginEnd="8dp"
+                android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:gravity="center_vertical"
                 android:text="TextView"
-                android:textSize="18sp"
-                android:textStyle="bold" />
+                android:textAlignment="viewStart" />
 
             <TextView
-                android:id="@+id/text_view_schedule_period"
+                android:id="@+id/text_view_travel_area"
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_marginStart="8dp"
-                android:layout_marginEnd="8dp"
+                android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:gravity="center_vertical"
-                android:text="TextView" />
+                android:text="TextView"
+                android:textAlignment="viewEnd" />
         </LinearLayout>
 
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:orientation="vertical">
+            android:baselineAligned="false"
+            android:orientation="horizontal">
 
-            <ImageButton
-                android:id="@+id/btn_remove_schedule"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:background="?attr/selectableItemBackground"
-                app:srcCompat="@drawable/remove_schedule" />
+                android:orientation="vertical">
 
-            <ImageButton
-                android:id="@+id/btn_edit_schedule"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
+                <TextView
+                    android:id="@+id/textView19"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="아침"
+                    android:textAlignment="center" />
+
+                <ImageView
+                    android:id="@+id/image_view_morning_sky"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:scaleType="center"
+                    app:srcCompat="@android:mipmap/sym_def_app_icon" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:background="?attr/selectableItemBackground"
-                app:srcCompat="@drawable/edit_schedule" />
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/textView20"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="낮"
+                    android:textAlignment="center" />
+
+                <ImageView
+                    android:id="@+id/image_view_day_sky"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:scaleType="center"
+                    app:srcCompat="@android:mipmap/sym_def_app_icon" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/textView21"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="저녁"
+                    android:textAlignment="center" />
+
+                <ImageView
+                    android:id="@+id/image_view_evening_sky"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:scaleType="center"
+                    app:srcCompat="@android:mipmap/sym_def_app_icon" />
+            </LinearLayout>
         </LinearLayout>
 
     </LinearLayout>
-
 </androidx.cardview.widget.CardView>
