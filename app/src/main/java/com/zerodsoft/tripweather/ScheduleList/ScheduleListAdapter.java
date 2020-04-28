@@ -2,6 +2,7 @@ package com.zerodsoft.tripweather.ScheduleList;
 
 import android.content.Context;
 import android.content.Intent;
+import android.util.SparseIntArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,21 +18,35 @@ import com.zerodsoft.tripweather.Room.DTO.Schedule;
 
 import java.util.List;
 
-public class ScheduleListAdapter extends RecyclerView.Adapter<ScheduleListAdapter.ViewHolder>
+public class ScheduleListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 {
     private List<Schedule> travelSchedules = null;
+    private SparseIntArray viewTypeArr;
+    public static final int HEADER = 0;
+    public static final int CHILD = 1;
 
-    public class ViewHolder extends RecyclerView.ViewHolder
+    public class HeaderViewHolder extends RecyclerView.ViewHolder
     {
-        TextView textViewTravelDate, textViewArea;
-        ImageView morningSky, daySky, eveningSky;
-        LinearLayout linearLayout;
+        TextView textViewDate;
 
-        ViewHolder(View itemView)
+        HeaderViewHolder(View itemView)
         {
             super(itemView);
 
-            textViewTravelDate = (TextView) itemView.findViewById(R.id.text_view_travel_date);
+            textViewDate = (TextView) itemView.findViewById(R.id.textview_schedule_header_date);
+        }
+    }
+
+    public class ChildViewHolder extends RecyclerView.ViewHolder
+    {
+        TextView textViewArea;
+        ImageView morningSky, daySky, eveningSky;
+        LinearLayout linearLayout;
+
+        ChildViewHolder(View itemView)
+        {
+            super(itemView);
+
             textViewArea = (TextView) itemView.findViewById(R.id.text_view_travel_area);
             morningSky = (ImageView) itemView.findViewById(R.id.image_view_morning_sky);
             daySky = (ImageView) itemView.findViewById(R.id.image_view_day_sky);
@@ -49,7 +64,7 @@ public class ScheduleListAdapter extends RecyclerView.Adapter<ScheduleListAdapte
 
     @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType)
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType)
     {
         Context context = parent.getContext();
         LayoutInflater layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -59,8 +74,15 @@ public class ScheduleListAdapter extends RecyclerView.Adapter<ScheduleListAdapte
         return viewHolder;
     }
 
+
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position)
+    public int getItemViewType(int position)
+    {
+
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position)
     {
         String destination = travelSchedules.get(position).getAreaName();
         String date = travelSchedules.get(position).getDate();
@@ -82,6 +104,21 @@ public class ScheduleListAdapter extends RecyclerView.Adapter<ScheduleListAdapte
     @Override
     public int getItemCount()
     {
-        return travelSchedules.size();
+        this.viewTypeArr = new SparseIntArray();
+
+        int count = 0;
+
+        if (!travelSchedules.isEmpty())
+        {
+            viewTypeArr.clear();
+
+            for (int i = 0; i < travelSchedules.size(); ++i)
+            {
+                viewTypeArr.put(count,HEADER);
+
+
+            }
+        }
+        return count;
     }
 }

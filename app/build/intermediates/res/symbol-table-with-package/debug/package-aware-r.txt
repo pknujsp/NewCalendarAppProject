@@ -1503,6 +1503,7 @@ id btn_edit_schedule
 id btn_edit_start
 id btn_remove_schedule
 id buttonPanel
+id button_refresh_data
 id cancel_action
 id cancel_button
 id card_view_added_schedule_item
@@ -1761,6 +1762,7 @@ id text_input_end_icon
 id text_input_start_icon
 id text_view_added_schedule_destinations
 id text_view_added_schedule_period
+id text_view_curr_travel_name
 id text_view_travel_area
 id text_view_travel_date
 id text_view_travel_name

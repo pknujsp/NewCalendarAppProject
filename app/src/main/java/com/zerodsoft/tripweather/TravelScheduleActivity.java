@@ -3,18 +3,13 @@ package com.zerodsoft.tripweather;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import android.os.Bundle;
-
 import com.zerodsoft.tripweather.Room.DTO.Schedule;
 import com.zerodsoft.tripweather.ScheduleList.ScheduleListAdapter;
 import com.zerodsoft.tripweather.ScheduleList.ViewItemDecoration;
-
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 public class TravelScheduleActivity extends AppCompatActivity
@@ -62,6 +57,6 @@ public class TravelScheduleActivity extends AppCompatActivity
 
         ScheduleListAdapter adapter = new ScheduleListAdapter(fixedScheduleList);
         recyclerView.setAdapter(adapter);
-        recyclerView.addItemDecoration(new ViewItemDecoration(8));
+        recyclerView.addItemDecoration(new ViewItemDecoration(16));
     }
 }
