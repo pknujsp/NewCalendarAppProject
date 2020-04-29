@@ -69,16 +69,16 @@ public class ScheduleListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         Context context = parent.getContext();
         LayoutInflater layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View view = layoutInflater.inflate(R.layout.recycler_view_schedule_item, parent, false);
-        ScheduleListAdapter.ViewHolder viewHolder = new ViewHolder(view);
+        //  ScheduleListAdapter.ViewHolder viewHolder = new ViewHolder(view);
 
-        return viewHolder;
+        return null;
     }
 
 
     @Override
     public int getItemViewType(int position)
     {
-
+        return 0;
     }
 
     @Override
@@ -96,9 +96,7 @@ public class ScheduleListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             }
         };
 
-        holder.linearLayout.setOnClickListener(onClickListener);
-        holder.textViewArea.setText(destination);
-        holder.textViewTravelDate.setText(date);
+
     }
 
     @Override
@@ -114,7 +112,7 @@ public class ScheduleListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
             for (int i = 0; i < travelSchedules.size(); ++i)
             {
-                viewTypeArr.put(count,HEADER);
+                viewTypeArr.put(count, HEADER);
 
 
             }

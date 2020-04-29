@@ -1602,6 +1602,7 @@ id line3
 id linear_layout_added_schedule_item
 id linear_layout_schedule_item
 id linear_layout_travel_item
+id linearlayout_schedule_header
 id listMode
 id list_item
 id masked
@@ -1764,7 +1765,6 @@ id text_view_added_schedule_destinations
 id text_view_added_schedule_period
 id text_view_curr_travel_name
 id text_view_travel_area
-id text_view_travel_date
 id text_view_travel_name
 id text_view_travel_period
 id textinput_counter
@@ -1774,6 +1774,7 @@ id textview_area_name
 id textview_end
 id textview_phase1
 id textview_phase2
+id textview_schedule_header_date
 id textview_selected_area
 id textview_start
 id time
@@ -1940,6 +1941,7 @@ layout recycler_view_added_schedule_item
 layout recycler_view_area_item
 layout recycler_view_schedule_item
 layout recycler_view_travel_item
+layout recyclerview_schedule_header
 layout select_dialog_item_material
 layout select_dialog_multichoice_material
 layout select_dialog_singlechoice_material
