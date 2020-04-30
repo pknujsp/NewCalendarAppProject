@@ -1,5 +1,8 @@
 package com.zerodsoft.tripweather.Utility;
 
+import org.w3c.dom.CDATASection;
+
+import java.sql.Time;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -9,64 +12,123 @@ import java.util.TimeZone;
 
 public class Clock
 {
-    public static Map<String, String> getCurrentDateTime()
-    {
-        Map<String, String> data = new HashMap<>();
-        Date date = new Date();
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMdd HHmm");
-        simpleDateFormat.setTimeZone(TimeZone.getTimeZone("Asia/Seoul"));
-        String[] result = simpleDateFormat.format(date).toString().split(" ");
+    public static final int CURRENT_WEATHER = 0;
+    public static final int N_FORECAST = 1;
+    private static final TimeZone timeZone = TimeZone.getTimeZone("Asia/Seoul");
+    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+    private static final SimpleDateFormat timeFormat = new SimpleDateFormat("HHmm");
 
-        data.put("currentDate", result[0]);
-        data.put("currentTime", result[1]);
+    public static Map<String, Object> getCurrentDateTime()
+    {
+        Map<String, Object> data = new HashMap<>();
+
+        Calendar today = Calendar.getInstance(timeZone);
+        // String baseDate = Integer.toString(today.get(Calendar.YEAR)) + Integer.toString(today.get(Calendar.MONTH) + 1) + Integer.toString(today.get(Calendar.DATE));
+        // String baseTime = Integer.toString(today.get(Calendar.HOUR_OF_DAY)) + Integer.toString(today.get(Calendar.MINUTE));
+
+        data.put("baseDate", dateFormat.format(today.getTime()));
+        data.put("baseTime", timeFormat.format(today.getTime()));
+        data.put("today", today);
 
         return data;
     }
 
-    private static String getYesterdayDate()
+
+    public static void convertBaseDateTime(Map<String, Object> currentDate, int type)
     {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMdd");
-        simpleDateFormat.setTimeZone(TimeZone.getTimeZone("Asia/Seoul"));
-        Calendar calendar = Calendar.getInstance();
+        Calendar today = (Calendar) currentDate.get("today");
 
-        calendar.add(calendar.DATE, -1);
+        switch (type)
+        {
+            case CURRENT_WEATHER:
+                convertCWeather(today);
+                break;
+            case N_FORECAST:
+                convertNForecast(today);
+                break;
+        }
 
-        return simpleDateFormat.format(calendar.getTime());
+        currentDate.put("baseDate", dateFormat.format(today.getTime()));
+        currentDate.put("baseTime", timeFormat.format(today.getTime()));
+
     }
 
-    public static void convertBaseDateTime(Map<String, String> currentDateTime)
+    private static void convertCWeather(Calendar date)
     {
-        String currentTime = currentDateTime.get("currentTime");
+        int hour = date.get(Calendar.HOUR_OF_DAY);
+        int minute = date.get(Calendar.MINUTE);
 
-        final int currentHour = Integer.valueOf(currentTime.substring(0, 2)).intValue();
-        final int currentMinute = Integer.valueOf(currentTime.substring(2)).intValue();
-
-        if (currentMinute > 40)
+        // renewal
+        if (minute > 40)
         {
-            currentTime = currentTime.substring(0, 2) + "00";
+            date.set(date.get(Calendar.YEAR), date.get(Calendar.MONTH), date.get(Calendar.DATE), date.get(Calendar.HOUR_OF_DAY), 0);
         } else
         {
-            if (currentHour == 0)
+            if (hour == 0)
             {
                 // 현재 시간이 오전12시 인 경우, 그 전날 오후 11시로 변경
-                currentTime = "2300";
-                String currentDate = getYesterdayDate();
-
-                currentDateTime.put("currentDate", currentDate);
-            } else if (currentHour >= 11)
-            {
-                currentTime = String.valueOf(currentHour - 1) + "00";
+                date.add(Calendar.DATE, -1);
+                date.set(date.get(Calendar.YEAR), date.get(Calendar.MONTH), date.get(Calendar.DATE), 23, 0);
             } else
             {
-                currentTime = "0" + String.valueOf(currentHour - 1) + "00";
+                date.add(Calendar.HOUR_OF_DAY, -1);
+                date.set(date.get(Calendar.YEAR), date.get(Calendar.MONTH), date.get(Calendar.DATE), date.get(Calendar.HOUR_OF_DAY), 0);
             }
         }
-        currentDateTime.put("currentTime", currentTime);
+    }
+
+    private static void convertNForecast(Calendar date)
+    {
+        final int hour = date.get(Calendar.HOUR_OF_DAY);
+        final int minute = date.get(Calendar.MINUTE);
+
+        if (minute > 10)
+        {
+            if (hour <= 1)
+            {
+                date.add(Calendar.DATE, -1);
+                date.set(date.get(Calendar.YEAR), date.get(Calendar.MONTH), date.get(Calendar.DATE), 23, 0);
+            } else if (hour >= 23)
+            {
+                date.set(date.get(Calendar.YEAR), date.get(Calendar.MONTH), date.get(Calendar.DATE), 23, 0);
+            } else
+            {
+                for (int i = 2; i <= 20; i += 3)
+                {
+                    if (hour <= i + 3 && hour >= i)
+                    {
+                        date.set(date.get(Calendar.YEAR), date.get(Calendar.MONTH), date.get(Calendar.DATE), i, 0);
+                        break;
+                    }
+                }
+            }
+        } else
+        {
+            if (hour <= 2)
+            {
+                date.add(Calendar.DATE, -1);
+                date.set(date.get(Calendar.YEAR), date.get(Calendar.MONTH), date.get(Calendar.DATE), 23, 0);
+            } else
+            {
+                for (int i = 2; i <= 20; i += 3)
+                {
+                    if (hour <= i + 3 && hour >= i + 1)
+                    {
+                        date.set(date.get(Calendar.YEAR), date.get(Calendar.MONTH), date.get(Calendar.DATE), i, 0);
+                        break;
+                    } else if (hour == i)
+                    {
+                        date.set(date.get(Calendar.YEAR), date.get(Calendar.MONTH), date.get(Calendar.DATE), i - 3, 0);
+                        break;
+                    }
+                }
+            }
+        }
     }
 
     public static String getYearMonth()
     {
-        Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("Asia/Seoul"));
+        Calendar calendar = Calendar.getInstance(timeZone);
 
         return Integer.toString(calendar.get(Calendar.YEAR)) + Integer.toString(calendar.get(Calendar.MONTH) + 1);
     }
