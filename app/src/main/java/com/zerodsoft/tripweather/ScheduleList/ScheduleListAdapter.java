@@ -14,13 +14,10 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.tripweather.R;
-import com.zerodsoft.tripweather.Room.DTO.Schedule;
-
-import java.util.List;
 
 public class ScheduleListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 {
-    private List<Schedule> travelSchedules = null;
+    ScheduleTable scheduleTable;
     private SparseIntArray viewTypeArr;
     public static final int HEADER = 0;
     public static final int CHILD = 1;
@@ -56,9 +53,9 @@ public class ScheduleListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     }
 
 
-    public ScheduleListAdapter(List<Schedule> travelSchedules)
+    public ScheduleListAdapter(ScheduleTable scheduleTable)
     {
-        this.travelSchedules = travelSchedules;
+        this.scheduleTable = scheduleTable;
     }
 
 
@@ -68,55 +65,58 @@ public class ScheduleListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     {
         Context context = parent.getContext();
         LayoutInflater layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View view = layoutInflater.inflate(R.layout.recycler_view_schedule_item, parent, false);
-        //  ScheduleListAdapter.ViewHolder viewHolder = new ViewHolder(view);
+        View view;
 
-        return null;
+        if (viewType == HEADER)
+        {
+            view = layoutInflater.inflate(R.layout.recyclerview_schedule_header, parent, false);
+            return new HeaderViewHolder(view);
+        } else
+        {
+            view = layoutInflater.inflate(R.layout.recycler_view_schedule_item, parent, false);
+            return new ChildViewHolder(view);
+        }
     }
 
 
     @Override
     public int getItemViewType(int position)
     {
-        return 0;
+        return scheduleTable.getViewType(position);
     }
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position)
     {
-        String destination = travelSchedules.get(position).getAreaName();
-        String date = travelSchedules.get(position).getDate();
+        final int viewType = scheduleTable.getViewType(position);
 
-        View.OnClickListener onClickListener = new View.OnClickListener()
+        if (viewType == HEADER)
         {
-            @Override
-            public void onClick(View view)
-            {
+            onBindHeaderViewHolder(holder, position);
+        } else
+        {
+            // CHILD
+            onBindChildViewHolder(holder, position);
+        }
+    }
 
-            }
-        };
+    private void onBindHeaderViewHolder(@NonNull RecyclerView.ViewHolder holder, int position)
+    {
+        String date = (String) scheduleTable.get(position);
 
+        ((HeaderViewHolder) holder).textViewDate.setText(date);
+    }
 
+    private void onBindChildViewHolder(@NonNull RecyclerView.ViewHolder holder, int position)
+    {
+        ScheduleNode schedule = (ScheduleNode) scheduleTable.get(position);
+
+        ((ChildViewHolder) holder).textViewArea.setText(schedule.getSchedule().getAreaName());
     }
 
     @Override
     public int getItemCount()
     {
-        this.viewTypeArr = new SparseIntArray();
-
-        int count = 0;
-
-        if (!travelSchedules.isEmpty())
-        {
-            viewTypeArr.clear();
-
-            for (int i = 0; i < travelSchedules.size(); ++i)
-            {
-                viewTypeArr.put(count, HEADER);
-
-
-            }
-        }
-        return count;
+        return scheduleTable.getSize();
     }
 }

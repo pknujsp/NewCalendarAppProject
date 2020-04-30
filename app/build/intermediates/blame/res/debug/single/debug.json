@@ -16,16 +16,16 @@
         "source": "C:\\Users\\Marx\\.gradle\\caches\\transforms-1\\files-1.1\\appcompat-1.1.0.aar\\d77b71b3a5a5c25917d77318714edd83\\res\\color\\abc_primary_text_disable_only_material_dark.xml"
     },
     {
-        "merged": "C:\\programming\\Android\\Android Projects\\Tripweather\\app\\build\\intermediates\\res\\merged\\debug\\drawable_abc_ic_clear_material.xml.flat",
-        "source": "C:\\Users\\Marx\\.gradle\\caches\\transforms-1\\files-1.1\\appcompat-1.1.0.aar\\d77b71b3a5a5c25917d77318714edd83\\res\\drawable\\abc_ic_clear_material.xml"
+        "merged": "C:\\programming\\Android\\Android Projects\\Tripweather\\app\\build\\intermediates\\res\\merged\\debug\\layout_notification_template_media_custom.xml.flat",
+        "source": "C:\\Users\\Marx\\.gradle\\caches\\transforms-1\\files-1.1\\media-1.0.0.aar\\1203966f03231b41c2012eb060fa2b9b\\res\\layout\\notification_template_media_custom.xml"
     },
     {
         "merged": "C:\\programming\\Android\\Android Projects\\Tripweather\\app\\build\\intermediates\\res\\merged\\debug\\anim_btn_checkbox_to_checked_box_inner_merged_animation.xml.flat",
         "source": "C:\\Users\\Marx\\.gradle\\caches\\transforms-1\\files-1.1\\appcompat-1.1.0.aar\\d77b71b3a5a5c25917d77318714edd83\\res\\anim\\btn_checkbox_to_checked_box_inner_merged_animation.xml"
     },
     {
-        "merged": "C:\\programming\\Android\\Android Projects\\Tripweather\\app\\build\\intermediates\\res\\merged\\debug\\layout_notification_template_media_custom.xml.flat",
-        "source": "C:\\Users\\Marx\\.gradle\\caches\\transforms-1\\files-1.1\\media-1.0.0.aar\\1203966f03231b41c2012eb060fa2b9b\\res\\layout\\notification_template_media_custom.xml"
+        "merged": "C:\\programming\\Android\\Android Projects\\Tripweather\\app\\build\\intermediates\\res\\merged\\debug\\drawable_abc_ic_clear_material.xml.flat",
+        "source": "C:\\Users\\Marx\\.gradle\\caches\\transforms-1\\files-1.1\\appcompat-1.1.0.aar\\d77b71b3a5a5c25917d77318714edd83\\res\\drawable\\abc_ic_clear_material.xml"
     },
     {
         "merged": "C:\\programming\\Android\\Android Projects\\Tripweather\\app\\build\\intermediates\\res\\merged\\debug\\drawable-xxhdpi_check_icon_white.png.flat",
@@ -310,6 +310,10 @@
     {
         "merged": "C:\\programming\\Android\\Android Projects\\Tripweather\\app\\build\\intermediates\\res\\merged\\debug\\drawable-xxxhdpi-v4_abc_tab_indicator_mtrl_alpha.9.png.flat",
         "source": "C:\\Users\\Marx\\.gradle\\caches\\transforms-1\\files-1.1\\appcompat-1.1.0.aar\\d77b71b3a5a5c25917d77318714edd83\\res\\drawable-xxxhdpi-v4\\abc_tab_indicator_mtrl_alpha.9.png"
+    },
+    {
+        "merged": "C:\\programming\\Android\\Android Projects\\Tripweather\\app\\build\\intermediates\\res\\merged\\debug\\drawable_ic_event_note_black_24dp.xml.flat",
+        "source": "C:\\programming\\Android\\Android Projects\\Tripweather\\app\\src\\main\\res\\drawable\\ic_event_note_black_24dp.xml"
     },
     {
         "merged": "C:\\programming\\Android\\Android Projects\\Tripweather\\app\\build\\intermediates\\res\\merged\\debug\\drawable-hdpi-v4_abc_ic_menu_paste_mtrl_am_alpha.png.flat",

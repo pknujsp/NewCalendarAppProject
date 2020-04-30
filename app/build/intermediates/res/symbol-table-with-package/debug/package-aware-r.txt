@@ -1375,6 +1375,7 @@ drawable gridview_selector
 drawable ic_calendar_black_24dp
 drawable ic_clear_black_24dp
 drawable ic_edit_black_24dp
+drawable ic_event_note_black_24dp
 drawable ic_keyboard_arrow_left_black_24dp
 drawable ic_keyboard_arrow_right_black_24dp
 drawable ic_launcher_background
@@ -1587,6 +1588,7 @@ id icon
 id icon_group
 id ifRoom
 id image
+id imageView
 id image_view_day_sky
 id image_view_evening_sky
 id image_view_morning_sky

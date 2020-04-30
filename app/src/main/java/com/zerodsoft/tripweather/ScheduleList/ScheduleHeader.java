@@ -10,6 +10,7 @@ public class ScheduleHeader
 {
     private Date date;
     private ArrayList<ScheduleNode> schedules;
+    private int viewType;
 
     public ScheduleHeader setDate(Date date)
     {
@@ -31,5 +32,26 @@ public class ScheduleHeader
     public ArrayList<ScheduleNode> getSchedules()
     {
         return schedules;
+    }
+
+    public void addSchedule(ScheduleNode node)
+    {
+        schedules.add(node);
+    }
+
+    public ScheduleNode getScheduleNode(int index)
+    {
+        return schedules.get(index);
+    }
+
+    public ScheduleHeader setViewType(int viewType)
+    {
+        this.viewType = viewType;
+        return this;
+    }
+
+    public int getViewType()
+    {
+        return viewType;
     }
 }

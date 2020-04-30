@@ -2,6 +2,8 @@ package com.zerodsoft.tripweather.ScheduleList;
 
 import com.zerodsoft.tripweather.Room.DTO.Schedule;
 
+import java.util.ArrayList;
+
 public class ScheduleNode
 {
     private Schedule schedule;

@@ -32,7 +32,7 @@ public class TravelScheduleActivity extends AppCompatActivity
 
         ScheduleTable scheduleTable = new ScheduleTable((ArrayList<Schedule>) travelData);
 
-        ScheduleListAdapter adapter = new ScheduleListAdapter(travelData);
+        ScheduleListAdapter adapter = new ScheduleListAdapter(scheduleTable);
         recyclerView.setAdapter(adapter);
         recyclerView.addItemDecoration(new ViewItemDecoration(16));
     }

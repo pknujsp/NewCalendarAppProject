@@ -8,6 +8,7 @@ import androidx.room.PrimaryKey;
 import com.zerodsoft.tripweather.Calendar.SelectedDate;
 
 import java.io.Serializable;
+import java.util.Date;
 
 @Entity(tableName = "schedule_table")
 public class Schedule implements Serializable
@@ -43,14 +44,14 @@ public class Schedule implements Serializable
     private Area area;
 
     @Ignore
-    private String date;
+    private Date date;
 
-    public void setDate(String date)
+    public void setDate(Date date)
     {
         this.date = date;
     }
 
-    public String getDate()
+    public Date getDate()
     {
         return date;
     }
