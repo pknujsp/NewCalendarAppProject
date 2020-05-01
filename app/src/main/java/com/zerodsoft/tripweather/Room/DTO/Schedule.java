@@ -22,6 +22,9 @@ public class Schedule implements Serializable
     @ColumnInfo(name = "schedule_area_name")
     private String areaName;
 
+    @ColumnInfo(name = "schedule_area_id")
+    private int areaId;
+
     @ColumnInfo(name = "schedule_area_x")
     private String areaX;
 
@@ -154,5 +157,15 @@ public class Schedule implements Serializable
     public void setEndDate(String endDate)
     {
         this.endDate = endDate;
+    }
+
+    public void setAreaId(int areaId)
+    {
+        this.areaId = areaId;
+    }
+
+    public int getAreaId()
+    {
+        return areaId;
     }
 }

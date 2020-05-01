@@ -14,9 +14,10 @@ public class Clock
 {
     public static final int CURRENT_WEATHER = 0;
     public static final int N_FORECAST = 1;
-    private static final TimeZone timeZone = TimeZone.getTimeZone("Asia/Seoul");
-    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
-    private static final SimpleDateFormat timeFormat = new SimpleDateFormat("HHmm");
+    public static final TimeZone timeZone = TimeZone.getTimeZone("Asia/Seoul");
+    public static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+    public static final SimpleDateFormat dateFormatSlash = new SimpleDateFormat("yyyy/MM/dd");
+    public static final SimpleDateFormat timeFormat = new SimpleDateFormat("HHmm");
 
     public static Map<String, Object> getCurrentDateTime()
     {
@@ -28,6 +29,7 @@ public class Clock
 
         data.put("baseDate", dateFormat.format(today.getTime()));
         data.put("baseTime", timeFormat.format(today.getTime()));
+        data.put("baseDateSlash", dateFormatSlash.format(today.getTime()));
         data.put("today", today);
 
         return data;

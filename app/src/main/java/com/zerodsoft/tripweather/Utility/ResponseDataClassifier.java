@@ -1,19 +1,13 @@
 package com.zerodsoft.tripweather.Utility;
 
 import android.content.Context;
-import android.util.SparseArray;
-import android.util.SparseIntArray;
 
 import com.zerodsoft.tripweather.RequestResponse.WeatherResponseItem;
-import com.zerodsoft.tripweather.Room.DTO.Area;
-import com.zerodsoft.tripweather.WeatherData.AreaData;
 import com.zerodsoft.tripweather.WeatherData.BaseData;
 import com.zerodsoft.tripweather.WeatherData.WeatherData;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 

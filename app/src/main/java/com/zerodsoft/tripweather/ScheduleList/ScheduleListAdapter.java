@@ -12,12 +12,19 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.room.RoomDatabase;
 
 import com.zerodsoft.tripweather.R;
+import com.zerodsoft.tripweather.WeatherData.ForecastAreaData;
+import com.zerodsoft.tripweather.WeatherData.WeatherData;
 
-public class ScheduleListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
+import java.io.Serializable;
+import java.util.ArrayList;
+
+public class ScheduleListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> implements Serializable
 {
     ScheduleTable scheduleTable;
+    ArrayList<ForecastAreaData> nForecastData;
     private SparseIntArray viewTypeArr;
     public static final int HEADER = 0;
     public static final int CHILD = 1;
@@ -37,7 +44,7 @@ public class ScheduleListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     public class ChildViewHolder extends RecyclerView.ViewHolder
     {
         TextView textViewArea;
-        ImageView morningSky, daySky, eveningSky;
+        TextView morningSky, daySky, eveningSky;
         LinearLayout linearLayout;
 
         ChildViewHolder(View itemView)
@@ -45,17 +52,18 @@ public class ScheduleListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             super(itemView);
 
             textViewArea = (TextView) itemView.findViewById(R.id.text_view_travel_area);
-            morningSky = (ImageView) itemView.findViewById(R.id.image_view_morning_sky);
-            daySky = (ImageView) itemView.findViewById(R.id.image_view_day_sky);
-            eveningSky = (ImageView) itemView.findViewById(R.id.image_view_evening_sky);
+            morningSky = (TextView) itemView.findViewById(R.id.image_view_morning_sky);
+            daySky = (TextView) itemView.findViewById(R.id.image_view_day_sky);
+            eveningSky = (TextView) itemView.findViewById(R.id.image_view_evening_sky);
             linearLayout = (LinearLayout) itemView.findViewById(R.id.linear_layout_schedule_item);
         }
     }
 
 
-    public ScheduleListAdapter(ScheduleTable scheduleTable)
+    public ScheduleListAdapter(ScheduleTable scheduleTable, ArrayList<ForecastAreaData> nForecast)
     {
         this.scheduleTable = scheduleTable;
+        this.nForecastData = nForecast;
     }
 
 
@@ -110,8 +118,56 @@ public class ScheduleListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     private void onBindChildViewHolder(@NonNull RecyclerView.ViewHolder holder, int position)
     {
         ScheduleNode schedule = (ScheduleNode) scheduleTable.get(position);
+        final String headerDate = scheduleTable.getHeaderDate(position);
+        String morningSky = null, daySky = null, eveningSky = null;
+
+        RootLoop:
+        for (int headerIdx = 0; headerIdx < scheduleTable.getSize(); headerIdx++)
+        {
+            for (int nodeIdx = 0; nodeIdx < scheduleTable.getNodesCount(headerIdx); nodeIdx++)
+            {
+                ScheduleNode node = scheduleTable.getNode(headerIdx, nodeIdx);
+
+                String areaX = node.getSchedule().getAreaX();
+                String areaY = node.getSchedule().getAreaY();
+
+                for (ForecastAreaData forecastArea : nForecastData)
+                {
+                    if (areaX.equals(forecastArea.getAreaX()) && areaY.equals(forecastArea.getAreaY()))
+                    {
+                        for (WeatherData weather : forecastArea.getForecastData())
+                        {
+                            try
+                            {
+                                if (headerDate.equals(weather.getFcstDate()))
+                                {
+                                    if (weather.getFcstTime().equals("0900"))
+                                    {
+                                        morningSky = weather.getSky();
+                                    } else if (weather.getFcstTime().equals("1500"))
+                                    {
+                                        daySky = weather.getSky();
+                                    } else if (weather.getFcstTime().equals("2100"))
+                                    {
+                                        eveningSky = weather.getSky();
+                                    }
+                                }
+                            } catch (NullPointerException e)
+                            {
+                                break RootLoop;
+                            }
+                        }
+
+                        break RootLoop;
+                    }
+                }
+            }
+        }
 
         ((ChildViewHolder) holder).textViewArea.setText(schedule.getSchedule().getAreaName());
+        ((ChildViewHolder) holder).morningSky.setText(morningSky);
+        ((ChildViewHolder) holder).daySky.setText(daySky);
+        ((ChildViewHolder) holder).eveningSky.setText(eveningSky);
     }
 
     @Override
@@ -119,4 +175,5 @@ public class ScheduleListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     {
         return scheduleTable.getSize();
     }
+
 }

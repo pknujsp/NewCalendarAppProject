@@ -1,9 +1,11 @@
 package com.zerodsoft.tripweather.ScheduleList;
 
+import android.content.pm.PackageManager;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
 
 import com.zerodsoft.tripweather.Room.DTO.Schedule;
+import com.zerodsoft.tripweather.Utility.Clock;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -22,6 +24,8 @@ public class ScheduleTable
 {
     private ArrayList<ScheduleHeader> scheduleHeaders;
     private SparseArray<ViewType> viewTypes;
+    private ArrayList<Integer> viewTypeIntList;
+    private HashMap<Integer, Long> headerDateMaps;
     private int size;
 
     public ScheduleTable(ArrayList<Schedule> schedules)
@@ -36,17 +40,47 @@ public class ScheduleTable
 
         if (viewType.getViewType() == ScheduleListAdapter.HEADER)
         {
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd EEE");
             Date date = scheduleHeaders.get(viewType.getHeaderIndex()).getDate();
-
-            return dateFormat.format(date);
+            return Clock.dateFormat.format(date.getTime());
         } else
         {
             return scheduleHeaders.get(viewType.getHeaderIndex()).getScheduleNode(viewType.getChildIndex());
         }
     }
 
+    public ScheduleNode getNode(int headerIdx, int nodeIdx)
+    {
+        return scheduleHeaders.get(headerIdx).getScheduleNode(nodeIdx);
+    }
+
+    public String getHeaderDate(int position)
+    {
+        String date = null;
+        for (int i = 0; i < viewTypeIntList.size() - 1; i++)
+        {
+            int currentIdx = viewTypeIntList.get(i).intValue();
+            int nextIdx = viewTypeIntList.get(i + 1).intValue();
+
+            if (position > currentIdx && position < nextIdx)
+            {
+                date = Clock.dateFormat.format(headerDateMaps.get(currentIdx));
+                break;
+            }
+        }
+        return date;
+    }
+
+    public int getNodesCount(int headerIdx)
+    {
+        return scheduleHeaders.get(headerIdx).getSchedules().size();
+    }
+
     public int getSize()
+    {
+        return viewTypes.size();
+    }
+
+    public int getAllScheduleCount()
     {
         return size;
     }
@@ -71,10 +105,14 @@ public class ScheduleTable
         int count = 0;
         int headerIndex = 0;
         this.viewTypes = new SparseArray<>();
+        this.headerDateMaps = new HashMap<>();
+        this.viewTypeIntList = new ArrayList<>();
 
         for (ScheduleHeader header : scheduleHeaders)
         {
             viewTypes.put(count, new ViewType().setViewType(ScheduleListAdapter.HEADER).setHeaderIndex(headerIndex));
+            viewTypeIntList.add(count);
+            headerDateMaps.put(count, header.getDate().getTime());
             count++;
 
             for (int i = 0; i < header.getSchedules().size(); ++i)
@@ -84,7 +122,6 @@ public class ScheduleTable
             }
             headerIndex++;
         }
-
         this.size = count;
     }
 
@@ -105,8 +142,6 @@ public class ScheduleTable
 
     private ArrayList<Schedule> initializeTable(ArrayList<Schedule> schedules)
     {
-        int size = 0;
-
         Calendar startDate = Calendar.getInstance();
         Calendar endDate = Calendar.getInstance();
         final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
@@ -137,12 +172,12 @@ public class ScheduleTable
 
                 fixedScheduleList.add(fixedSchedule);
                 dateSet.add(startDate.getTime());
-                size++;
+
                 startDate.add(Calendar.DATE, 1);
             }
         }
 
-        this.scheduleHeaders = new ArrayList<>(size);
+        this.scheduleHeaders = new ArrayList<>();
         Iterator<Date> iterator = dateSet.iterator();
 
         while (iterator.hasNext())

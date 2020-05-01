@@ -2061,6 +2061,9 @@ string precipitation_form_code_3
 string precipitation_form_code_4
 string rainfall
 string search_menu_title
+string sky_clear
+string sky_cloudy
+string sky_partly_cloudy
 string status_bar_notification_info_overflow
 string temperature
 string wind_direction

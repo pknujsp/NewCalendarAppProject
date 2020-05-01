@@ -206,7 +206,7 @@ public class WeatherData implements Comparable
 
     public WeatherData setSky(String sky)
     {
-        this.sky = sky;
+        this.sky = DataConverter.convertSky(sky, context);
         return this;
     }
 
@@ -261,9 +261,15 @@ public class WeatherData implements Comparable
         return 0;
     }
 
-    public String getFcstDate()
+    public String getFcstDate() throws NullPointerException
     {
-        return fcstDate;
+        if (fcstDate == null)
+        {
+            throw new NullPointerException();
+        } else
+        {
+            return fcstDate;
+        }
     }
 
     public WeatherData setFcstDate(String fcstDate)
@@ -272,9 +278,15 @@ public class WeatherData implements Comparable
         return this;
     }
 
-    public String getFcstTime()
+    public String getFcstTime() throws NullPointerException
     {
-        return fcstTime;
+        if (fcstTime == null)
+        {
+            throw new NullPointerException();
+        } else
+        {
+            return fcstTime;
+        }
     }
 
     public WeatherData setFcstTime(String fcstTime)

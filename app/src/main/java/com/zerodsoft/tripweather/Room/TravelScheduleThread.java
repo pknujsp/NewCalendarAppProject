@@ -74,6 +74,7 @@ public class TravelScheduleThread extends Thread
                 Schedule schedule = new Schedule();
 
                 schedule.setParentId((int) travelId);
+                schedule.setAreaId(scheduleData.getArea().getArea_id());
                 schedule.setAreaName(scheduleData.getArea().toString());
                 schedule.setAreaX(scheduleData.getArea().getX());
                 schedule.setAreaY(scheduleData.getArea().getY());
