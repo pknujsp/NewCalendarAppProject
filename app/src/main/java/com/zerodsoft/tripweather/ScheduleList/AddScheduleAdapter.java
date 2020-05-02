@@ -17,6 +17,7 @@ import com.zerodsoft.tripweather.AddScheduleActivity;
 import com.zerodsoft.tripweather.NewScheduleActivity;
 import com.zerodsoft.tripweather.R;
 import com.zerodsoft.tripweather.Room.DTO.Schedule;
+import com.zerodsoft.tripweather.Utility.Clock;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -67,8 +68,8 @@ public class AddScheduleAdapter extends RecyclerView.Adapter<AddScheduleAdapter.
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position)
     {
-        String startDate = travelSchedules.get(position).getStartDateObj().toString();
-        String endDate = travelSchedules.get(position).getEndDateObj().toString();
+        String startDate = Clock.dateFormatSlash.format(travelSchedules.get(position).getStartDateObj().getTime());
+        String endDate = Clock.dateFormatSlash.format(travelSchedules.get(position).getEndDateObj().getTime());
         String destinations = travelSchedules.get(position).getArea().toString();
 
         holder.textViewTravelPeriod.setText(startDate + " -> " + endDate);

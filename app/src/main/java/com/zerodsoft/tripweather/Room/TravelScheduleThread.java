@@ -15,6 +15,7 @@ import com.zerodsoft.tripweather.Room.DTO.Schedule;
 import com.zerodsoft.tripweather.Room.DTO.Travel;
 import com.zerodsoft.tripweather.ScheduleList.TravelScheduleListAdapter;
 import com.zerodsoft.tripweather.TravelScheduleActivity;
+import com.zerodsoft.tripweather.Utility.Clock;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -78,8 +79,8 @@ public class TravelScheduleThread extends Thread
                 schedule.setAreaName(scheduleData.getArea().toString());
                 schedule.setAreaX(scheduleData.getArea().getX());
                 schedule.setAreaY(scheduleData.getArea().getY());
-                schedule.setStartDate(scheduleData.getStartDateObj().toString());
-                schedule.setEndDate(scheduleData.getEndDateObj().toString());
+                schedule.setStartDate(Clock.dateFormatSlash.format(scheduleData.getStartDateObj().getTime()));
+                schedule.setEndDate(Clock.dateFormatSlash.format(scheduleData.getEndDateObj().getTime()));
 
                 scheduleDao.insertSchedule(schedule);
             }

@@ -5,9 +5,8 @@ import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
-import com.zerodsoft.tripweather.Calendar.SelectedDate;
-
 import java.io.Serializable;
+import java.util.Calendar;
 import java.util.Date;
 
 @Entity(tableName = "schedule_table")
@@ -38,10 +37,10 @@ public class Schedule implements Serializable
     private String endDate;
 
     @Ignore
-    private SelectedDate startDateObj;
+    private Date startDateObj;
 
     @Ignore
-    private SelectedDate endDateObj;
+    private Date endDateObj;
 
     @Ignore
     private Area area;
@@ -69,22 +68,22 @@ public class Schedule implements Serializable
         this.area = area;
     }
 
-    public SelectedDate getStartDateObj()
+    public Date getStartDateObj()
     {
         return startDateObj;
     }
 
-    public void setStartDateObj(SelectedDate startDateObj)
+    public void setStartDateObj(Date startDateObj)
     {
         this.startDateObj = startDateObj;
     }
 
-    public SelectedDate getEndDateObj()
+    public Date getEndDateObj()
     {
         return endDateObj;
     }
 
-    public void setEndDateObj(SelectedDate endDateObj)
+    public void setEndDateObj(Date endDateObj)
     {
         this.endDateObj = endDateObj;
     }

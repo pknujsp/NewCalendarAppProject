@@ -155,5 +155,4 @@ public class TravelScheduleActivity extends AppCompatActivity
         }
         return true;
     }
-
 }

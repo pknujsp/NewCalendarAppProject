@@ -7,7 +7,6 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
@@ -17,13 +16,13 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.zerodsoft.tripweather.Calendar.SelectedDate;
 import com.zerodsoft.tripweather.Room.DTO.Area;
 import com.zerodsoft.tripweather.Room.DTO.Schedule;
 import com.zerodsoft.tripweather.ScheduleList.AddScheduleAdapter;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class AddScheduleActivity extends AppCompatActivity
@@ -78,15 +77,15 @@ public class AddScheduleActivity extends AppCompatActivity
         if (resultCode == RESULT_OK)
         {
             Schedule travelSchedule;
-            SelectedDate startDate;
-            SelectedDate endDate;
+            Date startDate;
+            Date endDate;
             Area area;
 
             switch (requestCode)
             {
                 case ADD_SCHEDULE:
-                    startDate = (SelectedDate) data.getSerializableExtra("startDate");
-                    endDate = (SelectedDate) data.getSerializableExtra("endDate");
+                    startDate = (Date) data.getSerializableExtra("startDate");
+                    endDate = (Date) data.getSerializableExtra("endDate");
                     area = (Area) data.getSerializableExtra("area");
 
                     travelSchedule = new Schedule();
@@ -100,8 +99,8 @@ public class AddScheduleActivity extends AppCompatActivity
                     break;
 
                 case EDIT_SCHEDULE:
-                    startDate = (SelectedDate) data.getSerializableExtra("startDate");
-                    endDate = (SelectedDate) data.getSerializableExtra("endDate");
+                    startDate = (Date) data.getSerializableExtra("startDate");
+                    endDate = (Date) data.getSerializableExtra("endDate");
                     area = (Area) data.getSerializableExtra("area");
                     int position = data.getIntExtra("position", 0);
 
@@ -133,16 +132,21 @@ public class AddScheduleActivity extends AppCompatActivity
         switch (item.getItemId())
         {
             case R.id.menu_check:
-                Toast.makeText(getApplicationContext(), "CHECK", Toast.LENGTH_SHORT).show();
-                Intent intent = getIntent();
+                if (!adapter.getTravelSchedules().isEmpty())
+                {
+                    Intent intent = getIntent();
 
-                Bundle bundle = new Bundle();
-                bundle.putSerializable("schedules", (Serializable) adapter.getTravelSchedules());
-                intent.putExtras(bundle);
-                intent.putExtra("travelName", "My travel");
+                    Bundle bundle = new Bundle();
+                    bundle.putSerializable("schedules", (Serializable) adapter.getTravelSchedules());
+                    intent.putExtras(bundle);
+                    intent.putExtra("travelName", "My travel");
 
-                setResult(RESULT_OK, intent);
-                finish();
+                    setResult(RESULT_OK, intent);
+                    finish();
+                } else
+                {
+                    Toast.makeText(getApplicationContext(), "일정을 추가하십시오", Toast.LENGTH_SHORT).show();
+                }
                 return true;
             case android.R.id.home:
                 setResult(RESULT_CANCELED);

@@ -17,13 +17,16 @@ import androidx.fragment.app.DialogFragment;
 import com.google.gson.internal.$Gson$Preconditions;
 import com.zerodsoft.tripweather.DatePickerFragment;
 import com.zerodsoft.tripweather.R;
+import com.zerodsoft.tripweather.Utility.Clock;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Map;
 
 public class CalendarAdapter extends BaseAdapter
 {
-    ArrayList<Integer> calenderData;
+    ArrayList<Date> calenderData;
     int thisMonthStartIdx, thisMonthEndIdx;
     LayoutInflater layoutInflater;
     Context context;
@@ -35,11 +38,11 @@ public class CalendarAdapter extends BaseAdapter
 
     public interface OnDaySelectedListener
     {
-        void onDaySelected(String day);
+        void onDaySelected(Date date);
     }
 
 
-    public CalendarAdapter(Map<String, ArrayList<Integer>> calenderData, Context context, View dialog, DialogFragment dialogFragment)
+    public CalendarAdapter(Map<String, ArrayList<Date>> calenderData, Context context, View dialog, DialogFragment dialogFragment)
     {
         this.calenderData = new ArrayList<>();
 
@@ -85,24 +88,27 @@ public class CalendarAdapter extends BaseAdapter
             {
                 if (onDaySelectedListener != null)
                 {
-                    onDaySelectedListener.onDaySelected(text.getText().toString());
+                    onDaySelectedListener.onDaySelected(calenderData.get(i));
                 }
             }
         });
 
-        if (thisMonthStartIdx > 0 && i < thisMonthStartIdx)
+        if (i < thisMonthStartIdx)
         {
-            text.setText(calenderData.get(i).toString());
+            // previous Month
+            text.setText(Clock.dayFormat.format(calenderData.get(i).getTime()));
             text.setTypeface(text.getTypeface(), Typeface.ITALIC);
             text.setClickable(false);
-        } else if (thisMonthEndIdx > 0 && i > thisMonthEndIdx)
+        } else if (i > thisMonthEndIdx)
         {
-            text.setText(calenderData.get(i).toString());
+            // next Month
+            text.setText(Clock.dayFormat.format(calenderData.get(i).getTime()));
             text.setTypeface(text.getTypeface(), Typeface.ITALIC);
             text.setClickable(false);
         } else
         {
-            text.setText(calenderData.get(i).toString());
+            // this Month
+            text.setText(Clock.dayFormat.format(calenderData.get(i).getTime()));
             text.setTypeface(text.getTypeface(), Typeface.BOLD);
             text.setClickable(true);
         }
@@ -110,21 +116,16 @@ public class CalendarAdapter extends BaseAdapter
         return view;
     }
 
-    public void changeData(Map<String, ArrayList<Integer>> calenderData)
-    {
-        setData(calenderData);
-        notifyDataSetChanged();
-    }
 
-    public void setData(Map<String, ArrayList<Integer>> calenderData)
+    public void setData(Map<String, ArrayList<Date>> calenderData)
     {
         int index = 0;
         this.thisMonthEndIdx = 0;
         this.thisMonthStartIdx = 0;
 
-        if (calenderData.get("previous_month") != null)
+        if (!calenderData.get("previous_month").isEmpty())
         {
-            for (int date : (ArrayList<Integer>) calenderData.get("previous_month"))
+            for (Date date : (ArrayList<Date>) calenderData.get("previous_month"))
             {
                 this.calenderData.add(date);
                 ++index;
@@ -133,38 +134,38 @@ public class CalendarAdapter extends BaseAdapter
             thisMonthStartIdx = index;
         }
 
-        if (calenderData.get("this_month") != null)
+        if (!calenderData.get("this_month").isEmpty())
         {
-            for (int date : (ArrayList<Integer>) calenderData.get("this_month"))
+            for (Date date : (ArrayList<Date>) calenderData.get("this_month"))
             {
                 this.calenderData.add(date);
                 ++index;
             }
+
+            thisMonthEndIdx = index - 1;
         }
 
-        if (calenderData.get("next_month") != null)
+        if (!calenderData.get("next_month").isEmpty())
         {
-            thisMonthEndIdx = index - 1;
-
-            for (int date : (ArrayList<Integer>) calenderData.get("next_month"))
+            for (Date date : (ArrayList<Date>) calenderData.get("next_month"))
             {
                 this.calenderData.add(date);
-                ++index;
             }
         }
     }
 
-    private void setDate(SelectedDate date, int type)
+    private void setDate(Date date, int type)
     {
         switch (type)
         {
             case CalendarAdapter.START_DATE:
-                ((TextView) dialog.findViewById(R.id.textview_start)).setText(date.getYear() + "/" + date.getMonth() + "/" + date.getDay());
+                ((TextView) dialog.findViewById(R.id.textview_start)).setText(Clock.dateFormatSlash.format(date.getTime()));
                 break;
             case CalendarAdapter.END_DATE:
-                ((TextView) dialog.findViewById(R.id.textview_end)).setText(date.getYear() + "/" + date.getMonth() + "/" + date.getDay());
+                ((TextView) dialog.findViewById(R.id.textview_end)).setText(Clock.dateFormatSlash.format(date.getTime()));
                 break;
         }
     }
+
 
 }

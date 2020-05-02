@@ -15,16 +15,18 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.zerodsoft.tripweather.Calendar.SelectedDate;
 import com.zerodsoft.tripweather.Room.DTO.Area;
+import com.zerodsoft.tripweather.Utility.Clock;
+
+import java.util.Date;
 
 public class NewScheduleActivity extends AppCompatActivity implements DatePickerFragment.OnPositiveListener
 {
     Toolbar toolbar;
     TextView textArea, textStartDate, textEndDate;
     ImageButton btnArea, btnDate;
-    Area area;
-    SelectedDate startDate, endDate;
+    Area area = null;
+    Date startDate = null, endDate = null;
     Intent editIntent = null;
     private static final int ADD_AREA = 30;
 
@@ -51,13 +53,13 @@ public class NewScheduleActivity extends AppCompatActivity implements DatePicker
         if (getIntent().getAction().equals("EDIT_SCHEDULE"))
         {
             editIntent = getIntent();
-            startDate = (SelectedDate) editIntent.getSerializableExtra("startDate");
-            endDate = (SelectedDate) editIntent.getSerializableExtra("endDate");
+            startDate = (Date) editIntent.getSerializableExtra("startDate");
+            endDate = (Date) editIntent.getSerializableExtra("endDate");
             area = (Area) editIntent.getSerializableExtra("area");
 
             textArea.setText(area.getPhase1() + " " + area.getPhase2() + " " + area.getPhase3());
-            textStartDate.setText(startDate.getYear() + "/" + startDate.getMonth() + "/" + startDate.getDay());
-            textEndDate.setText(endDate.getYear() + "/" + endDate.getMonth() + "/" + endDate.getDay());
+            textStartDate.setText(Clock.dateFormatSlash.format(startDate.getTime()));
+            textEndDate.setText(Clock.dateFormatSlash.format(endDate.getTime()));
         }
 
         btnArea.setOnClickListener(new View.OnClickListener()
@@ -96,27 +98,33 @@ public class NewScheduleActivity extends AppCompatActivity implements DatePicker
         switch (item.getItemId())
         {
             case R.id.menu_check:
-                if (editIntent != null)
+                if (area != null && startDate != null && endDate != null)
                 {
-                    Bundle bundle = new Bundle();
-                    bundle.putSerializable("startDate", startDate);
-                    bundle.putSerializable("endDate", endDate);
-                    bundle.putSerializable("area", area);
-                    editIntent.putExtras(bundle);
+                    if (editIntent != null)
+                    {
+                        Bundle bundle = new Bundle();
+                        bundle.putSerializable("startDate", startDate);
+                        bundle.putSerializable("endDate", endDate);
+                        bundle.putSerializable("area", area);
+                        editIntent.putExtras(bundle);
 
-                    setResult(RESULT_OK, editIntent);
+                        setResult(RESULT_OK, editIntent);
+                    } else
+                    {
+                        Intent intent = getIntent();
+                        Bundle bundle = new Bundle();
+                        bundle.putSerializable("startDate", startDate);
+                        bundle.putSerializable("endDate", endDate);
+                        bundle.putSerializable("area", area);
+                        intent.putExtras(bundle);
+
+                        setResult(RESULT_OK, intent);
+                    }
+                    finish();
                 } else
                 {
-                    Intent intent = getIntent();
-                    Bundle bundle = new Bundle();
-                    bundle.putSerializable("startDate", startDate);
-                    bundle.putSerializable("endDate", endDate);
-                    bundle.putSerializable("area", area);
-                    intent.putExtras(bundle);
-
-                    setResult(RESULT_OK, intent);
+                    Toast.makeText(getApplicationContext(), "지역, 날짜를 선택해주세요", Toast.LENGTH_SHORT).show();
                 }
-                finish();
                 return true;
             case android.R.id.home:
                 setResult(RESULT_CANCELED);
@@ -145,13 +153,13 @@ public class NewScheduleActivity extends AppCompatActivity implements DatePicker
     }
 
     @Override
-    public void onPositiveSelected(SelectedDate startDate, SelectedDate endDate)
+    public void onPositiveSelected(Date startDate, Date endDate)
     {
         this.startDate = startDate;
         this.endDate = endDate;
 
-        textStartDate.setText(startDate.getYear() + "/" + startDate.getMonth() + "/" + startDate.getDay());
-        textEndDate.setText(endDate.getYear() + "/" + endDate.getMonth() + "/" + endDate.getDay());
+        textStartDate.setText(Clock.dateFormatSlash.format(startDate.getTime()));
+        textEndDate.setText(Clock.dateFormatSlash.format(endDate.getTime()));
     }
 
 }

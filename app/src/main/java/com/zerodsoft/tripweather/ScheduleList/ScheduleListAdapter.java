@@ -29,6 +29,11 @@ public class ScheduleListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     public static final int HEADER = 0;
     public static final int CHILD = 1;
 
+    public interface OnImageListener
+    {
+        void setSkyImage(String sky);
+    }
+
     public class HeaderViewHolder extends RecyclerView.ViewHolder
     {
         TextView textViewDate;
@@ -44,7 +49,7 @@ public class ScheduleListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     public class ChildViewHolder extends RecyclerView.ViewHolder
     {
         TextView textViewArea;
-        TextView morningSky, daySky, eveningSky;
+        ImageView morningSky, daySky, eveningSky;
         LinearLayout linearLayout;
 
         ChildViewHolder(View itemView)
@@ -52,9 +57,9 @@ public class ScheduleListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             super(itemView);
 
             textViewArea = (TextView) itemView.findViewById(R.id.text_view_travel_area);
-            morningSky = (TextView) itemView.findViewById(R.id.image_view_morning_sky);
-            daySky = (TextView) itemView.findViewById(R.id.image_view_day_sky);
-            eveningSky = (TextView) itemView.findViewById(R.id.image_view_evening_sky);
+            morningSky = (ImageView) itemView.findViewById(R.id.image_view_morning_sky);
+            daySky = (ImageView) itemView.findViewById(R.id.image_view_day_sky);
+            eveningSky = (ImageView) itemView.findViewById(R.id.image_view_evening_sky);
             linearLayout = (LinearLayout) itemView.findViewById(R.id.linear_layout_schedule_item);
         }
     }
@@ -165,15 +170,40 @@ public class ScheduleListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         }
 
         ((ChildViewHolder) holder).textViewArea.setText(schedule.getSchedule().getAreaName());
-        ((ChildViewHolder) holder).morningSky.setText(morningSky);
-        ((ChildViewHolder) holder).daySky.setText(daySky);
-        ((ChildViewHolder) holder).eveningSky.setText(eveningSky);
+        ((ChildViewHolder) holder).morningSky.setImageResource(getSkyImage(morningSky));
+        ((ChildViewHolder) holder).daySky.setImageResource(getSkyImage(daySky));
+        ((ChildViewHolder) holder).eveningSky.setImageResource(getSkyImage(eveningSky));
     }
 
     @Override
     public int getItemCount()
     {
         return scheduleTable.getSize();
+    }
+
+    private int getSkyImage(String sky)
+    {
+        int skyImageNumber = 0;
+
+        if (sky == null)
+        {
+            skyImageNumber = R.drawable.past_date_icon;
+        } else
+        {
+            switch (sky)
+            {
+                case "맑음":
+                    skyImageNumber = R.drawable.fine_icon;
+                    break;
+                case "구름 많음":
+                    skyImageNumber = R.drawable.partly_cloudy_icon;
+                    break;
+                case "흐림":
+                    skyImageNumber = R.drawable.cloudy_icon;
+                    break;
+            }
+        }
+        return skyImageNumber;
     }
 
 }

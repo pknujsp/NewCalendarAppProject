@@ -18,14 +18,14 @@ public class Clock
     public static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
     public static final SimpleDateFormat dateFormatSlash = new SimpleDateFormat("yyyy/MM/dd");
     public static final SimpleDateFormat timeFormat = new SimpleDateFormat("HHmm");
+    public static final SimpleDateFormat dayFormat = new SimpleDateFormat("d");
+    public static final SimpleDateFormat yearMonthFormat = new SimpleDateFormat("yyyy/MM");
 
     public static Map<String, Object> getCurrentDateTime()
     {
         Map<String, Object> data = new HashMap<>();
 
         Calendar today = Calendar.getInstance(timeZone);
-        // String baseDate = Integer.toString(today.get(Calendar.YEAR)) + Integer.toString(today.get(Calendar.MONTH) + 1) + Integer.toString(today.get(Calendar.DATE));
-        // String baseTime = Integer.toString(today.get(Calendar.HOUR_OF_DAY)) + Integer.toString(today.get(Calendar.MINUTE));
 
         data.put("baseDate", dateFormat.format(today.getTime()));
         data.put("baseTime", timeFormat.format(today.getTime()));

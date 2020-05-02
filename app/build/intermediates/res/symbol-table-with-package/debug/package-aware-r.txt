@@ -1363,6 +1363,7 @@ drawable btn_radio_on_to_off_mtrl_animation
 drawable buttonshape
 drawable check_icon
 drawable check_icon_white
+drawable cloudy_icon
 drawable create_icon
 drawable design_bottom_navigation_item_background
 drawable design_fab_background
@@ -1371,6 +1372,7 @@ drawable design_ic_visibility_off
 drawable design_password_eye
 drawable design_snackbar_background
 drawable edit_schedule
+drawable fine_icon
 drawable gridview_selector
 drawable ic_calendar_black_24dp
 drawable ic_clear_black_24dp
@@ -1410,10 +1412,11 @@ drawable notification_template_icon_bg
 drawable notification_template_icon_low_bg
 drawable notification_tile_bg
 drawable notify_panel_notification_icon_bg
+drawable partly_cloudy_icon
+drawable past_date_icon
 drawable remove_schedule
 drawable round_corner_blue
 drawable round_corner_white
-drawable sunrise_pic
 drawable test_custom_background
 drawable toolbar_menu_icon
 drawable tooltip_frame_dark
