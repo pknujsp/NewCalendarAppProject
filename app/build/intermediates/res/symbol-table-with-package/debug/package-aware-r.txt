@@ -1485,6 +1485,7 @@ id action_text
 id actions
 id activity_chooser_view_content
 id add
+id add_schedule_linearlayout
 id alertTitle
 id alignBounds
 id alignMargins
@@ -1555,6 +1556,7 @@ id dropdown_menu
 id eastWestWind
 id eastWestWindTextView
 id edit_query
+id edit_travel_name
 id end
 id end_padder
 id enterAlways
@@ -1738,6 +1740,9 @@ id tag_transition_group
 id tag_unhandled_key_event_manager
 id tag_unhandled_key_listeners
 id tempTextView
+id temp_day
+id temp_evening
+id temp_morning
 id temperature
 id test_checkbox_android_button_tint
 id test_checkbox_app_button_tint
@@ -1759,6 +1764,7 @@ id textView19
 id textView2
 id textView20
 id textView21
+id textView3
 id textView4
 id textView5
 id textView6

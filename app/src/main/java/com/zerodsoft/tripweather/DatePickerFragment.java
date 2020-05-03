@@ -214,7 +214,7 @@ public class DatePickerFragment extends DialogFragment implements CalendarAdapte
     {
         if (range)
         {
-            textViewStartDate.setText(Clock.dateFormatSlash.format(date.getTime()));
+            textViewStartDate.setText(Clock.dateDayNameFormatSlash.format(date.getTime()));
             startDate = date;
             textViewEndDate.setText("");
             range = false;
@@ -224,7 +224,7 @@ public class DatePickerFragment extends DialogFragment implements CalendarAdapte
 
         if (textViewStartDate.getText().toString().equals(""))
         {
-            textViewStartDate.setText(Clock.dateFormatSlash.format(date.getTime()));
+            textViewStartDate.setText(Clock.dateDayNameFormatSlash.format(date.getTime()));
             startDate = date;
         } else if (textViewEndDate.getText().toString().equals(""))
         {
@@ -234,7 +234,7 @@ public class DatePickerFragment extends DialogFragment implements CalendarAdapte
                 return;
             }
 
-            textViewEndDate.setText(Clock.dateFormatSlash.format(date.getTime()));
+            textViewEndDate.setText(Clock.dateDayNameFormatSlash.format(date.getTime()));
             endDate = date;
             range = true;
         }

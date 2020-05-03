@@ -32,7 +32,6 @@
             android:background="?attr/selectableItemBackground"
             android:drawableStart="@drawable/check_icon"
             android:gravity="center_vertical"
-            android:text="갱신"
             android:textAlignment="textStart"
             android:textSize="12sp" />
     </LinearLayout>

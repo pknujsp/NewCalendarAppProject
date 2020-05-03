@@ -9,15 +9,20 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.zerodsoft.tripweather.Room.AppDb;
 import com.zerodsoft.tripweather.Room.DTO.Area;
 import com.zerodsoft.tripweather.Room.DTO.Schedule;
+import com.zerodsoft.tripweather.Room.DTO.TravelScheduleCountTuple;
 import com.zerodsoft.tripweather.ScheduleList.AddScheduleAdapter;
 
 import java.io.Serializable;
@@ -25,12 +30,22 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class AddScheduleActivity extends AppCompatActivity
+public class AddScheduleActivity extends AppCompatActivity implements Runnable
 {
     private RecyclerView recyclerView;
     private AddScheduleAdapter adapter;
     private FloatingActionButton fabBtn;
     private Toolbar toolbar;
+    EditText editTravelName;
+    Handler handler = new Handler()
+    {
+        @Override
+        public void handleMessage(Message msg)
+        {
+            String count = Integer.toString((Integer) msg.obj);
+            editTravelName.setText(count + "번째 여행");
+        }
+    };
     public static final int ADD_SCHEDULE = 0;
     public static final int EDIT_SCHEDULE = 1;
 
@@ -43,12 +58,16 @@ public class AddScheduleActivity extends AppCompatActivity
         recyclerView = (RecyclerView) findViewById(R.id.recycler_view_add_schedule);
         fabBtn = (FloatingActionButton) findViewById(R.id.fab_add_schedule);
         toolbar = (Toolbar) findViewById(R.id.toolBar_add_schedule);
+        editTravelName = (EditText) findViewById(R.id.edit_travel_name);
 
         setSupportActionBar(toolbar);
 
         ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayShowTitleEnabled(false);
         actionBar.setDisplayHomeAsUpEnabled(true);
+
+        Thread thread = new Thread(AddScheduleActivity.this);
+        thread.start();
 
         fabBtn.setOnClickListener(new View.OnClickListener()
         {
@@ -134,12 +153,17 @@ public class AddScheduleActivity extends AppCompatActivity
             case R.id.menu_check:
                 if (!adapter.getTravelSchedules().isEmpty())
                 {
+                    if (editTravelName.getText().toString().isEmpty())
+                    {
+                        Toast.makeText(getApplicationContext(), "여행 이름을 입력하세요", Toast.LENGTH_SHORT).show();
+                        return false;
+                    }
                     Intent intent = getIntent();
 
                     Bundle bundle = new Bundle();
+                    bundle.putString("travelName", editTravelName.getText().toString());
                     bundle.putSerializable("schedules", (Serializable) adapter.getTravelSchedules());
                     intent.putExtras(bundle);
-                    intent.putExtra("travelName", "My travel");
 
                     setResult(RESULT_OK, intent);
                     finish();
@@ -157,4 +181,14 @@ public class AddScheduleActivity extends AppCompatActivity
         }
     }
 
+    @Override
+    public void run()
+    {
+        AppDb appDb = AppDb.getInstance(getApplicationContext());
+        TravelScheduleCountTuple countTuple = appDb.travelDao().getTravelCount();
+
+        Message msg = handler.obtainMessage();
+        msg.obj = countTuple.getCount() + 1;
+        handler.sendMessage(msg);
+    }
 }

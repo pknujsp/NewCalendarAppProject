@@ -18,7 +18,6 @@ public class Area implements Serializable
     @PrimaryKey
     private int area_id;
 
-
     @ColumnInfo(name = "phase_1")
     private String phase1;
 

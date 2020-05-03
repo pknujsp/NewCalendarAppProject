@@ -158,8 +158,8 @@ public class NewScheduleActivity extends AppCompatActivity implements DatePicker
         this.startDate = startDate;
         this.endDate = endDate;
 
-        textStartDate.setText(Clock.dateFormatSlash.format(startDate.getTime()));
-        textEndDate.setText(Clock.dateFormatSlash.format(endDate.getTime()));
+        textStartDate.setText(Clock.dateDayNameFormatSlash.format(startDate.getTime()));
+        textEndDate.setText(Clock.dateDayNameFormatSlash.format(endDate.getTime()));
     }
 
 }

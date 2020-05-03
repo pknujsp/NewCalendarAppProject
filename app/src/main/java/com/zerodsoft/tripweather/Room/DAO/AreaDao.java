@@ -19,7 +19,13 @@ public interface AreaDao
     List<Area> getPhase2(String phase1);
 
     @Query("SELECT * FROM area_table WHERE phase_1 LIKE :phase1 AND phase_2 LIKE :phase2")
+    Area getPhase2Xy(String phase1, String phase2);
+
+    @Query("SELECT * FROM area_table WHERE phase_1 LIKE :phase1 AND phase_2 LIKE :phase2")
     List<Area> getPhase3(String phase1, String phase2);
+
+    @Query("SELECT * FROM area_table WHERE phase_1 LIKE :phase1 AND phase_2 LIKE :phase2 AND phase_3 LIKE :phase3")
+    Area getPhase3Xy(String phase1, String phase2, String phase3);
 
     @Query("SELECT * FROM area_table WHERE phase_1 LIKE :phase1 AND phase_2 LIKE :phase2 AND phase_3 LIKE :phase3")
     Area getXy(String phase1, String phase2, String phase3);

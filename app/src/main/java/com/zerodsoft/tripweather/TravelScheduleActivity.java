@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.zerodsoft.tripweather.DataCommunication.DataCommunicationClient;
@@ -45,24 +46,22 @@ public class TravelScheduleActivity extends AppCompatActivity
 
             if (bundle.getInt("action") == REFRESH_ADAPTER)
             {
-                Toast.makeText(getApplicationContext(), "COMPLETED", Toast.LENGTH_SHORT).show();
-
+                ArrayList<ForecastAreaData> nForecastDataList = (ArrayList<ForecastAreaData>) bundle.getSerializable("nForecastDataList");
                 ScheduleListAdapter adapter = new ScheduleListAdapter(scheduleTable, nForecastDataList);
                 recyclerView.setAdapter(adapter);
-                recyclerView.addItemDecoration(new ViewItemDecoration(16));
+                refreshBtn.setText(bundle.getString("updatedTime"));
             }
         }
     };
-
-    private DataDownloadService dataDownloadService = null;
 
     private final String serviceKey = "T2nJm9zlOA0Z7Dut%2BThT6Jp0Itn0zZw80AUP3uMdOWlZJR1gVPkx9p1t8etuSW1kWsSNrGGHKdxbwr1IUlt%2Baw%3D%3D";
     private final String numOfRows = "250";
     private final String dataType = "JSON";
     private final String pageNo = "1";
-    private final static int REFRESH_ADAPTER = 0;
+    public final static int REFRESH_ADAPTER = 0;
     RecyclerView recyclerView;
     ScheduleTable scheduleTable;
+    TextView textViewTravelName;
     ArrayList<ForecastAreaData> nForecastDataList = new ArrayList<>();
     ArrayList<Schedule> travelData;
 
@@ -73,13 +72,19 @@ public class TravelScheduleActivity extends AppCompatActivity
         setContentView(R.layout.activity_travel_schedule);
 
         refreshBtn = (Button) findViewById(R.id.button_refresh_data);
+        textViewTravelName = (TextView) findViewById(R.id.text_view_curr_travel_name);
 
-        travelData = (ArrayList<Schedule>) getIntent().getSerializableExtra("scheduleList");
+        Bundle bundle = getIntent().getExtras();
+
+        travelData = (ArrayList<Schedule>) bundle.getSerializable("scheduleList");
+        textViewTravelName.setText(bundle.getString("travelName"));
 
         recyclerView = (RecyclerView) findViewById(R.id.recycler_view_travel_schedule);
         recyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
+        recyclerView.addItemDecoration(new ViewItemDecoration(16));
 
         scheduleTable = new ScheduleTable((ArrayList<Schedule>) travelData);
+
 
         refreshBtn.setOnClickListener(new View.OnClickListener()
         {
@@ -93,11 +98,12 @@ public class TravelScheduleActivity extends AppCompatActivity
 
     }
 
-    private boolean refreshData()
+    public boolean refreshData()
     {
-        dataDownloadService = DataCommunicationClient.getApiService();
+        DataDownloadService dataDownloadService = DataCommunicationClient.getApiService();
         Map<String, Object> currentDate = Clock.getCurrentDateTime();
         final String today = (String) currentDate.get("baseDateSlash");
+        final String updatedTime = (String) currentDate.get("updatedTime");
         Clock.convertBaseDateTime(currentDate, Clock.N_FORECAST);
 
         for (int i = 0; i < travelData.size(); i++)
@@ -140,6 +146,7 @@ public class TravelScheduleActivity extends AppCompatActivity
 
                         Bundle bundle = new Bundle();
                         bundle.putInt("action", REFRESH_ADAPTER);
+                        bundle.putString("updatedTime", updatedTime);
 
                         message.setData(bundle);
                         handler.sendMessage(message);

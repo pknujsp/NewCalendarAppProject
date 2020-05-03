@@ -74,10 +74,22 @@ public class AreaListThread extends Thread
             areaList = appDb.areaDao().getPhase2(phase1);
         } else if (phase3 == null)
         {
-            areaList = appDb.areaDao().getPhase3(phase1, phase2);
+            if (phase2.equals("ALL"))
+            {
+                area = appDb.areaDao().getPhase2Xy(phase1, new String(""));
+            } else
+            {
+                areaList = appDb.areaDao().getPhase3(phase1, phase2);
+            }
         } else
         {
-            area = appDb.areaDao().getXy(phase1, phase2, phase3);
+            if (phase3.equals("ALL"))
+            {
+                area = appDb.areaDao().getPhase3Xy(phase1, phase2, new String(""));
+            } else
+            {
+                area = appDb.areaDao().getXy(phase1, phase2, phase3);
+            }
         }
 
         activity.runOnUiThread(new Runnable()

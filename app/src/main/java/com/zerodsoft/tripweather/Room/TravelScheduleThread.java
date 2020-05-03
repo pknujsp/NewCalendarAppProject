@@ -119,6 +119,7 @@ public class TravelScheduleThread extends Thread
         {
             // 아이템을 클릭 했을때
             List<Schedule> scheduleList = scheduleDao.getAllSchedules(travelId);
+            Travel travelInfo = travelDao.getTravelInfo(travelId);
 
             activity.runOnUiThread(new Runnable()
             {
@@ -128,6 +129,7 @@ public class TravelScheduleThread extends Thread
                     Intent intent = new Intent(activity.getApplicationContext(), TravelScheduleActivity.class);
 
                     Bundle bundle = new Bundle();
+                    bundle.putString("travelName", travelInfo.getName());
                     bundle.putSerializable("scheduleList", (Serializable) scheduleList);
                     intent.putExtras(bundle);
 

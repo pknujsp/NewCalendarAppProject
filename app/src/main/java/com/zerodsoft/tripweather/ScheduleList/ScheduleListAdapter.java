@@ -15,11 +15,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.room.RoomDatabase;
 
 import com.zerodsoft.tripweather.R;
+import com.zerodsoft.tripweather.Utility.Clock;
 import com.zerodsoft.tripweather.WeatherData.ForecastAreaData;
 import com.zerodsoft.tripweather.WeatherData.WeatherData;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Calendar;
 
 public class ScheduleListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> implements Serializable
 {
@@ -49,6 +51,7 @@ public class ScheduleListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     public class ChildViewHolder extends RecyclerView.ViewHolder
     {
         TextView textViewArea;
+        TextView morningTemp, dayTemp, eveningTemp;
         ImageView morningSky, daySky, eveningSky;
         LinearLayout linearLayout;
 
@@ -60,6 +63,9 @@ public class ScheduleListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             morningSky = (ImageView) itemView.findViewById(R.id.image_view_morning_sky);
             daySky = (ImageView) itemView.findViewById(R.id.image_view_day_sky);
             eveningSky = (ImageView) itemView.findViewById(R.id.image_view_evening_sky);
+            morningTemp = (TextView) itemView.findViewById(R.id.temp_morning);
+            dayTemp = (TextView) itemView.findViewById(R.id.temp_day);
+            eveningTemp = (TextView) itemView.findViewById(R.id.temp_evening);
             linearLayout = (LinearLayout) itemView.findViewById(R.id.linear_layout_schedule_item);
         }
     }
@@ -115,9 +121,8 @@ public class ScheduleListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
     private void onBindHeaderViewHolder(@NonNull RecyclerView.ViewHolder holder, int position)
     {
-        String date = (String) scheduleTable.get(position);
-
-        ((HeaderViewHolder) holder).textViewDate.setText(date);
+        String dateStr = (String) scheduleTable.get(position);
+        ((HeaderViewHolder) holder).textViewDate.setText(dateStr);
     }
 
     private void onBindChildViewHolder(@NonNull RecyclerView.ViewHolder holder, int position)
@@ -125,6 +130,7 @@ public class ScheduleListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         ScheduleNode schedule = (ScheduleNode) scheduleTable.get(position);
         final String headerDate = scheduleTable.getHeaderDate(position);
         String morningSky = null, daySky = null, eveningSky = null;
+        String morningTemp = null, dayTemp = null, eveningTemp = null;
 
         RootLoop:
         for (int headerIdx = 0; headerIdx < scheduleTable.getSize(); headerIdx++)
@@ -149,12 +155,15 @@ public class ScheduleListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                                     if (weather.getFcstTime().equals("0900"))
                                     {
                                         morningSky = weather.getSky();
+                                        morningTemp = weather.getThreeHourTemp();
                                     } else if (weather.getFcstTime().equals("1500"))
                                     {
                                         daySky = weather.getSky();
+                                        dayTemp = weather.getThreeHourTemp();
                                     } else if (weather.getFcstTime().equals("2100"))
                                     {
                                         eveningSky = weather.getSky();
+                                        eveningTemp = weather.getThreeHourTemp();
                                     }
                                 }
                             } catch (NullPointerException e)
@@ -173,6 +182,9 @@ public class ScheduleListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         ((ChildViewHolder) holder).morningSky.setImageResource(getSkyImage(morningSky));
         ((ChildViewHolder) holder).daySky.setImageResource(getSkyImage(daySky));
         ((ChildViewHolder) holder).eveningSky.setImageResource(getSkyImage(eveningSky));
+        ((ChildViewHolder) holder).morningTemp.setText(getTemp(morningTemp));
+        ((ChildViewHolder) holder).dayTemp.setText(getTemp(dayTemp));
+        ((ChildViewHolder) holder).eveningTemp.setText(getTemp(eveningTemp));
     }
 
     @Override
@@ -204,6 +216,17 @@ public class ScheduleListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             }
         }
         return skyImageNumber;
+    }
+
+    private String getTemp(String temp)
+    {
+        if (temp != null)
+        {
+            return temp + "ºC";
+        } else
+        {
+            return "X";
+        }
     }
 
 }

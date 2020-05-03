@@ -68,8 +68,8 @@ public class AddScheduleAdapter extends RecyclerView.Adapter<AddScheduleAdapter.
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position)
     {
-        String startDate = Clock.dateFormatSlash.format(travelSchedules.get(position).getStartDateObj().getTime());
-        String endDate = Clock.dateFormatSlash.format(travelSchedules.get(position).getEndDateObj().getTime());
+        String startDate = Clock.dateDayNameFormatSlash.format(travelSchedules.get(position).getStartDateObj().getTime());
+        String endDate = Clock.dateDayNameFormatSlash.format(travelSchedules.get(position).getEndDateObj().getTime());
         String destinations = travelSchedules.get(position).getArea().toString();
 
         holder.textViewTravelPeriod.setText(startDate + " -> " + endDate);

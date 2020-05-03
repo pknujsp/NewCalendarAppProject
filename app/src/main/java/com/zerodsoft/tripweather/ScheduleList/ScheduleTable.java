@@ -41,7 +41,7 @@ public class ScheduleTable
         if (viewType.getViewType() == ScheduleListAdapter.HEADER)
         {
             Date date = scheduleHeaders.get(viewType.getHeaderIndex()).getDate();
-            return Clock.dateFormat.format(date.getTime());
+            return Clock.dateDayNameFormatSlash.format(date.getTime());
         } else
         {
             return scheduleHeaders.get(viewType.getHeaderIndex()).getScheduleNode(viewType.getChildIndex());

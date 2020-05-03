@@ -78,10 +78,22 @@ public class AreaListAdapter extends RecyclerView.Adapter<AreaListAdapter.AreaVi
             areaName = phase1Tuples.get(position).getPhase1();
         } else if (phase2 == null)
         {
-            areaName = areaList.get(position).getPhase2();
+            if (areaList.get(position).getPhase2().equals(""))
+            {
+                areaName = "ALL";
+            } else
+            {
+                areaName = areaList.get(position).getPhase2();
+            }
         } else if (phase3 == null)
         {
-            areaName = areaList.get(position).getPhase3();
+            if (areaList.get(position).getPhase3().equals(""))
+            {
+                areaName = "ALL";
+            } else
+            {
+                areaName = areaList.get(position).getPhase3();
+            }
         }
 
         holder.textViewAreaName.setText(areaName);

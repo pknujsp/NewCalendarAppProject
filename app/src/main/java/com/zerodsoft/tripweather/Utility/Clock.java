@@ -17,9 +17,11 @@ public class Clock
     public static final TimeZone timeZone = TimeZone.getTimeZone("Asia/Seoul");
     public static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
     public static final SimpleDateFormat dateFormatSlash = new SimpleDateFormat("yyyy/MM/dd");
+    public static final SimpleDateFormat dateDayNameFormatSlash = new SimpleDateFormat("yyyy/MM/dd EEE");
     public static final SimpleDateFormat timeFormat = new SimpleDateFormat("HHmm");
     public static final SimpleDateFormat dayFormat = new SimpleDateFormat("d");
     public static final SimpleDateFormat yearMonthFormat = new SimpleDateFormat("yyyy/MM");
+    public static final SimpleDateFormat timeFormat2 = new SimpleDateFormat("MM/dd HH:mm");
 
     public static Map<String, Object> getCurrentDateTime()
     {
@@ -30,6 +32,7 @@ public class Clock
         data.put("baseDate", dateFormat.format(today.getTime()));
         data.put("baseTime", timeFormat.format(today.getTime()));
         data.put("baseDateSlash", dateFormatSlash.format(today.getTime()));
+        data.put("updatedTime", timeFormat2.format(today.getTime()));
         data.put("today", today);
 
         return data;
