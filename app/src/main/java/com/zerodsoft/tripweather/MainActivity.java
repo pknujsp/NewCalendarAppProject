@@ -58,8 +58,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         recyclerView = (RecyclerView) findViewById(R.id.recycler_view_schedule);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        TravelScheduleThread travelScheduleThread = new TravelScheduleThread(MainActivity.this, 1);
-        travelScheduleThread.start();
     }
 
     @Override
@@ -131,5 +129,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     // DB에 데이터 저장후 adapter갱신
             }
         }
+    }
+
+    @Override
+    protected void onResume()
+    {
+        super.onResume();
+        TravelScheduleThread travelScheduleThread = new TravelScheduleThread(MainActivity.this, 1);
+        travelScheduleThread.start();
     }
 }

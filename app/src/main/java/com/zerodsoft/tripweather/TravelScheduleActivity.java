@@ -57,9 +57,9 @@ public class TravelScheduleActivity extends AppCompatActivity
                     ArrayList<ScheduleNForecast> savedNForecastDataList = (ArrayList<ScheduleNForecast>) bundle.getSerializable("savedNForecastDataList");
                     ScheduleListAdapter adapter = new ScheduleListAdapter(scheduleTable, savedNForecastDataList);
                     recyclerView.setAdapter(adapter);
-                    refreshBtn.setText(bundle.getString("updatedTime"));
                     break;
                 case Actions.INSERT_NFORECAST_DATA:
+                    refreshBtn.setText(bundle.getString("updatedTime"));
                     ArrayList<ForecastAreaData> nForecastDataList = (ArrayList<ForecastAreaData>) bundle.getSerializable("nForecastDataList");
                     WeatherDataThread thread = new WeatherDataThread(nForecastDataList, handler, getApplicationContext(), Actions.INSERT_NFORECAST_DATA);
                     thread.start();
@@ -92,7 +92,7 @@ public class TravelScheduleActivity extends AppCompatActivity
 
         scheduleTable = new ScheduleTable(scheduleList);
 
-        if (bundle.getInt("download") == AddScheduleActivity.DOWNLOAD_NFORECAST)
+        if (bundle.getInt("download") == Actions.DOWNLOAD_NFORECAST_DATA)
         {
             DownloadData.getNForecastData(scheduleList, getApplicationContext(), handler);
         }
