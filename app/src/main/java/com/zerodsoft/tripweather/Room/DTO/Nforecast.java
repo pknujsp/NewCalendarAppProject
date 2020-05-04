@@ -10,16 +10,16 @@ import java.io.Serializable;
 public class Nforecast implements Serializable
 {
     @PrimaryKey(autoGenerate = true)
-    private int id;
+    private int nForecastId;
 
     @ColumnInfo(name = "nforecast_parent_id")
     private int parentId;
 
     @ColumnInfo(name = "nforecast_date")
-    private int date;
+    private String date;
 
     @ColumnInfo(name = "nforecast_time")
-    private int time;
+    private String time;
 
     @ColumnInfo(name = "nforecast_chance_of_shower")
     private String chanceOfShower;
@@ -54,17 +54,15 @@ public class Nforecast implements Serializable
     @ColumnInfo(name = "nforecast_wind_speed")
     private String windSpeed;
 
-    @ColumnInfo(name = "nforecast_thunder")
-    private String thunder;
 
-    public int getId()
+    public int getNForecastId()
     {
-        return id;
+        return nForecastId;
     }
 
-    public void setId(int id)
+    public void setNForecastId(int nForecastId)
     {
-        this.id = id;
+        this.nForecastId = nForecastId;
     }
 
     public int getParentId()
@@ -77,22 +75,22 @@ public class Nforecast implements Serializable
         this.parentId = parentId;
     }
 
-    public int getDate()
+    public String getDate()
     {
         return date;
     }
 
-    public void setDate(int date)
+    public void setDate(String date)
     {
         this.date = date;
     }
 
-    public int getTime()
+    public String getTime()
     {
         return time;
     }
 
-    public void setTime(int time)
+    public void setTime(String time)
     {
         this.time = time;
     }
@@ -207,13 +205,4 @@ public class Nforecast implements Serializable
         this.windSpeed = windSpeed;
     }
 
-    public String getThunder()
-    {
-        return thunder;
-    }
-
-    public void setThunder(String thunder)
-    {
-        this.thunder = thunder;
-    }
 }

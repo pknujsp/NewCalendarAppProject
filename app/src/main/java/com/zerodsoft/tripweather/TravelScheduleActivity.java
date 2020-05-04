@@ -4,6 +4,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -14,12 +16,17 @@ import android.widget.Toast;
 
 import com.zerodsoft.tripweather.DataCommunication.DataCommunicationClient;
 import com.zerodsoft.tripweather.DataCommunication.DataDownloadService;
+import com.zerodsoft.tripweather.DataCommunication.DownloadData;
 import com.zerodsoft.tripweather.RequestResponse.WeatherResponse;
 import com.zerodsoft.tripweather.RequestResponse.WeatherResponseItem;
+import com.zerodsoft.tripweather.Room.DTO.Nforecast;
 import com.zerodsoft.tripweather.Room.DTO.Schedule;
+import com.zerodsoft.tripweather.Room.DTO.ScheduleNForecast;
+import com.zerodsoft.tripweather.Room.WeatherDataThread;
 import com.zerodsoft.tripweather.ScheduleList.ScheduleListAdapter;
 import com.zerodsoft.tripweather.ScheduleList.ScheduleTable;
 import com.zerodsoft.tripweather.ScheduleList.ViewItemDecoration;
+import com.zerodsoft.tripweather.Utility.Actions;
 import com.zerodsoft.tripweather.Utility.Clock;
 import com.zerodsoft.tripweather.Utility.ResponseDataClassifier;
 import com.zerodsoft.tripweather.WeatherData.ForecastAreaData;
@@ -44,26 +51,27 @@ public class TravelScheduleActivity extends AppCompatActivity
         {
             Bundle bundle = msg.getData();
 
-            if (bundle.getInt("action") == REFRESH_ADAPTER)
+            switch (msg.what)
             {
-                ArrayList<ForecastAreaData> nForecastDataList = (ArrayList<ForecastAreaData>) bundle.getSerializable("nForecastDataList");
-                ScheduleListAdapter adapter = new ScheduleListAdapter(scheduleTable, nForecastDataList);
-                recyclerView.setAdapter(adapter);
-                refreshBtn.setText(bundle.getString("updatedTime"));
+                case Actions.REFRESH_ADAPTER:
+                    ArrayList<ScheduleNForecast> savedNForecastDataList = (ArrayList<ScheduleNForecast>) bundle.getSerializable("savedNForecastDataList");
+                    ScheduleListAdapter adapter = new ScheduleListAdapter(scheduleTable, savedNForecastDataList);
+                    recyclerView.setAdapter(adapter);
+                    refreshBtn.setText(bundle.getString("updatedTime"));
+                    break;
+                case Actions.INSERT_NFORECAST_DATA:
+                    ArrayList<ForecastAreaData> nForecastDataList = (ArrayList<ForecastAreaData>) bundle.getSerializable("nForecastDataList");
+                    WeatherDataThread thread = new WeatherDataThread(nForecastDataList, handler, getApplicationContext(), Actions.INSERT_NFORECAST_DATA);
+                    thread.start();
+                    break;
             }
         }
     };
 
-    private final String serviceKey = "T2nJm9zlOA0Z7Dut%2BThT6Jp0Itn0zZw80AUP3uMdOWlZJR1gVPkx9p1t8etuSW1kWsSNrGGHKdxbwr1IUlt%2Baw%3D%3D";
-    private final String numOfRows = "250";
-    private final String dataType = "JSON";
-    private final String pageNo = "1";
-    public final static int REFRESH_ADAPTER = 0;
     RecyclerView recyclerView;
     ScheduleTable scheduleTable;
     TextView textViewTravelName;
-    ArrayList<ForecastAreaData> nForecastDataList = new ArrayList<>();
-    ArrayList<Schedule> travelData;
+    ArrayList<Schedule> scheduleList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -73,93 +81,39 @@ public class TravelScheduleActivity extends AppCompatActivity
 
         refreshBtn = (Button) findViewById(R.id.button_refresh_data);
         textViewTravelName = (TextView) findViewById(R.id.text_view_curr_travel_name);
-
-        Bundle bundle = getIntent().getExtras();
-
-        travelData = (ArrayList<Schedule>) bundle.getSerializable("scheduleList");
-        textViewTravelName.setText(bundle.getString("travelName"));
-
         recyclerView = (RecyclerView) findViewById(R.id.recycler_view_travel_schedule);
         recyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
         recyclerView.addItemDecoration(new ViewItemDecoration(16));
 
-        scheduleTable = new ScheduleTable((ArrayList<Schedule>) travelData);
+        Bundle bundle = getIntent().getExtras();
 
+        scheduleList = (ArrayList<Schedule>) bundle.getSerializable("scheduleList");
+        textViewTravelName.setText(bundle.getString("travelName"));
+
+        scheduleTable = new ScheduleTable(scheduleList);
+
+        if (bundle.getInt("download") == AddScheduleActivity.DOWNLOAD_NFORECAST)
+        {
+            DownloadData.getNForecastData(scheduleList, getApplicationContext(), handler);
+        }
 
         refreshBtn.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view)
             {
-                refreshData();
+                DownloadData.getNForecastData(scheduleList, getApplicationContext(), handler);
             }
         });
 
 
     }
 
-    public boolean refreshData()
+    @Override
+    public void onBackPressed()
     {
-        DataDownloadService dataDownloadService = DataCommunicationClient.getApiService();
-        Map<String, Object> currentDate = Clock.getCurrentDateTime();
-        final String today = (String) currentDate.get("baseDateSlash");
-        final String updatedTime = (String) currentDate.get("updatedTime");
-        Clock.convertBaseDateTime(currentDate, Clock.N_FORECAST);
-
-        for (int i = 0; i < travelData.size(); i++)
-        {
-            if (travelData.get(i).getEndDate().compareTo(today) < 0)
-            {
-                continue;
-            }
-
-            Map<String, String> queryMap = new HashMap<>();
-
-            queryMap.put("serviceKey", serviceKey);
-            queryMap.put("numOfRows", numOfRows);
-            queryMap.put("dataType", dataType);
-            queryMap.put("pageNo", pageNo);
-            queryMap.put("base_date", (String) currentDate.get("baseDate"));
-            queryMap.put("base_time", (String) currentDate.get("baseTime"));
-            queryMap.put("nx", travelData.get(i).getAreaX());
-            queryMap.put("ny", travelData.get(i).getAreaY());
-
-            final int idx = i;
-
-            Call<WeatherResponse> call = dataDownloadService.downloadNForecastData(queryMap);
-            call.enqueue(new Callback<WeatherResponse>()
-            {
-                @Override
-                public void onResponse(Call<WeatherResponse> call, Response<WeatherResponse> response)
-                {
-                    List<WeatherResponseItem> weatherResponseItems = response.body().getWeatherResponseResponse().
-                            getWeatherResponseBody().getWeatherResponseItems().getWeatherResponseItemList();
-
-                    ArrayList<WeatherData> dataList = ResponseDataClassifier.classifyWeatherResponseItem(weatherResponseItems, getApplicationContext());
-
-                    nForecastDataList.add(new ForecastAreaData().setAreaX(dataList.get(0).getAreaX()).setAreaY(dataList.get(0).getAreaY())
-                            .setForecastData(dataList));
-
-                    if (idx == travelData.size() - 1)
-                    {
-                        Message message = handler.obtainMessage();
-
-                        Bundle bundle = new Bundle();
-                        bundle.putInt("action", REFRESH_ADAPTER);
-                        bundle.putString("updatedTime", updatedTime);
-
-                        message.setData(bundle);
-                        handler.sendMessage(message);
-                    }
-                }
-
-                @Override
-                public void onFailure(Call<WeatherResponse> call, Throwable t)
-                {
-
-                }
-            });
-        }
-        return true;
+        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+        startActivity(intent);
+        finish();
     }
 }

@@ -22,8 +22,11 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.zerodsoft.tripweather.Room.AppDb;
 import com.zerodsoft.tripweather.Room.DTO.Area;
 import com.zerodsoft.tripweather.Room.DTO.Schedule;
+import com.zerodsoft.tripweather.Room.DTO.Travel;
 import com.zerodsoft.tripweather.Room.DTO.TravelScheduleCountTuple;
+import com.zerodsoft.tripweather.Room.TravelScheduleThread;
 import com.zerodsoft.tripweather.ScheduleList.AddScheduleAdapter;
+import com.zerodsoft.tripweather.Utility.Actions;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -42,12 +45,32 @@ public class AddScheduleActivity extends AppCompatActivity implements Runnable
         @Override
         public void handleMessage(Message msg)
         {
-            String count = Integer.toString((Integer) msg.obj);
-            editTravelName.setText(count + "번째 여행");
+            int action = msg.what;
+
+            switch (action)
+            {
+                case Actions.SET_TRAVEL_NAME:
+                    String count = Integer.toString((Integer) msg.obj);
+                    editTravelName.setText(count + "번째 여행");
+                    break;
+                case Actions.DOWNLOAD_NFORECAST_DATA:
+                    Bundle bundle = msg.getData();
+                    int travelId = bundle.getInt("travelId");
+
+                    TravelScheduleThread travelScheduleThread = new TravelScheduleThread(AddScheduleActivity.this, travelId, Actions.CLICKED_TRAVEL_ITEM);
+                    travelScheduleThread.setDownloadDataInt(Actions.DOWNLOAD_NFORECAST_DATA);
+                    travelScheduleThread.start();
+
+                    break;
+            }
+
         }
     };
     public static final int ADD_SCHEDULE = 0;
     public static final int EDIT_SCHEDULE = 1;
+    public static final int TRAVEL_NAME = 2;
+    public static final int INSERT_TRAVEL = 3;
+    public static final int DOWNLOAD_NFORECAST = 4;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -158,22 +181,19 @@ public class AddScheduleActivity extends AppCompatActivity implements Runnable
                         Toast.makeText(getApplicationContext(), "여행 이름을 입력하세요", Toast.LENGTH_SHORT).show();
                         return false;
                     }
-                    Intent intent = getIntent();
 
-                    Bundle bundle = new Bundle();
-                    bundle.putString("travelName", editTravelName.getText().toString());
-                    bundle.putSerializable("schedules", (Serializable) adapter.getTravelSchedules());
-                    intent.putExtras(bundle);
+                    ArrayList<Schedule> travelSchedules = (ArrayList<Schedule>) adapter.getTravelSchedules();
+                    String travelName = editTravelName.getText().toString();
 
-                    setResult(RESULT_OK, intent);
-                    finish();
+                    TravelScheduleThread travelListThread = new TravelScheduleThread(AddScheduleActivity.this, travelName, travelSchedules, INSERT_TRAVEL);
+                    travelListThread.setHandler(handler);
+                    travelListThread.start();
                 } else
                 {
                     Toast.makeText(getApplicationContext(), "일정을 추가하십시오", Toast.LENGTH_SHORT).show();
                 }
                 return true;
             case android.R.id.home:
-                setResult(RESULT_CANCELED);
                 finish();
                 return true;
             default:
@@ -188,6 +208,7 @@ public class AddScheduleActivity extends AppCompatActivity implements Runnable
         TravelScheduleCountTuple countTuple = appDb.travelDao().getTravelCount();
 
         Message msg = handler.obtainMessage();
+        msg.what = Actions.SET_TRAVEL_NAME;
         msg.obj = countTuple.getCount() + 1;
         handler.sendMessage(msg);
     }

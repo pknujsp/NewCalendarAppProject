@@ -4,9 +4,33 @@ import java.util.ArrayList;
 
 public class ForecastAreaData
 {
+    private int scheduleId;
+    private int travelId;
     private String areaX;
     private String areaY;
     private ArrayList<WeatherData> forecastData;
+
+    public ForecastAreaData setScheduleId(int scheduleId)
+    {
+        this.scheduleId = scheduleId;
+        return this;
+    }
+
+    public int getScheduleId()
+    {
+        return scheduleId;
+    }
+
+    public int getTravelId()
+    {
+        return travelId;
+    }
+
+    public ForecastAreaData setTravelId(int travelId)
+    {
+        this.travelId = travelId;
+        return this;
+    }
 
     public String getAreaX()
     {

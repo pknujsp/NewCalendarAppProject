@@ -15,6 +15,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.room.RoomDatabase;
 
 import com.zerodsoft.tripweather.R;
+import com.zerodsoft.tripweather.Room.DTO.Nforecast;
+import com.zerodsoft.tripweather.Room.DTO.ScheduleNForecast;
 import com.zerodsoft.tripweather.Utility.Clock;
 import com.zerodsoft.tripweather.WeatherData.ForecastAreaData;
 import com.zerodsoft.tripweather.WeatherData.WeatherData;
@@ -26,7 +28,7 @@ import java.util.Calendar;
 public class ScheduleListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> implements Serializable
 {
     ScheduleTable scheduleTable;
-    ArrayList<ForecastAreaData> nForecastData;
+    ArrayList<ScheduleNForecast> nForecastDataList;
     private SparseIntArray viewTypeArr;
     public static final int HEADER = 0;
     public static final int CHILD = 1;
@@ -71,10 +73,10 @@ public class ScheduleListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     }
 
 
-    public ScheduleListAdapter(ScheduleTable scheduleTable, ArrayList<ForecastAreaData> nForecast)
+    public ScheduleListAdapter(ScheduleTable scheduleTable, ArrayList<ScheduleNForecast> nForecast)
     {
         this.scheduleTable = scheduleTable;
-        this.nForecastData = nForecast;
+        this.nForecastDataList = nForecast;
     }
 
 
@@ -128,12 +130,12 @@ public class ScheduleListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     private void onBindChildViewHolder(@NonNull RecyclerView.ViewHolder holder, int position)
     {
         ScheduleNode schedule = (ScheduleNode) scheduleTable.get(position);
+        // 20200505
         final String headerDate = scheduleTable.getHeaderDate(position);
         String morningSky = null, daySky = null, eveningSky = null;
         String morningTemp = null, dayTemp = null, eveningTemp = null;
 
-        RootLoop:
-        for (int headerIdx = 0; headerIdx < scheduleTable.getSize(); headerIdx++)
+        for (int headerIdx = 0; headerIdx < scheduleTable.getHeadersSize(); headerIdx++)
         {
             for (int nodeIdx = 0; nodeIdx < scheduleTable.getNodesCount(headerIdx); nodeIdx++)
             {
@@ -142,37 +144,26 @@ public class ScheduleListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 String areaX = node.getSchedule().getAreaX();
                 String areaY = node.getSchedule().getAreaY();
 
-                for (ForecastAreaData forecastArea : nForecastData)
+                for (ScheduleNForecast forecastArea : nForecastDataList)
                 {
                     if (areaX.equals(forecastArea.getAreaX()) && areaY.equals(forecastArea.getAreaY()))
                     {
-                        for (WeatherData weather : forecastArea.getForecastData())
+                        if (headerDate.equals(forecastArea.getDate()))
                         {
-                            try
+                            if (forecastArea.getTime().equals("0900"))
                             {
-                                if (headerDate.equals(weather.getFcstDate()))
-                                {
-                                    if (weather.getFcstTime().equals("0900"))
-                                    {
-                                        morningSky = weather.getSky();
-                                        morningTemp = weather.getThreeHourTemp();
-                                    } else if (weather.getFcstTime().equals("1500"))
-                                    {
-                                        daySky = weather.getSky();
-                                        dayTemp = weather.getThreeHourTemp();
-                                    } else if (weather.getFcstTime().equals("2100"))
-                                    {
-                                        eveningSky = weather.getSky();
-                                        eveningTemp = weather.getThreeHourTemp();
-                                    }
-                                }
-                            } catch (NullPointerException e)
+                                morningSky = forecastArea.getSky();
+                                morningTemp = forecastArea.getThreeHourTemp();
+                            } else if (forecastArea.getTime().equals("1500"))
                             {
-                                break RootLoop;
+                                daySky = forecastArea.getSky();
+                                dayTemp = forecastArea.getThreeHourTemp();
+                            } else if (forecastArea.getTime().equals("2100"))
+                            {
+                                eveningSky = forecastArea.getSky();
+                                eveningTemp = forecastArea.getThreeHourTemp();
                             }
                         }
-
-                        break RootLoop;
                     }
                 }
             }

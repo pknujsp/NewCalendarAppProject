@@ -17,7 +17,7 @@ public interface ScheduleDao
     List<Schedule> getAllSchedules(int parentId);
 
     @Insert
-    void insertSchedule(Schedule schedule);
+    long insertSchedule(Schedule schedule);
 
     @Update
     void updateSchedule(Schedule schedule);

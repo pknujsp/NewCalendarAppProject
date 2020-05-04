@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.zerodsoft.tripweather.R;
 import com.zerodsoft.tripweather.Room.DTO.Travel;
 import com.zerodsoft.tripweather.Room.TravelScheduleThread;
+import com.zerodsoft.tripweather.Utility.Actions;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -69,7 +70,7 @@ public class TravelScheduleListAdapter extends RecyclerView.Adapter<TravelSchedu
             @Override
             public void onClick(View view)
             {
-                TravelScheduleThread travelScheduleThread = new TravelScheduleThread(activity, holder.travelId, 2);
+                TravelScheduleThread travelScheduleThread = new TravelScheduleThread(activity, holder.travelId, Actions.CLICKED_TRAVEL_ITEM);
                 travelScheduleThread.start();
             }
         });

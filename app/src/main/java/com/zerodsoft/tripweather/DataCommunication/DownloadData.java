@@ -8,7 +8,9 @@ import android.os.Message;
 import com.zerodsoft.tripweather.RequestResponse.WeatherResponse;
 import com.zerodsoft.tripweather.RequestResponse.WeatherResponseItem;
 import com.zerodsoft.tripweather.Room.DTO.Schedule;
+import com.zerodsoft.tripweather.Room.OnDataListener;
 import com.zerodsoft.tripweather.TravelScheduleActivity;
+import com.zerodsoft.tripweather.Utility.Actions;
 import com.zerodsoft.tripweather.Utility.Clock;
 import com.zerodsoft.tripweather.Utility.ResponseDataClassifier;
 import com.zerodsoft.tripweather.WeatherData.ForecastAreaData;
@@ -30,7 +32,7 @@ public class DownloadData
     private static final String dataType = "JSON";
     private static final String pageNo = "1";
 
-    public static boolean getNForecastData(ArrayList<Schedule> travelData, Context context, Handler handler)
+    public static boolean getNForecastData(ArrayList<Schedule> scheduleList, Context context, Handler handler)
     {
         DataDownloadService dataDownloadService = DataCommunicationClient.getApiService();
         ArrayList<ForecastAreaData> nForecastDataList = new ArrayList<>();
@@ -39,12 +41,16 @@ public class DownloadData
         final String updatedTime = (String) currentDate.get("updatedTime");
         Clock.convertBaseDateTime(currentDate, Clock.N_FORECAST);
 
-        for (int i = 0; i < travelData.size(); i++)
+        int i = 1;
+
+        for (Schedule schedule : scheduleList)
         {
-            if (travelData.get(i).getEndDate().compareTo(today) < 0)
+            if (schedule.getEndDate().compareTo(today) < 0)
             {
                 continue;
             }
+            int scheduleId = schedule.getSchedule_id();
+            int travelId = schedule.getParentId();
 
             Map<String, String> queryMap = new HashMap<>();
 
@@ -54,10 +60,10 @@ public class DownloadData
             queryMap.put("pageNo", pageNo);
             queryMap.put("base_date", (String) currentDate.get("baseDate"));
             queryMap.put("base_time", (String) currentDate.get("baseTime"));
-            queryMap.put("nx", travelData.get(i).getAreaX());
-            queryMap.put("ny", travelData.get(i).getAreaY());
+            queryMap.put("nx", schedule.getAreaX());
+            queryMap.put("ny", schedule.getAreaY());
 
-            final int idx = i;
+            final int count = i++;
 
             Call<WeatherResponse> call = dataDownloadService.downloadNForecastData(queryMap);
             call.enqueue(new Callback<WeatherResponse>()
@@ -70,17 +76,17 @@ public class DownloadData
 
                     ArrayList<WeatherData> dataList = ResponseDataClassifier.classifyWeatherResponseItem(weatherResponseItems, context);
 
-                    nForecastDataList.add(new ForecastAreaData().setAreaX(dataList.get(0).getAreaX()).setAreaY(dataList.get(0).getAreaY())
+                    nForecastDataList.add(new ForecastAreaData().setTravelId(travelId).setScheduleId(scheduleId).setAreaX(schedule.getAreaX()).setAreaY(schedule.getAreaY())
                             .setForecastData(dataList));
 
-                    if (idx == travelData.size() - 1)
+                    if (count == scheduleList.size())
                     {
                         Message message = handler.obtainMessage();
 
                         Bundle bundle = new Bundle();
-                        bundle.putInt("action", TravelScheduleActivity.REFRESH_ADAPTER);
                         bundle.putString("updatedTime", updatedTime);
                         bundle.putSerializable("nForecastDataList", nForecastDataList);
+                        message.what = Actions.INSERT_NFORECAST_DATA;
 
                         message.setData(bundle);
                         handler.sendMessage(message);
@@ -96,4 +102,5 @@ public class DownloadData
         }
         return true;
     }
+
 }

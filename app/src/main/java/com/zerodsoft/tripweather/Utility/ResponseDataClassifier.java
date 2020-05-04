@@ -26,6 +26,7 @@ public class ResponseDataClassifier
 
         if (items.get(0).getFcstDate() != null)
         {
+            // 동네예보 인 경우 - items의 각 날짜별 index값을 arrIndexes에 저장함
             for (int i = 0; i < items.size(); ++i)
             {
                 if (baseSet.add(new BaseData().setFcstDate(items.get(i).getFcstDate()).setFcstTime(items.get(i).getFcstTime())))
@@ -61,9 +62,11 @@ public class ResponseDataClassifier
 
                 for (int j = arrIndexes.get(i).intValue(); j < arrIndexes.get(i + 1).intValue(); j++)
                 {
+                    // 각 시간별 데이터를 저장
+                    // 0600 - 기온, 하늘상태 등
                     setValue(items.get(j), weatherData);
                 }
-
+                // 시간 오름차순으로 저장됨
                 dataList.add(weatherData);
             }
         }
@@ -183,7 +186,6 @@ class CustomedLinkedHashSet<E> extends java.util.LinkedHashSet
     @Override
     public boolean add(Object o)
     {
-
         final String baseDate = ((BaseData) o).getFcstDate();
         final String baseTime = ((BaseData) o).getFcstTime();
 
@@ -192,6 +194,7 @@ class CustomedLinkedHashSet<E> extends java.util.LinkedHashSet
         while (iterator.hasNext())
         {
             BaseData baseData = iterator.next();
+
             if (baseData.getFcstDate().equals(baseDate) && baseData.getFcstTime().equals(baseTime))
             {
                 return false;

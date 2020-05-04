@@ -18,9 +18,12 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.navigation.NavigationView;
 import com.zerodsoft.tripweather.Room.DTO.Schedule;
+import com.zerodsoft.tripweather.Room.DTO.Travel;
 import com.zerodsoft.tripweather.Room.TravelScheduleThread;
+import com.zerodsoft.tripweather.ScheduleList.TravelScheduleListAdapter;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener
 {
@@ -28,6 +31,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     Toolbar toolbar;
     NavigationView navigationView;
     DrawerLayout drawerLayout;
+    RecyclerView recyclerView;
     private static final int NEW_TRAVEL_SCHEDULE = 20;
 
     @Override
@@ -51,8 +55,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setHomeAsUpIndicator(R.drawable.toolbar_menu_icon);
 
-
-        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler_view_schedule);
+        recyclerView = (RecyclerView) findViewById(R.id.recycler_view_schedule);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         TravelScheduleThread travelScheduleThread = new TravelScheduleThread(MainActivity.this, 1);
@@ -76,7 +79,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 return true;
             case R.id.menu_item_add:
                 Intent intent = new Intent(getApplicationContext(), AddScheduleActivity.class);
-                startActivityForResult(intent, NEW_TRAVEL_SCHEDULE);
+                startActivity(intent);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -122,12 +125,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             switch (requestCode)
             {
                 case NEW_TRAVEL_SCHEDULE:
-                    ArrayList<Schedule> travelSchedules = (ArrayList<Schedule>) data.getSerializableExtra("schedules");
-                    String travelName = data.getStringExtra("travelName");
-                    TravelScheduleThread travelListThread = new TravelScheduleThread(MainActivity.this, travelName, travelSchedules, 0);
-                    travelListThread.start();
+                    ArrayList<Travel> travelList = (ArrayList<Travel>) data.getExtras().getSerializable("travelList");
+                    TravelScheduleListAdapter adapter = new TravelScheduleListAdapter(MainActivity.this, travelList);
+                    recyclerView.setAdapter(adapter);
                     // DB에 데이터 저장후 adapter갱신
-                    break;
             }
         }
     }

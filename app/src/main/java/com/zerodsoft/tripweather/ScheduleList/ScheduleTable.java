@@ -56,15 +56,26 @@ public class ScheduleTable
     public String getHeaderDate(int position)
     {
         String date = null;
-        for (int i = 0; i < viewTypeIntList.size() - 1; i++)
-        {
-            int currentIdx = viewTypeIntList.get(i).intValue();
-            int nextIdx = viewTypeIntList.get(i + 1).intValue();
 
-            if (position > currentIdx && position < nextIdx)
+        if (viewTypeIntList.size() == 1)
+        {
+            date = Clock.dateFormat.format(headerDateMaps.get(0));
+        } else
+        {
+            for (int i = 0; i < viewTypeIntList.size() - 1; i++)
             {
-                date = Clock.dateFormat.format(headerDateMaps.get(currentIdx));
-                break;
+                int currentIdx = viewTypeIntList.get(i).intValue();
+                int nextIdx = viewTypeIntList.get(i + 1).intValue();
+
+                if (position > currentIdx && position < nextIdx)
+                {
+                    date = Clock.dateFormat.format(headerDateMaps.get(currentIdx));
+                    break;
+                } else if (i == viewTypeIntList.size() - 2)
+                {
+                    date = Clock.dateFormat.format(headerDateMaps.get(nextIdx));
+                    break;
+                }
             }
         }
         return date;
@@ -80,10 +91,16 @@ public class ScheduleTable
         return viewTypes.size();
     }
 
-    public int getAllScheduleCount()
+    public int getAllSchedulesSize()
     {
-        return size;
+        return this.size;
     }
+
+    public int getHeadersSize()
+    {
+        return scheduleHeaders.size();
+    }
+
 
     public SparseArray<ViewType> getViewTypes()
     {
@@ -111,23 +128,24 @@ public class ScheduleTable
         for (ScheduleHeader header : scheduleHeaders)
         {
             viewTypes.put(count, new ViewType().setViewType(ScheduleListAdapter.HEADER).setHeaderIndex(headerIndex));
+            // header의 index를 저장
             viewTypeIntList.add(count);
             headerDateMaps.put(count, header.getDate().getTime());
-            count++;
 
-            for (int i = 0; i < header.getSchedules().size(); ++i)
+            for (int i = 0; i < header.getSchedules().size(); i++)
             {
-                viewTypes.put(count, new ViewType().setViewType(ScheduleListAdapter.CHILD).setHeaderIndex(headerIndex).setChildIndex(i));
                 count++;
+                viewTypes.put(count, new ViewType().setViewType(ScheduleListAdapter.CHILD).setHeaderIndex(headerIndex).setChildIndex(i));
             }
             headerIndex++;
+            count++;
         }
-        this.size = count;
+        this.size = viewTypes.size() - headerDateMaps.size();
     }
 
-    public void addSchedules(ArrayList<Schedule> schedules)
+    public void addSchedules(ArrayList<Schedule> fixedScheduleList)
     {
-        for (Schedule schedule : schedules)
+        for (Schedule schedule : fixedScheduleList)
         {
             for (int i = 0; i < scheduleHeaders.size(); i++)
             {
@@ -140,15 +158,14 @@ public class ScheduleTable
         }
     }
 
-    private ArrayList<Schedule> initializeTable(ArrayList<Schedule> schedules)
+    private ArrayList<Schedule> initializeTable(ArrayList<Schedule> scheduleList)
     {
         Calendar startDate = Calendar.getInstance();
         Calendar endDate = Calendar.getInstance();
-        final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
         SortedSet<Date> dateSet = new TreeSet<>();
         ArrayList<Schedule> fixedScheduleList = new ArrayList<>();
 
-        for (Schedule schedule : schedules)
+        for (Schedule schedule : scheduleList)
         {
             startDate.clear();
             endDate.clear();
@@ -159,13 +176,14 @@ public class ScheduleTable
             startDate.set(Integer.parseInt(separatedStartDate[0]), Integer.parseInt(separatedStartDate[1]) - 1, Integer.parseInt(separatedStartDate[2]));
             endDate.set(Integer.parseInt(separatedEndDate[0]), Integer.parseInt(separatedEndDate[1]) - 1, Integer.parseInt(separatedEndDate[2]));
 
-            while (startDate.before(endDate) || startDate.equals(endDate))
+            while (!startDate.after(endDate))
             {
                 Schedule fixedSchedule = new Schedule();
 
                 fixedSchedule.setDate(startDate.getTime());
                 fixedSchedule.setSchedule_id(schedule.getSchedule_id());
                 fixedSchedule.setParentId(schedule.getParentId());
+                fixedSchedule.setAreaId(schedule.getAreaId());
                 fixedSchedule.setAreaName(schedule.getAreaName());
                 fixedSchedule.setAreaX(schedule.getAreaX());
                 fixedSchedule.setAreaY(schedule.getAreaY());
