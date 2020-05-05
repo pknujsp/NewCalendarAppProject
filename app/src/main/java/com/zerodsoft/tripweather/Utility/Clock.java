@@ -7,6 +7,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
 
@@ -27,7 +28,7 @@ public class Clock
     {
         Map<String, Object> data = new HashMap<>();
 
-        Calendar today = Calendar.getInstance(timeZone);
+        Calendar today = Calendar.getInstance(timeZone, Locale.KOREA);
 
         data.put("baseDate", dateFormat.format(today.getTime()));
         data.put("baseTime", timeFormat.format(today.getTime()));
@@ -129,12 +130,5 @@ public class Clock
                 }
             }
         }
-    }
-
-    public static String getYearMonth()
-    {
-        Calendar calendar = Calendar.getInstance(timeZone);
-
-        return Integer.toString(calendar.get(Calendar.YEAR)) + Integer.toString(calendar.get(Calendar.MONTH) + 1);
     }
 }

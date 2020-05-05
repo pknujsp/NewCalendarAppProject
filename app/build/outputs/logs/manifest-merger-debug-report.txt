@@ -1,9 +1,9 @@
 -- Merging decision tree log ---
 manifest
-ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:2:1-32:12
-INJECTED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:2:1-32:12
-INJECTED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:2:1-32:12
-INJECTED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:2:1-32:12
+ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:2:1-34:12
+INJECTED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:2:1-34:12
+INJECTED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:2:1-34:12
+INJECTED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:2:1-34:12
 MERGED from [com.google.android.material:material:1.1.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\material-1.1.0.aar\0ff27be1b0756b6ede30b00b31c403d8\AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.appcompat:appcompat:1.1.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\appcompat-1.1.0.aar\d77b71b3a5a5c25917d77318714edd83\AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.legacy:legacy-support-v4:1.0.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\legacy-support-v4-1.0.0.aar\18f3cb317c1e1c2709299bf118897b70\AndroidManifest.xml:17:1-22:12
@@ -51,20 +51,20 @@ MERGED from [androidx.lifecycle:lifecycle-livedata-core:2.0.0] C:\Users\Marx\.gr
 MERGED from [androidx.arch.core:core-runtime:2.0.1] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\core-runtime-2.0.1.aar\ef40f59b77431723a5123b4eba246b4c\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.lifecycle:lifecycle-runtime:2.1.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\lifecycle-runtime-2.1.0.aar\1da4e54bd19a30c882d84afc3b79b86b\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.lifecycle:lifecycle-viewmodel:2.1.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\lifecycle-viewmodel-2.1.0.aar\afe11106efa75f0ab95010d6853b868b\AndroidManifest.xml:17:1-22:12
-INJECTED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:2:1-32:12
-INJECTED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:2:1-32:12
-INJECTED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:2:1-32:12
+INJECTED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:2:1-34:12
+INJECTED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:2:1-34:12
+INJECTED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:2:1-34:12
 	package
 		ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:3:5-40
 		INJECTED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml
 		INJECTED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml
 	android:versionName
 		INJECTED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml
-		ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:2:1-32:12
+		ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:2:1-34:12
 		INJECTED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml
 	android:versionCode
 		INJECTED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml
-		ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:2:1-32:12
+		ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:2:1-34:12
 		INJECTED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml
 	xmlns:android
 		ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:2:11-69
@@ -85,7 +85,7 @@ ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\Andr
 	android:name
 		ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:8:22-78
 application
-ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:10:5-30:19
+ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:10:5-32:19
 MERGED from [com.google.android.material:material:1.1.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\material-1.1.0.aar\0ff27be1b0756b6ede30b00b31c403d8\AndroidManifest.xml:22:5-20
 MERGED from [com.google.android.material:material:1.1.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\material-1.1.0.aar\0ff27be1b0756b6ede30b00b31c403d8\AndroidManifest.xml:22:5-20
 MERGED from [com.github.bumptech.glide:glide:4.11.0] C:\Users\Marx\.gradle\caches\transforms-1\files-1.1\glide-4.11.0.aar\bef5c137ef97058539de2da749c7a572\AndroidManifest.xml:10:5-20
@@ -129,27 +129,29 @@ ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\Andr
 	android:name
 		ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:20:19-54
 activity#com.zerodsoft.tripweather.TravelScheduleActivity
-ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:21:9-60
+ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:21:9-23:58
+	android:parentActivityName
+		ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:23:13-55
 	android:name
-		ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:21:19-57
+		ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:22:13-51
 activity#com.zerodsoft.tripweather.CurrentWeatherActivity
-ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:22:9-60
+ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:24:9-60
 	android:name
-		ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:22:19-57
+		ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:24:19-57
 activity#com.zerodsoft.tripweather.MainActivity
-ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:23:9-29:20
+ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:25:9-31:20
 	android:name
-		ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:23:19-47
+		ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:25:19-47
 intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
-ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:24:13-28:29
+ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:26:13-30:29
 action#android.intent.action.MAIN
-ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:25:17-69
+ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:27:17-69
 	android:name
-		ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:25:25-66
+		ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:27:25-66
 category#android.intent.category.LAUNCHER
-ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:27:17-77
+ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:29:17-77
 	android:name
-		ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:27:27-74
+		ADDED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml:29:27-74
 uses-sdk
 INJECTED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from C:\programming\Android\Android Projects\Tripweather\app\src\main\AndroidManifest.xml

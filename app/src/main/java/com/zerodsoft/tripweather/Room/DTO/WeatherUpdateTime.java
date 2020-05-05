@@ -2,127 +2,129 @@ package com.zerodsoft.tripweather.Room.DTO;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
 import java.io.Serializable;
 
-@Entity(tableName = "weather_update_time_table")
+@Entity(tableName = "weather_update_time_table", indices = {@Index(value = {"update_time_travel_parent_id", "update_time_cweather_parent_id"}, unique = true)})
 public class WeatherUpdateTime implements Serializable
 {
     @PrimaryKey(autoGenerate = true)
-    private int id;
+    private int updateId;
 
     @ColumnInfo(name = "update_time_travel_parent_id")
-    private String travelParentId;
+    private int travelParentId;
 
     @ColumnInfo(name = "update_time_cweather_parent_id")
-    private String cWeatherParentId;
+    private int cWeatherParentId;
 
-    @ColumnInfo(name = "update_time_forecast_date")
-    private int forecastDate;
+    @ColumnInfo(name = "update_time_nforecast_date")
+    private String forecastDate;
 
-    @ColumnInfo(name = "update_time_forecast_time")
-    private int forecastTime;
+    @ColumnInfo(name = "update_time_nforecast_time")
+    private String forecastTime;
 
     @ColumnInfo(name = "update_time_ust_date")
-    private int ustDate;
+    private String ustDate;
 
     @ColumnInfo(name = "update_time_ust_time")
-    private int ustTime;
+    private String ustTime;
 
-    @ColumnInfo(name = "update_time_current_date")
-    private int currentDate;
+    @ColumnInfo(name = "updated_date")
+    private String updatedDate;
 
-    @ColumnInfo(name = "update_time_current_time")
-    private int currentTime;
+    @ColumnInfo(name = "updated_time")
+    private String updatedTime;
 
-    public int getId()
+    public int getUpdateId()
     {
-        return id;
+        return updateId;
     }
 
-    public void setId(int id)
+    public void setUpdateId(int updateId)
     {
-        this.id = id;
+        this.updateId = updateId;
     }
 
-    public String getTravelParentId()
+    public int getTravelParentId()
     {
         return travelParentId;
     }
 
-    public void setTravelParentId(String travelParentId)
+    public void setTravelParentId(int travelParentId)
     {
         this.travelParentId = travelParentId;
     }
 
-    public String getCWeatherParentId()
+    public int getCWeatherParentId()
     {
         return cWeatherParentId;
     }
 
-    public void setCWeatherParentId(String cWeatherParentId)
+    public void setCWeatherParentId(int cWeatherParentId)
     {
         this.cWeatherParentId = cWeatherParentId;
     }
 
-    public int getForecastDate()
-    {
-        return forecastDate;
-    }
 
-    public void setForecastDate(int forecastDate)
-    {
-        this.forecastDate = forecastDate;
-    }
-
-    public int getForecastTime()
-    {
-        return forecastTime;
-    }
-
-    public void setForecastTime(int forecastTime)
-    {
-        this.forecastTime = forecastTime;
-    }
-
-    public int getUstDate()
+    public String getUstDate()
     {
         return ustDate;
     }
 
-    public void setUstDate(int ustDate)
+    public void setUstDate(String ustDate)
     {
         this.ustDate = ustDate;
     }
 
-    public int getUstTime()
+    public String getUstTime()
     {
         return ustTime;
     }
 
-    public void setUstTime(int ustTime)
+    public void setUstTime(String ustTime)
     {
         this.ustTime = ustTime;
     }
 
-    public int getCurrentDate()
+    public String getUpdatedDate()
     {
-        return currentDate;
+        return updatedDate;
     }
 
-    public void setCurrentDate(int currentDate)
+    public void setUpdatedDate(String updatedDate)
     {
-        this.currentDate = currentDate;
+        this.updatedDate = updatedDate;
     }
 
-    public int getCurrentTime()
+    public String getUpdatedTime()
     {
-        return currentTime;
+        return updatedTime;
     }
 
-    public void setCurrentTime(int currentTime)
+    public void setUpdatedTime(String updatedTime)
     {
-        this.currentTime = currentTime;
+        this.updatedTime = updatedTime;
+    }
+
+    public String getForecastDate()
+    {
+        return forecastDate;
+    }
+
+    public void setForecastDate(String forecastDate)
+    {
+        this.forecastDate = forecastDate;
+    }
+
+    public String getForecastTime()
+    {
+        return forecastTime;
+    }
+
+    public void setForecastTime(String forecastTime)
+    {
+        this.forecastTime = forecastTime;
     }
 }

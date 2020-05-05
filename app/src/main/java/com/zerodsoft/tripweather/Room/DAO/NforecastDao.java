@@ -33,8 +33,8 @@ public interface NforecastDao
     @Update
     void updateNforecastData(Nforecast nforecast);
 
-    @Query("DELETE FROM nforecast_table WHERE nforecast_parent_id = :parentId")
-    void deleteNforecastData(int parentId);
+    @Query("DELETE FROM nforecast_table WHERE nforecast_parent_id = :scheduleId")
+    void deleteNforecastData(int scheduleId);
 
     @Query("DELETE FROM nforecast_table WHERE nforecast_parent_id = :parentId AND (nforecast_date < :date OR nforecast_time < :time)")
     void deleteOldNforecastData(int parentId, int date, int time);

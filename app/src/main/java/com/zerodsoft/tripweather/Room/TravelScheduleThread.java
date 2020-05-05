@@ -137,6 +137,7 @@ public class TravelScheduleThread extends Thread
                     Bundle bundle = new Bundle();
 
                     bundle.putString("travelName", travelInfo.getName());
+                    bundle.putInt("travelId", travelId);
                     bundle.putInt("download", downloadDataInt);
                     bundle.putSerializable("scheduleList", scheduleList);
                     intent.putExtras(bundle);

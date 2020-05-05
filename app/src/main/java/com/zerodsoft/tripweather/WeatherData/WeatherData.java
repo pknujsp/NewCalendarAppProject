@@ -26,6 +26,8 @@ public class WeatherData implements Comparable
     private String waveHeight;
     private String fcstDate;
     private String fcstTime;
+    private String baseDate;
+    private String baseTime;
 
     private Context context;
 
@@ -137,6 +139,7 @@ public class WeatherData implements Comparable
     {
         return windDirection;
     }
+
 
     public WeatherData setWindDirection(String windDirection)
     {
@@ -293,5 +296,25 @@ public class WeatherData implements Comparable
     {
         this.fcstTime = fcstTime;
         return this;
+    }
+
+    public String getBaseDate()
+    {
+        return baseDate;
+    }
+
+    public void setBaseDate(String baseDate)
+    {
+        this.baseDate = baseDate;
+    }
+
+    public String getBaseTime()
+    {
+        return baseTime;
+    }
+
+    public void setBaseTime(String baseTime)
+    {
+        this.baseTime = baseTime;
     }
 }

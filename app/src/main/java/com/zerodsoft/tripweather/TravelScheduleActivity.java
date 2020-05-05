@@ -33,13 +33,6 @@ import com.zerodsoft.tripweather.WeatherData.ForecastAreaData;
 import com.zerodsoft.tripweather.WeatherData.WeatherData;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class TravelScheduleActivity extends AppCompatActivity
 {
@@ -57,12 +50,19 @@ public class TravelScheduleActivity extends AppCompatActivity
                     ArrayList<ScheduleNForecast> savedNForecastDataList = (ArrayList<ScheduleNForecast>) bundle.getSerializable("savedNForecastDataList");
                     ScheduleListAdapter adapter = new ScheduleListAdapter(scheduleTable, savedNForecastDataList);
                     recyclerView.setAdapter(adapter);
+                    refreshBtn.setText(bundle.getString("updatedDate") + " " + bundle.getString("updatedTime"));
                     break;
+
                 case Actions.INSERT_NFORECAST_DATA:
-                    refreshBtn.setText(bundle.getString("updatedTime"));
                     ArrayList<ForecastAreaData> nForecastDataList = (ArrayList<ForecastAreaData>) bundle.getSerializable("nForecastDataList");
-                    WeatherDataThread thread = new WeatherDataThread(nForecastDataList, handler, getApplicationContext(), Actions.INSERT_NFORECAST_DATA);
+                    WeatherDataThread thread = new WeatherDataThread(nForecastDataList, bundle, handler, getApplicationContext(), new ProcessingType().setAction(Actions.INSERT_NFORECAST_DATA).setProcessingType(Actions.INSERT));
                     thread.start();
+                    break;
+
+                case Actions.UPDATE_NFORECAST_DATA:
+                    ArrayList<ForecastAreaData> nForecastDataList2 = (ArrayList<ForecastAreaData>) bundle.getSerializable("nForecastDataList");
+                    WeatherDataThread thread2 = new WeatherDataThread(nForecastDataList2, bundle, handler, getApplicationContext(), new ProcessingType().setAction(Actions.INSERT_NFORECAST_DATA).setProcessingType(Actions.UPDATE));
+                    thread2.start();
                     break;
             }
         }
@@ -72,6 +72,7 @@ public class TravelScheduleActivity extends AppCompatActivity
     ScheduleTable scheduleTable;
     TextView textViewTravelName;
     ArrayList<Schedule> scheduleList;
+    int travelId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -88,13 +89,19 @@ public class TravelScheduleActivity extends AppCompatActivity
         Bundle bundle = getIntent().getExtras();
 
         scheduleList = (ArrayList<Schedule>) bundle.getSerializable("scheduleList");
+        travelId = bundle.getInt("travelId");
         textViewTravelName.setText(bundle.getString("travelName"));
 
         scheduleTable = new ScheduleTable(scheduleList);
 
+
         if (bundle.getInt("download") == Actions.DOWNLOAD_NFORECAST_DATA)
         {
-            DownloadData.getNForecastData(scheduleList, getApplicationContext(), handler);
+            DownloadData.getNForecastData(scheduleList, getApplicationContext(), handler, new ProcessingType().setProcessingType(Actions.INSERT));
+        } else
+        {
+            WeatherDataThread thread = new WeatherDataThread(bundle, handler, getApplicationContext(), new ProcessingType().setAction(Actions.SELECT_NFORECAST_DATA).setProcessingType(Actions.SELECT));
+            thread.start();
         }
 
         refreshBtn.setOnClickListener(new View.OnClickListener()
@@ -102,7 +109,7 @@ public class TravelScheduleActivity extends AppCompatActivity
             @Override
             public void onClick(View view)
             {
-                DownloadData.getNForecastData(scheduleList, getApplicationContext(), handler);
+                DownloadData.getNForecastData(scheduleList, getApplicationContext(), handler, new ProcessingType().setProcessingType(Actions.UPDATE));
             }
         });
 
@@ -113,7 +120,7 @@ public class TravelScheduleActivity extends AppCompatActivity
     public void onBackPressed()
     {
         Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
-        finish();
     }
 }

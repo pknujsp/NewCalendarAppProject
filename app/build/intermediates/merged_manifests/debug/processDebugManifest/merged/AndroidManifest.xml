@@ -27,7 +27,9 @@
         <activity android:name="com.zerodsoft.tripweather.NewScheduleActivity" />
         <activity android:name="com.zerodsoft.tripweather.AreaSelectionActivity" />
         <activity android:name="com.zerodsoft.tripweather.AddScheduleActivity" />
-        <activity android:name="com.zerodsoft.tripweather.TravelScheduleActivity" />
+        <activity
+            android:name="com.zerodsoft.tripweather.TravelScheduleActivity"
+            android:parentActivityName="com.zerodsoft.tripweather.MainActivity" />
         <activity android:name="com.zerodsoft.tripweather.CurrentWeatherActivity" />
         <activity android:name="com.zerodsoft.tripweather.MainActivity" >
             <intent-filter>

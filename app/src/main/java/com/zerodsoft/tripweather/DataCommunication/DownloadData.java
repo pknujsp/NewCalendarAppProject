@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 
+import com.zerodsoft.tripweather.ProcessingType;
 import com.zerodsoft.tripweather.RequestResponse.WeatherResponse;
 import com.zerodsoft.tripweather.RequestResponse.WeatherResponseItem;
 import com.zerodsoft.tripweather.Room.DTO.Schedule;
@@ -32,21 +33,26 @@ public class DownloadData
     private static final String dataType = "JSON";
     private static final String pageNo = "1";
 
-    public static boolean getNForecastData(ArrayList<Schedule> scheduleList, Context context, Handler handler)
+    public static boolean getNForecastData(ArrayList<Schedule> scheduleList, Context context, Handler handler, ProcessingType processingType)
     {
         DataDownloadService dataDownloadService = DataCommunicationClient.getApiService();
         ArrayList<ForecastAreaData> nForecastDataList = new ArrayList<>();
         Map<String, Object> currentDate = Clock.getCurrentDateTime();
+
+        String[] separatedUpdateInfo = ((String) currentDate.get("updatedTime")).split(" ");
         final String today = (String) currentDate.get("baseDateSlash");
-        final String updatedTime = (String) currentDate.get("updatedTime");
+        final String updatedDate = separatedUpdateInfo[0];
+        final String updatedTime = separatedUpdateInfo[1];
         Clock.convertBaseDateTime(currentDate, Clock.N_FORECAST);
 
-        int i = 1;
+        int count = 1;
+        int lastScheduleCount = 0;
 
         for (Schedule schedule : scheduleList)
         {
             if (schedule.getEndDate().compareTo(today) < 0)
             {
+                lastScheduleCount++;
                 continue;
             }
             int scheduleId = schedule.getSchedule_id();
@@ -63,9 +69,11 @@ public class DownloadData
             queryMap.put("nx", schedule.getAreaX());
             queryMap.put("ny", schedule.getAreaY());
 
-            final int count = i++;
+            final int finalCount = count++;
+            final int finalLastScheduleCount = lastScheduleCount;
 
             Call<WeatherResponse> call = dataDownloadService.downloadNForecastData(queryMap);
+
             call.enqueue(new Callback<WeatherResponse>()
             {
                 @Override
@@ -79,14 +87,24 @@ public class DownloadData
                     nForecastDataList.add(new ForecastAreaData().setTravelId(travelId).setScheduleId(scheduleId).setAreaX(schedule.getAreaX()).setAreaY(schedule.getAreaY())
                             .setForecastData(dataList));
 
-                    if (count == scheduleList.size())
+                    if (finalCount == scheduleList.size() - finalLastScheduleCount)
                     {
                         Message message = handler.obtainMessage();
 
                         Bundle bundle = new Bundle();
                         bundle.putString("updatedTime", updatedTime);
+                        bundle.putString("updatedDate", updatedDate);
+                        bundle.putString("baseDate", (String) currentDate.get("baseDate"));
+                        bundle.putString("baseTime", (String) currentDate.get("baseTime"));
                         bundle.putSerializable("nForecastDataList", nForecastDataList);
-                        message.what = Actions.INSERT_NFORECAST_DATA;
+
+                        if (processingType.getProcessingType() == Actions.INSERT)
+                        {
+                            message.what = Actions.INSERT_NFORECAST_DATA;
+                        } else if (processingType.getProcessingType() == Actions.UPDATE)
+                        {
+                            message.what = Actions.UPDATE_NFORECAST_DATA;
+                        }
 
                         message.setData(bundle);
                         handler.sendMessage(message);

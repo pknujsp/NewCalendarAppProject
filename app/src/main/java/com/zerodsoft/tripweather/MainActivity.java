@@ -33,6 +33,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     DrawerLayout drawerLayout;
     RecyclerView recyclerView;
     private static final int NEW_TRAVEL_SCHEDULE = 20;
+    private CloseActivity closeActivity;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -44,6 +45,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         toolbar = (Toolbar) findViewById(R.id.toolBar);
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         btnCurrentWeather = (Button) findViewById(R.id.btn_current_weather);
+        closeActivity = new CloseActivity(MainActivity.this);
 
         drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
         navigationView.setNavigationItemSelectedListener(this);
@@ -109,7 +111,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             drawerLayout.closeDrawer(GravityCompat.START);
         } else
         {
-            super.onBackPressed();
+            closeActivity.closeActivity();
         }
     }
 
