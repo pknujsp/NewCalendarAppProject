@@ -18,7 +18,7 @@
     </androidx.appcompat.widget.Toolbar>
 
     <RelativeLayout
-        android:id="@+id/view_map"
+        android:id="@+id/map_view"
         android:layout_width="match_parent"
         android:layout_height="400dp"
         android:orientation="vertical">

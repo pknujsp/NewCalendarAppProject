@@ -40,10 +40,12 @@ public class ScheduleTable
 
         if (viewType.getViewType() == ScheduleListAdapter.HEADER)
         {
+            // HEADER
             Date date = scheduleHeaders.get(viewType.getHeaderIndex()).getDate();
             return Clock.dateDayNameFormatSlash.format(date.getTime());
         } else
         {
+            // CHILD
             return scheduleHeaders.get(viewType.getHeaderIndex()).getScheduleNode(viewType.getChildIndex());
         }
     }

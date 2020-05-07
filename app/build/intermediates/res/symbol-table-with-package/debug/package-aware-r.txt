@@ -1389,6 +1389,7 @@ drawable ic_mtrl_chip_checked_black
 drawable ic_mtrl_chip_checked_circle
 drawable ic_mtrl_chip_close_circle
 drawable ic_search_black_24dp
+drawable more_icon
 drawable mtrl_dialog_background
 drawable mtrl_dropdown_arrow
 drawable mtrl_ic_arrow_drop_down
@@ -1506,6 +1507,7 @@ id btn_edit_area
 id btn_edit_end
 id btn_edit_schedule
 id btn_edit_start
+id btn_more
 id btn_remove_schedule
 id buttonPanel
 id button_refresh_data
@@ -1600,6 +1602,8 @@ id image_view_morning_sky
 id info
 id invisible
 id italic
+id item_edit_schedule
+id item_remove_schedule
 id item_touch_helper_previous_elevation
 id labeled
 id largeLabel
@@ -1612,6 +1616,7 @@ id linear_layout_travel_item
 id linearlayout_schedule_header
 id listMode
 id list_item
+id map_view
 id masked
 id media_actions
 id menu_check
@@ -1774,6 +1779,7 @@ id text_input_end_icon
 id text_input_start_icon
 id text_view_added_schedule_destinations
 id text_view_added_schedule_period
+id text_view_areas
 id text_view_curr_travel_name
 id text_view_travel_area
 id text_view_travel_name
@@ -1809,7 +1815,6 @@ id unlabeled
 id up
 id useLogo
 id vertical
-id view_map
 id view_offset_helper
 id visible
 id windDirection
@@ -1971,6 +1976,7 @@ layout text_view_with_theme_line_height
 layout text_view_without_line_height
 layout toolbar
 menu drawer_list
+menu main_context_menu
 menu new_schedule_toolbar_menu
 menu toolbar_action
 mipmap ic_launcher

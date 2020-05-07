@@ -13,4 +13,5 @@ public class Actions
     public static final int DELETE = 8;
     public static final int SELECT = 9;
     public static final int UPDATE_NFORECAST_DATA = 10;
+    public static final int SET_MAINACTIVITY_VIEW = 11;
 }

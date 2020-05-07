@@ -104,7 +104,7 @@ public class TravelScheduleThread extends Thread
             msg.setData(bundle);
             msg.what = Actions.DOWNLOAD_NFORECAST_DATA;
             handler.sendMessage(msg);
-        } else if (action == 1)
+        } else if (action == Actions.SET_MAINACTIVITY_VIEW)
         {
             // 앱 실행 직후
             List<Travel> travelList = travelDao.getAllTravels();

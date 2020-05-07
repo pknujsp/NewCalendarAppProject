@@ -1,7 +1,12 @@
 package com.zerodsoft.tripweather;
 
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.Signature;
 import android.os.Bundle;
+import android.util.Base64;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
@@ -21,7 +26,9 @@ import com.zerodsoft.tripweather.Room.DTO.Schedule;
 import com.zerodsoft.tripweather.Room.DTO.Travel;
 import com.zerodsoft.tripweather.Room.TravelScheduleThread;
 import com.zerodsoft.tripweather.ScheduleList.TravelScheduleListAdapter;
+import com.zerodsoft.tripweather.Utility.Actions;
 
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -86,12 +93,31 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
+    private void getAppKeyHash()
+    {
+        try
+        {
+            PackageInfo info = getPackageManager().getPackageInfo(getPackageName(), PackageManager.GET_SIGNATURES);
+            for (Signature signature : info.signatures)
+            {
+                MessageDigest md;
+                md = MessageDigest.getInstance("SHA");
+                md.update(signature.toByteArray());
+                String something = new String(Base64.encode(md.digest(), 0));
+                Log.e("Hash key", something);
+            }
+        } catch (Exception e)
+        {
+            // TODO Auto-generated catch block
+            Log.e("name not found", e.toString());
+        }
+    }
+
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem)
     {
         switch (menuItem.getItemId())
         {
-
             case R.id.btn_current_weather:
                 Intent intent = new Intent(getApplicationContext(), CurrentWeatherActivity.class);
                 startActivity(intent);
@@ -137,7 +163,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected void onResume()
     {
         super.onResume();
-        TravelScheduleThread travelScheduleThread = new TravelScheduleThread(MainActivity.this, 1);
+        TravelScheduleThread travelScheduleThread = new TravelScheduleThread(MainActivity.this, Actions.SET_MAINACTIVITY_VIEW);
         travelScheduleThread.start();
     }
 }

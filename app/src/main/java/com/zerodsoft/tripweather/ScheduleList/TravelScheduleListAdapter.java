@@ -2,13 +2,20 @@ package com.zerodsoft.tripweather.ScheduleList;
 
 import android.app.Activity;
 import android.content.Context;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.widget.PopupMenu;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.tripweather.R;
@@ -23,11 +30,14 @@ public class TravelScheduleListAdapter extends RecyclerView.Adapter<TravelSchedu
 {
     private List<Travel> travelDataList = null;
     private Activity activity;
+    private Context context;
 
     public class ViewHolder extends RecyclerView.ViewHolder
     {
         TextView textViewTravelName, textViewPeriod;
+        ImageButton btnMore;
         LinearLayout linearLayout;
+
         int travelId;
 
         ViewHolder(View itemView)
@@ -37,13 +47,60 @@ public class TravelScheduleListAdapter extends RecyclerView.Adapter<TravelSchedu
             textViewTravelName = (TextView) itemView.findViewById(R.id.text_view_travel_name);
             textViewPeriod = (TextView) itemView.findViewById(R.id.text_view_travel_period);
             linearLayout = (LinearLayout) itemView.findViewById(R.id.linear_layout_travel_item);
+            btnMore = (ImageButton) itemView.findViewById(R.id.btn_more);
+
+            PopupMenu popupMenu = new PopupMenu(itemView.getContext(), itemView);
+            popupMenu.setOnMenuItemClickListener(onMenuItemClickListener);
+            popupMenu.inflate(R.menu.main_context_menu);
+
+            btnMore.setOnClickListener(new View.OnClickListener()
+            {
+                @Override
+                public void onClick(View view)
+                {
+                    popupMenu.show();
+                }
+            });
         }
+
+      /*
+        public void onCreateContextMenu(ContextMenu contextMenu, View view, ContextMenu.ContextMenuInfo contextMenuInfo)
+        {
+            MenuItem editItem = contextMenu.add(Menu.NONE, 0, Menu.NONE, "수정");
+            MenuItem removeItem = contextMenu.add(Menu.NONE, 1, Menu.NONE, "삭제");
+            editItem.setOnMenuItemClickListener(onMenuItemClickListener);
+            removeItem.setOnMenuItemClickListener(onMenuItemClickListener);
+        }
+
+       */
+
+        private final PopupMenu.OnMenuItemClickListener onMenuItemClickListener = new PopupMenu.OnMenuItemClickListener()
+        {
+            @Override
+            public boolean onMenuItemClick(MenuItem item)
+            {
+
+                switch (item.getItemId())
+                {
+                    case R.id.item_edit_schedule:
+                        Toast.makeText(context, "EDIT", Toast.LENGTH_SHORT).show();
+                        break;
+                    case R.id.item_remove_schedule:
+                        Toast.makeText(context, "REMOVE", Toast.LENGTH_SHORT).show();
+                        break;
+                }
+                return true;
+
+            }
+        };
+
     }
 
     public TravelScheduleListAdapter(Activity activity, List<Travel> travelDataList)
     {
         this.travelDataList = travelDataList;
         this.activity = activity;
+        this.context = activity.getApplicationContext();
     }
 
     @NonNull
@@ -82,8 +139,4 @@ public class TravelScheduleListAdapter extends RecyclerView.Adapter<TravelSchedu
         return travelDataList.size();
     }
 
-    public void setActivity(Activity activity)
-    {
-        this.activity = activity;
-    }
 }

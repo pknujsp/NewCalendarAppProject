@@ -11,12 +11,15 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.zerodsoft.tripweather.Room.DTO.Area;
 import com.zerodsoft.tripweather.Utility.Clock;
+
+import net.daum.mf.map.api.MapView;
 
 import java.util.Date;
 
@@ -49,6 +52,10 @@ public class NewScheduleActivity extends AppCompatActivity implements DatePicker
         actionBar.setDisplayShowCustomEnabled(true);
         actionBar.setDisplayShowTitleEnabled(false);
         actionBar.setDisplayHomeAsUpEnabled(true);
+
+        MapView mapView = new MapView(NewScheduleActivity.this);
+        ViewGroup mapViewContainer = (ViewGroup) findViewById(R.id.map_view);
+        mapViewContainer.addView(mapView);
 
         if (getIntent().getAction().equals("EDIT_SCHEDULE"))
         {

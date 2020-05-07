@@ -132,37 +132,30 @@ public class ScheduleListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         ScheduleNode schedule = (ScheduleNode) scheduleTable.get(position);
         // 20200505
         final String headerDate = scheduleTable.getHeaderDate(position);
-        final int headerIdx = scheduleTable.getHeaderIndex(position);
-        final int nodesCount = scheduleTable.getNodesCount(headerIdx);
         String morningSky = null, daySky = null, eveningSky = null;
         String morningTemp = null, dayTemp = null, eveningTemp = null;
 
-        for (int nodeIdx = 0; nodeIdx < nodesCount; nodeIdx++)
+        String areaX = schedule.getSchedule().getAreaX();
+        String areaY = schedule.getSchedule().getAreaY();
+
+        for (ScheduleNForecast forecastArea : nForecastDataList)
         {
-            ScheduleNode node = scheduleTable.getNode(headerIdx, nodeIdx);
-
-            String areaX = node.getSchedule().getAreaX();
-            String areaY = node.getSchedule().getAreaY();
-
-            for (ScheduleNForecast forecastArea : nForecastDataList)
+            if (areaX.equals(forecastArea.getAreaX()) && areaY.equals(forecastArea.getAreaY()))
             {
-                if (areaX.equals(forecastArea.getAreaX()) && areaY.equals(forecastArea.getAreaY()))
+                if (headerDate.equals(forecastArea.getDate()))
                 {
-                    if (headerDate.equals(forecastArea.getDate()))
+                    if (forecastArea.getTime().equals("0900"))
                     {
-                        if (forecastArea.getTime().equals("0900"))
-                        {
-                            morningSky = forecastArea.getSky();
-                            morningTemp = forecastArea.getThreeHourTemp();
-                        } else if (forecastArea.getTime().equals("1500"))
-                        {
-                            daySky = forecastArea.getSky();
-                            dayTemp = forecastArea.getThreeHourTemp();
-                        } else if (forecastArea.getTime().equals("2100"))
-                        {
-                            eveningSky = forecastArea.getSky();
-                            eveningTemp = forecastArea.getThreeHourTemp();
-                        }
+                        morningSky = forecastArea.getSky();
+                        morningTemp = forecastArea.getThreeHourTemp();
+                    } else if (forecastArea.getTime().equals("1500"))
+                    {
+                        daySky = forecastArea.getSky();
+                        dayTemp = forecastArea.getThreeHourTemp();
+                    } else if (forecastArea.getTime().equals("2100"))
+                    {
+                        eveningSky = forecastArea.getSky();
+                        eveningTemp = forecastArea.getThreeHourTemp();
                     }
                 }
             }
