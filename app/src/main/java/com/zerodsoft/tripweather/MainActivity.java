@@ -5,11 +5,14 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Base64;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -41,6 +44,22 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     RecyclerView recyclerView;
     private static final int NEW_TRAVEL_SCHEDULE = 20;
     private CloseActivity closeActivity;
+    private Handler handler = new Handler()
+    {
+        @Override
+        public void handleMessage(Message msg)
+        {
+            switch (msg.what)
+            {
+                case Actions.FINISHED_DELETE_TRAVEL:
+                    Toast.makeText(getApplicationContext(), "삭제 완료", Toast.LENGTH_SHORT).show();
+                    TravelScheduleThread travelScheduleThread = new TravelScheduleThread(MainActivity.this, Actions.SET_MAINACTIVITY_VIEW);
+                    travelScheduleThread.setMainActivityHandler(handler);
+                    travelScheduleThread.start();
+                    break;
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -162,8 +181,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     protected void onResume()
     {
-        super.onResume();
         TravelScheduleThread travelScheduleThread = new TravelScheduleThread(MainActivity.this, Actions.SET_MAINACTIVITY_VIEW);
+        travelScheduleThread.setMainActivityHandler(handler);
         travelScheduleThread.start();
+        super.onResume();
     }
 }

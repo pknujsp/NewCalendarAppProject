@@ -109,7 +109,11 @@ public class TravelScheduleActivity extends AppCompatActivity
             @Override
             public void onClick(View view)
             {
-                DownloadData.getNForecastData(scheduleList, getApplicationContext(), handler, new ProcessingType().setProcessingType(Actions.UPDATE));
+                if (!DownloadData.getNForecastData(scheduleList, getApplicationContext(), handler, new ProcessingType().setProcessingType(Actions.UPDATE)))
+                {
+                    // 모든 일정이 과거인 경우
+                    Toast.makeText(getApplicationContext(), "모든 일정이 지났습니다\n갱신을 취소하였습니다", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 

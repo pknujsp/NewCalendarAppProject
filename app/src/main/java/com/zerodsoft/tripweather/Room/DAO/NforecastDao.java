@@ -27,14 +27,11 @@ public interface NforecastDao
     @Insert
     void insertNforecastData(Nforecast nforecast);
 
-    @Delete
-    void deleteNforecastData(Nforecast nforecast);
-
     @Update
     void updateNforecastData(Nforecast nforecast);
 
     @Query("DELETE FROM nforecast_table WHERE nforecast_parent_id = :scheduleId")
-    void deleteNforecastData(int scheduleId);
+    int deleteNforecastData(int scheduleId);
 
     @Query("DELETE FROM nforecast_table WHERE nforecast_parent_id = :parentId AND (nforecast_date < :date OR nforecast_time < :time)")
     void deleteOldNforecastData(int parentId, int date, int time);

@@ -14,8 +14,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.zerodsoft.tripweather.AddScheduleActivity;
 import com.zerodsoft.tripweather.DataCommunication.DownloadData;
 import com.zerodsoft.tripweather.R;
+import com.zerodsoft.tripweather.Room.DAO.NforecastDao;
 import com.zerodsoft.tripweather.Room.DAO.ScheduleDao;
 import com.zerodsoft.tripweather.Room.DAO.TravelDao;
+import com.zerodsoft.tripweather.Room.DAO.WeatherUpdateTimeDao;
 import com.zerodsoft.tripweather.Room.DTO.Schedule;
 import com.zerodsoft.tripweather.Room.DTO.Travel;
 import com.zerodsoft.tripweather.ScheduleList.TravelScheduleListAdapter;
@@ -37,6 +39,7 @@ public class TravelScheduleThread extends Thread
     private int travelId = 0;
     private Handler handler;
     private int downloadDataInt = 0;
+    private Handler mainActivityHandler;
 
     public TravelScheduleThread(Activity activity, int action)
     {
@@ -118,6 +121,7 @@ public class TravelScheduleThread extends Thread
                     recyclerView.setLayoutManager(new LinearLayoutManager(activity.getApplicationContext()));
 
                     TravelScheduleListAdapter adapter = new TravelScheduleListAdapter(activity, travelList);
+                    adapter.setMainActivityHandler(mainActivityHandler);
                     recyclerView.setAdapter(adapter);
                 }
             });
@@ -145,6 +149,42 @@ public class TravelScheduleThread extends Thread
                     activity.startActivity(intent);
                 }
             });
+        } else if (action == Actions.DELETE_TRAVEL)
+        {
+            // 업데이트 시각 데이터 제거, 동네예보 정보 제거, schedule 데이터 제거, travel 데이터 제거
+            WeatherUpdateTimeDao weatherUpdateTimeDao = appDb.weatherUpdateTimeDao();
+            NforecastDao nforecastDao = appDb.nforecastDao();
+            ArrayList<ScheduleIdTuple> scheduleIdList = (ArrayList<ScheduleIdTuple>) scheduleDao.getScheduleIdList(travelId);
+
+            // 업데이트 시각 데이터 제거
+            if (weatherUpdateTimeDao.deleteTravelUpdateData(travelId) == 1)
+            {
+                int count = 0;
+
+                for (ScheduleIdTuple tuple : scheduleIdList)
+                {
+                    // 동네예보 데이터 제거
+                    nforecastDao.deleteNforecastData(tuple.getScheduleId());
+                    count++;
+                }
+
+                if (count == scheduleIdList.size())
+                {
+                    // schedule 데이터 제거
+                    if (scheduleDao.deleteSchedules(travelId) > 0)
+                    {
+                        // travel 데이터 제거
+                        if (travelDao.deleteTravel(travelId) > 0)
+                        {
+                            // 모든 데이터 제거 완료
+                            Message msg = handler.obtainMessage();
+
+                            msg.what = Actions.FINISHED_DELETE_TRAVEL;
+                            handler.sendMessage(msg);
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -156,5 +196,10 @@ public class TravelScheduleThread extends Thread
     public void setDownloadDataInt(int downloadDataInt)
     {
         this.downloadDataInt = downloadDataInt;
+    }
+
+    public void setMainActivityHandler(Handler mainActivityHandler)
+    {
+        this.mainActivityHandler = mainActivityHandler;
     }
 }

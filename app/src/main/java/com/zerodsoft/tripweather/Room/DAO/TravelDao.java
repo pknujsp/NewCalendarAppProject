@@ -25,10 +25,10 @@ public interface TravelDao
     @Insert
     long insertTravel(Travel travel);
 
-    @Delete
-    void deleteTravel(Travel travel);
-
     @Query("DELETE FROM travel_table")
     void deleteAllTravels();
+
+    @Query("DELETE FROM travel_table WHERE travel_id = :travelId")
+    int deleteTravel(int travelId);
 
 }

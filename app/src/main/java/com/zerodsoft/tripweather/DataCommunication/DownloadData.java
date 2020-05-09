@@ -43,6 +43,7 @@ public class DownloadData
         final String today = (String) currentDate.get("baseDateSlash");
         final String updatedDate = separatedUpdateInfo[0];
         final String updatedTime = separatedUpdateInfo[1];
+
         Clock.convertBaseDateTime(currentDate, Clock.N_FORECAST);
 
         int count = 1;
@@ -117,6 +118,10 @@ public class DownloadData
 
                 }
             });
+        }
+        if (lastScheduleCount == scheduleList.size())
+        {
+            return false;
         }
         return true;
     }

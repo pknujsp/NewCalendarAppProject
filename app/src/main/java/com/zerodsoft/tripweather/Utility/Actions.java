@@ -14,4 +14,8 @@ public class Actions
     public static final int SELECT = 9;
     public static final int UPDATE_NFORECAST_DATA = 10;
     public static final int SET_MAINACTIVITY_VIEW = 11;
+    public static final int DELETE_SCHEDULE = 12;
+    public static final int DELETE_NFORECAST_DATA = 13;
+    public static final int DELETE_TRAVEL = 14;
+    public static final int FINISHED_DELETE_TRAVEL = 15;
 }

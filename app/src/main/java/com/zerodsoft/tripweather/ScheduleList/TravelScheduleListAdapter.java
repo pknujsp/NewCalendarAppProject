@@ -2,6 +2,8 @@ package com.zerodsoft.tripweather.ScheduleList;
 
 import android.app.Activity;
 import android.content.Context;
+import android.os.Handler;
+import android.os.Message;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -31,13 +33,26 @@ public class TravelScheduleListAdapter extends RecyclerView.Adapter<TravelSchedu
     private List<Travel> travelDataList = null;
     private Activity activity;
     private Context context;
+    private Handler handler = new Handler()
+    {
+        @Override
+        public void handleMessage(Message msg)
+        {
+            switch (msg.what)
+            {
+                case Actions.FINISHED_DELETE_TRAVEL:
+                    Toast.makeText(context, "삭제 완료", Toast.LENGTH_SHORT).show();
+                    break;
+            }
+        }
+    };
+    private Handler mainActivityHandler;
 
     public class ViewHolder extends RecyclerView.ViewHolder
     {
         TextView textViewTravelName, textViewPeriod;
         ImageButton btnMore;
         LinearLayout linearLayout;
-
         int travelId;
 
         ViewHolder(View itemView)
@@ -79,21 +94,30 @@ public class TravelScheduleListAdapter extends RecyclerView.Adapter<TravelSchedu
             @Override
             public boolean onMenuItemClick(MenuItem item)
             {
-
                 switch (item.getItemId())
                 {
                     case R.id.item_edit_schedule:
                         Toast.makeText(context, "EDIT", Toast.LENGTH_SHORT).show();
                         break;
                     case R.id.item_remove_schedule:
-                        Toast.makeText(context, "REMOVE", Toast.LENGTH_SHORT).show();
+                        TravelScheduleThread travelScheduleThread = new TravelScheduleThread(activity, travelId, Actions.DELETE_TRAVEL);
+                        travelScheduleThread.setHandler(mainActivityHandler);
+                        travelScheduleThread.start();
                         break;
                 }
                 return true;
-
             }
         };
 
+        public void setTravelId(int travelId)
+        {
+            this.travelId = travelId;
+        }
+
+        public int getTravelId()
+        {
+            return travelId;
+        }
     }
 
     public TravelScheduleListAdapter(Activity activity, List<Travel> travelDataList)
@@ -139,4 +163,9 @@ public class TravelScheduleListAdapter extends RecyclerView.Adapter<TravelSchedu
         return travelDataList.size();
     }
 
+
+    public void setMainActivityHandler(Handler mainActivityHandler)
+    {
+        this.mainActivityHandler = mainActivityHandler;
+    }
 }

@@ -21,11 +21,11 @@ public interface WeatherUpdateTimeDao
     @Insert
     long insertUpdateData(WeatherUpdateTime weatherUpdateTime);
 
-    @Query("DELETE FROM weather_update_time_table WHERE update_time_travel_parent_id =:parentId")
-    void deleteTravelUpdateData(int parentId);
+    @Query("DELETE FROM weather_update_time_table WHERE update_time_travel_parent_id =:travelId")
+    int deleteTravelUpdateData(int travelId);
 
-    @Query("DELETE FROM weather_update_time_table WHERE update_time_cweather_parent_id =:parentId")
-    void deleteCWeatherUpdateData(int parentId);
+    @Query("DELETE FROM weather_update_time_table WHERE update_time_cweather_parent_id =:travelId")
+    void deleteCWeatherUpdateData(int travelId);
 
     @Query("UPDATE weather_update_time_table SET update_time_nforecast_date = :baseDate, update_time_nforecast_time = :baseTime, "
             + "updated_date = :updatedDate, updated_time = :updatedTime WHERE update_time_travel_parent_id = :travelId")
