@@ -17,7 +17,7 @@ public interface ScheduleDao
     @Query("SELECT * FROM schedule_table WHERE schedule_parent_id = :parentId")
     List<Schedule> getAllSchedules(int parentId);
 
-    @Query("SELECT * FROM schedule_table WHERE schedule_parent_id = :travelId")
+    @Query("SELECT schedule_id FROM schedule_table WHERE schedule_parent_id = :travelId")
     List<ScheduleIdTuple> getScheduleIdList(int travelId);
 
     @Insert

@@ -17,6 +17,7 @@ import com.zerodsoft.tripweather.AddScheduleActivity;
 import com.zerodsoft.tripweather.NewScheduleActivity;
 import com.zerodsoft.tripweather.R;
 import com.zerodsoft.tripweather.Room.DTO.Schedule;
+import com.zerodsoft.tripweather.Utility.Actions;
 import com.zerodsoft.tripweather.Utility.Clock;
 
 import java.util.ArrayList;
@@ -28,7 +29,6 @@ public class AddScheduleAdapter extends RecyclerView.Adapter<AddScheduleAdapter.
     Context context;
     Activity activity;
     LayoutInflater layoutInflater;
-    ViewGroup viewGroup;
 
     public class ViewHolder extends RecyclerView.ViewHolder
     {
@@ -90,7 +90,7 @@ public class AddScheduleAdapter extends RecyclerView.Adapter<AddScheduleAdapter.
                 intent.setAction("EDIT_SCHEDULE");
                 intent.putExtras(bundle);
 
-                activity.startActivityForResult(intent, AddScheduleActivity.EDIT_SCHEDULE);
+                activity.startActivityForResult(intent, Actions.UPDATE_SCHEDULE);
             }
         };
 

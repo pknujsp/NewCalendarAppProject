@@ -18,4 +18,9 @@ public class Actions
     public static final int DELETE_NFORECAST_DATA = 13;
     public static final int DELETE_TRAVEL = 14;
     public static final int FINISHED_DELETE_TRAVEL = 15;
+    public static final int INSERT_TRAVEL = 16;
+    public static final int INSERT_SCHEDULE = 17;
+    public static final int UPDATE_SCHEDULE = 18;
+    public static final int SET_TRAVEL_RECYCLERVIEW_ADAPTER = 19;
+    public static final int START_SCHEDULE_ACTIVITY = 20;
 }

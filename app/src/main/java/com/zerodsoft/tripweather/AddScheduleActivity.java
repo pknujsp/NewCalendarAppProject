@@ -45,32 +45,33 @@ public class AddScheduleActivity extends AppCompatActivity implements Runnable
         @Override
         public void handleMessage(Message msg)
         {
-            int action = msg.what;
-
-            switch (action)
+            Bundle bundle = msg.getData();
+            switch (msg.what)
             {
                 case Actions.SET_TRAVEL_NAME:
                     String count = Integer.toString((Integer) msg.obj);
                     editTravelName.setText(count + "번째 여행");
                     break;
                 case Actions.DOWNLOAD_NFORECAST_DATA:
-                    Bundle bundle = msg.getData();
                     int travelId = bundle.getInt("travelId");
 
-                    TravelScheduleThread travelScheduleThread = new TravelScheduleThread(AddScheduleActivity.this, travelId, Actions.CLICKED_TRAVEL_ITEM);
-                    travelScheduleThread.setDownloadDataInt(Actions.DOWNLOAD_NFORECAST_DATA);
+                    TravelScheduleThread travelScheduleThread = new TravelScheduleThread(AddScheduleActivity.this);
+                    travelScheduleThread.setTravelId(travelId);
+                    travelScheduleThread.setAddScheduleActivityHandler(handler);
+                    travelScheduleThread.setAction(Actions.CLICKED_TRAVEL_ITEM);
                     travelScheduleThread.start();
 
+                    break;
+                case Actions.START_SCHEDULE_ACTIVITY:
+                    Intent scheduleActivityIntent = new Intent(getApplicationContext(), TravelScheduleActivity.class);
+                    bundle.putBoolean("isNewTravel", true);
+                    scheduleActivityIntent.putExtras(bundle);
+                    startActivity(scheduleActivityIntent);
                     break;
             }
 
         }
     };
-    public static final int ADD_SCHEDULE = 0;
-    public static final int EDIT_SCHEDULE = 1;
-    public static final int TRAVEL_NAME = 2;
-    public static final int INSERT_TRAVEL = 3;
-    public static final int DOWNLOAD_NFORECAST = 4;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -99,7 +100,7 @@ public class AddScheduleActivity extends AppCompatActivity implements Runnable
             {
                 Intent intent = new Intent(getApplicationContext(), NewScheduleActivity.class);
                 intent.setAction("ADD_SCHEDULE");
-                startActivityForResult(intent, ADD_SCHEDULE);
+                startActivityForResult(intent, Actions.INSERT_SCHEDULE);
             }
         });
         recyclerView.setHasFixedSize(true);
@@ -125,7 +126,7 @@ public class AddScheduleActivity extends AppCompatActivity implements Runnable
 
             switch (requestCode)
             {
-                case ADD_SCHEDULE:
+                case Actions.INSERT_SCHEDULE:
                     startDate = (Date) data.getSerializableExtra("startDate");
                     endDate = (Date) data.getSerializableExtra("endDate");
                     area = (Area) data.getSerializableExtra("area");
@@ -140,7 +141,7 @@ public class AddScheduleActivity extends AppCompatActivity implements Runnable
 
                     break;
 
-                case EDIT_SCHEDULE:
+                case Actions.UPDATE_SCHEDULE:
                     startDate = (Date) data.getSerializableExtra("startDate");
                     endDate = (Date) data.getSerializableExtra("endDate");
                     area = (Area) data.getSerializableExtra("area");
@@ -185,8 +186,11 @@ public class AddScheduleActivity extends AppCompatActivity implements Runnable
                     ArrayList<Schedule> travelSchedules = (ArrayList<Schedule>) adapter.getTravelSchedules();
                     String travelName = editTravelName.getText().toString();
 
-                    TravelScheduleThread travelListThread = new TravelScheduleThread(AddScheduleActivity.this, travelName, travelSchedules, INSERT_TRAVEL);
-                    travelListThread.setHandler(handler);
+                    TravelScheduleThread travelListThread = new TravelScheduleThread(AddScheduleActivity.this);
+                    travelListThread.setTravel(travelName);
+                    travelListThread.setTravelSchedules(travelSchedules);
+                    travelListThread.setAddScheduleActivityHandler(handler);
+                    travelListThread.setAction(Actions.INSERT_TRAVEL);
                     travelListThread.start();
                 } else
                 {

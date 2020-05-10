@@ -94,8 +94,7 @@ public class TravelScheduleActivity extends AppCompatActivity
 
         scheduleTable = new ScheduleTable(scheduleList);
 
-
-        if (bundle.getInt("download") == Actions.DOWNLOAD_NFORECAST_DATA)
+        if (bundle.getBoolean("isNewTravel"))
         {
             DownloadData.getNForecastData(scheduleList, getApplicationContext(), handler, new ProcessingType().setProcessingType(Actions.INSERT));
         } else

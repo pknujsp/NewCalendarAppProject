@@ -49,13 +49,30 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         @Override
         public void handleMessage(Message msg)
         {
+            Bundle bundle = msg.getData();
+
             switch (msg.what)
             {
                 case Actions.FINISHED_DELETE_TRAVEL:
                     Toast.makeText(getApplicationContext(), "삭제 완료", Toast.LENGTH_SHORT).show();
-                    TravelScheduleThread travelScheduleThread = new TravelScheduleThread(MainActivity.this, Actions.SET_MAINACTIVITY_VIEW);
+                    TravelScheduleThread travelScheduleThread = new TravelScheduleThread(MainActivity.this);
+                    travelScheduleThread.setAction(Actions.SET_MAINACTIVITY_VIEW);
                     travelScheduleThread.setMainActivityHandler(handler);
                     travelScheduleThread.start();
+                    break;
+
+                case Actions.SET_TRAVEL_RECYCLERVIEW_ADAPTER:
+                    ArrayList<Travel> travelList = (ArrayList<Travel>) bundle.getSerializable("travelList");
+                    TravelScheduleListAdapter adapter = new TravelScheduleListAdapter(MainActivity.this, travelList);
+                    adapter.setMainActivityHandler(handler);
+                    recyclerView.setAdapter(adapter);
+                    break;
+
+                case Actions.START_SCHEDULE_ACTIVITY:
+                    Intent scheduleActivityIntent = new Intent(getApplicationContext(), TravelScheduleActivity.class);
+                    bundle.putBoolean("isNewTravel", false);
+                    scheduleActivityIntent.putExtras(bundle);
+                    startActivity(scheduleActivityIntent);
                     break;
             }
         }
@@ -84,7 +101,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         actionBar.setHomeAsUpIndicator(R.drawable.toolbar_menu_icon);
 
         recyclerView = (RecyclerView) findViewById(R.id.recycler_view_schedule);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
 
     }
 
@@ -161,27 +178,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data)
-    {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (resultCode == RESULT_OK)
-        {
-            switch (requestCode)
-            {
-                case NEW_TRAVEL_SCHEDULE:
-                    ArrayList<Travel> travelList = (ArrayList<Travel>) data.getExtras().getSerializable("travelList");
-                    TravelScheduleListAdapter adapter = new TravelScheduleListAdapter(MainActivity.this, travelList);
-                    recyclerView.setAdapter(adapter);
-                    // DB에 데이터 저장후 adapter갱신
-            }
-        }
-    }
-
-    @Override
     protected void onResume()
     {
-        TravelScheduleThread travelScheduleThread = new TravelScheduleThread(MainActivity.this, Actions.SET_MAINACTIVITY_VIEW);
+        TravelScheduleThread travelScheduleThread = new TravelScheduleThread(MainActivity.this);
+        travelScheduleThread.setAction(Actions.SET_MAINACTIVITY_VIEW);
         travelScheduleThread.setMainActivityHandler(handler);
         travelScheduleThread.start();
         super.onResume();

@@ -37,35 +37,14 @@ public class TravelScheduleThread extends Thread
     private Travel travel;
     private int action;
     private int travelId = 0;
-    private Handler handler;
-    private int downloadDataInt = 0;
+    private Handler scheduleActivityHandler;
+    private Handler addScheduleActivityHandler;
     private Handler mainActivityHandler;
 
-    public TravelScheduleThread(Activity activity, int action)
+    public TravelScheduleThread(Activity activity)
     {
         this.activity = activity;
         appDb = AppDb.getInstance(activity.getApplicationContext());
-        this.action = action;
-    }
-
-    public TravelScheduleThread(Activity activity, int travelId, int action)
-    {
-        this.activity = activity;
-        appDb = AppDb.getInstance(activity.getApplicationContext());
-        this.action = action;
-        this.travelId = travelId;
-    }
-
-
-    public TravelScheduleThread(Activity activity, String travelName, ArrayList<Schedule> travelSchedules, int action)
-    {
-        appDb = AppDb.getInstance(activity.getApplicationContext());
-        this.activity = activity;
-        this.travelSchedules = travelSchedules;
-        this.travel = new Travel();
-        this.travel.setName(travelName);
-        this.travel.setId(0);
-        this.action = action;
     }
 
     @Override
@@ -76,7 +55,7 @@ public class TravelScheduleThread extends Thread
         ScheduleDao scheduleDao = appDb.scheduleDao();
         TravelDao travelDao = appDb.travelDao();
 
-        if (action == AddScheduleActivity.INSERT_TRAVEL)
+        if (action == Actions.INSERT_TRAVEL)
         {
             // 일정 추가 완료 시
             // 여행정보를 INSERT하고 travelId를 반환받음
@@ -103,52 +82,55 @@ public class TravelScheduleThread extends Thread
             Bundle bundle = new Bundle();
             bundle.putInt("travelId", (int) travelId);
 
-            Message msg = handler.obtainMessage();
+            Message msg = addScheduleActivityHandler.obtainMessage();
             msg.setData(bundle);
             msg.what = Actions.DOWNLOAD_NFORECAST_DATA;
-            handler.sendMessage(msg);
+            addScheduleActivityHandler.sendMessage(msg);
         } else if (action == Actions.SET_MAINACTIVITY_VIEW)
         {
             // 앱 실행 직후
-            List<Travel> travelList = travelDao.getAllTravels();
+            ArrayList<Travel> travelList = (ArrayList<Travel>) travelDao.getAllTravels();
 
-            activity.runOnUiThread(new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    RecyclerView recyclerView = (RecyclerView) activity.findViewById(R.id.recycler_view_schedule);
-                    recyclerView.setLayoutManager(new LinearLayoutManager(activity.getApplicationContext()));
+            Message msg = mainActivityHandler.obtainMessage();
+            msg.what = Actions.SET_TRAVEL_RECYCLERVIEW_ADAPTER;
+            Bundle bundle = new Bundle();
+            bundle.putSerializable("travelList", travelList);
+            msg.setData(bundle);
 
-                    TravelScheduleListAdapter adapter = new TravelScheduleListAdapter(activity, travelList);
-                    adapter.setMainActivityHandler(mainActivityHandler);
-                    recyclerView.setAdapter(adapter);
-                }
-            });
+            mainActivityHandler.sendMessage(msg);
         } else if (action == Actions.CLICKED_TRAVEL_ITEM)
         {
             // 아이템을 클릭 했을때
             ArrayList<Schedule> scheduleList = (ArrayList<Schedule>) scheduleDao.getAllSchedules(travelId);
             Travel travelInfo = travelDao.getTravelInfo(travelId);
 
-            activity.runOnUiThread(new Runnable()
+            // mainActivityHandler, scheduleActivityHandler 사용
+            if (mainActivityHandler != null)
             {
-                @Override
-                public void run()
-                {
-                    Intent intent = new Intent(activity.getApplicationContext(), TravelScheduleActivity.class);
+                Message msg = mainActivityHandler.obtainMessage();
+                Bundle bundle = new Bundle();
 
-                    Bundle bundle = new Bundle();
+                msg.what = Actions.START_SCHEDULE_ACTIVITY;
+                bundle.putString("travelName", travelInfo.getName());
+                bundle.putInt("travelId", travelId);
+                bundle.putSerializable("scheduleList", scheduleList);
+                msg.setData(bundle);
 
-                    bundle.putString("travelName", travelInfo.getName());
-                    bundle.putInt("travelId", travelId);
-                    bundle.putInt("download", downloadDataInt);
-                    bundle.putSerializable("scheduleList", scheduleList);
-                    intent.putExtras(bundle);
+                mainActivityHandler.sendMessage(msg);
+            } else if (addScheduleActivityHandler != null)
+            {
+                Message msg = addScheduleActivityHandler.obtainMessage();
+                Bundle bundle = new Bundle();
 
-                    activity.startActivity(intent);
-                }
-            });
+                msg.what = Actions.START_SCHEDULE_ACTIVITY;
+                bundle.putString("travelName", travelInfo.getName());
+                bundle.putInt("travelId", travelId);
+                bundle.putSerializable("scheduleList", scheduleList);
+                msg.setData(bundle);
+
+                addScheduleActivityHandler.sendMessage(msg);
+            }
+
         } else if (action == Actions.DELETE_TRAVEL)
         {
             // 업데이트 시각 데이터 제거, 동네예보 정보 제거, schedule 데이터 제거, travel 데이터 제거
@@ -177,10 +159,10 @@ public class TravelScheduleThread extends Thread
                         if (travelDao.deleteTravel(travelId) > 0)
                         {
                             // 모든 데이터 제거 완료
-                            Message msg = handler.obtainMessage();
+                            Message msg = mainActivityHandler.obtainMessage();
 
                             msg.what = Actions.FINISHED_DELETE_TRAVEL;
-                            handler.sendMessage(msg);
+                            mainActivityHandler.sendMessage(msg);
                         }
                     }
                 }
@@ -188,18 +170,66 @@ public class TravelScheduleThread extends Thread
         }
     }
 
-    public void setHandler(Handler handler)
-    {
-        this.handler = handler;
-    }
-
-    public void setDownloadDataInt(int downloadDataInt)
-    {
-        this.downloadDataInt = downloadDataInt;
-    }
-
     public void setMainActivityHandler(Handler mainActivityHandler)
     {
         this.mainActivityHandler = mainActivityHandler;
+    }
+
+    public void setAction(int action)
+    {
+        this.action = action;
+    }
+
+    public int getAction()
+    {
+        return action;
+    }
+
+    public Handler getScheduleActivityHandler()
+    {
+        return scheduleActivityHandler;
+    }
+
+    public void setScheduleActivityHandler(Handler scheduleActivityHandler)
+    {
+        this.scheduleActivityHandler = scheduleActivityHandler;
+    }
+
+    public Handler getAddScheduleActivityHandler()
+    {
+        return addScheduleActivityHandler;
+    }
+
+    public void setAddScheduleActivityHandler(Handler addScheduleActivityHandler)
+    {
+        this.addScheduleActivityHandler = addScheduleActivityHandler;
+    }
+
+    public void setTravelId(int travelId)
+    {
+        this.travelId = travelId;
+    }
+
+    public int getTravelId()
+    {
+        return travelId;
+    }
+
+    public void setTravelSchedules(ArrayList<Schedule> travelSchedules)
+    {
+        this.travelSchedules = travelSchedules;
+    }
+
+    public ArrayList<Schedule> getTravelSchedules()
+    {
+        return travelSchedules;
+    }
+
+    public void setTravel(String travelName)
+    {
+        Travel newTravel = new Travel();
+
+        newTravel.setName(travelName);
+        this.travel = newTravel;
     }
 }
