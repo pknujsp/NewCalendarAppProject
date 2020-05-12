@@ -65,8 +65,8 @@ public class NewScheduleActivity extends AppCompatActivity implements DatePicker
             area = (Area) editIntent.getSerializableExtra("area");
 
             textArea.setText(area.getPhase1() + " " + area.getPhase2() + " " + area.getPhase3());
-            textStartDate.setText(Clock.dateFormatSlash.format(startDate.getTime()));
-            textEndDate.setText(Clock.dateFormatSlash.format(endDate.getTime()));
+            textStartDate.setText(Clock.dateDayNameFormatSlash.format(startDate.getTime()));
+            textEndDate.setText(Clock.dateDayNameFormatSlash.format(endDate.getTime()));
         }
 
         btnArea.setOnClickListener(new View.OnClickListener()

@@ -25,7 +25,7 @@ import java.util.List;
 
 public class AddScheduleAdapter extends RecyclerView.Adapter<AddScheduleAdapter.ViewHolder>
 {
-    private List<Schedule> travelSchedules = null;
+    private ArrayList<Schedule> travelSchedules = null;
     Context context;
     Activity activity;
     LayoutInflater layoutInflater;
@@ -47,9 +47,9 @@ public class AddScheduleAdapter extends RecyclerView.Adapter<AddScheduleAdapter.
         }
     }
 
-    public AddScheduleAdapter(List<Schedule> travelSchedules, Activity activity)
+    public AddScheduleAdapter(Activity activity)
     {
-        this.travelSchedules = travelSchedules;
+        this.travelSchedules = new ArrayList<>();
         this.activity = activity;
     }
 
@@ -129,5 +129,10 @@ public class AddScheduleAdapter extends RecyclerView.Adapter<AddScheduleAdapter.
     public List<Schedule> getTravelSchedules()
     {
         return travelSchedules;
+    }
+
+    public void setTravelSchedules(ArrayList<Schedule> travelSchedules)
+    {
+        this.travelSchedules = travelSchedules;
     }
 }

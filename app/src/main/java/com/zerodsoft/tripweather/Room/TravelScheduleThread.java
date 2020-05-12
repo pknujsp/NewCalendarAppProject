@@ -167,6 +167,77 @@ public class TravelScheduleThread extends Thread
                     }
                 }
             }
+        } else if (action == Actions.UPDATE_SCHEDULE)
+        {
+            ArrayList<Schedule> scheduleList = (ArrayList<Schedule>) scheduleDao.getAllSchedules(travelId);
+            Travel travel = travelDao.getTravelInfo(travelId);
+            Bundle bundle = new Bundle();
+            Message msg = mainActivityHandler.obtainMessage();
+
+            bundle.putSerializable("scheduleList", scheduleList);
+            bundle.putSerializable("travel", travel);
+            msg.what = Actions.START_EDIT_SCHEDULE_ACTIVITY;
+            msg.setData(bundle);
+
+            mainActivityHandler.sendMessage(msg);
+        } else if (action == Actions.UPDATE_TRAVEL)
+        {
+            // 업데이트 시각 데이터 제거, 동네예보 정보 제거, schedule 데이터 제거
+            WeatherUpdateTimeDao weatherUpdateTimeDao = appDb.weatherUpdateTimeDao();
+            NforecastDao nforecastDao = appDb.nforecastDao();
+            ArrayList<ScheduleIdTuple> scheduleIdList = (ArrayList<ScheduleIdTuple>) scheduleDao.getScheduleIdList(travelId);
+
+            // 업데이트 시각 데이터 제거
+            if (weatherUpdateTimeDao.deleteTravelUpdateData(travelId) == 1)
+            {
+                int count = 0;
+
+                for (ScheduleIdTuple tuple : scheduleIdList)
+                {
+                    // 동네예보 데이터 제거
+                    nforecastDao.deleteNforecastData(tuple.getScheduleId());
+                    count++;
+                }
+
+                if (count == scheduleIdList.size())
+                {
+                    // schedule 데이터 제거
+                    if (scheduleDao.deleteSchedules(travelId) > 0)
+                    {
+                        if (travel != null)
+                        {
+                            travelDao.updateTravelName(travel.getName(), travelId);
+                        }
+
+                        ArrayList<Integer> newScheduleIdList = new ArrayList<>();
+
+                        for (Schedule scheduleData : travelSchedules)
+                        {
+                            Schedule schedule = new Schedule();
+
+                            schedule.setParentId(travelId);
+                            schedule.setAreaId(scheduleData.getArea().getArea_id());
+                            schedule.setAreaName(scheduleData.getArea().toString());
+                            schedule.setAreaX(scheduleData.getArea().getX());
+                            schedule.setAreaY(scheduleData.getArea().getY());
+                            schedule.setStartDate(Clock.dateFormatSlash.format(scheduleData.getStartDateObj().getTime()));
+                            schedule.setEndDate(Clock.dateFormatSlash.format(scheduleData.getEndDateObj().getTime()));
+
+                            // 여행 일정을 INSERT하고 scheduleId를 반환받음
+                            long scheduleId = scheduleDao.insertSchedule(schedule);
+                            newScheduleIdList.add((int) scheduleId);
+                        }
+
+                        Bundle bundle = new Bundle();
+                        bundle.putInt("travelId", (int) travelId);
+
+                        Message msg = addScheduleActivityHandler.obtainMessage();
+                        msg.setData(bundle);
+                        msg.what = Actions.DOWNLOAD_NFORECAST_DATA;
+                        addScheduleActivityHandler.sendMessage(msg);
+                    }
+                }
+            }
         }
     }
 

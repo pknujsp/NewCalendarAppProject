@@ -23,4 +23,7 @@ public class Actions
     public static final int UPDATE_SCHEDULE = 18;
     public static final int SET_TRAVEL_RECYCLERVIEW_ADAPTER = 19;
     public static final int START_SCHEDULE_ACTIVITY = 20;
+    public static final int START_EDIT_SCHEDULE_ACTIVITY = 21;
+    public static final int START_ADD_SCHEDULE_ACTIVITY = 22;
+    public static final int UPDATE_TRAVEL = 23;
 }

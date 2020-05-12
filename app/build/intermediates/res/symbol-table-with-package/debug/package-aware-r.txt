@@ -1504,7 +1504,6 @@ id btn_add_schedule
 id btn_app_settings
 id btn_current_weather
 id btn_edit_area
-id btn_edit_end
 id btn_edit_schedule
 id btn_edit_start
 id btn_more

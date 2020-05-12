@@ -26,12 +26,18 @@ import com.zerodsoft.tripweather.Room.DTO.Travel;
 import com.zerodsoft.tripweather.Room.DTO.TravelScheduleCountTuple;
 import com.zerodsoft.tripweather.Room.TravelScheduleThread;
 import com.zerodsoft.tripweather.ScheduleList.AddScheduleAdapter;
+import com.zerodsoft.tripweather.ScheduleList.ModificationStatus;
 import com.zerodsoft.tripweather.Utility.Actions;
+import com.zerodsoft.tripweather.Utility.Clock;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 public class AddScheduleActivity extends AppCompatActivity implements Runnable
 {
@@ -39,6 +45,9 @@ public class AddScheduleActivity extends AppCompatActivity implements Runnable
     private AddScheduleAdapter adapter;
     private FloatingActionButton fabBtn;
     private Toolbar toolbar;
+    String originalTravelName;
+    int action;
+    int travelId;
     EditText editTravelName;
     Handler handler = new Handler()
     {
@@ -84,14 +93,76 @@ public class AddScheduleActivity extends AppCompatActivity implements Runnable
         toolbar = (Toolbar) findViewById(R.id.toolBar_add_schedule);
         editTravelName = (EditText) findViewById(R.id.edit_travel_name);
 
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setLayoutManager(new LinearLayoutManager(AddScheduleActivity.this));
+        adapter = new AddScheduleAdapter(AddScheduleActivity.this);
+        recyclerView.setAdapter(adapter);
+
         setSupportActionBar(toolbar);
 
         ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayShowTitleEnabled(false);
         actionBar.setDisplayHomeAsUpEnabled(true);
 
-        Thread thread = new Thread(AddScheduleActivity.this);
-        thread.start();
+        Bundle bundle = getIntent().getExtras();
+        this.action = bundle.getInt("action");
+
+        if (action == Actions.START_ADD_SCHEDULE_ACTIVITY)
+        {
+            Thread thread = new Thread(AddScheduleActivity.this);
+            thread.start();
+        } else
+        {
+            // EDIT
+            ArrayList<Schedule> scheduleList = (ArrayList<Schedule>) bundle.getSerializable("scheduleList");
+            Travel travel = (Travel) bundle.getSerializable("travel");
+            editTravelName.setText(travel.getName());
+            this.travelId = travel.getId();
+            this.originalTravelName = travel.getName();
+
+            for (Schedule original : scheduleList)
+            {
+                String[] separatedStartDate = original.getStartDate().split("/");
+                String[] separatedEndDate = original.getEndDate().split("/");
+                String[] separatedArea = original.getAreaName().split(" ");
+                Area modifiedArea = new Area();
+
+                Calendar calendar = Calendar.getInstance(Clock.timeZone);
+
+                // startDate
+                calendar.set(Integer.parseInt(separatedStartDate[0]), Integer.parseInt(separatedStartDate[1]) - 1, Integer.parseInt(separatedStartDate[2]));
+                original.setStartDateObj(calendar.getTime());
+                // endDate
+                calendar.set(Integer.parseInt(separatedEndDate[0]), Integer.parseInt(separatedEndDate[1]) - 1, Integer.parseInt(separatedEndDate[2]));
+                original.setEndDateObj(calendar.getTime());
+
+                modifiedArea.setPhase1(separatedArea[0]);
+
+                if (separatedArea.length == 1)
+                {
+                    modifiedArea.setPhase2("");
+                    modifiedArea.setPhase3("");
+                } else if (separatedArea.length == 2)
+                {
+                    modifiedArea.setPhase2(separatedArea[1]);
+                    modifiedArea.setPhase3("");
+                } else if (separatedArea.length == 3)
+                {
+                    modifiedArea.setPhase2(separatedArea[1]);
+                    modifiedArea.setPhase3(separatedArea[2]);
+                }
+
+                modifiedArea.setArea_id(original.getAreaId());
+                modifiedArea.setX(original.getAreaX());
+                modifiedArea.setY(original.getAreaY());
+
+                original.setArea(modifiedArea);
+            }
+
+            adapter.setTravelSchedules(scheduleList);
+            adapter.notifyDataSetChanged();
+        }
+
 
         fabBtn.setOnClickListener(new View.OnClickListener()
         {
@@ -103,13 +174,6 @@ public class AddScheduleActivity extends AppCompatActivity implements Runnable
                 startActivityForResult(intent, Actions.INSERT_SCHEDULE);
             }
         });
-        recyclerView.setHasFixedSize(true);
-
-        List<Schedule> travelSchedules = new ArrayList<>();
-
-        recyclerView.setLayoutManager(new LinearLayoutManager(AddScheduleActivity.this));
-        adapter = new AddScheduleAdapter(travelSchedules, AddScheduleActivity.this);
-        recyclerView.setAdapter(adapter);
     }
 
     @Override
@@ -138,7 +202,6 @@ public class AddScheduleActivity extends AppCompatActivity implements Runnable
 
                     adapter.addItem(travelSchedule);
                     adapter.notifyDataSetChanged();
-
                     break;
 
                 case Actions.UPDATE_SCHEDULE:
@@ -154,7 +217,6 @@ public class AddScheduleActivity extends AppCompatActivity implements Runnable
 
                     adapter.replaceItem(travelSchedule, position);
                     adapter.notifyDataSetChanged();
-
                     break;
             }
         }
@@ -187,10 +249,22 @@ public class AddScheduleActivity extends AppCompatActivity implements Runnable
                     String travelName = editTravelName.getText().toString();
 
                     TravelScheduleThread travelListThread = new TravelScheduleThread(AddScheduleActivity.this);
-                    travelListThread.setTravel(travelName);
                     travelListThread.setTravelSchedules(travelSchedules);
                     travelListThread.setAddScheduleActivityHandler(handler);
-                    travelListThread.setAction(Actions.INSERT_TRAVEL);
+
+                    if (action == Actions.START_ADD_SCHEDULE_ACTIVITY)
+                    {
+                        travelListThread.setTravel(travelName);
+                        travelListThread.setAction(Actions.INSERT_TRAVEL);
+                    } else
+                    {
+                        if (!originalTravelName.equals(travelName))
+                        {
+                            travelListThread.setTravel(travelName);
+                        }
+                        travelListThread.setAction(Actions.UPDATE_TRAVEL);
+                        travelListThread.setTravelId(travelId);
+                    }
                     travelListThread.start();
                 } else
                 {

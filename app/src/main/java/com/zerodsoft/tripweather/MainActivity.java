@@ -74,6 +74,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     scheduleActivityIntent.putExtras(bundle);
                     startActivity(scheduleActivityIntent);
                     break;
+
+                case Actions.START_EDIT_SCHEDULE_ACTIVITY:
+                    Intent editScheduleActivityIntent = new Intent(getApplicationContext(), AddScheduleActivity.class);
+                    bundle.putInt("action", Actions.UPDATE_SCHEDULE);
+                    editScheduleActivityIntent.putExtras(bundle);
+                    startActivity(editScheduleActivityIntent);
             }
         }
     };
@@ -122,6 +128,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 return true;
             case R.id.menu_item_add:
                 Intent intent = new Intent(getApplicationContext(), AddScheduleActivity.class);
+                Bundle bundle = new Bundle();
+                bundle.putInt("action", Actions.START_ADD_SCHEDULE_ACTIVITY);
+                intent.putExtras(bundle);
                 startActivity(intent);
                 return true;
             default:

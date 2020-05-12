@@ -94,19 +94,20 @@ public class TravelScheduleListAdapter extends RecyclerView.Adapter<TravelSchedu
             @Override
             public boolean onMenuItemClick(MenuItem item)
             {
+                TravelScheduleThread travelScheduleThread = new TravelScheduleThread(activity);
+                travelScheduleThread.setTravelId(travelId);
+
                 switch (item.getItemId())
                 {
                     case R.id.item_edit_schedule:
-                        Toast.makeText(context, "EDIT", Toast.LENGTH_SHORT).show();
+                        travelScheduleThread.setAction(Actions.UPDATE_SCHEDULE);
                         break;
                     case R.id.item_remove_schedule:
-                        TravelScheduleThread travelScheduleThread = new TravelScheduleThread(activity);
-                        travelScheduleThread.setTravelId(travelId);
                         travelScheduleThread.setAction(Actions.DELETE_TRAVEL);
-                        travelScheduleThread.setMainActivityHandler(mainActivityHandler);
-                        travelScheduleThread.start();
                         break;
                 }
+                travelScheduleThread.setMainActivityHandler(mainActivityHandler);
+                travelScheduleThread.start();
                 return true;
             }
         };

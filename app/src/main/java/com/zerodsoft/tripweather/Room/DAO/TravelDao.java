@@ -31,4 +31,7 @@ public interface TravelDao
     @Query("DELETE FROM travel_table WHERE travel_id = :travelId")
     int deleteTravel(int travelId);
 
+    @Query("UPDATE travel_table SET travel_name = :travelName WHERE travel_id = :travelId")
+    void updateTravelName(String travelName, int travelId);
+
 }
