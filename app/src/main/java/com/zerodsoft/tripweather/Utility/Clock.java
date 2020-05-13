@@ -24,6 +24,10 @@ public class Clock
     public static final SimpleDateFormat yearMonthFormat = new SimpleDateFormat("yyyy/MM");
     public static final SimpleDateFormat timeFormat2 = new SimpleDateFormat("MM/dd HH:mm");
 
+    private Clock()
+    {
+    }
+
     public static Map<String, Object> getCurrentDateTime()
     {
         Map<String, Object> data = new HashMap<>();

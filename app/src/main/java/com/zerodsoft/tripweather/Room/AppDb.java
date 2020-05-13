@@ -44,6 +44,7 @@ public abstract class AppDb extends RoomDatabase
 
     public abstract WeatherUpdateTimeDao weatherUpdateTimeDao();
 
+
     public static AppDb getInstance(Context context)
     {
         if (instance == null)

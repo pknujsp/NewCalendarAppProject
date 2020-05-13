@@ -32,6 +32,7 @@ public class DownloadData
     private static final String numOfRows = "250";
     private static final String dataType = "JSON";
     private static final String pageNo = "1";
+    private static boolean isCompleted = false;
 
     public static boolean getNForecastData(ArrayList<Schedule> scheduleList, Context context, Handler handler, ProcessingType processingType)
     {
@@ -48,6 +49,8 @@ public class DownloadData
 
         int count = 1;
         int lastScheduleCount = 0;
+       // TimeOutThread thread = new TimeOutThread();
+      //  thread.start();
 
         for (Schedule schedule : scheduleList)
         {
@@ -90,6 +93,7 @@ public class DownloadData
 
                     if (finalCount == scheduleList.size() - finalLastScheduleCount)
                     {
+                     //   thread.interrupt();
                         Message message = handler.obtainMessage();
 
                         Bundle bundle = new Bundle();
@@ -125,5 +129,18 @@ public class DownloadData
         }
         return true;
     }
+}
 
+class TimeOutThread extends Thread
+{
+    long beginTime;
+
+    @Override
+    public void run()
+    {
+
+        beginTime = System.currentTimeMillis();
+
+
+    }
 }

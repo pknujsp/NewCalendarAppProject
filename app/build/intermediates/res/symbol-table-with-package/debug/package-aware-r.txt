@@ -1352,6 +1352,7 @@ drawable add_schedule
 drawable avd_hide_password
 drawable avd_show_password
 drawable before_icon
+drawable blue_button_shape
 drawable btn_checkbox_checked_mtrl
 drawable btn_checkbox_checked_to_unchecked_mtrl_animation
 drawable btn_checkbox_unchecked_mtrl
@@ -1422,6 +1423,7 @@ drawable test_custom_background
 drawable toolbar_menu_icon
 drawable tooltip_frame_dark
 drawable tooltip_frame_light
+drawable white_button_shape
 id ALT
 id BOTTOM_END
 id BOTTOM_START
@@ -1500,6 +1502,8 @@ id barrier
 id beginning
 id blocking
 id bottom
+id btnNo
+id btnYes
 id btn_add_schedule
 id btn_app_settings
 id btn_current_weather
@@ -1660,6 +1664,7 @@ id normal
 id notification_background
 id notification_main_column
 id notification_main_column_container
+id notification_string
 id off
 id on
 id outline
@@ -1773,6 +1778,7 @@ id textView4
 id textView5
 id textView6
 id textView7
+id textView9
 id text_date
 id text_input_end_icon
 id text_input_start_icon
@@ -1937,6 +1943,7 @@ layout mtrl_picker_header_toggle
 layout mtrl_picker_text_input_date
 layout mtrl_picker_text_input_date_range
 layout nav_header
+layout no_yes_dialog
 layout notification_action
 layout notification_action_tombstone
 layout notification_media_action

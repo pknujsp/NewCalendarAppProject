@@ -1,5 +1,6 @@
 package com.zerodsoft.tripweather;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -25,6 +26,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.navigation.NavigationView;
+import com.zerodsoft.tripweather.CustomDialog.EditDialog;
 import com.zerodsoft.tripweather.Room.DTO.Schedule;
 import com.zerodsoft.tripweather.Room.DTO.Travel;
 import com.zerodsoft.tripweather.Room.TravelScheduleThread;
@@ -42,8 +44,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     NavigationView navigationView;
     DrawerLayout drawerLayout;
     RecyclerView recyclerView;
+    EditDialog editDialog;
     private static final int NEW_TRAVEL_SCHEDULE = 20;
     private CloseActivity closeActivity;
+    @SuppressLint("HandlerLeak")
     private Handler handler = new Handler()
     {
         @Override
@@ -76,10 +80,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     break;
 
                 case Actions.START_EDIT_SCHEDULE_ACTIVITY:
-                    Intent editScheduleActivityIntent = new Intent(getApplicationContext(), AddScheduleActivity.class);
-                    bundle.putInt("action", Actions.UPDATE_SCHEDULE);
-                    editScheduleActivityIntent.putExtras(bundle);
-                    startActivity(editScheduleActivityIntent);
+                    if (editDialog != null)
+                    {
+                        editDialog.setBundle(bundle);
+                    } else
+                    {
+                        editDialog = new EditDialog(MainActivity.this, bundle);
+                        editDialog.setCancelable(false);
+                    }
+                    editDialog.show();
+                    break;
             }
         }
     };
