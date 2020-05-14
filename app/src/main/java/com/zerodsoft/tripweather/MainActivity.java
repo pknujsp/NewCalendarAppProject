@@ -26,6 +26,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.navigation.NavigationView;
+import com.zerodsoft.tripweather.CustomDialog.DeleteDialog;
 import com.zerodsoft.tripweather.CustomDialog.EditDialog;
 import com.zerodsoft.tripweather.Room.DTO.Schedule;
 import com.zerodsoft.tripweather.Room.DTO.Travel;
@@ -35,16 +36,16 @@ import com.zerodsoft.tripweather.Utility.Actions;
 
 import java.security.MessageDigest;
 import java.util.ArrayList;
-import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, TravelScheduleListAdapter.OnBtnListener
 {
     Button btnCurrentWeather;
     Toolbar toolbar;
     NavigationView navigationView;
     DrawerLayout drawerLayout;
     RecyclerView recyclerView;
-    EditDialog editDialog;
+    private EditDialog editDialog;
+    private DeleteDialog deleteDialog;
     private static final int NEW_TRAVEL_SCHEDULE = 20;
     private CloseActivity closeActivity;
     @SuppressLint("HandlerLeak")
@@ -57,14 +58,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
             switch (msg.what)
             {
-                case Actions.FINISHED_DELETE_TRAVEL:
-                    Toast.makeText(getApplicationContext(), "삭제 완료", Toast.LENGTH_SHORT).show();
-                    TravelScheduleThread travelScheduleThread = new TravelScheduleThread(MainActivity.this);
-                    travelScheduleThread.setAction(Actions.SET_MAINACTIVITY_VIEW);
-                    travelScheduleThread.setMainActivityHandler(handler);
-                    travelScheduleThread.start();
-                    break;
-
                 case Actions.SET_TRAVEL_RECYCLERVIEW_ADAPTER:
                     ArrayList<Travel> travelList = (ArrayList<Travel>) bundle.getSerializable("travelList");
                     TravelScheduleListAdapter adapter = new TravelScheduleListAdapter(MainActivity.this, travelList);
@@ -79,17 +72,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     startActivity(scheduleActivityIntent);
                     break;
 
-                case Actions.START_EDIT_SCHEDULE_ACTIVITY:
-                    if (editDialog != null)
-                    {
-                        editDialog.setBundle(bundle);
-                    } else
-                    {
-                        editDialog = new EditDialog(MainActivity.this, bundle);
-                        editDialog.setCancelable(false);
-                    }
-                    editDialog.show();
-                    break;
             }
         }
     };
@@ -204,5 +186,39 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         travelScheduleThread.setMainActivityHandler(handler);
         travelScheduleThread.start();
         super.onResume();
+    }
+
+    @Override
+    public void onClickBtn(int action, int travelId)
+    {
+        switch (action)
+        {
+            case Actions.UPDATE_TRAVEL:
+                if (editDialog == null)
+                {
+                    editDialog = new EditDialog(MainActivity.this, travelId);
+                    editDialog.setNotificationStr("수정 하시겠습니까?");
+                    editDialog.setCancelable(false);
+                } else
+                {
+                    editDialog.setTravelId(travelId);
+                }
+                editDialog.show();
+
+                break;
+            case Actions.DELETE_TRAVEL:
+                if (deleteDialog == null)
+                {
+                    deleteDialog = new DeleteDialog(MainActivity.this, travelId).setMainActivityHandler(handler);
+                    deleteDialog.setNotificationStr("삭제 하시겠습니까?");
+                    deleteDialog.setCancelable(false);
+                } else
+                {
+                    deleteDialog.setTravelId(travelId);
+                }
+                deleteDialog.show();
+
+                break;
+        }
     }
 }

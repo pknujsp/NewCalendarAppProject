@@ -1,10 +1,5 @@
 package com.zerodsoft.tripweather;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -14,12 +9,11 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.zerodsoft.tripweather.DataCommunication.DataCommunicationClient;
-import com.zerodsoft.tripweather.DataCommunication.DataDownloadService;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.zerodsoft.tripweather.DataCommunication.DownloadData;
-import com.zerodsoft.tripweather.RequestResponse.WeatherResponse;
-import com.zerodsoft.tripweather.RequestResponse.WeatherResponseItem;
-import com.zerodsoft.tripweather.Room.DTO.Nforecast;
 import com.zerodsoft.tripweather.Room.DTO.Schedule;
 import com.zerodsoft.tripweather.Room.DTO.ScheduleNForecast;
 import com.zerodsoft.tripweather.Room.WeatherDataThread;
@@ -27,10 +21,7 @@ import com.zerodsoft.tripweather.ScheduleList.ScheduleListAdapter;
 import com.zerodsoft.tripweather.ScheduleList.ScheduleTable;
 import com.zerodsoft.tripweather.ScheduleList.ViewItemDecoration;
 import com.zerodsoft.tripweather.Utility.Actions;
-import com.zerodsoft.tripweather.Utility.Clock;
-import com.zerodsoft.tripweather.Utility.ResponseDataClassifier;
 import com.zerodsoft.tripweather.WeatherData.ForecastAreaData;
-import com.zerodsoft.tripweather.WeatherData.WeatherData;
 
 import java.util.ArrayList;
 
@@ -63,6 +54,10 @@ public class TravelScheduleActivity extends AppCompatActivity
                     ArrayList<ForecastAreaData> nForecastDataList2 = (ArrayList<ForecastAreaData>) bundle.getSerializable("nForecastDataList");
                     WeatherDataThread thread2 = new WeatherDataThread(nForecastDataList2, bundle, handler, getApplicationContext(), new ProcessingType().setAction(Actions.INSERT_NFORECAST_DATA).setProcessingType(Actions.UPDATE));
                     thread2.start();
+                    break;
+
+                case Actions.FAILED_DOWNLOAD:
+                    Toast.makeText(TravelScheduleActivity.this, "FAILED", Toast.LENGTH_SHORT).show();
                     break;
             }
         }

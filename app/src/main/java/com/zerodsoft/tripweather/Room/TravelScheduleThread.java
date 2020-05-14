@@ -40,6 +40,7 @@ public class TravelScheduleThread extends Thread
     private Handler scheduleActivityHandler;
     private Handler addScheduleActivityHandler;
     private Handler mainActivityHandler;
+    private Handler dialogHandler;
 
     public TravelScheduleThread(Activity activity)
     {
@@ -159,10 +160,10 @@ public class TravelScheduleThread extends Thread
                         if (travelDao.deleteTravel(travelId) > 0)
                         {
                             // 모든 데이터 제거 완료
-                            Message msg = mainActivityHandler.obtainMessage();
+                            Message msg = dialogHandler.obtainMessage();
 
                             msg.what = Actions.FINISHED_DELETE_TRAVEL;
-                            mainActivityHandler.sendMessage(msg);
+                            dialogHandler.sendMessage(msg);
                         }
                     }
                 }
@@ -172,14 +173,14 @@ public class TravelScheduleThread extends Thread
             ArrayList<Schedule> scheduleList = (ArrayList<Schedule>) scheduleDao.getAllSchedules(travelId);
             Travel travel = travelDao.getTravelInfo(travelId);
             Bundle bundle = new Bundle();
-            Message msg = mainActivityHandler.obtainMessage();
+            Message msg = dialogHandler.obtainMessage();
 
             bundle.putSerializable("scheduleList", scheduleList);
             bundle.putSerializable("travel", travel);
             msg.what = Actions.START_EDIT_SCHEDULE_ACTIVITY;
             msg.setData(bundle);
 
-            mainActivityHandler.sendMessage(msg);
+            dialogHandler.sendMessage(msg);
         } else if (action == Actions.UPDATE_TRAVEL)
         {
             // 업데이트 시각 데이터 제거, 동네예보 정보 제거, schedule 데이터 제거
@@ -302,5 +303,10 @@ public class TravelScheduleThread extends Thread
 
         newTravel.setName(travelName);
         this.travel = newTravel;
+    }
+
+    public void setDialogHandler(Handler dialogHandler)
+    {
+        this.dialogHandler = dialogHandler;
     }
 }

@@ -6,35 +6,37 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.view.View;
+import android.widget.Toast;
 
 import com.zerodsoft.tripweather.AddScheduleActivity;
+import com.zerodsoft.tripweather.MainActivity;
 import com.zerodsoft.tripweather.R;
 import com.zerodsoft.tripweather.Room.TravelScheduleThread;
 import com.zerodsoft.tripweather.Utility.Actions;
 
-public class EditDialog extends CustomDialog implements View.OnClickListener
+public class DeleteDialog extends CustomDialog implements View.OnClickListener
 {
     private Handler handler = new Handler()
     {
         @Override
         public void handleMessage(Message msg)
         {
-            Bundle bundle = msg.getData();
-
             switch (msg.what)
             {
-                case Actions.START_EDIT_SCHEDULE_ACTIVITY:
-                    Intent editScheduleActivityIntent = new Intent(activity, AddScheduleActivity.class);
-                    bundle.putInt("action", Actions.START_EDIT_SCHEDULE_ACTIVITY);
-                    editScheduleActivityIntent.putExtras(bundle);
-                    activity.startActivity(editScheduleActivityIntent);
+                case Actions.FINISHED_DELETE_TRAVEL:
+                    Toast.makeText(activity, "삭제 완료", Toast.LENGTH_SHORT).show();
+                    TravelScheduleThread travelScheduleThread = new TravelScheduleThread(activity);
+                    travelScheduleThread.setAction(Actions.SET_MAINACTIVITY_VIEW);
+                    travelScheduleThread.setMainActivityHandler(mainActivityHandler);
+                    travelScheduleThread.start();
                     dismiss();
                     break;
             }
         }
     };
+    private Handler mainActivityHandler;
 
-    public EditDialog(Activity activity, int travelId)
+    public DeleteDialog(Activity activity, int travelId)
     {
         super(activity, travelId);
     }
@@ -50,10 +52,17 @@ public class EditDialog extends CustomDialog implements View.OnClickListener
             case R.id.btnYes:
                 TravelScheduleThread travelScheduleThread = new TravelScheduleThread(activity);
                 travelScheduleThread.setTravelId(travelId);
-                travelScheduleThread.setAction(Actions.UPDATE_SCHEDULE);
+                travelScheduleThread.setAction(Actions.DELETE_TRAVEL);
                 travelScheduleThread.setDialogHandler(handler);
                 travelScheduleThread.start();
                 break;
         }
     }
+
+    public DeleteDialog setMainActivityHandler(Handler mainActivityHandler)
+    {
+        this.mainActivityHandler = mainActivityHandler;
+        return this;
+    }
 }
+

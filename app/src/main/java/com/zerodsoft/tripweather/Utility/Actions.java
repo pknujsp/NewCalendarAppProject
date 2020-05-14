@@ -26,4 +26,5 @@ public class Actions
     public static final int START_EDIT_SCHEDULE_ACTIVITY = 21;
     public static final int START_ADD_SCHEDULE_ACTIVITY = 22;
     public static final int UPDATE_TRAVEL = 23;
+    public static final int FAILED_DOWNLOAD = 24;
 }

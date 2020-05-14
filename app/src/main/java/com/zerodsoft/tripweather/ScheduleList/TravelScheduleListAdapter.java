@@ -4,10 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
-import android.view.ContextMenu;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,7 +22,6 @@ import com.zerodsoft.tripweather.Room.DTO.Travel;
 import com.zerodsoft.tripweather.Room.TravelScheduleThread;
 import com.zerodsoft.tripweather.Utility.Actions;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class TravelScheduleListAdapter extends RecyclerView.Adapter<TravelScheduleListAdapter.ViewHolder>
@@ -47,6 +43,12 @@ public class TravelScheduleListAdapter extends RecyclerView.Adapter<TravelSchedu
         }
     };
     private Handler mainActivityHandler;
+    private OnBtnListener onBtnListener;
+
+    public interface OnBtnListener
+    {
+        void onClickBtn(int action, int travelId);
+    }
 
     public class ViewHolder extends RecyclerView.ViewHolder
     {
@@ -94,20 +96,15 @@ public class TravelScheduleListAdapter extends RecyclerView.Adapter<TravelSchedu
             @Override
             public boolean onMenuItemClick(MenuItem item)
             {
-                TravelScheduleThread travelScheduleThread = new TravelScheduleThread(activity);
-                travelScheduleThread.setTravelId(travelId);
-
                 switch (item.getItemId())
                 {
                     case R.id.item_edit_schedule:
-                        travelScheduleThread.setAction(Actions.UPDATE_SCHEDULE);
+                        onBtnListener.onClickBtn(Actions.UPDATE_TRAVEL, travelId);
                         break;
                     case R.id.item_remove_schedule:
-                        travelScheduleThread.setAction(Actions.DELETE_TRAVEL);
+                        onBtnListener.onClickBtn(Actions.DELETE_TRAVEL, travelId);
                         break;
                 }
-                travelScheduleThread.setMainActivityHandler(mainActivityHandler);
-                travelScheduleThread.start();
                 return true;
             }
         };
@@ -128,6 +125,7 @@ public class TravelScheduleListAdapter extends RecyclerView.Adapter<TravelSchedu
         this.travelDataList = travelDataList;
         this.activity = activity;
         this.context = activity.getApplicationContext();
+        this.onBtnListener = (OnBtnListener) activity;
     }
 
     @NonNull
