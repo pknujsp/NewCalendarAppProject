@@ -1,10 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "C:\\programming\\Android\\Android Projects\\Tripweather\\app\\build\\intermediates\\incremental\\mergeDebugResources\\merged.dir\\values-v16\\values-v16.xml",
+            "outputFile": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\build\\intermediates\\incremental\\mergeDebugResources\\merged.dir\\values-v16\\values-v16.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\Marx\\.gradle\\caches\\transforms-1\\files-1.1\\core-1.1.0.aar\\7dba2bdf2c19d6580865dcb271b12b18\\res\\values-v16\\values-v16.xml",
+                    "source": "C:\\Users\\Marx\\.gradle\\caches\\transforms-2\\files-2.1\\03736cf4bc3669a69d502627b70a527e\\core-1.1.0\\res\\values-v16\\values-v16.xml",
                     "from": {
                         "startLines": "2",
                         "startColumns": "4",
@@ -14,7 +14,7 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\Marx\\.gradle\\caches\\transforms-1\\files-1.1\\appcompat-1.1.0.aar\\d77b71b3a5a5c25917d77318714edd83\\res\\values-v16\\values-v16.xml",
+                    "source": "C:\\Users\\Marx\\.gradle\\caches\\transforms-2\\files-2.1\\c2c5fa787d66aaf40578b3071f4d283f\\appcompat-1.1.0\\res\\values-v16\\values-v16.xml",
                     "from": {
                         "startLines": "2",
                         "startColumns": "4",

@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".CurrentWeatherActivity">
+    tools:context="com.zerodsoft.scheduleweather.CurrentWeatherActivity">
 
     <Button
         android:id="@+id/getWeatherBtn"

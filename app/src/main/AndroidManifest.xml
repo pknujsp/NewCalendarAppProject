@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.zerodsoft.tripweather">
+    package="com.zerodsoft.scheduleweather">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
 
-    <meta-data android:name="com.kakao.sdk.AppKey" android:value="0dc55f983ec285210efb88d1389f7c2b"/>
+    <meta-data
+        android:name="com.kakao.sdk.AppKey"
+        android:value="0dc55f983ec285210efb88d1389f7c2b" />
 
     <application
         android:allowBackup="true"
@@ -17,20 +20,26 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".NewScheduleActivity"></activity>
+        <activity
+            android:name=".AppMainActivity"
+            android:label="@string/title_activity_app_main"
+            android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".IntroActivity" />
+        <activity android:name=".NewScheduleActivity" />
         <activity android:name=".AreaSelectionActivity" />
         <activity android:name=".AddScheduleActivity" />
         <activity
             android:name=".TravelScheduleActivity"
             android:parentActivityName=".MainActivity" />
         <activity android:name=".CurrentWeatherActivity" />
-        <activity android:name=".MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+        <activity android:name=".MainActivity" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+
     </application>
 
 </manifest>

@@ -1,1 +1,20 @@
-[{"outputType":{"type":"APK"},"apkInfo":{"type":"FULL_SPLIT","splits":[],"versionCode":1,"versionName":"1.0","enabled":true,"filterName":"universal","outputFile":"app-universal-debug.apk","fullName":"universalDebug","baseName":"universal-debug"},"path":"app-universal-debug.apk","properties":{}}]
+{
+  "version": 1,
+  "artifactType": {
+    "type": "APK",
+    "kind": "Directory"
+  },
+  "applicationId": "com.zerodsoft.scheduleweather",
+  "variantName": "debug",
+  "elements": [
+    {
+      "type": "ONE_OF_MANY",
+      "filters": [],
+      "properties": [],
+      "versionCode": 1,
+      "versionName": "1",
+      "enabled": true,
+      "outputFile": "app-universal-debug.apk"
+    }
+  ]
+}

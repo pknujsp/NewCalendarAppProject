@@ -1,0 +1,25 @@
+package com.zerodsoft.scheduleweather.Room.DAO;
+
+import androidx.room.Dao;
+import androidx.room.Delete;
+import androidx.room.Insert;
+import androidx.room.Query;
+import androidx.room.Update;
+
+import com.zerodsoft.scheduleweather.Room.DTO.CWeather;
+
+@Dao
+public interface CWeatherDao
+{
+    @Query("SELECT * FROM cweather_table WHERE cweather_parent_id = :parentId")
+    CWeather getCurrentWeather(String parentId);
+
+    @Insert(entity = CWeather.class)
+    void insertData(CWeather cWeather);
+
+    @Update
+    void updateData(CWeather cWeather);
+
+    @Delete
+    void deleteData(CWeather cWeather);
+}
