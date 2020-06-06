@@ -1154,7 +1154,7 @@ public class WeekView extends View
                 }
 
                 @Override
-                public String interpretWeek(int date)
+                public String interpretDay(int date)
                 {
                     return null;
                 }

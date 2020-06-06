@@ -58,7 +58,6 @@ public class DayFragment extends Fragment implements WeekDayView.MonthChangeList
     {
         mWeekView = (WeekDayView) view.findViewById(R.id.weekdayview);
         mWeekHeaderView = (WeekHeaderView) view.findViewById(R.id.weekheaderview);
-        mTv_date = (TextView) view.findViewById(R.id.tv_date);
         //init WeekView
         mWeekView.setMonthChangeListener(this);
         mWeekView.setEventLongPressListener(this);
@@ -113,7 +112,7 @@ public class DayFragment extends Fragment implements WeekDayView.MonthChangeList
             }
 
             @Override
-            public String interpretWeek(int date)
+            public String interpretDay(int date)
             {
                 if (date > 7 || date < 1)
                 {

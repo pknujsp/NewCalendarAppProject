@@ -5717,22 +5717,28 @@
             <enum name="friday" value="6"/>
             <enum name="saturday" value="7"/>
         </attr>
-        <attr format="dimension" name="headerWeekLabelTextSize"/>
-        <attr format="dimension" name="headerDayLabelTextSize"/>
-        <attr format="color" name="headerWeekLabelTextColor"/>
-        <attr format="color" name="headerDayLabelNormalTextColor"/>
-        <attr format="color" name="headerDayLabelTodayTextColor"/>
-        <attr format="color" name="headerBackgroundColor"/>
-        <attr format="dimension" name="headerColumnGap"/>
-        <attr format="dimension" name="headerRowGap"/>
-        <attr format="dimension" name="headerPaddingLeft"/>
-        <attr format="dimension" name="headerPaddingRight"/>
-        <attr format="dimension" name="headerPaddingTop"/>
-        <attr format="dimension" name="headerPaddingBottom"/>
-        <attr format="color" name="headerFocusTextColor"/>
-        <attr format="color" name="headerFocusBackgroundColor"/>
-        <attr format="color" name="headerFocusSameDayBackgroundColor"/>
-        <attr format="color" name="headerFocusSameDayTextColor"/>
+        <attr format="color" name="headerAllBackgroundColor"/>
+        <attr format="color" name="headerWeekTextColor"/>
+        <attr format="color" name="headerWeekBackgroundColor"/>
+        <attr format="dimension" name="headerWeekTextSize"/>
+        <attr format="color" name="headerDayTextColor"/>
+        <attr format="color" name="headerDayBackgroundColor"/>
+        <attr format="dimension" name="headerDayTextSize"/>
+        <attr format="color" name="headerDateTextColor"/>
+        <attr format="color" name="headerDateBackgroundColor"/>
+        <attr format="dimension" name="headerDateTextSize"/>
+        <attr format="color" name="headerScheduleTextColor"/>
+        <attr format="dimension" name="headerScheduleTextSize"/>
+        <attr format="color" name="headerScheduleBackgroundColor"/>
+        <attr format="dimension" name="headerExtraButtonSize"/>
+        <attr format="dimension" name="headerExtraTextSize"/>
+        <attr format="color" name="headerExtraTextColor"/>
+        <attr format="color" name="headerExtraBackgroundColor"/>
+        <attr format="color" name="headerTodayTextColor"/>
+
+        <attr format="dimension" name="headerRowMarginTop"/>
+        <attr format="dimension" name="headerRowMarginBottom"/>
+
     </declare-styleable></file><file path="C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\res\values\colors.xml" qualifiers=""><color name="colorPrimary">@color/design_default_color_primary</color><color name="colorPrimaryDark">#00574B</color><color name="colorAccent">#D81B60</color><color name="blueLight">#ff33b5e5</color><color name="event_color_01">#59dbe0</color><color name="event_color_02">#f57f68</color><color name="event_color_03">#87d288</color><color name="event_color_04">#f8b552</color><color name="toolbar">#efefef</color><color name="toolbar_text">#8f000000</color><color name="accent">#2789e4</color></file><file path="C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\res\values\dimens.xml" qualifiers=""><dimen name="datepicker_width">328</dimen><dimen name="datepicker_height">512</dimen><dimen name="activity_horizontal_margin">16dp</dimen><dimen name="activity_vertical_margin">16dp</dimen><dimen name="nav_header_vertical_spacing">8dp</dimen><dimen name="nav_header_height">176dp</dimen><dimen name="fab_margin">16dp</dimen></file><file path="C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\res\values\strings.xml" qualifiers=""><string name="app_name">Trip weather</string><string name="area_name">지역명</string><string name="rainfall">강수량(mm)</string><string name="east_west_wind">동서바람성분(m/s)</string><string name="north_south_wind">남북바람성분(m/s)</string><string name="humidity">습도(%)</string><string name="precipitation_form">강수형태</string><string name="wind_direction">풍향</string><string name="wind_speed">풍속(m/s)</string><string name="temperature">기온(℃)</string><string name="download_current_weather">현재 날씨 다운로드</string><string name="precipitation_form_code_0">없음</string><string name="precipitation_form_code_1">비</string><string name="precipitation_form_code_2">진눈개비</string><string name="precipitation_form_code_3">눈</string><string name="precipitation_form_code_4">소나기</string><string name="wind_direction_value_0">북</string><string name="wind_direction_value_1">북북동</string><string name="wind_direction_value_2">북동</string><string name="wind_direction_value_3">동북동</string><string name="wind_direction_value_4">동</string><string name="wind_direction_value_5">동남동</string><string name="wind_direction_value_6">남동</string><string name="wind_direction_value_7">남남동</string><string name="wind_direction_value_8">남</string><string name="wind_direction_value_9">남남서</string><string name="wind_direction_value_10">남서</string><string name="wind_direction_value_11">서남서</string><string name="wind_direction_value_12">서</string><string name="wind_direction_value_13">서북서</string><string name="wind_direction_value_14">북서</string><string name="wind_direction_value_15">북북서</string><string name="wind_direction_value_16">북</string><string name="sky_clear">맑음</string><string name="sky_partly_cloudy">구름 많음</string><string name="sky_cloudy">흐림</string><string name="hello_blank_fragment">Hello blank fragment</string><string name="title_activity_app_main">AppMainActivity</string><string name="navigation_drawer_open">Open navigation drawer</string><string name="navigation_drawer_close">Close navigation drawer</string><string name="nav_header_title">Android Studio</string><string name="nav_header_subtitle">android.studio@android.com</string><string name="nav_header_desc">Navigation header</string><string name="action_settings">Settings</string><string name="menu_home">Home</string><string name="menu_gallery">Gallery</string><string name="menu_slideshow">Slideshow</string></file><file path="C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\res\values\styles.xml" qualifiers=""><style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         
         <item name="colorPrimary">@color/colorPrimary</item>
@@ -6826,22 +6832,28 @@
             <enum name="friday" value="6"/>
             <enum name="saturday" value="7"/>
         </attr>
-        <attr format="dimension" name="headerWeekLabelTextSize"/>
-        <attr format="dimension" name="headerDayLabelTextSize"/>
-        <attr format="color" name="headerWeekLabelTextColor"/>
-        <attr format="color" name="headerDayLabelNormalTextColor"/>
-        <attr format="color" name="headerDayLabelTodayTextColor"/>
-        <attr format="color" name="headerBackgroundColor"/>
-        <attr format="dimension" name="headerColumnGap"/>
-        <attr format="dimension" name="headerRowGap"/>
-        <attr format="dimension" name="headerPaddingLeft"/>
-        <attr format="dimension" name="headerPaddingRight"/>
-        <attr format="dimension" name="headerPaddingTop"/>
-        <attr format="dimension" name="headerPaddingBottom"/>
-        <attr format="color" name="headerFocusTextColor"/>
-        <attr format="color" name="headerFocusBackgroundColor"/>
-        <attr format="color" name="headerFocusSameDayBackgroundColor"/>
-        <attr format="color" name="headerFocusSameDayTextColor"/>
+        <attr format="color" name="headerAllBackgroundColor"/>
+        <attr format="color" name="headerWeekTextColor"/>
+        <attr format="color" name="headerWeekBackgroundColor"/>
+        <attr format="dimension" name="headerWeekTextSize"/>
+        <attr format="color" name="headerDayTextColor"/>
+        <attr format="color" name="headerDayBackgroundColor"/>
+        <attr format="dimension" name="headerDayTextSize"/>
+        <attr format="color" name="headerDateTextColor"/>
+        <attr format="color" name="headerDateBackgroundColor"/>
+        <attr format="dimension" name="headerDateTextSize"/>
+        <attr format="color" name="headerScheduleTextColor"/>
+        <attr format="dimension" name="headerScheduleTextSize"/>
+        <attr format="color" name="headerScheduleBackgroundColor"/>
+        <attr format="dimension" name="headerExtraButtonSize"/>
+        <attr format="dimension" name="headerExtraTextSize"/>
+        <attr format="color" name="headerExtraTextColor"/>
+        <attr format="color" name="headerExtraBackgroundColor"/>
+        <attr format="color" name="headerTodayTextColor"/>
+
+        <attr format="dimension" name="headerRowMarginTop"/>
+        <attr format="dimension" name="headerRowMarginBottom"/>
+
     </declare-styleable><declare-styleable name="BottomAppBar">
     
     <attr name="backgroundTint"/>

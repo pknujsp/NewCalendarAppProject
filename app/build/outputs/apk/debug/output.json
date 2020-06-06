@@ -9,12 +9,17 @@
   "elements": [
     {
       "type": "ONE_OF_MANY",
-      "filters": [],
+      "filters": [
+        {
+          "filterType": "ABI",
+          "value": "x86"
+        }
+      ],
       "properties": [],
       "versionCode": 1,
       "versionName": "1",
       "enabled": true,
-      "outputFile": "app-universal-debug.apk"
+      "outputFile": "app-x86-debug.apk"
     }
   ]
 }

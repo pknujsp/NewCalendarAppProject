@@ -5,8 +5,10 @@ import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.graphics.Typeface;
 
 import android.util.AttributeSet;
@@ -20,6 +22,7 @@ import android.widget.Toast;
 import androidx.core.view.GestureDetectorCompat;
 import androidx.core.view.ViewCompat;
 
+import com.zerodsoft.scheduleweather.CalendarView.Dto.ColumnData;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.Utility.DateTimeInterpreter;
 
@@ -44,40 +47,42 @@ public class WeekHeaderView extends View
     private PointF mCurrentOrigin = new PointF(0f, 0f);
     private PointF mLastOrigin = new PointF(0F, 0F);
     private Paint mHeaderBackgroundPaint;
-    private Paint mHeaderWeekLabelPaint;
-    private Paint mHeaderDayLabelNormalPaint;
-    private Paint mHeaderDayLabelTodayPaint;
+    private Paint mHeaderDateNormalPaint;
+    private Paint mHeaderDateTodayPaint;
+    private Paint mHeaderDayNormalPaint;
+    private Paint mHeaderDayTodayPaint;
+    private Paint mHeaderWeekPaint;
+    private Paint circlePaint = new Paint();
+    private int mHeaderDateHeight;
+    private int mHeaderDayHeight;
+    private int mHeaderScheduleHeight;
 
-    private Paint mHeaderFocusTextPaint;
-    private Paint mHeaderFocusBackgroungPaint;
-    private Paint mHeaderFocusSameDayTextPaint;
-    private Paint mHeaderFocusSameDayBackgroundPaint;
     private float mDistanceX = 0;
 
     // Attributes and their default values.
     private int mHeaderHeight;
     private int mHeaderWidthPerDay;
     private int mFirstDayOfWeek = Calendar.SUNDAY;
-    private int mHeaderRowGap = 30;
-    private int mHeaderPaddingLeft = 0;
-    private int mHeaderPaddingRight = 0;
-    private int mHeaderPaddingTop = 30;
-    private int mHeaderPaddingBottom = 30;
-    private int mHeaderWeekLabelTextSize = 24;
-    private int mHeaderWeekLabelTextColor = Color.BLACK;
-    private int mHeaderDayLabelTextSize = 24;
-    private int mHeaderDayLabelNormalTextColor = Color.BLACK;
-    private int mHeaderDayLabelTodayTextColor = Color.RED;
-    private int mHeaderBackgroundColor = Color.WHITE;
-    private int mHeaderFocusTextColor = Color.YELLOW;
-    private int mHeaderFocusBackgroundColor = Color.BLUE;
-    private int mHeaderFocusSameDayTextColor = Color.BLACK;
-    private int mHeaderFocusSameDayBackgroundColor = Color.GREEN;
-    private int mHeaderWeekLabelHeight;
-    private int mHeaderWeekLabelWidth;
-    private int mHeaderDayLabelWidth;
-    private int mHeaderDayLabelHeight;
+    private int mHeaderAllBackgroundColor;
+    private int mHeaderDateBackgroundColor;
+    private int mHeaderDateTextColor;
+    private int mHeaderDateTextSize;
+    private int mHeaderDayBackgroundColor;
+    private int mHeaderDayTextColor;
+    private int mHeaderDayTextSize;
+    private int mHeaderExtraBackgroundColor;
+    private int mHeaderExtraButtonSize;
+    private int mHeaderExtraTextColor;
+    private int mHeaderExtraTextSize;
+    private int mHeaderRowMarginBottom;
+    private int mHeaderRowMarginTop;
+    private int mHeaderTodayTextColor;
+    private int mHeaderWeekBackgroundColor;
+    private int mHeaderWeekTextColor;
+    private int mHeaderWeekTextSize;
     private int mXScrollingSpeed = 1;
+
+    private ColumnData[] columnPoints = new ColumnData[7];
 
     private boolean mIsFirstDraw = true;
     private boolean mAreHeaderScrolling = false;
@@ -89,14 +94,11 @@ public class WeekHeaderView extends View
 
     private final GestureDetector.SimpleOnGestureListener mGestureListener = new GestureDetector.SimpleOnGestureListener()
     {
-
         @Override
         public boolean onDown(MotionEvent e)
         {
-//            mStickyScroller.forceFinished(true);
             mLastOrigin.x = mCurrentOrigin.x;
             mLastOrigin.y = mCurrentOrigin.y;
-//            Log.d(TAG, "onDown         mCurrentOrigin.x" + mCurrentOrigin.x % mHeaderWidthPerDay);
             return true;
         }
 
@@ -146,30 +148,33 @@ public class WeekHeaderView extends View
     public WeekHeaderView(Context context, AttributeSet attrs, int defStyleAttr)
     {
         super(context, attrs, defStyleAttr);
-
-        // Hold references.
         mContext = context;
 
-        // Get the attribute values (if any).
         TypedArray a = context.getTheme().obtainStyledAttributes(attrs, R.styleable.WeekHeaderView, 0, 0);
         try
         {
             mFirstDayOfWeek = a.getInteger(R.styleable.WeekHeaderView_firstDayOfWeek2, mFirstDayOfWeek);
-            mHeaderRowGap = a.getDimensionPixelSize(R.styleable.WeekHeaderView_headerRowGap, mHeaderRowGap);
-            mHeaderPaddingLeft = a.getDimensionPixelSize(R.styleable.WeekHeaderView_headerPaddingLeft, mHeaderPaddingLeft);
-            mHeaderPaddingRight = a.getDimensionPixelSize(R.styleable.WeekHeaderView_headerPaddingRight, mHeaderPaddingRight);
-            mHeaderPaddingTop = a.getDimensionPixelSize(R.styleable.WeekHeaderView_headerPaddingTop, mHeaderPaddingTop);
-            mHeaderPaddingBottom = a.getDimensionPixelSize(R.styleable.WeekHeaderView_headerPaddingBottom, mHeaderPaddingBottom);
-            mHeaderDayLabelNormalTextColor = a.getColor(R.styleable.WeekHeaderView_headerDayLabelNormalTextColor, mHeaderDayLabelNormalTextColor);
-            mHeaderDayLabelTodayTextColor = a.getColor(R.styleable.WeekHeaderView_headerDayLabelTodayTextColor, mHeaderDayLabelNormalTextColor);
-            mHeaderWeekLabelTextColor = a.getColor(R.styleable.WeekHeaderView_headerWeekLabelTextColor, mHeaderWeekLabelTextColor);
-            mHeaderBackgroundColor = a.getColor(R.styleable.WeekHeaderView_headerBackgroundColor, mHeaderBackgroundColor);
-            mHeaderFocusTextColor = a.getColor(R.styleable.WeekHeaderView_headerFocusTextColor, mHeaderFocusTextColor);
-            mHeaderFocusBackgroundColor = a.getColor(R.styleable.WeekHeaderView_headerFocusBackgroundColor, mHeaderFocusBackgroundColor);
-            mHeaderFocusSameDayTextColor = a.getColor(R.styleable.WeekHeaderView_headerFocusSameDayTextColor, mHeaderFocusSameDayTextColor);
-            mHeaderFocusSameDayBackgroundColor = a.getColor(R.styleable.WeekHeaderView_headerFocusSameDayBackgroundColor, mHeaderFocusSameDayBackgroundColor);
-            mHeaderWeekLabelTextSize = a.getDimensionPixelSize(R.styleable.WeekHeaderView_headerWeekLabelTextSize, mHeaderWeekLabelTextSize);
-            mHeaderDayLabelTextSize = a.getDimensionPixelSize(R.styleable.WeekHeaderView_headerDayLabelTextSize, mHeaderDayLabelTextSize);
+            mHeaderAllBackgroundColor = a.getColor(R.styleable.WeekHeaderView_headerAllBackgroundColor, mHeaderAllBackgroundColor);
+            mHeaderDateBackgroundColor = a.getColor(R.styleable.WeekHeaderView_headerDateBackgroundColor, mHeaderDateBackgroundColor);
+            mHeaderDateTextColor = a.getColor(R.styleable.WeekHeaderView_headerDateTextColor, mHeaderDateTextColor);
+            mHeaderDateTextSize = a.getDimensionPixelSize(R.styleable.WeekHeaderView_headerDateTextSize, mHeaderDateTextSize);
+
+            mHeaderDayBackgroundColor = a.getColor(R.styleable.WeekHeaderView_headerDayBackgroundColor, mHeaderDayBackgroundColor);
+            mHeaderDayTextColor = a.getColor(R.styleable.WeekHeaderView_headerDayTextColor, mHeaderDayTextColor);
+            mHeaderDayTextSize = a.getDimensionPixelSize(R.styleable.WeekHeaderView_headerDayTextSize, mHeaderDayTextSize);
+
+            mHeaderExtraBackgroundColor = a.getColor(R.styleable.WeekHeaderView_headerExtraBackgroundColor, mHeaderExtraBackgroundColor);
+            mHeaderExtraButtonSize = a.getDimensionPixelSize(R.styleable.WeekHeaderView_headerExtraButtonSize, mHeaderExtraButtonSize);
+            mHeaderExtraTextColor = a.getColor(R.styleable.WeekHeaderView_headerExtraTextColor, mHeaderExtraTextColor);
+            mHeaderExtraTextSize = a.getDimensionPixelSize(R.styleable.WeekHeaderView_headerExtraTextSize, mHeaderExtraTextSize);
+
+            mHeaderRowMarginBottom = a.getDimensionPixelOffset(R.styleable.WeekHeaderView_headerRowMarginBottom, mHeaderRowMarginBottom);
+            mHeaderRowMarginTop = a.getDimensionPixelOffset(R.styleable.WeekHeaderView_headerRowMarginTop, mHeaderRowMarginTop);
+
+            mHeaderTodayTextColor = a.getColor(R.styleable.WeekHeaderView_headerTodayTextColor, mHeaderTodayTextColor);
+            mHeaderWeekBackgroundColor = a.getColor(R.styleable.WeekHeaderView_headerWeekBackgroundColor, mHeaderWeekBackgroundColor);
+            mHeaderWeekTextColor = a.getColor(R.styleable.WeekHeaderView_headerWeekTextColor, mHeaderWeekTextColor);
+            mHeaderWeekTextSize = a.getDimensionPixelSize(R.styleable.WeekHeaderView_headerWeekTextSize, mHeaderWeekTextSize);
         } finally
         {
             a.recycle();
@@ -186,6 +191,7 @@ public class WeekHeaderView extends View
         mToday.set(Calendar.MINUTE, 0);
         mToday.set(Calendar.SECOND, 0);
 
+
         mSelectedDay = (Calendar) mToday.clone();
 
         // Scrolling initialization.
@@ -194,57 +200,46 @@ public class WeekHeaderView extends View
 
         //prepare paint
         mHeaderBackgroundPaint = new Paint();
-        mHeaderBackgroundPaint.setColor(mHeaderBackgroundColor);
+        mHeaderBackgroundPaint.setColor(mHeaderAllBackgroundColor);
 
-        mHeaderFocusSameDayBackgroundPaint = new Paint();
-        mHeaderFocusSameDayBackgroundPaint.setColor(mHeaderFocusSameDayBackgroundColor);
-        mHeaderFocusSameDayBackgroundPaint.setAntiAlias(true);
+        mHeaderWeekPaint = new Paint();
+        mHeaderWeekPaint.setColor(mHeaderWeekTextColor);
+        mHeaderWeekPaint.setTextSize(mHeaderWeekTextSize);
 
-        mHeaderFocusBackgroungPaint = new Paint();
-        mHeaderFocusBackgroungPaint.setColor(mHeaderFocusBackgroundColor);
-        mHeaderFocusBackgroungPaint.setStyle(Paint.Style.STROKE);
-        mHeaderFocusBackgroungPaint.setAntiAlias(true);
-
-        mHeaderWeekLabelPaint = new Paint();
-        mHeaderWeekLabelPaint.setColor(mHeaderWeekLabelTextColor);
-        mHeaderWeekLabelPaint.setTextSize(mHeaderWeekLabelTextSize);
         Rect rect = new Rect();
-        mHeaderWeekLabelPaint.getTextBounds("日", 0, "日".length(), rect);
-        mHeaderWeekLabelPaint.setTypeface(Typeface.DEFAULT_BOLD);
-        mHeaderWeekLabelPaint.setTextAlign(Paint.Align.CENTER);
-        mHeaderWeekLabelHeight = rect.height();
-        mHeaderWeekLabelWidth = rect.width();
+        mHeaderDateNormalPaint = new Paint();
+        mHeaderDateNormalPaint.setColor(mHeaderDateTextColor);
+        mHeaderDateNormalPaint.setTextSize(mHeaderDateTextSize);
+        mHeaderDateNormalPaint.setTypeface(Typeface.DEFAULT_BOLD);
+        mHeaderDateNormalPaint.setTextAlign(Paint.Align.CENTER);
+        mHeaderDateNormalPaint.getTextBounds("10", 0, 2, rect);
+        mHeaderDateHeight = rect.height();
 
-        mHeaderDayLabelNormalPaint = new Paint();
-        mHeaderDayLabelNormalPaint.setColor(mHeaderDayLabelNormalTextColor);
-        mHeaderDayLabelNormalPaint.setTextSize(mHeaderDayLabelTextSize);
-        mHeaderDayLabelNormalPaint.getTextBounds("日", 0, "日".length(), rect);
-        mHeaderDayLabelNormalPaint.setTypeface(Typeface.DEFAULT_BOLD);
-        mHeaderDayLabelNormalPaint.setTextAlign(Paint.Align.CENTER);
-        mHeaderDayLabelHeight = rect.height();
-        mHeaderDayLabelWidth = rect.width();
+        mHeaderDateTodayPaint = new Paint();
+        mHeaderDateTodayPaint.setColor(mHeaderTodayTextColor);
+        mHeaderDateTodayPaint.setTextSize(mHeaderDateTextSize);
+        mHeaderDateTodayPaint.setTypeface(Typeface.DEFAULT_BOLD);
+        mHeaderDateTodayPaint.setTextAlign(Paint.Align.CENTER);
 
-        mHeaderDayLabelTodayPaint = new Paint();
-        mHeaderDayLabelTodayPaint.setColor(mHeaderDayLabelTodayTextColor);
-        mHeaderDayLabelTodayPaint.setTextSize(mHeaderDayLabelTextSize);
-        mHeaderDayLabelTodayPaint.setTypeface(Typeface.DEFAULT_BOLD);
-        mHeaderDayLabelTodayPaint.setTextAlign(Paint.Align.CENTER);
+        mHeaderDayNormalPaint = new Paint();
+        mHeaderDayNormalPaint.setColor(mHeaderDayTextColor);
+        mHeaderDayNormalPaint.setTextSize(mHeaderDayTextSize);
+        mHeaderDayNormalPaint.setTypeface(Typeface.DEFAULT_BOLD);
+        mHeaderDayNormalPaint.setTextAlign(Paint.Align.CENTER);
+        mHeaderDayNormalPaint.getTextBounds("일", 0, "일".length(), rect);
+        mHeaderDayHeight = rect.height();
 
-        mHeaderFocusTextPaint = new Paint();
-        mHeaderFocusTextPaint.setColor(mHeaderFocusTextColor);
-        mHeaderFocusTextPaint.setTextSize(mHeaderDayLabelTextSize);
-        mHeaderFocusTextPaint.setTypeface(Typeface.DEFAULT_BOLD);
-        mHeaderFocusTextPaint.setTextAlign(Paint.Align.CENTER);
+        mHeaderDayTodayPaint = new Paint();
+        mHeaderDayTodayPaint.setColor(mHeaderTodayTextColor);
+        mHeaderDayTodayPaint.setTextSize(mHeaderDayTextSize);
+        mHeaderDayTodayPaint.setTypeface(Typeface.DEFAULT_BOLD);
+        mHeaderDayTodayPaint.setTextAlign(Paint.Align.CENTER);
 
-        mHeaderFocusSameDayTextPaint = new Paint();
-        mHeaderFocusSameDayTextPaint.setColor(mHeaderFocusSameDayTextColor);
-        mHeaderFocusSameDayTextPaint.setTextSize(mHeaderDayLabelTextSize);
-        mHeaderFocusSameDayTextPaint.setTypeface(Typeface.DEFAULT_BOLD);
-        mHeaderFocusSameDayTextPaint.setTextAlign(Paint.Align.CENTER);
+        mHeaderHeight = mHeaderDayHeight + mHeaderDateHeight + mHeaderRowMarginTop * 2;
 
-        mHeaderHeight = mHeaderPaddingBottom + mHeaderPaddingTop + mHeaderRowGap + mHeaderWeekLabelHeight + mHeaderDayLabelWidth;
-//        this.setLayoutParams();
-
+        circlePaint.setColor(Color.BLACK);
+        circlePaint.setStrokeWidth(3);
+        circlePaint.setStyle(Paint.Style.STROKE);
     }
 
     @Override
@@ -264,8 +259,7 @@ public class WeekHeaderView extends View
     //Draw week label and day label.
     private void drawHeader(Canvas canvas)
     {
-        mHeaderWidthPerDay = getWidth() - (mHeaderPaddingLeft + mHeaderPaddingRight);
-        mHeaderWidthPerDay = mHeaderWidthPerDay / 7;
+        mHeaderWidthPerDay = getWidth() / 7;
 
         if (mIsFirstDraw)
         {
@@ -288,8 +282,8 @@ public class WeekHeaderView extends View
         float startPixel = startFromPixel;
 
         // Prepare to iterate for each day.
-        Calendar day = (Calendar) mToday.clone();
-        day.add(Calendar.HOUR, 6);
+        Calendar date = (Calendar) mToday.clone();
+        date.add(Calendar.HOUR, 6);
 
         // Iterate through each day.
         Calendar oldFirstVisibleDay = mFirstVisibleDay;
@@ -306,29 +300,33 @@ public class WeekHeaderView extends View
 
         mFirstDayOfWeek = (mFirstDayOfWeek > Calendar.SATURDAY || mFirstDayOfWeek < Calendar.SUNDAY) ? Calendar.SUNDAY : mFirstDayOfWeek;
         int dayOfWeek;
-        // Draw the week labels;
+        // Draw the day labels;
         for (int i = mFirstDayOfWeek; i < mFirstDayOfWeek + 7; i++)
         {
             dayOfWeek = i % 7;
-            String weekLabel = getDateTimeInterpreter().interpretWeek(dayOfWeek == 0 ? 7 : dayOfWeek);
+            String weekLabel = getDateTimeInterpreter().interpretDay(dayOfWeek == 0 ? 7 : dayOfWeek);
             if (weekLabel == null)
             {
                 throw new IllegalStateException("A DateTimeInterpreter must not return null date");
             }
-            canvas.drawText(weekLabel, mHeaderPaddingLeft + mHeaderWidthPerDay / 2 + (mHeaderWidthPerDay) * (i - mFirstDayOfWeek), mHeaderWeekLabelHeight / 2 + mHeaderPaddingTop, mHeaderWeekLabelPaint);
+            canvas.drawText(weekLabel, mHeaderWidthPerDay / 2 + (mHeaderWidthPerDay) * (i - mFirstDayOfWeek), mHeaderDayHeight + mHeaderRowMarginTop, mHeaderDateNormalPaint);
 
         }
-        for (int dayNumber = leftDaysWithGaps + 1; dayNumber <= leftDaysWithGaps + 7 + 1; dayNumber++)
-        {
-            // Check if the day is today.
-            day = (Calendar) mToday.clone();
-            day.add(Calendar.DATE, dayNumber - 1);
-            boolean isToday = isSameDay(day, mToday);
-            boolean selectedDay = isSameDay(day, mSelectedDay);
-            // Draw the day labels.
-            String dayLabel = getDateTimeInterpreter().interpretDate(day);
 
-            if (dayLabel == null)
+
+        for (int dateNumber = leftDaysWithGaps + 1, i = 0; dateNumber <= leftDaysWithGaps + 7 + 1; dateNumber++)
+        {
+            // Check if the date is today.
+            date = (Calendar) mToday.clone();
+            date.add(Calendar.DATE, dateNumber - 1);
+            boolean isToday = isSameDay(date, mToday);
+            boolean selectedDay = isSameDay(date, mSelectedDay);
+            // Draw the day labels.
+            String dateLabel = getDateTimeInterpreter().interpretDate(date);
+            PointF columnPoint = new PointF((startPixel + (mHeaderWidthPerDay) * (dateNumber - leftDaysWithGaps - 1)), (mHeaderDayHeight + mHeaderRowMarginTop * 3 + mHeaderDateHeight));
+            columnPoints[i++] = new ColumnData().setColumnPoint(columnPoint).setDate(date);
+
+            if (dateLabel == null)
             {
                 throw new IllegalStateException("A DateTimeInterpreter must not return null date");
             }
@@ -336,26 +334,32 @@ public class WeekHeaderView extends View
             {
                 if (isToday)
                 {
-                    canvas.drawCircle(startPixel + mHeaderPaddingLeft + mHeaderWidthPerDay / 2 + (mHeaderWidthPerDay) * (dayNumber - leftDaysWithGaps - 1),
-                            (mHeaderDayLabelHeight / 2 + mHeaderRowGap + mHeaderWeekLabelHeight),
-                            mHeaderDayLabelWidth / 2 + (mHeaderRowGap < mHeaderPaddingBottom ? mHeaderRowGap : mHeaderPaddingBottom), mHeaderFocusSameDayBackgroundPaint);
-                    canvas.drawText(dayLabel, startPixel + mHeaderPaddingLeft + mHeaderWidthPerDay / 2 + (mHeaderWidthPerDay) * (dayNumber - leftDaysWithGaps - 1),
-                            (mHeaderDayLabelHeight + mHeaderRowGap + mHeaderWeekLabelHeight), mHeaderFocusSameDayTextPaint);
+                    canvas.drawText(dateLabel, startPixel + mHeaderWidthPerDay / 2 + (mHeaderWidthPerDay) * (dateNumber - leftDaysWithGaps - 1),
+                            (mHeaderDayHeight + mHeaderRowMarginTop * 2 + mHeaderDateHeight), isToday ? mHeaderDayTodayPaint : mHeaderDayNormalPaint);
+                    canvas.drawCircle((startPixel + mHeaderWidthPerDay / 2 + (mHeaderWidthPerDay) * (dateNumber - leftDaysWithGaps - 1)), (mHeaderRowMarginTop + mHeaderDayHeight + mHeaderRowMarginBottom + mHeaderDateHeight / 2), 32, circlePaint);
                 } else
                 {
-                    canvas.drawCircle(startPixel + mHeaderPaddingLeft + mHeaderWidthPerDay / 2 + (mHeaderWidthPerDay) * (dayNumber - leftDaysWithGaps - 1),
-                            (mHeaderDayLabelHeight / 2 + mHeaderRowGap + mHeaderWeekLabelHeight),
-                            mHeaderDayLabelWidth / 2 + (mHeaderRowGap < mHeaderPaddingBottom ? mHeaderRowGap : mHeaderPaddingBottom), mHeaderFocusBackgroungPaint);
-                    canvas.drawText(dayLabel, startPixel + mHeaderPaddingLeft + mHeaderWidthPerDay / 2 + (mHeaderWidthPerDay) * (dayNumber - leftDaysWithGaps - 1),
-                            (mHeaderDayLabelHeight + mHeaderRowGap + mHeaderWeekLabelHeight), mHeaderFocusTextPaint);
+                    canvas.drawText(dateLabel, startPixel + mHeaderWidthPerDay / 2 + (mHeaderWidthPerDay) * (dateNumber - leftDaysWithGaps - 1),
+                            (mHeaderDayHeight + mHeaderRowMarginTop * 2 + mHeaderDateHeight), mHeaderDayNormalPaint);
+                    canvas.drawCircle((startPixel + mHeaderWidthPerDay / 2 + (mHeaderWidthPerDay) * (dateNumber - leftDaysWithGaps - 1)), (mHeaderRowMarginTop + mHeaderDayHeight + mHeaderRowMarginBottom + mHeaderDateHeight / 2), 32, circlePaint);
                 }
             } else
             {
-                canvas.drawText(dayLabel, startPixel + mHeaderPaddingLeft + mHeaderWidthPerDay / 2 + (mHeaderWidthPerDay) * (dayNumber - leftDaysWithGaps - 1),
-                        (mHeaderDayLabelHeight + mHeaderRowGap + mHeaderWeekLabelHeight), isToday ? mHeaderDayLabelTodayPaint : mHeaderDayLabelNormalPaint);
+                canvas.drawText(dateLabel, startPixel + mHeaderWidthPerDay / 2 + (mHeaderWidthPerDay) * (dateNumber - leftDaysWithGaps - 1),
+                        (mHeaderDayHeight + mHeaderRowMarginTop * 2 + mHeaderDateHeight), isToday ? mHeaderDayTodayPaint : mHeaderDayNormalPaint);
             }
         }
     }
+
+    private void drawSchedules(Canvas canvas)
+    {
+        
+    }
+
+    private void drawScheduleRect(Canvas canvas, float x, float y, int length)
+    {
+    }
+
 
     /**
      * Get the time and date where the user clicked on.
@@ -416,7 +420,7 @@ public class WeekHeaderView extends View
                 }
 
                 @Override
-                public String interpretWeek(int dayofweek)
+                public String interpretDay(int dayofweek)
                 {
                     if (dayofweek > 7 || dayofweek < 1)
                     {
@@ -481,201 +485,6 @@ public class WeekHeaderView extends View
     //
     /////////////////////////////////////////////////////////////////
 
-    public int getHeaderRowGap()
-    {
-        return mHeaderRowGap;
-    }
-
-    public void setHeaderRowGap(int mHeaderRowGap)
-    {
-        this.mHeaderRowGap = mHeaderRowGap;
-        invalidate();
-    }
-
-    public int getHeaderPaddingLeft()
-    {
-        return mHeaderPaddingLeft;
-    }
-
-    public void setHeaderPaddingLeft(int mHeaderPaddingLeft)
-    {
-        this.mHeaderPaddingLeft = mHeaderPaddingLeft;
-        invalidate();
-    }
-
-    public int getHeaderPaddingRight()
-    {
-        return mHeaderPaddingRight;
-    }
-
-    public void setHeaderPaddingRight(int mHeaderPaddingRight)
-    {
-        this.mHeaderPaddingRight = mHeaderPaddingRight;
-        invalidate();
-    }
-
-    public int getHeaderPaddingTop()
-    {
-        return mHeaderPaddingTop;
-    }
-
-    public void setHeaderPaddingTop(int mHeaderPaddingTop)
-    {
-        this.mHeaderPaddingTop = mHeaderPaddingTop;
-    }
-
-    public int getHeaderPaddingBottom()
-    {
-        return mHeaderPaddingBottom;
-    }
-
-    public void setHeaderPaddingBottom(int mHeaderPaddingBottom)
-    {
-        this.mHeaderPaddingBottom = mHeaderPaddingBottom;
-        invalidate();
-    }
-
-    public int getHeaderWeekLabelTextSize()
-    {
-        return mHeaderWeekLabelTextSize;
-    }
-
-    public void setHeaderWeekLabelTextSize(int mHeaderWeekLabelTextSize)
-    {
-        this.mHeaderWeekLabelTextSize = mHeaderWeekLabelTextSize;
-        invalidate();
-    }
-
-    public int getHeaderWeekLabelTextColor()
-    {
-        return mHeaderWeekLabelTextColor;
-    }
-
-    public void setHeaderWeekLabelTextColor(int mHeaderWeekLabelTextColor)
-    {
-        this.mHeaderWeekLabelTextColor = mHeaderWeekLabelTextColor;
-        invalidate();
-    }
-
-    public int getHeaderDayLabelTextColor()
-    {
-        return mHeaderDayLabelNormalTextColor;
-    }
-
-    public void setHeaderDayLabelTextColor(int mHeaderDayLabelTextColor)
-    {
-        this.mHeaderDayLabelNormalTextColor = mHeaderDayLabelTextColor;
-        invalidate();
-    }
-
-    public int getHeaderBackgroundColor()
-    {
-        return mHeaderBackgroundColor;
-    }
-
-    public void setHeaderBackgroundColor(int mHeaderBackgroundColor)
-    {
-        this.mHeaderBackgroundColor = mHeaderBackgroundColor;
-    }
-
-    public int getHeaderDayLabelTextSize()
-    {
-        return mHeaderDayLabelTextSize;
-    }
-
-    public void setHeaderDayLabelTextSize(int mHeaderDayLabelTextSize)
-    {
-        this.mHeaderDayLabelTextSize = mHeaderDayLabelTextSize;
-        invalidate();
-    }
-
-    public int getFocusTextColor()
-    {
-        return mHeaderFocusTextColor;
-    }
-
-    public void setFocusTextColor(int mFocusTextColor)
-    {
-        this.mHeaderFocusTextColor = mFocusTextColor;
-        invalidate();
-    }
-
-    public int getFocusBackgroundColor()
-    {
-        return mHeaderFocusBackgroundColor;
-    }
-
-    public void setFocusBackgroundColor(int mFocusBackgroundColor)
-    {
-        this.mHeaderFocusBackgroundColor = mFocusBackgroundColor;
-        invalidate();
-    }
-
-    public int getFocusSameDayTextColor()
-    {
-        return mHeaderFocusSameDayTextColor;
-    }
-
-    public void setFocusSameDayTextColor(int mFocusSameDayTextColor)
-    {
-        this.mHeaderFocusSameDayTextColor = mFocusSameDayTextColor;
-        invalidate();
-    }
-
-    public int getFocusSameDayBackgroundColor()
-    {
-        return mHeaderFocusSameDayBackgroundColor;
-    }
-
-    public void setFocusSameDayBackgroundColor(int mFocusSameDayBackgroundColor)
-    {
-        this.mHeaderFocusSameDayBackgroundColor = mFocusSameDayBackgroundColor;
-        invalidate();
-    }
-
-    public int getHeaderWeekLabelHeight()
-    {
-        return mHeaderWeekLabelHeight;
-    }
-
-    public void setHeaderWeekLabelHeight(int mHeaderWeekLabelHeight)
-    {
-        this.mHeaderWeekLabelHeight = mHeaderWeekLabelHeight;
-        invalidate();
-    }
-
-    public int getHeaderWeekLabelWidth()
-    {
-        return mHeaderWeekLabelWidth;
-    }
-
-    public void setHeaderWeekLabelWidth(int mHeaderWeekLabelWidth)
-    {
-        this.mHeaderWeekLabelWidth = mHeaderWeekLabelWidth;
-        invalidate();
-    }
-
-    public int getHeaderDayLabelWidth()
-    {
-        return mHeaderDayLabelWidth;
-    }
-
-    public void setHeaderDayLabelWidth(int mHeaderDayLabelWidth)
-    {
-        this.mHeaderDayLabelWidth = mHeaderDayLabelWidth;
-        invalidate();
-    }
-
-    public int getHeaderDayLabelHeight()
-    {
-        return mHeaderDayLabelHeight;
-    }
-
-    public void setHeaderDayLabelHeight(int mHeaderDayLabelHeight)
-    {
-        this.mHeaderDayLabelHeight = mHeaderDayLabelHeight;
-        invalidate();
-    }
 
     public ScrollListener getScrollListener()
     {
@@ -705,11 +514,6 @@ public class WeekHeaderView extends View
     }
 
 
-    /**
-     * 这里的滑动的策略是,当selected在上一周,或者下一周时平顺移动,否则直接跳,不作滑动
-     *
-     * @param selectedDay
-     */
     public void setSelectedDay(Calendar selectedDay)
     {
         mStickyScroller.forceFinished(true);

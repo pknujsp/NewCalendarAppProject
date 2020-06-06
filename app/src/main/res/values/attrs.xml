@@ -46,21 +46,27 @@
             <enum name="friday" value="6" />
             <enum name="saturday" value="7" />
         </attr>
-        <attr name="headerWeekLabelTextSize" format="dimension" />
-        <attr name="headerDayLabelTextSize" format="dimension" />
-        <attr name="headerWeekLabelTextColor" format="color" />
-        <attr name="headerDayLabelNormalTextColor" format="color" />
-        <attr name="headerDayLabelTodayTextColor" format="color" />
-        <attr name="headerBackgroundColor" format="color"/>
-        <attr name="headerColumnGap" format="dimension" />
-        <attr name="headerRowGap" format="dimension" />
-        <attr name="headerPaddingLeft" format="dimension" />
-        <attr name="headerPaddingRight" format="dimension" />
-        <attr name="headerPaddingTop" format="dimension" />
-        <attr name="headerPaddingBottom" format="dimension" />
-        <attr name="headerFocusTextColor" format="color"/>
-        <attr name="headerFocusBackgroundColor" format="color"/>
-        <attr name="headerFocusSameDayBackgroundColor" format="color"/>
-        <attr name="headerFocusSameDayTextColor" format="color"/>
+        <attr name="headerAllBackgroundColor" format="color" />
+        <attr name="headerWeekTextColor" format="color" />
+        <attr name="headerWeekBackgroundColor" format="color" />
+        <attr name="headerWeekTextSize" format="dimension" />
+        <attr name="headerDayTextColor" format="color" />
+        <attr name="headerDayBackgroundColor" format="color" />
+        <attr name="headerDayTextSize" format="dimension" />
+        <attr name="headerDateTextColor" format="color" />
+        <attr name="headerDateBackgroundColor" format="color" />
+        <attr name="headerDateTextSize" format="dimension" />
+        <attr name="headerScheduleTextColor" format="color" />
+        <attr name="headerScheduleTextSize" format="dimension" />
+        <attr name="headerScheduleBackgroundColor" format="color" />
+        <attr name="headerExtraButtonSize" format="dimension" />
+        <attr name="headerExtraTextSize" format="dimension" />
+        <attr name="headerExtraTextColor" format="color" />
+        <attr name="headerExtraBackgroundColor" format="color" />
+        <attr name="headerTodayTextColor" format="color" />
+
+        <attr name="headerRowMarginTop" format="dimension" />
+        <attr name="headerRowMarginBottom" format="dimension" />
+
     </declare-styleable>
 </resources>

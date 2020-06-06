@@ -6,5 +6,5 @@ public interface DateTimeInterpreter
 {
     String interpretDate(Calendar date);
     String interpretTime(int hour);
-    String interpretWeek(int date);
+    String interpretDay(int date);
 }

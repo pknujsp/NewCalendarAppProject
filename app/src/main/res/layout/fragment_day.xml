@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".DayFragment">
 
     <LinearLayout
@@ -32,25 +32,33 @@
 
         <com.zerodsoft.scheduleweather.CalendarView.WeekHeaderView
             android:id="@+id/weekheaderview"
-            app:firstDayOfWeek2="sunday"
-            app:headerBackgroundColor="#455964"
-            app:headerDayLabelNormalTextColor="#ffffff"
-            app:headerDayLabelTextSize="20sp"
-            app:headerDayLabelTodayTextColor="@android:color/holo_red_dark"
-            app:headerFocusBackgroundColor="#ffffff"
-            app:headerFocusSameDayBackgroundColor="#ffffff"
-            app:headerFocusSameDayTextColor="#000000"
-            app:headerFocusTextColor="#000000"
-            app:headerPaddingTop="20dp"
-            app:headerRowGap="40dp"
-            app:headerWeekLabelTextColor="#ffffff"
-            app:headerWeekLabelTextSize="16sp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/tv_date" />
+            app:firstDayOfWeek2="sunday"
+            app:headerAllBackgroundColor="@android:color/white"
+            app:headerDateBackgroundColor="@android:color/transparent"
+            app:headerDateTextColor="@android:color/black"
+            app:headerDateTextSize="13sp"
+            app:headerDayBackgroundColor="@android:color/transparent"
+            app:headerDayTextColor="@android:color/black"
+            app:headerDayTextSize="13sp"
+            app:headerExtraBackgroundColor="@android:color/transparent"
+            app:headerExtraButtonSize="15dp"
+            app:headerExtraTextColor="@android:color/black"
+            app:headerExtraTextSize="13sp"
+            app:headerRowMarginBottom="8dp"
+            app:headerRowMarginTop="8dp"
+            app:headerTodayTextColor="@android:color/holo_blue_dark"
+            app:headerWeekBackgroundColor="@android:color/transparent"
+            app:headerWeekTextColor="@android:color/black"
+            app:headerWeekTextSize="13sp" />
 
         <com.zerodsoft.scheduleweather.CalendarView.WeekDayView
             android:id="@+id/weekdayview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@+id/weekheaderview"
+            android:visibility="visible"
             app:columnGap="8dp"
             app:dayBackgroundColor="#ffffffff"
             app:eventTextColor="@android:color/white"
@@ -63,11 +71,7 @@
             app:noOfVisibleDays="1"
             app:textSize="12sp"
             app:todayBackgroundColor="#1848adff"
-            app:todayHeaderTextColor="@color/accent"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_below="@+id/weekheaderview"
-            android:visibility="visible" />
+            app:todayHeaderTextColor="@color/accent" />
 
     </LinearLayout>
 
