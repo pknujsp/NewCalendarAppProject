@@ -1,6 +1,7 @@
 package com.zerodsoft.scheduleweather.CalendarView;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -53,10 +54,9 @@ public class WeekHeaderView extends View
     private Paint mHeaderDayNormalPaint;
     private Paint mHeaderDayTodayPaint;
     private Paint mHeaderWeekPaint;
-    private Paint circlePaint = new Paint();
+    private Paint circlePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private int mHeaderDateHeight;
     private int mHeaderDayHeight;
-    private int mHeaderScheduleHeight;
 
     private float mDistanceX = 0;
 
@@ -82,9 +82,6 @@ public class WeekHeaderView extends View
     private int mHeaderWeekTextColor;
     private int mHeaderWeekTextSize;
     private int mXScrollingSpeed = 1;
-    private int mHeaderWeekWidth = 0;
-
-    private ColumnData[] columnPoints = new ColumnData[7];
 
     private boolean mIsFirstDraw = true;
     private boolean mAreHeaderScrolling = false;
@@ -92,6 +89,18 @@ public class WeekHeaderView extends View
     //    Interface
     private ScrollListener mScrollListener;
     private DateSelectedChangeListener mDateSelectedChangeListener;
+    private OnUpdateWeekDatesListener onUpdateWeekDatesListener;
+
+    public interface OnUpdateWeekDatesListener
+    {
+        void updateWeekDates(String week);
+    }
+
+    public WeekHeaderView setOnUpdateWeekDatesListener(OnUpdateWeekDatesListener onUpdateWeekDatesListener)
+    {
+        this.onUpdateWeekDatesListener = onUpdateWeekDatesListener;
+        return this;
+    }
 
     private final GestureDetector.SimpleOnGestureListener mGestureListener = new GestureDetector.SimpleOnGestureListener()
     {
@@ -109,7 +118,7 @@ public class WeekHeaderView extends View
         {
             // 스크롤 시 onDraw()를 호출
             mAreHeaderScrolling = true;
-            mDistanceX = distanceX * mXScrollingSpeed;
+            mDistanceX = distanceX;
             ViewCompat.postInvalidateOnAnimation(WeekHeaderView.this);
             return true;
         }
@@ -120,7 +129,10 @@ public class WeekHeaderView extends View
             Calendar newSelectedDay = getDateFromPoint(e.getX(), e.getY());
             SimpleDateFormat format = new SimpleDateFormat("yyyy MM dd", Locale.getDefault());
             if (null != newSelectedDay)
-                Toast.makeText(mContext, "time =====" + format.format(newSelectedDay.getTime()), Toast.LENGTH_LONG).show();
+            {
+                // Toast.makeText(mContext, "time =====" + format.format(newSelectedDay.getTime()), Toast.LENGTH_SHORT).show();
+                onUpdateWeekDatesListener.updateWeekDates(format.format(newSelectedDay.getTime()));
+            }
             if (null != newSelectedDay && mDateSelectedChangeListener != null)
             {
                 mDateSelectedChangeListener.onDateSelectedChange(mSelectedDay, newSelectedDay);
@@ -232,9 +244,9 @@ public class WeekHeaderView extends View
         mHeaderDayNormalPaint.getTextBounds("일", 0, "일".length(), rect);
         mHeaderDayHeight = rect.height();
 
-        mHeaderHeight = mHeaderDayHeight + mHeaderDateHeight + mHeaderRowMarginTop * 2;
+        mHeaderHeight = mHeaderDayHeight + mHeaderDateHeight + mHeaderRowMarginTop * 3;
 
-        circlePaint.setColor(Color.BLACK);
+        circlePaint.setColor(Color.GRAY);
         circlePaint.setStrokeWidth(3);
         circlePaint.setStyle(Paint.Style.STROKE);
     }
@@ -257,9 +269,8 @@ public class WeekHeaderView extends View
     private void drawHeader(Canvas canvas)
     {
         // 열 사이의 간격 (주차, 일, 월~토)
-        mHeaderWidthPerDay = getWidth() / 8;
+        mHeaderWidthPerDay = getWidth() / 7;
         // 주차를 표시할 공간을 확보
-        mHeaderWeekWidth = mHeaderWidthPerDay;
 
         if (mIsFirstDraw)
         {
@@ -275,7 +286,7 @@ public class WeekHeaderView extends View
                 // 위의 경우 difference가 1이다
                 int difference = (7 + (mToday.get(Calendar.DAY_OF_WEEK) - mFirstDayOfWeek)) % 7;
                 // 오늘 날짜의 위치를 파악
-                mCurrentOrigin.x += (mHeaderWidthPerDay) * difference + mHeaderWeekWidth;
+                mCurrentOrigin.x += (mHeaderWidthPerDay) * difference;
             }
         }
         if (mAreHeaderScrolling)
@@ -284,7 +295,7 @@ public class WeekHeaderView extends View
             mCurrentOrigin.x -= mDistanceX;
         }
         // 일요일(맨앞)과 오늘의 일수 차이 계산
-        int leftDaysWithGaps = (int) -(Math.ceil((mCurrentOrigin.x - mHeaderWeekWidth) / mHeaderWidthPerDay));
+        final int leftDaysWithGaps = (int) -(Math.ceil((mCurrentOrigin.x) / mHeaderWidthPerDay));
         // 시작 픽셀(일요일 부터 시작)
         final float startPixel = mCurrentOrigin.x + mHeaderWidthPerDay * leftDaysWithGaps;
 
@@ -318,24 +329,26 @@ public class WeekHeaderView extends View
             {
                 throw new IllegalStateException("A DateTimeInterpreter must not return null date");
             }
-            canvas.drawText(weekLabel, mHeaderWidthPerDay / 2 + (mHeaderWidthPerDay) * (i - mFirstDayOfWeek) + mHeaderWeekWidth, mHeaderDayHeight + mHeaderRowMarginTop, mHeaderDateNormalPaint);
-
+            canvas.drawText(weekLabel, mHeaderWidthPerDay / 2 + (mHeaderWidthPerDay) * (i - mFirstDayOfWeek), mHeaderDayHeight + mHeaderRowMarginTop, mHeaderDateNormalPaint);
         }
 
+
         // 날짜를 그림
-        for (int index = 0, dateNum = leftDaysWithGaps; index <= 6; index++)
+        for (int dateNum = leftDaysWithGaps, amount = -7; amount <= 13; amount++)
         {
             // 날짜가 오늘인지 확인
             date = (Calendar) mToday.clone();
             // 일요일로 이동
             date.add(Calendar.DATE, dateNum);
+            // 3주간의 달력을 보여줌
+            date.add(Calendar.DATE, amount);
 
             boolean isToday = isSameDay(date, mToday);
             boolean selectedDay = isSameDay(date, mSelectedDay);
             // 표시할 날짜를 가져옴
             String dateLabel = getDateTimeInterpreter().interpretDate(date);
 
-            float x = startPixel + mHeaderWeekWidth + mHeaderWidthPerDay / 2 + mHeaderWidthPerDay * index;
+            float x = startPixel + mHeaderWidthPerDay / 2 + mHeaderWidthPerDay * amount;
             float y = mHeaderDayHeight + mHeaderRowMarginTop * 2 + mHeaderDateHeight;
 
             if (dateLabel == null)
@@ -356,8 +369,6 @@ public class WeekHeaderView extends View
             {
                 canvas.drawText(dateLabel, x, y, isToday ? mHeaderDateTodayPaint : mHeaderDateNormalPaint);
             }
-
-            dateNum++;
         }
     }
 
@@ -373,7 +384,7 @@ public class WeekHeaderView extends View
 
     private Calendar getDateFromPoint(float x, float y)
     {
-        int leftDaysWithGaps = (int) -(Math.ceil((mCurrentOrigin.x - mHeaderWeekWidth) / (mHeaderWidthPerDay)));
+        int leftDaysWithGaps = (int) -(Math.ceil((mCurrentOrigin.x) / (mHeaderWidthPerDay)));
         float startPixel = mCurrentOrigin.x + (mHeaderWidthPerDay) * leftDaysWithGaps;
 
         for (int dayNumber = leftDaysWithGaps + 1;
@@ -410,7 +421,7 @@ public class WeekHeaderView extends View
                 @Override
                 public String interpretDate(Calendar date)
                 {
-                    SimpleDateFormat format = new SimpleDateFormat("dd", Locale.getDefault());
+                    SimpleDateFormat format = new SimpleDateFormat("d", Locale.getDefault());
                     String day = format.format(date.getTime());
                     return day;
                 }
@@ -456,15 +467,16 @@ public class WeekHeaderView extends View
             float dx = mLastOrigin.x - mCurrentOrigin.x;
             if (Math.abs(dx) < 1 * mHeaderWidthPerDay)
             {
+                // 스크롤 길이 부족으로 주 이동하지 않음
                 mCurrentOrigin.x = mLastOrigin.x;
                 mCurrentOrigin.y = mLastOrigin.y;
             } else
             {
                 // 다른 주로 넘어감
                 // dx<0인 경우 : 이전 주, dx>0인 경우 : 다음 주
-                int scrollDx = (int) (dx > 0 ? (-mHeaderWidthPerDay * 7 + dx) : (mHeaderWidthPerDay * 7 + dx));
+                int scrollDx = (int) (dx > 0 ? (-mHeaderWidthPerDay * 7) : (mHeaderWidthPerDay * 7));
                 mSelectedDay.add(Calendar.DATE, dx > 0 ? 7 : -7);
-                mStickyScroller.startScroll((int) mCurrentOrigin.x, 0, scrollDx + mHeaderWeekWidth, 0);
+                mStickyScroller.startScroll((int) mLastOrigin.x, 0, scrollDx, 0);
             }
             ViewCompat.postInvalidateOnAnimation(WeekHeaderView.this);
             return mGestureDetector.onTouchEvent(event);
@@ -597,6 +609,7 @@ public class WeekHeaderView extends View
         lastWeek.add(Calendar.DATE, -7);
         setSelectedDay(lastWeek);
     }
+
 
     ////////////////////////////////////////////////////////////////
     //

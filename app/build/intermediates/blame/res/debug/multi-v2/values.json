@@ -51,20 +51,20 @@
                 {
                     "source": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\src\\main\\res\\values\\attrs.xml",
                     "from": {
-                        "startLines": "38",
+                        "startLines": "72",
                         "startColumns": "4",
-                        "startOffsets": "1889",
-                        "endLines": "70",
+                        "startOffsets": "3646",
+                        "endLines": "76",
                         "endColumns": "24",
-                        "endOffsets": "3638"
+                        "endOffsets": "3883"
                     },
                     "to": {
                         "startLines": "6926",
                         "startColumns": "4",
                         "startOffsets": "368802",
-                        "endLines": "6958",
+                        "endLines": "6930",
                         "endColumns": "24",
-                        "endOffsets": "370492"
+                        "endOffsets": "369032"
                     }
                 },
                 {
