@@ -3,11 +3,13 @@ package com.zerodsoft.scheduleweather;
 import android.graphics.RectF;
 import android.os.Bundle;
 
+import androidx.appcompat.widget.LinearLayoutCompat;
 import androidx.fragment.app.Fragment;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -29,6 +31,7 @@ public class DayFragment extends Fragment
     private WeekDayView mWeekView;
     private WeekHeaderView mWeekHeaderView;
     private WeekDatesView mWeekDatesView;
+    private LinearLayout headerLayout;
 
     public DayFragment()
     {
@@ -52,10 +55,12 @@ public class DayFragment extends Fragment
 
     private void assignViews(View view)
     {
+        headerLayout = (LinearLayout) view.findViewById(R.id.headerview_layout);
         mWeekView = (WeekDayView) view.findViewById(R.id.weekdayview);
         mWeekHeaderView = (WeekHeaderView) view.findViewById(R.id.weekheaderview);
+        headerLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, mWeekHeaderView.getMHeaderHeight()));
+        headerLayout.invalidate();
         mWeekDatesView = (WeekDatesView) view.findViewById(R.id.weekdatesview);
-
         mWeekHeaderView.setOnUpdateWeekDatesListener(mWeekDatesView);
     }
 

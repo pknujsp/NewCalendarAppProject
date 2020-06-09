@@ -25,6 +25,7 @@ import androidx.core.view.GestureDetectorCompat;
 import androidx.core.view.ViewCompat;
 
 import com.zerodsoft.scheduleweather.CalendarView.Dto.ColumnData;
+import com.zerodsoft.scheduleweather.DayFragment;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.Utility.DateTimeInterpreter;
 
@@ -96,6 +97,7 @@ public class WeekHeaderView extends View
         void updateWeekDates(String week);
     }
 
+
     public WeekHeaderView setOnUpdateWeekDatesListener(OnUpdateWeekDatesListener onUpdateWeekDatesListener)
     {
         this.onUpdateWeekDatesListener = onUpdateWeekDatesListener;
@@ -131,7 +133,6 @@ public class WeekHeaderView extends View
             if (null != newSelectedDay)
             {
                 // Toast.makeText(mContext, "time =====" + format.format(newSelectedDay.getTime()), Toast.LENGTH_SHORT).show();
-                onUpdateWeekDatesListener.updateWeekDates(format.format(newSelectedDay.getTime()));
             }
             if (null != newSelectedDay && mDateSelectedChangeListener != null)
             {
@@ -251,10 +252,14 @@ public class WeekHeaderView extends View
         circlePaint.setStyle(Paint.Style.STROKE);
     }
 
+    public int getMHeaderHeight()
+    {
+        return mHeaderHeight;
+    }
+
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
     {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         setMeasuredDimension(widthMeasureSpec, mHeaderHeight);
     }
 
@@ -311,9 +316,9 @@ public class WeekHeaderView extends View
         mLastVisibleDay = (Calendar) mFirstVisibleDay.clone();
         // 토요일로 이동
         mLastVisibleDay.add(Calendar.DATE, 6);
-        if (!mFirstVisibleDay.equals(oldFirstVisibleDay) && mScrollListener != null)
+        if (!mFirstVisibleDay.equals(oldFirstVisibleDay) && onUpdateWeekDatesListener != null)
         {
-            mScrollListener.onFirstVisibleDayChanged(mFirstVisibleDay, oldFirstVisibleDay);
+            onUpdateWeekDatesListener.updateWeekDates(Integer.toString(mFirstVisibleDay.get(Calendar.WEEK_OF_YEAR)) + "주");
         }
         // 헤더의 배경을 그림
         canvas.drawRect(0, 0, getWidth(), mHeaderHeight, mHeaderBackgroundPaint);
@@ -668,5 +673,6 @@ public class WeekHeaderView extends View
     {
         return dayOne.get(Calendar.YEAR) == dayTwo.get(Calendar.YEAR) && dayOne.get(Calendar.DAY_OF_YEAR) == dayTwo.get(Calendar.DAY_OF_YEAR);
     }
+
 
 }
