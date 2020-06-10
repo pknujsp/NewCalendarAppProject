@@ -75,4 +75,12 @@
         <attr name="WeekTextSize" format="dimension" />
         <attr name="WeekBackgroundColor" format="color" />
     </declare-styleable>
+
+    <declare-styleable name="WeekDayView">
+        <attr name="WeekDayHourTextColor" format="color" />
+        <attr name="WeekDayHourTextSize" format="dimension" />
+        <attr name="WeekDayViewBackgroundColor" format="color" />
+        <attr name="WeekDayViewLineThickness" format="dimension" />
+        <attr name="WeekDayViewLineColor" format="color" />
+    </declare-styleable>
 </resources>

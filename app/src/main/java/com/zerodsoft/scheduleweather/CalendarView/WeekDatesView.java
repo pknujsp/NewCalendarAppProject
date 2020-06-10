@@ -27,6 +27,8 @@ public class WeekDatesView extends View implements WeekHeaderView.OnUpdateWeekDa
     private int textBoxHeight;
     private String week = "12주";
     private Context mContext;
+    private float x;
+    private float y;
 
 
     public WeekDatesView(Context context)
@@ -84,6 +86,7 @@ public class WeekDatesView extends View implements WeekHeaderView.OnUpdateWeekDa
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
     {
         setMeasuredDimension(widthMeasureSpec / 8, heightMeasureSpec);
+
     }
 
     @Override
@@ -97,12 +100,10 @@ public class WeekDatesView extends View implements WeekHeaderView.OnUpdateWeekDa
     {
         if (week != null)
         {
-            float x = getWidth() / 2;
-            float y = getHeight() / 2;
+            x = getWidth() / 2;
+            y = getHeight() / 2;
             canvas.drawRect(0, 0, getWidth(), getHeight(), weekBackgroundPaint);
-            //    canvas.drawRect(x - textViewWidth / 2, y + textViewHeight / 2, x + textViewWidth / 2, y - textViewHeight / 2, weekTextBackgroundPaint);
-            //   canvas.drawRect(weekTextBoxRect, weekTextBackgroundPaint);
-            canvas.drawRect(x - textBoxWidth / 2 - 1, y + textBoxHeight / 2 - 1, x + textBoxWidth / 2 + 1, y - textBoxHeight / 2 + 1, weekTextBoxRectPaint);
+            canvas.drawRect(x - textBoxWidth / 2 - 10, y - textBoxHeight / 2 - 10, x + textBoxWidth / 2 + 10, y + textBoxHeight / 2 + 10, weekTextBoxRectPaint);
             canvas.drawText(week, x, y + weekTextBoxRect.height() / 2, weekTextBoxPaint);
         }
     }

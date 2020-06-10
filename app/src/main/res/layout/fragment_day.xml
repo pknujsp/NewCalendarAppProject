@@ -53,22 +53,12 @@
         <com.zerodsoft.scheduleweather.CalendarView.WeekDayView
             android:id="@+id/weekdayview"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_below="@+id/weekheaderview"
-            android:visibility="visible"
-            app:columnGap="8dp"
-            app:dayBackgroundColor="#ffffffff"
-            app:eventTextColor="@android:color/white"
-            app:headerColumnBackground="#ffffffff"
-            app:headerColumnPadding="8dp"
-            app:headerColumnTextColor="@color/toolbar_text"
-            app:headerRowBackgroundColor="#465a65"
-            app:headerRowPadding="12dp"
-            app:hourHeight="60dp"
-            app:noOfVisibleDays="1"
-            app:textSize="12sp"
-            app:todayBackgroundColor="#1848adff"
-            app:todayHeaderTextColor="@color/accent" />
+            android:layout_height="wrap_content"
+            app:WeekDayHourTextColor="@android:color/black"
+            app:WeekDayHourTextSize="12sp"
+            app:WeekDayViewBackgroundColor="@android:color/white"
+            app:WeekDayViewLineColor="@android:color/darker_gray"
+            app:WeekDayViewLineThickness="1dp" />
 
     </LinearLayout>
 

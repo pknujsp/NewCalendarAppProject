@@ -82,7 +82,6 @@ public class WeekHeaderView extends View
     private int mHeaderWeekBackgroundColor;
     private int mHeaderWeekTextColor;
     private int mHeaderWeekTextSize;
-    private int mXScrollingSpeed = 1;
 
     private boolean mIsFirstDraw = true;
     private boolean mAreHeaderScrolling = false;
@@ -128,6 +127,7 @@ public class WeekHeaderView extends View
         @Override
         public boolean onSingleTapConfirmed(MotionEvent e)
         {
+            // 날짜를 터치했을 때, 날짜를 출력한다
             Calendar newSelectedDay = getDateFromPoint(e.getX(), e.getY());
             SimpleDateFormat format = new SimpleDateFormat("yyyy MM dd", Locale.getDefault());
             if (null != newSelectedDay)
@@ -467,6 +467,7 @@ public class WeekHeaderView extends View
         }
         if (event.getAction() == MotionEvent.ACTION_UP)
         {
+            // 이전/다음 주로 이동하는 동작을 작성, 스크롤 후 손을 땠을 경우
             mAreHeaderScrolling = false;
             mDistanceX = 0;
             float dx = mLastOrigin.x - mCurrentOrigin.x;
