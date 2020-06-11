@@ -273,6 +273,7 @@ public class WeekHeaderView extends View
     //Draw date label and day label.
     private void drawHeader(Canvas canvas)
     {
+        Log.e("HEADER", "drawHeader : " + Float.toString(mCurrentOrigin.x));
         // 열 사이의 간격 (주차, 일, 월~토)
         mHeaderWidthPerDay = getWidth() / 7;
         // 주차를 표시할 공간을 확보

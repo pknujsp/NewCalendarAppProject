@@ -19,6 +19,8 @@ import androidx.core.view.ViewCompat;
 
 import com.zerodsoft.scheduleweather.R;
 
+import java.util.Calendar;
+
 public class WeekDayView extends View
 {
     private static final String TAG = "WEEK_DAY_VIEW_GESTURE";
@@ -31,9 +33,9 @@ public class WeekDayView extends View
     private int weekDayViewLineColor;
     private int spacingLinesBetweenHour;
     private int spacingLinesBetweenDay;
+    private int hourTextHeight;
     private Rect hourTextBoxRect = new Rect();
     private int scheduleLayoutWidth;
-    private float tableHeight;
 
     private Paint weekDayHourTextPaint;
     private Paint weekDayHorizontalLinePaint;
@@ -50,6 +52,8 @@ public class WeekDayView extends View
     private float startY = 8f;
 
     private boolean areScrolling = false;
+
+    private int currentScrollDirection;
 
     public WeekDayView(Context context, @Nullable AttributeSet attrs)
     {
@@ -85,6 +89,19 @@ public class WeekDayView extends View
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY)
         {
             areScrolling = true;
+            if (currentScrollDirection == SCROLL_AXIS_NONE)
+            {
+                if (Math.abs(distanceX) > Math.abs(distanceY))
+                {
+                    // 가로 스크롤
+                    currentScrollDirection = SCROLL_AXIS_HORIZONTAL;
+                } else
+                {
+                    // 세로 스크롤
+                    currentScrollDirection = SCROLL_AXIS_VERTICAL;
+                }
+            }
+            mDistanceX = distanceX;
             mDistanceY = distanceY;
             ViewCompat.postInvalidateOnAnimation(WeekDayView.this);
             return true;
@@ -99,6 +116,7 @@ public class WeekDayView extends View
         @Override
         public boolean onDown(MotionEvent e)
         {
+            overScroller.forceFinished(true);
             lastCoordinate.x = currentCoordinate.x;
             lastCoordinate.y = currentCoordinate.y;
             return true;
@@ -109,6 +127,7 @@ public class WeekDayView extends View
         {
             return super.onSingleTapConfirmed(e);
         }
+
     };
 
     private void init()
@@ -120,6 +139,7 @@ public class WeekDayView extends View
         weekDayHourTextPaint.getTextBounds("오전 12", 0, "오전 12".length(), hourTextBoxRect);
 
         spacingLinesBetweenHour = hourTextBoxRect.height() * 4;
+        hourTextHeight = hourTextBoxRect.height();
 
         weekDayBackgroundPaint = new Paint();
         weekDayBackgroundPaint.setColor(weekDayViewBackgroundColor);
@@ -146,6 +166,7 @@ public class WeekDayView extends View
     {
         super.onDraw(canvas);
         drawDayView(canvas);
+        Log.e(TAG, "currentCoordinate X : " + Float.toString(currentCoordinate.x));
     }
 
     @Override
@@ -156,31 +177,37 @@ public class WeekDayView extends View
         spacingLinesBetweenDay = scheduleLayoutWidth / 7;
     }
 
+    /*
     private void drawDayView(Canvas canvas)
     {
+        Log.e(TAG, "drawDayView : " + Float.toString(currentCoordinate.x));
         canvas.drawRect(0, 0, getWidth(), getHeight(), weekDayBackgroundPaint);
 
-        if (currentCoordinate.y - mDistanceY > 0)
-        {
-            currentCoordinate.y = 0f;
-        } else if (currentCoordinate.y - mDistanceY < -(spacingLinesBetweenHour * 23 - getHeight()))
-        {
-            currentCoordinate.y = -(spacingLinesBetweenHour * 23 - getHeight());
-        }
-        if (areScrolling)
+        if (currentScrollDirection == SCROLL_AXIS_VERTICAL)
         {
             currentCoordinate.y -= mDistanceY;
+
+            if (currentCoordinate.y - mDistanceY > 0)
+            {
+                currentCoordinate.y = 0f;
+            } else if (currentCoordinate.y - mDistanceY < -(spacingLinesBetweenHour * 23 - getHeight() + hourTextHeight * 2))
+            {
+                currentCoordinate.y = -(spacingLinesBetweenHour * 23 - getHeight() + hourTextHeight * 2);
+            }
+        } else if (currentScrollDirection == SCROLL_AXIS_HORIZONTAL)
+        {
+            currentCoordinate.x -= mDistanceX;
         }
 
-        float startX = (float) (getWidth() - scheduleLayoutWidth);
+        float startX = currentCoordinate.x + 8f;
         Log.e(TAG, Float.toString(currentCoordinate.y));
-        startY = currentCoordinate.y;
+        startY = currentCoordinate.y + hourTextHeight;
         float width = (float) getWidth();
         float tableHeight = (float) (startY + spacingLinesBetweenHour * 23);
 
         for (int i = 0; i <= 23; i++)
         {
-            canvas.drawText(Integer.toString(i), 0f, startY + (spacingLinesBetweenHour * i), weekDayHourTextPaint);
+            canvas.drawText(Integer.toString(i), 0f, startY + (spacingLinesBetweenHour * i) + hourTextHeight / 2, weekDayHourTextPaint);
             canvas.drawLine(startX, startY + (spacingLinesBetweenHour * i), width, startY + (spacingLinesBetweenHour * i), weekDayHorizontalLinePaint);
         }
 
@@ -191,11 +218,86 @@ public class WeekDayView extends View
     }
 
 
+     */
+    private void drawDayView(Canvas canvas)
+    {
+        canvas.drawRect(0f, 0f, getWidth(), getHeight(), weekDayBackgroundPaint);
+
+        if (currentScrollDirection == SCROLL_AXIS_VERTICAL)
+        {
+            currentCoordinate.y -= mDistanceY;
+
+            if (currentCoordinate.y - mDistanceY > 0)
+            {
+                currentCoordinate.y = 0f;
+            } else if (currentCoordinate.y - mDistanceY < -(spacingLinesBetweenHour * 23 - getHeight() + hourTextHeight * 2))
+            {
+                currentCoordinate.y = -(spacingLinesBetweenHour * 23 - getHeight() + hourTextHeight * 2);
+            }
+        } else if (currentScrollDirection == SCROLL_AXIS_HORIZONTAL)
+        {
+            currentCoordinate.x -= mDistanceX;
+        }
+
+        if (currentCoordinate.x <= -spacingLinesBetweenDay * 7 || currentCoordinate.x >= spacingLinesBetweenDay * 7)
+        {
+            currentCoordinate.x = 0f;
+            currentCoordinate.y = lastCoordinate.y;
+        }
+
+        float lineStartX = currentCoordinate.x + spacingLinesBetweenDay + mDistanceX;
+        float startX = currentCoordinate.x + spacingLinesBetweenDay;
+        startY = currentCoordinate.y + hourTextHeight;
+        float width = (float) getWidth();
+        float tableHeight = (float) (startY + spacingLinesBetweenHour * 23);
+
+        canvas.drawLine(spacingLinesBetweenDay, 0f, spacingLinesBetweenDay, tableHeight, weekDayVerticalLinePaint);
+
+
+        for (int i = 0; i <= 23; i++)
+        {
+            canvas.drawText(Integer.toString(i), 0f, startY + (spacingLinesBetweenHour * i) + hourTextHeight / 2, weekDayHourTextPaint);
+            canvas.drawLine(spacingLinesBetweenDay, startY + (spacingLinesBetweenHour * i), width, startY + (spacingLinesBetweenHour * i), weekDayHorizontalLinePaint);
+        }
+
+        for (int i = 0; i <= 7; i++)
+        {
+            canvas.drawLine(lineStartX + (spacingLinesBetweenDay * i), startY, lineStartX + (spacingLinesBetweenDay * i), tableHeight, weekDayVerticalLinePaint);
+        }
+    }
+
+
     @Override
     public boolean onTouchEvent(MotionEvent event)
     {
+        if (event.getAction() == MotionEvent.ACTION_UP && areScrolling)
+        {
+            // 스크롤 후 손가락을 떼는 경우
+            if (currentScrollDirection == SCROLL_AXIS_HORIZONTAL)
+            {
+                mDistanceX = 0;
+                float dx = lastCoordinate.x - currentCoordinate.x;
+                if (Math.abs(dx) < spacingLinesBetweenDay)
+                {
+                    // 스크롤 길이 부족으로 주 이동하지 않음
+                    currentCoordinate.x = lastCoordinate.x;
+                    currentCoordinate.y = lastCoordinate.y;
+                } else
+                {
+                    Log.e(TAG, "lastCoordinate X : " + Float.toString(lastCoordinate.x));
+                    // 다른 주로 넘어감
+                    // dx<0인 경우 : 이전 주, dx>0인 경우 : 다음 주
+                    int scrollDx = (int) (dx > 0 ? (-spacingLinesBetweenDay * 7) : (spacingLinesBetweenDay * 7));
+                    overScroller.startScroll((int) lastCoordinate.x, (int) lastCoordinate.y, scrollDx, (int) lastCoordinate.y);
+                }
+            }
+            areScrolling = false;
+            currentScrollDirection = SCROLL_AXIS_NONE;
+            ViewCompat.postInvalidateOnAnimation(WeekDayView.this);
+        }
         return this.gestureDetector.onTouchEvent(event);
     }
+
 
     @Override
     public void computeScroll()
@@ -203,6 +305,7 @@ public class WeekDayView extends View
         super.computeScroll();
         if (overScroller.computeScrollOffset())
         {
+            currentCoordinate.x = overScroller.getCurrX();
             currentCoordinate.y = overScroller.getCurrY();
             ViewCompat.postInvalidateOnAnimation(this);
         }
