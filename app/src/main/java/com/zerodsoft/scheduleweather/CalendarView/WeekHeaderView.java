@@ -34,7 +34,7 @@ import java.util.Calendar;
 import java.util.Locale;
 
 
-public class WeekHeaderView extends View
+public class WeekHeaderView extends View implements WeekView.MoveWeekListener
 {
     private final static String TAG = "WeekHeaderView";
     private Context mContext;
@@ -472,7 +472,7 @@ public class WeekHeaderView extends View
             mAreHeaderScrolling = false;
             mDistanceX = 0;
             float dx = mLastOrigin.x - mCurrentOrigin.x;
-            if (Math.abs(dx) < 1 * mHeaderWidthPerDay)
+            if (Math.abs(dx) < mHeaderWidthPerDay)
             {
                 // 스크롤 길이 부족으로 주 이동하지 않음
                 mCurrentOrigin.x = mLastOrigin.x;
@@ -537,87 +537,6 @@ public class WeekHeaderView extends View
     }
 
 
-    public void setSelectedDay(Calendar selectedDay)
-    {
-        mStickyScroller.forceFinished(true);
-        selectedDay.set(Calendar.HOUR_OF_DAY, 0);
-        selectedDay.set(Calendar.MINUTE, 0);
-        selectedDay.set(Calendar.SECOND, 0);
-        Log.d(TAG, "setSelectedDay ==" + selectedDay.get(Calendar.DAY_OF_MONTH));
-        this.mSelectedDay = (Calendar) selectedDay.clone();
-        if (mSelectedDay.equals(mFirstVisibleDay) || mSelectedDay.equals(mLastVisibleDay))
-        {
-            ViewCompat.postInvalidateOnAnimation(this);
-            return;
-        }
-        if (mSelectedDay.before(mFirstVisibleDay))
-        {
-            int intervalDay;
-            if (mFirstVisibleDay.get(Calendar.YEAR) == mSelectedDay.get(Calendar.YEAR))
-            {
-                intervalDay = mFirstVisibleDay.get(Calendar.DAY_OF_YEAR) - mSelectedDay.get(Calendar.DAY_OF_YEAR);
-            } else
-            {
-                intervalDay = Math.round((mFirstVisibleDay.getTimeInMillis() - mSelectedDay.getTimeInMillis()) / (1000 * 60 * 60 * 24));
-            }
-            Log.d(TAG, "   before    interval Day  ==" + intervalDay);
-            if (intervalDay <= 7 && intervalDay > 0)
-            {
-                mStickyScroller.startScroll((int) mCurrentOrigin.x, 0, 7 * mHeaderWidthPerDay, 0);
-            } else
-            {
-                mCurrentOrigin.x = (float) (mCurrentOrigin.x + Math.ceil(intervalDay / 7) * mHeaderWidthPerDay);
-            }
-        }
-        if (mSelectedDay.after(mLastVisibleDay))
-        {
-            int intervalDay;
-            if (mSelectedDay.get(Calendar.YEAR) == mLastVisibleDay.get(Calendar.YEAR))
-            {
-                intervalDay = mSelectedDay.get(Calendar.DAY_OF_YEAR) - mLastVisibleDay.get(Calendar.DAY_OF_YEAR);
-            } else
-            {
-                intervalDay = Math.round((mSelectedDay.getTimeInMillis() - mLastVisibleDay.getTimeInMillis()) / (1000 * 60 * 60 * 24));
-            }
-            Log.d(TAG, "  after     interval Day  ==" + intervalDay);
-            if (intervalDay <= 7 && intervalDay > 0)
-            {
-                mStickyScroller.startScroll((int) mCurrentOrigin.x, 0, -7 * mHeaderWidthPerDay, 0);
-            } else
-            {
-                mCurrentOrigin.x = (float) (mCurrentOrigin.x - Math.ceil(intervalDay / 7) * mHeaderWidthPerDay);
-            }
-        }
-        ViewCompat.postInvalidateOnAnimation(this);
-    }
-
-    /////////////////////////////////////////////////////////////////
-    //
-    //      Public methods.
-    //
-    /////////////////////////////////////////////////////////////////
-
-    /**
-     * Go to next week
-     */
-    public void goToNextWeek()
-    {
-        Calendar nextWeek = (Calendar) mLastVisibleDay.clone();
-        nextWeek.add(Calendar.DATE, 7);
-        setSelectedDay(nextWeek);
-    }
-
-    /**
-     * Go to last week
-     */
-    public void goToLastWeek()
-    {
-        Calendar lastWeek = (Calendar) mFirstVisibleDay.clone();
-        lastWeek.add(Calendar.DATE, -7);
-        setSelectedDay(lastWeek);
-    }
-
-
     ////////////////////////////////////////////////////////////////
     //
     //       InterFace
@@ -676,5 +595,9 @@ public class WeekHeaderView extends View
         return dayOne.get(Calendar.YEAR) == dayTwo.get(Calendar.YEAR) && dayOne.get(Calendar.DAY_OF_YEAR) == dayTwo.get(Calendar.DAY_OF_YEAR);
     }
 
+    @Override
+    public void moveWeek(int amount, float lastX)
+    {
 
+    }
 }

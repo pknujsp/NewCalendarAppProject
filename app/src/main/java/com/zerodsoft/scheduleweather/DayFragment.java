@@ -10,17 +10,17 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
 import com.zerodsoft.scheduleweather.CalendarView.WeekDatesView;
-import com.zerodsoft.scheduleweather.CalendarView.WeekDayView;
+import com.zerodsoft.scheduleweather.CalendarView.WeekView;
 import com.zerodsoft.scheduleweather.CalendarView.WeekHeaderView;
 
 
 public class DayFragment extends Fragment
 {
     //view
-    private WeekDayView mDayView;
     private WeekHeaderView mWeekHeaderView;
     private WeekDatesView mWeekDatesView;
     private LinearLayout headerLayout;
+    private WeekView weekView;
 
     public DayFragment()
     {
@@ -50,7 +50,8 @@ public class DayFragment extends Fragment
         headerLayout.invalidate();
         mWeekDatesView = (WeekDatesView) view.findViewById(R.id.weekdatesview);
         mWeekHeaderView.setOnUpdateWeekDatesListener(mWeekDatesView);
-        mDayView = (WeekDayView) view.findViewById(R.id.weekdayview);
+        weekView = (WeekView) view.findViewById(R.id.weekview);
+        weekView.setMoveWeekListener(mWeekHeaderView);
     }
 
 
