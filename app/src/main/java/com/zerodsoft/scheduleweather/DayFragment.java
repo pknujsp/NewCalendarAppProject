@@ -3,7 +3,9 @@ package com.zerodsoft.scheduleweather;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.viewpager.widget.ViewPager;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,15 +14,28 @@ import android.widget.LinearLayout;
 import com.zerodsoft.scheduleweather.CalendarView.WeekDatesView;
 import com.zerodsoft.scheduleweather.CalendarView.WeekView;
 import com.zerodsoft.scheduleweather.CalendarView.WeekHeaderView;
+import com.zerodsoft.scheduleweather.CalendarView.WeekViewPagerAdapter;
 
 
-public class DayFragment extends Fragment
+public class DayFragment extends Fragment implements WeekView.OnViewTouchListener
 {
     //view
+    private static final String DAYFRAGMENT_TAG = "DAY_FRAGMENT";
     private WeekHeaderView mWeekHeaderView;
     private WeekDatesView mWeekDatesView;
     private LinearLayout headerLayout;
-    private WeekView weekView;
+    private ViewPager weekViewPager;
+    private WeekViewPagerAdapter weekViewPagerAdapter;
+
+    public static final int WEEK_NUMBER = 521;
+    public static final int FIRST_VIEW_NUMBER = 261;
+
+    @Override
+    public int getPosition()
+    {
+        return weekViewPager.getCurrentItem();
+    }
+
 
     public DayFragment()
     {
@@ -50,9 +65,43 @@ public class DayFragment extends Fragment
         headerLayout.invalidate();
         mWeekDatesView = (WeekDatesView) view.findViewById(R.id.weekdatesview);
         mWeekHeaderView.setOnUpdateWeekDatesListener(mWeekDatesView);
-        weekView = (WeekView) view.findViewById(R.id.weekview);
-        weekView.setMoveWeekListener(mWeekHeaderView);
+
+        changeListener changeListener = new changeListener();
+
+        weekViewPager = (ViewPager) view.findViewById(R.id.weekviewpager);
+        weekViewPagerAdapter = new WeekViewPagerAdapter(getContext(), DayFragment.this);
+        weekViewPager.setAdapter(weekViewPagerAdapter);
+        weekViewPager.setCurrentItem(FIRST_VIEW_NUMBER);
+        weekViewPager.addOnPageChangeListener(changeListener);
     }
 
+    class changeListener extends ViewPager.SimpleOnPageChangeListener
+    {
+
+
+        @Override
+        public void onPageScrollStateChanged(int state)
+        {
+            Log.e(DAYFRAGMENT_TAG, "onPageScrollStateChanged");
+            if (state == ViewPager.SCROLL_STATE_DRAGGING)
+            {
+                Log.e(DAYFRAGMENT_TAG, Float.toString(weekViewPagerAdapter.getCurrentViewY()));
+            }
+        }
+
+        @Override
+        public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels)
+        {
+            Log.e(DAYFRAGMENT_TAG, "onPageScrolled");
+            super.onPageScrolled(position, positionOffset, positionOffsetPixels);
+        }
+
+        @Override
+        public void onPageSelected(int position)
+        {
+            Log.e(DAYFRAGMENT_TAG, "onPageSelected");
+            super.onPageSelected(position);
+        }
+    }
 
 }

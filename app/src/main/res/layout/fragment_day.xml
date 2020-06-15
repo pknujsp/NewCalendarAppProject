@@ -50,15 +50,10 @@
                 app:headerWeekTextSize="13sp" />
         </LinearLayout>
 
-        <com.zerodsoft.scheduleweather.CalendarView.WeekView
-            android:id="@+id/weekview"
+        <androidx.viewpager.widget.ViewPager
+            android:id="@+id/weekviewpager"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:WeekDayHourTextColor="@android:color/black"
-            app:WeekDayHourTextSize="12sp"
-            app:WeekDayViewBackgroundColor="@android:color/white"
-            app:WeekDayViewLineColor="@android:color/darker_gray"
-            app:WeekDayViewLineThickness="1dp" />
+            android:layout_height="wrap_content" />
 
 
     </LinearLayout>

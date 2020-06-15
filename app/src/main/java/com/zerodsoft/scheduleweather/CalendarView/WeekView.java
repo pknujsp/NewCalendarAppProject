@@ -1,16 +1,20 @@
 package com.zerodsoft.scheduleweather.CalendarView;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.OverScroller;
 import android.widget.Toast;
 
@@ -18,6 +22,7 @@ import androidx.annotation.Nullable;
 import androidx.core.view.GestureDetectorCompat;
 import androidx.core.view.ViewCompat;
 
+import com.zerodsoft.scheduleweather.DayFragment;
 import com.zerodsoft.scheduleweather.R;
 
 public class WeekView extends View
@@ -45,7 +50,7 @@ public class WeekView extends View
 
     private OverScroller overScroller;
     private GestureDetectorCompat gestureDetector;
-    private PointF currentCoordinate = new PointF(0f, 0f);
+    private static PointF currentCoordinate = new PointF(0f, 0f);
     private PointF lastCoordinate = new PointF(0f, 0f);
 
     private float mDistanceX;
@@ -63,9 +68,39 @@ public class WeekView extends View
     enum DIRECTION
     {NONE, HORIZONTAL, VERTICAL, CANCEL, FINISHED}
 
+    private WeekViewInterface weekViewInterface;
+    private OnViewTouchListener onTouchListener;
+
+    public interface WeekViewInterface
+    {
+        void refreshSideView(int position);
+    }
+
+    public interface OnViewTouchListener
+    {
+        int getPosition();
+    }
+
+
     public void setMoveWeekListener(MoveWeekListener moveWeekListener)
     {
         this.moveWeekListener = moveWeekListener;
+    }
+
+    @SuppressLint("ResourceType")
+    public WeekView(Context context, WeekViewPagerAdapter adapter, DayFragment dayFragment)
+    {
+        super(context);
+        this.context = context;
+        weekDayHourTextColor = Color.BLACK;
+        weekDayHourTextSize = context.getResources().getDimensionPixelSize(R.dimen.weekview_textsize);
+        weekDayViewBackgroundColor = Color.WHITE;
+        weekDayViewLineThickness = context.getResources().getDimensionPixelSize(R.dimen.line_thickness);
+        weekDayViewLineColor = Color.LTGRAY;
+
+        init();
+        this.weekViewInterface = adapter;
+        this.onTouchListener = dayFragment;
     }
 
     public WeekView(Context context, @Nullable AttributeSet attrs)
@@ -86,6 +121,7 @@ public class WeekView extends View
             a.recycle();
         }
         init();
+
     }
 
     public interface MoveWeekListener
@@ -105,56 +141,27 @@ public class WeekView extends View
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY)
         {
-            Log.e(TAG, "onScroll");
 
-            if (overScroller.isFinished())
+            if (currentScrollDirection == DIRECTION.FINISHED)
             {
-                if (currentScrollDirection == DIRECTION.FINISHED)
-                {
-                    currentScrollDirection = DIRECTION.NONE;
-                    Log.e(TAG, "DIRECTION FINISHED");
-                } else if (currentScrollDirection == DIRECTION.NONE)
-                {
-                    Log.e(TAG, "DIRECTION NONE");
-                    isScrolling = true;
-                    currentScrollDirection = (Math.abs(distanceX) > Math.abs(distanceY)) ? DIRECTION.HORIZONTAL : DIRECTION.VERTICAL;
-
-                    if (currentScrollDirection == DIRECTION.HORIZONTAL)
-                    {
-                        currentCoordinate.x -= distanceX;
-                        mDistanceX = distanceX;
-
-                        if (lastCoordinate.x - currentCoordinate.x > 0)
-                        {
-                            moveAmount++;
-                        } else
-                        {
-                            moveAmount--;
-                        }
-                    }
-
-                    return true;
-                }
-            }
-            if (isScrolling)
+                currentScrollDirection = DIRECTION.NONE;
+            } else if (currentScrollDirection == DIRECTION.NONE)
             {
-                if (currentScrollDirection == DIRECTION.HORIZONTAL)
-                {
-                    Log.e(TAG, "DIRECTION HORIZONTAL");
-                    currentCoordinate.x -= distanceX;
-                    mDistanceX = distanceX;
-                } else if (currentScrollDirection == DIRECTION.VERTICAL)
-                {
-                    Log.e(TAG, "DIRECTION VERTICAL");
-                    currentCoordinate.y -= distanceY;
-                    mDistanceY = distanceY;
-                }
-                ViewCompat.postInvalidateOnAnimation(WeekView.this);
+                isScrolling = true;
+                currentScrollDirection = DIRECTION.VERTICAL;
+
                 return true;
-            } else
-            {
-                return false;
             }
+
+            if (currentScrollDirection == DIRECTION.VERTICAL)
+            {
+                currentCoordinate.y -= distanceY;
+                mDistanceY = distanceY;
+                weekViewInterface.refreshSideView(onTouchListener.getPosition());
+            }
+            ViewCompat.postInvalidateOnAnimation(WeekView.this);
+            return true;
+
         }
 
         @Override
@@ -166,16 +173,8 @@ public class WeekView extends View
         @Override
         public boolean onDown(MotionEvent e)
         {
-            if (overScroller.isFinished() && !isScrolling)
-            {
-                lastCoordinate.x = currentCoordinate.x;
-                lastCoordinate.y = currentCoordinate.y;
-                Log.e(TAG, "onDown");
-                return true;
-            } else
-            {
-                return false;
-            }
+            lastCoordinate.y = currentCoordinate.y;
+            return true;
         }
 
         @Override
@@ -197,6 +196,10 @@ public class WeekView extends View
         spacingLinesBetweenHour = hourTextBoxRect.height() * 4;
         hourTextHeight = hourTextBoxRect.height();
 
+        if (currentCoordinate.y == 0f)
+        {
+            currentCoordinate.y = (float) hourTextHeight;
+        }
         weekDayBackgroundPaint = new Paint();
         weekDayBackgroundPaint.setColor(weekDayViewBackgroundColor);
 
@@ -236,50 +239,35 @@ public class WeekView extends View
     {
         canvas.drawRect(0f, 0f, getWidth(), getHeight(), weekDayBackgroundPaint);
 
+
         if (currentScrollDirection == DIRECTION.VERTICAL)
         {
-            if (currentCoordinate.y > 0f)
+            if (currentCoordinate.y >= 0f)
             {
-                currentCoordinate.y = 0f;
-            } else if (currentCoordinate.y - mDistanceY < -(spacingLinesBetweenHour * 23 - getHeight() + hourTextHeight * 2))
+                currentCoordinate.y = hourTextHeight;
+            } else if (currentCoordinate.y <= -(spacingLinesBetweenHour * 23 + hourTextHeight * 2 - getHeight()))
             {
-                currentCoordinate.y = -(spacingLinesBetweenHour * 23 - getHeight() + hourTextHeight * 2);
+                currentCoordinate.y = -(spacingLinesBetweenHour * 23 + hourTextHeight * 2 - getHeight());
             }
         }
 
-        startX = currentCoordinate.x + moveAmount * width;
-        startY = currentCoordinate.y + hourTextHeight;
+        startX = currentCoordinate.x;
+        startY = currentCoordinate.y;
         tableHeight = (float) (startY + spacingLinesBetweenHour * 23);
-        Log.e(TAG, "startX : " + Float.toString(startX));
 
         for (int i = 0; i <= 23; i++)
         {
-            // 이전 주 시간
-            canvas.drawText(Integer.toString(i), startX - width, startY + (spacingLinesBetweenHour * i) + hourTextHeight / 2, weekDayHourTextPaint);
-            // 가로 선
-            canvas.drawLine(startX + spacingLinesBetweenDay - width, startY + (spacingLinesBetweenHour * i), startX, startY + (spacingLinesBetweenHour * i), weekDayHorizontalLinePaint);
 
             // 이번 주 시간
             canvas.drawText(Integer.toString(i), startX, startY + (spacingLinesBetweenHour * i) + hourTextHeight / 2, weekDayHourTextPaint);
             // 가로 선
             canvas.drawLine(startX + spacingLinesBetweenDay, startY + (spacingLinesBetweenHour * i), startX + width, startY + (spacingLinesBetweenHour * i), weekDayHorizontalLinePaint);
-
-            // 다음 주 시간
-            canvas.drawText(Integer.toString(i), startX + width, startY + (spacingLinesBetweenHour * i) + hourTextHeight / 2, weekDayHourTextPaint);
-            // 가로 선
-            canvas.drawLine(startX + spacingLinesBetweenDay + width, startY + (spacingLinesBetweenHour * i), startX + width * 2, startY + (spacingLinesBetweenHour * i), weekDayHorizontalLinePaint);
         }
 
         for (int i = 1; i <= 8; i++)
         {
-            // 이전 주 세로 선
-            canvas.drawLine(startX + (spacingLinesBetweenDay * i) - width, startY - hourTextHeight, startX + (spacingLinesBetweenDay * i) - width, tableHeight, weekDayVerticalLinePaint);
-
             // 이번 주 세로 선
             canvas.drawLine(startX + (spacingLinesBetweenDay * i), startY - hourTextHeight, startX + (spacingLinesBetweenDay * i), tableHeight, weekDayVerticalLinePaint);
-
-            // 다음 주 세로 선
-            canvas.drawLine(startX + (spacingLinesBetweenDay * i) + width, startY - hourTextHeight, startX + (spacingLinesBetweenDay * i) + width, tableHeight, weekDayVerticalLinePaint);
         }
     }
 
@@ -291,55 +279,15 @@ public class WeekView extends View
         {
             Toast.makeText(context, "스크롤 중", Toast.LENGTH_SHORT).show();
         }
-        if (event.getAction() == MotionEvent.ACTION_UP && (currentCoordinate.x != lastCoordinate.x || currentCoordinate.y != lastCoordinate.y))
+        if (event.getAction() == MotionEvent.ACTION_UP && currentCoordinate.y != lastCoordinate.y)
         {
-            // 스크롤 후 손가락을 떼는 경우
-            if (currentScrollDirection == DIRECTION.HORIZONTAL)
-            {
-                isScrolling = false;
-                currentScrollDirection = DIRECTION.FINISHED;
-                mDistanceX = 0;
-                float dx = lastCoordinate.x - currentCoordinate.x;
-
-                if (Math.abs(dx) < spacingLinesBetweenDay)
-                {
-                    // 스크롤 길이 부족으로 주 이동하지 않음
-                    currentCoordinate.x = lastCoordinate.x;
-                    currentCoordinate.y = lastCoordinate.y;
-
-                    if (dx > 0)
-                    {
-                        moveAmount--;
-                    } else
-                    {
-                        moveAmount++;
-                    }
-                    Log.e(TAG, "onTouchEvent cancel");
-                } else
-                {
-                    // 다른 주로 넘어감
-                    // dx<0인 경우 : 이전 주, dx>0인 경우 : 다음 주
-                    int scrollDx = (int) (dx > 0 ? -width : width);
-                    overScroller.startScroll((int) lastCoordinate.x, (int) lastCoordinate.y, scrollDx, 0);
-                    Log.e(TAG, "startScroll");
-
-                    if (dx > 0)
-                    {
-                        // 헤더 뷰의 달력을 다음 주로 이동
-                        moveWeekListener.moveWeek(1, lastCoordinate.x - spacingLinesBetweenDay);
-                    } else
-                    {
-                        moveWeekListener.moveWeek(-1, lastCoordinate.x - spacingLinesBetweenDay);
-                    }
-                    Log.e(TAG, "SCROLL AMOUNT : " + Integer.toString(moveAmount));
-                }
-            } else if (currentScrollDirection == DIRECTION.VERTICAL)
+            if (currentScrollDirection == DIRECTION.VERTICAL)
             {
                 currentScrollDirection = DIRECTION.FINISHED;
             }
-            ViewCompat.postInvalidateOnAnimation(WeekView.this);
         }
         return gestureDetector.onTouchEvent(event);
+
     }
 
     @Override
@@ -351,7 +299,19 @@ public class WeekView extends View
             currentCoordinate.x = overScroller.getCurrX();
             currentCoordinate.y = overScroller.getCurrY();
             ViewCompat.postInvalidateOnAnimation(WeekView.this);
-            Log.e(TAG, "computeScroll");
         }
     }
+
+    public void refreshView()
+    {
+        invalidate();
+    }
+
+
+    public static float getCurrentCoordinateY()
+    {
+        return currentCoordinate.y;
+    }
+
+
 }
