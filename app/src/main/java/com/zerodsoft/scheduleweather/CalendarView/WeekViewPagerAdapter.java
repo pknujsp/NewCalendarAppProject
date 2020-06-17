@@ -18,7 +18,6 @@ public class WeekViewPagerAdapter extends PagerAdapter implements WeekView.WeekV
     private static final String ADAPTER_TAG = "WEEKVIEWPAGER_ADAPTER";
     private Context context;
     private Fragment fragment;
-    private int num;
     private ViewGroup container;
 
 
@@ -26,6 +25,7 @@ public class WeekViewPagerAdapter extends PagerAdapter implements WeekView.WeekV
     {
 
     }
+
 
     public WeekViewPagerAdapter(Context context, Fragment fragment)
     {
@@ -42,7 +42,7 @@ public class WeekViewPagerAdapter extends PagerAdapter implements WeekView.WeekV
 
         if (context != null)
         {
-            view = new WeekView(context, WeekViewPagerAdapter.this, (DayFragment) fragment);
+            view = new WeekView(context, WeekViewPagerAdapter.this);
         }
         container.addView(view);
         return view;
@@ -66,12 +66,6 @@ public class WeekViewPagerAdapter extends PagerAdapter implements WeekView.WeekV
         return (view == (View) object);
     }
 
-
-    public float getCurrentViewY()
-    {
-        return WeekView.getCurrentCoordinateY();
-    }
-
     @Override
     public void startUpdate(@NonNull ViewGroup container)
     {
@@ -80,11 +74,12 @@ public class WeekViewPagerAdapter extends PagerAdapter implements WeekView.WeekV
 
 
     @Override
-    public void refreshSideView(int position)
+    public void refreshSideView()
     {
-        container.getChildAt(1).invalidate();
-        container.getChildAt(2).invalidate();
-
+        for (int i = 0; i < container.getChildCount(); i++)
+        {
+            container.getChildAt(i).invalidate();
+        }
     }
 
 }

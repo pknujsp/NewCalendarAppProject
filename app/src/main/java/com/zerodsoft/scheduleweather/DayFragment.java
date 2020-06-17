@@ -17,7 +17,7 @@ import com.zerodsoft.scheduleweather.CalendarView.WeekHeaderView;
 import com.zerodsoft.scheduleweather.CalendarView.WeekViewPagerAdapter;
 
 
-public class DayFragment extends Fragment implements WeekView.OnViewTouchListener
+public class DayFragment extends Fragment
 {
     //view
     private static final String DAYFRAGMENT_TAG = "DAY_FRAGMENT";
@@ -29,12 +29,6 @@ public class DayFragment extends Fragment implements WeekView.OnViewTouchListene
 
     public static final int WEEK_NUMBER = 521;
     public static final int FIRST_VIEW_NUMBER = 261;
-
-    @Override
-    public int getPosition()
-    {
-        return weekViewPager.getCurrentItem();
-    }
 
 
     public DayFragment()
@@ -77,29 +71,24 @@ public class DayFragment extends Fragment implements WeekView.OnViewTouchListene
 
     class changeListener extends ViewPager.SimpleOnPageChangeListener
     {
-
-
         @Override
         public void onPageScrollStateChanged(int state)
         {
-            Log.e(DAYFRAGMENT_TAG, "onPageScrollStateChanged");
-            if (state == ViewPager.SCROLL_STATE_DRAGGING)
-            {
-                Log.e(DAYFRAGMENT_TAG, Float.toString(weekViewPagerAdapter.getCurrentViewY()));
-            }
+            // Log.e(DAYFRAGMENT_TAG, "onPageScrollStateChanged");
+
         }
 
         @Override
         public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels)
         {
-            Log.e(DAYFRAGMENT_TAG, "onPageScrolled");
+            // Log.e(DAYFRAGMENT_TAG, "onPageScrolled");
             super.onPageScrolled(position, positionOffset, positionOffsetPixels);
         }
 
         @Override
         public void onPageSelected(int position)
         {
-            Log.e(DAYFRAGMENT_TAG, "onPageSelected");
+            // Log.e(DAYFRAGMENT_TAG, "onPageSelected");
             super.onPageSelected(position);
         }
     }
