@@ -1,15 +1,12 @@
 package com.zerodsoft.scheduleweather.CalendarView;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
-import android.graphics.RectF;
 import android.graphics.Typeface;
 
 import android.util.AttributeSet;
@@ -18,19 +15,16 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.OverScroller;
-import android.widget.Scroller;
-import android.widget.Toast;
 
 import androidx.core.view.GestureDetectorCompat;
 import androidx.core.view.ViewCompat;
 
-import com.zerodsoft.scheduleweather.CalendarView.Dto.ColumnData;
-import com.zerodsoft.scheduleweather.DayFragment;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.Utility.DateTimeInterpreter;
+import com.zerodsoft.scheduleweather.Utility.DateHour;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Locale;
 
 
@@ -45,7 +39,6 @@ public class WeekHeaderView extends View implements WeekView.MoveWeekListener
 
     private GestureDetectorCompat mGestureDetector;
     private OverScroller mStickyScroller;
-    private DateTimeInterpreter mDateTimeInterpreter;
 
     private PointF mCurrentOrigin = new PointF(0f, 0f);
     private PointF mLastOrigin = new PointF(0F, 0F);
@@ -325,17 +318,10 @@ public class WeekHeaderView extends View implements WeekView.MoveWeekListener
         canvas.drawRect(0, 0, getWidth(), mHeaderHeight, mHeaderBackgroundPaint);
 
         mFirstDayOfWeek = (mFirstDayOfWeek > Calendar.SATURDAY || mFirstDayOfWeek < Calendar.SUNDAY) ? Calendar.SUNDAY : mFirstDayOfWeek;
-        int dayOfWeek;
         // 요일을 그림
-        for (int i = mFirstDayOfWeek; i < mFirstDayOfWeek + 7; i++)
+        for (int i = 0; i < 7; i++)
         {
-            dayOfWeek = i % 7;
-            String weekLabel = getDateTimeInterpreter().interpretDay(dayOfWeek == 0 ? 7 : dayOfWeek);
-            if (weekLabel == null)
-            {
-                throw new IllegalStateException("A DateTimeInterpreter must not return null date");
-            }
-            canvas.drawText(weekLabel, mHeaderWidthPerDay / 2 + (mHeaderWidthPerDay) * (i - mFirstDayOfWeek), mHeaderDayHeight + mHeaderRowMarginTop, mHeaderDateNormalPaint);
+            canvas.drawText(DateHour.getDayString(i), mHeaderWidthPerDay / 2 + mHeaderWidthPerDay * i, mHeaderDayHeight + mHeaderRowMarginTop, mHeaderDateNormalPaint);
         }
 
 
@@ -352,7 +338,7 @@ public class WeekHeaderView extends View implements WeekView.MoveWeekListener
             boolean isToday = isSameDay(date, mToday);
             boolean selectedDay = isSameDay(date, mSelectedDay);
             // 표시할 날짜를 가져옴
-            String dateLabel = getDateTimeInterpreter().interpretDate(date);
+            String dateLabel = DateHour.getDate(date);
 
             float x = startPixel + mHeaderWidthPerDay / 2 + mHeaderWidthPerDay * amount;
             float y = mHeaderDayHeight + mHeaderRowMarginTop * 2 + mHeaderDateHeight;
@@ -410,47 +396,6 @@ public class WeekHeaderView extends View implements WeekView.MoveWeekListener
         return null;
     }
 
-
-    /**
-     * Get the interpreter which provides the text to show in the header column and the header row.
-     *
-     * @return The date, time interpreter.
-     */
-    public DateTimeInterpreter getDateTimeInterpreter()
-    {
-        if (mDateTimeInterpreter == null)
-        {
-            mDateTimeInterpreter = new DateTimeInterpreter()
-            {
-                final String[] weekLabels = {"일", "월", "화", "수", "목", "금", "토"};
-
-                @Override
-                public String interpretDate(Calendar date)
-                {
-                    SimpleDateFormat format = new SimpleDateFormat("d", Locale.getDefault());
-                    String day = format.format(date.getTime());
-                    return day;
-                }
-
-                @Override
-                public String interpretTime(int hour)
-                {
-                    return null;
-                }
-
-                @Override
-                public String interpretDay(int dayofweek)
-                {
-                    if (dayofweek > 7 || dayofweek < 1)
-                    {
-                        return null;
-                    }
-                    return weekLabels[dayofweek - 1];
-                }
-            };
-        }
-        return mDateTimeInterpreter;
-    }
 
     /////////////////////////////////////////////////////////////////
     //

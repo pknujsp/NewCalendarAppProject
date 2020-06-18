@@ -5,6 +5,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ScrollView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -37,15 +38,15 @@ public class WeekViewPagerAdapter extends PagerAdapter implements WeekView.WeekV
     @Override
     public Object instantiateItem(@NonNull ViewGroup container, int position)
     {
-        View view = null;
+        View weekView = null;
         this.container = container;
 
         if (context != null)
         {
-            view = new WeekView(context, WeekViewPagerAdapter.this);
+            weekView = new WeekView(context, WeekViewPagerAdapter.this);
         }
-        container.addView(view);
-        return view;
+        container.addView(weekView);
+        return weekView;
     }
 
     @Override

@@ -28,6 +28,7 @@ import androidx.core.widget.EdgeEffectCompat;
 
 import com.zerodsoft.scheduleweather.DayFragment;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.Utility.DateHour;
 
 public class WeekView extends View
 {
@@ -61,18 +62,9 @@ public class WeekView extends View
     private float startX = 0f;
     private float startY = 0f;
 
-    private EdgeEffect topEdgeEffect;
-    private EdgeEffect bottomEdgeEffect;
-    private boolean edgeEffectState = false;
-
     private float minStartY;
     private float maxStartY;
     private int TABLE_LAYOUT_MARGIN;
-
-    private boolean isScrolling = false;
-    private boolean isPaused = false;
-    private float lastVelocity;
-
 
     private DIRECTION currentScrollDirection = DIRECTION.NONE;
 
@@ -102,11 +94,7 @@ public class WeekView extends View
         weekDayViewBackgroundColor = Color.WHITE;
         weekDayViewLineThickness = context.getResources().getDimensionPixelSize(R.dimen.line_thickness);
         weekDayViewLineColor = Color.LTGRAY;
-        topEdgeEffect = new EdgeEffect(context);
-        bottomEdgeEffect = new EdgeEffect(context);
-        topEdgeEffect.setColor(Color.LTGRAY);
-        bottomEdgeEffect.setColor(Color.LTGRAY);
-        TABLE_LAYOUT_MARGIN = weekDayHourTextSize * 2;
+        TABLE_LAYOUT_MARGIN = weekDayHourTextSize;
 
         init();
         this.weekViewInterface = adapter;
@@ -164,14 +152,14 @@ public class WeekView extends View
                 currentCoordinate.y -= distanceY;
                 mDistanceY = distanceY;
 
-                if (currentCoordinate.y >= TABLE_LAYOUT_MARGIN)
+                if (currentCoordinate.y >= maxStartY)
                 {
-                    currentCoordinate.y = TABLE_LAYOUT_MARGIN;
-                } else if (currentCoordinate.y <= -(spacingLinesBetweenHour * 23 + TABLE_LAYOUT_MARGIN * 2 - getHeight()))
+                    currentCoordinate.y = maxStartY;
+                } else if (currentCoordinate.y <= minStartY)
                 {
-                    currentCoordinate.y = -(spacingLinesBetweenHour * 23 + TABLE_LAYOUT_MARGIN * 2 - getHeight());
+                    currentCoordinate.y = minStartY;
                 }
-
+                weekViewInterface.refreshSideView();
             }
             ViewCompat.postInvalidateOnAnimation(WeekView.this);
             return true;
@@ -181,23 +169,14 @@ public class WeekView extends View
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY)
         {
-            Log.e(TAG, "onFling velocityX : " + Float.toString(velocityX) + ", velocityY : " + Float.toString(velocityY));
             fling(velocityX, velocityY);
             return true;
         }
 
         private void fling(float velocityX, float velocityY)
         {
+            overScroller.fling(0, (int) currentCoordinate.y, 0, (int) velocityY, 0, 0, (int) minStartY, (int) maxStartY, 0, 0);
 
-            overScroller.fling(0, (int) currentCoordinate.y, 0, (int) velocityY, 0, 0, (int) minStartY, (int) maxStartY, 0, 10);
-
-            if (velocityY < 0 && currentCoordinate.y <= minStartY)
-            {
-                edgeEffectState = true;
-            } else if (velocityY > 0 && currentCoordinate.y >= maxStartY)
-            {
-                edgeEffectState = true;
-            }
             ViewCompat.postInvalidateOnAnimation(WeekView.this);
         }
 
@@ -255,7 +234,6 @@ public class WeekView extends View
     {
         super.onDraw(canvas);
         drawDayView(canvas);
-        weekViewInterface.refreshSideView();
     }
 
 
@@ -266,10 +244,9 @@ public class WeekView extends View
         scheduleLayoutWidth = getWidth() - getWidth() / 8;
         spacingLinesBetweenDay = scheduleLayoutWidth / 7;
         width = getWidth();
-        minStartY = -(spacingLinesBetweenHour * 23 + TABLE_LAYOUT_MARGIN * 2 - getHeight());
+        minStartY = -(spacingLinesBetweenHour * 24 + TABLE_LAYOUT_MARGIN * 2 - getHeight());
         maxStartY = TABLE_LAYOUT_MARGIN;
-        topEdgeEffect.setSize(width, 100);
-        bottomEdgeEffect.setSize(width, 100);
+        tableHeight = (float) (spacingLinesBetweenHour * 24);
     }
 
 
@@ -279,12 +256,11 @@ public class WeekView extends View
 
         startX = currentCoordinate.x;
         startY = currentCoordinate.y;
-        tableHeight = (float) (startY + spacingLinesBetweenHour * 23);
 
-        for (int i = 0; i <= 23; i++)
+        for (int i = 0; i < 24; i++)
         {
             // 이번 주 시간
-            canvas.drawText(Integer.toString(i), startX, startY + (spacingLinesBetweenHour * i) + hourTextHeight / 2, weekDayHourTextPaint);
+            canvas.drawText(DateHour.getHourString(i), startX, startY + (spacingLinesBetweenHour * i) + hourTextHeight / 2, weekDayHourTextPaint);
             // 가로 선
             canvas.drawLine(startX + spacingLinesBetweenDay, startY + (spacingLinesBetweenHour * i), startX + width, startY + (spacingLinesBetweenHour * i), weekDayHorizontalLinePaint);
         }
@@ -292,21 +268,7 @@ public class WeekView extends View
         for (int i = 1; i <= 8; i++)
         {
             // 이번 주 세로 선
-            canvas.drawLine(startX + (spacingLinesBetweenDay * i), startY - hourTextHeight, startX + (spacingLinesBetweenDay * i), tableHeight, weekDayVerticalLinePaint);
-        }
-
-        if (!bottomEdgeEffect.isFinished())
-        {
-            if (bottomEdgeEffect.draw(canvas))
-            {
-                invalidate();
-            }
-        } else if (!topEdgeEffect.isFinished())
-        {
-            if (topEdgeEffect.draw(canvas))
-            {
-                invalidate();
-            }
+            canvas.drawLine(startX + (spacingLinesBetweenDay * i), startY - hourTextHeight, startX + (spacingLinesBetweenDay * i), startY + tableHeight, weekDayVerticalLinePaint);
         }
     }
 
@@ -330,26 +292,6 @@ public class WeekView extends View
             currentCoordinate.x = overScroller.getCurrX();
             currentCoordinate.y = overScroller.getCurrY();
 
-            startY = overScroller.getCurrY();
-
-            if (startY <= minStartY)
-            {
-                startY = minStartY;
-                if (edgeEffectState)
-                {
-                    bottomEdgeEffect.onAbsorb((int) -overScroller.getCurrVelocity());
-                    edgeEffectState = false;
-                }
-            } else if (startY >= maxStartY)
-            {
-                startY = maxStartY;
-                if (edgeEffectState)
-                {
-                    topEdgeEffect.onAbsorb((int) overScroller.getCurrVelocity());
-                    edgeEffectState = false;
-                }
-            }
-            lastVelocity = overScroller.getCurrVelocity();
             ViewCompat.postInvalidateOnAnimation(WeekView.this);
         }
     }
