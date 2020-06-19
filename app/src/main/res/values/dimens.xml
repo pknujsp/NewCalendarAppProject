@@ -10,4 +10,5 @@
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="weekview_textsize">12dp</dimen>
     <dimen name="line_thickness">1dp</dimen>
+    <dimen name="new_schedule_line_thickness">3dp</dimen>
 </resources>

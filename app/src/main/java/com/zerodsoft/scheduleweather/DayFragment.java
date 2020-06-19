@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
+import com.zerodsoft.scheduleweather.CalendarView.MoveWeekListener;
 import com.zerodsoft.scheduleweather.CalendarView.WeekDatesView;
 import com.zerodsoft.scheduleweather.CalendarView.WeekView;
 import com.zerodsoft.scheduleweather.CalendarView.WeekHeaderView;
@@ -61,6 +62,7 @@ public class DayFragment extends Fragment
         mWeekHeaderView.setOnUpdateWeekDatesListener(mWeekDatesView);
 
         changeListener changeListener = new changeListener();
+        changeListener.setMoveWeekListener(mWeekHeaderView);
 
         weekViewPager = (ViewPager) view.findViewById(R.id.weekviewpager);
         weekViewPagerAdapter = new WeekViewPagerAdapter(getContext(), DayFragment.this);
@@ -71,24 +73,40 @@ public class DayFragment extends Fragment
 
     class changeListener extends ViewPager.SimpleOnPageChangeListener
     {
+        MoveWeekListener moveWeekListener;
+
+        public void setMoveWeekListener(MoveWeekListener moveWeekListener)
+        {
+            this.moveWeekListener = moveWeekListener;
+        }
+
         @Override
         public void onPageScrollStateChanged(int state)
         {
-            // Log.e(DAYFRAGMENT_TAG, "onPageScrollStateChanged");
-
+            super.onPageScrollStateChanged(state);
+            if (state == ViewPager.SCROLL_STATE_IDLE)
+            {
+                Log.e(DAYFRAGMENT_TAG, "SCROLL_STATE_IDLE");
+            } else if (state == ViewPager.SCROLL_STATE_DRAGGING)
+            {
+                Log.e(DAYFRAGMENT_TAG, "SCROLL_STATE_DRAGGING");
+            } else if (state == ViewPager.SCROLL_STATE_SETTLING)
+            {
+                Log.e(DAYFRAGMENT_TAG, "SCROLL_STATE_SETTLING");
+            }
         }
 
         @Override
         public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels)
         {
-            // Log.e(DAYFRAGMENT_TAG, "onPageScrolled");
             super.onPageScrolled(position, positionOffset, positionOffsetPixels);
+            // 왼쪽으로 드래그시 positionOffset의 값이 작아짐 1.0 -> 0.0
+            // 오른쪽으로 드래그시 positionOffset의 값이 커짐 0.0 -> 1.0
         }
 
         @Override
         public void onPageSelected(int position)
         {
-            // Log.e(DAYFRAGMENT_TAG, "onPageSelected");
             super.onPageSelected(position);
         }
     }

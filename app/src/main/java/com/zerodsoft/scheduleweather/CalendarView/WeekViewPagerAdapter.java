@@ -67,12 +67,6 @@ public class WeekViewPagerAdapter extends PagerAdapter implements WeekView.WeekV
         return (view == (View) object);
     }
 
-    @Override
-    public void startUpdate(@NonNull ViewGroup container)
-    {
-        Log.e(ADAPTER_TAG, "start update");
-    }
-
 
     @Override
     public void refreshSideView()

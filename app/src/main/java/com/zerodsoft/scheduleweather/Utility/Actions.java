@@ -27,4 +27,6 @@ public class Actions
     public static final int START_ADD_SCHEDULE_ACTIVITY = 22;
     public static final int UPDATE_TRAVEL = 23;
     public static final int FAILED_DOWNLOAD = 24;
+    public static final int GO_TO_PREVIOUS_WEEK = 25;
+    public static final int GO_TO_NEXT_WEEK = 26;
 }

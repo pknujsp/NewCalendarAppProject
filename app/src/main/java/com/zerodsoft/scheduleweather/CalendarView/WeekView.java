@@ -28,7 +28,11 @@ import androidx.core.widget.EdgeEffectCompat;
 
 import com.zerodsoft.scheduleweather.DayFragment;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.Utility.Clock;
 import com.zerodsoft.scheduleweather.Utility.DateHour;
+
+import java.util.Calendar;
+import java.util.Date;
 
 public class WeekView extends View
 {
@@ -42,6 +46,8 @@ public class WeekView extends View
     private int weekDayViewLineColor;
     private int spacingLinesBetweenHour;
     private int spacingLinesBetweenDay;
+    private int newScheduleRectColor;
+    private int newScheduleRectThickness;
     private int hourTextHeight;
     private Rect hourTextBoxRect = new Rect();
     private int scheduleLayoutWidth;
@@ -66,9 +72,10 @@ public class WeekView extends View
     private float maxStartY;
     private int TABLE_LAYOUT_MARGIN;
 
-    private DIRECTION currentScrollDirection = DIRECTION.NONE;
+    private Calendar startTime = Calendar.getInstance();
+    private Calendar endTime = Calendar.getInstance();
 
-    private MoveWeekListener moveWeekListener;
+    private DIRECTION currentScrollDirection = DIRECTION.NONE;
 
     enum DIRECTION
     {NONE, HORIZONTAL, VERTICAL, CANCEL, FINISHED}
@@ -80,11 +87,6 @@ public class WeekView extends View
         void refreshSideView();
     }
 
-    public void setMoveWeekListener(MoveWeekListener moveWeekListener)
-    {
-        this.moveWeekListener = moveWeekListener;
-    }
-
     public WeekView(Context context, WeekViewPagerAdapter adapter)
     {
         super(context);
@@ -94,6 +96,8 @@ public class WeekView extends View
         weekDayViewBackgroundColor = Color.WHITE;
         weekDayViewLineThickness = context.getResources().getDimensionPixelSize(R.dimen.line_thickness);
         weekDayViewLineColor = Color.LTGRAY;
+        newScheduleRectColor = Color.BLUE;
+        newScheduleRectThickness = context.getResources().getDimensionPixelSize(R.dimen.new_schedule_line_thickness);
         TABLE_LAYOUT_MARGIN = weekDayHourTextSize;
 
         init();
@@ -119,11 +123,6 @@ public class WeekView extends View
         }
         init();
 
-    }
-
-    public interface MoveWeekListener
-    {
-        void moveWeek(int amount, float lastX);
     }
 
     private final GestureDetector.OnGestureListener onGestureListener = new GestureDetector.SimpleOnGestureListener()
@@ -159,7 +158,6 @@ public class WeekView extends View
                 {
                     currentCoordinate.y = minStartY;
                 }
-                weekViewInterface.refreshSideView();
             }
             ViewCompat.postInvalidateOnAnimation(WeekView.this);
             return true;
@@ -191,6 +189,13 @@ public class WeekView extends View
         public boolean onSingleTapConfirmed(MotionEvent e)
         {
             return super.onSingleTapConfirmed(e);
+        }
+
+        @Override
+        public void onLongPress(MotionEvent e)
+        {
+            setStartTime(e.getX() - spacingLinesBetweenDay, e.getY());
+            Log.e(TAG, Clock.timeFormat2.format(getTime(e.getY()).getTime()));
         }
     };
 
@@ -234,6 +239,7 @@ public class WeekView extends View
     {
         super.onDraw(canvas);
         drawDayView(canvas);
+        weekViewInterface.refreshSideView();
     }
 
 
@@ -269,6 +275,45 @@ public class WeekView extends View
         {
             // 이번 주 세로 선
             canvas.drawLine(startX + (spacingLinesBetweenDay * i), startY - hourTextHeight, startX + (spacingLinesBetweenDay * i), startY + tableHeight, weekDayVerticalLinePaint);
+        }
+    }
+
+    private Calendar getTime(float y)
+    {
+        float startHour, endHour;
+
+        for (int i = 0; i <= 23; i++)
+        {
+            startHour = currentCoordinate.y + spacingLinesBetweenHour * i;
+            endHour = currentCoordinate.y + spacingLinesBetweenHour * (i + 1);
+
+            if (y >= startHour && y < endHour)
+            {
+                float minute15Height = (endHour - startHour) / 4f;
+                y = y - startHour;
+                for (int j = 0; j <= 3; j++)
+                {
+                    if (y >= minute15Height * j && y <= minute15Height * (j + 1))
+                    {
+                        int year = startTime.get(Calendar.YEAR), month = startTime.get(Calendar.MONTH), date = startTime.get(Calendar.DAY_OF_MONTH);
+                        startTime.set(year, month, date, i, j * 15);
+                        return startTime;
+                    }
+                }
+            }
+        }
+        return startTime;
+    }
+
+    private void setStartTime(float x, float y)
+    {
+        for (int i = 0; i <= 6; i++)
+        {
+            if (x >= WeekHeaderView.coordinateInfos[i].getStartX() && x < WeekHeaderView.coordinateInfos[i].getEndX())
+            {
+                startTime = WeekHeaderView.coordinateInfos[i].getDate();
+                break;
+            }
         }
     }
 

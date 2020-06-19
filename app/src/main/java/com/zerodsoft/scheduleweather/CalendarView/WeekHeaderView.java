@@ -19,6 +19,7 @@ import android.widget.OverScroller;
 import androidx.core.view.GestureDetectorCompat;
 import androidx.core.view.ViewCompat;
 
+import com.zerodsoft.scheduleweather.CalendarView.Dto.CoordinateInfo;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.Utility.DateHour;
 
@@ -28,7 +29,7 @@ import java.util.Date;
 import java.util.Locale;
 
 
-public class WeekHeaderView extends View implements WeekView.MoveWeekListener
+public class WeekHeaderView extends View implements MoveWeekListener
 {
     private final static String TAG = "WeekHeaderView";
     private Context mContext;
@@ -83,6 +84,20 @@ public class WeekHeaderView extends View implements WeekView.MoveWeekListener
     private ScrollListener mScrollListener;
     private DateSelectedChangeListener mDateSelectedChangeListener;
     private OnUpdateWeekDatesListener onUpdateWeekDatesListener;
+
+    public static CoordinateInfo[] coordinateInfos = new CoordinateInfo[7];
+
+    @Override
+    public void moveWeek(int action)
+    {
+
+    }
+
+    @Override
+    public void moveWeekView(int action)
+    {
+
+    }
 
     public interface OnUpdateWeekDatesListener
     {
@@ -257,6 +272,18 @@ public class WeekHeaderView extends View implements WeekView.MoveWeekListener
     }
 
     @Override
+    public void layout(int l, int t, int r, int b)
+    {
+        super.layout(l, t, r, b);
+        mHeaderWidthPerDay = getWidth() / 7;
+        for (int i = 0; i <= 6; i++)
+        {
+            coordinateInfos[i] = new CoordinateInfo().setDate(null).setStartX(mHeaderWidthPerDay * i)
+                    .setEndX(mHeaderWidthPerDay * (i + 1));
+        }
+    }
+
+    @Override
     protected void onDraw(Canvas canvas)
     {
         super.onDraw(canvas);
@@ -266,9 +293,7 @@ public class WeekHeaderView extends View implements WeekView.MoveWeekListener
     //Draw date label and day label.
     private void drawHeader(Canvas canvas)
     {
-        Log.e("HEADER", "drawHeader : " + Float.toString(mCurrentOrigin.x));
         // 열 사이의 간격 (주차, 일, 월~토)
-        mHeaderWidthPerDay = getWidth() / 7;
         // 주차를 표시할 공간을 확보
 
         if (mIsFirstDraw)
@@ -324,6 +349,16 @@ public class WeekHeaderView extends View implements WeekView.MoveWeekListener
             canvas.drawText(DateHour.getDayString(i), mHeaderWidthPerDay / 2 + mHeaderWidthPerDay * i, mHeaderDayHeight + mHeaderRowMarginTop, mHeaderDateNormalPaint);
         }
 
+        // 날짜 정보를 저장할 변수를 생성 일~토
+        date = (Calendar) mToday.clone();
+        // 일요일로 이동
+        date.add(Calendar.DATE, leftDaysWithGaps);
+
+        for (int i = 0; i < 7; i++)
+        {
+            coordinateInfos[i].setDate(date);
+            date.add(Calendar.DATE, 1);
+        }
 
         // 날짜를 그림
         for (int dateNum = leftDaysWithGaps, amount = -7; amount <= 13; amount++)
@@ -540,9 +575,4 @@ public class WeekHeaderView extends View implements WeekView.MoveWeekListener
         return dayOne.get(Calendar.YEAR) == dayTwo.get(Calendar.YEAR) && dayOne.get(Calendar.DAY_OF_YEAR) == dayTwo.get(Calendar.DAY_OF_YEAR);
     }
 
-    @Override
-    public void moveWeek(int amount, float lastX)
-    {
-
-    }
 }
