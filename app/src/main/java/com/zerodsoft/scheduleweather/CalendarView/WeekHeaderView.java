@@ -16,10 +16,12 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.OverScroller;
 
+import androidx.annotation.Nullable;
 import androidx.core.view.GestureDetectorCompat;
 import androidx.core.view.ViewCompat;
 
 import com.zerodsoft.scheduleweather.CalendarView.Dto.CoordinateInfo;
+import com.zerodsoft.scheduleweather.DayFragment;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.Utility.DateHour;
 
@@ -37,9 +39,7 @@ public class WeekHeaderView extends View implements MoveWeekListener
     private Calendar mFirstVisibleDay;
     private Calendar mLastVisibleDay;
     private Calendar mSelectedDay;
-
-    private GestureDetectorCompat mGestureDetector;
-    private OverScroller mStickyScroller;
+    private int position;
 
     private PointF mCurrentOrigin = new PointF(0f, 0f);
     private PointF mLastOrigin = new PointF(0F, 0F);
@@ -48,15 +48,13 @@ public class WeekHeaderView extends View implements MoveWeekListener
     private Paint mHeaderDateTodayPaint;
     private Paint mHeaderDayNormalPaint;
     private Paint mHeaderDayTodayPaint;
-    private Paint mHeaderWeekPaint;
     private Paint circlePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private Paint dividingPaint;
     private int mHeaderDateHeight;
     private int mHeaderDayHeight;
 
-    private float mDistanceX = 0;
-
     // Attributes and their default values.
-    private int mHeaderHeight;
+    public static int mHeaderHeight;
     private int mHeaderWidthPerDay;
     private int mFirstDayOfWeek = Calendar.SUNDAY;
     private int mHeaderAllBackgroundColor;
@@ -80,9 +78,6 @@ public class WeekHeaderView extends View implements MoveWeekListener
     private boolean mIsFirstDraw = true;
     private boolean mAreHeaderScrolling = false;
 
-    //    Interface
-    private ScrollListener mScrollListener;
-    private DateSelectedChangeListener mDateSelectedChangeListener;
     private OnUpdateWeekDatesListener onUpdateWeekDatesListener;
 
     public static CoordinateInfo[] coordinateInfos = new CoordinateInfo[7];
@@ -111,67 +106,10 @@ public class WeekHeaderView extends View implements MoveWeekListener
         return this;
     }
 
-    private final GestureDetector.SimpleOnGestureListener mGestureListener = new GestureDetector.SimpleOnGestureListener()
+
+    public WeekHeaderView(Context context, @Nullable AttributeSet attrs)
     {
-        @Override
-        public boolean onDown(MotionEvent e)
-        {
-            // 터치한 위치의 좌표값 저장
-            mLastOrigin.x = mCurrentOrigin.x;
-            mLastOrigin.y = mCurrentOrigin.y;
-            return true;
-        }
-
-        @Override
-        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY)
-        {
-            // 스크롤 시 onDraw()를 호출
-            mAreHeaderScrolling = true;
-            mDistanceX = distanceX;
-            ViewCompat.postInvalidateOnAnimation(WeekHeaderView.this);
-            return true;
-        }
-
-        @Override
-        public boolean onSingleTapConfirmed(MotionEvent e)
-        {
-            // 날짜를 터치했을 때, 날짜를 출력한다
-            Calendar newSelectedDay = getDateFromPoint(e.getX(), e.getY());
-            SimpleDateFormat format = new SimpleDateFormat("yyyy MM dd", Locale.getDefault());
-            if (null != newSelectedDay)
-            {
-                // Toast.makeText(mContext, "time =====" + format.format(newSelectedDay.getTime()), Toast.LENGTH_SHORT).show();
-            }
-            if (null != newSelectedDay && mDateSelectedChangeListener != null)
-            {
-                mDateSelectedChangeListener.onDateSelectedChange(mSelectedDay, newSelectedDay);
-            }
-            mSelectedDay = (Calendar) newSelectedDay.clone();
-            ViewCompat.postInvalidateOnAnimation(WeekHeaderView.this);
-            return super.onSingleTapConfirmed(e);
-        }
-
-        @Override
-        public void onLongPress(MotionEvent e)
-        {
-            super.onLongPress(e);
-        }
-    };
-
-
-    public WeekHeaderView(Context context)
-    {
-        this(context, null);
-    }
-
-    public WeekHeaderView(Context context, AttributeSet attrs)
-    {
-        this(context, attrs, 0);
-    }
-
-    public WeekHeaderView(Context context, AttributeSet attrs, int defStyleAttr)
-    {
-        super(context, attrs, defStyleAttr);
+        super(context, attrs);
         mContext = context;
 
         TypedArray a = context.getTheme().obtainStyledAttributes(attrs, R.styleable.WeekHeaderView, 0, 0);
@@ -203,9 +141,9 @@ public class WeekHeaderView extends View implements MoveWeekListener
         {
             a.recycle();
         }
-
         init();
     }
+
 
     private void init()
     {
@@ -215,20 +153,16 @@ public class WeekHeaderView extends View implements MoveWeekListener
         mToday.set(Calendar.MINUTE, 0);
         mToday.set(Calendar.SECOND, 0);
 
+        if (position != DayFragment.FIRST_VIEW_NUMBER)
+        {
+            mToday.add(Calendar.DATE, (position - DayFragment.FIRST_VIEW_NUMBER));
+        }
 
         mSelectedDay = (Calendar) mToday.clone();
-
-        // Scrolling initialization.
-        mGestureDetector = new GestureDetectorCompat(mContext, mGestureListener);
-        mStickyScroller = new OverScroller(mContext);
 
         //prepare paint
         mHeaderBackgroundPaint = new Paint();
         mHeaderBackgroundPaint.setColor(mHeaderAllBackgroundColor);
-
-        mHeaderWeekPaint = new Paint();
-        mHeaderWeekPaint.setColor(mHeaderWeekTextColor);
-        mHeaderWeekPaint.setTextSize(mHeaderWeekTextSize);
 
         Rect rect = new Rect();
         mHeaderDateNormalPaint = new Paint();
@@ -258,11 +192,9 @@ public class WeekHeaderView extends View implements MoveWeekListener
         circlePaint.setColor(Color.GRAY);
         circlePaint.setStrokeWidth(3);
         circlePaint.setStyle(Paint.Style.STROKE);
-    }
 
-    public int getMHeaderHeight()
-    {
-        return mHeaderHeight;
+        dividingPaint = new Paint();
+        dividingPaint.setColor(Color.BLACK);
     }
 
     @Override
@@ -288,6 +220,8 @@ public class WeekHeaderView extends View implements MoveWeekListener
     {
         super.onDraw(canvas);
         drawHeader(canvas);
+        canvas.drawLine(0f, getHeight() - 1, getWidth(), getHeight() - 1, dividingPaint);
+
     }
 
     //Draw date label and day label.
@@ -313,11 +247,6 @@ public class WeekHeaderView extends View implements MoveWeekListener
                 mCurrentOrigin.x += (mHeaderWidthPerDay) * difference;
             }
         }
-        if (mAreHeaderScrolling)
-        {
-            // 스크롤 중인 경우
-            mCurrentOrigin.x -= mDistanceX;
-        }
         // 일요일(맨앞)과 오늘의 일수 차이 계산
         final int leftDaysWithGaps = (int) -(Math.ceil((mCurrentOrigin.x) / mHeaderWidthPerDay));
         // 시작 픽셀(일요일 부터 시작)
@@ -337,7 +266,7 @@ public class WeekHeaderView extends View implements MoveWeekListener
         mLastVisibleDay.add(Calendar.DATE, 6);
         if (!mFirstVisibleDay.equals(oldFirstVisibleDay) && onUpdateWeekDatesListener != null)
         {
-            onUpdateWeekDatesListener.updateWeekDates(Integer.toString(mFirstVisibleDay.get(Calendar.WEEK_OF_YEAR)) + "주");
+            sendWeekDates();
         }
         // 헤더의 배경을 그림
         canvas.drawRect(0, 0, getWidth(), mHeaderHeight, mHeaderBackgroundPaint);
@@ -399,169 +328,12 @@ public class WeekHeaderView extends View implements MoveWeekListener
         }
     }
 
-    private void drawSchedules(Canvas canvas)
-    {
-
-    }
-
-    private void drawScheduleRect(Canvas canvas, float x, float y, int length)
-    {
-    }
-
-
-    private Calendar getDateFromPoint(float x, float y)
-    {
-        int leftDaysWithGaps = (int) -(Math.ceil((mCurrentOrigin.x) / (mHeaderWidthPerDay)));
-        float startPixel = mCurrentOrigin.x + (mHeaderWidthPerDay) * leftDaysWithGaps;
-
-        for (int dayNumber = leftDaysWithGaps + 1;
-             dayNumber <= leftDaysWithGaps + 8;
-             dayNumber++)
-        {
-            float start = startPixel;
-            if (mHeaderWidthPerDay + startPixel - start > 0
-                    && x > start && x < startPixel + mHeaderWidthPerDay)
-            {
-                Calendar day = (Calendar) mToday.clone();
-                day.add(Calendar.DATE, dayNumber - 1);
-                return day;
-            }
-            startPixel += mHeaderWidthPerDay;
-        }
-        return null;
-    }
-
-
-    /////////////////////////////////////////////////////////////////
-    //
-    //      Functions related to scrolling.
-    //
-    /////////////////////////////////////////////////////////////////
-
-
-    @Override
-    public boolean onTouchEvent(MotionEvent event)
-    {
-        if (mStickyScroller.computeScrollOffset())
-        {
-            return true;
-        }
-        if (event.getAction() == MotionEvent.ACTION_UP)
-        {
-            // 이전/다음 주로 이동하는 동작을 작성, 스크롤 후 손을 땠을 경우
-            mAreHeaderScrolling = false;
-            mDistanceX = 0;
-            float dx = mLastOrigin.x - mCurrentOrigin.x;
-            if (Math.abs(dx) < mHeaderWidthPerDay)
-            {
-                // 스크롤 길이 부족으로 주 이동하지 않음
-                mCurrentOrigin.x = mLastOrigin.x;
-                mCurrentOrigin.y = mLastOrigin.y;
-            } else
-            {
-                // 다른 주로 넘어감
-                // dx<0인 경우 : 이전 주, dx>0인 경우 : 다음 주
-                int scrollDx = (int) (dx > 0 ? (-mHeaderWidthPerDay * 7) : (mHeaderWidthPerDay * 7));
-                mSelectedDay.add(Calendar.DATE, dx > 0 ? 7 : -7);
-                mStickyScroller.startScroll((int) mLastOrigin.x, 0, scrollDx, 0);
-            }
-            ViewCompat.postInvalidateOnAnimation(WeekHeaderView.this);
-            return mGestureDetector.onTouchEvent(event);
-        }
-        return mGestureDetector.onTouchEvent(event);
-    }
-
-    @Override
-    public void computeScroll()
-    {
-        super.computeScroll();
-        if (mStickyScroller.computeScrollOffset())
-        {
-            mCurrentOrigin.x = mStickyScroller.getCurrX();
-            ViewCompat.postInvalidateOnAnimation(this);
-        }
-    }
-
     /////////////////////////////////////////////////////////////////
     //
     //      Functions related to setting and getting the properties.
     //
     /////////////////////////////////////////////////////////////////
 
-
-    public ScrollListener getScrollListener()
-    {
-        return mScrollListener;
-    }
-
-    public void setScrollListener(ScrollListener mScrollListener)
-    {
-        this.mScrollListener = mScrollListener;
-        invalidate();
-    }
-
-    public Calendar getSelectedDay()
-    {
-        return mSelectedDay;
-    }
-
-
-    public DateSelectedChangeListener getDateSelectedChangeListener()
-    {
-        return mDateSelectedChangeListener;
-    }
-
-    public void setDateSelectedChangeListener(DateSelectedChangeListener dateSelectedChangeListener)
-    {
-        this.mDateSelectedChangeListener = dateSelectedChangeListener;
-    }
-
-
-    ////////////////////////////////////////////////////////////////
-    //
-    //       InterFace
-    //
-    ///////////////////////////////////////////////////////////////
-    public interface ScrollListener
-    {
-        /**
-         * Called when the first visible day has changed.
-         * <p/>
-         * (this will also be called during the first draw of the WeekHeaderView)
-         *
-         * @param newFirstVisibleDay The new first visible day
-         * @param oldFirstVisibleDay The old first visible day (is null on the first call).
-         */
-        public void onFirstVisibleDayChanged(Calendar newFirstVisibleDay, Calendar oldFirstVisibleDay);
-    }
-
-    public interface DateSelectedChangeListener
-    {
-        public void onDateSelectedChange(Calendar oldSelectedDay, Calendar newSelectedDay);
-    }
-
-    //////////////////////////////////////////////////////////////
-    //
-    //        Helper Methods
-    //
-    /////////////////////////////////////////////////////////////
-
-    /**
-     * Checks if an integer array contains a particular value.
-     *
-     * @param list  The haystack.
-     * @param value The needle.
-     * @return True if the array contains the value. Otherwise returns false.
-     */
-    private boolean containsValue(int[] list, int value)
-    {
-        for (int i = 0; i < list.length; i++)
-        {
-            if (list[i] == value)
-                return true;
-        }
-        return false;
-    }
 
     /**
      * Checks if two times are on the same day.
@@ -575,4 +347,19 @@ public class WeekHeaderView extends View implements MoveWeekListener
         return dayOne.get(Calendar.YEAR) == dayTwo.get(Calendar.YEAR) && dayOne.get(Calendar.DAY_OF_YEAR) == dayTwo.get(Calendar.DAY_OF_YEAR);
     }
 
+    public void sendWeekDates()
+    {
+        onUpdateWeekDatesListener.updateWeekDates(Integer.toString(mFirstVisibleDay.get(Calendar.WEEK_OF_YEAR)) + "주");
+    }
+
+    public WeekHeaderView setPosition(int position)
+    {
+        this.position = position;
+        return this;
+    }
+
+    public int getPosition()
+    {
+        return position;
+    }
 }

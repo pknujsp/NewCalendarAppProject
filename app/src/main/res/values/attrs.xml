@@ -48,5 +48,7 @@
         <attr name="WeekDayViewBackgroundColor" format="color" />
         <attr name="WeekDayViewLineThickness" format="dimension" />
         <attr name="WeekDayViewLineColor" format="color" />
+        <attr name="WeekDayViewNewScheduleRectColor" format="color" />
+        <attr name="WeekDayViewNewScheduleRectThickness" format="dimension" />
     </declare-styleable>
 </resources>

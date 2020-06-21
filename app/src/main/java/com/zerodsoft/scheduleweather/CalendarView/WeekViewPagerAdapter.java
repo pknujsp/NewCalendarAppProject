@@ -5,6 +5,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.HeaderViewListAdapter;
 import android.widget.ScrollView;
 
 import androidx.annotation.NonNull;
@@ -12,14 +13,16 @@ import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.PagerAdapter;
 
 import com.zerodsoft.scheduleweather.DayFragment;
+import com.zerodsoft.scheduleweather.R;
 
 
-public class WeekViewPagerAdapter extends PagerAdapter implements WeekView.WeekViewInterface
+public class WeekViewPagerAdapter extends PagerAdapter implements WeekView.OnRefreshChildViewListener, WeekHeaderView.OnUpdateWeekDatesListener
 {
     private static final String ADAPTER_TAG = "WEEKVIEWPAGER_ADAPTER";
     private Context context;
-    private Fragment fragment;
+    private HoursView hoursView;
     private ViewGroup container;
+    private WeekDatesView weekDatesView;
 
 
     public WeekViewPagerAdapter()
@@ -28,25 +31,33 @@ public class WeekViewPagerAdapter extends PagerAdapter implements WeekView.WeekV
     }
 
 
-    public WeekViewPagerAdapter(Context context, Fragment fragment)
+    public WeekViewPagerAdapter(Context context, WeekDatesView weekDatesView, HoursView hoursView)
     {
         this.context = context;
-        this.fragment = fragment;
+        this.weekDatesView = weekDatesView;
+        this.hoursView = hoursView;
     }
+
 
     @NonNull
     @Override
     public Object instantiateItem(@NonNull ViewGroup container, int position)
     {
-        View weekView = null;
         this.container = container;
+        View rootView = null, headerView = null, weekView = null;
 
         if (context != null)
         {
-            weekView = new WeekView(context, WeekViewPagerAdapter.this);
+            LayoutInflater layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            rootView = layoutInflater.inflate(R.layout.weekview_viewpager_item, container, false);
+            headerView = (WeekHeaderView) rootView.findViewById(R.id.weekheaderview);
+            weekView = (WeekView) rootView.findViewById(R.id.weekview);
+            ((WeekHeaderView) headerView).setPosition(position).setOnUpdateWeekDatesListener(weekDatesView);
+            ((WeekView) weekView).setPosition(position).setOnRefreshChildViewListener(this).setOnRefreshHoursViewListener(hoursView);
+            Log.e(ADAPTER_TAG,Integer.toString(((WeekHeaderView) headerView).getPosition())+"번째 뷰 추가됨");
         }
-        container.addView(weekView);
-        return weekView;
+        container.addView(rootView);
+        return rootView;
     }
 
     @Override
@@ -67,14 +78,20 @@ public class WeekViewPagerAdapter extends PagerAdapter implements WeekView.WeekV
         return (view == (View) object);
     }
 
-
     @Override
-    public void refreshSideView()
+    public void refreshChildView()
     {
         for (int i = 0; i < container.getChildCount(); i++)
         {
             container.getChildAt(i).invalidate();
         }
     }
+
+    @Override
+    public void updateWeekDates(String week)
+    {
+
+    }
+
 
 }

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:custom="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <com.zerodsoft.scheduleweather.CalendarView.WeekHeaderView
+        android:id="@+id/weekheaderview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        custom:firstDayOfWeek2="sunday"
+        custom:headerAllBackgroundColor="@android:color/white"
+        custom:headerDateBackgroundColor="@android:color/transparent"
+        custom:headerDateTextColor="@android:color/black"
+        custom:headerDateTextSize="@dimen/week_header_view_date_text_size"
+        custom:headerDayBackgroundColor="@android:color/transparent"
+        custom:headerDayTextColor="@android:color/black"
+        custom:headerDayTextSize="@dimen/week_header_view_day_text_size"
+        custom:headerExtraBackgroundColor="@android:color/transparent"
+        custom:headerExtraButtonSize="15dp"
+        custom:headerExtraTextColor="@android:color/black"
+        custom:headerExtraTextSize="13sp"
+        custom:headerRowMarginBottom="@dimen/week_header_view_day_row_margin"
+        custom:headerRowMarginTop="@dimen/week_header_view_day_row_margin"
+        custom:headerTodayTextColor="@android:color/holo_blue_dark" />
+
+    <com.zerodsoft.scheduleweather.CalendarView.WeekView
+        android:id="@+id/weekview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        custom:WeekDayHourTextColor="@android:color/black"
+        custom:WeekDayHourTextSize="@dimen/weekview_textsize"
+        custom:WeekDayViewBackgroundColor="@android:color/white"
+        custom:WeekDayViewLineColor="@android:color/darker_gray"
+        custom:WeekDayViewLineThickness="@dimen/line_thickness"
+        custom:WeekDayViewNewScheduleRectColor="@android:color/holo_blue_dark"
+        custom:WeekDayViewNewScheduleRectThickness="@dimen/line_thickness" />
+</LinearLayout>

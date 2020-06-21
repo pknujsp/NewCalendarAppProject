@@ -9,14 +9,14 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:orientation="horizontal">
 
 
         <LinearLayout
-            android:id="@+id/headerview_layout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:id="@+id/leftview_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
             <com.zerodsoft.scheduleweather.CalendarView.WeekDatesView
                 android:id="@+id/weekdatesview"
@@ -26,36 +26,24 @@
                 app:WeekTextColor="@android:color/white"
                 app:WeekTextSize="13sp" />
 
-            <com.zerodsoft.scheduleweather.CalendarView.WeekHeaderView
-                android:id="@+id/weekheaderview"
+            <com.zerodsoft.scheduleweather.CalendarView.HoursView
+                android:id="@+id/hoursview"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:firstDayOfWeek2="sunday"
-                app:headerAllBackgroundColor="@android:color/white"
-                app:headerDateBackgroundColor="@android:color/transparent"
-                app:headerDateTextColor="@android:color/black"
-                app:headerDateTextSize="13sp"
-                app:headerDayBackgroundColor="@android:color/transparent"
-                app:headerDayTextColor="@android:color/black"
-                app:headerDayTextSize="13sp"
-                app:headerExtraBackgroundColor="@android:color/transparent"
-                app:headerExtraButtonSize="15dp"
-                app:headerExtraTextColor="@android:color/black"
-                app:headerExtraTextSize="13sp"
-                app:headerRowMarginBottom="8dp"
-                app:headerRowMarginTop="8dp"
-                app:headerTodayTextColor="@android:color/holo_blue_dark"
-                app:headerWeekBackgroundColor="@android:color/transparent"
-                app:headerWeekTextColor="@android:color/black"
-                app:headerWeekTextSize="13sp" />
+                android:layout_height="wrap_content" />
         </LinearLayout>
 
 
-        <androidx.viewpager.widget.ViewPager
-            android:id="@+id/weekviewpager"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+        <LinearLayout
+            android:id="@+id/rightview_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
+            <androidx.viewpager.widget.ViewPager
+                android:id="@+id/weekviewpager"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+        </LinearLayout>
 
     </LinearLayout>
 

@@ -1,38 +1,27 @@
 package com.zerodsoft.scheduleweather.CalendarView;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.EdgeEffect;
 import android.widget.OverScroller;
-import android.widget.ScrollView;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.core.view.GestureDetectorCompat;
 import androidx.core.view.ViewCompat;
-import androidx.core.widget.EdgeEffectCompat;
 
-import com.zerodsoft.scheduleweather.DayFragment;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.Utility.Clock;
-import com.zerodsoft.scheduleweather.Utility.DateHour;
 
 import java.util.Calendar;
-import java.util.Date;
 
 public class WeekView extends View
 {
@@ -53,6 +42,7 @@ public class WeekView extends View
     private int scheduleLayoutWidth;
     private int width;
     private float tableHeight = 0f;
+    private int position;
 
     private Paint weekDayHourTextPaint;
     private Paint weekDayHorizontalLinePaint;
@@ -61,7 +51,7 @@ public class WeekView extends View
 
     private OverScroller overScroller;
     private GestureDetectorCompat gestureDetector;
-    private static PointF currentCoordinate = new PointF(0f, 0f);
+    public static PointF currentCoordinate = new PointF(0f, 0f);
     private PointF lastCoordinate = new PointF(0f, 0f);
 
     private float mDistanceY;
@@ -78,16 +68,34 @@ public class WeekView extends View
     private DIRECTION currentScrollDirection = DIRECTION.NONE;
 
     enum DIRECTION
-    {NONE, HORIZONTAL, VERTICAL, CANCEL, FINISHED}
+    {NONE, VERTICAL, CANCEL, FINISHED}
 
-    private WeekViewInterface weekViewInterface;
+    private OnRefreshChildViewListener onRefreshChildViewListener;
+    private OnRefreshHoursViewListener onRefreshHoursViewListener;
 
-    public interface WeekViewInterface
+    public interface OnRefreshHoursViewListener
     {
-        void refreshSideView();
+        void refreshHoursView();
     }
 
-    public WeekView(Context context, WeekViewPagerAdapter adapter)
+    public interface OnRefreshChildViewListener
+    {
+        void refreshChildView();
+    }
+
+    public WeekView setOnRefreshChildViewListener(OnRefreshChildViewListener onRefreshChildViewListener)
+    {
+        this.onRefreshChildViewListener = onRefreshChildViewListener;
+        return this;
+    }
+
+    public WeekView setOnRefreshHoursViewListener(OnRefreshHoursViewListener onRefreshHoursViewListener)
+    {
+        this.onRefreshHoursViewListener = onRefreshHoursViewListener;
+        return this;
+    }
+
+    public WeekView(Context context, WeekViewPagerAdapter adapter, HoursView hoursView)
     {
         super(context);
         this.context = context;
@@ -101,7 +109,6 @@ public class WeekView extends View
         TABLE_LAYOUT_MARGIN = weekDayHourTextSize;
 
         init();
-        this.weekViewInterface = adapter;
     }
 
     public WeekView(Context context, @Nullable AttributeSet attrs)
@@ -117,12 +124,14 @@ public class WeekView extends View
             weekDayViewBackgroundColor = a.getColor(R.styleable.WeekView_WeekDayViewBackgroundColor, weekDayViewBackgroundColor);
             weekDayViewLineThickness = a.getDimensionPixelSize(R.styleable.WeekView_WeekDayViewLineThickness, weekDayViewLineThickness);
             weekDayViewLineColor = a.getColor(R.styleable.WeekView_WeekDayViewLineColor, weekDayViewLineColor);
+            newScheduleRectColor = a.getColor(R.styleable.WeekView_WeekDayViewNewScheduleRectColor, newScheduleRectColor);
+            newScheduleRectThickness = a.getDimensionPixelSize(R.styleable.WeekView_WeekDayViewNewScheduleRectThickness, newScheduleRectThickness);
+            TABLE_LAYOUT_MARGIN = weekDayHourTextSize;
         } finally
         {
             a.recycle();
         }
         init();
-
     }
 
     private final GestureDetector.OnGestureListener onGestureListener = new GestureDetector.SimpleOnGestureListener()
@@ -160,6 +169,7 @@ public class WeekView extends View
                 }
             }
             ViewCompat.postInvalidateOnAnimation(WeekView.this);
+            onRefreshHoursViewListener.refreshHoursView();
             return true;
 
         }
@@ -174,7 +184,7 @@ public class WeekView extends View
         private void fling(float velocityX, float velocityY)
         {
             overScroller.fling(0, (int) currentCoordinate.y, 0, (int) velocityY, 0, 0, (int) minStartY, (int) maxStartY, 0, 0);
-
+            onRefreshHoursViewListener.refreshHoursView();
             ViewCompat.postInvalidateOnAnimation(WeekView.this);
         }
 
@@ -182,6 +192,7 @@ public class WeekView extends View
         public boolean onDown(MotionEvent e)
         {
             lastCoordinate.y = currentCoordinate.y;
+            Log.e(TAG, Float.toString(e.getX()));
             return true;
         }
 
@@ -194,7 +205,7 @@ public class WeekView extends View
         @Override
         public void onLongPress(MotionEvent e)
         {
-            setStartTime(e.getX() - spacingLinesBetweenDay, e.getY());
+            setStartTime(e.getX(), e.getY());
             Log.e(TAG, Clock.timeFormat2.format(getTime(e.getY()).getTime()));
         }
     };
@@ -239,7 +250,7 @@ public class WeekView extends View
     {
         super.onDraw(canvas);
         drawDayView(canvas);
-        weekViewInterface.refreshSideView();
+        onRefreshChildViewListener.refreshChildView();
     }
 
 
@@ -247,9 +258,8 @@ public class WeekView extends View
     public void layout(int l, int t, int r, int b)
     {
         super.layout(l, t, r, b);
-        scheduleLayoutWidth = getWidth() - getWidth() / 8;
-        spacingLinesBetweenDay = scheduleLayoutWidth / 7;
         width = getWidth();
+        spacingLinesBetweenDay = width / 7;
         minStartY = -(spacingLinesBetweenHour * 24 + TABLE_LAYOUT_MARGIN * 2 - getHeight());
         maxStartY = TABLE_LAYOUT_MARGIN;
         tableHeight = (float) (spacingLinesBetweenHour * 24);
@@ -263,15 +273,13 @@ public class WeekView extends View
         startX = currentCoordinate.x;
         startY = currentCoordinate.y;
 
-        for (int i = 0; i < 24; i++)
+        for (int i = 0; i <= 23; i++)
         {
-            // 이번 주 시간
-            canvas.drawText(DateHour.getHourString(i), startX, startY + (spacingLinesBetweenHour * i) + hourTextHeight / 2, weekDayHourTextPaint);
             // 가로 선
-            canvas.drawLine(startX + spacingLinesBetweenDay, startY + (spacingLinesBetweenHour * i), startX + width, startY + (spacingLinesBetweenHour * i), weekDayHorizontalLinePaint);
+            canvas.drawLine(0f, startY + (spacingLinesBetweenHour * i), width, startY + (spacingLinesBetweenHour * i), weekDayHorizontalLinePaint);
         }
 
-        for (int i = 1; i <= 8; i++)
+        for (int i = 0; i <= 7; i++)
         {
             // 이번 주 세로 선
             canvas.drawLine(startX + (spacingLinesBetweenDay * i), startY - hourTextHeight, startX + (spacingLinesBetweenDay * i), startY + tableHeight, weekDayVerticalLinePaint);
@@ -291,6 +299,7 @@ public class WeekView extends View
             {
                 float minute15Height = (endHour - startHour) / 4f;
                 y = y - startHour;
+
                 for (int j = 0; j <= 3; j++)
                 {
                     if (y >= minute15Height * j && y <= minute15Height * (j + 1))
@@ -338,7 +347,19 @@ public class WeekView extends View
             currentCoordinate.y = overScroller.getCurrY();
 
             ViewCompat.postInvalidateOnAnimation(WeekView.this);
+            onRefreshHoursViewListener.refreshHoursView();
         }
     }
 
+
+    public WeekView setPosition(int position)
+    {
+        this.position = position;
+        return this;
+    }
+
+    public int getPosition()
+    {
+        return position;
+    }
 }
