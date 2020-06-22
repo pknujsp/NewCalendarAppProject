@@ -16,7 +16,7 @@ import com.zerodsoft.scheduleweather.DayFragment;
 import com.zerodsoft.scheduleweather.R;
 
 
-public class WeekViewPagerAdapter extends PagerAdapter implements WeekView.OnRefreshChildViewListener, WeekHeaderView.OnUpdateWeekDatesListener
+public class WeekViewPagerAdapter extends PagerAdapter implements WeekView.OnRefreshChildViewListener
 {
     private static final String ADAPTER_TAG = "WEEKVIEWPAGER_ADAPTER";
     private Context context;
@@ -52,9 +52,9 @@ public class WeekViewPagerAdapter extends PagerAdapter implements WeekView.OnRef
             rootView = layoutInflater.inflate(R.layout.weekview_viewpager_item, container, false);
             headerView = (WeekHeaderView) rootView.findViewById(R.id.weekheaderview);
             weekView = (WeekView) rootView.findViewById(R.id.weekview);
-            ((WeekHeaderView) headerView).setPosition(position).setOnUpdateWeekDatesListener(weekDatesView);
-            ((WeekView) weekView).setPosition(position).setOnRefreshChildViewListener(this).setOnRefreshHoursViewListener(hoursView);
-            Log.e(ADAPTER_TAG,Integer.toString(((WeekHeaderView) headerView).getPosition())+"번째 뷰 추가됨");
+            ((WeekHeaderView) headerView).setPosition(position).setOnRefreshChildViewListener(this);
+            ((WeekView) weekView).setPosition(position).setCoordinateInfoInterface((WeekHeaderView) headerView).setOnRefreshChildViewListener(this).setOnRefreshHoursViewListener(hoursView);
+          //  Log.e(ADAPTER_TAG, Integer.toString(((WeekHeaderView) headerView).getPosition()) + "번째 뷰 추가됨");
         }
         container.addView(rootView);
         return rootView;
@@ -80,15 +80,6 @@ public class WeekViewPagerAdapter extends PagerAdapter implements WeekView.OnRef
 
     @Override
     public void refreshChildView()
-    {
-        for (int i = 0; i < container.getChildCount(); i++)
-        {
-            container.getChildAt(i).invalidate();
-        }
-    }
-
-    @Override
-    public void updateWeekDates(String week)
     {
 
     }

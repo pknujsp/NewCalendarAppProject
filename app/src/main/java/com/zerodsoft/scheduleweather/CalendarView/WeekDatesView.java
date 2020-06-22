@@ -14,9 +14,10 @@ import android.view.View;
 
 import androidx.annotation.Nullable;
 
+import com.zerodsoft.scheduleweather.DayFragment;
 import com.zerodsoft.scheduleweather.R;
 
-public class WeekDatesView extends View implements WeekHeaderView.OnUpdateWeekDatesListener
+public class WeekDatesView extends View implements DayFragment.OnUpdateWeekDatesListener
 {
     private int weekTextColor;
     private int weekTextSize;

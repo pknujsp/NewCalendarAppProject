@@ -15,7 +15,10 @@ import android.widget.LinearLayout;
 import com.zerodsoft.scheduleweather.CalendarView.HoursView;
 import com.zerodsoft.scheduleweather.CalendarView.MoveWeekListener;
 import com.zerodsoft.scheduleweather.CalendarView.WeekDatesView;
+import com.zerodsoft.scheduleweather.CalendarView.WeekHeaderView;
 import com.zerodsoft.scheduleweather.CalendarView.WeekViewPagerAdapter;
+
+import java.util.Calendar;
 
 
 public class DayFragment extends Fragment
@@ -36,6 +39,11 @@ public class DayFragment extends Fragment
 
     public DayFragment()
     {
+    }
+
+    public interface OnUpdateWeekDatesListener
+    {
+        void updateWeekDates(String week);
     }
 
     @Override
@@ -71,42 +79,61 @@ public class DayFragment extends Fragment
         mWeekDatesView = (WeekDatesView) view.findViewById(R.id.weekdatesview);
         hoursView = (HoursView) view.findViewById(R.id.hoursview);
 
-        //  changeListener changeListener = new changeListener();
+        ChangeListener changeListener = new ChangeListener().setOnUpdateWeekDatesListener(mWeekDatesView);
 
         weekViewPager = (ViewPager) view.findViewById(R.id.weekviewpager);
         weekViewPagerAdapter = new WeekViewPagerAdapter(getContext(), mWeekDatesView, hoursView);
         weekViewPager.setAdapter(weekViewPagerAdapter);
         weekViewPager.setCurrentItem(FIRST_VIEW_NUMBER);
-        // weekViewPager.addOnPageChangeListener(changeListener);
+        weekViewPager.addOnPageChangeListener(changeListener);
 
 
     }
 
-    class changeListener extends ViewPager.SimpleOnPageChangeListener
+    class ChangeListener extends ViewPager.SimpleOnPageChangeListener
     {
-        MoveWeekListener moveWeekListener;
-        float lastPositionOffset = 0f;
-        boolean isLeftDrag = false;
-        boolean isRightDrag = false;
+        private float lastPositionOffset = 0f;
+        private boolean isLeftDrag = false;
+        private boolean isRightDrag = false;
+        private int finalPosition;
+        private int firstPosition;
+        private Calendar today = Calendar.getInstance();
+        private OnUpdateWeekDatesListener onUpdateWeekDatesListener;
 
-        public void setMoveWeekListener(MoveWeekListener moveWeekListener)
+        public ChangeListener setOnUpdateWeekDatesListener(OnUpdateWeekDatesListener onUpdateWeekDatesListener)
         {
-            this.moveWeekListener = moveWeekListener;
+            this.onUpdateWeekDatesListener = onUpdateWeekDatesListener;
+            return this;
         }
 
         @Override
         public void onPageScrollStateChanged(int state)
         {
-            super.onPageScrollStateChanged(state);
             if (state == ViewPager.SCROLL_STATE_IDLE)
             {
                 Log.e(DAYFRAGMENT_TAG, "SCROLL_STATE_IDLE");
+                if (finalPosition == firstPosition)
+                {
+                    if (isLeftDrag)
+                    {
+                        // 다음주로 이동하려다 취소한 경우
+                        today.add(Calendar.WEEK_OF_YEAR, -1);
+                        onUpdateWeekDatesListener.updateWeekDates(Integer.toString(today.get(Calendar.WEEK_OF_YEAR)) + "주");
+                    } else if (isRightDrag)
+                    {
+                        today.add(Calendar.WEEK_OF_YEAR, 1);
+                        onUpdateWeekDatesListener.updateWeekDates(Integer.toString(today.get(Calendar.WEEK_OF_YEAR)) + "주");
+                    }
+                }
+                isLeftDrag = false;
+                isRightDrag = false;
             } else if (state == ViewPager.SCROLL_STATE_DRAGGING)
             {
                 Log.e(DAYFRAGMENT_TAG, "SCROLL_STATE_DRAGGING");
             } else if (state == ViewPager.SCROLL_STATE_SETTLING)
             {
                 Log.e(DAYFRAGMENT_TAG, "SCROLL_STATE_SETTLING");
+
             }
         }
 
@@ -117,26 +144,39 @@ public class DayFragment extends Fragment
             // 왼쪽(다음 주)으로 드래그시 positionOffset의 값이 작아짐 0.99999 -> 0.0
             // 오른쪽(이전 주)으로 드래그시 positionOffset의 값이 커짐 0.00001 -> 1.0
 
-            if (!isLeftDrag || !isRightDrag)
+            if (!isLeftDrag && !isRightDrag)
             {
                 if (positionOffset > lastPositionOffset)
                 {
                     // 이전 주로 이동
+                    today.add(Calendar.WEEK_OF_YEAR, -1);
+                    firstPosition = position + 1;
+                    onUpdateWeekDatesListener.updateWeekDates(Integer.toString(today.get(Calendar.WEEK_OF_YEAR)) + "주");
                     isRightDrag = true;
                 } else
                 {
                     // 다음 주로 이동
+                    today.add(Calendar.WEEK_OF_YEAR, 1);
+                    firstPosition = position - 1;
+                    onUpdateWeekDatesListener.updateWeekDates(Integer.toString(today.get(Calendar.WEEK_OF_YEAR)) + "주");
                     isLeftDrag = true;
                 }
             }
-
+            Log.e(DAYFRAGMENT_TAG, "onPageScrolled" + Integer.toString(position));
             lastPositionOffset = positionOffset;
+            finalPosition = position;
         }
 
         @Override
         public void onPageSelected(int position)
         {
+            // drag 성공 시에만 SETTLING 직후 호출
             super.onPageSelected(position);
+            Log.e(DAYFRAGMENT_TAG, "onPageSelected" + Integer.toString(position));
+            finalPosition = position;
+            lastPositionOffset = 0f;
+            isLeftDrag = false;
+            isRightDrag = false;
         }
 
     }

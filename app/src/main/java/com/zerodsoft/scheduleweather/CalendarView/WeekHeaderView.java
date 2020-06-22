@@ -31,14 +31,13 @@ import java.util.Date;
 import java.util.Locale;
 
 
-public class WeekHeaderView extends View implements MoveWeekListener
+public class WeekHeaderView extends View implements WeekView.CoordinateInfoInterface
 {
     private final static String TAG = "WeekHeaderView";
     private Context mContext;
-    private Calendar mToday;
-    private Calendar mFirstVisibleDay;
-    private Calendar mLastVisibleDay;
+    public static Calendar today = Calendar.getInstance();
     private Calendar mSelectedDay;
+    private Calendar sunday;
     private int position;
 
     private PointF mCurrentOrigin = new PointF(0f, 0f);
@@ -47,14 +46,13 @@ public class WeekHeaderView extends View implements MoveWeekListener
     private Paint mHeaderDateNormalPaint;
     private Paint mHeaderDateTodayPaint;
     private Paint mHeaderDayNormalPaint;
-    private Paint mHeaderDayTodayPaint;
     private Paint circlePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private Paint dividingPaint;
     private int mHeaderDateHeight;
     private int mHeaderDayHeight;
 
     // Attributes and their default values.
-    public static int mHeaderHeight;
+    private int mHeaderHeight;
     private int mHeaderWidthPerDay;
     private int mFirstDayOfWeek = Calendar.SUNDAY;
     private int mHeaderAllBackgroundColor;
@@ -75,36 +73,24 @@ public class WeekHeaderView extends View implements MoveWeekListener
     private int mHeaderWeekTextColor;
     private int mHeaderWeekTextSize;
 
-    private boolean mIsFirstDraw = true;
-    private boolean mAreHeaderScrolling = false;
+    private boolean firstDraw = true;
 
-    private OnUpdateWeekDatesListener onUpdateWeekDatesListener;
+    private WeekView.OnRefreshChildViewListener onRefreshChildViewListener;
+    private CoordinateInfo[] coordinateInfos = new CoordinateInfo[7];
+    public static int selectedDayPosition = -1;
 
-    public static CoordinateInfo[] coordinateInfos = new CoordinateInfo[7];
-
-    @Override
-    public void moveWeek(int action)
+    public WeekHeaderView setOnRefreshChildViewListener(WeekView.OnRefreshChildViewListener onRefreshChildViewListener)
     {
-
-    }
-
-    @Override
-    public void moveWeekView(int action)
-    {
-
-    }
-
-    public interface OnUpdateWeekDatesListener
-    {
-        void updateWeekDates(String week);
-    }
-
-
-    public WeekHeaderView setOnUpdateWeekDatesListener(OnUpdateWeekDatesListener onUpdateWeekDatesListener)
-    {
-        this.onUpdateWeekDatesListener = onUpdateWeekDatesListener;
+        this.onRefreshChildViewListener = onRefreshChildViewListener;
         return this;
     }
+
+    @Override
+    public CoordinateInfo[] getArray()
+    {
+        return coordinateInfos;
+    }
+
 
 
     public WeekHeaderView(Context context, @Nullable AttributeSet attrs)
@@ -147,20 +133,6 @@ public class WeekHeaderView extends View implements MoveWeekListener
 
     private void init()
     {
-        //Get the date today
-        mToday = Calendar.getInstance();
-        mToday.set(Calendar.HOUR_OF_DAY, 0);
-        mToday.set(Calendar.MINUTE, 0);
-        mToday.set(Calendar.SECOND, 0);
-
-        if (position != DayFragment.FIRST_VIEW_NUMBER)
-        {
-            mToday.add(Calendar.DATE, (position - DayFragment.FIRST_VIEW_NUMBER));
-        }
-
-        mSelectedDay = (Calendar) mToday.clone();
-
-        //prepare paint
         mHeaderBackgroundPaint = new Paint();
         mHeaderBackgroundPaint.setColor(mHeaderAllBackgroundColor);
 
@@ -207,11 +179,29 @@ public class WeekHeaderView extends View implements MoveWeekListener
     public void layout(int l, int t, int r, int b)
     {
         super.layout(l, t, r, b);
+        //   mToday.set(Calendar.HOUR_OF_DAY, 0);
+        //   mToday.set(Calendar.MINUTE, 0);
+        //   mToday.set(Calendar.SECOND, 0);
+
+        sunday = (Calendar) today.clone();
+        sunday.add(Calendar.WEEK_OF_YEAR, (position - DayFragment.FIRST_VIEW_NUMBER));
+
+        mSelectedDay = (Calendar) sunday.clone();
+
         mHeaderWidthPerDay = getWidth() / 7;
         for (int i = 0; i <= 6; i++)
         {
             coordinateInfos[i] = new CoordinateInfo().setDate(null).setStartX(mHeaderWidthPerDay * i)
                     .setEndX(mHeaderWidthPerDay * (i + 1));
+        }
+        // mFirstDayOfWeek : 1~7까지(일~토), mToday.get(Calendar.DAY_OF_WEEK) : mFirstDayOfWeek와 동일
+        if (sunday.get(Calendar.DAY_OF_WEEK) != mFirstDayOfWeek)
+        {
+            // 오늘이 월요일(2)인데 첫주가 일요일(1)인 경우에만 수행
+            // 위의 경우 difference가 1이다
+            int difference = (sunday.get(Calendar.DAY_OF_WEEK) - mFirstDayOfWeek) % 7;
+            // 오늘 날짜의 위치를 파악
+            mCurrentOrigin.x = mHeaderWidthPerDay * difference;
         }
     }
 
@@ -219,92 +209,64 @@ public class WeekHeaderView extends View implements MoveWeekListener
     protected void onDraw(Canvas canvas)
     {
         super.onDraw(canvas);
-        drawHeader(canvas);
+        drawHeaderView(canvas);
         canvas.drawLine(0f, getHeight() - 1, getWidth(), getHeight() - 1, dividingPaint);
-
     }
 
-    //Draw date label and day label.
-    private void drawHeader(Canvas canvas)
+    private void drawHeaderView(Canvas canvas)
     {
-        // 열 사이의 간격 (주차, 일, 월~토)
-        // 주차를 표시할 공간을 확보
+        // 헤더의 배경을 그림
+        canvas.drawRect(0, 0, getWidth(), mHeaderHeight, mHeaderBackgroundPaint);
 
-        if (mIsFirstDraw)
-        {
-            // 처음 onDraw()가 호출된 경우 (앱 시작 직후)
-            mIsFirstDraw = false;
-            // 자동으로 오늘 날짜를 선택함
-            mSelectedDay = (Calendar) mToday.clone();
-
-            // mFirstDayOfWeek : 1~7까지(일~토), mToday.get(Calendar.DAY_OF_WEEK) : mFirstDayOfWeek와 동일
-            if (mToday.get(Calendar.DAY_OF_WEEK) != mFirstDayOfWeek)
-            {
-                // 오늘이 월요일(2)인데 첫주가 일요일(1)인 경우에만 수행
-                // 위의 경우 difference가 1이다
-                int difference = (7 + (mToday.get(Calendar.DAY_OF_WEEK) - mFirstDayOfWeek)) % 7;
-                // 오늘 날짜의 위치를 파악
-                mCurrentOrigin.x += (mHeaderWidthPerDay) * difference;
-            }
-        }
         // 일요일(맨앞)과 오늘의 일수 차이 계산
         final int leftDaysWithGaps = (int) -(Math.ceil((mCurrentOrigin.x) / mHeaderWidthPerDay));
         // 시작 픽셀(일요일 부터 시작)
         final float startPixel = mCurrentOrigin.x + mHeaderWidthPerDay * leftDaysWithGaps;
 
-        // 오늘 날짜를 찾음
-        Calendar date = (Calendar) mToday.clone();
-        date.add(Calendar.HOUR, 6);
-
-        // 한 주의 달력을 생성
-        Calendar oldFirstVisibleDay = mFirstVisibleDay;
-        mFirstVisibleDay = (Calendar) mToday.clone();
-        // 일요일로 이동
-        mFirstVisibleDay.add(Calendar.DATE, leftDaysWithGaps);
-        mLastVisibleDay = (Calendar) mFirstVisibleDay.clone();
-        // 토요일로 이동
-        mLastVisibleDay.add(Calendar.DATE, 6);
-        if (!mFirstVisibleDay.equals(oldFirstVisibleDay) && onUpdateWeekDatesListener != null)
-        {
-            sendWeekDates();
-        }
-        // 헤더의 배경을 그림
-        canvas.drawRect(0, 0, getWidth(), mHeaderHeight, mHeaderBackgroundPaint);
-
-        mFirstDayOfWeek = (mFirstDayOfWeek > Calendar.SATURDAY || mFirstDayOfWeek < Calendar.SUNDAY) ? Calendar.SUNDAY : mFirstDayOfWeek;
         // 요일을 그림
         for (int i = 0; i < 7; i++)
         {
             canvas.drawText(DateHour.getDayString(i), mHeaderWidthPerDay / 2 + mHeaderWidthPerDay * i, mHeaderDayHeight + mHeaderRowMarginTop, mHeaderDateNormalPaint);
         }
 
-        // 날짜 정보를 저장할 변수를 생성 일~토
-        date = (Calendar) mToday.clone();
-        // 일요일로 이동
-        date.add(Calendar.DATE, leftDaysWithGaps);
+        if (!firstDraw)
+        {
+            sunday.add(Calendar.DATE, -7);
+        } else
+        {
+            // 일요일로 이동
+            sunday.add(Calendar.DATE, leftDaysWithGaps);
+            if (selectedDayPosition == -1)
+            {
+                selectedDayPosition = -leftDaysWithGaps;
+            }
+            firstDraw = false;
+        }
 
         for (int i = 0; i < 7; i++)
         {
-            coordinateInfos[i].setDate(date);
-            date.add(Calendar.DATE, 1);
+            coordinateInfos[i].setDate(sunday);
+            sunday.add(Calendar.DATE, 1);
         }
 
+        sunday.add(Calendar.DATE, -7);
+
         // 날짜를 그림
-        for (int dateNum = leftDaysWithGaps, amount = -7; amount <= 13; amount++)
+        for (int i = 0; i <= 6; i++)
         {
-            // 날짜가 오늘인지 확인
-            date = (Calendar) mToday.clone();
-            // 일요일로 이동
-            date.add(Calendar.DATE, dateNum);
-            // 3주간의 달력을 보여줌
-            date.add(Calendar.DATE, amount);
+            boolean isToday = isSameDay(sunday, today);
+            boolean selectedDay = false;
 
-            boolean isToday = isSameDay(date, mToday);
-            boolean selectedDay = isSameDay(date, mSelectedDay);
+            if (i == selectedDayPosition)
+            {
+                selectedDay = true;
+            }
+
+
             // 표시할 날짜를 가져옴
-            String dateLabel = DateHour.getDate(date);
+            String dateLabel = DateHour.getDate(sunday);
 
-            float x = startPixel + mHeaderWidthPerDay / 2 + mHeaderWidthPerDay * amount;
+            float x = startPixel + mHeaderWidthPerDay / 2 + mHeaderWidthPerDay * i;
             float y = mHeaderDayHeight + mHeaderRowMarginTop * 2 + mHeaderDateHeight;
 
             if (dateLabel == null)
@@ -325,31 +287,39 @@ public class WeekHeaderView extends View implements MoveWeekListener
             {
                 canvas.drawText(dateLabel, x, y, isToday ? mHeaderDateTodayPaint : mHeaderDateNormalPaint);
             }
+            sunday.add(Calendar.DATE, 1);
         }
+
     }
 
-    /////////////////////////////////////////////////////////////////
-    //
-    //      Functions related to setting and getting the properties.
-    //
-    /////////////////////////////////////////////////////////////////
+    @Override
+    public boolean onTouchEvent(MotionEvent event)
+    {
+        if (event.getAction() == MotionEvent.ACTION_DOWN)
+        {
+            for (int i = 0; i < coordinateInfos.length; i++)
+            {
+                if (event.getX() >= coordinateInfos[i].getStartX() && event.getX() < coordinateInfos[i].getEndX())
+                {
+                    selectDay(i);
+                    break;
+                }
+            }
+            onRefreshChildViewListener.refreshChildView();
+            ViewCompat.postInvalidateOnAnimation(this);
+        }
+        return true;
+    }
 
+    private void selectDay(int position)
+    {
+        mSelectedDay = (Calendar) coordinateInfos[position].getDate().clone();
+        selectedDayPosition = position;
+    }
 
-    /**
-     * Checks if two times are on the same day.
-     *
-     * @param dayOne The first day.
-     * @param dayTwo The second day.
-     * @return Whether the times are on the same day.
-     */
     private boolean isSameDay(Calendar dayOne, Calendar dayTwo)
     {
         return dayOne.get(Calendar.YEAR) == dayTwo.get(Calendar.YEAR) && dayOne.get(Calendar.DAY_OF_YEAR) == dayTwo.get(Calendar.DAY_OF_YEAR);
-    }
-
-    public void sendWeekDates()
-    {
-        onUpdateWeekDatesListener.updateWeekDates(Integer.toString(mFirstVisibleDay.get(Calendar.WEEK_OF_YEAR)) + "주");
     }
 
     public WeekHeaderView setPosition(int position)

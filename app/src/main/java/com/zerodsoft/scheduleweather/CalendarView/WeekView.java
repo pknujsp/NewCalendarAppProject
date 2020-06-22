@@ -18,6 +18,7 @@ import androidx.annotation.Nullable;
 import androidx.core.view.GestureDetectorCompat;
 import androidx.core.view.ViewCompat;
 
+import com.zerodsoft.scheduleweather.CalendarView.Dto.CoordinateInfo;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.Utility.Clock;
 
@@ -72,6 +73,9 @@ public class WeekView extends View
 
     private OnRefreshChildViewListener onRefreshChildViewListener;
     private OnRefreshHoursViewListener onRefreshHoursViewListener;
+    private CoordinateInfoInterface coordinateInfoInterface;
+
+    private CoordinateInfo[] coordinateInfos;
 
     public interface OnRefreshHoursViewListener
     {
@@ -81,6 +85,17 @@ public class WeekView extends View
     public interface OnRefreshChildViewListener
     {
         void refreshChildView();
+    }
+
+    public interface CoordinateInfoInterface
+    {
+        CoordinateInfo[] getArray();
+    }
+
+    public WeekView setCoordinateInfoInterface(CoordinateInfoInterface coordinateInfoInterface)
+    {
+        this.coordinateInfoInterface = coordinateInfoInterface;
+        return this;
     }
 
     public WeekView setOnRefreshChildViewListener(OnRefreshChildViewListener onRefreshChildViewListener)
@@ -192,7 +207,6 @@ public class WeekView extends View
         public boolean onDown(MotionEvent e)
         {
             lastCoordinate.y = currentCoordinate.y;
-            Log.e(TAG, Float.toString(e.getX()));
             return true;
         }
 
@@ -316,11 +330,16 @@ public class WeekView extends View
 
     private void setStartTime(float x, float y)
     {
+        if (coordinateInfos == null)
+        {
+            coordinateInfos = coordinateInfoInterface.getArray();
+        }
+
         for (int i = 0; i <= 6; i++)
         {
-            if (x >= WeekHeaderView.coordinateInfos[i].getStartX() && x < WeekHeaderView.coordinateInfos[i].getEndX())
+            if (x >= coordinateInfos[i].getStartX() && x < coordinateInfos[i].getEndX())
             {
-                startTime = WeekHeaderView.coordinateInfos[i].getDate();
+                startTime = coordinateInfos[i].getDate();
                 break;
             }
         }
