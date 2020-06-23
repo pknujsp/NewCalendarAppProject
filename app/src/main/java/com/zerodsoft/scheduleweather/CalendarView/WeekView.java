@@ -5,19 +5,23 @@ import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.OverScroller;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.core.view.GestureDetectorCompat;
 import androidx.core.view.ViewCompat;
 
+import com.zerodsoft.scheduleweather.Calendar.CalendarAdapter;
 import com.zerodsoft.scheduleweather.CalendarView.Dto.CoordinateInfo;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.Utility.Clock;
@@ -28,6 +32,7 @@ public class WeekView extends View
 {
     private static final String TAG = "WEEK_DAY_VIEW_GESTURE";
     private Context context;
+    private boolean createdAddScheduleRect = false;
 
     private int weekDayHourTextColor;
     private int weekDayHourTextSize;
@@ -45,10 +50,14 @@ public class WeekView extends View
     private float tableHeight = 0f;
     private int position;
 
+    private PointF startPoint;
+    private PointF endPoint;
+
     private Paint weekDayHourTextPaint;
     private Paint weekDayHorizontalLinePaint;
     private Paint weekDayVerticalLinePaint;
     private Paint weekDayBackgroundPaint;
+    private Paint newScheduleRectPaint;
 
     private OverScroller overScroller;
     private GestureDetectorCompat gestureDetector;
@@ -63,13 +72,17 @@ public class WeekView extends View
     private float maxStartY;
     private int TABLE_LAYOUT_MARGIN;
 
-    private Calendar startTime = Calendar.getInstance();
-    private Calendar endTime = Calendar.getInstance();
+    private Calendar startTime;
+    private Calendar endTime;
 
     private DIRECTION currentScrollDirection = DIRECTION.NONE;
+    private TIME_CATEGORY timeCategory = TIME_CATEGORY.NONE;
 
     enum DIRECTION
     {NONE, VERTICAL, CANCEL, FINISHED}
+
+    enum TIME_CATEGORY
+    {NONE, START, END}
 
     private OnRefreshChildViewListener onRefreshChildViewListener;
     private OnRefreshHoursViewListener onRefreshHoursViewListener;
@@ -155,12 +168,42 @@ public class WeekView extends View
         @Override
         public boolean onSingleTapUp(MotionEvent e)
         {
-            return super.onSingleTapUp(e);
+            Log.e(TAG, "onSingleTapUp");
+
+            if (createdAddScheduleRect)
+            {
+                createdAddScheduleRect = false;
+                WeekView.this.invalidate();
+            }
+
+            return true;
         }
 
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY)
         {
+            // e1 firstDown, e2 move
+            if (createdAddScheduleRect)
+            {
+                // 시작, 종료 날짜를 조절하는 코드
+                if ((e1.getX() >= startPoint.x && e1.getX() < startPoint.x + spacingLinesBetweenDay) &&
+                        (e1.getY() >= startPoint.y - 30f && e1.getY() < startPoint.y + 30f))
+                {
+                    changeTime(e2.getY(), TIME_CATEGORY.START);
+
+                    ViewCompat.postInvalidateOnAnimation(WeekView.this);
+                    return true;
+
+                } else if ((e1.getX() >= endPoint.x && e1.getX() < endPoint.x + spacingLinesBetweenDay) &&
+                        (e1.getY() >= endPoint.y - 30f && e1.getY() < endPoint.y + 30f))
+                {
+                    changeTime(e2.getY(), TIME_CATEGORY.END);
+
+                    ViewCompat.postInvalidateOnAnimation(WeekView.this);
+                    return true;
+
+                }
+            }
 
             if (currentScrollDirection == DIRECTION.FINISHED)
             {
@@ -186,7 +229,6 @@ public class WeekView extends View
             ViewCompat.postInvalidateOnAnimation(WeekView.this);
             onRefreshHoursViewListener.refreshHoursView();
             return true;
-
         }
 
         @Override
@@ -219,8 +261,12 @@ public class WeekView extends View
         @Override
         public void onLongPress(MotionEvent e)
         {
-            setStartTime(e.getX(), e.getY());
-            Log.e(TAG, Clock.timeFormat2.format(getTime(e.getY()).getTime()));
+            if (setStartTime(e.getX(), e.getY()))
+            {
+                Toast.makeText(context, Clock.timeFormat2.format(startTime.getTime()), Toast.LENGTH_SHORT).show();
+                createdAddScheduleRect = true;
+                WeekView.this.invalidate();
+            }
         }
     };
 
@@ -249,6 +295,11 @@ public class WeekView extends View
         weekDayVerticalLinePaint = new Paint();
         weekDayVerticalLinePaint.setColor(weekDayViewLineColor);
 
+        newScheduleRectPaint = new Paint();
+        newScheduleRectPaint.setFlags(Paint.ANTI_ALIAS_FLAG);
+        newScheduleRectPaint.setStyle(Paint.Style.FILL);
+        newScheduleRectPaint.setColor(newScheduleRectColor);
+
         gestureDetector = new GestureDetectorCompat(context, onGestureListener);
         overScroller = new OverScroller(context);
     }
@@ -264,7 +315,6 @@ public class WeekView extends View
     {
         super.onDraw(canvas);
         drawDayView(canvas);
-        onRefreshChildViewListener.refreshChildView();
     }
 
 
@@ -298,10 +348,120 @@ public class WeekView extends View
             // 이번 주 세로 선
             canvas.drawLine(startX + (spacingLinesBetweenDay * i), startY - hourTextHeight, startX + (spacingLinesBetweenDay * i), startY + tableHeight, weekDayVerticalLinePaint);
         }
+
+        if (createdAddScheduleRect)
+        {
+            // 일정 추가 사각형 코드
+            startPoint = getTimePoint(TIME_CATEGORY.START);
+            endPoint = getTimePoint(TIME_CATEGORY.END);
+
+            RectF rect = new RectF();
+            rect.set(startPoint.x, startPoint.y, endPoint.x + spacingLinesBetweenDay, endPoint.y);
+            canvas.drawRect(rect, newScheduleRectPaint);
+        }
     }
 
-    private Calendar getTime(float y)
+    private PointF getTimePoint(TIME_CATEGORY timeCategory)
     {
+        Calendar time = null;
+
+        if (timeCategory == TIME_CATEGORY.START)
+        {
+            time = (Calendar) startTime.clone();
+        } else
+        {
+            time = (Calendar) endTime.clone();
+        }
+
+        PointF point = new PointF(0f, 0f);
+
+        // x
+        for (int i = 0; i <= 6; i++)
+        {
+            if (isSameDay(time, coordinateInfos[i].getDate()))
+            {
+                point.x = coordinateInfos[i].getStartX();
+                break;
+            }
+        }
+
+        // y
+        float startHour = currentCoordinate.y + spacingLinesBetweenHour * time.get(Calendar.HOUR_OF_DAY);
+        float endHour = currentCoordinate.y + spacingLinesBetweenHour * (time.get(Calendar.HOUR_OF_DAY) + 1);
+        float minute15Height = (endHour - startHour) / 4f;
+
+        for (int j = 0; j <= 3; j++)
+        {
+            if (time.get(Calendar.MINUTE) == j * 15)
+            {
+                point.y = startHour + minute15Height * j;
+                break;
+            }
+        }
+        return point;
+    }
+
+    private boolean isSameDay(Calendar day1, Calendar day2)
+    {
+        return day1.get(Calendar.YEAR) == day2.get(Calendar.YEAR) && day1.get(Calendar.DAY_OF_YEAR) == day2.get(Calendar.DAY_OF_YEAR);
+    }
+
+    private boolean changeTime(float y, TIME_CATEGORY timeCategory)
+    {
+        Calendar time = null;
+
+        if (timeCategory == TIME_CATEGORY.START)
+        {
+            time = startTime;
+        } else
+        {
+            time = endTime;
+        }
+
+        float startHour, endHour;
+
+        for (int i = 0; i <= 23; i++)
+        {
+            startHour = currentCoordinate.y + spacingLinesBetweenHour * i;
+            endHour = currentCoordinate.y + spacingLinesBetweenHour * (i + 1);
+
+            if (y >= startHour && y < endHour)
+            {
+                float minute15Height = (endHour - startHour) / 4f;
+                y = y - startHour;
+
+                for (int j = 0; j <= 3; j++)
+                {
+                    if (y >= minute15Height * j && y <= minute15Height * (j + 1))
+                    {
+                        int year = time.get(Calendar.YEAR), month = time.get(Calendar.MONTH), date = time.get(Calendar.DAY_OF_MONTH);
+                        time.set(year, month, date, i, j * 15);
+
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+
+    private boolean setStartTime(float x, float y)
+    {
+        if (coordinateInfos == null)
+        {
+            coordinateInfos = coordinateInfoInterface.getArray();
+        }
+
+        for (int i = 0; i <= 6; i++)
+        {
+            if (x >= coordinateInfos[i].getStartX() && x < coordinateInfos[i].getEndX())
+            {
+                startTime = (Calendar) coordinateInfos[i].getDate().clone();
+                break;
+            }
+        }
+
         float startHour, endHour;
 
         for (int i = 0; i <= 23; i++)
@@ -320,29 +480,16 @@ public class WeekView extends View
                     {
                         int year = startTime.get(Calendar.YEAR), month = startTime.get(Calendar.MONTH), date = startTime.get(Calendar.DAY_OF_MONTH);
                         startTime.set(year, month, date, i, j * 15);
-                        return startTime;
+                        endTime = (Calendar) startTime.clone();
+                        endTime.add(Calendar.HOUR_OF_DAY, 1);
+
+                        return true;
                     }
                 }
             }
         }
-        return startTime;
-    }
+        return false;
 
-    private void setStartTime(float x, float y)
-    {
-        if (coordinateInfos == null)
-        {
-            coordinateInfos = coordinateInfoInterface.getArray();
-        }
-
-        for (int i = 0; i <= 6; i++)
-        {
-            if (x >= coordinateInfos[i].getStartX() && x < coordinateInfos[i].getEndX())
-            {
-                startTime = coordinateInfos[i].getDate();
-                break;
-            }
-        }
     }
 
 

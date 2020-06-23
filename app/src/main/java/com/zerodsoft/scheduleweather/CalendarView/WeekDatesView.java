@@ -17,6 +17,8 @@ import androidx.annotation.Nullable;
 import com.zerodsoft.scheduleweather.DayFragment;
 import com.zerodsoft.scheduleweather.R;
 
+import java.util.Calendar;
+
 public class WeekDatesView extends View implements DayFragment.OnUpdateWeekDatesListener
 {
     private int weekTextColor;
@@ -31,7 +33,7 @@ public class WeekDatesView extends View implements DayFragment.OnUpdateWeekDates
     private int textBoxHeight;
     private int viewWidth;
     private int viewHeight;
-    private String week = "";
+    private String week = Integer.toString(WeekHeaderView.today.get(Calendar.WEEK_OF_YEAR)) + "주";
     private Context mContext;
     private float x;
     private float y;
@@ -113,6 +115,8 @@ public class WeekDatesView extends View implements DayFragment.OnUpdateWeekDates
     public void layout(int l, int t, int r, int b)
     {
         super.layout(l, t, r, b);
+        x = getWidth() / 2;
+        y = getHeight() / 2;
     }
 
     @Override
@@ -126,14 +130,9 @@ public class WeekDatesView extends View implements DayFragment.OnUpdateWeekDates
 
     private void drawWeekDatesView(Canvas canvas)
     {
-        if (week != null)
-        {
-            x = getWidth() / 2;
-            y = getHeight() / 2;
-            canvas.drawRect(0, 0, getWidth(), getHeight(), weekBackgroundPaint);
-            canvas.drawRect(x - textBoxWidth / 2 - 10, y - textBoxHeight / 2 - 10, x + textBoxWidth / 2 + 10, y + textBoxHeight / 2 + 10, weekTextBoxRectPaint);
-            canvas.drawText(week, x, y + weekTextBoxRect.height() / 2, weekTextBoxPaint);
-        }
+        canvas.drawRect(0, 0, getWidth(), getHeight(), weekBackgroundPaint);
+        canvas.drawRect(x - textBoxWidth / 2 - 10, y - textBoxHeight / 2 - 10, x + textBoxWidth / 2 + 10, y + textBoxHeight / 2 + 10, weekTextBoxRectPaint);
+        canvas.drawText(week, x, y + weekTextBoxRect.height() / 2, weekTextBoxPaint);
     }
 
     @Override

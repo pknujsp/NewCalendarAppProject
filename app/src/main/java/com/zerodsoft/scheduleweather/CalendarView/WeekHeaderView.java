@@ -72,6 +72,7 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
     private int mHeaderWeekBackgroundColor;
     private int mHeaderWeekTextColor;
     private int mHeaderWeekTextSize;
+    private int spacingLineHeight;
 
     private boolean firstDraw = true;
 
@@ -90,7 +91,6 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
     {
         return coordinateInfos;
     }
-
 
 
     public WeekHeaderView(Context context, @Nullable AttributeSet attrs)
@@ -158,6 +158,8 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
         mHeaderDayNormalPaint.setTextAlign(Paint.Align.CENTER);
         mHeaderDayNormalPaint.getTextBounds("일", 0, "일".length(), rect);
         mHeaderDayHeight = rect.height();
+
+        spacingLineHeight = rect.height();
 
         mHeaderHeight = mHeaderDayHeight + mHeaderDateHeight + mHeaderRowMarginTop * 3;
 
@@ -241,6 +243,11 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
                 selectedDayPosition = -leftDaysWithGaps;
             }
             firstDraw = false;
+        }
+
+        for (int i = 0; i < 7; i++)
+        {
+            canvas.drawLine(mHeaderWidthPerDay * i, getHeight() - spacingLineHeight, mHeaderWidthPerDay * i, getHeight(), dividingPaint);
         }
 
         for (int i = 0; i < 7; i++)
@@ -332,4 +339,6 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
     {
         return position;
     }
+
+
 }

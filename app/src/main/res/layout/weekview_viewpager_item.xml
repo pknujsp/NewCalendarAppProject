@@ -35,5 +35,5 @@
         custom:WeekDayViewLineColor="@android:color/darker_gray"
         custom:WeekDayViewLineThickness="@dimen/line_thickness"
         custom:WeekDayViewNewScheduleRectColor="@android:color/holo_blue_dark"
-        custom:WeekDayViewNewScheduleRectThickness="@dimen/line_thickness" />
+        custom:WeekDayViewNewScheduleRectThickness="10dp" />
 </LinearLayout>

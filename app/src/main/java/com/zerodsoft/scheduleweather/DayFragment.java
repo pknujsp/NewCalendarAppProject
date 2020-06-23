@@ -13,9 +13,7 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
 import com.zerodsoft.scheduleweather.CalendarView.HoursView;
-import com.zerodsoft.scheduleweather.CalendarView.MoveWeekListener;
 import com.zerodsoft.scheduleweather.CalendarView.WeekDatesView;
-import com.zerodsoft.scheduleweather.CalendarView.WeekHeaderView;
 import com.zerodsoft.scheduleweather.CalendarView.WeekViewPagerAdapter;
 
 import java.util.Calendar;
@@ -93,10 +91,12 @@ public class DayFragment extends Fragment
     class ChangeListener extends ViewPager.SimpleOnPageChangeListener
     {
         private float lastPositionOffset = 0f;
-        private boolean isLeftDrag = false;
-        private boolean isRightDrag = false;
+        private boolean isNextWeekDrag = false;
+        private boolean isPreviousWeekDrag = false;
+        private boolean isFirstDrag = true;
+        private boolean isInit = true;
         private int finalPosition;
-        private int firstPosition;
+        private int firstPosition = 261;
         private Calendar today = Calendar.getInstance();
         private OnUpdateWeekDatesListener onUpdateWeekDatesListener;
 
@@ -111,60 +111,73 @@ public class DayFragment extends Fragment
         {
             if (state == ViewPager.SCROLL_STATE_IDLE)
             {
-                Log.e(DAYFRAGMENT_TAG, "SCROLL_STATE_IDLE");
-                if (finalPosition == firstPosition)
-                {
-                    if (isLeftDrag)
-                    {
-                        // 다음주로 이동하려다 취소한 경우
-                        today.add(Calendar.WEEK_OF_YEAR, -1);
-                        onUpdateWeekDatesListener.updateWeekDates(Integer.toString(today.get(Calendar.WEEK_OF_YEAR)) + "주");
-                    } else if (isRightDrag)
-                    {
-                        today.add(Calendar.WEEK_OF_YEAR, 1);
-                        onUpdateWeekDatesListener.updateWeekDates(Integer.toString(today.get(Calendar.WEEK_OF_YEAR)) + "주");
-                    }
-                }
-                isLeftDrag = false;
-                isRightDrag = false;
+                //  Log.e(DAYFRAGMENT_TAG, "SCROLL_STATE_IDLE");
+
             } else if (state == ViewPager.SCROLL_STATE_DRAGGING)
             {
-                Log.e(DAYFRAGMENT_TAG, "SCROLL_STATE_DRAGGING");
+                //    Log.e(DAYFRAGMENT_TAG, "SCROLL_STATE_DRAGGING");
             } else if (state == ViewPager.SCROLL_STATE_SETTLING)
             {
-                Log.e(DAYFRAGMENT_TAG, "SCROLL_STATE_SETTLING");
-
+                //    Log.e(DAYFRAGMENT_TAG, "SCROLL_STATE_SETTLING");
+                lastPositionOffset = 0f;
+                isNextWeekDrag = false;
+                isPreviousWeekDrag = false;
+                isFirstDrag = true;
             }
         }
+
 
         @Override
         public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels)
         {
-            super.onPageScrolled(position, positionOffset, positionOffsetPixels);
-            // 왼쪽(다음 주)으로 드래그시 positionOffset의 값이 작아짐 0.99999 -> 0.0
-            // 오른쪽(이전 주)으로 드래그시 positionOffset의 값이 커짐 0.00001 -> 1.0
+            // 오른쪽(이전 주)으로 드래그시 positionOffset의 값이 작아짐 0.99999 -> 0.0
+            // 왼쪽(다음 주)으로 드래그시 positionOffset의 값이 커짐 0.00001 -> 1.0
+            Log.e(DAYFRAGMENT_TAG, "onPageScrolled" + Float.toString(positionOffset));
 
-            if (!isLeftDrag && !isRightDrag)
+            if (isInit)
             {
-                if (positionOffset > lastPositionOffset)
+                isInit = false;
+                return;
+            }
+
+            if (isFirstDrag)
+            {
+                lastPositionOffset = positionOffset;
+                isFirstDrag = false;
+                return;
+            }
+
+            if (positionOffset > lastPositionOffset)
+            {
+                // 다음 주로 이동
+                if (!isNextWeekDrag)
                 {
-                    // 이전 주로 이동
-                    today.add(Calendar.WEEK_OF_YEAR, -1);
-                    firstPosition = position + 1;
-                    onUpdateWeekDatesListener.updateWeekDates(Integer.toString(today.get(Calendar.WEEK_OF_YEAR)) + "주");
-                    isRightDrag = true;
-                } else
-                {
-                    // 다음 주로 이동
-                    today.add(Calendar.WEEK_OF_YEAR, 1);
+                    isNextWeekDrag = true;
+                    isPreviousWeekDrag = false;
                     firstPosition = position - 1;
-                    onUpdateWeekDatesListener.updateWeekDates(Integer.toString(today.get(Calendar.WEEK_OF_YEAR)) + "주");
-                    isLeftDrag = true;
+                } else if (isPreviousWeekDrag)
+                {
+                    isPreviousWeekDrag = true;
+                    isNextWeekDrag = false;
+                    firstPosition = position + 1;
+                }
+            } else if (positionOffset < lastPositionOffset)
+            {
+                // 이전 주로 이동
+                if (!isPreviousWeekDrag)
+                {
+                    isPreviousWeekDrag = true;
+                    isNextWeekDrag = false;
+                    firstPosition = position + 1;
+                } else if (isNextWeekDrag)
+                {
+                    isPreviousWeekDrag = false;
+                    isNextWeekDrag = true;
+                    firstPosition = position - 1;
                 }
             }
-            Log.e(DAYFRAGMENT_TAG, "onPageScrolled" + Integer.toString(position));
+
             lastPositionOffset = positionOffset;
-            finalPosition = position;
         }
 
         @Override
@@ -172,13 +185,22 @@ public class DayFragment extends Fragment
         {
             // drag 성공 시에만 SETTLING 직후 호출
             super.onPageSelected(position);
-            Log.e(DAYFRAGMENT_TAG, "onPageSelected" + Integer.toString(position));
+            //   Log.e(DAYFRAGMENT_TAG, "onPageSelected" + Integer.toString(position));
             finalPosition = position;
-            lastPositionOffset = 0f;
-            isLeftDrag = false;
-            isRightDrag = false;
+
+            if (finalPosition < firstPosition)
+            {
+                // 이전 주
+                today.add(Calendar.WEEK_OF_YEAR, -1);
+            } else
+            {
+                // 다음 주
+                today.add(Calendar.WEEK_OF_YEAR, 1);
+            }
+            onUpdateWeekDatesListener.updateWeekDates(Integer.toString(today.get(Calendar.WEEK_OF_YEAR)) + "주");
         }
 
     }
+
 
 }
