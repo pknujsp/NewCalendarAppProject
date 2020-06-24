@@ -132,7 +132,7 @@ public class DayFragment extends Fragment
         {
             // 오른쪽(이전 주)으로 드래그시 positionOffset의 값이 작아짐 0.99999 -> 0.0
             // 왼쪽(다음 주)으로 드래그시 positionOffset의 값이 커짐 0.00001 -> 1.0
-            Log.e(DAYFRAGMENT_TAG, "onPageScrolled" + Float.toString(positionOffset));
+          //  Log.e(DAYFRAGMENT_TAG, "onPageScrolled" + Float.toString(positionOffset));
 
             if (isInit)
             {

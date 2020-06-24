@@ -33,6 +33,8 @@ public class WeekView extends View
     private static final String TAG = "WEEK_DAY_VIEW_GESTURE";
     private Context context;
     private boolean createdAddScheduleRect = false;
+    private boolean changingStartTime = false;
+    private boolean changingEndTime = false;
 
     private int weekDayHourTextColor;
     private int weekDayHourTextSize;
@@ -183,25 +185,35 @@ public class WeekView extends View
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY)
         {
             // e1 firstDown, e2 move
+
             if (createdAddScheduleRect)
             {
                 // 시작, 종료 날짜를 조절하는 코드
-                if ((e1.getX() >= startPoint.x && e1.getX() < startPoint.x + spacingLinesBetweenDay) &&
-                        (e1.getY() >= startPoint.y - 30f && e1.getY() < startPoint.y + 30f))
+                if (!changingStartTime && !changingEndTime)
                 {
-                    changeTime(e2.getY(), TIME_CATEGORY.START);
-
+                    if ((e1.getX() >= startPoint.x && e1.getX() < startPoint.x + spacingLinesBetweenDay) &&
+                            (e1.getY() >= startPoint.y - 30f && e1.getY() < startPoint.y + 30f))
+                    {
+                        changingStartTime = true;
+                        return true;
+                    } else if ((e1.getX() >= endPoint.x && e1.getX() < endPoint.x + spacingLinesBetweenDay) &&
+                            (e1.getY() >= endPoint.y - 30f && e1.getY() < endPoint.y + 30f))
+                    {
+                        changingEndTime = true;
+                        return true;
+                    }
+                } else
+                {
+                    // start or endtime을 수정중인 경우
+                    if (changingStartTime)
+                    {
+                        changeTime(e2.getY(), TIME_CATEGORY.START);
+                    } else if (changingEndTime)
+                    {
+                        changeTime(e2.getY(), TIME_CATEGORY.END);
+                    }
                     ViewCompat.postInvalidateOnAnimation(WeekView.this);
                     return true;
-
-                } else if ((e1.getX() >= endPoint.x && e1.getX() < endPoint.x + spacingLinesBetweenDay) &&
-                        (e1.getY() >= endPoint.y - 30f && e1.getY() < endPoint.y + 30f))
-                {
-                    changeTime(e2.getY(), TIME_CATEGORY.END);
-
-                    ViewCompat.postInvalidateOnAnimation(WeekView.this);
-                    return true;
-
                 }
             }
 
@@ -296,7 +308,6 @@ public class WeekView extends View
         weekDayVerticalLinePaint.setColor(weekDayViewLineColor);
 
         newScheduleRectPaint = new Paint();
-        newScheduleRectPaint.setFlags(Paint.ANTI_ALIAS_FLAG);
         newScheduleRectPaint.setStyle(Paint.Style.FILL);
         newScheduleRectPaint.setColor(newScheduleRectColor);
 
@@ -382,12 +393,29 @@ public class WeekView extends View
             {
                 point.x = coordinateInfos[i].getStartX();
                 break;
+            } else if (time.get(Calendar.HOUR_OF_DAY) == 0 && timeCategory == TIME_CATEGORY.END)
+            {
+                // endTime이 다음 날 오전12시 이후인 경우
+                Calendar t = (Calendar) endTime.clone();
+                t.add(Calendar.DATE, -1);
+                if (t.get(Calendar.DATE) == coordinateInfos[i].getDate().get(Calendar.DATE))
+                {
+                    point.x = coordinateInfos[i].getStartX();
+                    break;
+                }
             }
         }
 
         // y
         float startHour = currentCoordinate.y + spacingLinesBetweenHour * time.get(Calendar.HOUR_OF_DAY);
         float endHour = currentCoordinate.y + spacingLinesBetweenHour * (time.get(Calendar.HOUR_OF_DAY) + 1);
+
+        if (time.get(Calendar.HOUR_OF_DAY) == 0 && timeCategory == TIME_CATEGORY.END)
+        {
+            startHour = currentCoordinate.y + spacingLinesBetweenHour * 24;
+            // 다음 날 오전1시
+            endHour = currentCoordinate.y + spacingLinesBetweenHour * 25;
+        }
         float minute15Height = (endHour - startHour) / 4f;
 
         for (int j = 0; j <= 3; j++)
@@ -404,6 +432,11 @@ public class WeekView extends View
     private boolean isSameDay(Calendar day1, Calendar day2)
     {
         return day1.get(Calendar.YEAR) == day2.get(Calendar.YEAR) && day1.get(Calendar.DAY_OF_YEAR) == day2.get(Calendar.DAY_OF_YEAR);
+    }
+
+    private boolean isSameClock(Calendar clock1, Calendar clock2)
+    {
+        return clock1.get(Calendar.HOUR_OF_DAY) == clock2.get(Calendar.HOUR_OF_DAY) && clock1.get(Calendar.MINUTE) == clock2.get(Calendar.MINUTE);
     }
 
     private boolean changeTime(float y, TIME_CATEGORY timeCategory)
@@ -435,8 +468,33 @@ public class WeekView extends View
                     if (y >= minute15Height * j && y <= minute15Height * (j + 1))
                     {
                         int year = time.get(Calendar.YEAR), month = time.get(Calendar.MONTH), date = time.get(Calendar.DAY_OF_MONTH);
-                        time.set(year, month, date, i, j * 15);
+                        int hour = i, minute = j + 15;
+                        time.set(year, month, date, hour, minute);
 
+                        Calendar compTime = null;
+
+                        if (timeCategory == TIME_CATEGORY.START)
+                        {
+                            compTime = (Calendar) endTime.clone();
+                            compTime.add(Calendar.MINUTE, -15);
+                        } else
+                        {
+                            // END
+                            compTime = (Calendar) startTime.clone();
+                            compTime.add(Calendar.MINUTE, 15);
+                        }
+
+                        if (isSameClock(time, compTime))
+                        {
+                            if (timeCategory == TIME_CATEGORY.START)
+                            {
+                                time.add(Calendar.MINUTE, -15);
+                            } else
+                            {
+                                // END
+                                time.add(Calendar.MINUTE, 15);
+                            }
+                        }
                         return true;
                     }
                 }
@@ -496,9 +554,23 @@ public class WeekView extends View
     @Override
     public boolean onTouchEvent(MotionEvent event)
     {
-        if (event.getAction() == MotionEvent.ACTION_UP && currentScrollDirection == DIRECTION.VERTICAL)
+        if (event.getAction() == MotionEvent.ACTION_UP)
         {
-            currentScrollDirection = DIRECTION.FINISHED;
+            if (currentScrollDirection == DIRECTION.VERTICAL)
+            {
+                currentScrollDirection = DIRECTION.FINISHED;
+            } else if (changingStartTime || changingEndTime)
+            {
+                if (changingStartTime)
+                {
+                    changingStartTime = false;
+                } else
+                {
+                    changingEndTime = false;
+                }
+                invalidate();
+                return true;
+            }
         }
         return gestureDetector.onTouchEvent(event);
     }
