@@ -76,15 +76,9 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
 
     private boolean firstDraw = true;
 
-    private WeekView.OnRefreshChildViewListener onRefreshChildViewListener;
     private CoordinateInfo[] coordinateInfos = new CoordinateInfo[7];
     public static int selectedDayPosition = -1;
 
-    public WeekHeaderView setOnRefreshChildViewListener(WeekView.OnRefreshChildViewListener onRefreshChildViewListener)
-    {
-        this.onRefreshChildViewListener = onRefreshChildViewListener;
-        return this;
-    }
 
     @Override
     public CoordinateInfo[] getArray()
@@ -312,7 +306,6 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
                     break;
                 }
             }
-            onRefreshChildViewListener.refreshChildView();
             ViewCompat.postInvalidateOnAnimation(this);
         }
         return true;

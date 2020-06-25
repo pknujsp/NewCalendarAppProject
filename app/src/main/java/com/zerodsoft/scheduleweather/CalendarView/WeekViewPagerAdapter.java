@@ -2,6 +2,7 @@ package com.zerodsoft.scheduleweather.CalendarView;
 
 import android.content.Context;
 import android.util.Log;
+import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +24,7 @@ public class WeekViewPagerAdapter extends PagerAdapter implements WeekView.OnRef
     private HoursView hoursView;
     private ViewGroup container;
     private WeekDatesView weekDatesView;
+    private SparseArray<View> viewSparseArray = new SparseArray<>();
 
 
     public WeekViewPagerAdapter()
@@ -52,10 +54,10 @@ public class WeekViewPagerAdapter extends PagerAdapter implements WeekView.OnRef
             rootView = layoutInflater.inflate(R.layout.weekview_viewpager_item, container, false);
             headerView = (WeekHeaderView) rootView.findViewById(R.id.weekheaderview);
             weekView = (WeekView) rootView.findViewById(R.id.weekview);
-            ((WeekHeaderView) headerView).setPosition(position).setOnRefreshChildViewListener(this);
+            ((WeekHeaderView) headerView).setPosition(position);
             ((WeekView) weekView).setPosition(position).setCoordinateInfoInterface((WeekHeaderView) headerView).setOnRefreshChildViewListener(this).setOnRefreshHoursViewListener(hoursView);
-          //  Log.e(ADAPTER_TAG, Integer.toString(((WeekHeaderView) headerView).getPosition()) + "번째 뷰 추가됨");
         }
+        viewSparseArray.put(position, weekView);
         container.addView(rootView);
         return rootView;
     }
@@ -63,6 +65,7 @@ public class WeekViewPagerAdapter extends PagerAdapter implements WeekView.OnRef
     @Override
     public void destroyItem(@NonNull ViewGroup container, int position, @NonNull Object object)
     {
+        viewSparseArray.remove(position);
         container.removeView((View) object);
     }
 
@@ -79,10 +82,16 @@ public class WeekViewPagerAdapter extends PagerAdapter implements WeekView.OnRef
     }
 
     @Override
-    public void refreshChildView()
+    public void refreshChildView(int position)
     {
-
+        viewSparseArray.get(position - 1).invalidate();
+        viewSparseArray.get(position + 1).invalidate();
+        Log.e(ADAPTER_TAG, Integer.toString(position - 1) + ", " + Integer.toString(position + 1) + "업데이트 됨");
     }
 
+    public void refreshView(int position)
+    {
+        viewSparseArray.get(position).invalidate();
+    }
 
 }

@@ -18,7 +18,9 @@ import androidx.appcompat.widget.Toolbar;
 
 public class AppMainActivity extends AppCompatActivity
 {
-    private String current;
+    private DayFragment dayFragment;
+    private FragmentManager fragmentManager;
+    private FragmentTransaction fragmentTransaction;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -35,11 +37,10 @@ public class AppMainActivity extends AppCompatActivity
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setHomeAsUpIndicator(R.drawable.toolbar_menu_icon);
 
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        DayFragment dayFragment = new DayFragment();
+        fragmentManager = getSupportFragmentManager();
+        fragmentTransaction = fragmentManager.beginTransaction();
+        dayFragment = new DayFragment();
         fragmentTransaction.replace(R.id.nav_host_fragment, dayFragment).commitAllowingStateLoss();
-
 
         fab.setOnClickListener(new View.OnClickListener()
         {
@@ -70,14 +71,18 @@ public class AppMainActivity extends AppCompatActivity
                 // drawerLayout.openDrawer(navigationView);
                 return true;
             case R.id.menu_item_today:
+                /*
                 Intent intent = new Intent(getApplicationContext(), AddScheduleActivity.class);
                 Bundle bundle = new Bundle();
                 bundle.putInt("action", Actions.START_ADD_SCHEDULE_ACTIVITY);
                 intent.putExtras(bundle);
                 startActivity(intent);
+
+                 */
+                dayFragment.goToToday();
+
                 return true;
             case R.id.menu_item_refresh:
-
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

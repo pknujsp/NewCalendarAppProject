@@ -20,6 +20,7 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.core.view.GestureDetectorCompat;
 import androidx.core.view.ViewCompat;
+import androidx.viewpager.widget.ViewPager;
 
 import com.zerodsoft.scheduleweather.Calendar.CalendarAdapter;
 import com.zerodsoft.scheduleweather.CalendarView.Dto.CoordinateInfo;
@@ -99,7 +100,7 @@ public class WeekView extends View
 
     public interface OnRefreshChildViewListener
     {
-        void refreshChildView();
+        void refreshChildView(int position);
     }
 
     public interface CoordinateInfoInterface
@@ -213,6 +214,10 @@ public class WeekView extends View
                         changeTime(e2.getY(), TIME_CATEGORY.END);
                     }
                     ViewCompat.postInvalidateOnAnimation(WeekView.this);
+
+                    Log.e(TAG, "startTime : " + Integer.toString(startTime.get(Calendar.HOUR_OF_DAY)) + "시 " + Integer.toString(startTime.get(Calendar.MINUTE)) + "분");
+                    Log.e(TAG, "endTime : " + Integer.toString(endTime.get(Calendar.HOUR_OF_DAY)) + "시 " + Integer.toString(endTime.get(Calendar.MINUTE)) + "분");
+                    Log.e(TAG, "--------------------------");
                     return true;
                 }
             }
@@ -260,6 +265,7 @@ public class WeekView extends View
         @Override
         public boolean onDown(MotionEvent e)
         {
+            overScroller.forceFinished(true);
             lastCoordinate.y = currentCoordinate.y;
             return true;
         }
@@ -436,8 +442,32 @@ public class WeekView extends View
 
     private boolean isSameClock(Calendar clock1, Calendar clock2)
     {
-        return clock1.get(Calendar.HOUR_OF_DAY) == clock2.get(Calendar.HOUR_OF_DAY) && clock1.get(Calendar.MINUTE) == clock2.get(Calendar.MINUTE);
+        return clock1.equals(clock2);
     }
+
+    private void fixTimeError(TIME_CATEGORY timeCategory, Calendar originalTime)
+    {
+        if (startTime.equals(endTime))
+        {
+            if (timeCategory == TIME_CATEGORY.START)
+            {
+                startTime.add(Calendar.MINUTE, -15);
+            } else
+            {
+                endTime.add(Calendar.MINUTE, 15);
+            }
+        } else if (startTime.after(endTime))
+        {
+            if (timeCategory == TIME_CATEGORY.START)
+            {
+                startTime.setTime(originalTime.getTime());
+            } else
+            {
+                endTime.setTime(originalTime.getTime());
+            }
+        }
+    }
+
 
     private boolean changeTime(float y, TIME_CATEGORY timeCategory)
     {
@@ -452,6 +482,7 @@ public class WeekView extends View
         }
 
         float startHour, endHour;
+        Calendar originalTime = (Calendar) time.clone();
 
         for (int i = 0; i <= 23; i++)
         {
@@ -468,38 +499,16 @@ public class WeekView extends View
                     if (y >= minute15Height * j && y <= minute15Height * (j + 1))
                     {
                         int year = time.get(Calendar.YEAR), month = time.get(Calendar.MONTH), date = time.get(Calendar.DAY_OF_MONTH);
-                        int hour = i, minute = j + 15;
+                        int hour = i, minute = j * 15;
                         time.set(year, month, date, hour, minute);
+                        fixTimeError(timeCategory, originalTime);
 
-                        Calendar compTime = null;
-
-                        if (timeCategory == TIME_CATEGORY.START)
-                        {
-                            compTime = (Calendar) endTime.clone();
-                            compTime.add(Calendar.MINUTE, -15);
-                        } else
-                        {
-                            // END
-                            compTime = (Calendar) startTime.clone();
-                            compTime.add(Calendar.MINUTE, 15);
-                        }
-
-                        if (isSameClock(time, compTime))
-                        {
-                            if (timeCategory == TIME_CATEGORY.START)
-                            {
-                                time.add(Calendar.MINUTE, -15);
-                            } else
-                            {
-                                // END
-                                time.add(Calendar.MINUTE, 15);
-                            }
-                        }
                         return true;
                     }
                 }
             }
         }
+
         return false;
     }
 
@@ -569,6 +578,8 @@ public class WeekView extends View
                     changingEndTime = false;
                 }
                 invalidate();
+                Toast.makeText(context, "start : " + startTime.get(Calendar.HOUR_OF_DAY) + " : " + startTime.get(Calendar.MINUTE) + "\n"
+                        + "end : " + endTime.get(Calendar.HOUR_OF_DAY) + " : " + endTime.get(Calendar.MINUTE), Toast.LENGTH_SHORT).show();
                 return true;
             }
         }

@@ -3,6 +3,7 @@ package com.zerodsoft.scheduleweather;
 import android.graphics.Point;
 import android.os.Bundle;
 
+import androidx.core.view.ViewCompat;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.ViewPager;
 
@@ -30,6 +31,7 @@ public class DayFragment extends Fragment
     private ViewPager weekViewPager;
     private WeekViewPagerAdapter weekViewPagerAdapter;
     private int spacingBetweenDay;
+    private ChangeListener changeListener;
 
     public static final int WEEK_NUMBER = 521;
     public static final int FIRST_VIEW_NUMBER = 261;
@@ -77,28 +79,28 @@ public class DayFragment extends Fragment
         mWeekDatesView = (WeekDatesView) view.findViewById(R.id.weekdatesview);
         hoursView = (HoursView) view.findViewById(R.id.hoursview);
 
-        ChangeListener changeListener = new ChangeListener().setOnUpdateWeekDatesListener(mWeekDatesView);
+        changeListener = new ChangeListener().setOnUpdateWeekDatesListener(mWeekDatesView);
 
         weekViewPager = (ViewPager) view.findViewById(R.id.weekviewpager);
         weekViewPagerAdapter = new WeekViewPagerAdapter(getContext(), mWeekDatesView, hoursView);
         weekViewPager.setAdapter(weekViewPagerAdapter);
         weekViewPager.setCurrentItem(FIRST_VIEW_NUMBER);
         weekViewPager.addOnPageChangeListener(changeListener);
-
-
     }
 
     class ChangeListener extends ViewPager.SimpleOnPageChangeListener
     {
-        private float lastPositionOffset = 0f;
-        private boolean isNextWeekDrag = false;
-        private boolean isPreviousWeekDrag = false;
-        private boolean isFirstDrag = true;
-        private boolean isInit = true;
         private int finalPosition;
-        private int firstPosition = 261;
+        private int firstPosition = DayFragment.FIRST_VIEW_NUMBER;
+        private int position;
+        private int scrollingState;
         private Calendar today = Calendar.getInstance();
         private OnUpdateWeekDatesListener onUpdateWeekDatesListener;
+
+        public void initFirstPosition()
+        {
+            this.firstPosition = DayFragment.FIRST_VIEW_NUMBER;
+        }
 
         public ChangeListener setOnUpdateWeekDatesListener(OnUpdateWeekDatesListener onUpdateWeekDatesListener)
         {
@@ -111,18 +113,15 @@ public class DayFragment extends Fragment
         {
             if (state == ViewPager.SCROLL_STATE_IDLE)
             {
-                //  Log.e(DAYFRAGMENT_TAG, "SCROLL_STATE_IDLE");
-
+                scrollingState = ViewPager.SCROLL_STATE_IDLE;
             } else if (state == ViewPager.SCROLL_STATE_DRAGGING)
             {
-                //    Log.e(DAYFRAGMENT_TAG, "SCROLL_STATE_DRAGGING");
+                Log.e(DAYFRAGMENT_TAG, "SCROLL_STATE_DRAGGING");
+                scrollingState = ViewPager.SCROLL_STATE_DRAGGING;
+                weekViewPagerAdapter.refreshChildView(position);
             } else if (state == ViewPager.SCROLL_STATE_SETTLING)
             {
-                //    Log.e(DAYFRAGMENT_TAG, "SCROLL_STATE_SETTLING");
-                lastPositionOffset = 0f;
-                isNextWeekDrag = false;
-                isPreviousWeekDrag = false;
-                isFirstDrag = true;
+                scrollingState = ViewPager.SCROLL_STATE_SETTLING;
             }
         }
 
@@ -132,52 +131,8 @@ public class DayFragment extends Fragment
         {
             // 오른쪽(이전 주)으로 드래그시 positionOffset의 값이 작아짐 0.99999 -> 0.0
             // 왼쪽(다음 주)으로 드래그시 positionOffset의 값이 커짐 0.00001 -> 1.0
-          //  Log.e(DAYFRAGMENT_TAG, "onPageScrolled" + Float.toString(positionOffset));
-
-            if (isInit)
-            {
-                isInit = false;
-                return;
-            }
-
-            if (isFirstDrag)
-            {
-                lastPositionOffset = positionOffset;
-                isFirstDrag = false;
-                return;
-            }
-
-            if (positionOffset > lastPositionOffset)
-            {
-                // 다음 주로 이동
-                if (!isNextWeekDrag)
-                {
-                    isNextWeekDrag = true;
-                    isPreviousWeekDrag = false;
-                    firstPosition = position - 1;
-                } else if (isPreviousWeekDrag)
-                {
-                    isPreviousWeekDrag = true;
-                    isNextWeekDrag = false;
-                    firstPosition = position + 1;
-                }
-            } else if (positionOffset < lastPositionOffset)
-            {
-                // 이전 주로 이동
-                if (!isPreviousWeekDrag)
-                {
-                    isPreviousWeekDrag = true;
-                    isNextWeekDrag = false;
-                    firstPosition = position + 1;
-                } else if (isNextWeekDrag)
-                {
-                    isPreviousWeekDrag = false;
-                    isNextWeekDrag = true;
-                    firstPosition = position - 1;
-                }
-            }
-
-            lastPositionOffset = positionOffset;
+            Log.e(DAYFRAGMENT_TAG, "onPageScrolled" + Float.toString(positionOffset));
+            this.position = position;
         }
 
         @Override
@@ -185,7 +140,7 @@ public class DayFragment extends Fragment
         {
             // drag 성공 시에만 SETTLING 직후 호출
             super.onPageSelected(position);
-            //   Log.e(DAYFRAGMENT_TAG, "onPageSelected" + Integer.toString(position));
+            Log.e(DAYFRAGMENT_TAG, "onPageSelected" + Integer.toString(position));
             finalPosition = position;
 
             if (finalPosition < firstPosition)
@@ -197,10 +152,36 @@ public class DayFragment extends Fragment
                 // 다음 주
                 today.add(Calendar.WEEK_OF_YEAR, 1);
             }
+            firstPosition = finalPosition;
             onUpdateWeekDatesListener.updateWeekDates(Integer.toString(today.get(Calendar.WEEK_OF_YEAR)) + "주");
         }
 
+        public int getFirstPosition()
+        {
+            return firstPosition;
+        }
     }
 
+    public void goToToday()
+    {
+        int currentPosition = changeListener.getFirstPosition();
 
+        if (currentPosition != DayFragment.FIRST_VIEW_NUMBER)
+        {
+            if (currentPosition < DayFragment.FIRST_VIEW_NUMBER)
+            {
+                for (int i = DayFragment.FIRST_VIEW_NUMBER - currentPosition; i > 0; i--)
+                {
+                    weekViewPager.arrowScroll(View.FOCUS_RIGHT);
+                }
+            } else
+            {
+                for (int i = currentPosition - DayFragment.FIRST_VIEW_NUMBER; i > 0; i--)
+                {
+                    weekViewPager.arrowScroll(View.FOCUS_LEFT);
+                }
+            }
+            weekViewPagerAdapter.notifyDataSetChanged();
+        }
+    }
 }
