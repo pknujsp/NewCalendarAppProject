@@ -84,9 +84,14 @@ public class WeekViewPagerAdapter extends PagerAdapter implements WeekView.OnRef
     @Override
     public void refreshChildView(int position)
     {
-        viewSparseArray.get(position - 1).invalidate();
-        viewSparseArray.get(position + 1).invalidate();
-        Log.e(ADAPTER_TAG, Integer.toString(position - 1) + ", " + Integer.toString(position + 1) + "업데이트 됨");
+        try
+        {
+            viewSparseArray.get(position - 1).invalidate();
+            viewSparseArray.get(position + 1).invalidate();
+        } catch (NullPointerException e)
+        {
+
+        }
     }
 
     public void refreshView(int position)

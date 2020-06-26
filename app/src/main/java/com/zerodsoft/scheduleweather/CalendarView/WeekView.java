@@ -9,6 +9,7 @@ import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -48,7 +49,6 @@ public class WeekView extends View
     private int newScheduleRectThickness;
     private int hourTextHeight;
     private Rect hourTextBoxRect = new Rect();
-    private int scheduleLayoutWidth;
     private int width;
     private float tableHeight = 0f;
     private int position;
@@ -61,6 +61,8 @@ public class WeekView extends View
     private Paint weekDayVerticalLinePaint;
     private Paint weekDayBackgroundPaint;
     private Paint newScheduleRectPaint;
+
+    private Drawable newScheduleRect;
 
     private OverScroller overScroller;
     private GestureDetectorCompat gestureDetector;
@@ -158,6 +160,7 @@ public class WeekView extends View
             newScheduleRectColor = a.getColor(R.styleable.WeekView_WeekDayViewNewScheduleRectColor, newScheduleRectColor);
             newScheduleRectThickness = a.getDimensionPixelSize(R.styleable.WeekView_WeekDayViewNewScheduleRectThickness, newScheduleRectThickness);
             TABLE_LAYOUT_MARGIN = weekDayHourTextSize;
+            newScheduleRect = context.getDrawable(R.drawable.new_schedule_range_rect);
         } finally
         {
             a.recycle();
@@ -313,10 +316,6 @@ public class WeekView extends View
         weekDayVerticalLinePaint = new Paint();
         weekDayVerticalLinePaint.setColor(weekDayViewLineColor);
 
-        newScheduleRectPaint = new Paint();
-        newScheduleRectPaint.setStyle(Paint.Style.FILL);
-        newScheduleRectPaint.setColor(newScheduleRectColor);
-
         gestureDetector = new GestureDetectorCompat(context, onGestureListener);
         overScroller = new OverScroller(context);
     }
@@ -372,9 +371,13 @@ public class WeekView extends View
             startPoint = getTimePoint(TIME_CATEGORY.START);
             endPoint = getTimePoint(TIME_CATEGORY.END);
 
+            /*
             RectF rect = new RectF();
             rect.set(startPoint.x, startPoint.y, endPoint.x + spacingLinesBetweenDay, endPoint.y);
-            canvas.drawRect(rect, newScheduleRectPaint);
+             */
+            newScheduleRect.setBounds((int) startPoint.x, (int) startPoint.y, (int) endPoint.x + spacingLinesBetweenDay, (int) endPoint.y);
+            newScheduleRect.draw(canvas);
+            //    canvas.drawRect(rect, newScheduleRectPaint);
         }
     }
 
