@@ -60,7 +60,6 @@ public class WeekView extends View
     private Paint weekDayHorizontalLinePaint;
     private Paint weekDayVerticalLinePaint;
     private Paint weekDayBackgroundPaint;
-    private Paint newScheduleRectPaint;
 
     private Drawable newScheduleRect;
 
@@ -613,5 +612,11 @@ public class WeekView extends View
     public int getPosition()
     {
         return position;
+    }
+
+    public void updateLayout()
+    {
+        requestLayout();
+        invalidate();
     }
 }

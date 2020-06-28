@@ -2,6 +2,8 @@ package com.zerodsoft.scheduleweather.CalendarView;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.LinearGradient;
@@ -9,10 +11,17 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.Shader;
 import android.graphics.Typeface;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.text.Layout;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.zerodsoft.scheduleweather.DayFragment;
 import com.zerodsoft.scheduleweather.R;
@@ -24,6 +33,9 @@ public class WeekDatesView extends View implements DayFragment.OnUpdateWeekDates
     private int weekTextColor;
     private int weekTextSize;
     private int weekBackgroundColor;
+    private int weekHeaderEventTextSize;
+    private int weekHeaderEventBoxHeight;
+    private int eventMaxNum;
     private Paint weekBackgroundPaint;
     private Paint weekTextBoxPaint;
     private Paint weekTextBoxRectPaint;
@@ -32,11 +44,20 @@ public class WeekDatesView extends View implements DayFragment.OnUpdateWeekDates
     private int textBoxWidth;
     private int textBoxHeight;
     private int viewWidth;
-    private int viewHeight;
+    private int eventsViewHeight;
+    private int normalViewHeight;
+    private int headerRowMargin;
     private String week = Integer.toString(WeekHeaderView.today.get(Calendar.WEEK_OF_YEAR)) + "주";
     private Context mContext;
     private float x;
     private float y;
+
+    private Bitmap expandMoreBitmap;
+    private Bitmap expandLessBitmap;
+
+    private boolean isExpandedView = false;
+    private boolean manyItems = false;
+    private boolean haveEvents = false;
 
     public WeekDatesView(Context context, @Nullable AttributeSet attrs)
     {
@@ -49,6 +70,7 @@ public class WeekDatesView extends View implements DayFragment.OnUpdateWeekDates
             weekTextColor = a.getColor(R.styleable.WeekDatesView_WeekTextColor, weekTextColor);
             weekBackgroundColor = a.getColor(R.styleable.WeekDatesView_WeekBackgroundColor, weekBackgroundColor);
             weekTextSize = a.getDimensionPixelSize(R.styleable.WeekDatesView_WeekTextSize, weekTextSize);
+            weekHeaderEventTextSize = context.getResources().getDimensionPixelSize(R.dimen.week_header_view_day_event_text_size);
         } finally
         {
             a.recycle();
@@ -59,7 +81,7 @@ public class WeekDatesView extends View implements DayFragment.OnUpdateWeekDates
 
     private void init()
     {
-        int headerRowMargin = mContext.getResources().getDimensionPixelSize(R.dimen.week_header_view_day_row_margin);
+        headerRowMargin = mContext.getResources().getDimensionPixelSize(R.dimen.week_header_view_day_row_margin);
         int headerDayTextSize = mContext.getResources().getDimensionPixelSize(R.dimen.week_header_view_day_text_size);
         int headerDateTextSize = mContext.getResources().getDimensionPixelSize(R.dimen.week_header_view_date_text_size);
 
@@ -97,18 +119,44 @@ public class WeekDatesView extends View implements DayFragment.OnUpdateWeekDates
         weekTextBoxRectPaint.setColor(Color.GRAY);
         weekTextBoxRectPaint.setAntiAlias(true);
 
-        viewHeight = headerHeight;
-
+        normalViewHeight = headerHeight;
 
         dividingPaint = new Paint();
         dividingPaint.setColor(Color.BLACK);
+
+        expandMoreBitmap = convertDrawable(mContext.getResources().getDrawable(R.drawable.expand_more_icon, null));
+        expandLessBitmap = convertDrawable(mContext.getResources().getDrawable(R.drawable.expand_less_icon, null));
+
+        Paint eventBoxPaint = new Paint();
+        eventBoxPaint.setTextSize(weekHeaderEventTextSize);
+        eventBoxPaint.getTextBounds("1", 0, 1, rect);
+        weekHeaderEventBoxHeight = rect.height();
+    }
+
+    public Bitmap convertDrawable(Drawable drawable)
+    {
+        if (drawable instanceof BitmapDrawable)
+        {
+            return ((BitmapDrawable) drawable).getBitmap();
+        }
+        Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        drawable.draw(canvas);
+
+        return bitmap;
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
     {
-        setMeasuredDimension(widthMeasureSpec, viewHeight);
-
+        if (haveEvents)
+        {
+            setMeasuredDimension(widthMeasureSpec, eventsViewHeight);
+        } else
+        {
+            setMeasuredDimension(widthMeasureSpec, normalViewHeight);
+        }
     }
 
     @Override
@@ -116,7 +164,6 @@ public class WeekDatesView extends View implements DayFragment.OnUpdateWeekDates
     {
         super.layout(l, t, r, b);
         x = getWidth() / 2;
-        y = getHeight() / 2;
     }
 
     @Override
@@ -124,15 +171,58 @@ public class WeekDatesView extends View implements DayFragment.OnUpdateWeekDates
     {
         super.onDraw(canvas);
         drawWeekDatesView(canvas);
+        int height = getHeight();
         canvas.drawLine(0f, getHeight() - 1, getWidth(), getHeight() - 1, dividingPaint);
 
+        if (manyItems)
+        {
+            showExpandBtn(canvas);
+        }
     }
+
+    public void showExpandBtn(Canvas canvas)
+    {
+        if (isExpandedView)
+        {
+            canvas.drawBitmap(expandMoreBitmap, getWidth() / 2 - expandMoreBitmap.getWidth() / 2, getHeight() - expandMoreBitmap.getHeight(), new Paint());
+        } else
+        {
+            canvas.drawBitmap(expandLessBitmap, getWidth() / 2 - expandMoreBitmap.getWidth() / 2, getHeight() - expandMoreBitmap.getHeight(), new Paint());
+        }
+    }
+
+    public WeekDatesView setManyItems(boolean manyItems)
+    {
+        this.manyItems = manyItems;
+        this.isExpandedView = manyItems;
+        return this;
+    }
+
+    public void updateViewHeight(int eventMaxNum)
+    {
+        this.haveEvents = true;
+        this.eventMaxNum = eventMaxNum;
+        eventsViewHeight = normalViewHeight;
+
+        if (eventMaxNum > 2)
+        {
+            setManyItems(true);
+            eventsViewHeight = eventsViewHeight + (weekHeaderEventBoxHeight + headerRowMargin) * 2 + headerRowMargin;
+        } else
+        {
+            setManyItems(false);
+            eventsViewHeight = eventsViewHeight + (weekHeaderEventBoxHeight + headerRowMargin) * eventMaxNum + headerRowMargin;
+        }
+        requestLayout();
+        invalidate();
+    }
+
 
     private void drawWeekDatesView(Canvas canvas)
     {
         canvas.drawRect(0, 0, getWidth(), getHeight(), weekBackgroundPaint);
-        canvas.drawRect(x - textBoxWidth / 2 - 10, y - textBoxHeight / 2 - 10, x + textBoxWidth / 2 + 10, y + textBoxHeight / 2 + 10, weekTextBoxRectPaint);
-        canvas.drawText(week, x, y + weekTextBoxRect.height() / 2, weekTextBoxPaint);
+        canvas.drawRect(x - textBoxWidth / 2 - 10, normalViewHeight / 2 - textBoxHeight / 2 - 10, x + textBoxWidth / 2 + 10, normalViewHeight / 2 + textBoxHeight / 2 + 10, weekTextBoxRectPaint);
+        canvas.drawText(week, x, normalViewHeight / 2 + weekTextBoxRect.height() / 2, weekTextBoxPaint);
     }
 
     @Override

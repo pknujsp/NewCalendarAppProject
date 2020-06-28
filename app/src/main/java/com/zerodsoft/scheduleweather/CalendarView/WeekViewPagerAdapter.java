@@ -1,16 +1,12 @@
 package com.zerodsoft.scheduleweather.CalendarView;
 
 import android.content.Context;
-import android.util.Log;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.HeaderViewListAdapter;
-import android.widget.ScrollView;
 
 import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.PagerAdapter;
 
 import com.zerodsoft.scheduleweather.DayFragment;
@@ -24,7 +20,8 @@ public class WeekViewPagerAdapter extends PagerAdapter implements WeekView.OnRef
     private HoursView hoursView;
     private ViewGroup container;
     private WeekDatesView weekDatesView;
-    private SparseArray<View> viewSparseArray = new SparseArray<>();
+    private SparseArray<View> weekViewSparseArray = new SparseArray<>();
+    private SparseArray<View> headerViewSparseArray = new SparseArray<>();
 
 
     public WeekViewPagerAdapter()
@@ -57,7 +54,8 @@ public class WeekViewPagerAdapter extends PagerAdapter implements WeekView.OnRef
             ((WeekHeaderView) headerView).setPosition(position);
             ((WeekView) weekView).setPosition(position).setCoordinateInfoInterface((WeekHeaderView) headerView).setOnRefreshChildViewListener(this).setOnRefreshHoursViewListener(hoursView);
         }
-        viewSparseArray.put(position, weekView);
+        weekViewSparseArray.put(position, weekView);
+        headerViewSparseArray.put(position, headerView);
         container.addView(rootView);
         return rootView;
     }
@@ -65,7 +63,8 @@ public class WeekViewPagerAdapter extends PagerAdapter implements WeekView.OnRef
     @Override
     public void destroyItem(@NonNull ViewGroup container, int position, @NonNull Object object)
     {
-        viewSparseArray.remove(position);
+        weekViewSparseArray.remove(position);
+        headerViewSparseArray.remove(position);
         container.removeView((View) object);
     }
 
@@ -86,8 +85,8 @@ public class WeekViewPagerAdapter extends PagerAdapter implements WeekView.OnRef
     {
         try
         {
-            viewSparseArray.get(position - 1).invalidate();
-            viewSparseArray.get(position + 1).invalidate();
+            weekViewSparseArray.get(position - 1).invalidate();
+            weekViewSparseArray.get(position + 1).invalidate();
         } catch (NullPointerException e)
         {
 
@@ -96,7 +95,11 @@ public class WeekViewPagerAdapter extends PagerAdapter implements WeekView.OnRef
 
     public void refreshView(int position)
     {
-        viewSparseArray.get(position).invalidate();
+        weekViewSparseArray.get(position).invalidate();
     }
 
+    public void updateLayout(int eventMaxNum, int position)
+    {
+        ((WeekHeaderView) headerViewSparseArray.get(position)).setEventsNum(eventMaxNum);
+    }
 }

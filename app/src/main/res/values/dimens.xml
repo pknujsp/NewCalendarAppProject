@@ -14,4 +14,5 @@
     <dimen name="week_header_view_date_text_size">13dp</dimen>
     <dimen name="week_header_view_day_text_size">13dp</dimen>
     <dimen name="week_header_view_day_row_margin">8dp</dimen>
+    <dimen name="week_header_view_day_event_text_size">13dp</dimen>
 </resources>

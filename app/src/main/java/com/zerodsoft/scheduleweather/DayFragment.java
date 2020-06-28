@@ -3,7 +3,6 @@ package com.zerodsoft.scheduleweather;
 import android.graphics.Point;
 import android.os.Bundle;
 
-import androidx.core.view.ViewCompat;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.ViewPager;
 
@@ -12,9 +11,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 
 import com.zerodsoft.scheduleweather.CalendarView.HoursView;
 import com.zerodsoft.scheduleweather.CalendarView.WeekDatesView;
+import com.zerodsoft.scheduleweather.CalendarView.WeekHeaderView;
 import com.zerodsoft.scheduleweather.CalendarView.WeekViewPagerAdapter;
 
 import java.util.Calendar;
@@ -26,7 +27,7 @@ public class DayFragment extends Fragment
     private static final String DAYFRAGMENT_TAG = "DAY_FRAGMENT";
     private WeekDatesView mWeekDatesView;
     private HoursView hoursView;
-    private LinearLayout leftLayout;
+    private RelativeLayout leftLayout;
     private LinearLayout rightLayout;
     private ViewPager weekViewPager;
     private WeekViewPagerAdapter weekViewPagerAdapter;
@@ -67,8 +68,7 @@ public class DayFragment extends Fragment
 
     private void assignViews(View view)
     {
-
-        leftLayout = (LinearLayout) view.findViewById(R.id.leftview_layout);
+        leftLayout = (RelativeLayout) view.findViewById(R.id.leftview_layout);
         rightLayout = (LinearLayout) view.findViewById(R.id.rightview_layout);
 
         leftLayout.setLayoutParams(new LinearLayout.LayoutParams(spacingBetweenDay, ViewGroup.LayoutParams.MATCH_PARENT));
@@ -93,7 +93,6 @@ public class DayFragment extends Fragment
         private int finalPosition;
         private int firstPosition = DayFragment.FIRST_VIEW_NUMBER;
         private int position;
-        private int scrollingState;
         private Calendar today = Calendar.getInstance();
         private OnUpdateWeekDatesListener onUpdateWeekDatesListener;
 
@@ -113,15 +112,12 @@ public class DayFragment extends Fragment
         {
             if (state == ViewPager.SCROLL_STATE_IDLE)
             {
-                scrollingState = ViewPager.SCROLL_STATE_IDLE;
             } else if (state == ViewPager.SCROLL_STATE_DRAGGING)
             {
                 Log.e(DAYFRAGMENT_TAG, "SCROLL_STATE_DRAGGING");
-                scrollingState = ViewPager.SCROLL_STATE_DRAGGING;
-                weekViewPagerAdapter.refreshChildView(position);
+                weekViewPagerAdapter.refreshChildView(this.position);
             } else if (state == ViewPager.SCROLL_STATE_SETTLING)
             {
-                scrollingState = ViewPager.SCROLL_STATE_SETTLING;
             }
         }
 
@@ -165,6 +161,9 @@ public class DayFragment extends Fragment
     public void goToToday()
     {
         int currentPosition = changeListener.getFirstPosition();
+        mWeekDatesView.updateViewHeight(3);
+        hoursView.updateLayout();
+        weekViewPagerAdapter.updateLayout(3, currentPosition);
 
         if (currentPosition != DayFragment.FIRST_VIEW_NUMBER)
         {

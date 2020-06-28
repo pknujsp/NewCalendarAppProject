@@ -12,16 +12,17 @@
         android:orientation="horizontal">
 
 
-        <LinearLayout
+        <RelativeLayout
             android:id="@+id/leftview_layout"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:layout_height="match_parent">
 
             <com.zerodsoft.scheduleweather.CalendarView.WeekDatesView
                 android:id="@+id/weekdatesview"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentTop="true"
                 app:WeekBackgroundColor="@android:color/white"
                 app:WeekTextColor="@android:color/white"
                 app:WeekTextSize="13sp" />
@@ -29,8 +30,11 @@
             <com.zerodsoft.scheduleweather.CalendarView.HoursView
                 android:id="@+id/hoursview"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-        </LinearLayout>
+                android:layout_height="wrap_content"
+                android:layout_below="@id/weekdatesview"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentBottom="true" />
+        </RelativeLayout>
 
 
         <LinearLayout

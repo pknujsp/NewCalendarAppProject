@@ -7,6 +7,7 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.View;
+import android.widget.LinearLayout;
 
 import androidx.annotation.Nullable;
 import androidx.core.view.ViewCompat;
@@ -50,7 +51,6 @@ public class HoursView extends View implements WeekView.OnRefreshHoursViewListen
 
         backgroundPaint = new Paint();
         backgroundPaint.setColor(backgroundColor);
-
     }
 
     @Override
@@ -63,7 +63,6 @@ public class HoursView extends View implements WeekView.OnRefreshHoursViewListen
     public void layout(int l, int t, int r, int b)
     {
         super.layout(l, t, r, b);
-        spacingBetweenDay = getWidth();
     }
 
     @Override
@@ -75,7 +74,7 @@ public class HoursView extends View implements WeekView.OnRefreshHoursViewListen
 
     private void drawView(Canvas canvas)
     {
-        canvas.drawRect(0f, 0f, spacingBetweenDay, (float) getHeight(), backgroundPaint);
+        canvas.drawRect(0f, 0f, getWidth(), (float) getHeight(), backgroundPaint);
 
         for (int i = 0; i < 24; i++)
         {
@@ -95,5 +94,11 @@ public class HoursView extends View implements WeekView.OnRefreshHoursViewListen
     public void refreshHoursView()
     {
         ViewCompat.postInvalidateOnAnimation(this);
+    }
+
+    public void updateLayout()
+    {
+        requestLayout();
+        invalidate();
     }
 }
