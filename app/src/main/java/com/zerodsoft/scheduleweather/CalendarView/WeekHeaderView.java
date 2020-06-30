@@ -19,9 +19,13 @@ import androidx.core.view.ViewCompat;
 import com.zerodsoft.scheduleweather.CalendarView.Dto.CoordinateInfo;
 import com.zerodsoft.scheduleweather.DayFragment;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.Room.DTO.GoogleScheduleDTO;
+import com.zerodsoft.scheduleweather.Room.DTO.LocalScheduleDTO;
+import com.zerodsoft.scheduleweather.Utility.AppSettings;
 import com.zerodsoft.scheduleweather.Utility.DateHour;
 
 import java.util.Calendar;
+import java.util.List;
 
 
 public class WeekHeaderView extends View implements WeekView.CoordinateInfoInterface
@@ -35,6 +39,7 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
 
     private PointF mCurrentOrigin = new PointF(0f, 0f);
     private PointF mLastOrigin = new PointF(0F, 0F);
+    private PointF eventsStartCoordinate = new PointF(0f, 0f);
     private Paint mHeaderBackgroundPaint;
     private Paint mHeaderDateNormalPaint;
     private Paint mHeaderDateTodayPaint;
@@ -77,6 +82,9 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
     public static int selectedDayPosition = -1;
     private boolean haveEvents = false;
     private int eventMaxNum;
+
+    private List<GoogleScheduleDTO> googleScheduleList;
+    private List<LocalScheduleDTO> localScheduleList;
 
     @Override
     public CoordinateInfo[] getArray()
@@ -207,6 +215,7 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
             // 오늘 날짜의 위치를 파악
             mCurrentOrigin.x = mHeaderWidthPerDay * difference;
         }
+        eventsStartCoordinate.set(mHeaderWidthPerDay / 2, mHeaderHeightNormal);
     }
 
     @Override
@@ -355,8 +364,39 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
         {
             mHeaderHeightEvents = mHeaderHeightEvents + (weekHeaderEventBoxHeight + mHeaderRowMarginTop) * eventMaxNum + mHeaderRowMarginTop;
         }
+
         firstDraw = true;
         requestLayout();
         invalidate();
+    }
+
+    public void setScheduleList(List<LocalScheduleDTO> localScheduleList, List<GoogleScheduleDTO> googleScheduleList)
+    {
+        this.googleScheduleList = googleScheduleList;
+        this.localScheduleList = localScheduleList;
+    }
+
+    private void drawEvents(Canvas canvas)
+    {
+        final int googleEventColor = AppSettings.getGoogleEventColor();
+        final int localEventColor = AppSettings.getLocalEventColor();
+        Calendar startDate = Calendar.getInstance();
+        Calendar endDate = Calendar.getInstance();
+
+        for (GoogleScheduleDTO schedule : googleScheduleList)
+        {
+            startDate.setTimeInMillis(schedule.getStartDate());
+            endDate.setTimeInMillis(schedule.getEndDate());
+
+            // 이번주 내에 시작/종료
+            // 이전 주 부터 시작되어 이번 주 중에 종료
+            // 이전 주 부터 시작되어 이번 주 이후에 종료
+            // 이번 주 부터 시작되어 이번 주 이후에 종료
+        }
+
+        for (LocalScheduleDTO schedule : localScheduleList)
+        {
+
+        }
     }
 }

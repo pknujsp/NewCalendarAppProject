@@ -26,9 +26,12 @@ import androidx.viewpager.widget.ViewPager;
 import com.zerodsoft.scheduleweather.Calendar.CalendarAdapter;
 import com.zerodsoft.scheduleweather.CalendarView.Dto.CoordinateInfo;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.Room.DTO.GoogleScheduleDTO;
+import com.zerodsoft.scheduleweather.Room.DTO.LocalScheduleDTO;
 import com.zerodsoft.scheduleweather.Utility.Clock;
 
 import java.util.Calendar;
+import java.util.List;
 
 public class WeekView extends View
 {
@@ -91,6 +94,9 @@ public class WeekView extends View
     private OnRefreshChildViewListener onRefreshChildViewListener;
     private OnRefreshHoursViewListener onRefreshHoursViewListener;
     private CoordinateInfoInterface coordinateInfoInterface;
+
+    private List<GoogleScheduleDTO> googleScheduleList;
+    private List<LocalScheduleDTO> localScheduleList;
 
     private CoordinateInfo[] coordinateInfos;
 
@@ -618,5 +624,11 @@ public class WeekView extends View
     {
         requestLayout();
         invalidate();
+    }
+
+    public void setScheduleList(List<LocalScheduleDTO> localScheduleList, List<GoogleScheduleDTO> googleScheduleList)
+    {
+        this.googleScheduleList = googleScheduleList;
+        this.localScheduleList = localScheduleList;
     }
 }

@@ -11,6 +11,11 @@ import androidx.viewpager.widget.PagerAdapter;
 
 import com.zerodsoft.scheduleweather.DayFragment;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.Room.DBController;
+import com.zerodsoft.scheduleweather.Room.DTO.GoogleScheduleDTO;
+import com.zerodsoft.scheduleweather.Room.DTO.LocalScheduleDTO;
+
+import java.util.List;
 
 
 public class WeekViewPagerAdapter extends PagerAdapter implements WeekView.OnRefreshChildViewListener
@@ -22,6 +27,7 @@ public class WeekViewPagerAdapter extends PagerAdapter implements WeekView.OnRef
     private WeekDatesView weekDatesView;
     private SparseArray<View> weekViewSparseArray = new SparseArray<>();
     private SparseArray<View> headerViewSparseArray = new SparseArray<>();
+    private DBController dbController;
 
 
     public WeekViewPagerAdapter()
@@ -35,6 +41,7 @@ public class WeekViewPagerAdapter extends PagerAdapter implements WeekView.OnRef
         this.context = context;
         this.weekDatesView = weekDatesView;
         this.hoursView = hoursView;
+        this.dbController = DBController.getInstance();
     }
 
 
@@ -101,5 +108,18 @@ public class WeekViewPagerAdapter extends PagerAdapter implements WeekView.OnRef
     public void updateLayout(int eventMaxNum, int position)
     {
         ((WeekHeaderView) headerViewSparseArray.get(position)).setEventsNum(eventMaxNum);
+    }
+
+    public void getScheduleList(int position)
+    {
+        long sundayMillisec = 0L;
+        dbController.selectScheduleData();
+        sendScheduleList(position, dbController.getGoogleScheduleList(), dbController.getLocalScheduleList());
+    }
+
+    public void sendScheduleList(int position, List<GoogleScheduleDTO> googleScheduleList, List<LocalScheduleDTO> localScheduleList)
+    {
+        ((WeekHeaderView) headerViewSparseArray.get(position)).setScheduleList(localScheduleList, googleScheduleList);
+        ((WeekView) weekViewSparseArray.get(position)).setScheduleList(localScheduleList, googleScheduleList);
     }
 }
