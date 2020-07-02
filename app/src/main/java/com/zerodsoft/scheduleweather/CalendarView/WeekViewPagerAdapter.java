@@ -15,6 +15,7 @@ import com.zerodsoft.scheduleweather.Room.DBController;
 import com.zerodsoft.scheduleweather.Room.DTO.GoogleScheduleDTO;
 import com.zerodsoft.scheduleweather.Room.DTO.LocalScheduleDTO;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -58,11 +59,14 @@ public class WeekViewPagerAdapter extends PagerAdapter implements WeekView.OnRef
             rootView = layoutInflater.inflate(R.layout.weekview_viewpager_item, container, false);
             headerView = (WeekHeaderView) rootView.findViewById(R.id.weekheaderview);
             weekView = (WeekView) rootView.findViewById(R.id.weekview);
+
             ((WeekHeaderView) headerView).setPosition(position);
             ((WeekView) weekView).setPosition(position).setCoordinateInfoInterface((WeekHeaderView) headerView).setOnRefreshChildViewListener(this).setOnRefreshHoursViewListener(hoursView);
         }
         weekViewSparseArray.put(position, weekView);
         headerViewSparseArray.put(position, headerView);
+        getScheduleList(position);
+
         container.addView(rootView);
         return rootView;
     }
@@ -105,14 +109,9 @@ public class WeekViewPagerAdapter extends PagerAdapter implements WeekView.OnRef
         weekViewSparseArray.get(position).invalidate();
     }
 
-    public void updateLayout(int eventMaxNum, int position)
-    {
-        ((WeekHeaderView) headerViewSparseArray.get(position)).setEventsNum(eventMaxNum);
-    }
 
     public void getScheduleList(int position)
     {
-        long sundayMillisec = 0L;
         dbController.selectScheduleData();
         sendScheduleList(position, dbController.getGoogleScheduleList(), dbController.getLocalScheduleList());
     }
@@ -120,6 +119,6 @@ public class WeekViewPagerAdapter extends PagerAdapter implements WeekView.OnRef
     public void sendScheduleList(int position, List<GoogleScheduleDTO> googleScheduleList, List<LocalScheduleDTO> localScheduleList)
     {
         ((WeekHeaderView) headerViewSparseArray.get(position)).setScheduleList(localScheduleList, googleScheduleList);
-        ((WeekView) weekViewSparseArray.get(position)).setScheduleList(localScheduleList, googleScheduleList);
+        // ((WeekView) weekViewSparseArray.get(position)).setScheduleList(localScheduleList, googleScheduleList);
     }
 }

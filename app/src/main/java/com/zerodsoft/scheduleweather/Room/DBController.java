@@ -8,8 +8,8 @@ import java.util.List;
 
 public class DBController
 {
-    private static List<GoogleScheduleDTO> googleScheduleList;
-    private static List<LocalScheduleDTO> localScheduleList;
+    private static List<GoogleScheduleDTO> googleScheduleList = null;
+    private static List<LocalScheduleDTO> localScheduleList = null;
     private static DBController dbController;
 
     private DBController()

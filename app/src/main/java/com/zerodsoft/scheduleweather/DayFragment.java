@@ -161,9 +161,6 @@ public class DayFragment extends Fragment
     public void goToToday()
     {
         int currentPosition = changeListener.getFirstPosition();
-        mWeekDatesView.updateViewHeight(3);
-        hoursView.updateLayout();
-        weekViewPagerAdapter.updateLayout(3, currentPosition);
 
         if (currentPosition != DayFragment.FIRST_VIEW_NUMBER)
         {

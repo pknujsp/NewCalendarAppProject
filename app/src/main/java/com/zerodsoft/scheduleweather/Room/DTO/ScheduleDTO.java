@@ -1,6 +1,6 @@
 package com.zerodsoft.scheduleweather.Room.DTO;
 
-public class GoogleScheduleDTO extends ScheduleDTO
+public class ScheduleDTO
 {
     private int id;
     private String subject;
@@ -20,9 +20,10 @@ public class GoogleScheduleDTO extends ScheduleDTO
         return id;
     }
 
-    public void setId(int id)
+    public ScheduleDTO setId(int id)
     {
         this.id = id;
+        return this;
     }
 
     public String getSubject()
@@ -30,9 +31,10 @@ public class GoogleScheduleDTO extends ScheduleDTO
         return subject;
     }
 
-    public void setSubject(String subject)
+    public ScheduleDTO setSubject(String subject)
     {
         this.subject = subject;
+        return this;
     }
 
     public String getContent()
@@ -40,9 +42,10 @@ public class GoogleScheduleDTO extends ScheduleDTO
         return content;
     }
 
-    public void setContent(String content)
+    public ScheduleDTO setContent(String content)
     {
         this.content = content;
+        return this;
     }
 
     public int getStartDate()
@@ -50,9 +53,10 @@ public class GoogleScheduleDTO extends ScheduleDTO
         return startDate;
     }
 
-    public void setStartDate(int startDate)
+    public ScheduleDTO setStartDate(int startDate)
     {
         this.startDate = startDate;
+        return this;
     }
 
     public int getEndDate()
@@ -60,9 +64,10 @@ public class GoogleScheduleDTO extends ScheduleDTO
         return endDate;
     }
 
-    public void setEndDate(int endDate)
+    public ScheduleDTO setEndDate(int endDate)
     {
         this.endDate = endDate;
+        return this;
     }
 
     public String getLocName()
@@ -70,9 +75,10 @@ public class GoogleScheduleDTO extends ScheduleDTO
         return locName;
     }
 
-    public void setLocName(String locName)
+    public ScheduleDTO setLocName(String locName)
     {
         this.locName = locName;
+        return this;
     }
 
     public String getWthName()
@@ -80,9 +86,10 @@ public class GoogleScheduleDTO extends ScheduleDTO
         return wthName;
     }
 
-    public void setWthName(String wthName)
+    public ScheduleDTO setWthName(String wthName)
     {
         this.wthName = wthName;
+        return this;
     }
 
     public String getLocLat()
@@ -90,9 +97,10 @@ public class GoogleScheduleDTO extends ScheduleDTO
         return locLat;
     }
 
-    public void setLocLat(String locLat)
+    public ScheduleDTO setLocLat(String locLat)
     {
         this.locLat = locLat;
+        return this;
     }
 
     public String getLocLon()
@@ -100,9 +108,10 @@ public class GoogleScheduleDTO extends ScheduleDTO
         return locLon;
     }
 
-    public void setLocLon(String locLon)
+    public ScheduleDTO setLocLon(String locLon)
     {
         this.locLon = locLon;
+        return this;
     }
 
     public String getLocX()
@@ -110,9 +119,10 @@ public class GoogleScheduleDTO extends ScheduleDTO
         return locX;
     }
 
-    public void setLocX(String locX)
+    public ScheduleDTO setLocX(String locX)
     {
         this.locX = locX;
+        return this;
     }
 
     public String getLocY()
@@ -120,9 +130,10 @@ public class GoogleScheduleDTO extends ScheduleDTO
         return locY;
     }
 
-    public void setLocY(String locY)
+    public ScheduleDTO setLocY(String locY)
     {
         this.locY = locY;
+        return this;
     }
 
     public int getNotiTime()
@@ -130,8 +141,9 @@ public class GoogleScheduleDTO extends ScheduleDTO
         return notiTime;
     }
 
-    public void setNotiTime(int notiTime)
+    public ScheduleDTO setNotiTime(int notiTime)
     {
         this.notiTime = notiTime;
+        return this;
     }
 }

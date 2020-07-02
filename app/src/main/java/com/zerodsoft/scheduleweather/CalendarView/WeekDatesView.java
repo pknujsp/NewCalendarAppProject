@@ -3,25 +3,21 @@ package com.zerodsoft.scheduleweather.CalendarView;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.LinearGradient;
 import android.graphics.Paint;
+import android.graphics.Point;
 import android.graphics.Rect;
-import android.graphics.Shader;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.text.Layout;
 import android.util.AttributeSet;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 
 import androidx.annotation.Nullable;
-import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.view.GestureDetectorCompat;
 
 import com.zerodsoft.scheduleweather.DayFragment;
 import com.zerodsoft.scheduleweather.R;
@@ -44,13 +40,16 @@ public class WeekDatesView extends View implements DayFragment.OnUpdateWeekDates
     private int textBoxWidth;
     private int textBoxHeight;
     private int viewWidth;
-    private int eventsViewHeight;
+    private int eventsViewMinHeight;
     private int normalViewHeight;
+    private int eventsViewMaxHeight;
     private int headerRowMargin;
     private String week = Integer.toString(WeekHeaderView.today.get(Calendar.WEEK_OF_YEAR)) + "주";
     private Context mContext;
     private float x;
     private float y;
+
+    private Point expandBtnPoint = new Point();
 
     private Bitmap expandMoreBitmap;
     private Bitmap expandLessBitmap;
@@ -58,6 +57,8 @@ public class WeekDatesView extends View implements DayFragment.OnUpdateWeekDates
     private boolean isExpandedView = false;
     private boolean manyItems = false;
     private boolean haveEvents = false;
+
+    private GestureDetectorCompat gestureDetectorCompat;
 
     public WeekDatesView(Context context, @Nullable AttributeSet attrs)
     {
@@ -131,6 +132,8 @@ public class WeekDatesView extends View implements DayFragment.OnUpdateWeekDates
         eventBoxPaint.setTextSize(weekHeaderEventTextSize);
         eventBoxPaint.getTextBounds("1", 0, 1, rect);
         weekHeaderEventBoxHeight = rect.height();
+
+        gestureDetectorCompat = new GestureDetectorCompat(mContext, onGestureListener);
     }
 
     public Bitmap convertDrawable(Drawable drawable)
@@ -152,7 +155,13 @@ public class WeekDatesView extends View implements DayFragment.OnUpdateWeekDates
     {
         if (haveEvents)
         {
-            setMeasuredDimension(widthMeasureSpec, eventsViewHeight);
+            if (isExpandedView)
+            {
+                setMeasuredDimension(widthMeasureSpec, eventsViewMaxHeight);
+            } else
+            {
+                setMeasuredDimension(widthMeasureSpec, eventsViewMinHeight);
+            }
         } else
         {
             setMeasuredDimension(widthMeasureSpec, normalViewHeight);
@@ -184,17 +193,17 @@ public class WeekDatesView extends View implements DayFragment.OnUpdateWeekDates
     {
         if (isExpandedView)
         {
-            canvas.drawBitmap(expandMoreBitmap, getWidth() / 2 - expandMoreBitmap.getWidth() / 2, getHeight() - expandMoreBitmap.getHeight(), new Paint());
+            canvas.drawBitmap(expandLessBitmap, getWidth() / 2 - expandMoreBitmap.getWidth() / 2, getHeight() - expandMoreBitmap.getHeight(), new Paint());
         } else
         {
-            canvas.drawBitmap(expandLessBitmap, getWidth() / 2 - expandMoreBitmap.getWidth() / 2, getHeight() - expandMoreBitmap.getHeight(), new Paint());
+            canvas.drawBitmap(expandMoreBitmap, getWidth() / 2 - expandMoreBitmap.getWidth() / 2, getHeight() - expandMoreBitmap.getHeight(), new Paint());
         }
     }
 
     public WeekDatesView setManyItems(boolean manyItems)
     {
         this.manyItems = manyItems;
-        this.isExpandedView = manyItems;
+        this.isExpandedView = false;
         return this;
     }
 
@@ -202,17 +211,18 @@ public class WeekDatesView extends View implements DayFragment.OnUpdateWeekDates
     {
         this.haveEvents = true;
         this.eventMaxNum = eventMaxNum;
-        eventsViewHeight = normalViewHeight;
 
         if (eventMaxNum > 2)
         {
             setManyItems(true);
-            eventsViewHeight = eventsViewHeight + (weekHeaderEventBoxHeight + headerRowMargin) * 2 + headerRowMargin;
+            eventsViewMinHeight = normalViewHeight + (weekHeaderEventBoxHeight + headerRowMargin) * 2;
+            eventsViewMaxHeight = normalViewHeight + (weekHeaderEventBoxHeight + headerRowMargin) * eventMaxNum;
         } else
         {
             setManyItems(false);
-            eventsViewHeight = eventsViewHeight + (weekHeaderEventBoxHeight + headerRowMargin) * eventMaxNum + headerRowMargin;
+            eventsViewMinHeight = normalViewHeight + (weekHeaderEventBoxHeight + headerRowMargin) * eventMaxNum;
         }
+        expandBtnPoint.set(getWidth() / 2 - expandMoreBitmap.getWidth() / 2, eventsViewMinHeight - expandMoreBitmap.getHeight());
         requestLayout();
         invalidate();
     }
@@ -232,4 +242,32 @@ public class WeekDatesView extends View implements DayFragment.OnUpdateWeekDates
         invalidate();
     }
 
+    @Override
+    public boolean onTouchEvent(MotionEvent event)
+    {
+        return gestureDetectorCompat.onTouchEvent(event);
+    }
+
+    private final GestureDetector.OnGestureListener onGestureListener = new GestureDetector.SimpleOnGestureListener()
+    {
+        @Override
+        public boolean onSingleTapConfirmed(MotionEvent e)
+        {
+            if (e.getX() >= expandBtnPoint.x - expandMoreBitmap.getWidth() / 2
+                    && e.getX() <= expandBtnPoint.x + expandMoreBitmap.getWidth() / 2
+                    && e.getY() >= expandBtnPoint.y - expandMoreBitmap.getHeight() / 2
+                    && e.getY() <= expandBtnPoint.y + expandMoreBitmap.getHeight() / 2)
+            {
+                if (isExpandedView)
+                {
+                    isExpandedView = false;
+                } else
+                {
+                    isExpandedView = true;
+                }
+                requestLayout();
+                invalidate();
+            }
+        }
+    };
 }

@@ -1,6 +1,6 @@
 package com.zerodsoft.scheduleweather.Room.DTO;
 
-public class LocalScheduleDTO
+public class LocalScheduleDTO extends ScheduleDTO
 {
     private int id;
     private String subject;
