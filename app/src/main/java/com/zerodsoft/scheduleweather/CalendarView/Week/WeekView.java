@@ -1,11 +1,10 @@
-package com.zerodsoft.scheduleweather.CalendarView;
+package com.zerodsoft.scheduleweather.CalendarView.Week;
 
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
@@ -21,15 +20,19 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.core.view.GestureDetectorCompat;
 import androidx.core.view.ViewCompat;
-import androidx.viewpager.widget.ViewPager;
 
-import com.zerodsoft.scheduleweather.Calendar.CalendarAdapter;
+import com.zerodsoft.scheduleweather.CalendarView.ACCOUNT_TYPE;
 import com.zerodsoft.scheduleweather.CalendarView.Dto.CoordinateInfo;
+import com.zerodsoft.scheduleweather.CalendarView.EventDrawingInfo;
+import com.zerodsoft.scheduleweather.CalendarView.HoursView;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.Room.DTO.GoogleScheduleDTO;
 import com.zerodsoft.scheduleweather.Room.DTO.LocalScheduleDTO;
+import com.zerodsoft.scheduleweather.Room.DTO.ScheduleDTO;
+import com.zerodsoft.scheduleweather.Utility.AppSettings;
 import com.zerodsoft.scheduleweather.Utility.Clock;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
@@ -56,10 +59,16 @@ public class WeekView extends View
     private float tableHeight = 0f;
     private int position;
 
+    private int googleEventColor;
+    private int localEventColor;
+    private Paint googleEventPaint;
+    private Paint localEventPaint;
+
     private PointF startPoint;
     private PointF endPoint;
 
     private Paint weekDayHourTextPaint;
+    private Paint eventTextPaint;
     private Paint weekDayHorizontalLinePaint;
     private Paint weekDayVerticalLinePaint;
     private Paint weekDayBackgroundPaint;
@@ -85,8 +94,11 @@ public class WeekView extends View
     private DIRECTION currentScrollDirection = DIRECTION.NONE;
     private TIME_CATEGORY timeCategory = TIME_CATEGORY.NONE;
 
+    private boolean haveEvents = false;
+    private List<List<EventDrawingInfo>> eventDrawingInfoList = null;
+
     enum DIRECTION
-    {NONE, VERTICAL, CANCEL, FINISHED}
+    {NONE, VERTICAL, FINISHED}
 
     enum TIME_CATEGORY
     {NONE, START, END}
@@ -289,9 +301,8 @@ public class WeekView extends View
         {
             if (setStartTime(e.getX(), e.getY()))
             {
-                Toast.makeText(context, Clock.timeFormat2.format(startTime.getTime()), Toast.LENGTH_SHORT).show();
                 createdAddScheduleRect = true;
-                WeekView.this.invalidate();
+                invalidate();
             }
         }
     };
@@ -321,8 +332,27 @@ public class WeekView extends View
         weekDayVerticalLinePaint = new Paint();
         weekDayVerticalLinePaint.setColor(weekDayViewLineColor);
 
+        eventTextPaint = new Paint();
+        eventTextPaint.setColor(Color.WHITE);
+        eventTextPaint.setTextSize(weekDayHourTextSize);
+
+        googleEventColor = AppSettings.getGoogleEventColor();
+        localEventColor = AppSettings.getLocalEventColor();
+
+        googleEventPaint = new Paint();
+        localEventPaint = new Paint();
+        googleEventPaint.setColor(googleEventColor);
+        localEventPaint.setColor(localEventColor);
+
         gestureDetector = new GestureDetectorCompat(context, onGestureListener);
         overScroller = new OverScroller(context);
+
+        eventDrawingInfoList = new ArrayList<>();
+        for (int i = 0; i < 7; i++)
+        {
+            // 일 ~ 토 까지 리스트 초기화 (0 ~ 6)
+            eventDrawingInfoList.add(new ArrayList<EventDrawingInfo>());
+        }
     }
 
     @Override
@@ -335,7 +365,8 @@ public class WeekView extends View
     protected void onDraw(Canvas canvas)
     {
         super.onDraw(canvas);
-        drawDayView(canvas);
+        canvas.drawRect(0f, 0f, getWidth(), getHeight(), weekDayBackgroundPaint);
+        drawWeekView(canvas);
     }
 
 
@@ -351,10 +382,8 @@ public class WeekView extends View
     }
 
 
-    private void drawDayView(Canvas canvas)
+    private void drawWeekView(Canvas canvas)
     {
-        canvas.drawRect(0f, 0f, getWidth(), getHeight(), weekDayBackgroundPaint);
-
         startX = currentCoordinate.x;
         startY = currentCoordinate.y;
 
@@ -376,13 +405,12 @@ public class WeekView extends View
             startPoint = getTimePoint(TIME_CATEGORY.START);
             endPoint = getTimePoint(TIME_CATEGORY.END);
 
-            /*
-            RectF rect = new RectF();
-            rect.set(startPoint.x, startPoint.y, endPoint.x + spacingLinesBetweenDay, endPoint.y);
-             */
             newScheduleRect.setBounds((int) startPoint.x, (int) startPoint.y, (int) endPoint.x + spacingLinesBetweenDay, (int) endPoint.y);
             newScheduleRect.draw(canvas);
-            //    canvas.drawRect(rect, newScheduleRectPaint);
+        }
+        if (haveEvents)
+        {
+            drawEvents(canvas);
         }
     }
 
@@ -440,6 +468,23 @@ public class WeekView extends View
                 break;
             }
         }
+        return point;
+    }
+
+    private PointF getPoint(Calendar time, int dayOfWeek)
+    {
+        PointF point = new PointF(0f, 0f);
+
+        // x
+        point.x = coordinateInfos[dayOfWeek].getStartX();
+
+        // y
+        float hourY = currentCoordinate.y + spacingLinesBetweenHour * time.get(Calendar.HOUR_OF_DAY);
+        int minute = time.get(Calendar.MINUTE);
+        float minute1Height = spacingLinesBetweenHour / 60f;
+
+        point.y = hourY + minute1Height * minute;
+
         return point;
     }
 
@@ -603,8 +648,100 @@ public class WeekView extends View
             currentCoordinate.x = overScroller.getCurrX();
             currentCoordinate.y = overScroller.getCurrY();
 
-            ViewCompat.postInvalidateOnAnimation(WeekView.this);
+            ViewCompat.postInvalidateOnAnimation(this);
             onRefreshHoursViewListener.refreshHoursView();
+        }
+    }
+
+    private void drawEvents(Canvas canvas)
+    {
+        RectF rect = new RectF();
+
+        for (int dayOfWeek = 0; dayOfWeek < 7; dayOfWeek++)
+        {
+            for (EventDrawingInfo eventDrawingInfo : eventDrawingInfoList.get(dayOfWeek))
+            {
+                if (eventDrawingInfo.getAccountType() == ACCOUNT_TYPE.GOOGLE)
+                {
+                    rect.set(eventDrawingInfo.getStartPoint().x, eventDrawingInfo.getStartPoint().y,
+                            eventDrawingInfo.getEndPoint().x, eventDrawingInfo.getEndPoint().y);
+                    canvas.drawRect(rect, googleEventPaint);
+                } else
+                {
+                    rect.set(eventDrawingInfo.getStartPoint().x, eventDrawingInfo.getStartPoint().y,
+                            eventDrawingInfo.getEndPoint().x, eventDrawingInfo.getEndPoint().y);
+                    canvas.drawRect(rect, localEventPaint);
+                }
+                canvas.drawText(eventDrawingInfo.getSchedule().getSubject(),
+                        (eventDrawingInfo.getEndPoint().x - eventDrawingInfo.getStartPoint().x) / 2, eventDrawingInfo.getEndPoint().y, eventTextPaint);
+            }
+        }
+    }
+
+    public void setEventDrawingInfo()
+    {
+        int dayOfWeek;
+        PointF startPoint = new PointF();
+        PointF endPoint = new PointF();
+
+        for (GoogleScheduleDTO schedule : googleScheduleList)
+        {
+            dayOfWeek = calcEventPosition(startPoint, endPoint, schedule);
+            eventDrawingInfoList.get(dayOfWeek).add(new EventDrawingInfo(new PointF(startPoint.x, startPoint.y), new PointF(endPoint.x, endPoint.y), schedule, ACCOUNT_TYPE.GOOGLE));
+        }
+        for (LocalScheduleDTO schedule : localScheduleList)
+        {
+            dayOfWeek = calcEventPosition(startPoint, endPoint, schedule);
+            eventDrawingInfoList.get(dayOfWeek).add(new EventDrawingInfo(new PointF(startPoint.x, startPoint.y), new PointF(endPoint.x, endPoint.y), schedule, ACCOUNT_TYPE.LOCAL));
+        }
+    }
+
+    private int calcEventPosition(PointF startPoint, PointF endPoint, ScheduleDTO schedule)
+    {
+        int dayOfWeek = 0;
+        Calendar startTime = Calendar.getInstance();
+        Calendar endTime = Calendar.getInstance();
+
+        startTime.setTimeInMillis(schedule.getStartDate());
+        endTime.setTimeInMillis(schedule.getEndDate());
+
+        if (isSameDay(startTime, endTime))
+        {
+            for (int i = 0; i < 7; i++)
+            {
+                if (isSameDay(startTime, coordinateInfos[i].getDate()))
+                {
+                    dayOfWeek = i;
+                    break;
+                }
+            }
+            startPoint = getPoint(startTime, dayOfWeek);
+            endPoint = getPoint(endTime, dayOfWeek);
+
+            // 다른 이벤트와 시간대가 겹치는 부분이 있는지 여부 확인
+            for (EventDrawingInfo eventDrawingInfo : eventDrawingInfoList.get(dayOfWeek))
+            {
+                // 추가할 이벤트의 진행 시각이 다른 이벤트의 진행 시각을 모두 포함 하는 경우
+                if (startTime.getTimeInMillis() <= eventDrawingInfo.getSchedule().getStartDate()
+                        && endTime.getTimeInMillis() >= eventDrawingInfo.getSchedule().getEndDate())
+                {
+                    startPoint.x = startPoint.x + 3f;
+                }
+                // 추가할 이벤트의 시작시각 또는 종료시각이 다른 이벤트의 진행 시각 사이에 있는 경우
+                else if ((startTime.getTimeInMillis() >= eventDrawingInfo.getSchedule().getStartDate()
+                        && startTime.getTimeInMillis() < eventDrawingInfo.getSchedule().getEndDate())
+                        || (endTime.getTimeInMillis() > eventDrawingInfo.getSchedule().getStartDate()
+                        && endTime.getTimeInMillis() <= eventDrawingInfo.getSchedule().getEndDate()))
+                {
+                    startPoint.x = startPoint.x + 3f;
+                }
+            }
+
+            return dayOfWeek;
+        } else
+        {
+            // 시작 시각과 종료 시각이 같은 날이 아니므로 그리지않음
+            return -1;
         }
     }
 
@@ -630,5 +767,6 @@ public class WeekView extends View
     {
         this.googleScheduleList = googleScheduleList;
         this.localScheduleList = localScheduleList;
+        setEventDrawingInfo();
     }
 }

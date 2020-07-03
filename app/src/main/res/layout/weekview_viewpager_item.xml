@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <com.zerodsoft.scheduleweather.CalendarView.WeekHeaderView
+    <com.zerodsoft.scheduleweather.CalendarView.Week.WeekHeaderView
         android:id="@+id/weekheaderview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -25,7 +25,7 @@
         custom:headerRowMarginTop="@dimen/week_header_view_day_row_margin"
         custom:headerTodayTextColor="@android:color/holo_blue_dark" />
 
-    <com.zerodsoft.scheduleweather.CalendarView.WeekView
+    <com.zerodsoft.scheduleweather.CalendarView.Week.WeekView
         android:id="@+id/weekview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

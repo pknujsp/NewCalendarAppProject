@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.CalendarView;
+package com.zerodsoft.scheduleweather.CalendarView.Week;
 
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -19,19 +19,19 @@ import android.view.View;
 import androidx.annotation.Nullable;
 import androidx.core.view.GestureDetectorCompat;
 
-import com.zerodsoft.scheduleweather.DayFragment;
+import com.zerodsoft.scheduleweather.CalendarFragment.WeekFragment;
 import com.zerodsoft.scheduleweather.R;
 
 import java.util.Calendar;
 
-public class WeekDatesView extends View implements DayFragment.OnUpdateWeekDatesListener
+public class WeekDatesView extends View implements WeekFragment.OnUpdateWeekDatesListener
 {
     private int weekTextColor;
     private int weekTextSize;
     private int weekBackgroundColor;
     private int weekHeaderEventTextSize;
     private int weekHeaderEventBoxHeight;
-    private int eventMaxNum;
+    private int rowNum;
     private Paint weekBackgroundPaint;
     private Paint weekTextBoxPaint;
     private Paint weekTextBoxRectPaint;
@@ -39,7 +39,6 @@ public class WeekDatesView extends View implements DayFragment.OnUpdateWeekDates
     private Rect weekTextBoxRect;
     private int textBoxWidth;
     private int textBoxHeight;
-    private int viewWidth;
     private int eventsViewMinHeight;
     private int normalViewHeight;
     private int eventsViewMaxHeight;
@@ -57,7 +56,6 @@ public class WeekDatesView extends View implements DayFragment.OnUpdateWeekDates
     private boolean isExpandedView = false;
     private boolean manyItems = false;
     private boolean haveEvents = false;
-
     private GestureDetectorCompat gestureDetectorCompat;
 
     public WeekDatesView(Context context, @Nullable AttributeSet attrs)
@@ -200,27 +198,26 @@ public class WeekDatesView extends View implements DayFragment.OnUpdateWeekDates
         }
     }
 
-    public WeekDatesView setManyItems(boolean manyItems)
+    public void setManyItems(boolean manyItems)
     {
         this.manyItems = manyItems;
         this.isExpandedView = false;
-        return this;
     }
 
-    public void updateViewHeight(int eventMaxNum)
+    public void updateViewHeight(int rowNum)
     {
         this.haveEvents = true;
-        this.eventMaxNum = eventMaxNum;
+        this.rowNum = rowNum;
 
-        if (eventMaxNum > 2)
+        if (rowNum > 2)
         {
             setManyItems(true);
             eventsViewMinHeight = normalViewHeight + (weekHeaderEventBoxHeight + headerRowMargin) * 2;
-            eventsViewMaxHeight = normalViewHeight + (weekHeaderEventBoxHeight + headerRowMargin) * eventMaxNum;
+            eventsViewMaxHeight = normalViewHeight + (weekHeaderEventBoxHeight + headerRowMargin) * rowNum;
         } else
         {
             setManyItems(false);
-            eventsViewMinHeight = normalViewHeight + (weekHeaderEventBoxHeight + headerRowMargin) * eventMaxNum;
+            eventsViewMinHeight = normalViewHeight + (weekHeaderEventBoxHeight + headerRowMargin) * rowNum;
         }
         expandBtnPoint.set(getWidth() / 2 - expandMoreBitmap.getWidth() / 2, eventsViewMinHeight - expandMoreBitmap.getHeight());
         requestLayout();
@@ -268,6 +265,7 @@ public class WeekDatesView extends View implements DayFragment.OnUpdateWeekDates
                 requestLayout();
                 invalidate();
             }
+            return true;
         }
     };
 }

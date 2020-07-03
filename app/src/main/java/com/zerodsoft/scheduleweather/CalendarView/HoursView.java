@@ -7,11 +7,11 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.View;
-import android.widget.LinearLayout;
 
 import androidx.annotation.Nullable;
 import androidx.core.view.ViewCompat;
 
+import com.zerodsoft.scheduleweather.CalendarView.Week.WeekView;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.Utility.DateHour;
 

@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".DayFragment">
+    tools:context=".CalendarFragment.WeekFragment">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -17,7 +17,7 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent">
 
-            <com.zerodsoft.scheduleweather.CalendarView.WeekDatesView
+            <com.zerodsoft.scheduleweather.CalendarView.Week.WeekDatesView
                 android:id="@+id/weekdatesview"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

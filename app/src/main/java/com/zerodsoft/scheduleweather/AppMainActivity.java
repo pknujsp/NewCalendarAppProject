@@ -1,6 +1,5 @@
 package com.zerodsoft.scheduleweather;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
@@ -8,7 +7,7 @@ import android.view.Menu;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
-import com.zerodsoft.scheduleweather.Utility.Actions;
+import com.zerodsoft.scheduleweather.CalendarFragment.WeekFragment;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.fragment.app.FragmentManager;
@@ -18,7 +17,7 @@ import androidx.appcompat.widget.Toolbar;
 
 public class AppMainActivity extends AppCompatActivity
 {
-    private DayFragment dayFragment;
+    private WeekFragment weekFragment;
     private FragmentManager fragmentManager;
     private FragmentTransaction fragmentTransaction;
 
@@ -39,8 +38,8 @@ public class AppMainActivity extends AppCompatActivity
 
         fragmentManager = getSupportFragmentManager();
         fragmentTransaction = fragmentManager.beginTransaction();
-        dayFragment = new DayFragment();
-        fragmentTransaction.replace(R.id.nav_host_fragment, dayFragment).commitAllowingStateLoss();
+        weekFragment = new WeekFragment();
+        fragmentTransaction.replace(R.id.nav_host_fragment, weekFragment).commitAllowingStateLoss();
 
         fab.setOnClickListener(new View.OnClickListener()
         {
@@ -79,7 +78,7 @@ public class AppMainActivity extends AppCompatActivity
                 startActivity(intent);
 
                  */
-                dayFragment.goToToday();
+                weekFragment.goToToday();
 
                 return true;
             case R.id.menu_item_refresh:

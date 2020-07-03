@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.CalendarView;
+package com.zerodsoft.scheduleweather.CalendarView.Week;
 
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -7,7 +7,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PointF;
 import android.graphics.Rect;
-import android.graphics.RectF;
 import android.graphics.Typeface;
 
 import android.util.AttributeSet;
@@ -17,8 +16,10 @@ import android.view.View;
 import androidx.annotation.Nullable;
 import androidx.core.view.ViewCompat;
 
+import com.zerodsoft.scheduleweather.CalendarView.ACCOUNT_TYPE;
 import com.zerodsoft.scheduleweather.CalendarView.Dto.CoordinateInfo;
-import com.zerodsoft.scheduleweather.DayFragment;
+import com.zerodsoft.scheduleweather.CalendarFragment.WeekFragment;
+import com.zerodsoft.scheduleweather.CalendarView.EventDrawingInfo;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.Room.DTO.GoogleScheduleDTO;
 import com.zerodsoft.scheduleweather.Room.DTO.LocalScheduleDTO;
@@ -86,7 +87,7 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
     private CoordinateInfo[] coordinateInfos = new CoordinateInfo[7];
     public static int selectedDayPosition = -1;
     private boolean haveEvents = false;
-    private int eventMaxNum;
+    private int eventRowNum;
 
     private long weekFirstDayMillis;
     private long weekLastDayMillis;
@@ -98,11 +99,6 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
     private List<EventDrawingInfo> eventDrawingInfoList = new ArrayList<>();
 
     private static final int EVENT_ROW_MAX = 20;
-
-    enum ACCOUNT_TYPE
-    {
-        GOOGLE, LOCAL
-    }
 
     @Override
     public CoordinateInfo[] getArray()
@@ -217,7 +213,7 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
 
         sunday = (Calendar) today.clone();
         sunday.set(sunday.get(Calendar.YEAR), sunday.get(Calendar.MONTH), sunday.get(Calendar.DAY_OF_MONTH), 0, 0, 0);
-        sunday.add(Calendar.WEEK_OF_YEAR, (position - DayFragment.FIRST_VIEW_NUMBER));
+        sunday.add(Calendar.WEEK_OF_YEAR, (position - WeekFragment.FIRST_VIEW_NUMBER));
 
         mSelectedDay = (Calendar) sunday.clone();
 
@@ -392,21 +388,21 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
             {
                 if (eventMatrix[row][col])
                 {
-                    eventMaxNum = row + 1;
+                    eventRowNum = row + 1;
                     break;
                 }
             }
-            if (eventMaxNum == row)
+            if (eventRowNum == row)
             {
                 break;
             }
         }
-        if (eventMaxNum > 2)
+        if (eventRowNum > 2)
         {
             mHeaderHeightEvents = mHeaderHeightNormal + (weekHeaderEventBoxHeight + mHeaderRowMarginTop) * 2;
         } else
         {
-            mHeaderHeightEvents = mHeaderHeightNormal + (weekHeaderEventBoxHeight + mHeaderRowMarginTop) * eventMaxNum;
+            mHeaderHeightEvents = mHeaderHeightNormal + (weekHeaderEventBoxHeight + mHeaderRowMarginTop) * eventRowNum;
         }
 
         firstDraw = true;
@@ -425,8 +421,8 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
 
     private void drawEvents(Canvas canvas)
     {
-        final int googleEventColor = AppSettings.getGoogleEventColor();
-        final int localEventColor = AppSettings.getLocalEventColor();
+        int googleEventColor = AppSettings.getGoogleEventColor();
+        int localEventColor = AppSettings.getLocalEventColor();
 
         Paint googleEventPaint = new Paint();
         Paint localEventPaint = new Paint();
@@ -435,14 +431,14 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
 
         for (EventDrawingInfo eventDrawingInfo : eventDrawingInfoList)
         {
-            if (eventDrawingInfo.accountType == ACCOUNT_TYPE.GOOGLE)
+            if (eventDrawingInfo.getAccountType() == ACCOUNT_TYPE.GOOGLE)
             {
-                canvas.drawRect(eventDrawingInfo.left + spacingBetweenEvent, eventDrawingInfo.top, eventDrawingInfo.right - spacingBetweenEvent, eventDrawingInfo.bottom, googleEventPaint);
+                canvas.drawRect(eventDrawingInfo.getLeft() + spacingBetweenEvent, eventDrawingInfo.getTop(), eventDrawingInfo.getRight() - spacingBetweenEvent, eventDrawingInfo.getBottom(), googleEventPaint);
             } else
             {
-                canvas.drawRect(eventDrawingInfo.left + spacingBetweenEvent, eventDrawingInfo.top, eventDrawingInfo.right - spacingBetweenEvent, eventDrawingInfo.bottom, localEventPaint);
+                canvas.drawRect(eventDrawingInfo.getLeft() + spacingBetweenEvent, eventDrawingInfo.getTop(), eventDrawingInfo.getRight() - spacingBetweenEvent, eventDrawingInfo.getBottom(), localEventPaint);
             }
-            canvas.drawText(eventDrawingInfo.schedule.getSubject(), (eventDrawingInfo.right - eventDrawingInfo.left) / 2, eventDrawingInfo.bottom, mHeaderDateNormalPaint);
+            canvas.drawText(eventDrawingInfo.getSchedule().getSubject(), (eventDrawingInfo.getRight() - eventDrawingInfo.getLeft()) / 2, eventDrawingInfo.getBottom(), mHeaderDateNormalPaint);
         }
     }
 
@@ -645,23 +641,9 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
         }
     }
 
-    class EventDrawingInfo
+    public int getEventRowNum()
     {
-        int left;
-        int right;
-        int top;
-        int bottom;
-        ScheduleDTO schedule;
-        ACCOUNT_TYPE accountType;
-
-        EventDrawingInfo(int left, int right, int top, int bottom, ScheduleDTO schedule, ACCOUNT_TYPE accountType)
-        {
-            this.left = left;
-            this.right = right;
-            this.top = top;
-            this.bottom = bottom;
-            this.schedule = schedule;
-            this.accountType = accountType;
-        }
+        return eventRowNum;
     }
+
 }
