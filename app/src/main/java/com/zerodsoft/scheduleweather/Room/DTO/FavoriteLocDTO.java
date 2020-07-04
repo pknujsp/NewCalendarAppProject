@@ -1,12 +1,35 @@
 package com.zerodsoft.scheduleweather.Room.DTO;
 
-public class FavoriteLocDTO
+import androidx.room.ColumnInfo;
+import androidx.room.Entity;
+import androidx.room.ForeignKey;
+import androidx.room.PrimaryKey;
+
+import java.io.Serializable;
+
+@Entity(tableName = "TB_FAVORITE_LOC"
+        , foreignKeys = @ForeignKey(entity = ScheduleDTO.class,
+        parentColumns = "id",
+        childColumns = "schedule_id"))
+public class FavoriteLocDTO implements Serializable
 {
+    @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "id")
     private int id;
+
+    @ColumnInfo(name = "schedule_id")
     private int scheduleId;
+
+    @ColumnInfo(name = "loc_name")
     private String locName;
+
+    @ColumnInfo(name = "loc_category")
     private String locCategory;
+
+    @ColumnInfo(name = "loc_lat")
     private String locLat;
+
+    @ColumnInfo(name = "loc_lon")
     private String locLon;
 
     public int getId()
@@ -14,9 +37,10 @@ public class FavoriteLocDTO
         return id;
     }
 
-    public void setId(int id)
+    public FavoriteLocDTO setId(int id)
     {
         this.id = id;
+        return this;
     }
 
     public int getScheduleId()
@@ -24,9 +48,10 @@ public class FavoriteLocDTO
         return scheduleId;
     }
 
-    public void setScheduleId(int scheduleId)
+    public FavoriteLocDTO setScheduleId(int scheduleId)
     {
         this.scheduleId = scheduleId;
+        return this;
     }
 
     public String getLocName()
@@ -34,9 +59,10 @@ public class FavoriteLocDTO
         return locName;
     }
 
-    public void setLocName(String locName)
+    public FavoriteLocDTO setLocName(String locName)
     {
         this.locName = locName;
+        return this;
     }
 
     public String getLocCategory()
@@ -44,9 +70,10 @@ public class FavoriteLocDTO
         return locCategory;
     }
 
-    public void setLocCategory(String locCategory)
+    public FavoriteLocDTO setLocCategory(String locCategory)
     {
         this.locCategory = locCategory;
+        return this;
     }
 
     public String getLocLat()
@@ -54,9 +81,10 @@ public class FavoriteLocDTO
         return locLat;
     }
 
-    public void setLocLat(String locLat)
+    public FavoriteLocDTO setLocLat(String locLat)
     {
         this.locLat = locLat;
+        return this;
     }
 
     public String getLocLon()
@@ -64,8 +92,9 @@ public class FavoriteLocDTO
         return locLon;
     }
 
-    public void setLocLon(String locLon)
+    public FavoriteLocDTO setLocLon(String locLon)
     {
         this.locLon = locLon;
+        return this;
     }
 }

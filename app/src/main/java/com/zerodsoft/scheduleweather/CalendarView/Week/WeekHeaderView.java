@@ -21,8 +21,8 @@ import com.zerodsoft.scheduleweather.CalendarView.Dto.CoordinateInfo;
 import com.zerodsoft.scheduleweather.CalendarFragment.WeekFragment;
 import com.zerodsoft.scheduleweather.CalendarView.EventDrawingInfo;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.Room.DTO.GoogleScheduleDTO;
-import com.zerodsoft.scheduleweather.Room.DTO.LocalScheduleDTO;
+import com.zerodsoft.scheduleweather.Room.DBController;
+import com.zerodsoft.scheduleweather.Room.DTO.ScheduleCategoryDTO;
 import com.zerodsoft.scheduleweather.Room.DTO.ScheduleDTO;
 import com.zerodsoft.scheduleweather.Utility.AppSettings;
 import com.zerodsoft.scheduleweather.Utility.DateHour;
@@ -92,8 +92,7 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
     private long weekFirstDayMillis;
     private long weekLastDayMillis;
 
-    private List<GoogleScheduleDTO> googleScheduleList;
-    private List<LocalScheduleDTO> localScheduleList;
+    private List<ScheduleDTO> scheduleList;
 
     private boolean[][] eventMatrix = new boolean[EVENT_ROW_MAX][7];
     private List<EventDrawingInfo> eventDrawingInfoList = new ArrayList<>();
@@ -410,13 +409,15 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
         invalidate();
     }
 
-    public void setScheduleList(List<LocalScheduleDTO> localScheduleList, List<GoogleScheduleDTO> googleScheduleList)
+    public void setScheduleList(List<ScheduleDTO> scheduleList)
     {
-        this.googleScheduleList = googleScheduleList;
-        this.localScheduleList = localScheduleList;
-        this.haveEvents = true;
-        setEventDrawingInfo();
-        setEventsNum();
+        this.scheduleList = scheduleList;
+        if (!scheduleList.isEmpty())
+        {
+            this.haveEvents = true;
+            setEventDrawingInfo();
+            setEventsNum();
+        }
     }
 
     private void drawEvents(Canvas canvas)
@@ -449,16 +450,16 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
 
         Integer left = new Integer(0), top = new Integer(0), right = new Integer(0), bottom = new Integer(0);
 
-        for (GoogleScheduleDTO schedule : googleScheduleList)
+        for (ScheduleDTO schedule : scheduleList)
         {
             calcEventPosition(left, right, top, bottom, schedule);
-            eventDrawingInfoList.add(new EventDrawingInfo(left, right, top, bottom, schedule, ACCOUNT_TYPE.GOOGLE));
-        }
-
-        for (LocalScheduleDTO schedule : localScheduleList)
-        {
-            calcEventPosition(left, right, top, bottom, schedule);
-            eventDrawingInfoList.add(new EventDrawingInfo(left, right, top, bottom, schedule, ACCOUNT_TYPE.LOCAL));
+            if (schedule.getCategory() == ScheduleCategoryDTO.GOOGLE_SCHEDULE)
+            {
+                eventDrawingInfoList.add(new EventDrawingInfo(left, right, top, bottom, schedule, ACCOUNT_TYPE.GOOGLE));
+            } else
+            {
+                eventDrawingInfoList.add(new EventDrawingInfo(left, right, top, bottom, schedule, ACCOUNT_TYPE.LOCAL));
+            }
         }
     }
 

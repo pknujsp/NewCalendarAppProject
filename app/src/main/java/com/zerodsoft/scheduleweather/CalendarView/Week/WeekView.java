@@ -26,11 +26,9 @@ import com.zerodsoft.scheduleweather.CalendarView.Dto.CoordinateInfo;
 import com.zerodsoft.scheduleweather.CalendarView.EventDrawingInfo;
 import com.zerodsoft.scheduleweather.CalendarView.HoursView;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.Room.DTO.GoogleScheduleDTO;
-import com.zerodsoft.scheduleweather.Room.DTO.LocalScheduleDTO;
+import com.zerodsoft.scheduleweather.Room.DTO.ScheduleCategoryDTO;
 import com.zerodsoft.scheduleweather.Room.DTO.ScheduleDTO;
 import com.zerodsoft.scheduleweather.Utility.AppSettings;
-import com.zerodsoft.scheduleweather.Utility.Clock;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -74,6 +72,7 @@ public class WeekView extends View
     private Paint weekDayBackgroundPaint;
 
     private Drawable newScheduleRect;
+    private Drawable addDrawable;
 
     private OverScroller overScroller;
     private GestureDetectorCompat gestureDetector;
@@ -107,8 +106,7 @@ public class WeekView extends View
     private OnRefreshHoursViewListener onRefreshHoursViewListener;
     private CoordinateInfoInterface coordinateInfoInterface;
 
-    private List<GoogleScheduleDTO> googleScheduleList;
-    private List<LocalScheduleDTO> localScheduleList;
+    private List<ScheduleDTO> scheduleList;
 
     private CoordinateInfo[] coordinateInfos;
 
@@ -178,6 +176,7 @@ public class WeekView extends View
             newScheduleRectThickness = a.getDimensionPixelSize(R.styleable.WeekView_WeekDayViewNewScheduleRectThickness, newScheduleRectThickness);
             TABLE_LAYOUT_MARGIN = weekDayHourTextSize;
             newScheduleRect = context.getDrawable(R.drawable.new_schedule_range_rect);
+            addDrawable = context.getDrawable(R.drawable.add_schedule_blue);
         } finally
         {
             a.recycle();
@@ -684,15 +683,16 @@ public class WeekView extends View
         PointF startPoint = new PointF();
         PointF endPoint = new PointF();
 
-        for (GoogleScheduleDTO schedule : googleScheduleList)
+        for (ScheduleDTO schedule : scheduleList)
         {
             dayOfWeek = calcEventPosition(startPoint, endPoint, schedule);
-            eventDrawingInfoList.get(dayOfWeek).add(new EventDrawingInfo(new PointF(startPoint.x, startPoint.y), new PointF(endPoint.x, endPoint.y), schedule, ACCOUNT_TYPE.GOOGLE));
-        }
-        for (LocalScheduleDTO schedule : localScheduleList)
-        {
-            dayOfWeek = calcEventPosition(startPoint, endPoint, schedule);
-            eventDrawingInfoList.get(dayOfWeek).add(new EventDrawingInfo(new PointF(startPoint.x, startPoint.y), new PointF(endPoint.x, endPoint.y), schedule, ACCOUNT_TYPE.LOCAL));
+            if (schedule.getCategory() == ScheduleCategoryDTO.GOOGLE_SCHEDULE)
+            {
+                eventDrawingInfoList.get(dayOfWeek).add(new EventDrawingInfo(new PointF(startPoint.x, startPoint.y), new PointF(endPoint.x, endPoint.y), schedule, ACCOUNT_TYPE.GOOGLE));
+            } else
+            {
+                eventDrawingInfoList.get(dayOfWeek).add(new EventDrawingInfo(new PointF(startPoint.x, startPoint.y), new PointF(endPoint.x, endPoint.y), schedule, ACCOUNT_TYPE.LOCAL));
+            }
         }
     }
 
@@ -757,16 +757,10 @@ public class WeekView extends View
         return position;
     }
 
-    public void updateLayout()
-    {
-        requestLayout();
-        invalidate();
-    }
 
-    public void setScheduleList(List<LocalScheduleDTO> localScheduleList, List<GoogleScheduleDTO> googleScheduleList)
+    public void setScheduleList(List<ScheduleDTO> scheduleList)
     {
-        this.googleScheduleList = googleScheduleList;
-        this.localScheduleList = localScheduleList;
+        this.scheduleList = scheduleList;
         setEventDrawingInfo();
     }
 }

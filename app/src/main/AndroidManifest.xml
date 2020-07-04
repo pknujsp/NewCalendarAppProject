@@ -20,12 +20,14 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
+        <activity android:name=".Activity.AddScheduleActivity"></activity>
         <activity
             android:name=".AppMainActivity"
             android:label="@string/title_activity_app_main"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -38,8 +40,6 @@
             android:parentActivityName=".MainActivity" />
         <activity android:name=".CurrentWeatherActivity" />
         <activity android:name=".MainActivity" />
-
-
     </application>
 
 </manifest>

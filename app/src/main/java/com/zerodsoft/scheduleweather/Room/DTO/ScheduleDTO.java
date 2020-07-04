@@ -1,18 +1,59 @@
 package com.zerodsoft.scheduleweather.Room.DTO;
 
-public class ScheduleDTO
+import androidx.room.ColumnInfo;
+import androidx.room.Entity;
+import androidx.room.ForeignKey;
+import androidx.room.PrimaryKey;
+
+import java.io.Serializable;
+
+@Entity(tableName = "TB_SCHEDULE",
+        foreignKeys = @ForeignKey(
+                entity = ScheduleCategoryDTO.class,
+                parentColumns = "id",
+                childColumns = "category"
+        ))
+
+public class ScheduleDTO implements Serializable
 {
+    @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "id")
     private int id;
+
+    @ColumnInfo(name = "category")
+    private int category;
+
+    @ColumnInfo(name = "subject")
     private String subject;
+
+    @ColumnInfo(name = "content")
     private String content;
+
+    @ColumnInfo(name = "start_date")
     private int startDate;
+
+    @ColumnInfo(name = "end_date")
     private int endDate;
+
+    @ColumnInfo(name = "loc_name")
     private String locName;
+
+    @ColumnInfo(name = "wth_name")
     private String wthName;
+
+    @ColumnInfo(name = "loc_lat")
     private String locLat;
+
+    @ColumnInfo(name = "loc_lon")
     private String locLon;
+
+    @ColumnInfo(name = "loc_x")
     private String locX;
+
+    @ColumnInfo(name = "loc_y")
     private String locY;
+
+    @ColumnInfo(name = "noti_time")
     private int notiTime;
 
     public int getId()
@@ -24,6 +65,17 @@ public class ScheduleDTO
     {
         this.id = id;
         return this;
+    }
+
+    public ScheduleDTO setCategory(int category)
+    {
+        this.category = category;
+        return this;
+    }
+
+    public int getCategory()
+    {
+        return category;
     }
 
     public String getSubject()

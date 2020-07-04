@@ -7,7 +7,6 @@ import android.os.Message;
 import android.os.Process;
 
 import com.zerodsoft.scheduleweather.Room.DAO.NforecastDao;
-import com.zerodsoft.scheduleweather.Room.DAO.ScheduleDao;
 import com.zerodsoft.scheduleweather.Room.DAO.TravelDao;
 import com.zerodsoft.scheduleweather.Room.DAO.WeatherUpdateTimeDao;
 import com.zerodsoft.scheduleweather.Room.DTO.Schedule;

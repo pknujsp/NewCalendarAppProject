@@ -1,15 +1,13 @@
 package com.zerodsoft.scheduleweather.Room;
 
-import com.zerodsoft.scheduleweather.Room.DTO.GoogleScheduleDTO;
-import com.zerodsoft.scheduleweather.Room.DTO.LocalScheduleDTO;
+import com.zerodsoft.scheduleweather.Room.DTO.ScheduleDTO;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class DBController
 {
-    private static List<GoogleScheduleDTO> googleScheduleList = null;
-    private static List<LocalScheduleDTO> localScheduleList = null;
+    private static List<ScheduleDTO> scheduleList = new ArrayList<>();
     private static DBController dbController;
 
     private DBController()
@@ -25,14 +23,9 @@ public class DBController
         return dbController;
     }
 
-    public List<GoogleScheduleDTO> getGoogleScheduleList()
+    public static List<ScheduleDTO> getScheduleList()
     {
-        return googleScheduleList;
-    }
-
-    public List<LocalScheduleDTO> getLocalScheduleList()
-    {
-        return localScheduleList;
+        return scheduleList;
     }
 
     public void updateScheduleData()

@@ -13,8 +13,7 @@ import com.zerodsoft.scheduleweather.CalendarFragment.WeekFragment;
 import com.zerodsoft.scheduleweather.CalendarView.HoursView;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.Room.DBController;
-import com.zerodsoft.scheduleweather.Room.DTO.GoogleScheduleDTO;
-import com.zerodsoft.scheduleweather.Room.DTO.LocalScheduleDTO;
+import com.zerodsoft.scheduleweather.Room.DTO.ScheduleDTO;
 
 import java.util.List;
 
@@ -113,13 +112,13 @@ public class WeekViewPagerAdapter extends PagerAdapter implements WeekView.OnRef
     public void getScheduleList(int position)
     {
         dbController.selectScheduleData();
-        sendScheduleList(position, dbController.getGoogleScheduleList(), dbController.getLocalScheduleList());
+        sendScheduleList(position, dbController.getScheduleList());
     }
 
-    public void sendScheduleList(int position, List<GoogleScheduleDTO> googleScheduleList, List<LocalScheduleDTO> localScheduleList)
+    public void sendScheduleList(int position, List<ScheduleDTO> scheduleList)
     {
-        ((WeekHeaderView) headerViewSparseArray.get(position)).setScheduleList(localScheduleList, googleScheduleList);
-        ((WeekView) weekViewSparseArray.get(position)).setScheduleList(localScheduleList, googleScheduleList);
+        ((WeekHeaderView) headerViewSparseArray.get(position)).setScheduleList(scheduleList);
+        ((WeekView) weekViewSparseArray.get(position)).setScheduleList(scheduleList);
     }
 
     public int getEventRowNum(int position)
