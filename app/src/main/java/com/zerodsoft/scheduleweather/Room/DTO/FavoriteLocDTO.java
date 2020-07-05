@@ -97,4 +97,6 @@ public class FavoriteLocDTO implements Serializable
         this.locLon = locLon;
         return this;
     }
+
+
 }
