@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Trip weather</string>
+    <string name="app_name">Test Calendar</string>
     <string name="area_name">지역명</string>
     <string name="rainfall">강수량(mm)</string>
     <string name="east_west_wind">동서바람성분(m/s)</string>

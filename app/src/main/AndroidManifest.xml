@@ -32,14 +32,6 @@
             </intent-filter>
         </activity>
         <activity android:name=".IntroActivity" />
-        <activity android:name=".NewScheduleActivity" />
-        <activity android:name=".AreaSelectionActivity" />
-        <activity android:name=".AddScheduleActivity" />
-        <activity
-            android:name=".TravelScheduleActivity"
-            android:parentActivityName=".MainActivity" />
-        <activity android:name=".CurrentWeatherActivity" />
-        <activity android:name=".MainActivity" />
     </application>
 
 </manifest>

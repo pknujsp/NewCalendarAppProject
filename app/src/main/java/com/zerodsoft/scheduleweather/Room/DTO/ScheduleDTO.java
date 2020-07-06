@@ -61,16 +61,9 @@ public class ScheduleDTO implements Serializable
         return id;
     }
 
-    public ScheduleDTO setId(int id)
+    public void setId(int id)
     {
         this.id = id;
-        return this;
-    }
-
-    public ScheduleDTO setCategory(int category)
-    {
-        this.category = category;
-        return this;
     }
 
     public int getCategory()
@@ -78,15 +71,19 @@ public class ScheduleDTO implements Serializable
         return category;
     }
 
+    public void setCategory(int category)
+    {
+        this.category = category;
+    }
+
     public String getSubject()
     {
         return subject;
     }
 
-    public ScheduleDTO setSubject(String subject)
+    public void setSubject(String subject)
     {
         this.subject = subject;
-        return this;
     }
 
     public String getContent()
@@ -94,10 +91,9 @@ public class ScheduleDTO implements Serializable
         return content;
     }
 
-    public ScheduleDTO setContent(String content)
+    public void setContent(String content)
     {
         this.content = content;
-        return this;
     }
 
     public int getStartDate()
@@ -105,10 +101,9 @@ public class ScheduleDTO implements Serializable
         return startDate;
     }
 
-    public ScheduleDTO setStartDate(int startDate)
+    public void setStartDate(int startDate)
     {
         this.startDate = startDate;
-        return this;
     }
 
     public int getEndDate()
@@ -116,10 +111,9 @@ public class ScheduleDTO implements Serializable
         return endDate;
     }
 
-    public ScheduleDTO setEndDate(int endDate)
+    public void setEndDate(int endDate)
     {
         this.endDate = endDate;
-        return this;
     }
 
     public String getLocName()
@@ -127,10 +121,9 @@ public class ScheduleDTO implements Serializable
         return locName;
     }
 
-    public ScheduleDTO setLocName(String locName)
+    public void setLocName(String locName)
     {
         this.locName = locName;
-        return this;
     }
 
     public String getWthName()
@@ -138,10 +131,9 @@ public class ScheduleDTO implements Serializable
         return wthName;
     }
 
-    public ScheduleDTO setWthName(String wthName)
+    public void setWthName(String wthName)
     {
         this.wthName = wthName;
-        return this;
     }
 
     public String getLocLat()
@@ -149,10 +141,9 @@ public class ScheduleDTO implements Serializable
         return locLat;
     }
 
-    public ScheduleDTO setLocLat(String locLat)
+    public void setLocLat(String locLat)
     {
         this.locLat = locLat;
-        return this;
     }
 
     public String getLocLon()
@@ -160,10 +151,9 @@ public class ScheduleDTO implements Serializable
         return locLon;
     }
 
-    public ScheduleDTO setLocLon(String locLon)
+    public void setLocLon(String locLon)
     {
         this.locLon = locLon;
-        return this;
     }
 
     public String getLocX()
@@ -171,10 +161,9 @@ public class ScheduleDTO implements Serializable
         return locX;
     }
 
-    public ScheduleDTO setLocX(String locX)
+    public void setLocX(String locX)
     {
         this.locX = locX;
-        return this;
     }
 
     public String getLocY()
@@ -182,10 +171,9 @@ public class ScheduleDTO implements Serializable
         return locY;
     }
 
-    public ScheduleDTO setLocY(String locY)
+    public void setLocY(String locY)
     {
         this.locY = locY;
-        return this;
     }
 
     public int getNotiTime()
@@ -193,9 +181,8 @@ public class ScheduleDTO implements Serializable
         return notiTime;
     }
 
-    public ScheduleDTO setNotiTime(int notiTime)
+    public void setNotiTime(int notiTime)
     {
         this.notiTime = notiTime;
-        return this;
     }
 }

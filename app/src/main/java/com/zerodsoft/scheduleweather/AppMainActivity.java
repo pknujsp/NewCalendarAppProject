@@ -1,5 +1,6 @@
 package com.zerodsoft.scheduleweather;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
@@ -7,6 +8,7 @@ import android.view.Menu;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
+import com.zerodsoft.scheduleweather.Activity.AddScheduleActivity;
 import com.zerodsoft.scheduleweather.CalendarFragment.WeekFragment;
 
 import androidx.appcompat.app.ActionBar;
@@ -46,8 +48,8 @@ public class AppMainActivity extends AppCompatActivity
             @Override
             public void onClick(View view)
             {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                Intent intent = new Intent(AppMainActivity.this, AddScheduleActivity.class);
+                startActivity(intent);
             }
         });
 

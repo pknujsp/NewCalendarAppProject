@@ -37,10 +37,9 @@ public class FavoriteLocDTO implements Serializable
         return id;
     }
 
-    public FavoriteLocDTO setId(int id)
+    public void setId(int id)
     {
         this.id = id;
-        return this;
     }
 
     public int getScheduleId()
@@ -48,10 +47,9 @@ public class FavoriteLocDTO implements Serializable
         return scheduleId;
     }
 
-    public FavoriteLocDTO setScheduleId(int scheduleId)
+    public void setScheduleId(int scheduleId)
     {
         this.scheduleId = scheduleId;
-        return this;
     }
 
     public String getLocName()
@@ -59,10 +57,9 @@ public class FavoriteLocDTO implements Serializable
         return locName;
     }
 
-    public FavoriteLocDTO setLocName(String locName)
+    public void setLocName(String locName)
     {
         this.locName = locName;
-        return this;
     }
 
     public String getLocCategory()
@@ -70,10 +67,9 @@ public class FavoriteLocDTO implements Serializable
         return locCategory;
     }
 
-    public FavoriteLocDTO setLocCategory(String locCategory)
+    public void setLocCategory(String locCategory)
     {
         this.locCategory = locCategory;
-        return this;
     }
 
     public String getLocLat()
@@ -81,10 +77,9 @@ public class FavoriteLocDTO implements Serializable
         return locLat;
     }
 
-    public FavoriteLocDTO setLocLat(String locLat)
+    public void setLocLat(String locLat)
     {
         this.locLat = locLat;
-        return this;
     }
 
     public String getLocLon()
@@ -92,11 +87,8 @@ public class FavoriteLocDTO implements Serializable
         return locLon;
     }
 
-    public FavoriteLocDTO setLocLon(String locLon)
+    public void setLocLon(String locLon)
     {
         this.locLon = locLon;
-        return this;
     }
-
-
 }

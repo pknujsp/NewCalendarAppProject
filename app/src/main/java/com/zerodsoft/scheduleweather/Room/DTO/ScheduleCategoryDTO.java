@@ -29,10 +29,9 @@ public class ScheduleCategoryDTO implements Serializable
         return id;
     }
 
-    public ScheduleCategoryDTO setId(int id)
+    public void setId(int id)
     {
         this.id = id;
-        return this;
     }
 
     public String getName()
@@ -40,9 +39,8 @@ public class ScheduleCategoryDTO implements Serializable
         return name;
     }
 
-    public ScheduleCategoryDTO setName(String name)
+    public void setName(String name)
     {
         this.name = name;
-        return this;
     }
 }
