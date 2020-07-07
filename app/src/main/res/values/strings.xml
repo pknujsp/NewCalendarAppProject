@@ -50,4 +50,9 @@
     <string name="menu_gallery">Gallery</string>
     <string name="menu_slideshow">Slideshow</string>
 
+    <!-- addScheduleActivity -->
+    <string name="start_date_text_view_allday">시작/종료일</string>
+    <string name="start_date_text_view_not_allday">시작일</string>
+    <string name="end_date_text_view_not_allday">종료일</string>
+
 </resources>
