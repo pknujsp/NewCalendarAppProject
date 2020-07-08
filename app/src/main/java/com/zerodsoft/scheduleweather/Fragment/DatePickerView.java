@@ -1,10 +1,12 @@
 package com.zerodsoft.scheduleweather.Fragment;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.PointF;
 import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
@@ -17,7 +19,9 @@ import androidx.core.view.GestureDetectorCompat;
 
 import com.zerodsoft.scheduleweather.R;
 
-class DatePickerView extends View
+import java.util.Calendar;
+
+public class DatePickerView extends View
 {
     private Context context;
     private int unselectedTextColor;
@@ -25,6 +29,7 @@ class DatePickerView extends View
     private int backgroundColor;
     private int textSize;
     private int spacingBetweenElement;
+    private int spacingYBetweenText;
 
     private Paint backgroundPaint;
     private Paint unselectedTextPaint;
@@ -33,6 +38,15 @@ class DatePickerView extends View
 
     private OverScroller overScroller;
     private GestureDetectorCompat gestureDetector;
+
+    private Calendar calendar;
+
+    private PointF currentYearPoint;
+    private PointF currentMonthPoint;
+    private PointF currentDayPoint;
+    private PointF currentMeridiemPoint;
+    private PointF currentHourPoint;
+    private PointF currentMinutePoint;
 
     public DatePickerView(Context context, @Nullable AttributeSet attrs)
     {
@@ -43,9 +57,9 @@ class DatePickerView extends View
 
         try
         {
-            unselectedTextColor = typedArray.getDimensionPixelSize(R.styleable.DatePickerView_DatePickerViewUnSelectedTextColor, 0);
-            selectedTextColor = typedArray.getDimensionPixelSize(R.styleable.DatePickerView_DatePickerViewSelectedTextColor, 0);
-            backgroundColor = typedArray.getDimensionPixelSize(R.styleable.DatePickerView_DatePickerViewBackgroundColor, 0);
+            unselectedTextColor = typedArray.getColor(R.styleable.DatePickerView_DatePickerViewUnSelectedTextColor, 0);
+            selectedTextColor = typedArray.getColor(R.styleable.DatePickerView_DatePickerViewSelectedTextColor, 0);
+            backgroundColor = typedArray.getColor(R.styleable.DatePickerView_DatePickerViewBackgroundColor, 0);
             textSize = typedArray.getDimensionPixelSize(R.styleable.DatePickerView_DatePickerViewTextSize, 0);
         } finally
         {
@@ -71,23 +85,56 @@ class DatePickerView extends View
         selectedTextPaint.getTextBounds("2", 0, 1, rect);
 
         spacingBetweenElement = rect.height() / 2;
+        spacingYBetweenText = spacingBetweenElement * 2;
 
         divisionLinePaint = new Paint();
         divisionLinePaint.setColor(Color.GRAY);
 
         overScroller = new OverScroller(context);
         gestureDetector = new GestureDetectorCompat(context, onGestureListener);
+
+        calendar = Calendar.getInstance();
+    }
+
+    @Override
+    public void layout(int l, int t, int r, int b)
+    {
+        super.layout(l, t, r, b);
+
+        float x = getWidth() / 6;
+        float y = getHeight() / 2;
+
+        currentYearPoint = new PointF(0f, y);
+        currentMonthPoint = new PointF(x, y);
+        currentDayPoint = new PointF(x * 2, y);
+        currentMeridiemPoint = new PointF(x * 3, y);
+        currentHourPoint = new PointF(x * 4, y);
+        currentMinutePoint = new PointF(x * 5, y);
     }
 
     @Override
     protected void onDraw(Canvas canvas)
     {
         super.onDraw(canvas);
+        drawView(canvas);
     }
 
     private void drawView(Canvas canvas)
     {
-
+        // 2020	    7	 11 토	 오전	1  	 00
+        for (int i = -3; i <= 3; i++)
+        {
+            if (i == 0)
+            {
+                // selected
+                canvas.drawLine(0f, getHeight() / 2, getWidth(), getHeight() / 2, divisionLinePaint);
+            }
+            canvas.drawText(Integer.toString(calendar.get(Calendar.YEAR)), currentYearPoint.x, currentYearPoint.y + spacingYBetweenText * i, unselectedTextPaint);
+            canvas.drawText(Integer.toString(calendar.get(Calendar.MONTH)), currentMonthPoint.x, currentMonthPoint.y + spacingYBetweenText * i, unselectedTextPaint);
+            canvas.drawText(Integer.toString(calendar.get(Calendar.DAY_OF_MONTH)), currentDayPoint.x, currentDayPoint.y + spacingYBetweenText * i, unselectedTextPaint);
+            canvas.drawText(Integer.toString(calendar.get(Calendar.HOUR)), currentHourPoint.x, currentHourPoint.y + spacingYBetweenText * i, unselectedTextPaint);
+            canvas.drawText(Integer.toString(calendar.get(Calendar.MINUTE)), currentMinutePoint.x, currentMinutePoint.y + spacingYBetweenText * i, unselectedTextPaint);
+        }
     }
 
     private final GestureDetector.SimpleOnGestureListener onGestureListener = new GestureDetector.SimpleOnGestureListener()

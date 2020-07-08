@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:custom="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center_vertical">
+
+    <com.zerodsoft.scheduleweather.Fragment.DatePickerView
+        android:id="@+id/date_picker_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        custom:DatePickerViewBackgroundColor="@android:color/white"
+        custom:DatePickerViewSelectedTextColor="@android:color/black"
+        custom:DatePickerViewTextSize="14sp"
+        custom:DatePickerViewUnSelectedTextColor="@android:color/darker_gray" />
+</FrameLayout>

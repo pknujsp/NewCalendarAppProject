@@ -18,6 +18,8 @@ import android.widget.SpinnerAdapter;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import com.zerodsoft.scheduleweather.Fragment.DatePickerFragment;
+import com.zerodsoft.scheduleweather.Fragment.DatePickerView;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.Utility.Clock;
 
@@ -137,9 +139,8 @@ public class AddScheduleActivity extends AppCompatActivity
                 //하루종일인 경우 : 연월일, 아닌 경우 : 연원일시분
                 if (view.getId() == R.id.start_date_right_textview)
                 {
-                    Calendar calendar = Calendar.getInstance();
-                    calendar.setTimeInMillis(System.currentTimeMillis());
-                    startDateRightTextView.setText(Clock.dateFormat2.format(calendar.getTime()));
+                    DatePickerFragment datePickerFragment = new DatePickerFragment();
+                    datePickerFragment.show(getSupportFragmentManager(), "TEST DIALOG");
                 }
             }
         };

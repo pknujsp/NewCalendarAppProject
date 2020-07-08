@@ -5,12 +5,15 @@ import android.app.Dialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
-class DatePickerFragment extends DialogFragment
+import com.zerodsoft.scheduleweather.R;
+
+public class DatePickerFragment extends DialogFragment
 {
     public DatePickerFragment()
     {
@@ -28,7 +31,10 @@ class DatePickerFragment extends DialogFragment
     {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         LayoutInflater layoutInflater = getActivity().getLayoutInflater();
+        View dialog = layoutInflater.inflate(R.layout.datepicker_layout, null);
+        DatePickerView datePickerView = (DatePickerView) dialog.findViewById(R.id.date_picker_view);
 
+        builder.setView(dialog);
         return builder.create();
     }
 }
