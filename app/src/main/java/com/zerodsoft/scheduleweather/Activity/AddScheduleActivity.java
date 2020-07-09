@@ -139,8 +139,8 @@ public class AddScheduleActivity extends AppCompatActivity
                 //하루종일인 경우 : 연월일, 아닌 경우 : 연원일시분
                 if (view.getId() == R.id.start_date_right_textview)
                 {
-                    DatePickerFragment datePickerFragment = new DatePickerFragment();
-                    datePickerFragment.show(getSupportFragmentManager(), "TEST DIALOG");
+                    DatePickerFragment datePickerFragment = DatePickerFragment.getInstance();
+                    datePickerFragment.show(getSupportFragmentManager(), DatePickerFragment.TAG);
                 }
             }
         };

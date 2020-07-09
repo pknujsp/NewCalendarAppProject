@@ -5,12 +5,40 @@
     android:layout_height="wrap_content"
     android:layout_gravity="center_vertical">
 
-    <com.zerodsoft.scheduleweather.Fragment.DatePickerView
-        android:id="@+id/date_picker_view"
+    <LinearLayout
+        android:id="@+id/pickers_layout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        custom:DatePickerViewBackgroundColor="@android:color/white"
-        custom:DatePickerViewSelectedTextColor="@android:color/black"
-        custom:DatePickerViewTextSize="14sp"
-        custom:DatePickerViewUnSelectedTextColor="@android:color/darker_gray" />
+        android:layout_height="match_parent"
+        android:orientation="horizontal">
+
+        <NumberPicker
+            android:id="@+id/year_picker"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <NumberPicker
+            android:id="@+id/month_picker"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <NumberPicker
+            android:id="@+id/day_picker"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <NumberPicker
+            android:id="@+id/meridiem_picker"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <NumberPicker
+            android:id="@+id/hour_picker"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <NumberPicker
+            android:id="@+id/minute_picker"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
 </FrameLayout>

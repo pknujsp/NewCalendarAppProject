@@ -1,7 +1,6 @@
 package com.zerodsoft.scheduleweather.Fragment;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -28,8 +27,8 @@ public class DatePickerView extends View
     private int selectedTextColor;
     private int backgroundColor;
     private int textSize;
-    private int spacingBetweenElement;
-    private int spacingYBetweenText;
+    private int textHeight;
+    private int spacingBetweenText;
 
     private Paint backgroundPaint;
     private Paint unselectedTextPaint;
@@ -47,6 +46,13 @@ public class DatePickerView extends View
     private PointF currentMeridiemPoint;
     private PointF currentHourPoint;
     private PointF currentMinutePoint;
+
+    private String[] yearArr;
+    private String[] monthArr;
+    private String[] hourArr;
+    private String[] minuteArr;
+
+    private boolean isFirstDraw;
 
     public DatePickerView(Context context, @Nullable AttributeSet attrs)
     {
@@ -84,8 +90,8 @@ public class DatePickerView extends View
         selectedTextPaint.setTextSize(textSize);
         selectedTextPaint.getTextBounds("2", 0, 1, rect);
 
-        spacingBetweenElement = rect.height() / 2;
-        spacingYBetweenText = spacingBetweenElement * 2;
+        textHeight = rect.height();
+        spacingBetweenText = textHeight * 2;
 
         divisionLinePaint = new Paint();
         divisionLinePaint.setColor(Color.GRAY);
@@ -94,6 +100,29 @@ public class DatePickerView extends View
         gestureDetector = new GestureDetectorCompat(context, onGestureListener);
 
         calendar = Calendar.getInstance();
+
+        yearArr = new String[11];
+        monthArr = new String[12];
+        hourArr = new String[12];
+        minuteArr = new String[60];
+
+        for (int year = calendar.get(Calendar.YEAR) - 5, i = 0; i <= 10; i++)
+        {
+            yearArr[i] = Integer.toString(year++);
+        }
+
+        for (int i = 0; i <= 11; i++)
+        {
+            monthArr[i] = Integer.toString(i + 1);
+            hourArr[i] = Integer.toString(i + 1);
+        }
+
+        for (int i = 0; i <= 59; i++)
+        {
+            minuteArr[i] = Integer.toString(i);
+        }
+
+        isFirstDraw = true;
     }
 
     @Override
@@ -116,25 +145,58 @@ public class DatePickerView extends View
     protected void onDraw(Canvas canvas)
     {
         super.onDraw(canvas);
+        drawDivisionLine(canvas);
         drawView(canvas);
+    }
+
+    private void drawDivisionLine(Canvas canvas)
+    {
+        int topLineY = (int) (getHeight() / 2 - textHeight * 1.5);
+        int bottomLineY = getHeight() / 2 + textHeight / 2;
+
+        canvas.drawLine(0f, topLineY, getWidth(), topLineY, divisionLinePaint);
+        canvas.drawLine(0f, bottomLineY, getWidth(), bottomLineY, divisionLinePaint);
     }
 
     private void drawView(Canvas canvas)
     {
         // 2020	    7	 11 토	 오전	1  	 00
-        for (int i = -3; i <= 3; i++)
+        int yearIndex;
+        int monthIndex;
+        int hourIndex;
+        int minuteIndex;
+
+        if (isFirstDraw)
         {
-            if (i == 0)
-            {
-                // selected
-                canvas.drawLine(0f, getHeight() / 2, getWidth(), getHeight() / 2, divisionLinePaint);
-            }
-            canvas.drawText(Integer.toString(calendar.get(Calendar.YEAR)), currentYearPoint.x, currentYearPoint.y + spacingYBetweenText * i, unselectedTextPaint);
-            canvas.drawText(Integer.toString(calendar.get(Calendar.MONTH)), currentMonthPoint.x, currentMonthPoint.y + spacingYBetweenText * i, unselectedTextPaint);
-            canvas.drawText(Integer.toString(calendar.get(Calendar.DAY_OF_MONTH)), currentDayPoint.x, currentDayPoint.y + spacingYBetweenText * i, unselectedTextPaint);
-            canvas.drawText(Integer.toString(calendar.get(Calendar.HOUR)), currentHourPoint.x, currentHourPoint.y + spacingYBetweenText * i, unselectedTextPaint);
-            canvas.drawText(Integer.toString(calendar.get(Calendar.MINUTE)), currentMinutePoint.x, currentMinutePoint.y + spacingYBetweenText * i, unselectedTextPaint);
+            yearIndex = 5;
+            monthIndex = calendar.get(Calendar.MONTH);
+            hourIndex = calendar.get(Calendar.HOUR) - 1;
+            minuteIndex = calendar.get(Calendar.MINUTE);
+
+            isFirstDraw = false;
         }
+
+        for (int i = 0; i < yearArr.length; i++)
+        {
+            canvas.drawText(yearArr[i], currentYearPoint.x, currentYearPoint.y + spacingBetweenText * i, unselectedTextPaint);
+        }
+
+        for (int i = 0; i < monthArr.length; i++)
+        {
+            canvas.drawText(monthArr[i], currentMonthPoint.x, currentMonthPoint.y + spacingBetweenText * i, unselectedTextPaint);
+        }
+
+        for (int i = 0; i < hourArr.length; i++)
+        {
+            canvas.drawText(hourArr[i], currentHourPoint.x, currentHourPoint.y + spacingBetweenText * i, unselectedTextPaint);
+        }
+
+        for (int i = 0; i < minuteArr.length; i++)
+        {
+            canvas.drawText(minuteArr[i], currentMinutePoint.x, currentMinutePoint.y + spacingBetweenText * i, unselectedTextPaint);
+        }
+
+
     }
 
     private final GestureDetector.SimpleOnGestureListener onGestureListener = new GestureDetector.SimpleOnGestureListener()
@@ -151,4 +213,20 @@ public class DatePickerView extends View
             return super.onScroll(e1, e2, distanceX, distanceY);
         }
     };
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event)
+    {
+        return gestureDetector.onTouchEvent(event);
+    }
+
+    @Override
+    public void computeScroll()
+    {
+        super.computeScroll();
+        if (overScroller.computeScrollOffset())
+        {
+
+        }
+    }
 }
