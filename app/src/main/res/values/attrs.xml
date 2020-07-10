@@ -52,10 +52,5 @@
         <attr name="WeekDayViewNewScheduleRectThickness" format="dimension" />
     </declare-styleable>
 
-    <declare-styleable name="DatePickerView">
-        <attr name="DatePickerViewUnSelectedTextColor" format="color" />
-        <attr name="DatePickerViewSelectedTextColor" format="color" />
-        <attr name="DatePickerViewBackgroundColor" format="color" />
-        <attr name="DatePickerViewTextSize" format="dimension" />
-    </declare-styleable>
+
 </resources>

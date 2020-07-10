@@ -1,6 +1,5 @@
 package com.zerodsoft.scheduleweather.Fragment;
 
-import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Point;
 import android.os.Bundle;
@@ -8,22 +7,29 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.NumberPicker;
+import android.widget.Toast;
+import android.widget.Toolbar;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.Utility.Clock;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 public class DatePickerFragment extends DialogFragment implements NumberPicker.OnValueChangeListener
 {
     public static final String TAG = "DATE_PICKER_DIALOG";
     private static DatePickerFragment datePickerFragment;
     private Calendar calendar = Calendar.getInstance();
+    private String[] dayList;
 
     private NumberPicker yearPicker;
     private NumberPicker monthPicker;
@@ -31,6 +37,11 @@ public class DatePickerFragment extends DialogFragment implements NumberPicker.O
     private NumberPicker meridiemPicker;
     private NumberPicker hourPicker;
     private NumberPicker minutePicker;
+    private Button cancelButton;
+    private Button okButton;
+
+    private final String[] days = new String[]{" 일", " 월", " 화", " 수", " 목", " 금", " 토"};
+
 
     public DatePickerFragment()
     {
@@ -65,26 +76,56 @@ public class DatePickerFragment extends DialogFragment implements NumberPicker.O
         hourPicker = (NumberPicker) view.findViewById(R.id.hour_picker);
         minutePicker = (NumberPicker) view.findViewById(R.id.minute_picker);
 
-        setDatePicker();
+        cancelButton = (Button) view.findViewById(R.id.cancel_button);
+        okButton = (Button) view.findViewById(R.id.ok_button);
+
+        cancelButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                DatePickerFragment.this.dismiss();
+            }
+        });
+
+        okButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                calendar.set(Calendar.AM_PM, meridiemPicker.getValue());
+                calendar.set(yearPicker.getValue(), monthPicker.getValue() - 1, dayPicker.getValue() + 1, hourPicker.getValue(), minutePicker.getValue());
+                Toast.makeText(getActivity(), Clock.timeFormat2.format(calendar.getTime()), Toast.LENGTH_SHORT).show();
+            }
+        });
 
         return view;
     }
 
     private void setDatePicker()
     {
+        calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), 1);
+
         yearPicker.setMinValue(calendar.get(Calendar.YEAR) - 5);
         yearPicker.setMaxValue(calendar.get(Calendar.YEAR) + 5);
         yearPicker.setValue(calendar.get(Calendar.YEAR));
         yearPicker.setDescendantFocusability(NumberPicker.FOCUS_BLOCK_DESCENDANTS);
+        yearPicker.setOnValueChangedListener(this);
 
         monthPicker.setMinValue(1);
         monthPicker.setMaxValue(12);
         monthPicker.setValue(calendar.get(Calendar.MONTH) + 1);
         monthPicker.setDescendantFocusability(NumberPicker.FOCUS_BLOCK_DESCENDANTS);
+        monthPicker.setOnValueChangedListener(this);
 
-        dayPicker.setMinValue(1);
-        dayPicker.setMaxValue(calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
-        dayPicker.setValue(calendar.get(Calendar.DAY_OF_MONTH));
+        setDayList();
+
+        dayPicker.setMinValue(0);
+        dayPicker.setMaxValue(dayList.length - 1);
+        dayPicker.setDisplayedValues(dayList);
+
+        calendar.setTimeInMillis(System.currentTimeMillis());
+        dayPicker.setValue(calendar.get(Calendar.DAY_OF_MONTH) - 1);
         dayPicker.setDescendantFocusability(NumberPicker.FOCUS_BLOCK_DESCENDANTS);
 
         meridiemPicker.setMinValue(0);
@@ -127,6 +168,7 @@ public class DatePickerFragment extends DialogFragment implements NumberPicker.O
 
         getDialog().getWindow().setAttributes(layoutParams);
         calendar.setTimeInMillis(System.currentTimeMillis());
+        setDatePicker();
 
         super.onResume();
     }
@@ -134,20 +176,64 @@ public class DatePickerFragment extends DialogFragment implements NumberPicker.O
     @Override
     public void onValueChange(NumberPicker numberPicker, int i, int i1)
     {
-        switch (numberPicker.getId())
+        if (numberPicker.getId() == R.id.year_picker)
         {
-            case R.id.hour_picker:
-                if (numberPicker.getValue() == 12)
+            changeDayPicker();
+        } else if (numberPicker.getId() == R.id.month_picker)
+        {
+            changeDayPicker();
+        } else if (numberPicker.getId() == R.id.hour_picker)
+        {
+            if (numberPicker.getValue() == 12)
+            {
+                if (meridiemPicker.getValue() == 0)
                 {
-                    if (meridiemPicker.getValue() == 0)
-                    {
-                        meridiemPicker.setValue(1);
-                    } else
-                    {
-                        meridiemPicker.setValue(0);
-                    }
+                    meridiemPicker.setValue(1);
+                } else
+                {
+                    meridiemPicker.setValue(0);
                 }
-                break;
+            }
         }
     }
+
+    private void changeDayPicker()
+    {
+        int selectedDateIndex = dayPicker.getValue();
+
+        calendar.set(yearPicker.getValue(), monthPicker.getValue() - 1, 1);
+        setDayList();
+
+        dayPicker.setMinValue(0);
+        dayPicker.setMaxValue(1);
+
+        dayPicker.setDisplayedValues(dayList);
+        dayPicker.setMaxValue(dayList.length - 1);
+
+
+        if (selectedDateIndex > dayPicker.getMaxValue())
+        {
+            dayPicker.setValue(dayPicker.getMaxValue());
+        } else
+        {
+            dayPicker.setValue(selectedDateIndex);
+        }
+    }
+
+    private void setDayList()
+    {
+        dayList = new String[calendar.getActualMaximum(Calendar.DAY_OF_MONTH)];
+        int dayIndex = calendar.get(Calendar.DAY_OF_WEEK) - 1;
+
+        for (int i = 1; i <= calendar.getActualMaximum(Calendar.DAY_OF_MONTH); i++)
+        {
+            dayList[i - 1] = i + days[dayIndex++];
+
+            if (dayIndex == days.length)
+            {
+                dayIndex = 0;
+            }
+        }
+    }
+
 }

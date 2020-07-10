@@ -19,12 +19,9 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import com.zerodsoft.scheduleweather.Fragment.DatePickerFragment;
-import com.zerodsoft.scheduleweather.Fragment.DatePickerView;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.Utility.Clock;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 
 public class AddScheduleActivity extends AppCompatActivity
