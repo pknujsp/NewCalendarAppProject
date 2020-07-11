@@ -1,9 +1,11 @@
 package com.zerodsoft.scheduleweather.Activity;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -20,11 +22,14 @@ import android.widget.TextView;
 
 import com.zerodsoft.scheduleweather.Fragment.DatePickerFragment;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.Room.DTO.LocationDTO;
+import com.zerodsoft.scheduleweather.Utility.Clock;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
-public class AddScheduleActivity extends AppCompatActivity
+public class AddScheduleActivity extends AppCompatActivity implements DatePickerFragment.OnOkButtonClickListener
 {
     private Toolbar toolbar;
     private Spinner accountSpinner;
@@ -38,6 +43,49 @@ public class AddScheduleActivity extends AppCompatActivity
     private TextView alarmTextView;
     private TextView startDateLeftTextView;
     private LinearLayout endDateLayout;
+
+    public static Calendar startDate = null;
+    public static Calendar endDate = null;
+
+    private boolean isAllDay = false;
+
+    public static final int ADD_LOCATION_ACTIVITY = 0;
+
+    @Override
+    public void clickedOkButton(long timeMilliSec, DATE_PICKER_CATEGORY datePickerCategory)
+    {
+        if (datePickerCategory == DATE_PICKER_CATEGORY.START)
+        {
+            if (startDate == null)
+            {
+                startDate = Calendar.getInstance();
+            }
+            startDate.setTimeInMillis(timeMilliSec);
+            startDateRightTextView.setText(Clock.dateFormat2.format(startDate.getTime()));
+        } else if (datePickerCategory == DATE_PICKER_CATEGORY.END)
+        {
+            if (endDate == null)
+            {
+                endDate = Calendar.getInstance();
+            }
+            endDate.setTimeInMillis(timeMilliSec);
+            endDateTextView.setText(Clock.dateFormat2.format(endDate.getTime()));
+        } else
+        {
+            // allday
+            if (startDate == null)
+            {
+                startDate = Calendar.getInstance();
+            }
+            startDate.setTimeInMillis(timeMilliSec);
+            startDateRightTextView.setText(Clock.dateFormat3.format(startDate.getTime()));
+        }
+    }
+
+    public enum DATE_PICKER_CATEGORY
+    {
+        START, END, ALL_DAY
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -109,6 +157,8 @@ public class AddScheduleActivity extends AppCompatActivity
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked)
             {
+                isAllDay = isChecked;
+
                 if (isChecked)
                 {
                     // 하루 종일
@@ -121,6 +171,9 @@ public class AddScheduleActivity extends AppCompatActivity
                 }
                 startDateRightTextView.setText("");
                 endDateTextView.setText("");
+
+                startDate.clear();
+                endDate.clear();
             }
         });
     }
@@ -134,11 +187,23 @@ public class AddScheduleActivity extends AppCompatActivity
             {
                 //날짜 설정 다이얼로그 표시
                 //하루종일인 경우 : 연월일, 아닌 경우 : 연원일시분
+                DatePickerFragment datePickerFragment = DatePickerFragment.getInstance();
+                datePickerFragment.setOnOkButtonClickListener(AddScheduleActivity.this);
+
                 if (view.getId() == R.id.start_date_right_textview)
                 {
-                    DatePickerFragment datePickerFragment = DatePickerFragment.getInstance();
-                    datePickerFragment.show(getSupportFragmentManager(), DatePickerFragment.TAG);
+                    if (isAllDay)
+                    {
+                        datePickerFragment.setDatePickerCategory(DATE_PICKER_CATEGORY.ALL_DAY);
+                    } else
+                    {
+                        datePickerFragment.setDatePickerCategory(DATE_PICKER_CATEGORY.START);
+                    }
+                } else if (view.getId() == R.id.end_date_right_textview)
+                {
+                    datePickerFragment.setDatePickerCategory(DATE_PICKER_CATEGORY.END);
                 }
+                datePickerFragment.show(getSupportFragmentManager(), DatePickerFragment.TAG);
             }
         };
 
@@ -169,9 +234,28 @@ public class AddScheduleActivity extends AppCompatActivity
             public void onClick(View view)
             {
                 //위치를 설정하는 액티비티 표시
+                Intent intent = new Intent(AddScheduleActivity.this, AddLocationActivity.class);
+                startActivityForResult(intent, ADD_LOCATION_ACTIVITY);
             }
         };
 
         addLocationButton.setOnClickListener(onClickListener);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data)
+    {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == ADD_LOCATION_ACTIVITY)
+        {
+            if (resultCode == RESULT_OK)
+            {
+                LocationDTO locationDTO = (LocationDTO) data.getExtras().getSerializable("location");
+            } else if (resultCode == RESULT_CANCELED)
+            {
+
+            }
+        }
     }
 }

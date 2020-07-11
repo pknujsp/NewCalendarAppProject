@@ -58,4 +58,14 @@
     <string name="datepicker_ok_button">선택 완료</string>
     <string name="cancel_button">취소</string>
 
+    <string name="date_picker_category_start">시작 날짜</string>
+    <string name="date_picker_category_end">종료 날짜</string>
+    <string name="date_picker_category_all_day">시작/종료 날짜</string>
+    <string name="date_picker_date_error">날짜를 재 선택 해주세요</string>
+
+    <string name="region_addr">지번 주소</string>
+    <string name="region">지명</string>
+    <string name="road_addr">도로명 주소</string>
+    <string name="road">도로명</string>
+
 </resources>

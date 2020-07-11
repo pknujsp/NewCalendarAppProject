@@ -11,6 +11,14 @@
         android:orientation="vertical"
         android:padding="8dp">
 
+        <TextView
+            android:id="@+id/datepicker_header_textview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:text="TextView"
+            android:textAlignment="center" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -41,7 +49,7 @@
                 android:text="일" />
 
             <TextView
-                android:id="@+id/textView25"
+                android:id="@+id/meridiem_textview"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -49,7 +57,7 @@
                 android:text="오전/오후" />
 
             <TextView
-                android:id="@+id/textView26"
+                android:id="@+id/hour_textview"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -57,7 +65,7 @@
                 android:text="시" />
 
             <TextView
-                android:id="@+id/textView27"
+                android:id="@+id/minute_textview"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"

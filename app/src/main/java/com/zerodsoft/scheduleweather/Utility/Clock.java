@@ -19,7 +19,8 @@ public class Clock
     public static final SimpleDateFormat dayFormat = new SimpleDateFormat("d");
     public static final SimpleDateFormat yearMonthFormat = new SimpleDateFormat("yyyy/MM");
     public static final SimpleDateFormat timeFormat2 = new SimpleDateFormat("MM/dd HH:mm");
-    public static final SimpleDateFormat dateFormat2 = new SimpleDateFormat("yyyy년 MM월 dd일 E HH시 mm분");
+    public static final SimpleDateFormat dateFormat2 = new SimpleDateFormat("yyyy년 M월 d일 E a h시 m분");
+    public static final SimpleDateFormat dateFormat3 = new SimpleDateFormat("yyyy년 M월 d일 E");
 
     private Clock()
     {

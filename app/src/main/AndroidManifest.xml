@@ -6,11 +6,6 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
-
-    <meta-data
-        android:name="com.kakao.sdk.AppKey"
-        android:value="0dc55f983ec285210efb88d1389f7c2b" />
 
     <application
         android:allowBackup="true"
@@ -20,10 +15,12 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".Activity.AddScheduleActivity"></activity>
+        <activity android:name=".Activity.SearchAddressActivity"></activity>
+        <activity android:name=".Activity.AddLocationActivity" />
+        <activity android:name=".Activity.AddScheduleActivity" />
         <activity
             android:name=".AppMainActivity"
-            android:label="@string/title_activity_app_main"
+            android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -32,6 +29,10 @@
             </intent-filter>
         </activity>
         <activity android:name=".IntroActivity" />
+
+        <meta-data
+            android:name="com.kakao.sdk.AppKey"
+            android:value="0dc55f983ec285210efb88d1389f7c2b" />
     </application>
 
 </manifest>
