@@ -68,4 +68,9 @@
     <string name="road_addr">도로명 주소</string>
     <string name="road">도로명</string>
 
+    <string name="result_address">주소</string>
+    <string name="result_place">장소</string>
+    
+    <!--kakao local api category search category codes-->
+
 </resources>

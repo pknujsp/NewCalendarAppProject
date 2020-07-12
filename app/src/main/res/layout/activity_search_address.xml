@@ -27,7 +27,7 @@
             android:layout_gravity="center_vertical"
             android:layout_marginStart="8dp"
             android:layout_marginEnd="8dp"
-            android:background="#00FFFFFF"
+            android:background="?attr/selectableItemBackground"
             android:src="@drawable/arrow_back_icon" />
 
         <EditText
@@ -48,19 +48,20 @@
             android:layout_gravity="center_vertical"
             android:layout_marginStart="8dp"
             android:layout_marginEnd="8dp"
-            android:background="#00FFFFFF"
+            android:background="?attr/selectableItemBackground"
             android:src="@drawable/search_icon" />
     </LinearLayout>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/search_address_recyclerview"
-        android:layout_width="match_parent"
+
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/search_address_viewpager"
+        android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
+        android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout3"
-        tools:listitem="@layout/search_address_recycler_view_item" />
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout3" />
 </androidx.constraintlayout.widget.ConstraintLayout>

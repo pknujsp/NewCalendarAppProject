@@ -1,9 +1,9 @@
-package com.zerodsoft.scheduleweather.Retrofit.QueryResponse;
+package com.zerodsoft.scheduleweather.Retrofit.QueryResponse.AddressResponse;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class AddressResponseRoadAddress
+public class AddressResponseAddress
 {
     @SerializedName("address_name")
     @Expose
@@ -21,29 +21,33 @@ public class AddressResponseRoadAddress
     @Expose
     private String region3DepthName;
 
-    @SerializedName("road_name")
+    @SerializedName("region_3depth_h_name")
     @Expose
-    private String roadName;
+    private String region3DepthHName;
 
-    @SerializedName("underground_yn")
+    @SerializedName("h_code")
     @Expose
-    private String undergroundYn;
+    private String hCode;
 
-    @SerializedName("main_building_no")
+    @SerializedName("b_code")
     @Expose
-    private String mainBuildingNo;
+    private String bCode;
 
-    @SerializedName("sub_building_no")
+    @SerializedName("mountain_yn")
     @Expose
-    private String subBuildingNo;
+    private String mountainYn;
 
-    @SerializedName("building_name")
+    @SerializedName("main_address_no")
     @Expose
-    private String buildingName;
+    private String mainAddressNo;
 
-    @SerializedName("zone_no")
+    @SerializedName("sub_address_no")
     @Expose
-    private String zoneNo;
+    private String subAddressNo;
+
+    @SerializedName("zip_code")
+    @Expose
+    private String zipCode;
 
     @SerializedName("x")
     @Expose
@@ -93,64 +97,74 @@ public class AddressResponseRoadAddress
         this.region3DepthName = region3DepthName;
     }
 
-    public String getRoadName()
+    public String getRegion3DepthHName()
     {
-        return roadName;
+        return region3DepthHName;
     }
 
-    public void setRoadName(String roadName)
+    public void setRegion3DepthHName(String region3DepthHName)
     {
-        this.roadName = roadName;
+        this.region3DepthHName = region3DepthHName;
     }
 
-    public String getUndergroundYn()
+    public String gethCode()
     {
-        return undergroundYn;
+        return hCode;
     }
 
-    public void setUndergroundYn(String undergroundYn)
+    public void sethCode(String hCode)
     {
-        this.undergroundYn = undergroundYn;
+        this.hCode = hCode;
     }
 
-    public String getMainBuildingNo()
+    public String getbCode()
     {
-        return mainBuildingNo;
+        return bCode;
     }
 
-    public void setMainBuildingNo(String mainBuildingNo)
+    public void setbCode(String bCode)
     {
-        this.mainBuildingNo = mainBuildingNo;
+        this.bCode = bCode;
     }
 
-    public String getSubBuildingNo()
+    public String getMountainYn()
     {
-        return subBuildingNo;
+        return mountainYn;
     }
 
-    public void setSubBuildingNo(String subBuildingNo)
+    public void setMountainYn(String mountainYn)
     {
-        this.subBuildingNo = subBuildingNo;
+        this.mountainYn = mountainYn;
     }
 
-    public String getBuildingName()
+    public String getMainAddressNo()
     {
-        return buildingName;
+        return mainAddressNo;
     }
 
-    public void setBuildingName(String buildingName)
+    public void setMainAddressNo(String mainAddressNo)
     {
-        this.buildingName = buildingName;
+        this.mainAddressNo = mainAddressNo;
     }
 
-    public String getZoneNo()
+    public String getSubAddressNo()
     {
-        return zoneNo;
+        return subAddressNo;
     }
 
-    public void setZoneNo(String zoneNo)
+    public void setSubAddressNo(String subAddressNo)
     {
-        this.zoneNo = zoneNo;
+        this.subAddressNo = subAddressNo;
+    }
+
+    public String getZipCode()
+    {
+        return zipCode;
+    }
+
+    public void setZipCode(String zipCode)
+    {
+        this.zipCode = zipCode;
     }
 
     public double getX()

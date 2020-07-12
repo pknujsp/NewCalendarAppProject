@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.Retrofit.QueryResponse;
+package com.zerodsoft.scheduleweather.Retrofit.QueryResponse.AddressResponse;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
