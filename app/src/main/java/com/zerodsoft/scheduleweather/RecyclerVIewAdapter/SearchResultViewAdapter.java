@@ -117,16 +117,16 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
             switch (type)
             {
                 case DownloadData.ADDRESS:
-                    addressLayout = (LinearLayout) itemView.findViewById(R.id.address_linearlayout);
-                    addressLayout.setVisibility(View.VISIBLE);
+                    placeLayout = (LinearLayout) itemView.findViewById(R.id.place_linearlayout);
+                    placeLayout.setVisibility(View.GONE);
                     addressTextView = (TextView) itemView.findViewById(R.id.search_address_name_textview);
                     anotherTypeTextView = (TextView) itemView.findViewById(R.id.another_address_type_textview);
                     anotherTypeAddressTextView = (TextView) itemView.findViewById(R.id.search_another_type_address_textview);
                     break;
 
                 case DownloadData.PLACE_KEYWORD:
-                    placeLayout = (LinearLayout) itemView.findViewById(R.id.place_linearlayout);
-                    placeLayout.setVisibility(View.VISIBLE);
+                    addressLayout = (LinearLayout) itemView.findViewById(R.id.address_linearlayout);
+                    addressLayout.setVisibility(View.GONE);
                     placeNameTextView = (TextView) itemView.findViewById(R.id.search_place_name_textview);
                     placeCategoryTextView = (TextView) itemView.findViewById(R.id.search_place_category_name_textview);
                     placeAddressTextView = (TextView) itemView.findViewById(R.id.search_place_addess_name_textview);
@@ -167,14 +167,14 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
         {
             placeNameTextView.setText(data.getPlaceName());
             placeCategoryTextView.setText(data.getCategoryName());
-            placeAddressTextView.setText(data.getRoadAddressName());
+            placeAddressTextView.setText(data.getAddressName());
         }
 
         public void onBindPlaceCategory(PlaceCategoryDocuments data)
         {
             placeNameTextView.setText(data.getPlaceName());
             placeCategoryTextView.setText(data.getCategoryName());
-            placeAddressTextView.setText(data.getRoadAddressName());
+            placeAddressTextView.setText(data.getAddressName());
         }
     }
 }

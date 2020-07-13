@@ -67,6 +67,7 @@ public class DownloadData
         Querys querys = HttpCommunicationClient.getApiService();
         Map<String, String> queryMap = new HashMap<>();
         queryMap.put("query", searchWord);
+        /*
         queryMap.put("category_group_code", null);
         queryMap.put("x", null);
         queryMap.put("y", null);
@@ -75,6 +76,8 @@ public class DownloadData
         queryMap.put("page", null);
         queryMap.put("size", null);
         queryMap.put("sort", null);
+
+         */
 
         Call<PlaceKeyword> call = querys.getPlaceKeyword(queryMap);
         call.enqueue(new Callback<PlaceKeyword>()
@@ -107,6 +110,7 @@ public class DownloadData
         Querys querys = HttpCommunicationClient.getApiService();
         Map<String, String> queryMap = new HashMap<>();
         queryMap.put("category_group_code", code);
+      /*
         queryMap.put("x", null);
         queryMap.put("y", null);
         queryMap.put("radius", null);
@@ -115,6 +119,8 @@ public class DownloadData
         queryMap.put("size", null);
         queryMap.put("sort", null);
 
+
+       */
         Call<PlaceCategory> call = querys.getPlaceCategory(queryMap);
         call.enqueue(new Callback<PlaceCategory>()
         {

@@ -37,8 +37,8 @@
             android:layout_gravity="center_vertical"
             android:layout_weight="1"
             android:ems="10"
+            android:hint="검색어 입력"
             android:inputType="text"
-            android:text="address"
             android:textColor="@color/text_color" />
 
         <ImageButton

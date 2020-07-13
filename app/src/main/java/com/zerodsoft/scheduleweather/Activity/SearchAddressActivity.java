@@ -31,7 +31,7 @@ public class SearchAddressActivity extends AppCompatActivity
 
     private Handler handler = new Handler()
     {
-        private AddressSearchResult addressSearchResult;
+        private AddressSearchResult addressSearchResult = null;
 
         @Override
         public void handleMessage(Message msg)
@@ -56,16 +56,16 @@ public class SearchAddressActivity extends AppCompatActivity
                     break;
             }
 
-            if (addressSearchResult.getResultNum() == 1 && addressSearchResult.getPlaceCategoryDocuments() != null)
+            if (addressSearchResult.getResultNum() == 1 && !addressSearchResult.getPlaceCategoryDocuments().isEmpty())
             {
-                searchResultViewPagerAdapter.setAddressSearchResult(addressSearchResult);
+                searchResultViewPagerAdapter.setAddressSearchResult(addressSearchResult.clone());
+                addressSearchResult.clearAll();
                 searchResultViewPagerAdapter.notifyDataSetChanged();
-                addressSearchResult = null;
             } else if (addressSearchResult.getResultNum() == 2)
             {
-                searchResultViewPagerAdapter.setAddressSearchResult(addressSearchResult);
+                searchResultViewPagerAdapter.setAddressSearchResult(addressSearchResult.clone());
+                addressSearchResult.clearAll();
                 searchResultViewPagerAdapter.notifyDataSetChanged();
-                addressSearchResult = null;
             }
         }
     };

@@ -9,13 +9,14 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:visibility="gone">
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:visibility="visible">
 
         <TextView
             android:id="@+id/search_address_name_textview"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
             android:text="address"
             android:textColor="@android:color/black"
             android:textSize="15sp" />
@@ -24,7 +25,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:layout_marginBottom="8dp"
             android:orientation="horizontal">
 
             <TextView
@@ -33,8 +33,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="4dp"
                 android:background="@android:color/darker_gray"
-                android:padding="2dp
-    "
+                android:padding="2dp"
                 android:text="type"
                 android:textColor="@android:color/white" />
 
@@ -42,7 +41,6 @@
                 android:id="@+id/search_another_type_address_textview"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-
                 android:text="address2"
                 android:textColor="@android:color/darker_gray"
                 android:textSize="14sp" />
@@ -54,11 +52,14 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:visibility="gone">
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:visibility="visible">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
             android:orientation="horizontal">
 
             <TextView
@@ -66,8 +67,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:layout_marginTop="8dp"
                 android:text="placename"
+                android:layout_marginEnd="4dp"
                 android:textColor="@android:color/black"
                 android:textSize="15sp" />
 
