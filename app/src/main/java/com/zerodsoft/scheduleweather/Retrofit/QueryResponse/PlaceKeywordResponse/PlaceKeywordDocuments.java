@@ -1,9 +1,14 @@
 package com.zerodsoft.scheduleweather.Retrofit.QueryResponse.PlaceKeywordResponse;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class PlaceKeywordDocuments
+import java.io.Serializable;
+
+public class PlaceKeywordDocuments implements Parcelable
 {
     @SerializedName("id")
     @Expose
@@ -52,6 +57,60 @@ public class PlaceKeywordDocuments
     @SerializedName("distance")
     @Expose
     private String distance;
+
+    protected PlaceKeywordDocuments(Parcel in)
+    {
+        id = in.readString();
+        placeName = in.readString();
+        categoryName = in.readString();
+        categoryGroupCode = in.readString();
+        categoryGroupName = in.readString();
+        phone = in.readString();
+        addressName = in.readString();
+        roadAddressName = in.readString();
+        x = in.readDouble();
+        y = in.readDouble();
+        placeUrl = in.readString();
+        distance = in.readString();
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags)
+    {
+        dest.writeString(id);
+        dest.writeString(placeName);
+        dest.writeString(categoryName);
+        dest.writeString(categoryGroupCode);
+        dest.writeString(categoryGroupName);
+        dest.writeString(phone);
+        dest.writeString(addressName);
+        dest.writeString(roadAddressName);
+        dest.writeDouble(x);
+        dest.writeDouble(y);
+        dest.writeString(placeUrl);
+        dest.writeString(distance);
+    }
+
+    @Override
+    public int describeContents()
+    {
+        return 0;
+    }
+
+    public static final Creator<PlaceKeywordDocuments> CREATOR = new Creator<PlaceKeywordDocuments>()
+    {
+        @Override
+        public PlaceKeywordDocuments createFromParcel(Parcel in)
+        {
+            return new PlaceKeywordDocuments(in);
+        }
+
+        @Override
+        public PlaceKeywordDocuments[] newArray(int size)
+        {
+            return new PlaceKeywordDocuments[size];
+        }
+    };
 
     public String getId()
     {

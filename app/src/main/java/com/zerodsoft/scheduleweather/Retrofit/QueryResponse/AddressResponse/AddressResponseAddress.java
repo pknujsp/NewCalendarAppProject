@@ -1,9 +1,12 @@
 package com.zerodsoft.scheduleweather.Retrofit.QueryResponse.AddressResponse;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class AddressResponseAddress
+public class AddressResponseAddress implements Parcelable
 {
     @SerializedName("address_name")
     @Expose
@@ -56,6 +59,62 @@ public class AddressResponseAddress
     @SerializedName("y")
     @Expose
     private double y;
+
+    protected AddressResponseAddress(Parcel in)
+    {
+        addressName = in.readString();
+        region1DepthName = in.readString();
+        region2DepthName = in.readString();
+        region3DepthName = in.readString();
+        region3DepthHName = in.readString();
+        hCode = in.readString();
+        bCode = in.readString();
+        mountainYn = in.readString();
+        mainAddressNo = in.readString();
+        subAddressNo = in.readString();
+        zipCode = in.readString();
+        x = in.readDouble();
+        y = in.readDouble();
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags)
+    {
+        dest.writeString(addressName);
+        dest.writeString(region1DepthName);
+        dest.writeString(region2DepthName);
+        dest.writeString(region3DepthName);
+        dest.writeString(region3DepthHName);
+        dest.writeString(hCode);
+        dest.writeString(bCode);
+        dest.writeString(mountainYn);
+        dest.writeString(mainAddressNo);
+        dest.writeString(subAddressNo);
+        dest.writeString(zipCode);
+        dest.writeDouble(x);
+        dest.writeDouble(y);
+    }
+
+    @Override
+    public int describeContents()
+    {
+        return 0;
+    }
+
+    public static final Creator<AddressResponseAddress> CREATOR = new Creator<AddressResponseAddress>()
+    {
+        @Override
+        public AddressResponseAddress createFromParcel(Parcel in)
+        {
+            return new AddressResponseAddress(in);
+        }
+
+        @Override
+        public AddressResponseAddress[] newArray(int size)
+        {
+            return new AddressResponseAddress[size];
+        }
+    };
 
     public String getAddressName()
     {

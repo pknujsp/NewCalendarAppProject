@@ -1,12 +1,15 @@
 package com.zerodsoft.scheduleweather.Retrofit.QueryResponse.PlaceCategoryResponse;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.PlaceKeywordResponse.PlaceKeywordSameName;
 
 import java.io.Serializable;
 
-public class PlaceCategoryMeta implements Serializable
+public class PlaceCategoryMeta implements Parcelable
 {
     @SerializedName("total_count")
     @Expose
@@ -23,6 +26,29 @@ public class PlaceCategoryMeta implements Serializable
     @SerializedName("same_name")
     @Expose
     private PlaceCategorySameName placeCategorySameName;
+
+    protected PlaceCategoryMeta(Parcel in)
+    {
+        totalCount = in.readInt();
+        pageableCount = in.readInt();
+        isEnd = in.readByte() != 0;
+        placeCategorySameName = in.readParcelable(PlaceCategorySameName.class.getClassLoader());
+    }
+
+    public static final Creator<PlaceCategoryMeta> CREATOR = new Creator<PlaceCategoryMeta>()
+    {
+        @Override
+        public PlaceCategoryMeta createFromParcel(Parcel in)
+        {
+            return new PlaceCategoryMeta(in);
+        }
+
+        @Override
+        public PlaceCategoryMeta[] newArray(int size)
+        {
+            return new PlaceCategoryMeta[size];
+        }
+    };
 
     public int getTotalCount()
     {
@@ -62,5 +88,20 @@ public class PlaceCategoryMeta implements Serializable
     public void setPlaceCategorySameName(PlaceCategorySameName placeCategorySameName)
     {
         this.placeCategorySameName = placeCategorySameName;
+    }
+
+    @Override
+    public int describeContents()
+    {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i)
+    {
+        parcel.writeInt(totalCount);
+        parcel.writeInt(pageableCount);
+        parcel.writeByte((byte) (isEnd ? 1 : 0));
+        parcel.writeParcelable(placeCategorySameName, i);
     }
 }

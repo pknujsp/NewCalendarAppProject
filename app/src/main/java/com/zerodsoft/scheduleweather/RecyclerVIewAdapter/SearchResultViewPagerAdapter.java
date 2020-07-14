@@ -14,7 +14,6 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.Retrofit.DownloadData;
 import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.AddressSearchResult;
 
-import java.util.ArrayList;
 
 public class SearchResultViewPagerAdapter extends RecyclerView.Adapter<SearchResultViewPagerAdapter.SearchResultViewPagerHolder>
 {
@@ -33,7 +32,7 @@ public class SearchResultViewPagerAdapter extends RecyclerView.Adapter<SearchRes
     {
         this.addressSearchResult = addressSearchResult;
 
-        if (addressSearchResult.getAddressResponseDocuments() != null)
+        if (!addressSearchResult.getAddressResponseDocuments().isEmpty())
         {
             existingAddress = true;
         } else
@@ -41,7 +40,7 @@ public class SearchResultViewPagerAdapter extends RecyclerView.Adapter<SearchRes
             existingAddress = false;
         }
 
-        if (addressSearchResult.getPlaceCategoryDocuments() != null)
+        if (!addressSearchResult.getPlaceCategoryDocuments().isEmpty())
         {
             existingPlaceCategory = true;
         } else
@@ -49,7 +48,7 @@ public class SearchResultViewPagerAdapter extends RecyclerView.Adapter<SearchRes
             existingPlaceCategory = false;
         }
 
-        if (addressSearchResult.getPlaceKeywordDocuments() != null)
+        if (!addressSearchResult.getPlaceKeywordDocuments().isEmpty())
         {
             existingPlaceKeyword = true;
         } else

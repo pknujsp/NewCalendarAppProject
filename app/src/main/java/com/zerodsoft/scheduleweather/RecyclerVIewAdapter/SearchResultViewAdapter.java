@@ -1,6 +1,9 @@
 package com.zerodsoft.scheduleweather.RecyclerVIewAdapter;
 
 import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
+import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +13,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.zerodsoft.scheduleweather.Activity.AddLocationActivity;
 import com.zerodsoft.scheduleweather.Activity.AddScheduleActivity;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.Retrofit.DownloadData;
@@ -17,6 +21,8 @@ import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.AddressResponse.Addr
 import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.PlaceCategoryResponse.PlaceCategoryDocuments;
 import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.PlaceKeywordResponse.PlaceKeywordDocuments;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultViewAdapter.SearchResultViewHolder>
@@ -68,15 +74,73 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
         {
             case DownloadData.ADDRESS:
                 holder.onBindAddress(addressList.get(position));
+                holder.getAddressLayout().setOnClickListener(new View.OnClickListener()
+                {
+                    @Override
+                    public void onClick(View view)
+                    {
+                        Intent mapActivity = new Intent(context, AddLocationActivity.class);
+                        Bundle bundle = new Bundle();
+
+                        List<AddressResponseDocuments> copiedList = new ArrayList<>(addressList);
+                        Collections.copy(copiedList, addressList);
+
+                        bundle.putParcelableArrayList("placeInfo", (ArrayList<? extends Parcelable>) copiedList);
+                        bundle.putInt("type", DownloadData.ADDRESS);
+                        bundle.putInt("position", position);
+                        mapActivity.putExtras(bundle);
+
+                        context.startActivity(mapActivity);
+                    }
+                });
                 break;
 
             case DownloadData.PLACE_KEYWORD:
                 holder.onBindPlaceKeyword(placeKeywordList.get(position));
+                holder.getPlaceLayout().setOnClickListener(new View.OnClickListener()
+                {
+                    @Override
+                    public void onClick(View view)
+                    {
+                        Intent mapActivity = new Intent(context, AddLocationActivity.class);
+                        Bundle bundle = new Bundle();
+
+                        List<PlaceKeywordDocuments> copiedList = new ArrayList<>(placeKeywordList);
+                        Collections.copy(copiedList, placeKeywordList);
+
+                        bundle.putParcelableArrayList("placeInfo", (ArrayList<? extends Parcelable>) copiedList);
+                        bundle.putInt("type", DownloadData.PLACE_KEYWORD);
+                        bundle.putInt("position", position);
+                        mapActivity.putExtras(bundle);
+
+                        context.startActivity(mapActivity);
+                    }
+                });
                 break;
 
             case DownloadData.PLACE_CATEGORY:
                 holder.onBindPlaceCategory(placeCategoryList.get(position));
+                holder.getPlaceLayout().setOnClickListener(new View.OnClickListener()
+                {
+                    @Override
+                    public void onClick(View view)
+                    {
+                        Intent mapActivity = new Intent(context, AddLocationActivity.class);
+                        Bundle bundle = new Bundle();
+
+                        List<PlaceCategoryDocuments> copiedList = new ArrayList<>(placeCategoryList);
+                        Collections.copy(copiedList, placeCategoryList);
+
+                        bundle.putParcelableArrayList("placeInfo", (ArrayList<? extends Parcelable>) copiedList);
+                        bundle.putInt("type", DownloadData.PLACE_CATEGORY);
+                        bundle.putInt("position", position);
+                        mapActivity.putExtras(bundle);
+
+                        context.startActivity(mapActivity);
+                    }
+                });
                 break;
+
         }
     }
 
@@ -117,8 +181,11 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
             switch (type)
             {
                 case DownloadData.ADDRESS:
+                    addressLayout = (LinearLayout) itemView.findViewById(R.id.address_linearlayout);
+                    addressLayout.setVisibility(View.VISIBLE);
                     placeLayout = (LinearLayout) itemView.findViewById(R.id.place_linearlayout);
                     placeLayout.setVisibility(View.GONE);
+
                     addressTextView = (TextView) itemView.findViewById(R.id.search_address_name_textview);
                     anotherTypeTextView = (TextView) itemView.findViewById(R.id.another_address_type_textview);
                     anotherTypeAddressTextView = (TextView) itemView.findViewById(R.id.search_another_type_address_textview);
@@ -127,6 +194,9 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
                 case DownloadData.PLACE_KEYWORD:
                     addressLayout = (LinearLayout) itemView.findViewById(R.id.address_linearlayout);
                     addressLayout.setVisibility(View.GONE);
+                    placeLayout = (LinearLayout) itemView.findViewById(R.id.place_linearlayout);
+                    placeLayout.setVisibility(View.VISIBLE);
+
                     placeNameTextView = (TextView) itemView.findViewById(R.id.search_place_name_textview);
                     placeCategoryTextView = (TextView) itemView.findViewById(R.id.search_place_category_name_textview);
                     placeAddressTextView = (TextView) itemView.findViewById(R.id.search_place_addess_name_textview);
@@ -175,6 +245,16 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
             placeNameTextView.setText(data.getPlaceName());
             placeCategoryTextView.setText(data.getCategoryName());
             placeAddressTextView.setText(data.getAddressName());
+        }
+
+        public LinearLayout getAddressLayout()
+        {
+            return addressLayout;
+        }
+
+        public LinearLayout getPlaceLayout()
+        {
+            return placeLayout;
         }
     }
 }

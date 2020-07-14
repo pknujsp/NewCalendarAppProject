@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.Signature;
 import android.media.Image;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
@@ -20,13 +21,19 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.Retrofit.DownloadData;
+import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.AddressResponse.AddressResponseDocuments;
 import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.AddressSearchResult;
+import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.PlaceCategoryResponse.PlaceCategoryDocuments;
+import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.PlaceKeywordResponse.PlaceKeywordDocuments;
 import com.zerodsoft.scheduleweather.Room.DTO.LocationDTO;
 
 import net.daum.mf.map.api.MapPoint;
 import net.daum.mf.map.api.MapView;
 
 import java.security.MessageDigest;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AddLocationActivity extends AppCompatActivity
 {
@@ -35,6 +42,12 @@ public class AddLocationActivity extends AppCompatActivity
     private ImageButton zoomInButton;
     private ImageButton zoomOutButton;
     private ImageButton gpsButton;
+
+    private List<PlaceKeywordDocuments> addressList = null;
+    private List<PlaceKeywordDocuments> placeKeywordList = null;
+    private List<PlaceCategoryDocuments> placeCategoryList = null;
+    private int type;
+    private int position;
 
     private LocationDTO locationDTO;
     private MapView mapView;
@@ -58,9 +71,35 @@ public class AddLocationActivity extends AppCompatActivity
         }
         ConstraintLayout mapViewContainer = (ConstraintLayout) findViewById(R.id.add_location_map_view);
         mapViewContainer.addView(mapView);
-        mapView.setMapCenterPoint(MapPoint.mapPointWithGeoCoord(37.53737528, 127.00557633), true);
 
+        if (getIntent().getExtras() != null)
+        {
+            Bundle bundle = getIntent().getExtras();
+            type = bundle.getInt("type");
+            position = bundle.getInt("position");
+            double longitude = 0, latitude = 0;
 
+            if (type == DownloadData.ADDRESS)
+            {
+                addressList = bundle.getParcelableArrayList("placeInfo");
+                longitude = addressList.get(position).getX();
+                latitude = addressList.get(position).getY();
+            } else if (type == DownloadData.PLACE_KEYWORD)
+            {
+                placeKeywordList = bundle.getParcelableArrayList("placeInfo");
+                longitude = placeKeywordList.get(position).getX();
+                latitude = placeKeywordList.get(position).getY();
+            } else if (type == DownloadData.PLACE_CATEGORY)
+            {
+                placeCategoryList = bundle.getParcelableArrayList("placeInfo");
+                longitude = Double.valueOf(placeCategoryList.get(position).getX());
+                latitude = Double.valueOf(placeCategoryList.get(position).getY());
+            }
+            mapView.setMapCenterPoint(MapPoint.mapPointWithGeoCoord(latitude, longitude), true);
+        } else
+        {
+            mapView.setMapCenterPoint(MapPoint.mapPointWithGeoCoord(37.53737528, 127.00557633), true);
+        }
         mapView.setCurrentLocationEventListener(new MapView.CurrentLocationEventListener()
         {
             @Override
@@ -142,6 +181,7 @@ public class AddLocationActivity extends AppCompatActivity
             public void onClick(View view)
             {
                 mapView.setCurrentLocationTrackingMode(MapView.CurrentLocationTrackingMode.TrackingModeOnWithoutHeading);
+                gpsButton.setClickable(false);
                 TimeOutThread timeOutThread = new TimeOutThread();
                 timeOutThread.start();
             }
@@ -164,7 +204,7 @@ public class AddLocationActivity extends AppCompatActivity
                     public void run()
                     {
                         mapView.setCurrentLocationTrackingMode(MapView.CurrentLocationTrackingMode.TrackingModeOff);
-                        Toast.makeText(AddLocationActivity.this, "finished", Toast.LENGTH_SHORT).show();
+                        gpsButton.setClickable(true);
                     }
                 });
             } catch (InterruptedException e)

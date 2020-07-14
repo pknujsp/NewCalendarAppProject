@@ -1,9 +1,14 @@
 package com.zerodsoft.scheduleweather.Retrofit.QueryResponse.PlaceCategoryResponse;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class PlaceCategoryDocuments
+import java.io.Serializable;
+
+public class PlaceCategoryDocuments implements Parcelable
 {
     @SerializedName("id")
     @Expose
@@ -52,6 +57,60 @@ public class PlaceCategoryDocuments
     @SerializedName("distance")
     @Expose
     private String distance;
+
+    protected PlaceCategoryDocuments(Parcel in)
+    {
+        id = in.readString();
+        placeName = in.readString();
+        categoryName = in.readString();
+        categoryGroupCode = in.readString();
+        categoryGroupName = in.readString();
+        phone = in.readString();
+        addressName = in.readString();
+        roadAddressName = in.readString();
+        x = in.readString();
+        y = in.readString();
+        placeUrl = in.readString();
+        distance = in.readString();
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags)
+    {
+        dest.writeString(id);
+        dest.writeString(placeName);
+        dest.writeString(categoryName);
+        dest.writeString(categoryGroupCode);
+        dest.writeString(categoryGroupName);
+        dest.writeString(phone);
+        dest.writeString(addressName);
+        dest.writeString(roadAddressName);
+        dest.writeString(x);
+        dest.writeString(y);
+        dest.writeString(placeUrl);
+        dest.writeString(distance);
+    }
+
+    @Override
+    public int describeContents()
+    {
+        return 0;
+    }
+
+    public static final Creator<PlaceCategoryDocuments> CREATOR = new Creator<PlaceCategoryDocuments>()
+    {
+        @Override
+        public PlaceCategoryDocuments createFromParcel(Parcel in)
+        {
+            return new PlaceCategoryDocuments(in);
+        }
+
+        @Override
+        public PlaceCategoryDocuments[] newArray(int size)
+        {
+            return new PlaceCategoryDocuments[size];
+        }
+    };
 
     public String getId()
     {

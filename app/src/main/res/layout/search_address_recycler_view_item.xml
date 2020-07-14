@@ -8,6 +8,7 @@
         android:id="@+id/address_linearlayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:clickable="true"
         android:orientation="vertical"
         android:paddingTop="8dp"
         android:paddingBottom="8dp"
@@ -51,6 +52,7 @@
         android:id="@+id/place_linearlayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:clickable="true"
         android:orientation="vertical"
         android:paddingTop="8dp"
         android:paddingBottom="8dp"
@@ -67,8 +69,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:text="placename"
                 android:layout_marginEnd="4dp"
+                android:text="placename"
                 android:textColor="@android:color/black"
                 android:textSize="15sp" />
 

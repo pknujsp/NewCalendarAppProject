@@ -1,9 +1,12 @@
 package com.zerodsoft.scheduleweather.Retrofit.QueryResponse.AddressResponse;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class AddressResponseRoadAddress
+public class AddressResponseRoadAddress implements Parcelable
 {
     @SerializedName("address_name")
     @Expose
@@ -52,6 +55,37 @@ public class AddressResponseRoadAddress
     @SerializedName("y")
     @Expose
     private double y;
+
+    protected AddressResponseRoadAddress(Parcel in)
+    {
+        addressName = in.readString();
+        region1DepthName = in.readString();
+        region2DepthName = in.readString();
+        region3DepthName = in.readString();
+        roadName = in.readString();
+        undergroundYn = in.readString();
+        mainBuildingNo = in.readString();
+        subBuildingNo = in.readString();
+        buildingName = in.readString();
+        zoneNo = in.readString();
+        x = in.readDouble();
+        y = in.readDouble();
+    }
+
+    public static final Creator<AddressResponseRoadAddress> CREATOR = new Creator<AddressResponseRoadAddress>()
+    {
+        @Override
+        public AddressResponseRoadAddress createFromParcel(Parcel in)
+        {
+            return new AddressResponseRoadAddress(in);
+        }
+
+        @Override
+        public AddressResponseRoadAddress[] newArray(int size)
+        {
+            return new AddressResponseRoadAddress[size];
+        }
+    };
 
     public String getAddressName()
     {
@@ -171,5 +205,28 @@ public class AddressResponseRoadAddress
     public void setY(double y)
     {
         this.y = y;
+    }
+
+    @Override
+    public int describeContents()
+    {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i)
+    {
+        parcel.writeString(addressName);
+        parcel.writeString(region1DepthName);
+        parcel.writeString(region2DepthName);
+        parcel.writeString(region3DepthName);
+        parcel.writeString(roadName);
+        parcel.writeString(undergroundYn);
+        parcel.writeString(mainBuildingNo);
+        parcel.writeString(subBuildingNo);
+        parcel.writeString(buildingName);
+        parcel.writeString(zoneNo);
+        parcel.writeDouble(x);
+        parcel.writeDouble(y);
     }
 }

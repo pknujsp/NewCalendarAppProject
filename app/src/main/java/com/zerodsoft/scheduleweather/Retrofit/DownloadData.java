@@ -3,6 +3,8 @@ package com.zerodsoft.scheduleweather.Retrofit;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.Parcel;
+import android.os.Parcelable;
 
 import com.zerodsoft.scheduleweather.RecyclerVIewAdapter.SearchResultViewPagerAdapter;
 import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.AddressResponse.AddressResponse;
@@ -46,8 +48,8 @@ public class DownloadData
                 List<AddressResponseDocuments> documents = (ArrayList<AddressResponseDocuments>) response.body().getAddressResponseDocumentsList();
 
                 Bundle bundle = new Bundle();
-                bundle.putSerializable("meta", meta);
-                bundle.putSerializable("documents", (ArrayList<AddressResponseDocuments>) documents);
+                bundle.putParcelable("meta", meta);
+                bundle.putParcelableArrayList("documents", (ArrayList<? extends Parcelable>) documents);
 
                 Message message = handler.obtainMessage();
                 message.what = ADDRESS;
@@ -89,8 +91,8 @@ public class DownloadData
                 List<PlaceKeywordDocuments> documents = (ArrayList<PlaceKeywordDocuments>) response.body().getPlaceKeywordDocuments();
 
                 Bundle bundle = new Bundle();
-                bundle.putSerializable("meta", meta);
-                bundle.putSerializable("documents", (ArrayList<PlaceKeywordDocuments>) documents);
+                bundle.putParcelable("meta", meta);
+                bundle.putParcelableArrayList("documents", (ArrayList<? extends Parcelable>) documents);
 
                 Message message = handler.obtainMessage();
                 message.setData(bundle);
@@ -131,8 +133,8 @@ public class DownloadData
                 List<PlaceCategoryDocuments> documents = (ArrayList<PlaceCategoryDocuments>) response.body().getPlaceCategoryDocuments();
 
                 Bundle bundle = new Bundle();
-                bundle.putSerializable("meta", meta);
-                bundle.putSerializable("documents", (ArrayList<PlaceCategoryDocuments>) documents);
+                bundle.putParcelable("meta", meta);
+                bundle.putParcelableArrayList("documents", (ArrayList<? extends Parcelable>) documents);
 
                 Message message = handler.obtainMessage();
                 message.setData(bundle);

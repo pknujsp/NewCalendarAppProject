@@ -1,8 +1,10 @@
 package com.zerodsoft.scheduleweather.Activity;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -26,8 +28,8 @@ public class SearchAddressActivity extends AppCompatActivity
     private ImageButton backButton;
     private EditText searchAddressEditText;
     private ImageButton searchAddressButton;
-    private ViewPager2 viewPager2;
-    private SearchResultViewPagerAdapter searchResultViewPagerAdapter;
+    private Intent searchResultIntent;
+    private RecyclerView recentRecyclerView;
 
     private Handler handler = new Handler()
     {
@@ -46,26 +48,34 @@ public class SearchAddressActivity extends AppCompatActivity
             switch (msg.what)
             {
                 case DownloadData.ADDRESS:
-                    addressSearchResult.setAddressResponseDocuments((ArrayList<AddressResponseDocuments>) bundle.getSerializable("documents"));
+                    addressSearchResult.setAddressResponseDocuments(bundle.getParcelableArrayList("documents"));
                     break;
                 case DownloadData.PLACE_KEYWORD:
-                    addressSearchResult.setPlaceKeywordDocuments((ArrayList<PlaceKeywordDocuments>) bundle.getSerializable("documents"));
+                    addressSearchResult.setPlaceKeywordDocuments(bundle.getParcelableArrayList("documents"));
                     break;
                 case DownloadData.PLACE_CATEGORY:
-                    addressSearchResult.setPlaceCategoryDocuments((ArrayList<PlaceCategoryDocuments>) bundle.getSerializable("documents"));
+                    addressSearchResult.setPlaceCategoryDocuments(bundle.getParcelableArrayList("documents"));
                     break;
             }
 
             if (addressSearchResult.getResultNum() == 1 && !addressSearchResult.getPlaceCategoryDocuments().isEmpty())
             {
-                searchResultViewPagerAdapter.setAddressSearchResult(addressSearchResult.clone());
+                searchResultIntent = new Intent(SearchAddressActivity.this, SearchResultActivity.class);
+
+                Bundle dataBundle = new Bundle();
+                dataBundle.putParcelable("result", addressSearchResult.clone());
+                searchResultIntent.putExtras(dataBundle);
+                startActivity(searchResultIntent);
                 addressSearchResult.clearAll();
-                searchResultViewPagerAdapter.notifyDataSetChanged();
             } else if (addressSearchResult.getResultNum() == 2)
             {
-                searchResultViewPagerAdapter.setAddressSearchResult(addressSearchResult.clone());
+                searchResultIntent = new Intent(SearchAddressActivity.this, SearchResultActivity.class);
+
+                Bundle dataBundle = new Bundle();
+                dataBundle.putParcelable("result", addressSearchResult.clone());
+                searchResultIntent.putExtras(dataBundle);
+                startActivity(searchResultIntent);
                 addressSearchResult.clearAll();
-                searchResultViewPagerAdapter.notifyDataSetChanged();
             }
         }
     };
@@ -79,10 +89,7 @@ public class SearchAddressActivity extends AppCompatActivity
         backButton = (ImageButton) findViewById(R.id.back_button);
         searchAddressEditText = (EditText) findViewById(R.id.search_address_edittext);
         searchAddressButton = (ImageButton) findViewById(R.id.search_address_button);
-        viewPager2 = (ViewPager2) findViewById(R.id.search_address_viewpager);
-
-        searchResultViewPagerAdapter = new SearchResultViewPagerAdapter(SearchAddressActivity.this);
-        viewPager2.setAdapter(searchResultViewPagerAdapter);
+        recentRecyclerView = (RecyclerView) findViewById(R.id.search_address_recent_recyclerview);
 
         searchAddressButton.setOnClickListener(new View.OnClickListener()
         {

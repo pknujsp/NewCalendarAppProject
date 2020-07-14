@@ -1,9 +1,14 @@
 package com.zerodsoft.scheduleweather.Retrofit.QueryResponse.AddressResponse;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class AddressResponseDocuments
+import java.io.Serializable;
+
+public class AddressResponseDocuments implements Parcelable
 {
     @SerializedName("address_name")
     @Expose
@@ -33,6 +38,31 @@ public class AddressResponseDocuments
     public static final String ROAD = "ROAD";
     public static final String REGION_ADDR = "REGION_ADDR";
     public static final String ROAD_ADDR = "ROAD_ADDR";
+
+    protected AddressResponseDocuments(Parcel in)
+    {
+        addressName = in.readString();
+        addressType = in.readString();
+        x = in.readDouble();
+        y = in.readDouble();
+        addressResponseAddress = in.readParcelable(AddressResponseAddress.class.getClassLoader());
+        addressResponseRoadAddress = in.readParcelable(AddressResponseRoadAddress.class.getClassLoader());
+    }
+
+    public static final Creator<AddressResponseDocuments> CREATOR = new Creator<AddressResponseDocuments>()
+    {
+        @Override
+        public AddressResponseDocuments createFromParcel(Parcel in)
+        {
+            return new AddressResponseDocuments(in);
+        }
+
+        @Override
+        public AddressResponseDocuments[] newArray(int size)
+        {
+            return new AddressResponseDocuments[size];
+        }
+    };
 
     public String getAddressName()
     {
@@ -92,5 +122,22 @@ public class AddressResponseDocuments
     public void setAddressResponseRoadAddress(AddressResponseRoadAddress addressResponseRoadAddress)
     {
         this.addressResponseRoadAddress = addressResponseRoadAddress;
+    }
+
+    @Override
+    public int describeContents()
+    {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i)
+    {
+        parcel.writeString(this.addressName);
+        parcel.writeString(this.addressType);
+        parcel.writeDouble(this.x);
+        parcel.writeDouble(this.y);
+        parcel.writeParcelable(this.addressResponseAddress, i);
+        parcel.writeParcelable(this.addressResponseRoadAddress, i);
     }
 }
