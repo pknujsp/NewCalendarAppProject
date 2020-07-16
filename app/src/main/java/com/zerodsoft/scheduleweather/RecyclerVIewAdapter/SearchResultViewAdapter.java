@@ -32,6 +32,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
     private List<PlaceCategoryDocuments> placeCategoryList = null;
     private int type;
     private Context context;
+    private long downloadedTime;
 
     public SearchResultViewAdapter(Context context)
     {
@@ -42,18 +43,21 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
     {
         this.addressList = addressList;
         type = DownloadData.ADDRESS;
+        downloadedTime = System.currentTimeMillis();
     }
 
     public void setPlaceKeywordList(List<PlaceKeywordDocuments> placeKeywordList)
     {
         this.placeKeywordList = placeKeywordList;
         type = DownloadData.PLACE_KEYWORD;
+        downloadedTime = System.currentTimeMillis();
     }
 
     public void setPlaceCategoryList(List<PlaceCategoryDocuments> placeCategoryList)
     {
         this.placeCategoryList = placeCategoryList;
         type = DownloadData.PLACE_CATEGORY;
+        downloadedTime = System.currentTimeMillis();
     }
 
     @NonNull
@@ -85,9 +89,10 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
                         List<AddressResponseDocuments> copiedList = new ArrayList<>(addressList);
                         Collections.copy(copiedList, addressList);
 
-                        bundle.putParcelableArrayList("placeInfo", (ArrayList<? extends Parcelable>) copiedList);
+                        bundle.putParcelableArrayList("itemsInfo", (ArrayList<? extends Parcelable>) copiedList);
                         bundle.putInt("type", DownloadData.ADDRESS);
                         bundle.putInt("position", position);
+                        bundle.putLong("downloadedTime", downloadedTime);
                         mapActivity.putExtras(bundle);
 
                         context.startActivity(mapActivity);
@@ -108,9 +113,10 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
                         List<PlaceKeywordDocuments> copiedList = new ArrayList<>(placeKeywordList);
                         Collections.copy(copiedList, placeKeywordList);
 
-                        bundle.putParcelableArrayList("placeInfo", (ArrayList<? extends Parcelable>) copiedList);
+                        bundle.putParcelableArrayList("itemsInfo", (ArrayList<? extends Parcelable>) copiedList);
                         bundle.putInt("type", DownloadData.PLACE_KEYWORD);
                         bundle.putInt("position", position);
+                        bundle.putLong("downloadedTime", downloadedTime);
                         mapActivity.putExtras(bundle);
 
                         context.startActivity(mapActivity);
@@ -131,9 +137,10 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
                         List<PlaceCategoryDocuments> copiedList = new ArrayList<>(placeCategoryList);
                         Collections.copy(copiedList, placeCategoryList);
 
-                        bundle.putParcelableArrayList("placeInfo", (ArrayList<? extends Parcelable>) copiedList);
+                        bundle.putParcelableArrayList("itemsInfo", (ArrayList<? extends Parcelable>) copiedList);
                         bundle.putInt("type", DownloadData.PLACE_CATEGORY);
                         bundle.putInt("position", position);
+                        bundle.putLong("downloadedTime", downloadedTime);
                         mapActivity.putExtras(bundle);
 
                         context.startActivity(mapActivity);
