@@ -2,15 +2,10 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/map_item_bottom_sheet"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:elevation="2dp"
-    android:orientation="vertical"
-    app:behavior_hideable="false"
-    app:behavior_peekHeight="120dp"
-    app:layout_behavior="@string/bottom_sheet_behavior"
-    app:layout_insetEdge="bottom">
+    android:orientation="vertical">
 
     <LinearLayout
         android:id="@+id/item_place_layout"

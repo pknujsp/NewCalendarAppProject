@@ -1,20 +1,16 @@
 package com.zerodsoft.scheduleweather.Activity;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.FrameLayout;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.google.android.material.bottomsheet.BottomSheetBehavior;
-import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.zerodsoft.scheduleweather.Fragment.MapBottomSheetFragment;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.Retrofit.DownloadData;
 import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.AddressResponse.AddressResponseDocuments;
@@ -36,30 +32,10 @@ public class AddLocationActivity extends AppCompatActivity
     private ImageButton zoomOutButton;
     private ImageButton gpsButton;
 
-    private BottomSheetBehavior bottomSheetBehavior;
-    private LinearLayout bottomSheet;
-
-    private TextView selectedItemPlaceNameTextView;
-    private TextView selectedItemPlaceCategoryTextView;
-    private TextView selectedItemPlaceAddressTextView;
-    private TextView selectedItemPlaceDescriptionTextView;
-
-    private TextView selectedItemAddressNameTextView;
-    private TextView selectedItemAnotherAddressNameTextView;
-    private TextView selectedItemAnotherAddressTypeTextView;
-
-    private ImageButton selectedItemFavoriteButton;
-    private ImageButton selectedItemShareButton;
-    private ImageButton selectedItemCheckButton;
-    private ImageButton selectedItemLeftButton;
-    private ImageButton selectedItemRightButton;
-
-    private LinearLayout placeItemLayout;
-    private LinearLayout addressItemLayout;
-
     private List<AddressResponseDocuments> addressList = null;
     private List<PlaceKeywordDocuments> placeKeywordList = null;
     private List<PlaceCategoryDocuments> placeCategoryList = null;
+
     private long downloadedTime;
     private int resultType;
     private int selectedItemPosition;
@@ -73,34 +49,11 @@ public class AddLocationActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_location);
 
-        bottomSheet = (LinearLayout) findViewById(R.id.map_item_bottom_sheet);
-        bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
-        setBottomSheetCallback();
-        bottomSheet.setVisibility(View.GONE);
-
         addressTextView = (TextView) findViewById(R.id.address_textview);
         checkButton = (ImageButton) findViewById(R.id.add_location_check_button);
         zoomInButton = (ImageButton) findViewById(R.id.zoom_in_button);
         zoomOutButton = (ImageButton) findViewById(R.id.zoom_out_button);
         gpsButton = (ImageButton) findViewById(R.id.gps_button);
-
-        placeItemLayout = (LinearLayout) findViewById(R.id.item_place_layout);
-        addressItemLayout = (LinearLayout) findViewById(R.id.item_address_layout);
-
-        selectedItemPlaceNameTextView = (TextView) findViewById(R.id.selected_place_name_textview);
-        selectedItemPlaceCategoryTextView = (TextView) findViewById(R.id.selected_place_category_textview);
-        selectedItemPlaceAddressTextView = (TextView) findViewById(R.id.selected_place_address_textview);
-        selectedItemPlaceDescriptionTextView = (TextView) findViewById(R.id.selected_place_description_textview);
-
-        selectedItemFavoriteButton = (ImageButton) findViewById(R.id.add_favorite_address_button);
-        selectedItemShareButton = (ImageButton) findViewById(R.id.share_address_button);
-        selectedItemCheckButton = (ImageButton) findViewById(R.id.check_address_button);
-        selectedItemLeftButton = (ImageButton) findViewById(R.id.left_address_button);
-        selectedItemRightButton = (ImageButton) findViewById(R.id.right_address_button);
-
-        selectedItemAddressNameTextView = (TextView) findViewById(R.id.selected_address_name_textview);
-        selectedItemAnotherAddressNameTextView = (TextView) findViewById(R.id.selected_another_address_textview);
-        selectedItemAnotherAddressTypeTextView = (TextView) findViewById(R.id.selected_another_address_type_textview);
 
         mapView = new MapView(this);
         if (!MapView.isMapTilePersistentCacheEnabled())
@@ -214,7 +167,7 @@ public class AddLocationActivity extends AppCompatActivity
             {
                 placeKeywordList = bundle.getParcelableArrayList("itemsInfo");
             }
-            displayItemInfo(selectedItemPosition);
+            displayItemBottomSheet(selectedItemPosition);
             return true;
         } else
         {
@@ -223,9 +176,11 @@ public class AddLocationActivity extends AppCompatActivity
         }
     }
 
-    private void displayItemInfo(int position)
+    private void displayItemBottomSheet(int position)
     {
-        inflateSelectItemLayout(View.VISIBLE);
+        MapBottomSheetFragment mapBottomSheetFragment = MapBottomSheetFragment.getInstance();
+        mapBottomSheetFragment.show(getSupportFragmentManager(), MapBottomSheetFragment.TAG);
+
         double latitude = 0, longitude = 0;
 
         if (resultType == DownloadData.ADDRESS)
@@ -233,88 +188,23 @@ public class AddLocationActivity extends AppCompatActivity
             longitude = addressList.get(position).getX();
             latitude = addressList.get(position).getY();
 
-            displayAddressInfo(position);
+            mapBottomSheetFragment.setAddress(addressList.get(position));
         } else if (resultType == DownloadData.PLACE_KEYWORD)
         {
             longitude = placeKeywordList.get(position).getX();
             latitude = placeKeywordList.get(position).getY();
 
-            displayPlaceInfo(position);
+            mapBottomSheetFragment.setPlaceKeyword(placeKeywordList.get(position));
         } else if (resultType == DownloadData.PLACE_CATEGORY)
         {
             longitude = Double.valueOf(placeCategoryList.get(position).getX());
             latitude = Double.valueOf(placeCategoryList.get(position).getY());
 
-            displayPlaceInfo(position);
+            mapBottomSheetFragment.setPlaceCategory(placeCategoryList.get(position));
         }
-
         setCenterPoint(latitude, longitude, position);
     }
 
-    private void displayPlaceInfo(int position)
-    {
-        switch (resultType)
-        {
-            case DownloadData.PLACE_KEYWORD:
-                selectedItemPlaceNameTextView.setText(placeKeywordList.get(position).getPlaceName());
-                selectedItemPlaceCategoryTextView.setText(placeKeywordList.get(position).getCategoryName());
-
-                if (placeKeywordList.get(position).getRoadAddressName() != null)
-                {
-                    selectedItemPlaceAddressTextView.setText(placeKeywordList.get(position).getRoadAddressName());
-                } else
-                {
-                    // 지번주소만 있는 경우
-                    selectedItemPlaceAddressTextView.setText(placeKeywordList.get(position).getAddressName());
-                }
-                selectedItemPlaceDescriptionTextView.setText("TEST");
-                break;
-
-            case DownloadData.PLACE_CATEGORY:
-                selectedItemPlaceNameTextView.setText(placeCategoryList.get(position).getPlaceName());
-                selectedItemPlaceCategoryTextView.setText(placeCategoryList.get(position).getCategoryName());
-
-                if (placeCategoryList.get(position).getRoadAddressName() != null)
-                {
-                    selectedItemPlaceAddressTextView.setText(placeCategoryList.get(position).getRoadAddressName());
-                } else
-                {
-                    // 지번주소만 있는 경우
-                    selectedItemPlaceAddressTextView.setText(placeCategoryList.get(position).getAddressName());
-                }
-                selectedItemPlaceDescriptionTextView.setText("TEST");
-                break;
-        }
-    }
-
-    private void displayAddressInfo(int position)
-    {
-        selectedItemAddressNameTextView.setText(addressList.get(position).getAddressName());
-
-        switch (addressList.get(position).getAddressType())
-        {
-            case AddressResponseDocuments.REGION:
-                //지명
-                selectedItemAnotherAddressTypeTextView.setText(getString(R.string.region));
-                selectedItemAnotherAddressNameTextView.setText(addressList.get(position).getAddressResponseAddress().getAddressName());
-                break;
-            case AddressResponseDocuments.REGION_ADDR:
-                //지명 주소
-                selectedItemAnotherAddressTypeTextView.setText(getString(R.string.road_addr));
-                selectedItemAnotherAddressNameTextView.setText(addressList.get(position).getAddressResponseRoadAddress().getAddressName());
-                break;
-            case AddressResponseDocuments.ROAD:
-                //도로명
-                selectedItemAnotherAddressTypeTextView.setText(getString(R.string.road));
-                selectedItemAnotherAddressNameTextView.setText(addressList.get(position).getAddressResponseRoadAddress().getAddressName());
-                break;
-            case AddressResponseDocuments.ROAD_ADDR:
-                //도로명 주소
-                selectedItemAnotherAddressTypeTextView.setText(getString(R.string.region_addr));
-                selectedItemAnotherAddressNameTextView.setText(addressList.get(position).getAddressResponseAddress().getAddressName());
-                break;
-        }
-    }
 
     private void setCenterPoint(double latitude, double longitude, int position)
     {
@@ -340,53 +230,6 @@ public class AddLocationActivity extends AppCompatActivity
         mapView.addPOIItem(marker);
     }
 
-    private void setBottomSheetCallback()
-    {
-        bottomSheetBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback()
-        {
-            @Override
-            public void onStateChanged(@NonNull View view, int newState)
-            {
-
-            }
-
-            @Override
-            public void onSlide(@NonNull View view, float v)
-            {
-
-            }
-        });
-    }
-
-    private void inflateSelectItemLayout(int isVisibility)
-    {
-        bottomSheet.setVisibility(View.VISIBLE);
-        bottomSheetBehavior.setHideable(false);
-
-        /*
-        if (bottomSheetBehavior.getState() != BottomSheetBehavior.STATE_EXPANDED)
-        {
-            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-        } else
-        {
-            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-        }
-
-         */
-
-        switch (resultType)
-        {
-            case DownloadData.ADDRESS:
-                addressItemLayout.setVisibility(isVisibility);
-                placeItemLayout.setVisibility(View.GONE);
-                break;
-
-            default:
-                placeItemLayout.setVisibility(isVisibility);
-                addressItemLayout.setVisibility(View.GONE);
-                break;
-        }
-    }
 
     class TimeOutThread extends Thread
     {
