@@ -1,6 +1,7 @@
 package com.zerodsoft.scheduleweather.Fragment;
 
 
+import android.app.Dialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -12,7 +13,10 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.Fragment;
 
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.Retrofit.DownloadData;
@@ -25,7 +29,7 @@ import net.daum.mf.map.api.MapPoint;
 
 import java.util.List;
 
-public class MapBottomSheetFragment extends BottomSheetDialogFragment
+public class MapBottomSheetFragment extends Fragment
 {
     public static final String TAG = "MAP_BOTTOM_SHEET_FRAGMENT";
     private static MapBottomSheetFragment mapBottomSheetFragment = null;
@@ -52,7 +56,9 @@ public class MapBottomSheetFragment extends BottomSheetDialogFragment
     private PlaceKeywordDocuments placeKeyword = null;
     private PlaceCategoryDocuments placeCategory = null;
 
-    private int resultType;
+    private BottomSheetBehavior bottomSheetBehavior;
+
+    private int resultType = -1;
 
     public void setAddress(AddressResponseDocuments address)
     {
@@ -85,8 +91,12 @@ public class MapBottomSheetFragment extends BottomSheetDialogFragment
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
     {
-        return inflater.inflate(R.layout.map_item_bottom_sheet, container, false);
+        LinearLayout bottomSheet = (LinearLayout) getActivity().findViewById(R.id.map_bottom_sheet);
+        bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
+        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+        return bottomSheet;
     }
+
 
     @Override
     public void onStart()
@@ -97,12 +107,27 @@ public class MapBottomSheetFragment extends BottomSheetDialogFragment
                 setLayoutVisibility();
                 displayAddressInfo();
                 break;
+            case -1:
+                break;
             default:
                 setLayoutVisibility();
                 displayPlaceInfo();
                 break;
         }
         super.onStart();
+    }
+
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+        if (resultType == -1)
+        {
+            onHiddenChanged(false);
+        } else
+        {
+            onHiddenChanged(true);
+        }
     }
 
     @Override
@@ -127,6 +152,7 @@ public class MapBottomSheetFragment extends BottomSheetDialogFragment
         selectedItemAddressNameTextView = (TextView) view.findViewById(R.id.selected_address_name_textview);
         selectedItemAnotherAddressNameTextView = (TextView) view.findViewById(R.id.selected_another_address_textview);
         selectedItemAnotherAddressTypeTextView = (TextView) view.findViewById(R.id.selected_another_address_type_textview);
+
     }
 
     private void displayPlaceInfo()

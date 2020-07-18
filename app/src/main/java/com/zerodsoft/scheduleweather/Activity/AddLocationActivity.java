@@ -2,14 +2,18 @@ package com.zerodsoft.scheduleweather.Activity;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.Fragment.MapBottomSheetFragment;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.Retrofit.DownloadData;
@@ -23,6 +27,7 @@ import net.daum.mf.map.api.MapPoint;
 import net.daum.mf.map.api.MapView;
 
 import java.util.List;
+import java.util.Map;
 
 public class AddLocationActivity extends AppCompatActivity
 {
@@ -32,6 +37,7 @@ public class AddLocationActivity extends AppCompatActivity
     private ImageButton zoomOutButton;
     private ImageButton gpsButton;
 
+
     private List<AddressResponseDocuments> addressList = null;
     private List<PlaceKeywordDocuments> placeKeywordList = null;
     private List<PlaceCategoryDocuments> placeCategoryList = null;
@@ -39,6 +45,10 @@ public class AddLocationActivity extends AppCompatActivity
     private long downloadedTime;
     private int resultType;
     private int selectedItemPosition;
+
+    private FragmentTransaction fragmentTransaction;
+    private FragmentManager fragmentManager;
+    private MapBottomSheetFragment mapBottomSheetFragment;
 
     private LocationDTO locationDTO;
     private MapView mapView;
@@ -54,6 +64,14 @@ public class AddLocationActivity extends AppCompatActivity
         zoomInButton = (ImageButton) findViewById(R.id.zoom_in_button);
         zoomOutButton = (ImageButton) findViewById(R.id.zoom_out_button);
         gpsButton = (ImageButton) findViewById(R.id.gps_button);
+
+        fragmentManager = getSupportFragmentManager();
+        fragmentTransaction = fragmentManager.beginTransaction();
+        mapBottomSheetFragment = MapBottomSheetFragment.getInstance();
+
+        //  fragmentTransaction.add(R.id.map_bottom_sheet_layout, mapBottomSheetFragment);
+        fragmentTransaction.add(mapBottomSheetFragment, MapBottomSheetFragment.TAG);
+        fragmentTransaction.commit();
 
         mapView = new MapView(this);
         if (!MapView.isMapTilePersistentCacheEnabled())
@@ -122,9 +140,7 @@ public class AddLocationActivity extends AppCompatActivity
             @Override
             public void onClick(View view)
             {
-                // 줌 인
                 mapView.zoomIn(true);
-
             }
         });
 
@@ -133,7 +149,6 @@ public class AddLocationActivity extends AppCompatActivity
             @Override
             public void onClick(View view)
             {
-                // 줌 인
                 mapView.zoomOut(true);
             }
         });
@@ -151,6 +166,7 @@ public class AddLocationActivity extends AppCompatActivity
         });
     }
 
+
     private boolean availableIntent()
     {
         if (getIntent().getExtras() != null)
@@ -167,6 +183,7 @@ public class AddLocationActivity extends AppCompatActivity
             {
                 placeKeywordList = bundle.getParcelableArrayList("itemsInfo");
             }
+
             displayItemBottomSheet(selectedItemPosition);
             return true;
         } else
@@ -178,9 +195,6 @@ public class AddLocationActivity extends AppCompatActivity
 
     private void displayItemBottomSheet(int position)
     {
-        MapBottomSheetFragment mapBottomSheetFragment = MapBottomSheetFragment.getInstance();
-        mapBottomSheetFragment.show(getSupportFragmentManager(), MapBottomSheetFragment.TAG);
-
         double latitude = 0, longitude = 0;
 
         if (resultType == DownloadData.ADDRESS)
@@ -202,6 +216,10 @@ public class AddLocationActivity extends AppCompatActivity
 
             mapBottomSheetFragment.setPlaceCategory(placeCategoryList.get(position));
         }
+        fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.show(mapBottomSheetFragment);
+        fragmentTransaction.commit();
+
         setCenterPoint(latitude, longitude, position);
     }
 
@@ -230,6 +248,12 @@ public class AddLocationActivity extends AppCompatActivity
         mapView.addPOIItem(marker);
     }
 
+    @Override
+    public boolean onTouchEvent(MotionEvent event)
+    {
+        return super.onTouchEvent(event);
+
+    }
 
     class TimeOutThread extends Thread
     {
