@@ -1,27 +1,15 @@
-package com.zerodsoft.scheduleweather.Activity;
+package com.zerodsoft.scheduleweather.Activity.MapActivity;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager2.widget.ViewPager2;
 
-import android.content.Intent;
-import android.location.Address;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.ImageButton;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.RecyclerVIewAdapter.SearchResultViewPagerAdapter;
-import com.zerodsoft.scheduleweather.Retrofit.DownloadData;
-import com.zerodsoft.scheduleweather.Retrofit.KakaoLocalApiCategoryCode;
-import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.AddressResponse.AddressResponseDocuments;
 import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.AddressSearchResult;
-import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.PlaceCategoryResponse.PlaceCategoryDocuments;
-import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.PlaceKeywordResponse.PlaceKeywordDocuments;
-
-import java.util.ArrayList;
 
 public class SearchResultActivity extends AppCompatActivity
 {

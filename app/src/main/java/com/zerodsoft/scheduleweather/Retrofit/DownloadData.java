@@ -107,11 +107,11 @@ public class DownloadData
         });
     }
 
-    public static void searchPlaceCategory(String code, Handler handler)
+    public static void searchPlaceCategory(String name, Handler handler)
     {
         Querys querys = HttpCommunicationClient.getApiService();
         Map<String, String> queryMap = new HashMap<>();
-        queryMap.put("category_group_code", code);
+        queryMap.put("category_group_code", name);
       /*
         queryMap.put("x", null);
         queryMap.put("y", null);
@@ -120,8 +120,6 @@ public class DownloadData
         queryMap.put("page", null);
         queryMap.put("size", null);
         queryMap.put("sort", null);
-
-
        */
         Call<PlaceCategory> call = querys.getPlaceCategory(queryMap);
         call.enqueue(new Callback<PlaceCategory>()

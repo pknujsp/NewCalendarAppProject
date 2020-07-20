@@ -13,8 +13,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.zerodsoft.scheduleweather.Activity.AddLocationActivity;
-import com.zerodsoft.scheduleweather.Activity.AddScheduleActivity;
+import com.zerodsoft.scheduleweather.Activity.MapActivity.MapActivity;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.Retrofit.DownloadData;
 import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.AddressResponse.AddressResponseDocuments;
@@ -83,7 +82,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
                     @Override
                     public void onClick(View view)
                     {
-                        Intent mapActivity = new Intent(context, AddLocationActivity.class);
+                        Intent mapActivity = new Intent(context, MapActivity.class);
                         Bundle bundle = new Bundle();
 
                         List<AddressResponseDocuments> copiedList = new ArrayList<>(addressList);
@@ -94,6 +93,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
                         bundle.putInt("position", position);
                         bundle.putLong("downloadedTime", downloadedTime);
                         mapActivity.putExtras(bundle);
+                        mapActivity.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
 
                         context.startActivity(mapActivity);
                     }
@@ -107,7 +107,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
                     @Override
                     public void onClick(View view)
                     {
-                        Intent mapActivity = new Intent(context, AddLocationActivity.class);
+                        Intent mapActivity = new Intent(context, MapActivity.class);
                         Bundle bundle = new Bundle();
 
                         List<PlaceKeywordDocuments> copiedList = new ArrayList<>(placeKeywordList);
@@ -118,6 +118,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
                         bundle.putInt("position", position);
                         bundle.putLong("downloadedTime", downloadedTime);
                         mapActivity.putExtras(bundle);
+                        mapActivity.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
 
                         context.startActivity(mapActivity);
                     }
@@ -131,7 +132,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
                     @Override
                     public void onClick(View view)
                     {
-                        Intent mapActivity = new Intent(context, AddLocationActivity.class);
+                        Intent mapActivity = new Intent(context, MapActivity.class);
                         Bundle bundle = new Bundle();
 
                         List<PlaceCategoryDocuments> copiedList = new ArrayList<>(placeCategoryList);
@@ -142,6 +143,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
                         bundle.putInt("position", position);
                         bundle.putLong("downloadedTime", downloadedTime);
                         mapActivity.putExtras(bundle);
+                        mapActivity.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
 
                         context.startActivity(mapActivity);
                     }
@@ -198,7 +200,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
                     anotherTypeAddressTextView = (TextView) itemView.findViewById(R.id.search_another_type_address_textview);
                     break;
 
-                case DownloadData.PLACE_KEYWORD:
+                default:
                     addressLayout = (LinearLayout) itemView.findViewById(R.id.address_linearlayout);
                     addressLayout.setVisibility(View.GONE);
                     placeLayout = (LinearLayout) itemView.findViewById(R.id.place_linearlayout);

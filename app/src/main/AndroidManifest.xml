@@ -15,9 +15,15 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".Activity.SearchResultActivity"></activity>
-        <activity android:name=".Activity.SearchAddressActivity" />
-        <activity android:name=".Activity.AddLocationActivity" />
+        <activity
+            android:name=".Activity.MapActivity.SearchResultActivity"
+            android:taskAffinity="com.zerodsoft.scheduleweather.Activity.MapActivity" />
+        <activity
+            android:name=".Activity.MapActivity.SearchAddressActivity"
+            android:taskAffinity="com.zerodsoft.scheduleweather.Activity.MapActivity" />
+        <activity
+            android:name=".Activity.MapActivity.MapActivity"
+            android:taskAffinity="com.zerodsoft.scheduleweather.Activity.MapActivity" />
         <activity android:name=".Activity.AddScheduleActivity" />
         <activity
             android:name=".AppMainActivity"

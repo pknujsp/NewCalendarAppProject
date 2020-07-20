@@ -1,8 +1,8 @@
-package com.zerodsoft.scheduleweather.Activity;
+package com.zerodsoft.scheduleweather.Activity.MapActivity;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.viewpager2.widget.ViewPager2;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -13,23 +13,19 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.RecyclerVIewAdapter.SearchResultViewPagerAdapter;
+import com.zerodsoft.scheduleweather.RecyclerVIewAdapter.SearchCategoryViewAdapter;
 import com.zerodsoft.scheduleweather.Retrofit.DownloadData;
 import com.zerodsoft.scheduleweather.Retrofit.KakaoLocalApiCategoryCode;
-import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.AddressResponse.AddressResponseDocuments;
 import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.AddressSearchResult;
-import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.PlaceCategoryResponse.PlaceCategoryDocuments;
-import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.PlaceKeywordResponse.PlaceKeywordDocuments;
 
-import java.util.ArrayList;
-
-public class SearchAddressActivity extends AppCompatActivity
+public class SearchAddressActivity extends AppCompatActivity implements SearchCategoryViewAdapter.OnCategoryClickListener
 {
     private ImageButton backButton;
     private EditText searchAddressEditText;
     private ImageButton searchAddressButton;
     private Intent searchResultIntent;
     private RecyclerView recentRecyclerView;
+    private RecyclerView categoryRecyclerView;
 
     private Handler handler = new Handler()
     {
@@ -90,6 +86,11 @@ public class SearchAddressActivity extends AppCompatActivity
         searchAddressEditText = (EditText) findViewById(R.id.search_address_edittext);
         searchAddressButton = (ImageButton) findViewById(R.id.search_address_button);
         recentRecyclerView = (RecyclerView) findViewById(R.id.search_address_recent_recyclerview);
+        categoryRecyclerView = (RecyclerView) findViewById(R.id.category_recyclerview);
+
+        SearchCategoryViewAdapter searchCategoryViewAdapter = new SearchCategoryViewAdapter(this);
+        categoryRecyclerView.setLayoutManager(new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false));
+        categoryRecyclerView.setAdapter(searchCategoryViewAdapter);
 
         searchAddressButton.setOnClickListener(new View.OnClickListener()
         {
@@ -97,11 +98,11 @@ public class SearchAddressActivity extends AppCompatActivity
             public void onClick(View view)
             {
                 String searchWord = searchAddressEditText.getText().toString();
-                String code = getCategoryCode(searchWord);
+                String name = getCategoryName(searchWord);
 
-                if (code != null)
+                if (name != null)
                 {
-                    DownloadData.searchPlaceCategory(code, handler);
+                    DownloadData.searchPlaceCategory(name, handler);
                 } else
                 {
                     DownloadData.searchAddress(searchWord, handler);
@@ -111,17 +112,32 @@ public class SearchAddressActivity extends AppCompatActivity
         });
     }
 
-    private String getCategoryCode(String searchWord)
+    private String getCategoryName(String searchWord)
     {
         KakaoLocalApiCategoryCode.loadCategoryMap();
-        String code = KakaoLocalApiCategoryCode.getCode(searchWord);
+        String name = KakaoLocalApiCategoryCode.getName(searchWord);
 
-        if (code != null)
+        if (name != null)
         {
-            return code;
+            return name;
         } else
         {
             return null;
         }
+    }
+
+    @Override
+    public void onBackPressed()
+    {
+        Intent intent = new Intent(this, MapActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        startActivity(intent);
+    }
+
+    @Override
+    public void selectedCategory(String name)
+    {
+        // 카테고리 이름을 전달받음
+        DownloadData.searchPlaceCategory(name, handler);
     }
 }

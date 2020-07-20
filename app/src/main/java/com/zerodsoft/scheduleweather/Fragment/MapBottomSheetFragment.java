@@ -121,13 +121,6 @@ public class MapBottomSheetFragment extends Fragment
     public void onResume()
     {
         super.onResume();
-        if (resultType == -1)
-        {
-            onHiddenChanged(false);
-        } else
-        {
-            onHiddenChanged(true);
-        }
     }
 
     @Override

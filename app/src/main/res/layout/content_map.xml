@@ -2,12 +2,12 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/add_location_map_view"
+    android:id="@+id/map_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context=".Activity.AddLocationActivity"
-    tools:showIn="@layout/activity_add_location">
+    tools:context=".Activity.MapActivity.MapActivity"
+    tools:showIn="@layout/activity_map">
 
 
     <LinearLayout
@@ -35,14 +35,6 @@
             android:textColor="@color/text_color"
             android:textSize="16sp" />
 
-        <ImageButton
-            android:id="@+id/add_location_check_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="8dp"
-            android:background="?attr/selectableItemBackground"
-            android:clickable="true"
-            android:src="@drawable/check_icon" />
     </LinearLayout>
 
 

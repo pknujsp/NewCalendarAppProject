@@ -1,11 +1,14 @@
 package com.zerodsoft.scheduleweather.Retrofit;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class KakaoLocalApiCategoryCode
 {
     private static Map<String, String> categoryMap = null;
+    private static List<KakaoLocalApiCategory> categoryList = null;
 
     private KakaoLocalApiCategoryCode()
     {
@@ -41,8 +44,22 @@ public class KakaoLocalApiCategoryCode
         }
     }
 
-    public static String getCode(String searchWord)
+    public static List<KakaoLocalApiCategory> toArrayList()
     {
-        return categoryMap.get(searchWord);
+        if (categoryList == null)
+        {
+            categoryList = new ArrayList<>();
+
+            for (Map.Entry entry : categoryMap.entrySet())
+            {
+                categoryList.add(new KakaoLocalApiCategory(entry.getValue().toString(), entry.getKey().toString()));
+            }
+        }
+        return categoryList;
+    }
+
+    public static String getName(String description)
+    {
+        return categoryMap.get(description);
     }
 }

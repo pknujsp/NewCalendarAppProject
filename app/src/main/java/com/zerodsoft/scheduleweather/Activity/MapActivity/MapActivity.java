@@ -1,8 +1,7 @@
-package com.zerodsoft.scheduleweather.Activity;
+package com.zerodsoft.scheduleweather.Activity.MapActivity;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -13,7 +12,6 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.Fragment.MapBottomSheetFragment;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.Retrofit.DownloadData;
@@ -27,12 +25,10 @@ import net.daum.mf.map.api.MapPoint;
 import net.daum.mf.map.api.MapView;
 
 import java.util.List;
-import java.util.Map;
 
-public class AddLocationActivity extends AppCompatActivity
+public class MapActivity extends AppCompatActivity
 {
     private TextView addressTextView;
-    private ImageButton checkButton;
     private ImageButton zoomInButton;
     private ImageButton zoomOutButton;
     private ImageButton gpsButton;
@@ -53,14 +49,14 @@ public class AddLocationActivity extends AppCompatActivity
     private LocationDTO locationDTO;
     private MapView mapView;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_add_location);
+        setContentView(R.layout.activity_map);
 
         addressTextView = (TextView) findViewById(R.id.address_textview);
-        checkButton = (ImageButton) findViewById(R.id.add_location_check_button);
         zoomInButton = (ImageButton) findViewById(R.id.zoom_in_button);
         zoomOutButton = (ImageButton) findViewById(R.id.zoom_out_button);
         gpsButton = (ImageButton) findViewById(R.id.gps_button);
@@ -69,16 +65,15 @@ public class AddLocationActivity extends AppCompatActivity
         fragmentTransaction = fragmentManager.beginTransaction();
         mapBottomSheetFragment = MapBottomSheetFragment.getInstance();
 
-        //  fragmentTransaction.add(R.id.map_bottom_sheet_layout, mapBottomSheetFragment);
         fragmentTransaction.add(mapBottomSheetFragment, MapBottomSheetFragment.TAG);
-        fragmentTransaction.commit();
+        fragmentTransaction.hide(mapBottomSheetFragment).commit();
 
         mapView = new MapView(this);
         if (!MapView.isMapTilePersistentCacheEnabled())
         {
             MapView.setMapTilePersistentCacheEnabled(true);
         }
-        ConstraintLayout mapViewContainer = (ConstraintLayout) findViewById(R.id.add_location_map_view);
+        ConstraintLayout mapViewContainer = (ConstraintLayout) findViewById(R.id.map_view);
         mapViewContainer.addView(mapView);
 
         availableIntent();
@@ -114,23 +109,12 @@ public class AddLocationActivity extends AppCompatActivity
             }
         });
 
-        checkButton.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-
-                setResult(RESULT_OK, getIntent());
-                finish();
-            }
-        });
-
         addressTextView.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view)
             {
-                Intent intent = new Intent(AddLocationActivity.this, SearchAddressActivity.class);
+                Intent intent = new Intent(MapActivity.this, SearchAddressActivity.class);
                 startActivity(intent);
             }
         });
@@ -217,8 +201,7 @@ public class AddLocationActivity extends AppCompatActivity
             mapBottomSheetFragment.setPlaceCategory(placeCategoryList.get(position));
         }
         fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.show(mapBottomSheetFragment);
-        fragmentTransaction.commit();
+        fragmentTransaction.show(mapBottomSheetFragment).commit();
 
         setCenterPoint(latitude, longitude, position);
     }
@@ -252,7 +235,6 @@ public class AddLocationActivity extends AppCompatActivity
     public boolean onTouchEvent(MotionEvent event)
     {
         return super.onTouchEvent(event);
-
     }
 
     class TimeOutThread extends Thread

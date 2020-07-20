@@ -20,6 +20,7 @@ import android.widget.SpinnerAdapter;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import com.zerodsoft.scheduleweather.Activity.MapActivity.MapActivity;
 import com.zerodsoft.scheduleweather.Fragment.DatePickerFragment;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.Room.DTO.LocationDTO;
@@ -234,7 +235,8 @@ public class AddScheduleActivity extends AppCompatActivity implements DatePicker
             public void onClick(View view)
             {
                 //위치를 설정하는 액티비티 표시
-                Intent intent = new Intent(AddScheduleActivity.this, AddLocationActivity.class);
+                Intent intent = new Intent(AddScheduleActivity.this, MapActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivityForResult(intent, ADD_LOCATION_ACTIVITY);
             }
         };
