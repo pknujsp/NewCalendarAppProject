@@ -55,5 +55,9 @@ public class SearchResultActivity extends AppCompatActivity
         });
     }
 
-
+    @Override
+    public void onBackPressed()
+    {
+        super.onBackPressed();
+    }
 }

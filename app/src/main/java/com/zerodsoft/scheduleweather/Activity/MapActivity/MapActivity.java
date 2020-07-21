@@ -2,16 +2,20 @@ package com.zerodsoft.scheduleweather.Activity.MapActivity;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.view.GestureDetectorCompat;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Parcelable;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.Fragment.MapBottomSheetFragment;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.Retrofit.DownloadData;
@@ -24,15 +28,15 @@ import net.daum.mf.map.api.MapPOIItem;
 import net.daum.mf.map.api.MapPoint;
 import net.daum.mf.map.api.MapView;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class MapActivity extends AppCompatActivity
+public class MapActivity extends AppCompatActivity implements MapView.POIItemEventListener
 {
     private TextView addressTextView;
     private ImageButton zoomInButton;
     private ImageButton zoomOutButton;
     private ImageButton gpsButton;
-
 
     private List<AddressResponseDocuments> addressList = null;
     private List<PlaceKeywordDocuments> placeKeywordList = null;
@@ -41,14 +45,88 @@ public class MapActivity extends AppCompatActivity
     private long downloadedTime;
     private int resultType;
     private int selectedItemPosition;
+    private static boolean isMainMapActivity = true;
+
+    private LocationDTO locationDTO;
 
     private FragmentTransaction fragmentTransaction;
     private FragmentManager fragmentManager;
     private MapBottomSheetFragment mapBottomSheetFragment;
 
-    private LocationDTO locationDTO;
-    private MapView mapView;
+    private static MapView mapView;
+    private boolean opendPOIInfo = false;
+    private boolean clickedPOI = false;
+    private int poiTag;
 
+    private static MapPoint currentMapPoint = MapPoint.mapPointWithGeoCoord(37.53737528, 127.00557633);
+
+    private GestureDetectorCompat gestureDetectorCompat;
+
+    private OnControlItemFragment onControlItemFragment;
+
+    @Override
+    public void onPOIItemSelected(MapView mapView, MapPOIItem mapPOIItem)
+    {
+        poiTag = mapPOIItem.getTag();
+        clickedPOI = true;
+    }
+
+    @Override
+    public void onCalloutBalloonOfPOIItemTouched(MapView mapView, MapPOIItem mapPOIItem)
+    {
+
+    }
+
+    @Override
+    public void onCalloutBalloonOfPOIItemTouched(MapView mapView, MapPOIItem mapPOIItem, MapPOIItem.CalloutBalloonButtonType calloutBalloonButtonType)
+    {
+
+    }
+
+    @Override
+    public void onDraggablePOIItemMoved(MapView mapView, MapPOIItem mapPOIItem, MapPoint mapPoint)
+    {
+
+    }
+
+    public interface OnControlItemFragment
+    {
+        void onChangeFragment(Bundle bundle);
+
+        void onShowItemInfo(int position);
+
+        boolean getBehaviorStateExpand();
+
+        void setBehaviorState(int state);
+    }
+
+    private final GestureDetector.SimpleOnGestureListener onGestureListener = new GestureDetector.SimpleOnGestureListener()
+    {
+        @Override
+        public boolean onSingleTapConfirmed(MotionEvent e)
+        {
+            if (opendPOIInfo && !clickedPOI)
+            {
+                if (onControlItemFragment.getBehaviorStateExpand())
+                {
+                    onControlItemFragment.setBehaviorState(BottomSheetBehavior.STATE_COLLAPSED);
+                    opendPOIInfo = false;
+                    return true;
+                } else
+                {
+                    return false;
+                }
+            }
+            if (clickedPOI)
+            {
+                onControlItemFragment.onShowItemInfo(poiTag);
+                opendPOIInfo = true;
+                clickedPOI = false;
+                return true;
+            }
+            return false;
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -61,14 +139,9 @@ public class MapActivity extends AppCompatActivity
         zoomOutButton = (ImageButton) findViewById(R.id.zoom_out_button);
         gpsButton = (ImageButton) findViewById(R.id.gps_button);
 
-        fragmentManager = getSupportFragmentManager();
-        fragmentTransaction = fragmentManager.beginTransaction();
-        mapBottomSheetFragment = MapBottomSheetFragment.getInstance();
-
-        fragmentTransaction.add(mapBottomSheetFragment, MapBottomSheetFragment.TAG);
-        fragmentTransaction.hide(mapBottomSheetFragment).commit();
-
         mapView = new MapView(this);
+
+        gestureDetectorCompat = new GestureDetectorCompat(this, onGestureListener);
         if (!MapView.isMapTilePersistentCacheEnabled())
         {
             MapView.setMapTilePersistentCacheEnabled(true);
@@ -78,13 +151,16 @@ public class MapActivity extends AppCompatActivity
 
         availableIntent();
 
+        mapView.setPOIItemEventListener(this);
+
         mapView.setCurrentLocationEventListener(new MapView.CurrentLocationEventListener()
         {
             @Override
             public void onCurrentLocationUpdate(MapView mapView, MapPoint mapPoint, float v)
             {
                 // 단말의 현위치 좌표값을 통보받을 수 있다.
-                mapView.setMapCenterPoint(MapPoint.mapPointWithGeoCoord(mapPoint.getMapPointGeoCoord().latitude, mapPoint.getMapPointGeoCoord().longitude), true);
+                currentMapPoint = MapPoint.mapPointWithGeoCoord(mapPoint.getMapPointGeoCoord().latitude, mapPoint.getMapPointGeoCoord().longitude);
+                mapView.setMapCenterPoint(currentMapPoint, true);
 
                 // 5초후 현위치를 잡으면 트랙킹 모드 종료
                 //mapView.setCurrentLocationTrackingMode(MapView.CurrentLocationTrackingMode.TrackingModeOff);
@@ -115,6 +191,7 @@ public class MapActivity extends AppCompatActivity
             public void onClick(View view)
             {
                 Intent intent = new Intent(MapActivity.this, SearchAddressActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
                 startActivity(intent);
             }
         });
@@ -144,10 +221,23 @@ public class MapActivity extends AppCompatActivity
             {
                 mapView.setCurrentLocationTrackingMode(MapView.CurrentLocationTrackingMode.TrackingModeOnWithoutHeading);
                 gpsButton.setClickable(false);
+
                 TimeOutThread timeOutThread = new TimeOutThread();
                 timeOutThread.start();
             }
         });
+
+
+        mapView.setOnTouchListener(new View.OnTouchListener()
+        {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent)
+            {
+                return gestureDetectorCompat.onTouchEvent(motionEvent);
+            }
+        });
+
+
     }
 
 
@@ -155,7 +245,10 @@ public class MapActivity extends AppCompatActivity
     {
         if (getIntent().getExtras() != null)
         {
+            // Item Info Map Activity
+            isMainMapActivity = false;
             Bundle bundle = getIntent().getExtras();
+
             resultType = bundle.getInt("type");
             selectedItemPosition = bundle.getInt("position");
             downloadedTime = bundle.getLong("downloadedTime");
@@ -163,83 +256,137 @@ public class MapActivity extends AppCompatActivity
             if (resultType == DownloadData.ADDRESS)
             {
                 addressList = bundle.getParcelableArrayList("itemsInfo");
-            } else if (resultType == DownloadData.PLACE_KEYWORD || resultType == DownloadData.PLACE_CATEGORY)
+            } else if (resultType == DownloadData.PLACE_KEYWORD)
             {
                 placeKeywordList = bundle.getParcelableArrayList("itemsInfo");
+            } else if (resultType == DownloadData.PLACE_CATEGORY)
+            {
+                placeCategoryList = bundle.getParcelableArrayList("itemsInfo");
             }
 
             displayItemBottomSheet(selectedItemPosition);
             return true;
         } else
         {
-            mapView.setMapCenterPoint(MapPoint.mapPointWithGeoCoord(37.53737528, 127.00557633), true);
+            isMainMapActivity = true;
+            mapView.setMapCenterPoint(currentMapPoint, true);
             return false;
         }
     }
 
     private void displayItemBottomSheet(int position)
     {
+        if (fragmentManager == null)
+        {
+            initItemFragment();
+        }
         double latitude = 0, longitude = 0;
+        Bundle bundle = new Bundle();
 
         if (resultType == DownloadData.ADDRESS)
         {
             longitude = addressList.get(position).getX();
             latitude = addressList.get(position).getY();
 
-            mapBottomSheetFragment.setAddress(addressList.get(position));
+            bundle.putParcelableArrayList("itemList", (ArrayList<? extends Parcelable>) addressList);
+            bundle.putInt("type", DownloadData.ADDRESS);
         } else if (resultType == DownloadData.PLACE_KEYWORD)
         {
             longitude = placeKeywordList.get(position).getX();
             latitude = placeKeywordList.get(position).getY();
 
-            mapBottomSheetFragment.setPlaceKeyword(placeKeywordList.get(position));
+            bundle.putParcelableArrayList("itemList", (ArrayList<? extends Parcelable>) placeKeywordList);
+            bundle.putInt("type", DownloadData.PLACE_KEYWORD);
         } else if (resultType == DownloadData.PLACE_CATEGORY)
         {
             longitude = Double.valueOf(placeCategoryList.get(position).getX());
             latitude = Double.valueOf(placeCategoryList.get(position).getY());
 
-            mapBottomSheetFragment.setPlaceCategory(placeCategoryList.get(position));
+            bundle.putParcelableArrayList("itemList", (ArrayList<? extends Parcelable>) placeCategoryList);
+            bundle.putInt("type", DownloadData.PLACE_CATEGORY);
         }
+        bundle.putInt("position", position);
+
+        onControlItemFragment.onChangeFragment(bundle);
         fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.show(mapBottomSheetFragment).commit();
+        opendPOIInfo = true;
 
-        setCenterPoint(latitude, longitude, position);
+        setCenterPoint(latitude, longitude);
     }
 
 
-    private void setCenterPoint(double latitude, double longitude, int position)
+    private void setCenterPoint(double latitude, double longitude)
     {
-        mapView.setMapCenterPoint(MapPoint.mapPointWithGeoCoord(latitude, longitude), true);
+        int size = 0;
 
-        MapPOIItem marker = new MapPOIItem();
-
-        if (resultType == DownloadData.ADDRESS)
+        switch (resultType)
         {
-            marker.setItemName(addressList.get(position).getAddressName());
-        } else if (resultType == DownloadData.PLACE_KEYWORD)
-        {
-            marker.setItemName(placeKeywordList.get(position).getPlaceName());
-        } else if (resultType == DownloadData.PLACE_CATEGORY)
-        {
-            marker.setItemName(placeCategoryList.get(position).getPlaceName());
+            case DownloadData.ADDRESS:
+                size = addressList.size();
+                break;
+            case DownloadData.PLACE_KEYWORD:
+                size = placeKeywordList.size();
+                break;
+            case DownloadData.PLACE_CATEGORY:
+                size = placeCategoryList.size();
+                break;
         }
-        marker.setTag(0);
-        marker.setMapPoint(MapPoint.mapPointWithGeoCoord(latitude, longitude));
-        marker.setMarkerType(MapPOIItem.MarkerType.BluePin); // 기본으로 제공하는 BluePin 마커 모양.
-        marker.setSelectedMarkerType(MapPOIItem.MarkerType.RedPin); // 마커를 클릭했을때, 기본으로 제공하는 RedPin 마커 모양.
 
-        mapView.addPOIItem(marker);
+        MapPOIItem[] mapPOIItems = new MapPOIItem[size];
+
+        for (int i = 0; i < size; i++)
+        {
+            MapPoint mapPoint = null;
+            mapPOIItems[i] = new MapPOIItem();
+
+            if (resultType == DownloadData.ADDRESS)
+            {
+                mapPOIItems[i].setItemName(addressList.get(i).getAddressName());
+                mapPoint = MapPoint.mapPointWithGeoCoord(addressList.get(i).getY(), addressList.get(i).getX());
+            } else if (resultType == DownloadData.PLACE_KEYWORD)
+            {
+                mapPOIItems[i].setItemName(placeKeywordList.get(i).getPlaceName());
+                mapPoint = MapPoint.mapPointWithGeoCoord(placeKeywordList.get(i).getY(), placeKeywordList.get(i).getX());
+            } else if (resultType == DownloadData.PLACE_CATEGORY)
+            {
+                mapPOIItems[i].setItemName(placeCategoryList.get(i).getPlaceName());
+                mapPoint = MapPoint.mapPointWithGeoCoord(Double.valueOf(placeCategoryList.get(i).getY()), Double.valueOf(placeCategoryList.get(i).getX()));
+            }
+            mapPOIItems[i].setTag(i);
+            mapPOIItems[i].setMapPoint(mapPoint);
+            mapPOIItems[i].setMarkerType(MapPOIItem.MarkerType.BluePin); // 기본으로 제공하는 BluePin 마커 모양.
+            mapPOIItems[i].setSelectedMarkerType(MapPOIItem.MarkerType.RedPin); // 마커를 클릭했을때, 기본으로 제공하는 RedPin 마커 모양.
+        }
+        mapView.addPOIItems(mapPOIItems);
+        currentMapPoint = MapPoint.mapPointWithGeoCoord(latitude, longitude);
+        mapView.setMapCenterPoint(currentMapPoint, true);
+    }
+
+    private void initItemFragment()
+    {
+        fragmentManager = getSupportFragmentManager();
+        fragmentTransaction = fragmentManager.beginTransaction();
+        mapBottomSheetFragment = MapBottomSheetFragment.getInstance();
+        onControlItemFragment = mapBottomSheetFragment;
+
+        fragmentTransaction.add(mapBottomSheetFragment, MapBottomSheetFragment.TAG);
+        fragmentTransaction.hide(mapBottomSheetFragment).commit();
     }
 
     @Override
-    public boolean onTouchEvent(MotionEvent event)
+    public void onBackPressed()
     {
-        return super.onTouchEvent(event);
+        if (isMainMapActivity)
+        {
+            mapView = null;
+        }
+        super.onBackPressed();
     }
+
 
     class TimeOutThread extends Thread
     {
-
         @Override
         public void run()
         {
@@ -262,5 +409,4 @@ public class MapActivity extends AppCompatActivity
             }
         }
     }
-
 }

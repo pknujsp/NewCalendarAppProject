@@ -1,8 +1,6 @@
 package com.zerodsoft.scheduleweather.Fragment;
 
 
-import android.app.Dialog;
-import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,23 +11,19 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+import com.zerodsoft.scheduleweather.Activity.MapActivity.MapActivity;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.Retrofit.DownloadData;
 import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.AddressResponse.AddressResponseDocuments;
 import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.PlaceCategoryResponse.PlaceCategoryDocuments;
 import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.PlaceKeywordResponse.PlaceKeywordDocuments;
 
-import net.daum.mf.map.api.MapPOIItem;
-import net.daum.mf.map.api.MapPoint;
-
 import java.util.List;
 
-public class MapBottomSheetFragment extends Fragment
+public class MapBottomSheetFragment extends Fragment implements MapActivity.OnControlItemFragment
 {
     public static final String TAG = "MAP_BOTTOM_SHEET_FRAGMENT";
     private static MapBottomSheetFragment mapBottomSheetFragment = null;
@@ -52,31 +46,14 @@ public class MapBottomSheetFragment extends Fragment
     private LinearLayout placeItemLayout;
     private LinearLayout addressItemLayout;
 
-    private AddressResponseDocuments address = null;
-    private PlaceKeywordDocuments placeKeyword = null;
-    private PlaceCategoryDocuments placeCategory = null;
+    private List<AddressResponseDocuments> addressList = null;
+    private List<PlaceKeywordDocuments> placeKeywordList = null;
+    private List<PlaceCategoryDocuments> placeCategoryList = null;
 
     private BottomSheetBehavior bottomSheetBehavior;
 
-    private int resultType = -1;
-
-    public void setAddress(AddressResponseDocuments address)
-    {
-        this.address = address;
-        resultType = DownloadData.ADDRESS;
-    }
-
-    public void setPlaceKeyword(PlaceKeywordDocuments placeKeyword)
-    {
-        this.placeKeyword = placeKeyword;
-        resultType = DownloadData.PLACE_KEYWORD;
-    }
-
-    public void setPlaceCategory(PlaceCategoryDocuments placeCategory)
-    {
-        this.placeCategory = placeCategory;
-        resultType = DownloadData.PLACE_CATEGORY;
-    }
+    private int resultType = Integer.MIN_VALUE;
+    private int selectedItemPosition;
 
     public static MapBottomSheetFragment getInstance()
     {
@@ -93,10 +70,8 @@ public class MapBottomSheetFragment extends Fragment
     {
         LinearLayout bottomSheet = (LinearLayout) getActivity().findViewById(R.id.map_bottom_sheet);
         bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
-        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
         return bottomSheet;
     }
-
 
     @Override
     public void onStart()
@@ -107,7 +82,7 @@ public class MapBottomSheetFragment extends Fragment
                 setLayoutVisibility();
                 displayAddressInfo();
                 break;
-            case -1:
+            case Integer.MIN_VALUE:
                 break;
             default:
                 setLayoutVisibility();
@@ -145,7 +120,6 @@ public class MapBottomSheetFragment extends Fragment
         selectedItemAddressNameTextView = (TextView) view.findViewById(R.id.selected_address_name_textview);
         selectedItemAnotherAddressNameTextView = (TextView) view.findViewById(R.id.selected_another_address_textview);
         selectedItemAnotherAddressTypeTextView = (TextView) view.findViewById(R.id.selected_another_address_type_textview);
-
     }
 
     private void displayPlaceInfo()
@@ -153,31 +127,31 @@ public class MapBottomSheetFragment extends Fragment
         switch (resultType)
         {
             case DownloadData.PLACE_KEYWORD:
-                selectedItemPlaceNameTextView.setText(placeKeyword.getPlaceName());
-                selectedItemPlaceCategoryTextView.setText(placeKeyword.getCategoryName());
+                selectedItemPlaceNameTextView.setText(placeKeywordList.get(selectedItemPosition).getPlaceName());
+                selectedItemPlaceCategoryTextView.setText(placeKeywordList.get(selectedItemPosition).getCategoryName());
 
-                if (placeKeyword.getRoadAddressName() != null)
+                if (placeKeywordList.get(selectedItemPosition).getRoadAddressName() != null)
                 {
-                    selectedItemPlaceAddressTextView.setText(placeKeyword.getRoadAddressName());
+                    selectedItemPlaceAddressTextView.setText(placeKeywordList.get(selectedItemPosition).getRoadAddressName());
                 } else
                 {
                     // 지번주소만 있는 경우
-                    selectedItemPlaceAddressTextView.setText(placeKeyword.getAddressName());
+                    selectedItemPlaceAddressTextView.setText(placeKeywordList.get(selectedItemPosition).getAddressName());
                 }
                 selectedItemPlaceDescriptionTextView.setText("TEST");
                 break;
 
             case DownloadData.PLACE_CATEGORY:
-                selectedItemPlaceNameTextView.setText(placeCategory.getPlaceName());
-                selectedItemPlaceCategoryTextView.setText(placeCategory.getCategoryName());
+                selectedItemPlaceNameTextView.setText(placeCategoryList.get(selectedItemPosition).getPlaceName());
+                selectedItemPlaceCategoryTextView.setText(placeCategoryList.get(selectedItemPosition).getCategoryName());
 
-                if (placeCategory.getRoadAddressName() != null)
+                if (placeCategoryList.get(selectedItemPosition).getRoadAddressName() != null)
                 {
-                    selectedItemPlaceAddressTextView.setText(placeCategory.getRoadAddressName());
+                    selectedItemPlaceAddressTextView.setText(placeCategoryList.get(selectedItemPosition).getRoadAddressName());
                 } else
                 {
                     // 지번주소만 있는 경우
-                    selectedItemPlaceAddressTextView.setText(placeCategory.getAddressName());
+                    selectedItemPlaceAddressTextView.setText(placeCategoryList.get(selectedItemPosition).getAddressName());
                 }
                 selectedItemPlaceDescriptionTextView.setText("TEST");
                 break;
@@ -186,29 +160,29 @@ public class MapBottomSheetFragment extends Fragment
 
     private void displayAddressInfo()
     {
-        selectedItemAddressNameTextView.setText(address.getAddressName());
+        selectedItemAddressNameTextView.setText(addressList.get(selectedItemPosition).getAddressName());
 
-        switch (address.getAddressType())
+        switch (addressList.get(selectedItemPosition).getAddressType())
         {
             case AddressResponseDocuments.REGION:
                 //지명
                 selectedItemAnotherAddressTypeTextView.setText(getString(R.string.region));
-                selectedItemAnotherAddressNameTextView.setText(address.getAddressResponseAddress().getAddressName());
+                selectedItemAnotherAddressNameTextView.setText(addressList.get(selectedItemPosition).getAddressResponseAddress().getAddressName());
                 break;
             case AddressResponseDocuments.REGION_ADDR:
                 //지명 주소
                 selectedItemAnotherAddressTypeTextView.setText(getString(R.string.road_addr));
-                selectedItemAnotherAddressNameTextView.setText(address.getAddressResponseRoadAddress().getAddressName());
+                selectedItemAnotherAddressNameTextView.setText(addressList.get(selectedItemPosition).getAddressResponseRoadAddress().getAddressName());
                 break;
             case AddressResponseDocuments.ROAD:
                 //도로명
                 selectedItemAnotherAddressTypeTextView.setText(getString(R.string.road));
-                selectedItemAnotherAddressNameTextView.setText(address.getAddressResponseRoadAddress().getAddressName());
+                selectedItemAnotherAddressNameTextView.setText(addressList.get(selectedItemPosition).getAddressResponseRoadAddress().getAddressName());
                 break;
             case AddressResponseDocuments.ROAD_ADDR:
                 //도로명 주소
                 selectedItemAnotherAddressTypeTextView.setText(getString(R.string.region_addr));
-                selectedItemAnotherAddressNameTextView.setText(address.getAddressResponseAddress().getAddressName());
+                selectedItemAnotherAddressNameTextView.setText(addressList.get(selectedItemPosition).getAddressResponseAddress().getAddressName());
                 break;
         }
     }
@@ -226,6 +200,61 @@ public class MapBottomSheetFragment extends Fragment
             default:
                 placeItemLayout.setVisibility(View.VISIBLE);
                 addressItemLayout.setVisibility(View.GONE);
+                break;
+        }
+        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+    }
+
+    @Override
+    public void onChangeFragment(Bundle bundle)
+    {
+        resultType = bundle.getInt("type");
+        selectedItemPosition = bundle.getInt("position");
+
+        switch (resultType)
+        {
+            case DownloadData.ADDRESS:
+                addressList = bundle.getParcelableArrayList("itemList");
+                break;
+            case DownloadData.PLACE_KEYWORD:
+                placeKeywordList = bundle.getParcelableArrayList("itemList");
+                break;
+            case DownloadData.PLACE_CATEGORY:
+                placeCategoryList = bundle.getParcelableArrayList("itemList");
+                break;
+        }
+    }
+
+    @Override
+    public void setBehaviorState(int state)
+    {
+        bottomSheetBehavior.setState(state);
+    }
+
+    @Override
+    public boolean getBehaviorStateExpand()
+    {
+        if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED)
+        {
+            return true;
+        } else
+        {
+            return false;
+        }
+    }
+
+    @Override
+    public void onShowItemInfo(int position)
+    {
+        selectedItemPosition = position;
+        setLayoutVisibility();
+        switch (resultType)
+        {
+            case DownloadData.ADDRESS:
+                displayAddressInfo();
+                break;
+            default:
+                displayPlaceInfo();
                 break;
         }
     }

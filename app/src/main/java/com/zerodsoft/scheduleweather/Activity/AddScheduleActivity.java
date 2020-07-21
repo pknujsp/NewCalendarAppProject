@@ -237,6 +237,7 @@ public class AddScheduleActivity extends AppCompatActivity implements DatePicker
                 //위치를 설정하는 액티비티 표시
                 Intent intent = new Intent(AddScheduleActivity.this, MapActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
                 startActivityForResult(intent, ADD_LOCATION_ACTIVITY);
             }
         };

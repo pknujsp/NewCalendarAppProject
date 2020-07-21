@@ -57,6 +57,7 @@ public class SearchAddressActivity extends AppCompatActivity implements SearchCa
             if (addressSearchResult.getResultNum() == 1 && !addressSearchResult.getPlaceCategoryDocuments().isEmpty())
             {
                 searchResultIntent = new Intent(SearchAddressActivity.this, SearchResultActivity.class);
+                searchResultIntent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
 
                 Bundle dataBundle = new Bundle();
                 dataBundle.putParcelable("result", addressSearchResult.clone());
@@ -66,6 +67,7 @@ public class SearchAddressActivity extends AppCompatActivity implements SearchCa
             } else if (addressSearchResult.getResultNum() == 2)
             {
                 searchResultIntent = new Intent(SearchAddressActivity.this, SearchResultActivity.class);
+                searchResultIntent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
 
                 Bundle dataBundle = new Bundle();
                 dataBundle.putParcelable("result", addressSearchResult.clone());
@@ -110,6 +112,15 @@ public class SearchAddressActivity extends AppCompatActivity implements SearchCa
                 }
             }
         });
+
+        backButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                onBackPressed();
+            }
+        });
     }
 
     private String getCategoryName(String searchWord)
@@ -130,8 +141,13 @@ public class SearchAddressActivity extends AppCompatActivity implements SearchCa
     public void onBackPressed()
     {
         Intent intent = new Intent(this, MapActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
         startActivity(intent);
+
+        finish();
     }
 
     @Override

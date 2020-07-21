@@ -92,8 +92,10 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
                         bundle.putInt("type", DownloadData.ADDRESS);
                         bundle.putInt("position", position);
                         bundle.putLong("downloadedTime", downloadedTime);
+
                         mapActivity.putExtras(bundle);
                         mapActivity.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                        mapActivity.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
 
                         context.startActivity(mapActivity);
                     }
@@ -117,8 +119,10 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
                         bundle.putInt("type", DownloadData.PLACE_KEYWORD);
                         bundle.putInt("position", position);
                         bundle.putLong("downloadedTime", downloadedTime);
+
                         mapActivity.putExtras(bundle);
                         mapActivity.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                        mapActivity.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
 
                         context.startActivity(mapActivity);
                     }
@@ -142,14 +146,15 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
                         bundle.putInt("type", DownloadData.PLACE_CATEGORY);
                         bundle.putInt("position", position);
                         bundle.putLong("downloadedTime", downloadedTime);
+
                         mapActivity.putExtras(bundle);
                         mapActivity.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                        mapActivity.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
 
                         context.startActivity(mapActivity);
                     }
                 });
                 break;
-
         }
     }
 
