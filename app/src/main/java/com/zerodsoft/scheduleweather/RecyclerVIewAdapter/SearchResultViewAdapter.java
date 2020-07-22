@@ -94,8 +94,8 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
                         bundle.putLong("downloadedTime", downloadedTime);
 
                         mapActivity.putExtras(bundle);
-                        mapActivity.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                        mapActivity.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+                        mapActivity.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                        mapActivity.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
 
                         context.startActivity(mapActivity);
                     }
@@ -121,8 +121,8 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
                         bundle.putLong("downloadedTime", downloadedTime);
 
                         mapActivity.putExtras(bundle);
-                        mapActivity.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                        mapActivity.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+                        mapActivity.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                        mapActivity.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
 
                         context.startActivity(mapActivity);
                     }
@@ -148,8 +148,8 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
                         bundle.putLong("downloadedTime", downloadedTime);
 
                         mapActivity.putExtras(bundle);
-                        mapActivity.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                        mapActivity.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+                        mapActivity.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                        mapActivity.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
 
                         context.startActivity(mapActivity);
                     }

@@ -49,11 +49,9 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
 
     private LocationDTO locationDTO;
 
-    private FragmentTransaction fragmentTransaction;
-    private FragmentManager fragmentManager;
     private MapBottomSheetFragment mapBottomSheetFragment;
 
-    private static MapView mapView;
+    private MapView mapView;
     private boolean opendPOIInfo = false;
     private boolean clickedPOI = false;
     private int poiTag;
@@ -61,7 +59,6 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
     private static MapPoint currentMapPoint = MapPoint.mapPointWithGeoCoord(37.53737528, 127.00557633);
 
     private GestureDetectorCompat gestureDetectorCompat;
-
     private OnControlItemFragment onControlItemFragment;
 
     @Override
@@ -117,6 +114,7 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
                     return false;
                 }
             }
+
             if (clickedPOI)
             {
                 onControlItemFragment.onShowItemInfo(poiTag);
@@ -124,9 +122,36 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
                 clickedPOI = false;
                 return true;
             }
+
             return false;
         }
     };
+
+    @Override
+    protected void onStart()
+    {
+        availableIntent();
+        super.onStart();
+    }
+
+    @Override
+    protected void onRestart()
+    {
+        super.onRestart();
+    }
+
+    @Override
+    protected void onResume()
+    {
+        super.onResume();
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent)
+    {
+        super.onNewIntent(intent);
+        setIntent(intent);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -142,14 +167,14 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
         mapView = new MapView(this);
 
         gestureDetectorCompat = new GestureDetectorCompat(this, onGestureListener);
+
+        initItemFragment();
         if (!MapView.isMapTilePersistentCacheEnabled())
         {
             MapView.setMapTilePersistentCacheEnabled(true);
         }
         ConstraintLayout mapViewContainer = (ConstraintLayout) findViewById(R.id.map_view);
         mapViewContainer.addView(mapView);
-
-        availableIntent();
 
         mapView.setPOIItemEventListener(this);
 
@@ -236,14 +261,12 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
                 return gestureDetectorCompat.onTouchEvent(motionEvent);
             }
         });
-
-
     }
 
 
     private boolean availableIntent()
     {
-        if (getIntent().getExtras() != null)
+        if (getIntent().getExtras() != null && isMainMapActivity)
         {
             // Item Info Map Activity
             isMainMapActivity = false;
@@ -276,10 +299,6 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
 
     private void displayItemBottomSheet(int position)
     {
-        if (fragmentManager == null)
-        {
-            initItemFragment();
-        }
         double latitude = 0, longitude = 0;
         Bundle bundle = new Bundle();
 
@@ -308,13 +327,10 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
         bundle.putInt("position", position);
 
         onControlItemFragment.onChangeFragment(bundle);
-        fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.show(mapBottomSheetFragment).commit();
         opendPOIInfo = true;
 
         setCenterPoint(latitude, longitude);
     }
-
 
     private void setCenterPoint(double latitude, double longitude)
     {
@@ -353,6 +369,7 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
                 mapPOIItems[i].setItemName(placeCategoryList.get(i).getPlaceName());
                 mapPoint = MapPoint.mapPointWithGeoCoord(Double.valueOf(placeCategoryList.get(i).getY()), Double.valueOf(placeCategoryList.get(i).getX()));
             }
+
             mapPOIItems[i].setTag(i);
             mapPOIItems[i].setMapPoint(mapPoint);
             mapPOIItems[i].setMarkerType(MapPOIItem.MarkerType.BluePin); // 기본으로 제공하는 BluePin 마커 모양.
@@ -365,22 +382,17 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
 
     private void initItemFragment()
     {
-        fragmentManager = getSupportFragmentManager();
-        fragmentTransaction = fragmentManager.beginTransaction();
+        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         mapBottomSheetFragment = MapBottomSheetFragment.getInstance();
         onControlItemFragment = mapBottomSheetFragment;
 
         fragmentTransaction.add(mapBottomSheetFragment, MapBottomSheetFragment.TAG);
-        fragmentTransaction.hide(mapBottomSheetFragment).commit();
+        fragmentTransaction.show(mapBottomSheetFragment).commit();
     }
 
     @Override
     public void onBackPressed()
     {
-        if (isMainMapActivity)
-        {
-            mapView = null;
-        }
         super.onBackPressed();
     }
 

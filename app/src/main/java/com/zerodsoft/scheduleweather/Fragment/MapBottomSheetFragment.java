@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
@@ -45,6 +46,7 @@ public class MapBottomSheetFragment extends Fragment implements MapActivity.OnCo
 
     private LinearLayout placeItemLayout;
     private LinearLayout addressItemLayout;
+    private ConstraintLayout bottomSheetToolbar;
 
     private List<AddressResponseDocuments> addressList = null;
     private List<PlaceKeywordDocuments> placeKeywordList = null;
@@ -70,32 +72,28 @@ public class MapBottomSheetFragment extends Fragment implements MapActivity.OnCo
     {
         LinearLayout bottomSheet = (LinearLayout) getActivity().findViewById(R.id.map_bottom_sheet);
         bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
-        return bottomSheet;
-    }
-
-    @Override
-    public void onStart()
-    {
-        switch (resultType)
+        bottomSheetBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback()
         {
-            case DownloadData.ADDRESS:
-                setLayoutVisibility();
-                displayAddressInfo();
-                break;
-            case Integer.MIN_VALUE:
-                break;
-            default:
-                setLayoutVisibility();
-                displayPlaceInfo();
-                break;
-        }
-        super.onStart();
-    }
+            @Override
+            public void onStateChanged(@NonNull View bottomSheet, int newState)
+            {
+             /*
+              STATE_COLLAPSED: 기본적인 상태이며, 일부분의 레이아웃만 보여지고 있는 상태. 이 높이는 behavior_peekHeight속성을 통해 변경 가능
+               STATE_DRAGGING: 드래그중인 상태
+              STATE_SETTLING: 드래그후 완전히 고정된 상태
+               STATE_EXPANDED: 확장된 상태
+                STATE_HIDDEN: 기본적으로 비활성화 상태이며, app:behavior_hideable을 사용하는 경우 완전히 숨겨져 있는 상태
+             */
 
-    @Override
-    public void onResume()
-    {
-        super.onResume();
+            }
+
+            @Override
+            public void onSlide(@NonNull View bottomSheet, float slideOffset)
+            {
+
+            }
+        });
+        return bottomSheet;
     }
 
     @Override
@@ -105,6 +103,8 @@ public class MapBottomSheetFragment extends Fragment implements MapActivity.OnCo
 
         placeItemLayout = (LinearLayout) view.findViewById(R.id.item_place_layout);
         addressItemLayout = (LinearLayout) view.findViewById(R.id.item_address_layout);
+        bottomSheetToolbar = (ConstraintLayout) view.findViewById(R.id.map_bottom_sheet_toolbar);
+        bottomSheetToolbar.setVisibility(View.VISIBLE);
 
         selectedItemPlaceNameTextView = (TextView) view.findViewById(R.id.selected_place_name_textview);
         selectedItemPlaceCategoryTextView = (TextView) view.findViewById(R.id.selected_place_category_textview);
@@ -120,6 +120,49 @@ public class MapBottomSheetFragment extends Fragment implements MapActivity.OnCo
         selectedItemAddressNameTextView = (TextView) view.findViewById(R.id.selected_address_name_textview);
         selectedItemAnotherAddressNameTextView = (TextView) view.findViewById(R.id.selected_another_address_textview);
         selectedItemAnotherAddressTypeTextView = (TextView) view.findViewById(R.id.selected_another_address_type_textview);
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState)
+    {
+        super.onActivityCreated(savedInstanceState);
+
+    }
+
+    @Override
+    public void onStart()
+    {
+        super.onStart();
+
+        if (resultType != Integer.MIN_VALUE)
+        {
+            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+            setLayoutVisibility();
+
+            switch (resultType)
+            {
+                case DownloadData.ADDRESS:
+                    displayAddressInfo();
+                    break;
+                default:
+                    displayPlaceInfo();
+                    break;
+            }
+            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+        }
+    }
+
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+    }
+
+    @Override
+    public void onDetach()
+    {
+        resultType = Integer.MIN_VALUE;
+        super.onDetach();
     }
 
     private void displayPlaceInfo()
@@ -196,13 +239,12 @@ public class MapBottomSheetFragment extends Fragment implements MapActivity.OnCo
                 addressItemLayout.setVisibility(View.VISIBLE);
                 placeItemLayout.setVisibility(View.GONE);
                 break;
-
             default:
+                // keyword, category
                 placeItemLayout.setVisibility(View.VISIBLE);
                 addressItemLayout.setVisibility(View.GONE);
                 break;
         }
-        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
     }
 
     @Override
@@ -223,6 +265,7 @@ public class MapBottomSheetFragment extends Fragment implements MapActivity.OnCo
                 placeCategoryList = bundle.getParcelableArrayList("itemList");
                 break;
         }
+
     }
 
     @Override
@@ -247,6 +290,8 @@ public class MapBottomSheetFragment extends Fragment implements MapActivity.OnCo
     public void onShowItemInfo(int position)
     {
         selectedItemPosition = position;
+
+        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
         setLayoutVisibility();
         switch (resultType)
         {
@@ -257,5 +302,14 @@ public class MapBottomSheetFragment extends Fragment implements MapActivity.OnCo
                 displayPlaceInfo();
                 break;
         }
+        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
     }
 }
+
+/*
+시트의 하단 툴바가 보이지 않는 버그
+- 발생 하는 경우
+시트가 접혀있다가 아이템 클릭 후 펼쳐질 때
+- 발생 하지 않는 경우
+그 외
+ */
