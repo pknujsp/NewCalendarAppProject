@@ -17,7 +17,7 @@
         android:layout_height="wrap_content"
         android:background="#FFFFFF"
         android:orientation="vertical"
-        android:padding="8dp">
+        android:padding="10dp">
 
 
         <LinearLayout
@@ -73,7 +73,7 @@
         android:layout_height="wrap_content"
         android:background="#FFFFFF"
         android:orientation="vertical"
-        android:padding="8dp">
+        android:padding="10dp">
 
 
         <TextView
@@ -124,8 +124,8 @@
 
         <ImageButton
             android:id="@+id/add_favorite_address_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
             android:background="?attr/selectableItemBackground"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
@@ -134,8 +134,8 @@
 
         <ImageButton
             android:id="@+id/share_address_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
             android:layout_marginLeft="8dp"
             android:background="?attr/selectableItemBackground"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -145,8 +145,8 @@
 
         <ImageButton
             android:id="@+id/check_address_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
             android:layout_marginLeft="8dp"
             android:background="?attr/selectableItemBackground"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -156,8 +156,8 @@
 
         <ImageButton
             android:id="@+id/left_address_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
             android:layout_marginRight="8dp"
             android:background="?attr/selectableItemBackground"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -167,8 +167,8 @@
 
         <ImageButton
             android:id="@+id/right_address_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
             android:background="?attr/selectableItemBackground"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintRight_toRightOf="parent"

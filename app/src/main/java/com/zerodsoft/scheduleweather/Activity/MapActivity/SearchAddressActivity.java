@@ -16,6 +16,7 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.RecyclerVIewAdapter.SearchCategoryViewAdapter;
 import com.zerodsoft.scheduleweather.Retrofit.DownloadData;
 import com.zerodsoft.scheduleweather.Retrofit.KakaoLocalApiCategoryCode;
+import com.zerodsoft.scheduleweather.Retrofit.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.AddressSearchResult;
 
 public class SearchAddressActivity extends AppCompatActivity implements SearchCategoryViewAdapter.OnCategoryClickListener
@@ -26,6 +27,9 @@ public class SearchAddressActivity extends AppCompatActivity implements SearchCa
     private Intent searchResultIntent;
     private RecyclerView recentRecyclerView;
     private RecyclerView categoryRecyclerView;
+    private LocalApiPlaceParameter parameters;
+
+    private String rect;
 
     private Handler handler = new Handler()
     {
@@ -61,6 +65,9 @@ public class SearchAddressActivity extends AppCompatActivity implements SearchCa
 
                 Bundle dataBundle = new Bundle();
                 dataBundle.putParcelable("result", addressSearchResult.clone());
+                dataBundle.putParcelable("parameters", parameters);
+                dataBundle.putBoolean("isCategory", true);
+
                 searchResultIntent.putExtras(dataBundle);
                 startActivity(searchResultIntent);
                 addressSearchResult.clearAll();
@@ -71,6 +78,9 @@ public class SearchAddressActivity extends AppCompatActivity implements SearchCa
 
                 Bundle dataBundle = new Bundle();
                 dataBundle.putParcelable("result", addressSearchResult.clone());
+                dataBundle.putParcelable("parameters", parameters);
+                dataBundle.putBoolean("isCategory", false);
+
                 searchResultIntent.putExtras(dataBundle);
                 startActivity(searchResultIntent);
                 addressSearchResult.clearAll();
@@ -90,9 +100,14 @@ public class SearchAddressActivity extends AppCompatActivity implements SearchCa
         recentRecyclerView = (RecyclerView) findViewById(R.id.search_address_recent_recyclerview);
         categoryRecyclerView = (RecyclerView) findViewById(R.id.category_recyclerview);
 
+
         SearchCategoryViewAdapter searchCategoryViewAdapter = new SearchCategoryViewAdapter(this);
         categoryRecyclerView.setLayoutManager(new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false));
         categoryRecyclerView.setAdapter(searchCategoryViewAdapter);
+
+        Bundle bundle = getIntent().getExtras();
+        rect = bundle.getString("rect");
+
 
         searchAddressButton.setOnClickListener(new View.OnClickListener()
         {
@@ -102,13 +117,19 @@ public class SearchAddressActivity extends AppCompatActivity implements SearchCa
                 String searchWord = searchAddressEditText.getText().toString();
                 String name = getCategoryName(searchWord);
 
+                parameters = new LocalApiPlaceParameter().setRect(rect).setPage(LocalApiPlaceParameter.DEFAULT_PAGE)
+                        .setSize(LocalApiPlaceParameter.DEFAULT_SIZE)
+                        .setSort(LocalApiPlaceParameter.DEFAULT_SORT);
+
                 if (name != null)
                 {
-                    DownloadData.searchPlaceCategory(name, handler);
+                    parameters.setCategoryGroupCode(name);
+                    DownloadData.searchPlaceCategory(handler, parameters);
                 } else
                 {
-                    DownloadData.searchAddress(searchWord, handler);
-                    DownloadData.searchPlaceKeyWord(searchWord, handler);
+                    parameters.setQuery(searchWord);
+                    DownloadData.searchAddress(handler, parameters);
+                    DownloadData.searchPlaceKeyWord(handler, parameters);
                 }
             }
         });
@@ -153,6 +174,11 @@ public class SearchAddressActivity extends AppCompatActivity implements SearchCa
     public void selectedCategory(String name)
     {
         // 카테고리 이름을 전달받음
-        DownloadData.searchPlaceCategory(name, handler);
+        parameters = new LocalApiPlaceParameter().setRect(rect).setPage(LocalApiPlaceParameter.DEFAULT_PAGE)
+                .setSize(LocalApiPlaceParameter.DEFAULT_SIZE)
+                .setSort(LocalApiPlaceParameter.DEFAULT_SORT)
+                .setCategoryGroupCode(name);
+
+        DownloadData.searchPlaceCategory(handler, parameters);
     }
 }

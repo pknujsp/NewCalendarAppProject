@@ -32,11 +32,13 @@ public class DownloadData
     public static final int PLACE_KEYWORD = 1;
     public static final int PLACE_CATEGORY = 2;
 
-    public static void searchAddress(String address, Handler handler)
+    public static void searchAddress(Handler handler, LocalApiPlaceParameter parameter)
     {
         Querys querys = HttpCommunicationClient.getApiService();
         Map<String, String> queryMap = new HashMap<>();
-        queryMap.put("query", address);
+        queryMap.put("query", parameter.getQuery());
+        queryMap.put("page", parameter.getPage());
+        queryMap.put("AddressSize", "15");
 
         Call<AddressResponse> call = querys.getAddress(queryMap);
         call.enqueue(new Callback<AddressResponse>()
@@ -64,22 +66,10 @@ public class DownloadData
         });
     }
 
-    public static void searchPlaceKeyWord(String searchWord, Handler handler)
+    public static void searchPlaceKeyWord(Handler handler, LocalApiPlaceParameter parameter)
     {
         Querys querys = HttpCommunicationClient.getApiService();
-        Map<String, String> queryMap = new HashMap<>();
-        queryMap.put("query", searchWord);
-        /*
-        queryMap.put("category_group_code", null);
-        queryMap.put("x", null);
-        queryMap.put("y", null);
-        queryMap.put("radius", null);
-        queryMap.put("rect", null);
-        queryMap.put("page", null);
-        queryMap.put("size", null);
-        queryMap.put("sort", null);
-
-         */
+        Map<String, String> queryMap = parameter.getParameterMap();
 
         Call<PlaceKeyword> call = querys.getPlaceKeyword(queryMap);
         call.enqueue(new Callback<PlaceKeyword>()
@@ -107,20 +97,10 @@ public class DownloadData
         });
     }
 
-    public static void searchPlaceCategory(String name, Handler handler)
+    public static void searchPlaceCategory(Handler handler, LocalApiPlaceParameter parameter)
     {
         Querys querys = HttpCommunicationClient.getApiService();
-        Map<String, String> queryMap = new HashMap<>();
-        queryMap.put("category_group_code", name);
-      /*
-        queryMap.put("x", null);
-        queryMap.put("y", null);
-        queryMap.put("radius", null);
-        queryMap.put("rect", null);
-        queryMap.put("page", null);
-        queryMap.put("size", null);
-        queryMap.put("sort", null);
-       */
+        Map<String, String> queryMap = parameter.getParameterMap();
         Call<PlaceCategory> call = querys.getPlaceCategory(queryMap);
         call.enqueue(new Callback<PlaceCategory>()
         {

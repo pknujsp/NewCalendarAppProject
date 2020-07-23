@@ -6,9 +6,13 @@ import androidx.core.view.GestureDetectorCompat;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -26,12 +30,14 @@ import com.zerodsoft.scheduleweather.Room.DTO.LocationDTO;
 
 import net.daum.mf.map.api.MapPOIItem;
 import net.daum.mf.map.api.MapPoint;
+import net.daum.mf.map.api.MapPointBounds;
+import net.daum.mf.map.api.MapReverseGeoCoder;
 import net.daum.mf.map.api.MapView;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class MapActivity extends AppCompatActivity implements MapView.POIItemEventListener
+public class MapActivity extends AppCompatActivity implements MapView.POIItemEventListener, MapReverseGeoCoder.ReverseGeoCodingResultListener, MapView.MapViewEventListener
 {
     private TextView addressTextView;
     private ImageButton zoomInButton;
@@ -51,10 +57,12 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
 
     private MapBottomSheetFragment mapBottomSheetFragment;
 
-    private MapView mapView;
+    protected static MapView mapView;
     private boolean opendPOIInfo = false;
     private boolean clickedPOI = false;
     private int poiTag;
+
+    private MapReverseGeoCoder mapReverseGeoCoder;
 
     private static MapPoint currentMapPoint = MapPoint.mapPointWithGeoCoord(37.53737528, 127.00557633);
 
@@ -84,6 +92,82 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
     public void onDraggablePOIItemMoved(MapView mapView, MapPOIItem mapPOIItem, MapPoint mapPoint)
     {
 
+    }
+
+    @Override
+    public void onReverseGeoCoderFoundAddress(MapReverseGeoCoder mapReverseGeoCoder, String s)
+    {
+        addressTextView.setText(s);
+    }
+
+    @Override
+    public void onReverseGeoCoderFailedToFindAddress(MapReverseGeoCoder mapReverseGeoCoder)
+    {
+
+    }
+
+    @Override
+    public void onMapViewInitialized(MapView mapView)
+    {
+
+    }
+
+    @Override
+    public void onMapViewCenterPointMoved(MapView mapView, MapPoint mapPoint)
+    {
+
+    }
+
+    @Override
+    public void onMapViewZoomLevelChanged(MapView mapView, int i)
+    {
+
+    }
+
+    @Override
+    public void onMapViewSingleTapped(MapView mapView, MapPoint mapPoint)
+    {
+
+    }
+
+    @Override
+    public void onMapViewDoubleTapped(MapView mapView, MapPoint mapPoint)
+    {
+
+    }
+
+    @Override
+    public void onMapViewLongPressed(MapView mapView, MapPoint mapPoint)
+    {
+
+    }
+
+    @Override
+    public void onMapViewDragStarted(MapView mapView, MapPoint mapPoint)
+    {
+
+    }
+
+    @Override
+    public void onMapViewDragEnded(MapView mapView, MapPoint mapPoint)
+    {
+    }
+
+    @Override
+    public void onMapViewMoveFinished(MapView mapView, MapPoint mapPoint)
+    {
+        currentMapPoint = MapPoint.mapPointWithGeoCoord(mapPoint.getMapPointGeoCoord().latitude, mapPoint.getMapPointGeoCoord().longitude);
+        ApplicationInfo ai = null;
+        try
+        {
+            ai = getPackageManager().getApplicationInfo(getPackageName(), PackageManager.GET_META_DATA);
+        } catch (PackageManager.NameNotFoundException e)
+        {
+            e.printStackTrace();
+        }
+        mapReverseGeoCoder = new MapReverseGeoCoder(ai.metaData.getString("com.kakao.sdk.AppKey"), currentMapPoint
+                , this, MapActivity.this);
+        mapReverseGeoCoder.startFindingAddress(MapReverseGeoCoder.AddressType.ShortAddress);
     }
 
     public interface OnControlItemFragment
@@ -177,6 +261,10 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
         mapViewContainer.addView(mapView);
 
         mapView.setPOIItemEventListener(this);
+        mapView.setMapViewEventListener(this);
+
+
+
 
         mapView.setCurrentLocationEventListener(new MapView.CurrentLocationEventListener()
         {
@@ -216,6 +304,16 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
             public void onClick(View view)
             {
                 Intent intent = new Intent(MapActivity.this, SearchAddressActivity.class);
+
+                MapPointBounds mapPointBounds = mapView.getMapPointBounds();
+                Bundle bundle = new Bundle();
+                String rect = mapPointBounds.bottomLeft.getMapPointGeoCoord().longitude + "," +
+                        mapPointBounds.bottomLeft.getMapPointGeoCoord().latitude + "," +
+                        mapPointBounds.topRight.getMapPointGeoCoord().longitude + "," +
+                        mapPointBounds.topRight.getMapPointGeoCoord().latitude;
+                bundle.putString("rect", rect);
+
+                intent.putExtras(bundle);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
                 startActivity(intent);
             }

@@ -84,7 +84,6 @@ public class MapBottomSheetFragment extends Fragment implements MapActivity.OnCo
                STATE_EXPANDED: 확장된 상태
                 STATE_HIDDEN: 기본적으로 비활성화 상태이며, app:behavior_hideable을 사용하는 경우 완전히 숨겨져 있는 상태
              */
-
             }
 
             @Override
@@ -136,7 +135,6 @@ public class MapBottomSheetFragment extends Fragment implements MapActivity.OnCo
 
         if (resultType != Integer.MIN_VALUE)
         {
-            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
             setLayoutVisibility();
 
             switch (resultType)
@@ -148,7 +146,11 @@ public class MapBottomSheetFragment extends Fragment implements MapActivity.OnCo
                     displayPlaceInfo();
                     break;
             }
+
             bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+        } else
+        {
+            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
         }
     }
 
@@ -291,7 +293,6 @@ public class MapBottomSheetFragment extends Fragment implements MapActivity.OnCo
     {
         selectedItemPosition = position;
 
-        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
         setLayoutVisibility();
         switch (resultType)
         {

@@ -49,6 +49,44 @@
 
     </LinearLayout>
 
+    <LinearLayout
+        android:id="@+id/search_result_rescan"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toTopOf="@id/search_address_viewpager"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/search_result_bar">
+
+        <TextView
+            android:id="@+id/search_result_map_center_rescan"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:padding="8dp"
+            android:text="@string/result_activity_map_center"
+            android:textColor="@android:color/black"
+            android:textSize="13sp" />
+
+        <TextView
+            android:id="@+id/search_result_myloc_center_rescan"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:padding="8dp"
+            android:text="@string/result_activity_myloc_center"
+            android:textColor="@android:color/black"
+            android:textSize="13sp" />
+
+    </LinearLayout>
+
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/search_address_viewpager"
         android:layout_width="0dp"
@@ -60,6 +98,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/search_result_bar" />
+        app:layout_constraintTop_toBottomOf="@+id/search_result_rescan" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
