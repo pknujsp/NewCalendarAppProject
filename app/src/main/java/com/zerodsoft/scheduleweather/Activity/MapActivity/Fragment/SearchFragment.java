@@ -1,17 +1,23 @@
-package com.zerodsoft.scheduleweather.Activity.MapActivity;
+package com.zerodsoft.scheduleweather.Activity.MapActivity.Fragment;
 
-import androidx.appcompat.app.AppCompatActivity;
+import android.os.Bundle;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.content.Intent;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
 
+import com.zerodsoft.scheduleweather.Activity.MapActivity.MapActivity;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.RecyclerVIewAdapter.SearchCategoryViewAdapter;
 import com.zerodsoft.scheduleweather.Retrofit.DownloadData;
@@ -19,14 +25,18 @@ import com.zerodsoft.scheduleweather.Retrofit.KakaoLocalApiCategoryCode;
 import com.zerodsoft.scheduleweather.Retrofit.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.AddressSearchResult;
 
-public class SearchAddressActivity extends AppCompatActivity implements SearchCategoryViewAdapter.OnCategoryClickListener
+import java.util.concurrent.RecursiveAction;
+
+public class SearchFragment extends Fragment implements SearchCategoryViewAdapter.OnCategoryClickListener, MapActivity.OnBackPressedListener
 {
+    public static final String TAG = "Search Fragment";
+    private static SearchFragment searchFragment = null;
+
     private ImageButton backButton;
-    private EditText searchAddressEditText;
-    private ImageButton searchAddressButton;
-    private Intent searchResultIntent;
-    private RecyclerView recentRecyclerView;
-    private RecyclerView categoryRecyclerView;
+    private EditText searchEditText;
+    private ImageButton searchButton;
+    private RecyclerView searchHistoryRecyclerView;
+    private RecyclerView itemCategoryRecyclerView;
     private LocalApiPlaceParameter parameters;
 
     private String rect;
@@ -60,61 +70,74 @@ public class SearchAddressActivity extends AppCompatActivity implements SearchCa
 
             if (addressSearchResult.getResultNum() == 1 && !addressSearchResult.getPlaceCategoryDocuments().isEmpty())
             {
-                searchResultIntent = new Intent(SearchAddressActivity.this, SearchResultActivity.class);
-                searchResultIntent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-
                 Bundle dataBundle = new Bundle();
                 dataBundle.putParcelable("result", addressSearchResult.clone());
                 dataBundle.putParcelable("parameters", parameters);
                 dataBundle.putBoolean("isCategory", true);
 
-                searchResultIntent.putExtras(dataBundle);
-                startActivity(searchResultIntent);
+                ((MapActivity) getActivity()).onFragmentChanged(MapActivity.SEARCH_RESULT_FRAGMENT, dataBundle);
                 addressSearchResult.clearAll();
             } else if (addressSearchResult.getResultNum() == 2)
             {
-                searchResultIntent = new Intent(SearchAddressActivity.this, SearchResultActivity.class);
-                searchResultIntent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-
                 Bundle dataBundle = new Bundle();
                 dataBundle.putParcelable("result", addressSearchResult.clone());
                 dataBundle.putParcelable("parameters", parameters);
                 dataBundle.putBoolean("isCategory", false);
 
-                searchResultIntent.putExtras(dataBundle);
-                startActivity(searchResultIntent);
+                ((MapActivity) getActivity()).onFragmentChanged(MapActivity.SEARCH_RESULT_FRAGMENT, dataBundle);
                 addressSearchResult.clearAll();
             }
         }
     };
 
+    public SearchFragment()
+    {
+    }
+
+    public static SearchFragment getInstance()
+    {
+        if (searchFragment == null)
+        {
+            searchFragment = new SearchFragment();
+        }
+        return searchFragment;
+    }
+
+
     @Override
-    protected void onCreate(Bundle savedInstanceState)
+    public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_search_address);
+    }
 
-        backButton = (ImageButton) findViewById(R.id.back_button);
-        searchAddressEditText = (EditText) findViewById(R.id.search_address_edittext);
-        searchAddressButton = (ImageButton) findViewById(R.id.search_address_button);
-        recentRecyclerView = (RecyclerView) findViewById(R.id.search_address_recent_recyclerview);
-        categoryRecyclerView = (RecyclerView) findViewById(R.id.category_recyclerview);
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState)
+    {
+        View view = inflater.inflate(R.layout.fragment_search, container, false);
 
+        backButton = (ImageButton) view.findViewById(R.id.back_button);
+        searchEditText = (EditText) view.findViewById(R.id.search_edittext);
+        searchButton = (ImageButton) view.findViewById(R.id.search_button);
+        searchHistoryRecyclerView = (RecyclerView) view.findViewById(R.id.search_history_recyclerview);
+        itemCategoryRecyclerView = (RecyclerView) view.findViewById(R.id.category_recyclerview);
 
         SearchCategoryViewAdapter searchCategoryViewAdapter = new SearchCategoryViewAdapter(this);
-        categoryRecyclerView.setLayoutManager(new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false));
-        categoryRecyclerView.setAdapter(searchCategoryViewAdapter);
+        itemCategoryRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity(), RecyclerView.HORIZONTAL, false));
+        itemCategoryRecyclerView.setAdapter(searchCategoryViewAdapter);
 
-        Bundle bundle = getIntent().getExtras();
-        rect = bundle.getString("rect");
+        return view;
+    }
 
-
-        searchAddressButton.setOnClickListener(new View.OnClickListener()
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
+    {
+        searchButton.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view)
             {
-                String searchWord = searchAddressEditText.getText().toString();
+                String searchWord = searchEditText.getText().toString();
                 String name = getCategoryName(searchWord);
 
                 parameters = new LocalApiPlaceParameter().setRect(rect).setPage(LocalApiPlaceParameter.DEFAULT_PAGE)
@@ -142,6 +165,45 @@ public class SearchAddressActivity extends AppCompatActivity implements SearchCa
                 onBackPressed();
             }
         });
+
+        super.onViewCreated(view, savedInstanceState);
+    }
+
+    @Override
+    public void onStart()
+    {
+        super.onStart();
+    }
+
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+    }
+
+    @Override
+    public void onPause()
+    {
+        super.onPause();
+    }
+
+    @Override
+    public void onStop()
+    {
+        super.onStop();
+    }
+
+
+    @Override
+    public void selectedCategory(String name)
+    {
+        // 카테고리 이름을 전달받음
+        parameters = new LocalApiPlaceParameter().setRect(rect).setPage(LocalApiPlaceParameter.DEFAULT_PAGE)
+                .setSize(LocalApiPlaceParameter.DEFAULT_SIZE)
+                .setSort(LocalApiPlaceParameter.DEFAULT_SORT)
+                .setCategoryGroupCode(name);
+
+        DownloadData.searchPlaceCategory(handler, parameters);
     }
 
     private String getCategoryName(String searchWord)
@@ -158,27 +220,16 @@ public class SearchAddressActivity extends AppCompatActivity implements SearchCa
         }
     }
 
-    @Override
-    public void onBackPressed()
+    public void setData(Bundle bundle)
     {
-        Intent intent = new Intent(this, MapActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-        startActivity(intent);
-
-        finish();
+        this.rect = bundle.getString("rect");
     }
 
     @Override
-    public void selectedCategory(String name)
+    public void onBackPressed()
     {
-        // 카테고리 이름을 전달받음
-        parameters = new LocalApiPlaceParameter().setRect(rect).setPage(LocalApiPlaceParameter.DEFAULT_PAGE)
-                .setSize(LocalApiPlaceParameter.DEFAULT_SIZE)
-                .setSort(LocalApiPlaceParameter.DEFAULT_SORT)
-                .setCategoryGroupCode(name);
-
-        DownloadData.searchPlaceCategory(handler, parameters);
+        MapActivity.isMainMapActivity = true;
+        MapActivity.clearAllPoiItems();
+        getActivity().getSupportFragmentManager().popBackStackImmediate();
     }
 }

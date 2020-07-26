@@ -1,5 +1,6 @@
 package com.zerodsoft.scheduleweather.RecyclerVIewAdapter;
 
+import android.app.Activity;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,15 +18,15 @@ import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.AddressSearchResult;
 
 public class SearchResultViewPagerAdapter extends RecyclerView.Adapter<SearchResultViewPagerAdapter.SearchResultViewPagerHolder>
 {
-    private Context context;
+    private Activity context;
     private AddressSearchResult addressSearchResult = new AddressSearchResult();
     private boolean existingAddress = false;
     private boolean existingPlaceKeyword = false;
     private boolean existingPlaceCategory = false;
 
-    public SearchResultViewPagerAdapter(Context context)
+    public SearchResultViewPagerAdapter(Activity activity)
     {
-        this.context = context;
+        this.context = activity;
     }
 
     public void setAddressSearchResult(AddressSearchResult addressSearchResult)

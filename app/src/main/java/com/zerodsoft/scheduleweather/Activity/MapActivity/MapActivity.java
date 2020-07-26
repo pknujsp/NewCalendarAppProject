@@ -3,6 +3,7 @@ package com.zerodsoft.scheduleweather.Activity.MapActivity;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.view.GestureDetectorCompat;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -17,11 +18,15 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.zerodsoft.scheduleweather.Activity.MapActivity.Fragment.SearchFragment;
+import com.zerodsoft.scheduleweather.Activity.MapActivity.Fragment.SearchResultFragment;
 import com.zerodsoft.scheduleweather.Fragment.MapBottomSheetFragment;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.RecyclerVIewAdapter.SearchResultViewAdapter;
 import com.zerodsoft.scheduleweather.Retrofit.DownloadData;
 import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.AddressResponse.AddressResponseDocuments;
 import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.PlaceCategoryResponse.PlaceCategoryDocuments;
@@ -37,8 +42,12 @@ import net.daum.mf.map.api.MapView;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MapActivity extends AppCompatActivity implements MapView.POIItemEventListener, MapReverseGeoCoder.ReverseGeoCodingResultListener, MapView.MapViewEventListener
+public class MapActivity extends AppCompatActivity implements MapView.POIItemEventListener, MapReverseGeoCoder.ReverseGeoCodingResultListener, MapView.MapViewEventListener,
+        SearchResultViewAdapter.OnItemClickedListener
 {
+    public static final int SEARCH_FRAGMENT = 0;
+    public static final int SEARCH_RESULT_FRAGMENT = 1;
+
     private TextView addressTextView;
     private ImageButton zoomInButton;
     private ImageButton zoomOutButton;
@@ -51,13 +60,13 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
     private long downloadedTime;
     private int resultType;
     private int selectedItemPosition;
-    private static boolean isMainMapActivity = true;
+    public static boolean isMainMapActivity = true;
 
     private LocationDTO locationDTO;
 
     private MapBottomSheetFragment mapBottomSheetFragment;
 
-    protected static MapView mapView;
+    public static MapView mapView;
     private boolean opendPOIInfo = false;
     private boolean clickedPOI = false;
     private int poiTag;
@@ -181,6 +190,12 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
         void setBehaviorState(int state);
     }
 
+    public interface OnBackPressedListener
+    {
+        void onBackPressed();
+    }
+
+
     private final GestureDetector.SimpleOnGestureListener onGestureListener = new GestureDetector.SimpleOnGestureListener()
     {
         @Override
@@ -190,7 +205,7 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
             {
                 if (onControlItemFragment.getBehaviorStateExpand())
                 {
-                    onControlItemFragment.setBehaviorState(BottomSheetBehavior.STATE_COLLAPSED);
+                    onControlItemFragment.setBehaviorState(BottomSheetBehavior.STATE_HIDDEN);
                     opendPOIInfo = false;
                     return true;
                 } else
@@ -226,7 +241,6 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
     @Override
     protected void onResume()
     {
-        availableIntent();
         super.onResume();
     }
 
@@ -254,6 +268,7 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
 
         if (isMainMapActivity)
         {
+            mapView.setMapCenterPoint(currentMapPoint, true);
             initItemFragment();
         }
         if (!MapView.isMapTilePersistentCacheEnabled())
@@ -304,19 +319,17 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
             @Override
             public void onClick(View view)
             {
-                Intent intent = new Intent(MapActivity.this, SearchAddressActivity.class);
-
                 MapPointBounds mapPointBounds = mapView.getMapPointBounds();
-                Bundle bundle = new Bundle();
-                String rect = mapPointBounds.bottomLeft.getMapPointGeoCoord().longitude + "," +
+
+                final String rect = mapPointBounds.bottomLeft.getMapPointGeoCoord().longitude + "," +
                         mapPointBounds.bottomLeft.getMapPointGeoCoord().latitude + "," +
                         mapPointBounds.topRight.getMapPointGeoCoord().longitude + "," +
                         mapPointBounds.topRight.getMapPointGeoCoord().latitude;
+
+                Bundle bundle = new Bundle();
                 bundle.putString("rect", rect);
 
-                intent.putExtras(bundle);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-                startActivity(intent);
+                onFragmentChanged(SEARCH_FRAGMENT, bundle);
             }
         });
 
@@ -362,38 +375,34 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
         });
     }
 
-
-    private boolean availableIntent()
+    @Override
+    public void onItemClicked(Bundle bundle)
     {
-        if (getIntent().getExtras() != null && isMainMapActivity)
+        // Item Info Map Activity
+        isMainMapActivity = false;
+
+        resultType = bundle.getInt("type");
+        selectedItemPosition = bundle.getInt("position");
+        downloadedTime = bundle.getLong("downloadedTime");
+
+        if (resultType == DownloadData.ADDRESS)
         {
-            // Item Info Map Activity
-            isMainMapActivity = false;
-            Bundle bundle = getIntent().getExtras();
-
-            resultType = bundle.getInt("type");
-            selectedItemPosition = bundle.getInt("position");
-            downloadedTime = bundle.getLong("downloadedTime");
-
-            if (resultType == DownloadData.ADDRESS)
-            {
-                addressList = bundle.getParcelableArrayList("itemsInfo");
-            } else if (resultType == DownloadData.PLACE_KEYWORD)
-            {
-                placeKeywordList = bundle.getParcelableArrayList("itemsInfo");
-            } else if (resultType == DownloadData.PLACE_CATEGORY)
-            {
-                placeCategoryList = bundle.getParcelableArrayList("itemsInfo");
-            }
-
-            displayItemBottomSheet(selectedItemPosition);
-            return true;
-        } else
+            addressList = bundle.getParcelableArrayList("itemsInfo");
+        } else if (resultType == DownloadData.PLACE_KEYWORD)
         {
-            isMainMapActivity = true;
-            mapView.setMapCenterPoint(currentMapPoint, true);
-            return false;
+            placeKeywordList = bundle.getParcelableArrayList("itemsInfo");
+        } else if (resultType == DownloadData.PLACE_CATEGORY)
+        {
+            placeCategoryList = bundle.getParcelableArrayList("itemsInfo");
         }
+
+        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+        fragmentTransaction.hide(SearchResultFragment.getInstance());
+        fragmentTransaction.hide(SearchFragment.getInstance());
+
+        fragmentTransaction.commit();
+
+        displayItemBottomSheet(selectedItemPosition);
     }
 
     private void displayItemBottomSheet(int position)
@@ -430,6 +439,7 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
 
         setCenterPoint(latitude, longitude);
     }
+
 
     private void setCenterPoint(double latitude, double longitude)
     {
@@ -479,6 +489,11 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
         mapView.setMapCenterPoint(currentMapPoint, true);
     }
 
+    public static void clearAllPoiItems()
+    {
+        mapView.removeAllPOIItems();
+    }
+
     private void initItemFragment()
     {
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
@@ -489,12 +504,64 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
         fragmentTransaction.show(mapBottomSheetFragment).commit();
     }
 
+    public void onFragmentChanged(int type, Bundle bundle)
+    {
+        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+        switch (type)
+        {
+            case SEARCH_FRAGMENT:
+                SearchFragment searchFragment = SearchFragment.getInstance();
+                searchFragment.setData(bundle);
+
+                fragmentTransaction.add(R.id.map_activity_root_layout, searchFragment);
+                fragmentTransaction.addToBackStack(null);
+                fragmentTransaction.commit();
+                break;
+            case SEARCH_RESULT_FRAGMENT:
+                SearchResultFragment searchResultFragment = SearchResultFragment.getInstance();
+                searchResultFragment.setData(bundle);
+
+                fragmentTransaction.add(R.id.map_activity_root_layout, searchResultFragment);
+                fragmentTransaction.addToBackStack(null);
+                fragmentTransaction.hide(SearchFragment.getInstance());
+                fragmentTransaction.commit();
+                break;
+        }
+    }
+
     @Override
     public void onBackPressed()
     {
+        if (onControlItemFragment.getBehaviorStateExpand())
+        {
+            onControlItemFragment.setBehaviorState(BottomSheetBehavior.STATE_HIDDEN);
+        }
+
+        List<Fragment> fragmentList = getSupportFragmentManager().getFragments();
+
+        if (fragmentList != null)
+        {
+            for (Fragment fragment : fragmentList)
+            {
+                if (fragment.isVisible() && fragment instanceof OnBackPressedListener)
+                {
+                    ((OnBackPressedListener) fragment).onBackPressed();
+                    return;
+                }
+            }
+        }
+
+        if (!isMainMapActivity)
+        {
+            FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+            fragmentTransaction.show(SearchResultFragment.getInstance());
+
+            fragmentTransaction.commit();
+            return;
+        }
+
         super.onBackPressed();
     }
-
 
     class TimeOutThread extends Thread
     {

@@ -9,7 +9,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.zerodsoft.scheduleweather.Activity.MapActivity.SearchAddressActivity;
+import com.zerodsoft.scheduleweather.Activity.MapActivity.Fragment.SearchFragment;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.Retrofit.KakaoLocalApiCategory;
 import com.zerodsoft.scheduleweather.Retrofit.KakaoLocalApiCategoryCode;
@@ -27,11 +27,11 @@ public class SearchCategoryViewAdapter extends RecyclerView.Adapter<SearchCatego
 
     private OnCategoryClickListener onCategoryClickListener;
 
-    public SearchCategoryViewAdapter(SearchAddressActivity searchAddressActivity)
+    public SearchCategoryViewAdapter(SearchFragment searchFragment)
     {
         KakaoLocalApiCategoryCode.loadCategoryMap();
         categoryList = KakaoLocalApiCategoryCode.toArrayList();
-        this.onCategoryClickListener = searchAddressActivity;
+        this.onCategoryClickListener = searchFragment;
     }
 
     @NonNull

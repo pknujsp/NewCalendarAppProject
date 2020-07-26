@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF"
+    tools:context=".Activity.MapActivity.Fragment.SearchFragment">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:id="@+id/search_toolbar"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/location_toolbar"
+            android:elevation="2dp"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageButton
+                android:id="@+id/back_button"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_gravity="center"
+                android:layout_margin="8dp"
+                android:background="?attr/selectableItemBackground"
+                android:src="@drawable/arrow_back_icon" />
+
+            <EditText
+                android:id="@+id/search_edittext"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:ems="10"
+                android:hint="검색어 입력"
+                android:inputType="text"
+                android:textColor="@color/text_color" />
+
+            <ImageButton
+                android:id="@+id/search_button"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_gravity="center"
+                android:layout_margin="8dp"
+                android:background="?attr/selectableItemBackground"
+                android:src="@drawable/search_icon" />
+        </LinearLayout>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/category_recyclerview"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/search_toolbar"
+            tools:listitem="@layout/search_category_recyclerview_item" />
+
+        <View
+            android:id="@+id/divisor_line"
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:background="@android:color/darker_gray"
+            app:layout_constraintBottom_toTopOf="@id/search_history_recyclerview"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/category_recyclerview" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/search_history_recyclerview"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/divisor_line" />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</FrameLayout>

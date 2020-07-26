@@ -267,7 +267,6 @@ public class MapBottomSheetFragment extends Fragment implements MapActivity.OnCo
                 placeCategoryList = bundle.getParcelableArrayList("itemList");
                 break;
         }
-
     }
 
     @Override

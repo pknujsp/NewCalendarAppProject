@@ -16,12 +16,6 @@
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
         <activity
-            android:name=".Activity.MapActivity.SearchResultActivity"
-            android:taskAffinity="com.zerodsoft.scheduleweather.Activity.MapActivity" />
-        <activity
-            android:name=".Activity.MapActivity.SearchAddressActivity"
-            android:taskAffinity="com.zerodsoft.scheduleweather.Activity.MapActivity" />
-        <activity
             android:name=".Activity.MapActivity.MapActivity"
             android:taskAffinity="com.zerodsoft.scheduleweather.Activity.MapActivity" />
         <activity android:name=".Activity.AddScheduleActivity" />

@@ -32,6 +32,10 @@
         "source": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\src\\main\\res\\drawable-hdpi\\arrow_back_icon.png"
     },
     {
+        "merged": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\build\\intermediates\\res\\merged\\debug\\layout_fragment_search_result.xml.flat",
+        "source": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\src\\main\\res\\layout\\fragment_search_result.xml"
+    },
+    {
         "merged": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\build\\intermediates\\res\\merged\\debug\\drawable_ic_launcher_background.xml.flat",
         "source": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\src\\main\\res\\drawable\\ic_launcher_background.xml"
     },
@@ -384,10 +388,6 @@
         "source": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\src\\main\\res\\drawable-anydpi\\search_icon.xml"
     },
     {
-        "merged": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\build\\intermediates\\res\\merged\\debug\\layout_activity_search_result.xml.flat",
-        "source": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\src\\main\\res\\layout\\activity_search_result.xml"
-    },
-    {
         "merged": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\build\\intermediates\\res\\merged\\debug\\drawable-xhdpi_favorite_disabled_icon.png.flat",
         "source": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\src\\main\\res\\drawable-xhdpi\\favorite_disabled_icon.png"
     },
@@ -580,6 +580,10 @@
         "source": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\src\\main\\res\\mipmap-anydpi-v26\\ic_launcher.xml"
     },
     {
+        "merged": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\build\\intermediates\\res\\merged\\debug\\layout_fragment_search.xml.flat",
+        "source": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\src\\main\\res\\layout\\fragment_search.xml"
+    },
+    {
         "merged": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\build\\intermediates\\res\\merged\\debug\\drawable-xhdpi_search_icon.png.flat",
         "source": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\src\\main\\res\\drawable-xhdpi\\search_icon.png"
     },
@@ -682,10 +686,6 @@
     {
         "merged": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\build\\intermediates\\res\\merged\\debug\\drawable-anydpi_create_icon.xml.flat",
         "source": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\src\\main\\res\\drawable-anydpi\\create_icon.xml"
-    },
-    {
-        "merged": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\build\\intermediates\\res\\merged\\debug\\layout_activity_search_address.xml.flat",
-        "source": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\src\\main\\res\\layout\\activity_search_address.xml"
     },
     {
         "merged": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\build\\intermediates\\res\\merged\\debug\\layout_toolbar.xml.flat",

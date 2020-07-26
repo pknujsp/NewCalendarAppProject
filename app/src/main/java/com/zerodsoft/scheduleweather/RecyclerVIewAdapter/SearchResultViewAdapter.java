@@ -1,5 +1,6 @@
 package com.zerodsoft.scheduleweather.RecyclerVIewAdapter;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -23,6 +24,7 @@ import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.PlaceKeywordResponse
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultViewAdapter.SearchResultViewHolder>
 {
@@ -30,12 +32,20 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
     private List<PlaceKeywordDocuments> placeKeywordList = null;
     private List<PlaceCategoryDocuments> placeCategoryList = null;
     private int type;
-    private Context context;
+    private Activity context;
     private long downloadedTime;
 
-    public SearchResultViewAdapter(Context context)
+    private OnItemClickedListener onItemClickedListener;
+
+    public interface OnItemClickedListener
     {
-        this.context = context;
+        void onItemClicked(Bundle bundle);
+    }
+
+    public SearchResultViewAdapter(Activity activity)
+    {
+        this.context = activity;
+        this.onItemClickedListener = (MapActivity) activity;
     }
 
     public void setAddressList(List<AddressResponseDocuments> addressList)
@@ -82,7 +92,6 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
                     @Override
                     public void onClick(View view)
                     {
-                        Intent mapActivity = new Intent(context, MapActivity.class);
                         Bundle bundle = new Bundle();
 
                         List<AddressResponseDocuments> copiedList = new ArrayList<>(addressList);
@@ -93,11 +102,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
                         bundle.putInt("position", position);
                         bundle.putLong("downloadedTime", downloadedTime);
 
-                        mapActivity.putExtras(bundle);
-                        mapActivity.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                        mapActivity.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-
-                        context.startActivity(mapActivity);
+                        onItemClickedListener.onItemClicked(bundle);
                     }
                 });
                 break;
@@ -109,7 +114,6 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
                     @Override
                     public void onClick(View view)
                     {
-                        Intent mapActivity = new Intent(context, MapActivity.class);
                         Bundle bundle = new Bundle();
 
                         List<PlaceKeywordDocuments> copiedList = new ArrayList<>(placeKeywordList);
@@ -120,11 +124,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
                         bundle.putInt("position", position);
                         bundle.putLong("downloadedTime", downloadedTime);
 
-                        mapActivity.putExtras(bundle);
-                        mapActivity.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                        mapActivity.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-
-                        context.startActivity(mapActivity);
+                        onItemClickedListener.onItemClicked(bundle);
                     }
                 });
                 break;
@@ -136,7 +136,6 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
                     @Override
                     public void onClick(View view)
                     {
-                        Intent mapActivity = new Intent(context, MapActivity.class);
                         Bundle bundle = new Bundle();
 
                         List<PlaceCategoryDocuments> copiedList = new ArrayList<>(placeCategoryList);
@@ -147,11 +146,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
                         bundle.putInt("position", position);
                         bundle.putLong("downloadedTime", downloadedTime);
 
-                        mapActivity.putExtras(bundle);
-                        mapActivity.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                        mapActivity.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-
-                        context.startActivity(mapActivity);
+                        onItemClickedListener.onItemClicked(bundle);
                     }
                 });
                 break;

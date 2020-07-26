@@ -1,35 +1,40 @@
-package com.zerodsoft.scheduleweather.Activity.MapActivity;
-
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.viewpager2.widget.ViewPager2;
+package com.zerodsoft.scheduleweather.Activity.MapActivity.Fragment;
 
 import android.Manifest;
 import android.content.Context;
-import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.viewpager2.widget.ViewPager2;
+
 import android.os.Handler;
 import android.os.Message;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import com.zerodsoft.scheduleweather.Activity.MapActivity.MapActivity;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.RecyclerVIewAdapter.SearchResultViewPagerAdapter;
 import com.zerodsoft.scheduleweather.Retrofit.DownloadData;
 import com.zerodsoft.scheduleweather.Retrofit.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.AddressSearchResult;
 
-import net.daum.mf.map.api.MapPoint;
 import net.daum.mf.map.api.MapPointBounds;
 
-public class SearchResultActivity extends AppCompatActivity
+public class SearchResultFragment extends Fragment implements MapActivity.OnBackPressedListener
 {
+    public static final String TAG = "SearchResult Fragment";
+    private static SearchResultFragment searchResultFragment = null;
 
     private ImageButton closeButton;
     private ImageButton goToMapButton;
@@ -81,6 +86,7 @@ public class SearchResultActivity extends AppCompatActivity
 
         }
     };
+
     private boolean isCategory;
 
     private Handler handler = new Handler()
@@ -126,29 +132,48 @@ public class SearchResultActivity extends AppCompatActivity
         }
     };
 
+    public SearchResultFragment()
+    {
+    }
+
+    public static SearchResultFragment getInstance()
+    {
+        if (searchResultFragment == null)
+        {
+            searchResultFragment = new SearchResultFragment();
+        }
+        return searchResultFragment;
+    }
+
     @Override
-    protected void onCreate(Bundle savedInstanceState)
+    public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_search_result);
+    }
 
-        closeButton = (ImageButton) findViewById(R.id.search_result_close_button);
-        goToMapButton = (ImageButton) findViewById(R.id.search_result_map_button);
-        viewPager2 = (ViewPager2) findViewById(R.id.search_address_viewpager);
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState)
+    {
+        View view = inflater.inflate(R.layout.fragment_search_result, container, false);
 
-        Bundle bundle = getIntent().getExtras();
-        result = bundle.getParcelable("result");
-        parameters = bundle.getParcelable("parameters");
-        isCategory = bundle.getBoolean("isCategory");
+        closeButton = (ImageButton) view.findViewById(R.id.search_result_close_button);
+        goToMapButton = (ImageButton) view.findViewById(R.id.search_result_map_button);
+        viewPager2 = (ViewPager2) view.findViewById(R.id.search_result_viewpager);
+        locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+        rescanMapCenter = (TextView) view.findViewById(R.id.search_result_map_center_rescan);
+        rescanMyLocCenter = (TextView) view.findViewById(R.id.search_result_myloc_center_rescan);
 
-        searchResultViewPagerAdapter = new SearchResultViewPagerAdapter(SearchResultActivity.this);
+        searchResultViewPagerAdapter = new SearchResultViewPagerAdapter(getActivity());
         searchResultViewPagerAdapter.setAddressSearchResult(result);
         viewPager2.setAdapter(searchResultViewPagerAdapter);
 
-        rescanMapCenter = (TextView) findViewById(R.id.search_result_map_center_rescan);
-        rescanMyLocCenter = (TextView) findViewById(R.id.search_result_myloc_center_rescan);
+        return view;
+    }
 
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
+    {
         rescanMapCenter.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -178,12 +203,11 @@ public class SearchResultActivity extends AppCompatActivity
             @Override
             public void onClick(View view)
             {
-
                 boolean isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
                 boolean isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
 
-                int fineLocationPermission = ContextCompat.checkSelfPermission(SearchResultActivity.this, Manifest.permission.ACCESS_FINE_LOCATION);
-                int coarseLocationPermission = ContextCompat.checkSelfPermission(SearchResultActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION);
+                int fineLocationPermission = ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION);
+                int coarseLocationPermission = ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION);
 
                 if (isGpsEnabled && isNetworkEnabled)
                 {
@@ -199,7 +223,7 @@ public class SearchResultActivity extends AppCompatActivity
             @Override
             public void onClick(View view)
             {
-                onBackPressed();
+                //  onBackPressed();
             }
         });
 
@@ -211,11 +235,45 @@ public class SearchResultActivity extends AppCompatActivity
 
             }
         });
+        super.onViewCreated(view, savedInstanceState);
+    }
+
+    @Override
+    public void onStart()
+    {
+        super.onStart();
+    }
+
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+    }
+
+    @Override
+    public void onPause()
+    {
+        super.onPause();
+    }
+
+    @Override
+    public void onStop()
+    {
+        super.onStop();
+    }
+
+    public void setData(Bundle bundle)
+    {
+        result = bundle.getParcelable("result");
+        parameters = bundle.getParcelable("parameters");
+        isCategory = bundle.getBoolean("isCategory");
     }
 
     @Override
     public void onBackPressed()
     {
-        super.onBackPressed();
+        FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+        fragmentManager.popBackStackImmediate();
+        fragmentManager.beginTransaction().show(SearchFragment.getInstance()).commit();
     }
 }
