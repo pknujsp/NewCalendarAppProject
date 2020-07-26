@@ -214,7 +214,6 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
     @Override
     protected void onStart()
     {
-        availableIntent();
         super.onStart();
     }
 
@@ -227,6 +226,7 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
     @Override
     protected void onResume()
     {
+        availableIntent();
         super.onResume();
     }
 
@@ -252,7 +252,10 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
 
         gestureDetectorCompat = new GestureDetectorCompat(this, onGestureListener);
 
-        initItemFragment();
+        if (isMainMapActivity)
+        {
+            initItemFragment();
+        }
         if (!MapView.isMapTilePersistentCacheEnabled())
         {
             MapView.setMapTilePersistentCacheEnabled(true);
@@ -262,8 +265,6 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
 
         mapView.setPOIItemEventListener(this);
         mapView.setMapViewEventListener(this);
-
-
 
 
         mapView.setCurrentLocationEventListener(new MapView.CurrentLocationEventListener()

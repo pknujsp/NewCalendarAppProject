@@ -150,7 +150,7 @@ public class MapBottomSheetFragment extends Fragment implements MapActivity.OnCo
             bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
         } else
         {
-            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
         }
     }
 
