@@ -25,6 +25,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.Activity.MapActivity.Fragment.SearchFragment;
 import com.zerodsoft.scheduleweather.Activity.MapActivity.Fragment.SearchResultFragment;
 import com.zerodsoft.scheduleweather.Fragment.MapBottomSheetFragment;
+import com.zerodsoft.scheduleweather.Fragment.SearchResultHeaderFragment;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.RecyclerVIewAdapter.SearchResultViewAdapter;
 import com.zerodsoft.scheduleweather.Retrofit.DownloadData;
@@ -261,6 +262,8 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
         zoomInButton = (ImageButton) findViewById(R.id.zoom_in_button);
         zoomOutButton = (ImageButton) findViewById(R.id.zoom_out_button);
         gpsButton = (ImageButton) findViewById(R.id.gps_button);
+        SearchResultHeaderFragment searchResultHeaderFragment = (SearchResultHeaderFragment) getSupportFragmentManager().findFragmentById(R.id.search_result_map_header);
+        getSupportFragmentManager().beginTransaction().hide(searchResultHeaderFragment).commit();
 
         mapView = new MapView(this);
 
@@ -380,7 +383,7 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
     {
         // Item Info Map Activity
         isMainMapActivity = false;
-
+        String itemName = null;
         resultType = bundle.getInt("type");
         selectedItemPosition = bundle.getInt("position");
         downloadedTime = bundle.getLong("downloadedTime");
@@ -388,19 +391,27 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
         if (resultType == DownloadData.ADDRESS)
         {
             addressList = bundle.getParcelableArrayList("itemsInfo");
+            itemName = addressList.get(selectedItemPosition).getAddressName();
         } else if (resultType == DownloadData.PLACE_KEYWORD)
         {
             placeKeywordList = bundle.getParcelableArrayList("itemsInfo");
+            itemName = placeKeywordList.get(selectedItemPosition).getPlaceName();
         } else if (resultType == DownloadData.PLACE_CATEGORY)
         {
             placeCategoryList = bundle.getParcelableArrayList("itemsInfo");
+            itemName = placeCategoryList.get(selectedItemPosition).getPlaceName();
         }
 
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         fragmentTransaction.hide(SearchResultFragment.getInstance());
         fragmentTransaction.hide(SearchFragment.getInstance());
 
+        SearchResultHeaderFragment searchResultHeaderFragment = (SearchResultHeaderFragment) getSupportFragmentManager().findFragmentById(R.id.search_result_map_header);
+        searchResultHeaderFragment.setItemName(itemName);
+        fragmentTransaction.show(searchResultHeaderFragment);
+
         fragmentTransaction.commit();
+
 
         displayItemBottomSheet(selectedItemPosition);
     }

@@ -188,6 +188,10 @@
         "source": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\src\\main\\res\\drawable-hdpi\\toolbar_menu_icon.png"
     },
     {
+        "merged": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\build\\intermediates\\res\\merged\\debug\\layout_fragment_search_result_map_header.xml.flat",
+        "source": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\src\\main\\res\\layout\\fragment_search_result_map_header.xml"
+    },
+    {
         "merged": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\build\\intermediates\\res\\merged\\debug\\mipmap-mdpi_ic_launcher.png.flat",
         "source": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\src\\main\\res\\mipmap-mdpi\\ic_launcher.png"
     },
@@ -248,12 +252,12 @@
         "source": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\src\\main\\res\\drawable-hdpi\\right_item_icon.png"
     },
     {
-        "merged": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\build\\intermediates\\res\\merged\\debug\\drawable_gridview_selector.xml.flat",
-        "source": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\src\\main\\res\\drawable\\gridview_selector.xml"
-    },
-    {
         "merged": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\build\\intermediates\\res\\merged\\debug\\drawable-anydpi_zoom_in_icon.xml.flat",
         "source": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\src\\main\\res\\drawable-anydpi\\zoom_in_icon.xml"
+    },
+    {
+        "merged": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\build\\intermediates\\res\\merged\\debug\\drawable_gridview_selector.xml.flat",
+        "source": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\src\\main\\res\\drawable\\gridview_selector.xml"
     },
     {
         "merged": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\build\\intermediates\\res\\merged\\debug\\drawable-anydpi_favorite_enabled_icon.xml.flat",
@@ -324,6 +328,10 @@
         "source": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\src\\main\\res\\drawable-anydpi\\fine_icon.xml"
     },
     {
+        "merged": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\build\\intermediates\\res\\merged\\debug\\drawable-anydpi_list_icon.xml.flat",
+        "source": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\src\\main\\res\\drawable-anydpi\\list_icon.xml"
+    },
+    {
         "merged": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\build\\intermediates\\res\\merged\\debug\\drawable-xxhdpi_favorite_disabled_icon.png.flat",
         "source": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\src\\main\\res\\drawable-xxhdpi\\favorite_disabled_icon.png"
     },
@@ -334,6 +342,10 @@
     {
         "merged": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\build\\intermediates\\res\\merged\\debug\\layout_activity_app_main.xml.flat",
         "source": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\src\\main\\res\\layout\\activity_app_main.xml"
+    },
+    {
+        "merged": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\build\\intermediates\\res\\merged\\debug\\drawable-hdpi_list_icon.png.flat",
+        "source": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\src\\main\\res\\drawable-hdpi\\list_icon.png"
     },
     {
         "merged": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\build\\intermediates\\res\\merged\\debug\\drawable-hdpi_favorite_disabled_icon.png.flat",
@@ -372,6 +384,10 @@
         "source": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\src\\main\\res\\drawable-mdpi\\right_item_icon.png"
     },
     {
+        "merged": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\build\\intermediates\\res\\merged\\debug\\drawable-mdpi_list_icon.png.flat",
+        "source": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\src\\main\\res\\drawable-mdpi\\list_icon.png"
+    },
+    {
         "merged": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\build\\intermediates\\res\\merged\\debug\\drawable-xxhdpi_today_icon.png.flat",
         "source": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\src\\main\\res\\drawable-xxhdpi\\today_icon.png"
     },
@@ -406,6 +422,10 @@
     {
         "merged": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\build\\intermediates\\res\\merged\\debug\\drawable-xxhdpi_save_icon_black.png.flat",
         "source": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\src\\main\\res\\drawable-xxhdpi\\save_icon_black.png"
+    },
+    {
+        "merged": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\build\\intermediates\\res\\merged\\debug\\drawable-xhdpi_list_icon.png.flat",
+        "source": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\src\\main\\res\\drawable-xhdpi\\list_icon.png"
     },
     {
         "merged": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\build\\intermediates\\res\\merged\\debug\\drawable-anydpi_gps_fixed_icon.xml.flat",
@@ -890,6 +910,10 @@
     {
         "merged": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\build\\intermediates\\res\\merged\\debug\\drawable-mdpi_save_icon_black.png.flat",
         "source": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\src\\main\\res\\drawable-mdpi\\save_icon_black.png"
+    },
+    {
+        "merged": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\build\\intermediates\\res\\merged\\debug\\drawable-xxhdpi_list_icon.png.flat",
+        "source": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\src\\main\\res\\drawable-xxhdpi\\list_icon.png"
     },
     {
         "merged": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\build\\intermediates\\res\\merged\\debug\\drawable-hdpi_past_date_icon.png.flat",

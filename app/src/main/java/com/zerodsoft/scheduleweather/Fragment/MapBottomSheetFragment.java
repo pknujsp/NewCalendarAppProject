@@ -132,26 +132,7 @@ public class MapBottomSheetFragment extends Fragment implements MapActivity.OnCo
     public void onStart()
     {
         super.onStart();
-
-        if (resultType != Integer.MIN_VALUE)
-        {
-            setLayoutVisibility();
-
-            switch (resultType)
-            {
-                case DownloadData.ADDRESS:
-                    displayAddressInfo();
-                    break;
-                default:
-                    displayPlaceInfo();
-                    break;
-            }
-
-            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-        } else
-        {
-            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
-        }
+        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
     }
 
     @Override
@@ -267,6 +248,22 @@ public class MapBottomSheetFragment extends Fragment implements MapActivity.OnCo
                 placeCategoryList = bundle.getParcelableArrayList("itemList");
                 break;
         }
+
+
+        setLayoutVisibility();
+
+        switch (resultType)
+        {
+            case DownloadData.ADDRESS:
+                displayAddressInfo();
+                break;
+            default:
+                displayPlaceInfo();
+                break;
+        }
+
+        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+
     }
 
     @Override
