@@ -266,7 +266,7 @@
                 <Button
                     android:id="@+id/add_location_button"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_height="35dp"
                     android:background="@drawable/blue_button_shape"
                     android:gravity="center"
                     android:text="위치 추가"

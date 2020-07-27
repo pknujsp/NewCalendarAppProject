@@ -229,7 +229,8 @@ public class SearchFragment extends Fragment implements SearchCategoryViewAdapte
     public void onBackPressed()
     {
         MapActivity.isMainMapActivity = true;
-        MapActivity.clearAllPoiItems();
+        ((MapActivity) getActivity()).clearAllPoiItems();
+        ((MapActivity) getActivity()).setZoomGpsButtonVisibility(View.VISIBLE);
         getActivity().getSupportFragmentManager().popBackStackImmediate();
     }
 }

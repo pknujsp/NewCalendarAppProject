@@ -1,5 +1,8 @@
 package com.zerodsoft.scheduleweather.Room.DTO;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
@@ -11,7 +14,7 @@ import java.io.Serializable;
         , foreignKeys = @ForeignKey(entity = ScheduleDTO.class,
         parentColumns = "id",
         childColumns = "schedule_id"))
-public class FavoriteLocDTO implements Serializable
+public class FavoriteLocDTO implements Parcelable
 {
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "id")
@@ -20,17 +23,38 @@ public class FavoriteLocDTO implements Serializable
     @ColumnInfo(name = "schedule_id")
     private int scheduleId;
 
-    @ColumnInfo(name = "loc_name")
-    private String locName;
+    @ColumnInfo(name = "place_id")
+    private int placeId;
 
-    @ColumnInfo(name = "loc_category")
-    private String locCategory;
+    @ColumnInfo(name = "address_id")
+    private int addressId;
 
-    @ColumnInfo(name = "loc_lat")
-    private String locLat;
+    public FavoriteLocDTO()
+    {
+    }
 
-    @ColumnInfo(name = "loc_lon")
-    private String locLon;
+    protected FavoriteLocDTO(Parcel in)
+    {
+        id = in.readInt();
+        scheduleId = in.readInt();
+        placeId = in.readInt();
+        addressId = in.readInt();
+    }
+
+    public static final Creator<FavoriteLocDTO> CREATOR = new Creator<FavoriteLocDTO>()
+    {
+        @Override
+        public FavoriteLocDTO createFromParcel(Parcel in)
+        {
+            return new FavoriteLocDTO(in);
+        }
+
+        @Override
+        public FavoriteLocDTO[] newArray(int size)
+        {
+            return new FavoriteLocDTO[size];
+        }
+    };
 
     public int getId()
     {
@@ -52,43 +76,38 @@ public class FavoriteLocDTO implements Serializable
         this.scheduleId = scheduleId;
     }
 
-    public String getLocName()
+    public int getPlaceId()
     {
-        return locName;
+        return placeId;
     }
 
-    public void setLocName(String locName)
+    public void setPlaceId(int placeId)
     {
-        this.locName = locName;
+        this.placeId = placeId;
     }
 
-    public String getLocCategory()
+    public int getAddressId()
     {
-        return locCategory;
+        return addressId;
     }
 
-    public void setLocCategory(String locCategory)
+    public void setAddressId(int addressId)
     {
-        this.locCategory = locCategory;
+        this.addressId = addressId;
     }
 
-    public String getLocLat()
+    @Override
+    public int describeContents()
     {
-        return locLat;
+        return 0;
     }
 
-    public void setLocLat(String locLat)
+    @Override
+    public void writeToParcel(Parcel parcel, int i)
     {
-        this.locLat = locLat;
-    }
-
-    public String getLocLon()
-    {
-        return locLon;
-    }
-
-    public void setLocLon(String locLon)
-    {
-        this.locLon = locLon;
+        parcel.writeInt(id);
+        parcel.writeInt(scheduleId);
+        parcel.writeInt(placeId);
+        parcel.writeInt(addressId);
     }
 }

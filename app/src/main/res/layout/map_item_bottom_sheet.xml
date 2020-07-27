@@ -143,16 +143,21 @@
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/share_icon" />
 
-        <ImageButton
-            android:id="@+id/check_address_button"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+        <Button
+            android:id="@+id/choice_address_button"
+            android:layout_width="wrap_content"
+            android:layout_height="28dp"
+            android:layout_gravity="right"
             android:layout_marginLeft="8dp"
-            android:background="?attr/selectableItemBackground"
+            android:background="@drawable/blue_button_rectangle"
+            android:drawableLeft="@drawable/check_icon_white"
+            android:padding="4dp"
+            android:text="@string/choice"
+            android:textColor="@android:color/white"
+            android:textSize="12sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toRightOf="@id/share_address_button"
-            app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/check_icon" />
+            app:layout_constraintTop_toTopOf="parent" />
 
         <ImageButton
             android:id="@+id/left_address_button"

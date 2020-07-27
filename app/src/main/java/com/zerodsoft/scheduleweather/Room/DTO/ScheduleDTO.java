@@ -1,5 +1,8 @@
 package com.zerodsoft.scheduleweather.Room.DTO;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
@@ -14,7 +17,7 @@ import java.io.Serializable;
                 childColumns = "category"
         ))
 
-public class ScheduleDTO implements Serializable
+public class ScheduleDTO implements Parcelable
 {
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "id")
@@ -35,26 +38,46 @@ public class ScheduleDTO implements Serializable
     @ColumnInfo(name = "end_date")
     private int endDate;
 
-    @ColumnInfo(name = "loc_name")
-    private String locName;
-
-    @ColumnInfo(name = "wth_name")
-    private String wthName;
-
-    @ColumnInfo(name = "loc_lat")
-    private String locLat;
-
-    @ColumnInfo(name = "loc_lon")
-    private String locLon;
-
-    @ColumnInfo(name = "loc_x")
-    private String locX;
-
-    @ColumnInfo(name = "loc_y")
-    private String locY;
-
     @ColumnInfo(name = "noti_time")
     private int notiTime;
+
+    @ColumnInfo(name = "place_id_to_be_visited")
+    private int placeId;
+
+    @ColumnInfo(name = "address_id_to_be_visited")
+    private int addressId;
+
+    public ScheduleDTO()
+    {
+    }
+
+    protected ScheduleDTO(Parcel in)
+    {
+        id = in.readInt();
+        category = in.readInt();
+        subject = in.readString();
+        content = in.readString();
+        startDate = in.readInt();
+        endDate = in.readInt();
+        notiTime = in.readInt();
+        placeId = in.readInt();
+        addressId = in.readInt();
+    }
+
+    public static final Creator<ScheduleDTO> CREATOR = new Creator<ScheduleDTO>()
+    {
+        @Override
+        public ScheduleDTO createFromParcel(Parcel in)
+        {
+            return new ScheduleDTO(in);
+        }
+
+        @Override
+        public ScheduleDTO[] newArray(int size)
+        {
+            return new ScheduleDTO[size];
+        }
+    };
 
     public int getId()
     {
@@ -116,66 +139,6 @@ public class ScheduleDTO implements Serializable
         this.endDate = endDate;
     }
 
-    public String getLocName()
-    {
-        return locName;
-    }
-
-    public void setLocName(String locName)
-    {
-        this.locName = locName;
-    }
-
-    public String getWthName()
-    {
-        return wthName;
-    }
-
-    public void setWthName(String wthName)
-    {
-        this.wthName = wthName;
-    }
-
-    public String getLocLat()
-    {
-        return locLat;
-    }
-
-    public void setLocLat(String locLat)
-    {
-        this.locLat = locLat;
-    }
-
-    public String getLocLon()
-    {
-        return locLon;
-    }
-
-    public void setLocLon(String locLon)
-    {
-        this.locLon = locLon;
-    }
-
-    public String getLocX()
-    {
-        return locX;
-    }
-
-    public void setLocX(String locX)
-    {
-        this.locX = locX;
-    }
-
-    public String getLocY()
-    {
-        return locY;
-    }
-
-    public void setLocY(String locY)
-    {
-        this.locY = locY;
-    }
-
     public int getNotiTime()
     {
         return notiTime;
@@ -184,5 +147,45 @@ public class ScheduleDTO implements Serializable
     public void setNotiTime(int notiTime)
     {
         this.notiTime = notiTime;
+    }
+
+    public int getPlaceId()
+    {
+        return placeId;
+    }
+
+    public void setPlaceId(int placeId)
+    {
+        this.placeId = placeId;
+    }
+
+    public int getAddressId()
+    {
+        return addressId;
+    }
+
+    public void setAddressId(int addressId)
+    {
+        this.addressId = addressId;
+    }
+
+    @Override
+    public int describeContents()
+    {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i)
+    {
+        parcel.writeInt(id);
+        parcel.writeInt(category);
+        parcel.writeString(subject);
+        parcel.writeString(content);
+        parcel.writeInt(startDate);
+        parcel.writeInt(endDate);
+        parcel.writeInt(notiTime);
+        parcel.writeInt(placeId);
+        parcel.writeInt(addressId);
     }
 }

@@ -4,21 +4,17 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.view.GestureDetectorCompat;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
-import android.Manifest;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
@@ -67,7 +63,7 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
 
     private MapBottomSheetFragment mapBottomSheetFragment;
 
-    public static MapView mapView;
+    public MapView mapView;
     private boolean opendPOIInfo = false;
     private boolean clickedPOI = false;
     private int poiTag;
@@ -217,7 +213,8 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
 
             if (clickedPOI)
             {
-                onControlItemFragment.onShowItemInfo(poiTag);
+                onItemSelected(poiTag);
+
                 opendPOIInfo = true;
                 clickedPOI = false;
                 return true;
@@ -333,6 +330,7 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
                 bundle.putString("rect", rect);
 
                 onFragmentChanged(SEARCH_FRAGMENT, bundle);
+                setZoomGpsButtonVisibility(View.GONE);
             }
         });
 
@@ -378,9 +376,23 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
         });
     }
 
+    public void onItemSelected(int position)
+    {
+        onControlItemFragment.onShowItemInfo(position);
+        setCurrentCenterPoint(position);
+    }
+
+    public void setZoomGpsButtonVisibility(int value)
+    {
+        zoomInButton.setVisibility(value);
+        zoomOutButton.setVisibility(value);
+        gpsButton.setVisibility(value);
+    }
+
     @Override
     public void onItemClicked(Bundle bundle)
     {
+        setZoomGpsButtonVisibility(View.VISIBLE);
         // Item Info Map Activity
         isMainMapActivity = false;
         String itemName = null;
@@ -412,34 +424,26 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
 
         fragmentTransaction.commit();
 
-
         displayItemBottomSheet(selectedItemPosition);
     }
 
     private void displayItemBottomSheet(int position)
     {
-        double latitude = 0, longitude = 0;
         Bundle bundle = new Bundle();
+
+        setCurrentCenterPoint(position);
+        setPoiItems();
 
         if (resultType == DownloadData.ADDRESS)
         {
-            longitude = addressList.get(position).getX();
-            latitude = addressList.get(position).getY();
-
             bundle.putParcelableArrayList("itemList", (ArrayList<? extends Parcelable>) addressList);
             bundle.putInt("type", DownloadData.ADDRESS);
         } else if (resultType == DownloadData.PLACE_KEYWORD)
         {
-            longitude = placeKeywordList.get(position).getX();
-            latitude = placeKeywordList.get(position).getY();
-
             bundle.putParcelableArrayList("itemList", (ArrayList<? extends Parcelable>) placeKeywordList);
             bundle.putInt("type", DownloadData.PLACE_KEYWORD);
         } else if (resultType == DownloadData.PLACE_CATEGORY)
         {
-            longitude = Double.valueOf(placeCategoryList.get(position).getX());
-            latitude = Double.valueOf(placeCategoryList.get(position).getY());
-
             bundle.putParcelableArrayList("itemList", (ArrayList<? extends Parcelable>) placeCategoryList);
             bundle.putInt("type", DownloadData.PLACE_CATEGORY);
         }
@@ -447,12 +451,10 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
 
         onControlItemFragment.onChangeFragment(bundle);
         opendPOIInfo = true;
-
-        setCenterPoint(latitude, longitude);
     }
 
 
-    private void setCenterPoint(double latitude, double longitude)
+    private void setPoiItems()
     {
         int size = 0;
 
@@ -496,11 +498,31 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
             mapPOIItems[i].setSelectedMarkerType(MapPOIItem.MarkerType.RedPin); // 마커를 클릭했을때, 기본으로 제공하는 RedPin 마커 모양.
         }
         mapView.addPOIItems(mapPOIItems);
+    }
+
+    private void setCurrentCenterPoint(int position)
+    {
+        double latitude = 0, longitude = 0;
+
+        if (resultType == DownloadData.ADDRESS)
+        {
+            longitude = addressList.get(position).getX();
+            latitude = addressList.get(position).getY();
+        } else if (resultType == DownloadData.PLACE_KEYWORD)
+        {
+            longitude = placeKeywordList.get(position).getX();
+            latitude = placeKeywordList.get(position).getY();
+        } else if (resultType == DownloadData.PLACE_CATEGORY)
+        {
+            longitude = Double.valueOf(placeCategoryList.get(position).getX());
+            latitude = Double.valueOf(placeCategoryList.get(position).getY());
+        }
+
         currentMapPoint = MapPoint.mapPointWithGeoCoord(latitude, longitude);
         mapView.setMapCenterPoint(currentMapPoint, true);
     }
 
-    public static void clearAllPoiItems()
+    public void clearAllPoiItems()
     {
         mapView.removeAllPOIItems();
     }
@@ -564,7 +586,10 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
 
         if (!isMainMapActivity)
         {
+            setZoomGpsButtonVisibility(View.GONE);
             FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+            SearchResultHeaderFragment searchResultHeaderFragment = (SearchResultHeaderFragment) getSupportFragmentManager().findFragmentById(R.id.search_result_map_header);
+            fragmentTransaction.hide(searchResultHeaderFragment);
             fragmentTransaction.show(SearchResultFragment.getInstance());
 
             fragmentTransaction.commit();
@@ -572,6 +597,14 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
         }
 
         super.onBackPressed();
+    }
+
+    public void onChoicedLoc(Bundle bundle)
+    {
+        mapView = null;
+        getIntent().putExtras(bundle);
+        setResult(RESULT_OK, getIntent());
+        finish();
     }
 
     class TimeOutThread extends Thread
@@ -597,5 +630,10 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
                 e.printStackTrace();
             }
         }
+    }
+
+    public MapPointBounds getMapPointBounds()
+    {
+        return mapView.getMapPointBounds();
     }
 }

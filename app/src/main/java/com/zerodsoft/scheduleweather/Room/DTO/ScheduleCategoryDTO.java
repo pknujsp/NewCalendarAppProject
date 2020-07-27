@@ -1,5 +1,8 @@
 package com.zerodsoft.scheduleweather.Room.DTO;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.Ignore;
@@ -9,7 +12,7 @@ import java.io.Serializable;
 
 
 @Entity(tableName = "TB_SCHEDULE_CATEGORY")
-public class ScheduleCategoryDTO implements Serializable
+public class ScheduleCategoryDTO implements Parcelable
 {
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "id")
@@ -23,6 +26,31 @@ public class ScheduleCategoryDTO implements Serializable
 
     @Ignore
     public static final int LOCAL_SCHEDULE = 1;
+
+    public ScheduleCategoryDTO()
+    {
+    }
+
+    protected ScheduleCategoryDTO(Parcel in)
+    {
+        id = in.readInt();
+        name = in.readString();
+    }
+
+    public static final Creator<ScheduleCategoryDTO> CREATOR = new Creator<ScheduleCategoryDTO>()
+    {
+        @Override
+        public ScheduleCategoryDTO createFromParcel(Parcel in)
+        {
+            return new ScheduleCategoryDTO(in);
+        }
+
+        @Override
+        public ScheduleCategoryDTO[] newArray(int size)
+        {
+            return new ScheduleCategoryDTO[size];
+        }
+    };
 
     public int getId()
     {
@@ -42,5 +70,18 @@ public class ScheduleCategoryDTO implements Serializable
     public void setName(String name)
     {
         this.name = name;
+    }
+
+    @Override
+    public int describeContents()
+    {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i)
+    {
+        parcel.writeInt(id);
+        parcel.writeString(name);
     }
 }

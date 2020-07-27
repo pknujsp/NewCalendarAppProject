@@ -1,10 +1,14 @@
 package com.zerodsoft.scheduleweather.Room.DTO;
 
+import android.location.LocationManager;
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import androidx.room.ColumnInfo;
 
 import java.io.Serializable;
 
-public class LocationDTO implements Serializable
+public class LocationDTO implements Parcelable
 {
     private String locName;
     private String wthName;
@@ -12,6 +16,35 @@ public class LocationDTO implements Serializable
     private String locLon;
     private String locX;
     private String locY;
+
+    public LocationDTO()
+    {
+    }
+
+    protected LocationDTO(Parcel in)
+    {
+        locName = in.readString();
+        wthName = in.readString();
+        locLat = in.readString();
+        locLon = in.readString();
+        locX = in.readString();
+        locY = in.readString();
+    }
+
+    public static final Creator<LocationDTO> CREATOR = new Creator<LocationDTO>()
+    {
+        @Override
+        public LocationDTO createFromParcel(Parcel in)
+        {
+            return new LocationDTO(in);
+        }
+
+        @Override
+        public LocationDTO[] newArray(int size)
+        {
+            return new LocationDTO[size];
+        }
+    };
 
     public String getLocName()
     {
@@ -77,5 +110,22 @@ public class LocationDTO implements Serializable
     {
         this.locY = locY;
         return this;
+    }
+
+    @Override
+    public int describeContents()
+    {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i)
+    {
+        parcel.writeString(locName);
+        parcel.writeString(wthName);
+        parcel.writeString(locLat);
+        parcel.writeString(locLon);
+        parcel.writeString(locX);
+        parcel.writeString(locY);
     }
 }

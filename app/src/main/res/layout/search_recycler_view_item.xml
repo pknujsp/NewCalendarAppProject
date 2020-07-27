@@ -12,7 +12,7 @@
         android:clickable="true"
         android:orientation="vertical"
         android:paddingTop="8dp"
-        android:paddingBottom="8dp"
+        android:paddingBottom="4dp"
         android:visibility="visible">
 
         <TextView
@@ -27,13 +27,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp"
             android:orientation="horizontal">
 
             <TextView
                 android:id="@+id/another_address_type_textview"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="4dp"
+                android:layout_marginRight="4dp"
                 android:background="@android:color/darker_gray"
                 android:padding="2dp"
                 android:text="type"
@@ -47,6 +48,18 @@
                 android:textColor="@android:color/darker_gray"
                 android:textSize="14sp" />
         </LinearLayout>
+
+        <Button
+            android:id="@+id/choice_address_button"
+            android:layout_width="wrap_content"
+            android:layout_height="28dp"
+            android:layout_gravity="right"
+            android:background="@drawable/blue_button_rectangle"
+            android:drawableLeft="@drawable/check_icon_white"
+            android:padding="4dp"
+            android:text="@string/choice"
+            android:textColor="@android:color/white"
+            android:textSize="12sp" />
     </LinearLayout>
 
     <LinearLayout
@@ -57,7 +70,7 @@
         android:clickable="true"
         android:orientation="vertical"
         android:paddingTop="8dp"
-        android:paddingBottom="8dp"
+        android:paddingBottom="4dp"
         android:visibility="visible">
 
         <LinearLayout
@@ -90,10 +103,22 @@
             android:id="@+id/search_place_addess_name_textview"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
             android:text="address"
             android:textColor="@android:color/darker_gray"
             android:textSize="14sp" />
 
+        <Button
+            android:id="@+id/choice_place_button"
+            android:layout_width="wrap_content"
+            android:layout_height="28dp"
+            android:layout_gravity="right"
+            android:background="@drawable/blue_button_rectangle"
+            android:drawableLeft="@drawable/check_icon_white"
+            android:padding="4dp"
+            android:text="@string/choice"
+            android:textColor="@android:color/white"
+            android:textSize="12sp" />
     </LinearLayout>
 
 </LinearLayout>

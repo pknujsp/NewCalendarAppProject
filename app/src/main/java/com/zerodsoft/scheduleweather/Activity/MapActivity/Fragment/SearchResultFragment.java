@@ -179,7 +179,7 @@ public class SearchResultFragment extends Fragment implements MapActivity.OnBack
             @Override
             public void onClick(View view)
             {
-                MapPointBounds mapPointBounds = MapActivity.mapView.getMapPointBounds();
+                MapPointBounds mapPointBounds = ((MapActivity) getActivity()).getMapPointBounds();
                 String rect = mapPointBounds.bottomLeft.getMapPointGeoCoord().longitude + "," +
                         mapPointBounds.bottomLeft.getMapPointGeoCoord().latitude + "," +
                         mapPointBounds.topRight.getMapPointGeoCoord().longitude + "," +

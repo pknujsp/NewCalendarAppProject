@@ -4,16 +4,21 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.view.GestureDetectorCompat;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
@@ -23,8 +28,14 @@ import android.widget.TextView;
 import com.zerodsoft.scheduleweather.Activity.MapActivity.MapActivity;
 import com.zerodsoft.scheduleweather.Fragment.DatePickerFragment;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.Retrofit.DownloadData;
+import com.zerodsoft.scheduleweather.Room.DTO.AddressDTO;
 import com.zerodsoft.scheduleweather.Room.DTO.LocationDTO;
+import com.zerodsoft.scheduleweather.Room.DTO.PlaceDTO;
 import com.zerodsoft.scheduleweather.Utility.Clock;
+
+import net.daum.mf.map.api.MapPoint;
+import net.daum.mf.map.api.MapView;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -44,6 +55,10 @@ public class AddScheduleActivity extends AppCompatActivity implements DatePicker
     private TextView alarmTextView;
     private TextView startDateLeftTextView;
     private LinearLayout endDateLayout;
+
+    private PlaceDTO placeDTO;
+    private AddressDTO addressDTO;
+    private int locType;
 
     public static Calendar startDate = null;
     public static Calendar endDate = null;
@@ -118,6 +133,9 @@ public class AddScheduleActivity extends AppCompatActivity implements DatePicker
         setAllDaySwitch();
         setDateEditText();
         setAddLocationButton();
+
+        InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        inputMethodManager.hideSoftInputFromWindow(subjectEditText.getWindowToken(), 0);
     }
 
     @Override
@@ -236,7 +254,6 @@ public class AddScheduleActivity extends AppCompatActivity implements DatePicker
             {
                 //위치를 설정하는 액티비티 표시
                 Intent intent = new Intent(AddScheduleActivity.this, MapActivity.class);
-                //  intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivityForResult(intent, ADD_LOCATION_ACTIVITY);
             }
         };
@@ -253,7 +270,32 @@ public class AddScheduleActivity extends AppCompatActivity implements DatePicker
         {
             if (resultCode == RESULT_OK)
             {
-                LocationDTO locationDTO = (LocationDTO) data.getExtras().getSerializable("location");
+                Bundle bundle = data.getExtras();
+                locType = bundle.getInt("type");
+                String locName = null;
+                double latitude = 0f;
+                double longitude = 0f;
+
+                switch (locType)
+                {
+                    case DownloadData.ADDRESS:
+                        addressDTO = bundle.getParcelable("addressDTO");
+                        locName = addressDTO.getAddressName();
+                        latitude = Double.valueOf(addressDTO.getLatitude());
+                        longitude = Double.valueOf(addressDTO.getLongitude());
+                        break;
+
+                    case DownloadData.PLACE_KEYWORD:
+                    case DownloadData.PLACE_CATEGORY:
+                        placeDTO = bundle.getParcelable("placeDTO");
+                        locName = placeDTO.getPlaceName();
+                        latitude = Double.valueOf(placeDTO.getLatitude());
+                        longitude = Double.valueOf(placeDTO.getLongitude());
+                        break;
+                }
+                locationTextView.setText(locName);
+                locationTextView.setVisibility(View.VISIBLE);
+
             } else if (resultCode == RESULT_CANCELED)
             {
 

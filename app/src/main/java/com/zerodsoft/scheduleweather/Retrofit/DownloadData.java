@@ -31,6 +31,8 @@ public class DownloadData
     public static final int ADDRESS = 0;
     public static final int PLACE_KEYWORD = 1;
     public static final int PLACE_CATEGORY = 2;
+    public static final int ADDRESS_AND_PLACE_KEYWORD = 3;
+    public static final int PLACE = 4;
 
     public static void searchAddress(Handler handler, LocalApiPlaceParameter parameter)
     {

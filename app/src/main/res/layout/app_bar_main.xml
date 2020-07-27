@@ -29,6 +29,9 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
-        app:srcCompat="@android:drawable/ic_dialog_email" />
+        app:backgroundTint="@android:color/darker_gray"
+        app:fabSize="normal"
+        app:maxImageSize="40dp"
+        app:srcCompat="@drawable/add_schedule" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

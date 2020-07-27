@@ -14,4 +14,5 @@
     <dimen name="week_header_view_day_row_margin">8dp</dimen>
     <dimen name="week_header_view_day_event_text_size">13sp</dimen>
     <dimen name="add_schedule_activity_text_size">16sp</dimen>
+    <dimen name="button_rectangle_radius">5dp</dimen>
 </resources>

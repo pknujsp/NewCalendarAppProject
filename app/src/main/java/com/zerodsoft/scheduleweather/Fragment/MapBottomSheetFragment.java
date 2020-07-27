@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -21,6 +22,8 @@ import com.zerodsoft.scheduleweather.Retrofit.DownloadData;
 import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.AddressResponse.AddressResponseDocuments;
 import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.PlaceCategoryResponse.PlaceCategoryDocuments;
 import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.PlaceKeywordResponse.PlaceKeywordDocuments;
+import com.zerodsoft.scheduleweather.Room.DTO.AddressDTO;
+import com.zerodsoft.scheduleweather.Room.DTO.PlaceDTO;
 
 import java.util.List;
 
@@ -40,7 +43,7 @@ public class MapBottomSheetFragment extends Fragment implements MapActivity.OnCo
 
     private ImageButton selectedItemFavoriteButton;
     private ImageButton selectedItemShareButton;
-    private ImageButton selectedItemCheckButton;
+    private Button selectedItemChoiceButton;
     private ImageButton selectedItemLeftButton;
     private ImageButton selectedItemRightButton;
 
@@ -56,6 +59,7 @@ public class MapBottomSheetFragment extends Fragment implements MapActivity.OnCo
 
     private int resultType = Integer.MIN_VALUE;
     private int selectedItemPosition;
+    private int itemPositionMax;
 
     public static MapBottomSheetFragment getInstance()
     {
@@ -98,8 +102,6 @@ public class MapBottomSheetFragment extends Fragment implements MapActivity.OnCo
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
-        super.onViewCreated(view, savedInstanceState);
-
         placeItemLayout = (LinearLayout) view.findViewById(R.id.item_place_layout);
         addressItemLayout = (LinearLayout) view.findViewById(R.id.item_address_layout);
         bottomSheetToolbar = (ConstraintLayout) view.findViewById(R.id.map_bottom_sheet_toolbar);
@@ -112,13 +114,112 @@ public class MapBottomSheetFragment extends Fragment implements MapActivity.OnCo
 
         selectedItemFavoriteButton = (ImageButton) view.findViewById(R.id.add_favorite_address_button);
         selectedItemShareButton = (ImageButton) view.findViewById(R.id.share_address_button);
-        selectedItemCheckButton = (ImageButton) view.findViewById(R.id.check_address_button);
+        selectedItemChoiceButton = (Button) view.findViewById(R.id.choice_address_button);
         selectedItemLeftButton = (ImageButton) view.findViewById(R.id.left_address_button);
         selectedItemRightButton = (ImageButton) view.findViewById(R.id.right_address_button);
 
         selectedItemAddressNameTextView = (TextView) view.findViewById(R.id.selected_address_name_textview);
         selectedItemAnotherAddressNameTextView = (TextView) view.findViewById(R.id.selected_another_address_textview);
         selectedItemAnotherAddressTypeTextView = (TextView) view.findViewById(R.id.selected_another_address_type_textview);
+
+        selectedItemFavoriteButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+
+            }
+        });
+
+        selectedItemShareButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+
+            }
+        });
+
+
+        selectedItemChoiceButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                Bundle bundle = new Bundle();
+                bundle.putInt("type", resultType);
+
+                switch (resultType)
+                {
+                    case DownloadData.ADDRESS:
+                        AddressDTO addressDTO = new AddressDTO();
+                        addressDTO.setAddressName(addressList.get(selectedItemPosition).getAddressName());
+                        addressDTO.setLongitude(Double.toString(addressList.get(selectedItemPosition).getX()));
+                        addressDTO.setLatitude(Double.toString(addressList.get(selectedItemPosition).getY()));
+
+                        bundle.putParcelable("addressDTO", addressDTO);
+                        break;
+
+                    case DownloadData.PLACE_KEYWORD:
+                        PlaceDTO placeDTOKeyword = new PlaceDTO();
+                        placeDTOKeyword.setPlaceId(placeKeywordList.get(selectedItemPosition).getId());
+                        placeDTOKeyword.setPlaceName(placeKeywordList.get(selectedItemPosition).getPlaceName());
+                        placeDTOKeyword.setLongitude(Double.toString(placeKeywordList.get(selectedItemPosition).getX()));
+                        placeDTOKeyword.setLatitude(Double.toString(placeKeywordList.get(selectedItemPosition).getY()));
+
+                        bundle.putParcelable("placeDTO", placeDTOKeyword);
+                        break;
+
+                    case DownloadData.PLACE_CATEGORY:
+                        PlaceDTO placeDTOCategory = new PlaceDTO();
+                        placeDTOCategory.setPlaceId(placeCategoryList.get(selectedItemPosition).getId());
+                        placeDTOCategory.setPlaceName(placeCategoryList.get(selectedItemPosition).getPlaceName());
+                        placeDTOCategory.setLongitude(placeCategoryList.get(selectedItemPosition).getX());
+                        placeDTOCategory.setLatitude(placeCategoryList.get(selectedItemPosition).getY());
+
+                        bundle.putParcelable("placeDTO", placeDTOCategory);
+                        break;
+                }
+                ((MapActivity) getActivity()).onChoicedLoc(bundle);
+            }
+        });
+
+
+        selectedItemLeftButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                if (selectedItemPosition == 0)
+                {
+                    selectedItemPosition = itemPositionMax;
+                } else
+                {
+                    --selectedItemPosition;
+                }
+                ((MapActivity) getActivity()).onItemSelected(selectedItemPosition);
+            }
+        });
+
+
+        selectedItemRightButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                if (selectedItemPosition < itemPositionMax)
+                {
+                    ++selectedItemPosition;
+                } else
+                {
+                    selectedItemPosition = 0;
+                }
+                ((MapActivity) getActivity()).onItemSelected(selectedItemPosition);
+            }
+        });
+
+
+        super.onViewCreated(view, savedInstanceState);
     }
 
     @Override
@@ -240,15 +341,17 @@ public class MapBottomSheetFragment extends Fragment implements MapActivity.OnCo
         {
             case DownloadData.ADDRESS:
                 addressList = bundle.getParcelableArrayList("itemList");
+                itemPositionMax = addressList.size() - 1;
                 break;
             case DownloadData.PLACE_KEYWORD:
                 placeKeywordList = bundle.getParcelableArrayList("itemList");
+                itemPositionMax = placeKeywordList.size() - 1;
                 break;
             case DownloadData.PLACE_CATEGORY:
                 placeCategoryList = bundle.getParcelableArrayList("itemList");
+                itemPositionMax = placeCategoryList.size() - 1;
                 break;
         }
-
 
         setLayoutVisibility();
 
