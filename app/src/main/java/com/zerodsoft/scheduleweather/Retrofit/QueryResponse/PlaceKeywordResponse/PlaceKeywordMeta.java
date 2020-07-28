@@ -103,4 +103,6 @@ public class PlaceKeywordMeta implements Parcelable
     {
         this.placeKeywordSameName = placeKeywordSameName;
     }
+
+
 }

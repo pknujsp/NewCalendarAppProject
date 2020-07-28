@@ -39,7 +39,8 @@ public class SearchFragment extends Fragment implements SearchCategoryViewAdapte
     private RecyclerView itemCategoryRecyclerView;
     private LocalApiPlaceParameter parameters;
 
-    private String rect;
+    private double latitude;
+    private double longitude;
 
     private Handler handler = new Handler()
     {
@@ -59,12 +60,15 @@ public class SearchFragment extends Fragment implements SearchCategoryViewAdapte
             {
                 case DownloadData.ADDRESS:
                     addressSearchResult.setAddressResponseDocuments(bundle.getParcelableArrayList("documents"));
+                    addressSearchResult.setAddressResponseMeta(bundle.getParcelable("meta"));
                     break;
                 case DownloadData.PLACE_KEYWORD:
                     addressSearchResult.setPlaceKeywordDocuments(bundle.getParcelableArrayList("documents"));
+                    addressSearchResult.setPlaceKeywordMeta(bundle.getParcelable("meta"));
                     break;
                 case DownloadData.PLACE_CATEGORY:
                     addressSearchResult.setPlaceCategoryDocuments(bundle.getParcelableArrayList("documents"));
+                    addressSearchResult.setPlaceCategoryMeta(bundle.getParcelable("meta"));
                     break;
             }
 
@@ -74,18 +78,18 @@ public class SearchFragment extends Fragment implements SearchCategoryViewAdapte
                 dataBundle.putParcelable("result", addressSearchResult.clone());
                 dataBundle.putParcelable("parameters", parameters);
                 dataBundle.putBoolean("isCategory", true);
+                addressSearchResult = null;
 
                 ((MapActivity) getActivity()).onFragmentChanged(MapActivity.SEARCH_RESULT_FRAGMENT, dataBundle);
-                addressSearchResult.clearAll();
             } else if (addressSearchResult.getResultNum() == 2)
             {
                 Bundle dataBundle = new Bundle();
                 dataBundle.putParcelable("result", addressSearchResult.clone());
                 dataBundle.putParcelable("parameters", parameters);
                 dataBundle.putBoolean("isCategory", false);
+                addressSearchResult = null;
 
                 ((MapActivity) getActivity()).onFragmentChanged(MapActivity.SEARCH_RESULT_FRAGMENT, dataBundle);
-                addressSearchResult.clearAll();
             }
         }
     };
@@ -102,7 +106,6 @@ public class SearchFragment extends Fragment implements SearchCategoryViewAdapte
         }
         return searchFragment;
     }
-
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -140,7 +143,8 @@ public class SearchFragment extends Fragment implements SearchCategoryViewAdapte
                 String searchWord = searchEditText.getText().toString();
                 String name = getCategoryName(searchWord);
 
-                parameters = new LocalApiPlaceParameter().setRect(rect).setPage(LocalApiPlaceParameter.DEFAULT_PAGE)
+                parameters = new LocalApiPlaceParameter().setX(longitude)
+                        .setY(latitude).setPage(LocalApiPlaceParameter.DEFAULT_PAGE)
                         .setSize(LocalApiPlaceParameter.DEFAULT_SIZE)
                         .setSort(LocalApiPlaceParameter.DEFAULT_SORT);
 
@@ -198,7 +202,9 @@ public class SearchFragment extends Fragment implements SearchCategoryViewAdapte
     public void selectedCategory(String name)
     {
         // 카테고리 이름을 전달받음
-        parameters = new LocalApiPlaceParameter().setRect(rect).setPage(LocalApiPlaceParameter.DEFAULT_PAGE)
+        parameters = new LocalApiPlaceParameter().setX(longitude)
+                .setY(latitude)
+                .setPage(LocalApiPlaceParameter.DEFAULT_PAGE)
                 .setSize(LocalApiPlaceParameter.DEFAULT_SIZE)
                 .setSort(LocalApiPlaceParameter.DEFAULT_SORT)
                 .setCategoryGroupCode(name);
@@ -222,7 +228,8 @@ public class SearchFragment extends Fragment implements SearchCategoryViewAdapte
 
     public void setData(Bundle bundle)
     {
-        this.rect = bundle.getString("rect");
+        this.latitude = bundle.getDouble("latitude");
+        this.longitude = bundle.getDouble("longitude");
     }
 
     @Override

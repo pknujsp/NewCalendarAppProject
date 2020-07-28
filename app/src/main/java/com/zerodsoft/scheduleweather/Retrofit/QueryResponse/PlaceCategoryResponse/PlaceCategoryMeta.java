@@ -104,4 +104,5 @@ public class PlaceCategoryMeta implements Parcelable
         parcel.writeByte((byte) (isEnd ? 1 : 0));
         parcel.writeParcelable(placeCategorySameName, i);
     }
+
 }

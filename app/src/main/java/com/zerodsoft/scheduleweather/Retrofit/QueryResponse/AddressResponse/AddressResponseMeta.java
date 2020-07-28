@@ -87,4 +87,6 @@ public class AddressResponseMeta implements Parcelable
     {
         isEnd = end;
     }
+
+
 }

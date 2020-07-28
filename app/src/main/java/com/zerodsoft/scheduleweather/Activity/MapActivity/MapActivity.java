@@ -319,15 +319,12 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
             @Override
             public void onClick(View view)
             {
-                MapPointBounds mapPointBounds = mapView.getMapPointBounds();
-
-                final String rect = mapPointBounds.bottomLeft.getMapPointGeoCoord().longitude + "," +
-                        mapPointBounds.bottomLeft.getMapPointGeoCoord().latitude + "," +
-                        mapPointBounds.topRight.getMapPointGeoCoord().longitude + "," +
-                        mapPointBounds.topRight.getMapPointGeoCoord().latitude;
-
                 Bundle bundle = new Bundle();
-                bundle.putString("rect", rect);
+
+                MapPoint.GeoCoordinate mapPoint = mapView.getMapCenterPoint().getMapPointGeoCoord();
+
+                bundle.putDouble("latitude", mapPoint.latitude);
+                bundle.putDouble("longitude", mapPoint.longitude);
 
                 onFragmentChanged(SEARCH_FRAGMENT, bundle);
                 setZoomGpsButtonVisibility(View.GONE);
@@ -374,6 +371,8 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
                 return gestureDetectorCompat.onTouchEvent(motionEvent);
             }
         });
+
+        gpsButton.performClick();
     }
 
     public void onItemSelected(int position)
@@ -635,5 +634,10 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
     public MapPointBounds getMapPointBounds()
     {
         return mapView.getMapPointBounds();
+    }
+
+    public MapPoint.GeoCoordinate getMapCenterPoint()
+    {
+        return mapView.getMapCenterPoint().getMapPointGeoCoord();
     }
 }

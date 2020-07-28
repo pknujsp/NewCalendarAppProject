@@ -22,6 +22,9 @@ public class LocalApiPlaceParameter implements Parcelable
     public static final String DEFAULT_PAGE = "1";
     public static final String DEFAULT_SIZE = "15";
     public static final String DEFAULT_SORT = "accuracy";
+    public static final int DEFAULT_RADIUS_INT = 2000;
+    public static final int DEFAULT_PAGE_INT = 1;
+    public static final int DEFAULT_SIZE_INT = 15;
 
     public static final Creator<LocalApiPlaceParameter> CREATOR = new Creator<LocalApiPlaceParameter>()
     {
@@ -65,9 +68,9 @@ public class LocalApiPlaceParameter implements Parcelable
         return x;
     }
 
-    public LocalApiPlaceParameter setX(String x)
+    public LocalApiPlaceParameter setX(double x)
     {
-        this.x = x;
+        this.x = Double.toString(x);
         return this;
     }
 
@@ -76,9 +79,9 @@ public class LocalApiPlaceParameter implements Parcelable
         return y;
     }
 
-    public LocalApiPlaceParameter setY(String y)
+    public LocalApiPlaceParameter setY(double y)
     {
-        this.y = y;
+        this.y = Double.toString(y);
         return this;
     }
 
@@ -190,17 +193,6 @@ public class LocalApiPlaceParameter implements Parcelable
     @Override
     public void writeToParcel(Parcel parcel, int i)
     {
-        /*
-        private String query;
-    private String categoryGroupCode;
-    private String x;
-    private String y;
-    private String radius;
-    private String page;
-    private String size;
-    private String sort;
-    private String rect;
-         */
         parcel.writeString(query);
         parcel.writeString(categoryGroupCode);
         parcel.writeString(x);

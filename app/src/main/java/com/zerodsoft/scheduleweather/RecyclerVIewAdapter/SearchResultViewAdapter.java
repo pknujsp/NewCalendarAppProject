@@ -17,9 +17,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.zerodsoft.scheduleweather.Activity.MapActivity.MapActivity;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.Retrofit.DownloadData;
+import com.zerodsoft.scheduleweather.Retrofit.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.AddressResponse.AddressResponseDocuments;
+import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.AddressResponse.AddressResponseMeta;
 import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.PlaceCategoryResponse.PlaceCategoryDocuments;
+import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.PlaceCategoryResponse.PlaceCategoryMeta;
 import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.PlaceKeywordResponse.PlaceKeywordDocuments;
+import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.PlaceKeywordResponse.PlaceKeywordMeta;
 import com.zerodsoft.scheduleweather.Room.DTO.AddressDTO;
 import com.zerodsoft.scheduleweather.Room.DTO.PlaceDTO;
 
@@ -32,9 +36,16 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
     private List<AddressResponseDocuments> addressList = null;
     private List<PlaceKeywordDocuments> placeKeywordList = null;
     private List<PlaceCategoryDocuments> placeCategoryList = null;
+
     private int type;
     private Activity context;
     private long downloadedTime;
+    private int currentPage;
+
+    private int totalCount;
+    private int pageableCount;
+    private boolean isEnd;
+
 
     private OnItemClickedListener onItemClickedListener;
 
@@ -47,27 +58,86 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
     {
         this.context = activity;
         this.onItemClickedListener = (MapActivity) activity;
+        this.currentPage = 1;
     }
 
-    public void setAddressList(List<AddressResponseDocuments> addressList)
+    public boolean isEnd()
+    {
+        return isEnd;
+    }
+
+    public void setAddressList(List<AddressResponseDocuments> addressList, AddressResponseMeta meta)
     {
         this.addressList = addressList;
         type = DownloadData.ADDRESS;
-        downloadedTime = System.currentTimeMillis();
+        totalCount = meta.getTotalCount();
+        pageableCount = meta.getPageableCount();
+        isEnd = meta.isEnd();
     }
 
-    public void setPlaceKeywordList(List<PlaceKeywordDocuments> placeKeywordList)
+    public void setPlaceKeywordList(List<PlaceKeywordDocuments> placeKeywordList, PlaceKeywordMeta meta)
     {
         this.placeKeywordList = placeKeywordList;
         type = DownloadData.PLACE_KEYWORD;
-        downloadedTime = System.currentTimeMillis();
+        totalCount = meta.getTotalCount();
+        pageableCount = meta.getPageableCount();
+        isEnd = meta.isEnd();
     }
 
-    public void setPlaceCategoryList(List<PlaceCategoryDocuments> placeCategoryList)
+    public void setPlaceCategoryList(List<PlaceCategoryDocuments> placeCategoryList, PlaceCategoryMeta meta)
     {
         this.placeCategoryList = placeCategoryList;
         type = DownloadData.PLACE_CATEGORY;
-        downloadedTime = System.currentTimeMillis();
+        totalCount = meta.getTotalCount();
+        pageableCount = meta.getPageableCount();
+        isEnd = meta.isEnd();
+    }
+
+    public void addAddressData(List<AddressResponseDocuments> addressList, AddressResponseMeta meta)
+    {
+        isEnd = meta.isEnd();
+        for (int index = 0; index < addressList.size(); index++)
+        {
+            this.addressList.add(addressList.get(index));
+        }
+    }
+
+    public void addPlaceKeywordData(List<PlaceKeywordDocuments> placeKeywordList, PlaceKeywordMeta meta)
+    {
+        isEnd = meta.isEnd();
+        for (int index = 0; index < placeKeywordList.size(); index++)
+        {
+            this.placeKeywordList.add(placeKeywordList.get(index));
+        }
+    }
+
+    public void addPlaceCategoryData(List<PlaceCategoryDocuments> placeCategoryList, PlaceCategoryMeta meta)
+    {
+        isEnd = meta.isEnd();
+        for (int index = 0; index < placeCategoryList.size(); index++)
+        {
+            this.placeCategoryList.add(placeCategoryList.get(index));
+        }
+    }
+
+    public int getType()
+    {
+        return type;
+    }
+
+    public void setCurrentPage(int currentPage)
+    {
+        this.currentPage = currentPage;
+    }
+
+    public int getCurrentPage()
+    {
+        return currentPage;
+    }
+
+    public void setDownloadedTime(long downloadedTime)
+    {
+        this.downloadedTime = downloadedTime;
     }
 
     @NonNull
@@ -77,7 +147,6 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
         Context context = parent.getContext();
         LayoutInflater layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View view = layoutInflater.inflate(R.layout.search_recycler_view_item, parent, false);
-
         return new SearchResultViewHolder(view, type);
     }
 
@@ -183,6 +252,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
         private TextView placeNameTextView;
         private TextView placeCategoryTextView;
         private TextView placeAddressTextView;
+        private TextView placeDistanceTextView;
 
         private Button choiceAddressButton;
         private Button choicePlaceButton;
@@ -223,6 +293,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
                     placeCategoryTextView = (TextView) itemView.findViewById(R.id.search_place_category_name_textview);
                     placeAddressTextView = (TextView) itemView.findViewById(R.id.search_place_addess_name_textview);
                     choicePlaceButton = (Button) itemView.findViewById(R.id.choice_place_button);
+                    placeDistanceTextView = (TextView) itemView.findViewById(R.id.search_place_distance);
                     break;
             }
             setOnClickListenerButton();
@@ -329,6 +400,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
             placeNameTextView.setText(data.getPlaceName());
             placeCategoryTextView.setText(data.getCategoryName());
             placeAddressTextView.setText(data.getAddressName());
+            placeDistanceTextView.setText(data.getDistance() + "M");
 
             placeName = data.getPlaceName();
             placeId = data.getId();
@@ -341,6 +413,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
             placeNameTextView.setText(data.getPlaceName());
             placeCategoryTextView.setText(data.getCategoryName());
             placeAddressTextView.setText(data.getAddressName());
+            placeDistanceTextView.setText(data.getDistance() + "M");
 
             placeName = data.getPlaceName();
             placeId = data.getId();

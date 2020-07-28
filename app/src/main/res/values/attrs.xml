@@ -52,5 +52,9 @@
         <attr name="WeekDayViewNewScheduleRectThickness" format="dimension" />
     </declare-styleable>
 
+    <declare-styleable name="ViewPagerIndicator">
+        <attr name="IndicatorUnselectedDotDrawable" format="reference" />
+        <attr name="IndicatorSelectedDotDrawable" format="reference" />
+    </declare-styleable>
 
 </resources>

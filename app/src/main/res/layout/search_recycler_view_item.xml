@@ -108,17 +108,32 @@
             android:textColor="@android:color/darker_gray"
             android:textSize="14sp" />
 
-        <Button
-            android:id="@+id/choice_place_button"
-            android:layout_width="wrap_content"
-            android:layout_height="28dp"
-            android:layout_gravity="right"
-            android:background="@drawable/blue_button_rectangle"
-            android:drawableLeft="@drawable/check_icon_white"
-            android:padding="4dp"
-            android:text="@string/choice"
-            android:textColor="@android:color/white"
-            android:textSize="12sp" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/search_place_distance"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:text="TextView" />
+
+            <Button
+                android:id="@+id/choice_place_button"
+                android:layout_width="wrap_content"
+                android:layout_height="28dp"
+                android:layout_gravity="right"
+                android:background="@drawable/blue_button_rectangle"
+                android:drawableLeft="@drawable/check_icon_white"
+                android:padding="4dp"
+                android:text="@string/choice"
+                android:textColor="@android:color/white"
+                android:textSize="12sp" />
+        </LinearLayout>
+
     </LinearLayout>
 
 </LinearLayout>

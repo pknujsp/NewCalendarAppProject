@@ -23,12 +23,14 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.zerodsoft.scheduleweather.Activity.MapActivity.MapActivity;
+import com.zerodsoft.scheduleweather.Etc.ViewPagerIndicator;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.RecyclerVIewAdapter.SearchResultViewPagerAdapter;
 import com.zerodsoft.scheduleweather.Retrofit.DownloadData;
 import com.zerodsoft.scheduleweather.Retrofit.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.AddressSearchResult;
 
+import net.daum.mf.map.api.MapPoint;
 import net.daum.mf.map.api.MapPointBounds;
 
 public class SearchResultFragment extends Fragment implements MapActivity.OnBackPressedListener
@@ -46,15 +48,16 @@ public class SearchResultFragment extends Fragment implements MapActivity.OnBack
     private LocalApiPlaceParameter parameters;
     private LocationManager locationManager;
 
+    private ViewPagerIndicator viewPagerIndicator;
+    private int indicatorLength;
+
     private LocationListener locationListener = new LocationListener()
     {
         @Override
         public void onLocationChanged(Location location)
         {
-            parameters.setX(Double.toString(location.getLongitude()));
-            parameters.setY(Double.toString(location.getLatitude()));
-            parameters.setRadius(LocalApiPlaceParameter.DEFAULT_RADIUS);
-            parameters.setRect(null);
+            parameters.setX(location.getLongitude());
+            parameters.setY(location.getLatitude());
             // 자원해제
             locationManager.removeUpdates(locationListener);
 
@@ -107,25 +110,30 @@ public class SearchResultFragment extends Fragment implements MapActivity.OnBack
             {
                 case DownloadData.ADDRESS:
                     addressSearchResult.setAddressResponseDocuments(bundle.getParcelableArrayList("documents"));
+                    addressSearchResult.setAddressResponseMeta(bundle.getParcelable("meta"));
                     break;
                 case DownloadData.PLACE_KEYWORD:
                     addressSearchResult.setPlaceKeywordDocuments(bundle.getParcelableArrayList("documents"));
+                    addressSearchResult.setPlaceKeywordMeta(bundle.getParcelable("meta"));
                     break;
                 case DownloadData.PLACE_CATEGORY:
                     addressSearchResult.setPlaceCategoryDocuments(bundle.getParcelableArrayList("documents"));
+                    addressSearchResult.setPlaceCategoryMeta(bundle.getParcelable("meta"));
                     break;
             }
 
             if (addressSearchResult.getResultNum() == 1 && !addressSearchResult.getPlaceCategoryDocuments().isEmpty())
             {
                 result = addressSearchResult.clone();
-                addressSearchResult.clearAll();
+                addressSearchResult = null;
+
                 searchResultViewPagerAdapter.setAddressSearchResult(result);
                 searchResultViewPagerAdapter.notifyDataSetChanged();
             } else if (addressSearchResult.getResultNum() == 2)
             {
                 result = addressSearchResult.clone();
-                addressSearchResult.clearAll();
+                addressSearchResult = null;
+
                 searchResultViewPagerAdapter.setAddressSearchResult(result);
                 searchResultViewPagerAdapter.notifyDataSetChanged();
             }
@@ -163,10 +171,7 @@ public class SearchResultFragment extends Fragment implements MapActivity.OnBack
         locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
         rescanMapCenter = (TextView) view.findViewById(R.id.search_result_map_center_rescan);
         rescanMyLocCenter = (TextView) view.findViewById(R.id.search_result_myloc_center_rescan);
-
-        searchResultViewPagerAdapter = new SearchResultViewPagerAdapter(getActivity());
-        searchResultViewPagerAdapter.setAddressSearchResult(result);
-        viewPager2.setAdapter(searchResultViewPagerAdapter);
+        viewPagerIndicator = (ViewPagerIndicator) view.findViewById(R.id.search_result_view_pager_indicator);
 
         return view;
     }
@@ -174,18 +179,16 @@ public class SearchResultFragment extends Fragment implements MapActivity.OnBack
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
+        viewPagerIndicator.createDot(0, indicatorLength);
         rescanMapCenter.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view)
             {
-                MapPointBounds mapPointBounds = ((MapActivity) getActivity()).getMapPointBounds();
-                String rect = mapPointBounds.bottomLeft.getMapPointGeoCoord().longitude + "," +
-                        mapPointBounds.bottomLeft.getMapPointGeoCoord().latitude + "," +
-                        mapPointBounds.topRight.getMapPointGeoCoord().longitude + "," +
-                        mapPointBounds.topRight.getMapPointGeoCoord().latitude;
+                MapPoint.GeoCoordinate mapPoint = ((MapActivity) getActivity()).getMapCenterPoint();
 
-                parameters.setRect(rect);
+                parameters.setX(mapPoint.longitude);
+                parameters.setY(mapPoint.latitude);
 
                 if (isCategory)
                 {
@@ -223,7 +226,7 @@ public class SearchResultFragment extends Fragment implements MapActivity.OnBack
             @Override
             public void onClick(View view)
             {
-                //  onBackPressed();
+                onBackPressed();
             }
         });
 
@@ -241,6 +244,24 @@ public class SearchResultFragment extends Fragment implements MapActivity.OnBack
     @Override
     public void onStart()
     {
+        Bundle bundle = new Bundle();
+        bundle.putParcelable("parameters", parameters);
+        searchResultViewPagerAdapter = new SearchResultViewPagerAdapter(getActivity());
+        searchResultViewPagerAdapter.setAddressSearchResult(result);
+        searchResultViewPagerAdapter.setParameters(bundle);
+
+        viewPager2.setAdapter(searchResultViewPagerAdapter);
+
+        viewPager2.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback()
+        {
+            @Override
+            public void onPageSelected(int position)
+            {
+                viewPagerIndicator.selectDot(position);
+                super.onPageSelected(position);
+            }
+        });
+
         super.onStart();
     }
 
@@ -267,6 +288,16 @@ public class SearchResultFragment extends Fragment implements MapActivity.OnBack
         result = bundle.getParcelable("result");
         parameters = bundle.getParcelable("parameters");
         isCategory = bundle.getBoolean("isCategory");
+        indicatorLength = 0;
+
+        if (!result.getAddressResponseDocuments().isEmpty())
+        {
+            indicatorLength++;
+        }
+        if (!result.getPlaceCategoryDocuments().isEmpty() || !result.getPlaceKeywordDocuments().isEmpty())
+        {
+            indicatorLength++;
+        }
     }
 
     @Override

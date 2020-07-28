@@ -5,8 +5,11 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.AddressResponse.AddressResponseDocuments;
+import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.AddressResponse.AddressResponseMeta;
 import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.PlaceCategoryResponse.PlaceCategoryDocuments;
+import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.PlaceCategoryResponse.PlaceCategoryMeta;
 import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.PlaceKeywordResponse.PlaceKeywordDocuments;
+import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.PlaceKeywordResponse.PlaceKeywordMeta;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -14,29 +17,41 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class AddressSearchResult implements Cloneable, Parcelable
+public class AddressSearchResult implements Parcelable
 {
     private List<AddressResponseDocuments> addressResponseDocuments;
     private List<PlaceKeywordDocuments> placeKeywordDocuments;
     private List<PlaceCategoryDocuments> placeCategoryDocuments;
+
+    private AddressResponseMeta addressResponseMeta;
+    private PlaceKeywordMeta placeKeywordMeta;
+    private PlaceCategoryMeta placeCategoryMeta;
+
     private int resultNum;
+    private long downloadedTime;
 
     public AddressSearchResult()
     {
         resultNum = 0;
+        downloadedTime = System.currentTimeMillis();
         addressResponseDocuments = new ArrayList<>();
         placeKeywordDocuments = new ArrayList<>();
         placeCategoryDocuments = new ArrayList<>();
     }
 
-    public AddressSearchResult(int resultNum, List<AddressResponseDocuments> addressResponseDocuments,
+    public AddressSearchResult(int resultNum, long downloadedTime, List<AddressResponseDocuments> addressResponseDocuments,
                                List<PlaceKeywordDocuments> placeKeywordDocuments,
-                               List<PlaceCategoryDocuments> placeCategoryDocuments)
+                               List<PlaceCategoryDocuments> placeCategoryDocuments, AddressResponseMeta addressResponseMeta,
+                               PlaceKeywordMeta placeKeywordMeta, PlaceCategoryMeta placeCategoryMeta)
     {
         this.resultNum = resultNum;
+        this.downloadedTime = downloadedTime;
         this.addressResponseDocuments = addressResponseDocuments;
         this.placeKeywordDocuments = placeKeywordDocuments;
         this.placeCategoryDocuments = placeCategoryDocuments;
+        this.addressResponseMeta = addressResponseMeta;
+        this.placeKeywordMeta = placeKeywordMeta;
+        this.placeCategoryMeta = placeCategoryMeta;
     }
 
     protected AddressSearchResult(Parcel in)
@@ -44,7 +59,11 @@ public class AddressSearchResult implements Cloneable, Parcelable
         addressResponseDocuments = in.createTypedArrayList(AddressResponseDocuments.CREATOR);
         placeKeywordDocuments = in.createTypedArrayList(PlaceKeywordDocuments.CREATOR);
         placeCategoryDocuments = in.createTypedArrayList(PlaceCategoryDocuments.CREATOR);
+        addressResponseMeta = in.readParcelable(AddressResponseMeta.class.getClassLoader());
+        placeKeywordMeta = in.readParcelable(PlaceKeywordMeta.class.getClassLoader());
+        placeCategoryMeta = in.readParcelable(PlaceCategoryMeta.class.getClassLoader());
         resultNum = in.readInt();
+        downloadedTime = in.readLong();
     }
 
     public static final Creator<AddressSearchResult> CREATOR = new Creator<AddressSearchResult>()
@@ -83,6 +102,39 @@ public class AddressSearchResult implements Cloneable, Parcelable
         return this;
     }
 
+    public AddressSearchResult setAddressResponseMeta(AddressResponseMeta addressResponseMeta)
+    {
+        this.addressResponseMeta = addressResponseMeta;
+        return this;
+    }
+
+    public AddressSearchResult setPlaceKeywordMeta(PlaceKeywordMeta placeKeywordMeta)
+    {
+        this.placeKeywordMeta = placeKeywordMeta;
+        return this;
+    }
+
+    public AddressSearchResult setPlaceCategoryMeta(PlaceCategoryMeta placeCategoryMeta)
+    {
+        this.placeCategoryMeta = placeCategoryMeta;
+        return this;
+    }
+
+    public AddressResponseMeta getAddressResponseMeta()
+    {
+        return addressResponseMeta;
+    }
+
+    public PlaceKeywordMeta getPlaceKeywordMeta()
+    {
+        return placeKeywordMeta;
+    }
+
+    public PlaceCategoryMeta getPlaceCategoryMeta()
+    {
+        return placeCategoryMeta;
+    }
+
     public int getResultNum()
     {
         return resultNum;
@@ -103,14 +155,10 @@ public class AddressSearchResult implements Cloneable, Parcelable
         return placeKeywordDocuments;
     }
 
-    public void clearAll()
+    public long getDownloadedTime()
     {
-        resultNum = 0;
-        addressResponseDocuments.clear();
-        placeKeywordDocuments.clear();
-        placeCategoryDocuments.clear();
+        return downloadedTime;
     }
-
 
     public AddressSearchResult clone()
     {
@@ -122,7 +170,8 @@ public class AddressSearchResult implements Cloneable, Parcelable
         Collections.copy(newPlaceKeywordDocuments, placeKeywordDocuments);
         Collections.copy(newPlaceCategoryDocuments, placeCategoryDocuments);
 
-        return new AddressSearchResult(resultNum, newAddressResponseDocuments, newPlaceKeywordDocuments, newPlaceCategoryDocuments);
+        return new AddressSearchResult(resultNum, downloadedTime, newAddressResponseDocuments, newPlaceKeywordDocuments, newPlaceCategoryDocuments, addressResponseMeta,
+                placeKeywordMeta, placeCategoryMeta);
     }
 
     @Override
@@ -137,6 +186,10 @@ public class AddressSearchResult implements Cloneable, Parcelable
         parcel.writeTypedList(addressResponseDocuments);
         parcel.writeTypedList(placeKeywordDocuments);
         parcel.writeTypedList(placeCategoryDocuments);
+        parcel.writeParcelable(addressResponseMeta, i);
+        parcel.writeParcelable(placeKeywordMeta, i);
+        parcel.writeParcelable(placeCategoryMeta, i);
         parcel.writeInt(resultNum);
+        parcel.writeLong(downloadedTime);
     }
 }
