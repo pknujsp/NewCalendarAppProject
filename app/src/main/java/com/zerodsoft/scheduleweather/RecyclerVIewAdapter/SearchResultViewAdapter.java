@@ -46,6 +46,8 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
     private int pageableCount;
     private boolean isEnd;
 
+    private String searchWord;
+
 
     private OnItemClickedListener onItemClickedListener;
 
@@ -59,6 +61,12 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
         this.context = activity;
         this.onItemClickedListener = (MapActivity) activity;
         this.currentPage = 1;
+    }
+
+    public SearchResultViewAdapter setSearchWord(String searchWord)
+    {
+        this.searchWord = searchWord;
+        return this;
     }
 
     public boolean isEnd()
@@ -171,6 +179,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
                         bundle.putInt("type", DownloadData.ADDRESS);
                         bundle.putInt("position", position);
                         bundle.putLong("downloadedTime", downloadedTime);
+                        bundle.putString("searchWord", searchWord);
 
                         onItemClickedListener.onItemClicked(bundle);
                     }
@@ -193,6 +202,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
                         bundle.putInt("type", DownloadData.PLACE_KEYWORD);
                         bundle.putInt("position", position);
                         bundle.putLong("downloadedTime", downloadedTime);
+                        bundle.putString("searchWord", searchWord);
 
                         onItemClickedListener.onItemClicked(bundle);
                     }
@@ -215,6 +225,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
                         bundle.putInt("type", DownloadData.PLACE_CATEGORY);
                         bundle.putInt("position", position);
                         bundle.putLong("downloadedTime", downloadedTime);
+                        bundle.putString("searchWord", searchWord);
 
                         onItemClickedListener.onItemClicked(bundle);
                     }

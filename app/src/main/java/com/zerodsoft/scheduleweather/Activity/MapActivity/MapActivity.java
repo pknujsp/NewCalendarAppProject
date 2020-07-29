@@ -80,6 +80,7 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
     {
         poiTag = mapPOIItem.getTag();
         clickedPOI = true;
+        // 하단 시트의 좌우 클릭시 poiitem의 풍선이 선택되도록
     }
 
     @Override
@@ -379,6 +380,7 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
     {
         onControlItemFragment.onShowItemInfo(position);
         setCurrentCenterPoint(position);
+        mapView.selectPOIItem(mapView.getPOIItems()[position], true);
     }
 
     public void setZoomGpsButtonVisibility(int value)
@@ -388,13 +390,28 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
         gpsButton.setVisibility(value);
     }
 
-    @Override
-    public void onItemClicked(Bundle bundle)
+    public void onMapButtonClicked(Bundle bundle)
+    {
+        setResultData(bundle);
+        String searchWord = bundle.getString("searchWord");
+
+        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+        fragmentTransaction.hide(SearchResultFragment.getInstance());
+        fragmentTransaction.hide(SearchFragment.getInstance());
+
+        SearchResultHeaderFragment searchResultHeaderFragment = (SearchResultHeaderFragment) getSupportFragmentManager().findFragmentById(R.id.search_result_map_header);
+        searchResultHeaderFragment.setSearchWord(searchWord);
+        fragmentTransaction.show(searchResultHeaderFragment);
+
+        fragmentTransaction.commit();
+    }
+
+    private void setResultData(Bundle bundle)
     {
         setZoomGpsButtonVisibility(View.VISIBLE);
+
         // Item Info Map Activity
         isMainMapActivity = false;
-        String itemName = null;
         resultType = bundle.getInt("type");
         selectedItemPosition = bundle.getInt("position");
         downloadedTime = bundle.getLong("downloadedTime");
@@ -402,23 +419,27 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
         if (resultType == DownloadData.ADDRESS)
         {
             addressList = bundle.getParcelableArrayList("itemsInfo");
-            itemName = addressList.get(selectedItemPosition).getAddressName();
         } else if (resultType == DownloadData.PLACE_KEYWORD)
         {
             placeKeywordList = bundle.getParcelableArrayList("itemsInfo");
-            itemName = placeKeywordList.get(selectedItemPosition).getPlaceName();
         } else if (resultType == DownloadData.PLACE_CATEGORY)
         {
             placeCategoryList = bundle.getParcelableArrayList("itemsInfo");
-            itemName = placeCategoryList.get(selectedItemPosition).getPlaceName();
         }
+    }
+
+    @Override
+    public void onItemClicked(Bundle bundle)
+    {
+        setResultData(bundle);
+        String searchWord = bundle.getString("searchWord");
 
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         fragmentTransaction.hide(SearchResultFragment.getInstance());
         fragmentTransaction.hide(SearchFragment.getInstance());
 
         SearchResultHeaderFragment searchResultHeaderFragment = (SearchResultHeaderFragment) getSupportFragmentManager().findFragmentById(R.id.search_result_map_header);
-        searchResultHeaderFragment.setItemName(itemName);
+        searchResultHeaderFragment.setSearchWord(searchWord);
         fragmentTransaction.show(searchResultHeaderFragment);
 
         fragmentTransaction.commit();

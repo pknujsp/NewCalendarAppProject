@@ -100,8 +100,8 @@ public class SearchResultHeaderFragment extends Fragment
         super.onResume();
     }
 
-    public void setItemName(String itemName)
+    public void setSearchWord(String searchWord)
     {
-        this.itemNameTextView.setText(itemName);
+        this.itemNameTextView.setText(searchWord);
     }
 }

@@ -51,12 +51,19 @@ public class DownloadData
                 AddressResponseMeta meta = response.body().getAddressResponseMeta();
                 List<AddressResponseDocuments> documents = (ArrayList<AddressResponseDocuments>) response.body().getAddressResponseDocumentsList();
 
-                Bundle bundle = new Bundle();
-                bundle.putParcelable("meta", meta);
-                bundle.putParcelableArrayList("documents", (ArrayList<? extends Parcelable>) documents);
-
                 Message message = handler.obtainMessage();
                 message.what = ADDRESS;
+                Bundle bundle = new Bundle();
+
+                if (documents.isEmpty())
+                {
+                    bundle.putBoolean("isEmpty", true);
+                } else
+                {
+                    bundle.putParcelable("meta", meta);
+                    bundle.putParcelableArrayList("documents", (ArrayList<? extends Parcelable>) documents);
+                    bundle.putBoolean("isEmpty", false);
+                }
                 message.setData(bundle);
                 handler.sendMessage(message);
             }
@@ -82,13 +89,20 @@ public class DownloadData
                 PlaceKeywordMeta meta = response.body().getPlaceKeywordMeta();
                 List<PlaceKeywordDocuments> documents = (ArrayList<PlaceKeywordDocuments>) response.body().getPlaceKeywordDocuments();
 
-                Bundle bundle = new Bundle();
-                bundle.putParcelable("meta", meta);
-                bundle.putParcelableArrayList("documents", (ArrayList<? extends Parcelable>) documents);
-
                 Message message = handler.obtainMessage();
-                message.setData(bundle);
                 message.what = PLACE_KEYWORD;
+                Bundle bundle = new Bundle();
+
+                if (documents.isEmpty())
+                {
+                    bundle.putBoolean("isEmpty", true);
+                } else
+                {
+                    bundle.putParcelable("meta", meta);
+                    bundle.putParcelableArrayList("documents", (ArrayList<? extends Parcelable>) documents);
+                    bundle.putBoolean("isEmpty", false);
+                }
+                message.setData(bundle);
                 handler.sendMessage(message);
             }
 
@@ -112,13 +126,20 @@ public class DownloadData
                 PlaceCategoryMeta meta = response.body().getPlaceCategoryMeta();
                 List<PlaceCategoryDocuments> documents = (ArrayList<PlaceCategoryDocuments>) response.body().getPlaceCategoryDocuments();
 
-                Bundle bundle = new Bundle();
-                bundle.putParcelable("meta", meta);
-                bundle.putParcelableArrayList("documents", (ArrayList<? extends Parcelable>) documents);
-
                 Message message = handler.obtainMessage();
-                message.setData(bundle);
                 message.what = PLACE_CATEGORY;
+                Bundle bundle = new Bundle();
+
+                if (documents.isEmpty())
+                {
+                    bundle.putBoolean("isEmpty", true);
+                } else
+                {
+                    bundle.putParcelable("meta", meta);
+                    bundle.putParcelableArrayList("documents", (ArrayList<? extends Parcelable>) documents);
+                    bundle.putBoolean("isEmpty", false);
+                }
+                message.setData(bundle);
                 handler.sendMessage(message);
             }
 

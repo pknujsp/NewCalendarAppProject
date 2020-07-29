@@ -1,6 +1,7 @@
 package com.zerodsoft.scheduleweather.Activity.MapActivity.Fragment;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.location.Location;
 import android.location.LocationListener;
@@ -19,9 +20,14 @@ import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
+import android.widget.Spinner;
+import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 
+import com.zerodsoft.scheduleweather.Activity.AddScheduleActivity;
 import com.zerodsoft.scheduleweather.Activity.MapActivity.MapActivity;
 import com.zerodsoft.scheduleweather.Etc.ViewPagerIndicator;
 import com.zerodsoft.scheduleweather.R;
@@ -32,6 +38,9 @@ import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.AddressSearchResult;
 
 import net.daum.mf.map.api.MapPoint;
 import net.daum.mf.map.api.MapPointBounds;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class SearchResultFragment extends Fragment implements MapActivity.OnBackPressedListener
 {
@@ -45,11 +54,17 @@ public class SearchResultFragment extends Fragment implements MapActivity.OnBack
     private AddressSearchResult result;
     private TextView rescanMapCenter;
     private TextView rescanMyLocCenter;
+    private TextView searchWordTextView;
     private LocalApiPlaceParameter parameters;
     private LocationManager locationManager;
+    private Spinner sortSpinner;
 
     private ViewPagerIndicator viewPagerIndicator;
     private int indicatorLength;
+
+    private String searchWord;
+
+    private List<Integer> resultTypes;
 
     private LocationListener locationListener = new LocationListener()
     {
@@ -61,13 +76,19 @@ public class SearchResultFragment extends Fragment implements MapActivity.OnBack
             // 자원해제
             locationManager.removeUpdates(locationListener);
 
-            if (isCategory)
+            for (int type : resultTypes)
             {
-                DownloadData.searchPlaceCategory(handler, parameters);
-            } else
-            {
-                DownloadData.searchAddress(handler, parameters);
-                DownloadData.searchPlaceKeyWord(handler, parameters);
+                if (type == DownloadData.PLACE_CATEGORY)
+                {
+                    DownloadData.searchPlaceCategory(handler, parameters);
+                    break;
+                } else if (type == DownloadData.ADDRESS)
+                {
+                    DownloadData.searchAddress(handler, parameters);
+                } else if (type == DownloadData.PLACE_KEYWORD)
+                {
+                    DownloadData.searchPlaceKeyWord(handler, parameters);
+                }
             }
         }
 
@@ -90,15 +111,16 @@ public class SearchResultFragment extends Fragment implements MapActivity.OnBack
         }
     };
 
-    private boolean isCategory;
-
+    @SuppressLint("HandlerLeak")
     private Handler handler = new Handler()
     {
         private AddressSearchResult addressSearchResult = null;
+        private int totalCallCount = 0;
 
         @Override
         public void handleMessage(Message msg)
         {
+            ++totalCallCount;
             Bundle bundle = msg.getData();
 
             if (addressSearchResult == null)
@@ -122,20 +144,15 @@ public class SearchResultFragment extends Fragment implements MapActivity.OnBack
                     break;
             }
 
-            if (addressSearchResult.getResultNum() == 1 && !addressSearchResult.getPlaceCategoryDocuments().isEmpty())
+            if (totalCallCount == indicatorLength)
             {
                 result = addressSearchResult.clone();
-                addressSearchResult = null;
 
                 searchResultViewPagerAdapter.setAddressSearchResult(result);
                 searchResultViewPagerAdapter.notifyDataSetChanged();
-            } else if (addressSearchResult.getResultNum() == 2)
-            {
-                result = addressSearchResult.clone();
-                addressSearchResult = null;
 
-                searchResultViewPagerAdapter.setAddressSearchResult(result);
-                searchResultViewPagerAdapter.notifyDataSetChanged();
+                totalCallCount = 0;
+                addressSearchResult = null;
             }
         }
     };
@@ -172,6 +189,10 @@ public class SearchResultFragment extends Fragment implements MapActivity.OnBack
         rescanMapCenter = (TextView) view.findViewById(R.id.search_result_map_center_rescan);
         rescanMyLocCenter = (TextView) view.findViewById(R.id.search_result_myloc_center_rescan);
         viewPagerIndicator = (ViewPagerIndicator) view.findViewById(R.id.search_result_view_pager_indicator);
+        sortSpinner = (Spinner) view.findViewById(R.id.search_sort_spinner);
+        searchWordTextView = (TextView) view.findViewById(R.id.search_result_searchword_textview);
+
+        setSortSpinner();
 
         return view;
     }
@@ -180,6 +201,7 @@ public class SearchResultFragment extends Fragment implements MapActivity.OnBack
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         viewPagerIndicator.createDot(0, indicatorLength);
+
         rescanMapCenter.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -190,13 +212,19 @@ public class SearchResultFragment extends Fragment implements MapActivity.OnBack
                 parameters.setX(mapPoint.longitude);
                 parameters.setY(mapPoint.latitude);
 
-                if (isCategory)
+                for (int type : resultTypes)
                 {
-                    DownloadData.searchPlaceCategory(handler, parameters);
-                } else
-                {
-                    DownloadData.searchAddress(handler, parameters);
-                    DownloadData.searchPlaceKeyWord(handler, parameters);
+                    if (type == DownloadData.PLACE_CATEGORY)
+                    {
+                        DownloadData.searchPlaceCategory(handler, parameters);
+                        break;
+                    } else if (type == DownloadData.ADDRESS)
+                    {
+                        DownloadData.searchAddress(handler, parameters);
+                    } else if (type == DownloadData.PLACE_KEYWORD)
+                    {
+                        DownloadData.searchPlaceKeyWord(handler, parameters);
+                    }
                 }
             }
         });
@@ -235,7 +263,8 @@ public class SearchResultFragment extends Fragment implements MapActivity.OnBack
             @Override
             public void onClick(View view)
             {
-
+                //  Bundle bundle = new Bundle();
+                //  ((MapActivity) getActivity()).onMapButtonClicked(bundle);
             }
         });
         super.onViewCreated(view, savedInstanceState);
@@ -249,6 +278,8 @@ public class SearchResultFragment extends Fragment implements MapActivity.OnBack
         searchResultViewPagerAdapter = new SearchResultViewPagerAdapter(getActivity());
         searchResultViewPagerAdapter.setAddressSearchResult(result);
         searchResultViewPagerAdapter.setParameters(bundle);
+        searchResultViewPagerAdapter.setSearchWord(searchWordTextView.getText().toString());
+        searchWordTextView.setText(searchWord);
 
         viewPager2.setAdapter(searchResultViewPagerAdapter);
 
@@ -287,24 +318,65 @@ public class SearchResultFragment extends Fragment implements MapActivity.OnBack
     {
         result = bundle.getParcelable("result");
         parameters = bundle.getParcelable("parameters");
-        isCategory = bundle.getBoolean("isCategory");
-        indicatorLength = 0;
-
-        if (!result.getAddressResponseDocuments().isEmpty())
-        {
-            indicatorLength++;
-        }
-        if (!result.getPlaceCategoryDocuments().isEmpty() || !result.getPlaceKeywordDocuments().isEmpty())
-        {
-            indicatorLength++;
-        }
+        searchWord = bundle.getString("searchWord");
+        indicatorLength = result.getResultNum();
+        resultTypes = result.getResultTypes();
     }
 
     @Override
     public void onBackPressed()
     {
+        searchResultViewPagerAdapter = null;
         FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
         fragmentManager.popBackStackImmediate();
         fragmentManager.beginTransaction().show(SearchFragment.getInstance()).commit();
+    }
+
+    private void setSortSpinner()
+    {
+        List<String> sortList = new ArrayList<>();
+        sortList.add("정확도순");
+        sortList.add("거리순");
+
+        SpinnerAdapter adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_dropdown_item, sortList);
+        sortSpinner.setAdapter(adapter);
+
+        sortSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
+        {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l)
+            {
+                switch (i)
+                {
+                    case 0:
+                        parameters.setSort(LocalApiPlaceParameter.SORT_ACCURACY);
+                        break;
+                    case 1:
+                        parameters.setSort(LocalApiPlaceParameter.SORT_DISTANCE);
+                        break;
+                }
+
+                for (int type : resultTypes)
+                {
+                    if (type == DownloadData.PLACE_CATEGORY)
+                    {
+                        DownloadData.searchPlaceCategory(handler, parameters);
+                        break;
+                    } else if (type == DownloadData.ADDRESS)
+                    {
+                        DownloadData.searchAddress(handler, parameters);
+                    } else if (type == DownloadData.PLACE_KEYWORD)
+                    {
+                        DownloadData.searchPlaceKeyWord(handler, parameters);
+                    }
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView)
+            {
+
+            }
+        });
     }
 }

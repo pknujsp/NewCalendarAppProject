@@ -1,5 +1,6 @@
 package com.zerodsoft.scheduleweather.RecyclerVIewAdapter;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
@@ -23,12 +24,15 @@ import com.zerodsoft.scheduleweather.Retrofit.DownloadData;
 import com.zerodsoft.scheduleweather.Retrofit.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.AddressSearchResult;
 
+import java.util.List;
+
 
 public class SearchResultViewPagerAdapter extends RecyclerView.Adapter<SearchResultViewPagerAdapter.SearchResultViewPagerHolder>
 {
     private Activity context;
     private AddressSearchResult addressSearchResult = new AddressSearchResult();
     private LocalApiPlaceParameter parameters;
+    private String searchWord;
     private boolean existingAddress = false;
     private boolean existingPlaceKeyword = false;
     private boolean existingPlaceCategory = false;
@@ -39,6 +43,12 @@ public class SearchResultViewPagerAdapter extends RecyclerView.Adapter<SearchRes
         this.parameters = bundle.getParcelable("parameters");
     }
 
+    public SearchResultViewPagerAdapter setSearchWord(String searchWord)
+    {
+        this.searchWord = searchWord;
+        return this;
+    }
+
     public SearchResultViewPagerAdapter(Activity activity)
     {
         this.context = activity;
@@ -47,31 +57,33 @@ public class SearchResultViewPagerAdapter extends RecyclerView.Adapter<SearchRes
     public void setAddressSearchResult(AddressSearchResult addressSearchResult)
     {
         this.addressSearchResult = addressSearchResult;
+        List<Integer> resultTypes = addressSearchResult.getResultTypes();
 
-        if (!addressSearchResult.getAddressResponseDocuments().isEmpty())
-        {
-            existingAddress = true;
-        } else
-        {
-            existingAddress = false;
-        }
+        existingPlaceCategory = false;
+        existingPlaceKeyword = false;
+        existingAddress = false;
 
-        if (!addressSearchResult.getPlaceCategoryDocuments().isEmpty())
+        for (int type : resultTypes)
         {
-            existingPlaceCategory = true;
-        } else
-        {
-            existingPlaceCategory = false;
-        }
-
-        if (!addressSearchResult.getPlaceKeywordDocuments().isEmpty())
-        {
-            existingPlaceKeyword = true;
-        } else
-        {
-            existingPlaceKeyword = false;
+            if (type == DownloadData.PLACE_CATEGORY)
+            {
+                existingPlaceCategory = true;
+                break;
+            } else if (type == DownloadData.ADDRESS)
+            {
+                existingAddress = true;
+            } else if (type == DownloadData.PLACE_KEYWORD)
+            {
+                existingPlaceKeyword = true;
+            }
         }
     }
+
+    public void changeAddressSearchResult(AddressSearchResult addressSearchResult)
+    {
+        this.addressSearchResult = addressSearchResult;
+    }
+
 
     @NonNull
     @Override
@@ -85,6 +97,8 @@ public class SearchResultViewPagerAdapter extends RecyclerView.Adapter<SearchRes
     @Override
     public void onBindViewHolder(@NonNull SearchResultViewPagerHolder holder, int position)
     {
+
+
         if (existingAddress)
         {
             holder.onBind(addressSearchResult, DownloadData.ADDRESS, parameters);
@@ -116,6 +130,7 @@ public class SearchResultViewPagerAdapter extends RecyclerView.Adapter<SearchRes
 
         private LocalApiPlaceParameter parameters;
 
+        @SuppressLint("HandlerLeak")
         private Handler handler = new Handler()
         {
             @Override
@@ -182,7 +197,6 @@ public class SearchResultViewPagerAdapter extends RecyclerView.Adapter<SearchRes
                     }
                 }
             });
-
         }
 
         public void onBind(AddressSearchResult addressSearchResult, int type, LocalApiPlaceParameter parameters)
@@ -206,6 +220,7 @@ public class SearchResultViewPagerAdapter extends RecyclerView.Adapter<SearchRes
                 resultNum.setText(Integer.toString(addressSearchResult.getPlaceCategoryMeta().getTotalCount()));
                 adapter.setPlaceCategoryList(addressSearchResult.getPlaceCategoryDocuments(), addressSearchResult.getPlaceCategoryMeta());
             }
+            adapter.setSearchWord(searchWord);
             adapter.setDownloadedTime(addressSearchResult.getDownloadedTime());
             adapter.notifyDataSetChanged();
         }

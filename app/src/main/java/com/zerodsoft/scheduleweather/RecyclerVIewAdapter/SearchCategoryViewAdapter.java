@@ -22,7 +22,7 @@ public class SearchCategoryViewAdapter extends RecyclerView.Adapter<SearchCatego
 
     public interface OnCategoryClickListener
     {
-        void selectedCategory(String name);
+        void selectedCategory(String name, String description);
     }
 
     private OnCategoryClickListener onCategoryClickListener;
@@ -52,7 +52,7 @@ public class SearchCategoryViewAdapter extends RecyclerView.Adapter<SearchCatego
             @Override
             public void onClick(View view)
             {
-                onCategoryClickListener.selectedCategory(holder.getName());
+                onCategoryClickListener.selectedCategory(holder.getName(), holder.getDescription());
             }
         });
     }
@@ -83,6 +83,11 @@ public class SearchCategoryViewAdapter extends RecyclerView.Adapter<SearchCatego
         public String getName()
         {
             return categoryInfo.getName();
+        }
+
+        public String getDescription()
+        {
+            return categoryDescriptionTextView.getText().toString();
         }
 
         public TextView getCategoryDescriptionTextView()

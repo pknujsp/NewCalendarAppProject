@@ -1,5 +1,6 @@
 package com.zerodsoft.scheduleweather.Activity.MapActivity.Fragment;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -38,58 +39,58 @@ public class SearchFragment extends Fragment implements SearchCategoryViewAdapte
     private RecyclerView searchHistoryRecyclerView;
     private RecyclerView itemCategoryRecyclerView;
     private LocalApiPlaceParameter parameters;
+    private int calledDownloadTotalCount;
 
     private double latitude;
     private double longitude;
 
+    @SuppressLint("HandlerLeak")
     private Handler handler = new Handler()
     {
         private AddressSearchResult addressSearchResult = null;
+        private int totalCallCount = 0;
 
         @Override
         public void handleMessage(Message msg)
         {
-            Bundle bundle = msg.getData();
+            ++totalCallCount;
 
             if (addressSearchResult == null)
             {
                 addressSearchResult = new AddressSearchResult();
             }
+            Bundle bundle = msg.getData();
 
-            switch (msg.what)
+            if (!bundle.getBoolean("isEmpty"))
             {
-                case DownloadData.ADDRESS:
-                    addressSearchResult.setAddressResponseDocuments(bundle.getParcelableArrayList("documents"));
-                    addressSearchResult.setAddressResponseMeta(bundle.getParcelable("meta"));
-                    break;
-                case DownloadData.PLACE_KEYWORD:
-                    addressSearchResult.setPlaceKeywordDocuments(bundle.getParcelableArrayList("documents"));
-                    addressSearchResult.setPlaceKeywordMeta(bundle.getParcelable("meta"));
-                    break;
-                case DownloadData.PLACE_CATEGORY:
-                    addressSearchResult.setPlaceCategoryDocuments(bundle.getParcelableArrayList("documents"));
-                    addressSearchResult.setPlaceCategoryMeta(bundle.getParcelable("meta"));
-                    break;
+                switch (msg.what)
+                {
+                    case DownloadData.ADDRESS:
+                        addressSearchResult.setAddressResponseDocuments(bundle.getParcelableArrayList("documents"));
+                        addressSearchResult.setAddressResponseMeta(bundle.getParcelable("meta"));
+                        break;
+                    case DownloadData.PLACE_KEYWORD:
+                        addressSearchResult.setPlaceKeywordDocuments(bundle.getParcelableArrayList("documents"));
+                        addressSearchResult.setPlaceKeywordMeta(bundle.getParcelable("meta"));
+                        break;
+                    case DownloadData.PLACE_CATEGORY:
+                        addressSearchResult.setPlaceCategoryDocuments(bundle.getParcelableArrayList("documents"));
+                        addressSearchResult.setPlaceCategoryMeta(bundle.getParcelable("meta"));
+                        break;
+                }
             }
 
-            if (addressSearchResult.getResultNum() == 1 && !addressSearchResult.getPlaceCategoryDocuments().isEmpty())
+            if (totalCallCount == calledDownloadTotalCount)
             {
                 Bundle dataBundle = new Bundle();
                 dataBundle.putParcelable("result", addressSearchResult.clone());
                 dataBundle.putParcelable("parameters", parameters);
-                dataBundle.putBoolean("isCategory", true);
-                addressSearchResult = null;
+                dataBundle.putString("searchWord", searchEditText.getText().toString());
 
                 ((MapActivity) getActivity()).onFragmentChanged(MapActivity.SEARCH_RESULT_FRAGMENT, dataBundle);
-            } else if (addressSearchResult.getResultNum() == 2)
-            {
-                Bundle dataBundle = new Bundle();
-                dataBundle.putParcelable("result", addressSearchResult.clone());
-                dataBundle.putParcelable("parameters", parameters);
-                dataBundle.putBoolean("isCategory", false);
-                addressSearchResult = null;
 
-                ((MapActivity) getActivity()).onFragmentChanged(MapActivity.SEARCH_RESULT_FRAGMENT, dataBundle);
+                totalCallCount = 0;
+                addressSearchResult = null;
             }
         }
     };
@@ -143,6 +144,7 @@ public class SearchFragment extends Fragment implements SearchCategoryViewAdapte
                 String searchWord = searchEditText.getText().toString();
                 String name = getCategoryName(searchWord);
 
+                parameters = null;
                 parameters = new LocalApiPlaceParameter().setX(longitude)
                         .setY(latitude).setPage(LocalApiPlaceParameter.DEFAULT_PAGE)
                         .setSize(LocalApiPlaceParameter.DEFAULT_SIZE)
@@ -150,11 +152,14 @@ public class SearchFragment extends Fragment implements SearchCategoryViewAdapte
 
                 if (name != null)
                 {
+                    searchEditText.setText(searchWord);
                     parameters.setCategoryGroupCode(name);
+                    calledDownloadTotalCount = 1;
                     DownloadData.searchPlaceCategory(handler, parameters);
                 } else
                 {
                     parameters.setQuery(searchWord);
+                    calledDownloadTotalCount = 2;
                     DownloadData.searchAddress(handler, parameters);
                     DownloadData.searchPlaceKeyWord(handler, parameters);
                 }
@@ -199,9 +204,11 @@ public class SearchFragment extends Fragment implements SearchCategoryViewAdapte
 
 
     @Override
-    public void selectedCategory(String name)
+    public void selectedCategory(String name, String description)
     {
         // 카테고리 이름을 전달받음
+        searchEditText.setText(description);
+        parameters = null;
         parameters = new LocalApiPlaceParameter().setX(longitude)
                 .setY(latitude)
                 .setPage(LocalApiPlaceParameter.DEFAULT_PAGE)
@@ -209,6 +216,7 @@ public class SearchFragment extends Fragment implements SearchCategoryViewAdapte
                 .setSort(LocalApiPlaceParameter.DEFAULT_SORT)
                 .setCategoryGroupCode(name);
 
+        calledDownloadTotalCount = 1;
         DownloadData.searchPlaceCategory(handler, parameters);
     }
 

@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.zerodsoft.scheduleweather.Retrofit.DownloadData;
 import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.AddressResponse.AddressResponseDocuments;
 import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.AddressResponse.AddressResponseMeta;
 import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.PlaceCategoryResponse.PlaceCategoryDocuments;
@@ -191,5 +192,25 @@ public class AddressSearchResult implements Parcelable
         parcel.writeParcelable(placeCategoryMeta, i);
         parcel.writeInt(resultNum);
         parcel.writeLong(downloadedTime);
+    }
+
+    public List<Integer> getResultTypes()
+    {
+        // 검색된 타입들을 배열로 반환
+        List<Integer> types = new ArrayList<>();
+
+        if (addressResponseDocuments.size() != 0)
+        {
+            types.add(DownloadData.ADDRESS);
+        }
+        if (placeKeywordDocuments.size() != 0)
+        {
+            types.add(DownloadData.PLACE_KEYWORD);
+        }
+        if (placeCategoryDocuments.size() != 0)
+        {
+            types.add(DownloadData.PLACE_CATEGORY);
+        }
+        return types;
     }
 }
