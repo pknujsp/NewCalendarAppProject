@@ -46,14 +46,11 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
     private int pageableCount;
     private boolean isEnd;
 
-    private String searchWord;
-
-
     private OnItemClickedListener onItemClickedListener;
 
     public interface OnItemClickedListener
     {
-        void onItemClicked(Bundle bundle);
+        void onItemClicked(int position, int type);
     }
 
     public SearchResultViewAdapter(Activity activity)
@@ -61,12 +58,6 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
         this.context = activity;
         this.onItemClickedListener = (MapActivity) activity;
         this.currentPage = 1;
-    }
-
-    public SearchResultViewAdapter setSearchWord(String searchWord)
-    {
-        this.searchWord = searchWord;
-        return this;
     }
 
     public boolean isEnd()
@@ -170,18 +161,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
                     @Override
                     public void onClick(View view)
                     {
-                        Bundle bundle = new Bundle();
-
-                        List<AddressResponseDocuments> copiedList = new ArrayList<>(addressList);
-                        Collections.copy(copiedList, addressList);
-
-                        bundle.putParcelableArrayList("itemsInfo", (ArrayList<? extends Parcelable>) copiedList);
-                        bundle.putInt("type", DownloadData.ADDRESS);
-                        bundle.putInt("position", position);
-                        bundle.putLong("downloadedTime", downloadedTime);
-                        bundle.putString("searchWord", searchWord);
-
-                        onItemClickedListener.onItemClicked(bundle);
+                        onItemClickedListener.onItemClicked(position, type);
                     }
                 });
                 break;
@@ -193,18 +173,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
                     @Override
                     public void onClick(View view)
                     {
-                        Bundle bundle = new Bundle();
-
-                        List<PlaceKeywordDocuments> copiedList = new ArrayList<>(placeKeywordList);
-                        Collections.copy(copiedList, placeKeywordList);
-
-                        bundle.putParcelableArrayList("itemsInfo", (ArrayList<? extends Parcelable>) copiedList);
-                        bundle.putInt("type", DownloadData.PLACE_KEYWORD);
-                        bundle.putInt("position", position);
-                        bundle.putLong("downloadedTime", downloadedTime);
-                        bundle.putString("searchWord", searchWord);
-
-                        onItemClickedListener.onItemClicked(bundle);
+                        onItemClickedListener.onItemClicked(position, type);
                     }
                 });
                 break;
@@ -216,18 +185,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
                     @Override
                     public void onClick(View view)
                     {
-                        Bundle bundle = new Bundle();
-
-                        List<PlaceCategoryDocuments> copiedList = new ArrayList<>(placeCategoryList);
-                        Collections.copy(copiedList, placeCategoryList);
-
-                        bundle.putParcelableArrayList("itemsInfo", (ArrayList<? extends Parcelable>) copiedList);
-                        bundle.putInt("type", DownloadData.PLACE_CATEGORY);
-                        bundle.putInt("position", position);
-                        bundle.putLong("downloadedTime", downloadedTime);
-                        bundle.putString("searchWord", searchWord);
-
-                        onItemClickedListener.onItemClicked(bundle);
+                        onItemClickedListener.onItemClicked(position, type);
                     }
                 });
                 break;

@@ -13,6 +13,7 @@ import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.os.Handler;
@@ -22,14 +23,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 
-import com.zerodsoft.scheduleweather.Activity.AddScheduleActivity;
 import com.zerodsoft.scheduleweather.Activity.MapActivity.MapActivity;
 import com.zerodsoft.scheduleweather.Etc.ViewPagerIndicator;
+import com.zerodsoft.scheduleweather.Fragment.SearchResultHeaderFragment;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.RecyclerVIewAdapter.SearchResultViewPagerAdapter;
 import com.zerodsoft.scheduleweather.Retrofit.DownloadData;
@@ -37,24 +37,20 @@ import com.zerodsoft.scheduleweather.Retrofit.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.AddressSearchResult;
 
 import net.daum.mf.map.api.MapPoint;
-import net.daum.mf.map.api.MapPointBounds;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class SearchResultFragment extends Fragment implements MapActivity.OnBackPressedListener
+public class SearchResultListFragment extends Fragment
 {
     public static final String TAG = "SearchResult Fragment";
-    private static SearchResultFragment searchResultFragment = null;
+    private static SearchResultListFragment searchResultListFragment = null;
 
-    private ImageButton closeButton;
-    private ImageButton goToMapButton;
     private ViewPager2 viewPager2;
     private SearchResultViewPagerAdapter searchResultViewPagerAdapter;
     private AddressSearchResult result;
     private TextView rescanMapCenter;
     private TextView rescanMyLocCenter;
-    private TextView searchWordTextView;
     private LocalApiPlaceParameter parameters;
     private LocationManager locationManager;
     private Spinner sortSpinner;
@@ -62,9 +58,12 @@ public class SearchResultFragment extends Fragment implements MapActivity.OnBack
     private ViewPagerIndicator viewPagerIndicator;
     private int indicatorLength;
 
+    private OnPageCallback onPageCallback;
+
     private String searchWord;
 
     private List<Integer> resultTypes;
+
 
     private LocationListener locationListener = new LocationListener()
     {
@@ -151,23 +150,29 @@ public class SearchResultFragment extends Fragment implements MapActivity.OnBack
                 searchResultViewPagerAdapter.setAddressSearchResult(result);
                 searchResultViewPagerAdapter.notifyDataSetChanged();
 
+                Bundle dataBundle = new Bundle();
+                dataBundle.putParcelable("result", result);
+                dataBundle.putLong("downloadedTime", System.currentTimeMillis());
+
+                ((MapActivity) getActivity()).onFragmentChanged(MapActivity.SEARCH_RESULT_FRAGMENT_UPDATE, dataBundle);
+
                 totalCallCount = 0;
                 addressSearchResult = null;
             }
         }
     };
 
-    public SearchResultFragment()
+    public SearchResultListFragment()
     {
     }
 
-    public static SearchResultFragment getInstance()
+    public static SearchResultListFragment getInstance()
     {
-        if (searchResultFragment == null)
+        if (searchResultListFragment == null)
         {
-            searchResultFragment = new SearchResultFragment();
+            searchResultListFragment = new SearchResultListFragment();
         }
-        return searchResultFragment;
+        return searchResultListFragment;
     }
 
     @Override
@@ -180,17 +185,14 @@ public class SearchResultFragment extends Fragment implements MapActivity.OnBack
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState)
     {
-        View view = inflater.inflate(R.layout.fragment_search_result, container, false);
+        View view = inflater.inflate(R.layout.fragment_search_result_list, container, false);
 
-        closeButton = (ImageButton) view.findViewById(R.id.search_result_close_button);
-        goToMapButton = (ImageButton) view.findViewById(R.id.search_result_map_button);
         viewPager2 = (ViewPager2) view.findViewById(R.id.search_result_viewpager);
         locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
         rescanMapCenter = (TextView) view.findViewById(R.id.search_result_map_center_rescan);
         rescanMyLocCenter = (TextView) view.findViewById(R.id.search_result_myloc_center_rescan);
         viewPagerIndicator = (ViewPagerIndicator) view.findViewById(R.id.search_result_view_pager_indicator);
         sortSpinner = (Spinner) view.findViewById(R.id.search_sort_spinner);
-        searchWordTextView = (TextView) view.findViewById(R.id.search_result_searchword_textview);
 
         setSortSpinner();
 
@@ -248,25 +250,6 @@ public class SearchResultFragment extends Fragment implements MapActivity.OnBack
             }
         });
 
-
-        closeButton.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                onBackPressed();
-            }
-        });
-
-        goToMapButton.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                //  Bundle bundle = new Bundle();
-                //  ((MapActivity) getActivity()).onMapButtonClicked(bundle);
-            }
-        });
         super.onViewCreated(view, savedInstanceState);
     }
 
@@ -275,23 +258,16 @@ public class SearchResultFragment extends Fragment implements MapActivity.OnBack
     {
         Bundle bundle = new Bundle();
         bundle.putParcelable("parameters", parameters);
+
         searchResultViewPagerAdapter = new SearchResultViewPagerAdapter(getActivity());
         searchResultViewPagerAdapter.setAddressSearchResult(result);
         searchResultViewPagerAdapter.setParameters(bundle);
-        searchResultViewPagerAdapter.setSearchWord(searchWordTextView.getText().toString());
-        searchWordTextView.setText(searchWord);
+        searchResultViewPagerAdapter.setSearchWord(searchWord);
 
         viewPager2.setAdapter(searchResultViewPagerAdapter);
 
-        viewPager2.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback()
-        {
-            @Override
-            public void onPageSelected(int position)
-            {
-                viewPagerIndicator.selectDot(position);
-                super.onPageSelected(position);
-            }
-        });
+        onPageCallback = new OnPageCallback();
+        viewPager2.registerOnPageChangeCallback(onPageCallback);
 
         super.onStart();
     }
@@ -323,13 +299,11 @@ public class SearchResultFragment extends Fragment implements MapActivity.OnBack
         resultTypes = result.getResultTypes();
     }
 
-    @Override
-    public void onBackPressed()
+
+    public int getCurrentListType()
     {
-        searchResultViewPagerAdapter = null;
-        FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
-        fragmentManager.popBackStackImmediate();
-        fragmentManager.beginTransaction().show(SearchFragment.getInstance()).commit();
+        // header fragment에서 change 버튼 클릭 시 리스트의 타입을 가져오기 위해 사용
+        return searchResultViewPagerAdapter.getCurrentListType(onPageCallback.finalPosition);
     }
 
     private void setSortSpinner()
@@ -378,5 +352,19 @@ public class SearchResultFragment extends Fragment implements MapActivity.OnBack
 
             }
         });
+    }
+
+
+    class OnPageCallback extends ViewPager2.OnPageChangeCallback
+    {
+        public int finalPosition;
+
+        @Override
+        public void onPageSelected(int position)
+        {
+            finalPosition = position;
+            viewPagerIndicator.selectDot(position);
+            super.onPageSelected(position);
+        }
     }
 }

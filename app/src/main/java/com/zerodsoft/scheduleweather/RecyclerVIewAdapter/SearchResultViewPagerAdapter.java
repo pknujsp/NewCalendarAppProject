@@ -7,6 +7,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Parcelable;
+import android.util.SparseArray;
+import android.util.SparseIntArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,6 +38,8 @@ public class SearchResultViewPagerAdapter extends RecyclerView.Adapter<SearchRes
     private boolean existingAddress = false;
     private boolean existingPlaceKeyword = false;
     private boolean existingPlaceCategory = false;
+
+    private SparseIntArray sparseIntArray;
 
 
     public void setParameters(Bundle bundle)
@@ -84,6 +88,11 @@ public class SearchResultViewPagerAdapter extends RecyclerView.Adapter<SearchRes
         this.addressSearchResult = addressSearchResult;
     }
 
+    public int getCurrentListType(int position)
+    {
+        return sparseIntArray.get(position);
+    }
+
 
     @NonNull
     @Override
@@ -91,14 +100,13 @@ public class SearchResultViewPagerAdapter extends RecyclerView.Adapter<SearchRes
     {
         Context context = parent.getContext();
         View view = LayoutInflater.from(context).inflate(R.layout.search_result_viewpager_item, parent, false);
+        sparseIntArray = new SparseIntArray();
         return new SearchResultViewPagerHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull SearchResultViewPagerHolder holder, int position)
     {
-
-
         if (existingAddress)
         {
             holder.onBind(addressSearchResult, DownloadData.ADDRESS, parameters);
@@ -112,6 +120,7 @@ public class SearchResultViewPagerAdapter extends RecyclerView.Adapter<SearchRes
             holder.onBind(addressSearchResult, DownloadData.PLACE_CATEGORY, parameters);
             existingPlaceCategory = false;
         }
+        sparseIntArray.put(position, holder.getType());
     }
 
     @Override
@@ -220,9 +229,13 @@ public class SearchResultViewPagerAdapter extends RecyclerView.Adapter<SearchRes
                 resultNum.setText(Integer.toString(addressSearchResult.getPlaceCategoryMeta().getTotalCount()));
                 adapter.setPlaceCategoryList(addressSearchResult.getPlaceCategoryDocuments(), addressSearchResult.getPlaceCategoryMeta());
             }
-            adapter.setSearchWord(searchWord);
             adapter.setDownloadedTime(addressSearchResult.getDownloadedTime());
             adapter.notifyDataSetChanged();
+        }
+
+        public int getType()
+        {
+            return type;
         }
     }
 }

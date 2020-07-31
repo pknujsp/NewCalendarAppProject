@@ -19,13 +19,16 @@ import android.widget.TextView;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.Activity.MapActivity.Fragment.SearchFragment;
-import com.zerodsoft.scheduleweather.Activity.MapActivity.Fragment.SearchResultFragment;
+import com.zerodsoft.scheduleweather.Activity.MapActivity.Fragment.SearchResultListFragment;
 import com.zerodsoft.scheduleweather.Fragment.MapBottomSheetFragment;
+import com.zerodsoft.scheduleweather.Fragment.SearchResultController;
 import com.zerodsoft.scheduleweather.Fragment.SearchResultHeaderFragment;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.RecyclerVIewAdapter.SearchResultViewAdapter;
 import com.zerodsoft.scheduleweather.Retrofit.DownloadData;
+import com.zerodsoft.scheduleweather.Retrofit.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.AddressResponse.AddressResponseDocuments;
+import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.AddressSearchResult;
 import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.PlaceCategoryResponse.PlaceCategoryDocuments;
 import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.PlaceKeywordResponse.PlaceKeywordDocuments;
 import com.zerodsoft.scheduleweather.Room.DTO.LocationDTO;
@@ -44,6 +47,7 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
 {
     public static final int SEARCH_FRAGMENT = 0;
     public static final int SEARCH_RESULT_FRAGMENT = 1;
+    public static final int SEARCH_RESULT_FRAGMENT_UPDATE = 2;
 
     private TextView addressTextView;
     private ImageButton zoomInButton;
@@ -59,9 +63,13 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
     private int selectedItemPosition;
     public static boolean isMainMapActivity = true;
 
+    private AddressSearchResult searchResult;
+
     private LocationDTO locationDTO;
 
     private MapBottomSheetFragment mapBottomSheetFragment;
+
+    private SearchResultController searchResultController;
 
     public MapView mapView;
     private boolean opendPOIInfo = false;
@@ -378,6 +386,7 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
 
     public void onItemSelected(int position)
     {
+        // 다른 아이템을 선택한 경우에 사용된다
         onControlItemFragment.onShowItemInfo(position);
         setCurrentCenterPoint(position);
         mapView.selectPOIItem(mapView.getPOIItems()[position], true);
@@ -390,61 +399,50 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
         gpsButton.setVisibility(value);
     }
 
-    public void onMapButtonClicked(Bundle bundle)
-    {
-        setResultData(bundle);
-        String searchWord = bundle.getString("searchWord");
-
-        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        fragmentTransaction.hide(SearchResultFragment.getInstance());
-        fragmentTransaction.hide(SearchFragment.getInstance());
-
-        SearchResultHeaderFragment searchResultHeaderFragment = (SearchResultHeaderFragment) getSupportFragmentManager().findFragmentById(R.id.search_result_map_header);
-        searchResultHeaderFragment.setSearchWord(searchWord);
-        fragmentTransaction.show(searchResultHeaderFragment);
-
-        fragmentTransaction.commit();
-    }
-
-    private void setResultData(Bundle bundle)
+    public void onChangeButtonClicked(int type)
     {
         setZoomGpsButtonVisibility(View.VISIBLE);
-
-        // Item Info Map Activity
+        searchResultController.setListVisibility(false);
         isMainMapActivity = false;
-        resultType = bundle.getInt("type");
-        selectedItemPosition = bundle.getInt("position");
-        downloadedTime = bundle.getLong("downloadedTime");
+        resultType = type;
+        setPoiItems();
+        mapView.fitMapViewAreaToShowAllPOIItems();
+    }
 
-        if (resultType == DownloadData.ADDRESS)
+
+    public void setResultData(Bundle bundle)
+    {
+        // 검색 완료 후 데이터를 저장
+        searchResult = bundle.getParcelable("result");
+        List<Integer> types = searchResult.getResultTypes();
+
+        for (int type : types)
         {
-            addressList = bundle.getParcelableArrayList("itemsInfo");
-        } else if (resultType == DownloadData.PLACE_KEYWORD)
-        {
-            placeKeywordList = bundle.getParcelableArrayList("itemsInfo");
-        } else if (resultType == DownloadData.PLACE_CATEGORY)
-        {
-            placeCategoryList = bundle.getParcelableArrayList("itemsInfo");
+            if (type == DownloadData.ADDRESS)
+            {
+                addressList = searchResult.getAddressResponseDocuments();
+            } else if (type == DownloadData.PLACE_KEYWORD)
+            {
+                placeKeywordList = searchResult.getPlaceKeywordDocuments();
+            } else if (type == DownloadData.PLACE_CATEGORY)
+            {
+                placeCategoryList = searchResult.getPlaceCategoryDocuments();
+                break;
+            }
         }
     }
 
-    @Override
-    public void onItemClicked(Bundle bundle)
+    public void onItemClicked(int position, int type)
     {
-        setResultData(bundle);
-        String searchWord = bundle.getString("searchWord");
+        // list에서 아이템을 선택한 경우에 사용된다
+        setZoomGpsButtonVisibility(View.VISIBLE);
+        isMainMapActivity = false;
+        selectedItemPosition = position;
+        resultType = type;
 
-        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        fragmentTransaction.hide(SearchResultFragment.getInstance());
-        fragmentTransaction.hide(SearchFragment.getInstance());
+        searchResultController.setListVisibility(false);
 
-        SearchResultHeaderFragment searchResultHeaderFragment = (SearchResultHeaderFragment) getSupportFragmentManager().findFragmentById(R.id.search_result_map_header);
-        searchResultHeaderFragment.setSearchWord(searchWord);
-        fragmentTransaction.show(searchResultHeaderFragment);
-
-        fragmentTransaction.commit();
-
-        displayItemBottomSheet(selectedItemPosition);
+        displayItemBottomSheet(position);
     }
 
     private void displayItemBottomSheet(int position)
@@ -477,6 +475,7 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
     private void setPoiItems()
     {
         int size = 0;
+        clearAllPoiItems();
 
         switch (resultType)
         {
@@ -571,13 +570,23 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
                 fragmentTransaction.commit();
                 break;
             case SEARCH_RESULT_FRAGMENT:
-                SearchResultFragment searchResultFragment = SearchResultFragment.getInstance();
-                searchResultFragment.setData(bundle);
+                // fragment_search_layout에 헤더/리스트 프래그먼트를 추가
+                setResultData(bundle);
 
-                fragmentTransaction.add(R.id.map_activity_root_layout, searchResultFragment);
+                if (searchResultController == null)
+                {
+                    searchResultController = SearchResultController.getInstance();
+                }
+                searchResultController.setResultData(bundle);
+
+                fragmentTransaction.add(R.id.map_activity_root_layout, searchResultController, SearchResultController.TAG);
                 fragmentTransaction.addToBackStack(null);
-                fragmentTransaction.hide(SearchFragment.getInstance());
                 fragmentTransaction.commit();
+                break;
+            case SEARCH_RESULT_FRAGMENT_UPDATE:
+                // fragment_search_layout에 헤더/리스트 프래그먼트를 추가
+                setResultData(bundle);
+                searchResultController.setResultData(bundle);
                 break;
         }
     }
@@ -589,7 +598,6 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
         {
             onControlItemFragment.setBehaviorState(BottomSheetBehavior.STATE_HIDDEN);
         }
-
         List<Fragment> fragmentList = getSupportFragmentManager().getFragments();
 
         if (fragmentList != null)
@@ -607,12 +615,7 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
         if (!isMainMapActivity)
         {
             setZoomGpsButtonVisibility(View.GONE);
-            FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-            SearchResultHeaderFragment searchResultHeaderFragment = (SearchResultHeaderFragment) getSupportFragmentManager().findFragmentById(R.id.search_result_map_header);
-            fragmentTransaction.hide(searchResultHeaderFragment);
-            fragmentTransaction.show(SearchResultFragment.getInstance());
-
-            fragmentTransaction.commit();
+            searchResultController.setListVisibility(true);
             return;
         }
 

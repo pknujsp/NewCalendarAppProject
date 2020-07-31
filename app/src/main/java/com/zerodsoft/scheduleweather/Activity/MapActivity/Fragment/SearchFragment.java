@@ -86,6 +86,7 @@ public class SearchFragment extends Fragment implements SearchCategoryViewAdapte
                 dataBundle.putParcelable("result", addressSearchResult.clone());
                 dataBundle.putParcelable("parameters", parameters);
                 dataBundle.putString("searchWord", searchEditText.getText().toString());
+                dataBundle.putLong("downloadedTime", System.currentTimeMillis());
 
                 ((MapActivity) getActivity()).onFragmentChanged(MapActivity.SEARCH_RESULT_FRAGMENT, dataBundle);
 
