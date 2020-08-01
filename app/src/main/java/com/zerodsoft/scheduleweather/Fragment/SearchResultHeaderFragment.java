@@ -26,7 +26,6 @@ import java.util.List;
 public class SearchResultHeaderFragment extends Fragment
 {
     public static final String TAG = "SearchResultHeaderFragment";
-    private static SearchResultHeaderFragment searchResultHeaderFragment = null;
 
     private ImageButton changeButton;
     private ImageButton closeButton;
@@ -52,15 +51,7 @@ public class SearchResultHeaderFragment extends Fragment
     public SearchResultHeaderFragment()
     {
     }
-
-    public static SearchResultHeaderFragment getInstance()
-    {
-        if (searchResultHeaderFragment == null)
-        {
-            searchResultHeaderFragment = new SearchResultHeaderFragment();
-        }
-        return searchResultHeaderFragment;
-    }
+    
 
     @Override
     public void onCreate(Bundle savedInstanceState)

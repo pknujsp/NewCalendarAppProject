@@ -13,11 +13,6 @@
         android:layout_height="wrap_content"
         android:theme="@style/AppTheme.NoActionBar" />
 
-    <fragment
-        android:id="@+id/search_result_map_header"
-        android:name="com.zerodsoft.scheduleweather.Fragment.SearchResultHeaderFragment"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
 
     <include layout="@layout/content_map" />
 

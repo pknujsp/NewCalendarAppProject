@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.view.GestureDetectorCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import android.content.Intent;
@@ -268,8 +269,6 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
         zoomInButton = (ImageButton) findViewById(R.id.zoom_in_button);
         zoomOutButton = (ImageButton) findViewById(R.id.zoom_out_button);
         gpsButton = (ImageButton) findViewById(R.id.gps_button);
-        SearchResultHeaderFragment searchResultHeaderFragment = (SearchResultHeaderFragment) getSupportFragmentManager().findFragmentById(R.id.search_result_map_header);
-        getSupportFragmentManager().beginTransaction().hide(searchResultHeaderFragment).commit();
 
         mapView = new MapView(this);
 
@@ -402,6 +401,8 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
     public void onChangeButtonClicked(int type)
     {
         setZoomGpsButtonVisibility(View.VISIBLE);
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        fragmentManager.beginTransaction().hide((SearchFragment) fragmentManager.findFragmentById(R.id.fragment_search)).commit();
         searchResultController.setListVisibility(false);
         isMainMapActivity = false;
         resultType = type;
@@ -441,6 +442,8 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
         resultType = type;
 
         searchResultController.setListVisibility(false);
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        fragmentManager.beginTransaction().hide((SearchFragment) fragmentManager.findFragmentById(R.id.fragment_search)).commit();
 
         displayItemBottomSheet(position);
     }
@@ -562,10 +565,10 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
         switch (type)
         {
             case SEARCH_FRAGMENT:
-                SearchFragment searchFragment = SearchFragment.getInstance();
+                SearchFragment searchFragment = new SearchFragment();
                 searchFragment.setData(bundle);
 
-                fragmentTransaction.add(R.id.map_activity_root_layout, searchFragment);
+                fragmentTransaction.add(R.id.map_activity_root_layout, searchFragment, SearchFragment.TAG);
                 fragmentTransaction.addToBackStack(null);
                 fragmentTransaction.commit();
                 break;
@@ -575,12 +578,11 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
 
                 if (searchResultController == null)
                 {
-                    searchResultController = SearchResultController.getInstance();
+                    searchResultController = new SearchResultController();
                 }
                 searchResultController.setResultData(bundle);
 
                 fragmentTransaction.add(R.id.map_activity_root_layout, searchResultController, SearchResultController.TAG);
-                fragmentTransaction.addToBackStack(null);
                 fragmentTransaction.commit();
                 break;
             case SEARCH_RESULT_FRAGMENT_UPDATE:
@@ -590,6 +592,7 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
                 break;
         }
     }
+
 
     @Override
     public void onBackPressed()
@@ -611,14 +614,6 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
                 }
             }
         }
-
-        if (!isMainMapActivity)
-        {
-            setZoomGpsButtonVisibility(View.GONE);
-            searchResultController.setListVisibility(true);
-            return;
-        }
-
         super.onBackPressed();
     }
 

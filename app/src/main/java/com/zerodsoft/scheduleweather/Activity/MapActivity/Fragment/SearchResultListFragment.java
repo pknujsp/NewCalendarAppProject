@@ -44,7 +44,6 @@ import java.util.List;
 public class SearchResultListFragment extends Fragment
 {
     public static final String TAG = "SearchResult Fragment";
-    private static SearchResultListFragment searchResultListFragment = null;
 
     private ViewPager2 viewPager2;
     private SearchResultViewPagerAdapter searchResultViewPagerAdapter;
@@ -166,14 +165,6 @@ public class SearchResultListFragment extends Fragment
     {
     }
 
-    public static SearchResultListFragment getInstance()
-    {
-        if (searchResultListFragment == null)
-        {
-            searchResultListFragment = new SearchResultListFragment();
-        }
-        return searchResultListFragment;
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState)

@@ -31,7 +31,6 @@ import java.util.concurrent.RecursiveAction;
 public class SearchFragment extends Fragment implements SearchCategoryViewAdapter.OnCategoryClickListener, MapActivity.OnBackPressedListener
 {
     public static final String TAG = "Search Fragment";
-    private static SearchFragment searchFragment = null;
 
     private ImageButton backButton;
     private EditText searchEditText;
@@ -100,15 +99,6 @@ public class SearchFragment extends Fragment implements SearchCategoryViewAdapte
     {
     }
 
-    public static SearchFragment getInstance()
-    {
-        if (searchFragment == null)
-        {
-            searchFragment = new SearchFragment();
-        }
-        return searchFragment;
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
@@ -119,7 +109,7 @@ public class SearchFragment extends Fragment implements SearchCategoryViewAdapte
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState)
     {
-        View view = inflater.inflate(R.layout.fragment_search, container, false);
+        View view = inflater.inflate(R.layout.fragment_search, null, false);
 
         backButton = (ImageButton) view.findViewById(R.id.back_button);
         searchEditText = (EditText) view.findViewById(R.id.search_edittext);
@@ -127,16 +117,16 @@ public class SearchFragment extends Fragment implements SearchCategoryViewAdapte
         searchHistoryRecyclerView = (RecyclerView) view.findViewById(R.id.search_history_recyclerview);
         itemCategoryRecyclerView = (RecyclerView) view.findViewById(R.id.category_recyclerview);
 
-        SearchCategoryViewAdapter searchCategoryViewAdapter = new SearchCategoryViewAdapter(this);
-        itemCategoryRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity(), RecyclerView.HORIZONTAL, false));
-        itemCategoryRecyclerView.setAdapter(searchCategoryViewAdapter);
-
         return view;
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
+        SearchCategoryViewAdapter searchCategoryViewAdapter = new SearchCategoryViewAdapter(this);
+        itemCategoryRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity(), RecyclerView.HORIZONTAL, false));
+        itemCategoryRecyclerView.setAdapter(searchCategoryViewAdapter);
+
         searchButton.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -245,6 +235,7 @@ public class SearchFragment extends Fragment implements SearchCategoryViewAdapte
     public void onBackPressed()
     {
         MapActivity.isMainMapActivity = true;
+        searchEditText.setText("");
         ((MapActivity) getActivity()).clearAllPoiItems();
         ((MapActivity) getActivity()).setZoomGpsButtonVisibility(View.VISIBLE);
         getActivity().getSupportFragmentManager().popBackStackImmediate();
