@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.RecyclerVIewAdapter;
+package com.zerodsoft.scheduleweather.RecyclerViewAdapter;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -6,8 +6,6 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.os.Parcelable;
-import android.util.SparseArray;
 import android.util.SparseIntArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,16 +14,18 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.core.widget.NestedScrollView;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.zerodsoft.scheduleweather.Activity.MapActivity.Fragment.SearchResultListFragment;
+import com.zerodsoft.scheduleweather.Fragment.SearchResultController;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.Retrofit.DownloadData;
 import com.zerodsoft.scheduleweather.Retrofit.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.AddressSearchResult;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -40,11 +40,18 @@ public class SearchResultViewPagerAdapter extends RecyclerView.Adapter<SearchRes
     private boolean existingPlaceCategory = false;
 
     private SparseIntArray sparseIntArray;
+    private List<SearchResultViewPagerHolder> viewHolders;
 
 
     public void setParameters(Bundle bundle)
     {
         this.parameters = bundle.getParcelable("parameters");
+    }
+
+    public SearchResultViewPagerAdapter setParameters(LocalApiPlaceParameter parameters)
+    {
+        this.parameters = parameters;
+        return this;
     }
 
     public SearchResultViewPagerAdapter setSearchWord(String searchWord)
@@ -56,6 +63,8 @@ public class SearchResultViewPagerAdapter extends RecyclerView.Adapter<SearchRes
     public SearchResultViewPagerAdapter(Activity activity)
     {
         this.context = activity;
+        this.viewHolders = new ArrayList<>();
+        this.sparseIntArray = new SparseIntArray();
     }
 
     public void setAddressSearchResult(AddressSearchResult addressSearchResult)
@@ -93,6 +102,13 @@ public class SearchResultViewPagerAdapter extends RecyclerView.Adapter<SearchRes
         return sparseIntArray.get(position);
     }
 
+    public void setCurrentPage(int page)
+    {
+        for (SearchResultViewPagerHolder holder : viewHolders)
+        {
+            holder.setRecyclerViewCurrentPage(page);
+        }
+    }
 
     @NonNull
     @Override
@@ -100,7 +116,6 @@ public class SearchResultViewPagerAdapter extends RecyclerView.Adapter<SearchRes
     {
         Context context = parent.getContext();
         View view = LayoutInflater.from(context).inflate(R.layout.search_result_viewpager_item, parent, false);
-        sparseIntArray = new SparseIntArray();
         return new SearchResultViewPagerHolder(view);
     }
 
@@ -121,6 +136,7 @@ public class SearchResultViewPagerAdapter extends RecyclerView.Adapter<SearchRes
             existingPlaceCategory = false;
         }
         sparseIntArray.put(position, holder.getType());
+        viewHolders.add(holder);
     }
 
     @Override
@@ -236,6 +252,11 @@ public class SearchResultViewPagerAdapter extends RecyclerView.Adapter<SearchRes
         public int getType()
         {
             return type;
+        }
+
+        public void setRecyclerViewCurrentPage(int page)
+        {
+            adapter.setCurrentPage(page);
         }
     }
 }

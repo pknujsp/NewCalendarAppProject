@@ -4,8 +4,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.core.view.GestureDetectorCompat;
 
 import android.content.Context;
 import android.content.Intent;
@@ -18,7 +16,6 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
@@ -26,22 +23,22 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import com.zerodsoft.scheduleweather.Activity.MapActivity.MapActivity;
+import com.zerodsoft.scheduleweather.Etc.SelectedNotificationTime;
 import com.zerodsoft.scheduleweather.Fragment.DatePickerFragment;
+import com.zerodsoft.scheduleweather.Fragment.NotificationFragment;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.Retrofit.DownloadData;
 import com.zerodsoft.scheduleweather.Room.DTO.AddressDTO;
-import com.zerodsoft.scheduleweather.Room.DTO.LocationDTO;
 import com.zerodsoft.scheduleweather.Room.DTO.PlaceDTO;
 import com.zerodsoft.scheduleweather.Utility.Clock;
 
-import net.daum.mf.map.api.MapPoint;
-import net.daum.mf.map.api.MapView;
-
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-public class AddScheduleActivity extends AppCompatActivity implements DatePickerFragment.OnOkButtonClickListener
+public class AddScheduleActivity extends AppCompatActivity implements DatePickerFragment.OnOkButtonClickListener, NotificationFragment.OnNotificationTimeListener
 {
     private Toolbar toolbar;
     private Spinner accountSpinner;
@@ -52,7 +49,7 @@ public class AddScheduleActivity extends AppCompatActivity implements DatePicker
     private EditText contentEditText;
     private Button addLocationButton;
     private TextView locationTextView;
-    private TextView alarmTextView;
+    private TextView notiValueTextView;
     private TextView startDateLeftTextView;
     private LinearLayout endDateLayout;
 
@@ -62,6 +59,8 @@ public class AddScheduleActivity extends AppCompatActivity implements DatePicker
 
     public static Calendar startDate = null;
     public static Calendar endDate = null;
+
+    private SelectedNotificationTime selectedNotificationTime;
 
     private boolean isAllDay = false;
 
@@ -98,6 +97,13 @@ public class AddScheduleActivity extends AppCompatActivity implements DatePicker
         }
     }
 
+    @Override
+    public void onNotiTimeSelected(SelectedNotificationTime selectedNotificationTime)
+    {
+        this.selectedNotificationTime = selectedNotificationTime;
+        notiValueTextView.setText(selectedNotificationTime.getResultStr());
+    }
+
     public enum DATE_PICKER_CATEGORY
     {
         START, END, ALL_DAY
@@ -125,7 +131,7 @@ public class AddScheduleActivity extends AppCompatActivity implements DatePicker
         contentEditText = (EditText) findViewById(R.id.content_multiline);
         addLocationButton = (Button) findViewById(R.id.add_location_button);
         locationTextView = (TextView) findViewById(R.id.location_right_textview);
-        alarmTextView = (TextView) findViewById(R.id.alarm_right_textview);
+        notiValueTextView = (TextView) findViewById(R.id.alarm_value_textview);
         startDateLeftTextView = (TextView) findViewById(R.id.start_date_left_textview);
         endDateLayout = (LinearLayout) findViewById(R.id.enddate_layout);
 
@@ -133,6 +139,7 @@ public class AddScheduleActivity extends AppCompatActivity implements DatePicker
         setAllDaySwitch();
         setDateEditText();
         setAddLocationButton();
+        setNotiValue();
 
         InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         inputMethodManager.hideSoftInputFromWindow(subjectEditText.getWindowToken(), 0);
@@ -230,7 +237,7 @@ public class AddScheduleActivity extends AppCompatActivity implements DatePicker
         endDateTextView.setOnClickListener(onClickListener);
     }
 
-    private void setAlarmEditText()
+    private void setNotiValue()
     {
         View.OnClickListener onClickListener = new View.OnClickListener()
         {
@@ -239,10 +246,12 @@ public class AddScheduleActivity extends AppCompatActivity implements DatePicker
             {
                 //알람 시각을 설정하는 다이얼로그 표시
                 //하루종일 인 경우와 아닌 경우 내용이 다르다
+                NotificationFragment notificationFragment = new NotificationFragment();
+                notificationFragment.show(getSupportFragmentManager(), NotificationFragment.TAG);
             }
         };
 
-        alarmTextView.setOnClickListener(onClickListener);
+        notiValueTextView.setOnClickListener(onClickListener);
     }
 
     private void setAddLocationButton()

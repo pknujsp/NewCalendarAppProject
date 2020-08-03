@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#FFFFFF"
     android:orientation="vertical">
 
     <LinearLayout
@@ -31,7 +32,7 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/search_result_recyclerview"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:visibility="visible"
         tools:listitem="@layout/search_recycler_view_item" />
 

@@ -6,7 +6,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,13 +14,6 @@ import android.widget.TextView;
 
 import com.zerodsoft.scheduleweather.Activity.MapActivity.MapActivity;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.RecyclerVIewAdapter.SearchResultViewAdapter;
-import com.zerodsoft.scheduleweather.Retrofit.DownloadData;
-import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.PlaceCategoryResponse.PlaceCategoryDocuments;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 public class SearchResultHeaderFragment extends Fragment
 {
@@ -51,7 +43,7 @@ public class SearchResultHeaderFragment extends Fragment
     public SearchResultHeaderFragment()
     {
     }
-    
+
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -92,11 +84,11 @@ public class SearchResultHeaderFragment extends Fragment
                 {
                     // map으로
                     setChangeButtonDrawable(CURRENT_LIST);
-                    ((MapActivity) getActivity()).onChangeButtonClicked(currentListTypeGetter.getCurrentListType());
                 } else
                 {
                     setChangeButtonDrawable(CURRENT_MAP);
                 }
+                ((MapActivity) getActivity()).onChangeButtonClicked(currentListTypeGetter.getCurrentListType());
             }
         });
 
@@ -136,6 +128,7 @@ public class SearchResultHeaderFragment extends Fragment
             changeButton.setImageDrawable(getResources().getDrawable(R.drawable.map_icon, null));
         } else
         {
+            // list
             changeButton.setImageDrawable(getResources().getDrawable(R.drawable.list_icon, null));
         }
     }

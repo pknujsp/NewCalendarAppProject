@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.RecyclerVIewAdapter;
+package com.zerodsoft.scheduleweather.RecyclerViewAdapter;
 
 import android.content.Context;
 import android.view.LayoutInflater;

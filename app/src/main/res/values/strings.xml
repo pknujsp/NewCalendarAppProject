@@ -73,7 +73,7 @@
 
     <string name="result_activity_myloc_center">현재 위치</string>
     <string name="result_activity_map_center">지도 중심</string>
-    
+
     <string name="choice">선택</string>
 
     <!--kakao local api category search category codes-->

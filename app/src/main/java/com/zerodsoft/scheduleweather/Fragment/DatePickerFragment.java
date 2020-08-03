@@ -236,13 +236,11 @@ public class DatePickerFragment extends DialogFragment implements NumberPicker.O
     }
 
     @Override
-    public void onResume()
+    public void onStart()
     {
         Point point = new Point();
         getActivity().getWindowManager().getDefaultDisplay().getRealSize(point);
         int width = point.x;
-
-        // getDialog().getWindow().setLayout(width, height);
 
         WindowManager.LayoutParams layoutParams = getDialog().getWindow().getAttributes();
         layoutParams.width = width;
@@ -252,6 +250,12 @@ public class DatePickerFragment extends DialogFragment implements NumberPicker.O
         calendar.setTimeInMillis(System.currentTimeMillis());
         setDatePicker();
 
+        super.onStart();
+    }
+
+    @Override
+    public void onResume()
+    {
         super.onResume();
     }
 

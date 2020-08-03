@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/fragment_notification"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    tools:context=".Fragment.NotificationFragment">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:orientation="vertical"
+        android:padding="8dp">
+
+        <RelativeLayout
+            android:id="@+id/noti_main_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="left">
+
+            <ImageButton
+                android:id="@+id/minus_noti_value_button"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_alignParentLeft="true"
+                android:layout_centerVertical="true"
+                android:background="?attr/selectableItemBackground"
+                android:scaleType="fitXY"
+                android:src="@drawable/minus_icon" />
+
+            <EditText
+                android:id="@+id/noti_main_value_edittext"
+                android:layout_width="64dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:layout_toRightOf="@id/minus_noti_value_button"
+                android:ems="10"
+                android:inputType="number"
+                android:textSize="14sp" />
+
+            <ImageButton
+                android:id="@+id/plus_noti_value_button"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_centerVertical="true"
+                android:layout_toRightOf="@id/noti_main_value_edittext"
+                android:background="?attr/selectableItemBackground"
+                android:scaleType="fitXY"
+                android:src="@drawable/plus_icon" />
+
+            <Spinner
+                android:id="@+id/noti_spinner"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="8dp"
+                android:layout_toRightOf="@id/plus_noti_value_button" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/noti_hour_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="left"
+            android:layout_marginTop="8dp">
+
+            <ImageButton
+                android:id="@+id/minus_noti_hour_button"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_alignParentLeft="true"
+                android:layout_centerVertical="true"
+                android:background="?attr/selectableItemBackground"
+                android:scaleType="fitXY"
+                android:src="@drawable/minus_icon" />
+
+            <EditText
+                android:id="@+id/noti_hour_value_edittext"
+                android:layout_width="64dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:layout_toRightOf="@id/minus_noti_hour_button"
+                android:ems="10"
+                android:inputType="number"
+                android:textSize="14sp" />
+
+            <ImageButton
+                android:id="@+id/plus_noti_hour_button"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_centerVertical="true"
+                android:layout_toRightOf="@id/noti_hour_value_edittext"
+                android:background="?attr/selectableItemBackground"
+                android:scaleType="fitXY"
+                android:src="@drawable/plus_icon" />
+
+            <TextView
+                android:id="@+id/textView25"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="8dp"
+                android:layout_toRightOf="@id/plus_noti_hour_button"
+                android:text="시간"
+                android:textSize="14sp" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/noti_minute_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="left"
+            android:layout_marginTop="8dp">
+
+            <ImageButton
+                android:id="@+id/minus_noti_minute_button"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_alignParentLeft="true"
+                android:layout_centerVertical="true"
+                android:background="?attr/selectableItemBackground"
+                android:scaleType="fitXY"
+                android:src="@drawable/minus_icon" />
+
+            <EditText
+                android:id="@+id/noti_minute_value_edittext"
+                android:layout_width="64dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:layout_toRightOf="@id/minus_noti_minute_button"
+                android:ems="10"
+                android:inputType="number"
+                android:textSize="14sp" />
+
+            <ImageButton
+                android:id="@+id/plus_noti_minute_button"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_centerVertical="true"
+                android:layout_toRightOf="@id/noti_minute_value_edittext"
+                android:background="?attr/selectableItemBackground"
+                android:scaleType="fitXY"
+                android:src="@drawable/plus_icon" />
+
+            <TextView
+                android:id="@+id/textView26"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="8dp"
+                android:layout_toRightOf="@id/plus_noti_minute_button"
+                android:text="분"
+                android:textSize="14sp" />
+        </RelativeLayout>
+
+        <TextView
+            android:id="@+id/noti_result_value_textview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            android:textAlignment="center"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/noti_cancel_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="4dp"
+                android:layout_marginBottom="4dp"
+                android:layout_weight="1"
+                android:background="@drawable/buttonshape"
+                android:text="@string/cancel_button" />
+
+            <Button
+                android:id="@+id/noti_ok_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="4dp"
+                android:layout_marginBottom="4dp"
+                android:layout_weight="1"
+                android:background="@drawable/blue_button_shape"
+                android:text="@string/datepicker_ok_button"
+                android:textColor="@android:color/white" />
+        </LinearLayout>
+
+    </LinearLayout>
+</FrameLayout>

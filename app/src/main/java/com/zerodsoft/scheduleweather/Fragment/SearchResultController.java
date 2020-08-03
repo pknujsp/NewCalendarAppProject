@@ -16,6 +16,8 @@ import com.zerodsoft.scheduleweather.Activity.MapActivity.Fragment.SearchResultL
 import com.zerodsoft.scheduleweather.Activity.MapActivity.MapActivity;
 import com.zerodsoft.scheduleweather.R;
 
+import java.util.List;
+
 public class SearchResultController extends Fragment implements MapActivity.OnBackPressedListener, SearchResultHeaderFragment.CurrentListTypeGetter
 {
     public static final String TAG = "SearchResultController";
@@ -25,6 +27,7 @@ public class SearchResultController extends Fragment implements MapActivity.OnBa
 
     public static boolean isShowHeader = true;
     public static boolean isShowList = true;
+
 
     @Nullable
     @Override
@@ -36,11 +39,13 @@ public class SearchResultController extends Fragment implements MapActivity.OnBa
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
-        FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        FragmentTransaction fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
 
-        headerFragment = (SearchResultHeaderFragment) fragmentManager.findFragmentById(R.id.fragment_search_result_header);
-        listFragment = (SearchResultListFragment) fragmentManager.findFragmentById(R.id.fragment_search_result_list);
+        //  headerFragment = new SearchResultHeaderFragment();
+        //  listFragment = new SearchResultListFragment();
+
+        fragmentTransaction.add(R.id.fragment_search_result_header_container, headerFragment, SearchResultHeaderFragment.TAG);
+        fragmentTransaction.add(R.id.fragment_search_result_list_container, listFragment, SearchResultListFragment.TAG);
         fragmentTransaction.show(headerFragment).show(listFragment).commit();
 
         super.onViewCreated(view, savedInstanceState);
@@ -107,7 +112,6 @@ public class SearchResultController extends Fragment implements MapActivity.OnBa
             if (isShowList)
             {
                 getActivity().getSupportFragmentManager().beginTransaction().show(listFragment).commit();
-                headerFragment.setChangeButtonDrawable(SearchResultHeaderFragment.CURRENT_LIST);
             } else
             {
                 getActivity().getSupportFragmentManager().beginTransaction().hide(listFragment).commit();
@@ -126,14 +130,27 @@ public class SearchResultController extends Fragment implements MapActivity.OnBa
             // list인 경우
             setHeaderVisibility(false);
             setListVisibility(false);
-            SearchFragment searchFragment = (SearchFragment) fragmentManager.findFragmentById(R.id.fragment_search);
-            fragmentTransaction.show(searchFragment);
-            fragmentTransaction.remove(this).commit();
+
+            List<Fragment> fragments = fragmentManager.getFragments();
+
+            int i = 0;
+            for (; i < fragments.size(); i++)
+            {
+                if (fragments.get(i) instanceof SearchFragment)
+                {
+                    break;
+                }
+            }
+            fragmentTransaction.remove(headerFragment);
+            fragmentTransaction.remove(listFragment);
+            fragmentTransaction.remove(SearchResultController.this);
+            fragmentTransaction.show(fragments.get(i)).commit();
         } else
         {
             // map인 경우
             setHeaderVisibility(true);
             setListVisibility(true);
+
             ((MapActivity) getActivity()).setZoomGpsButtonVisibility(View.GONE);
         }
     }

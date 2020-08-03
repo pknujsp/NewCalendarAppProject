@@ -12,8 +12,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.os.Handler;
@@ -29,9 +27,8 @@ import android.widget.TextView;
 
 import com.zerodsoft.scheduleweather.Activity.MapActivity.MapActivity;
 import com.zerodsoft.scheduleweather.Etc.ViewPagerIndicator;
-import com.zerodsoft.scheduleweather.Fragment.SearchResultHeaderFragment;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.RecyclerVIewAdapter.SearchResultViewPagerAdapter;
+import com.zerodsoft.scheduleweather.RecyclerViewAdapter.SearchResultViewPagerAdapter;
 import com.zerodsoft.scheduleweather.Retrofit.DownloadData;
 import com.zerodsoft.scheduleweather.Retrofit.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.AddressSearchResult;
@@ -63,6 +60,11 @@ public class SearchResultListFragment extends Fragment
 
     private List<Integer> resultTypes;
 
+    public interface OnControlViewPagerAdapter
+    {
+        void setRecyclerViewCurrentPage(int page);
+    }
+
 
     private LocationListener locationListener = new LocationListener()
     {
@@ -71,6 +73,7 @@ public class SearchResultListFragment extends Fragment
         {
             parameters.setX(location.getLongitude());
             parameters.setY(location.getLatitude());
+            parameters.setPage("1");
             // 자원해제
             locationManager.removeUpdates(locationListener);
 
@@ -146,8 +149,15 @@ public class SearchResultListFragment extends Fragment
             {
                 result = addressSearchResult.clone();
 
+                searchResultViewPagerAdapter = new SearchResultViewPagerAdapter(getActivity());
                 searchResultViewPagerAdapter.setAddressSearchResult(result);
-                searchResultViewPagerAdapter.notifyDataSetChanged();
+                searchResultViewPagerAdapter.setParameters(parameters);
+                searchResultViewPagerAdapter.setSearchWord(searchWord);
+
+                viewPager2.setAdapter(searchResultViewPagerAdapter);
+
+                onPageCallback = new OnPageCallback();
+                viewPager2.registerOnPageChangeCallback(onPageCallback);
 
                 Bundle dataBundle = new Bundle();
                 dataBundle.putParcelable("result", result);
@@ -176,8 +186,12 @@ public class SearchResultListFragment extends Fragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState)
     {
-        View view = inflater.inflate(R.layout.fragment_search_result_list, container, false);
+        return inflater.inflate(R.layout.fragment_search_result_list, container, false);
+    }
 
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
+    {
         viewPager2 = (ViewPager2) view.findViewById(R.id.search_result_viewpager);
         locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
         rescanMapCenter = (TextView) view.findViewById(R.id.search_result_map_center_rescan);
@@ -185,14 +199,6 @@ public class SearchResultListFragment extends Fragment
         viewPagerIndicator = (ViewPagerIndicator) view.findViewById(R.id.search_result_view_pager_indicator);
         sortSpinner = (Spinner) view.findViewById(R.id.search_sort_spinner);
 
-        setSortSpinner();
-
-        return view;
-    }
-
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
-    {
         viewPagerIndicator.createDot(0, indicatorLength);
 
         rescanMapCenter.setOnClickListener(new View.OnClickListener()
@@ -204,6 +210,7 @@ public class SearchResultListFragment extends Fragment
 
                 parameters.setX(mapPoint.longitude);
                 parameters.setY(mapPoint.latitude);
+                parameters.setPage("1");
 
                 for (int type : resultTypes)
                 {
@@ -249,6 +256,7 @@ public class SearchResultListFragment extends Fragment
     {
         Bundle bundle = new Bundle();
         bundle.putParcelable("parameters", parameters);
+        setSortSpinner();
 
         searchResultViewPagerAdapter = new SearchResultViewPagerAdapter(getActivity());
         searchResultViewPagerAdapter.setAddressSearchResult(result);
@@ -290,7 +298,6 @@ public class SearchResultListFragment extends Fragment
         resultTypes = result.getResultTypes();
     }
 
-
     public int getCurrentListType()
     {
         // header fragment에서 change 버튼 클릭 시 리스트의 타입을 가져오기 위해 사용
@@ -308,9 +315,17 @@ public class SearchResultListFragment extends Fragment
 
         sortSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
         {
+            boolean isInitializing = true;
+
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l)
             {
+                if (isInitializing)
+                {
+                    isInitializing = false;
+                    return;
+                }
+
                 switch (i)
                 {
                     case 0:
@@ -320,6 +335,7 @@ public class SearchResultListFragment extends Fragment
                         parameters.setSort(LocalApiPlaceParameter.SORT_DISTANCE);
                         break;
                 }
+                parameters.setPage("1");
 
                 for (int type : resultTypes)
                 {
@@ -343,6 +359,11 @@ public class SearchResultListFragment extends Fragment
 
             }
         });
+    }
+
+    public void setCurrentPage(int page)
+    {
+        searchResultViewPagerAdapter.setCurrentPage(page);
     }
 
 

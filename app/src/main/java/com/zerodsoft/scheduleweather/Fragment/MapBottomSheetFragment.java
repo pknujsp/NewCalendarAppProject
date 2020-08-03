@@ -30,7 +30,6 @@ import java.util.List;
 public class MapBottomSheetFragment extends Fragment implements MapActivity.OnControlItemFragment
 {
     public static final String TAG = "MAP_BOTTOM_SHEET_FRAGMENT";
-    private static MapBottomSheetFragment mapBottomSheetFragment = null;
 
     private TextView selectedItemPlaceNameTextView;
     private TextView selectedItemPlaceCategoryTextView;
@@ -60,15 +59,6 @@ public class MapBottomSheetFragment extends Fragment implements MapActivity.OnCo
     private int resultType = Integer.MIN_VALUE;
     private int selectedItemPosition;
     private int itemPositionMax;
-
-    public static MapBottomSheetFragment getInstance()
-    {
-        if (mapBottomSheetFragment == null)
-        {
-            mapBottomSheetFragment = new MapBottomSheetFragment();
-        }
-        return mapBottomSheetFragment;
-    }
 
     @Nullable
     @Override
@@ -121,6 +111,8 @@ public class MapBottomSheetFragment extends Fragment implements MapActivity.OnCo
         selectedItemAddressNameTextView = (TextView) view.findViewById(R.id.selected_address_name_textview);
         selectedItemAnotherAddressNameTextView = (TextView) view.findViewById(R.id.selected_another_address_textview);
         selectedItemAnotherAddressTypeTextView = (TextView) view.findViewById(R.id.selected_another_address_type_textview);
+
+        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
 
         selectedItemFavoriteButton.setOnClickListener(new View.OnClickListener()
         {
@@ -226,14 +218,12 @@ public class MapBottomSheetFragment extends Fragment implements MapActivity.OnCo
     public void onActivityCreated(@Nullable Bundle savedInstanceState)
     {
         super.onActivityCreated(savedInstanceState);
-
     }
 
     @Override
     public void onStart()
     {
         super.onStart();
-        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
     }
 
     @Override
