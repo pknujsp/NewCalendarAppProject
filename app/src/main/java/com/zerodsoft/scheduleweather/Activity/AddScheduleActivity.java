@@ -34,31 +34,36 @@ import com.zerodsoft.scheduleweather.Utility.Clock;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-public class AddScheduleActivity extends AppCompatActivity implements DatePickerFragment.OnOkButtonClickListener, NotificationFragment.OnNotificationTimeListener
+public class AddScheduleActivity extends AppCompatActivity implements NotificationFragment.OnNotificationTimeListener
 {
     private Toolbar toolbar;
     private Spinner accountSpinner;
     private EditText subjectEditText;
     private Switch allDaySwitch;
-    private TextView startDateRightTextView;
-    private TextView endDateTextView;
+
+    private TextView allDayValueTextView;
+    private TextView startDateValueTextView;
+    private TextView endDateValueTextView;
     private EditText contentEditText;
     private Button addLocationButton;
+
     private TextView locationTextView;
     private TextView notiValueTextView;
-    private TextView startDateLeftTextView;
+    private LinearLayout allDayLayout;
+    private LinearLayout startDateLayout;
     private LinearLayout endDateLayout;
 
     private PlaceDTO placeDTO;
     private AddressDTO addressDTO;
     private int locType;
 
-    public static Calendar startDate = null;
-    public static Calendar endDate = null;
+    private DatePickerFragment datePickerFragment;
+
+    private Calendar allDay = Calendar.getInstance();
+    private Calendar startDate = Calendar.getInstance();
+    private Calendar endDate = Calendar.getInstance();
 
     private SelectedNotificationTime selectedNotificationTime;
 
@@ -66,34 +71,25 @@ public class AddScheduleActivity extends AppCompatActivity implements DatePicker
 
     public static final int ADD_LOCATION_ACTIVITY = 0;
 
-    @Override
+
     public void clickedOkButton(long timeMilliSec, DATE_PICKER_CATEGORY datePickerCategory)
     {
-        if (datePickerCategory == DATE_PICKER_CATEGORY.START)
+        switch (datePickerCategory)
         {
-            if (startDate == null)
-            {
-                startDate = Calendar.getInstance();
-            }
-            startDate.setTimeInMillis(timeMilliSec);
-            startDateRightTextView.setText(Clock.dateFormat2.format(startDate.getTime()));
-        } else if (datePickerCategory == DATE_PICKER_CATEGORY.END)
-        {
-            if (endDate == null)
-            {
-                endDate = Calendar.getInstance();
-            }
-            endDate.setTimeInMillis(timeMilliSec);
-            endDateTextView.setText(Clock.dateFormat2.format(endDate.getTime()));
-        } else
-        {
-            // allday
-            if (startDate == null)
-            {
-                startDate = Calendar.getInstance();
-            }
-            startDate.setTimeInMillis(timeMilliSec);
-            startDateRightTextView.setText(Clock.dateFormat3.format(startDate.getTime()));
+            case START:
+                startDate.setTimeInMillis(timeMilliSec);
+                startDateValueTextView.setText(Clock.dateFormat2.format(startDate.getTime()));
+                break;
+
+            case END:
+                endDate.setTimeInMillis(timeMilliSec);
+                endDateValueTextView.setText(Clock.dateFormat2.format(endDate.getTime()));
+                break;
+
+            case ALL_DAY:
+                allDay.setTimeInMillis(timeMilliSec);
+                allDayValueTextView.setText(Clock.dateFormat3.format(allDay.getTime()));
+                break;
         }
     }
 
@@ -126,18 +122,27 @@ public class AddScheduleActivity extends AppCompatActivity implements DatePicker
         accountSpinner = (Spinner) findViewById(R.id.account_spinner);
         subjectEditText = (EditText) findViewById(R.id.subject_edittext);
         allDaySwitch = (Switch) findViewById(R.id.schedule_allday_switch);
-        startDateRightTextView = (TextView) findViewById(R.id.start_date_right_textview);
-        endDateTextView = (TextView) findViewById(R.id.end_date_right_textview);
+
+        allDayValueTextView = (TextView) findViewById(R.id.allday_value_textview);
+        startDateValueTextView = (TextView) findViewById(R.id.startdate_value_textview);
+        endDateValueTextView = (TextView) findViewById(R.id.enddate_value_textview);
+
         contentEditText = (EditText) findViewById(R.id.content_multiline);
         addLocationButton = (Button) findViewById(R.id.add_location_button);
         locationTextView = (TextView) findViewById(R.id.location_right_textview);
         notiValueTextView = (TextView) findViewById(R.id.alarm_value_textview);
-        startDateLeftTextView = (TextView) findViewById(R.id.start_date_left_textview);
+
+        allDayLayout = (LinearLayout) findViewById(R.id.allday_layout);
+        startDateLayout = (LinearLayout) findViewById(R.id.startdate_layout);
         endDateLayout = (LinearLayout) findViewById(R.id.enddate_layout);
+
+        allDayLayout.setVisibility(View.GONE);
+        startDateLayout.setVisibility(View.VISIBLE);
+        endDateLayout.setVisibility(View.VISIBLE);
 
         setAccountSpinner();
         setAllDaySwitch();
-        setDateEditText();
+        setDateTextView();
         setAddLocationButton();
         setNotiValue();
 
@@ -158,6 +163,12 @@ public class AddScheduleActivity extends AppCompatActivity implements DatePicker
         switch (item.getItemId())
         {
             case R.id.save:
+                Calendar calendar = Calendar.getInstance();
+                long notificationTime = 0L;
+                if (selectedNotificationTime != null)
+                {
+                    notificationTime = selectedNotificationTime.getTimeInMillis(calendar);
+                }
                 break;
             case android.R.id.home:
                 finish();
@@ -185,26 +196,34 @@ public class AddScheduleActivity extends AppCompatActivity implements DatePicker
             {
                 isAllDay = isChecked;
 
-                if (isChecked)
+                if (isAllDay)
                 {
                     // 하루 종일
-                    startDateLeftTextView.setText(getResources().getString(R.string.start_date_text_view_allday));
+                    allDayLayout.setVisibility(View.VISIBLE);
+                    startDateLayout.setVisibility(View.GONE);
                     endDateLayout.setVisibility(View.GONE);
                 } else
                 {
-                    startDateLeftTextView.setText(getResources().getString(R.string.start_date_text_view_not_allday));
+                    allDayLayout.setVisibility(View.GONE);
+                    startDateLayout.setVisibility(View.VISIBLE);
                     endDateLayout.setVisibility(View.VISIBLE);
                 }
-                startDateRightTextView.setText("");
-                endDateTextView.setText("");
+
+                startDateValueTextView.setText("시작");
+                endDateValueTextView.setText("종료");
+                allDayValueTextView.setText("시작/종료");
 
                 startDate.clear();
                 endDate.clear();
+                allDay.clear();
+
+                datePickerFragment = DatePickerFragment.getInstance();
+                datePickerFragment.clearAllDate();
             }
         });
     }
 
-    private void setDateEditText()
+    private void setDateTextView()
     {
         View.OnClickListener onClickListener = new View.OnClickListener()
         {
@@ -212,29 +231,29 @@ public class AddScheduleActivity extends AppCompatActivity implements DatePicker
             public void onClick(View view)
             {
                 //날짜 설정 다이얼로그 표시
-                //하루종일인 경우 : 연월일, 아닌 경우 : 연원일시분
-                DatePickerFragment datePickerFragment = DatePickerFragment.getInstance();
-                datePickerFragment.setOnOkButtonClickListener(AddScheduleActivity.this);
+                //하루종일인 경우 : 연월일, 아닌 경우 : 연월일시분
+                datePickerFragment = DatePickerFragment.getInstance();
 
-                if (view.getId() == R.id.start_date_right_textview)
+                switch (view.getId())
                 {
-                    if (isAllDay)
-                    {
-                        datePickerFragment.setDatePickerCategory(DATE_PICKER_CATEGORY.ALL_DAY);
-                    } else
-                    {
+                    case R.id.startdate_value_textview:
                         datePickerFragment.setDatePickerCategory(DATE_PICKER_CATEGORY.START);
-                    }
-                } else if (view.getId() == R.id.end_date_right_textview)
-                {
-                    datePickerFragment.setDatePickerCategory(DATE_PICKER_CATEGORY.END);
+                        break;
+                    case R.id.enddate_value_textview:
+                        datePickerFragment.setDatePickerCategory(DATE_PICKER_CATEGORY.END);
+                        break;
+                    case R.id.allday_value_textview:
+                        datePickerFragment.setDatePickerCategory(DATE_PICKER_CATEGORY.ALL_DAY);
+                        break;
                 }
+
                 datePickerFragment.show(getSupportFragmentManager(), DatePickerFragment.TAG);
             }
         };
 
-        startDateRightTextView.setOnClickListener(onClickListener);
-        endDateTextView.setOnClickListener(onClickListener);
+        allDayValueTextView.setOnClickListener(onClickListener);
+        startDateValueTextView.setOnClickListener(onClickListener);
+        endDateValueTextView.setOnClickListener(onClickListener);
     }
 
     private void setNotiValue()
@@ -246,7 +265,11 @@ public class AddScheduleActivity extends AppCompatActivity implements DatePicker
             {
                 //알람 시각을 설정하는 다이얼로그 표시
                 //하루종일 인 경우와 아닌 경우 내용이 다르다
-                NotificationFragment notificationFragment = new NotificationFragment();
+                NotificationFragment notificationFragment = NotificationFragment.getInstance();
+                if (selectedNotificationTime != null)
+                {
+                    notificationFragment.setSelectedNotificationTime(selectedNotificationTime);
+                }
                 notificationFragment.show(getSupportFragmentManager(), NotificationFragment.TAG);
             }
         };

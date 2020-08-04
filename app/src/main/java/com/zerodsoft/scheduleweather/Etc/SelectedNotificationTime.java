@@ -2,6 +2,8 @@ package com.zerodsoft.scheduleweather.Etc;
 
 import com.zerodsoft.scheduleweather.Fragment.NotificationFragment;
 
+import java.util.Calendar;
+
 public class SelectedNotificationTime
 {
     private int day;
@@ -63,6 +65,37 @@ public class SelectedNotificationTime
     public String getResultStr()
     {
         return resultStr;
+    }
+
+    public long getTimeInMillis(Calendar originalCalendar)
+    {
+        Calendar calendar = (Calendar) originalCalendar.clone();
+
+        switch (mainType)
+        {
+            case DAY:
+                calendar.add(day, Calendar.DATE);
+                calendar.add(hour, Calendar.HOUR_OF_DAY);
+                calendar.add(minute, Calendar.MINUTE);
+                break;
+            case HOUR:
+                int quotient = (int) Math.floor(hour / 24);
+                int remainder = hour % 24;
+
+                if (quotient >= 1)
+                {
+                    calendar.add(quotient, Calendar.DATE);
+                }
+                if (remainder != 0)
+                {
+                    calendar.add(remainder, Calendar.HOUR_OF_DAY);
+                }
+                break;
+            case MINUTE:
+                calendar.add(minute, Calendar.MINUTE);
+                break;
+        }
+        return calendar.getTimeInMillis();
     }
 }
 

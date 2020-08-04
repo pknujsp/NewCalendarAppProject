@@ -144,6 +144,35 @@
                 </LinearLayout>
 
                 <LinearLayout
+                    android:id="@+id/allday_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:visibility="visible">
+
+                    <TextView
+                        android:id="@+id/allday_desc_textview"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:text="시작/종료일"
+                        android:textColor="@color/text_color" />
+
+                    <TextView
+                        android:id="@+id/allday_value_textview"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:text="시작/종료"
+                        android:textAlignment="textEnd"
+                        android:textColor="@color/text_color"
+                        android:textSize="14sp"
+                        android:visibility="visible" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/startdate_layout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
@@ -157,12 +186,12 @@
                         android:textColor="@color/text_color" />
 
                     <TextView
-                        android:id="@+id/start_date_right_textview"
+                        android:id="@+id/startdate_value_textview"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:background="#00FFFFFF"
+                        android:background="?attr/selectableItemBackground"
                         android:clickable="true"
-                        android:hint="시작"
+                        android:text="시작"
                         android:textAlignment="textEnd"
                         android:textColor="@color/text_color"
                         android:textSize="14sp"
@@ -176,7 +205,7 @@
                     android:orientation="horizontal">
 
                     <TextView
-                        android:id="@+id/end_date_left_textview"
+                        android:id="@+id/enddate_desc_textview"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
@@ -184,12 +213,12 @@
                         android:textColor="@color/text_color" />
 
                     <TextView
-                        android:id="@+id/end_date_right_textview"
+                        android:id="@+id/enddate_value_textview"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:background="#00FFFFFF"
+                        android:background="?attr/selectableItemBackground"
                         android:clickable="true"
-                        android:hint="종료"
+                        android:text="종료"
                         android:textAlignment="textEnd"
                         android:textColor="@color/text_color"
                         android:textSize="14sp"

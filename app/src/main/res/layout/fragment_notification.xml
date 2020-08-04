@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:orientation="vertical"
-        android:padding="8dp">
+        android:padding="16dp">
 
         <RelativeLayout
             android:id="@+id/noti_main_layout"
@@ -20,44 +20,44 @@
             android:layout_height="wrap_content"
             android:layout_gravity="left">
 
-            <ImageButton
-                android:id="@+id/minus_noti_value_button"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:layout_alignParentLeft="true"
-                android:layout_centerVertical="true"
-                android:background="?attr/selectableItemBackground"
-                android:scaleType="fitXY"
-                android:src="@drawable/minus_icon" />
-
-            <EditText
-                android:id="@+id/noti_main_value_edittext"
+            <TextView
+                android:id="@+id/noti_main_value_textview"
                 android:layout_width="64dp"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="8dp"
-                android:layout_marginRight="8dp"
-                android:layout_toRightOf="@id/minus_noti_value_button"
-                android:ems="10"
-                android:inputType="number"
+                android:layout_alignParentLeft="true"
+                android:layout_centerVertical="true"
                 android:textSize="14sp" />
 
-            <ImageButton
-                android:id="@+id/plus_noti_value_button"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:layout_centerVertical="true"
-                android:layout_toRightOf="@id/noti_main_value_edittext"
-                android:background="?attr/selectableItemBackground"
-                android:scaleType="fitXY"
-                android:src="@drawable/plus_icon" />
 
             <Spinner
                 android:id="@+id/noti_spinner"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
-                android:layout_marginLeft="8dp"
-                android:layout_toRightOf="@id/plus_noti_value_button" />
+                android:layout_marginLeft="4dp"
+                android:layout_toRightOf="@id/noti_main_value_textview" />
+
+            <ImageButton
+                android:id="@+id/minus_noti_value_button"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_centerVertical="true"
+                android:layout_marginRight="8dp"
+                android:layout_toLeftOf="@+id/plus_noti_value_button"
+                android:background="?attr/selectableItemBackground"
+                android:scaleType="fitXY"
+                android:src="@drawable/minus_icon" />
+
+            <ImageButton
+                android:id="@+id/plus_noti_value_button"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:background="?attr/selectableItemBackground"
+                android:scaleType="fitXY"
+                android:src="@drawable/plus_icon" />
+
         </RelativeLayout>
 
         <RelativeLayout
@@ -67,46 +67,47 @@
             android:layout_gravity="left"
             android:layout_marginTop="8dp">
 
+
+            <TextView
+                android:id="@+id/noti_hour_value_textview"
+                android:layout_width="64dp"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_centerVertical="true"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/noti_hour_desc"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="4dp"
+                android:layout_toRightOf="@id/noti_hour_value_textview"
+                android:text="시간"
+                android:textSize="14sp" />
+
             <ImageButton
                 android:id="@+id/minus_noti_hour_button"
                 android:layout_width="32dp"
                 android:layout_height="32dp"
-                android:layout_alignParentLeft="true"
                 android:layout_centerVertical="true"
+                android:layout_marginRight="8dp"
+                android:layout_toLeftOf="@+id/plus_noti_hour_button"
                 android:background="?attr/selectableItemBackground"
                 android:scaleType="fitXY"
                 android:src="@drawable/minus_icon" />
-
-            <EditText
-                android:id="@+id/noti_hour_value_edittext"
-                android:layout_width="64dp"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="8dp"
-                android:layout_marginRight="8dp"
-                android:layout_toRightOf="@id/minus_noti_hour_button"
-                android:ems="10"
-                android:inputType="number"
-                android:textSize="14sp" />
 
             <ImageButton
                 android:id="@+id/plus_noti_hour_button"
                 android:layout_width="32dp"
                 android:layout_height="32dp"
+                android:layout_alignParentRight="true"
                 android:layout_centerVertical="true"
-                android:layout_toRightOf="@id/noti_hour_value_edittext"
                 android:background="?attr/selectableItemBackground"
                 android:scaleType="fitXY"
                 android:src="@drawable/plus_icon" />
 
-            <TextView
-                android:id="@+id/textView25"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginLeft="8dp"
-                android:layout_toRightOf="@id/plus_noti_hour_button"
-                android:text="시간"
-                android:textSize="14sp" />
+
         </RelativeLayout>
 
         <RelativeLayout
@@ -116,46 +117,46 @@
             android:layout_gravity="left"
             android:layout_marginTop="8dp">
 
+            <TextView
+                android:id="@+id/noti_minute_value_textview"
+                android:layout_width="64dp"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_centerVertical="true"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/noti_minute_desc"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="4dp"
+                android:layout_toRightOf="@id/noti_minute_value_textview"
+                android:text="분"
+                android:textSize="14sp" />
+
             <ImageButton
                 android:id="@+id/minus_noti_minute_button"
                 android:layout_width="32dp"
                 android:layout_height="32dp"
-                android:layout_alignParentLeft="true"
                 android:layout_centerVertical="true"
+                android:layout_marginRight="8dp"
+                android:layout_toLeftOf="@+id/plus_noti_minute_button"
                 android:background="?attr/selectableItemBackground"
                 android:scaleType="fitXY"
                 android:src="@drawable/minus_icon" />
-
-            <EditText
-                android:id="@+id/noti_minute_value_edittext"
-                android:layout_width="64dp"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="8dp"
-                android:layout_marginRight="8dp"
-                android:layout_toRightOf="@id/minus_noti_minute_button"
-                android:ems="10"
-                android:inputType="number"
-                android:textSize="14sp" />
 
             <ImageButton
                 android:id="@+id/plus_noti_minute_button"
                 android:layout_width="32dp"
                 android:layout_height="32dp"
+                android:layout_alignParentRight="true"
                 android:layout_centerVertical="true"
-                android:layout_toRightOf="@id/noti_minute_value_edittext"
                 android:background="?attr/selectableItemBackground"
                 android:scaleType="fitXY"
                 android:src="@drawable/plus_icon" />
 
-            <TextView
-                android:id="@+id/textView26"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginLeft="8dp"
-                android:layout_toRightOf="@id/plus_noti_minute_button"
-                android:text="분"
-                android:textSize="14sp" />
+
         </RelativeLayout>
 
         <TextView

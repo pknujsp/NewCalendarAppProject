@@ -41,31 +41,39 @@ public class DatePickerFragment extends DialogFragment implements NumberPicker.O
     private Button okButton;
     private TextView headerTextView;
 
+    private Calendar startDate = Calendar.getInstance();
+    private Calendar endDate = Calendar.getInstance();
+
+    private boolean isSettedStartDate = false;
+    private boolean isSettedEndDate = false;
+
 
     private AddScheduleActivity.DATE_PICKER_CATEGORY datePickerCategory;
 
     private final String[] days = new String[]{" 일", " 월", " 화", " 수", " 목", " 금", " 토"};
 
-    private OnOkButtonClickListener onOkButtonClickListener;
 
-    public interface OnOkButtonClickListener
+    public DatePickerFragment setStartDate(long timeMillisec)
     {
-        void clickedOkButton(long timeMilliSec, AddScheduleActivity.DATE_PICKER_CATEGORY datePickerCategory);
+        this.startDate.setTimeInMillis(timeMillisec);
+        return this;
     }
 
+    public DatePickerFragment setEndDate(long timeMillisec)
+    {
+        this.endDate.setTimeInMillis(timeMillisec);
+        return this;
+    }
 
     public void setDatePickerCategory(AddScheduleActivity.DATE_PICKER_CATEGORY datePickerCategory)
     {
         this.datePickerCategory = datePickerCategory;
     }
 
-    public void setOnOkButtonClickListener(OnOkButtonClickListener onOkButtonClickListener)
-    {
-        this.onOkButtonClickListener = onOkButtonClickListener;
-    }
 
     public DatePickerFragment()
     {
+
     }
 
     public static DatePickerFragment getInstance()
@@ -75,6 +83,14 @@ public class DatePickerFragment extends DialogFragment implements NumberPicker.O
             datePickerFragment = new DatePickerFragment();
         }
         return datePickerFragment;
+    }
+
+    public void clearAllDate()
+    {
+        startDate.clear();
+        endDate.clear();
+        isSettedEndDate = false;
+        isSettedStartDate = false;
     }
 
     @Override
@@ -88,7 +104,12 @@ public class DatePickerFragment extends DialogFragment implements NumberPicker.O
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
     {
-        View view = inflater.inflate(R.layout.datepicker_layout, container);
+        return inflater.inflate(R.layout.datepicker_layout, container, false);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
+    {
         yearPicker = (NumberPicker) view.findViewById(R.id.year_picker);
         monthPicker = (NumberPicker) view.findViewById(R.id.month_picker);
         dayPicker = (NumberPicker) view.findViewById(R.id.day_picker);
@@ -138,6 +159,7 @@ public class DatePickerFragment extends DialogFragment implements NumberPicker.O
 
                 if (datePickerCategory != AddScheduleActivity.DATE_PICKER_CATEGORY.ALL_DAY)
                 {
+                    // not all day
                     if (meridiemPicker.getValue() == Calendar.AM)
                     {
                         hourOfDay = hourPicker.getValue();
@@ -155,17 +177,17 @@ public class DatePickerFragment extends DialogFragment implements NumberPicker.O
                     }
                     calendar.set(yearPicker.getValue(), monthPicker.getValue() - 1, dayPicker.getValue() + 1, hourOfDay, minutePicker.getValue());
 
-                    if (datePickerCategory == AddScheduleActivity.DATE_PICKER_CATEGORY.START && AddScheduleActivity.endDate != null)
+                    if (datePickerCategory == AddScheduleActivity.DATE_PICKER_CATEGORY.START && isSettedEndDate)
                     {
-                        if (calendar.after(AddScheduleActivity.endDate))
+                        if (calendar.after(endDate))
                         {
                             // ERROR
                             Toast.makeText(getActivity(), getString(R.string.date_picker_date_error), Toast.LENGTH_SHORT).show();
                             return;
                         }
-                    } else if (datePickerCategory == AddScheduleActivity.DATE_PICKER_CATEGORY.END && AddScheduleActivity.startDate != null)
+                    } else if (datePickerCategory == AddScheduleActivity.DATE_PICKER_CATEGORY.END && isSettedStartDate)
                     {
-                        if (calendar.before(AddScheduleActivity.startDate))
+                        if (calendar.before(startDate))
                         {
                             // ERROR
                             Toast.makeText(getActivity(), getString(R.string.date_picker_date_error), Toast.LENGTH_SHORT).show();
@@ -174,14 +196,27 @@ public class DatePickerFragment extends DialogFragment implements NumberPicker.O
                     }
                 } else
                 {
+                    // all day
                     calendar.set(yearPicker.getValue(), monthPicker.getValue() - 1, dayPicker.getValue() + 1);
                 }
-                onOkButtonClickListener.clickedOkButton(calendar.getTimeInMillis(), datePickerCategory);
+
+                switch (datePickerCategory)
+                {
+                    case START:
+                        isSettedStartDate = true;
+                        startDate.setTimeInMillis(calendar.getTimeInMillis());
+                        break;
+                    case END:
+                        isSettedEndDate = true;
+                        endDate.setTimeInMillis(calendar.getTimeInMillis());
+                        break;
+                }
+
+                ((AddScheduleActivity) getActivity()).clickedOkButton(calendar.getTimeInMillis(), datePickerCategory);
                 dismiss();
             }
         });
-
-        return view;
+        super.onViewCreated(view, savedInstanceState);
     }
 
     private void setDatePicker()
@@ -321,5 +356,4 @@ public class DatePickerFragment extends DialogFragment implements NumberPicker.O
             }
         }
     }
-
 }

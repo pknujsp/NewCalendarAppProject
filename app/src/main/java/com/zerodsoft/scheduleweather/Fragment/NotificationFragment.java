@@ -1,5 +1,6 @@
 package com.zerodsoft.scheduleweather.Fragment;
 
+import android.annotation.SuppressLint;
 import android.graphics.Point;
 import android.os.Bundle;
 
@@ -7,7 +8,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
+import android.os.Handler;
+import android.os.Message;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -26,10 +31,7 @@ import com.zerodsoft.scheduleweather.Etc.SelectedNotificationTime;
 import com.zerodsoft.scheduleweather.R;
 
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 
 public class NotificationFragment extends DialogFragment
@@ -48,9 +50,9 @@ public class NotificationFragment extends DialogFragment
     private ImageButton minuteMinusButton;
     private ImageButton minutePlusButton;
 
-    private EditText mainValueEditText;
-    private EditText hourValueEditText;
-    private EditText minuteValueEditText;
+    private TextView mainValueTextview;
+    private TextView hourValueTextview;
+    private TextView minuteValueTextview;
 
     private TextView resultValueTextView;
 
@@ -61,6 +63,9 @@ public class NotificationFragment extends DialogFragment
     private int hourValue = 0;
     private int minuteValue = 0;
 
+    boolean restartedFragment = false;
+
+
     private StringBuilder stringBuilder = new StringBuilder();
 
     private MainType mainType = MainType.DAY;
@@ -70,7 +75,67 @@ public class NotificationFragment extends DialogFragment
         DAY, HOUR, MINUTE
     }
 
+    private static NotificationFragment notificationFragment = null;
+
+    public static NotificationFragment getInstance()
+    {
+        if (notificationFragment == null)
+        {
+            notificationFragment = new NotificationFragment();
+        }
+        return notificationFragment;
+    }
+
+    private boolean buttonLongClick = false;
+
     private OnNotificationTimeListener onNotificationTimeListener;
+
+    @SuppressLint("HandlerLeak")
+    private Handler handler = new Handler()
+    {
+        @Override
+        public void handleMessage(Message msg)
+        {
+            switch (msg.what)
+            {
+                case R.id.minus_noti_value_button:
+                    if (mainValue != 0)
+                    {
+                        mainValueTextview.setText(Integer.toString(--mainValue));
+                    }
+                    break;
+                case R.id.plus_noti_value_button:
+                    mainValueTextview.setText(Integer.toString(++mainValue));
+                    break;
+                case R.id.minus_noti_hour_button:
+                    if (hourValue != 0)
+                    {
+                        hourValueTextview.setText(Integer.toString(--hourValue));
+                    }
+                    break;
+                case R.id.plus_noti_hour_button:
+                    if (hourValue != 23)
+                    {
+                        hourValueTextview.setText(Integer.toString(++hourValue));
+                    }
+                    break;
+                case R.id.minus_noti_minute_button:
+                    if (minuteValue != 0)
+                    {
+                        minuteValueTextview.setText(Integer.toString(--minuteValue));
+                    }
+                    break;
+                case R.id.plus_noti_minute_button:
+                    if (minuteValue != 59)
+                    {
+                        minuteValueTextview.setText(Integer.toString(++minuteValue));
+                    }
+                    break;
+            }
+            showResultValue();
+            handler.sendEmptyMessageDelayed(msg.what, 70);
+        }
+    };
 
     public interface OnNotificationTimeListener
     {
@@ -111,9 +176,9 @@ public class NotificationFragment extends DialogFragment
         minuteMinusButton = (ImageButton) view.findViewById(R.id.minus_noti_minute_button);
         minutePlusButton = (ImageButton) view.findViewById(R.id.plus_noti_minute_button);
 
-        mainValueEditText = (EditText) view.findViewById(R.id.noti_main_value_edittext);
-        hourValueEditText = (EditText) view.findViewById(R.id.noti_hour_value_edittext);
-        minuteValueEditText = (EditText) view.findViewById(R.id.noti_minute_value_edittext);
+        mainValueTextview = (TextView) view.findViewById(R.id.noti_main_value_textview);
+        hourValueTextview = (TextView) view.findViewById(R.id.noti_hour_value_textview);
+        minuteValueTextview = (TextView) view.findViewById(R.id.noti_minute_value_textview);
 
         resultValueTextView = (TextView) view.findViewById(R.id.noti_result_value_textview);
 
@@ -164,6 +229,20 @@ public class NotificationFragment extends DialogFragment
         minuteMinusButton.setOnClickListener(onClickListener);
         minutePlusButton.setOnClickListener(onClickListener);
 
+        mainMinusButton.setOnLongClickListener(onLongClickListener);
+        mainPlusButton.setOnLongClickListener(onLongClickListener);
+        hourMinusButton.setOnLongClickListener(onLongClickListener);
+        hourPlusButton.setOnLongClickListener(onLongClickListener);
+        minuteMinusButton.setOnLongClickListener(onLongClickListener);
+        minutePlusButton.setOnLongClickListener(onLongClickListener);
+
+        mainMinusButton.setOnTouchListener(onTouchListener);
+        mainPlusButton.setOnTouchListener(onTouchListener);
+        hourMinusButton.setOnTouchListener(onTouchListener);
+        hourPlusButton.setOnTouchListener(onTouchListener);
+        minuteMinusButton.setOnTouchListener(onTouchListener);
+        minutePlusButton.setOnTouchListener(onTouchListener);
+
         List<String> valueList = new ArrayList<>();
         valueList.add("일");
         valueList.add("시간");
@@ -174,20 +253,10 @@ public class NotificationFragment extends DialogFragment
 
         notiSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
         {
+
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l)
             {
-                if (hourValue != 0)
-                {
-                    hourValue = 0;
-                    hourValueEditText.setText(Integer.toString(hourValue));
-                }
-                if (minuteValue != 0)
-                {
-                    minuteValue = 0;
-                    minuteValueEditText.setText(Integer.toString(minuteValue));
-                }
-
                 switch (i)
                 {
                     case 0:
@@ -222,6 +291,42 @@ public class NotificationFragment extends DialogFragment
         super.onViewCreated(view, savedInstanceState);
     }
 
+    final View.OnLongClickListener onLongClickListener = new View.OnLongClickListener()
+    {
+        @Override
+        public boolean onLongClick(View view)
+        {
+            Log.e(TAG, "LONG CLICK");
+            buttonLongClick = true;
+            handler.sendEmptyMessageDelayed(view.getId(), 70);
+            return true;
+        }
+    };
+
+    final View.OnTouchListener onTouchListener = new View.OnTouchListener()
+    {
+        @Override
+        public boolean onTouch(View view, MotionEvent motionEvent)
+        {
+            Log.e(TAG, "ON TOUCH");
+
+            if (buttonLongClick)
+            {
+                switch (motionEvent.getAction())
+                {
+                    case MotionEvent.ACTION_UP:
+                        buttonLongClick = false;
+                        handler.removeMessages(view.getId());
+                        view.cancelLongPress();
+                        break;
+                }
+                return false;
+            }
+            return false;
+        }
+
+    };
+
     final View.OnClickListener onClickListener = new View.OnClickListener()
     {
         @Override
@@ -232,35 +337,34 @@ public class NotificationFragment extends DialogFragment
                 case R.id.minus_noti_value_button:
                     if (mainValue != 0)
                     {
-                        mainValueEditText.setText(Integer.toString(--mainValue));
+                        mainValueTextview.setText(Integer.toString(--mainValue));
                     }
                     break;
                 case R.id.plus_noti_value_button:
-                    mainValueEditText.setText(Integer.toString(++mainValue));
+                    mainValueTextview.setText(Integer.toString(++mainValue));
                     break;
                 case R.id.minus_noti_hour_button:
                     if (hourValue != 0)
                     {
-                        hourValueEditText.setText(Integer.toString(--hourValue));
+                        hourValueTextview.setText(Integer.toString(--hourValue));
                     }
                     break;
                 case R.id.plus_noti_hour_button:
                     if (hourValue != 23)
                     {
-                        hourValueEditText.setText(Integer.toString(++hourValue));
+                        hourValueTextview.setText(Integer.toString(++hourValue));
                     }
                     break;
-
                 case R.id.minus_noti_minute_button:
                     if (minuteValue != 0)
                     {
-                        minuteValueEditText.setText(Integer.toString(--minuteValue));
+                        minuteValueTextview.setText(Integer.toString(--minuteValue));
                     }
                     break;
                 case R.id.plus_noti_minute_button:
                     if (minuteValue != 59)
                     {
-                        minuteValueEditText.setText(Integer.toString(++minuteValue));
+                        minuteValueTextview.setText(Integer.toString(++minuteValue));
                     }
                     break;
             }
@@ -277,25 +381,28 @@ public class NotificationFragment extends DialogFragment
         switch (mainType)
         {
             case DAY:
-                stringBuilder.append(mainValueEditText.getText().toString()).append(" 일 ");
-                stringBuilder.append(hourValueEditText.getText().toString()).append(" 시간 ");
-                stringBuilder.append(minuteValueEditText.getText().toString()).append(" 분 ");
+                stringBuilder.append(mainValueTextview.getText().toString()).append(" 일 ");
+                stringBuilder.append(hourValueTextview.getText().toString()).append(" 시간 ");
+                stringBuilder.append(minuteValueTextview.getText().toString()).append(" 분 ");
                 break;
             case MINUTE:
-                stringBuilder.append(mainValueEditText.getText().toString()).append(" 분 ");
+                stringBuilder.append(mainValueTextview.getText().toString()).append(" 분 ");
                 break;
             case HOUR:
-                stringBuilder.append(mainValueEditText.getText().toString()).append(" 시간 ");
-                stringBuilder.append(minuteValueEditText.getText().toString()).append(" 분 ");
+                stringBuilder.append(mainValueTextview.getText().toString()).append(" 시간 ");
+                stringBuilder.append(minuteValueTextview.getText().toString()).append(" 분 ");
                 break;
         }
         stringBuilder.append(" 전에 알림");
         resultValueTextView.setText(stringBuilder.toString());
     }
 
+
     @Override
     public void onStart()
     {
+        super.onStart();
+
         Point point = new Point();
         getActivity().getWindowManager().getDefaultDisplay().getRealSize(point);
         int width = point.x;
@@ -306,13 +413,40 @@ public class NotificationFragment extends DialogFragment
 
         getDialog().getWindow().setAttributes(layoutParams);
 
-        mainValueEditText.setText(Integer.toString(mainValue));
-        hourValueEditText.setText(Integer.toString(hourValue));
-        minuteValueEditText.setText(Integer.toString(minuteValue));
+        mainValueTextview.setText(Integer.toString(mainValue));
+        hourValueTextview.setText(Integer.toString(hourValue));
+        minuteValueTextview.setText(Integer.toString(minuteValue));
+        showResultValue();
 
-        hourLayout.setVisibility(View.GONE);
-        minuteLayout.setVisibility(View.GONE);
+    }
 
-        super.onStart();
+    public void setSelectedNotificationTime(SelectedNotificationTime selectedNotificationTime)
+    {
+        mainValue = 1;
+        hourValue = 0;
+        minuteValue = 0;
+        restartedFragment = true;
+
+        switch (selectedNotificationTime.getMainType())
+        {
+            case DAY:
+                mainValue = selectedNotificationTime.getDay();
+                hourValue = selectedNotificationTime.getHour();
+                minuteValue = selectedNotificationTime.getMinute();
+
+                notiSpinner.setSelection(0);
+                break;
+            case MINUTE:
+                mainValue = selectedNotificationTime.getMinute();
+
+                notiSpinner.setSelection(1);
+                break;
+            case HOUR:
+                mainValue = selectedNotificationTime.getHour();
+                minuteValue = selectedNotificationTime.getMinute();
+
+                notiSpinner.setSelection(2);
+                break;
+        }
     }
 }
