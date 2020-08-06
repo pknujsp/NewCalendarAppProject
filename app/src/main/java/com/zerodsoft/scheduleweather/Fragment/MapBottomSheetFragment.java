@@ -24,6 +24,8 @@ import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.PlaceCategoryRespons
 import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.PlaceKeywordResponse.PlaceKeywordDocuments;
 import com.zerodsoft.scheduleweather.Room.DTO.AddressDTO;
 import com.zerodsoft.scheduleweather.Room.DTO.PlaceDTO;
+import com.zerodsoft.scheduleweather.Utility.LonLat;
+import com.zerodsoft.scheduleweather.Utility.LonLatConverter;
 
 import java.util.List;
 
@@ -140,34 +142,54 @@ public class MapBottomSheetFragment extends Fragment implements MapActivity.OnCo
             {
                 Bundle bundle = new Bundle();
                 bundle.putInt("type", resultType);
+                LonLat lonLat = null;
+                double lon, lat;
 
                 switch (resultType)
                 {
                     case DownloadData.ADDRESS:
+                        lon = addressList.get(selectedItemPosition).getX();
+                        lat = addressList.get(selectedItemPosition).getY();
+                        lonLat = LonLatConverter.convertLonLat(lon, lat);
+
                         AddressDTO addressDTO = new AddressDTO();
                         addressDTO.setAddressName(addressList.get(selectedItemPosition).getAddressName());
-                        addressDTO.setLongitude(Double.toString(addressList.get(selectedItemPosition).getX()));
-                        addressDTO.setLatitude(Double.toString(addressList.get(selectedItemPosition).getY()));
+                        addressDTO.setLongitude(Double.toString(lon));
+                        addressDTO.setLatitude(Double.toString(lat));
+                        addressDTO.setWeatherX(Integer.toString(lonLat.getX()));
+                        addressDTO.setWeatherY(Integer.toString(lonLat.getY()));
 
                         bundle.putParcelable("addressDTO", addressDTO);
                         break;
 
                     case DownloadData.PLACE_KEYWORD:
+                        lon = placeKeywordList.get(selectedItemPosition).getX();
+                        lat = placeKeywordList.get(selectedItemPosition).getY();
+                        lonLat = LonLatConverter.convertLonLat(lon, lat);
+
                         PlaceDTO placeDTOKeyword = new PlaceDTO();
                         placeDTOKeyword.setPlaceId(placeKeywordList.get(selectedItemPosition).getId());
                         placeDTOKeyword.setPlaceName(placeKeywordList.get(selectedItemPosition).getPlaceName());
-                        placeDTOKeyword.setLongitude(Double.toString(placeKeywordList.get(selectedItemPosition).getX()));
-                        placeDTOKeyword.setLatitude(Double.toString(placeKeywordList.get(selectedItemPosition).getY()));
+                        placeDTOKeyword.setLongitude(Double.toString(lon));
+                        placeDTOKeyword.setLatitude(Double.toString(lat));
+                        placeDTOKeyword.setWeatherX(Integer.toString(lonLat.getX()));
+                        placeDTOKeyword.setWeatherY(Integer.toString(lonLat.getY()));
 
                         bundle.putParcelable("placeDTO", placeDTOKeyword);
                         break;
 
                     case DownloadData.PLACE_CATEGORY:
+                        lon = Double.valueOf(placeCategoryList.get(selectedItemPosition).getX());
+                        lat = Double.valueOf(placeCategoryList.get(selectedItemPosition).getY());
+                        lonLat = LonLatConverter.convertLonLat(lon, lat);
+
                         PlaceDTO placeDTOCategory = new PlaceDTO();
                         placeDTOCategory.setPlaceId(placeCategoryList.get(selectedItemPosition).getId());
                         placeDTOCategory.setPlaceName(placeCategoryList.get(selectedItemPosition).getPlaceName());
                         placeDTOCategory.setLongitude(placeCategoryList.get(selectedItemPosition).getX());
                         placeDTOCategory.setLatitude(placeCategoryList.get(selectedItemPosition).getY());
+                        placeDTOCategory.setWeatherX(Integer.toString(lonLat.getX()));
+                        placeDTOCategory.setWeatherY(Integer.toString(lonLat.getY()));
 
                         bundle.putParcelable("placeDTO", placeDTOCategory);
                         break;

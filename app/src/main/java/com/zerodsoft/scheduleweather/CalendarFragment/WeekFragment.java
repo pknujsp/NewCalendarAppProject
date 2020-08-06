@@ -3,6 +3,8 @@ package com.zerodsoft.scheduleweather.CalendarFragment;
 import android.graphics.Point;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.ViewPager;
 
@@ -23,8 +25,8 @@ import java.util.Calendar;
 
 public class WeekFragment extends Fragment
 {
-    //view
-    private static final String WEEKFRAGMENT_TAG = "DAY_FRAGMENT";
+    public static final String TAG = "DAY_FRAGMENT";
+
     private WeekDatesView mWeekDatesView;
     private HoursView hoursView;
     private RelativeLayout leftLayout;
@@ -57,16 +59,14 @@ public class WeekFragment extends Fragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState)
     {
-        View view = inflater.inflate(R.layout.fragment_day, container, false);
         Point point = new Point();
         getActivity().getWindowManager().getDefaultDisplay().getRealSize(point);
         spacingBetweenDay = point.x / 8;
-        assignViews(view);
-        return view;
+        return inflater.inflate(R.layout.fragment_day, container, false);
     }
 
-
-    private void assignViews(View view)
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         leftLayout = (RelativeLayout) view.findViewById(R.id.leftview_layout);
         rightLayout = (LinearLayout) view.findViewById(R.id.rightview_layout);
@@ -86,6 +86,14 @@ public class WeekFragment extends Fragment
         weekViewPager.setAdapter(weekViewPagerAdapter);
         weekViewPager.setCurrentItem(FIRST_VIEW_NUMBER);
         weekViewPager.addOnPageChangeListener(changeListener);
+
+        super.onViewCreated(view, savedInstanceState);
+    }
+
+    @Override
+    public void onStart()
+    {
+        super.onStart();
     }
 
     class ChangeListener extends ViewPager.SimpleOnPageChangeListener
@@ -114,7 +122,7 @@ public class WeekFragment extends Fragment
             {
             } else if (state == ViewPager.SCROLL_STATE_DRAGGING)
             {
-                Log.e(WEEKFRAGMENT_TAG, "SCROLL_STATE_DRAGGING");
+                Log.e(TAG, "SCROLL_STATE_DRAGGING");
                 weekViewPagerAdapter.refreshChildView(this.position);
             } else if (state == ViewPager.SCROLL_STATE_SETTLING)
             {
@@ -127,7 +135,7 @@ public class WeekFragment extends Fragment
         {
             // 오른쪽(이전 주)으로 드래그시 positionOffset의 값이 작아짐 0.99999 -> 0.0
             // 왼쪽(다음 주)으로 드래그시 positionOffset의 값이 커짐 0.00001 -> 1.0
-            Log.e(WEEKFRAGMENT_TAG, "onPageScrolled" + Float.toString(positionOffset));
+            Log.e(TAG, "onPageScrolled" + Float.toString(positionOffset));
             this.position = position;
         }
 
@@ -136,7 +144,7 @@ public class WeekFragment extends Fragment
         {
             // drag 성공 시에만 SETTLING 직후 호출
             super.onPageSelected(position);
-            Log.e(WEEKFRAGMENT_TAG, "onPageSelected" + Integer.toString(position));
+            Log.e(TAG, "onPageSelected" + Integer.toString(position));
             finalPosition = position;
 
             if (finalPosition < firstPosition)

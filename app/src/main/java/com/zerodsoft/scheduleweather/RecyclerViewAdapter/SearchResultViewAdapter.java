@@ -24,6 +24,8 @@ import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.PlaceKeywordResponse
 import com.zerodsoft.scheduleweather.Retrofit.QueryResponse.PlaceKeywordResponse.PlaceKeywordMeta;
 import com.zerodsoft.scheduleweather.Room.DTO.AddressDTO;
 import com.zerodsoft.scheduleweather.Room.DTO.PlaceDTO;
+import com.zerodsoft.scheduleweather.Utility.LonLat;
+import com.zerodsoft.scheduleweather.Utility.LonLatConverter;
 
 import java.util.List;
 
@@ -324,6 +326,8 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
                 @Override
                 public void onClick(View view)
                 {
+                    LonLat lonLat = LonLatConverter.convertLonLat(Double.valueOf(longitude), Double.valueOf(latitude));
+
                     Bundle bundle = new Bundle();
 
                     bundle.putInt("type", type);
@@ -331,6 +335,8 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
                     addressDTO.setAddressName(addressName);
                     addressDTO.setLongitude(longitude);
                     addressDTO.setLatitude(latitude);
+                    addressDTO.setWeatherX(Integer.toString(lonLat.getX()));
+                    addressDTO.setWeatherY(Integer.toString(lonLat.getY()));
 
                     bundle.putParcelable("addressDTO", addressDTO);
                     ((MapActivity) context).onChoicedLoc(bundle);
@@ -345,6 +351,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
                 @Override
                 public void onClick(View view)
                 {
+                    LonLat lonLat = LonLatConverter.convertLonLat(Double.valueOf(longitude), Double.valueOf(latitude));
                     Bundle bundle = new Bundle();
 
                     bundle.putInt("type", type);
@@ -353,6 +360,8 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
                     placeDTO.setPlaceName(placeName);
                     placeDTO.setLongitude(longitude);
                     placeDTO.setLatitude(latitude);
+                    placeDTO.setWeatherX(Integer.toString(lonLat.getX()));
+                    placeDTO.setWeatherY(Integer.toString(lonLat.getY()));
 
                     bundle.putParcelable("placeDTO", placeDTO);
                     ((MapActivity) context).onChoicedLoc(bundle);

@@ -21,8 +21,6 @@ import com.zerodsoft.scheduleweather.CalendarView.Dto.CoordinateInfo;
 import com.zerodsoft.scheduleweather.CalendarFragment.WeekFragment;
 import com.zerodsoft.scheduleweather.CalendarView.EventDrawingInfo;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.Room.DBController;
-import com.zerodsoft.scheduleweather.Room.DTO.ScheduleCategoryDTO;
 import com.zerodsoft.scheduleweather.Room.DTO.ScheduleDTO;
 import com.zerodsoft.scheduleweather.Utility.AppSettings;
 import com.zerodsoft.scheduleweather.Utility.DateHour;
@@ -453,7 +451,7 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
         for (ScheduleDTO schedule : scheduleList)
         {
             calcEventPosition(left, right, top, bottom, schedule);
-            if (schedule.getCategory() == ScheduleCategoryDTO.GOOGLE_SCHEDULE)
+            if (schedule.getCategory() == ScheduleDTO.GOOGLE_CATEGORY)
             {
                 eventDrawingInfoList.add(new EventDrawingInfo(left, right, top, bottom, schedule, ACCOUNT_TYPE.GOOGLE));
             } else

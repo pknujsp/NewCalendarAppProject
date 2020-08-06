@@ -7,23 +7,23 @@ import androidx.room.Room;
 import androidx.room.RoomDatabase;
 
 import com.zerodsoft.scheduleweather.Room.DAO.FavoriteLocDAO;
-import com.zerodsoft.scheduleweather.Room.DAO.ScheduleCategoryDAO;
+import com.zerodsoft.scheduleweather.Room.DAO.LocationDAO;
 import com.zerodsoft.scheduleweather.Room.DAO.ScheduleDAO;
+import com.zerodsoft.scheduleweather.Room.DTO.AddressDTO;
 import com.zerodsoft.scheduleweather.Room.DTO.FavoriteLocDTO;
-import com.zerodsoft.scheduleweather.Room.DTO.ScheduleCategoryDTO;
+import com.zerodsoft.scheduleweather.Room.DTO.PlaceDTO;
 import com.zerodsoft.scheduleweather.Room.DTO.ScheduleDTO;
 
-@Database(entities = {FavoriteLocDTO.class, ScheduleCategoryDTO.class, ScheduleDTO.class}, version = 1, exportSchema = false)
+@Database(entities = {FavoriteLocDTO.class, PlaceDTO.class, AddressDTO.class, ScheduleDTO.class}, version = 1, exportSchema = false)
 public abstract class AppDb extends RoomDatabase
 {
     private static AppDb instance = null;
-
 
     public abstract FavoriteLocDAO favoriteLocDAO();
 
     public abstract ScheduleDAO scheduleDAO();
 
-    public abstract ScheduleCategoryDAO scheduleCategoryDAO();
+    public abstract LocationDAO locationDAO();
 
 
     public static AppDb getInstance(Context context)

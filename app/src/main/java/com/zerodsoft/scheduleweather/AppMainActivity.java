@@ -5,12 +5,14 @@ import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Menu;
+import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.zerodsoft.scheduleweather.Activity.AddScheduleActivity;
 import com.zerodsoft.scheduleweather.CalendarFragment.WeekFragment;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -20,8 +22,13 @@ import androidx.appcompat.widget.Toolbar;
 public class AppMainActivity extends AppCompatActivity
 {
     private WeekFragment weekFragment;
-    private FragmentManager fragmentManager;
-    private FragmentTransaction fragmentTransaction;
+
+    private static final int ADD_SCHEDULE_REQUEST = 0;
+    public static final int WEEK_FRAGMENT = 1;
+    public static final int DAY_FRAGMENT = 2;
+    public static final int MONTH_FRAGMENT = 3;
+
+    private static int calendarFragmentType = WEEK_FRAGMENT;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -38,27 +45,46 @@ public class AppMainActivity extends AppCompatActivity
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setHomeAsUpIndicator(R.drawable.toolbar_menu_icon);
 
-        fragmentManager = getSupportFragmentManager();
-        fragmentTransaction = fragmentManager.beginTransaction();
-        weekFragment = new WeekFragment();
-        fragmentTransaction.replace(R.id.nav_host_fragment, weekFragment).commitAllowingStateLoss();
-
         fab.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view)
             {
                 Intent intent = new Intent(AppMainActivity.this, AddScheduleActivity.class);
-                startActivity(intent);
+                startActivityForResult(intent, ADD_SCHEDULE_REQUEST);
             }
         });
+    }
 
+    @Override
+    protected void onStart()
+    {
+        onCalendarFragmentChanged(calendarFragmentType);
+        super.onStart();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data)
+    {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == ADD_SCHEDULE_REQUEST)
+        {
+            if (requestCode == RESULT_OK)
+            {
+                Bundle bundle = data.getExtras();
+
+                long startDate = bundle.getLong("startDate");
+                int scheduleId = bundle.getInt("scheduleId");
+
+                Toast.makeText(AppMainActivity.this, Long.toString(startDate) + ", " + Integer.toString(scheduleId), Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
     {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.app_main, menu);
         return true;
     }
@@ -72,16 +98,7 @@ public class AppMainActivity extends AppCompatActivity
                 // drawerLayout.openDrawer(navigationView);
                 return true;
             case R.id.menu_item_today:
-                /*
-                Intent intent = new Intent(getApplicationContext(), AddScheduleActivity.class);
-                Bundle bundle = new Bundle();
-                bundle.putInt("action", Actions.START_ADD_SCHEDULE_ACTIVITY);
-                intent.putExtras(bundle);
-                startActivity(intent);
-
-                 */
                 weekFragment.goToToday();
-
                 return true;
             case R.id.menu_item_refresh:
                 return true;
@@ -90,5 +107,23 @@ public class AppMainActivity extends AppCompatActivity
         }
     }
 
+    private void onCalendarFragmentChanged(int type)
+    {
+        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
 
+        switch (type)
+        {
+            case MONTH_FRAGMENT:
+                break;
+            case WEEK_FRAGMENT:
+                if (weekFragment == null)
+                {
+                    weekFragment = new WeekFragment();
+                }
+                fragmentTransaction.replace(R.id.nav_host_fragment, weekFragment).commit();
+                break;
+            case DAY_FRAGMENT:
+                break;
+        }
+    }
 }

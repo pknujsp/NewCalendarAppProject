@@ -5,9 +5,12 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -28,8 +31,12 @@ import com.zerodsoft.scheduleweather.Fragment.DatePickerFragment;
 import com.zerodsoft.scheduleweather.Fragment.NotificationFragment;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.Retrofit.DownloadData;
+import com.zerodsoft.scheduleweather.Room.AppDb;
+import com.zerodsoft.scheduleweather.Room.DAO.LocationDAO;
+import com.zerodsoft.scheduleweather.Room.DAO.ScheduleDAO;
 import com.zerodsoft.scheduleweather.Room.DTO.AddressDTO;
 import com.zerodsoft.scheduleweather.Room.DTO.PlaceDTO;
+import com.zerodsoft.scheduleweather.Room.DTO.ScheduleDTO;
 import com.zerodsoft.scheduleweather.Utility.Clock;
 
 import java.util.ArrayList;
@@ -70,6 +77,19 @@ public class AddScheduleActivity extends AppCompatActivity implements Notificati
     private boolean isAllDay = false;
 
     public static final int ADD_LOCATION_ACTIVITY = 0;
+
+    @SuppressLint("HandlerLeak")
+    private final Handler handler = new Handler()
+    {
+        @Override
+        public void handleMessage(Message msg)
+        {
+            Bundle bundle = msg.getData();
+            getIntent().putExtras(bundle);
+            setResult(RESULT_OK, getIntent());
+            finish();
+        }
+    };
 
 
     public void clickedOkButton(long timeMilliSec, DATE_PICKER_CATEGORY datePickerCategory)
@@ -163,14 +183,46 @@ public class AddScheduleActivity extends AppCompatActivity implements Notificati
         switch (item.getItemId())
         {
             case R.id.save:
+                ScheduleDTO scheduleDTO = new ScheduleDTO();
+
+                if (accountSpinner.getSelectedItemPosition() == 0)
+                {
+                    scheduleDTO.setCategory(ScheduleDTO.GOOGLE_CATEGORY);
+                } else
+                {
+                    scheduleDTO.setCategory(ScheduleDTO.LOCAL_CATEGORY);
+                }
+
+                scheduleDTO.setSubject(subjectEditText.getText().toString());
+                scheduleDTO.setContent(contentEditText.getText().toString());
+
+                if (isAllDay)
+                {
+                    scheduleDTO.setStartDate((int) allDay.getTimeInMillis());
+                    scheduleDTO.setEndDate((int) allDay.getTimeInMillis());
+                } else
+                {
+                    scheduleDTO.setStartDate((int) startDate.getTimeInMillis());
+                    scheduleDTO.setEndDate((int) endDate.getTimeInMillis());
+                }
+
                 Calendar calendar = Calendar.getInstance();
                 long notificationTime = 0L;
                 if (selectedNotificationTime != null)
                 {
                     notificationTime = selectedNotificationTime.getTimeInMillis(calendar);
                 }
+                scheduleDTO.setNotiTime((int) notificationTime);
+                scheduleDTO.setInsertedDate((int) calendar.getTimeInMillis());
+                scheduleDTO.setUpdatedDate((int) calendar.getTimeInMillis());
+
+                DBThread dbThread = new DBThread();
+                dbThread.schedule = scheduleDTO;
+                dbThread.start();
+
                 break;
             case android.R.id.home:
+                setResult(RESULT_CANCELED);
                 finish();
                 break;
         }
@@ -305,24 +357,18 @@ public class AddScheduleActivity extends AppCompatActivity implements Notificati
                 Bundle bundle = data.getExtras();
                 locType = bundle.getInt("type");
                 String locName = null;
-                double latitude = 0f;
-                double longitude = 0f;
 
                 switch (locType)
                 {
                     case DownloadData.ADDRESS:
                         addressDTO = bundle.getParcelable("addressDTO");
                         locName = addressDTO.getAddressName();
-                        latitude = Double.valueOf(addressDTO.getLatitude());
-                        longitude = Double.valueOf(addressDTO.getLongitude());
                         break;
 
                     case DownloadData.PLACE_KEYWORD:
                     case DownloadData.PLACE_CATEGORY:
                         placeDTO = bundle.getParcelable("placeDTO");
                         locName = placeDTO.getPlaceName();
-                        latitude = Double.valueOf(placeDTO.getLatitude());
-                        longitude = Double.valueOf(placeDTO.getLongitude());
                         break;
                 }
                 locationTextView.setText(locName);
@@ -332,6 +378,46 @@ public class AddScheduleActivity extends AppCompatActivity implements Notificati
             {
 
             }
+        }
+    }
+
+    class DBThread extends Thread
+    {
+        ScheduleDTO schedule;
+
+        @Override
+        public void run()
+        {
+            AppDb appDb = AppDb.getInstance(AddScheduleActivity.this);
+            ScheduleDAO scheduleDAO = appDb.scheduleDAO();
+            LocationDAO locationDAO = null;
+
+            long scheduleId = scheduleDAO.insertNewSchedule(schedule);
+
+            if (placeDTO != null)
+            {
+                locationDAO = appDb.locationDAO();
+
+                placeDTO.setScheduleId((int) scheduleId);
+                long placeId = locationDAO.insertPlace(placeDTO);
+                scheduleDAO.updatePlaceId((int) scheduleId, (int) placeId);
+            }
+            if (addressDTO != null)
+            {
+                locationDAO = appDb.locationDAO();
+
+                addressDTO.setScheduleId((int) scheduleId);
+                long addressId = locationDAO.insertAddress(addressDTO);
+                scheduleDAO.updateAddressId((int) scheduleId, (int) addressId);
+            }
+
+            Message msg = handler.obtainMessage();
+            Bundle bundle = new Bundle();
+            bundle.putLong("startDate", (long) schedule.getStartDate());
+            bundle.putInt("scheduleId", (int) scheduleId);
+
+            msg.setData(bundle);
+            handler.sendMessage(msg);
         }
     }
 }

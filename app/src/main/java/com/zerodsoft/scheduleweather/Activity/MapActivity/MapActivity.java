@@ -2,13 +2,19 @@ package com.zerodsoft.scheduleweather.Activity.MapActivity;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.content.ContextCompat;
 import androidx.core.view.GestureDetectorCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import android.Manifest;
+import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.view.GestureDetector;
@@ -38,6 +44,7 @@ import net.daum.mf.map.api.MapView;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class MapActivity extends AppCompatActivity implements MapView.POIItemEventListener, MapReverseGeoCoder.ReverseGeoCodingResultListener, MapView.MapViewEventListener,
         SearchResultViewAdapter.OnItemClickedListener
@@ -54,6 +61,8 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
     private List<AddressResponseDocuments> addressList = null;
     private List<PlaceKeywordDocuments> placeKeywordList = null;
     private List<PlaceCategoryDocuments> placeCategoryList = null;
+
+    private LocationManager locationManager;
 
     private long downloadedTime;
     private int resultType;
@@ -230,9 +239,40 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
         }
     };
 
+    private final LocationListener locationListener = new LocationListener()
+    {
+        @Override
+        public void onLocationChanged(Location location)
+        {
+            currentMapPoint = MapPoint.mapPointWithGeoCoord(location.getLatitude(), location.getLongitude());
+            mapView.setMapCenterPoint(currentMapPoint, true);
+            // 자원해제
+            locationManager.removeUpdates(locationListener);
+        }
+
+        @Override
+        public void onStatusChanged(String s, int i, Bundle bundle)
+        {
+
+        }
+
+        @Override
+        public void onProviderEnabled(String s)
+        {
+
+        }
+
+        @Override
+        public void onProviderDisabled(String s)
+        {
+
+        }
+    };
+
     @Override
     protected void onStart()
     {
+        gpsButton.performClick();
         super.onStart();
     }
 
@@ -259,14 +299,13 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
         zoomInButton = (ImageButton) findViewById(R.id.zoom_in_button);
         zoomOutButton = (ImageButton) findViewById(R.id.zoom_out_button);
         gpsButton = (ImageButton) findViewById(R.id.gps_button);
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
         mapView = new MapView(this);
-
         gestureDetectorCompat = new GestureDetectorCompat(this, onGestureListener);
 
         if (isMainMapActivity)
         {
-            mapView.setMapCenterPoint(currentMapPoint, true);
             initItemFragment();
         }
         if (!MapView.isMapTilePersistentCacheEnabled())
@@ -351,11 +390,20 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
             @Override
             public void onClick(View view)
             {
-                mapView.setCurrentLocationTrackingMode(MapView.CurrentLocationTrackingMode.TrackingModeOnWithoutHeading);
-                gpsButton.setClickable(false);
+                //   TimeOutThread timeOutThread = new TimeOutThread();
+                //    timeOutThread.start();
 
-                TimeOutThread timeOutThread = new TimeOutThread();
-                timeOutThread.start();
+                boolean isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+                boolean isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+
+                int fineLocationPermission = ContextCompat.checkSelfPermission(MapActivity.this, Manifest.permission.ACCESS_FINE_LOCATION);
+                int coarseLocationPermission = ContextCompat.checkSelfPermission(MapActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION);
+
+                if (isGpsEnabled && isNetworkEnabled)
+                {
+                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+                    locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
+                }
             }
         });
 
@@ -368,9 +416,8 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
                 return gestureDetectorCompat.onTouchEvent(motionEvent);
             }
         });
-
-        gpsButton.performClick();
     }
+
 
     public void onItemSelected(int position)
     {

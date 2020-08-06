@@ -77,17 +77,18 @@
             <EditText
                 android:id="@+id/subject_edittext"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="8dp"
                 android:layout_marginEnd="16dp"
                 android:layout_marginBottom="8dp"
-                android:background="@drawable/spinner_background"
                 android:ems="10"
                 android:hint="제목 입력"
                 android:inputType="text"
                 android:textColor="@color/text_color"
                 android:textSize="15dp" />
+
+
         </LinearLayout>
 
         <LinearLayout
@@ -254,7 +255,6 @@
                 android:layout_marginTop="8dp"
                 android:layout_marginEnd="16dp"
                 android:layout_marginBottom="8dp"
-                android:background="@drawable/spinner_background"
                 android:ems="10"
                 android:gravity="start|top"
                 android:hint="내용을 입력해주세요"
@@ -298,7 +298,7 @@
                     android:layout_height="35dp"
                     android:background="@drawable/blue_button_shape"
                     android:gravity="center"
-                    android:text="위치 추가"
+                    android:text="위치 설정"
                     android:textColor="#FFFFFF" />
 
                 <TextView

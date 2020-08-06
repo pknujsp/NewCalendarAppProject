@@ -11,22 +11,27 @@ import androidx.room.PrimaryKey;
 import java.io.Serializable;
 
 @Entity(tableName = "TB_FAVORITE_LOC"
-        , foreignKeys = @ForeignKey(entity = ScheduleDTO.class,
-        parentColumns = "id",
-        childColumns = "schedule_id"))
+        , foreignKeys =
+        {@ForeignKey(entity = ScheduleDTO.class,
+                parentColumns = "id",
+                childColumns = "schedule_id"),
+                @ForeignKey(entity = PlaceDTO.class,
+                        parentColumns = "id", childColumns = "place_id"),
+                @ForeignKey(entity = AddressDTO.class,
+                        parentColumns = "id", childColumns = "address_id")})
 public class FavoriteLocDTO implements Parcelable
 {
     @PrimaryKey(autoGenerate = true)
-    @ColumnInfo(name = "id")
+    @ColumnInfo(name = "id", index = true)
     private int id;
 
-    @ColumnInfo(name = "schedule_id")
+    @ColumnInfo(name = "schedule_id", index = true)
     private int scheduleId;
 
-    @ColumnInfo(name = "place_id")
+    @ColumnInfo(name = "place_id", index = true)
     private int placeId;
 
-    @ColumnInfo(name = "address_id")
+    @ColumnInfo(name = "address_id", index = true)
     private int addressId;
 
     public FavoriteLocDTO()

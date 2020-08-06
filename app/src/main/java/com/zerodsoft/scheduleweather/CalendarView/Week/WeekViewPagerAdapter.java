@@ -12,7 +12,6 @@ import androidx.viewpager.widget.PagerAdapter;
 import com.zerodsoft.scheduleweather.CalendarFragment.WeekFragment;
 import com.zerodsoft.scheduleweather.CalendarView.HoursView;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.Room.DBController;
 import com.zerodsoft.scheduleweather.Room.DTO.ScheduleDTO;
 
 import java.util.List;
@@ -20,28 +19,24 @@ import java.util.List;
 
 public class WeekViewPagerAdapter extends PagerAdapter implements WeekView.OnRefreshChildViewListener
 {
-    private static final String ADAPTER_TAG = "WEEKVIEWPAGER_ADAPTER";
+    public static final String TAG = "WEEKVIEWPAGER_ADAPTER";
     private Context context;
     private HoursView hoursView;
     private ViewGroup container;
     private WeekDatesView weekDatesView;
     private SparseArray<View> weekViewSparseArray = new SparseArray<>();
     private SparseArray<View> headerViewSparseArray = new SparseArray<>();
-    private DBController dbController;
-
 
     public WeekViewPagerAdapter()
     {
 
     }
 
-
     public WeekViewPagerAdapter(Context context, WeekDatesView weekDatesView, HoursView hoursView)
     {
         this.context = context;
         this.weekDatesView = weekDatesView;
         this.hoursView = hoursView;
-        this.dbController = DBController.getInstance();
     }
 
 
@@ -64,7 +59,6 @@ public class WeekViewPagerAdapter extends PagerAdapter implements WeekView.OnRef
         }
         weekViewSparseArray.put(position, weekView);
         headerViewSparseArray.put(position, headerView);
-        getScheduleList(position);
 
         container.addView(rootView);
         return rootView;
@@ -103,23 +97,6 @@ public class WeekViewPagerAdapter extends PagerAdapter implements WeekView.OnRef
         }
     }
 
-    public void refreshView(int position)
-    {
-        weekViewSparseArray.get(position).invalidate();
-    }
-
-
-    public void getScheduleList(int position)
-    {
-        dbController.selectScheduleData();
-        sendScheduleList(position, dbController.getScheduleList());
-    }
-
-    public void sendScheduleList(int position, List<ScheduleDTO> scheduleList)
-    {
-        ((WeekHeaderView) headerViewSparseArray.get(position)).setScheduleList(scheduleList);
-        ((WeekView) weekViewSparseArray.get(position)).setScheduleList(scheduleList);
-    }
 
     public int getEventRowNum(int position)
     {

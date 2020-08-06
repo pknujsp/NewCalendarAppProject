@@ -26,7 +26,6 @@ import com.zerodsoft.scheduleweather.CalendarView.Dto.CoordinateInfo;
 import com.zerodsoft.scheduleweather.CalendarView.EventDrawingInfo;
 import com.zerodsoft.scheduleweather.CalendarView.HoursView;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.Room.DTO.ScheduleCategoryDTO;
 import com.zerodsoft.scheduleweather.Room.DTO.ScheduleDTO;
 import com.zerodsoft.scheduleweather.Utility.AppSettings;
 
@@ -686,7 +685,7 @@ public class WeekView extends View
         for (ScheduleDTO schedule : scheduleList)
         {
             dayOfWeek = calcEventPosition(startPoint, endPoint, schedule);
-            if (schedule.getCategory() == ScheduleCategoryDTO.GOOGLE_SCHEDULE)
+            if (schedule.getCategory() == ScheduleDTO.GOOGLE_CATEGORY)
             {
                 eventDrawingInfoList.get(dayOfWeek).add(new EventDrawingInfo(new PointF(startPoint.x, startPoint.y), new PointF(endPoint.x, endPoint.y), schedule, ACCOUNT_TYPE.GOOGLE));
             } else

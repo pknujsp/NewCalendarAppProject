@@ -17,11 +17,11 @@ import androidx.room.PrimaryKey;
         ))
 public class PlaceDTO implements Parcelable
 {
-    @ColumnInfo(name = "id")
+    @ColumnInfo(name = "id", index = true)
     @PrimaryKey(autoGenerate = true)
     private int id;
 
-    @ColumnInfo(name = "schedule_id")
+    @ColumnInfo(name = "schedule_id", index = true)
     private int scheduleId;
 
     @ColumnInfo(name = "place_id")

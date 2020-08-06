@@ -6,21 +6,16 @@ import android.os.Parcelable;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 import java.io.Serializable;
 
-@Entity(tableName = "TB_SCHEDULE",
-        foreignKeys = @ForeignKey(
-                entity = ScheduleCategoryDTO.class,
-                parentColumns = "id",
-                childColumns = "category"
-        ))
-
+@Entity(tableName = "TB_SCHEDULE")
 public class ScheduleDTO implements Parcelable
 {
     @PrimaryKey(autoGenerate = true)
-    @ColumnInfo(name = "id")
+    @ColumnInfo(name = "id", index = true)
     private int id;
 
     @ColumnInfo(name = "category")
@@ -47,6 +42,18 @@ public class ScheduleDTO implements Parcelable
     @ColumnInfo(name = "address_id_to_be_visited")
     private int addressId;
 
+    @ColumnInfo(name = "inserted_date")
+    private int insertedDate;
+
+    @ColumnInfo(name = "updated_date")
+    private int updatedDate;
+
+    @Ignore
+    public static final int GOOGLE_CATEGORY = 0;
+
+    @Ignore
+    public static final int LOCAL_CATEGORY = 1;
+
     public ScheduleDTO()
     {
     }
@@ -62,6 +69,8 @@ public class ScheduleDTO implements Parcelable
         notiTime = in.readInt();
         placeId = in.readInt();
         addressId = in.readInt();
+        insertedDate = in.readInt();
+        updatedDate = in.readInt();
     }
 
     public static final Creator<ScheduleDTO> CREATOR = new Creator<ScheduleDTO>()
@@ -169,6 +178,26 @@ public class ScheduleDTO implements Parcelable
         this.addressId = addressId;
     }
 
+    public int getInsertedDate()
+    {
+        return insertedDate;
+    }
+
+    public void setInsertedDate(int insertedDate)
+    {
+        this.insertedDate = insertedDate;
+    }
+
+    public int getUpdatedDate()
+    {
+        return updatedDate;
+    }
+
+    public void setUpdatedDate(int updatedDate)
+    {
+        this.updatedDate = updatedDate;
+    }
+
     @Override
     public int describeContents()
     {
@@ -187,5 +216,7 @@ public class ScheduleDTO implements Parcelable
         parcel.writeInt(notiTime);
         parcel.writeInt(placeId);
         parcel.writeInt(addressId);
+        parcel.writeInt(insertedDate);
+        parcel.writeInt(updatedDate);
     }
 }
