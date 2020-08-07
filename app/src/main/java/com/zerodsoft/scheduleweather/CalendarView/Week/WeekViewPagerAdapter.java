@@ -7,82 +7,106 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
-import androidx.viewpager.widget.PagerAdapter;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.CalendarFragment.WeekFragment;
 import com.zerodsoft.scheduleweather.CalendarView.HoursView;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.Room.DTO.ScheduleDTO;
-
-import java.util.List;
 
 
-public class WeekViewPagerAdapter extends PagerAdapter implements WeekView.OnRefreshChildViewListener
+public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdapter.WeekViewPagerHolder> implements WeekView.OnRefreshChildViewListener
 {
     public static final String TAG = "WEEKVIEWPAGER_ADAPTER";
     private Context context;
     private HoursView hoursView;
-    private ViewGroup container;
-    private WeekDatesView weekDatesView;
-    private SparseArray<View> weekViewSparseArray = new SparseArray<>();
-    private SparseArray<View> headerViewSparseArray = new SparseArray<>();
+    private SparseArray<WeekView> weekViewSparseArray = new SparseArray<>();
+    private SparseArray<WeekHeaderView> headerViewSparseArray = new SparseArray<>();
 
     public WeekViewPagerAdapter()
     {
 
     }
 
-    public WeekViewPagerAdapter(Context context, WeekDatesView weekDatesView, HoursView hoursView)
+    public WeekViewPagerAdapter(Context context, HoursView hoursView)
     {
         this.context = context;
-        this.weekDatesView = weekDatesView;
         this.hoursView = hoursView;
     }
 
+    class WeekViewPagerHolder extends RecyclerView.ViewHolder
+    {
+        private View rootView;
+        private WeekHeaderView headerView;
+        private WeekView weekView;
+        private int viewPosition;
+
+        public WeekViewPagerHolder(View view)
+        {
+            super(view);
+            this.rootView = view;
+        }
+
+        public void onBindView(WeekHeaderView headerView, WeekView weekView, int position)
+        {
+            this.headerView = headerView;
+            this.weekView = weekView;
+            this.viewPosition = position;
+        }
+
+        public View getRootView()
+        {
+            return rootView;
+        }
+
+        public int getViewPosition()
+        {
+            return viewPosition;
+        }
+    }
 
     @NonNull
     @Override
-    public Object instantiateItem(@NonNull ViewGroup container, int position)
+    public WeekViewPagerHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType)
     {
-        this.container = container;
-        View rootView = null, headerView = null, weekView = null;
+        return new WeekViewPagerHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.weekview_viewpager_item, parent, false));
+    }
 
-        if (context != null)
-        {
-            LayoutInflater layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            rootView = layoutInflater.inflate(R.layout.weekview_viewpager_item, container, false);
-            headerView = (WeekHeaderView) rootView.findViewById(R.id.weekheaderview);
-            weekView = (WeekView) rootView.findViewById(R.id.weekview);
+    @Override
+    public void onBindViewHolder(@NonNull WeekViewPagerHolder holder, int position)
+    {
+        View rootView = holder.getRootView();
+        WeekHeaderView headerView = (WeekHeaderView) rootView.findViewById(R.id.week_header_view);
+        WeekView weekView = (WeekView) rootView.findViewById(R.id.weekview);
 
-            ((WeekHeaderView) headerView).setPosition(position);
-            ((WeekView) weekView).setPosition(position).setCoordinateInfoInterface((WeekHeaderView) headerView).setOnRefreshChildViewListener(this).setOnRefreshHoursViewListener(hoursView);
-        }
+        headerView.setPosition(position);
+        weekView.setPosition(position).setCoordinateInfoInterface(headerView).setOnRefreshChildViewListener(this).setOnRefreshHoursViewListener(hoursView);
+
+        holder.onBindView(headerView, weekView, position);
+
         weekViewSparseArray.put(position, weekView);
         headerViewSparseArray.put(position, headerView);
-
-        container.addView(rootView);
-        return rootView;
     }
 
     @Override
-    public void destroyItem(@NonNull ViewGroup container, int position, @NonNull Object object)
+    public void onViewAttachedToWindow(@NonNull WeekViewPagerHolder holder)
     {
-        weekViewSparseArray.remove(position);
-        headerViewSparseArray.remove(position);
-        container.removeView((View) object);
+        super.onViewAttachedToWindow(holder);
     }
 
     @Override
-    public int getCount()
+    public void onViewDetachedFromWindow(@NonNull WeekViewPagerHolder holder)
     {
-        return WeekFragment.WEEK_NUMBER;
+        // weekViewSparseArray.remove(holder.getViewPosition());
+        // headerViewSparseArray.remove(holder.getViewPosition());
+        super.onViewDetachedFromWindow(holder);
     }
 
     @Override
-    public boolean isViewFromObject(@NonNull View view, @NonNull Object object)
+    public int getItemCount()
     {
-        return (view == (View) object);
+        return WeekFragment.WEEK_TOTAL_COUNT;
     }
+
 
     @Override
     public void refreshChildView(int position)
@@ -100,6 +124,6 @@ public class WeekViewPagerAdapter extends PagerAdapter implements WeekView.OnRef
 
     public int getEventRowNum(int position)
     {
-        return ((WeekHeaderView) headerViewSparseArray.get(position)).getEventRowNum();
+        return headerViewSparseArray.get(position).getEventRowNum();
     }
 }

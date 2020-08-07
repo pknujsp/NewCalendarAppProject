@@ -5,26 +5,6 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <com.zerodsoft.scheduleweather.CalendarView.Week.WeekHeaderView
-        android:id="@+id/weekheaderview"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        custom:firstDayOfWeek2="sunday"
-        custom:headerAllBackgroundColor="@android:color/white"
-        custom:headerDateBackgroundColor="@android:color/transparent"
-        custom:headerDateTextColor="@android:color/black"
-        custom:headerDateTextSize="@dimen/week_header_view_date_text_size"
-        custom:headerDayBackgroundColor="@android:color/transparent"
-        custom:headerDayTextColor="@android:color/black"
-        custom:headerDayTextSize="@dimen/week_header_view_day_text_size"
-        custom:headerExtraBackgroundColor="@android:color/transparent"
-        custom:headerExtraButtonSize="15dp"
-        custom:headerExtraTextColor="@android:color/black"
-        custom:headerExtraTextSize="13sp"
-        custom:headerRowMarginBottom="@dimen/week_header_view_day_row_margin"
-        custom:headerRowMarginTop="@dimen/week_header_view_day_row_margin"
-        custom:headerTodayTextColor="@android:color/holo_blue_dark" />
-
     <com.zerodsoft.scheduleweather.CalendarView.Week.WeekView
         android:id="@+id/weekview"
         android:layout_width="match_parent"
@@ -36,4 +16,5 @@
         custom:WeekDayViewLineThickness="@dimen/line_thickness"
         custom:WeekDayViewNewScheduleRectColor="@android:color/holo_blue_dark"
         custom:WeekDayViewNewScheduleRectThickness="10dp" />
+    
 </LinearLayout>

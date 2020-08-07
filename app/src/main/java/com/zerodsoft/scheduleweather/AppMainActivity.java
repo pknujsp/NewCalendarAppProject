@@ -10,6 +10,8 @@ import android.widget.Toast;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.zerodsoft.scheduleweather.Activity.AddScheduleActivity;
+import com.zerodsoft.scheduleweather.CalendarFragment.DayFragment;
+import com.zerodsoft.scheduleweather.CalendarFragment.MonthFragment;
 import com.zerodsoft.scheduleweather.CalendarFragment.WeekFragment;
 
 import androidx.annotation.Nullable;
@@ -21,7 +23,9 @@ import androidx.appcompat.widget.Toolbar;
 
 public class AppMainActivity extends AppCompatActivity
 {
+    private MonthFragment monthFragment;
     private WeekFragment weekFragment;
+    private DayFragment dayFragment;
 
     private static final int ADD_SCHEDULE_REQUEST = 0;
     public static final int WEEK_FRAGMENT = 1;
@@ -45,6 +49,8 @@ public class AppMainActivity extends AppCompatActivity
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setHomeAsUpIndicator(R.drawable.toolbar_menu_icon);
 
+        onCalendarFragmentChanged(calendarFragmentType);
+
         fab.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -59,7 +65,6 @@ public class AppMainActivity extends AppCompatActivity
     @Override
     protected void onStart()
     {
-        onCalendarFragmentChanged(calendarFragmentType);
         super.onStart();
     }
 
@@ -114,6 +119,11 @@ public class AppMainActivity extends AppCompatActivity
         switch (type)
         {
             case MONTH_FRAGMENT:
+                if (monthFragment == null)
+                {
+                    monthFragment = new MonthFragment();
+                }
+                fragmentTransaction.replace(R.id.nav_host_fragment, monthFragment).commit();
                 break;
             case WEEK_FRAGMENT:
                 if (weekFragment == null)
@@ -123,6 +133,11 @@ public class AppMainActivity extends AppCompatActivity
                 fragmentTransaction.replace(R.id.nav_host_fragment, weekFragment).commit();
                 break;
             case DAY_FRAGMENT:
+                if (dayFragment == null)
+                {
+                    dayFragment = new DayFragment();
+                }
+                fragmentTransaction.replace(R.id.nav_host_fragment, dayFragment).commit();
                 break;
         }
     }
