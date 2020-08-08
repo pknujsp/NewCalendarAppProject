@@ -11,6 +11,7 @@ import android.view.View;
 import androidx.annotation.Nullable;
 import androidx.core.view.ViewCompat;
 
+import com.zerodsoft.scheduleweather.CalendarFragment.WeekFragment;
 import com.zerodsoft.scheduleweather.CalendarView.Week.WeekView;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.Utility.DateHour;
@@ -56,7 +57,7 @@ public class HoursView extends View implements WeekView.OnRefreshHoursViewListen
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
     {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        setMeasuredDimension(WeekFragment.SPACING_BETWEEN_DAY, heightMeasureSpec);
     }
 
     @Override

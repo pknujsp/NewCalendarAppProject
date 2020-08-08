@@ -19,12 +19,11 @@ import android.view.View;
 import androidx.annotation.Nullable;
 import androidx.core.view.GestureDetectorCompat;
 
-import com.zerodsoft.scheduleweather.CalendarFragment.WeekFragment;
 import com.zerodsoft.scheduleweather.R;
 
 import java.util.Calendar;
 
-public class WeekDatesView extends View implements WeekFragment.OnUpdateWeekDatesListener
+public class WeekDatesView extends View
 {
     private int weekTextColor;
     private int weekTextSize;
@@ -230,13 +229,6 @@ public class WeekDatesView extends View implements WeekFragment.OnUpdateWeekDate
         canvas.drawRect(0, 0, getWidth(), getHeight(), weekBackgroundPaint);
         canvas.drawRect(x - textBoxWidth / 2 - 10, normalViewHeight / 2 - textBoxHeight / 2 - 10, x + textBoxWidth / 2 + 10, normalViewHeight / 2 + textBoxHeight / 2 + 10, weekTextBoxRectPaint);
         canvas.drawText(week, x, normalViewHeight / 2 + weekTextBoxRect.height() / 2, weekTextBoxPaint);
-    }
-
-    @Override
-    public void updateWeekDates(String week)
-    {
-        this.week = week;
-        invalidate();
     }
 
     @Override

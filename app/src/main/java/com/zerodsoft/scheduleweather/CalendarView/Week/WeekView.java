@@ -109,6 +109,7 @@ public class WeekView extends View
 
     private CoordinateInfo[] coordinateInfos;
 
+
     public interface OnRefreshHoursViewListener
     {
         void refreshHoursView();
@@ -196,7 +197,6 @@ public class WeekView extends View
                 createdAddScheduleRect = false;
                 WeekView.this.invalidate();
             }
-
             return true;
         }
 

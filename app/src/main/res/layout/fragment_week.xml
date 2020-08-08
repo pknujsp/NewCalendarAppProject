@@ -6,93 +6,9 @@
     android:layout_height="match_parent"
     tools:context=".CalendarFragment.WeekFragment">
 
-    <androidx.coordinatorlayout.widget.CoordinatorLayout
-        android:id="@+id/week_coordinator_layout"
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/week_viewpager"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
-
-        <RelativeLayout
-            android:id="@+id/week_header_layout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <RelativeLayout
-                android:id="@+id/week_dates_layout"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_alignParentLeft="true"
-                android:layout_alignParentTop="true">
-
-                <TextView
-                    android:id="@+id/week_dates_textview"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentTop="true"
-                    android:layout_centerHorizontal="true"
-                    android:background="@android:color/darker_gray"
-                    android:text="23주"
-                    android:textColor="@android:color/white"
-                    android:textSize="13sp" />
-
-                <ImageButton
-                    android:id="@+id/week_dates_button"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_below="@id/week_dates_textview"
-                    android:layout_alignParentBottom="true"
-                    android:layout_centerHorizontal="true"
-                    android:scaleType="fitXY"
-                    android:src="@drawable/expand_more_icon" />
-            </RelativeLayout>
-
-            <com.zerodsoft.scheduleweather.CalendarView.Week.WeekHeaderView
-                android:id="@+id/week_header_view"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_alignParentTop="true"
-                android:layout_alignParentRight="true"
-                android:layout_toRightOf="@id/week_dates_layout"
-                custom:firstDayOfWeek2="sunday"
-                custom:headerAllBackgroundColor="@android:color/white"
-                custom:headerDateBackgroundColor="@android:color/transparent"
-                custom:headerDateTextColor="@android:color/black"
-                custom:headerDateTextSize="@dimen/week_header_view_date_text_size"
-                custom:headerDayBackgroundColor="@android:color/transparent"
-                custom:headerDayTextColor="@android:color/black"
-                custom:headerDayTextSize="@dimen/week_header_view_day_text_size"
-                custom:headerExtraBackgroundColor="@android:color/transparent"
-                custom:headerExtraButtonSize="15dp"
-                custom:headerExtraTextColor="@android:color/black"
-                custom:headerExtraTextSize="13sp"
-                custom:headerRowMarginBottom="@dimen/week_header_view_day_row_margin"
-                custom:headerRowMarginTop="@dimen/week_header_view_day_row_margin"
-                custom:headerTodayTextColor="@android:color/holo_blue_dark" />
-
-        </RelativeLayout>
-
-
-        <RelativeLayout
-            android:id="@+id/week_content_layout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            custom:layout_anchor="@id/week_header_layout">
-
-            <com.zerodsoft.scheduleweather.CalendarView.HoursView
-                android:id="@+id/week_hours_view"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_alignParentLeft="true" />
-
-            <androidx.viewpager2.widget.ViewPager2
-                android:id="@+id/week_viewpager"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_toRightOf="@id/week_hours_view"
-                android:orientation="horizontal" />
-        </RelativeLayout>
-
-    </androidx.coordinatorlayout.widget.CoordinatorLayout>
-
+        android:layout_height="match_parent" />
 
 </FrameLayout>
