@@ -1,6 +1,9 @@
 package com.zerodsoft.scheduleweather.CalendarView.Week;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
@@ -42,7 +45,7 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
     class WeekViewPagerHolder extends RecyclerView.ViewHolder
     {
         private WeekView weekView;
-        private RelativeLayout weekDatesLayout;
+        private LinearLayout weekDatesLayout;
         private TextView weekDatesTextView;
         private ImageButton weekDatesButton;
         private HoursView hoursView;
@@ -61,7 +64,7 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
             this.weekLayout = (LinearLayout) view.findViewById(R.id.week_layout);
             this.headerLayout = (LinearLayout) view.findViewById(R.id.week_header_layout);
             this.contentLayout = (LinearLayout) view.findViewById(R.id.week_content_layout);
-            this.weekDatesLayout = (RelativeLayout) view.findViewById(R.id.week_dates_layout);
+            this.weekDatesLayout = (LinearLayout) view.findViewById(R.id.week_dates_layout);
             this.hoursView = (HoursView) view.findViewById(R.id.week_hours_view);
             this.weekHeaderView = (WeekHeaderView) view.findViewById(R.id.week_header_view);
             this.weekDatesTextView = (TextView) view.findViewById(R.id.week_dates_textview);
@@ -92,6 +95,17 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
             return viewPosition;
         }
     }
+
+    @SuppressLint("HandlerLeak")
+    private final Handler handler = new Handler()
+    {
+        @Override
+        public void handleMessage(Message msg)
+        {
+
+        }
+    };
+
 
     @NonNull
     @Override

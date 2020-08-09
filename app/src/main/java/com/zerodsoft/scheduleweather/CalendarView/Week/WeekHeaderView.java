@@ -14,7 +14,6 @@ import android.view.MotionEvent;
 import android.view.View;
 
 import androidx.annotation.Nullable;
-import androidx.core.view.ViewCompat;
 
 import com.zerodsoft.scheduleweather.CalendarView.ACCOUNT_TYPE;
 import com.zerodsoft.scheduleweather.CalendarView.Dto.CoordinateInfo;
@@ -37,11 +36,14 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
     public static final Calendar today = Calendar.getInstance();
     private static final int WEEK_HEADER_WIDTH_PER_DAY = (WeekFragment.DISPLAY_WIDTH - WeekFragment.SPACING_BETWEEN_DAY) / 7;
 
-    private Calendar mSelectedDay;
-    private Calendar sunday;
     private Calendar weekFirstDay;
     private Calendar weekLastDay;
     private int position;
+
+    // 일요일(맨앞)과 오늘의 일수 차이 계산
+    private int leftDaysWithGaps;
+    // 시작 픽셀(일요일 부터 시작)
+    private float startPixel;
 
     private PointF mCurrentOrigin = new PointF(0f, 0f);
     private PointF eventsStartCoordinate = new PointF(0f, 0f);
@@ -79,10 +81,10 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
     private int weekHeaderEventTextSize;
     private int weekHeaderEventBoxHeight;
 
-    private boolean firstDraw = true;
+    private boolean isFirstDraw = true;
+    private boolean haveEvents = false;
 
     private CoordinateInfo[] coordinateInfos = new CoordinateInfo[7];
-    private boolean haveEvents = false;
     private int eventRowNum;
 
     private long weekFirstDayMillis;
@@ -205,75 +207,77 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
     public void layout(int l, int t, int r, int b)
     {
         super.layout(l, t, r, b);
+    }
 
-        sunday = (Calendar) today.clone();
-        sunday.set(sunday.get(Calendar.YEAR), sunday.get(Calendar.MONTH), sunday.get(Calendar.DAY_OF_MONTH), 0, 0, 0);
-        sunday.add(Calendar.WEEK_OF_YEAR, (position - WeekViewPagerAdapter.FIRST_VIEW_NUMBER));
-
-        mSelectedDay = (Calendar) sunday.clone();
-
-        for (int i = 0; i <= 6; i++)
-        {
-            coordinateInfos[i] = new CoordinateInfo().setDate(null).setStartX(WEEK_HEADER_WIDTH_PER_DAY * i)
-                    .setEndX(WEEK_HEADER_WIDTH_PER_DAY * (i + 1));
-        }
+    private void setInitialData()
+    {
+        weekFirstDay = (Calendar) today.clone();
+        weekFirstDay.set(weekFirstDay.get(Calendar.YEAR), weekFirstDay.get(Calendar.MONTH), weekFirstDay.get(Calendar.DAY_OF_MONTH), 0, 0, 0);
+        weekFirstDay.add(Calendar.WEEK_OF_YEAR, (position - WeekViewPagerAdapter.FIRST_VIEW_NUMBER));
 
         // mFirstDayOfWeek : 1~7까지(일~토), mToday.get(Calendar.DAY_OF_WEEK) : mFirstDayOfWeek와 동일
-        if (sunday.get(Calendar.DAY_OF_WEEK) != mFirstDayOfWeek)
+        if (weekFirstDay.get(Calendar.DAY_OF_WEEK) != mFirstDayOfWeek)
         {
             // 오늘이 월요일(2)인데 첫주가 일요일(1)인 경우에만 수행
             // 위의 경우 difference가 1이다
-            int difference = (sunday.get(Calendar.DAY_OF_WEEK) - mFirstDayOfWeek) % 7;
             // 오늘 날짜의 위치를 파악
-            mCurrentOrigin.x = WEEK_HEADER_WIDTH_PER_DAY * difference;
+            mCurrentOrigin.x = WEEK_HEADER_WIDTH_PER_DAY * ((weekFirstDay.get(Calendar.DAY_OF_WEEK) - mFirstDayOfWeek) % 7);
         }
         eventsStartCoordinate.set(0f, mHeaderHeightNormal);
+
+        // 일요일(맨앞)과 오늘의 일수 차이 계산
+        leftDaysWithGaps = (int) -(Math.ceil((mCurrentOrigin.x) / WEEK_HEADER_WIDTH_PER_DAY));
+        // 시작 픽셀(일요일 부터 시작)
+        startPixel = mCurrentOrigin.x + WEEK_HEADER_WIDTH_PER_DAY * leftDaysWithGaps;
+
+        // 일요일로 이동
+        weekFirstDay.add(Calendar.DATE, leftDaysWithGaps);
+        // 토요일로 설정
+        weekLastDay = (Calendar) weekFirstDay.clone();
+        weekLastDay.add(Calendar.DATE, 6);
+
+        // 날짜를 그림
+        for (int i = 0; i <= 6; i++)
+        {
+            coordinateInfos[i] = new CoordinateInfo().setDate(weekFirstDay).setStartX(WEEK_HEADER_WIDTH_PER_DAY * i)
+                    .setEndX(WEEK_HEADER_WIDTH_PER_DAY * (i + 1));
+            weekFirstDay.add(Calendar.DATE, 1);
+        }
+        weekFirstDay.add(Calendar.WEEK_OF_YEAR, -1);
     }
 
     @Override
     protected void onDraw(Canvas canvas)
     {
-        // 화면에 표시될 때 마다 호출
+        // 화면에 처음 보여질 때만 호출
         super.onDraw(canvas);
-        drawHeaderView(canvas);
+        setInitialData();
+        // 헤더의 배경을 그림
+        canvas.drawRect(0, 0, getWidth(), getHeight(), mHeaderBackgroundPaint);
         canvas.drawLine(0f, getHeight() - 1, getWidth(), getHeight() - 1, dividingPaint);
+        drawHeaderView(canvas);
     }
 
     private void drawHeaderView(Canvas canvas)
     {
-        // 헤더의 배경을 그림
-        canvas.drawRect(0, 0, getWidth(), getHeight(), mHeaderBackgroundPaint);
-
-        // 일요일(맨앞)과 오늘의 일수 차이 계산
-        int leftDaysWithGaps = (int) -(Math.ceil((mCurrentOrigin.x) / WEEK_HEADER_WIDTH_PER_DAY));
-        // 시작 픽셀(일요일 부터 시작)
-        float startPixel = mCurrentOrigin.x + WEEK_HEADER_WIDTH_PER_DAY * leftDaysWithGaps;
-
         // 요일을 그림
         for (int i = 0; i < 7; i++)
         {
             canvas.drawText(DateHour.getDayString(i), WEEK_HEADER_WIDTH_PER_DAY / 2 + WEEK_HEADER_WIDTH_PER_DAY * i, mHeaderDayHeight + mHeaderRowMarginTop, mHeaderDateNormalPaint);
         }
 
-        // 일요일로 이동
-        sunday.add(Calendar.DATE, leftDaysWithGaps);
-
-        weekFirstDay = (Calendar) sunday.clone();
-        weekLastDay = (Calendar) sunday.clone();
-        weekLastDay.add(Calendar.DATE, 6);
-
         for (int i = 0; i < 7; i++)
         {
+            // 날짜 사이의 구분선
             canvas.drawLine(WEEK_HEADER_WIDTH_PER_DAY * i, getHeight() - spacingLineHeight, WEEK_HEADER_WIDTH_PER_DAY * i, getHeight(), dividingPaint);
         }
 
         // 날짜를 그림
         for (int i = 0; i <= 6; i++)
         {
-            boolean isToday = isSameDay(sunday, today);
-
+            boolean isToday = isSameDay(weekFirstDay, today);
             // 표시할 날짜를 가져옴
-            String dateLabel = DateHour.getDate(sunday);
+            String dateLabel = DateHour.getDate(weekFirstDay);
 
             float x = startPixel + WEEK_HEADER_WIDTH_PER_DAY / 2 + WEEK_HEADER_WIDTH_PER_DAY * i;
             float y = mHeaderDayHeight + mHeaderRowMarginTop * 2 + mHeaderDateHeight;
@@ -283,14 +287,13 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
                 throw new IllegalStateException("A DateTimeInterpreter must not return null date");
             }
             canvas.drawText(dateLabel, x, y, isToday ? mHeaderDateTodayPaint : mHeaderDateNormalPaint);
-
-            coordinateInfos[i].setDate(sunday);
-            sunday.add(Calendar.DATE, 1);
+            weekFirstDay.add(Calendar.DATE, 1);
         }
+        weekFirstDay.add(Calendar.WEEK_OF_YEAR, -1);
 
         if (haveEvents)
         {
-            drawEvents(canvas);
+            // drawEvents(canvas);
         }
     }
 
@@ -362,7 +365,7 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
             mHeaderHeightEvents = mHeaderHeightNormal + (weekHeaderEventBoxHeight + mHeaderRowMarginTop) * eventRowNum;
         }
 
-        firstDraw = true;
+        isFirstDraw = true;
         requestLayout();
         invalidate();
     }
