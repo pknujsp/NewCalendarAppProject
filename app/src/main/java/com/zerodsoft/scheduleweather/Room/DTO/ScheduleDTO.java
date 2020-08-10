@@ -28,13 +28,13 @@ public class ScheduleDTO implements Parcelable
     private String content;
 
     @ColumnInfo(name = "start_date")
-    private int startDate;
+    private float startDate;
 
     @ColumnInfo(name = "end_date")
-    private int endDate;
+    private float endDate;
 
     @ColumnInfo(name = "noti_time")
-    private int notiTime;
+    private float notiTime;
 
     @ColumnInfo(name = "place_id_to_be_visited")
     private int placeId;
@@ -43,10 +43,10 @@ public class ScheduleDTO implements Parcelable
     private int addressId;
 
     @ColumnInfo(name = "inserted_date")
-    private int insertedDate;
+    private float insertedDate;
 
     @ColumnInfo(name = "updated_date")
-    private int updatedDate;
+    private float updatedDate;
 
     @Ignore
     public static final int GOOGLE_CATEGORY = 0;
@@ -64,13 +64,13 @@ public class ScheduleDTO implements Parcelable
         category = in.readInt();
         subject = in.readString();
         content = in.readString();
-        startDate = in.readInt();
-        endDate = in.readInt();
-        notiTime = in.readInt();
+        startDate = in.readFloat();
+        endDate = in.readFloat();
+        notiTime = in.readFloat();
         placeId = in.readInt();
         addressId = in.readInt();
-        insertedDate = in.readInt();
-        updatedDate = in.readInt();
+        insertedDate = in.readFloat();
+        updatedDate = in.readFloat();
     }
 
     public static final Creator<ScheduleDTO> CREATOR = new Creator<ScheduleDTO>()
@@ -128,32 +128,32 @@ public class ScheduleDTO implements Parcelable
         this.content = content;
     }
 
-    public int getStartDate()
+    public float getStartDate()
     {
         return startDate;
     }
 
-    public void setStartDate(int startDate)
+    public void setStartDate(float startDate)
     {
         this.startDate = startDate;
     }
 
-    public int getEndDate()
+    public float getEndDate()
     {
         return endDate;
     }
 
-    public void setEndDate(int endDate)
+    public void setEndDate(float endDate)
     {
         this.endDate = endDate;
     }
 
-    public int getNotiTime()
+    public float getNotiTime()
     {
         return notiTime;
     }
 
-    public void setNotiTime(int notiTime)
+    public void setNotiTime(float notiTime)
     {
         this.notiTime = notiTime;
     }
@@ -178,22 +178,22 @@ public class ScheduleDTO implements Parcelable
         this.addressId = addressId;
     }
 
-    public int getInsertedDate()
+    public float getInsertedDate()
     {
         return insertedDate;
     }
 
-    public void setInsertedDate(int insertedDate)
+    public void setInsertedDate(float insertedDate)
     {
         this.insertedDate = insertedDate;
     }
 
-    public int getUpdatedDate()
+    public float getUpdatedDate()
     {
         return updatedDate;
     }
 
-    public void setUpdatedDate(int updatedDate)
+    public void setUpdatedDate(float updatedDate)
     {
         this.updatedDate = updatedDate;
     }
@@ -211,12 +211,12 @@ public class ScheduleDTO implements Parcelable
         parcel.writeInt(category);
         parcel.writeString(subject);
         parcel.writeString(content);
-        parcel.writeInt(startDate);
-        parcel.writeInt(endDate);
-        parcel.writeInt(notiTime);
+        parcel.writeFloat(startDate);
+        parcel.writeFloat(endDate);
+        parcel.writeFloat(notiTime);
         parcel.writeInt(placeId);
         parcel.writeInt(addressId);
-        parcel.writeInt(insertedDate);
-        parcel.writeInt(updatedDate);
+        parcel.writeFloat(insertedDate);
+        parcel.writeFloat(updatedDate);
     }
 }

@@ -4,26 +4,48 @@ import android.graphics.Color;
 
 public class AppSettings
 {
-    private static int googleEventColor = Color.GREEN;
-    private static int localEventColor = Color.BLUE;
+    private static int googleEventBackgroundColor = Color.GRAY;
+    private static int localEventBackgroundColor = Color.BLUE;
+    private static int localEventTextColor = Color.WHITE;
+    private static int googleEventTextColor = Color.WHITE;
 
-    public static int getGoogleEventColor()
+    public static int getGoogleEventBackgroundColor()
     {
-        return googleEventColor;
+        return googleEventBackgroundColor;
     }
 
-    public static void setGoogleEventColor(int googleEventColor)
+    public static void setGoogleEventBackgroundColor(int googleEventBackgroundColor)
     {
-        AppSettings.googleEventColor = googleEventColor;
+        AppSettings.googleEventBackgroundColor = googleEventBackgroundColor;
     }
 
-    public static int getLocalEventColor()
+    public static int getLocalEventBackgroundColor()
     {
-        return localEventColor;
+        return localEventBackgroundColor;
     }
 
-    public static void setLocalEventColor(int localEventColor)
+    public static void setLocalEventBackgroundColor(int localEventBackgroundColor)
     {
-        AppSettings.localEventColor = localEventColor;
+        AppSettings.localEventBackgroundColor = localEventBackgroundColor;
+    }
+
+    public static int getLocalEventTextColor()
+    {
+        return localEventTextColor;
+    }
+
+    public static void setLocalEventTextColor(int localEventTextColor)
+    {
+        AppSettings.localEventTextColor = localEventTextColor;
+    }
+
+    public static int getGoogleEventTextColor()
+    {
+        return googleEventTextColor;
+    }
+
+    public static void setGoogleEventTextColor(int googleEventTextColor)
+    {
+        AppSettings.googleEventTextColor = googleEventTextColor;
     }
 }

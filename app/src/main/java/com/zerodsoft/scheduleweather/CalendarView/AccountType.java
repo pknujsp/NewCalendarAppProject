@@ -1,6 +1,7 @@
 package com.zerodsoft.scheduleweather.CalendarView;
 
-public enum ACCOUNT_TYPE
+public enum AccountType
 {
     GOOGLE, LOCAL
+
 }

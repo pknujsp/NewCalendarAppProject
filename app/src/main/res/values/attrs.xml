@@ -22,9 +22,6 @@
         <attr name="headerDateTextColor" format="color" />
         <attr name="headerDateBackgroundColor" format="color" />
         <attr name="headerDateTextSize" format="dimension" />
-        <attr name="headerScheduleTextColor" format="color" />
-        <attr name="headerScheduleTextSize" format="dimension" />
-        <attr name="headerScheduleBackgroundColor" format="color" />
         <attr name="headerExtraButtonSize" format="dimension" />
         <attr name="headerExtraTextSize" format="dimension" />
         <attr name="headerExtraTextColor" format="color" />

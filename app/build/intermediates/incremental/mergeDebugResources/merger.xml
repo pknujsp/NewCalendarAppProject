@@ -5705,9 +5705,6 @@
         <attr format="color" name="headerDateTextColor"/>
         <attr format="color" name="headerDateBackgroundColor"/>
         <attr format="dimension" name="headerDateTextSize"/>
-        <attr format="color" name="headerScheduleTextColor"/>
-        <attr format="dimension" name="headerScheduleTextSize"/>
-        <attr format="color" name="headerScheduleBackgroundColor"/>
         <attr format="dimension" name="headerExtraButtonSize"/>
         <attr format="dimension" name="headerExtraTextSize"/>
         <attr format="color" name="headerExtraTextColor"/>
@@ -6822,9 +6819,6 @@
         <attr format="color" name="headerDateTextColor"/>
         <attr format="color" name="headerDateBackgroundColor"/>
         <attr format="dimension" name="headerDateTextSize"/>
-        <attr format="color" name="headerScheduleTextColor"/>
-        <attr format="dimension" name="headerScheduleTextSize"/>
-        <attr format="color" name="headerScheduleBackgroundColor"/>
         <attr format="dimension" name="headerExtraButtonSize"/>
         <attr format="dimension" name="headerExtraTextSize"/>
         <attr format="color" name="headerExtraTextColor"/>

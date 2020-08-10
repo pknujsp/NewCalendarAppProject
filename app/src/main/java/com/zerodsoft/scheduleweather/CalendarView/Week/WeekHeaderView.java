@@ -15,7 +15,7 @@ import android.view.View;
 
 import androidx.annotation.Nullable;
 
-import com.zerodsoft.scheduleweather.CalendarView.ACCOUNT_TYPE;
+import com.zerodsoft.scheduleweather.CalendarView.AccountType;
 import com.zerodsoft.scheduleweather.CalendarView.Dto.CoordinateInfo;
 import com.zerodsoft.scheduleweather.CalendarFragment.WeekFragment;
 import com.zerodsoft.scheduleweather.CalendarView.EventDrawingInfo;
@@ -26,7 +26,9 @@ import com.zerodsoft.scheduleweather.Utility.DateHour;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 public class WeekHeaderView extends View implements WeekView.CoordinateInfoInterface
@@ -96,6 +98,17 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
     private List<EventDrawingInfo> eventDrawingInfoList = new ArrayList<>();
 
     private static final int EVENT_ROW_MAX = 20;
+    private ViewHeightChangeListener viewHeightChangeListener;
+
+    public interface ViewHeightChangeListener
+    {
+        void onHeightChanged(int height);
+    }
+
+    public void setViewHeightChangeListener(ViewHeightChangeListener viewHeightChangeListener)
+    {
+        this.viewHeightChangeListener = viewHeightChangeListener;
+    }
 
     @Override
     public CoordinateInfo[] getArray()
@@ -235,6 +248,7 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
         // 토요일로 설정
         weekLastDay = (Calendar) weekFirstDay.clone();
         weekLastDay.add(Calendar.DATE, 6);
+        weekLastDay.set(weekLastDay.get(Calendar.YEAR), weekLastDay.get(Calendar.MONTH), weekLastDay.get(Calendar.DAY_OF_MONTH), 23, 59, 59);
 
         // 날짜를 그림
         for (int i = 0; i <= 6; i++)
@@ -244,6 +258,9 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
             weekFirstDay.add(Calendar.DATE, 1);
         }
         weekFirstDay.add(Calendar.WEEK_OF_YEAR, -1);
+
+        weekFirstDayMillis = weekFirstDay.getTimeInMillis();
+        weekLastDayMillis = weekLastDay.getTimeInMillis();
     }
 
     @Override
@@ -251,7 +268,7 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
     {
         // 화면에 처음 보여질 때만 호출
         super.onDraw(canvas);
-        setInitialData();
+
         // 헤더의 배경을 그림
         canvas.drawRect(0, 0, getWidth(), getHeight(), mHeaderBackgroundPaint);
         canvas.drawLine(0f, getHeight() - 1, getWidth(), getHeight() - 1, dividingPaint);
@@ -293,7 +310,7 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
 
         if (haveEvents)
         {
-            // drawEvents(canvas);
+            drawEvents(canvas);
         }
     }
 
@@ -333,6 +350,7 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
     public void setPosition(int position)
     {
         this.position = position;
+        setInitialData();
     }
 
     public int getPosition()
@@ -366,6 +384,7 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
         }
 
         isFirstDraw = true;
+        viewHeightChangeListener.onHeightChanged(mHeaderHeightEvents);
         requestLayout();
         invalidate();
     }
@@ -383,56 +402,66 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
 
     private void drawEvents(Canvas canvas)
     {
-        int googleEventColor = AppSettings.getGoogleEventColor();
-        int localEventColor = AppSettings.getLocalEventColor();
-
         Paint googleEventPaint = new Paint();
         Paint localEventPaint = new Paint();
-        googleEventPaint.setColor(googleEventColor);
-        localEventPaint.setColor(localEventColor);
+        Paint googleEventTextPaint = new Paint();
+        Paint localEventTextPaint = new Paint();
+
+        googleEventPaint.setColor(AppSettings.getGoogleEventBackgroundColor());
+        localEventPaint.setColor(AppSettings.getLocalEventBackgroundColor());
+
+        googleEventTextPaint.setColor(AppSettings.getGoogleEventTextColor());
+        googleEventTextPaint.setTextSize(weekHeaderEventTextSize);
+        localEventTextPaint.setColor(AppSettings.getLocalEventTextColor());
+        localEventTextPaint.setTextSize(weekHeaderEventTextSize);
+
 
         for (EventDrawingInfo eventDrawingInfo : eventDrawingInfoList)
         {
-            if (eventDrawingInfo.getAccountType() == ACCOUNT_TYPE.GOOGLE)
+            if (eventDrawingInfo.getAccountType() == AccountType.GOOGLE)
             {
                 canvas.drawRect(eventDrawingInfo.getLeft() + spacingBetweenEvent, eventDrawingInfo.getTop(), eventDrawingInfo.getRight() - spacingBetweenEvent, eventDrawingInfo.getBottom(), googleEventPaint);
+                canvas.drawText(eventDrawingInfo.getSchedule().getSubject(), (eventDrawingInfo.getRight() - eventDrawingInfo.getLeft()) / 2, eventDrawingInfo.getBottom(), googleEventTextPaint);
             } else
             {
                 canvas.drawRect(eventDrawingInfo.getLeft() + spacingBetweenEvent, eventDrawingInfo.getTop(), eventDrawingInfo.getRight() - spacingBetweenEvent, eventDrawingInfo.getBottom(), localEventPaint);
+                canvas.drawText(eventDrawingInfo.getSchedule().getSubject(), (eventDrawingInfo.getRight() - eventDrawingInfo.getLeft()) / 2, eventDrawingInfo.getBottom(), localEventTextPaint);
             }
-            canvas.drawText(eventDrawingInfo.getSchedule().getSubject(), (eventDrawingInfo.getRight() - eventDrawingInfo.getLeft()) / 2, eventDrawingInfo.getBottom(), mHeaderDateNormalPaint);
         }
     }
 
     private void setEventDrawingInfo()
     {
-        weekFirstDayMillis = weekFirstDay.getTimeInMillis();
-        weekLastDayMillis = weekLastDay.getTimeInMillis();
-
-        Integer left = new Integer(0), top = new Integer(0), right = new Integer(0), bottom = new Integer(0);
-
         for (ScheduleDTO schedule : scheduleList)
         {
-            calcEventPosition(left, right, top, bottom, schedule);
-            if (schedule.getCategory() == ScheduleDTO.GOOGLE_CATEGORY)
+            Map<String, Integer> map = calcEventPosition(schedule);
+            if (map != null)
             {
-                eventDrawingInfoList.add(new EventDrawingInfo(left, right, top, bottom, schedule, ACCOUNT_TYPE.GOOGLE));
-            } else
-            {
-                eventDrawingInfoList.add(new EventDrawingInfo(left, right, top, bottom, schedule, ACCOUNT_TYPE.LOCAL));
+                if (schedule.getCategory() == ScheduleDTO.GOOGLE_CATEGORY)
+                {
+                    eventDrawingInfoList.add(new EventDrawingInfo(map.get("left"), map.get("right"), map.get("top"), map.get("bottom"), schedule, AccountType.GOOGLE));
+                } else
+                {
+                    eventDrawingInfoList.add(new EventDrawingInfo(map.get("left"), map.get("right"), map.get("top"), map.get("bottom"), schedule, AccountType.LOCAL));
+                }
             }
         }
     }
 
-    private void calcEventPosition(Integer left, Integer right, Integer top, Integer bottom, ScheduleDTO schedule)
+    private Map<String, Integer> calcEventPosition(ScheduleDTO schedule)
     {
-        long startMillis = schedule.getStartDate();
-        long endMillis = schedule.getEndDate();
+        long startMillis = (long) schedule.getStartDate();
+        long endMillis = (long) schedule.getEndDate();
         int startIndex = 0, endIndex = 0;
+
+        int top = 0;
+        int bottom = 0;
+        int right = 0;
+        int left = 0;
 
         if (endMillis < weekFirstDayMillis || startMillis > weekLastDayMillis)
         {
-            return;
+            return null;
         } else if (startMillis >= weekFirstDayMillis && endMillis <= weekLastDayMillis)
         {
             // 이번주 내에 시작/종료
@@ -601,6 +630,20 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
             top = (int) eventsStartCoordinate.y + row * mHeaderRowMarginBottom;
             bottom = top + weekHeaderEventBoxHeight + row * mHeaderRowMarginBottom;
         }
+        Map<String, Integer> map = new HashMap<>();
+        map.put("top", top);
+        map.put("bottom", bottom);
+        map.put("right", right);
+        map.put("left", left);
+
+        return map;
+    }
+
+    public void clearScheduleVars()
+    {
+        scheduleList = null;
+        isFirstDraw = true;
+        haveEvents = false;
     }
 
     public int getEventRowNum()
@@ -608,4 +651,13 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
         return eventRowNum;
     }
 
+    public long getWeekFirstDayMillis()
+    {
+        return weekFirstDayMillis;
+    }
+
+    public long getWeekLastDayMillis()
+    {
+        return weekLastDayMillis;
+    }
 }

@@ -21,7 +21,7 @@ import androidx.annotation.Nullable;
 import androidx.core.view.GestureDetectorCompat;
 import androidx.core.view.ViewCompat;
 
-import com.zerodsoft.scheduleweather.CalendarView.ACCOUNT_TYPE;
+import com.zerodsoft.scheduleweather.CalendarView.AccountType;
 import com.zerodsoft.scheduleweather.CalendarView.Dto.CoordinateInfo;
 import com.zerodsoft.scheduleweather.CalendarView.EventDrawingInfo;
 import com.zerodsoft.scheduleweather.CalendarView.HoursView;
@@ -334,8 +334,8 @@ public class WeekView extends View
         eventTextPaint.setColor(Color.WHITE);
         eventTextPaint.setTextSize(weekDayHourTextSize);
 
-        googleEventColor = AppSettings.getGoogleEventColor();
-        localEventColor = AppSettings.getLocalEventColor();
+        googleEventColor = AppSettings.getGoogleEventBackgroundColor();
+        localEventColor = AppSettings.getLocalEventBackgroundColor();
 
         googleEventPaint = new Paint();
         localEventPaint = new Paint();
@@ -659,7 +659,7 @@ public class WeekView extends View
         {
             for (EventDrawingInfo eventDrawingInfo : eventDrawingInfoList.get(dayOfWeek))
             {
-                if (eventDrawingInfo.getAccountType() == ACCOUNT_TYPE.GOOGLE)
+                if (eventDrawingInfo.getAccountType() == AccountType.GOOGLE)
                 {
                     rect.set(eventDrawingInfo.getStartPoint().x, eventDrawingInfo.getStartPoint().y,
                             eventDrawingInfo.getEndPoint().x, eventDrawingInfo.getEndPoint().y);
@@ -687,10 +687,10 @@ public class WeekView extends View
             dayOfWeek = calcEventPosition(startPoint, endPoint, schedule);
             if (schedule.getCategory() == ScheduleDTO.GOOGLE_CATEGORY)
             {
-                eventDrawingInfoList.get(dayOfWeek).add(new EventDrawingInfo(new PointF(startPoint.x, startPoint.y), new PointF(endPoint.x, endPoint.y), schedule, ACCOUNT_TYPE.GOOGLE));
+                eventDrawingInfoList.get(dayOfWeek).add(new EventDrawingInfo(new PointF(startPoint.x, startPoint.y), new PointF(endPoint.x, endPoint.y), schedule, AccountType.GOOGLE));
             } else
             {
-                eventDrawingInfoList.get(dayOfWeek).add(new EventDrawingInfo(new PointF(startPoint.x, startPoint.y), new PointF(endPoint.x, endPoint.y), schedule, ACCOUNT_TYPE.LOCAL));
+                eventDrawingInfoList.get(dayOfWeek).add(new EventDrawingInfo(new PointF(startPoint.x, startPoint.y), new PointF(endPoint.x, endPoint.y), schedule, AccountType.LOCAL));
             }
         }
     }
@@ -701,8 +701,8 @@ public class WeekView extends View
         Calendar startTime = Calendar.getInstance();
         Calendar endTime = Calendar.getInstance();
 
-        startTime.setTimeInMillis(schedule.getStartDate());
-        endTime.setTimeInMillis(schedule.getEndDate());
+        startTime.setTimeInMillis((long) schedule.getStartDate());
+        endTime.setTimeInMillis((long) schedule.getEndDate());
 
         if (isSameDay(startTime, endTime))
         {

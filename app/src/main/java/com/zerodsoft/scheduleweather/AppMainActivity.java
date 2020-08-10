@@ -82,7 +82,7 @@ public class AppMainActivity extends AppCompatActivity
                 long startDate = bundle.getLong("startDate");
                 int scheduleId = bundle.getInt("scheduleId");
 
-                Toast.makeText(AppMainActivity.this, Long.toString(startDate) + ", " + Integer.toString(scheduleId), Toast.LENGTH_SHORT).show();
+                Toast.makeText(AppMainActivity.this, startDate + ", " + scheduleId, Toast.LENGTH_SHORT).show();
             }
         }
     }

@@ -9,6 +9,8 @@ import androidx.room.Update;
 
 import com.zerodsoft.scheduleweather.Room.DTO.ScheduleDTO;
 
+import java.util.List;
+
 @Dao
 public interface ScheduleDAO
 {
@@ -25,7 +27,7 @@ public interface ScheduleDAO
     LiveData<ScheduleDTO> selectAllSchedules();
 
     @Query("SELECT * FROM TB_SCHEDULE WHERE category = :category AND start_date >= :startDate AND end_date <= :endDate")
-    LiveData<ScheduleDTO> selectSchedule(int category, int startDate, int endDate);
+    List<ScheduleDTO> selectSchedules(int category, float startDate, float endDate);
 
     @Update(onConflict = OnConflictStrategy.IGNORE)
     void updateSchedule(ScheduleDTO scheduleDTO);

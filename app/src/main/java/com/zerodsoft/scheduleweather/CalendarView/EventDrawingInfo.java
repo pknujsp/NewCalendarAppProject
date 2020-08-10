@@ -13,9 +13,9 @@ public class EventDrawingInfo
     private PointF startPoint;
     private PointF endPoint;
     private ScheduleDTO schedule;
-    private ACCOUNT_TYPE accountType;
+    private AccountType accountType;
 
-    public EventDrawingInfo(int left, int right, int top, int bottom, ScheduleDTO schedule, ACCOUNT_TYPE accountType)
+    public EventDrawingInfo(int left, int right, int top, int bottom, ScheduleDTO schedule, AccountType accountType)
     {
         this.left = left;
         this.right = right;
@@ -25,7 +25,7 @@ public class EventDrawingInfo
         this.accountType = accountType;
     }
 
-    public EventDrawingInfo(PointF startPoint, PointF endPoint, ScheduleDTO schedule, ACCOUNT_TYPE accountType)
+    public EventDrawingInfo(PointF startPoint, PointF endPoint, ScheduleDTO schedule, AccountType accountType)
     {
         this.startPoint = startPoint;
         this.endPoint = endPoint;
@@ -110,12 +110,12 @@ public class EventDrawingInfo
         return this;
     }
 
-    public ACCOUNT_TYPE getAccountType()
+    public AccountType getAccountType()
     {
         return accountType;
     }
 
-    public EventDrawingInfo setAccountType(ACCOUNT_TYPE accountType)
+    public EventDrawingInfo setAccountType(AccountType accountType)
     {
         this.accountType = accountType;
         return this;

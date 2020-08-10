@@ -84,8 +84,7 @@ public class AddScheduleActivity extends AppCompatActivity implements Notificati
         @Override
         public void handleMessage(Message msg)
         {
-            Bundle bundle = msg.getData();
-            getIntent().putExtras(bundle);
+            getIntent().putExtras(msg.getData());
             setResult(RESULT_OK, getIntent());
             finish();
         }
@@ -198,12 +197,12 @@ public class AddScheduleActivity extends AppCompatActivity implements Notificati
 
                 if (isAllDay)
                 {
-                    scheduleDTO.setStartDate((int) allDay.getTimeInMillis());
-                    scheduleDTO.setEndDate((int) allDay.getTimeInMillis());
+                    scheduleDTO.setStartDate((float) allDay.getTimeInMillis());
+                    scheduleDTO.setEndDate((float) allDay.getTimeInMillis());
                 } else
                 {
-                    scheduleDTO.setStartDate((int) startDate.getTimeInMillis());
-                    scheduleDTO.setEndDate((int) endDate.getTimeInMillis());
+                    scheduleDTO.setStartDate((float) startDate.getTimeInMillis());
+                    scheduleDTO.setEndDate((float) endDate.getTimeInMillis());
                 }
 
                 Calendar calendar = Calendar.getInstance();
@@ -212,9 +211,9 @@ public class AddScheduleActivity extends AppCompatActivity implements Notificati
                 {
                     notificationTime = selectedNotificationTime.getTimeInMillis(calendar);
                 }
-                scheduleDTO.setNotiTime((int) notificationTime);
-                scheduleDTO.setInsertedDate((int) calendar.getTimeInMillis());
-                scheduleDTO.setUpdatedDate((int) calendar.getTimeInMillis());
+                scheduleDTO.setNotiTime((float) notificationTime);
+                scheduleDTO.setInsertedDate((float) calendar.getTimeInMillis());
+                scheduleDTO.setUpdatedDate((float) calendar.getTimeInMillis());
 
                 DBThread dbThread = new DBThread();
                 dbThread.schedule = scheduleDTO;

@@ -11,20 +11,23 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.CalendarFragment.WeekFragment;
+import com.zerodsoft.scheduleweather.CalendarView.AccountType;
+import com.zerodsoft.scheduleweather.CalendarView.CalendarType;
 import com.zerodsoft.scheduleweather.CalendarView.HoursView;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.Thread.ScheduleThread;
 
 import java.util.Calendar;
+import java.util.Objects;
 
 
-public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdapter.WeekViewPagerHolder> implements WeekView.OnRefreshChildViewListener
+public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdapter.WeekViewPagerHolderListener> implements WeekView.OnRefreshChildViewListener
 {
     public static final String TAG = "WEEKVIEWPAGER_ADAPTER";
     public static final int WEEK_TOTAL_COUNT = 521;
@@ -42,7 +45,7 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
         this.activity = activity;
     }
 
-    class WeekViewPagerHolder extends RecyclerView.ViewHolder
+    class WeekViewPagerHolderListener extends RecyclerView.ViewHolder implements WeekHeaderView.ViewHeightChangeListener
     {
         private WeekView weekView;
         private LinearLayout weekDatesLayout;
@@ -58,7 +61,17 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
         private int viewPosition;
         private Calendar calendar;
 
-        public WeekViewPagerHolder(View view)
+        @SuppressLint("HandlerLeak")
+        private final Handler handler = new Handler()
+        {
+            @Override
+            public void handleMessage(Message msg)
+            {
+                weekHeaderView.setScheduleList(Objects.requireNonNull(msg.getData().getParcelableArrayList("schedules")));
+            }
+        };
+
+        public WeekViewPagerHolderListener(View view)
         {
             super(view);
             this.weekLayout = (LinearLayout) view.findViewById(R.id.week_layout);
@@ -71,6 +84,7 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
             this.weekDatesButton = (ImageButton) view.findViewById(R.id.week_dates_button);
             this.weekView = (WeekView) view.findViewById(R.id.week_view);
 
+            this.weekHeaderView.setViewHeightChangeListener(WeekViewPagerHolderListener.this);
             weekDatesLayout.setLayoutParams(new LinearLayout.LayoutParams(WeekFragment.SPACING_BETWEEN_DAY, ViewGroup.LayoutParams.WRAP_CONTENT));
         }
 
@@ -81,6 +95,7 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
             setWeekDates();
             weekHeaderView.setPosition(viewPosition);
             weekView.setPosition(viewPosition).setCoordinateInfoInterface(weekHeaderView).setOnRefreshHoursViewListener(hoursView);
+            setEvents();
         }
 
         private void setWeekDates()
@@ -90,32 +105,41 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
             weekDatesTextView.setText(Integer.toString(calendar.get(Calendar.WEEK_OF_YEAR)) + "주");
         }
 
+        private void setEvents()
+        {
+            ScheduleThread scheduleThread = new ScheduleThread();
+            scheduleThread.setInitialData(activity, handler, CalendarType.WEEK, AccountType.LOCAL, weekHeaderView.getWeekFirstDayMillis(), weekHeaderView.getWeekLastDayMillis());
+            scheduleThread.start();
+        }
+
         public int getViewPosition()
         {
             return viewPosition;
         }
-    }
 
-    @SuppressLint("HandlerLeak")
-    private final Handler handler = new Handler()
-    {
         @Override
-        public void handleMessage(Message msg)
+        public void onHeightChanged(int height)
         {
-
+            headerLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, height));
+            weekDatesLayout.setLayoutParams(new LinearLayout.LayoutParams(WeekFragment.SPACING_BETWEEN_DAY, height));
         }
-    };
+
+        public void clearLocalVars()
+        {
+            weekHeaderView.clearScheduleVars();
+        }
+    }
 
 
     @NonNull
     @Override
-    public WeekViewPagerHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType)
+    public WeekViewPagerHolderListener onCreateViewHolder(@NonNull ViewGroup parent, int viewType)
     {
-        return new WeekViewPagerHolder(LayoutInflater.from(activity).inflate(R.layout.weekview_viewpager_item, parent, false));
+        return new WeekViewPagerHolderListener(LayoutInflater.from(activity).inflate(R.layout.weekview_viewpager_item, parent, false));
     }
 
     @Override
-    public void onBindViewHolder(@NonNull WeekViewPagerHolder holder, int position)
+    public void onBindViewHolder(@NonNull WeekViewPagerHolderListener holder, int position)
     {
         //Log.e(TAG, "onBindViewHolder : " + Integer.toString(position));
         holder.onBindView(position);
@@ -124,17 +148,18 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
     }
 
     @Override
-    public void onViewAttachedToWindow(@NonNull WeekViewPagerHolder holder)
+    public void onViewAttachedToWindow(@NonNull WeekViewPagerHolderListener holder)
     {
         Log.e(TAG, "onViewAttachedToWindow : " + holder.getViewPosition());
         super.onViewAttachedToWindow(holder);
     }
 
     @Override
-    public void onViewDetachedFromWindow(@NonNull WeekViewPagerHolder holder)
+    public void onViewDetachedFromWindow(@NonNull WeekViewPagerHolderListener holder)
     {
         // weekViewSparseArray.remove(holder.getViewPosition());
         // headerViewSparseArray.remove(holder.getViewPosition());
+        holder.clearLocalVars();
         super.onViewDetachedFromWindow(holder);
     }
 
