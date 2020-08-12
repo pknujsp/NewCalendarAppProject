@@ -86,7 +86,7 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
     private boolean isFirstDraw = true;
     private boolean haveEvents = false;
 
-    private CoordinateInfo[] coordinateInfos = new CoordinateInfo[7];
+    private CoordinateInfo[] coordinateInfos = new CoordinateInfo[8];
     private int eventRowNum;
 
     private long weekFirstDayMillis;
@@ -251,13 +251,13 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
         weekLastDay.set(weekLastDay.get(Calendar.YEAR), weekLastDay.get(Calendar.MONTH), weekLastDay.get(Calendar.DAY_OF_MONTH), 23, 59, 59);
 
         // 날짜를 그림
-        for (int i = 0; i <= 6; i++)
+        for (int i = 0; i <= 7; i++)
         {
             coordinateInfos[i] = new CoordinateInfo().setDate(weekFirstDay).setStartX(WEEK_HEADER_WIDTH_PER_DAY * i)
                     .setEndX(WEEK_HEADER_WIDTH_PER_DAY * (i + 1));
             weekFirstDay.add(Calendar.DATE, 1);
         }
-        weekFirstDay.add(Calendar.WEEK_OF_YEAR, -1);
+        weekFirstDay.add(Calendar.DATE, -8);
 
         weekFirstDayMillis = weekFirstDay.getTimeInMillis();
         weekLastDayMillis = weekLastDay.getTimeInMillis();
@@ -395,8 +395,8 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
         if (!scheduleList.isEmpty())
         {
             this.haveEvents = true;
-            setEventDrawingInfo();
-            setEventsNum();
+            //  setEventDrawingInfo();
+            //  setEventsNum();
         }
     }
 
@@ -420,12 +420,12 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
         {
             if (eventDrawingInfo.getAccountType() == AccountType.GOOGLE)
             {
-                canvas.drawRect(eventDrawingInfo.getLeft() + spacingBetweenEvent, eventDrawingInfo.getTop(), eventDrawingInfo.getRight() - spacingBetweenEvent, eventDrawingInfo.getBottom(), googleEventPaint);
-                canvas.drawText(eventDrawingInfo.getSchedule().getSubject(), (eventDrawingInfo.getRight() - eventDrawingInfo.getLeft()) / 2, eventDrawingInfo.getBottom(), googleEventTextPaint);
+                //  canvas.drawRect(eventDrawingInfo.getLeft() + spacingBetweenEvent, eventDrawingInfo.getTop(), eventDrawingInfo.getRight() - spacingBetweenEvent, eventDrawingInfo.getBottom(), googleEventPaint);
+                //   canvas.drawText(eventDrawingInfo.getSchedule().getSubject(), (eventDrawingInfo.getRight() - eventDrawingInfo.getLeft()) / 2, eventDrawingInfo.getBottom(), googleEventTextPaint);
             } else
             {
-                canvas.drawRect(eventDrawingInfo.getLeft() + spacingBetweenEvent, eventDrawingInfo.getTop(), eventDrawingInfo.getRight() - spacingBetweenEvent, eventDrawingInfo.getBottom(), localEventPaint);
-                canvas.drawText(eventDrawingInfo.getSchedule().getSubject(), (eventDrawingInfo.getRight() - eventDrawingInfo.getLeft()) / 2, eventDrawingInfo.getBottom(), localEventTextPaint);
+                //  canvas.drawRect(eventDrawingInfo.getLeft() + spacingBetweenEvent, eventDrawingInfo.getTop(), eventDrawingInfo.getRight() - spacingBetweenEvent, eventDrawingInfo.getBottom(), localEventPaint);
+                //   canvas.drawText(eventDrawingInfo.getSchedule().getSubject(), (eventDrawingInfo.getRight() - eventDrawingInfo.getLeft()) / 2, eventDrawingInfo.getBottom(), localEventTextPaint);
             }
         }
     }
@@ -439,10 +439,10 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
             {
                 if (schedule.getCategory() == ScheduleDTO.GOOGLE_CATEGORY)
                 {
-                    eventDrawingInfoList.add(new EventDrawingInfo(map.get("left"), map.get("right"), map.get("top"), map.get("bottom"), schedule, AccountType.GOOGLE));
+                    // eventDrawingInfoList.add(new EventDrawingInfo(map.get("left"), map.get("right"), map.get("top"), map.get("bottom"), schedule, AccountType.GOOGLE));
                 } else
                 {
-                    eventDrawingInfoList.add(new EventDrawingInfo(map.get("left"), map.get("right"), map.get("top"), map.get("bottom"), schedule, AccountType.LOCAL));
+                    //  eventDrawingInfoList.add(new EventDrawingInfo(map.get("left"), map.get("right"), map.get("top"), map.get("bottom"), schedule, AccountType.LOCAL));
                 }
             }
         }
@@ -450,8 +450,8 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
 
     private Map<String, Integer> calcEventPosition(ScheduleDTO schedule)
     {
-        long startMillis = (long) schedule.getStartDate();
-        long endMillis = (long) schedule.getEndDate();
+        final long startMillis = (long) schedule.getStartDate();
+        final long endMillis = (long) schedule.getEndDate();
         int startIndex = 0, endIndex = 0;
 
         int top = 0;
@@ -465,17 +465,23 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
         } else if (startMillis >= weekFirstDayMillis && endMillis <= weekLastDayMillis)
         {
             // 이번주 내에 시작/종료
-            for (int i = coordinateInfos.length - 1; i >= 0; i--)
+            for (int i = 6; i >= 0; --i)
             {
-                if (schedule.getStartDate() >= coordinateInfos[i].getDate().getTimeInMillis())
+                if (startMillis >= coordinateInfos[i].getDate().getTimeInMillis())
                 {
                     left = WEEK_HEADER_WIDTH_PER_DAY * i;
                     startIndex = i;
+                    break;
                 }
-                if (schedule.getEndDate() >= coordinateInfos[i].getDate().getTimeInMillis())
+            }
+
+            for (int i = 6; i >= 0; --i)
+            {
+                if (endMillis >= coordinateInfos[i].getDate().getTimeInMillis())
                 {
                     right = WEEK_HEADER_WIDTH_PER_DAY * (i + 1);
                     endIndex = i;
+                    break;
                 }
             }
 

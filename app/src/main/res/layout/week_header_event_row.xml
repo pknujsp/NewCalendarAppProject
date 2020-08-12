@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.zerodsoft.scheduleweather.CalendarView.Week.WeekHeaderEventRow xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/week_header_event_row"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="2dp"
+    android:layout_marginBottom="2dp">
+
+    <TextView
+        android:id="@+id/week_header_event_0"
+        android:background="@android:color/white"
+        android:textSize="12sp" />
+
+    <TextView
+        android:id="@+id/week_header_event_1"
+        android:background="@android:color/white"
+        android:textSize="12sp" />
+
+    <TextView
+        android:id="@+id/week_header_event_2"
+        android:background="@android:color/white"
+        android:textSize="12sp" />
+
+    <TextView
+        android:id="@+id/week_header_event_3"
+        android:background="@android:color/white"
+        android:textSize="12sp" />
+
+    <TextView
+        android:id="@+id/week_header_event_4"
+        android:background="@android:color/white"
+        android:textSize="12sp" />
+
+    <TextView
+        android:id="@+id/week_header_event_5"
+        android:background="@android:color/white"
+        android:textSize="12sp" />
+
+    <TextView
+        android:id="@+id/week_header_event_6"
+        android:background="@android:color/white"
+        android:textSize="12sp" />
+</com.zerodsoft.scheduleweather.CalendarView.Week.WeekHeaderEventRow>

@@ -6,21 +6,19 @@ import com.zerodsoft.scheduleweather.Room.DTO.ScheduleDTO;
 
 public class EventDrawingInfo
 {
-    private int left;
-    private int right;
-    private int top;
-    private int bottom;
+    private int startCol;
+    private int endCol;
+    private int row;
     private PointF startPoint;
     private PointF endPoint;
     private ScheduleDTO schedule;
     private AccountType accountType;
 
-    public EventDrawingInfo(int left, int right, int top, int bottom, ScheduleDTO schedule, AccountType accountType)
+    public EventDrawingInfo(int startCol, int endCol, int row, ScheduleDTO schedule, AccountType accountType)
     {
-        this.left = left;
-        this.right = right;
-        this.top = top;
-        this.bottom = bottom;
+        this.startCol = startCol;
+        this.endCol = endCol;
+        this.row = row;
         this.schedule = schedule;
         this.accountType = accountType;
     }
@@ -33,47 +31,36 @@ public class EventDrawingInfo
         this.accountType = accountType;
     }
 
-    public int getLeft()
+    public int getStartCol()
     {
-        return left;
+        return startCol;
     }
 
-    public EventDrawingInfo setLeft(int left)
+    public EventDrawingInfo setStartCol(int startCol)
     {
-        this.left = left;
+        this.startCol = startCol;
         return this;
     }
 
-    public int getRight()
+    public int getEndCol()
     {
-        return right;
+        return endCol;
     }
 
-    public EventDrawingInfo setRight(int right)
+    public EventDrawingInfo setEndCol(int endCol)
     {
-        this.right = right;
+        this.endCol = endCol;
         return this;
     }
 
-    public int getTop()
+    public int getRow()
     {
-        return top;
+        return row;
     }
 
-    public EventDrawingInfo setTop(int top)
+    public EventDrawingInfo setRow(int row)
     {
-        this.top = top;
-        return this;
-    }
-
-    public int getBottom()
-    {
-        return bottom;
-    }
-
-    public EventDrawingInfo setBottom(int bottom)
-    {
-        this.bottom = bottom;
+        this.row = row;
         return this;
     }
 

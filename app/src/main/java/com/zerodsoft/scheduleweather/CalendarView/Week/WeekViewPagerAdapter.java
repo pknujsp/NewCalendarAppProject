@@ -2,6 +2,7 @@ package com.zerodsoft.scheduleweather.CalendarView.Week;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -11,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.TableLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -19,15 +21,21 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.zerodsoft.scheduleweather.CalendarFragment.WeekFragment;
 import com.zerodsoft.scheduleweather.CalendarView.AccountType;
 import com.zerodsoft.scheduleweather.CalendarView.CalendarType;
+import com.zerodsoft.scheduleweather.CalendarView.Dto.CoordinateInfo;
+import com.zerodsoft.scheduleweather.CalendarView.EventDrawingInfo;
 import com.zerodsoft.scheduleweather.CalendarView.HoursView;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.Room.DTO.ScheduleDTO;
 import com.zerodsoft.scheduleweather.Thread.ScheduleThread;
 
+import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Objects;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
-public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdapter.WeekViewPagerHolderListener> implements WeekView.OnRefreshChildViewListener
+public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdapter.WeekViewPagerHolder> implements WeekView.OnRefreshChildViewListener
 {
     public static final String TAG = "WEEKVIEWPAGER_ADAPTER";
     public static final int WEEK_TOTAL_COUNT = 521;
@@ -45,10 +53,9 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
         this.activity = activity;
     }
 
-    class WeekViewPagerHolderListener extends RecyclerView.ViewHolder implements WeekHeaderView.ViewHeightChangeListener
+    class WeekViewPagerHolder extends RecyclerView.ViewHolder implements WeekHeaderView.ViewHeightChangeListener
     {
         private WeekView weekView;
-        private LinearLayout weekDatesLayout;
         private TextView weekDatesTextView;
         private ImageButton weekDatesButton;
         private HoursView hoursView;
@@ -56,10 +63,25 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
 
         private LinearLayout weekLayout;
         private LinearLayout headerLayout;
+        private LinearLayout datesLayout;
+        private LinearLayout eventLayout;
         private LinearLayout contentLayout;
+        private LinearLayout tableLayout;
 
         private int viewPosition;
         private Calendar calendar;
+
+        private List<ScheduleDTO> schedules;
+
+        private boolean[][] eventMatrix;
+        private int rowNum;
+        private List<EventDrawingInfo> eventDrawingInfoList;
+        private CoordinateInfo[] coordinateInfos;
+
+        private static final int EVENT_ROW_MAX = 20;
+
+        private long weekFirstDayMillis;
+        private long weekLastDayMillis;
 
         @SuppressLint("HandlerLeak")
         private final Handler handler = new Handler()
@@ -67,25 +89,42 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
             @Override
             public void handleMessage(Message msg)
             {
-                weekHeaderView.setScheduleList(Objects.requireNonNull(msg.getData().getParcelableArrayList("schedules")));
+                weekFirstDayMillis = weekHeaderView.getWeekFirstDayMillis();
+                weekLastDayMillis = weekHeaderView.getWeekLastDayMillis();
+                coordinateInfos = weekHeaderView.getArray();
+
+                eventMatrix = new boolean[EVENT_ROW_MAX][7];
+                eventDrawingInfoList = new ArrayList<>();
+                schedules = msg.getData().getParcelableArrayList("schedules");
+
+                if (schedules.isEmpty())
+                {
+                    return;
+                }
+                tableLayout.setVisibility(View.VISIBLE);
+                setEventDrawingInfo();
+                drawEvents();
             }
         };
 
-        public WeekViewPagerHolderListener(View view)
+        public WeekViewPagerHolder(View view)
         {
             super(view);
             this.weekLayout = (LinearLayout) view.findViewById(R.id.week_layout);
             this.headerLayout = (LinearLayout) view.findViewById(R.id.week_header_layout);
             this.contentLayout = (LinearLayout) view.findViewById(R.id.week_content_layout);
-            this.weekDatesLayout = (LinearLayout) view.findViewById(R.id.week_dates_layout);
+            this.datesLayout = (LinearLayout) view.findViewById(R.id.week_dates_layout);
+            this.eventLayout = (LinearLayout) view.findViewById(R.id.week_event_layout);
             this.hoursView = (HoursView) view.findViewById(R.id.week_hours_view);
             this.weekHeaderView = (WeekHeaderView) view.findViewById(R.id.week_header_view);
             this.weekDatesTextView = (TextView) view.findViewById(R.id.week_dates_textview);
             this.weekDatesButton = (ImageButton) view.findViewById(R.id.week_dates_button);
             this.weekView = (WeekView) view.findViewById(R.id.week_view);
+            this.tableLayout = (TableLayout) view.findViewById(R.id.week_header_event_table);
 
-            this.weekHeaderView.setViewHeightChangeListener(WeekViewPagerHolderListener.this);
-            weekDatesLayout.setLayoutParams(new LinearLayout.LayoutParams(WeekFragment.SPACING_BETWEEN_DAY, ViewGroup.LayoutParams.WRAP_CONTENT));
+            this.weekHeaderView.setViewHeightChangeListener(WeekViewPagerHolder.this);
+            datesLayout.setLayoutParams(new LinearLayout.LayoutParams(WeekFragment.SPACING_BETWEEN_DAY, ViewGroup.LayoutParams.WRAP_CONTENT));
+            tableLayout.setVisibility(View.GONE);
         }
 
         public void onBindView(int position)
@@ -121,8 +160,224 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
         public void onHeightChanged(int height)
         {
             headerLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, height));
-            weekDatesLayout.setLayoutParams(new LinearLayout.LayoutParams(WeekFragment.SPACING_BETWEEN_DAY, height));
+            datesLayout.setLayoutParams(new LinearLayout.LayoutParams(WeekFragment.SPACING_BETWEEN_DAY, height));
         }
+
+
+        private void setEventDrawingInfo()
+        {
+            for (ScheduleDTO schedule : schedules)
+            {
+                Map<String, Integer> map = calcEventPosition(schedule);
+                if (map != null)
+                {
+                    if (schedule.getCategory() == ScheduleDTO.GOOGLE_CATEGORY)
+                    {
+                        eventDrawingInfoList.add(new EventDrawingInfo(map.get("startCol"), map.get("endCol"), map.get("row"), schedule, AccountType.GOOGLE));
+                    } else
+                    {
+                        eventDrawingInfoList.add(new EventDrawingInfo(map.get("startCol"), map.get("endCol"), map.get("row"), schedule, AccountType.LOCAL));
+                    }
+                }
+            }
+        }
+
+        private Map<String, Integer> calcEventPosition(ScheduleDTO schedule)
+        {
+            final long startMillis = (long) schedule.getStartDate();
+            final long endMillis = (long) schedule.getEndDate();
+
+            int startCol = 0;
+            int endCol = 0;
+            int row = 0;
+
+            if (endMillis < weekFirstDayMillis || startMillis > weekLastDayMillis)
+            {
+                return null;
+            } else if (startMillis >= weekFirstDayMillis && endMillis <= weekLastDayMillis)
+            {
+                // 이번주 내에 시작/종료
+                for (int i = 6; i >= 0; --i)
+                {
+                    if (startMillis >= coordinateInfos[i].getDate().getTimeInMillis())
+                    {
+                        startCol = i;
+                        break;
+                    }
+                }
+
+                for (int i = 6; i >= 0; --i)
+                {
+                    if (endMillis >= coordinateInfos[i].getDate().getTimeInMillis())
+                    {
+                        endCol = i;
+                        break;
+                    }
+                }
+
+                RowLoop:
+                for (; row < EVENT_ROW_MAX; row++)
+                {
+                    for (int col = startCol; col <= endCol; col++)
+                    {
+                        if (eventMatrix[row][col])
+                        {
+                            // false이면 추가
+                            break;
+                        } else if (col == endCol)
+                        {
+                            if (!eventMatrix[row][col])
+                            {
+                                break RowLoop;
+                            }
+                        }
+                    }
+                }
+
+                for (int col = startCol; col <= endCol; col++)
+                {
+                    eventMatrix[row][col] = true;
+                    // eventMatrix의 해당 부분이 false일 경우(등록된 데이터가 없음)에 추가가능
+                }
+            } else if (startMillis < weekFirstDayMillis && endMillis <= weekLastDayMillis)
+            {
+                // 이전 주 부터 시작되어 이번 주 중에 종료
+                for (int i = 6; i >= 0; --i)
+                {
+                    if (schedule.getEndDate() >= coordinateInfos[i].getDate().getTimeInMillis())
+                    {
+                        endCol = i;
+                        break;
+                    }
+                }
+
+                RowLoop:
+                for (; row < EVENT_ROW_MAX; row++)
+                {
+                    for (int col = 0; col <= endCol; col++)
+                    {
+                        if (eventMatrix[row][col])
+                        {
+                            break;
+                        } else if (col == endCol)
+                        {
+                            if (!eventMatrix[row][col])
+                            {
+                                break RowLoop;
+                            }
+                        }
+                    }
+                }
+
+                for (int col = 0; col <= endCol; col++)
+                {
+                    eventMatrix[row][col] = true;
+                    // eventMatrix의 해당 부분이 false일 경우 draw
+                }
+            } else if (startMillis < weekFirstDayMillis && endMillis > weekLastDayMillis)
+            {
+                // 이전 주 부터 시작되어 이번 주 이후에 종료
+                RowLoop:
+                for (; row < EVENT_ROW_MAX; row++)
+                {
+                    for (int col = 0; col <= 6; col++)
+                    {
+                        if (eventMatrix[row][col])
+                        {
+                            break;
+                        } else if (col == 6)
+                        {
+                            if (!eventMatrix[row][6])
+                            {
+                                break RowLoop;
+                            }
+                        }
+                    }
+                }
+
+                for (int col = 0; col <= 6; col++)
+                {
+                    eventMatrix[row][col] = true;
+                    // eventMatrix의 해당 부분이 false일 경우 draw
+                }
+            } else if (startMillis >= weekFirstDayMillis && endMillis > weekLastDayMillis)
+            {
+                // 이번 주 부터 시작되어 이번 주 이후에 종료
+
+                for (int i = 6; i >= 0; --i)
+                {
+                    if (schedule.getStartDate() >= coordinateInfos[i].getDate().getTimeInMillis())
+                    {
+                        startCol = i;
+                        break;
+                    }
+                }
+
+                RowLoop:
+                for (; row < EVENT_ROW_MAX; row++)
+                {
+                    for (int col = startCol; col <= 6; col++)
+                    {
+                        if (eventMatrix[row][col])
+                        {
+                            break;
+                        } else if (col == 6)
+                        {
+                            if (!eventMatrix[row][6])
+                            {
+                                break RowLoop;
+                            }
+                        }
+                    }
+                }
+
+                for (int col = startCol; col <= 6; col++)
+                {
+                    eventMatrix[row][col] = true;
+                    // eventMatrix의 해당 부분이 false일 경우 draw
+                }
+            }
+            Map<String, Integer> map = new HashMap<>();
+            map.put("startCol", startCol);
+            map.put("endCol", endCol);
+            map.put("row", row);
+
+            if (row + 1 > rowNum)
+            {
+                rowNum = row + 1;
+            }
+
+            return map;
+        }
+
+        private void drawEvents()
+        {
+            WeekHeaderEventRow[] tableRows = new WeekHeaderEventRow[rowNum + 1];
+            LayoutInflater layoutInflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+
+            for (int i = 0; i <= rowNum; ++i)
+            {
+                tableRows[i] = (WeekHeaderEventRow) layoutInflater.inflate(R.layout.week_header_event_row, null, false);
+                tableRows[i].initCols();
+                tableLayout.addView(tableRows[i], i);
+            }
+
+            for (EventDrawingInfo eventDrawingInfo : eventDrawingInfoList)
+            {
+                tableRows[eventDrawingInfo.getRow()].setCol(eventDrawingInfo.getStartCol(), eventDrawingInfo.getEndCol(), eventDrawingInfo);
+                tableRows[eventDrawingInfo.getRow()].invalidate();
+            }
+            tableLayout.requestLayout();
+            tableLayout.invalidate();
+        }
+
+        public void setHeaderLayoutHeight()
+        {
+            Log.e(TAG, "table:" + tableLayout.getHeight());
+            Log.e(TAG, "header:" + headerLayout.getHeight());
+            onHeightChanged(headerLayout.getHeight() + tableLayout.getHeight());
+        }
+
 
         public void clearLocalVars()
         {
@@ -133,13 +388,13 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
 
     @NonNull
     @Override
-    public WeekViewPagerHolderListener onCreateViewHolder(@NonNull ViewGroup parent, int viewType)
+    public WeekViewPagerHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType)
     {
-        return new WeekViewPagerHolderListener(LayoutInflater.from(activity).inflate(R.layout.weekview_viewpager_item, parent, false));
+        return new WeekViewPagerHolder(LayoutInflater.from(activity).inflate(R.layout.weekview_viewpager_item, parent, false));
     }
 
     @Override
-    public void onBindViewHolder(@NonNull WeekViewPagerHolderListener holder, int position)
+    public void onBindViewHolder(@NonNull WeekViewPagerHolder holder, int position)
     {
         //Log.e(TAG, "onBindViewHolder : " + Integer.toString(position));
         holder.onBindView(position);
@@ -148,14 +403,14 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
     }
 
     @Override
-    public void onViewAttachedToWindow(@NonNull WeekViewPagerHolderListener holder)
+    public void onViewAttachedToWindow(@NonNull WeekViewPagerHolder holder)
     {
-        Log.e(TAG, "onViewAttachedToWindow : " + holder.getViewPosition());
         super.onViewAttachedToWindow(holder);
+
     }
 
     @Override
-    public void onViewDetachedFromWindow(@NonNull WeekViewPagerHolderListener holder)
+    public void onViewDetachedFromWindow(@NonNull WeekViewPagerHolder holder)
     {
         // weekViewSparseArray.remove(holder.getViewPosition());
         // headerViewSparseArray.remove(holder.getViewPosition());
