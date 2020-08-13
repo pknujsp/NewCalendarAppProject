@@ -6,6 +6,8 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.Parcelable;
 
+import androidx.lifecycle.LiveData;
+
 import com.zerodsoft.scheduleweather.CalendarView.AccountType;
 import com.zerodsoft.scheduleweather.CalendarView.CalendarType;
 import com.zerodsoft.scheduleweather.Room.AppDb;
@@ -47,7 +49,8 @@ public class ScheduleThread extends Thread
                 // bundle.putParcelableArrayList("schedules", (ArrayList<? extends Parcelable>) selectDaySchedules());
                 break;
             case WEEK:
-                bundle.putParcelableArrayList("schedules", (ArrayList<? extends Parcelable>) selectWeekSchedules());
+                //  bundle.putParcelableArrayList("schedules", (ArrayList<? extends Parcelable>) selectWeekSchedules());
+                msg.obj = selectWeekSchedules();
                 break;
             case MONTH:
                 //  bundle.putParcelableArrayList("schedules", (ArrayList<? extends Parcelable>) selectMonthSchedules());
@@ -64,7 +67,7 @@ public class ScheduleThread extends Thread
     }
 
 
-    private List<ScheduleDTO> selectWeekSchedules()
+    private LiveData<List<ScheduleDTO>> selectWeekSchedules()
     {
         AppDb appDb = AppDb.getInstance(activity);
         ScheduleDAO scheduleDAO = appDb.scheduleDAO();

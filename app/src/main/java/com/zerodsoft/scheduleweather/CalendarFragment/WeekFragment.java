@@ -6,6 +6,8 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.viewpager.widget.ViewPager;
 import androidx.viewpager2.widget.ViewPager2;
 
@@ -14,10 +16,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.zerodsoft.scheduleweather.CalendarView.ViewModel.WeekViewModel;
 import com.zerodsoft.scheduleweather.CalendarView.Week.WeekViewPagerAdapter;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.Room.DTO.ScheduleDTO;
 
 import java.util.Calendar;
+import java.util.List;
 
 
 public class WeekFragment extends Fragment
@@ -61,7 +66,7 @@ public class WeekFragment extends Fragment
         onPageChangeCallback = new OnPageChangeCallback();
 
         weekViewPager = (ViewPager2) view.findViewById(R.id.week_viewpager);
-        weekViewPagerAdapter = new WeekViewPagerAdapter(getActivity());
+        weekViewPagerAdapter = new WeekViewPagerAdapter(getActivity(), this);
 
         weekViewPager.setAdapter(weekViewPagerAdapter);
         weekViewPager.setCurrentItem(WeekViewPagerAdapter.FIRST_VIEW_NUMBER);

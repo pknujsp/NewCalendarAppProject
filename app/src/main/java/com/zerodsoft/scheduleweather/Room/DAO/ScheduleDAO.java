@@ -24,10 +24,10 @@ public interface ScheduleDAO
     void updateAddressId(int scheduleId, int addressId);
 
     @Query("SELECT * FROM TB_SCHEDULE")
-    LiveData<ScheduleDTO> selectAllSchedules();
+    LiveData<List<ScheduleDTO>> selectAllSchedules();
 
     @Query("SELECT * FROM TB_SCHEDULE WHERE category = :category AND start_date >= :startDate AND end_date <= :endDate")
-    List<ScheduleDTO> selectSchedules(int category, float startDate, float endDate);
+    LiveData<List<ScheduleDTO>> selectSchedules(int category, float startDate, float endDate);
 
     @Update(onConflict = OnConflictStrategy.IGNORE)
     void updateSchedule(ScheduleDTO scheduleDTO);
