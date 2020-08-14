@@ -1,6 +1,7 @@
 package com.zerodsoft.scheduleweather.Room.DAO;
 
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
@@ -24,10 +25,10 @@ public interface ScheduleDAO
     void updateAddressId(int scheduleId, int addressId);
 
     @Query("SELECT * FROM TB_SCHEDULE")
-    LiveData<List<ScheduleDTO>> selectAllSchedules();
+    MutableLiveData<List<ScheduleDTO>> selectAllSchedules();
 
     @Query("SELECT * FROM TB_SCHEDULE WHERE category = :category AND start_date >= :startDate AND end_date <= :endDate")
-    LiveData<List<ScheduleDTO>> selectSchedules(int category, float startDate, float endDate);
+    MutableLiveData<List<ScheduleDTO>> selectSchedules(int category, float startDate, float endDate);
 
     @Update(onConflict = OnConflictStrategy.IGNORE)
     void updateSchedule(ScheduleDTO scheduleDTO);

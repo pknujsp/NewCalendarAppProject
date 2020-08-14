@@ -19,6 +19,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
@@ -52,11 +53,45 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
 
     private Activity activity;
     private WeekFragment weekFragment;
-    private SparseArray<WeekView> weekViewSparseArray = new SparseArray<>();
-    private SparseArray<WeekHeaderView> headerViewSparseArray = new SparseArray<>();
+    private SparseArray<WeekViewPagerHolder> pagerHolderSparseArr = new SparseArray<>();
 
-    private int lastPosition = FIRST_VIEW_NUMBER;
     private Calendar today = Calendar.getInstance();
+
+    private WeekViewModel weekViewModel;
+
+    @SuppressLint("HandlerLeak")
+    private final Handler handler = new Handler()
+    {
+        @Override
+        public void handleMessage(Message msg)
+        {
+            /*
+            weekFirstDayMillis = weekHeaderView.getWeekFirstDayMillis();
+            weekLastDayMillis = weekHeaderView.getWeekLastDayMillis();
+            coordinateInfos = weekHeaderView.getArray();
+
+            eventMatrix = new boolean[EVENT_ROW_MAX][7];
+            eventDrawingInfoList = new ArrayList<>();
+            schedules = msg.getData().getParcelableArrayList("schedules");
+            schedules = ((MutableLiveData<List<ScheduleDTO>>) msg.obj).getValue();
+
+            if (schedules == null)
+            {
+                return;
+            } else
+            {
+                //   weekViewModel.setSchedules((LiveData<List<ScheduleDTO>>) msg.obj);
+            }
+
+             */
+        }
+    };
+
+    @Override
+    public void refreshChildView(int position)
+    {
+
+    }
 
     class WeekViewPagerHolder extends RecyclerView.ViewHolder implements WeekHeaderView.ViewHeightChangeListener
     {
@@ -87,33 +122,7 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
 
         private long weekFirstDayMillis;
         private long weekLastDayMillis;
-        private WeekViewModel weekViewModel;
 
-
-        @SuppressLint("HandlerLeak")
-        private final Handler handler = new Handler()
-        {
-            @Override
-            public void handleMessage(Message msg)
-            {
-                weekFirstDayMillis = weekHeaderView.getWeekFirstDayMillis();
-                weekLastDayMillis = weekHeaderView.getWeekLastDayMillis();
-                coordinateInfos = weekHeaderView.getArray();
-
-                eventMatrix = new boolean[EVENT_ROW_MAX][7];
-                eventDrawingInfoList = new ArrayList<>();
-                //  schedules = msg.getData().getParcelableArrayList("schedules");
-                schedules = ((LiveData<List<ScheduleDTO>>) msg.obj).getValue();
-
-                if (schedules == null)
-                {
-                    return;
-                } else
-                {
-                 //   weekViewModel.setSchedules((LiveData<List<ScheduleDTO>>) msg.obj);
-                }
-            }
-        };
 
         public WeekViewPagerHolder(View view)
         {
@@ -133,18 +142,6 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
             this.weekHeaderView.setViewHeightChangeListener(WeekViewPagerHolder.this);
             datesLayout.setLayoutParams(new LinearLayout.LayoutParams(WeekFragment.SPACING_BETWEEN_DAY, ViewGroup.LayoutParams.WRAP_CONTENT));
             tableLayout.setVisibility(View.GONE);
-
-            weekViewModel = new ViewModelProvider(weekFragment).get(WeekViewModel.class);
-            weekViewModel.getSchedules().observe(weekFragment, schedules ->
-            {
-                if (!schedules.isEmpty())
-                {
-                    Log.e(TAG, "view model onChanged called");
-                    tableLayout.setVisibility(View.VISIBLE);
-                    setEventDrawingInfo();
-                    drawEvents();
-                }
-            });
         }
 
         public void onBindView(int position)
@@ -154,7 +151,6 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
             setWeekDates();
             weekHeaderView.setPosition(viewPosition);
             weekView.setPosition(viewPosition).setCoordinateInfoInterface(weekHeaderView).setOnRefreshHoursViewListener(hoursView);
-            setEvents();
         }
 
         private void setWeekDates()
@@ -421,6 +417,18 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
     {
         this.activity = activity;
         this.weekFragment = (WeekFragment) fragment;
+
+        weekViewModel = new ViewModelProvider(weekFragment).get(WeekViewModel.class);
+        weekViewModel.getSchedules().observe(weekFragment, schedules ->
+        {
+            if (!schedules.isEmpty())
+            {
+                Log.e(TAG, "view model onChanged called");
+                // tableLayout.setVisibility(View.VISIBLE);
+                // setEventDrawingInfo();
+                // drawEvents();
+            }
+        });
     }
 
     @NonNull
@@ -433,10 +441,8 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
     @Override
     public void onBindViewHolder(@NonNull WeekViewPagerHolder holder, int position)
     {
-        //Log.e(TAG, "onBindViewHolder : " + Integer.toString(position));
         holder.onBindView(position);
-        //  weekViewSparseArray.put(position, weekView);
-        //  headerViewSparseArray.put(position, weekHeaderView);
+        pagerHolderSparseArr.put(position, holder);
     }
 
     @Override
@@ -448,10 +454,8 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
     @Override
     public void onViewDetachedFromWindow(@NonNull WeekViewPagerHolder holder)
     {
-        // weekViewSparseArray.remove(holder.getViewPosition());
-        // headerViewSparseArray.remove(holder.getViewPosition());
-        holder.clearLocalVars();
         super.onViewDetachedFromWindow(holder);
+        pagerHolderSparseArr.remove(holder.getViewPosition());
     }
 
     @Override
@@ -461,24 +465,8 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
     }
 
 
-    @Override
-    public void refreshChildView(int position)
+    public void selectEvents(int position)
     {
-        try
-        {
-            weekViewSparseArray.get(position - 1).invalidate();
-            weekViewSparseArray.get(position + 1).invalidate();
-        } catch (NullPointerException e)
-        {
-
-        }
+        pagerHolderSparseArr.get(position).setEvents();
     }
-
-
-    public int getEventRowNum(int position)
-    {
-        return headerViewSparseArray.get(position).getEventRowNum();
-    }
-
-
 }

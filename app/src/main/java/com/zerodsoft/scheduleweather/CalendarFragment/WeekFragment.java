@@ -83,14 +83,12 @@ public class WeekFragment extends Fragment
 
     class OnPageChangeCallback extends ViewPager2.OnPageChangeCallback
     {
-        private int finalPosition;
-        private int firstPosition = WeekViewPagerAdapter.FIRST_VIEW_NUMBER;
-        private int position;
-        private Calendar today = Calendar.getInstance();
+        private int currentPosition = WeekViewPagerAdapter.FIRST_VIEW_NUMBER;
 
-        public void initFirstPosition()
+
+        public int getCurrentPosition()
         {
-            this.firstPosition = WeekViewPagerAdapter.FIRST_VIEW_NUMBER;
+            return currentPosition;
         }
 
         @Override
@@ -105,6 +103,7 @@ public class WeekFragment extends Fragment
             } else if (state == ViewPager.SCROLL_STATE_SETTLING)
             {
             }
+            super.onPageScrollStateChanged(state);
         }
 
 
@@ -113,7 +112,7 @@ public class WeekFragment extends Fragment
         {
             // 오른쪽(이전 주)으로 드래그시 positionOffset의 값이 작아짐 0.99999 -> 0.0
             // 왼쪽(다음 주)으로 드래그시 positionOffset의 값이 커짐 0.00001 -> 1.0
-            this.position = position;
+            super.onPageScrolled(position, positionOffset, positionOffsetPixels);
         }
 
         @Override
@@ -121,33 +120,17 @@ public class WeekFragment extends Fragment
         {
             // drag 성공 시에만 SETTLING 직후 호출
             super.onPageSelected(position);
-            // Log.e(TAG, "onPageSelected" + Integer.toString(position));
-            finalPosition = position;
-
-            if (finalPosition < firstPosition)
-            {
-                // 이전 주
-                today.add(Calendar.WEEK_OF_YEAR, -1);
-            } else
-            {
-                // 다음 주
-                today.add(Calendar.WEEK_OF_YEAR, 1);
-            }
-            firstPosition = finalPosition;
+            currentPosition = position;
+            // 일정 목록을 가져와서 표시함 header view, week view
+            weekViewPagerAdapter.selectEvents(position);
         }
 
-        public int getFirstPosition()
-        {
-            return firstPosition;
-        }
     }
 
 
     public void goToToday()
     {
-        int currentPosition = onPageChangeCallback.getFirstPosition();
-
-        if (currentPosition != WeekViewPagerAdapter.FIRST_VIEW_NUMBER)
+        if (onPageChangeCallback.getCurrentPosition() != WeekViewPagerAdapter.FIRST_VIEW_NUMBER)
         {
             weekViewPager.setCurrentItem(WeekViewPagerAdapter.FIRST_VIEW_NUMBER, true);
             weekViewPagerAdapter.notifyDataSetChanged();

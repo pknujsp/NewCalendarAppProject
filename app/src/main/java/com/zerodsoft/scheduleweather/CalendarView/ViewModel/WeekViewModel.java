@@ -1,6 +1,7 @@
 package com.zerodsoft.scheduleweather.CalendarView.ViewModel;
 
 import android.app.Application;
+import android.content.Context;
 import android.graphics.Paint;
 
 import androidx.annotation.NonNull;
@@ -21,24 +22,26 @@ public class WeekViewModel extends AndroidViewModel
 {
     private ScheduleDAO scheduleDAO;
     private ExecutorService executorService;
+    private Context context;
 
-    private LiveData<List<ScheduleDTO>> schedules = new MutableLiveData<>();
+    private MutableLiveData<List<ScheduleDTO>> schedules = new MutableLiveData<>();
     private int pagePosition;
 
     public WeekViewModel(@NonNull Application application)
     {
         super(application);
+        context = application.getApplicationContext();
         scheduleDAO = AppDb.getInstance(application.getApplicationContext()).scheduleDAO();
         executorService = Executors.newSingleThreadExecutor();
     }
 
-    public LiveData<List<ScheduleDTO>> selectSchedules(AccountType accountType, long startDate, long endDate)
+    public MutableLiveData<List<ScheduleDTO>> selectSchedules(AccountType accountType, long startDate, long endDate)
     {
         schedules = scheduleDAO.selectSchedules(accountType.ordinal(), startDate, endDate);
         return schedules;
     }
 
-    public LiveData<List<ScheduleDTO>> getSchedules()
+    public MutableLiveData<List<ScheduleDTO>> getSchedules()
     {
         return schedules;
     }
