@@ -7,13 +7,17 @@ import android.graphics.Paint;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Observer;
 
 import com.zerodsoft.scheduleweather.CalendarView.AccountType;
 import com.zerodsoft.scheduleweather.Room.AppDb;
 import com.zerodsoft.scheduleweather.Room.DAO.ScheduleDAO;
 import com.zerodsoft.scheduleweather.Room.DTO.ScheduleDTO;
+import com.zerodsoft.scheduleweather.Room.DTO.TypeConverter;
 
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -24,7 +28,7 @@ public class WeekViewModel extends AndroidViewModel
     private ExecutorService executorService;
     private Context context;
 
-    private MutableLiveData<List<ScheduleDTO>> schedules = new MutableLiveData<>();
+    private MediatorLiveData<List<ScheduleDTO>> schedules = new MediatorLiveData<>();
     private int pagePosition;
 
     public WeekViewModel(@NonNull Application application)
@@ -35,13 +39,28 @@ public class WeekViewModel extends AndroidViewModel
         executorService = Executors.newSingleThreadExecutor();
     }
 
-    public MutableLiveData<List<ScheduleDTO>> selectSchedules(AccountType accountType, long startDate, long endDate)
+    public LiveData<List<ScheduleDTO>> selectSchedules(AccountType accountType, Date startDate, Date endDate)
     {
-        schedules = scheduleDAO.selectSchedules(accountType.ordinal(), startDate, endDate);
+        LiveData<List<ScheduleDTO>> resultList = scheduleDAO.selectSchedules(accountType.ordinal(), startDate, endDate);
+        schedules.addSource(resultList, new Observer<List<ScheduleDTO>>()
+        {
+            @Override
+            public void onChanged(List<ScheduleDTO> scheduleDTOS)
+            {
+                if (scheduleDTOS == null || scheduleDTOS.isEmpty())
+                {
+
+                } else
+                {
+                    schedules.removeSource(resultList);
+                    schedules.setValue(scheduleDTOS);
+                }
+            }
+        });
         return schedules;
     }
 
-    public MutableLiveData<List<ScheduleDTO>> getSchedules()
+    public LiveData<List<ScheduleDTO>> getSchedules()
     {
         return schedules;
     }

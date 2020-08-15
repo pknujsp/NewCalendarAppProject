@@ -10,6 +10,7 @@ import androidx.room.Update;
 
 import com.zerodsoft.scheduleweather.Room.DTO.ScheduleDTO;
 
+import java.util.Date;
 import java.util.List;
 
 @Dao
@@ -25,10 +26,10 @@ public interface ScheduleDAO
     void updateAddressId(int scheduleId, int addressId);
 
     @Query("SELECT * FROM TB_SCHEDULE")
-    MutableLiveData<List<ScheduleDTO>> selectAllSchedules();
+    LiveData<List<ScheduleDTO>> selectAllSchedules();
 
-    @Query("SELECT * FROM TB_SCHEDULE WHERE category = :category AND start_date >= :startDate AND end_date <= :endDate")
-    MutableLiveData<List<ScheduleDTO>> selectSchedules(int category, float startDate, float endDate);
+    @Query("SELECT * FROM TB_SCHEDULE WHERE category = :category AND (date(start_date) BETWEEN date(:weekFirstDate) AND date(:weekLastDate)) OR (date(end_date) BETWEEN date(:weekFirstDate) AND date(:weekLastDate))")
+    LiveData<List<ScheduleDTO>> selectSchedules(int category, Date weekFirstDate, Date weekLastDate);
 
     @Update(onConflict = OnConflictStrategy.IGNORE)
     void updateSchedule(ScheduleDTO scheduleDTO);

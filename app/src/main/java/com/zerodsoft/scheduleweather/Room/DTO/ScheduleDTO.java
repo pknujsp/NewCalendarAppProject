@@ -8,8 +8,10 @@ import androidx.room.Entity;
 import androidx.room.ForeignKey;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
+import androidx.room.TypeConverters;
 
 import java.io.Serializable;
+import java.util.Date;
 
 @Entity(tableName = "TB_SCHEDULE")
 public class ScheduleDTO implements Parcelable
@@ -28,13 +30,13 @@ public class ScheduleDTO implements Parcelable
     private String content;
 
     @ColumnInfo(name = "start_date")
-    private float startDate;
+    private Date startDate;
 
     @ColumnInfo(name = "end_date")
-    private float endDate;
+    private Date endDate;
 
     @ColumnInfo(name = "noti_time")
-    private float notiTime;
+    private Date notiTime;
 
     @ColumnInfo(name = "place_id_to_be_visited")
     private int placeId;
@@ -43,10 +45,10 @@ public class ScheduleDTO implements Parcelable
     private int addressId;
 
     @ColumnInfo(name = "inserted_date")
-    private float insertedDate;
+    private Date insertedDate;
 
     @ColumnInfo(name = "updated_date")
-    private float updatedDate;
+    private Date updatedDate;
 
     @Ignore
     public static final int GOOGLE_CATEGORY = 0;
@@ -64,13 +66,13 @@ public class ScheduleDTO implements Parcelable
         category = in.readInt();
         subject = in.readString();
         content = in.readString();
-        startDate = in.readFloat();
-        endDate = in.readFloat();
-        notiTime = in.readFloat();
+        startDate = (Date) in.readSerializable();
+        endDate = (Date) in.readSerializable();
+        notiTime = (Date) in.readSerializable();
         placeId = in.readInt();
         addressId = in.readInt();
-        insertedDate = in.readFloat();
-        updatedDate = in.readFloat();
+        insertedDate = (Date) in.readSerializable();
+        updatedDate = (Date) in.readSerializable();
     }
 
     public static final Creator<ScheduleDTO> CREATOR = new Creator<ScheduleDTO>()
@@ -128,35 +130,6 @@ public class ScheduleDTO implements Parcelable
         this.content = content;
     }
 
-    public float getStartDate()
-    {
-        return startDate;
-    }
-
-    public void setStartDate(float startDate)
-    {
-        this.startDate = startDate;
-    }
-
-    public float getEndDate()
-    {
-        return endDate;
-    }
-
-    public void setEndDate(float endDate)
-    {
-        this.endDate = endDate;
-    }
-
-    public float getNotiTime()
-    {
-        return notiTime;
-    }
-
-    public void setNotiTime(float notiTime)
-    {
-        this.notiTime = notiTime;
-    }
 
     public int getPlaceId()
     {
@@ -178,22 +151,52 @@ public class ScheduleDTO implements Parcelable
         this.addressId = addressId;
     }
 
-    public float getInsertedDate()
+    public Date getStartDate()
+    {
+        return startDate;
+    }
+
+    public void setStartDate(Date startDate)
+    {
+        this.startDate = startDate;
+    }
+
+    public Date getEndDate()
+    {
+        return endDate;
+    }
+
+    public void setEndDate(Date endDate)
+    {
+        this.endDate = endDate;
+    }
+
+    public Date getNotiTime()
+    {
+        return notiTime;
+    }
+
+    public void setNotiTime(Date notiTime)
+    {
+        this.notiTime = notiTime;
+    }
+
+    public Date getInsertedDate()
     {
         return insertedDate;
     }
 
-    public void setInsertedDate(float insertedDate)
+    public void setInsertedDate(Date insertedDate)
     {
         this.insertedDate = insertedDate;
     }
 
-    public float getUpdatedDate()
+    public Date getUpdatedDate()
     {
         return updatedDate;
     }
 
-    public void setUpdatedDate(float updatedDate)
+    public void setUpdatedDate(Date updatedDate)
     {
         this.updatedDate = updatedDate;
     }
@@ -211,12 +214,12 @@ public class ScheduleDTO implements Parcelable
         parcel.writeInt(category);
         parcel.writeString(subject);
         parcel.writeString(content);
-        parcel.writeFloat(startDate);
-        parcel.writeFloat(endDate);
-        parcel.writeFloat(notiTime);
+        parcel.writeSerializable(startDate);
+        parcel.writeSerializable(endDate);
+        parcel.writeSerializable(notiTime);
         parcel.writeInt(placeId);
         parcel.writeInt(addressId);
-        parcel.writeFloat(insertedDate);
-        parcel.writeFloat(updatedDate);
+        parcel.writeSerializable(insertedDate);
+        parcel.writeSerializable(updatedDate);
     }
 }

@@ -13,8 +13,10 @@ import com.zerodsoft.scheduleweather.CalendarView.CalendarType;
 import com.zerodsoft.scheduleweather.Room.AppDb;
 import com.zerodsoft.scheduleweather.Room.DAO.ScheduleDAO;
 import com.zerodsoft.scheduleweather.Room.DTO.ScheduleDTO;
+import com.zerodsoft.scheduleweather.Room.DTO.TypeConverter;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class ScheduleThread extends Thread
@@ -24,10 +26,10 @@ public class ScheduleThread extends Thread
     private CalendarType calendarType;
     private AccountType accountType;
 
-    private long startDate;
-    private long endDate;
+    private Date startDate;
+    private Date endDate;
 
-    public void setInitialData(Activity activity, Handler handler, CalendarType calendarType, AccountType accountType, long startDate, long endDate)
+    public void setInitialData(Activity activity, Handler handler, CalendarType calendarType, AccountType accountType, Date startDate, Date endDate)
     {
         this.activity = activity;
         this.handler = handler;

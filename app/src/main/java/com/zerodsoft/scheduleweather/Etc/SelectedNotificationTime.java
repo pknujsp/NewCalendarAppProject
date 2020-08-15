@@ -3,6 +3,7 @@ package com.zerodsoft.scheduleweather.Etc;
 import com.zerodsoft.scheduleweather.Fragment.NotificationFragment;
 
 import java.util.Calendar;
+import java.util.Date;
 
 public class SelectedNotificationTime
 {
@@ -67,8 +68,9 @@ public class SelectedNotificationTime
         return resultStr;
     }
 
-    public long getTimeInMillis(Calendar originalCalendar)
+    public Date getTime()
     {
+        Calendar originalCalendar = Calendar.getInstance();
         Calendar calendar = (Calendar) originalCalendar.clone();
 
         switch (mainType)
@@ -95,7 +97,7 @@ public class SelectedNotificationTime
                 calendar.add(minute, Calendar.MINUTE);
                 break;
         }
-        return calendar.getTimeInMillis();
+        return calendar.getTime();
     }
 }
 

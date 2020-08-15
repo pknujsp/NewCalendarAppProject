@@ -26,6 +26,7 @@ import com.zerodsoft.scheduleweather.Utility.DateHour;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -89,8 +90,8 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
     private CoordinateInfo[] coordinateInfos = new CoordinateInfo[8];
     private int eventRowNum;
 
-    private long weekFirstDayMillis;
-    private long weekLastDayMillis;
+    private Date weekFirstDate;
+    private Date weekLastDate;
 
     private List<ScheduleDTO> scheduleList;
 
@@ -247,8 +248,8 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
         weekFirstDay.add(Calendar.DATE, leftDaysWithGaps);
         // 토요일로 설정
         weekLastDay = (Calendar) weekFirstDay.clone();
-        weekLastDay.add(Calendar.DATE, 6);
-        weekLastDay.set(weekLastDay.get(Calendar.YEAR), weekLastDay.get(Calendar.MONTH), weekLastDay.get(Calendar.DAY_OF_MONTH), 23, 59, 59);
+        weekLastDay.add(Calendar.DATE, 7);
+        weekLastDay.add(Calendar.SECOND, -1);
 
         // 날짜를 그림
         for (int i = 0; i <= 7; i++)
@@ -259,8 +260,8 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
         }
         weekFirstDay.add(Calendar.DATE, -8);
 
-        weekFirstDayMillis = weekFirstDay.getTimeInMillis();
-        weekLastDayMillis = weekLastDay.getTimeInMillis();
+        weekFirstDate = weekFirstDay.getTime();
+        weekLastDate = weekLastDay.getTime();
     }
 
     @Override
@@ -307,11 +308,6 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
             weekFirstDay.add(Calendar.DATE, 1);
         }
         weekFirstDay.add(Calendar.WEEK_OF_YEAR, -1);
-
-        if (haveEvents)
-        {
-            drawEvents(canvas);
-        }
     }
 
     @Override
@@ -353,317 +349,13 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
         setInitialData();
     }
 
-    public int getPosition()
+    public Date getWeekFirstDate()
     {
-        return position;
+        return weekFirstDate;
     }
 
-    public void setEventsNum()
+    public Date getWeekLastDate()
     {
-        for (int row = 0; row < EVENT_ROW_MAX; row++)
-        {
-            for (int col = 0; col < 7; col++)
-            {
-                if (eventMatrix[row][col])
-                {
-                    eventRowNum = row + 1;
-                    break;
-                }
-            }
-            if (eventRowNum == row)
-            {
-                break;
-            }
-        }
-        if (eventRowNum > 2)
-        {
-            mHeaderHeightEvents = mHeaderHeightNormal + (weekHeaderEventBoxHeight + mHeaderRowMarginTop) * 2;
-        } else
-        {
-            mHeaderHeightEvents = mHeaderHeightNormal + (weekHeaderEventBoxHeight + mHeaderRowMarginTop) * eventRowNum;
-        }
-
-        isFirstDraw = true;
-        viewHeightChangeListener.onHeightChanged(mHeaderHeightEvents);
-        requestLayout();
-        invalidate();
-    }
-
-    public void setScheduleList(List<ScheduleDTO> scheduleList)
-    {
-        this.scheduleList = scheduleList;
-        if (!scheduleList.isEmpty())
-        {
-            this.haveEvents = true;
-            //  setEventDrawingInfo();
-            //  setEventsNum();
-        }
-    }
-
-    private void drawEvents(Canvas canvas)
-    {
-        Paint googleEventPaint = new Paint();
-        Paint localEventPaint = new Paint();
-        Paint googleEventTextPaint = new Paint();
-        Paint localEventTextPaint = new Paint();
-
-        googleEventPaint.setColor(AppSettings.getGoogleEventBackgroundColor());
-        localEventPaint.setColor(AppSettings.getLocalEventBackgroundColor());
-
-        googleEventTextPaint.setColor(AppSettings.getGoogleEventTextColor());
-        googleEventTextPaint.setTextSize(weekHeaderEventTextSize);
-        localEventTextPaint.setColor(AppSettings.getLocalEventTextColor());
-        localEventTextPaint.setTextSize(weekHeaderEventTextSize);
-
-
-        for (EventDrawingInfo eventDrawingInfo : eventDrawingInfoList)
-        {
-            if (eventDrawingInfo.getAccountType() == AccountType.GOOGLE)
-            {
-                //  canvas.drawRect(eventDrawingInfo.getLeft() + spacingBetweenEvent, eventDrawingInfo.getTop(), eventDrawingInfo.getRight() - spacingBetweenEvent, eventDrawingInfo.getBottom(), googleEventPaint);
-                //   canvas.drawText(eventDrawingInfo.getSchedule().getSubject(), (eventDrawingInfo.getRight() - eventDrawingInfo.getLeft()) / 2, eventDrawingInfo.getBottom(), googleEventTextPaint);
-            } else
-            {
-                //  canvas.drawRect(eventDrawingInfo.getLeft() + spacingBetweenEvent, eventDrawingInfo.getTop(), eventDrawingInfo.getRight() - spacingBetweenEvent, eventDrawingInfo.getBottom(), localEventPaint);
-                //   canvas.drawText(eventDrawingInfo.getSchedule().getSubject(), (eventDrawingInfo.getRight() - eventDrawingInfo.getLeft()) / 2, eventDrawingInfo.getBottom(), localEventTextPaint);
-            }
-        }
-    }
-
-    private void setEventDrawingInfo()
-    {
-        for (ScheduleDTO schedule : scheduleList)
-        {
-            Map<String, Integer> map = calcEventPosition(schedule);
-            if (map != null)
-            {
-                if (schedule.getCategory() == ScheduleDTO.GOOGLE_CATEGORY)
-                {
-                    // eventDrawingInfoList.add(new EventDrawingInfo(map.get("left"), map.get("right"), map.get("top"), map.get("bottom"), schedule, AccountType.GOOGLE));
-                } else
-                {
-                    //  eventDrawingInfoList.add(new EventDrawingInfo(map.get("left"), map.get("right"), map.get("top"), map.get("bottom"), schedule, AccountType.LOCAL));
-                }
-            }
-        }
-    }
-
-    private Map<String, Integer> calcEventPosition(ScheduleDTO schedule)
-    {
-        final long startMillis = (long) schedule.getStartDate();
-        final long endMillis = (long) schedule.getEndDate();
-        int startIndex = 0, endIndex = 0;
-
-        int top = 0;
-        int bottom = 0;
-        int right = 0;
-        int left = 0;
-
-        if (endMillis < weekFirstDayMillis || startMillis > weekLastDayMillis)
-        {
-            return null;
-        } else if (startMillis >= weekFirstDayMillis && endMillis <= weekLastDayMillis)
-        {
-            // 이번주 내에 시작/종료
-            for (int i = 6; i >= 0; --i)
-            {
-                if (startMillis >= coordinateInfos[i].getDate().getTimeInMillis())
-                {
-                    left = WEEK_HEADER_WIDTH_PER_DAY * i;
-                    startIndex = i;
-                    break;
-                }
-            }
-
-            for (int i = 6; i >= 0; --i)
-            {
-                if (endMillis >= coordinateInfos[i].getDate().getTimeInMillis())
-                {
-                    right = WEEK_HEADER_WIDTH_PER_DAY * (i + 1);
-                    endIndex = i;
-                    break;
-                }
-            }
-
-            int row = 0;
-
-            RowLoop:
-            for (; row < EVENT_ROW_MAX; row++)
-            {
-                for (int col = startIndex; col <= endIndex; col++)
-                {
-                    if (eventMatrix[row][col])
-                    {
-                        break;
-                    } else if (col == endIndex)
-                    {
-                        if (!eventMatrix[row][col])
-                        {
-                            break RowLoop;
-                        }
-                    }
-                }
-            }
-
-            for (int col = startIndex; col <= endIndex; col++)
-            {
-                eventMatrix[row][col] = true;
-                // eventMatrix의 해당 부분이 false일 경우 draw
-            }
-            top = (int) eventsStartCoordinate.y + row * mHeaderRowMarginBottom;
-            bottom = top + weekHeaderEventBoxHeight + row * mHeaderRowMarginBottom;
-        } else if (startMillis < weekFirstDayMillis && endMillis <= weekLastDayMillis)
-        {
-            // 이전 주 부터 시작되어 이번 주 중에 종료
-            left = 0;
-            startIndex = 0;
-
-            for (int i = coordinateInfos.length - 1; i >= 0; i--)
-            {
-                if (schedule.getEndDate() >= coordinateInfos[i].getDate().getTimeInMillis())
-                {
-                    right = WEEK_HEADER_WIDTH_PER_DAY * (i + 1);
-                    endIndex = i;
-                    break;
-                }
-            }
-
-            int row = 0;
-
-            RowLoop:
-            for (; row < EVENT_ROW_MAX; row++)
-            {
-                for (int col = startIndex; col <= endIndex; col++)
-                {
-                    if (eventMatrix[row][col])
-                    {
-                        break;
-                    } else if (col == endIndex)
-                    {
-                        if (!eventMatrix[row][col])
-                        {
-                            break RowLoop;
-                        }
-                    }
-                }
-            }
-
-            for (int col = startIndex; col <= endIndex; col++)
-            {
-                eventMatrix[row][col] = true;
-                // eventMatrix의 해당 부분이 false일 경우 draw
-            }
-            top = (int) eventsStartCoordinate.y + row * mHeaderRowMarginBottom;
-            bottom = top + weekHeaderEventBoxHeight + row * mHeaderRowMarginBottom;
-        } else if (startMillis < weekFirstDayMillis && endMillis > weekLastDayMillis)
-        {
-            // 이전 주 부터 시작되어 이번 주 이후에 종료
-
-            left = 0;
-            right = getWidth();
-
-            startIndex = 0;
-            endIndex = 6;
-
-            int row = 0;
-
-            RowLoop:
-            for (; row < EVENT_ROW_MAX; row++)
-            {
-                for (int col = startIndex; col <= endIndex; col++)
-                {
-                    if (eventMatrix[row][col])
-                    {
-                        break;
-                    } else if (col == endIndex)
-                    {
-                        if (!eventMatrix[row][col])
-                        {
-                            break RowLoop;
-                        }
-                    }
-                }
-            }
-
-            for (int col = startIndex; col <= endIndex; col++)
-            {
-                eventMatrix[row][col] = true;
-                // eventMatrix의 해당 부분이 false일 경우 draw
-            }
-            top = (int) eventsStartCoordinate.y + row * mHeaderRowMarginBottom;
-            bottom = top + weekHeaderEventBoxHeight + row * mHeaderRowMarginBottom;
-        } else if (startMillis >= weekFirstDayMillis && endMillis > weekLastDayMillis)
-        {
-            // 이번 주 부터 시작되어 이번 주 이후에 종료
-
-            for (int i = coordinateInfos.length - 1; i >= 0; i--)
-            {
-                if (schedule.getStartDate() >= coordinateInfos[i].getDate().getTimeInMillis())
-                {
-                    left = WEEK_HEADER_WIDTH_PER_DAY * i;
-                    startIndex = i;
-                    break;
-                }
-            }
-            right = getWidth();
-            endIndex = 6;
-
-            int row = 0;
-
-            RowLoop:
-            for (; row < EVENT_ROW_MAX; row++)
-            {
-                for (int col = startIndex; col <= endIndex; col++)
-                {
-                    if (eventMatrix[row][col])
-                    {
-                        break;
-                    } else if (col == endIndex)
-                    {
-                        if (!eventMatrix[row][col])
-                        {
-                            break RowLoop;
-                        }
-                    }
-                }
-            }
-
-            for (int col = startIndex; col <= endIndex; col++)
-            {
-                eventMatrix[row][col] = true;
-                // eventMatrix의 해당 부분이 false일 경우 draw
-            }
-            top = (int) eventsStartCoordinate.y + row * mHeaderRowMarginBottom;
-            bottom = top + weekHeaderEventBoxHeight + row * mHeaderRowMarginBottom;
-        }
-        Map<String, Integer> map = new HashMap<>();
-        map.put("top", top);
-        map.put("bottom", bottom);
-        map.put("right", right);
-        map.put("left", left);
-
-        return map;
-    }
-
-    public void clearScheduleVars()
-    {
-        scheduleList = null;
-        isFirstDraw = true;
-        haveEvents = false;
-    }
-
-    public int getEventRowNum()
-    {
-        return eventRowNum;
-    }
-
-    public long getWeekFirstDayMillis()
-    {
-        return weekFirstDayMillis;
-    }
-
-    public long getWeekLastDayMillis()
-    {
-        return weekLastDayMillis;
+        return weekLastDate;
     }
 }

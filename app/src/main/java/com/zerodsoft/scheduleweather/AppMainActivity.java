@@ -21,6 +21,8 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import java.util.Date;
+
 public class AppMainActivity extends AppCompatActivity
 {
     private MonthFragment monthFragment;
@@ -79,10 +81,9 @@ public class AppMainActivity extends AppCompatActivity
             {
                 Bundle bundle = data.getExtras();
 
-                long startDate = bundle.getLong("startDate");
+                Date startDate = (Date) bundle.getSerializable("startDate");
                 int scheduleId = bundle.getInt("scheduleId");
 
-                Toast.makeText(AppMainActivity.this, startDate + ", " + scheduleId, Toast.LENGTH_SHORT).show();
             }
         }
     }

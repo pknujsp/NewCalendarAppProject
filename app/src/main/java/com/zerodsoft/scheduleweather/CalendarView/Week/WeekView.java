@@ -701,8 +701,8 @@ public class WeekView extends View
         Calendar startTime = Calendar.getInstance();
         Calendar endTime = Calendar.getInstance();
 
-        startTime.setTimeInMillis((long) schedule.getStartDate());
-        endTime.setTimeInMillis((long) schedule.getEndDate());
+        startTime.setTimeInMillis(schedule.getStartDate().getTime());
+        endTime.setTimeInMillis(schedule.getEndDate().getTime());
 
         if (isSameDay(startTime, endTime))
         {
@@ -721,16 +721,16 @@ public class WeekView extends View
             for (EventDrawingInfo eventDrawingInfo : eventDrawingInfoList.get(dayOfWeek))
             {
                 // 추가할 이벤트의 진행 시각이 다른 이벤트의 진행 시각을 모두 포함 하는 경우
-                if (startTime.getTimeInMillis() <= eventDrawingInfo.getSchedule().getStartDate()
-                        && endTime.getTimeInMillis() >= eventDrawingInfo.getSchedule().getEndDate())
+                if (startTime.getTimeInMillis() <= eventDrawingInfo.getSchedule().getStartDate().getTime()
+                        && endTime.getTimeInMillis() >= eventDrawingInfo.getSchedule().getEndDate().getTime())
                 {
                     startPoint.x = startPoint.x + 3f;
                 }
                 // 추가할 이벤트의 시작시각 또는 종료시각이 다른 이벤트의 진행 시각 사이에 있는 경우
-                else if ((startTime.getTimeInMillis() >= eventDrawingInfo.getSchedule().getStartDate()
-                        && startTime.getTimeInMillis() < eventDrawingInfo.getSchedule().getEndDate())
-                        || (endTime.getTimeInMillis() > eventDrawingInfo.getSchedule().getStartDate()
-                        && endTime.getTimeInMillis() <= eventDrawingInfo.getSchedule().getEndDate()))
+                else if ((startTime.getTimeInMillis() >= eventDrawingInfo.getSchedule().getStartDate().getTime()
+                        && startTime.getTimeInMillis() < eventDrawingInfo.getSchedule().getEndDate().getTime())
+                        || (endTime.getTimeInMillis() > eventDrawingInfo.getSchedule().getStartDate().getTime()
+                        && endTime.getTimeInMillis() <= eventDrawingInfo.getSchedule().getEndDate().getTime()))
                 {
                     startPoint.x = startPoint.x + 3f;
                 }

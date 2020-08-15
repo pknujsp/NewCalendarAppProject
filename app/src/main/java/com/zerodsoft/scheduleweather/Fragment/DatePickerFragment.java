@@ -212,7 +212,7 @@ public class DatePickerFragment extends DialogFragment implements NumberPicker.O
                         break;
                 }
 
-                ((AddScheduleActivity) getActivity()).clickedOkButton(calendar.getTimeInMillis(), datePickerCategory);
+                ((AddScheduleActivity) getActivity()).clickedOkButton(calendar.getTime(), datePickerCategory);
                 dismiss();
             }
         });

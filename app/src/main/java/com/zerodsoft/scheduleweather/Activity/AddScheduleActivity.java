@@ -41,6 +41,7 @@ import com.zerodsoft.scheduleweather.Utility.Clock;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 public class AddScheduleActivity extends AppCompatActivity implements NotificationFragment.OnNotificationTimeListener
@@ -68,9 +69,9 @@ public class AddScheduleActivity extends AppCompatActivity implements Notificati
 
     private DatePickerFragment datePickerFragment;
 
-    private Calendar allDay = Calendar.getInstance();
-    private Calendar startDate = Calendar.getInstance();
-    private Calendar endDate = Calendar.getInstance();
+    private Date allDay = new Date();
+    private Date startDate = new Date();
+    private Date endDate = new Date();
 
     private SelectedNotificationTime selectedNotificationTime;
 
@@ -91,23 +92,23 @@ public class AddScheduleActivity extends AppCompatActivity implements Notificati
     };
 
 
-    public void clickedOkButton(long timeMilliSec, DATE_PICKER_CATEGORY datePickerCategory)
+    public void clickedOkButton(Date date, DATE_PICKER_CATEGORY datePickerCategory)
     {
         switch (datePickerCategory)
         {
             case START:
-                startDate.setTimeInMillis(timeMilliSec);
-                startDateValueTextView.setText(Clock.dateFormat2.format(startDate.getTime()));
+                startDate = date;
+                startDateValueTextView.setText(Clock.dateFormat2.format(startDate));
                 break;
 
             case END:
-                endDate.setTimeInMillis(timeMilliSec);
-                endDateValueTextView.setText(Clock.dateFormat2.format(endDate.getTime()));
+                endDate = date;
+                endDateValueTextView.setText(Clock.dateFormat2.format(endDate));
                 break;
 
             case ALL_DAY:
-                allDay.setTimeInMillis(timeMilliSec);
-                allDayValueTextView.setText(Clock.dateFormat3.format(allDay.getTime()));
+                allDay = date;
+                allDayValueTextView.setText(Clock.dateFormat3.format(allDay));
                 break;
         }
     }
@@ -197,23 +198,22 @@ public class AddScheduleActivity extends AppCompatActivity implements Notificati
 
                 if (isAllDay)
                 {
-                    scheduleDTO.setStartDate((float) allDay.getTimeInMillis());
-                    scheduleDTO.setEndDate((float) allDay.getTimeInMillis());
+                    scheduleDTO.setStartDate(allDay);
+                    scheduleDTO.setEndDate(allDay);
                 } else
                 {
-                    scheduleDTO.setStartDate((float) startDate.getTimeInMillis());
-                    scheduleDTO.setEndDate((float) endDate.getTimeInMillis());
+                    scheduleDTO.setStartDate(startDate);
+                    scheduleDTO.setEndDate(endDate);
                 }
 
-                Calendar calendar = Calendar.getInstance();
-                long notificationTime = 0L;
                 if (selectedNotificationTime != null)
                 {
-                    notificationTime = selectedNotificationTime.getTimeInMillis(calendar);
+                    scheduleDTO.setNotiTime(selectedNotificationTime.getTime());
                 }
-                scheduleDTO.setNotiTime((float) notificationTime);
-                scheduleDTO.setInsertedDate((float) calendar.getTimeInMillis());
-                scheduleDTO.setUpdatedDate((float) calendar.getTimeInMillis());
+                Calendar calendar = Calendar.getInstance();
+
+                scheduleDTO.setInsertedDate(calendar.getTime());
+                scheduleDTO.setUpdatedDate(calendar.getTime());
 
                 DBThread dbThread = new DBThread();
                 dbThread.schedule = scheduleDTO;
@@ -264,9 +264,9 @@ public class AddScheduleActivity extends AppCompatActivity implements Notificati
                 endDateValueTextView.setText("종료");
                 allDayValueTextView.setText("시작/종료");
 
-                startDate.clear();
-                endDate.clear();
-                allDay.clear();
+                startDate = new Date();
+                endDate = new Date();
+                allDay = new Date();
 
                 datePickerFragment = DatePickerFragment.getInstance();
                 datePickerFragment.clearAllDate();
@@ -391,6 +391,7 @@ public class AddScheduleActivity extends AppCompatActivity implements Notificati
             ScheduleDAO scheduleDAO = appDb.scheduleDAO();
             LocationDAO locationDAO = null;
 
+
             long scheduleId = scheduleDAO.insertNewSchedule(schedule);
 
             if (placeDTO != null)
@@ -412,7 +413,7 @@ public class AddScheduleActivity extends AppCompatActivity implements Notificati
 
             Message msg = handler.obtainMessage();
             Bundle bundle = new Bundle();
-            bundle.putLong("startDate", (long) schedule.getStartDate());
+            bundle.putSerializable("startDate", schedule.getStartDate());
             bundle.putInt("scheduleId", (int) scheduleId);
 
             msg.setData(bundle);
