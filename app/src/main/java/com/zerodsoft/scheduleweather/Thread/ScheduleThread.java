@@ -52,7 +52,7 @@ public class ScheduleThread extends Thread
                 break;
             case WEEK:
                 //  bundle.putParcelableArrayList("schedules", (ArrayList<? extends Parcelable>) selectWeekSchedules());
-                msg.obj = selectWeekSchedules();
+              //  msg.obj = selectWeekSchedules();
                 break;
             case MONTH:
                 //  bundle.putParcelableArrayList("schedules", (ArrayList<? extends Parcelable>) selectMonthSchedules());
@@ -68,15 +68,15 @@ public class ScheduleThread extends Thread
         return null;
     }
 
-
+/*
     private LiveData<List<ScheduleDTO>> selectWeekSchedules()
     {
         AppDb appDb = AppDb.getInstance(activity);
         ScheduleDAO scheduleDAO = appDb.scheduleDAO();
 
-        return scheduleDAO.selectSchedules(accountType.ordinal(), startDate, endDate);
+        return scheduleDAO.selectSchedules(accountType.ordinal(), TypeConverter.dateToTime(startDate), TypeConverter.dateToTime(endDate));
     }
-
+*/
 
     private List<ScheduleDTO> selectMonthSchedules()
     {

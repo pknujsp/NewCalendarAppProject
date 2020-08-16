@@ -28,8 +28,8 @@ public interface ScheduleDAO
     @Query("SELECT * FROM TB_SCHEDULE")
     LiveData<List<ScheduleDTO>> selectAllSchedules();
 
-    @Query("SELECT * FROM TB_SCHEDULE WHERE category = :category AND (date(start_date) BETWEEN date(:weekFirstDate) AND date(:weekLastDate)) OR (date(end_date) BETWEEN date(:weekFirstDate) AND date(:weekLastDate))")
-    LiveData<List<ScheduleDTO>> selectSchedules(int category, Date weekFirstDate, Date weekLastDate);
+    @Query("SELECT * FROM TB_SCHEDULE WHERE category = :category AND ((start_date BETWEEN :weekFirstDate AND :weekLastDate) OR (end_date BETWEEN :weekFirstDate AND :weekLastDate))")
+    List<ScheduleDTO> selectSchedules(int category, String weekFirstDate, String weekLastDate);
 
     @Update(onConflict = OnConflictStrategy.IGNORE)
     void updateSchedule(ScheduleDTO scheduleDTO);

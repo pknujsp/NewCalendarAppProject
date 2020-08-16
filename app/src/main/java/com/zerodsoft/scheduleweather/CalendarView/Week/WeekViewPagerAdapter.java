@@ -2,7 +2,6 @@ package com.zerodsoft.scheduleweather.CalendarView.Week;
 
 import android.app.Activity;
 import android.content.Context;
-import android.util.Log;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,10 +9,10 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.CalendarFragment.WeekFragment;
@@ -23,7 +22,10 @@ import com.zerodsoft.scheduleweather.CalendarView.EventDrawingInfo;
 import com.zerodsoft.scheduleweather.CalendarView.HoursView;
 import com.zerodsoft.scheduleweather.CalendarView.ViewModel.WeekViewModel;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.Room.AppDb;
 import com.zerodsoft.scheduleweather.Room.DTO.ScheduleDTO;
+import com.zerodsoft.scheduleweather.Room.DTO.TypeConverter;
+import com.zerodsoft.scheduleweather.Utility.AppSettings;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -74,7 +76,7 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
         public List<ScheduleDTO> schedules;
 
         public boolean[][] eventMatrix;
-        public int rowNum;
+        public int rowCount;
         public List<EventDrawingInfo> eventDrawingInfoList;
         public CoordinateInfo[] coordinateInfos;
 
@@ -121,44 +123,27 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
 
         public void setEvents()
         {
-            weekFirstDate = weekHeaderView.getWeekFirstDate();
-            weekLastDate = weekHeaderView.getWeekLastDate();
-
-            schedules = weekViewModel.selectSchedules(AccountType.LOCAL, weekFirstDate, weekLastDate).getValue();
-
-            coordinateInfos = weekHeaderView.getArray();
-            eventMatrix = new boolean[EVENT_ROW_MAX][7];
-            eventDrawingInfoList = new ArrayList<>();
-
-            if (schedules == null)
-            {
-                return;
-            } else
-            {
-                setEventDrawingInfo();
-                drawEvents();
-            }
-                        /*
             new Thread(new Runnable()
             {
                 @Override
                 public void run()
                 {
-                    weekFirstDayMillis = weekHeaderView.getWeekFirstDayMillis();
-                    weekLastDayMillis = weekHeaderView.getWeekLastDayMillis();
+                    weekFirstDate = weekHeaderView.getWeekFirstDate();
+                    weekLastDate = weekHeaderView.getWeekLastDate();
 
-                    schedules = weekViewModel.selectSchedules(AccountType.LOCAL, weekFirstDayMillis, weekLastDayMillis).getValue();
+                    schedules = AppDb.getInstance(activity).scheduleDAO().selectSchedules(AccountType.LOCAL.ordinal(), TypeConverter.dateToTime(weekFirstDate), TypeConverter.dateToTime(weekLastDate));
 
                     activity.runOnUiThread(new Runnable()
                     {
                         @Override
                         public void run()
                         {
+
                             coordinateInfos = weekHeaderView.getArray();
                             eventMatrix = new boolean[EVENT_ROW_MAX][7];
                             eventDrawingInfoList = new ArrayList<>();
 
-                            if (schedules == null)
+                            if (schedules.isEmpty())
                             {
                                 return;
                             } else
@@ -169,7 +154,7 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
                         }
                     });
                 }
-            }).start();                         */
+            }).start();
         }
 
         public int getViewPosition()
@@ -210,7 +195,6 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
             int startCol = 0;
             int endCol = 0;
             int row = 0;
-
 
             if (endDate.before(weekFirstDate) || startDate.after(weekLastDate))
             {
@@ -363,9 +347,9 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
             map.put("endCol", endCol);
             map.put("row", row);
 
-            if (row + 1 > rowNum)
+            if (row + 1 > rowCount)
             {
-                rowNum = row + 1;
+                rowCount = row + 1;
             }
 
             return map;
@@ -373,31 +357,58 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
 
         private void drawEvents()
         {
-            WeekHeaderEventRow[] tableRows = new WeekHeaderEventRow[rowNum + 1];
+            tableLayout.setVisibility(View.VISIBLE);
+
+            TableRow[] tableRows = new TableRow[rowCount];
+            TextView[][] tableElements = new TextView[rowCount][7];
             LayoutInflater layoutInflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-            for (int i = 0; i <= rowNum; ++i)
+            for (int i = 0; i < rowCount; ++i)
             {
-                tableRows[i] = (WeekHeaderEventRow) layoutInflater.inflate(R.layout.week_header_event_row, null, false);
-                tableRows[i].initCols();
-                tableLayout.addView(tableRows[i], i);
+                tableRows[i] = (TableRow) layoutInflater.inflate(R.layout.week_header_event_row, tableLayout, false);
+
+                tableElements[i][0] = (TextView) tableRows[i].findViewById(R.id.week_header_event_0);
+                tableElements[i][1] = (TextView) tableRows[i].findViewById(R.id.week_header_event_1);
+                tableElements[i][2] = (TextView) tableRows[i].findViewById(R.id.week_header_event_2);
+                tableElements[i][3] = (TextView) tableRows[i].findViewById(R.id.week_header_event_3);
+                tableElements[i][4] = (TextView) tableRows[i].findViewById(R.id.week_header_event_4);
+                tableElements[i][5] = (TextView) tableRows[i].findViewById(R.id.week_header_event_5);
+                tableElements[i][6] = (TextView) tableRows[i].findViewById(R.id.week_header_event_6);
             }
 
             for (EventDrawingInfo eventDrawingInfo : eventDrawingInfoList)
             {
-                tableRows[eventDrawingInfo.getRow()].setCol(eventDrawingInfo.getStartCol(), eventDrawingInfo.getEndCol(), eventDrawingInfo);
-                tableRows[eventDrawingInfo.getRow()].invalidate();
+                int row = eventDrawingInfo.getRow();
+                int startCol = eventDrawingInfo.getStartCol();
+                int endCol = eventDrawingInfo.getEndCol();
+
+                for (int i = startCol; i <= endCol; i++)
+                {
+                    tableElements[row][i].setText(eventDrawingInfo.getSchedule().getSubject());
+
+                    if (eventDrawingInfo.getAccountType() == AccountType.GOOGLE)
+                    {
+                        tableElements[row][i].setBackgroundColor(AppSettings.getGoogleEventBackgroundColor());
+                        tableElements[row][i].setTextColor(AppSettings.getGoogleEventTextColor());
+                    } else
+                    {
+                        tableElements[row][i].setBackgroundColor(AppSettings.getLocalEventBackgroundColor());
+                        tableElements[row][i].setTextColor(AppSettings.getLocalEventTextColor());
+                    }
+                }
             }
+
+            for (int i = 0; i < rowCount; ++i)
+            {
+                tableLayout.addView(tableRows[i], new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+            }
+            tableLayout.requestLayout();
+            eventLayout.requestLayout();
+            headerLayout.requestLayout();
+
             tableLayout.invalidate();
             eventLayout.invalidate();
             headerLayout.invalidate();
-        }
-
-        public void setHeaderLayoutHeight()
-        {
-            Log.e(TAG, "table:" + tableLayout.getHeight());
-            Log.e(TAG, "header:" + headerLayout.getHeight());
-            onHeightChanged(headerLayout.getHeight() + tableLayout.getHeight());
         }
     }
 
@@ -405,12 +416,6 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
     {
         this.activity = activity;
         this.weekFragment = fragment;
-
-        weekViewModel = new ViewModelProvider(weekFragment).get(WeekViewModel.class);
-        weekViewModel.getSchedules().observe(weekFragment.getViewLifecycleOwner(), scheduleDTOS ->
-        {
-            Log.e(TAG, "observe");
-        });
     }
 
     @NonNull
@@ -450,4 +455,5 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
     {
         pagerHolderSparseArr.get(position).setEvents();
     }
+
 }

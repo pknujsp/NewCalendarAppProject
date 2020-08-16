@@ -17,6 +17,7 @@ import com.zerodsoft.scheduleweather.Room.DAO.ScheduleDAO;
 import com.zerodsoft.scheduleweather.Room.DTO.ScheduleDTO;
 import com.zerodsoft.scheduleweather.Room.DTO.TypeConverter;
 
+import java.lang.reflect.Type;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -25,7 +26,6 @@ import java.util.concurrent.Executors;
 public class WeekViewModel extends AndroidViewModel
 {
     private ScheduleDAO scheduleDAO;
-    private ExecutorService executorService;
     private Context context;
 
     private MediatorLiveData<List<ScheduleDTO>> schedules = new MediatorLiveData<>();
@@ -35,13 +35,15 @@ public class WeekViewModel extends AndroidViewModel
     {
         super(application);
         context = application.getApplicationContext();
-        scheduleDAO = AppDb.getInstance(application.getApplicationContext()).scheduleDAO();
-        executorService = Executors.newSingleThreadExecutor();
+        scheduleDAO = AppDb.getInstance(application).scheduleDAO();
     }
 
+    /*
     public LiveData<List<ScheduleDTO>> selectSchedules(AccountType accountType, Date startDate, Date endDate)
     {
-        LiveData<List<ScheduleDTO>> resultList = scheduleDAO.selectSchedules(accountType.ordinal(), startDate, endDate);
+
+        final LiveData<List<ScheduleDTO>> resultList = scheduleDAO.selectSchedules(accountType.ordinal(), TypeConverter.dateToTime(startDate), TypeConverter.dateToTime(endDate));
+
         schedules.addSource(resultList, new Observer<List<ScheduleDTO>>()
         {
             @Override
@@ -58,7 +60,11 @@ public class WeekViewModel extends AndroidViewModel
             }
         });
         return schedules;
+
+
     }
+
+     */
 
     public LiveData<List<ScheduleDTO>> getSchedules()
     {

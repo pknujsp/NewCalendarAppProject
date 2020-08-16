@@ -17,7 +17,6 @@ import com.zerodsoft.scheduleweather.Room.DTO.ScheduleDTO;
 import com.zerodsoft.scheduleweather.Room.DTO.TypeConverter;
 
 @Database(entities = {FavoriteLocDTO.class, PlaceDTO.class, AddressDTO.class, ScheduleDTO.class}, version = 1, exportSchema = false)
-@TypeConverters({TypeConverter.class})
 public abstract class AppDb extends RoomDatabase
 {
     private static AppDb instance = null;

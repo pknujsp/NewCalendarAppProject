@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.zerodsoft.scheduleweather.CalendarView.Week.WeekHeaderEventRow xmlns:android="http://schemas.android.com/apk/res/android"
+<TableRow xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/week_header_event_row"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -40,4 +40,4 @@
         android:id="@+id/week_header_event_6"
         android:background="@android:color/white"
         android:textSize="12sp" />
-</com.zerodsoft.scheduleweather.CalendarView.Week.WeekHeaderEventRow>
+</TableRow>

@@ -30,12 +30,15 @@ public class ScheduleDTO implements Parcelable
     private String content;
 
     @ColumnInfo(name = "start_date")
+    @TypeConverters({TypeConverter.class})
     private Date startDate;
 
     @ColumnInfo(name = "end_date")
+    @TypeConverters({TypeConverter.class})
     private Date endDate;
 
     @ColumnInfo(name = "noti_time")
+    @TypeConverters({TypeConverter.class})
     private Date notiTime;
 
     @ColumnInfo(name = "place_id_to_be_visited")
@@ -45,9 +48,11 @@ public class ScheduleDTO implements Parcelable
     private int addressId;
 
     @ColumnInfo(name = "inserted_date")
+    @TypeConverters({TypeConverter.class})
     private Date insertedDate;
 
     @ColumnInfo(name = "updated_date")
+    @TypeConverters({TypeConverter.class})
     private Date updatedDate;
 
     @Ignore

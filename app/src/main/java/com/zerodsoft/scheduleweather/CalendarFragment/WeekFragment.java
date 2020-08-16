@@ -94,15 +94,6 @@ public class WeekFragment extends Fragment
         @Override
         public void onPageScrollStateChanged(int state)
         {
-            if (state == ViewPager.SCROLL_STATE_IDLE)
-            {
-            } else if (state == ViewPager.SCROLL_STATE_DRAGGING)
-            {
-                //   Log.e(TAG, "SCROLL_STATE_DRAGGING");
-                //  weekViewPagerAdapter.refreshChildView(this.position);
-            } else if (state == ViewPager.SCROLL_STATE_SETTLING)
-            {
-            }
             super.onPageScrollStateChanged(state);
         }
 

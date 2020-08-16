@@ -251,6 +251,9 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
         weekLastDay.add(Calendar.DATE, 7);
         weekLastDay.add(Calendar.SECOND, -1);
 
+        weekFirstDate = weekFirstDay.getTime();
+        weekLastDate = weekLastDay.getTime();
+
         // 날짜를 그림
         for (int i = 0; i <= 7; i++)
         {
@@ -260,8 +263,7 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
         }
         weekFirstDay.add(Calendar.DATE, -8);
 
-        weekFirstDate = weekFirstDay.getTime();
-        weekLastDate = weekLastDay.getTime();
+
     }
 
     @Override

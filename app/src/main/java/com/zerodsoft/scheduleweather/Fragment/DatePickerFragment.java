@@ -2,6 +2,7 @@ package com.zerodsoft.scheduleweather.Fragment;
 
 import android.content.Context;
 import android.graphics.Point;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -16,12 +17,14 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.fragment.app.DialogFragment;
 
 import com.zerodsoft.scheduleweather.Activity.AddScheduleActivity;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.Utility.Clock;
 
+import java.time.LocalDateTime;
 import java.util.Calendar;
 
 public class DatePickerFragment extends DialogFragment implements NumberPicker.OnValueChangeListener
@@ -52,18 +55,6 @@ public class DatePickerFragment extends DialogFragment implements NumberPicker.O
 
     private final String[] days = new String[]{" 일", " 월", " 화", " 수", " 목", " 금", " 토"};
 
-
-    public DatePickerFragment setStartDate(long timeMillisec)
-    {
-        this.startDate.setTimeInMillis(timeMillisec);
-        return this;
-    }
-
-    public DatePickerFragment setEndDate(long timeMillisec)
-    {
-        this.endDate.setTimeInMillis(timeMillisec);
-        return this;
-    }
 
     public void setDatePickerCategory(AddScheduleActivity.DATE_PICKER_CATEGORY datePickerCategory)
     {
@@ -204,11 +195,11 @@ public class DatePickerFragment extends DialogFragment implements NumberPicker.O
                 {
                     case START:
                         isSettedStartDate = true;
-                        startDate.setTimeInMillis(calendar.getTimeInMillis());
+                        startDate.setTime(calendar.getTime());
                         break;
                     case END:
                         isSettedEndDate = true;
-                        endDate.setTimeInMillis(calendar.getTimeInMillis());
+                        endDate.setTime(calendar.getTime());
                         break;
                 }
 
