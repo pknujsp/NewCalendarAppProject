@@ -46,7 +46,8 @@
             <LinearLayout
                 android:id="@+id/week_event_layout"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
 
                 <com.zerodsoft.scheduleweather.CalendarView.Week.WeekHeaderView
                     android:id="@+id/week_header_view"
@@ -68,11 +69,13 @@
                     custom:headerRowMarginTop="@dimen/week_header_view_day_row_margin"
                     custom:headerTodayTextColor="@android:color/holo_blue_dark" />
 
-                <TableLayout
-                    android:id="@+id/week_header_event_table"
+                <androidx.gridlayout.widget.GridLayout
+                    android:id="@+id/week_header_event_layout"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:stretchColumns="*" />
+                    custom:columnCount="7"
+                    custom:orientation="vertical"
+                    custom:rowCount="0" />
             </LinearLayout>
         </LinearLayout>
 

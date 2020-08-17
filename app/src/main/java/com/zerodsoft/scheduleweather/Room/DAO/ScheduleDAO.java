@@ -6,9 +6,11 @@ import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
+import androidx.room.TypeConverters;
 import androidx.room.Update;
 
 import com.zerodsoft.scheduleweather.Room.DTO.ScheduleDTO;
+import com.zerodsoft.scheduleweather.Room.DTO.TypeConverter;
 
 import java.util.Date;
 import java.util.List;
@@ -28,8 +30,9 @@ public interface ScheduleDAO
     @Query("SELECT * FROM TB_SCHEDULE")
     LiveData<List<ScheduleDTO>> selectAllSchedules();
 
-    @Query("SELECT * FROM TB_SCHEDULE WHERE category = :category AND ((start_date BETWEEN :weekFirstDate AND :weekLastDate) OR (end_date BETWEEN :weekFirstDate AND :weekLastDate))")
-    List<ScheduleDTO> selectSchedules(int category, String weekFirstDate, String weekLastDate);
+    @TypeConverters({TypeConverter.class})
+    @Query("SELECT * FROM TB_SCHEDULE WHERE category = :category AND ((Datetime(start_date) BETWEEN Datetime(:weekFirstDate) AND Datetime(:weekLastDate)) OR (Datetime(end_date) BETWEEN Datetime(:weekFirstDate) AND Datetime(:weekLastDate)))")
+    List<ScheduleDTO> selectSchedules(int category, Date weekFirstDate, Date weekLastDate);
 
     @Update(onConflict = OnConflictStrategy.IGNORE)
     void updateSchedule(ScheduleDTO scheduleDTO);

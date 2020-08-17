@@ -22,6 +22,7 @@ import com.zerodsoft.scheduleweather.CalendarView.EventDrawingInfo;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.Room.DTO.ScheduleDTO;
 import com.zerodsoft.scheduleweather.Utility.AppSettings;
+import com.zerodsoft.scheduleweather.Utility.Clock;
 import com.zerodsoft.scheduleweather.Utility.DateHour;
 
 import java.util.ArrayList;
@@ -37,7 +38,7 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
     public final static String TAG = "WeekHeaderView";
     private Context mContext;
     public static final Calendar today = Calendar.getInstance();
-    private static final int WEEK_HEADER_WIDTH_PER_DAY = (WeekFragment.DISPLAY_WIDTH - WeekFragment.SPACING_BETWEEN_DAY) / 7;
+    public static final int WEEK_HEADER_WIDTH_PER_DAY = (WeekFragment.DISPLAY_WIDTH - WeekFragment.SPACING_BETWEEN_DAY) / 7;
 
     private Calendar weekFirstDay;
     private Calendar weekLastDay;
@@ -251,8 +252,8 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
         weekLastDay.add(Calendar.DATE, 7);
         weekLastDay.add(Calendar.SECOND, -1);
 
-        weekFirstDate = weekFirstDay.getTime();
-        weekLastDate = weekLastDay.getTime();
+        weekFirstDate = new Date(weekFirstDay.getTimeInMillis());
+        weekLastDate = new Date(weekLastDay.getTimeInMillis());
 
         // 날짜를 그림
         for (int i = 0; i <= 7; i++)

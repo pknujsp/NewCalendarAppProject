@@ -67,9 +67,8 @@ public class WeekFragment extends Fragment
 
         weekViewPager = (ViewPager2) view.findViewById(R.id.week_viewpager);
         weekViewPagerAdapter = new WeekViewPagerAdapter(getActivity(), this);
-
         weekViewPager.setAdapter(weekViewPagerAdapter);
-        weekViewPager.setCurrentItem(WeekViewPagerAdapter.FIRST_VIEW_NUMBER);
+        weekViewPager.setCurrentItem(WeekViewPagerAdapter.FIRST_VIEW_NUMBER, false);
         weekViewPager.registerOnPageChangeCallback(onPageChangeCallback);
 
         super.onViewCreated(view, savedInstanceState);
@@ -84,7 +83,6 @@ public class WeekFragment extends Fragment
     class OnPageChangeCallback extends ViewPager2.OnPageChangeCallback
     {
         private int currentPosition = WeekViewPagerAdapter.FIRST_VIEW_NUMBER;
-
 
         public int getCurrentPosition()
         {
