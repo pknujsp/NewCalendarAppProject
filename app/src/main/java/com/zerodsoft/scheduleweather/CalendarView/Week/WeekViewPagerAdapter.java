@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.graphics.Color;
 import android.util.Log;
 import android.util.SparseArray;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -104,6 +105,7 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
             //  this.weekHeaderView.setViewHeightChangeListener(WeekViewPagerHolder.this);
             datesLayout.setLayoutParams(new LinearLayout.LayoutParams(WeekFragment.SPACING_BETWEEN_DAY, ViewGroup.LayoutParams.WRAP_CONTENT));
             eventGrid.setVisibility(View.GONE);
+            eventGrid.setLayoutParams(new LinearLayout.LayoutParams(weekHeaderView.WEEK_HEADER_WIDTH_PER_DAY * 7, ViewGroup.LayoutParams.WRAP_CONTENT));
         }
 
         public void onBindView(int position)
@@ -178,15 +180,12 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
             for (ScheduleDTO schedule : schedules)
             {
                 Map<String, Integer> map = calcEventPosition(schedule);
-                if (map != null)
+                if (schedule.getCategory() == ScheduleDTO.GOOGLE_CATEGORY)
                 {
-                    if (schedule.getCategory() == ScheduleDTO.GOOGLE_CATEGORY)
-                    {
-                        eventDrawingInfoList.add(new EventDrawingInfo(map.get("startCol"), map.get("endCol"), map.get("row"), schedule, AccountType.GOOGLE));
-                    } else
-                    {
-                        eventDrawingInfoList.add(new EventDrawingInfo(map.get("startCol"), map.get("endCol"), map.get("row"), schedule, AccountType.LOCAL));
-                    }
+                    eventDrawingInfoList.add(new EventDrawingInfo(map.get("startCol"), map.get("endCol"), map.get("row"), schedule, AccountType.GOOGLE));
+                } else
+                {
+                    eventDrawingInfoList.add(new EventDrawingInfo(map.get("startCol"), map.get("endCol"), map.get("row"), schedule, AccountType.LOCAL));
                 }
             }
         }
@@ -199,10 +198,7 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
             int endCol = 0;
             int row = 0;
 
-            if (endDate.before(weekFirstDate) || startDate.after(weekLastDate))
-            {
-                return null;
-            } else if (startDate.compareTo(weekFirstDate) >= 0 && endDate.compareTo(weekLastDate) <= 0)
+            if (startDate.compareTo(weekFirstDate) >= 0 && endDate.compareTo(weekLastDate) <= 0)
             {
                 // 이번주 내에 시작/종료
                 for (int i = 6; i >= 0; --i)
@@ -354,7 +350,6 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
             {
                 rowCount = row + 1;
             }
-
             return map;
         }
 
@@ -362,6 +357,8 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
         {
             eventGrid.setVisibility(View.VISIBLE);
             eventGrid.setRowCount(rowCount);
+            eventGrid.setColumnCount(7);
+            eventGrid.setColumnOrderPreserved(true);
 
             for (EventDrawingInfo eventDrawingInfo : eventDrawingInfoList)
             {
@@ -370,15 +367,16 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
                 int endCol = eventDrawingInfo.getEndCol();
                 int size = endCol - startCol + 1;
 
-                GridLayout.LayoutParams param = new GridLayout.LayoutParams();
+                GridLayout.Spec columnSpec = GridLayout.spec(startCol, size, GridLayout.FILL);
+                GridLayout.Spec rowSpec = GridLayout.spec(row);
+
+                GridLayout.LayoutParams param = new GridLayout.LayoutParams(rowSpec, columnSpec);
                 param.width = weekHeaderView.WEEK_HEADER_WIDTH_PER_DAY * size - 4;
-                param.height = ViewGroup.LayoutParams.WRAP_CONTENT;
-                param.columnSpec = GridLayout.spec(startCol, size);
-                param.rowSpec = GridLayout.spec(row);
                 param.bottomMargin = 2;
                 param.topMargin = 2;
                 param.leftMargin = 2;
                 param.rightMargin = 2;
+                param.setGravity(Gravity.FILL_HORIZONTAL | Gravity.CENTER);
 
                 TextView textView = new TextView(activity);
                 textView.setLayoutParams(param);
@@ -396,9 +394,8 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
                     textView.setBackgroundColor(AppSettings.getLocalEventBackgroundColor());
                     textView.setTextColor(AppSettings.getLocalEventTextColor());
                 }
-                eventGrid.addView(textView);
+                eventGrid.addView(textView, param);
             }
-
             eventGrid.requestLayout();
             eventLayout.requestLayout();
             headerLayout.requestLayout();
