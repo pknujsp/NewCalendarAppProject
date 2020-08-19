@@ -51,7 +51,7 @@
 
                 <com.zerodsoft.scheduleweather.CalendarView.Week.WeekHeaderView
                     android:id="@+id/week_header_view"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     custom:firstDayOfWeek2="sunday"
                     custom:headerAllBackgroundColor="@android:color/white"
@@ -69,13 +69,62 @@
                     custom:headerRowMarginTop="@dimen/week_header_view_day_row_margin"
                     custom:headerTodayTextColor="@android:color/holo_blue_dark" />
 
-                <androidx.gridlayout.widget.GridLayout
+                <TableLayout
                     android:id="@+id/week_header_event_layout"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    custom:columnCount="7"
-                    custom:orientation="vertical"
-                    custom:rowCount="0" />
+                    android:stretchColumns="*">
+
+                    <TableRow
+                        android:layout_width="match_parent"
+                        android:layout_height="15dp"
+                        android:weightSum="7">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:text="col" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:text="col" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:text="col" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:text="col" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:text="col" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:text="col" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:text="col" />
+
+                    </TableRow>
+
+                </TableLayout>
             </LinearLayout>
         </LinearLayout>
 
@@ -93,7 +142,7 @@
 
             <com.zerodsoft.scheduleweather.CalendarView.Week.WeekView
                 android:id="@+id/week_view"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 custom:WeekDayHourTextColor="@android:color/black"
                 custom:WeekDayHourTextSize="@dimen/weekview_textsize"

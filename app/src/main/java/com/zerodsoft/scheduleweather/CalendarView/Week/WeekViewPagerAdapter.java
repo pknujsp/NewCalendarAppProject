@@ -15,7 +15,6 @@ import android.widget.TableRow;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.gridlayout.widget.GridLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.CalendarFragment.WeekFragment;
@@ -27,7 +26,6 @@ import com.zerodsoft.scheduleweather.CalendarView.ViewModel.WeekViewModel;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.Room.AppDb;
 import com.zerodsoft.scheduleweather.Room.DTO.ScheduleDTO;
-import com.zerodsoft.scheduleweather.Room.DTO.TypeConverter;
 import com.zerodsoft.scheduleweather.Utility.AppSettings;
 
 import java.util.ArrayList;
@@ -70,7 +68,7 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
         public LinearLayout datesLayout;
         public LinearLayout eventLayout;
         public LinearLayout contentLayout;
-        public GridLayout eventGrid;
+        public TableLayout eventTable;
 
         public int viewPosition;
         public Calendar calendar;
@@ -100,12 +98,14 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
             this.weekDatesTextView = (TextView) view.findViewById(R.id.week_dates_textview);
             this.weekDatesButton = (ImageButton) view.findViewById(R.id.week_dates_button);
             this.weekView = (WeekView) view.findViewById(R.id.week_view);
-            this.eventGrid = (GridLayout) view.findViewById(R.id.week_header_event_layout);
+            this.eventTable = (TableLayout) view.findViewById(R.id.week_header_event_layout);
 
-            //  this.weekHeaderView.setViewHeightChangeListener(WeekViewPagerHolder.this);
-            datesLayout.setLayoutParams(new LinearLayout.LayoutParams(WeekFragment.SPACING_BETWEEN_DAY, ViewGroup.LayoutParams.WRAP_CONTENT));
-            eventGrid.setVisibility(View.GONE);
-            eventGrid.setLayoutParams(new LinearLayout.LayoutParams(weekHeaderView.WEEK_HEADER_WIDTH_PER_DAY * 7, ViewGroup.LayoutParams.WRAP_CONTENT));
+            hoursView.setLayoutParams(new LinearLayout.LayoutParams(WeekFragment.getSpacingBetweenDay(), ViewGroup.LayoutParams.WRAP_CONTENT));
+            weekView.setLayoutParams(new LinearLayout.LayoutParams(WeekFragment.getDisplayWidth() - WeekFragment.getSpacingBetweenDay(), ViewGroup.LayoutParams.WRAP_CONTENT));
+            datesLayout.setLayoutParams(new LinearLayout.LayoutParams(WeekFragment.getSpacingBetweenDay(), ViewGroup.LayoutParams.WRAP_CONTENT));
+            eventLayout.setLayoutParams(new LinearLayout.LayoutParams(WeekFragment.getDisplayWidth() - WeekFragment.getSpacingBetweenDay(), ViewGroup.LayoutParams.WRAP_CONTENT));
+
+            eventTable.setVisibility(View.GONE);
         }
 
         public void onBindView(int position)
@@ -128,10 +128,13 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
             weekFirstDate = null;
             weekLastDate = null;
 
-            if (eventGrid != null)
+            if (eventTable != null)
             {
-                eventGrid.removeAllViews();
-                eventGrid.setVisibility(View.GONE);
+                if (eventTable.getChildCount() >= 2)
+                {
+                    eventTable.removeViews(1, eventTable.getChildCount() - 1);
+                }
+                eventTable.setVisibility(View.GONE);
             }
         }
 
@@ -355,10 +358,13 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
 
         private void drawEvents()
         {
-            eventGrid.setVisibility(View.VISIBLE);
-            eventGrid.setRowCount(rowCount);
-            eventGrid.setColumnCount(7);
-            eventGrid.setColumnOrderPreserved(true);
+            eventTable.setVisibility(View.VISIBLE);
+            TableRow[] tableRows = new TableRow[rowCount];
+
+            for (int i = 0; i < rowCount; i++)
+            {
+                tableRows[i] = new TableRow(activity);
+            }
 
             for (EventDrawingInfo eventDrawingInfo : eventDrawingInfoList)
             {
@@ -367,19 +373,13 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
                 int endCol = eventDrawingInfo.getEndCol();
                 int size = endCol - startCol + 1;
 
-                GridLayout.Spec columnSpec = GridLayout.spec(startCol, size, GridLayout.FILL);
-                GridLayout.Spec rowSpec = GridLayout.spec(row);
-
-                GridLayout.LayoutParams param = new GridLayout.LayoutParams(rowSpec, columnSpec);
-                param.width = weekHeaderView.WEEK_HEADER_WIDTH_PER_DAY * size - 4;
-                param.bottomMargin = 2;
-                param.topMargin = 2;
-                param.leftMargin = 2;
-                param.rightMargin = 2;
-                param.setGravity(Gravity.FILL_HORIZONTAL | Gravity.CENTER);
+                TableRow.LayoutParams param = new TableRow.LayoutParams();
+                param.width = ViewGroup.LayoutParams.WRAP_CONTENT;
+                param.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+                param.column = startCol;
+                param.span = size;
 
                 TextView textView = new TextView(activity);
-                textView.setLayoutParams(param);
                 textView.setBackgroundColor(Color.WHITE);
                 textView.setTextSize(12);
                 textView.setText(eventDrawingInfo.getSchedule().getSubject());
@@ -394,13 +394,22 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
                     textView.setBackgroundColor(AppSettings.getLocalEventBackgroundColor());
                     textView.setTextColor(AppSettings.getLocalEventTextColor());
                 }
-                eventGrid.addView(textView, param);
+                tableRows[row].addView(textView, param);
             }
-            eventGrid.requestLayout();
+
+            TableLayout.LayoutParams param = new TableLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            param.bottomMargin = 2;
+
+            for (int i = 0; i < rowCount; i++)
+            {
+                eventTable.addView(tableRows[i], param);
+            }
+
+            eventTable.requestLayout();
             eventLayout.requestLayout();
             headerLayout.requestLayout();
 
-            eventGrid.invalidate();
+            eventTable.invalidate();
             eventLayout.invalidate();
             headerLayout.invalidate();
         }
@@ -440,8 +449,7 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
     public void onViewDetachedFromWindow(@NonNull WeekViewPagerHolder holder)
     {
         super.onViewDetachedFromWindow(holder);
-        holder.eventGrid.removeAllViews();
-        holder.eventGrid.setVisibility(View.GONE);
+        holder.clearEvents();
         Log.e(TAG, "onViewDetachedFromWindow : " + holder.viewPosition);
     }
 

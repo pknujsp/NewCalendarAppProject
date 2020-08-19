@@ -37,8 +37,7 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
 {
     public final static String TAG = "WeekHeaderView";
     private Context mContext;
-    public static final Calendar today = Calendar.getInstance();
-    public static final int WEEK_HEADER_WIDTH_PER_DAY = (WeekFragment.DISPLAY_WIDTH - WeekFragment.SPACING_BETWEEN_DAY) / 7;
+    private static final Calendar today = Calendar.getInstance();
 
     private Calendar weekFirstDay;
     private Calendar weekLastDay;
@@ -236,14 +235,14 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
             // 오늘이 월요일(2)인데 첫주가 일요일(1)인 경우에만 수행
             // 위의 경우 difference가 1이다
             // 오늘 날짜의 위치를 파악
-            mCurrentOrigin.x = WEEK_HEADER_WIDTH_PER_DAY * ((weekFirstDay.get(Calendar.DAY_OF_WEEK) - mFirstDayOfWeek) % 7);
+            mCurrentOrigin.x = WeekFragment.getSpacingBetweenDay() * ((weekFirstDay.get(Calendar.DAY_OF_WEEK) - mFirstDayOfWeek) % 7);
         }
         eventsStartCoordinate.set(0f, mHeaderHeightNormal);
 
         // 일요일(맨앞)과 오늘의 일수 차이 계산
-        leftDaysWithGaps = (int) -(Math.ceil((mCurrentOrigin.x) / WEEK_HEADER_WIDTH_PER_DAY));
+        leftDaysWithGaps = (int) -(Math.ceil((mCurrentOrigin.x) / WeekFragment.getSpacingBetweenDay()));
         // 시작 픽셀(일요일 부터 시작)
-        startPixel = mCurrentOrigin.x + WEEK_HEADER_WIDTH_PER_DAY * leftDaysWithGaps;
+        startPixel = mCurrentOrigin.x + WeekFragment.getSpacingBetweenDay() * leftDaysWithGaps;
 
         // 일요일로 이동
         weekFirstDay.add(Calendar.DATE, leftDaysWithGaps);
@@ -258,8 +257,8 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
         // 날짜를 그림
         for (int i = 0; i <= 7; i++)
         {
-            coordinateInfos[i] = new CoordinateInfo().setDate(weekFirstDay).setStartX(WEEK_HEADER_WIDTH_PER_DAY * i)
-                    .setEndX(WEEK_HEADER_WIDTH_PER_DAY * (i + 1));
+            coordinateInfos[i] = new CoordinateInfo().setDate(weekFirstDay).setStartX(WeekFragment.getSpacingBetweenDay() * i)
+                    .setEndX(WeekFragment.getSpacingBetweenDay() * (i + 1));
             weekFirstDay.add(Calendar.DATE, 1);
         }
         weekFirstDay.add(Calendar.DATE, -8);
@@ -284,13 +283,13 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
         // 요일을 그림
         for (int i = 0; i < 7; i++)
         {
-            canvas.drawText(DateHour.getDayString(i), WEEK_HEADER_WIDTH_PER_DAY / 2 + WEEK_HEADER_WIDTH_PER_DAY * i, mHeaderDayHeight + mHeaderRowMarginTop, mHeaderDateNormalPaint);
+            canvas.drawText(DateHour.getDayString(i), WeekFragment.getSpacingBetweenDay() / 2 + WeekFragment.getSpacingBetweenDay() * i, mHeaderDayHeight + mHeaderRowMarginTop, mHeaderDateNormalPaint);
         }
 
         for (int i = 0; i < 7; i++)
         {
             // 날짜 사이의 구분선
-            canvas.drawLine(WEEK_HEADER_WIDTH_PER_DAY * i, getHeight() - spacingLineHeight, WEEK_HEADER_WIDTH_PER_DAY * i, getHeight(), dividingPaint);
+            canvas.drawLine(WeekFragment.getSpacingBetweenDay() * i, getHeight() - spacingLineHeight, WeekFragment.getSpacingBetweenDay() * i, getHeight(), dividingPaint);
         }
 
         // 날짜를 그림
@@ -300,7 +299,7 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
             // 표시할 날짜를 가져옴
             String dateLabel = DateHour.getDate(weekFirstDay);
 
-            float x = startPixel + WEEK_HEADER_WIDTH_PER_DAY / 2 + WEEK_HEADER_WIDTH_PER_DAY * i;
+            float x = startPixel + WeekFragment.getSpacingBetweenDay() / 2 + WeekFragment.getSpacingBetweenDay() * i;
             float y = mHeaderDayHeight + mHeaderRowMarginTop * 2 + mHeaderDateHeight;
 
             if (dateLabel == null)

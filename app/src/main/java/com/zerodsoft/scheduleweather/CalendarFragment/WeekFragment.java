@@ -31,14 +31,30 @@ public class WeekFragment extends Fragment
     private ViewPager2 weekViewPager;
     private WeekViewPagerAdapter weekViewPagerAdapter;
 
-    public static int SPACING_BETWEEN_DAY;
-    public static int DISPLAY_WIDTH;
-    public static int DISPLAY_HEIGHT;
+    private static int SPACING_BETWEEN_DAY = 0;
+    private static int DISPLAY_WIDTH = 0;
+    private static int DISPLAY_HEIGHT = 0;
 
     private OnPageChangeCallback onPageChangeCallback;
 
     public WeekFragment()
     {
+
+    }
+
+    public static int getSpacingBetweenDay()
+    {
+        return SPACING_BETWEEN_DAY;
+    }
+
+    public static int getDisplayHeight()
+    {
+        return DISPLAY_HEIGHT;
+    }
+
+    public static int getDisplayWidth()
+    {
+        return DISPLAY_WIDTH;
     }
 
     @Override
@@ -57,6 +73,7 @@ public class WeekFragment extends Fragment
         SPACING_BETWEEN_DAY = point.x / 8;
         DISPLAY_WIDTH = point.x;
         DISPLAY_HEIGHT = point.y;
+
         return inflater.inflate(R.layout.fragment_week, container, false);
     }
 

@@ -57,7 +57,7 @@ public class HoursView extends View implements WeekView.OnRefreshHoursViewListen
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
     {
-        setMeasuredDimension(WeekFragment.SPACING_BETWEEN_DAY, heightMeasureSpec);
+        setMeasuredDimension(WeekFragment.getSpacingBetweenDay(), heightMeasureSpec);
     }
 
     @Override
