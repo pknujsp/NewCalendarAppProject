@@ -15,22 +15,17 @@ import android.view.View;
 
 import androidx.annotation.Nullable;
 
-import com.zerodsoft.scheduleweather.CalendarView.AccountType;
 import com.zerodsoft.scheduleweather.CalendarView.Dto.CoordinateInfo;
 import com.zerodsoft.scheduleweather.CalendarFragment.WeekFragment;
 import com.zerodsoft.scheduleweather.CalendarView.EventDrawingInfo;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.Room.DTO.ScheduleDTO;
-import com.zerodsoft.scheduleweather.Utility.AppSettings;
-import com.zerodsoft.scheduleweather.Utility.Clock;
 import com.zerodsoft.scheduleweather.Utility.DateHour;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 
 public class WeekHeaderView extends View implements WeekView.CoordinateInfoInterface
@@ -59,8 +54,7 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
     private int mHeaderDateHeight;
     private int mHeaderDayHeight;
 
-    private int mHeaderHeightNormal;
-    private int mHeaderHeightEvents;
+    private int mHeaderHeight;
     private int mFirstDayOfWeek = Calendar.SUNDAY;
     private int mHeaderAllBackgroundColor;
     private int mHeaderDateBackgroundColor;
@@ -188,7 +182,7 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
 
         spacingLineHeight = rect.height();
 
-        mHeaderHeightNormal = mHeaderDayHeight + mHeaderDateHeight + mHeaderRowMarginTop * 3;
+        mHeaderHeight = mHeaderDayHeight + mHeaderDateHeight + mHeaderRowMarginTop * 3;
 
         circlePaint.setColor(Color.GRAY);
         circlePaint.setStrokeWidth(3);
@@ -205,16 +199,21 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
         spacingBetweenEvent = 2;
     }
 
+    public int getmHeaderHeight()
+    {
+        return mHeaderHeight;
+    }
+
+    @Override
+    public void requestLayout()
+    {
+        super.requestLayout();
+    }
+
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
     {
-        if (haveEvents)
-        {
-            setMeasuredDimension(widthMeasureSpec, mHeaderHeightEvents);
-        } else
-        {
-            setMeasuredDimension(widthMeasureSpec, mHeaderHeightNormal);
-        }
+        setMeasuredDimension(widthMeasureSpec, mHeaderHeight);
     }
 
     @Override
@@ -237,7 +236,7 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
             // 오늘 날짜의 위치를 파악
             mCurrentOrigin.x = WeekFragment.getSpacingBetweenDay() * ((weekFirstDay.get(Calendar.DAY_OF_WEEK) - mFirstDayOfWeek) % 7);
         }
-        eventsStartCoordinate.set(0f, mHeaderHeightNormal);
+        eventsStartCoordinate.set(0f, mHeaderHeight);
 
         // 일요일(맨앞)과 오늘의 일수 차이 계산
         leftDaysWithGaps = (int) -(Math.ceil((mCurrentOrigin.x) / WeekFragment.getSpacingBetweenDay()));

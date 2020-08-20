@@ -87,7 +87,6 @@ public class WeekFragment extends Fragment
         weekViewPager.setAdapter(weekViewPagerAdapter);
         weekViewPager.setCurrentItem(WeekViewPagerAdapter.FIRST_VIEW_NUMBER, false);
         weekViewPager.registerOnPageChangeCallback(onPageChangeCallback);
-
         super.onViewCreated(view, savedInstanceState);
     }
 
@@ -128,18 +127,31 @@ public class WeekFragment extends Fragment
             super.onPageSelected(position);
             currentPosition = position;
             // 일정 목록을 가져와서 표시함 header view, week view
-            weekViewPagerAdapter.selectEvents(position);
+            weekViewPager.setUserInputEnabled(false);
+            new Thread(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    try
+                    {
+                        Thread.sleep(400);
+                        weekViewPager.setUserInputEnabled(true);
+                    } catch (InterruptedException e)
+                    {
+                        e.printStackTrace();
+                    }
+
+                }
+            }).start();
         }
-
     }
-
 
     public void goToToday()
     {
         if (onPageChangeCallback.getCurrentPosition() != WeekViewPagerAdapter.FIRST_VIEW_NUMBER)
         {
             weekViewPager.setCurrentItem(WeekViewPagerAdapter.FIRST_VIEW_NUMBER, true);
-            weekViewPagerAdapter.notifyDataSetChanged();
         }
     }
 }

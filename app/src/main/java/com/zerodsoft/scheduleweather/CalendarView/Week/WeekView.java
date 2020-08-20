@@ -143,21 +143,6 @@ public class WeekView extends View
         return this;
     }
 
-    public WeekView(Context context, WeekViewPagerAdapter adapter, HoursView hoursView)
-    {
-        super(context);
-        this.context = context;
-        weekDayHourTextColor = Color.BLACK;
-        weekDayHourTextSize = context.getResources().getDimensionPixelSize(R.dimen.weekview_textsize);
-        weekDayViewBackgroundColor = Color.WHITE;
-        weekDayViewLineThickness = context.getResources().getDimensionPixelSize(R.dimen.line_thickness);
-        weekDayViewLineColor = Color.LTGRAY;
-        newScheduleRectColor = Color.BLUE;
-        newScheduleRectThickness = context.getResources().getDimensionPixelSize(R.dimen.new_schedule_line_thickness);
-        TABLE_LAYOUT_MARGIN = weekDayHourTextSize;
-
-        init();
-    }
 
     public WeekView(Context context, @Nullable AttributeSet attrs)
     {

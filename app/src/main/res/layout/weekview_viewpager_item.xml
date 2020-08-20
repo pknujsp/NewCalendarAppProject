@@ -15,38 +15,25 @@
             android:id="@+id/week_header_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@android:color/white"
             android:orientation="horizontal">
 
-            <LinearLayout
-                android:id="@+id/week_dates_layout"
+            <TextView
+                android:id="@+id/week_dates_textview"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/week_dates_textview"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:background="@android:color/darker_gray"
-                    android:text="23주"
-                    android:textColor="@android:color/white"
-                    android:textSize="12sp" />
-
-                <ImageButton
-                    android:id="@+id/week_dates_button"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:layout_gravity="center_horizontal"
-                    android:background="?attr/selectableItemBackground"
-                    android:scaleType="center"
-                    android:src="@drawable/expand_more_icon" />
-            </LinearLayout>
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="2dp"
+                android:background="@android:color/darker_gray"
+                android:text="23주"
+                android:textAlignment="center"
+                android:textColor="@android:color/white"
+                android:textSize="12sp" />
 
             <LinearLayout
-                android:id="@+id/week_event_layout"
+                android:id="@+id/week_header_calendar_layout"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:orientation="vertical">
 
                 <com.zerodsoft.scheduleweather.CalendarView.Week.WeekHeaderView
@@ -70,57 +57,50 @@
                     custom:headerTodayTextColor="@android:color/holo_blue_dark" />
 
                 <TableLayout
-                    android:id="@+id/week_header_event_layout"
+                    android:id="@+id/week_header_event_list_layout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:stretchColumns="*">
 
                     <TableRow
                         android:layout_width="match_parent"
-                        android:layout_height="15dp"
+                        android:layout_height="wrap_content"
                         android:weightSum="7">
 
                         <TextView
                             android:layout_width="0dp"
-                            android:layout_height="match_parent"
-                            android:layout_weight="1"
-                            android:text="col" />
+                            android:layout_height="2dp"
+                            android:layout_weight="1" />
 
                         <TextView
                             android:layout_width="0dp"
-                            android:layout_height="match_parent"
-                            android:layout_weight="1"
-                            android:text="col" />
+                            android:layout_height="2dp"
+                            android:layout_weight="1" />
 
                         <TextView
                             android:layout_width="0dp"
-                            android:layout_height="match_parent"
-                            android:layout_weight="1"
-                            android:text="col" />
+                            android:layout_height="2dp"
+                            android:layout_weight="1" />
 
                         <TextView
                             android:layout_width="0dp"
-                            android:layout_height="match_parent"
-                            android:layout_weight="1"
-                            android:text="col" />
+                            android:layout_height="2dp"
+                            android:layout_weight="1" />
 
                         <TextView
                             android:layout_width="0dp"
-                            android:layout_height="match_parent"
-                            android:layout_weight="1"
-                            android:text="col" />
+                            android:layout_height="2dp"
+                            android:layout_weight="1" />
 
                         <TextView
                             android:layout_width="0dp"
-                            android:layout_height="match_parent"
-                            android:layout_weight="1"
-                            android:text="col" />
+                            android:layout_height="2dp"
+                            android:layout_weight="1" />
 
                         <TextView
                             android:layout_width="0dp"
-                            android:layout_height="match_parent"
-                            android:layout_weight="1"
-                            android:text="col" />
+                            android:layout_height="2dp"
+                            android:layout_weight="1" />
 
                     </TableRow>
 
@@ -130,7 +110,7 @@
 
 
         <LinearLayout
-            android:id="@+id/week_content_layout"
+            android:id="@+id/week_table_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
