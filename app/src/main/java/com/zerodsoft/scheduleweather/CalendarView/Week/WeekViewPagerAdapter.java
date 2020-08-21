@@ -66,7 +66,7 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
         public LinearLayout headerLayout;
         public LinearLayout tableLayout;
         public LinearLayout headerCalendarLayout;
-        public TableLayout eventListLayout;
+        public RelativeLayout eventListLayout;
 
         public int viewPosition;
         public Calendar calendar;
@@ -94,7 +94,7 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
             this.weekHeaderView = (WeekHeaderView) view.findViewById(R.id.week_header_view);
             this.weekDatesTextView = (TextView) view.findViewById(R.id.week_dates_textview);
             this.weekView = (WeekView) view.findViewById(R.id.week_view);
-            this.eventListLayout = (TableLayout) view.findViewById(R.id.week_header_event_list_layout);
+            this.eventListLayout = (RelativeLayout) view.findViewById(R.id.week_header_event_list_layout);
 
             weekDatesTextView.setLayoutParams(new LinearLayout.LayoutParams(WeekFragment.getSpacingBetweenDay(), ViewGroup.LayoutParams.WRAP_CONTENT));
             hoursView.setLayoutParams(new LinearLayout.LayoutParams(WeekFragment.getSpacingBetweenDay(), ViewGroup.LayoutParams.WRAP_CONTENT));
@@ -118,9 +118,9 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
         {
             if (eventListLayout != null)
             {
-                if (eventListLayout.getChildCount() >= 2)
+                if (eventListLayout.getChildCount() > 0)
                 {
-                    eventListLayout.removeViews(1, eventListLayout.getChildCount() - 1);
+                    eventListLayout.removeAllViews();
                 }
                 eventListLayout.setVisibility(View.GONE);
             }
@@ -346,70 +346,17 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
 
         private void drawEvents()
         {
+            int layoutHeight = 200;
             eventListLayout.setVisibility(View.VISIBLE);
-            TableRow[] tableRows = new TableRow[rowCount];
-
-            for (int i = 0; i < rowCount; i++)
-            {
-                tableRows[i] = new TableRow(activity);
-            }
+            eventListLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, layoutHeight));
+            eventListLayout.requestLayout();
 
             for (EventDrawingInfo eventDrawingInfo : eventDrawingInfoList)
             {
-                int row = eventDrawingInfo.getRow();
-                int startCol = eventDrawingInfo.getStartCol();
-                int endCol = eventDrawingInfo.getEndCol();
-                int size = endCol - startCol + 1;
-
-                TableRow.LayoutParams param = new TableRow.LayoutParams();
-                param.width = ViewGroup.LayoutParams.WRAP_CONTENT;
-                param.height = ViewGroup.LayoutParams.WRAP_CONTENT;
-                param.column = startCol;
-                param.span = size;
-                param.setMarginStart(2);
-                param.setMarginEnd(2);
-
-                TextView textView = new TextView(activity);
-                textView.setBackgroundColor(Color.WHITE);
-                textView.setTextSize(12);
-                textView.setText(eventDrawingInfo.getSchedule().getSubject());
-                textView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-                textView.setOnClickListener(new View.OnClickListener()
-                {
-                    @Override
-                    public void onClick(View view)
-                    {
-                        Toast.makeText(activity, eventDrawingInfo.getSchedule().getSubject(), Toast.LENGTH_SHORT).show();
-                    }
-                });
-
-                if (eventDrawingInfo.getAccountType() == AccountType.GOOGLE)
-                {
-                    textView.setBackgroundColor(AppSettings.getGoogleEventBackgroundColor());
-                    textView.setTextColor(AppSettings.getGoogleEventTextColor());
-                } else
-                {
-                    textView.setBackgroundColor(AppSettings.getLocalEventBackgroundColor());
-                    textView.setTextColor(AppSettings.getLocalEventTextColor());
-                }
-                tableRows[row].addView(textView, param);
+                HeaderEventView headerEventView = new HeaderEventView(activity, eventDrawingInfo, WeekFragment.getDisplayWidth() - WeekFragment.getSpacingBetweenDay(), layoutHeight);
+                eventListLayout.addView(headerEventView);
             }
-
-            TableLayout.LayoutParams param = new TableLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            param.bottomMargin = 2;
-
-            for (int i = 0; i < rowCount; i++)
-            {
-                eventListLayout.addView(tableRows[i], param);
-            }
-
-            eventListLayout.requestLayout();
-            headerCalendarLayout.requestLayout();
-            headerLayout.requestLayout();
-
             eventListLayout.invalidate();
-            headerCalendarLayout.invalidate();
-            headerLayout.invalidate();
         }
     }
 

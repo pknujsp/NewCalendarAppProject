@@ -56,55 +56,12 @@
                     custom:headerRowMarginTop="@dimen/week_header_view_day_row_margin"
                     custom:headerTodayTextColor="@android:color/holo_blue_dark" />
 
-                <TableLayout
+                <RelativeLayout
                     android:id="@+id/week_header_event_list_layout"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:stretchColumns="*">
-
-                    <TableRow
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:weightSum="7">
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="2dp"
-                            android:layout_weight="1" />
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="2dp"
-                            android:layout_weight="1" />
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="2dp"
-                            android:layout_weight="1" />
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="2dp"
-                            android:layout_weight="1" />
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="2dp"
-                            android:layout_weight="1" />
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="2dp"
-                            android:layout_weight="1" />
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="2dp"
-                            android:layout_weight="1" />
-
-                    </TableRow>
-
-                </TableLayout>
+                    android:layout_height="wrap_content">
+                    
+                </RelativeLayout>
             </LinearLayout>
         </LinearLayout>
 
