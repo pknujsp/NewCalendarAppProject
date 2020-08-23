@@ -273,7 +273,6 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
 
         // 헤더의 배경을 그림
         canvas.drawRect(0, 0, getWidth(), getHeight(), mHeaderBackgroundPaint);
-        canvas.drawLine(0f, getHeight() - 1, getWidth(), getHeight() - 1, dividingPaint);
         drawHeaderView(canvas);
     }
 

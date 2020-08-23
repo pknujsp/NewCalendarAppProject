@@ -2,6 +2,8 @@ package com.zerodsoft.scheduleweather.CalendarView.Week;
 
 import android.app.Activity;
 import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Rect;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
@@ -20,6 +22,7 @@ import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.zerodsoft.scheduleweather.AppMainActivity;
 import com.zerodsoft.scheduleweather.CalendarFragment.WeekFragment;
 import com.zerodsoft.scheduleweather.CalendarView.AccountType;
 import com.zerodsoft.scheduleweather.CalendarView.Dto.CoordinateInfo;
@@ -346,7 +349,13 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
 
         private void drawEvents()
         {
-            int layoutHeight = 200;
+            Rect textRect = new Rect();
+            Paint textPaint = new Paint();
+            textPaint.setTextSize(activity.getResources().getDimension(R.dimen.week_header_view_day_event_text_size));
+            textPaint.getTextBounds("12", 0, 1, textRect);
+
+            int layoutHeight = (textRect.height() + 10) * rowCount;
+
             eventListLayout.setVisibility(View.VISIBLE);
             eventListLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, layoutHeight));
             eventListLayout.requestLayout();
@@ -354,6 +363,15 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
             for (EventDrawingInfo eventDrawingInfo : eventDrawingInfoList)
             {
                 HeaderEventView headerEventView = new HeaderEventView(activity, eventDrawingInfo, WeekFragment.getDisplayWidth() - WeekFragment.getSpacingBetweenDay(), layoutHeight);
+                headerEventView.setId(eventDrawingInfo.getStartCol());
+                headerEventView.setOnClickListener(new View.OnClickListener()
+                {
+                    @Override
+                    public void onClick(View view)
+                    {
+                        Toast.makeText(activity, Integer.toString(view.getId()), Toast.LENGTH_SHORT).show();
+                    }
+                });
                 eventListLayout.addView(headerEventView);
             }
             eventListLayout.invalidate();
@@ -412,5 +430,9 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
         return WeekViewPagerAdapter.WEEK_TOTAL_COUNT;
     }
 
+    private void setGrid()
+    {
+
+    }
 
 }

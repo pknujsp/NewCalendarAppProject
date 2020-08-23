@@ -5,7 +5,10 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
@@ -25,6 +28,7 @@ public class HeaderEventView extends View
     private Paint backgroundPaint;
     private Paint textPaint;
     private Rect viewRect;
+    private Rect textRect;
 
     private Context context;
 
@@ -38,20 +42,23 @@ public class HeaderEventView extends View
     private int parentViewWidth;
     private int parentViewHeight;
 
+    private int viewWidth;
+    private int viewHeight;
+
+
     public HeaderEventView(Context context, EventDrawingInfo eventDrawingInfo, int parentViewWidth, int parentViewHeight)
     {
         super(context);
         this.context = context;
         init(eventDrawingInfo);
+
         this.parentViewWidth = parentViewWidth;
         this.parentViewHeight = parentViewHeight;
+
     }
 
     private void init(EventDrawingInfo eventDrawingInfo)
     {
-        parentViewWidth = WeekFragment.getDisplayWidth() - WeekFragment.getSpacingBetweenDay();
-        parentViewHeight = 0;
-
         switch (eventDrawingInfo.getAccountType())
         {
             case GOOGLE:
@@ -73,21 +80,22 @@ public class HeaderEventView extends View
         backgroundPaint = new Paint();
         backgroundPaint.setColor(backgroundColor);
 
-        Rect rect = new Rect();
+        textRect = new Rect();
         textPaint = new Paint();
         textPaint.setTextSize(textSize);
         textPaint.setColor(textColor);
-        textPaint.getTextBounds("12", 0, 1, rect);
+        textPaint.getTextBounds("12", 0, 1, textRect);
 
         width = WeekFragment.getSpacingBetweenDay() * (endCol - startCol + 1);
-        height = rect.height() + 6;
+        height = textRect.height() + 10;
 
         viewRect = new Rect();
 
-        int left = WeekFragment.getSpacingBetweenDay() * startCol;
-        int right = left + width;
-        int top = height * row;
-        int bottom = top + height;
+        int left = WeekFragment.getSpacingBetweenDay() * startCol + 2;
+        int right = left + width - 2;
+        int top = height * row + 2;
+        int bottom = (height * (row + 1)) - 2;
+
         viewRect.set(left, top, right, bottom);
     }
 
@@ -100,7 +108,8 @@ public class HeaderEventView extends View
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom)
     {
-        super.onLayout(changed, left, top, right, bottom);
+        //  super.onLayout(changed, left, top, right, bottom);
+        super.onLayout(changed, viewRect.left, viewRect.top, viewRect.right, viewRect.bottom);
     }
 
     @Override
@@ -113,6 +122,11 @@ public class HeaderEventView extends View
     private void drawEventView(Canvas canvas)
     {
         canvas.drawRect(viewRect, backgroundPaint);
-        canvas.drawText(subject, (viewRect.right - viewRect.left) / 2, viewRect.top, textPaint);
+        canvas.drawText(subject, viewRect.left + 2, viewRect.top + (viewRect.height() / 2) + (textRect.height() / 2), textPaint);
+    }
+
+    public String getSubject()
+    {
+        return subject;
     }
 }

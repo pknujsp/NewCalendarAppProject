@@ -51,6 +51,7 @@ public class AppMainActivity extends AppCompatActivity
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setHomeAsUpIndicator(R.drawable.toolbar_menu_icon);
 
+
         onCalendarFragmentChanged(calendarFragmentType);
 
         fab.setOnClickListener(new View.OnClickListener()

@@ -81,6 +81,7 @@ public class WeekFragment extends Fragment
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         onPageChangeCallback = new OnPageChangeCallback();
+        int height = DISPLAY_HEIGHT - getDisplayHeight();
 
         weekViewPager = (ViewPager2) view.findViewById(R.id.week_viewpager);
         weekViewPagerAdapter = new WeekViewPagerAdapter(getActivity(), this);
