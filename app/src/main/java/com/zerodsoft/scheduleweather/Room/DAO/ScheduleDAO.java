@@ -27,8 +27,8 @@ public interface ScheduleDAO
     @Query("UPDATE TB_SCHEDULE SET address_id_to_be_visited = :addressId WHERE id = :scheduleId")
     void updateAddressId(int scheduleId, int addressId);
 
-    @Query("SELECT * FROM TB_SCHEDULE")
-    LiveData<List<ScheduleDTO>> selectAllSchedules();
+    @Query("SELECT * FROM TB_SCHEDULE WHERE id = :scheduleId")
+    ScheduleDTO selectSchedule(int scheduleId);
 
     @TypeConverters({TypeConverter.class})
     @Query("SELECT * FROM TB_SCHEDULE WHERE category = :category AND ((Datetime(start_date) BETWEEN Datetime(:weekFirstDate) AND Datetime(:weekLastDate)) OR (Datetime(end_date) BETWEEN Datetime(:weekFirstDate) AND Datetime(:weekLastDate)))")

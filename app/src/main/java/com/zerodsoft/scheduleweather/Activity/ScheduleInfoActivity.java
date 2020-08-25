@@ -1,20 +1,14 @@
 package com.zerodsoft.scheduleweather.Activity;
 
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CompoundButton;
@@ -44,9 +38,13 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-public class AddScheduleActivity extends AppCompatActivity implements NotificationFragment.OnNotificationTimeListener
+public class ScheduleInfoActivity extends AppCompatActivity implements NotificationFragment.OnNotificationTimeListener
 {
-    private Toolbar toolbar;
+    public static final int ADD_SCHEDULE_REQUEST = 0;
+    public static final int SHOW_SCHEDULE_REQUEST = 1;
+    public static final int ADD_LOCATION_ACTIVITY = 2;
+    public static final int DELETE_SCHEDULE = 3;
+
     private Spinner accountSpinner;
     private EditText subjectEditText;
     private Switch allDaySwitch;
@@ -55,7 +53,6 @@ public class AddScheduleActivity extends AppCompatActivity implements Notificati
     private TextView startDateValueTextView;
     private TextView endDateValueTextView;
     private EditText contentEditText;
-    private Button addLocationButton;
 
     private TextView locationTextView;
     private TextView notiValueTextView;
@@ -63,6 +60,16 @@ public class AddScheduleActivity extends AppCompatActivity implements Notificati
     private LinearLayout startDateLayout;
     private LinearLayout endDateLayout;
 
+    private LinearLayout bottomEditButtons;
+    private LinearLayout bottomInfoButtons;
+
+    private Button editButton;
+    private Button shareButton;
+    private Button deleteButton;
+    private Button cancelButton;
+    private Button saveButton;
+
+    private ScheduleDTO scheduleDTO;
     private PlaceDTO placeDTO;
     private AddressDTO addressDTO;
     private int locType;
@@ -73,11 +80,12 @@ public class AddScheduleActivity extends AppCompatActivity implements Notificati
     private Date startDate = new Date();
     private Date endDate = new Date();
 
+    private int requestCode;
+
     private SelectedNotificationTime selectedNotificationTime;
 
     private boolean isAllDay = false;
 
-    public static final int ADD_LOCATION_ACTIVITY = 0;
 
     @SuppressLint("HandlerLeak")
     private final Handler handler = new Handler()
@@ -85,9 +93,74 @@ public class AddScheduleActivity extends AppCompatActivity implements Notificati
         @Override
         public void handleMessage(Message msg)
         {
-            getIntent().putExtras(msg.getData());
-            setResult(RESULT_OK, getIntent());
-            finish();
+            switch (msg.what)
+            {
+                case ADD_SCHEDULE_REQUEST:
+                    getIntent().putExtras(msg.getData());
+                    setResult(RESULT_OK, getIntent());
+                    finish();
+                    break;
+                case SHOW_SCHEDULE_REQUEST:
+                    // 계정, 제목, 날짜, 내용(메모), 위치, 알림
+                    accountSpinner.setSelection(scheduleDTO.getCategory());
+
+                    subjectEditText.setText(scheduleDTO.getSubject());
+
+                    if (scheduleDTO.getStartDate().compareTo(scheduleDTO.getEndDate()) == 0)
+                    {
+                        // all day
+                        allDaySwitch.setChecked(true);
+                        allDayValueTextView.setText(Clock.dateFormat3.format(scheduleDTO.getStartDate()));
+                        allDay = scheduleDTO.getStartDate();
+                    } else
+                    {
+                        allDaySwitch.setChecked(false);
+                        startDateValueTextView.setText(Clock.dateFormat2.format(scheduleDTO.getStartDate()));
+                        endDateValueTextView.setText(Clock.dateFormat2.format(scheduleDTO.getEndDate()));
+                        startDate = scheduleDTO.getStartDate();
+                        endDate = scheduleDTO.getEndDate();
+                    }
+
+                    if (!scheduleDTO.getContent().isEmpty())
+                    {
+                        contentEditText.setText(scheduleDTO.getContent());
+                    } else
+                    {
+                        contentEditText.setText(getString(R.string.content_not_inputted));
+                    }
+
+                    if (scheduleDTO.getPlaceId() != -1)
+                    {
+                        locationTextView.setText(placeDTO.getPlaceName());
+                    } else if (scheduleDTO.getAddressId() != -1)
+                    {
+                        locationTextView.setText(addressDTO.getAddressName());
+                    } else
+                    {
+                        locationTextView.setText(getString(R.string.location_not_selected));
+                    }
+
+                    if (scheduleDTO.getNotiTime() != null)
+                    {
+                        selectedNotificationTime = new SelectedNotificationTime();
+                        selectedNotificationTime.setMainType(scheduleDTO.getNotiMainType());
+                        selectedNotificationTime.setDay(scheduleDTO.getNotiDay());
+                        selectedNotificationTime.setHour(scheduleDTO.getNotiHour());
+                        selectedNotificationTime.setMinute(scheduleDTO.getNotiMinute());
+                        selectedNotificationTime.setResultStr();
+
+                        notiValueTextView.setText(selectedNotificationTime.getResultStr());
+                        // 추가 작성 필요
+                    } else
+                    {
+                        notiValueTextView.setText(getString(R.string.noti_time_not_selected));
+                    }
+                    break;
+                case DELETE_SCHEDULE:
+                    setResult(RESULT_OK);
+                    finish();
+                    break;
+            }
         }
     };
 
@@ -129,15 +202,7 @@ public class AddScheduleActivity extends AppCompatActivity implements Notificati
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_add_schedule);
-
-        toolbar = (Toolbar) findViewById(R.id.add_schedule_toolbar);
-
-        setSupportActionBar(toolbar);
-        ActionBar actionBar = getSupportActionBar();
-        actionBar.setDisplayShowCustomEnabled(true);
-        actionBar.setDisplayShowTitleEnabled(false);
-        actionBar.setDisplayHomeAsUpEnabled(true);
+        setContentView(R.layout.activity_schedule);
 
         accountSpinner = (Spinner) findViewById(R.id.account_spinner);
         subjectEditText = (EditText) findViewById(R.id.subject_edittext);
@@ -148,13 +213,21 @@ public class AddScheduleActivity extends AppCompatActivity implements Notificati
         endDateValueTextView = (TextView) findViewById(R.id.enddate_value_textview);
 
         contentEditText = (EditText) findViewById(R.id.content_multiline);
-        addLocationButton = (Button) findViewById(R.id.add_location_button);
         locationTextView = (TextView) findViewById(R.id.location_right_textview);
         notiValueTextView = (TextView) findViewById(R.id.alarm_value_textview);
 
         allDayLayout = (LinearLayout) findViewById(R.id.allday_layout);
         startDateLayout = (LinearLayout) findViewById(R.id.startdate_layout);
         endDateLayout = (LinearLayout) findViewById(R.id.enddate_layout);
+
+        bottomEditButtons = (LinearLayout) findViewById(R.id.schedule_edit_buttons);
+        bottomInfoButtons = (LinearLayout) findViewById(R.id.schedule_info_buttons);
+
+        editButton = (Button) findViewById(R.id.edit_schedule_button);
+        shareButton = (Button) findViewById(R.id.share_schedule_button);
+        deleteButton = (Button) findViewById(R.id.delete_schedule_button);
+        cancelButton = (Button) findViewById(R.id.cancel_edit_schedule_button);
+        saveButton = (Button) findViewById(R.id.save_schedule_button);
 
         allDayLayout.setVisibility(View.GONE);
         startDateLayout.setVisibility(View.VISIBLE);
@@ -165,25 +238,165 @@ public class AddScheduleActivity extends AppCompatActivity implements Notificati
         setDateTextView();
         setAddLocationButton();
         setNotiValue();
+        setBottomButtons();
 
-        InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-        inputMethodManager.hideSoftInputFromWindow(subjectEditText.getWindowToken(), 0);
+        requestCode = getIntent().getIntExtra("requestCode", 0);
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu)
-    {
-        getMenuInflater().inflate(R.menu.add_schedule_menu, menu);
-        return true;
-    }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item)
+    protected void onStart()
     {
-        switch (item.getItemId())
+        boolean isClickable = true;
+        scheduleDTO = null;
+        addressDTO = null;
+        placeDTO = null;
+
+        switch (requestCode)
         {
-            case R.id.save:
-                ScheduleDTO scheduleDTO = new ScheduleDTO();
+            case SHOW_SCHEDULE_REQUEST:
+                isClickable = false;
+                bottomInfoButtons.setVisibility(View.VISIBLE);
+                bottomEditButtons.setVisibility(View.GONE);
+
+                int scheduleId = getIntent().getIntExtra("scheduleId", 0);
+
+                new Thread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        AppDb appDb = AppDb.getInstance(ScheduleInfoActivity.this);
+                        ScheduleDAO scheduleDAO = appDb.scheduleDAO();
+                        LocationDAO locationDAO = appDb.locationDAO();
+
+                        scheduleDTO = scheduleDAO.selectSchedule(scheduleId);
+
+                        if (scheduleDTO.getPlaceId() != -1)
+                        {
+                            placeDTO = locationDAO.selectPlace(scheduleId);
+                        } else if (scheduleDTO.getAddressId() != -1)
+                        {
+                            addressDTO = locationDAO.selectAddress(scheduleId);
+                        }
+
+                        Message msg = handler.obtainMessage();
+                        msg.what = SHOW_SCHEDULE_REQUEST;
+                        handler.sendMessage(msg);
+                    }
+                }).start();
+                break;
+
+            case ADD_SCHEDULE_REQUEST:
+                isClickable = true;
+                bottomEditButtons.setVisibility(View.VISIBLE);
+                bottomInfoButtons.setVisibility(View.GONE);
+
+                break;
+        }
+        setEnableButtons(isClickable);
+
+        super.onStart();
+    }
+
+    private void setEnableButtons(boolean isClickable)
+    {
+        accountSpinner.setClickable(isClickable);
+        accountSpinner.setFocusable(isClickable);
+        accountSpinner.setEnabled(isClickable);
+
+        subjectEditText.setClickable(isClickable);
+        subjectEditText.setFocusable(isClickable);
+
+        allDaySwitch.setClickable(isClickable);
+        allDaySwitch.setFocusable(isClickable);
+
+        allDayValueTextView.setClickable(isClickable);
+        allDayValueTextView.setFocusable(isClickable);
+
+        startDateValueTextView.setClickable(isClickable);
+        startDateValueTextView.setFocusable(isClickable);
+
+        endDateValueTextView.setClickable(isClickable);
+        endDateValueTextView.setFocusable(isClickable);
+
+        contentEditText.setClickable(isClickable);
+        contentEditText.setFocusable(isClickable);
+
+        locationTextView.setClickable(isClickable);
+        locationTextView.setFocusable(isClickable);
+
+        notiValueTextView.setClickable(isClickable);
+        notiValueTextView.setFocusable(isClickable);
+    }
+
+    private void setBottomButtons()
+    {
+        editButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                bottomEditButtons.setVisibility(View.VISIBLE);
+                bottomInfoButtons.setVisibility(View.GONE);
+                setEnableButtons(true);
+            }
+        });
+
+        shareButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+
+            }
+        });
+
+        deleteButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                new Thread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        AppDb appDb = AppDb.getInstance(ScheduleInfoActivity.this);
+                        ScheduleDAO scheduleDAO = appDb.scheduleDAO();
+                        LocationDAO locationDAO = appDb.locationDAO();
+
+                        if (placeDTO != null)
+                        {
+                            locationDAO.deletePlace(scheduleDTO.getPlaceId());
+                        } else if (addressDTO != null)
+                        {
+                            locationDAO.deleteAddress(scheduleDTO.getAddressId());
+                        }
+                        scheduleDAO.deleteSchedule(scheduleDTO.getId());
+
+                        handler.sendEmptyMessage(DELETE_SCHEDULE);
+                    }
+                }).start();
+            }
+        });
+
+        cancelButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                setResult(RESULT_CANCELED);
+                finish();
+            }
+        });
+
+        saveButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                scheduleDTO = new ScheduleDTO();
 
                 if (accountSpinner.getSelectedItemPosition() == 0)
                 {
@@ -209,6 +422,10 @@ public class AddScheduleActivity extends AppCompatActivity implements Notificati
                 if (selectedNotificationTime != null)
                 {
                     scheduleDTO.setNotiTime(selectedNotificationTime.getTime());
+                    scheduleDTO.setNotiMainType(selectedNotificationTime.getMainType());
+                    scheduleDTO.setNotiDay(selectedNotificationTime.getDay());
+                    scheduleDTO.setNotiHour(selectedNotificationTime.getHour());
+                    scheduleDTO.setNotiMinute(selectedNotificationTime.getMinute());
                 }
                 Calendar calendar = Calendar.getInstance();
 
@@ -218,14 +435,8 @@ public class AddScheduleActivity extends AppCompatActivity implements Notificati
                 DBThread dbThread = new DBThread();
                 dbThread.schedule = scheduleDTO;
                 dbThread.start();
-
-                break;
-            case android.R.id.home:
-                setResult(RESULT_CANCELED);
-                finish();
-                break;
-        }
-        return true;
+            }
+        });
     }
 
     private void setAccountSpinner()
@@ -234,7 +445,7 @@ public class AddScheduleActivity extends AppCompatActivity implements Notificati
         accountList.add("GOOGLE");
         accountList.add("LOCAL");
 
-        SpinnerAdapter adapter = new ArrayAdapter<>(AddScheduleActivity.this, android.R.layout.simple_spinner_dropdown_item, accountList);
+        SpinnerAdapter adapter = new ArrayAdapter<>(ScheduleInfoActivity.this, android.R.layout.simple_spinner_dropdown_item, accountList);
         accountSpinner.setAdapter(adapter);
     }
 
@@ -336,12 +547,11 @@ public class AddScheduleActivity extends AppCompatActivity implements Notificati
             public void onClick(View view)
             {
                 //위치를 설정하는 액티비티 표시
-                Intent intent = new Intent(AddScheduleActivity.this, MapActivity.class);
+                Intent intent = new Intent(ScheduleInfoActivity.this, MapActivity.class);
                 startActivityForResult(intent, ADD_LOCATION_ACTIVITY);
             }
         };
-
-        addLocationButton.setOnClickListener(onClickListener);
+        locationTextView.setOnClickListener(onClickListener);
     }
 
     @Override
@@ -387,10 +597,9 @@ public class AddScheduleActivity extends AppCompatActivity implements Notificati
         @Override
         public void run()
         {
-            AppDb appDb = AppDb.getInstance(AddScheduleActivity.this);
+            AppDb appDb = AppDb.getInstance(ScheduleInfoActivity.this);
             ScheduleDAO scheduleDAO = appDb.scheduleDAO();
             LocationDAO locationDAO = null;
-
 
             long scheduleId = scheduleDAO.insertNewSchedule(schedule);
 
@@ -415,6 +624,7 @@ public class AddScheduleActivity extends AppCompatActivity implements Notificati
             Bundle bundle = new Bundle();
             bundle.putSerializable("startDate", schedule.getStartDate());
             bundle.putInt("scheduleId", (int) scheduleId);
+            msg.what = ADD_SCHEDULE_REQUEST;
 
             msg.setData(bundle);
             handler.sendMessage(msg);

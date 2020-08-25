@@ -1,6 +1,7 @@
 package com.zerodsoft.scheduleweather.Etc;
 
-import com.zerodsoft.scheduleweather.Fragment.NotificationFragment;
+
+import com.zerodsoft.scheduleweather.Room.DTO.ScheduleDTO;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -10,8 +11,10 @@ public class SelectedNotificationTime
     private int day;
     private int hour;
     private int minute;
-    private NotificationFragment.MainType mainType;
+    private int mainType;
     private String resultStr;
+
+    private StringBuilder stringBuilder = new StringBuilder();
 
     public int getDay()
     {
@@ -46,20 +49,40 @@ public class SelectedNotificationTime
         return this;
     }
 
-    public SelectedNotificationTime setMainType(NotificationFragment.MainType mainType)
+    public SelectedNotificationTime setMainType(int mainType)
     {
         this.mainType = mainType;
         return this;
     }
 
-    public NotificationFragment.MainType getMainType()
+    public int getMainType()
     {
         return mainType;
     }
 
-    public SelectedNotificationTime setResultStr(String resultStr)
+    public SelectedNotificationTime setResultStr()
     {
-        this.resultStr = resultStr;
+        if (stringBuilder.length() != 0)
+        {
+            stringBuilder.delete(0, stringBuilder.length());
+        }
+        switch (mainType)
+        {
+            case ScheduleDTO.MAIN_DAY:
+                stringBuilder.append(Integer.toString(day)).append(" 일 ");
+                stringBuilder.append(Integer.toString(hour)).append(" 시간 ");
+                stringBuilder.append(Integer.toString(minute)).append(" 분");
+                break;
+            case ScheduleDTO.MAIN_MINUTE:
+                stringBuilder.append(Integer.toString(minute)).append(" 분");
+                break;
+            case ScheduleDTO.MAIN_HOUR:
+                stringBuilder.append(Integer.toString(hour)).append(" 시간 ");
+                stringBuilder.append(Integer.toString(minute)).append(" 분");
+                break;
+        }
+        stringBuilder.append(" 전에 알림");
+        resultStr = stringBuilder.toString();
         return this;
     }
 
@@ -75,12 +98,12 @@ public class SelectedNotificationTime
 
         switch (mainType)
         {
-            case DAY:
+            case ScheduleDTO.MAIN_DAY:
                 calendar.add(day, Calendar.DATE);
                 calendar.add(hour, Calendar.HOUR_OF_DAY);
                 calendar.add(minute, Calendar.MINUTE);
                 break;
-            case HOUR:
+            case ScheduleDTO.MAIN_HOUR:
                 int quotient = (int) Math.floor(hour / 24);
                 int remainder = hour % 24;
 
@@ -93,7 +116,7 @@ public class SelectedNotificationTime
                     calendar.add(remainder, Calendar.HOUR_OF_DAY);
                 }
                 break;
-            case MINUTE:
+            case ScheduleDTO.MAIN_MINUTE:
                 calendar.add(minute, Calendar.MINUTE);
                 break;
         }

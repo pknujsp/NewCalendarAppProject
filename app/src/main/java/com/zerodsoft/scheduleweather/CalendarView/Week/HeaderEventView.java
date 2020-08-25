@@ -3,7 +3,9 @@ package com.zerodsoft.scheduleweather.CalendarView.Week;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Point;
 import android.graphics.Rect;
+import android.os.Bundle;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -86,17 +88,22 @@ public class HeaderEventView extends View
         textPaint.setColor(textColor);
         textPaint.getTextBounds("12", 0, 1, textRect);
 
-        width = WeekFragment.getSpacingBetweenDay() * (endCol - startCol + 1);
-        height = textRect.height() + 10;
+        width = WeekFragment.getSpacingBetweenDay() * (endCol - startCol + 1) - 6;
+        height = textRect.height() + 16;
 
         viewRect = new Rect();
 
-        int left = WeekFragment.getSpacingBetweenDay() * startCol + 2;
-        int right = left + width - 2;
-        int top = height * row + 2;
-        int bottom = (height * (row + 1)) - 2;
+        int left = WeekFragment.getSpacingBetweenDay() * startCol + 3;
+        int right = WeekFragment.getSpacingBetweenDay() * (endCol + 1) - 3;
+        int top = height * row + 3;
+        int bottom = height * (row + 1) - 3;
 
         viewRect.set(left, top, right, bottom);
+    }
+
+    public Rect getViewRect()
+    {
+        return viewRect;
     }
 
     @Override
@@ -106,11 +113,11 @@ public class HeaderEventView extends View
     }
 
     @Override
-    protected void onLayout(boolean changed, int left, int top, int right, int bottom)
+    public void layout(int l, int t, int r, int b)
     {
-        //  super.onLayout(changed, left, top, right, bottom);
-        super.onLayout(changed, viewRect.left, viewRect.top, viewRect.right, viewRect.bottom);
+        super.layout(l, t, r, b);
     }
+
 
     @Override
     protected void onDraw(Canvas canvas)

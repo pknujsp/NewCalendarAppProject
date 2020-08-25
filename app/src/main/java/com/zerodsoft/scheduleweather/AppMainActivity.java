@@ -5,18 +5,15 @@ import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Menu;
-import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
-import com.zerodsoft.scheduleweather.Activity.AddScheduleActivity;
+import com.zerodsoft.scheduleweather.Activity.ScheduleInfoActivity;
 import com.zerodsoft.scheduleweather.CalendarFragment.DayFragment;
 import com.zerodsoft.scheduleweather.CalendarFragment.MonthFragment;
 import com.zerodsoft.scheduleweather.CalendarFragment.WeekFragment;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
-import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -29,10 +26,10 @@ public class AppMainActivity extends AppCompatActivity
     private WeekFragment weekFragment;
     private DayFragment dayFragment;
 
-    private static final int ADD_SCHEDULE_REQUEST = 0;
-    public static final int WEEK_FRAGMENT = 1;
-    public static final int DAY_FRAGMENT = 2;
-    public static final int MONTH_FRAGMENT = 3;
+
+    public static final int WEEK_FRAGMENT = 0;
+    public static final int DAY_FRAGMENT = 1;
+    public static final int MONTH_FRAGMENT = 2;
 
     private static int calendarFragmentType = WEEK_FRAGMENT;
 
@@ -59,8 +56,9 @@ public class AppMainActivity extends AppCompatActivity
             @Override
             public void onClick(View view)
             {
-                Intent intent = new Intent(AppMainActivity.this, AddScheduleActivity.class);
-                startActivityForResult(intent, ADD_SCHEDULE_REQUEST);
+                Intent intent = new Intent(AppMainActivity.this, ScheduleInfoActivity.class);
+                intent.putExtra("requestCode", ScheduleInfoActivity.ADD_SCHEDULE_REQUEST);
+                startActivityForResult(intent, ScheduleInfoActivity.ADD_SCHEDULE_REQUEST);
             }
         });
     }
@@ -76,16 +74,22 @@ public class AppMainActivity extends AppCompatActivity
     {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == ADD_SCHEDULE_REQUEST)
+        switch (resultCode)
         {
-            if (requestCode == RESULT_OK)
-            {
-                Bundle bundle = data.getExtras();
-
-                Date startDate = (Date) bundle.getSerializable("startDate");
-                int scheduleId = bundle.getInt("scheduleId");
-
-            }
+            case RESULT_OK:
+                switch (requestCode)
+                {
+                    case ScheduleInfoActivity.ADD_LOCATION_ACTIVITY:
+                    case ScheduleInfoActivity.SHOW_SCHEDULE_REQUEST:
+                }
+                break;
+            case RESULT_CANCELED:
+                switch (requestCode)
+                {
+                    case ScheduleInfoActivity.ADD_LOCATION_ACTIVITY:
+                    case ScheduleInfoActivity.SHOW_SCHEDULE_REQUEST:
+                }
+                break;
         }
     }
 
@@ -142,5 +146,13 @@ public class AppMainActivity extends AppCompatActivity
                 fragmentTransaction.replace(R.id.nav_host_fragment, dayFragment).commit();
                 break;
         }
+    }
+
+    public void goToScheduleInfoAcitivity(int scheduleId)
+    {
+        Intent intent = new Intent(AppMainActivity.this, ScheduleInfoActivity.class);
+        intent.putExtra("scheduleId", scheduleId);
+        intent.putExtra("requestCode", ScheduleInfoActivity.SHOW_SCHEDULE_REQUEST);
+        startActivityForResult(intent, ScheduleInfoActivity.SHOW_SCHEDULE_REQUEST);
     }
 }

@@ -1,9 +1,11 @@
 package com.zerodsoft.scheduleweather.CalendarView.Week;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.os.Bundle;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
@@ -86,6 +88,9 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
         public Date weekFirstDate;
         public Date weekLastDate;
 
+        private List<EventGridInfo> eventGridInfos;
+
+
         public WeekViewPagerHolder(View view)
         {
             super(view);
@@ -105,6 +110,27 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
             headerCalendarLayout.setLayoutParams(new LinearLayout.LayoutParams(WeekFragment.getDisplayWidth() - WeekFragment.getSpacingBetweenDay(), ViewGroup.LayoutParams.WRAP_CONTENT));
 
             eventListLayout.setVisibility(View.GONE);
+
+            eventListLayout.setOnTouchListener(new View.OnTouchListener()
+            {
+                @Override
+                public boolean onTouch(View view, MotionEvent motionEvent)
+                {
+                    float x = motionEvent.getX();
+                    float y = motionEvent.getY();
+
+                    for (EventGridInfo eventGridInfo : eventGridInfos)
+                    {
+                        if (x >= eventGridInfo.getLeft() && x <= eventGridInfo.getRight() && y >= eventGridInfo.getTop() && y <= eventGridInfo.getBottom())
+                        {
+                            ((AppMainActivity) activity).goToScheduleInfoAcitivity(eventGridInfo.getScheduleDTO().getId());
+                            break;
+                        }
+                    }
+
+                    return false;
+                }
+            });
         }
 
         public void onBindView(int position)
@@ -159,6 +185,7 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
                         {
                             if (schedules != null)
                             {
+                                eventGridInfos = new ArrayList<>();
                                 setEventDrawingInfo();
                                 drawEvents();
                             }
@@ -354,7 +381,7 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
             textPaint.setTextSize(activity.getResources().getDimension(R.dimen.week_header_view_day_event_text_size));
             textPaint.getTextBounds("12", 0, 1, textRect);
 
-            int layoutHeight = (textRect.height() + 10) * rowCount;
+            int layoutHeight = (textRect.height() + 16) * rowCount;
 
             eventListLayout.setVisibility(View.VISIBLE);
             eventListLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, layoutHeight));
@@ -363,15 +390,7 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
             for (EventDrawingInfo eventDrawingInfo : eventDrawingInfoList)
             {
                 HeaderEventView headerEventView = new HeaderEventView(activity, eventDrawingInfo, WeekFragment.getDisplayWidth() - WeekFragment.getSpacingBetweenDay(), layoutHeight);
-                headerEventView.setId(eventDrawingInfo.getStartCol());
-                headerEventView.setOnClickListener(new View.OnClickListener()
-                {
-                    @Override
-                    public void onClick(View view)
-                    {
-                        Toast.makeText(activity, Integer.toString(view.getId()), Toast.LENGTH_SHORT).show();
-                    }
-                });
+                eventGridInfos.add(new EventGridInfo(headerEventView.getViewRect(), eventDrawingInfo.getSchedule()));
                 eventListLayout.addView(headerEventView);
             }
             eventListLayout.invalidate();
@@ -433,6 +452,49 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
     private void setGrid()
     {
 
+    }
+
+    class EventGridInfo
+    {
+        private int left;
+        private int right;
+        private int top;
+        private int bottom;
+        private ScheduleDTO scheduleDTO;
+
+        public EventGridInfo(Rect rect, ScheduleDTO scheduleDTO)
+        {
+            left = rect.left;
+            right = rect.right;
+            top = rect.top;
+            bottom = rect.bottom;
+            this.scheduleDTO = scheduleDTO;
+        }
+
+        public ScheduleDTO getScheduleDTO()
+        {
+            return scheduleDTO;
+        }
+
+        public int getBottom()
+        {
+            return bottom;
+        }
+
+        public int getLeft()
+        {
+            return left;
+        }
+
+        public int getRight()
+        {
+            return right;
+        }
+
+        public int getTop()
+        {
+            return top;
+        }
     }
 
 }

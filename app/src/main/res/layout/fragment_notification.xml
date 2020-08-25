@@ -14,42 +14,69 @@
         android:orientation="vertical"
         android:padding="16dp">
 
+        <RadioGroup
+            android:id="@+id/notification_type_radio_group"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/notification_day_radio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/notification_type_day" />
+
+            <RadioButton
+                android:id="@+id/notification_hour_radio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/notification_type_hour" />
+
+            <RadioButton
+                android:id="@+id/notification_minute_radio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/notification_type_minute" />
+        </RadioGroup>
+
         <RelativeLayout
-            android:id="@+id/noti_main_layout"
+            android:id="@+id/noti_day_layout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="left">
 
             <TextView
-                android:id="@+id/noti_main_value_textview"
+                android:id="@+id/noti_day_value_textview"
                 android:layout_width="64dp"
                 android:layout_height="wrap_content"
                 android:layout_alignParentLeft="true"
                 android:layout_centerVertical="true"
                 android:textSize="14sp" />
 
-
-            <Spinner
-                android:id="@+id/noti_spinner"
+            <TextView
+                android:id="@+id/noti_day_desc"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
                 android:layout_marginLeft="4dp"
-                android:layout_toRightOf="@id/noti_main_value_textview" />
+                android:layout_toRightOf="@id/noti_day_value_textview"
+                android:text="일"
+                android:textSize="14sp" />
+
 
             <ImageButton
-                android:id="@+id/minus_noti_value_button"
+                android:id="@+id/minus_noti_day_button"
                 android:layout_width="32dp"
                 android:layout_height="32dp"
                 android:layout_centerVertical="true"
                 android:layout_marginRight="8dp"
-                android:layout_toLeftOf="@+id/plus_noti_value_button"
+                android:layout_toLeftOf="@+id/plus_noti_day_button"
                 android:background="?attr/selectableItemBackground"
                 android:scaleType="fitXY"
                 android:src="@drawable/minus_icon" />
 
             <ImageButton
-                android:id="@+id/plus_noti_value_button"
+                android:id="@+id/plus_noti_day_button"
                 android:layout_width="32dp"
                 android:layout_height="32dp"
                 android:layout_alignParentRight="true"

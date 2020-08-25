@@ -155,10 +155,10 @@ ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\
 		ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:20:13-86
 	android:name
 		ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:19:13-61
-activity#com.zerodsoft.scheduleweather.Activity.AddScheduleActivity
-ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:21:9-66
+activity#com.zerodsoft.scheduleweather.Activity.ScheduleInfoActivity
+ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:21:9-67
 	android:name
-		ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:21:19-63
+		ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:21:19-64
 activity#com.zerodsoft.scheduleweather.AppMainActivity
 ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:22:9-31:20
 	android:label

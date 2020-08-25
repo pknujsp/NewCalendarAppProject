@@ -5,12 +5,10 @@ import android.os.Parcelable;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
-import androidx.room.ForeignKey;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 import androidx.room.TypeConverters;
 
-import java.io.Serializable;
 import java.util.Date;
 
 @Entity(tableName = "TB_SCHEDULE")
@@ -37,9 +35,21 @@ public class ScheduleDTO implements Parcelable
     @TypeConverters({TypeConverter.class})
     private Date endDate;
 
+    @ColumnInfo(name = "noti_main_type")
+    private int notiMainType;
+
     @ColumnInfo(name = "noti_time")
     @TypeConverters({TypeConverter.class})
     private Date notiTime;
+
+    @ColumnInfo(name = "noti_time_day")
+    private int notiDay;
+
+    @ColumnInfo(name = "noti_time_hour")
+    private int notiHour;
+
+    @ColumnInfo(name = "noti_time_minute")
+    private int notiMinute;
 
     @ColumnInfo(name = "place_id_to_be_visited")
     private int placeId;
@@ -61,6 +71,15 @@ public class ScheduleDTO implements Parcelable
     @Ignore
     public static final int LOCAL_CATEGORY = 1;
 
+    @Ignore
+    public static final int MAIN_DAY = 2;
+
+    @Ignore
+    public static final int MAIN_HOUR = 3;
+
+    @Ignore
+    public static final int MAIN_MINUTE = 4;
+
     public ScheduleDTO()
     {
     }
@@ -73,7 +92,11 @@ public class ScheduleDTO implements Parcelable
         content = in.readString();
         startDate = (Date) in.readSerializable();
         endDate = (Date) in.readSerializable();
+        notiMainType = in.readInt();
         notiTime = (Date) in.readSerializable();
+        notiDay = in.readInt();
+        notiHour = in.readInt();
+        notiMinute = in.readInt();
         placeId = in.readInt();
         addressId = in.readInt();
         insertedDate = (Date) in.readSerializable();
@@ -206,6 +229,46 @@ public class ScheduleDTO implements Parcelable
         this.updatedDate = updatedDate;
     }
 
+    public int getNotiMainType()
+    {
+        return notiMainType;
+    }
+
+    public void setNotiMainType(int notiMainType)
+    {
+        this.notiMainType = notiMainType;
+    }
+
+    public int getNotiDay()
+    {
+        return notiDay;
+    }
+
+    public void setNotiDay(int notiDay)
+    {
+        this.notiDay = notiDay;
+    }
+
+    public int getNotiHour()
+    {
+        return notiHour;
+    }
+
+    public void setNotiHour(int notiHour)
+    {
+        this.notiHour = notiHour;
+    }
+
+    public int getNotiMinute()
+    {
+        return notiMinute;
+    }
+
+    public void setNotiMinute(int notiMinute)
+    {
+        this.notiMinute = notiMinute;
+    }
+
     @Override
     public int describeContents()
     {
@@ -221,7 +284,11 @@ public class ScheduleDTO implements Parcelable
         parcel.writeString(content);
         parcel.writeSerializable(startDate);
         parcel.writeSerializable(endDate);
+        parcel.writeInt(notiMainType);
         parcel.writeSerializable(notiTime);
+        parcel.writeInt(notiDay);
+        parcel.writeInt(notiHour);
+        parcel.writeInt(notiMinute);
         parcel.writeInt(placeId);
         parcel.writeInt(addressId);
         parcel.writeSerializable(insertedDate);
