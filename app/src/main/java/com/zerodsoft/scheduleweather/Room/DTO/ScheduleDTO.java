@@ -80,6 +80,9 @@ public class ScheduleDTO implements Parcelable
     @Ignore
     public static final int MAIN_MINUTE = 4;
 
+    @Ignore
+    public static final int NOT_NOTI = 5;
+
     public ScheduleDTO()
     {
     }

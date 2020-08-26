@@ -60,6 +60,13 @@ public class SelectedNotificationTime
         return mainType;
     }
 
+    public void clear()
+    {
+        day = 1;
+        hour = 0;
+        minute = 0;
+    }
+
     public SelectedNotificationTime setResultStr()
     {
         if (stringBuilder.length() != 0)
@@ -80,6 +87,9 @@ public class SelectedNotificationTime
                 stringBuilder.append(Integer.toString(hour)).append(" 시간 ");
                 stringBuilder.append(Integer.toString(minute)).append(" 분");
                 break;
+            case ScheduleDTO.NOT_NOTI:
+                resultStr = "알림 없음";
+                return this;
         }
         stringBuilder.append(" 전에 알림");
         resultStr = stringBuilder.toString();

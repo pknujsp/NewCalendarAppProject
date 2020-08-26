@@ -37,13 +37,23 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.StringTokenizer;
 
 public class ScheduleInfoActivity extends AppCompatActivity implements NotificationFragment.OnNotificationTimeListener
 {
+    /*
+      -수정해야 하는 것
+        데이터 수정 클릭 한 뒤 데이터 수정 완료 후 저장할 때 바뀐 데이터가 적용되지 않는 문제
+        (추가가 되어버림)
+        데이터 수정 클릭 한 뒤 edittext가 작동하지 않는 문제
+        하단 버튼의 삭제 버튼 클릭 시 다이얼로그를 띄워서 재 확인을 하도록 해야함
+
+     */
     public static final int ADD_SCHEDULE_REQUEST = 0;
     public static final int SHOW_SCHEDULE_REQUEST = 1;
     public static final int ADD_LOCATION_ACTIVITY = 2;
     public static final int DELETE_SCHEDULE = 3;
+    public static final int EDIT_SCHEDULE = 4;
 
     private Spinner accountSpinner;
     private EditText subjectEditText;
@@ -86,6 +96,9 @@ public class ScheduleInfoActivity extends AppCompatActivity implements Notificat
 
     private boolean isAllDay = false;
 
+    private boolean isEdit = false;
+    private boolean isNew = false;
+    private boolean editedLocation = false;
 
     @SuppressLint("HandlerLeak")
     private final Handler handler = new Handler()
@@ -100,6 +113,13 @@ public class ScheduleInfoActivity extends AppCompatActivity implements Notificat
                     setResult(RESULT_OK, getIntent());
                     finish();
                     break;
+
+                case EDIT_SCHEDULE:
+                    bottomInfoButtons.setVisibility(View.VISIBLE);
+                    bottomEditButtons.setVisibility(View.GONE);
+                    setEnableButtons(false);
+                    break;
+
                 case SHOW_SCHEDULE_REQUEST:
                     // 계정, 제목, 날짜, 내용(메모), 위치, 알림
                     accountSpinner.setSelection(scheduleDTO.getCategory());
@@ -140,21 +160,21 @@ public class ScheduleInfoActivity extends AppCompatActivity implements Notificat
                         locationTextView.setText(getString(R.string.location_not_selected));
                     }
 
-                    if (scheduleDTO.getNotiTime() != null)
-                    {
-                        selectedNotificationTime = new SelectedNotificationTime();
-                        selectedNotificationTime.setMainType(scheduleDTO.getNotiMainType());
-                        selectedNotificationTime.setDay(scheduleDTO.getNotiDay());
-                        selectedNotificationTime.setHour(scheduleDTO.getNotiHour());
-                        selectedNotificationTime.setMinute(scheduleDTO.getNotiMinute());
-                        selectedNotificationTime.setResultStr();
+                    selectedNotificationTime = new SelectedNotificationTime();
+                    selectedNotificationTime.setMainType(scheduleDTO.getNotiMainType());
+                    selectedNotificationTime.setDay(scheduleDTO.getNotiDay());
+                    selectedNotificationTime.setHour(scheduleDTO.getNotiHour());
+                    selectedNotificationTime.setMinute(scheduleDTO.getNotiMinute());
+                    selectedNotificationTime.setResultStr();
 
-                        notiValueTextView.setText(selectedNotificationTime.getResultStr());
-                        // 추가 작성 필요
+                    if (selectedNotificationTime.getMainType() == ScheduleDTO.NOT_NOTI)
+                    {
+                        notiValueTextView.setText(getString(R.string.notification_type_disable_radio));
                     } else
                     {
-                        notiValueTextView.setText(getString(R.string.noti_time_not_selected));
+                        notiValueTextView.setText(selectedNotificationTime.getResultStr());
                     }
+
                     break;
                 case DELETE_SCHEDULE:
                     setResult(RESULT_OK);
@@ -190,7 +210,14 @@ public class ScheduleInfoActivity extends AppCompatActivity implements Notificat
     public void onNotiTimeSelected(SelectedNotificationTime selectedNotificationTime)
     {
         this.selectedNotificationTime = selectedNotificationTime;
-        notiValueTextView.setText(selectedNotificationTime.getResultStr());
+        if (selectedNotificationTime.getMainType() == ScheduleDTO.NOT_NOTI)
+        {
+            notiValueTextView.setText("");
+            notiValueTextView.setHint(getString(R.string.noti_time_not_selected));
+        } else
+        {
+            notiValueTextView.setText(selectedNotificationTime.getResultStr());
+        }
     }
 
     public enum DATE_PICKER_CATEGORY
@@ -289,6 +316,7 @@ public class ScheduleInfoActivity extends AppCompatActivity implements Notificat
 
             case ADD_SCHEDULE_REQUEST:
                 isClickable = true;
+                isNew = true;
                 bottomEditButtons.setVisibility(View.VISIBLE);
                 bottomInfoButtons.setVisibility(View.GONE);
 
@@ -337,6 +365,7 @@ public class ScheduleInfoActivity extends AppCompatActivity implements Notificat
             @Override
             public void onClick(View view)
             {
+                isEdit = true;
                 bottomEditButtons.setVisibility(View.VISIBLE);
                 bottomInfoButtons.setVisibility(View.GONE);
                 setEnableButtons(true);
@@ -396,45 +425,134 @@ public class ScheduleInfoActivity extends AppCompatActivity implements Notificat
             @Override
             public void onClick(View view)
             {
-                scheduleDTO = new ScheduleDTO();
+                if (isNew)
+                {
+                    scheduleDTO = new ScheduleDTO();
 
-                if (accountSpinner.getSelectedItemPosition() == 0)
+                    if (accountSpinner.getSelectedItemPosition() == 0)
+                    {
+                        scheduleDTO.setCategory(ScheduleDTO.GOOGLE_CATEGORY);
+                    } else
+                    {
+                        scheduleDTO.setCategory(ScheduleDTO.LOCAL_CATEGORY);
+                    }
+
+                    scheduleDTO.setSubject(subjectEditText.getText().toString());
+                    scheduleDTO.setContent(contentEditText.getText().toString());
+
+                    if (isAllDay)
+                    {
+                        scheduleDTO.setStartDate(allDay);
+                        scheduleDTO.setEndDate(allDay);
+                    } else
+                    {
+                        scheduleDTO.setStartDate(startDate);
+                        scheduleDTO.setEndDate(endDate);
+                    }
+
+                    if (selectedNotificationTime == null)
+                    {
+                        selectedNotificationTime = new SelectedNotificationTime();
+                        selectedNotificationTime.setMainType(ScheduleDTO.NOT_NOTI);
+                    }
+
+                    if (selectedNotificationTime.getMainType() == ScheduleDTO.NOT_NOTI)
+                    {
+                        scheduleDTO.setNotiTime(null);
+                    } else
+                    {
+                        scheduleDTO.setNotiTime(selectedNotificationTime.getTime());
+                        scheduleDTO.setNotiMainType(selectedNotificationTime.getMainType());
+                        scheduleDTO.setNotiDay(selectedNotificationTime.getDay());
+                        scheduleDTO.setNotiHour(selectedNotificationTime.getHour());
+                        scheduleDTO.setNotiMinute(selectedNotificationTime.getMinute());
+                    }
+
+                    Calendar calendar = Calendar.getInstance();
+
+                    scheduleDTO.setInsertedDate(calendar.getTime());
+                    scheduleDTO.setUpdatedDate(calendar.getTime());
+
+                    scheduleDTO.setPlaceId(-1);
+                    scheduleDTO.setAddressId(-1);
+
+                    new Thread(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            AppDb appDb = AppDb.getInstance(ScheduleInfoActivity.this);
+                            ScheduleDAO scheduleDAO = appDb.scheduleDAO();
+
+                            long scheduleId = scheduleDAO.insertNewSchedule(scheduleDTO);
+
+                            if (placeDTO != null)
+                            {
+                                LocationDAO locationDAO = appDb.locationDAO();
+
+                                placeDTO.setScheduleId((int) scheduleId);
+                                long placeId = locationDAO.insertPlace(placeDTO);
+                                scheduleDAO.updatePlaceId((int) scheduleId, (int) placeId);
+                            } else if (addressDTO != null)
+                            {
+                                LocationDAO locationDAO = appDb.locationDAO();
+
+                                addressDTO.setScheduleId((int) scheduleId);
+                                long addressId = locationDAO.insertAddress(addressDTO);
+                                scheduleDAO.updateAddressId((int) scheduleId, (int) addressId);
+                            }
+
+                            Message msg = handler.obtainMessage();
+                            msg.what = ADD_SCHEDULE_REQUEST;
+                            handler.sendMessage(msg);
+                        }
+                    }).start();
+                } else if (isEdit)
                 {
-                    scheduleDTO.setCategory(ScheduleDTO.GOOGLE_CATEGORY);
-                } else
-                {
-                    scheduleDTO.setCategory(ScheduleDTO.LOCAL_CATEGORY);
+                    new Thread(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            AppDb appDb = AppDb.getInstance(ScheduleInfoActivity.this);
+                            ScheduleDAO scheduleDAO = appDb.scheduleDAO();
+
+                            if (editedLocation)
+                            {
+                                LocationDAO locationDAO = appDb.locationDAO();
+                                scheduleDTO.setAddressId(-1);
+                                scheduleDTO.setPlaceId(-1);
+
+                                if (scheduleDTO.getAddressId() != -1)
+                                {
+                                    locationDAO.deleteAddress(scheduleDTO.getAddressId());
+                                } else if (scheduleDTO.getPlaceId() != -1)
+                                {
+                                    locationDAO.deletePlace(scheduleDTO.getPlaceId());
+                                }
+
+                                if (placeDTO != null)
+                                {
+                                    placeDTO.setScheduleId((int) scheduleDTO.getId());
+                                    long placeId = locationDAO.insertPlace(placeDTO);
+                                    scheduleDTO.setPlaceId((int) placeId);
+                                } else if (addressDTO != null)
+                                {
+                                    addressDTO.setScheduleId((int) scheduleDTO.getId());
+                                    long addressId = locationDAO.insertAddress(addressDTO);
+                                    scheduleDTO.setAddressId((int) addressId);
+                                }
+                            }
+                            Calendar calendar = Calendar.getInstance();
+                            scheduleDTO.setUpdatedDate(calendar.getTime());
+                            scheduleDAO.updateSchedule(scheduleDTO);
+
+                            Message msg = handler.obtainMessage();
+                            msg.what = EDIT_SCHEDULE;
+                            handler.sendMessage(msg);
+                        }
+                    }).start();
                 }
-
-                scheduleDTO.setSubject(subjectEditText.getText().toString());
-                scheduleDTO.setContent(contentEditText.getText().toString());
-
-                if (isAllDay)
-                {
-                    scheduleDTO.setStartDate(allDay);
-                    scheduleDTO.setEndDate(allDay);
-                } else
-                {
-                    scheduleDTO.setStartDate(startDate);
-                    scheduleDTO.setEndDate(endDate);
-                }
-
-                if (selectedNotificationTime != null)
-                {
-                    scheduleDTO.setNotiTime(selectedNotificationTime.getTime());
-                    scheduleDTO.setNotiMainType(selectedNotificationTime.getMainType());
-                    scheduleDTO.setNotiDay(selectedNotificationTime.getDay());
-                    scheduleDTO.setNotiHour(selectedNotificationTime.getHour());
-                    scheduleDTO.setNotiMinute(selectedNotificationTime.getMinute());
-                }
-                Calendar calendar = Calendar.getInstance();
-
-                scheduleDTO.setInsertedDate(calendar.getTime());
-                scheduleDTO.setUpdatedDate(calendar.getTime());
-
-                DBThread dbThread = new DBThread();
-                dbThread.schedule = scheduleDTO;
-                dbThread.start();
             }
         });
     }
@@ -567,6 +685,10 @@ public class ScheduleInfoActivity extends AppCompatActivity implements Notificat
                 locType = bundle.getInt("type");
                 String locName = null;
 
+                placeDTO = null;
+                addressDTO = null;
+                editedLocation = true;
+
                 switch (locType)
                 {
                     case DownloadData.ADDRESS:
@@ -587,47 +709,6 @@ public class ScheduleInfoActivity extends AppCompatActivity implements Notificat
             {
 
             }
-        }
-    }
-
-    class DBThread extends Thread
-    {
-        ScheduleDTO schedule;
-
-        @Override
-        public void run()
-        {
-            AppDb appDb = AppDb.getInstance(ScheduleInfoActivity.this);
-            ScheduleDAO scheduleDAO = appDb.scheduleDAO();
-            LocationDAO locationDAO = null;
-
-            long scheduleId = scheduleDAO.insertNewSchedule(schedule);
-
-            if (placeDTO != null)
-            {
-                locationDAO = appDb.locationDAO();
-
-                placeDTO.setScheduleId((int) scheduleId);
-                long placeId = locationDAO.insertPlace(placeDTO);
-                scheduleDAO.updatePlaceId((int) scheduleId, (int) placeId);
-            }
-            if (addressDTO != null)
-            {
-                locationDAO = appDb.locationDAO();
-
-                addressDTO.setScheduleId((int) scheduleId);
-                long addressId = locationDAO.insertAddress(addressDTO);
-                scheduleDAO.updateAddressId((int) scheduleId, (int) addressId);
-            }
-
-            Message msg = handler.obtainMessage();
-            Bundle bundle = new Bundle();
-            bundle.putSerializable("startDate", schedule.getStartDate());
-            bundle.putInt("scheduleId", (int) scheduleId);
-            msg.what = ADD_SCHEDULE_REQUEST;
-
-            msg.setData(bundle);
-            handler.sendMessage(msg);
         }
     }
 }

@@ -33,12 +33,13 @@ public class NotificationFragment extends DialogFragment
 {
     public static final String TAG = "NotificationFragment";
 
-    private SelectedNotificationTime selectedNotificationTime;
+    private static SelectedNotificationTime selectedNotificationTime;
 
     private RadioGroup typeRadioGroup;
     private RadioButton typeDayRadio;
     private RadioButton typeHourRadio;
     private RadioButton typeMinuteRadio;
+    private RadioButton notNotiRadio;
 
     private RelativeLayout dayLayout;
     private RelativeLayout hourLayout;
@@ -59,7 +60,7 @@ public class NotificationFragment extends DialogFragment
     private Button cancelButton;
     private Button okButton;
 
-    private boolean isRestartedFragment = false;
+    private boolean restartedFragment = false;
 
     private static NotificationFragment notificationFragment = null;
 
@@ -97,7 +98,13 @@ public class NotificationFragment extends DialogFragment
     public NotificationFragment()
     {
         selectedNotificationTime = new SelectedNotificationTime();
-        selectedNotificationTime.setMainType(ScheduleDTO.MAIN_DAY).setDay(1).setHour(0).setMinute(0);
+        selectedNotificationTime.setMainType(ScheduleDTO.NOT_NOTI).setDay(1).setHour(0).setMinute(0).setResultStr();
+    }
+
+    public static void close()
+    {
+        selectedNotificationTime = null;
+        notificationFragment = null;
     }
 
     @Override
@@ -126,6 +133,7 @@ public class NotificationFragment extends DialogFragment
         typeDayRadio = (RadioButton) view.findViewById(R.id.notification_day_radio);
         typeHourRadio = (RadioButton) view.findViewById(R.id.notification_hour_radio);
         typeMinuteRadio = (RadioButton) view.findViewById(R.id.notification_minute_radio);
+        notNotiRadio = (RadioButton) view.findViewById(R.id.notification_disable_radio);
 
         mainMinusButton = (ImageButton) view.findViewById(R.id.minus_noti_day_button);
         mainPlusButton = (ImageButton) view.findViewById(R.id.plus_noti_day_button);
@@ -143,7 +151,6 @@ public class NotificationFragment extends DialogFragment
         cancelButton = (Button) view.findViewById(R.id.noti_cancel_button);
         okButton = (Button) view.findViewById(R.id.noti_ok_button);
 
-
         typeRadioGroup.setOnCheckedChangeListener(onCheckedChangeListener);
 
         cancelButton.setOnClickListener(new View.OnClickListener()
@@ -151,7 +158,6 @@ public class NotificationFragment extends DialogFragment
             @Override
             public void onClick(View view)
             {
-                isRestartedFragment = false;
                 dismiss();
             }
         });
@@ -162,7 +168,6 @@ public class NotificationFragment extends DialogFragment
             public void onClick(View view)
             {
                 onNotificationTimeListener.onNotiTimeSelected(selectedNotificationTime);
-                isRestartedFragment = false;
                 dismiss();
             }
         });
@@ -194,9 +199,9 @@ public class NotificationFragment extends DialogFragment
     final RadioGroup.OnCheckedChangeListener onCheckedChangeListener = new RadioGroup.OnCheckedChangeListener()
     {
         @Override
-        public void onCheckedChanged(RadioGroup radioGroup, int id)
+        public void onCheckedChanged(RadioGroup radioGroup, int viewId)
         {
-            switch (id)
+            switch (viewId)
             {
                 case R.id.notification_day_radio:
                     // 일
@@ -219,11 +224,19 @@ public class NotificationFragment extends DialogFragment
                     hourLayout.setVisibility(View.GONE);
                     minuteLayout.setVisibility(View.VISIBLE);
                     break;
+                case R.id.notification_disable_radio:
+                    // 일
+                    selectedNotificationTime.setMainType(ScheduleDTO.NOT_NOTI);
+                    dayLayout.setVisibility(View.GONE);
+                    hourLayout.setVisibility(View.GONE);
+                    minuteLayout.setVisibility(View.GONE);
+                    break;
             }
 
-            if (!isRestartedFragment)
+            if (!restartedFragment)
             {
-                selectedNotificationTime.setDay(1).setHour(0).setMinute(0).setResultStr();
+                checkValue(viewId);
+                selectedNotificationTime.setResultStr();
             }
 
             dayValueTextview.setText(Integer.toString(selectedNotificationTime.getDay()));
@@ -266,7 +279,6 @@ public class NotificationFragment extends DialogFragment
             }
             return false;
         }
-
     };
 
     final View.OnClickListener onClickListener = new View.OnClickListener()
@@ -338,6 +350,34 @@ public class NotificationFragment extends DialogFragment
         }
     }
 
+    private void checkValue(int viewId)
+    {
+        switch (viewId)
+        {
+            case R.id.notification_day_radio:
+                if (selectedNotificationTime.getHour() > 23)
+                {
+                    selectedNotificationTime.setHour(23);
+                }
+                if (selectedNotificationTime.getMinute() > 59)
+                {
+                    selectedNotificationTime.setMinute(59);
+                }
+                break;
+
+            case R.id.notification_hour_radio:
+                if (selectedNotificationTime.getMinute() > 59)
+                {
+                    selectedNotificationTime.setMinute(59);
+                }
+                break;
+
+            case R.id.notification_minute_radio:
+            case R.id.notification_disable_radio:
+                break;
+        }
+    }
+
 
     @Override
     public void onStart()
@@ -353,6 +393,23 @@ public class NotificationFragment extends DialogFragment
         layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT;
 
         getDialog().getWindow().setAttributes(layoutParams);
+
+        switch (selectedNotificationTime.getMainType())
+        {
+            case ScheduleDTO.MAIN_DAY:
+                typeDayRadio.performClick();
+                break;
+            case ScheduleDTO.MAIN_HOUR:
+                typeHourRadio.performClick();
+                break;
+            case ScheduleDTO.MAIN_MINUTE:
+                typeMinuteRadio.performClick();
+                break;
+            case ScheduleDTO.NOT_NOTI:
+                notNotiRadio.performClick();
+                break;
+        }
+        restartedFragment = false;
     }
 
     @Override
@@ -364,6 +421,6 @@ public class NotificationFragment extends DialogFragment
     public void setSelectedNotificationTime(SelectedNotificationTime selectedNotificationTime)
     {
         this.selectedNotificationTime = selectedNotificationTime;
-        isRestartedFragment = true;
+        restartedFragment = true;
     }
 }

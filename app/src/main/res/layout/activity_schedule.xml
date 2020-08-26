@@ -79,6 +79,7 @@
                     android:layout_marginBottom="8dp"
                     android:ems="10"
                     android:hint="@string/subject_default"
+                    android:focusableInTouchMode="true"
                     android:inputType="text"
                     android:textColor="@color/text_color"
                     android:textSize="@dimen/schedule_info_value_text_size" />
@@ -333,7 +334,7 @@
                     android:layout_marginEnd="16dp"
                     android:layout_marginBottom="8dp"
                     android:clickable="true"
-                    android:hint="@string/noti_time_default"
+                    android:hint="@string/noti_time_not_selected"
                     android:textColor="@color/text_color"
                     android:textSize="@dimen/schedule_info_value_text_size" />
             </LinearLayout>
