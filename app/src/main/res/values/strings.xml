@@ -51,9 +51,11 @@
     <string name="menu_slideshow">Slideshow</string>
 
     <!-- ScheduleActivity -->
-    <string name="start_date_text_view_allday">시작/종료일</string>
-    <string name="start_date_text_view_not_allday">시작일</string>
-    <string name="end_date_text_view_not_allday">종료일</string>
+    <string name="all_day">하루 종일</string>
+    <string name="not_all_day">시간</string>
+    <string name="date_text_allday">시작/종료일</string>
+    <string name="start_date_text_not_allday">시작일</string>
+    <string name="end_date_text_not_allday">종료일</string>
 
 
     <string name="subject_default">제목 입력</string>
@@ -63,7 +65,7 @@
 
     <string name="location_not_selected">위치 설정되지 않음</string>
     <string name="location_default">위치 설정 하기</string>
-    <string name="noti_time_not_selected">알림 없음, 알림 설정하기</string>
+    <string name="noti_time_not_selected">알림 없음</string>
 
     <string name="datepicker_ok_button">선택 완료</string>
     <string name="cancel_button">취소</string>
@@ -87,7 +89,6 @@
     <string name="choice">선택</string>
 
     <string name="save_button">저장</string>
-
     <string name="delete_button">삭제</string>
     <string name="share_button">공유</string>
     <string name="edit_button">수정</string>
@@ -96,7 +97,5 @@
     <string name="notification_type_hour">시간</string>
     <string name="notification_type_minute">분</string>
     <string name="notification_type_disable_radio">알림 없음</string>
-
-    <!--kakao local api category search category codes-->
 
 </resources>

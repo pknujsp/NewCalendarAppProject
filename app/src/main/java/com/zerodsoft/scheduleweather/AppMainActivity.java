@@ -7,18 +7,16 @@ import android.view.View;
 import android.view.Menu;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.zerodsoft.scheduleweather.Activity.ScheduleInfoActivity;
-import com.zerodsoft.scheduleweather.CalendarFragment.DayFragment;
-import com.zerodsoft.scheduleweather.CalendarFragment.MonthFragment;
-import com.zerodsoft.scheduleweather.CalendarFragment.WeekFragment;
+import com.zerodsoft.scheduleweather.activity.ScheduleInfoActivity;
+import com.zerodsoft.scheduleweather.calendarfragment.DayFragment;
+import com.zerodsoft.scheduleweather.calendarfragment.MonthFragment;
+import com.zerodsoft.scheduleweather.calendarfragment.WeekFragment;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-
-import java.util.Date;
 
 public class AppMainActivity extends AppCompatActivity
 {
@@ -57,8 +55,8 @@ public class AppMainActivity extends AppCompatActivity
             public void onClick(View view)
             {
                 Intent intent = new Intent(AppMainActivity.this, ScheduleInfoActivity.class);
-                intent.putExtra("requestCode", ScheduleInfoActivity.ADD_SCHEDULE_REQUEST);
-                startActivityForResult(intent, ScheduleInfoActivity.ADD_SCHEDULE_REQUEST);
+                intent.putExtra("requestCode", ScheduleInfoActivity.REQUEST_NEW_SCHEDULE);
+                startActivityForResult(intent, ScheduleInfoActivity.REQUEST_NEW_SCHEDULE);
             }
         });
     }
@@ -79,15 +77,15 @@ public class AppMainActivity extends AppCompatActivity
             case RESULT_OK:
                 switch (requestCode)
                 {
-                    case ScheduleInfoActivity.ADD_LOCATION_ACTIVITY:
-                    case ScheduleInfoActivity.SHOW_SCHEDULE_REQUEST:
+                    case ScheduleInfoActivity.ADD_LOCATION:
+                    case ScheduleInfoActivity.REQUEST_SHOW_SCHEDULE:
                 }
                 break;
             case RESULT_CANCELED:
                 switch (requestCode)
                 {
-                    case ScheduleInfoActivity.ADD_LOCATION_ACTIVITY:
-                    case ScheduleInfoActivity.SHOW_SCHEDULE_REQUEST:
+                    case ScheduleInfoActivity.ADD_LOCATION:
+                    case ScheduleInfoActivity.REQUEST_SHOW_SCHEDULE:
                 }
                 break;
         }
@@ -152,7 +150,7 @@ public class AppMainActivity extends AppCompatActivity
     {
         Intent intent = new Intent(AppMainActivity.this, ScheduleInfoActivity.class);
         intent.putExtra("scheduleId", scheduleId);
-        intent.putExtra("requestCode", ScheduleInfoActivity.SHOW_SCHEDULE_REQUEST);
-        startActivityForResult(intent, ScheduleInfoActivity.SHOW_SCHEDULE_REQUEST);
+        intent.putExtra("requestCode", ScheduleInfoActivity.REQUEST_SHOW_SCHEDULE);
+        startActivityForResult(intent, ScheduleInfoActivity.REQUEST_SHOW_SCHEDULE);
     }
 }

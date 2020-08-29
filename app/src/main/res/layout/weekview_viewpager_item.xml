@@ -38,7 +38,7 @@
                 android:layout_height="match_parent"
                 android:orientation="vertical">
 
-                <com.zerodsoft.scheduleweather.CalendarView.Week.WeekHeaderView
+                <com.zerodsoft.scheduleweather.calendarview.week.WeekHeaderView
                     android:id="@+id/week_header_view"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -74,12 +74,12 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
-            <com.zerodsoft.scheduleweather.CalendarView.HoursView
+            <com.zerodsoft.scheduleweather.calendarview.HoursView
                 android:id="@+id/week_hours_view"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
 
-            <com.zerodsoft.scheduleweather.CalendarView.Week.WeekView
+            <com.zerodsoft.scheduleweather.calendarview.week.WeekView
                 android:id="@+id/week_view"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

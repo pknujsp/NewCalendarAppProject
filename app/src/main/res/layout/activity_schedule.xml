@@ -1,406 +1,436 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".Activity.ScheduleInfoActivity">
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <ScrollView
-        android:id="@+id/schedule_scroll_view"
+    <data>
+
+        <import type="com.zerodsoft.scheduleweather.utility.Clock" />
+
+        <variable
+            name="allDay"
+            type="java.util.Date" />
+
+        <variable
+            name="startDate"
+            type="java.util.Date" />
+
+        <variable
+            name="endDate"
+            type="java.util.Date" />
+
+        <variable
+            name="scheduleDto"
+            type="com.zerodsoft.scheduleweather.room.dto.ScheduleDTO" />
+
+        <variable
+            name="placeDto"
+            type="com.zerodsoft.scheduleweather.room.dto.PlaceDTO" />
+
+        <variable
+            name="addressDto"
+            type="com.zerodsoft.scheduleweather.room.dto.AddressDTO" />
+
+        <variable
+            name="notification"
+            type="com.zerodsoft.scheduleweather.etc.SelectedNotificationTime" />
+    </data>
+
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true">
+        android:layout_height="match_parent"
+        tools:context=".activity.ScheduleInfoActivity">
 
-        <LinearLayout
-            android:id="@+id/schedule_root_layout"
+        <ScrollView
+            android:id="@+id/schedule_scroll_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_alignParentTop="true">
+
+            <LinearLayout
+                android:id="@+id/schedule_root_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:id="@+id/account_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginEnd="16dp"
+                        android:layout_marginBottom="16dp"
+                        android:text="계정"
+                        android:textAlignment="textStart"
+                        android:textColor="@color/text_color"
+                        android:textSize="@dimen/schedule_info_desc_text_size" />
+
+                    <Spinner
+                        android:id="@+id/account_spinner"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_marginLeft="16dp"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginRight="16dp"
+                        android:layout_marginBottom="8dp"
+                        android:textColor="@color/text_color"
+                        android:textSize="@dimen/schedule_info_value_text_size" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/subject_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginEnd="16dp"
+                        android:layout_marginBottom="16dp"
+                        android:text="제목"
+                        android:textColor="@color/text_color"
+                        android:textSize="@dimen/schedule_info_desc_text_size" />
+
+                    <EditText
+                        android:id="@+id/subject"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginEnd="16dp"
+                        android:layout_marginBottom="8dp"
+                        android:ems="10"
+                        android:focusableInTouchMode="true"
+                        android:hint="@string/subject_default"
+                        android:inputType="text"
+                        android:text="@{scheduleDto.subject != null ? scheduleDto.subject : null}"
+                        android:textColor="@color/text_color"
+                        android:textSize="@dimen/schedule_info_value_text_size" />
+
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/time_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginEnd="16dp"
+                        android:layout_marginBottom="16dp"
+                        android:text="시간"
+                        android:textAlignment="textStart"
+                        android:textColor="@color/text_color"
+                        android:textSize="@dimen/schedule_info_desc_text_size" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginEnd="16dp"
+                        android:layout_marginBottom="8dp"
+                        android:orientation="vertical">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="8dp"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/not_all_day"
+                                android:textColor="@color/text_color"
+                                android:textSize="@dimen/schedule_info_value_text_size" />
+
+                            <Switch
+                                android:id="@+id/schedule_allday_switch"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/all_day"
+                                android:textColor="@color/text_color"
+                                android:textSize="@dimen/schedule_info_value_text_size" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/allday_layout"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:visibility="visible">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center_vertical"
+                                android:text="@string/date_text_allday"
+                                android:textColor="@color/text_color"
+                                android:textSize="@dimen/schedule_info_value_text_size" />
+
+                            <TextView
+                                android:id="@+id/allday_value"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="?attr/selectableItemBackground"
+                                android:clickable="true"
+                                android:hint="@string/date_text_allday"
+                                android:text="@{scheduleDto.startDate != null ? (scheduleDto.startDate.equals(scheduleDto.endDate) ? Clock.dateFormat3.format(scheduleDto.startDate) : null) : null}"
+                                android:textAlignment="textEnd"
+                                android:textColor="@color/text_color"
+                                android:textSize="@dimen/schedule_info_value_text_size"
+                                android:visibility="visible" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/startdate_layout"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center_vertical"
+                                android:text="@string/start_date_text_not_allday"
+                                android:textColor="@color/text_color"
+                                android:textSize="@dimen/schedule_info_value_text_size" />
+
+                            <TextView
+                                android:id="@+id/startdate_value"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="?attr/selectableItemBackground"
+                                android:clickable="true"
+                                android:hint="@string/start_date_text_not_allday"
+                                android:text="@{scheduleDto.startDate != null ? Clock.dateFormat2.format(scheduleDto.startDate) : null}"
+                                android:textAlignment="textEnd"
+                                android:textColor="@color/text_color"
+                                android:textSize="@dimen/schedule_info_value_text_size"
+                                android:visibility="visible" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/enddate_layout"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center_vertical"
+                                android:text="@string/end_date_text_not_allday"
+                                android:textColor="@color/text_color"
+                                android:textSize="@dimen/schedule_info_value_text_size" />
+
+                            <TextView
+                                android:id="@+id/enddate_value"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="?attr/selectableItemBackground"
+                                android:clickable="true"
+                                android:hint="@string/end_date_text_not_allday"
+                                android:text="@{scheduleDto.endDate != null ? Clock.dateFormat2.format(scheduleDto.endDate) : null}"
+                                android:textAlignment="textEnd"
+                                android:textColor="@color/text_color"
+                                android:textSize="@dimen/schedule_info_value_text_size"
+                                android:visibility="visible" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/content_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginEnd="16dp"
+                        android:layout_marginBottom="16dp"
+                        android:text="내용"
+                        android:textColor="@color/text_color"
+                        android:textSize="@dimen/schedule_info_desc_text_size" />
+
+                    <EditText
+                        android:id="@+id/content"
+                        android:layout_width="match_parent"
+                        android:layout_height="200dp"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginEnd="16dp"
+                        android:layout_marginBottom="8dp"
+                        android:ems="10"
+                        android:gravity="start|top"
+                        android:hint="@string/content_default"
+                        android:inputType="textMultiLine"
+                        android:text="@{scheduleDto.content != null ? scheduleDto.content : null}"
+                        android:textAlignment="textStart"
+                        android:textColor="@color/text_color"
+                        android:textSize="@dimen/schedule_info_value_text_size" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/location_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginEnd="16dp"
+                        android:layout_marginBottom="16dp"
+                        android:text="위치"
+                        android:textColor="@color/text_color"
+                        android:textSize="@dimen/schedule_info_desc_text_size" />
+
+                    <TextView
+                        android:id="@+id/location"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginEnd="16dp"
+                        android:layout_marginBottom="8dp"
+                        android:clickable="true"
+                        android:hint="@string/location_default"
+                        android:text="@{placeDto != null ? placeDto.placeName : (addressDto != null ? addressDto.addressName : null )}"
+                        android:textColor="@color/text_color"
+                        android:textSize="@dimen/schedule_info_value_text_size" />
+
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/alarm_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginEnd="16dp"
+                        android:layout_marginBottom="16dp"
+                        android:text="알림"
+                        android:textColor="@color/text_color"
+                        android:textSize="@dimen/schedule_info_desc_text_size" />
+
+                    <TextView
+                        android:id="@+id/notification_value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginEnd="16dp"
+                        android:layout_marginBottom="8dp"
+                        android:clickable="true"
+                        android:hint="@string/noti_time_not_selected"
+                        android:text="@{notification != null ? notification.resultStr : null}"
+                        android:textColor="@color/text_color"
+                        android:textSize="@dimen/schedule_info_value_text_size" />
+                </LinearLayout>
+            </LinearLayout>
+        </ScrollView>
+
+        <LinearLayout
+            android:id="@+id/schedule_bottom_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:elevation="2dp"
             android:orientation="vertical">
 
             <LinearLayout
-                android:id="@+id/account_layout"
+                android:id="@+id/schedule_info_buttons"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
-                <TextView
-                    android:id="@+id/account_textview"
-                    android:layout_width="wrap_content"
+                <Button
+                    android:id="@+id/delete_schedule_button"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginTop="16dp"
-                    android:layout_marginEnd="16dp"
-                    android:layout_marginBottom="16dp"
-                    android:text="계정"
-                    android:textAlignment="textStart"
-                    android:textColor="@color/text_color"
-                    android:textSize="@dimen/schedule_info_desc_text_size" />
+                    android:layout_weight="1"
+                    android:background="?attr/selectableItemBackground"
+                    android:text="@string/delete_button" />
 
-                <Spinner
-                    android:id="@+id/account_spinner"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_marginLeft="16dp"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginRight="16dp"
-                    android:layout_marginBottom="8dp"
-                    android:textColor="@color/text_color"
-                    android:textSize="@dimen/schedule_info_value_text_size" />
+                <Button
+                    android:id="@+id/share_schedule_button"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="?attr/selectableItemBackground"
+                    android:text="@string/share_button" />
+
+                <Button
+                    android:id="@+id/edit_schedule_button"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="?attr/selectableItemBackground"
+                    android:text="@string/edit_button" />
             </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/subject_layout"
+                android:id="@+id/schedule_edit_buttons"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
-                <TextView
-                    android:id="@+id/subject_textview"
-                    android:layout_width="wrap_content"
+                <Button
+                    android:id="@+id/cancel_edit_schedule_button"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginTop="16dp"
-                    android:layout_marginEnd="16dp"
-                    android:layout_marginBottom="16dp"
-                    android:text="제목"
-                    android:textColor="@color/text_color"
-                    android:textSize="@dimen/schedule_info_desc_text_size" />
+                    android:layout_weight="1"
+                    android:background="?attr/selectableItemBackground"
+                    android:text="@string/cancel_button" />
 
-                <EditText
-                    android:id="@+id/subject_edittext"
-                    android:layout_width="match_parent"
+                <Button
+                    android:id="@+id/save_schedule_button"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginEnd="16dp"
-                    android:layout_marginBottom="8dp"
-                    android:ems="10"
-                    android:hint="@string/subject_default"
-                    android:focusableInTouchMode="true"
-                    android:inputType="text"
-                    android:textColor="@color/text_color"
-                    android:textSize="@dimen/schedule_info_value_text_size" />
-
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/time_layout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/time_textview"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginTop="16dp"
-                    android:layout_marginEnd="16dp"
-                    android:layout_marginBottom="16dp"
-                    android:text="시간"
-                    android:textAlignment="textStart"
-                    android:textColor="@color/text_color"
-                    android:textSize="@dimen/schedule_info_desc_text_size" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginEnd="16dp"
-                    android:layout_marginBottom="8dp"
-                    android:orientation="vertical">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="8dp"
-                        android:orientation="horizontal">
-
-                        <TextView
-                            android:id="@+id/textView3"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="시간"
-                            android:textColor="@color/text_color"
-                            android:textSize="@dimen/schedule_info_value_text_size" />
-
-                        <Switch
-                            android:id="@+id/schedule_allday_switch"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content" />
-
-                        <TextView
-                            android:id="@+id/textView24"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="하루 종일 O"
-                            android:textColor="@color/text_color"
-                            android:textSize="@dimen/schedule_info_value_text_size" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:id="@+id/allday_layout"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:visibility="visible">
-
-                        <TextView
-                            android:id="@+id/allday_desc_textview"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center_vertical"
-                            android:text="시작/종료일"
-                            android:textColor="@color/text_color"
-                            android:textSize="@dimen/schedule_info_value_text_size" />
-
-                        <TextView
-                            android:id="@+id/allday_value_textview"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:background="?attr/selectableItemBackground"
-                            android:clickable="true"
-                            android:text="시작/종료"
-                            android:textAlignment="textEnd"
-                            android:textColor="@color/text_color"
-                            android:textSize="@dimen/schedule_info_value_text_size"
-
-                            android:visibility="visible" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:id="@+id/startdate_layout"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal">
-
-                        <TextView
-                            android:id="@+id/start_date_left_textview"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center_vertical"
-                            android:text="@string/start_date_text_view_not_allday"
-                            android:textColor="@color/text_color"
-                            android:textSize="@dimen/schedule_info_value_text_size" />
-
-                        <TextView
-                            android:id="@+id/startdate_value_textview"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:background="?attr/selectableItemBackground"
-                            android:clickable="true"
-                            android:text="시작"
-                            android:textAlignment="textEnd"
-                            android:textColor="@color/text_color"
-                            android:textSize="@dimen/schedule_info_value_text_size"
-                            android:visibility="visible" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:id="@+id/enddate_layout"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:orientation="horizontal">
-
-                        <TextView
-                            android:id="@+id/enddate_desc_textview"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center_vertical"
-                            android:text="@string/end_date_text_view_not_allday"
-                            android:textColor="@color/text_color"
-                            android:textSize="@dimen/schedule_info_value_text_size" />
-
-                        <TextView
-                            android:id="@+id/enddate_value_textview"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:background="?attr/selectableItemBackground"
-                            android:clickable="true"
-                            android:text="종료"
-                            android:textAlignment="textEnd"
-                            android:textColor="@color/text_color"
-                            android:textSize="@dimen/schedule_info_value_text_size"
-                            android:visibility="visible" />
-                    </LinearLayout>
-                </LinearLayout>
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/content_layout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/content_textview"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginTop="16dp"
-                    android:layout_marginEnd="16dp"
-                    android:layout_marginBottom="16dp"
-                    android:text="내용"
-                    android:textColor="@color/text_color"
-                    android:textSize="@dimen/schedule_info_desc_text_size" />
-
-                <EditText
-                    android:id="@+id/content_multiline"
-                    android:layout_width="match_parent"
-                    android:layout_height="200dp"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginEnd="16dp"
-                    android:layout_marginBottom="8dp"
-                    android:ems="10"
-                    android:gravity="start|top"
-                    android:hint="@string/content_default"
-                    android:inputType="textMultiLine"
-                    android:textAlignment="textStart"
-                    android:textColor="@color/text_color"
-                    android:textSize="@dimen/schedule_info_value_text_size" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/location_layout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/location_left_textview"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginTop="16dp"
-                    android:layout_marginEnd="16dp"
-                    android:layout_marginBottom="16dp"
-                    android:text="위치"
-                    android:textColor="@color/text_color"
-                    android:textSize="@dimen/schedule_info_desc_text_size" />
-
-
-                <TextView
-                    android:id="@+id/location_right_textview"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginEnd="16dp"
-                    android:layout_marginBottom="8dp"
-                    android:clickable="true"
-                    android:hint="@string/location_default"
-                    android:textColor="@color/text_color"
-                    android:textSize="@dimen/schedule_info_value_text_size" />
-
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/alarm_layout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/noti_desc_textview"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginTop="16dp"
-                    android:layout_marginEnd="16dp"
-                    android:layout_marginBottom="16dp"
-                    android:text="알림"
-                    android:textColor="@color/text_color"
-                    android:textSize="@dimen/schedule_info_desc_text_size" />
-
-                <TextView
-                    android:id="@+id/alarm_value_textview"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginEnd="16dp"
-                    android:layout_marginBottom="8dp"
-                    android:clickable="true"
-                    android:hint="@string/noti_time_not_selected"
-                    android:textColor="@color/text_color"
-                    android:textSize="@dimen/schedule_info_value_text_size" />
+                    android:layout_weight="1"
+                    android:background="?attr/selectableItemBackground"
+                    android:text="@string/save_button" />
             </LinearLayout>
         </LinearLayout>
-    </ScrollView>
-
-    <LinearLayout
-        android:id="@+id/schedule_bottom_layout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:elevation="2dp"
-        android:orientation="vertical">
-
-        <LinearLayout
-            android:id="@+id/schedule_info_buttons"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <Button
-                android:id="@+id/delete_schedule_button"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="?attr/selectableItemBackground"
-                android:text="@string/delete_button" />
-
-            <Button
-                android:id="@+id/share_schedule_button"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="?attr/selectableItemBackground"
-                android:text="@string/share_button" />
-
-            <Button
-                android:id="@+id/edit_schedule_button"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="?attr/selectableItemBackground"
-                android:text="@string/edit_button" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/schedule_edit_buttons"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <Button
-                android:id="@+id/cancel_edit_schedule_button"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="?attr/selectableItemBackground"
-                android:text="@string/cancel_button" />
-
-            <Button
-                android:id="@+id/save_schedule_button"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="?attr/selectableItemBackground"
-                android:text="@string/save_button" />
-        </LinearLayout>
-    </LinearLayout>
-</RelativeLayout>
+    </RelativeLayout>
+</layout>
