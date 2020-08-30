@@ -1,9 +1,12 @@
 package com.zerodsoft.scheduleweather.repositories;
 
-import android.app.Application;
+
+import android.os.Handler;
 
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 
+import com.zerodsoft.scheduleweather.Application;
 import com.zerodsoft.scheduleweather.activity.ScheduleInfoActivity;
 import com.zerodsoft.scheduleweather.room.AppDb;
 import com.zerodsoft.scheduleweather.room.dao.LocationDAO;
@@ -11,18 +14,26 @@ import com.zerodsoft.scheduleweather.room.dao.ScheduleDAO;
 import com.zerodsoft.scheduleweather.room.dto.AddressDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
 import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
+import com.zerodsoft.scheduleweather.thread.RepositoryCallback;
+import com.zerodsoft.scheduleweather.thread.Result;
 
 import java.util.Calendar;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ScheduleRepository
 {
+    // db내 데이터 유무에 관계없이 LiveData는 넘어온다(null이 아님)
     private AppDb appDb;
     private ScheduleDAO scheduleDAO;
     private LocationDAO locationDAO;
 
-    private LiveData<ScheduleDTO> scheduleLiveData;
-    private LiveData<PlaceDTO> placeLiveData;
-    private LiveData<AddressDTO> addressLiveData;
+    private MutableLiveData<ScheduleDTO> scheduleLiveData = new MutableLiveData<>();
+    private MutableLiveData<PlaceDTO> placeLiveData = new MutableLiveData<>();
+    private MutableLiveData<AddressDTO> addressLiveData = new MutableLiveData<>();
+
+    private final Handler resultHandler = Application.mainThreadHandler;
 
     public ScheduleRepository(Application application)
     {
@@ -31,40 +42,61 @@ public class ScheduleRepository
         locationDAO = appDb.locationDAO();
     }
 
-    public void selectSchedule(int id)
+    public void selectSchedule(int id, RepositoryCallback<MutableLiveData<ScheduleDTO>> callback)
     {
-        new Thread(new Runnable()
+        Application.executorService.execute(new Runnable()
         {
             @Override
             public void run()
             {
-                scheduleLiveData = scheduleDAO.selectSchedule(id);
-                ScheduleDTO scheduleDTO = scheduleLiveData.getValue();
+                LiveData<ScheduleDTO> scheduleLive = scheduleDAO.selectSchedule(id);
 
-                if (scheduleDTO.getAddress() != -1)
+                if (scheduleLive.getValue() != null)
                 {
-                    addressLiveData = locationDAO.selectAddress(scheduleDTO.getAddress());
-                } else if (scheduleDTO.getPlace() != -1)
+                    ScheduleDTO scheduleDTO = scheduleLive.getValue();
+                    scheduleLiveData.postValue(scheduleDTO);
+
+                    if (scheduleDTO.getAddress() != -1)
+                    {
+                        addressLiveData.postValue(locationDAO.selectAddress(scheduleDTO.getAddress()).getValue());
+                    } else if (scheduleDTO.getPlace() != -1)
+                    {
+                        placeLiveData.postValue(locationDAO.selectPlace(scheduleDTO.getPlace()).getValue());
+                    }
+                } else
                 {
-                    placeLiveData = locationDAO.selectPlace(scheduleDTO.getPlace());
+                    scheduleLiveData.postValue(new ScheduleDTO());
                 }
+                notifyResult(callback);
             }
-        }).start();
+        });
     }
 
-    public LiveData<ScheduleDTO> getScheduleLiveData()
+    public MutableLiveData<ScheduleDTO> getScheduleLiveData()
     {
         return scheduleLiveData;
     }
 
-    public LiveData<AddressDTO> getAddressLiveData()
+    public MutableLiveData<AddressDTO> getAddressLiveData()
     {
         return addressLiveData;
     }
 
-    public LiveData<PlaceDTO> getPlaceLiveData()
+    public MutableLiveData<PlaceDTO> getPlaceLiveData()
     {
         return placeLiveData;
+    }
+
+    private void notifyResult(RepositoryCallback<MutableLiveData<ScheduleDTO>> callback)
+    {
+        resultHandler.post(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                callback.onComplete(new Result.Success<>(scheduleLiveData));
+            }
+        });
     }
 
     public void deleteSchedule()
@@ -194,3 +226,4 @@ public class ScheduleRepository
         }).start();
     }
 }
+

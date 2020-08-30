@@ -304,4 +304,15 @@ public class ScheduleDTO implements Parcelable
         parcel.writeSerializable(insertedDate);
         parcel.writeSerializable(updatedDate);
     }
+
+    public boolean isEmpty()
+    {
+        if (subject.isEmpty())
+        {
+            return true;
+        } else
+        {
+            return false;
+        }
+    }
 }

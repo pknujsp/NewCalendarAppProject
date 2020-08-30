@@ -8,10 +8,10 @@ import java.util.Date;
 
 public class SelectedNotificationTime
 {
-    private int day;
-    private int hour;
-    private int minute;
-    private int mainType;
+    private int day = 1;
+    private int hour = 0;
+    private int minute = 0;
+    private int mainType = ScheduleDTO.NOT_NOTI;
     private String resultStr;
 
     private StringBuilder stringBuilder = new StringBuilder();

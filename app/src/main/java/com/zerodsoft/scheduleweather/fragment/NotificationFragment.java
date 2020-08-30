@@ -6,6 +6,7 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.DialogFragment;
 
 import android.os.Handler;
@@ -24,6 +25,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.zerodsoft.scheduleweather.activity.ScheduleInfoActivity;
+import com.zerodsoft.scheduleweather.databinding.FragmentNotificationBinding;
 import com.zerodsoft.scheduleweather.etc.SelectedNotificationTime;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
@@ -32,48 +34,23 @@ import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
 public class NotificationFragment extends DialogFragment
 {
     public static final String TAG = "NotificationFragment";
+    private static NotificationFragment notificationFragment = new NotificationFragment();
+    private SelectedNotificationTime notification;
 
-    private static SelectedNotificationTime selectedNotificationTime;
+    private FragmentNotificationBinding fragmentBinding;
 
-    private RadioGroup typeRadioGroup;
-    private RadioButton typeDayRadio;
-    private RadioButton typeHourRadio;
-    private RadioButton typeMinuteRadio;
-    private RadioButton notNotiRadio;
-
-    private RelativeLayout dayLayout;
-    private RelativeLayout hourLayout;
-    private RelativeLayout minuteLayout;
-
-    private ImageButton mainMinusButton;
-    private ImageButton mainPlusButton;
-    private ImageButton hourMinusButton;
-    private ImageButton hourPlusButton;
-    private ImageButton minuteMinusButton;
-    private ImageButton minutePlusButton;
-
-    private TextView dayValueTextview;
-    private TextView hourValueTextview;
-    private TextView minuteValueTextview;
-    private TextView resultValueTextView;
-
-    private Button cancelButton;
-    private Button okButton;
-
+    private boolean buttonLongClick = false;
     private boolean restartedFragment = false;
 
-    private static NotificationFragment notificationFragment = null;
+
+    private NotificationFragment()
+    {
+    }
 
     public static NotificationFragment getInstance()
     {
-        if (notificationFragment == null)
-        {
-            notificationFragment = new NotificationFragment();
-        }
         return notificationFragment;
     }
-
-    private boolean buttonLongClick = false;
 
     private OnNotificationTimeListener onNotificationTimeListener;
 
@@ -84,8 +61,8 @@ public class NotificationFragment extends DialogFragment
         public void handleMessage(Message msg)
         {
             moveValue(msg.what);
-            selectedNotificationTime.setResultStr();
-            resultValueTextView.setText(selectedNotificationTime.getResultStr());
+            notification.setResultStr();
+            fragmentBinding.setResult(notification.getResultStr());
             handler.sendEmptyMessageDelayed(msg.what, 50);
         }
     };
@@ -95,17 +72,6 @@ public class NotificationFragment extends DialogFragment
         void onNotiTimeSelected(SelectedNotificationTime selectedNotificationTime);
     }
 
-    public NotificationFragment()
-    {
-        selectedNotificationTime = new SelectedNotificationTime();
-        selectedNotificationTime.setMainType(ScheduleDTO.NOT_NOTI).setDay(1).setHour(0).setMinute(0).setResultStr();
-    }
-
-    public static void close()
-    {
-        selectedNotificationTime = null;
-        notificationFragment = null;
-    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState)
@@ -118,42 +84,18 @@ public class NotificationFragment extends DialogFragment
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
     {
-        return inflater.inflate(R.layout.fragment_notification, container, false);
+        fragmentBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_notification, container, false);
+        fragmentBinding.setNotificationObj(new SelectedNotificationTime());
+        this.notification = fragmentBinding.getNotificationObj();
+        return fragmentBinding.getRoot();
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
-        dayLayout = (RelativeLayout) view.findViewById(R.id.noti_day_layout);
-        hourLayout = (RelativeLayout) view.findViewById(R.id.noti_hour_layout);
-        minuteLayout = (RelativeLayout) view.findViewById(R.id.noti_minute_layout);
+        fragmentBinding.notificationTypeRadioGroup.setOnCheckedChangeListener(onCheckedChangeListener);
 
-        typeRadioGroup = (RadioGroup) view.findViewById(R.id.notification_type_radio_group);
-
-        typeDayRadio = (RadioButton) view.findViewById(R.id.notification_day_radio);
-        typeHourRadio = (RadioButton) view.findViewById(R.id.notification_hour_radio);
-        typeMinuteRadio = (RadioButton) view.findViewById(R.id.notification_minute_radio);
-        notNotiRadio = (RadioButton) view.findViewById(R.id.notification_disable_radio);
-
-        mainMinusButton = (ImageButton) view.findViewById(R.id.minus_noti_day_button);
-        mainPlusButton = (ImageButton) view.findViewById(R.id.plus_noti_day_button);
-        hourMinusButton = (ImageButton) view.findViewById(R.id.minus_noti_hour_button);
-        hourPlusButton = (ImageButton) view.findViewById(R.id.plus_noti_hour_button);
-        minuteMinusButton = (ImageButton) view.findViewById(R.id.minus_noti_minute_button);
-        minutePlusButton = (ImageButton) view.findViewById(R.id.plus_noti_minute_button);
-
-        dayValueTextview = (TextView) view.findViewById(R.id.noti_day_value_textview);
-        hourValueTextview = (TextView) view.findViewById(R.id.noti_hour_value_textview);
-        minuteValueTextview = (TextView) view.findViewById(R.id.noti_minute_value_textview);
-
-        resultValueTextView = (TextView) view.findViewById(R.id.noti_result_value_textview);
-
-        cancelButton = (Button) view.findViewById(R.id.noti_cancel_button);
-        okButton = (Button) view.findViewById(R.id.noti_ok_button);
-
-        typeRadioGroup.setOnCheckedChangeListener(onCheckedChangeListener);
-
-        cancelButton.setOnClickListener(new View.OnClickListener()
+        fragmentBinding.notiCancelButton.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view)
@@ -162,36 +104,36 @@ public class NotificationFragment extends DialogFragment
             }
         });
 
-        okButton.setOnClickListener(new View.OnClickListener()
+        fragmentBinding.notiOkButton.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view)
             {
-                onNotificationTimeListener.onNotiTimeSelected(selectedNotificationTime);
+                onNotificationTimeListener.onNotiTimeSelected(fragmentBinding.getNotificationObj());
                 dismiss();
             }
         });
 
-        mainMinusButton.setOnClickListener(onClickListener);
-        mainPlusButton.setOnClickListener(onClickListener);
-        hourMinusButton.setOnClickListener(onClickListener);
-        hourPlusButton.setOnClickListener(onClickListener);
-        minuteMinusButton.setOnClickListener(onClickListener);
-        minutePlusButton.setOnClickListener(onClickListener);
+        fragmentBinding.minusNotiDayButton.setOnClickListener(onClickListener);
+        fragmentBinding.plusNotiDayButton.setOnClickListener(onClickListener);
+        fragmentBinding.minusNotiHourButton.setOnClickListener(onClickListener);
+        fragmentBinding.plusNotiHourButton.setOnClickListener(onClickListener);
+        fragmentBinding.minusNotiMinuteButton.setOnClickListener(onClickListener);
+        fragmentBinding.plusNotiMinuteButton.setOnClickListener(onClickListener);
 
-        mainMinusButton.setOnLongClickListener(onLongClickListener);
-        mainPlusButton.setOnLongClickListener(onLongClickListener);
-        hourMinusButton.setOnLongClickListener(onLongClickListener);
-        hourPlusButton.setOnLongClickListener(onLongClickListener);
-        minuteMinusButton.setOnLongClickListener(onLongClickListener);
-        minutePlusButton.setOnLongClickListener(onLongClickListener);
+        fragmentBinding.minusNotiDayButton.setOnLongClickListener(onLongClickListener);
+        fragmentBinding.plusNotiDayButton.setOnLongClickListener(onLongClickListener);
+        fragmentBinding.minusNotiHourButton.setOnLongClickListener(onLongClickListener);
+        fragmentBinding.plusNotiHourButton.setOnLongClickListener(onLongClickListener);
+        fragmentBinding.minusNotiMinuteButton.setOnLongClickListener(onLongClickListener);
+        fragmentBinding.plusNotiMinuteButton.setOnLongClickListener(onLongClickListener);
 
-        mainMinusButton.setOnTouchListener(onTouchListener);
-        mainPlusButton.setOnTouchListener(onTouchListener);
-        hourMinusButton.setOnTouchListener(onTouchListener);
-        hourPlusButton.setOnTouchListener(onTouchListener);
-        minuteMinusButton.setOnTouchListener(onTouchListener);
-        minutePlusButton.setOnTouchListener(onTouchListener);
+        fragmentBinding.minusNotiDayButton.setOnTouchListener(onTouchListener);
+        fragmentBinding.plusNotiDayButton.setOnTouchListener(onTouchListener);
+        fragmentBinding.minusNotiHourButton.setOnTouchListener(onTouchListener);
+        fragmentBinding.plusNotiHourButton.setOnTouchListener(onTouchListener);
+        fragmentBinding.minusNotiMinuteButton.setOnTouchListener(onTouchListener);
+        fragmentBinding.plusNotiMinuteButton.setOnTouchListener(onTouchListener);
 
         super.onViewCreated(view, savedInstanceState);
     }
@@ -205,44 +147,44 @@ public class NotificationFragment extends DialogFragment
             {
                 case R.id.notification_day_radio:
                     // 일
-                    selectedNotificationTime.setMainType(ScheduleDTO.MAIN_DAY);
-                    dayLayout.setVisibility(View.VISIBLE);
-                    hourLayout.setVisibility(View.VISIBLE);
-                    minuteLayout.setVisibility(View.VISIBLE);
+                    notification.setMainType(ScheduleDTO.MAIN_DAY);
+                    fragmentBinding.notiDayLayout.setVisibility(View.VISIBLE);
+                    fragmentBinding.notiHourLayout.setVisibility(View.VISIBLE);
+                    fragmentBinding.notiMinuteLayout.setVisibility(View.VISIBLE);
                     break;
                 case R.id.notification_hour_radio:
                     // 시간
-                    selectedNotificationTime.setMainType(ScheduleDTO.MAIN_HOUR);
-                    dayLayout.setVisibility(View.GONE);
-                    hourLayout.setVisibility(View.VISIBLE);
-                    minuteLayout.setVisibility(View.VISIBLE);
+                    notification.setMainType(ScheduleDTO.MAIN_HOUR);
+                    fragmentBinding.notiDayLayout.setVisibility(View.GONE);
+                    fragmentBinding.notiHourLayout.setVisibility(View.VISIBLE);
+                    fragmentBinding.notiMinuteLayout.setVisibility(View.VISIBLE);
                     break;
                 case R.id.notification_minute_radio:
                     // 분
-                    selectedNotificationTime.setMainType(ScheduleDTO.MAIN_MINUTE);
-                    dayLayout.setVisibility(View.GONE);
-                    hourLayout.setVisibility(View.GONE);
-                    minuteLayout.setVisibility(View.VISIBLE);
+                    notification.setMainType(ScheduleDTO.MAIN_MINUTE);
+                    fragmentBinding.notiDayLayout.setVisibility(View.GONE);
+                    fragmentBinding.notiHourLayout.setVisibility(View.GONE);
+                    fragmentBinding.notiMinuteLayout.setVisibility(View.VISIBLE);
                     break;
                 case R.id.notification_disable_radio:
                     // 일
-                    selectedNotificationTime.setMainType(ScheduleDTO.NOT_NOTI);
-                    dayLayout.setVisibility(View.GONE);
-                    hourLayout.setVisibility(View.GONE);
-                    minuteLayout.setVisibility(View.GONE);
+                    notification.setMainType(ScheduleDTO.NOT_NOTI);
+                    fragmentBinding.notiDayLayout.setVisibility(View.GONE);
+                    fragmentBinding.notiHourLayout.setVisibility(View.GONE);
+                    fragmentBinding.notiMinuteLayout.setVisibility(View.GONE);
                     break;
             }
 
             if (!restartedFragment)
             {
                 checkValue(viewId);
-                selectedNotificationTime.setResultStr();
+                notification.setResultStr();
             }
 
-            dayValueTextview.setText(Integer.toString(selectedNotificationTime.getDay()));
-            hourValueTextview.setText(Integer.toString(selectedNotificationTime.getHour()));
-            minuteValueTextview.setText(Integer.toString(selectedNotificationTime.getMinute()));
-            resultValueTextView.setText(selectedNotificationTime.getResultStr());
+            fragmentBinding.setDay(notification.getDay());
+            fragmentBinding.setHour(notification.getHour());
+            fragmentBinding.setMinute(notification.getMinute());
+            fragmentBinding.setResult(notification.getResultStr());
         }
     };
 
@@ -287,8 +229,8 @@ public class NotificationFragment extends DialogFragment
         public void onClick(View view)
         {
             moveValue(view.getId());
-            selectedNotificationTime.setResultStr();
-            resultValueTextView.setText(selectedNotificationTime.getResultStr());
+            notification.setResultStr();
+            fragmentBinding.setResult(notification.getResultStr());
         }
     };
 
@@ -297,55 +239,55 @@ public class NotificationFragment extends DialogFragment
         switch (viewId)
         {
             case R.id.minus_noti_day_button:
-                if (selectedNotificationTime.getDay() != 0)
+                if (notification.getDay() != 0)
                 {
-                    selectedNotificationTime.setDay(selectedNotificationTime.getDay() - 1);
-                    dayValueTextview.setText(Integer.toString(selectedNotificationTime.getDay()));
+                    notification.setDay(notification.getDay() - 1);
+                    fragmentBinding.setDay(notification.getDay());
                 }
                 break;
             case R.id.plus_noti_day_button:
-                selectedNotificationTime.setDay(selectedNotificationTime.getDay() + 1);
-                dayValueTextview.setText(Integer.toString(selectedNotificationTime.getDay()));
+                notification.setDay(notification.getDay() + 1);
+                fragmentBinding.setDay(notification.getDay());
                 break;
             case R.id.minus_noti_hour_button:
-                if (selectedNotificationTime.getHour() != 0)
+                if (notification.getHour() != 0)
                 {
-                    selectedNotificationTime.setHour(selectedNotificationTime.getHour() - 1);
-                    hourValueTextview.setText(Integer.toString(selectedNotificationTime.getHour()));
+                    notification.setHour(notification.getHour() - 1);
+                    fragmentBinding.setHour(notification.getHour());
                 }
                 break;
             case R.id.plus_noti_hour_button:
-                selectedNotificationTime.setHour(selectedNotificationTime.getHour() + 1);
+                notification.setHour(notification.getHour() + 1);
 
-                if (selectedNotificationTime.getMainType() == ScheduleDTO.MAIN_DAY)
+                if (notification.getMainType() == ScheduleDTO.MAIN_DAY)
                 {
-                    if (selectedNotificationTime.getHour() > 23)
+                    if (notification.getHour() > 23)
                     {
-                        selectedNotificationTime.setHour(23);
+                        notification.setHour(23);
                     }
                 }
-                hourValueTextview.setText(Integer.toString(selectedNotificationTime.getHour()));
+                fragmentBinding.setHour(notification.getHour());
 
                 break;
             case R.id.minus_noti_minute_button:
-                if (selectedNotificationTime.getMinute() != 0)
+                if (notification.getMinute() != 0)
                 {
-                    selectedNotificationTime.setMinute(selectedNotificationTime.getMinute() - 1);
-                    minuteValueTextview.setText(Integer.toString(selectedNotificationTime.getMinute()));
+                    notification.setMinute(notification.getMinute() - 1);
+                    fragmentBinding.setMinute(notification.getMinute());
                 }
                 break;
             case R.id.plus_noti_minute_button:
-                selectedNotificationTime.setMinute(selectedNotificationTime.getMinute() + 1);
+                notification.setMinute(notification.getMinute() + 1);
 
-                if (selectedNotificationTime.getMainType() == ScheduleDTO.MAIN_DAY || selectedNotificationTime.getMainType() == ScheduleDTO.MAIN_HOUR)
+                if (notification.getMainType() == ScheduleDTO.MAIN_DAY || notification.getMainType() == ScheduleDTO.MAIN_HOUR)
                 {
-                    if (selectedNotificationTime.getMinute() > 59)
+                    if (notification.getMinute() > 59)
                     {
-                        selectedNotificationTime.setMinute(59);
+                        notification.setMinute(59);
                     }
                 }
 
-                minuteValueTextview.setText(Integer.toString(selectedNotificationTime.getMinute()));
+                fragmentBinding.setMinute(notification.getMinute());
                 break;
         }
     }
@@ -355,20 +297,20 @@ public class NotificationFragment extends DialogFragment
         switch (viewId)
         {
             case R.id.notification_day_radio:
-                if (selectedNotificationTime.getHour() > 23)
+                if (notification.getHour() > 23)
                 {
-                    selectedNotificationTime.setHour(23);
+                    notification.setHour(23);
                 }
-                if (selectedNotificationTime.getMinute() > 59)
+                if (notification.getMinute() > 59)
                 {
-                    selectedNotificationTime.setMinute(59);
+                    notification.setMinute(59);
                 }
                 break;
 
             case R.id.notification_hour_radio:
-                if (selectedNotificationTime.getMinute() > 59)
+                if (notification.getMinute() > 59)
                 {
-                    selectedNotificationTime.setMinute(59);
+                    notification.setMinute(59);
                 }
                 break;
 
@@ -394,22 +336,23 @@ public class NotificationFragment extends DialogFragment
 
         getDialog().getWindow().setAttributes(layoutParams);
 
-        switch (selectedNotificationTime.getMainType())
+        restartedFragment = false;
+
+        switch (notification.getMainType())
         {
             case ScheduleDTO.MAIN_DAY:
-                typeDayRadio.performClick();
+                fragmentBinding.notificationDayRadio.performClick();
                 break;
             case ScheduleDTO.MAIN_HOUR:
-                typeHourRadio.performClick();
+                fragmentBinding.notificationHourRadio.performClick();
                 break;
             case ScheduleDTO.MAIN_MINUTE:
-                typeMinuteRadio.performClick();
+                fragmentBinding.notificationMinuteRadio.performClick();
                 break;
             case ScheduleDTO.NOT_NOTI:
-                notNotiRadio.performClick();
+                fragmentBinding.notificationDisableRadio.performClick();
                 break;
         }
-        restartedFragment = false;
     }
 
     @Override
@@ -420,7 +363,8 @@ public class NotificationFragment extends DialogFragment
 
     public void setSelectedNotificationTime(SelectedNotificationTime selectedNotificationTime)
     {
-        this.selectedNotificationTime = selectedNotificationTime;
+        fragmentBinding.setNotificationObj(selectedNotificationTime);
+        notification = fragmentBinding.getNotificationObj();
         restartedFragment = true;
     }
 }

@@ -1,36 +1,54 @@
 package com.zerodsoft.scheduleweather.viewmodel;
 
-import android.app.Application;
 import android.content.Context;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
-import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Observer;
 
+import com.zerodsoft.scheduleweather.Application;
 import com.zerodsoft.scheduleweather.repositories.ScheduleRepository;
 import com.zerodsoft.scheduleweather.room.dto.AddressDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
 import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
+import com.zerodsoft.scheduleweather.thread.RepositoryCallback;
+import com.zerodsoft.scheduleweather.thread.Result;
 
 public class ScheduleViewModel extends AndroidViewModel
 {
     private Context context;
     private ScheduleRepository scheduleRepository;
 
-    private LiveData<ScheduleDTO> scheduleLiveData;
-    private LiveData<PlaceDTO> placeLiveData;
-    private LiveData<AddressDTO> addressLiveData;
+    private MutableLiveData<ScheduleDTO> scheduleLiveData;
+    private MutableLiveData<PlaceDTO> placeLiveData;
+    private MutableLiveData<AddressDTO> addressLiveData;
 
     private ScheduleDTO scheduleDTO;
     private PlaceDTO placeDTO;
     private AddressDTO addressDTO;
 
+    private Observer<ScheduleDTO> observer;
     private int scheduleId;
+    private OnDataListener onDataListener;
+
+    public interface OnDataListener
+    {
+        void setViews(ScheduleDTO scheduleDTO);
+    }
 
     public ScheduleViewModel(@NonNull Application application)
     {
         super(application);
         scheduleRepository = new ScheduleRepository(application);
+        observer = new Observer<ScheduleDTO>()
+        {
+            @Override
+            public void onChanged(ScheduleDTO scheduleDTO)
+            {
+                onDataListener.setViews(scheduleDTO);
+            }
+        }
     }
 
     public void setScheduleId(int scheduleId)
@@ -40,14 +58,39 @@ public class ScheduleViewModel extends AndroidViewModel
 
     public void selectSchedule()
     {
-        scheduleRepository.selectSchedule(scheduleId);
+        scheduleRepository.selectSchedule(scheduleId, new RepositoryCallback<MutableLiveData<ScheduleDTO>>()
+        {
+            @Override
+            public void onComplete(Result<MutableLiveData<ScheduleDTO>> result)
+            {
+                if (result instanceof Result.Success)
+                {
+                    scheduleLiveData = scheduleRepository.getScheduleLiveData();
+
+                    if (!scheduleLiveData.getValue().isEmpty())
+                    {
+                        addressLiveData = null;
+                        placeLiveData = null;
+
+                        if (scheduleLiveData.getValue().getAddress() != -1)
+                        {
+                            addressLiveData = scheduleRepository.getAddressLiveData();
+                        } else if (scheduleLiveData.getValue().getPlace() != -1)
+                        {
+                            placeLiveData = scheduleRepository.getPlaceLiveData();
+                        }
+                    }
+                    scheduleLiveData.observe();
+                }
+            }
+        });
     }
 
-    public LiveData<ScheduleDTO> getSchedule()
+    public MutableLiveData<ScheduleDTO> getSchedule()
     {
         scheduleLiveData = scheduleRepository.getScheduleLiveData();
 
-        if (scheduleLiveData.getValue() != null)
+        if (!scheduleLiveData.getValue().isEmpty())
         {
             addressLiveData = null;
             placeLiveData = null;
@@ -63,12 +106,12 @@ public class ScheduleViewModel extends AndroidViewModel
         return scheduleLiveData;
     }
 
-    public LiveData<PlaceDTO> getPlace()
+    public MutableLiveData<PlaceDTO> getPlace()
     {
         return placeLiveData;
     }
 
-    public LiveData<AddressDTO> getAddress()
+    public MutableLiveData<AddressDTO> getAddress()
     {
         return addressLiveData;
     }

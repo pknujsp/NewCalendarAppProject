@@ -8,18 +8,6 @@
         <import type="com.zerodsoft.scheduleweather.utility.Clock" />
 
         <variable
-            name="allDay"
-            type="java.util.Date" />
-
-        <variable
-            name="startDate"
-            type="java.util.Date" />
-
-        <variable
-            name="endDate"
-            type="java.util.Date" />
-
-        <variable
             name="scheduleDto"
             type="com.zerodsoft.scheduleweather.room.dto.ScheduleDTO" />
 
