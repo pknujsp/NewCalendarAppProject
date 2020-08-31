@@ -307,7 +307,7 @@ public class ScheduleDTO implements Parcelable
 
     public boolean isEmpty()
     {
-        if (subject.isEmpty())
+        if (subject == null)
         {
             return true;
         } else

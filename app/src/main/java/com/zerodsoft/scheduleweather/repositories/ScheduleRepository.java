@@ -1,12 +1,12 @@
 package com.zerodsoft.scheduleweather.repositories;
 
 
+import android.app.Application;
 import android.os.Handler;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import com.zerodsoft.scheduleweather.Application;
 import com.zerodsoft.scheduleweather.activity.ScheduleInfoActivity;
 import com.zerodsoft.scheduleweather.room.AppDb;
 import com.zerodsoft.scheduleweather.room.dao.LocationDAO;
@@ -33,43 +33,34 @@ public class ScheduleRepository
     private MutableLiveData<PlaceDTO> placeLiveData = new MutableLiveData<>();
     private MutableLiveData<AddressDTO> addressLiveData = new MutableLiveData<>();
 
-    private final Handler resultHandler = Application.mainThreadHandler;
-
-    public ScheduleRepository(Application application)
+    public ScheduleRepository(Application application, int scheduleId)
     {
-        appDb = AppDb.getInstance(application.getApplicationContext());
+        appDb = AppDb.getInstance(application);
         scheduleDAO = appDb.scheduleDAO();
         locationDAO = appDb.locationDAO();
+        selectSchedule(scheduleId);
     }
 
-    public void selectSchedule(int id, RepositoryCallback<MutableLiveData<ScheduleDTO>> callback)
+    public void selectSchedule(int scheduleId)
     {
-        Application.executorService.execute(new Runnable()
+        LiveData<ScheduleDTO> scheduleLive = scheduleDAO.selectSchedule(scheduleId);
+
+        if (scheduleLive.getValue() != null)
         {
-            @Override
-            public void run()
+            ScheduleDTO scheduleDTO = scheduleLive.getValue();
+            scheduleLiveData.setValue(scheduleDTO);
+
+            if (scheduleDTO.getAddress() != -1)
             {
-                LiveData<ScheduleDTO> scheduleLive = scheduleDAO.selectSchedule(id);
-
-                if (scheduleLive.getValue() != null)
-                {
-                    ScheduleDTO scheduleDTO = scheduleLive.getValue();
-                    scheduleLiveData.postValue(scheduleDTO);
-
-                    if (scheduleDTO.getAddress() != -1)
-                    {
-                        addressLiveData.postValue(locationDAO.selectAddress(scheduleDTO.getAddress()).getValue());
-                    } else if (scheduleDTO.getPlace() != -1)
-                    {
-                        placeLiveData.postValue(locationDAO.selectPlace(scheduleDTO.getPlace()).getValue());
-                    }
-                } else
-                {
-                    scheduleLiveData.postValue(new ScheduleDTO());
-                }
-                notifyResult(callback);
+                addressLiveData.setValue(locationDAO.selectAddress(scheduleDTO.getAddress()).getValue());
+            } else if (scheduleDTO.getPlace() != -1)
+            {
+                placeLiveData.setValue(locationDAO.selectPlace(scheduleDTO.getPlace()).getValue());
             }
-        });
+        } else
+        {
+            scheduleLiveData.setValue(new ScheduleDTO());
+        }
     }
 
     public MutableLiveData<ScheduleDTO> getScheduleLiveData()
@@ -87,17 +78,6 @@ public class ScheduleRepository
         return placeLiveData;
     }
 
-    private void notifyResult(RepositoryCallback<MutableLiveData<ScheduleDTO>> callback)
-    {
-        resultHandler.post(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                callback.onComplete(new Result.Success<>(scheduleLiveData));
-            }
-        });
-    }
 
     public void deleteSchedule()
     {

@@ -7,15 +7,15 @@
 
         <variable
             name="day"
-            type="Integer" />
+            type="String" />
 
         <variable
             name="hour"
-            type="Integer" />
+            type="String" />
 
         <variable
             name="minute"
-            type="Integer" />
+            type="String" />
 
         <variable
             name="result"

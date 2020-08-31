@@ -1,12 +1,13 @@
 -- Merging decision tree log ---
 manifest
-ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:2:1-39:12
-INJECTED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:2:1-39:12
-INJECTED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:2:1-39:12
-INJECTED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:2:1-39:12
+ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:2:1-40:12
+INJECTED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:2:1-40:12
+INJECTED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:2:1-40:12
+INJECTED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:2:1-40:12
 MERGED from [androidx.databinding:databinding-adapters:4.0.1] C:\Users\Marx\.gradle\caches\transforms-2\files-2.1\eb6d9396332fcb64ccb4c1f61c80f690\databinding-adapters-4.0.1\AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.databinding:databinding-runtime:4.0.1] C:\Users\Marx\.gradle\caches\transforms-2\files-2.1\ba7f26db2b0562aa3ede6c23dd752068\databinding-runtime-4.0.1\AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.databinding:viewbinding:4.0.1] C:\Users\Marx\.gradle\caches\transforms-2\files-2.1\5dd45fc0af2ed6a6165fc80ea1f24b08\jetified-viewbinding-4.0.1\AndroidManifest.xml:17:1-22:12
+MERGED from [com.amitshekhar.android:debug-db:1.0.6] C:\Users\Marx\.gradle\caches\transforms-2\files-2.1\40d132d4169ee4715906e6aabb11ff89\jetified-debug-db-1.0.6\AndroidManifest.xml:2:1-19:12
 MERGED from [androidx.navigation:navigation-ui:2.3.0] C:\Users\Marx\.gradle\caches\transforms-2\files-2.1\d0f92c0b26fabb47a28488bab3cc8456\navigation-ui-2.3.0\AndroidManifest.xml:17:1-24:12
 MERGED from [com.google.android.material:material:1.1.0] C:\Users\Marx\.gradle\caches\transforms-2\files-2.1\880b7e418025ce421e62ae2f6f547833\material-1.1.0\AndroidManifest.xml:17:1-24:12
 MERGED from [pub.devrel:easypermissions:0.3.0] C:\Users\Marx\.gradle\caches\transforms-2\files-2.1\4fe259e1096a2ad43f521114d73cdae9\jetified-easypermissions-0.3.0\AndroidManifest.xml:2:1-19:12
@@ -27,6 +28,7 @@ MERGED from [com.google.android.gms:play-services-auth:18.0.0] C:\Users\Marx\.gr
 MERGED from [androidx.room:room-ktx:2.2.5] C:\Users\Marx\.gradle\caches\transforms-2\files-2.1\dc67d19a3e87ce6f1a24cc2a78720358\jetified-room-ktx-2.2.5\AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.room:room-rxjava2:2.2.5] C:\Users\Marx\.gradle\caches\transforms-2\files-2.1\1653b92da6ba6bdbe82373ba7b4e7d67\room-rxjava2-2.2.5\AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.room:room-guava:2.2.5] C:\Users\Marx\.gradle\caches\transforms-2\files-2.1\51a913e93cb656f4a213b338b360ccb9\room-guava-2.2.5\AndroidManifest.xml:17:1-24:12
+MERGED from [com.amitshekhar.android:debug-db-base:1.0.6] C:\Users\Marx\.gradle\caches\transforms-2\files-2.1\a69bf2d70126947c79b6367fb3276b88\jetified-debug-db-base-1.0.6\AndroidManifest.xml:20:1-32:12
 MERGED from [androidx.room:room-runtime:2.2.5] C:\Users\Marx\.gradle\caches\transforms-2\files-2.1\28e9fb3eede996dd8d91f8bfd7ee4a2a\room-runtime-2.2.5\AndroidManifest.xml:17:1-31:12
 MERGED from [androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0] C:\Users\Marx\.gradle\caches\transforms-2\files-2.1\7cabbd44efe2b9cccf9f38ccf8061f05\jetified-lifecycle-viewmodel-ktx-2.2.0\AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.cursoradapter:cursoradapter:1.0.0] C:\Users\Marx\.gradle\caches\transforms-2\files-2.1\7c0677be8011741026309ef690a9f4db\cursoradapter-1.0.0\AndroidManifest.xml:17:1-22:12
@@ -71,25 +73,27 @@ MERGED from [androidx.documentfile:documentfile:1.0.0] C:\Users\Marx\.gradle\cac
 MERGED from [androidx.localbroadcastmanager:localbroadcastmanager:1.0.0] C:\Users\Marx\.gradle\caches\transforms-2\files-2.1\d711f81259436f09ffdf0b48105165e3\localbroadcastmanager-1.0.0\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.print:print:1.0.0] C:\Users\Marx\.gradle\caches\transforms-2\files-2.1\87e4a5cb4839ebd5d033fa0ae6227780\print-1.0.0\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.interpolator:interpolator:1.0.0] C:\Users\Marx\.gradle\caches\transforms-2\files-2.1\bcf856ddfeb04b3b73ed182739910d39\interpolator-1.0.0\AndroidManifest.xml:17:1-22:12
-INJECTED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:2:1-39:12
-INJECTED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:2:1-39:12
-INJECTED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:2:1-39:12
+INJECTED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:2:1-40:12
+INJECTED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:2:1-40:12
+INJECTED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:2:1-40:12
 	package
 		ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:3:5-44
 		INJECTED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml
 		INJECTED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml
 	android:versionName
 		INJECTED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml
-		ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:2:1-39:12
+		ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:2:1-40:12
 		INJECTED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml
 	android:versionCode
 		INJECTED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml
-		ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:2:1-39:12
+		ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:2:1-40:12
 		INJECTED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml
 	xmlns:android
 		ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:2:11-69
 uses-permission#android.permission.INTERNET
 ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:5:5-67
+MERGED from [com.amitshekhar.android:debug-db-base:1.0.6] C:\Users\Marx\.gradle\caches\transforms-2\files-2.1\a69bf2d70126947c79b6367fb3276b88\jetified-debug-db-base-1.0.6\AndroidManifest.xml:29:5-67
+MERGED from [com.amitshekhar.android:debug-db-base:1.0.6] C:\Users\Marx\.gradle\caches\transforms-2\files-2.1\a69bf2d70126947c79b6367fb3276b88\jetified-debug-db-base-1.0.6\AndroidManifest.xml:29:5-67
 	android:name
 		ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:5:22-64
 uses-permission#android.permission.ACCESS_NETWORK_STATE
@@ -105,7 +109,9 @@ ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\
 	android:name
 		ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:8:22-78
 application
-ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:10:5-37:19
+ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:10:5-38:19
+MERGED from [com.amitshekhar.android:debug-db:1.0.6] C:\Users\Marx\.gradle\caches\transforms-2\files-2.1\40d132d4169ee4715906e6aabb11ff89\jetified-debug-db-1.0.6\AndroidManifest.xml:11:5-17:19
+MERGED from [com.amitshekhar.android:debug-db:1.0.6] C:\Users\Marx\.gradle\caches\transforms-2\files-2.1\40d132d4169ee4715906e6aabb11ff89\jetified-debug-db-1.0.6\AndroidManifest.xml:11:5-17:19
 MERGED from [com.google.android.material:material:1.1.0] C:\Users\Marx\.gradle\caches\transforms-2\files-2.1\880b7e418025ce421e62ae2f6f547833\material-1.1.0\AndroidManifest.xml:22:5-20
 MERGED from [com.google.android.material:material:1.1.0] C:\Users\Marx\.gradle\caches\transforms-2\files-2.1\880b7e418025ce421e62ae2f6f547833\material-1.1.0\AndroidManifest.xml:22:5-20
 MERGED from [pub.devrel:easypermissions:0.3.0] C:\Users\Marx\.gradle\caches\transforms-2\files-2.1\4fe259e1096a2ad43f521114d73cdae9\jetified-easypermissions-0.3.0\AndroidManifest.xml:11:5-17:19
@@ -151,45 +157,47 @@ MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.0] C:\Users\Ma
 	android:theme
 		ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:16:9-40
 	android:usesCleartextTraffic
-		ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:17:9-44
+		ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:18:9-44
+	android:name
+		ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:17:9-36
 activity#com.zerodsoft.scheduleweather.activity.mapactivity.MapActivity
-ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:18:9-20:89
+ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:19:9-21:89
 	android:taskAffinity
-		ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:20:13-86
+		ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:21:13-86
 	android:name
-		ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:19:13-61
+		ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:20:13-61
 activity#com.zerodsoft.scheduleweather.activity.ScheduleInfoActivity
-ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:21:9-67
+ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:22:9-67
 	android:name
-		ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:21:19-64
+		ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:22:19-64
 activity#com.zerodsoft.scheduleweather.AppMainActivity
-ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:22:9-31:20
+ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:23:9-32:20
 	android:label
-		ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:24:13-45
+		ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:25:13-45
 	android:theme
-		ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:25:13-56
+		ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:26:13-56
 	android:name
-		ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:23:13-44
+		ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:24:13-44
 intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
-ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:26:13-30:29
+ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:27:13-31:29
 action#android.intent.action.MAIN
-ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:27:17-69
+ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:28:17-69
 	android:name
-		ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:27:25-66
+		ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:28:25-66
 category#android.intent.category.LAUNCHER
-ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:29:17-77
+ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:30:17-77
 	android:name
-		ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:29:27-74
+		ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:30:27-74
 activity#com.zerodsoft.scheduleweather.IntroActivity
-ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:32:9-51
+ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:33:9-51
 	android:name
-		ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:32:19-48
+		ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:33:19-48
 meta-data#com.kakao.sdk.AppKey
-ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:34:9-36:64
+ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:35:9-37:64
 	android:value
-		ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:36:13-61
+		ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:37:13-61
 	android:name
-		ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:35:13-48
+		ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:36:13-48
 uses-sdk
 INJECTED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml
@@ -200,6 +208,8 @@ MERGED from [androidx.databinding:databinding-runtime:4.0.1] C:\Users\Marx\.grad
 MERGED from [androidx.databinding:databinding-runtime:4.0.1] C:\Users\Marx\.gradle\caches\transforms-2\files-2.1\ba7f26db2b0562aa3ede6c23dd752068\databinding-runtime-4.0.1\AndroidManifest.xml:22:5-44
 MERGED from [androidx.databinding:viewbinding:4.0.1] C:\Users\Marx\.gradle\caches\transforms-2\files-2.1\5dd45fc0af2ed6a6165fc80ea1f24b08\jetified-viewbinding-4.0.1\AndroidManifest.xml:20:5-44
 MERGED from [androidx.databinding:viewbinding:4.0.1] C:\Users\Marx\.gradle\caches\transforms-2\files-2.1\5dd45fc0af2ed6a6165fc80ea1f24b08\jetified-viewbinding-4.0.1\AndroidManifest.xml:20:5-44
+MERGED from [com.amitshekhar.android:debug-db:1.0.6] C:\Users\Marx\.gradle\caches\transforms-2\files-2.1\40d132d4169ee4715906e6aabb11ff89\jetified-debug-db-1.0.6\AndroidManifest.xml:7:5-9:41
+MERGED from [com.amitshekhar.android:debug-db:1.0.6] C:\Users\Marx\.gradle\caches\transforms-2\files-2.1\40d132d4169ee4715906e6aabb11ff89\jetified-debug-db-1.0.6\AndroidManifest.xml:7:5-9:41
 MERGED from [androidx.navigation:navigation-ui:2.3.0] C:\Users\Marx\.gradle\caches\transforms-2\files-2.1\d0f92c0b26fabb47a28488bab3cc8456\navigation-ui-2.3.0\AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.navigation:navigation-ui:2.3.0] C:\Users\Marx\.gradle\caches\transforms-2\files-2.1\d0f92c0b26fabb47a28488bab3cc8456\navigation-ui-2.3.0\AndroidManifest.xml:20:5-22:41
 MERGED from [com.google.android.material:material:1.1.0] C:\Users\Marx\.gradle\caches\transforms-2\files-2.1\880b7e418025ce421e62ae2f6f547833\material-1.1.0\AndroidManifest.xml:20:5-44
@@ -240,6 +250,8 @@ MERGED from [androidx.room:room-rxjava2:2.2.5] C:\Users\Marx\.gradle\caches\tran
 MERGED from [androidx.room:room-rxjava2:2.2.5] C:\Users\Marx\.gradle\caches\transforms-2\files-2.1\1653b92da6ba6bdbe82373ba7b4e7d67\room-rxjava2-2.2.5\AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.room:room-guava:2.2.5] C:\Users\Marx\.gradle\caches\transforms-2\files-2.1\51a913e93cb656f4a213b338b360ccb9\room-guava-2.2.5\AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.room:room-guava:2.2.5] C:\Users\Marx\.gradle\caches\transforms-2\files-2.1\51a913e93cb656f4a213b338b360ccb9\room-guava-2.2.5\AndroidManifest.xml:20:5-22:41
+MERGED from [com.amitshekhar.android:debug-db-base:1.0.6] C:\Users\Marx\.gradle\caches\transforms-2\files-2.1\a69bf2d70126947c79b6367fb3276b88\jetified-debug-db-base-1.0.6\AndroidManifest.xml:25:5-27:41
+MERGED from [com.amitshekhar.android:debug-db-base:1.0.6] C:\Users\Marx\.gradle\caches\transforms-2\files-2.1\a69bf2d70126947c79b6367fb3276b88\jetified-debug-db-base-1.0.6\AndroidManifest.xml:25:5-27:41
 MERGED from [androidx.room:room-runtime:2.2.5] C:\Users\Marx\.gradle\caches\transforms-2\files-2.1\28e9fb3eede996dd8d91f8bfd7ee4a2a\room-runtime-2.2.5\AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.room:room-runtime:2.2.5] C:\Users\Marx\.gradle\caches\transforms-2\files-2.1\28e9fb3eede996dd8d91f8bfd7ee4a2a\room-runtime-2.2.5\AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0] C:\Users\Marx\.gradle\caches\transforms-2\files-2.1\7cabbd44efe2b9cccf9f38ccf8061f05\jetified-lifecycle-viewmodel-ktx-2.2.0\AndroidManifest.xml:20:5-22:41
@@ -338,6 +350,16 @@ INJECTED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\ma
 		INJECTED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml
 		ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml
 		INJECTED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml
+provider#com.amitshekhar.debug.DebugDBInitProvider
+ADDED from [com.amitshekhar.android:debug-db:1.0.6] C:\Users\Marx\.gradle\caches\transforms-2\files-2.1\40d132d4169ee4715906e6aabb11ff89\jetified-debug-db-1.0.6\AndroidManifest.xml:12:9-16:40
+	android:enabled
+		ADDED from [com.amitshekhar.android:debug-db:1.0.6] C:\Users\Marx\.gradle\caches\transforms-2\files-2.1\40d132d4169ee4715906e6aabb11ff89\jetified-debug-db-1.0.6\AndroidManifest.xml:15:13-35
+	android:authorities
+		ADDED from [com.amitshekhar.android:debug-db:1.0.6] C:\Users\Marx\.gradle\caches\transforms-2\files-2.1\40d132d4169ee4715906e6aabb11ff89\jetified-debug-db-1.0.6\AndroidManifest.xml:14:13-71
+	android:exported
+		ADDED from [com.amitshekhar.android:debug-db:1.0.6] C:\Users\Marx\.gradle\caches\transforms-2\files-2.1\40d132d4169ee4715906e6aabb11ff89\jetified-debug-db-1.0.6\AndroidManifest.xml:16:13-37
+	android:name
+		ADDED from [com.amitshekhar.android:debug-db:1.0.6] C:\Users\Marx\.gradle\caches\transforms-2\files-2.1\40d132d4169ee4715906e6aabb11ff89\jetified-debug-db-1.0.6\AndroidManifest.xml:13:13-69
 activity#pub.devrel.easypermissions.AppSettingsDialogHolderActivity
 ADDED from [pub.devrel:easypermissions:0.3.0] C:\Users\Marx\.gradle\caches\transforms-2\files-2.1\4fe259e1096a2ad43f521114d73cdae9\jetified-easypermissions-0.3.0\AndroidManifest.xml:12:9-16:66
 	android:label
@@ -366,6 +388,10 @@ ADDED from [com.google.android.gms:play-services-auth:18.0.0] C:\Users\Marx\.gra
 		ADDED from [com.google.android.gms:play-services-auth:18.0.0] C:\Users\Marx\.gradle\caches\transforms-2\files-2.1\308cf7196b5ef02884707b1d44fe6884\jetified-play-services-auth-18.0.0\AndroidManifest.xml:36:13-107
 	android:name
 		ADDED from [com.google.android.gms:play-services-auth:18.0.0] C:\Users\Marx\.gradle\caches\transforms-2\files-2.1\308cf7196b5ef02884707b1d44fe6884\jetified-play-services-auth-18.0.0\AndroidManifest.xml:34:13-89
+uses-permission#android.permission.ACCESS_WIFI_STATE
+ADDED from [com.amitshekhar.android:debug-db-base:1.0.6] C:\Users\Marx\.gradle\caches\transforms-2\files-2.1\a69bf2d70126947c79b6367fb3276b88\jetified-debug-db-base-1.0.6\AndroidManifest.xml:30:5-76
+	android:name
+		ADDED from [com.amitshekhar.android:debug-db-base:1.0.6] C:\Users\Marx\.gradle\caches\transforms-2\files-2.1\a69bf2d70126947c79b6367fb3276b88\jetified-debug-db-base-1.0.6\AndroidManifest.xml:30:22-73
 service#androidx.room.MultiInstanceInvalidationService
 ADDED from [androidx.room:room-runtime:2.2.5] C:\Users\Marx\.gradle\caches\transforms-2\files-2.1\28e9fb3eede996dd8d91f8bfd7ee4a2a\room-runtime-2.2.5\AndroidManifest.xml:25:9-28:40
 	android:exported

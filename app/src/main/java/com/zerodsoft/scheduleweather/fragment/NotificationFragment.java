@@ -36,16 +36,10 @@ public class NotificationFragment extends DialogFragment
     public static final String TAG = "NotificationFragment";
     private static NotificationFragment notificationFragment = new NotificationFragment();
     private SelectedNotificationTime notification;
-
     private FragmentNotificationBinding fragmentBinding;
 
     private boolean buttonLongClick = false;
     private boolean restartedFragment = false;
-
-
-    private NotificationFragment()
-    {
-    }
 
     public static NotificationFragment getInstance()
     {
@@ -72,11 +66,10 @@ public class NotificationFragment extends DialogFragment
         void onNotiTimeSelected(SelectedNotificationTime selectedNotificationTime);
     }
 
-
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState)
     {
-        this.onNotificationTimeListener = (ScheduleInfoActivity) getActivity();
+        this.onNotificationTimeListener = (OnNotificationTimeListener) getActivity();
         super.onCreate(savedInstanceState);
     }
 
@@ -85,8 +78,6 @@ public class NotificationFragment extends DialogFragment
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
     {
         fragmentBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_notification, container, false);
-        fragmentBinding.setNotificationObj(new SelectedNotificationTime());
-        this.notification = fragmentBinding.getNotificationObj();
         return fragmentBinding.getRoot();
     }
 
@@ -181,9 +172,9 @@ public class NotificationFragment extends DialogFragment
                 notification.setResultStr();
             }
 
-            fragmentBinding.setDay(notification.getDay());
-            fragmentBinding.setHour(notification.getHour());
-            fragmentBinding.setMinute(notification.getMinute());
+            fragmentBinding.setDay(Integer.toString(notification.getDay()));
+            fragmentBinding.setHour(Integer.toString(notification.getHour()));
+            fragmentBinding.setMinute(Integer.toString(notification.getMinute()));
             fragmentBinding.setResult(notification.getResultStr());
         }
     };
@@ -242,18 +233,18 @@ public class NotificationFragment extends DialogFragment
                 if (notification.getDay() != 0)
                 {
                     notification.setDay(notification.getDay() - 1);
-                    fragmentBinding.setDay(notification.getDay());
+                    fragmentBinding.setDay(Integer.toString(notification.getDay()));
                 }
                 break;
             case R.id.plus_noti_day_button:
                 notification.setDay(notification.getDay() + 1);
-                fragmentBinding.setDay(notification.getDay());
+                fragmentBinding.setDay(Integer.toString(notification.getDay()));
                 break;
             case R.id.minus_noti_hour_button:
                 if (notification.getHour() != 0)
                 {
                     notification.setHour(notification.getHour() - 1);
-                    fragmentBinding.setHour(notification.getHour());
+                    fragmentBinding.setHour(Integer.toString(notification.getHour()));
                 }
                 break;
             case R.id.plus_noti_hour_button:
@@ -266,14 +257,14 @@ public class NotificationFragment extends DialogFragment
                         notification.setHour(23);
                     }
                 }
-                fragmentBinding.setHour(notification.getHour());
+                fragmentBinding.setHour(Integer.toString(notification.getHour()));
 
                 break;
             case R.id.minus_noti_minute_button:
                 if (notification.getMinute() != 0)
                 {
                     notification.setMinute(notification.getMinute() - 1);
-                    fragmentBinding.setMinute(notification.getMinute());
+                    fragmentBinding.setMinute(Integer.toString(notification.getMinute()));
                 }
                 break;
             case R.id.plus_noti_minute_button:
@@ -287,7 +278,7 @@ public class NotificationFragment extends DialogFragment
                     }
                 }
 
-                fragmentBinding.setMinute(notification.getMinute());
+                fragmentBinding.setMinute(Integer.toString(notification.getMinute()));
                 break;
         }
     }
@@ -328,15 +319,15 @@ public class NotificationFragment extends DialogFragment
 
         Point point = new Point();
         getActivity().getWindowManager().getDefaultDisplay().getRealSize(point);
-        int width = point.x;
 
         WindowManager.LayoutParams layoutParams = getDialog().getWindow().getAttributes();
-        layoutParams.width = width;
+        layoutParams.width = point.x;
         layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT;
 
         getDialog().getWindow().setAttributes(layoutParams);
 
         restartedFragment = false;
+        fragmentBinding.setNotificationObj(notification);
 
         switch (notification.getMainType())
         {
@@ -363,8 +354,7 @@ public class NotificationFragment extends DialogFragment
 
     public void setSelectedNotificationTime(SelectedNotificationTime selectedNotificationTime)
     {
-        fragmentBinding.setNotificationObj(selectedNotificationTime);
-        notification = fragmentBinding.getNotificationObj();
+        notification = selectedNotificationTime;
         restartedFragment = true;
     }
 }

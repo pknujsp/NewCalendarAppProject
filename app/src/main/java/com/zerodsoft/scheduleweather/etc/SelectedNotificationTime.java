@@ -8,7 +8,7 @@ import java.util.Date;
 
 public class SelectedNotificationTime
 {
-    private int day = 1;
+    private int day = 0;
     private int hour = 0;
     private int minute = 0;
     private int mainType = ScheduleDTO.NOT_NOTI;
@@ -52,6 +52,12 @@ public class SelectedNotificationTime
     public SelectedNotificationTime setMainType(int mainType)
     {
         this.mainType = mainType;
+        if (mainType == ScheduleDTO.NOT_NOTI)
+        {
+            day = 0;
+            hour = 0;
+            minute = 0;
+        }
         return this;
     }
 

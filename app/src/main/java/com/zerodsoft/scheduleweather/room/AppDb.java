@@ -17,7 +17,7 @@ import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
 @Database(entities = {FavoriteLocDTO.class, PlaceDTO.class, AddressDTO.class, ScheduleDTO.class}, version = 1, exportSchema = false)
 public abstract class AppDb extends RoomDatabase
 {
-    private static AppDb instance = null;
+    private static volatile AppDb instance = null;
 
     public abstract FavoriteLocDAO favoriteLocDAO();
 
@@ -26,7 +26,7 @@ public abstract class AppDb extends RoomDatabase
     public abstract LocationDAO locationDAO();
 
 
-    public static AppDb getInstance(Context context)
+    public static synchronized AppDb getInstance(Context context)
     {
         if (instance == null)
         {
