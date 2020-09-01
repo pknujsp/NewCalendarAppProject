@@ -4,9 +4,12 @@ import android.app.Application;
 import android.content.Context;
 
 import androidx.annotation.NonNull;
+import androidx.arch.core.util.Function;
 import androidx.lifecycle.AndroidViewModel;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
+import androidx.lifecycle.Transformations;
 
 import com.zerodsoft.scheduleweather.activity.ScheduleInfoActivity;
 import com.zerodsoft.scheduleweather.repositories.ScheduleRepository;
@@ -20,59 +23,63 @@ public class ScheduleViewModel extends AndroidViewModel
 {
     private ScheduleRepository scheduleRepository;
 
-    private MutableLiveData<ScheduleDTO> scheduleLiveData;
-    private MutableLiveData<PlaceDTO> placeLiveData;
-    private MutableLiveData<AddressDTO> addressLiveData;
-
     private ScheduleDTO scheduleDTO;
     private PlaceDTO placeDTO;
     private AddressDTO addressDTO;
 
-    private int scheduleId;
+    private LiveData<ScheduleDTO> scheduleLiveData;
+    private LiveData<PlaceDTO> placeLiveData;
+    private LiveData<AddressDTO> addressLiveData;
 
     public ScheduleViewModel(@NonNull Application application)
     {
         super(application);
         scheduleRepository = new ScheduleRepository(application, ScheduleInfoActivity.scheduleId);
-    }
-
-    public void setScheduleId(int scheduleId)
-    {
-        this.scheduleId = scheduleId;
-    }
-
-    public MutableLiveData<ScheduleDTO> getSchedule()
-    {
         scheduleLiveData = scheduleRepository.getScheduleLiveData();
-        if (!scheduleLiveData.getValue().isEmpty())
-        {
-            addressLiveData = null;
-            placeLiveData = null;
+        addressLiveData = scheduleRepository.getAddressLiveData();
+        placeLiveData = scheduleRepository.getPlaceLiveData();
 
-            if (scheduleLiveData.getValue().getAddress() != -1)
+        scheduleLiveData = Transformations.map(scheduleLiveData, new Function<ScheduleDTO, ScheduleDTO>()
+        {
+            @Override
+            public ScheduleDTO apply(ScheduleDTO input)
             {
-                addressLiveData = scheduleRepository.getAddressLiveData();
-            } else if (scheduleLiveData.getValue().getPlace() != -1)
-            {
-                placeLiveData = scheduleRepository.getPlaceLiveData();
+                if (input != null)
+                {
+                    if (input.getAddress() != ScheduleDTO.NOT_LOCATION)
+                    {
+                        addressLiveData = scheduleRepository.getAddressLiveData();
+                    } else if (input.getPlace() != ScheduleDTO.NOT_LOCATION)
+                    {
+                        placeLiveData = scheduleRepository.getPlaceLiveData();
+                    }
+                } else
+                {
+                    input = new ScheduleDTO();
+                }
+                return input;
             }
-        }
+        });
+    }
+
+    public LiveData<ScheduleDTO> getSchedule()
+    {
         return scheduleLiveData;
     }
 
-    public MutableLiveData<PlaceDTO> getPlace()
+    public LiveData<PlaceDTO> getPlace()
     {
         return placeLiveData;
     }
 
-    public MutableLiveData<AddressDTO> getAddress()
+    public LiveData<AddressDTO> getAddress()
     {
         return addressLiveData;
     }
 
     public void deleteSchedule()
     {
-        scheduleRepository.deleteSchedule();
+        scheduleRepository.deleteSchedule(ScheduleInfoActivity.scheduleId);
     }
 
     public void updateSchedule()

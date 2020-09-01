@@ -2,16 +2,18 @@ package com.zerodsoft.scheduleweather.activity;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.databinding.DataBindingUtil;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
 import android.widget.SpinnerAdapter;
+import android.widget.Toast;
 
 import com.zerodsoft.scheduleweather.activity.mapactivity.MapActivity;
 import com.zerodsoft.scheduleweather.etc.SelectedNotificationTime;
@@ -19,6 +21,8 @@ import com.zerodsoft.scheduleweather.fragment.DatePickerFragment;
 import com.zerodsoft.scheduleweather.fragment.NotificationFragment;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.retrofit.DownloadData;
+import com.zerodsoft.scheduleweather.room.dto.AddressDTO;
+import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
 import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
 import com.zerodsoft.scheduleweather.viewmodel.ScheduleViewModel;
 
@@ -29,14 +33,10 @@ import java.util.List;
 public class ScheduleInfoActivity extends AppCompatActivity implements NotificationFragment.OnNotificationTimeListener
 {
     /*
-      -수정해야 하는 것
-        데이터 수정 클릭 한 뒤 데이터 수정 완료 후 저장할 때 바뀐 데이터가 적용되지 않는 문제
-        (추가가 되어버림)
+        - 수정해야 하는 것
+        일정 클릭 후 읽어 왔을때 제목, 하루종일 시간이 안나옴
         데이터 수정 클릭 한 뒤 edittext가 작동하지 않는 문제
         하단 버튼의 삭제 버튼 클릭 시 다이얼로그를 띄워서 재 확인을 하도록 해야함
-
-        일정 보기, 수정, 추가, 삭제
-
      */
     public static final int REQUEST_NEW_SCHEDULE = 0;
     public static final int REQUEST_SHOW_SCHEDULE = 10;
@@ -107,10 +107,52 @@ public class ScheduleInfoActivity extends AppCompatActivity implements Notificat
         activityBinding.setNotification(null);
         activityBinding.setAddressDto(null);
 
+        activityBinding.subject.addTextChangedListener(new TextWatcher()
+        {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2)
+            {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2)
+            {
+                activityBinding.getScheduleDto().setSubject(charSequence.toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable)
+            {
+
+            }
+        });
+
+        activityBinding.content.addTextChangedListener(new TextWatcher()
+        {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2)
+            {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2)
+            {
+                activityBinding.getScheduleDto().setContent(charSequence.toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable)
+            {
+
+            }
+        });
+
         setAccountSpinner();
         setAllDaySwitch();
         setDateTextView();
-        setAddLocationButton();
+        setLocationButton();
         setNotiValue();
         setBottomButtons();
 
@@ -135,8 +177,6 @@ public class ScheduleInfoActivity extends AppCompatActivity implements Notificat
             public void onChanged(ScheduleDTO scheduleDTO)
             {
                 activityBinding.setScheduleDto(scheduleDTO);
-                activityBinding.setAddressDto(null);
-                activityBinding.setPlaceDto(null);
                 activityBinding.setNotification(new SelectedNotificationTime());
                 activityBinding.getNotification().setResultStr();
 
@@ -145,7 +185,7 @@ public class ScheduleInfoActivity extends AppCompatActivity implements Notificat
                     // 계정, 제목, 날짜, 내용, 위치 ,알림 내용을 화면에 표시하는 코드
 
                     //날짜
-                    if (scheduleDTO.getStartDate().compareTo(scheduleDTO.getEndDate()) == 0)
+                    if (scheduleDTO.getDateType() == ScheduleDTO.DATE_ALLDAY)
                     {
                         activityBinding.scheduleAlldaySwitch.setChecked(true);
                     } else
@@ -154,10 +194,10 @@ public class ScheduleInfoActivity extends AppCompatActivity implements Notificat
                     }
 
                     //위치
-                    if (scheduleDTO.getPlace() != -1)
+                    if (scheduleDTO.getPlace() != ScheduleDTO.NOT_LOCATION)
                     {
                         activityBinding.setPlaceDto(viewModel.getPlace().getValue());
-                    } else if (scheduleDTO.getAddress() != -1)
+                    } else if (scheduleDTO.getAddress() != ScheduleDTO.NOT_LOCATION)
                     {
                         activityBinding.setAddressDto(viewModel.getAddress().getValue());
                     }
@@ -185,6 +225,36 @@ public class ScheduleInfoActivity extends AppCompatActivity implements Notificat
                         }
                         activityBinding.setNotification(selectedNotificationTime);
                     }
+                }
+            }
+        });
+
+        viewModel.getAddress().observe(this, new Observer<AddressDTO>()
+        {
+            @Override
+            public void onChanged(AddressDTO addressDTO)
+            {
+                if (addressDTO != null)
+                {
+                    activityBinding.setAddressDto(addressDTO);
+                } else
+                {
+                    activityBinding.setAddressDto(null);
+                }
+            }
+        });
+
+        viewModel.getPlace().observe(this, new Observer<PlaceDTO>()
+        {
+            @Override
+            public void onChanged(PlaceDTO placeDTO)
+            {
+                if (placeDTO != null)
+                {
+                    activityBinding.setPlaceDto(placeDTO);
+                } else
+                {
+                    activityBinding.setPlaceDto(null);
                 }
             }
         });
@@ -251,25 +321,35 @@ public class ScheduleInfoActivity extends AppCompatActivity implements Notificat
             @Override
             public void onClick(View view)
             {
-                activityBinding.getScheduleDto().setCategory(ScheduleDTO.LOCAL_CATEGORY);
-
-                ScheduleDTO scheduleDTO = activityBinding.getScheduleDto();
-                scheduleDTO.setSubject(activityBinding.subject.getText().toString());
-                scheduleDTO.setContent(activityBinding.content.getText().toString());
-
-                viewModel.setScheduleDTO(activityBinding.getScheduleDto());
-                viewModel.setAddressDTO(activityBinding.getAddressDto());
-                viewModel.setPlaceDTO(activityBinding.getPlaceDto());
-
-                if (requestCode == REQUEST_SHOW_SCHEDULE)
+                // 제목, 날짜 필수 입력
+                if (activityBinding.subject.getText().toString().isEmpty())
                 {
-                    viewModel.updateSchedule();
-                } else if (requestCode == REQUEST_NEW_SCHEDULE)
+                    Toast.makeText(ScheduleInfoActivity.this, "제목을 입력해주세요", Toast.LENGTH_SHORT).show();
+                } else if (activityBinding.getScheduleDto().getStartDate() == null || activityBinding.getScheduleDto().getEndDate() == null)
                 {
-                    viewModel.insertSchedule();
+                    Toast.makeText(ScheduleInfoActivity.this, "날짜를 지정해주세요", Toast.LENGTH_SHORT).show();
+                } else
+                {
+                    ScheduleDTO scheduleDTO = activityBinding.getScheduleDto();
+
+                    scheduleDTO.setCategory(ScheduleDTO.LOCAL_CATEGORY);
+                    scheduleDTO.setSubject(activityBinding.subject.getText().toString());
+                    scheduleDTO.setContent(activityBinding.content.getText().toString());
+
+                    viewModel.setScheduleDTO(activityBinding.getScheduleDto());
+                    viewModel.setAddressDTO(activityBinding.getAddressDto());
+                    viewModel.setPlaceDTO(activityBinding.getPlaceDto());
+
+                    if (requestCode == REQUEST_SHOW_SCHEDULE)
+                    {
+                        viewModel.updateSchedule();
+                    } else if (requestCode == REQUEST_NEW_SCHEDULE)
+                    {
+                        viewModel.insertSchedule();
+                    }
+                    setResult(RESULT_OK);
+                    finish();
                 }
-                setResult(RESULT_OK);
-                finish();
             }
         });
     }
@@ -343,11 +423,13 @@ public class ScheduleInfoActivity extends AppCompatActivity implements Notificat
                 if (isChecked)
                 {
                     // 하루 종일
+                    activityBinding.getScheduleDto().setDateType(ScheduleDTO.DATE_ALLDAY);
                     activityBinding.alldayLayout.setVisibility(View.VISIBLE);
                     activityBinding.startdateLayout.setVisibility(View.GONE);
                     activityBinding.enddateLayout.setVisibility(View.GONE);
                 } else
                 {
+                    activityBinding.getScheduleDto().setDateType(ScheduleDTO.DATE_NOT_ALLDAY);
                     activityBinding.alldayLayout.setVisibility(View.GONE);
                     activityBinding.startdateLayout.setVisibility(View.VISIBLE);
                     activityBinding.enddateLayout.setVisibility(View.VISIBLE);
@@ -418,7 +500,7 @@ public class ScheduleInfoActivity extends AppCompatActivity implements Notificat
         activityBinding.notificationValue.setOnClickListener(onClickListener);
     }
 
-    private void setAddLocationButton()
+    private void setLocationButton()
     {
         View.OnClickListener onClickListener = new View.OnClickListener()
         {
@@ -427,16 +509,17 @@ public class ScheduleInfoActivity extends AppCompatActivity implements Notificat
             {
                 //위치를 설정하는 액티비티 표시
                 Intent intent = new Intent(ScheduleInfoActivity.this, MapActivity.class);
-                int request = 0;
+                int requestCode = 0;
 
-                if (activityBinding.getPlaceDto() != null || activityBinding.getAddressDto() != null)
+                if (activityBinding.getScheduleDto().getPlace() != ScheduleDTO.NOT_LOCATION || activityBinding.getScheduleDto().getAddress() != ScheduleDTO.NOT_LOCATION)
                 {
-                    request = EDIT_LOCATION;
+                    requestCode = EDIT_LOCATION;
                 } else
                 {
-                    request = ADD_LOCATION;
+                    requestCode = ADD_LOCATION;
                 }
-                startActivityForResult(intent, request);
+                intent.putExtra("request", requestCode);
+                startActivityForResult(intent, requestCode);
             }
         };
         activityBinding.location.setOnClickListener(onClickListener);

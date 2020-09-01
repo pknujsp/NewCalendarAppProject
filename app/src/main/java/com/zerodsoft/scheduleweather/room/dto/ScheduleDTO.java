@@ -27,6 +27,9 @@ public class ScheduleDTO implements Parcelable
     @ColumnInfo(name = "content")
     private String content;
 
+    @ColumnInfo(name = "date_type")
+    private int dateType;
+
     @ColumnInfo(name = "start_date")
     @TypeConverters({TypeConverter.class})
     private Date startDate;
@@ -72,6 +75,12 @@ public class ScheduleDTO implements Parcelable
     public static final int SELECTED_LOCATION = 1;
 
     @Ignore
+    public static final int DATE_NOT_ALLDAY = 0;
+
+    @Ignore
+    public static final int DATE_ALLDAY = 1;
+
+    @Ignore
     public static final int GOOGLE_CATEGORY = 0;
 
     @Ignore
@@ -100,6 +109,7 @@ public class ScheduleDTO implements Parcelable
         category = in.readInt();
         subject = in.readString();
         content = in.readString();
+        dateType = in.readInt();
         startDate = (Date) in.readSerializable();
         endDate = (Date) in.readSerializable();
         notiMainType = in.readInt();
@@ -187,6 +197,16 @@ public class ScheduleDTO implements Parcelable
     public void setAddress(int address)
     {
         this.address = address;
+    }
+
+    public void setDateType(int dateType)
+    {
+        this.dateType = dateType;
+    }
+
+    public int getDateType()
+    {
+        return dateType;
     }
 
     public Date getStartDate()
@@ -292,6 +312,7 @@ public class ScheduleDTO implements Parcelable
         parcel.writeInt(category);
         parcel.writeString(subject);
         parcel.writeString(content);
+        parcel.writeInt(dateType);
         parcel.writeSerializable(startDate);
         parcel.writeSerializable(endDate);
         parcel.writeInt(notiMainType);

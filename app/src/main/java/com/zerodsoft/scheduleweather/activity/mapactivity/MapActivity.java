@@ -25,6 +25,7 @@ import android.widget.TextView;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.activity.mapactivity.Fragment.SearchFragment;
+import com.zerodsoft.scheduleweather.databinding.ActivityMapBinding;
 import com.zerodsoft.scheduleweather.fragment.MapBottomSheetFragment;
 import com.zerodsoft.scheduleweather.fragment.SearchResultController;
 import com.zerodsoft.scheduleweather.R;
@@ -53,10 +54,9 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
     public static final int SEARCH_RESULT_FRAGMENT_UPDATE = 2;
     public static final int RESULT_DELETE = 10;
 
-    private TextView addressTextView;
-    private ImageButton zoomInButton;
-    private ImageButton zoomOutButton;
-    private ImageButton gpsButton;
+    private ActivityMapBinding binding;
+
+    private int requestCode;
 
     private List<AddressResponseDocuments> addressList = null;
     private List<PlaceKeywordDocuments> placeKeywordList = null;
@@ -118,7 +118,7 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
     @Override
     public void onReverseGeoCoderFoundAddress(MapReverseGeoCoder mapReverseGeoCoder, String s)
     {
-        addressTextView.setText(s);
+       binding.mapActivityRootLayout. addressTextView.setText(s);
     }
 
     @Override
@@ -293,7 +293,10 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_map);
+        binding = ActivityMapBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+
+        requestCode = getIntent().getIntExtra("requestCode", 0);
 
         addressTextView = (TextView) findViewById(R.id.address_textview);
         zoomInButton = (ImageButton) findViewById(R.id.zoom_in_button);
@@ -390,9 +393,6 @@ public class MapActivity extends AppCompatActivity implements MapView.POIItemEve
             @Override
             public void onClick(View view)
             {
-                //   TimeOutThread timeOutThread = new TimeOutThread();
-                //    timeOutThread.start();
-
                 boolean isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
                 boolean isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
 

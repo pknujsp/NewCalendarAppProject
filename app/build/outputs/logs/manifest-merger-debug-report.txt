@@ -159,7 +159,7 @@ MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.0] C:\Users\Ma
 	android:usesCleartextTraffic
 		ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:18:9-44
 	android:name
-		ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:17:9-36
+		ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:17:9-28
 activity#com.zerodsoft.scheduleweather.activity.mapactivity.MapActivity
 ADDED from C:\programming\Android\Android Projects\ScheduleWeather\app\src\main\AndroidManifest.xml:19:9-21:89
 	android:taskAffinity

@@ -7,96 +7,87 @@ import android.os.Handler;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import com.zerodsoft.scheduleweather.activity.ScheduleInfoActivity;
+import com.zerodsoft.scheduleweather.App;
 import com.zerodsoft.scheduleweather.room.AppDb;
 import com.zerodsoft.scheduleweather.room.dao.LocationDAO;
 import com.zerodsoft.scheduleweather.room.dao.ScheduleDAO;
 import com.zerodsoft.scheduleweather.room.dto.AddressDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
 import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
-import com.zerodsoft.scheduleweather.thread.RepositoryCallback;
-import com.zerodsoft.scheduleweather.thread.Result;
+
 
 import java.util.Calendar;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+
 
 public class ScheduleRepository
 {
-    // db내 데이터 유무에 관계없이 LiveData는 넘어온다(null이 아님)
-    private AppDb appDb;
+    // db내 데이터 유무에 관계없이(null이라도) LiveData는 넘어온다
     private ScheduleDAO scheduleDAO;
     private LocationDAO locationDAO;
 
-    private MutableLiveData<ScheduleDTO> scheduleLiveData = new MutableLiveData<>();
-    private MutableLiveData<PlaceDTO> placeLiveData = new MutableLiveData<>();
-    private MutableLiveData<AddressDTO> addressLiveData = new MutableLiveData<>();
+    private LiveData<ScheduleDTO> scheduleLiveData;
+    private LiveData<PlaceDTO> placeLiveData;
+    private LiveData<AddressDTO> addressLiveData;
 
     public ScheduleRepository(Application application, int scheduleId)
     {
-        appDb = AppDb.getInstance(application);
+        AppDb appDb = AppDb.getInstance(application);
         scheduleDAO = appDb.scheduleDAO();
         locationDAO = appDb.locationDAO();
+
         selectSchedule(scheduleId);
+        selectAddress(scheduleId);
+        selectPlace(scheduleId);
     }
 
     public void selectSchedule(int scheduleId)
     {
-        LiveData<ScheduleDTO> scheduleLive = scheduleDAO.selectSchedule(scheduleId);
-
-        if (scheduleLive.getValue() != null)
-        {
-            ScheduleDTO scheduleDTO = scheduleLive.getValue();
-            scheduleLiveData.setValue(scheduleDTO);
-
-            if (scheduleDTO.getAddress() != -1)
-            {
-                addressLiveData.setValue(locationDAO.selectAddress(scheduleDTO.getAddress()).getValue());
-            } else if (scheduleDTO.getPlace() != -1)
-            {
-                placeLiveData.setValue(locationDAO.selectPlace(scheduleDTO.getPlace()).getValue());
-            }
-        } else
-        {
-            scheduleLiveData.setValue(new ScheduleDTO());
-        }
+        scheduleLiveData = scheduleDAO.selectSchedule(scheduleId);
     }
 
-    public MutableLiveData<ScheduleDTO> getScheduleLiveData()
+    public void selectAddress(int scheduleId)
+    {
+        addressLiveData = locationDAO.selectAddress(scheduleId);
+    }
+
+    public void selectPlace(int scheduleId)
+    {
+        placeLiveData = locationDAO.selectPlace(scheduleId);
+    }
+
+    public LiveData<ScheduleDTO> getScheduleLiveData()
     {
         return scheduleLiveData;
     }
 
-    public MutableLiveData<AddressDTO> getAddressLiveData()
+    public LiveData<AddressDTO> getAddressLiveData()
     {
         return addressLiveData;
     }
 
-    public MutableLiveData<PlaceDTO> getPlaceLiveData()
+    public LiveData<PlaceDTO> getPlaceLiveData()
     {
         return placeLiveData;
     }
 
 
-    public void deleteSchedule()
+    public void deleteSchedule(int scheduleId)
     {
-        new Thread(new Runnable()
+        App.executorService.execute(new Runnable()
         {
             @Override
             public void run()
             {
-                int scheduleId = scheduleLiveData.getValue().getId();
-                scheduleDAO.deleteSchedule(scheduleId);
                 locationDAO.deleteAddress(scheduleId);
                 locationDAO.deletePlace(scheduleId);
+                scheduleDAO.deleteSchedule(scheduleId);
             }
-        }).start();
+        });
     }
 
     public void insertSchedule(ScheduleDTO scheduleDTO, PlaceDTO placeDTO, AddressDTO addressDTO)
     {
-        new Thread(new Runnable()
+        App.executorService.execute(new Runnable()
         {
             @Override
             public void run()
@@ -108,17 +99,17 @@ public class ScheduleRepository
 
                 long scheduleId = scheduleDAO.insertNewSchedule(scheduleDTO);
 
-                if (placeDTO != null)
+                if (scheduleDTO.getPlace() != ScheduleDTO.NOT_LOCATION)
                 {
                     placeDTO.setScheduleId((int) scheduleId);
                     locationDAO.insertPlace(placeDTO);
-                } else if (addressDTO != null)
+                } else if (scheduleDTO.getAddress() != ScheduleDTO.NOT_LOCATION)
                 {
                     addressDTO.setScheduleId((int) scheduleId);
                     locationDAO.insertAddress(addressDTO);
                 }
             }
-        }).start();
+        });
     }
 
     public void updateSchedule(ScheduleDTO scheduleDTO, PlaceDTO placeDTO, AddressDTO addressDTO)
@@ -128,7 +119,7 @@ public class ScheduleRepository
         // 위치가 추가된 경우 -> scheduleDto의 해당 값이 그대로 0으로 유지되고 해당 위치의 정보를 받음
         // 위치가 추가되지 않은 원상태 그대로인 경우 -> scheduleDto의 해당 값이 그대로 0으로 유지되고 해당 위치의 정보를 받지않음
         // livedata의 원본 데이터와 비교
-        new Thread(new Runnable()
+        App.executorService.execute(new Runnable()
         {
             @Override
             public void run()
@@ -203,7 +194,7 @@ public class ScheduleRepository
                     }
                 }
             }
-        }).start();
+        });
     }
 }
 
