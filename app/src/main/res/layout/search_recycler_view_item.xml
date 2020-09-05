@@ -50,7 +50,7 @@
         </LinearLayout>
 
         <Button
-            android:id="@+id/choice_address_button"
+            android:id="@+id/choice_location_button"
             android:layout_width="wrap_content"
             android:layout_height="28dp"
             android:layout_gravity="right"

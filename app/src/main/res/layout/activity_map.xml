@@ -1,84 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    tools:context=".activity.mapactivity.MapActivity">
 
-    <androidx.coordinatorlayout.widget.CoordinatorLayout
-        android:id="@+id/map_activity_root_layout"
+    <FrameLayout
+        android:id="@+id/map_activity_fragment_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fitsSystemWindows="true"
         tools:context=".activity.mapactivity.MapActivity">
 
-        <com.google.android.material.appbar.AppBarLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:theme="@style/AppTheme.NoActionBar" />
-
-
-        <include layout="@layout/content_map" />
-
-        <include
-            android:id="@+id/map_bottom_sheet"
-            layout="@layout/map_item_bottom_sheet" />
-
-
-        <ImageButton
-            android:id="@+id/zoom_in_button"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_gravity="top|center"
-            android:background="@drawable/map_button_rect"
-            android:elevation="2dp"
-            android:src="@drawable/zoom_in_icon"
-            app:layout_anchor="@id/dummy_one"
-            app:layout_anchorGravity="top|center" />
-
-        <View
-            android:id="@+id/dummy_one"
-            android:layout_width="1dp"
-            android:layout_height="8dp"
-            android:layout_gravity="top|center"
-            app:layout_anchor="@id/zoom_out_button"
-            app:layout_anchorGravity="top|center" />
-
-        <ImageButton
-            android:id="@+id/zoom_out_button"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_gravity="top|center"
-            android:background="@drawable/map_button_rect"
-            android:elevation="2dp"
-            android:src="@drawable/zoom_out_icon"
-            app:layout_anchor="@id/dummy_two"
-            app:layout_anchorGravity="top|center" />
-
-        <View
-            android:id="@+id/dummy_two"
-            android:layout_width="1dp"
-            android:layout_height="32dp"
-            android:layout_gravity="top|center"
-            app:layout_anchor="@id/gps_button"
-            app:layout_anchorGravity="top|center" />
-
-        <ImageButton
-            android:id="@+id/gps_button"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_gravity="top"
-            android:background="@drawable/map_button_rect"
-            android:elevation="2dp"
-            android:src="@drawable/gps_not_fixed_icon"
-            app:layout_anchor="@id/dummy_three"
-            app:layout_anchorGravity="left|top" />
-
-        <View
-            android:id="@+id/dummy_three"
-            android:layout_width="0dp"
-            android:layout_height="32dp"
-            android:layout_marginRight="32dp"
-            android:background="@color/blueLight"
-            app:layout_anchor="@id/map_bottom_sheet"
-            app:layout_anchorGravity="top|right" />
-    </androidx.coordinatorlayout.widget.CoordinatorLayout>
-</layout>
+    </FrameLayout>
+</FrameLayout>

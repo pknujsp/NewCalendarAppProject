@@ -1,6 +1,5 @@
 package com.zerodsoft.scheduleweather.activity.mapactivity.Fragment;
 
-import android.annotation.SuppressLint;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -9,8 +8,6 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.os.Handler;
-import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,14 +17,13 @@ import android.widget.ImageButton;
 import com.zerodsoft.scheduleweather.activity.mapactivity.MapActivity;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.recyclerviewadapter.SearchCategoryViewAdapter;
-import com.zerodsoft.scheduleweather.retrofit.DownloadData;
 import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryCode;
 import com.zerodsoft.scheduleweather.retrofit.LocalApiPlaceParameter;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.AddressSearchResult;
 
 public class SearchFragment extends Fragment implements SearchCategoryViewAdapter.OnCategoryClickListener, MapActivity.OnBackPressedListener
 {
     public static final String TAG = "Search Fragment";
+    private static SearchFragment instance;
 
     private ImageButton backButton;
     private EditText searchEditText;
@@ -40,60 +36,22 @@ public class SearchFragment extends Fragment implements SearchCategoryViewAdapte
     private double latitude;
     private double longitude;
 
-    @SuppressLint("HandlerLeak")
-    private Handler handler = new Handler()
-    {
-        private AddressSearchResult addressSearchResult = null;
-        private int totalCallCount = 0;
-
-        @Override
-        public void handleMessage(Message msg)
-        {
-            ++totalCallCount;
-
-            if (addressSearchResult == null)
-            {
-                addressSearchResult = new AddressSearchResult();
-            }
-            Bundle bundle = msg.getData();
-
-            if (!bundle.getBoolean("isEmpty"))
-            {
-                switch (msg.what)
-                {
-                    case DownloadData.ADDRESS:
-                        addressSearchResult.setAddressResponseDocuments(bundle.getParcelableArrayList("documents"));
-                        addressSearchResult.setAddressResponseMeta(bundle.getParcelable("meta"));
-                        break;
-                    case DownloadData.PLACE_KEYWORD:
-                        addressSearchResult.setPlaceKeywordDocuments(bundle.getParcelableArrayList("documents"));
-                        addressSearchResult.setPlaceKeywordMeta(bundle.getParcelable("meta"));
-                        break;
-                    case DownloadData.PLACE_CATEGORY:
-                        addressSearchResult.setPlaceCategoryDocuments(bundle.getParcelableArrayList("documents"));
-                        addressSearchResult.setPlaceCategoryMeta(bundle.getParcelable("meta"));
-                        break;
-                }
-            }
-
-            if (totalCallCount == calledDownloadTotalCount)
-            {
-                Bundle dataBundle = new Bundle();
-                dataBundle.putParcelable("result", addressSearchResult.clone());
-                dataBundle.putParcelable("parameters", parameters);
-                dataBundle.putString("searchWord", searchEditText.getText().toString());
-                dataBundle.putLong("downloadedTime", System.currentTimeMillis());
-
-                ((MapActivity) getActivity()).onFragmentChanged(MapActivity.SEARCH_RESULT_FRAGMENT, dataBundle);
-
-                totalCallCount = 0;
-                addressSearchResult = null;
-            }
-        }
-    };
-
     public SearchFragment()
     {
+    }
+
+    public static SearchFragment getInstance()
+    {
+        if (instance == null)
+        {
+            instance = new SearchFragment();
+        }
+        return instance;
+    }
+
+    public void setInitialData(Bundle bundle)
+    {
+
     }
 
     @Override
@@ -141,13 +99,13 @@ public class SearchFragment extends Fragment implements SearchCategoryViewAdapte
                     searchEditText.setText(searchWord);
                     parameters.setCategoryGroupCode(name);
                     calledDownloadTotalCount = 1;
-                    DownloadData.searchPlaceCategory(handler, parameters);
+                    KakaoLocalApi.searchPlaceCategory(handler, parameters);
                 } else
                 {
                     parameters.setQuery(searchWord);
                     calledDownloadTotalCount = 2;
-                    DownloadData.searchAddress(handler, parameters);
-                    DownloadData.searchPlaceKeyWord(handler, parameters);
+                    KakaoLocalApi.searchAddress(handler, parameters);
+                    KakaoLocalApi.searchPlaceKeyWord(handler, parameters);
                 }
             }
         });
@@ -203,7 +161,7 @@ public class SearchFragment extends Fragment implements SearchCategoryViewAdapte
                 .setCategoryGroupCode(name);
 
         calledDownloadTotalCount = 1;
-        DownloadData.searchPlaceCategory(handler, parameters);
+        KakaoLocalApi.searchPlaceCategory(handler, parameters);
     }
 
     private String getCategoryName(String searchWord)
@@ -229,12 +187,10 @@ public class SearchFragment extends Fragment implements SearchCategoryViewAdapte
     @Override
     public void onBackPressed()
     {
-        MapActivity.isMainMapActivity = true;
         searchEditText.setText("");
 
         ((MapActivity) getActivity()).clearAllPoiItems();
         ((MapActivity) getActivity()).setZoomGpsButtonVisibility(View.VISIBLE);
         getActivity().getSupportFragmentManager().popBackStackImmediate();
-
     }
 }

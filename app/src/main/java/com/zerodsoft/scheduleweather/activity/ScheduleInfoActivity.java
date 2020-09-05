@@ -20,7 +20,6 @@ import com.zerodsoft.scheduleweather.etc.SelectedNotificationTime;
 import com.zerodsoft.scheduleweather.fragment.DatePickerFragment;
 import com.zerodsoft.scheduleweather.fragment.NotificationFragment;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.retrofit.DownloadData;
 import com.zerodsoft.scheduleweather.room.dto.AddressDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
 import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
@@ -555,13 +554,13 @@ public class ScheduleInfoActivity extends AppCompatActivity implements Notificat
 
                 switch (bundle.getInt("type"))
                 {
-                    case DownloadData.ADDRESS:
+                    case KakaoLocalApi.TYPE_ADDRESS:
                         activityBinding.setAddressDto(bundle.getParcelable("addressDTO"));
                         activityBinding.getScheduleDto().setAddress(ScheduleDTO.SELECTED_LOCATION);
                         break;
 
-                    case DownloadData.PLACE_KEYWORD:
-                    case DownloadData.PLACE_CATEGORY:
+                    case KakaoLocalApi.TYPE_PLACE_KEYWORD:
+                    case KakaoLocalApi.TYPE_PLACE_CATEGORY:
                         activityBinding.setPlaceDto(bundle.getParcelable("placeDTO"));
                         activityBinding.getScheduleDto().setPlace(ScheduleDTO.SELECTED_LOCATION);
                         break;

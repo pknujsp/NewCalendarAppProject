@@ -87,6 +87,7 @@
     <string name="result_activity_map_center">지도 중심</string>
 
     <string name="choice">선택</string>
+    <string name="cancel_location">선택 취소</string>
 
     <string name="save_button">저장</string>
     <string name="delete_button">삭제</string>

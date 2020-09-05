@@ -6,6 +6,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.SparseArray;
 import android.util.SparseIntArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,9 +20,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.retrofit.DownloadData;
+import com.zerodsoft.scheduleweather.activity.mapactivity.Fragment.MapController;
 import com.zerodsoft.scheduleweather.retrofit.LocalApiPlaceParameter;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.AddressSearchResult;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.LocationSearchResult;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,17 +30,36 @@ import java.util.List;
 
 public class SearchResultViewPagerAdapter extends RecyclerView.Adapter<SearchResultViewPagerAdapter.SearchResultViewPagerHolder>
 {
-    private Activity context;
-    private AddressSearchResult addressSearchResult = new AddressSearchResult();
+    private LocationSearchResult locationSearchResult = new LocationSearchResult();
     private LocalApiPlaceParameter parameters;
     private String searchWord;
     private boolean existingAddress = false;
     private boolean existingPlaceKeyword = false;
     private boolean existingPlaceCategory = false;
 
-    private SparseIntArray sparseIntArray;
-    private List<SearchResultViewPagerHolder> viewHolders;
+    private final int ADDRESS_VIEW_PAGER_POSITION = 0;
+    private final int PLACE_VIEW_PAGER_POSITION = 1;
 
+    private SparseArray<SearchResultViewPagerHolder> holderSparseArray = new SparseArray<>();
+    private OnScrollResultList onScrollResultList;
+
+    public interface OnScrollResultList
+    {
+        // 뷰페이지에서 스크롤시 추가 데이터를 불러올때 사용
+        void onScroll(LocalApiPlaceParameter parameter, int type);
+    }
+
+    public void onAddExtraData(LocalApiPlaceParameter parameter, int type, LocationSearchResult locationSearchResult)
+    {
+        for (int i = 0; i < holderSparseArray.size(); ++i)
+        {
+            if (type == holderSparseArray.get(i).type)
+            {
+                holderSparseArray.get(i).addExtraData(locationSearchResult);
+                break;
+            }
+        }
+    }
 
     public void setParameters(Bundle bundle)
     {
@@ -60,15 +80,15 @@ public class SearchResultViewPagerAdapter extends RecyclerView.Adapter<SearchRes
 
     public SearchResultViewPagerAdapter(Activity activity)
     {
-        this.context = activity;
+        this.onScrollResultList = (OnScrollResultList) activity;
         this.viewHolders = new ArrayList<>();
         this.sparseIntArray = new SparseIntArray();
     }
 
-    public void setAddressSearchResult(AddressSearchResult addressSearchResult)
+    public void setLocationSearchResult(LocationSearchResult locationSearchResult)
     {
-        this.addressSearchResult = addressSearchResult;
-        List<Integer> resultTypes = addressSearchResult.getResultTypes();
+        this.locationSearchResult = locationSearchResult;
+        List<Integer> resultTypes = locationSearchResult.getResultTypes();
 
         existingPlaceCategory = false;
         existingPlaceKeyword = false;
@@ -76,23 +96,23 @@ public class SearchResultViewPagerAdapter extends RecyclerView.Adapter<SearchRes
 
         for (int type : resultTypes)
         {
-            if (type == DownloadData.PLACE_CATEGORY)
+            if (type == MapController.TYPE_PLACE_CATEGORY)
             {
                 existingPlaceCategory = true;
                 break;
-            } else if (type == DownloadData.ADDRESS)
+            } else if (type == MapController.TYPE_ADDRESS)
             {
                 existingAddress = true;
-            } else if (type == DownloadData.PLACE_KEYWORD)
+            } else if (type == MapController.TYPE_PLACE_KEYWORD)
             {
                 existingPlaceKeyword = true;
             }
         }
     }
 
-    public void changeAddressSearchResult(AddressSearchResult addressSearchResult)
+    public void changeAddressSearchResult(LocationSearchResult locationSearchResult)
     {
-        this.addressSearchResult = addressSearchResult;
+        this.locationSearchResult = locationSearchResult;
     }
 
     public int getCurrentListType(int position)
@@ -112,35 +132,50 @@ public class SearchResultViewPagerAdapter extends RecyclerView.Adapter<SearchRes
     @Override
     public SearchResultViewPagerHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType)
     {
-        Context context = parent.getContext();
-        View view = LayoutInflater.from(context).inflate(R.layout.search_result_viewpager_item, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.search_result_viewpager_item, parent, false);
         return new SearchResultViewPagerHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull SearchResultViewPagerHolder holder, int position)
     {
-        if (existingAddress)
+        // 0번에 주소 리스트 표시, 1번에는 장소 리스트 표시
+        // 주소 데이터가 없으면 0번에 장소 리스트 표시
+        // 데이터 유무의 경우의 수 : 장소+주소, 장소, 주소, 카테고리
+        if (position == ADDRESS_VIEW_PAGER_POSITION)
         {
-            holder.onBind(addressSearchResult, DownloadData.ADDRESS, parameters);
-            existingAddress = false;
-        } else if (existingPlaceKeyword)
+            if (existingAddress)
+            {
+                holder.onBind(locationSearchResult, MapController.TYPE_ADDRESS, parameters);
+                existingAddress = false;
+            } else if (existingPlaceKeyword)
+            {
+                holder.onBind(locationSearchResult, MapController.TYPE_PLACE_KEYWORD, parameters);
+                existingPlaceKeyword = false;
+            } else if (existingPlaceCategory)
+            {
+                holder.onBind(locationSearchResult, MapController.TYPE_PLACE_CATEGORY, parameters);
+                existingPlaceCategory = false;
+            }
+        } else if (position == PLACE_VIEW_PAGER_POSITION)
         {
-            holder.onBind(addressSearchResult, DownloadData.PLACE_KEYWORD, parameters);
-            existingPlaceKeyword = false;
-        } else if (existingPlaceCategory)
-        {
-            holder.onBind(addressSearchResult, DownloadData.PLACE_CATEGORY, parameters);
-            existingPlaceCategory = false;
+            if (existingPlaceKeyword)
+            {
+                holder.onBind(locationSearchResult, MapController.TYPE_PLACE_KEYWORD, parameters);
+                existingPlaceKeyword = false;
+            } else if (existingPlaceCategory)
+            {
+                holder.onBind(locationSearchResult, MapController.TYPE_PLACE_CATEGORY, parameters);
+                existingPlaceCategory = false;
+            }
         }
-        sparseIntArray.put(position, holder.getType());
-        viewHolders.add(holder);
+        holderSparseArray.put(position, holder);
     }
 
     @Override
     public int getItemCount()
     {
-        return addressSearchResult.getResultNum();
+        return locationSearchResult.getResultNum();
     }
 
     class SearchResultViewPagerHolder extends RecyclerView.ViewHolder
@@ -153,29 +188,22 @@ public class SearchResultViewPagerAdapter extends RecyclerView.Adapter<SearchRes
 
         private LocalApiPlaceParameter parameters;
 
-        @SuppressLint("HandlerLeak")
-        private Handler handler = new Handler()
+        public void addExtraData(LocationSearchResult locationSearchResult)
         {
-            @Override
-            public void handleMessage(Message msg)
+            switch (type)
             {
-                Bundle bundle = msg.getData();
-
-                switch (msg.what)
-                {
-                    case DownloadData.ADDRESS:
-                        adapter.addAddressData(bundle.getParcelableArrayList("documents"), bundle.getParcelable("meta"));
-                        break;
-                    case DownloadData.PLACE_KEYWORD:
-                        adapter.addPlaceKeywordData(bundle.getParcelableArrayList("documents"), bundle.getParcelable("meta"));
-                        break;
-                    case DownloadData.PLACE_CATEGORY:
-                        adapter.addPlaceCategoryData(bundle.getParcelableArrayList("documents"), bundle.getParcelable("meta"));
-                        break;
-                }
-                adapter.notifyDataSetChanged();
+                case MapController.TYPE_ADDRESS:
+                    adapter.addAddressData(locationSearchResult);
+                    break;
+                case MapController.TYPE_PLACE_KEYWORD:
+                    adapter.addPlaceKeywordData(locationSearchResult);
+                    break;
+                case MapController.TYPE_PLACE_CATEGORY:
+                    adapter.addPlaceCategoryData(locationSearchResult);
+                    break;
             }
-        };
+            adapter.notifyDataSetChanged();
+        }
 
         SearchResultViewPagerHolder(View view)
         {
@@ -205,14 +233,14 @@ public class SearchResultViewPagerAdapter extends RecyclerView.Adapter<SearchRes
 
                             switch (type)
                             {
-                                case DownloadData.ADDRESS:
-                                    DownloadData.searchAddress(handler, parameters);
+                                case MapController.TYPE_ADDRESS:
+                                    MapController.searchAddress(handler, parameters);
                                     break;
-                                case DownloadData.PLACE_KEYWORD:
-                                    DownloadData.searchPlaceKeyWord(handler, parameters);
+                                case MapController.TYPE_PLACE_KEYWORD:
+                                    MapController.searchPlaceKeyWord(handler, parameters);
                                     break;
-                                case DownloadData.PLACE_CATEGORY:
-                                    DownloadData.searchPlaceCategory(handler, parameters);
+                                case MapController.TYPE_PLACE_CATEGORY:
+                                    MapController.searchPlaceCategory(handler, parameters);
                                     break;
                             }
                             Toast.makeText(context, "추가 데이터를 가져오는 중", Toast.LENGTH_SHORT).show();
@@ -222,28 +250,28 @@ public class SearchResultViewPagerAdapter extends RecyclerView.Adapter<SearchRes
             });
         }
 
-        public void onBind(AddressSearchResult addressSearchResult, int type, LocalApiPlaceParameter parameters)
+        public void onBind(LocationSearchResult locationSearchResult, int type, LocalApiPlaceParameter parameters)
         {
             this.type = type;
             this.parameters = parameters;
 
-            if (type == DownloadData.ADDRESS)
+            if (type == MapController.TYPE_ADDRESS)
             {
                 resultType.setText(SearchResultViewPagerAdapter.this.context.getString(R.string.result_address));
-                resultNum.setText(Integer.toString(addressSearchResult.getAddressResponseMeta().getTotalCount()));
-                adapter.setAddressList(addressSearchResult.getAddressResponseDocuments(), addressSearchResult.getAddressResponseMeta());
-            } else if (type == DownloadData.PLACE_KEYWORD)
+                resultNum.setText(Integer.toString(locationSearchResult.getAddressResponseMeta().getTotalCount()));
+                adapter.setAddressList(locationSearchResult.getAddressResponseDocuments(), locationSearchResult.getAddressResponseMeta());
+            } else if (type == KakaoLocalApi.TYPE_PLACE_KEYWORD)
             {
                 resultType.setText(SearchResultViewPagerAdapter.this.context.getString(R.string.result_place));
-                resultNum.setText(Integer.toString(addressSearchResult.getPlaceKeywordMeta().getTotalCount()));
-                adapter.setPlaceKeywordList(addressSearchResult.getPlaceKeywordDocuments(), addressSearchResult.getPlaceKeywordMeta());
-            } else if (type == DownloadData.PLACE_CATEGORY)
+                resultNum.setText(Integer.toString(locationSearchResult.getPlaceKeywordMeta().getTotalCount()));
+                adapter.setPlaceKeywordList(locationSearchResult.getPlaceKeywordDocuments(), locationSearchResult.getPlaceKeywordMeta());
+            } else if (type == KakaoLocalApi.TYPE_PLACE_CATEGORY)
             {
                 resultType.setText(SearchResultViewPagerAdapter.this.context.getString(R.string.result_place));
-                resultNum.setText(Integer.toString(addressSearchResult.getPlaceCategoryMeta().getTotalCount()));
-                adapter.setPlaceCategoryList(addressSearchResult.getPlaceCategoryDocuments(), addressSearchResult.getPlaceCategoryMeta());
+                resultNum.setText(Integer.toString(locationSearchResult.getPlaceCategoryMeta().getTotalCount()));
+                adapter.setPlaceCategoryList(locationSearchResult.getPlaceCategoryDocuments(), locationSearchResult.getPlaceCategoryMeta());
             }
-            adapter.setDownloadedTime(addressSearchResult.getDownloadedTime());
+            adapter.setDownloadedTime(locationSearchResult.getDownloadedTime());
             adapter.notifyDataSetChanged();
         }
 

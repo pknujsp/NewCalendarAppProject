@@ -122,6 +122,17 @@ public class AddressResponseDocuments implements Parcelable
         this.addressResponseRoadAddress = addressResponseRoadAddress;
     }
 
+    public String getAddressTypeStr()
+    {
+        if (addressType.equals(ROAD) || addressType.equals(ROAD_ADDR))
+        {
+            return "도로명";
+        } else
+        {
+            return "지번";
+        }
+    }
+
     @Override
     public int describeContents()
     {

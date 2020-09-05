@@ -12,7 +12,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.zerodsoft.scheduleweather.activity.mapactivity.Fragment.SearchFragment;
-import com.zerodsoft.scheduleweather.activity.mapactivity.Fragment.SearchResultListFragment;
+import com.zerodsoft.scheduleweather.activity.mapactivity.Fragment.SearchResultFragment;
 import com.zerodsoft.scheduleweather.activity.mapactivity.MapActivity;
 import com.zerodsoft.scheduleweather.R;
 
@@ -23,7 +23,7 @@ public class SearchResultController extends Fragment implements MapActivity.OnBa
     public static final String TAG = "SearchResultController";
 
     private SearchResultHeaderFragment headerFragment;
-    private SearchResultListFragment listFragment;
+    private SearchResultFragment listFragment;
 
     public static boolean isShowHeader = true;
     public static boolean isShowList = true;
@@ -45,7 +45,7 @@ public class SearchResultController extends Fragment implements MapActivity.OnBa
         //  listFragment = new SearchResultListFragment();
 
         fragmentTransaction.add(R.id.fragment_search_result_header_container, headerFragment, SearchResultHeaderFragment.TAG);
-        fragmentTransaction.add(R.id.fragment_search_result_list_container, listFragment, SearchResultListFragment.TAG);
+        fragmentTransaction.add(R.id.fragment_search_result_list_container, listFragment, SearchResultFragment.TAG);
         fragmentTransaction.show(headerFragment).show(listFragment).commit();
 
         super.onViewCreated(view, savedInstanceState);
@@ -72,7 +72,7 @@ public class SearchResultController extends Fragment implements MapActivity.OnBa
         }
         if (listFragment == null)
         {
-            listFragment = new SearchResultListFragment();
+            listFragment = new SearchResultFragment();
         }
 
         headerFragment.setSearchWord(bundle.getString("searchWord"));

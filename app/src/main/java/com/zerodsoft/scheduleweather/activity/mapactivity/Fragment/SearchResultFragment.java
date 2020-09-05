@@ -29,22 +29,22 @@ import com.zerodsoft.scheduleweather.activity.mapactivity.MapActivity;
 import com.zerodsoft.scheduleweather.etc.ViewPagerIndicator;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.recyclerviewadapter.SearchResultViewPagerAdapter;
-import com.zerodsoft.scheduleweather.retrofit.DownloadData;
 import com.zerodsoft.scheduleweather.retrofit.LocalApiPlaceParameter;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.AddressSearchResult;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.LocationSearchResult;
 
 import net.daum.mf.map.api.MapPoint;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class SearchResultListFragment extends Fragment
+public class SearchResultFragment extends Fragment
 {
     public static final String TAG = "SearchResult Fragment";
+    private static SearchResultFragment instance;
 
     private ViewPager2 viewPager2;
     private SearchResultViewPagerAdapter searchResultViewPagerAdapter;
-    private AddressSearchResult result;
+    private LocationSearchResult result;
     private TextView rescanMapCenter;
     private TextView rescanMyLocCenter;
     private LocalApiPlaceParameter parameters;
@@ -60,11 +60,25 @@ public class SearchResultListFragment extends Fragment
 
     private List<Integer> resultTypes;
 
+
     public interface OnControlViewPagerAdapter
     {
         void setRecyclerViewCurrentPage(int page);
     }
 
+    public static SearchResultFragment getInstance()
+    {
+        if (instance == null)
+        {
+            instance = new SearchResultFragment();
+        }
+        return instance;
+    }
+
+    public void setInitialData(Bundle bundle)
+    {
+
+    }
 
     private LocationListener locationListener = new LocationListener()
     {
@@ -79,16 +93,16 @@ public class SearchResultListFragment extends Fragment
 
             for (int type : resultTypes)
             {
-                if (type == DownloadData.PLACE_CATEGORY)
+                if (type == KakaoLocalApi.TYPE_PLACE_CATEGORY)
                 {
-                    DownloadData.searchPlaceCategory(handler, parameters);
+                    KakaoLocalApi.searchPlaceCategory(handler, parameters);
                     break;
-                } else if (type == DownloadData.ADDRESS)
+                } else if (type == KakaoLocalApi.TYPE_ADDRESS)
                 {
-                    DownloadData.searchAddress(handler, parameters);
-                } else if (type == DownloadData.PLACE_KEYWORD)
+                    KakaoLocalApi.searchAddress(handler, parameters);
+                } else if (type == KakaoLocalApi.TYPE_PLACE_KEYWORD)
                 {
-                    DownloadData.searchPlaceKeyWord(handler, parameters);
+                    KakaoLocalApi.searchPlaceKeyWord(handler, parameters);
                 }
             }
         }
@@ -115,7 +129,7 @@ public class SearchResultListFragment extends Fragment
     @SuppressLint("HandlerLeak")
     private Handler handler = new Handler()
     {
-        private AddressSearchResult addressSearchResult = null;
+        private LocationSearchResult locationSearchResult = null;
         private int totalCallCount = 0;
 
         @Override
@@ -124,33 +138,33 @@ public class SearchResultListFragment extends Fragment
             ++totalCallCount;
             Bundle bundle = msg.getData();
 
-            if (addressSearchResult == null)
+            if (locationSearchResult == null)
             {
-                addressSearchResult = new AddressSearchResult();
+                locationSearchResult = new LocationSearchResult();
             }
 
             switch (msg.what)
             {
-                case DownloadData.ADDRESS:
-                    addressSearchResult.setAddressResponseDocuments(bundle.getParcelableArrayList("documents"));
-                    addressSearchResult.setAddressResponseMeta(bundle.getParcelable("meta"));
+                case KakaoLocalApi.TYPE_ADDRESS:
+                    locationSearchResult.setAddressResponseDocuments(bundle.getParcelableArrayList("documents"));
+                    locationSearchResult.setAddressResponseMeta(bundle.getParcelable("meta"));
                     break;
-                case DownloadData.PLACE_KEYWORD:
-                    addressSearchResult.setPlaceKeywordDocuments(bundle.getParcelableArrayList("documents"));
-                    addressSearchResult.setPlaceKeywordMeta(bundle.getParcelable("meta"));
+                case KakaoLocalApi.TYPE_PLACE_KEYWORD:
+                    locationSearchResult.setPlaceKeywordDocuments(bundle.getParcelableArrayList("documents"));
+                    locationSearchResult.setPlaceKeywordMeta(bundle.getParcelable("meta"));
                     break;
-                case DownloadData.PLACE_CATEGORY:
-                    addressSearchResult.setPlaceCategoryDocuments(bundle.getParcelableArrayList("documents"));
-                    addressSearchResult.setPlaceCategoryMeta(bundle.getParcelable("meta"));
+                case KakaoLocalApi.TYPE_PLACE_CATEGORY:
+                    locationSearchResult.setPlaceCategoryDocuments(bundle.getParcelableArrayList("documents"));
+                    locationSearchResult.setPlaceCategoryMeta(bundle.getParcelable("meta"));
                     break;
             }
 
             if (totalCallCount == indicatorLength)
             {
-                result = addressSearchResult.clone();
+                result = locationSearchResult.clone();
 
                 searchResultViewPagerAdapter = new SearchResultViewPagerAdapter(getActivity());
-                searchResultViewPagerAdapter.setAddressSearchResult(result);
+                searchResultViewPagerAdapter.setLocationSearchResult(result);
                 searchResultViewPagerAdapter.setParameters(parameters);
                 searchResultViewPagerAdapter.setSearchWord(searchWord);
 
@@ -166,12 +180,12 @@ public class SearchResultListFragment extends Fragment
                 ((MapActivity) getActivity()).onFragmentChanged(MapActivity.SEARCH_RESULT_FRAGMENT_UPDATE, dataBundle);
 
                 totalCallCount = 0;
-                addressSearchResult = null;
+                locationSearchResult = null;
             }
         }
     };
 
-    public SearchResultListFragment()
+    public SearchResultFragment()
     {
     }
 
@@ -201,6 +215,16 @@ public class SearchResultListFragment extends Fragment
 
         viewPagerIndicator.createDot(0, indicatorLength);
 
+        searchResultViewPagerAdapter = new SearchResultViewPagerAdapter(getActivity());
+        searchResultViewPagerAdapter.setLocationSearchResult(result);
+        searchResultViewPagerAdapter.setParameters(bundle);
+        searchResultViewPagerAdapter.setSearchWord(searchWord);
+
+        viewPager2.setAdapter(searchResultViewPagerAdapter);
+
+        onPageCallback = new OnPageCallback();
+        viewPager2.registerOnPageChangeCallback(onPageCallback);
+
         rescanMapCenter.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -214,16 +238,16 @@ public class SearchResultListFragment extends Fragment
 
                 for (int type : resultTypes)
                 {
-                    if (type == DownloadData.PLACE_CATEGORY)
+                    if (type == KakaoLocalApi.TYPE_PLACE_CATEGORY)
                     {
-                        DownloadData.searchPlaceCategory(handler, parameters);
+                        KakaoLocalApi.searchPlaceCategory(handler, parameters);
                         break;
-                    } else if (type == DownloadData.ADDRESS)
+                    } else if (type == KakaoLocalApi.TYPE_ADDRESS)
                     {
-                        DownloadData.searchAddress(handler, parameters);
-                    } else if (type == DownloadData.PLACE_KEYWORD)
+                        KakaoLocalApi.searchAddress(handler, parameters);
+                    } else if (type == KakaoLocalApi.TYPE_PLACE_KEYWORD)
                     {
-                        DownloadData.searchPlaceKeyWord(handler, parameters);
+                        KakaoLocalApi.searchPlaceKeyWord(handler, parameters);
                     }
                 }
             }
@@ -248,6 +272,7 @@ public class SearchResultListFragment extends Fragment
             }
         });
 
+
         super.onViewCreated(view, savedInstanceState);
     }
 
@@ -258,15 +283,6 @@ public class SearchResultListFragment extends Fragment
         bundle.putParcelable("parameters", parameters);
         setSortSpinner();
 
-        searchResultViewPagerAdapter = new SearchResultViewPagerAdapter(getActivity());
-        searchResultViewPagerAdapter.setAddressSearchResult(result);
-        searchResultViewPagerAdapter.setParameters(bundle);
-        searchResultViewPagerAdapter.setSearchWord(searchWord);
-
-        viewPager2.setAdapter(searchResultViewPagerAdapter);
-
-        onPageCallback = new OnPageCallback();
-        viewPager2.registerOnPageChangeCallback(onPageCallback);
 
         super.onStart();
     }
@@ -339,16 +355,16 @@ public class SearchResultListFragment extends Fragment
 
                 for (int type : resultTypes)
                 {
-                    if (type == DownloadData.PLACE_CATEGORY)
+                    if (type == KakaoLocalApi.TYPE_PLACE_CATEGORY)
                     {
-                        DownloadData.searchPlaceCategory(handler, parameters);
+                        KakaoLocalApi.searchPlaceCategory(handler, parameters);
                         break;
-                    } else if (type == DownloadData.ADDRESS)
+                    } else if (type == KakaoLocalApi.TYPE_ADDRESS)
                     {
-                        DownloadData.searchAddress(handler, parameters);
-                    } else if (type == DownloadData.PLACE_KEYWORD)
+                        KakaoLocalApi.searchAddress(handler, parameters);
+                    } else if (type == KakaoLocalApi.TYPE_PLACE_KEYWORD)
                     {
-                        DownloadData.searchPlaceKeyWord(handler, parameters);
+                        KakaoLocalApi.searchPlaceKeyWord(handler, parameters);
                     }
                 }
             }

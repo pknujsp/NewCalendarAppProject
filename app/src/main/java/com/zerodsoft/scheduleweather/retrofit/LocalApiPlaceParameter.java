@@ -186,6 +186,19 @@ public class LocalApiPlaceParameter implements Parcelable
         return map;
     }
 
+    public void clear()
+    {
+        query = null;
+        categoryGroupCode = null;
+        x = null;
+        y = null;
+        radius = null;
+        page = null;
+        size = null;
+        sort = null;
+        rect = null;
+    }
+
 
     @Override
     public int describeContents()

@@ -14,7 +14,7 @@ import androidx.room.PrimaryKey;
                 parentColumns = "id",
                 childColumns = "schedule_id"
         ))
-public class AddressDTO implements Parcelable
+public class AddressDTO implements Parcelable, Cloneable
 {
     @ColumnInfo(name = "id", index = true)
     @PrimaryKey(autoGenerate = true)
@@ -155,5 +155,11 @@ public class AddressDTO implements Parcelable
         parcel.writeString(longitude);
         parcel.writeString(weatherX);
         parcel.writeString(weatherY);
+    }
+
+    @Override
+    public Object clone() throws CloneNotSupportedException
+    {
+        return super.clone();
     }
 }
