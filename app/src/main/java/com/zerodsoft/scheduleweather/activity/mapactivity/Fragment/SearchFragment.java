@@ -1,5 +1,6 @@
 package com.zerodsoft.scheduleweather.activity.mapactivity.Fragment;
 
+import android.app.Activity;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -30,28 +31,30 @@ public class SearchFragment extends Fragment implements SearchCategoryViewAdapte
     private ImageButton searchButton;
     private RecyclerView searchHistoryRecyclerView;
     private RecyclerView itemCategoryRecyclerView;
-    private LocalApiPlaceParameter parameters;
-    private int calledDownloadTotalCount;
 
     private double latitude;
     private double longitude;
 
-    public SearchFragment()
+    private MapController.OnDownloadListener onDownloadListener;
+
+    public SearchFragment(Activity activity)
     {
+        onDownloadListener = (MapController.OnDownloadListener) activity;
     }
 
-    public static SearchFragment getInstance()
+    public static SearchFragment getInstance(Activity activity)
     {
         if (instance == null)
         {
-            instance = new SearchFragment();
+            instance = new SearchFragment(activity);
         }
         return instance;
     }
 
     public void setInitialData(Bundle bundle)
     {
-
+        this.latitude = bundle.getDouble("latitude");
+        this.longitude = bundle.getDouble("longitude");
     }
 
     @Override
@@ -85,28 +88,14 @@ public class SearchFragment extends Fragment implements SearchCategoryViewAdapte
             @Override
             public void onClick(View view)
             {
-                String searchWord = searchEditText.getText().toString();
-                String name = getCategoryName(searchWord);
-
-                parameters = null;
-                parameters = new LocalApiPlaceParameter().setX(longitude)
-                        .setY(latitude).setPage(LocalApiPlaceParameter.DEFAULT_PAGE)
-                        .setSize(LocalApiPlaceParameter.DEFAULT_SIZE)
-                        .setSort(LocalApiPlaceParameter.DEFAULT_SORT);
-
-                if (name != null)
-                {
-                    searchEditText.setText(searchWord);
-                    parameters.setCategoryGroupCode(name);
-                    calledDownloadTotalCount = 1;
-                    KakaoLocalApi.searchPlaceCategory(handler, parameters);
-                } else
-                {
-                    parameters.setQuery(searchWord);
-                    calledDownloadTotalCount = 2;
-                    KakaoLocalApi.searchAddress(handler, parameters);
-                    KakaoLocalApi.searchPlaceKeyWord(handler, parameters);
-                }
+                Bundle bundle = new Bundle();
+                LocalApiPlaceParameter parameter = new LocalApiPlaceParameter();
+                // String searchWord, double latitude, double longitude, String sort, String page
+                // 검색 파라미터 설정
+                parameter.setQuery(searchEditText.getText().toString()).setX(longitude).setY(latitude)
+                        .setSort(LocalApiPlaceParameter.SORT_ACCURACY).setPage("1");
+                bundle.putParcelable("parameter", parameter);
+                ((MapActivity) getActivity()).onFragmentChanged(SearchResultFragment.TAG, bundle);
             }
         });
 
@@ -148,49 +137,12 @@ public class SearchFragment extends Fragment implements SearchCategoryViewAdapte
 
 
     @Override
-    public void selectedCategory(String name, String description)
-    {
-        // 카테고리 이름을 전달받음
-        searchEditText.setText(description);
-        parameters = null;
-        parameters = new LocalApiPlaceParameter().setX(longitude)
-                .setY(latitude)
-                .setPage(LocalApiPlaceParameter.DEFAULT_PAGE)
-                .setSize(LocalApiPlaceParameter.DEFAULT_SIZE)
-                .setSort(LocalApiPlaceParameter.DEFAULT_SORT)
-                .setCategoryGroupCode(name);
-
-        calledDownloadTotalCount = 1;
-        KakaoLocalApi.searchPlaceCategory(handler, parameters);
-    }
-
-    private String getCategoryName(String searchWord)
-    {
-        KakaoLocalApiCategoryCode.loadCategoryMap();
-        String name = KakaoLocalApiCategoryCode.getName(searchWord);
-
-        if (name != null)
-        {
-            return name;
-        } else
-        {
-            return null;
-        }
-    }
-
-    public void setData(Bundle bundle)
-    {
-        this.latitude = bundle.getDouble("latitude");
-        this.longitude = bundle.getDouble("longitude");
-    }
-
-    @Override
     public void onBackPressed()
     {
         searchEditText.setText("");
-
-        ((MapActivity) getActivity()).clearAllPoiItems();
-        ((MapActivity) getActivity()).setZoomGpsButtonVisibility(View.VISIBLE);
+        MapFragment mapFragment = MapFragment.getInstance();
+        mapFragment.clearAllPoiItems();
+        mapFragment.setZoomGpsButtonVisibility(View.VISIBLE);
         getActivity().getSupportFragmentManager().popBackStackImmediate();
     }
 }

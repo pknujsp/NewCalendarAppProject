@@ -1,6 +1,7 @@
 package com.zerodsoft.scheduleweather.activity.mapactivity.Fragment;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -29,11 +30,27 @@ public class MapController
     public static final int TYPE_PLACE_CATEGORY = 2;
 
     private int calledDownloadTotalCount = 0;
+    private String tag;
     private LocalApiPlaceParameter parameter;
+    private int resultType = -1;
 
-    public interface OnDownloadedData
+    private OnDownloadListener onDownloadListener;
+
+    public MapController(Activity activity)
     {
-        void onDownloadedData(LocalApiPlaceParameter parameter, LocationSearchResult locationSearchResult);
+        onDownloadListener = (OnDownloadListener) activity;
+    }
+
+
+    public interface OnDownloadListener
+    {
+        void onDownloadedData(LocalApiPlaceParameter parameter, String tag, LocationSearchResult locationSearchResult);
+
+        void onDownloadedExtraData(LocalApiPlaceParameter parameter, int type, LocationSearchResult locationSearchResult);
+
+        void requestData(LocalApiPlaceParameter parameter, String tag);
+
+        void requestExtraData(LocalApiPlaceParameter parameter, int type);
     }
 
     @SuppressLint("HandlerLeak")
@@ -57,13 +74,13 @@ public class MapController
             {
                 switch (msg.what)
                 {
-                    case KakaoLocalApi.TYPE_ADDRESS:
+                    case TYPE_ADDRESS:
                         locationSearchResult.setAddressResponse(bundle.getParcelable("response"));
                         break;
-                    case KakaoLocalApi.TYPE_PLACE_KEYWORD:
+                    case TYPE_PLACE_KEYWORD:
                         locationSearchResult.setPlaceKeywordResponse(bundle.getParcelable("response"));
                         break;
-                    case KakaoLocalApi.TYPE_PLACE_CATEGORY:
+                    case TYPE_PLACE_CATEGORY:
                         locationSearchResult.setPlaceCategoryResponse(bundle.getParcelable("response"));
                         break;
                 }
@@ -71,7 +88,27 @@ public class MapController
             if (totalCallCount == calledDownloadTotalCount)
             {
                 locationSearchResult.setDownloadedDate(new Date(System.currentTimeMillis()));
+                try
+                {
+                    onDownloadListener.onDownloadedData(parameter, tag, (LocationSearchResult) locationSearchResult.clone());
+                } catch (CloneNotSupportedException e)
+                {
+                    e.printStackTrace();
+                }
 
+                calledDownloadTotalCount = 0;
+                totalCallCount = 0;
+            } else if (resultType != -1)
+            {
+                // 추가 데이터를 받아온 경우
+                try
+                {
+                    onDownloadListener.onDownloadedExtraData(parameter, resultType, (LocationSearchResult) locationSearchResult.clone());
+                } catch (CloneNotSupportedException e)
+                {
+                    e.printStackTrace();
+                }
+                resultType = -1;
                 calledDownloadTotalCount = 0;
                 totalCallCount = 0;
             }
@@ -195,10 +232,11 @@ public class MapController
         });
     }
 
-    public void selectLocation(LocalApiPlaceParameter parameter)
+    public void selectLocation(LocalApiPlaceParameter parameter, String tag)
     {
         // String searchWord, double latitude, double longitude, String sort, String page
-        parameter.clear();
+        this.parameter = parameter;
+        this.tag = tag;
         String categoryName = getCategoryName(parameter.getQuery());
 
         if (categoryName != null)
@@ -210,6 +248,27 @@ public class MapController
             // 카테고리 검색
             searchAddress(parameter);
             searchPlaceKeyWord(parameter);
+        }
+    }
+
+    public void selectLocation(LocalApiPlaceParameter parameter, int type)
+    {
+        // 스크롤할때 추가 데이터를 받아오기 위한 메소드
+        // String searchWord, double latitude, double longitude, String sort, String page
+        this.parameter = parameter;
+        this.resultType = type;
+
+        switch (resultType)
+        {
+            case MapController.TYPE_ADDRESS:
+                searchAddress(parameter);
+                break;
+            case MapController.TYPE_PLACE_CATEGORY:
+                searchPlaceCategory(parameter);
+                break;
+            case MapController.TYPE_PLACE_KEYWORD:
+                searchPlaceKeyWord(parameter);
+                break;
         }
     }
 

@@ -1,6 +1,7 @@
 package com.zerodsoft.scheduleweather.activity.mapactivity.Fragment;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -24,6 +25,7 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.mapactivity.MapActivity;
 import com.zerodsoft.scheduleweather.databinding.FragmentMapBinding;
 import com.zerodsoft.scheduleweather.fragment.SearchResultController;
+import com.zerodsoft.scheduleweather.retrofit.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.LocationSearchResult;
 import com.zerodsoft.scheduleweather.room.dto.AddressDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
@@ -39,9 +41,9 @@ import java.util.List;
 
 public class MapFragment extends Fragment implements MapView.POIItemEventListener, MapReverseGeoCoder.ReverseGeoCodingResultListener, MapView.MapViewEventListener, MapActivity.OnBackPressedListener
 {
-
     private static MapFragment instance;
     public static final String TAG = "MapFragment";
+
     private FragmentMapBinding binding;
     private MapView mapView;
 
@@ -51,6 +53,8 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     private LocationManager locationManager;
     private LocationSearchResult searchResult;
     private SearchResultController searchResultController;
+
+    private MapController.OnDownloadListener onDownloadListener;
 
     private boolean opendPOIInfo = false;
     private boolean clickedPOI = false;
@@ -74,24 +78,46 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
         void setBehaviorState(int state);
     }
 
-    public static MapFragment getInstance()
+    public static MapFragment getInstance(Activity activity)
     {
         if (instance == null)
         {
-            instance = new MapFragment();
+            instance = new MapFragment(activity);
         }
         return instance;
     }
 
+    public MapFragment(Activity activity)
+    {
+        onDownloadListener = (MapController.OnDownloadListener) activity;
+    }
+
     public void setInitialData(Bundle bundle)
     {
+        // EDIT_LOCATION인 경우 데이터를 받아와서 화면에 표시
+
         if (bundle == null)
         {
             isMain = true;
         } else
         {
             isMain = false;
-            locationSearchResult = bundle.getParcelable("searchResult");
+            selectedPlace = bundle.getParcelable("selectedPlace");
+            selectedAddress = bundle.getParcelable("selectedAddress");
+
+            LocalApiPlaceParameter parameter = new LocalApiPlaceParameter();
+
+            if (selectedAddress != null)
+            {
+                // 주소 검색 순서 : 좌표로 주소 변환
+            } else if (selectedPlace != null)
+            {
+                // 장소 검색 순서 : 장소의 위경도 내 10M 반경에서 장소 이름 검색(여러개 나올 경우 장소ID와 일치하는 장소를 선택)
+
+            }
+
+
+            onDownloadListener.requestData();
         }
     }
 

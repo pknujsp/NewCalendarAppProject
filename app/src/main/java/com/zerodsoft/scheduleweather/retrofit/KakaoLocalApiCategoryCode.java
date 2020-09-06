@@ -15,6 +15,11 @@ public class KakaoLocalApiCategoryCode
 
     }
 
+    static
+    {
+        loadCategoryMap();
+    }
+
     public static void loadCategoryMap()
     {
         if (categoryMap == null)

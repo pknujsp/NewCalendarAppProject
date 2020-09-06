@@ -1,7 +1,7 @@
 package com.zerodsoft.scheduleweather.activity.mapactivity.Fragment;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.location.Location;
 import android.location.LocationListener;
@@ -14,8 +14,6 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
-import android.os.Handler;
-import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -44,10 +42,9 @@ public class SearchResultFragment extends Fragment
 
     private ViewPager2 viewPager2;
     private SearchResultViewPagerAdapter searchResultViewPagerAdapter;
-    private LocationSearchResult result;
     private TextView rescanMapCenter;
     private TextView rescanMyLocCenter;
-    private LocalApiPlaceParameter parameters;
+    private LocalApiPlaceParameter parameter;
     private LocationManager locationManager;
     private Spinner sortSpinner;
 
@@ -56,9 +53,7 @@ public class SearchResultFragment extends Fragment
 
     private OnPageCallback onPageCallback;
 
-    private String searchWord;
-
-    private List<Integer> resultTypes;
+    private MapController.OnDownloadListener onDownloadListener;
 
 
     public interface OnControlViewPagerAdapter
@@ -66,18 +61,37 @@ public class SearchResultFragment extends Fragment
         void setRecyclerViewCurrentPage(int page);
     }
 
-    public static SearchResultFragment getInstance()
+    public static SearchResultFragment getInstance(Activity activity)
     {
         if (instance == null)
         {
-            instance = new SearchResultFragment();
+            instance = new SearchResultFragment(activity);
         }
         return instance;
     }
 
+    public SearchResultFragment(Activity activity)
+    {
+        onDownloadListener = (MapController.OnDownloadListener) activity;
+    }
+
     public void setInitialData(Bundle bundle)
     {
+        parameter = bundle.getParcelable("parameter");
+    }
 
+    public void setDownloadedData(LocalApiPlaceParameter parameter, LocationSearchResult locationSearchResult)
+    {
+        this.parameter = parameter;
+        searchResultViewPagerAdapter.setData(parameter, locationSearchResult);
+        searchResultViewPagerAdapter.notifyDataSetChanged();
+    }
+
+    public void setDownloadedExtraData(LocalApiPlaceParameter parameter, int type, LocationSearchResult locationSearchResult)
+    {
+        this.parameter = parameter;
+        searchResultViewPagerAdapter.addExtraData(parameter, type, locationSearchResult);
+        searchResultViewPagerAdapter.notifyDataSetChanged();
     }
 
     private LocationListener locationListener = new LocationListener()
@@ -85,26 +99,12 @@ public class SearchResultFragment extends Fragment
         @Override
         public void onLocationChanged(Location location)
         {
-            parameters.setX(location.getLongitude());
-            parameters.setY(location.getLatitude());
-            parameters.setPage("1");
+            parameter.setX(location.getLongitude());
+            parameter.setY(location.getLatitude());
+            parameter.setPage("1");
             // 자원해제
             locationManager.removeUpdates(locationListener);
-
-            for (int type : resultTypes)
-            {
-                if (type == KakaoLocalApi.TYPE_PLACE_CATEGORY)
-                {
-                    KakaoLocalApi.searchPlaceCategory(handler, parameters);
-                    break;
-                } else if (type == KakaoLocalApi.TYPE_ADDRESS)
-                {
-                    KakaoLocalApi.searchAddress(handler, parameters);
-                } else if (type == KakaoLocalApi.TYPE_PLACE_KEYWORD)
-                {
-                    KakaoLocalApi.searchPlaceKeyWord(handler, parameters);
-                }
-            }
+            onDownloadListener.requestData(parameter, TAG);
         }
 
         @Override
@@ -126,64 +126,6 @@ public class SearchResultFragment extends Fragment
         }
     };
 
-    @SuppressLint("HandlerLeak")
-    private Handler handler = new Handler()
-    {
-        private LocationSearchResult locationSearchResult = null;
-        private int totalCallCount = 0;
-
-        @Override
-        public void handleMessage(Message msg)
-        {
-            ++totalCallCount;
-            Bundle bundle = msg.getData();
-
-            if (locationSearchResult == null)
-            {
-                locationSearchResult = new LocationSearchResult();
-            }
-
-            switch (msg.what)
-            {
-                case KakaoLocalApi.TYPE_ADDRESS:
-                    locationSearchResult.setAddressResponseDocuments(bundle.getParcelableArrayList("documents"));
-                    locationSearchResult.setAddressResponseMeta(bundle.getParcelable("meta"));
-                    break;
-                case KakaoLocalApi.TYPE_PLACE_KEYWORD:
-                    locationSearchResult.setPlaceKeywordDocuments(bundle.getParcelableArrayList("documents"));
-                    locationSearchResult.setPlaceKeywordMeta(bundle.getParcelable("meta"));
-                    break;
-                case KakaoLocalApi.TYPE_PLACE_CATEGORY:
-                    locationSearchResult.setPlaceCategoryDocuments(bundle.getParcelableArrayList("documents"));
-                    locationSearchResult.setPlaceCategoryMeta(bundle.getParcelable("meta"));
-                    break;
-            }
-
-            if (totalCallCount == indicatorLength)
-            {
-                result = locationSearchResult.clone();
-
-                searchResultViewPagerAdapter = new SearchResultViewPagerAdapter(getActivity());
-                searchResultViewPagerAdapter.setLocationSearchResult(result);
-                searchResultViewPagerAdapter.setParameters(parameters);
-                searchResultViewPagerAdapter.setSearchWord(searchWord);
-
-                viewPager2.setAdapter(searchResultViewPagerAdapter);
-
-                onPageCallback = new OnPageCallback();
-                viewPager2.registerOnPageChangeCallback(onPageCallback);
-
-                Bundle dataBundle = new Bundle();
-                dataBundle.putParcelable("result", result);
-                dataBundle.putLong("downloadedTime", System.currentTimeMillis());
-
-                ((MapActivity) getActivity()).onFragmentChanged(MapActivity.SEARCH_RESULT_FRAGMENT_UPDATE, dataBundle);
-
-                totalCallCount = 0;
-                locationSearchResult = null;
-            }
-        }
-    };
 
     public SearchResultFragment()
     {
@@ -216,14 +158,13 @@ public class SearchResultFragment extends Fragment
         viewPagerIndicator.createDot(0, indicatorLength);
 
         searchResultViewPagerAdapter = new SearchResultViewPagerAdapter(getActivity());
-        searchResultViewPagerAdapter.setLocationSearchResult(result);
-        searchResultViewPagerAdapter.setParameters(bundle);
-        searchResultViewPagerAdapter.setSearchWord(searchWord);
 
         viewPager2.setAdapter(searchResultViewPagerAdapter);
 
         onPageCallback = new OnPageCallback();
         viewPager2.registerOnPageChangeCallback(onPageCallback);
+
+        onDownloadListener.requestData(parameter, TAG);
 
         rescanMapCenter.setOnClickListener(new View.OnClickListener()
         {
@@ -232,24 +173,11 @@ public class SearchResultFragment extends Fragment
             {
                 MapPoint.GeoCoordinate mapPoint = ((MapActivity) getActivity()).getMapCenterPoint();
 
-                parameters.setX(mapPoint.longitude);
-                parameters.setY(mapPoint.latitude);
-                parameters.setPage("1");
+                parameter.setX(mapPoint.longitude);
+                parameter.setY(mapPoint.latitude);
+                parameter.setPage("1");
 
-                for (int type : resultTypes)
-                {
-                    if (type == KakaoLocalApi.TYPE_PLACE_CATEGORY)
-                    {
-                        KakaoLocalApi.searchPlaceCategory(handler, parameters);
-                        break;
-                    } else if (type == KakaoLocalApi.TYPE_ADDRESS)
-                    {
-                        KakaoLocalApi.searchAddress(handler, parameters);
-                    } else if (type == KakaoLocalApi.TYPE_PLACE_KEYWORD)
-                    {
-                        KakaoLocalApi.searchPlaceKeyWord(handler, parameters);
-                    }
-                }
+                onDownloadListener.requestData(parameter, TAG);
             }
         });
 
@@ -279,11 +207,7 @@ public class SearchResultFragment extends Fragment
     @Override
     public void onStart()
     {
-        Bundle bundle = new Bundle();
-        bundle.putParcelable("parameters", parameters);
         setSortSpinner();
-
-
         super.onStart();
     }
 
@@ -303,15 +227,6 @@ public class SearchResultFragment extends Fragment
     public void onStop()
     {
         super.onStop();
-    }
-
-    public void setData(Bundle bundle)
-    {
-        result = bundle.getParcelable("result");
-        parameters = bundle.getParcelable("parameters");
-        searchWord = bundle.getString("searchWord");
-        indicatorLength = result.getResultNum();
-        resultTypes = result.getResultTypes();
     }
 
     public int getCurrentListType()
@@ -345,28 +260,15 @@ public class SearchResultFragment extends Fragment
                 switch (i)
                 {
                     case 0:
-                        parameters.setSort(LocalApiPlaceParameter.SORT_ACCURACY);
+                        parameter.setSort(LocalApiPlaceParameter.SORT_ACCURACY);
                         break;
                     case 1:
-                        parameters.setSort(LocalApiPlaceParameter.SORT_DISTANCE);
+                        parameter.setSort(LocalApiPlaceParameter.SORT_DISTANCE);
                         break;
                 }
-                parameters.setPage("1");
+                parameter.setPage("1");
 
-                for (int type : resultTypes)
-                {
-                    if (type == KakaoLocalApi.TYPE_PLACE_CATEGORY)
-                    {
-                        KakaoLocalApi.searchPlaceCategory(handler, parameters);
-                        break;
-                    } else if (type == KakaoLocalApi.TYPE_ADDRESS)
-                    {
-                        KakaoLocalApi.searchAddress(handler, parameters);
-                    } else if (type == KakaoLocalApi.TYPE_PLACE_KEYWORD)
-                    {
-                        KakaoLocalApi.searchPlaceKeyWord(handler, parameters);
-                    }
-                }
+                onDownloadListener.requestData(parameter, TAG);
             }
 
             @Override
@@ -375,11 +277,6 @@ public class SearchResultFragment extends Fragment
 
             }
         });
-    }
-
-    public void setCurrentPage(int page)
-    {
-        searchResultViewPagerAdapter.setCurrentPage(page);
     }
 
 

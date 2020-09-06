@@ -3,6 +3,7 @@ package com.zerodsoft.scheduleweather.retrofit.queryresponse;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.zerodsoft.scheduleweather.activity.mapactivity.Fragment.MapController;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placecategoryresponse.PlaceCategory;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placekeywordresponse.PlaceKeyword;
@@ -139,15 +140,15 @@ public class LocationSearchResult implements Parcelable, Cloneable
 
         if (addressResponse.getAddressResponseDocumentsList().size() != 0)
         {
-            types.add(KakaoLocalApi.TYPE_ADDRESS);
+            types.add(MapController.TYPE_ADDRESS);
         }
         if (placeKeywordResponse.getPlaceKeywordDocuments().size() != 0)
         {
-            types.add(KakaoLocalApi.TYPE_PLACE_KEYWORD);
+            types.add(MapController.TYPE_PLACE_KEYWORD);
         }
         if (placeCategoryResponse.getPlaceCategoryDocuments().size() != 0)
         {
-            types.add(KakaoLocalApi.TYPE_PLACE_CATEGORY);
+            types.add(MapController.TYPE_PLACE_CATEGORY);
         }
         return types;
     }

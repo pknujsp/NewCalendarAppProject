@@ -18,18 +18,15 @@ import com.zerodsoft.scheduleweather.activity.mapactivity.MapActivity;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.LocationSearchResult;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponseDocuments;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponseMeta;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placecategoryresponse.PlaceCategoryDocuments;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.placecategoryresponse.PlaceCategoryMeta;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placekeywordresponse.PlaceKeywordDocuments;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.placekeywordresponse.PlaceKeywordMeta;
 import com.zerodsoft.scheduleweather.room.dto.AddressDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
 import com.zerodsoft.scheduleweather.utility.LonLat;
 import com.zerodsoft.scheduleweather.utility.LonLatConverter;
 
+import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultViewAdapter.SearchResultViewHolder>
 {
@@ -39,7 +36,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
 
     private int type;
     private Activity context;
-    private long downloadedTime;
+    private Date downloadedDate;
     private int currentPage;
 
     private int totalCount;
@@ -134,9 +131,9 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
         return currentPage;
     }
 
-    public void setDownloadedTime(long downloadedTime)
+    public void setDownloadedDate(Date downloadedDate)
     {
-        this.downloadedTime = downloadedTime;
+        this.downloadedDate = downloadedDate;
     }
 
     @NonNull
