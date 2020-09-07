@@ -12,6 +12,7 @@ import com.zerodsoft.scheduleweather.retrofit.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.Querys;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.LocationSearchResult;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponse;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.coordtoaddressresponse.CoordToAddress;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placecategoryresponse.PlaceCategory;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placekeywordresponse.PlaceKeyword;
 
@@ -28,6 +29,7 @@ public class MapController
     public static final int TYPE_ADDRESS = 0;
     public static final int TYPE_PLACE_KEYWORD = 1;
     public static final int TYPE_PLACE_CATEGORY = 2;
+    public static final int COORD_TO_ADDRESS = 3;
 
     private int calledDownloadTotalCount = 0;
     private String tag;
@@ -197,6 +199,36 @@ public class MapController
     public void searchPlaceCategory(LocalApiPlaceParameter parameter)
     {
         ++calledDownloadTotalCount;
+        Querys querys = HttpCommunicationClient.getApiService();
+        Map<String, String> queryMap = parameter.getParameterMap();
+        Call<CoordToAddress> call = querys.getCoordToAddress(queryMap);
+
+        call.enqueue(new Callback<CoordToAddress>()
+        {
+            @Override
+            public void onResponse(Call<CoordToAddress> call, Response<CoordToAddress> response)
+            {
+                CoordToAddress coordToAddressResponse = response.body();
+
+                Message message = handler.obtainMessage();
+                message.what = COORD_TO_ADDRESS;
+                Bundle bundle = new Bundle();
+
+                bundle.putParcelable("response", coordToAddressResponse);
+
+                message.setData(bundle);
+                handler.sendMessage(message);
+            }
+
+            @Override
+            public void onFailure(Call<CoordToAddress> call, Throwable t)
+            {
+            }
+        });
+    }
+
+    public void getCoordToAddress(LocalApiPlaceParameter parameter)
+    {
         Querys querys = HttpCommunicationClient.getApiService();
         Map<String, String> queryMap = parameter.getParameterMap();
         Call<PlaceCategory> call = querys.getPlaceCategory(queryMap);

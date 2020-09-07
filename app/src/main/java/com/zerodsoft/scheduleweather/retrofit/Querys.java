@@ -1,6 +1,7 @@
 package com.zerodsoft.scheduleweather.retrofit;
 
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponse;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.coordtoaddressresponse.CoordToAddress;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placecategoryresponse.PlaceCategory;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placekeywordresponse.PlaceKeyword;
 
@@ -20,4 +21,7 @@ public interface Querys
 
     @GET("search/category.json")
     Call<PlaceCategory> getPlaceCategory(@QueryMap(encoded = true) Map<String, String> queryMap);
+
+    @GET("geo/coord2address.json")
+    Call<CoordToAddress> getCoordToAddress(@QueryMap(encoded = true) Map<String, String> queryMap);
 }
