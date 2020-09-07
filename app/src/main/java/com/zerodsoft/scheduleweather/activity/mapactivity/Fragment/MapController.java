@@ -29,12 +29,13 @@ public class MapController
     public static final int TYPE_ADDRESS = 0;
     public static final int TYPE_PLACE_KEYWORD = 1;
     public static final int TYPE_PLACE_CATEGORY = 2;
-    public static final int COORD_TO_ADDRESS = 3;
+    public static final int TYPE_COORD_TO_ADDRESS = 3;
+    public static final int TYPE_NOT = 4;
 
     private int calledDownloadTotalCount = 0;
-    private String tag;
+    private String fragmentTag;
     private LocalApiPlaceParameter parameter;
-    private int resultType = -1;
+    private int dataType = TYPE_NOT;
 
     private OnDownloadListener onDownloadListener;
 
@@ -46,13 +47,9 @@ public class MapController
 
     public interface OnDownloadListener
     {
-        void onDownloadedData(LocalApiPlaceParameter parameter, String tag, LocationSearchResult locationSearchResult);
+        void onDownloadedData(LocalApiPlaceParameter parameter, int dataType, String fragmentTag, LocationSearchResult locationSearchResult);
 
-        void onDownloadedExtraData(LocalApiPlaceParameter parameter, int type, LocationSearchResult locationSearchResult);
-
-        void requestData(LocalApiPlaceParameter parameter, String tag);
-
-        void requestExtraData(LocalApiPlaceParameter parameter, int type);
+        void requestData(LocalApiPlaceParameter parameter, int dataType, String fragmentTag);
     }
 
     @SuppressLint("HandlerLeak")
@@ -85,32 +82,24 @@ public class MapController
                     case TYPE_PLACE_CATEGORY:
                         locationSearchResult.setPlaceCategoryResponse(bundle.getParcelable("response"));
                         break;
+                    case TYPE_COORD_TO_ADDRESS:
+                        locationSearchResult.setCoordToAddressResponse(bundle.getParcelable("response"));
+                        break;
                 }
             }
+
             if (totalCallCount == calledDownloadTotalCount)
             {
                 locationSearchResult.setDownloadedDate(new Date(System.currentTimeMillis()));
                 try
                 {
-                    onDownloadListener.onDownloadedData(parameter, tag, (LocationSearchResult) locationSearchResult.clone());
+                    onDownloadListener.onDownloadedData((LocalApiPlaceParameter) parameter.clone(), dataType, fragmentTag, (LocationSearchResult) locationSearchResult.clone());
                 } catch (CloneNotSupportedException e)
                 {
                     e.printStackTrace();
                 }
 
-                calledDownloadTotalCount = 0;
-                totalCallCount = 0;
-            } else if (resultType != -1)
-            {
-                // 추가 데이터를 받아온 경우
-                try
-                {
-                    onDownloadListener.onDownloadedExtraData(parameter, resultType, (LocationSearchResult) locationSearchResult.clone());
-                } catch (CloneNotSupportedException e)
-                {
-                    e.printStackTrace();
-                }
-                resultType = -1;
+                dataType = TYPE_NOT;
                 calledDownloadTotalCount = 0;
                 totalCallCount = 0;
             }
@@ -119,7 +108,6 @@ public class MapController
 
     public void searchAddress(LocalApiPlaceParameter parameter)
     {
-        ++calledDownloadTotalCount;
         Querys querys = HttpCommunicationClient.getApiService();
         Map<String, String> queryMap = new HashMap<>();
         queryMap.put("query", parameter.getQuery());
@@ -160,7 +148,6 @@ public class MapController
 
     public void searchPlaceKeyWord(LocalApiPlaceParameter parameter)
     {
-        ++calledDownloadTotalCount;
         Querys querys = HttpCommunicationClient.getApiService();
         Map<String, String> queryMap = parameter.getParameterMap();
         Call<PlaceKeyword> call = querys.getPlaceKeyword(queryMap);
@@ -198,37 +185,6 @@ public class MapController
 
     public void searchPlaceCategory(LocalApiPlaceParameter parameter)
     {
-        ++calledDownloadTotalCount;
-        Querys querys = HttpCommunicationClient.getApiService();
-        Map<String, String> queryMap = parameter.getParameterMap();
-        Call<CoordToAddress> call = querys.getCoordToAddress(queryMap);
-
-        call.enqueue(new Callback<CoordToAddress>()
-        {
-            @Override
-            public void onResponse(Call<CoordToAddress> call, Response<CoordToAddress> response)
-            {
-                CoordToAddress coordToAddressResponse = response.body();
-
-                Message message = handler.obtainMessage();
-                message.what = COORD_TO_ADDRESS;
-                Bundle bundle = new Bundle();
-
-                bundle.putParcelable("response", coordToAddressResponse);
-
-                message.setData(bundle);
-                handler.sendMessage(message);
-            }
-
-            @Override
-            public void onFailure(Call<CoordToAddress> call, Throwable t)
-            {
-            }
-        });
-    }
-
-    public void getCoordToAddress(LocalApiPlaceParameter parameter)
-    {
         Querys querys = HttpCommunicationClient.getApiService();
         Map<String, String> queryMap = parameter.getParameterMap();
         Call<PlaceCategory> call = querys.getPlaceCategory(queryMap);
@@ -251,6 +207,7 @@ public class MapController
                 {
                     bundle.putBoolean("isEmpty", false);
                 }
+
                 bundle.putParcelable("response", placeCategoryResponse);
 
                 message.setData(bundle);
@@ -264,45 +221,89 @@ public class MapController
         });
     }
 
-    public void selectLocation(LocalApiPlaceParameter parameter, String tag)
+    public void getCoordToAddress(LocalApiPlaceParameter parameter)
     {
-        // String searchWord, double latitude, double longitude, String sort, String page
-        this.parameter = parameter;
-        this.tag = tag;
-        String categoryName = getCategoryName(parameter.getQuery());
+        Querys querys = HttpCommunicationClient.getApiService();
+        Map<String, String> queryMap = parameter.getParameterMap();
+        Call<CoordToAddress> call = querys.getCoordToAddress(queryMap);
 
-        if (categoryName != null)
+        call.enqueue(new Callback<CoordToAddress>()
         {
-            parameter.setCategoryGroupCode(categoryName);
-            searchPlaceCategory(parameter);
+            @Override
+            public void onResponse(Call<CoordToAddress> call, Response<CoordToAddress> response)
+            {
+                CoordToAddress coordToAddressResponse = response.body();
+
+                Message message = handler.obtainMessage();
+                message.what = TYPE_COORD_TO_ADDRESS;
+                Bundle bundle = new Bundle();
+
+                if (coordToAddressResponse.getCoordToAddressDocuments().isEmpty())
+                {
+                    bundle.putBoolean("isEmpty", true);
+                } else
+                {
+                    bundle.putBoolean("isEmpty", false);
+                }
+                bundle.putParcelable("response", coordToAddressResponse);
+
+                message.setData(bundle);
+                handler.sendMessage(message);
+            }
+
+            @Override
+            public void onFailure(Call<CoordToAddress> call, Throwable t)
+            {
+            }
+        });
+    }
+
+    public void selectLocation(LocalApiPlaceParameter parameter, int dataType, String fragmentTag)
+    {
+        // 스크롤할때 추가 데이터를 받아옴, 선택된 위치의 정보를 가져옴
+        this.parameter = parameter;
+        this.dataType = dataType;
+        this.fragmentTag = fragmentTag;
+
+        if (dataType != TYPE_NOT)
+        {
+            calledDownloadTotalCount = 1;
+
+            switch (dataType)
+            {
+                case TYPE_ADDRESS:
+                    searchAddress(parameter);
+                    break;
+                case TYPE_PLACE_CATEGORY:
+                    searchPlaceCategory(parameter);
+                    break;
+                case TYPE_PLACE_KEYWORD:
+                    searchPlaceKeyWord(parameter);
+                    break;
+                case TYPE_COORD_TO_ADDRESS:
+                    getCoordToAddress(parameter);
+                    break;
+            }
+            return;
         } else
         {
-            // 카테고리 검색
-            searchAddress(parameter);
-            searchPlaceKeyWord(parameter);
-        }
-    }
+            String categoryName = getCategoryName(parameter.getQuery());
 
-    public void selectLocation(LocalApiPlaceParameter parameter, int type)
-    {
-        // 스크롤할때 추가 데이터를 받아오기 위한 메소드
-        // String searchWord, double latitude, double longitude, String sort, String page
-        this.parameter = parameter;
-        this.resultType = type;
-
-        switch (resultType)
-        {
-            case MapController.TYPE_ADDRESS:
-                searchAddress(parameter);
-                break;
-            case MapController.TYPE_PLACE_CATEGORY:
+            if (categoryName != null)
+            {
+                calledDownloadTotalCount = 1;
+                parameter.setCategoryGroupCode(categoryName);
                 searchPlaceCategory(parameter);
-                break;
-            case MapController.TYPE_PLACE_KEYWORD:
+            } else
+            {
+                // 카테고리 검색
+                calledDownloadTotalCount = 2;
+                searchAddress(parameter);
                 searchPlaceKeyWord(parameter);
-                break;
+            }
         }
     }
+
 
     private String getCategoryName(String searchWord)
     {

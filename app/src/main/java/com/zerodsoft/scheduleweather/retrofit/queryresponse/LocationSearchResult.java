@@ -5,6 +5,7 @@ import android.os.Parcelable;
 
 import com.zerodsoft.scheduleweather.activity.mapactivity.Fragment.MapController;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponse;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.coordtoaddressresponse.CoordToAddress;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placecategoryresponse.PlaceCategory;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placekeywordresponse.PlaceKeyword;
 
@@ -17,6 +18,7 @@ public class LocationSearchResult implements Parcelable, Cloneable
     private AddressResponse addressResponse;
     private PlaceKeyword placeKeywordResponse;
     private PlaceCategory placeCategoryResponse;
+    private CoordToAddress coordToAddressResponse;
     private Date downloadedDate;
     private int resultNum = 0;
 
@@ -24,11 +26,12 @@ public class LocationSearchResult implements Parcelable, Cloneable
     {
     }
 
-    public LocationSearchResult(AddressResponse addressResponse, PlaceKeyword placeKeywordResponse, PlaceCategory placeCategoryResponse, Date downloadedDate, int resultNum)
+    public LocationSearchResult(AddressResponse addressResponse, PlaceKeyword placeKeywordResponse, PlaceCategory placeCategoryResponse, CoordToAddress coordToAddressResponse, Date downloadedDate, int resultNum)
     {
         this.addressResponse = addressResponse;
         this.placeKeywordResponse = placeKeywordResponse;
         this.placeCategoryResponse = placeCategoryResponse;
+        this.coordToAddressResponse = coordToAddressResponse;
         this.downloadedDate = downloadedDate;
         this.resultNum = resultNum;
     }
@@ -38,6 +41,7 @@ public class LocationSearchResult implements Parcelable, Cloneable
         addressResponse = in.readParcelable(AddressResponse.class.getClassLoader());
         placeKeywordResponse = in.readParcelable(PlaceKeyword.class.getClassLoader());
         placeCategoryResponse = in.readParcelable(PlaceCategory.class.getClassLoader());
+        coordToAddressResponse = in.readParcelable(CoordToAddress.class.getClassLoader());
         downloadedDate = (Date) in.readSerializable();
         resultNum = in.readInt();
     }
@@ -112,6 +116,16 @@ public class LocationSearchResult implements Parcelable, Cloneable
         return this;
     }
 
+    public void setCoordToAddressResponse(CoordToAddress coordToAddressResponse)
+    {
+        this.coordToAddressResponse = coordToAddressResponse;
+    }
+
+    public CoordToAddress getCoordToAddressResponse()
+    {
+        return coordToAddressResponse;
+    }
+
     public LocationSearchResult copy()
     {
         return new LocationSearchResult();
@@ -129,6 +143,7 @@ public class LocationSearchResult implements Parcelable, Cloneable
         parcel.writeParcelable(addressResponse, i);
         parcel.writeParcelable(placeKeywordResponse, i);
         parcel.writeParcelable(placeCategoryResponse, i);
+        parcel.writeParcelable(coordToAddressResponse, i);
         parcel.writeSerializable(downloadedDate);
         parcel.writeInt(resultNum);
     }

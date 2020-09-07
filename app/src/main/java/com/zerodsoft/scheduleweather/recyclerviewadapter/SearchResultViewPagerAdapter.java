@@ -19,7 +19,6 @@ import com.zerodsoft.scheduleweather.retrofit.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.LocationSearchResult;
 
 import java.util.List;
-import java.util.Map;
 
 
 public class SearchResultViewPagerAdapter extends RecyclerView.Adapter<SearchResultViewPagerAdapter.SearchResultViewPagerHolder>
@@ -54,7 +53,7 @@ public class SearchResultViewPagerAdapter extends RecyclerView.Adapter<SearchRes
         // 스크롤할때 추가 데이터를 받아옴
         for (int i = 0; i < holderSparseArray.size(); ++i)
         {
-            if (type == holderSparseArray.get(i).type)
+            if (type == holderSparseArray.get(i).dataType)
             {
                 holderSparseArray.get(i).addExtraData(locationSearchResult);
                 break;
@@ -91,7 +90,7 @@ public class SearchResultViewPagerAdapter extends RecyclerView.Adapter<SearchRes
 
     public int getCurrentListType(int position)
     {
-        return holderSparseArray.get(position).type;
+        return holderSparseArray.get(position).dataType;
     }
 
     @NonNull
@@ -146,17 +145,17 @@ public class SearchResultViewPagerAdapter extends RecyclerView.Adapter<SearchRes
 
     class SearchResultViewPagerHolder extends RecyclerView.ViewHolder
     {
-        private TextView resultType;
+        private TextView dataTypeTextView;
         private TextView resultNum;
         private RecyclerView recyclerView;
         private SearchResultViewAdapter adapter;
-        private int type;
+        private int dataType;
 
         private LocalApiPlaceParameter parameters;
 
         public void addExtraData(LocationSearchResult locationSearchResult)
         {
-            switch (type)
+            switch (dataType)
             {
                 case MapController.TYPE_ADDRESS:
                     adapter.addAddressData(locationSearchResult);
@@ -174,7 +173,7 @@ public class SearchResultViewPagerAdapter extends RecyclerView.Adapter<SearchRes
         SearchResultViewPagerHolder(View view)
         {
             super(view);
-            resultType = (TextView) view.findViewById(R.id.search_result_type_textview);
+            dataTypeTextView = (TextView) view.findViewById(R.id.search_result_type_textview);
             resultNum = (TextView) view.findViewById(R.id.search_result_items_num_textview);
             recyclerView = (RecyclerView) view.findViewById(R.id.search_result_recyclerview);
 
@@ -197,7 +196,7 @@ public class SearchResultViewPagerAdapter extends RecyclerView.Adapter<SearchRes
                             parameters.setPage(Integer.toString(++page));
                             adapter.setCurrentPage(page);
 
-                            onDownloadListener.requestExtraData(parameters, type);
+                            onDownloadListener.requestData(parameters, dataType, TAG);
                             Toast.makeText(activity, "추가 데이터를 가져오는 중", Toast.LENGTH_SHORT).show();
                         }
                     }
@@ -207,22 +206,22 @@ public class SearchResultViewPagerAdapter extends RecyclerView.Adapter<SearchRes
 
         public void onBind(LocationSearchResult locationSearchResult, int type, LocalApiPlaceParameter parameters)
         {
-            this.type = type;
+            this.dataType = type;
             this.parameters = parameters;
 
             if (type == MapController.TYPE_ADDRESS)
             {
-                resultType.setText(activity.getString(R.string.result_address));
+                dataTypeTextView.setText(activity.getString(R.string.result_address));
                 resultNum.setText(Integer.toString(locationSearchResult.getAddressResponse().getAddressResponseMeta().getTotalCount()));
                 adapter.setAddressList(locationSearchResult);
             } else if (type == MapController.TYPE_PLACE_KEYWORD)
             {
-                resultType.setText(activity.getString(R.string.result_place));
+                dataTypeTextView.setText(activity.getString(R.string.result_place));
                 resultNum.setText(Integer.toString(locationSearchResult.getPlaceKeywordResponse().getPlaceKeywordMeta().getTotalCount()));
                 adapter.setPlaceKeywordList(locationSearchResult);
             } else if (type == MapController.TYPE_PLACE_CATEGORY)
             {
-                resultType.setText(activity.getString(R.string.result_place));
+                dataTypeTextView.setText(activity.getString(R.string.result_place));
                 resultNum.setText(Integer.toString(locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryMeta().getTotalCount()));
                 adapter.setPlaceCategoryList(locationSearchResult);
             }

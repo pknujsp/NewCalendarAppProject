@@ -45,45 +45,45 @@ public class MapActivity extends AppCompatActivity implements MapController.OnDo
     }
 
     @Override
-    public void onDownloadedData(LocalApiPlaceParameter parameter, String tag, LocationSearchResult locationSearchResult)
+    public void onDownloadedData(LocalApiPlaceParameter parameter, int dataType, String fragmentTag, LocationSearchResult locationSearchResult)
     {
         // 다운로드된 데이터를 전달
-        if (tag.equals(SearchResultFragment.TAG))
+        if (fragmentTag.equals(SearchResultFragment.TAG))
         {
             // 초기 검색 결과
             SearchResultFragment searchResultFragment = SearchResultFragment.getInstance(this);
             searchResultFragment.setDownloadedData(parameter, locationSearchResult);
-        } else if (tag.equals(SearchResultViewPagerAdapter.TAG))
+        } else if (fragmentTag.equals(SearchResultViewPagerAdapter.TAG))
         {
-            // 스피너 사용, 내 위치/지도 중심으로 변경한 경우
+            if (dataType != MapController.TYPE_NOT)
+            {
+                // 스크롤하면서 추가 데이터가 필요한 경우
+                SearchResultFragment searchResultFragment = SearchResultFragment.getInstance(this);
+                searchResultFragment.setDownloadedExtraData(parameter, dataType, locationSearchResult);
+            } else
+            {
+                // 스피너 사용, 내 위치/지도 중심으로 변경한 경우
+
+            }
+        } else if (fragmentTag.equals(MapFragment.TAG))
+        {
+            // 지정된 주소 검색 완료
+            MapFragment mapFragment = MapFragment.getInstance(this);
+            mapFragment.setSelectedLocationData(parameter, dataType, locationSearchResult);
         }
     }
 
     @Override
-    public void onDownloadedExtraData(LocalApiPlaceParameter parameter, int type, LocationSearchResult locationSearchResult)
+    public void requestData(LocalApiPlaceParameter parameter, int dataType, String fragmentTag)
     {
-        SearchResultFragment searchResultFragment = SearchResultFragment.getInstance(this);
-        searchResultFragment.setDownloadedExtraData(parameter, type, locationSearchResult);
-    }
-
-    @Override
-    public void requestData(LocalApiPlaceParameter parameter, String tag)
-    {
-        mapController.selectLocation(parameter, tag);
-    }
-
-    @Override
-    public void requestExtraData(LocalApiPlaceParameter parameter, int type)
-    {
-        mapController.selectLocation(parameter, type);
+        mapController.selectLocation(parameter, dataType, fragmentTag);
     }
 
     public MapPoint.GeoCoordinate getMapCenterPoint()
     {
-        MapFragment mapFragment = MapFragment.getInstance();
+        MapFragment mapFragment = MapFragment.getInstance(this);
         return mapFragment.getMapCenterPoint();
     }
-
 
     public interface OnBackPressedListener
     {
@@ -102,16 +102,15 @@ public class MapActivity extends AppCompatActivity implements MapController.OnDo
 
         switch (requestCode)
         {
-            ScheduleInfoActivity.ADD_LOCATION:
-            isSelectedLocation = false;
-            break;
+            case ScheduleInfoActivity.ADD_LOCATION:
+                isSelectedLocation = false;
+                break;
 
-            ScheduleInfoActivity.EDIT_LOCATION:
-            isSelectedLocation = true;
-            bundle.putParcelable("selectedPlace", intent.getParcelableExtra("place"));
-            bundle.putParcelable("selectedAddress", intent.getParcelableExtra("address"));
-
-            break;
+            case ScheduleInfoActivity.EDIT_LOCATION:
+                isSelectedLocation = true;
+                bundle.putParcelable("selectedPlace", intent.getParcelableExtra("place"));
+                bundle.putParcelable("selectedAddress", intent.getParcelableExtra("address"));
+                break;
         }
         onFragmentChanged(MapFragment.TAG, bundle);
     }
@@ -146,7 +145,7 @@ public class MapActivity extends AppCompatActivity implements MapController.OnDo
 
         if (fragmentTag.equals(MapFragment.TAG))
         {
-            MapFragment mapFragment = MapFragment.getInstance();
+            MapFragment mapFragment = MapFragment.getInstance(this);
             mapFragment.setInitialData(bundle);
             fragmentTransaction.replace(fragmentViewId, mapFragment);
         } else if (fragmentTag.equals(SearchFragment.TAG))

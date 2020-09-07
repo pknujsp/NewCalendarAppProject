@@ -24,6 +24,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.mapactivity.MapActivity;
 import com.zerodsoft.scheduleweather.databinding.FragmentMapBinding;
+import com.zerodsoft.scheduleweather.fragment.MapBottomSheetFragment;
 import com.zerodsoft.scheduleweather.fragment.SearchResultController;
 import com.zerodsoft.scheduleweather.retrofit.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.LocationSearchResult;
@@ -38,6 +39,7 @@ import net.daum.mf.map.api.MapView;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class MapFragment extends Fragment implements MapView.POIItemEventListener, MapReverseGeoCoder.ReverseGeoCodingResultListener, MapView.MapViewEventListener, MapActivity.OnBackPressedListener
 {
@@ -51,10 +53,10 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     private boolean isMain = false;
 
     private LocationManager locationManager;
-    private LocationSearchResult searchResult;
     private SearchResultController searchResultController;
 
     private MapController.OnDownloadListener onDownloadListener;
+    private OnControlItemFragment onControlItemFragment;
 
     private boolean opendPOIInfo = false;
     private boolean clickedPOI = false;
@@ -69,7 +71,7 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
 
     public interface OnControlItemFragment
     {
-        void onChangeItem(Bundle bundle);
+        void onChangeItems(Bundle bundle);
 
         void onShowItem(int position);
 
@@ -110,15 +112,33 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
             if (selectedAddress != null)
             {
                 // 주소 검색 순서 : 좌표로 주소 변환
+                parameter.setX(Double.parseDouble(selectedAddress.getLongitude())).setY(Double.parseDouble(selectedAddress.getLatitude()));
+                onDownloadListener.requestData(parameter, MapController.TYPE_COORD_TO_ADDRESS, TAG);
             } else if (selectedPlace != null)
             {
                 // 장소 검색 순서 : 장소의 위경도 내 10M 반경에서 장소 이름 검색(여러개 나올 경우 장소ID와 일치하는 장소를 선택)
-
+                parameter.setQuery(selectedPlace.getPlaceName()).setX(Double.parseDouble(selectedPlace.getLongitude())).setY(Double.parseDouble(selectedPlace.getLatitude()))
+                        .setRadius("10").setPage("1").setSort(LocalApiPlaceParameter.SORT_ACCURACY);
+                onDownloadListener.requestData(parameter, MapController.TYPE_PLACE_KEYWORD, TAG);
             }
-
-
-            onDownloadListener.requestData();
         }
+    }
+
+    public void setSelectedLocationData(LocalApiPlaceParameter parameter, int dataType, LocationSearchResult locationSearchResult)
+    {
+        Bundle bundle = new Bundle();
+
+        if (dataType == MapController.TYPE_COORD_TO_ADDRESS)
+        {
+            bundle.putInt("dataType", MapController.TYPE_COORD_TO_ADDRESS);
+        } else if (dataType == MapController.TYPE_PLACE_KEYWORD)
+        {
+            bundle.putInt("dataType", MapController.TYPE_PLACE_KEYWORD);
+        }
+
+        bundle.putInt("position", 0);
+        bundle.putParcelable("locationSearchResult", locationSearchResult);
+        onControlItemFragment.onChangeItems(bundle);
     }
 
     private final LocationListener locationListener = new LocationListener()
@@ -164,9 +184,12 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     {
         super.onViewCreated(view, savedInstanceState);
 
+        MapBottomSheetFragment bottomSheetFragment = (MapBottomSheetFragment) getActivity().getSupportFragmentManager().findFragmentById(R.id.map_bottom_sheet);
+        onControlItemFragment = (OnControlItemFragment) bottomSheetFragment;
+        onControlItemFragment.setBehaviorState(BottomSheetBehavior.STATE_HIDDEN);
+
         mapView = new MapView(getActivity());
-        CoordinatorLayout mapViewContainer = (CoordinatorLayout) view.findViewById(R.id.map_view);
-        mapViewContainer.addView(mapView);
+        binding.mapView.addView(mapView);
 
         mapView.setPOIItemEventListener(this);
         mapView.setMapViewEventListener(this);
@@ -211,7 +234,7 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
                 bundle.putDouble("latitude", mapPoint.latitude);
                 bundle.putDouble("longitude", mapPoint.longitude);
 
-                onFragmentChanged(SEARCH_FRAGMENT, bundle);
+                ((MapActivity) getActivity()).onFragmentChanged(SearchFragment.TAG, bundle);
             }
         });
 
@@ -256,13 +279,6 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     @Override
     public void onStart()
     {
-        if (MapActivity.isSelectedLocation)
-        {
-            if (selectedAddress != null)
-            {
-
-            }
-        }
         super.onStart();
     }
 
@@ -278,17 +294,6 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
         super.onStop();
     }
 
-    public MapFragment setSelectedAddress(AddressDTO selectedAddress)
-    {
-        this.selectedAddress = selectedAddress;
-        return this;
-    }
-
-    public MapFragment setSelectedPlace(PlaceDTO selectedPlace)
-    {
-        this.selectedPlace = selectedPlace;
-        return this;
-    }
 
     @Override
     public void onReverseGeoCoderFoundAddress(MapReverseGeoCoder mapReverseGeoCoder, String address)
@@ -394,7 +399,7 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     public void onItemSelected(int position)
     {
         // 다른 아이템을 선택한 경우에 사용된다
-        onControlItemFragment.onShowItem(position);
+        getActivity().frag.onShowItem(position);
         setCurrentCenterPoint(position);
         mapView.selectPOIItem(mapView.getPOIItems()[position], true);
     }

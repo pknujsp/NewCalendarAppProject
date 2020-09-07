@@ -6,7 +6,7 @@ import android.os.Parcelable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class LocalApiPlaceParameter implements Parcelable
+public class LocalApiPlaceParameter implements Parcelable, Cloneable
 {
     private String query;
     private String categoryGroupCode;
@@ -21,12 +21,8 @@ public class LocalApiPlaceParameter implements Parcelable
     public static final String DEFAULT_RADIUS = "2000";
     public static final String DEFAULT_PAGE = "1";
     public static final String DEFAULT_SIZE = "15";
-    public static final String DEFAULT_SORT = "accuracy";
     public static final String SORT_ACCURACY = "accuracy";
     public static final String SORT_DISTANCE = "distance";
-    public static final int DEFAULT_RADIUS_INT = 2000;
-    public static final int DEFAULT_PAGE_INT = 1;
-    public static final int DEFAULT_SIZE_INT = 15;
 
 
     public static final Creator<LocalApiPlaceParameter> CREATOR = new Creator<LocalApiPlaceParameter>()
@@ -236,5 +232,11 @@ public class LocalApiPlaceParameter implements Parcelable
         size = in.readString();
         sort = in.readString();
         rect = in.readString();
+    }
+
+    @Override
+    public Object clone() throws CloneNotSupportedException
+    {
+        return super.clone();
     }
 }

@@ -41,9 +41,6 @@ public class SearchResultController extends Fragment implements MapActivity.OnBa
     {
         FragmentTransaction fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
 
-        //  headerFragment = new SearchResultHeaderFragment();
-        //  listFragment = new SearchResultListFragment();
-
         fragmentTransaction.add(R.id.fragment_search_result_header_container, headerFragment, SearchResultHeaderFragment.TAG);
         fragmentTransaction.add(R.id.fragment_search_result_list_container, listFragment, SearchResultFragment.TAG);
         fragmentTransaction.show(headerFragment).show(listFragment).commit();
