@@ -34,26 +34,26 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
     private List<PlaceKeywordDocuments> placeKeywordList = null;
     private List<PlaceCategoryDocuments> placeCategoryList = null;
 
-    private int type;
+    private int dataType;
     private Activity context;
-    private Date downloadedDate;
-    private int currentPage;
 
+    private int currentPage;
+    private boolean isEnd;
     private int totalCount;
     private int pageableCount;
-    private boolean isEnd;
+    private Date downloadedDate;
 
-    private OnItemClickedListener onItemClickedListener;
+    private OnItemSelectedListener onItemSelectedListener;
 
-    public interface OnItemClickedListener
+    public interface OnItemSelectedListener
     {
-        void onItemClicked(int position, int type);
+        void onItemSelected(int position, int dataType);
     }
 
     public SearchResultViewAdapter(Activity activity)
     {
         this.context = activity;
-        this.onItemClickedListener = (OnItemClickedListener) activity;
+        this.onItemSelectedListener = (OnItemSelectedListener) activity;
         this.currentPage = 1;
     }
 
@@ -65,7 +65,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
     public void setAddressList(LocationSearchResult locationSearchResult)
     {
         addressList = locationSearchResult.getAddressResponse().getAddressResponseDocumentsList();
-        type = MapController.TYPE_ADDRESS;
+        dataType = MapController.TYPE_ADDRESS;
         totalCount = locationSearchResult.getAddressResponse().getAddressResponseMeta().getTotalCount();
         pageableCount = locationSearchResult.getAddressResponse().getAddressResponseMeta().getPageableCount();
         isEnd = locationSearchResult.getAddressResponse().getAddressResponseMeta().isEnd();
@@ -74,7 +74,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
     public void setPlaceKeywordList(LocationSearchResult locationSearchResult)
     {
         placeKeywordList = locationSearchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments();
-        type = MapController.TYPE_PLACE_KEYWORD;
+        dataType = MapController.TYPE_PLACE_KEYWORD;
         totalCount = locationSearchResult.getPlaceKeywordResponse().getPlaceKeywordMeta().getTotalCount();
         pageableCount = locationSearchResult.getPlaceKeywordResponse().getPlaceKeywordMeta().getPageableCount();
         isEnd = locationSearchResult.getPlaceKeywordResponse().getPlaceKeywordMeta().isEnd();
@@ -83,7 +83,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
     public void setPlaceCategoryList(LocationSearchResult locationSearchResult)
     {
         placeCategoryList = locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments();
-        type = MapController.TYPE_PLACE_KEYWORD;
+        dataType = MapController.TYPE_PLACE_KEYWORD;
         totalCount = locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryMeta().getTotalCount();
         pageableCount = locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryMeta().getPageableCount();
         isEnd = locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryMeta().isEnd();
@@ -116,9 +116,9 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
         }
     }
 
-    public int getType()
+    public int getDataType()
     {
-        return type;
+        return dataType;
     }
 
     public void setCurrentPage(int currentPage)
@@ -143,13 +143,13 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
         Context context = parent.getContext();
         LayoutInflater layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View view = layoutInflater.inflate(R.layout.search_recycler_view_item, parent, false);
-        return new SearchResultViewHolder(view, type);
+        return new SearchResultViewHolder(view, dataType);
     }
 
     @Override
     public void onBindViewHolder(@NonNull SearchResultViewHolder holder, int position)
     {
-        switch (type)
+        switch (dataType)
         {
             case MapController.TYPE_ADDRESS:
                 holder.onBindAddress(addressList.get(position));
@@ -158,7 +158,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
                     @Override
                     public void onClick(View view)
                     {
-                        onItemClickedListener.onItemClicked(position, type);
+                        onItemSelectedListener.onItemSelected(position, dataType);
                     }
                 });
                 break;
@@ -170,7 +170,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
                     @Override
                     public void onClick(View view)
                     {
-                        onItemClickedListener.onItemClicked(position, type);
+                        onItemSelectedListener.onItemSelected(position, dataType);
                     }
                 });
                 break;
@@ -182,7 +182,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
                     @Override
                     public void onClick(View view)
                     {
-                        onItemClickedListener.onItemClicked(position, type);
+                        onItemSelectedListener.onItemSelected(position, dataType);
                     }
                 });
                 break;
@@ -300,7 +300,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
 
         private void setOnClickListenerButton()
         {
-            switch (type)
+            switch (dataType)
             {
                 case MapController.TYPE_ADDRESS:
                     setChoiceButtonListener();
@@ -309,11 +309,6 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
                 case MapController.TYPE_PLACE_KEYWORD:
                 case MapController.TYPE_PLACE_CATEGORY:
                     setChoicePlaceButtonListener();
-                    break;
-
-                case MapController.ADDRESS_AND_PLACE_KEYWORD:
-                    setChoicePlaceButtonListener();
-                    setChoiceButtonListener();
                     break;
             }
         }
@@ -329,7 +324,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
 
                     Bundle bundle = new Bundle();
 
-                    bundle.putInt("type", type);
+                    bundle.putInt("type", dataType);
                     AddressDTO addressDTO = new AddressDTO();
                     addressDTO.setAddressName(addressName);
                     addressDTO.setLongitude(longitude);
@@ -353,7 +348,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
                     LonLat lonLat = LonLatConverter.convertLonLat(Double.valueOf(longitude), Double.valueOf(latitude));
                     Bundle bundle = new Bundle();
 
-                    bundle.putInt("type", type);
+                    bundle.putInt("type", dataType);
                     PlaceDTO placeDTO = new PlaceDTO();
                     placeDTO.setPlaceId(placeId);
                     placeDTO.setPlaceName(placeName);

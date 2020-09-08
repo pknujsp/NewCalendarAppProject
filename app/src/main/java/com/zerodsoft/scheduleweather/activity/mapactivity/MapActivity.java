@@ -7,15 +7,15 @@ import androidx.fragment.app.FragmentTransaction;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 
 import com.zerodsoft.scheduleweather.activity.ScheduleInfoActivity;
 import com.zerodsoft.scheduleweather.activity.mapactivity.Fragment.MapController;
 import com.zerodsoft.scheduleweather.activity.mapactivity.Fragment.MapFragment;
 import com.zerodsoft.scheduleweather.activity.mapactivity.Fragment.SearchFragment;
+import com.zerodsoft.scheduleweather.activity.mapactivity.Fragment.SearchResultController;
 import com.zerodsoft.scheduleweather.activity.mapactivity.Fragment.SearchResultFragment;
-import com.zerodsoft.scheduleweather.fragment.SearchResultController;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.recyclerviewadapter.SearchResultViewAdapter;
 import com.zerodsoft.scheduleweather.recyclerviewadapter.SearchResultViewPagerAdapter;
 import com.zerodsoft.scheduleweather.retrofit.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.LocationSearchResult;
@@ -25,16 +25,12 @@ import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
 import net.daum.mf.map.api.MapPoint;
 
 import java.util.List;
-import java.util.Map;
 
-public class MapActivity extends AppCompatActivity implements MapController.OnDownloadListener
+public class MapActivity extends AppCompatActivity implements MapController.OnDownloadListener, SearchResultViewAdapter.OnItemSelectedListener
 {
     public static int requestCode = 0;
     public static boolean isSelectedLocation = false;
     private final int fragmentViewId;
-
-    private AddressDTO selectedAddress;
-    private PlaceDTO selectedPlace;
 
     private MapController mapController;
 
@@ -51,20 +47,29 @@ public class MapActivity extends AppCompatActivity implements MapController.OnDo
         if (fragmentTag.equals(SearchResultFragment.TAG))
         {
             // 초기 검색 결과
-            SearchResultFragment searchResultFragment = SearchResultFragment.getInstance(this);
-            searchResultFragment.setDownloadedData(parameter, locationSearchResult);
+            SearchResultController searchResultController = SearchResultController.getInstance(this);
+            searchResultController.setDownloadedData(parameter, locationSearchResult);
+
+            MapFragment mapFragment = MapFragment.getInstance(this);
+            mapFragment.setLocationSearchResult(locationSearchResult);
+            mapFragment.setPoiItems();
+
         } else if (fragmentTag.equals(SearchResultViewPagerAdapter.TAG))
         {
             if (dataType != MapController.TYPE_NOT)
             {
                 // 스크롤하면서 추가 데이터가 필요한 경우
-                SearchResultFragment searchResultFragment = SearchResultFragment.getInstance(this);
-                searchResultFragment.setDownloadedExtraData(parameter, dataType, locationSearchResult);
+                SearchResultController searchResultController = SearchResultController.getInstance(this);
+                searchResultController.setDownloadedExtraData(parameter, dataType, locationSearchResult);
             } else
             {
                 // 스피너 사용, 내 위치/지도 중심으로 변경한 경우
 
             }
+            MapFragment mapFragment = MapFragment.getInstance(this);
+            mapFragment.setLocationSearchResult(locationSearchResult);
+            mapFragment.setPoiItems();
+
         } else if (fragmentTag.equals(MapFragment.TAG))
         {
             // 지정된 주소 검색 완료
@@ -83,6 +88,12 @@ public class MapActivity extends AppCompatActivity implements MapController.OnDo
     {
         MapFragment mapFragment = MapFragment.getInstance(this);
         return mapFragment.getMapCenterPoint();
+    }
+
+    @Override
+    public void onItemSelected(int position, int dataType)
+    {
+        // 위치 검색 결과 리스트에서 하나를 선택한 경우 수행된다
     }
 
     public interface OnBackPressedListener
@@ -155,11 +166,48 @@ public class MapActivity extends AppCompatActivity implements MapController.OnDo
             fragmentTransaction.replace(fragmentViewId, searchFragment);
         } else if (fragmentTag.equals(SearchResultFragment.TAG))
         {
-            SearchResultFragment searchResultFragment = SearchResultFragment.getInstance(this);
-            searchResultFragment.setInitialData(bundle);
-            fragmentTransaction.replace(fragmentViewId, searchResultFragment);
+            SearchResultController searchResultController = SearchResultController.getInstance(this);
+            searchResultController.setInitialData(bundle);
+            fragmentTransaction.replace(fragmentViewId, searchResultController);
         }
-        fragmentTransaction.addToBackStack(null).commit();
+        fragmentTransaction.commit();
     }
 
+    public void onChoicedLocation(Bundle bundle)
+    {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        List<Fragment> fragments = fragmentManager.getFragments();
+
+        for (Fragment fragment : fragments)
+        {
+            if (fragment instanceof SearchResultFragment || fragment instanceof MapFragment)
+            {
+                fragmentTransaction.remove(fragment).commit();
+                break;
+            }
+        }
+
+        getIntent().putExtras(bundle);
+        setResult(RESULT_OK, getIntent());
+        finish();
+    }
+
+    @Override
+    public void onBackPressed()
+    {
+        List<Fragment> fragments = getSupportFragmentManager().getFragments();
+
+        for (Fragment fragment : fragments)
+        {
+            if (fragment instanceof OnBackPressedListener)
+            {
+                ((OnBackPressedListener) fragment).onBackPressed();
+                return;
+            }
+        }
+
+        setResult(RESULT_CANCELED);
+        finish();
+    }
 }

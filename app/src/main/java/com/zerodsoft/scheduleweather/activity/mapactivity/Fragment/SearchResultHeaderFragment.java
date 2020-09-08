@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.fragment;
+package com.zerodsoft.scheduleweather.activity.mapactivity.Fragment;
 
 import android.os.Bundle;
 
@@ -12,7 +12,6 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-import com.zerodsoft.scheduleweather.activity.mapactivity.MapActivity;
 import com.zerodsoft.scheduleweather.R;
 
 public class SearchResultHeaderFragment extends Fragment
@@ -88,7 +87,7 @@ public class SearchResultHeaderFragment extends Fragment
                 {
                     setChangeButtonDrawable(CURRENT_MAP);
                 }
-                ((MapActivity) getActivity()).onChangeButtonClicked(currentListTypeGetter.getCurrentListType());
+                //  ((MapActivity) getActivity()).onChangeButtonClicked(currentListTypeGetter.getCurrentListType());
             }
         });
 

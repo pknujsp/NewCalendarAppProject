@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.fragment;
+package com.zerodsoft.scheduleweather.activity.mapactivity.Fragment;
 
 
 import android.app.Activity;
@@ -25,6 +25,7 @@ import com.zerodsoft.scheduleweather.utility.LonLatConverter;
 public class MapBottomSheetFragment extends Fragment implements MapFragment.OnControlItemFragment
 {
     public static final String TAG = "MAP_BOTTOM_SHEET_FRAGMENT";
+    private static MapBottomSheetFragment instance;
 
     private MapItemBottomSheetBinding binding;
     private BottomSheetBehavior bottomSheetBehavior;
@@ -34,6 +35,14 @@ public class MapBottomSheetFragment extends Fragment implements MapFragment.OnCo
     private int selectedItemPosition;
     private int itemPositionMax;
 
+    public static MapBottomSheetFragment getInstance()
+    {
+        if (instance == null)
+        {
+            instance = new MapBottomSheetFragment();
+        }
+        return instance;
+    }
 
     @Nullable
     @Override
@@ -101,50 +110,68 @@ public class MapBottomSheetFragment extends Fragment implements MapFragment.OnCo
                 switch (dataType)
                 {
                     case MapController.TYPE_ADDRESS:
-                        lon = addressList.get(selectedItemPosition).getX();
-                        lat = addressList.get(selectedItemPosition).getY();
+                        lon = locationSearchResult.getAddressResponse().getAddressResponseDocumentsList().get(selectedItemPosition).getX();
+                        lat = locationSearchResult.getAddressResponse().getAddressResponseDocumentsList().get(selectedItemPosition).getY();
                         lonLat = LonLatConverter.convertLonLat(lon, lat);
 
                         AddressDTO addressDTO = new AddressDTO();
-                        addressDTO.setAddressName(addressList.get(selectedItemPosition).getAddressName());
+                        addressDTO.setAddressName(locationSearchResult.getAddressResponse().getAddressResponseDocumentsList().get(selectedItemPosition).getAddressName());
                         addressDTO.setLongitude(Double.toString(lon));
                         addressDTO.setLatitude(Double.toString(lat));
                         addressDTO.setWeatherX(Integer.toString(lonLat.getX()));
                         addressDTO.setWeatherY(Integer.toString(lonLat.getY()));
 
-                        bundle.putParcelable("addressDTO", addressDTO);
+                        try
+                        {
+                            bundle.putParcelable("address", (AddressDTO) addressDTO.clone());
+                        } catch (CloneNotSupportedException e)
+                        {
+                            e.printStackTrace();
+                        }
                         break;
 
                     case MapController.TYPE_PLACE_KEYWORD:
-                        lon = placeKeywordList.get(selectedItemPosition).getX();
-                        lat = placeKeywordList.get(selectedItemPosition).getY();
+                        lon = locationSearchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().get(selectedItemPosition).getX();
+                        lat = locationSearchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().get(selectedItemPosition).getY();
                         lonLat = LonLatConverter.convertLonLat(lon, lat);
 
                         PlaceDTO placeDTOKeyword = new PlaceDTO();
-                        placeDTOKeyword.setPlaceId(placeKeywordList.get(selectedItemPosition).getId());
-                        placeDTOKeyword.setPlaceName(placeKeywordList.get(selectedItemPosition).getPlaceName());
+                        placeDTOKeyword.setPlaceId(locationSearchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().get(selectedItemPosition).getId());
+                        placeDTOKeyword.setPlaceName(locationSearchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().get(selectedItemPosition).getPlaceName());
                         placeDTOKeyword.setLongitude(Double.toString(lon));
                         placeDTOKeyword.setLatitude(Double.toString(lat));
                         placeDTOKeyword.setWeatherX(Integer.toString(lonLat.getX()));
                         placeDTOKeyword.setWeatherY(Integer.toString(lonLat.getY()));
 
-                        bundle.putParcelable("placeDTO", placeDTOKeyword);
+                        try
+                        {
+                            bundle.putParcelable("place", (PlaceDTO) placeDTOKeyword.clone());
+                        } catch (CloneNotSupportedException e)
+                        {
+                            e.printStackTrace();
+                        }
                         break;
 
                     case MapController.TYPE_PLACE_CATEGORY:
-                        lon = Double.valueOf(placeCategoryList.get(selectedItemPosition).getX());
-                        lat = Double.valueOf(placeCategoryList.get(selectedItemPosition).getY());
+                        lon = Double.valueOf(locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(selectedItemPosition).getX());
+                        lat = Double.valueOf(locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(selectedItemPosition).getY());
                         lonLat = LonLatConverter.convertLonLat(lon, lat);
 
                         PlaceDTO placeDTOCategory = new PlaceDTO();
-                        placeDTOCategory.setPlaceId(placeCategoryList.get(selectedItemPosition).getId());
-                        placeDTOCategory.setPlaceName(placeCategoryList.get(selectedItemPosition).getPlaceName());
-                        placeDTOCategory.setLongitude(placeCategoryList.get(selectedItemPosition).getX());
-                        placeDTOCategory.setLatitude(placeCategoryList.get(selectedItemPosition).getY());
+                        placeDTOCategory.setPlaceId(locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(selectedItemPosition).getId());
+                        placeDTOCategory.setPlaceName(locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(selectedItemPosition).getPlaceName());
+                        placeDTOCategory.setLongitude(locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(selectedItemPosition).getX());
+                        placeDTOCategory.setLatitude(locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(selectedItemPosition).getY());
                         placeDTOCategory.setWeatherX(Integer.toString(lonLat.getX()));
                         placeDTOCategory.setWeatherY(Integer.toString(lonLat.getY()));
 
-                        bundle.putParcelable("placeDTO", placeDTOCategory);
+                        try
+                        {
+                            bundle.putParcelable("place", (PlaceDTO) placeDTOCategory.clone());
+                        } catch (CloneNotSupportedException e)
+                        {
+                            e.printStackTrace();
+                        }
                         break;
                 }
                 ((MapActivity) getActivity()).onChoicedLocation(bundle);
@@ -164,7 +191,7 @@ public class MapBottomSheetFragment extends Fragment implements MapFragment.OnCo
                 {
                     --selectedItemPosition;
                 }
-                ((MapActivity) getActivity()).onItemSelected(selectedItemPosition);
+                //  ((MapActivity) getActivity()).onItemSelected(selectedItemPosition);
             }
         });
 
@@ -181,7 +208,7 @@ public class MapBottomSheetFragment extends Fragment implements MapFragment.OnCo
                 {
                     selectedItemPosition = 0;
                 }
-                ((MapActivity) getActivity()).onItemSelected(selectedItemPosition);
+                //  ((MapActivity) getActivity()).onItemSelected(selectedItemPosition);
             }
         });
 
@@ -300,7 +327,6 @@ public class MapBottomSheetFragment extends Fragment implements MapFragment.OnCo
     public void onChangeItems(Bundle bundle)
     {
         dataType = bundle.getInt("dataType");
-        selectedItemPosition = bundle.getInt("position");
         locationSearchResult = bundle.getParcelable("locationSearchResult");
 
         switch (dataType)
@@ -318,10 +344,7 @@ public class MapBottomSheetFragment extends Fragment implements MapFragment.OnCo
                 itemPositionMax = locationSearchResult.getCoordToAddressResponse().getCoordToAddressDocuments().size() - 1;
                 break;
         }
-        setLayoutVisibility();
-        setViewData();
-
-        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
     }
 
     @Override

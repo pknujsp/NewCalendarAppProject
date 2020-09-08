@@ -15,6 +15,7 @@ import android.widget.CompoundButton;
 import android.widget.SpinnerAdapter;
 import android.widget.Toast;
 
+import com.zerodsoft.scheduleweather.activity.mapactivity.Fragment.MapController;
 import com.zerodsoft.scheduleweather.activity.mapactivity.MapActivity;
 import com.zerodsoft.scheduleweather.etc.SelectedNotificationTime;
 import com.zerodsoft.scheduleweather.fragment.DatePickerFragment;
@@ -552,16 +553,16 @@ public class ScheduleInfoActivity extends AppCompatActivity implements Notificat
                 activityBinding.getScheduleDto().setPlace(ScheduleDTO.NOT_LOCATION);
                 activityBinding.getScheduleDto().setAddress(ScheduleDTO.NOT_LOCATION);
 
-                switch (bundle.getInt("type"))
+                switch (bundle.getInt("dataType"))
                 {
-                    case KakaoLocalApi.TYPE_ADDRESS:
-                        activityBinding.setAddressDto(bundle.getParcelable("addressDTO"));
+                    case MapController.TYPE_ADDRESS:
+                        activityBinding.setAddressDto(bundle.getParcelable("address"));
                         activityBinding.getScheduleDto().setAddress(ScheduleDTO.SELECTED_LOCATION);
                         break;
 
-                    case KakaoLocalApi.TYPE_PLACE_KEYWORD:
-                    case KakaoLocalApi.TYPE_PLACE_CATEGORY:
-                        activityBinding.setPlaceDto(bundle.getParcelable("placeDTO"));
+                    case MapController.TYPE_PLACE_KEYWORD:
+                    case MapController.TYPE_PLACE_CATEGORY:
+                        activityBinding.setPlaceDto(bundle.getParcelable("place"));
                         activityBinding.getScheduleDto().setPlace(ScheduleDTO.SELECTED_LOCATION);
                         break;
                 }

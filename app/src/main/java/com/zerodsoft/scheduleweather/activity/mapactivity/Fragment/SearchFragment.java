@@ -12,25 +12,17 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
-import android.widget.ImageButton;
 
 import com.zerodsoft.scheduleweather.activity.mapactivity.MapActivity;
-import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.databinding.FragmentSearchBinding;
 import com.zerodsoft.scheduleweather.recyclerviewadapter.SearchCategoryViewAdapter;
-import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryCode;
 import com.zerodsoft.scheduleweather.retrofit.LocalApiPlaceParameter;
 
 public class SearchFragment extends Fragment implements SearchCategoryViewAdapter.OnCategoryClickListener, MapActivity.OnBackPressedListener
 {
     public static final String TAG = "Search Fragment";
     private static SearchFragment instance;
-
-    private ImageButton backButton;
-    private EditText searchEditText;
-    private ImageButton searchButton;
-    private RecyclerView searchHistoryRecyclerView;
-    private RecyclerView itemCategoryRecyclerView;
+    private FragmentSearchBinding binding;
 
     private double latitude;
     private double longitude;
@@ -53,8 +45,11 @@ public class SearchFragment extends Fragment implements SearchCategoryViewAdapte
 
     public void setInitialData(Bundle bundle)
     {
-        this.latitude = bundle.getDouble("latitude");
-        this.longitude = bundle.getDouble("longitude");
+        if (!bundle.isEmpty())
+        {
+            this.latitude = bundle.getDouble("latitude");
+            this.longitude = bundle.getDouble("longitude");
+        }
     }
 
     @Override
@@ -67,23 +62,18 @@ public class SearchFragment extends Fragment implements SearchCategoryViewAdapte
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState)
     {
-        return inflater.inflate(R.layout.fragment_search, container, false);
+        binding = FragmentSearchBinding.inflate(inflater, container, false);
+        return binding.getRoot();
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
-        backButton = (ImageButton) view.findViewById(R.id.back_button);
-        searchEditText = (EditText) view.findViewById(R.id.search_edittext);
-        searchButton = (ImageButton) view.findViewById(R.id.search_button);
-        searchHistoryRecyclerView = (RecyclerView) view.findViewById(R.id.search_history_recyclerview);
-        itemCategoryRecyclerView = (RecyclerView) view.findViewById(R.id.category_recyclerview);
-
         SearchCategoryViewAdapter searchCategoryViewAdapter = new SearchCategoryViewAdapter(this);
-        itemCategoryRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity(), RecyclerView.HORIZONTAL, false));
-        itemCategoryRecyclerView.setAdapter(searchCategoryViewAdapter);
+        binding.categoryRecyclerview.setLayoutManager(new LinearLayoutManager(getActivity(), RecyclerView.HORIZONTAL, false));
+        binding.categoryRecyclerview.setAdapter(searchCategoryViewAdapter);
 
-        searchButton.setOnClickListener(new View.OnClickListener()
+        binding.searchButton.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view)
@@ -92,14 +82,14 @@ public class SearchFragment extends Fragment implements SearchCategoryViewAdapte
                 LocalApiPlaceParameter parameter = new LocalApiPlaceParameter();
                 // String searchWord, double latitude, double longitude, String sort, String page
                 // 검색 파라미터 설정
-                parameter.setQuery(searchEditText.getText().toString()).setX(longitude).setY(latitude)
+                parameter.setQuery(binding.searchEdittext.getText().toString()).setX(longitude).setY(latitude)
                         .setSort(LocalApiPlaceParameter.SORT_ACCURACY).setPage("1");
                 bundle.putParcelable("parameter", parameter);
                 ((MapActivity) getActivity()).onFragmentChanged(SearchResultFragment.TAG, bundle);
             }
         });
 
-        backButton.setOnClickListener(new View.OnClickListener()
+        binding.backButton.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view)
@@ -139,10 +129,24 @@ public class SearchFragment extends Fragment implements SearchCategoryViewAdapte
     @Override
     public void onBackPressed()
     {
-        searchEditText.setText("");
-        MapFragment mapFragment = MapFragment.getInstance();
-        mapFragment.clearAllPoiItems();
+        binding.searchEdittext.setText("");
+        MapFragment mapFragment = MapFragment.getInstance(getActivity());
+        mapFragment.removeAllPoiItems();
         mapFragment.setZoomGpsButtonVisibility(View.VISIBLE);
-        getActivity().getSupportFragmentManager().popBackStackImmediate();
+
+        ((MapActivity) getActivity()).onFragmentChanged(MapFragment.TAG, new Bundle());
+    }
+
+    @Override
+    public void selectedCategory(String name, String description)
+    {
+        Bundle bundle = new Bundle();
+        LocalApiPlaceParameter parameter = new LocalApiPlaceParameter();
+        // String searchWord, double latitude, double longitude, String sort, String page
+        // 검색 파라미터 설정
+        parameter.setQuery(description).setX(longitude).setY(latitude)
+                .setSort(LocalApiPlaceParameter.SORT_ACCURACY).setPage("1");
+        bundle.putParcelable("parameter", parameter);
+        ((MapActivity) getActivity()).onFragmentChanged(SearchResultFragment.TAG, bundle);
     }
 }

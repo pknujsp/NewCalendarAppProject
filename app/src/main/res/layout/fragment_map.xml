@@ -105,13 +105,12 @@
             app:layout_anchor="@id/map_bottom_sheet"
             app:layout_anchorGravity="top|right" />
 
-        <fragment
+        <include
             android:id="@+id/map_bottom_sheet"
-            android:name="com.zerodsoft.scheduleweather.fragment.MapBottomSheetFragment"
+            layout="@layout/map_item_bottom_sheet"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom" />
-
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>

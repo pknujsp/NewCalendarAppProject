@@ -77,12 +77,34 @@ public class SearchResultFragment extends Fragment
 
     public void setInitialData(Bundle bundle)
     {
-        parameter = bundle.getParcelable("parameter");
+        if (!bundle.isEmpty())
+        {
+            parameter = bundle.getParcelable("parameter");
+        }
     }
 
     public void setDownloadedData(LocalApiPlaceParameter parameter, LocationSearchResult locationSearchResult)
     {
         this.parameter = parameter;
+
+        List<Integer> dataTypes = locationSearchResult.getResultTypes();
+        indicatorLength = 0;
+
+        for (int dataType : dataTypes)
+        {
+            if (dataType == MapController.TYPE_PLACE_CATEGORY)
+            {
+                ++indicatorLength;
+            } else if (dataType == MapController.TYPE_PLACE_KEYWORD)
+            {
+                ++indicatorLength;
+            } else if (dataType == MapController.TYPE_ADDRESS)
+            {
+                ++indicatorLength;
+            }
+        }
+
+        viewPagerIndicator.createDot(0, indicatorLength);
         searchResultViewPagerAdapter.setData(parameter, locationSearchResult);
         searchResultViewPagerAdapter.notifyDataSetChanged();
     }
@@ -104,7 +126,7 @@ public class SearchResultFragment extends Fragment
             parameter.setPage("1");
             // 자원해제
             locationManager.removeUpdates(locationListener);
-            onDownloadListener.requestData(parameter, TAG);
+            onDownloadListener.requestData(parameter, MapController.TYPE_NOT, TAG);
         }
 
         @Override
@@ -155,7 +177,6 @@ public class SearchResultFragment extends Fragment
         viewPagerIndicator = (ViewPagerIndicator) view.findViewById(R.id.search_result_view_pager_indicator);
         sortSpinner = (Spinner) view.findViewById(R.id.search_sort_spinner);
 
-        viewPagerIndicator.createDot(0, indicatorLength);
 
         searchResultViewPagerAdapter = new SearchResultViewPagerAdapter(getActivity());
 
@@ -164,7 +185,7 @@ public class SearchResultFragment extends Fragment
         onPageCallback = new OnPageCallback();
         viewPager2.registerOnPageChangeCallback(onPageCallback);
 
-        onDownloadListener.requestData(parameter, TAG);
+        onDownloadListener.requestData(parameter, MapController.TYPE_NOT, TAG);
 
         rescanMapCenter.setOnClickListener(new View.OnClickListener()
         {
@@ -177,7 +198,7 @@ public class SearchResultFragment extends Fragment
                 parameter.setY(mapPoint.latitude);
                 parameter.setPage("1");
 
-                onDownloadListener.requestData(parameter, TAG);
+                onDownloadListener.requestData(parameter, MapController.TYPE_NOT, TAG);
             }
         });
 
@@ -199,8 +220,6 @@ public class SearchResultFragment extends Fragment
                 }
             }
         });
-
-
         super.onViewCreated(view, savedInstanceState);
     }
 
@@ -268,7 +287,7 @@ public class SearchResultFragment extends Fragment
                 }
                 parameter.setPage("1");
 
-                onDownloadListener.requestData(parameter, TAG);
+                onDownloadListener.requestData(parameter, MapController.TYPE_NOT, TAG);
             }
 
             @Override

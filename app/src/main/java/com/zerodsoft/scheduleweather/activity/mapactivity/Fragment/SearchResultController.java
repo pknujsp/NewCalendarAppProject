@@ -1,5 +1,6 @@
-package com.zerodsoft.scheduleweather.fragment;
+package com.zerodsoft.scheduleweather.activity.mapactivity.Fragment;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,16 +12,17 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
-import com.zerodsoft.scheduleweather.activity.mapactivity.Fragment.SearchFragment;
-import com.zerodsoft.scheduleweather.activity.mapactivity.Fragment.SearchResultFragment;
 import com.zerodsoft.scheduleweather.activity.mapactivity.MapActivity;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.retrofit.LocalApiPlaceParameter;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.LocationSearchResult;
 
 import java.util.List;
 
 public class SearchResultController extends Fragment implements MapActivity.OnBackPressedListener, SearchResultHeaderFragment.CurrentListTypeGetter
 {
     public static final String TAG = "SearchResultController";
+    private static SearchResultController instance;
 
     private SearchResultHeaderFragment headerFragment;
     private SearchResultFragment listFragment;
@@ -28,6 +30,34 @@ public class SearchResultController extends Fragment implements MapActivity.OnBa
     public static boolean isShowHeader = true;
     public static boolean isShowList = true;
 
+    public SearchResultController(Activity activity)
+    {
+
+    }
+
+    public static SearchResultController getInstance(Activity activity)
+    {
+        if (instance == null)
+        {
+            instance = new SearchResultController(activity);
+        }
+        return instance;
+    }
+
+    public void setInitialData(Bundle bundle)
+    {
+        listFragment.setInitialData(bundle);
+    }
+
+    public void setDownloadedData(LocalApiPlaceParameter parameter, LocationSearchResult locationSearchResult)
+    {
+        listFragment.setDownloadedData(parameter, locationSearchResult);
+    }
+
+    public void setDownloadedExtraData(LocalApiPlaceParameter parameter, int type, LocationSearchResult locationSearchResult)
+    {
+        listFragment.setDownloadedExtraData(parameter, type, locationSearchResult);
+    }
 
     @Nullable
     @Override
@@ -60,23 +90,6 @@ public class SearchResultController extends Fragment implements MapActivity.OnBa
         super.onResume();
     }
 
-    public void setResultData(Bundle bundle)
-    {
-        if (headerFragment == null)
-        {
-            headerFragment = new SearchResultHeaderFragment();
-            headerFragment.setCurrentListTypeGetter(this);
-        }
-        if (listFragment == null)
-        {
-            listFragment = new SearchResultFragment();
-        }
-
-        headerFragment.setSearchWord(bundle.getString("searchWord"));
-        listFragment.setData(bundle);
-        isShowHeader = true;
-        isShowList = true;
-    }
 
     public void setHeaderVisibility(boolean value)
     {
@@ -119,6 +132,7 @@ public class SearchResultController extends Fragment implements MapActivity.OnBa
     @Override
     public void onBackPressed()
     {
+
         FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
@@ -139,17 +153,15 @@ public class SearchResultController extends Fragment implements MapActivity.OnBa
                 }
             }
             fragmentTransaction.remove(headerFragment);
-            fragmentTransaction.remove(listFragment);
-            fragmentTransaction.remove(SearchResultController.this);
-            fragmentTransaction.show(fragments.get(i)).commit();
+            fragmentTransaction.remove(listFragment).commit();
         } else
         {
             // map인 경우
             setHeaderVisibility(true);
             setListVisibility(true);
-
-            ((MapActivity) getActivity()).setZoomGpsButtonVisibility(View.GONE);
         }
+        ((MapActivity) getActivity()).onFragmentChanged(SearchFragment.TAG, new Bundle());
+
     }
 
     @Override
