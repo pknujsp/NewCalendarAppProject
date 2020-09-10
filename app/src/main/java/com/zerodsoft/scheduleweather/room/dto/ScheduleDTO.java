@@ -101,6 +101,9 @@ public class ScheduleDTO implements Parcelable
 
     public ScheduleDTO()
     {
+        notiMainType = NOT_NOTI;
+        address = NOT_LOCATION;
+        place = NOT_LOCATION;
     }
 
     protected ScheduleDTO(Parcel in)

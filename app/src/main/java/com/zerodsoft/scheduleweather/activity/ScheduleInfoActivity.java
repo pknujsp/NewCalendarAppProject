@@ -518,7 +518,7 @@ public class ScheduleInfoActivity extends AppCompatActivity implements Notificat
                 {
                     requestCode = ADD_LOCATION;
                 }
-                intent.putExtra("request", requestCode);
+                intent.putExtra("requestCode", requestCode);
                 startActivityForResult(intent, requestCode);
             }
         };

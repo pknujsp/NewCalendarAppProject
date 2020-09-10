@@ -12,12 +12,14 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
+import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.R;
@@ -28,6 +30,8 @@ import com.zerodsoft.scheduleweather.retrofit.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.LocationSearchResult;
 import com.zerodsoft.scheduleweather.room.dto.AddressDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
+import com.zerodsoft.scheduleweather.utility.LonLat;
+import com.zerodsoft.scheduleweather.utility.LonLatConverter;
 
 import net.daum.mf.map.api.MapPOIItem;
 import net.daum.mf.map.api.MapPoint;
@@ -53,7 +57,6 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     private MapPOIItem[] placePoiItems;
 
     private MapController.OnDownloadListener onDownloadListener;
-    private OnControlItemFragment onControlItemFragment;
 
     private boolean opendPOIInfo = false;
     private boolean clickedPOI = false;
@@ -67,16 +70,10 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     private PlaceDTO selectedPlace;
     private LocationSearchResult locationSearchResult;
 
-    public interface OnControlItemFragment
-    {
-        void onChangeItems(Bundle bundle);
+    private BottomSheetBehavior bottomSheetBehavior;
+    private int selectedItemPosition;
+    private int itemPositionMax;
 
-        void onShowItem(int position);
-
-        boolean isFragmentExpanded();
-
-        void setBehaviorState(int state);
-    }
 
     public static MapFragment getInstance(Activity activity)
     {
@@ -123,19 +120,7 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
 
     public void setSelectedLocationData(LocalApiPlaceParameter parameter, int dataType, LocationSearchResult locationSearchResult)
     {
-        Bundle bundle = new Bundle();
-
-        if (dataType == MapController.TYPE_COORD_TO_ADDRESS)
-        {
-            bundle.putInt("dataType", MapController.TYPE_COORD_TO_ADDRESS);
-        } else if (dataType == MapController.TYPE_PLACE_KEYWORD)
-        {
-            bundle.putInt("dataType", MapController.TYPE_PLACE_KEYWORD);
-        }
-
-        bundle.putInt("position", 0);
-        bundle.putParcelable("locationSearchResult", locationSearchResult);
-        onControlItemFragment.onChangeItems(bundle);
+        onChangeItems(dataType);
     }
 
     private final LocationListener locationListener = new LocationListener()
@@ -181,11 +166,174 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     {
         super.onViewCreated(view, savedInstanceState);
 
-        MapBottomSheetFragment bottomSheetFragment = MapBottomSheetFragment.getInstance();
-        onControlItemFragment = (OnControlItemFragment) bottomSheetFragment;
+        bottomSheetBehavior = BottomSheetBehavior.from(binding.mapItemBottomSheet);
+        bottomSheetBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback()
+        {
+            @Override
+            public void onStateChanged(@NonNull View bottomSheet, int newState)
+            {
+             /*
+                STATE_COLLAPSED: 기본적인 상태이며, 일부분의 레이아웃만 보여지고 있는 상태. 이 높이는 behavior_peekHeight속성을 통해 변경 가능
+                STATE_DRAGGING: 드래그중인 상태
+                STATE_SETTLING: 드래그후 완전히 고정된 상태
+                STATE_EXPANDED: 확장된 상태
+                STATE_HIDDEN: 기본적으로 비활성화 상태이며, app:behavior_hideable을 사용하는 경우 완전히 숨겨져 있는 상태
+             */
+            }
 
-        FragmentTransaction fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
-        fragmentTransaction.add(R.id.map_bottom_sheet, bottomSheetFragment).show(bottomSheetFragment).commit();
+            @Override
+            public void onSlide(@NonNull View bottomSheet, float slideOffset)
+            {
+
+            }
+        });
+
+        // bottomsheet 초기화
+        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+
+        binding.addFavoriteLocationButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+
+            }
+        });
+
+        binding.shareLocationButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+
+            }
+        });
+
+
+        binding.choiceLocationButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                Bundle bundle = new Bundle();
+                bundle.putInt("dataType", dataType);
+                LonLat lonLat = null;
+                double lon, lat;
+
+                switch (dataType)
+                {
+                    case MapController.TYPE_ADDRESS:
+                        lon = locationSearchResult.getAddressResponse().getAddressResponseDocumentsList().get(selectedItemPosition).getX();
+                        lat = locationSearchResult.getAddressResponse().getAddressResponseDocumentsList().get(selectedItemPosition).getY();
+                        lonLat = LonLatConverter.convertLonLat(lon, lat);
+
+                        AddressDTO addressDTO = new AddressDTO();
+                        addressDTO.setAddressName(locationSearchResult.getAddressResponse().getAddressResponseDocumentsList().get(selectedItemPosition).getAddressName());
+                        addressDTO.setLongitude(Double.toString(lon));
+                        addressDTO.setLatitude(Double.toString(lat));
+                        addressDTO.setWeatherX(Integer.toString(lonLat.getX()));
+                        addressDTO.setWeatherY(Integer.toString(lonLat.getY()));
+
+                        try
+                        {
+                            bundle.putParcelable("address", (AddressDTO) addressDTO.clone());
+                        } catch (CloneNotSupportedException e)
+                        {
+                            e.printStackTrace();
+                        }
+                        break;
+
+                    case MapController.TYPE_PLACE_KEYWORD:
+                        lon = locationSearchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().get(selectedItemPosition).getX();
+                        lat = locationSearchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().get(selectedItemPosition).getY();
+                        lonLat = LonLatConverter.convertLonLat(lon, lat);
+
+                        PlaceDTO placeDTOKeyword = new PlaceDTO();
+                        placeDTOKeyword.setPlaceId(locationSearchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().get(selectedItemPosition).getId());
+                        placeDTOKeyword.setPlaceName(locationSearchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().get(selectedItemPosition).getPlaceName());
+                        placeDTOKeyword.setLongitude(Double.toString(lon));
+                        placeDTOKeyword.setLatitude(Double.toString(lat));
+                        placeDTOKeyword.setWeatherX(Integer.toString(lonLat.getX()));
+                        placeDTOKeyword.setWeatherY(Integer.toString(lonLat.getY()));
+
+                        try
+                        {
+                            bundle.putParcelable("place", (PlaceDTO) placeDTOKeyword.clone());
+                        } catch (CloneNotSupportedException e)
+                        {
+                            e.printStackTrace();
+                        }
+                        break;
+
+                    case MapController.TYPE_PLACE_CATEGORY:
+                        lon = Double.valueOf(locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(selectedItemPosition).getX());
+                        lat = Double.valueOf(locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(selectedItemPosition).getY());
+                        lonLat = LonLatConverter.convertLonLat(lon, lat);
+
+                        PlaceDTO placeDTOCategory = new PlaceDTO();
+                        placeDTOCategory.setPlaceId(locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(selectedItemPosition).getId());
+                        placeDTOCategory.setPlaceName(locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(selectedItemPosition).getPlaceName());
+                        placeDTOCategory.setLongitude(locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(selectedItemPosition).getX());
+                        placeDTOCategory.setLatitude(locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(selectedItemPosition).getY());
+                        placeDTOCategory.setWeatherX(Integer.toString(lonLat.getX()));
+                        placeDTOCategory.setWeatherY(Integer.toString(lonLat.getY()));
+
+                        try
+                        {
+                            bundle.putParcelable("place", (PlaceDTO) placeDTOCategory.clone());
+                        } catch (CloneNotSupportedException e)
+                        {
+                            e.printStackTrace();
+                        }
+                        break;
+                }
+                ((MapActivity) getActivity()).onChoicedLocation(bundle);
+            }
+        });
+
+
+        binding.cancelLocationButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+
+            }
+        });
+
+
+        binding.rightLocationButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                if (selectedItemPosition < itemPositionMax)
+                {
+                    ++selectedItemPosition;
+                } else
+                {
+                    selectedItemPosition = 0;
+                }
+                //  ((MapActivity) getActivity()).onItemSelected(selectedItemPosition);
+            }
+        });
+
+        binding.leftLocationButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                if (selectedItemPosition == 0)
+                {
+                    selectedItemPosition = itemPositionMax;
+                } else
+                {
+                    --selectedItemPosition;
+                }
+                //  ((MapActivity) getActivity()).onItemSelected(selectedItemPosition);
+            }
+        });
+
 
         mapView = new MapView(getActivity());
         binding.mapView.addView(mapView);
@@ -279,8 +427,6 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     public void onStart()
     {
         super.onStart();
-        onControlItemFragment.setBehaviorState(BottomSheetBehavior.STATE_HIDDEN);
-
     }
 
     @Override
@@ -299,7 +445,7 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     @Override
     public void onReverseGeoCoderFoundAddress(MapReverseGeoCoder mapReverseGeoCoder, String address)
     {
-        binding.setCurrentAddress(address);
+        // binding.setCurrentAddress(address);
     }
 
     @Override
@@ -377,7 +523,7 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     public void onPOIItemSelected(MapView mapView, MapPOIItem mapPOIItem)
     {
         opendPOIInfo = true;
-        onControlItemFragment.onShowItem(mapPOIItem.getTag());
+        onShowItem(mapPOIItem.getTag());
     }
 
     @Override
@@ -401,10 +547,7 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     @Override
     public void onItemSelected(int position, int dataType)
     {
-        Bundle bundle = new Bundle();
-        bundle.putInt("dataType", dataType);
-        bundle.putParcelable("locationSearchResult", locationSearchResult);
-        onControlItemFragment.onChangeItems(bundle);
+        onChangeItems(dataType);
         addPoiItems(dataType);
         mapView.selectPOIItem(mapView.getPOIItems()[position], true);
     }
@@ -560,9 +703,9 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     @Override
     public void onBackPressed()
     {
-        if (onControlItemFragment.isFragmentExpanded())
+        if (isFragmentExpanded())
         {
-            onControlItemFragment.setBehaviorState(BottomSheetBehavior.STATE_HIDDEN);
+            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
         }
         if (mapView.getPOIItems() != null)
         {
@@ -583,5 +726,124 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     public MapPoint.GeoCoordinate getMapCenterPoint()
     {
         return mapView.getMapCenterPoint().getMapPointGeoCoord();
+    }
+
+    private void setLayoutVisibility()
+    {
+        switch (dataType)
+        {
+            case MapController.TYPE_ADDRESS:
+                binding.itemAddressLayout.setVisibility(View.VISIBLE);
+                binding.itemPlaceLayout.setVisibility(View.GONE);
+                break;
+            case MapController.TYPE_PLACE_CATEGORY:
+            case MapController.TYPE_PLACE_KEYWORD:
+                // keyword, category
+                binding.itemPlaceLayout.setVisibility(View.VISIBLE);
+                binding.itemAddressLayout.setVisibility(View.GONE);
+                break;
+        }
+
+        if (MapActivity.isSelectedLocation)
+        {
+            binding.choiceLocationButton.setVisibility(View.VISIBLE);
+            binding.cancelLocationButton.setVisibility(View.VISIBLE);
+        } else
+        {
+            binding.choiceLocationButton.setVisibility(View.VISIBLE);
+            binding.cancelLocationButton.setVisibility(View.GONE);
+        }
+    }
+
+    private void setViewData()
+    {
+        switch (dataType)
+        {
+            case MapController.TYPE_ADDRESS:
+                binding.selectedAddressNameTextview.setText(locationSearchResult.getAddressResponse().getAddressResponseDocumentsList().get(selectedItemPosition).getAddressName());
+                if (locationSearchResult.getAddressResponse().getAddressResponseDocumentsList().get(selectedItemPosition).getAddressTypeStr().equals("도로명"))
+                {
+                    binding.selectedAnotherAddressTextview.setText(locationSearchResult.getAddressResponse().getAddressResponseDocumentsList().get(selectedItemPosition).getAddressResponseRoadAddress().getAddressName());
+                } else
+                {
+                    // 지번
+                    binding.selectedAnotherAddressTextview.setText(locationSearchResult.getAddressResponse().getAddressResponseDocumentsList().get(selectedItemPosition).getAddressResponseAddress().getAddressName());
+                }
+                binding.selectedAnotherAddressTypeTextview.setText(locationSearchResult.getAddressResponse().getAddressResponseDocumentsList().get(selectedItemPosition).getAddressTypeStr());
+                break;
+
+            case MapController.TYPE_PLACE_KEYWORD:
+                binding.selectedPlaceAddressTextview.setText(locationSearchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().get(selectedItemPosition).getAddressName());
+                binding.selectedPlaceCategoryTextview.setText(locationSearchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().get(selectedItemPosition).getCategoryName());
+                binding.selectedPlaceDescriptionTextview.setText(locationSearchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().get(selectedItemPosition).getCategoryGroupName());
+                binding.selectedPlaceNameTextview.setText(locationSearchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().get(selectedItemPosition).getPlaceName());
+                break;
+
+            case MapController.TYPE_PLACE_CATEGORY:
+                binding.selectedPlaceAddressTextview.setText(locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(selectedItemPosition).getAddressName());
+                binding.selectedPlaceCategoryTextview.setText(locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(selectedItemPosition).getCategoryName());
+                binding.selectedPlaceDescriptionTextview.setText(locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(selectedItemPosition).getCategoryGroupName());
+                binding.selectedPlaceNameTextview.setText(locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(selectedItemPosition).getPlaceName());
+                break;
+
+            case MapController.TYPE_COORD_TO_ADDRESS:
+                if (locationSearchResult.getCoordToAddressResponse().getCoordToAddressDocuments().get(selectedItemPosition).getCoordToAddressAddress() != null)
+                {
+                    // 지번
+                    binding.selectedAddressNameTextview.setText(locationSearchResult.getCoordToAddressResponse().getCoordToAddressDocuments().get(selectedItemPosition).getCoordToAddressAddress().getAddressName());
+                    binding.selectedAnotherAddressTextview.setText(locationSearchResult.getCoordToAddressResponse().getCoordToAddressDocuments().get(selectedItemPosition).getCoordToAddressAddress().getMainAddressNo());
+                    binding.selectedAnotherAddressTypeTextview.setText(locationSearchResult.getCoordToAddressResponse().getCoordToAddressDocuments().get(selectedItemPosition).getCoordToAddressAddress().getRegion1DepthName());
+                } else
+                {
+                    // 도로명
+                    binding.selectedAddressNameTextview.setText(locationSearchResult.getCoordToAddressResponse().getCoordToAddressDocuments().get(selectedItemPosition).getCoordToAddressRoadAddress().getAddressName());
+                    binding.selectedAnotherAddressTextview.setText(locationSearchResult.getCoordToAddressResponse().getCoordToAddressDocuments().get(selectedItemPosition).getCoordToAddressRoadAddress().getRoadName());
+                    binding.selectedAnotherAddressTypeTextview.setText(locationSearchResult.getCoordToAddressResponse().getCoordToAddressDocuments().get(selectedItemPosition).getCoordToAddressRoadAddress().getRegion1DepthName());
+                }
+                break;
+        }
+    }
+
+    public void onChangeItems(int dataType)
+    {
+        switch (dataType)
+        {
+            case MapController.TYPE_ADDRESS:
+                itemPositionMax = locationSearchResult.getAddressResponse().getAddressResponseDocumentsList().size() - 1;
+                break;
+            case MapController.TYPE_PLACE_KEYWORD:
+                itemPositionMax = locationSearchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().size() - 1;
+                break;
+            case MapController.TYPE_PLACE_CATEGORY:
+                itemPositionMax = locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().size() - 1;
+                break;
+            case MapController.TYPE_COORD_TO_ADDRESS:
+                itemPositionMax = locationSearchResult.getCoordToAddressResponse().getCoordToAddressDocuments().size() - 1;
+                break;
+        }
+        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+    }
+
+
+    public boolean isFragmentExpanded()
+    {
+        if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED)
+        {
+            return true;
+        } else
+        {
+            return false;
+        }
+    }
+
+
+    public void onShowItem(int position)
+    {
+        selectedItemPosition = position;
+
+        setLayoutVisibility();
+        setViewData();
+
+        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
     }
 }
