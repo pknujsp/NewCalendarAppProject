@@ -21,7 +21,7 @@ import java.util.List;
 
 public class SearchResultController extends Fragment implements MapActivity.OnBackPressedListener, SearchResultHeaderFragment.CurrentListTypeGetter
 {
-    public static final String TAG = "SearchResultController";
+    public static final String TAG = "SearchResult Controller";
     private static SearchResultController instance;
 
     private SearchResultHeaderFragment headerFragment;
@@ -32,7 +32,8 @@ public class SearchResultController extends Fragment implements MapActivity.OnBa
 
     public SearchResultController(Activity activity)
     {
-
+        headerFragment = SearchResultHeaderFragment.getInstance(activity);
+        listFragment = SearchResultFragment.getInstance(activity);
     }
 
     public static SearchResultController getInstance(Activity activity)

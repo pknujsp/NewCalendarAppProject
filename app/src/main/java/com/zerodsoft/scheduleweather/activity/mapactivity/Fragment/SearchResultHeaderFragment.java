@@ -1,5 +1,6 @@
 package com.zerodsoft.scheduleweather.activity.mapactivity.Fragment;
 
+import android.app.Activity;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -17,6 +18,7 @@ import com.zerodsoft.scheduleweather.R;
 public class SearchResultHeaderFragment extends Fragment
 {
     public static final String TAG = "SearchResultHeaderFragment";
+    private static SearchResultHeaderFragment instance;
 
     private ImageButton changeButton;
     private ImageButton closeButton;
@@ -27,6 +29,20 @@ public class SearchResultHeaderFragment extends Fragment
     public static final int CURRENT_LIST = 1;
 
     private CurrentListTypeGetter currentListTypeGetter;
+
+    public SearchResultHeaderFragment(Activity activity)
+    {
+
+    }
+
+    public static SearchResultHeaderFragment getInstance(Activity activity)
+    {
+        if (instance == null)
+        {
+            instance = new SearchResultHeaderFragment(activity);
+        }
+        return instance;
+    }
 
     public interface CurrentListTypeGetter
     {

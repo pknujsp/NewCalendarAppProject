@@ -23,6 +23,7 @@ public class SearchFragment extends Fragment implements SearchCategoryViewAdapte
     public static final String TAG = "Search Fragment";
     private static SearchFragment instance;
     private FragmentSearchBinding binding;
+    private SearchCategoryViewAdapter searchCategoryViewAdapter;
 
     private double latitude;
     private double longitude;
@@ -69,7 +70,7 @@ public class SearchFragment extends Fragment implements SearchCategoryViewAdapte
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
-        SearchCategoryViewAdapter searchCategoryViewAdapter = new SearchCategoryViewAdapter(this);
+        searchCategoryViewAdapter = new SearchCategoryViewAdapter(this);
         binding.categoryRecyclerview.setLayoutManager(new LinearLayoutManager(getActivity(), RecyclerView.HORIZONTAL, false));
         binding.categoryRecyclerview.setAdapter(searchCategoryViewAdapter);
 

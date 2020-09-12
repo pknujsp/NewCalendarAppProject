@@ -161,6 +161,7 @@ public class MapActivity extends AppCompatActivity implements MapController.OnDo
             fragmentTransaction.replace(fragmentViewId, mapFragment);
         } else if (fragmentTag.equals(SearchFragment.TAG))
         {
+            // Map프래그먼트에서 상단 바를 터치한 경우
             SearchFragment searchFragment = SearchFragment.getInstance(this);
             searchFragment.setInitialData(bundle);
             fragmentTransaction.replace(fragmentViewId, searchFragment);

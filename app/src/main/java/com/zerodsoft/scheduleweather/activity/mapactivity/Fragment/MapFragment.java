@@ -2,6 +2,7 @@ package com.zerodsoft.scheduleweather.activity.mapactivity.Fragment;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -188,9 +189,6 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
             }
         });
 
-        // bottomsheet 초기화
-        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
-
         binding.addFavoriteLocationButton.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -334,7 +332,6 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
             }
         });
 
-
         mapView = new MapView(getActivity());
         binding.mapView.addView(mapView);
 
@@ -369,7 +366,7 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
             }
         });
 
-        binding.addressTextview.setOnClickListener(new View.OnClickListener()
+        binding.mapHeaderBar.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view)
@@ -408,13 +405,17 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
             @Override
             public void onClick(View view)
             {
+                if (locationManager == null)
+                {
+                    locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
+                }
                 boolean isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
                 boolean isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
 
                 int fineLocationPermission = ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION);
                 int coarseLocationPermission = ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION);
 
-                if (isGpsEnabled && isNetworkEnabled)
+                if (isGpsEnabled || isNetworkEnabled)
                 {
                     locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
                     locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
@@ -445,7 +446,6 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     @Override
     public void onReverseGeoCoderFoundAddress(MapReverseGeoCoder mapReverseGeoCoder, String address)
     {
-        // binding.setCurrentAddress(address);
     }
 
     @Override
