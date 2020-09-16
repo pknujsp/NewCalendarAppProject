@@ -18,6 +18,7 @@ import com.zerodsoft.scheduleweather.retrofit.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.LocationSearchResult;
 
 import java.util.List;
+import java.util.Map;
 
 public class SearchResultController extends Fragment implements MapActivity.OnBackPressedListener, SearchResultHeaderFragment.CurrentListTypeGetter
 {
@@ -34,6 +35,7 @@ public class SearchResultController extends Fragment implements MapActivity.OnBa
     {
         headerFragment = SearchResultHeaderFragment.getInstance(activity);
         listFragment = SearchResultFragment.getInstance(activity);
+        headerFragment.setCurrentListTypeGetter(this);
     }
 
     public static SearchResultController getInstance(Activity activity)
@@ -48,16 +50,22 @@ public class SearchResultController extends Fragment implements MapActivity.OnBa
     public void setInitialData(Bundle bundle)
     {
         listFragment.setInitialData(bundle);
+        headerFragment.setInitialData(bundle);
     }
 
-    public void setDownloadedData(LocalApiPlaceParameter parameter, LocationSearchResult locationSearchResult)
+    public void setChangeButtonDrawable()
     {
-        listFragment.setDownloadedData(parameter, locationSearchResult);
+        headerFragment.setChangeButtonDrawable();
     }
 
-    public void setDownloadedExtraData(LocalApiPlaceParameter parameter, int type, LocationSearchResult locationSearchResult)
+    public void setDownloadedData(LocationSearchResult locationSearchResult)
     {
-        listFragment.setDownloadedExtraData(parameter, type, locationSearchResult);
+        listFragment.setDownloadedData(locationSearchResult);
+    }
+
+    public void setDownloadedExtraData(int type, LocationSearchResult locationSearchResult)
+    {
+        listFragment.setDownloadedExtraData(type, locationSearchResult);
     }
 
     @Nullable
@@ -91,78 +99,25 @@ public class SearchResultController extends Fragment implements MapActivity.OnBa
         super.onResume();
     }
 
-
-    public void setHeaderVisibility(boolean value)
-    {
-        if (isShowHeader == value)
-        {
-            return;
-        } else
-        {
-            isShowHeader = value;
-
-            if (isShowHeader)
-            {
-                getActivity().getSupportFragmentManager().beginTransaction().show(headerFragment).commit();
-            } else
-            {
-                getActivity().getSupportFragmentManager().beginTransaction().hide(headerFragment).commit();
-            }
-        }
-    }
-
-    public void setListVisibility(boolean value)
-    {
-        if (isShowList == value)
-        {
-            return;
-        } else
-        {
-            isShowList = value;
-
-            if (isShowList)
-            {
-                getActivity().getSupportFragmentManager().beginTransaction().show(listFragment).commit();
-            } else
-            {
-                getActivity().getSupportFragmentManager().beginTransaction().hide(listFragment).commit();
-            }
-        }
-    }
-
     @Override
     public void onBackPressed()
     {
-
-        FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-
         if (isShowList)
         {
             // list인 경우
-            setHeaderVisibility(false);
-            setListVisibility(false);
-
-            List<Fragment> fragments = fragmentManager.getFragments();
-
-            int i = 0;
-            for (; i < fragments.size(); i++)
-            {
-                if (fragments.get(i) instanceof SearchFragment)
-                {
-                    break;
-                }
-            }
-            fragmentTransaction.remove(headerFragment);
-            fragmentTransaction.remove(listFragment).commit();
+            getActivity().getSupportFragmentManager().beginTransaction().remove(headerFragment).remove(listFragment).commit();
+            SearchFragment.parameter.clear();
+            listFragment.clearHolderSparseArr();
+            SearchResultFragment.isFirstCreated = true;
+            ((MapActivity) getActivity()).onFragmentChanged(SearchFragment.TAG, new Bundle());
         } else
         {
             // map인 경우
-            setHeaderVisibility(true);
-            setListVisibility(true);
+            if (MapFragment.isClickedChangeButton || MapFragment.isClickedListItem)
+            {
+                ((MapActivity) getActivity()).changeMapOrList(MapController.TYPE_NOT);
+            }
         }
-        ((MapActivity) getActivity()).onFragmentChanged(SearchFragment.TAG, new Bundle());
-
     }
 
     @Override
@@ -170,5 +125,4 @@ public class SearchResultController extends Fragment implements MapActivity.OnBa
     {
         return listFragment.getCurrentListType();
     }
-
 }

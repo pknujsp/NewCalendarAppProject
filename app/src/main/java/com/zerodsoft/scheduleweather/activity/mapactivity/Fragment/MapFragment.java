@@ -13,22 +13,20 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
-import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
-import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.mapactivity.MapActivity;
 import com.zerodsoft.scheduleweather.databinding.FragmentMapBinding;
-import com.zerodsoft.scheduleweather.recyclerviewadapter.SearchResultViewAdapter;
 import com.zerodsoft.scheduleweather.retrofit.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.LocationSearchResult;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponseDocuments;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.placecategoryresponse.PlaceCategoryDocuments;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.placekeywordresponse.PlaceKeywordDocuments;
 import com.zerodsoft.scheduleweather.room.dto.AddressDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
 import com.zerodsoft.scheduleweather.utility.LonLat;
@@ -36,36 +34,40 @@ import com.zerodsoft.scheduleweather.utility.LonLatConverter;
 
 import net.daum.mf.map.api.MapPOIItem;
 import net.daum.mf.map.api.MapPoint;
-import net.daum.mf.map.api.MapPointBounds;
 import net.daum.mf.map.api.MapReverseGeoCoder;
 import net.daum.mf.map.api.MapView;
 
 import java.util.List;
 
-public class MapFragment extends Fragment implements MapView.POIItemEventListener, MapReverseGeoCoder.ReverseGeoCodingResultListener, MapView.MapViewEventListener, MapActivity.OnBackPressedListener, SearchResultViewAdapter.OnItemSelectedListener
+public class MapFragment extends Fragment implements MapView.POIItemEventListener, MapReverseGeoCoder.ReverseGeoCodingResultListener, MapView.MapViewEventListener
 {
+    // list에서 item클릭 시 poiitem이 선택되고 맵 중앙좌표가 해당item의 좌표로 변경되면서 하단 시트가 올라온다
     public static final String TAG = "MapFragment";
     private static MapFragment instance;
+    public static MapPoint currentMapPoint = MapPoint.mapPointWithGeoCoord(37.53737528, 127.00557633);
+
     private FragmentMapBinding binding;
     private MapView mapView;
 
     private int dataType;
 
     private LocationManager locationManager;
-    private SearchResultController searchResultController;
 
     private MapPOIItem[] addressPoiItems;
     private MapPOIItem[] placePoiItems;
 
     private MapController.OnDownloadListener onDownloadListener;
 
-    private boolean opendPOIInfo = false;
-    private boolean clickedPOI = false;
-    private int poiTag;
-    private boolean isMain = true;
+    private boolean isOpendPoiInfo = false;
+    private boolean isClickedPOI = false;
+    public static boolean isMain = true;
+    public static boolean isClickedChangeButton = false;
+    public static boolean isClickedListItem = false;
+    public static boolean isShowingPreviousItem = false;
+
+    private String currentAddress = "";
 
     private MapReverseGeoCoder mapReverseGeoCoder;
-    private MapPoint currentMapPoint = MapPoint.mapPointWithGeoCoord(37.53737528, 127.00557633);
 
     private AddressDTO selectedAddress;
     private PlaceDTO selectedPlace;
@@ -74,7 +76,6 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     private BottomSheetBehavior bottomSheetBehavior;
     private int selectedItemPosition;
     private int itemPositionMax;
-
 
     public static MapFragment getInstance(Activity activity)
     {
@@ -95,33 +96,30 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
         // EDIT_LOCATION인 경우 데이터를 받아와서 화면에 표시
         if (bundle.isEmpty())
         {
-            isMain = true;
+
         } else
         {
-            isMain = false;
             selectedPlace = bundle.getParcelable("selectedPlace");
             selectedAddress = bundle.getParcelable("selectedAddress");
-
-            LocalApiPlaceParameter parameter = new LocalApiPlaceParameter();
 
             if (selectedAddress != null)
             {
                 // 주소 검색 순서 : 좌표로 주소 변환
-                parameter.setX(Double.parseDouble(selectedAddress.getLongitude())).setY(Double.parseDouble(selectedAddress.getLatitude()));
-                onDownloadListener.requestData(parameter, MapController.TYPE_COORD_TO_ADDRESS, TAG);
+                SearchFragment.parameter.setX(Double.parseDouble(selectedAddress.getLongitude())).setY(Double.parseDouble(selectedAddress.getLatitude()));
+                onDownloadListener.requestData(MapController.TYPE_COORD_TO_ADDRESS, TAG);
             } else if (selectedPlace != null)
             {
                 // 장소 검색 순서 : 장소의 위경도 내 10M 반경에서 장소 이름 검색(여러개 나올 경우 장소ID와 일치하는 장소를 선택)
-                parameter.setQuery(selectedPlace.getPlaceName()).setX(Double.parseDouble(selectedPlace.getLongitude())).setY(Double.parseDouble(selectedPlace.getLatitude()))
+                SearchFragment.parameter.setQuery(selectedPlace.getPlaceName()).setX(Double.parseDouble(selectedPlace.getLongitude())).setY(Double.parseDouble(selectedPlace.getLatitude()))
                         .setRadius("10").setPage("1").setSort(LocalApiPlaceParameter.SORT_ACCURACY);
-                onDownloadListener.requestData(parameter, MapController.TYPE_PLACE_KEYWORD, TAG);
+                onDownloadListener.requestData(MapController.TYPE_PLACE_KEYWORD, TAG);
             }
         }
     }
 
-    public void setSelectedLocationData(LocalApiPlaceParameter parameter, int dataType, LocationSearchResult locationSearchResult)
+    public void setSelectedLocationData(int dataType, LocationSearchResult locationSearchResult)
     {
-        onChangeItems(dataType);
+        onChangeItems();
     }
 
     private final LocationListener locationListener = new LocationListener()
@@ -305,6 +303,7 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
             @Override
             public void onClick(View view)
             {
+                /*
                 if (selectedItemPosition < itemPositionMax)
                 {
                     ++selectedItemPosition;
@@ -313,6 +312,8 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
                     selectedItemPosition = 0;
                 }
                 //  ((MapActivity) getActivity()).onItemSelected(selectedItemPosition);
+
+                 */
             }
         });
 
@@ -321,6 +322,7 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
             @Override
             public void onClick(View view)
             {
+                /*
                 if (selectedItemPosition == 0)
                 {
                     selectedItemPosition = itemPositionMax;
@@ -329,9 +331,12 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
                     --selectedItemPosition;
                 }
                 //  ((MapActivity) getActivity()).onItemSelected(selectedItemPosition);
+
+                 */
             }
         });
 
+        binding.addressTextview.setText(currentAddress);
         mapView = new MapView(getActivity());
         binding.mapView.addView(mapView);
 
@@ -371,14 +376,7 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
             @Override
             public void onClick(View view)
             {
-                Bundle bundle = new Bundle();
-
-                MapPoint.GeoCoordinate mapPoint = mapView.getMapCenterPoint().getMapPointGeoCoord();
-
-                bundle.putDouble("latitude", mapPoint.latitude);
-                bundle.putDouble("longitude", mapPoint.longitude);
-
-                ((MapActivity) getActivity()).onFragmentChanged(SearchFragment.TAG, bundle);
+                ((MapActivity) getActivity()).onFragmentChanged(SearchFragment.TAG, new Bundle());
             }
         });
 
@@ -427,12 +425,42 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     @Override
     public void onStart()
     {
+        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+
+        if (isMain)
+        {
+            // 메인 화면인 경우
+            binding.mapHeaderBar.setClickable(true);
+            isClickedListItem = false;
+            isClickedChangeButton = false;
+            binding.gpsButton.performClick();
+            removeAllPoiItems();
+            setZoomGpsButtonVisibility(View.VISIBLE);
+        } else
+        {
+            // 검색 후 아이템을 선택 또는 지도 버튼을 클릭한 경우
+            addPoiItems();
+            binding.mapHeaderBar.setClickable(false);
+
+            if (isClickedChangeButton)
+            {
+                mapView.fitMapViewAreaToShowAllPOIItems();
+            } else if (isClickedListItem)
+            {
+                onItemSelected();
+            } else if (isShowingPreviousItem)
+            {
+                //이전에 선택된 위치의 정보를 표시
+            }
+        }
         super.onStart();
     }
 
     @Override
     public void onPause()
     {
+        isClickedListItem = false;
+        isClickedChangeButton = false;
         super.onPause();
     }
 
@@ -446,6 +474,8 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     @Override
     public void onReverseGeoCoderFoundAddress(MapReverseGeoCoder mapReverseGeoCoder, String address)
     {
+        currentAddress = address;
+        binding.addressTextview.setText(currentAddress);
     }
 
     @Override
@@ -522,8 +552,11 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     @Override
     public void onPOIItemSelected(MapView mapView, MapPOIItem mapPOIItem)
     {
-        opendPOIInfo = true;
+        // poiitem을 선택하였을 경우에 수행됨
+        isOpendPoiInfo = true;
         onShowItem(mapPOIItem.getTag());
+        currentMapPoint = MapPoint.mapPointWithGeoCoord(mapPOIItem.getMapPoint().getMapPointGeoCoord().latitude, mapPOIItem.getMapPoint().getMapPointGeoCoord().longitude);
+        mapView.setMapCenterPoint(currentMapPoint, true);
     }
 
     @Override
@@ -544,12 +577,17 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
 
     }
 
-    @Override
-    public void onItemSelected(int position, int dataType)
+    public void onItemSelected()
     {
-        onChangeItems(dataType);
-        addPoiItems(dataType);
-        mapView.selectPOIItem(mapView.getPOIItems()[position], true);
+        // 리스트에서 아이템을 선택하였을 때에 수행됨
+        onChangeItems();
+        addPoiItems();
+        mapView.selectPOIItem(mapView.getPOIItems()[selectedItemPosition], true);
+        isOpendPoiInfo = true;
+        onShowItem(selectedItemPosition);
+        currentMapPoint = MapPoint.mapPointWithGeoCoord(mapView.getPOIItems()[selectedItemPosition].getMapPoint().getMapPointGeoCoord().latitude,
+                mapView.getPOIItems()[selectedItemPosition].getMapPoint().getMapPointGeoCoord().longitude);
+        mapView.setMapCenterPoint(currentMapPoint, true);
     }
 
     public void setZoomGpsButtonVisibility(int value)
@@ -559,33 +597,55 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
         binding.gpsButton.setVisibility(value);
     }
 
-    public void onChangeButtonClicked(int type)
-    {
-        if (SearchResultController.isShowList)
-        {
-            searchResultController.setListVisibility(false);
-            setZoomGpsButtonVisibility(View.VISIBLE);
-
-            dataType = type;
-            setPoiItems();
-            mapView.fitMapViewAreaToShowAllPOIItems();
-        } else
-        {
-            searchResultController.setListVisibility(true);
-            setZoomGpsButtonVisibility(View.INVISIBLE);
-        }
-    }
-
 
     public void setLocationSearchResult(LocationSearchResult locationSearchResult)
     {
         this.locationSearchResult = locationSearchResult;
     }
 
+    public void addExtraData(LocationSearchResult newLocationSearchResult)
+    {
+        /*
+        if (newLocationSearchResult.getAddressResponse() != null)
+        {
+            List<AddressResponseDocuments> documentList = locationSearchResult.getAddressResponse().getAddressResponseDocumentsList();
+            List<AddressResponseDocuments> newDocumentList = newLocationSearchResult.getAddressResponse().getAddressResponseDocumentsList();
+
+            for (AddressResponseDocuments document : newDocumentList)
+            {
+                documentList.add(document);
+            }
+        }
+        if (newLocationSearchResult.getPlaceCategoryResponse() != null)
+        {
+            List<PlaceCategoryDocuments> documentList = locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments();
+            List<PlaceCategoryDocuments> newDocumentList = newLocationSearchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments();
+
+            for (PlaceCategoryDocuments document : newDocumentList)
+            {
+                documentList.add(document);
+            }
+        }
+        if (newLocationSearchResult.getPlaceKeywordResponse() != null)
+        {
+            List<PlaceKeywordDocuments> documentList = locationSearchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments();
+            List<PlaceKeywordDocuments> newDocumentList = newLocationSearchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments();
+
+            for (PlaceKeywordDocuments document : newDocumentList)
+            {
+                documentList.add(document);
+            }
+        }
+
+         */
+    }
+
     public void setPoiItems()
     {
         int addressSize = 0;
         int placeSize = 0;
+        int placeDataType = 0;
+        int addressDataType = 0;
         removeAllPoiItems();
 
         List<Integer> dataTypes = locationSearchResult.getResultTypes();
@@ -593,15 +653,19 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
         {
             if (dataType == MapController.TYPE_PLACE_KEYWORD)
             {
+                placeDataType = dataType;
                 placeSize = locationSearchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().size();
             } else if (dataType == MapController.TYPE_PLACE_CATEGORY)
             {
+                placeDataType = dataType;
                 placeSize = locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().size();
             } else if (dataType == MapController.TYPE_ADDRESS)
             {
+                addressDataType = dataType;
                 addressSize = locationSearchResult.getAddressResponse().getAddressResponseDocumentsList().size();
             } else if (dataType == MapController.TYPE_COORD_TO_ADDRESS)
             {
+                addressDataType = dataType;
                 addressSize = 1;
             }
         }
@@ -615,12 +679,12 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
                 MapPoint mapPoint = null;
                 placePoiItems[i] = new MapPOIItem();
 
-                if (dataType == MapController.TYPE_PLACE_KEYWORD)
+                if (placeDataType == MapController.TYPE_PLACE_KEYWORD)
                 {
                     placePoiItems[i].setItemName(locationSearchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().get(i).getPlaceName());
                     mapPoint = MapPoint.mapPointWithGeoCoord(locationSearchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().get(i).getY(),
                             locationSearchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().get(i).getX());
-                } else if (dataType == MapController.TYPE_PLACE_CATEGORY)
+                } else if (placeDataType == MapController.TYPE_PLACE_CATEGORY)
                 {
                     placePoiItems[i].setItemName(locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(i).getPlaceName());
                     mapPoint = MapPoint.mapPointWithGeoCoord(Double.valueOf(locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(i).getY()),
@@ -642,12 +706,12 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
                 MapPoint mapPoint = null;
                 addressPoiItems[i] = new MapPOIItem();
 
-                if (dataType == MapController.TYPE_ADDRESS)
+                if (addressDataType == MapController.TYPE_ADDRESS)
                 {
                     addressPoiItems[i].setItemName(locationSearchResult.getAddressResponse().getAddressResponseDocumentsList().get(i).getAddressName());
                     mapPoint = MapPoint.mapPointWithGeoCoord(locationSearchResult.getAddressResponse().getAddressResponseDocumentsList().get(i).getY(),
                             locationSearchResult.getAddressResponse().getAddressResponseDocumentsList().get(i).getX());
-                } else if (dataType == MapController.TYPE_COORD_TO_ADDRESS)
+                } else if (addressDataType == MapController.TYPE_COORD_TO_ADDRESS)
                 {
                     addressPoiItems[i].setItemName(selectedAddress.getAddressName());
                     mapPoint = MapPoint.mapPointWithGeoCoord(Double.parseDouble(selectedAddress.getLatitude()),
@@ -662,9 +726,10 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
         }
     }
 
-    public void addPoiItems(int dataType)
+    public void addPoiItems()
     {
         mapView.removeAllPOIItems();
+
         if (dataType == MapController.TYPE_COORD_TO_ADDRESS || dataType == MapController.TYPE_ADDRESS)
         {
             mapView.addPOIItems(addressPoiItems);
@@ -674,53 +739,11 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
         }
     }
 
-    private void setCurrentCenterPoint(int position)
-    {
-        double latitude = 0, longitude = 0;
-
-        if (dataType == MapController.TYPE_ADDRESS)
-        {
-            longitude = addressPoiItems[position].getMapPoint().getMapPointGeoCoord().longitude;
-            latitude = addressPoiItems[position].getMapPoint().getMapPointGeoCoord().latitude;
-        } else if (dataType == MapController.TYPE_PLACE_KEYWORD || dataType == MapController.TYPE_PLACE_CATEGORY)
-        {
-            longitude = placePoiItems[position].getMapPoint().getMapPointGeoCoord().longitude;
-            latitude = placePoiItems[position].getMapPoint().getMapPointGeoCoord().latitude;
-        }
-
-        currentMapPoint = MapPoint.mapPointWithGeoCoord(latitude, longitude);
-        mapView.setMapCenterPoint(currentMapPoint, true);
-    }
-
     public void removeAllPoiItems()
     {
         addressPoiItems = null;
         placePoiItems = null;
         mapView.removeAllPOIItems();
-    }
-
-
-    @Override
-    public void onBackPressed()
-    {
-        if (isFragmentExpanded())
-        {
-            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
-        }
-        if (mapView.getPOIItems() != null)
-        {
-            ((MapActivity) getActivity()).onFragmentChanged(SearchResultFragment.TAG, new Bundle());
-        } else
-        {
-            ((MapActivity) getActivity()).getSupportFragmentManager().beginTransaction()
-                    .remove(MapFragment.this).commit();
-            ((MapActivity) getActivity()).onBackPressed();
-        }
-    }
-
-    public MapPointBounds getMapPointBounds()
-    {
-        return mapView.getMapPointBounds();
     }
 
     public MapPoint.GeoCoordinate getMapCenterPoint()
@@ -804,7 +827,7 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
         }
     }
 
-    public void onChangeItems(int dataType)
+    public void onChangeItems()
     {
         switch (dataType)
         {
@@ -821,21 +844,7 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
                 itemPositionMax = locationSearchResult.getCoordToAddressResponse().getCoordToAddressDocuments().size() - 1;
                 break;
         }
-        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
     }
-
-
-    public boolean isFragmentExpanded()
-    {
-        if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED)
-        {
-            return true;
-        } else
-        {
-            return false;
-        }
-    }
-
 
     public void onShowItem(int position)
     {
@@ -846,4 +855,18 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
 
         bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
     }
+
+
+    public MapFragment setDataType(int dataType)
+    {
+        this.dataType = dataType;
+        return this;
+    }
+
+    public MapFragment setSelectedItemPosition(int selectedItemPosition)
+    {
+        this.selectedItemPosition = selectedItemPosition;
+        return this;
+    }
+
 }

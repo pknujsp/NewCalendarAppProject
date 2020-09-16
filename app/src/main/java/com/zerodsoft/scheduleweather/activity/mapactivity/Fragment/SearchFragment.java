@@ -18,15 +18,16 @@ import com.zerodsoft.scheduleweather.databinding.FragmentSearchBinding;
 import com.zerodsoft.scheduleweather.recyclerviewadapter.SearchCategoryViewAdapter;
 import com.zerodsoft.scheduleweather.retrofit.LocalApiPlaceParameter;
 
+import net.daum.mf.map.api.MapPoint;
+
 public class SearchFragment extends Fragment implements SearchCategoryViewAdapter.OnCategoryClickListener, MapActivity.OnBackPressedListener
 {
     public static final String TAG = "Search Fragment";
+    public static final LocalApiPlaceParameter parameter = new LocalApiPlaceParameter();
+    // localapi 파라미터 객체를 전달하지 않고 static으로 만들어 편하게 사용
     private static SearchFragment instance;
     private FragmentSearchBinding binding;
     private SearchCategoryViewAdapter searchCategoryViewAdapter;
-
-    private double latitude;
-    private double longitude;
 
     private MapController.OnDownloadListener onDownloadListener;
 
@@ -42,15 +43,6 @@ public class SearchFragment extends Fragment implements SearchCategoryViewAdapte
             instance = new SearchFragment(activity);
         }
         return instance;
-    }
-
-    public void setInitialData(Bundle bundle)
-    {
-        if (!bundle.isEmpty())
-        {
-            this.latitude = bundle.getDouble("latitude");
-            this.longitude = bundle.getDouble("longitude");
-        }
     }
 
     @Override
@@ -79,14 +71,11 @@ public class SearchFragment extends Fragment implements SearchCategoryViewAdapte
             @Override
             public void onClick(View view)
             {
-                Bundle bundle = new Bundle();
-                LocalApiPlaceParameter parameter = new LocalApiPlaceParameter();
-                // String searchWord, double latitude, double longitude, String sort, String page
-                // 검색 파라미터 설정
-                parameter.setQuery(binding.searchEdittext.getText().toString()).setX(longitude).setY(latitude)
+                MapPoint.GeoCoordinate currentMapPoint = MapFragment.currentMapPoint.getMapPointGeoCoord();
+
+                parameter.setQuery(binding.searchEdittext.getText().toString()).setX(currentMapPoint.longitude).setY(currentMapPoint.latitude)
                         .setSort(LocalApiPlaceParameter.SORT_ACCURACY).setPage("1");
-                bundle.putParcelable("parameter", parameter);
-                ((MapActivity) getActivity()).onFragmentChanged(SearchResultFragment.TAG, bundle);
+                ((MapActivity) getActivity()).onFragmentChanged(SearchResultFragment.TAG, new Bundle());
             }
         });
 
@@ -131,9 +120,7 @@ public class SearchFragment extends Fragment implements SearchCategoryViewAdapte
     public void onBackPressed()
     {
         binding.searchEdittext.setText("");
-        MapFragment mapFragment = MapFragment.getInstance(getActivity());
-        mapFragment.removeAllPoiItems();
-        mapFragment.setZoomGpsButtonVisibility(View.VISIBLE);
+        MapFragment.isMain = true;
 
         ((MapActivity) getActivity()).onFragmentChanged(MapFragment.TAG, new Bundle());
     }
@@ -141,13 +128,10 @@ public class SearchFragment extends Fragment implements SearchCategoryViewAdapte
     @Override
     public void selectedCategory(String name, String description)
     {
-        Bundle bundle = new Bundle();
-        LocalApiPlaceParameter parameter = new LocalApiPlaceParameter();
-        // String searchWord, double latitude, double longitude, String sort, String page
-        // 검색 파라미터 설정
-        parameter.setQuery(description).setX(longitude).setY(latitude)
+        MapPoint.GeoCoordinate currentMapPoint = MapFragment.currentMapPoint.getMapPointGeoCoord();
+
+        parameter.setQuery(description).setX(currentMapPoint.longitude).setY(currentMapPoint.latitude)
                 .setSort(LocalApiPlaceParameter.SORT_ACCURACY).setPage("1");
-        bundle.putParcelable("parameter", parameter);
-        ((MapActivity) getActivity()).onFragmentChanged(SearchResultFragment.TAG, bundle);
+        ((MapActivity) getActivity()).onFragmentChanged(SearchResultFragment.TAG, new Bundle());
     }
 }

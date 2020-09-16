@@ -21,6 +21,7 @@ public class LocationSearchResult implements Parcelable, Cloneable
     private CoordToAddress coordToAddressResponse;
     private Date downloadedDate;
     private int resultNum = 0;
+    private List<Integer> types = new ArrayList<>();
 
     public LocationSearchResult()
     {
@@ -116,6 +117,13 @@ public class LocationSearchResult implements Parcelable, Cloneable
         return this;
     }
 
+    public LocationSearchResult setResultNum()
+    {
+        getResultTypes();
+        this.resultNum = types.size();
+        return this;
+    }
+
     public void setCoordToAddressResponse(CoordToAddress coordToAddressResponse)
     {
         this.coordToAddressResponse = coordToAddressResponse;
@@ -151,19 +159,28 @@ public class LocationSearchResult implements Parcelable, Cloneable
     public List<Integer> getResultTypes()
     {
         // 검색된 타입들을 배열로 반환
-        List<Integer> types = new ArrayList<>();
+        types.clear();
 
-        if (addressResponse.getAddressResponseDocumentsList().size() != 0)
+        if (addressResponse != null)
         {
-            types.add(MapController.TYPE_ADDRESS);
+            if (addressResponse.getAddressResponseDocumentsList().size() > 0)
+            {
+                types.add(MapController.TYPE_ADDRESS);
+            }
         }
-        if (placeKeywordResponse.getPlaceKeywordDocuments().size() != 0)
+        if (placeKeywordResponse != null)
         {
-            types.add(MapController.TYPE_PLACE_KEYWORD);
+            if (placeKeywordResponse.getPlaceKeywordDocuments().size() > 0)
+            {
+                types.add(MapController.TYPE_PLACE_KEYWORD);
+            }
         }
-        if (placeCategoryResponse.getPlaceCategoryDocuments().size() != 0)
+        if (placeCategoryResponse != null)
         {
-            types.add(MapController.TYPE_PLACE_CATEGORY);
+            if (placeCategoryResponse.getPlaceCategoryDocuments().size() > 0)
+            {
+                types.add(MapController.TYPE_PLACE_CATEGORY);
+            }
         }
         return types;
     }

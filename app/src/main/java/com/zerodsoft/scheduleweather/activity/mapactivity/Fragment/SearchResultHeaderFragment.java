@@ -14,6 +14,9 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.activity.mapactivity.MapActivity;
+import com.zerodsoft.scheduleweather.recyclerviewadapter.SearchResultViewAdapter;
+import com.zerodsoft.scheduleweather.retrofit.LocalApiPlaceParameter;
 
 public class SearchResultHeaderFragment extends Fragment
 {
@@ -25,8 +28,8 @@ public class SearchResultHeaderFragment extends Fragment
     private TextView searchWordTextView;
     private String searchWord;
 
-    public static final int CURRENT_MAP = 0;
-    public static final int CURRENT_LIST = 1;
+    public static final int MAP = 0;
+    public static final int LIST = 1;
 
     private CurrentListTypeGetter currentListTypeGetter;
 
@@ -49,10 +52,9 @@ public class SearchResultHeaderFragment extends Fragment
         int getCurrentListType();
     }
 
-    public SearchResultHeaderFragment setCurrentListTypeGetter(CurrentListTypeGetter currentListTypeGetter)
+    public void setCurrentListTypeGetter(SearchResultController searchResultController)
     {
-        this.currentListTypeGetter = currentListTypeGetter;
-        return this;
+        this.currentListTypeGetter = (CurrentListTypeGetter) searchResultController;
     }
 
     public SearchResultHeaderFragment()
@@ -95,15 +97,7 @@ public class SearchResultHeaderFragment extends Fragment
             public void onClick(View view)
             {
                 // list(map)인 경우 map(list)로
-                if (SearchResultController.isShowList)
-                {
-                    // map으로
-                    setChangeButtonDrawable(CURRENT_LIST);
-                } else
-                {
-                    setChangeButtonDrawable(CURRENT_MAP);
-                }
-                //  ((MapActivity) getActivity()).onChangeButtonClicked(currentListTypeGetter.getCurrentListType());
+                ((MapActivity) getActivity()).changeMapOrList(currentListTypeGetter.getCurrentListType());
             }
         });
 
@@ -131,20 +125,24 @@ public class SearchResultHeaderFragment extends Fragment
         super.onResume();
     }
 
-    public void setSearchWord(String searchWord)
+    public void setInitialData(Bundle bundle)
     {
-        this.searchWord = searchWord;
+        if (!bundle.isEmpty())
+        {
+            LocalApiPlaceParameter parameter = bundle.getParcelable("parameter");
+            searchWord = parameter.getQuery();
+        }
     }
 
-    public void setChangeButtonDrawable(int state)
+    public void setChangeButtonDrawable()
     {
-        if (state == CURRENT_MAP)
+        if (SearchResultController.isShowList)
         {
-            changeButton.setImageDrawable(getResources().getDrawable(R.drawable.map_icon, null));
+            // Map으로 전환할때
+            changeButton.setImageDrawable(getResources().getDrawable(R.drawable.list_icon, null));
         } else
         {
-            // list
-            changeButton.setImageDrawable(getResources().getDrawable(R.drawable.list_icon, null));
+            changeButton.setImageDrawable(getResources().getDrawable(R.drawable.map_icon, null));
         }
     }
 }

@@ -34,27 +34,38 @@ import net.daum.mf.map.api.MapPoint;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class SearchResultFragment extends Fragment
 {
+    /*
+    스크롤 시에 추가 데이터를 가져오는 코드 보완 필요(데이터 불러오는데에 오류있음)
+    map으로 갔다가 돌아올때 정확도/거리순 스피너가 초기화되어 있음
+    viewpager의 페이지 수가 정확하지 않음
+     */
     public static final String TAG = "SearchResult Fragment";
     private static SearchResultFragment instance;
+
+    public static boolean isFirstCreated = true;
+    public static boolean isReStarted = false;
 
     private ViewPager2 viewPager2;
     private SearchResultViewPagerAdapter searchResultViewPagerAdapter;
     private TextView rescanMapCenter;
     private TextView rescanMyLocCenter;
-    private LocalApiPlaceParameter parameter;
     private LocationManager locationManager;
     private Spinner sortSpinner;
-
+    private SpinnerAdapter adapter;
     private ViewPagerIndicator viewPagerIndicator;
     private int indicatorLength;
+
+    public static final int SORT_ACCURACY = 0;
+    public static final int SORT_DISTANCE = 1;
+    public static int SELECTED_SORT = SORT_ACCURACY;
 
     private OnPageCallback onPageCallback;
 
     private MapController.OnDownloadListener onDownloadListener;
-
 
     public interface OnControlViewPagerAdapter
     {
@@ -73,20 +84,26 @@ public class SearchResultFragment extends Fragment
     public SearchResultFragment(Activity activity)
     {
         onDownloadListener = (MapController.OnDownloadListener) activity;
+        List<String> sortList = new ArrayList<>();
+        sortList.add(SORT_ACCURACY, "정확도순");
+        sortList.add(SORT_DISTANCE, "거리순");
+        adapter = new ArrayAdapter<>(activity, android.R.layout.simple_spinner_dropdown_item, sortList);
     }
 
     public void setInitialData(Bundle bundle)
     {
         if (!bundle.isEmpty())
         {
-            parameter = bundle.getParcelable("parameter");
         }
     }
 
-    public void setDownloadedData(LocalApiPlaceParameter parameter, LocationSearchResult locationSearchResult)
+    public void clearHolderSparseArr()
     {
-        this.parameter = parameter;
+        searchResultViewPagerAdapter.clearHolderSparseArr();
+    }
 
+    public void setDownloadedData(LocationSearchResult locationSearchResult)
+    {
         List<Integer> dataTypes = locationSearchResult.getResultTypes();
         indicatorLength = 0;
 
@@ -105,14 +122,15 @@ public class SearchResultFragment extends Fragment
         }
 
         viewPagerIndicator.createDot(0, indicatorLength);
-        searchResultViewPagerAdapter.setData(parameter, locationSearchResult);
+        searchResultViewPagerAdapter.setData(locationSearchResult);
         searchResultViewPagerAdapter.notifyDataSetChanged();
+        // 리사이클러뷰 갱신이 안되는 오류
     }
 
-    public void setDownloadedExtraData(LocalApiPlaceParameter parameter, int type, LocationSearchResult locationSearchResult)
+
+    public void setDownloadedExtraData(int type, LocationSearchResult locationSearchResult)
     {
-        this.parameter = parameter;
-        searchResultViewPagerAdapter.addExtraData(parameter, type, locationSearchResult);
+        searchResultViewPagerAdapter.addExtraData(type, locationSearchResult);
         searchResultViewPagerAdapter.notifyDataSetChanged();
     }
 
@@ -121,12 +139,12 @@ public class SearchResultFragment extends Fragment
         @Override
         public void onLocationChanged(Location location)
         {
-            parameter.setX(location.getLongitude());
-            parameter.setY(location.getLatitude());
-            parameter.setPage("1");
+            SearchFragment.parameter.setX(location.getLongitude());
+            SearchFragment.parameter.setY(location.getLatitude());
+            SearchFragment.parameter.setPage("1");
             // 자원해제
             locationManager.removeUpdates(locationListener);
-            onDownloadListener.requestData(parameter, MapController.TYPE_NOT, TAG);
+            onDownloadListener.requestData(MapController.TYPE_NOT, TAG);
         }
 
         @Override
@@ -177,28 +195,30 @@ public class SearchResultFragment extends Fragment
         viewPagerIndicator = (ViewPagerIndicator) view.findViewById(R.id.search_result_view_pager_indicator);
         sortSpinner = (Spinner) view.findViewById(R.id.search_sort_spinner);
 
-
         searchResultViewPagerAdapter = new SearchResultViewPagerAdapter(getActivity());
-
-        viewPager2.setAdapter(searchResultViewPagerAdapter);
-
         onPageCallback = new OnPageCallback();
+        sortSpinner.setOnItemSelectedListener(onItemSelectedListener);
+        sortSpinner.setAdapter(adapter);
+        viewPager2.setAdapter(searchResultViewPagerAdapter);
         viewPager2.registerOnPageChangeCallback(onPageCallback);
 
-        onDownloadListener.requestData(parameter, MapController.TYPE_NOT, TAG);
+        if (isFirstCreated)
+        {
+            onDownloadListener.requestData(MapController.TYPE_NOT, TAG);
+            isFirstCreated = false;
+        }
 
         rescanMapCenter.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view)
             {
-                MapPoint.GeoCoordinate mapPoint = ((MapActivity) getActivity()).getMapCenterPoint();
+                MapPoint.GeoCoordinate currentMapPoint = MapFragment.currentMapPoint.getMapPointGeoCoord();
+                SearchFragment.parameter.setX(currentMapPoint.longitude);
+                SearchFragment.parameter.setY(currentMapPoint.latitude);
+                SearchFragment.parameter.setPage("1");
 
-                parameter.setX(mapPoint.longitude);
-                parameter.setY(mapPoint.latitude);
-                parameter.setPage("1");
-
-                onDownloadListener.requestData(parameter, MapController.TYPE_NOT, TAG);
+                onDownloadListener.requestData(MapController.TYPE_NOT, TAG);
             }
         });
 
@@ -226,7 +246,6 @@ public class SearchResultFragment extends Fragment
     @Override
     public void onStart()
     {
-        setSortSpinner();
         super.onStart();
     }
 
@@ -254,49 +273,52 @@ public class SearchResultFragment extends Fragment
         return searchResultViewPagerAdapter.getCurrentListType(onPageCallback.finalPosition);
     }
 
-    private void setSortSpinner()
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState)
     {
-        List<String> sortList = new ArrayList<>();
-        sortList.add("정확도순");
-        sortList.add("거리순");
-
-        SpinnerAdapter adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_dropdown_item, sortList);
-        sortSpinner.setAdapter(adapter);
-
-        sortSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
-        {
-            boolean isInitializing = true;
-
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l)
-            {
-                if (isInitializing)
-                {
-                    isInitializing = false;
-                    return;
-                }
-
-                switch (i)
-                {
-                    case 0:
-                        parameter.setSort(LocalApiPlaceParameter.SORT_ACCURACY);
-                        break;
-                    case 1:
-                        parameter.setSort(LocalApiPlaceParameter.SORT_DISTANCE);
-                        break;
-                }
-                parameter.setPage("1");
-
-                onDownloadListener.requestData(parameter, MapController.TYPE_NOT, TAG);
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView)
-            {
-
-            }
-        });
+        super.onSaveInstanceState(outState);
     }
+
+    private final AdapterView.OnItemSelectedListener onItemSelectedListener = new AdapterView.OnItemSelectedListener()
+    {
+        boolean isInitializing = true;
+
+        @Override
+        public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l)
+        {
+            // 프래그먼트 재 실행 시에 발생하는 문제 수정 필요
+            if (isInitializing)
+            {
+                isInitializing = false;
+                sortSpinner.setSelection(SELECTED_SORT);
+                return;
+            }
+            if (isReStarted)
+            {
+                isReStarted = false;
+                return;
+            }
+            SELECTED_SORT = i;
+
+            switch (i)
+            {
+                case SORT_ACCURACY:
+                    SearchFragment.parameter.setSort(LocalApiPlaceParameter.SORT_ACCURACY);
+                    break;
+                case SORT_DISTANCE:
+                    SearchFragment.parameter.setSort(LocalApiPlaceParameter.SORT_DISTANCE);
+                    break;
+            }
+            SearchFragment.parameter.setPage("1");
+            onDownloadListener.requestData(MapController.TYPE_NOT, TAG);
+        }
+
+        @Override
+        public void onNothingSelected(AdapterView<?> adapterView)
+        {
+
+        }
+    };
 
 
     class OnPageCallback extends ViewPager2.OnPageChangeCallback

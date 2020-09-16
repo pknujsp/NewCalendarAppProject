@@ -34,7 +34,6 @@ public class MapController
 
     private int calledDownloadTotalCount = 0;
     private String fragmentTag;
-    private LocalApiPlaceParameter parameter;
     private int dataType = TYPE_NOT;
 
     private OnDownloadListener onDownloadListener;
@@ -47,9 +46,9 @@ public class MapController
 
     public interface OnDownloadListener
     {
-        void onDownloadedData(LocalApiPlaceParameter parameter, int dataType, String fragmentTag, LocationSearchResult locationSearchResult);
+        void onDownloadedData(int dataType, String fragmentTag, LocationSearchResult locationSearchResult);
 
-        void requestData(LocalApiPlaceParameter parameter, int dataType, String fragmentTag);
+        void requestData(int dataType, String fragmentTag);
     }
 
     @SuppressLint("HandlerLeak")
@@ -91,14 +90,16 @@ public class MapController
             if (totalCallCount == calledDownloadTotalCount)
             {
                 locationSearchResult.setDownloadedDate(new Date(System.currentTimeMillis()));
+                locationSearchResult.setResultNum();
                 try
                 {
-                    onDownloadListener.onDownloadedData((LocalApiPlaceParameter) parameter.clone(), dataType, fragmentTag, (LocationSearchResult) locationSearchResult.clone());
+                    onDownloadListener.onDownloadedData(dataType, fragmentTag, (LocationSearchResult) locationSearchResult.clone());
                 } catch (CloneNotSupportedException e)
                 {
                     e.printStackTrace();
                 }
 
+                locationSearchResult = null;
                 dataType = TYPE_NOT;
                 calledDownloadTotalCount = 0;
                 totalCallCount = 0;
@@ -106,12 +107,12 @@ public class MapController
         }
     };
 
-    public void searchAddress(LocalApiPlaceParameter parameter)
+    public void searchAddress()
     {
         Querys querys = HttpCommunicationClient.getApiService();
         Map<String, String> queryMap = new HashMap<>();
-        queryMap.put("query", parameter.getQuery());
-        queryMap.put("page", parameter.getPage());
+        queryMap.put("query", SearchFragment.parameter.getQuery());
+        queryMap.put("page", SearchFragment.parameter.getPage());
         queryMap.put("AddressSize", "15");
         Call<AddressResponse> call = querys.getAddress(queryMap);
 
@@ -146,10 +147,10 @@ public class MapController
         });
     }
 
-    public void searchPlaceKeyWord(LocalApiPlaceParameter parameter)
+    public void searchPlaceKeyWord()
     {
         Querys querys = HttpCommunicationClient.getApiService();
-        Map<String, String> queryMap = parameter.getParameterMap();
+        Map<String, String> queryMap = SearchFragment.parameter.getParameterMap();
         Call<PlaceKeyword> call = querys.getPlaceKeyword(queryMap);
 
         call.enqueue(new Callback<PlaceKeyword>()
@@ -183,10 +184,10 @@ public class MapController
         });
     }
 
-    public void searchPlaceCategory(LocalApiPlaceParameter parameter)
+    public void searchPlaceCategory()
     {
         Querys querys = HttpCommunicationClient.getApiService();
-        Map<String, String> queryMap = parameter.getParameterMap();
+        Map<String, String> queryMap = SearchFragment.parameter.getParameterMap();
         Call<PlaceCategory> call = querys.getPlaceCategory(queryMap);
 
         call.enqueue(new Callback<PlaceCategory>()
@@ -221,10 +222,10 @@ public class MapController
         });
     }
 
-    public void getCoordToAddress(LocalApiPlaceParameter parameter)
+    public void getCoordToAddress()
     {
         Querys querys = HttpCommunicationClient.getApiService();
-        Map<String, String> queryMap = parameter.getParameterMap();
+        Map<String, String> queryMap = SearchFragment.parameter.getParameterMap();
         Call<CoordToAddress> call = querys.getCoordToAddress(queryMap);
 
         call.enqueue(new Callback<CoordToAddress>()
@@ -258,49 +259,48 @@ public class MapController
         });
     }
 
-    public void selectLocation(LocalApiPlaceParameter parameter, int dataType, String fragmentTag)
+    public void selectLocation(int dataType, String fragmentTag)
     {
         // 스크롤할때 추가 데이터를 받아옴, 선택된 위치의 정보를 가져옴
-        this.parameter = parameter;
         this.dataType = dataType;
         this.fragmentTag = fragmentTag;
 
-        if (dataType != TYPE_NOT)
+        if (dataType == TYPE_NOT)
+        {
+            String categoryName = getCategoryName(SearchFragment.parameter.getQuery());
+
+            if (categoryName != null)
+            {
+                calledDownloadTotalCount = 1;
+                SearchFragment.parameter.setCategoryGroupCode(categoryName);
+                searchPlaceCategory();
+            } else
+            {
+                // 카테고리 검색
+                calledDownloadTotalCount = 2;
+                searchAddress();
+                searchPlaceKeyWord();
+            }
+        } else
         {
             calledDownloadTotalCount = 1;
 
             switch (dataType)
             {
                 case TYPE_ADDRESS:
-                    searchAddress(parameter);
+                    searchAddress();
                     break;
                 case TYPE_PLACE_CATEGORY:
-                    searchPlaceCategory(parameter);
+                    searchPlaceCategory();
                     break;
                 case TYPE_PLACE_KEYWORD:
-                    searchPlaceKeyWord(parameter);
+                    searchPlaceKeyWord();
                     break;
                 case TYPE_COORD_TO_ADDRESS:
-                    getCoordToAddress(parameter);
+                    getCoordToAddress();
                     break;
             }
             return;
-        } else
-        {
-            String categoryName = getCategoryName(parameter.getQuery());
-
-            if (categoryName != null)
-            {
-                calledDownloadTotalCount = 1;
-                parameter.setCategoryGroupCode(categoryName);
-                searchPlaceCategory(parameter);
-            } else
-            {
-                // 카테고리 검색
-                calledDownloadTotalCount = 2;
-                searchAddress(parameter);
-                searchPlaceKeyWord(parameter);
-            }
         }
     }
 
@@ -317,11 +317,5 @@ public class MapController
         {
             return null;
         }
-    }
-
-
-    public LocalApiPlaceParameter getParameter()
-    {
-        return parameter;
     }
 }

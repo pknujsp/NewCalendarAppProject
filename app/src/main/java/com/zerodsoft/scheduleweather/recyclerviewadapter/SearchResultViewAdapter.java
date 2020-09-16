@@ -35,7 +35,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
     private List<PlaceCategoryDocuments> placeCategoryList = null;
 
     private int dataType;
-    private Activity context;
+    private Context context;
 
     private int currentPage;
     private boolean isEnd;
@@ -52,7 +52,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
 
     public SearchResultViewAdapter(Activity activity)
     {
-        this.context = activity;
+        this.context = activity.getApplicationContext();
         this.onItemSelectedListener = (OnItemSelectedListener) activity;
         this.currentPage = 1;
     }
@@ -69,6 +69,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
         totalCount = locationSearchResult.getAddressResponse().getAddressResponseMeta().getTotalCount();
         pageableCount = locationSearchResult.getAddressResponse().getAddressResponseMeta().getPageableCount();
         isEnd = locationSearchResult.getAddressResponse().getAddressResponseMeta().isEnd();
+        currentPage = 1;
     }
 
     public void setPlaceKeywordList(LocationSearchResult locationSearchResult)
@@ -78,19 +79,22 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
         totalCount = locationSearchResult.getPlaceKeywordResponse().getPlaceKeywordMeta().getTotalCount();
         pageableCount = locationSearchResult.getPlaceKeywordResponse().getPlaceKeywordMeta().getPageableCount();
         isEnd = locationSearchResult.getPlaceKeywordResponse().getPlaceKeywordMeta().isEnd();
+        currentPage = 1;
     }
 
     public void setPlaceCategoryList(LocationSearchResult locationSearchResult)
     {
         placeCategoryList = locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments();
-        dataType = MapController.TYPE_PLACE_KEYWORD;
+        dataType = MapController.TYPE_PLACE_CATEGORY;
         totalCount = locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryMeta().getTotalCount();
         pageableCount = locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryMeta().getPageableCount();
         isEnd = locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryMeta().isEnd();
+        currentPage = 1;
     }
 
     public void addAddressData(LocationSearchResult locationSearchResult)
     {
+        currentPage++;
         isEnd = locationSearchResult.getAddressResponse().getAddressResponseMeta().isEnd();
         for (int index = 0; index < locationSearchResult.getAddressResponse().getAddressResponseDocumentsList().size(); index++)
         {
@@ -100,6 +104,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
 
     public void addPlaceKeywordData(LocationSearchResult locationSearchResult)
     {
+        currentPage++;
         isEnd = locationSearchResult.getPlaceKeywordResponse().getPlaceKeywordMeta().isEnd();
         for (int index = 0; index < locationSearchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().size(); index++)
         {
@@ -109,6 +114,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
 
     public void addPlaceCategoryData(LocationSearchResult locationSearchResult)
     {
+        currentPage++;
         isEnd = locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryMeta().isEnd();
         for (int index = 0; index < locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().size(); index++)
         {
@@ -119,11 +125,6 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
     public int getDataType()
     {
         return dataType;
-    }
-
-    public void setCurrentPage(int currentPage)
-    {
-        this.currentPage = currentPage;
     }
 
     public int getCurrentPage()
@@ -140,8 +141,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
     @Override
     public SearchResultViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType)
     {
-        Context context = parent.getContext();
-        LayoutInflater layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        LayoutInflater layoutInflater = (LayoutInflater) parent.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View view = layoutInflater.inflate(R.layout.search_recycler_view_item, parent, false);
         return new SearchResultViewHolder(view, dataType);
     }
@@ -152,7 +152,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
         switch (dataType)
         {
             case MapController.TYPE_ADDRESS:
-                holder.onBindAddress(addressList.get(position));
+                holder.onBindAddress(position);
                 holder.getAddressLayout().setOnClickListener(new View.OnClickListener()
                 {
                     @Override
@@ -164,7 +164,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
                 break;
 
             case MapController.TYPE_PLACE_KEYWORD:
-                holder.onBindPlaceKeyword(placeKeywordList.get(position));
+                holder.onBindPlaceKeyword(position);
                 holder.getPlaceLayout().setOnClickListener(new View.OnClickListener()
                 {
                     @Override
@@ -176,7 +176,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
                 break;
 
             case MapController.TYPE_PLACE_CATEGORY:
-                holder.onBindPlaceCategory(placeCategoryList.get(position));
+                holder.onBindPlaceCategory(position);
                 holder.getPlaceLayout().setOnClickListener(new View.OnClickListener()
                 {
                     @Override
@@ -220,6 +220,9 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
         private TextView placeAddressTextView;
         private TextView placeDistanceTextView;
 
+        private TextView addressListNumTextView;
+        private TextView placeListNumTextView;
+
         private Button choiceAddressButton;
         private Button choicePlaceButton;
 
@@ -247,6 +250,8 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
                     anotherTypeAddressTextView = (TextView) itemView.findViewById(R.id.search_another_type_address_textview);
                     choiceAddressButton = (Button) itemView.findViewById(R.id.choice_location_button);
                     choicePlaceButton = (Button) itemView.findViewById(R.id.choice_place_button);
+
+                    addressListNumTextView = (TextView) itemView.findViewById(R.id.search_address_list_number_textview);
                     break;
 
                 default:
@@ -260,40 +265,42 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
                     placeAddressTextView = (TextView) itemView.findViewById(R.id.search_place_addess_name_textview);
                     choicePlaceButton = (Button) itemView.findViewById(R.id.choice_place_button);
                     placeDistanceTextView = (TextView) itemView.findViewById(R.id.search_place_distance);
+                    placeListNumTextView = (TextView) itemView.findViewById(R.id.search_place_list_number_textview);
                     break;
             }
             setOnClickListenerButton();
         }
 
-        public void onBindAddress(AddressResponseDocuments data)
+        public void onBindAddress(int position)
         {
-            addressTextView.setText(data.getAddressName());
+            addressListNumTextView.setText(Integer.toString(position + 1));
+            addressTextView.setText(addressList.get(position).getAddressName());
 
-            addressName = data.getAddressName();
-            latitude = Double.toString(data.getY());
-            longitude = Double.toString(data.getX());
+            addressName = addressList.get(position).getAddressName();
+            latitude = Double.toString(addressList.get(position).getY());
+            longitude = Double.toString(addressList.get(position).getX());
 
-            switch (data.getAddressType())
+            switch (addressList.get(position).getAddressType())
             {
                 case AddressResponseDocuments.REGION:
                     //지명
                     anotherTypeTextView.setText(context.getString(R.string.region));
-                    anotherTypeAddressTextView.setText(data.getAddressResponseAddress().getAddressName());
+                    anotherTypeAddressTextView.setText(addressList.get(position).getAddressResponseAddress().getAddressName());
                     break;
                 case AddressResponseDocuments.REGION_ADDR:
                     //지명 주소
                     anotherTypeTextView.setText(context.getString(R.string.road_addr));
-                    anotherTypeAddressTextView.setText(data.getAddressResponseRoadAddress().getAddressName());
+                    anotherTypeAddressTextView.setText(addressList.get(position).getAddressResponseRoadAddress().getAddressName());
                     break;
                 case AddressResponseDocuments.ROAD:
                     //도로명
                     anotherTypeTextView.setText(context.getString(R.string.road));
-                    anotherTypeAddressTextView.setText(data.getAddressResponseRoadAddress().getAddressName());
+                    anotherTypeAddressTextView.setText(addressList.get(position).getAddressResponseRoadAddress().getAddressName());
                     break;
                 case AddressResponseDocuments.ROAD_ADDR:
                     //도로명 주소
                     anotherTypeTextView.setText(context.getString(R.string.region_addr));
-                    anotherTypeAddressTextView.setText(data.getAddressResponseAddress().getAddressName());
+                    anotherTypeAddressTextView.setText(addressList.get(position).getAddressResponseAddress().getAddressName());
                     break;
             }
         }
@@ -363,30 +370,32 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
             });
         }
 
-        public void onBindPlaceKeyword(PlaceKeywordDocuments data)
+        public void onBindPlaceKeyword(int position)
         {
-            placeNameTextView.setText(data.getPlaceName());
-            placeCategoryTextView.setText(data.getCategoryName());
-            placeAddressTextView.setText(data.getAddressName());
-            placeDistanceTextView.setText(data.getDistance() + "M");
+            placeListNumTextView.setText(Integer.toString(position + 1));
+            placeNameTextView.setText(placeKeywordList.get(position).getPlaceName());
+            placeCategoryTextView.setText(placeKeywordList.get(position).getCategoryName());
+            placeAddressTextView.setText(placeKeywordList.get(position).getAddressName());
+            placeDistanceTextView.setText(placeKeywordList.get(position).getDistance() + "M");
 
-            placeName = data.getPlaceName();
-            placeId = data.getId();
-            latitude = Double.toString(data.getY());
-            longitude = Double.toString(data.getX());
+            placeName = placeKeywordList.get(position).getPlaceName();
+            placeId = placeKeywordList.get(position).getId();
+            latitude = Double.toString(placeKeywordList.get(position).getY());
+            longitude = Double.toString(placeKeywordList.get(position).getX());
         }
 
-        public void onBindPlaceCategory(PlaceCategoryDocuments data)
+        public void onBindPlaceCategory(int position)
         {
-            placeNameTextView.setText(data.getPlaceName());
-            placeCategoryTextView.setText(data.getCategoryName());
-            placeAddressTextView.setText(data.getAddressName());
-            placeDistanceTextView.setText(data.getDistance() + "M");
+            placeListNumTextView.setText(Integer.toString(position + 1));
+            placeNameTextView.setText(placeCategoryList.get(position).getPlaceName());
+            placeCategoryTextView.setText(placeCategoryList.get(position).getCategoryName());
+            placeAddressTextView.setText(placeCategoryList.get(position).getAddressName());
+            placeDistanceTextView.setText(placeCategoryList.get(position).getDistance() + "M");
 
-            placeName = data.getPlaceName();
-            placeId = data.getId();
-            latitude = data.getY();
-            longitude = data.getX();
+            placeName = placeCategoryList.get(position).getPlaceName();
+            placeId = placeCategoryList.get(position).getId();
+            latitude = placeCategoryList.get(position).getY();
+            longitude = placeCategoryList.get(position).getX();
         }
 
         public LinearLayout getAddressLayout()
