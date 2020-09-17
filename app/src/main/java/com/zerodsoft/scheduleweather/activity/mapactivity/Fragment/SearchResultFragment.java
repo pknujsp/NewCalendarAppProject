@@ -46,9 +46,6 @@ public class SearchResultFragment extends Fragment
     public static final String TAG = "SearchResult Fragment";
     private static SearchResultFragment instance;
 
-    public static boolean isFirstCreated = true;
-    public static boolean isReStarted = false;
-
     private ViewPager2 viewPager2;
     private SearchResultViewPagerAdapter searchResultViewPagerAdapter;
     private TextView rescanMapCenter;
@@ -61,7 +58,7 @@ public class SearchResultFragment extends Fragment
 
     public static final int SORT_ACCURACY = 0;
     public static final int SORT_DISTANCE = 1;
-    public static int SELECTED_SORT = SORT_ACCURACY;
+    public int SELECTED_SORT = SORT_ACCURACY;
 
     private OnPageCallback onPageCallback;
 
@@ -102,9 +99,9 @@ public class SearchResultFragment extends Fragment
         searchResultViewPagerAdapter.clearHolderSparseArr();
     }
 
-    public void setDownloadedData(LocationSearchResult locationSearchResult)
+    public void setDownloadedData()
     {
-        List<Integer> dataTypes = locationSearchResult.getResultTypes();
+        List<Integer> dataTypes = MapActivity.searchResult.getResultTypes();
         indicatorLength = 0;
 
         for (int dataType : dataTypes)
@@ -122,15 +119,15 @@ public class SearchResultFragment extends Fragment
         }
 
         viewPagerIndicator.createDot(0, indicatorLength);
-        searchResultViewPagerAdapter.setData(locationSearchResult);
+        searchResultViewPagerAdapter.setData();
         searchResultViewPagerAdapter.notifyDataSetChanged();
         // 리사이클러뷰 갱신이 안되는 오류
     }
 
 
-    public void setDownloadedExtraData(int type, LocationSearchResult locationSearchResult)
+    public void setDownloadedExtraData(int type)
     {
-        searchResultViewPagerAdapter.addExtraData(type, locationSearchResult);
+        searchResultViewPagerAdapter.addExtraData(type);
         searchResultViewPagerAdapter.notifyDataSetChanged();
     }
 
@@ -139,9 +136,9 @@ public class SearchResultFragment extends Fragment
         @Override
         public void onLocationChanged(Location location)
         {
-            SearchFragment.parameter.setX(location.getLongitude());
-            SearchFragment.parameter.setY(location.getLatitude());
-            SearchFragment.parameter.setPage("1");
+            MapActivity.parameters.setX(location.getLongitude());
+            MapActivity.parameters.setY(location.getLatitude());
+            MapActivity.parameters.setPage("1");
             // 자원해제
             locationManager.removeUpdates(locationListener);
             onDownloadListener.requestData(MapController.TYPE_NOT, TAG);
@@ -202,21 +199,15 @@ public class SearchResultFragment extends Fragment
         viewPager2.setAdapter(searchResultViewPagerAdapter);
         viewPager2.registerOnPageChangeCallback(onPageCallback);
 
-        if (isFirstCreated)
-        {
-            onDownloadListener.requestData(MapController.TYPE_NOT, TAG);
-            isFirstCreated = false;
-        }
-
         rescanMapCenter.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view)
             {
                 MapPoint.GeoCoordinate currentMapPoint = MapFragment.currentMapPoint.getMapPointGeoCoord();
-                SearchFragment.parameter.setX(currentMapPoint.longitude);
-                SearchFragment.parameter.setY(currentMapPoint.latitude);
-                SearchFragment.parameter.setPage("1");
+                MapActivity.parameters.setX(currentMapPoint.longitude);
+                MapActivity.parameters.setY(currentMapPoint.latitude);
+                MapActivity.parameters.setPage("1");
 
                 onDownloadListener.requestData(MapController.TYPE_NOT, TAG);
             }
@@ -267,6 +258,12 @@ public class SearchResultFragment extends Fragment
         super.onStop();
     }
 
+    @Override
+    public void onDestroy()
+    {
+        super.onDestroy();
+    }
+
     public int getCurrentListType()
     {
         // header fragment에서 change 버튼 클릭 시 리스트의 타입을 가져오기 위해 사용
@@ -284,32 +281,21 @@ public class SearchResultFragment extends Fragment
         boolean isInitializing = true;
 
         @Override
-        public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l)
+        public void onItemSelected(AdapterView<?> adapterView, View view, int index, long l)
         {
             // 프래그먼트 재 실행 시에 발생하는 문제 수정 필요
-            if (isInitializing)
-            {
-                isInitializing = false;
-                sortSpinner.setSelection(SELECTED_SORT);
-                return;
-            }
-            if (isReStarted)
-            {
-                isReStarted = false;
-                return;
-            }
-            SELECTED_SORT = i;
+            SELECTED_SORT = index;
 
-            switch (i)
+            switch (index)
             {
                 case SORT_ACCURACY:
-                    SearchFragment.parameter.setSort(LocalApiPlaceParameter.SORT_ACCURACY);
+                    MapActivity.parameters.setSort(LocalApiPlaceParameter.SORT_ACCURACY);
                     break;
                 case SORT_DISTANCE:
-                    SearchFragment.parameter.setSort(LocalApiPlaceParameter.SORT_DISTANCE);
+                    MapActivity.parameters.setSort(LocalApiPlaceParameter.SORT_DISTANCE);
                     break;
             }
-            SearchFragment.parameter.setPage("1");
+            MapActivity.parameters.setPage("1");
             onDownloadListener.requestData(MapController.TYPE_NOT, TAG);
         }
 

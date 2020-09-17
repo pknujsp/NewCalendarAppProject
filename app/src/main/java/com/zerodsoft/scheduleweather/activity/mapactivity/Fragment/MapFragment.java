@@ -71,7 +71,6 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
 
     private AddressDTO selectedAddress;
     private PlaceDTO selectedPlace;
-    private LocationSearchResult locationSearchResult;
 
     private BottomSheetBehavior bottomSheetBehavior;
     private int selectedItemPosition;
@@ -105,21 +104,16 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
             if (selectedAddress != null)
             {
                 // 주소 검색 순서 : 좌표로 주소 변환
-                SearchFragment.parameter.setX(Double.parseDouble(selectedAddress.getLongitude())).setY(Double.parseDouble(selectedAddress.getLatitude()));
+                MapActivity.parameters.setX(Double.parseDouble(selectedAddress.getLongitude())).setY(Double.parseDouble(selectedAddress.getLatitude()));
                 onDownloadListener.requestData(MapController.TYPE_COORD_TO_ADDRESS, TAG);
             } else if (selectedPlace != null)
             {
                 // 장소 검색 순서 : 장소의 위경도 내 10M 반경에서 장소 이름 검색(여러개 나올 경우 장소ID와 일치하는 장소를 선택)
-                SearchFragment.parameter.setQuery(selectedPlace.getPlaceName()).setX(Double.parseDouble(selectedPlace.getLongitude())).setY(Double.parseDouble(selectedPlace.getLatitude()))
+                MapActivity.parameters.setQuery(selectedPlace.getPlaceName()).setX(Double.parseDouble(selectedPlace.getLongitude())).setY(Double.parseDouble(selectedPlace.getLatitude()))
                         .setRadius("10").setPage("1").setSort(LocalApiPlaceParameter.SORT_ACCURACY);
                 onDownloadListener.requestData(MapController.TYPE_PLACE_KEYWORD, TAG);
             }
         }
-    }
-
-    public void setSelectedLocationData(int dataType, LocationSearchResult locationSearchResult)
-    {
-        onChangeItems();
     }
 
     private final LocationListener locationListener = new LocationListener()
@@ -219,12 +213,12 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
                 switch (dataType)
                 {
                     case MapController.TYPE_ADDRESS:
-                        lon = locationSearchResult.getAddressResponse().getAddressResponseDocumentsList().get(selectedItemPosition).getX();
-                        lat = locationSearchResult.getAddressResponse().getAddressResponseDocumentsList().get(selectedItemPosition).getY();
+                        lon = MapActivity.searchResult.getAddressResponse().getAddressResponseDocumentsList().get(selectedItemPosition).getX();
+                        lat = MapActivity.searchResult.getAddressResponse().getAddressResponseDocumentsList().get(selectedItemPosition).getY();
                         lonLat = LonLatConverter.convertLonLat(lon, lat);
 
                         AddressDTO addressDTO = new AddressDTO();
-                        addressDTO.setAddressName(locationSearchResult.getAddressResponse().getAddressResponseDocumentsList().get(selectedItemPosition).getAddressName());
+                        addressDTO.setAddressName(MapActivity.searchResult.getAddressResponse().getAddressResponseDocumentsList().get(selectedItemPosition).getAddressName());
                         addressDTO.setLongitude(Double.toString(lon));
                         addressDTO.setLatitude(Double.toString(lat));
                         addressDTO.setWeatherX(Integer.toString(lonLat.getX()));
@@ -240,13 +234,13 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
                         break;
 
                     case MapController.TYPE_PLACE_KEYWORD:
-                        lon = locationSearchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().get(selectedItemPosition).getX();
-                        lat = locationSearchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().get(selectedItemPosition).getY();
+                        lon = MapActivity.searchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().get(selectedItemPosition).getX();
+                        lat = MapActivity.searchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().get(selectedItemPosition).getY();
                         lonLat = LonLatConverter.convertLonLat(lon, lat);
 
                         PlaceDTO placeDTOKeyword = new PlaceDTO();
-                        placeDTOKeyword.setPlaceId(locationSearchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().get(selectedItemPosition).getId());
-                        placeDTOKeyword.setPlaceName(locationSearchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().get(selectedItemPosition).getPlaceName());
+                        placeDTOKeyword.setPlaceId(MapActivity.searchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().get(selectedItemPosition).getId());
+                        placeDTOKeyword.setPlaceName(MapActivity.searchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().get(selectedItemPosition).getPlaceName());
                         placeDTOKeyword.setLongitude(Double.toString(lon));
                         placeDTOKeyword.setLatitude(Double.toString(lat));
                         placeDTOKeyword.setWeatherX(Integer.toString(lonLat.getX()));
@@ -262,15 +256,15 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
                         break;
 
                     case MapController.TYPE_PLACE_CATEGORY:
-                        lon = Double.valueOf(locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(selectedItemPosition).getX());
-                        lat = Double.valueOf(locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(selectedItemPosition).getY());
+                        lon = Double.valueOf(MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(selectedItemPosition).getX());
+                        lat = Double.valueOf(MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(selectedItemPosition).getY());
                         lonLat = LonLatConverter.convertLonLat(lon, lat);
 
                         PlaceDTO placeDTOCategory = new PlaceDTO();
-                        placeDTOCategory.setPlaceId(locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(selectedItemPosition).getId());
-                        placeDTOCategory.setPlaceName(locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(selectedItemPosition).getPlaceName());
-                        placeDTOCategory.setLongitude(locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(selectedItemPosition).getX());
-                        placeDTOCategory.setLatitude(locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(selectedItemPosition).getY());
+                        placeDTOCategory.setPlaceId(MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(selectedItemPosition).getId());
+                        placeDTOCategory.setPlaceName(MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(selectedItemPosition).getPlaceName());
+                        placeDTOCategory.setLongitude(MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(selectedItemPosition).getX());
+                        placeDTOCategory.setLatitude(MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(selectedItemPosition).getY());
                         placeDTOCategory.setWeatherX(Integer.toString(lonLat.getX()));
                         placeDTOCategory.setWeatherY(Integer.toString(lonLat.getY()));
 
@@ -426,34 +420,35 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     public void onStart()
     {
         bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
-
-        if (isMain)
-        {
-            // 메인 화면인 경우
-            binding.mapHeaderBar.setClickable(true);
-            isClickedListItem = false;
-            isClickedChangeButton = false;
-            binding.gpsButton.performClick();
-            removeAllPoiItems();
-            setZoomGpsButtonVisibility(View.VISIBLE);
-        } else
-        {
-            // 검색 후 아이템을 선택 또는 지도 버튼을 클릭한 경우
-            addPoiItems();
-            binding.mapHeaderBar.setClickable(false);
-
-            if (isClickedChangeButton)
-            {
-                mapView.fitMapViewAreaToShowAllPOIItems();
-            } else if (isClickedListItem)
-            {
-                onItemSelected();
-            } else if (isShowingPreviousItem)
-            {
-                //이전에 선택된 위치의 정보를 표시
-            }
-        }
+        binding.gpsButton.performClick();
         super.onStart();
+    }
+
+    public void setMain()
+    {
+        binding.mapHeaderBar.setClickable(true);
+        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+        isMain = true;
+        isClickedListItem = false;
+        isClickedChangeButton = false;
+        isShowingPreviousItem = false;
+        isClickedPOI = false;
+        isOpendPoiInfo = false;
+        clearData();
+    }
+
+    public void clickedMapButton()
+    {
+        // 검색 후 아이템을 선택 또는 지도 버튼을 클릭한 경우
+        addPoiItems();
+        binding.mapHeaderBar.setClickable(false);
+        mapView.fitMapViewAreaToShowAllPOIItems();
+    }
+
+    @Override
+    public void onResume()
+    {
+        super.onResume();
     }
 
     @Override
@@ -577,9 +572,12 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
 
     }
 
-    public void onItemSelected()
+    public void onItemSelected(int selectedItemPosition)
     {
         // 리스트에서 아이템을 선택하였을 때에 수행됨
+
+        binding.mapHeaderBar.setClickable(false);
+        this.selectedItemPosition = selectedItemPosition;
         onChangeItems();
         addPoiItems();
         mapView.selectPOIItem(mapView.getPOIItems()[selectedItemPosition], true);
@@ -590,20 +588,15 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
         mapView.setMapCenterPoint(currentMapPoint, true);
     }
 
-    public void setZoomGpsButtonVisibility(int value)
+    public void setZoomGpsButtonVisibility(int visibility)
     {
-        binding.zoomInButton.setVisibility(value);
-        binding.zoomOutButton.setVisibility(value);
-        binding.gpsButton.setVisibility(value);
+        binding.zoomInButton.setVisibility(visibility);
+        binding.zoomOutButton.setVisibility(visibility);
+        binding.gpsButton.setVisibility(visibility);
     }
 
 
-    public void setLocationSearchResult(LocationSearchResult locationSearchResult)
-    {
-        this.locationSearchResult = locationSearchResult;
-    }
-
-    public void addExtraData(LocationSearchResult newLocationSearchResult)
+    public void addExtraData()
     {
         /*
         if (newLocationSearchResult.getAddressResponse() != null)
@@ -648,21 +641,21 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
         int addressDataType = 0;
         removeAllPoiItems();
 
-        List<Integer> dataTypes = locationSearchResult.getResultTypes();
+        List<Integer> dataTypes = MapActivity.searchResult.getResultTypes();
         for (int dataType : dataTypes)
         {
             if (dataType == MapController.TYPE_PLACE_KEYWORD)
             {
                 placeDataType = dataType;
-                placeSize = locationSearchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().size();
+                placeSize = MapActivity.searchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().size();
             } else if (dataType == MapController.TYPE_PLACE_CATEGORY)
             {
                 placeDataType = dataType;
-                placeSize = locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().size();
+                placeSize = MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().size();
             } else if (dataType == MapController.TYPE_ADDRESS)
             {
                 addressDataType = dataType;
-                addressSize = locationSearchResult.getAddressResponse().getAddressResponseDocumentsList().size();
+                addressSize = MapActivity.searchResult.getAddressResponse().getAddressResponseDocumentsList().size();
             } else if (dataType == MapController.TYPE_COORD_TO_ADDRESS)
             {
                 addressDataType = dataType;
@@ -681,14 +674,14 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
 
                 if (placeDataType == MapController.TYPE_PLACE_KEYWORD)
                 {
-                    placePoiItems[i].setItemName(locationSearchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().get(i).getPlaceName());
-                    mapPoint = MapPoint.mapPointWithGeoCoord(locationSearchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().get(i).getY(),
-                            locationSearchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().get(i).getX());
+                    placePoiItems[i].setItemName(MapActivity.searchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().get(i).getPlaceName());
+                    mapPoint = MapPoint.mapPointWithGeoCoord(MapActivity.searchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().get(i).getY(),
+                            MapActivity.searchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().get(i).getX());
                 } else if (placeDataType == MapController.TYPE_PLACE_CATEGORY)
                 {
-                    placePoiItems[i].setItemName(locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(i).getPlaceName());
-                    mapPoint = MapPoint.mapPointWithGeoCoord(Double.valueOf(locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(i).getY()),
-                            Double.valueOf(locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(i).getX()));
+                    placePoiItems[i].setItemName(MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(i).getPlaceName());
+                    mapPoint = MapPoint.mapPointWithGeoCoord(Double.valueOf(MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(i).getY()),
+                            Double.valueOf(MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(i).getX()));
                 }
 
                 placePoiItems[i].setTag(i);
@@ -708,9 +701,9 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
 
                 if (addressDataType == MapController.TYPE_ADDRESS)
                 {
-                    addressPoiItems[i].setItemName(locationSearchResult.getAddressResponse().getAddressResponseDocumentsList().get(i).getAddressName());
-                    mapPoint = MapPoint.mapPointWithGeoCoord(locationSearchResult.getAddressResponse().getAddressResponseDocumentsList().get(i).getY(),
-                            locationSearchResult.getAddressResponse().getAddressResponseDocumentsList().get(i).getX());
+                    addressPoiItems[i].setItemName(MapActivity.searchResult.getAddressResponse().getAddressResponseDocumentsList().get(i).getAddressName());
+                    mapPoint = MapPoint.mapPointWithGeoCoord(MapActivity.searchResult.getAddressResponse().getAddressResponseDocumentsList().get(i).getY(),
+                            MapActivity.searchResult.getAddressResponse().getAddressResponseDocumentsList().get(i).getX());
                 } else if (addressDataType == MapController.TYPE_COORD_TO_ADDRESS)
                 {
                     addressPoiItems[i].setItemName(selectedAddress.getAddressName());
@@ -783,45 +776,45 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
         switch (dataType)
         {
             case MapController.TYPE_ADDRESS:
-                binding.selectedAddressNameTextview.setText(locationSearchResult.getAddressResponse().getAddressResponseDocumentsList().get(selectedItemPosition).getAddressName());
-                if (locationSearchResult.getAddressResponse().getAddressResponseDocumentsList().get(selectedItemPosition).getAddressTypeStr().equals("도로명"))
+                binding.selectedAddressNameTextview.setText(MapActivity.searchResult.getAddressResponse().getAddressResponseDocumentsList().get(selectedItemPosition).getAddressName());
+                if (MapActivity.searchResult.getAddressResponse().getAddressResponseDocumentsList().get(selectedItemPosition).getAddressTypeStr().equals("도로명"))
                 {
-                    binding.selectedAnotherAddressTextview.setText(locationSearchResult.getAddressResponse().getAddressResponseDocumentsList().get(selectedItemPosition).getAddressResponseRoadAddress().getAddressName());
+                    binding.selectedAnotherAddressTextview.setText(MapActivity.searchResult.getAddressResponse().getAddressResponseDocumentsList().get(selectedItemPosition).getAddressResponseRoadAddress().getAddressName());
                 } else
                 {
                     // 지번
-                    binding.selectedAnotherAddressTextview.setText(locationSearchResult.getAddressResponse().getAddressResponseDocumentsList().get(selectedItemPosition).getAddressResponseAddress().getAddressName());
+                    binding.selectedAnotherAddressTextview.setText(MapActivity.searchResult.getAddressResponse().getAddressResponseDocumentsList().get(selectedItemPosition).getAddressResponseAddress().getAddressName());
                 }
-                binding.selectedAnotherAddressTypeTextview.setText(locationSearchResult.getAddressResponse().getAddressResponseDocumentsList().get(selectedItemPosition).getAddressTypeStr());
+                binding.selectedAnotherAddressTypeTextview.setText(MapActivity.searchResult.getAddressResponse().getAddressResponseDocumentsList().get(selectedItemPosition).getAddressTypeStr());
                 break;
 
             case MapController.TYPE_PLACE_KEYWORD:
-                binding.selectedPlaceAddressTextview.setText(locationSearchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().get(selectedItemPosition).getAddressName());
-                binding.selectedPlaceCategoryTextview.setText(locationSearchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().get(selectedItemPosition).getCategoryName());
-                binding.selectedPlaceDescriptionTextview.setText(locationSearchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().get(selectedItemPosition).getCategoryGroupName());
-                binding.selectedPlaceNameTextview.setText(locationSearchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().get(selectedItemPosition).getPlaceName());
+                binding.selectedPlaceAddressTextview.setText(MapActivity.searchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().get(selectedItemPosition).getAddressName());
+                binding.selectedPlaceCategoryTextview.setText(MapActivity.searchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().get(selectedItemPosition).getCategoryName());
+                binding.selectedPlaceDescriptionTextview.setText(MapActivity.searchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().get(selectedItemPosition).getCategoryGroupName());
+                binding.selectedPlaceNameTextview.setText(MapActivity.searchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().get(selectedItemPosition).getPlaceName());
                 break;
 
             case MapController.TYPE_PLACE_CATEGORY:
-                binding.selectedPlaceAddressTextview.setText(locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(selectedItemPosition).getAddressName());
-                binding.selectedPlaceCategoryTextview.setText(locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(selectedItemPosition).getCategoryName());
-                binding.selectedPlaceDescriptionTextview.setText(locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(selectedItemPosition).getCategoryGroupName());
-                binding.selectedPlaceNameTextview.setText(locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(selectedItemPosition).getPlaceName());
+                binding.selectedPlaceAddressTextview.setText(MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(selectedItemPosition).getAddressName());
+                binding.selectedPlaceCategoryTextview.setText(MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(selectedItemPosition).getCategoryName());
+                binding.selectedPlaceDescriptionTextview.setText(MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(selectedItemPosition).getCategoryGroupName());
+                binding.selectedPlaceNameTextview.setText(MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(selectedItemPosition).getPlaceName());
                 break;
 
             case MapController.TYPE_COORD_TO_ADDRESS:
-                if (locationSearchResult.getCoordToAddressResponse().getCoordToAddressDocuments().get(selectedItemPosition).getCoordToAddressAddress() != null)
+                if (MapActivity.searchResult.getCoordToAddressResponse().getCoordToAddressDocuments().get(selectedItemPosition).getCoordToAddressAddress() != null)
                 {
                     // 지번
-                    binding.selectedAddressNameTextview.setText(locationSearchResult.getCoordToAddressResponse().getCoordToAddressDocuments().get(selectedItemPosition).getCoordToAddressAddress().getAddressName());
-                    binding.selectedAnotherAddressTextview.setText(locationSearchResult.getCoordToAddressResponse().getCoordToAddressDocuments().get(selectedItemPosition).getCoordToAddressAddress().getMainAddressNo());
-                    binding.selectedAnotherAddressTypeTextview.setText(locationSearchResult.getCoordToAddressResponse().getCoordToAddressDocuments().get(selectedItemPosition).getCoordToAddressAddress().getRegion1DepthName());
+                    binding.selectedAddressNameTextview.setText(MapActivity.searchResult.getCoordToAddressResponse().getCoordToAddressDocuments().get(selectedItemPosition).getCoordToAddressAddress().getAddressName());
+                    binding.selectedAnotherAddressTextview.setText(MapActivity.searchResult.getCoordToAddressResponse().getCoordToAddressDocuments().get(selectedItemPosition).getCoordToAddressAddress().getMainAddressNo());
+                    binding.selectedAnotherAddressTypeTextview.setText(MapActivity.searchResult.getCoordToAddressResponse().getCoordToAddressDocuments().get(selectedItemPosition).getCoordToAddressAddress().getRegion1DepthName());
                 } else
                 {
                     // 도로명
-                    binding.selectedAddressNameTextview.setText(locationSearchResult.getCoordToAddressResponse().getCoordToAddressDocuments().get(selectedItemPosition).getCoordToAddressRoadAddress().getAddressName());
-                    binding.selectedAnotherAddressTextview.setText(locationSearchResult.getCoordToAddressResponse().getCoordToAddressDocuments().get(selectedItemPosition).getCoordToAddressRoadAddress().getRoadName());
-                    binding.selectedAnotherAddressTypeTextview.setText(locationSearchResult.getCoordToAddressResponse().getCoordToAddressDocuments().get(selectedItemPosition).getCoordToAddressRoadAddress().getRegion1DepthName());
+                    binding.selectedAddressNameTextview.setText(MapActivity.searchResult.getCoordToAddressResponse().getCoordToAddressDocuments().get(selectedItemPosition).getCoordToAddressRoadAddress().getAddressName());
+                    binding.selectedAnotherAddressTextview.setText(MapActivity.searchResult.getCoordToAddressResponse().getCoordToAddressDocuments().get(selectedItemPosition).getCoordToAddressRoadAddress().getRoadName());
+                    binding.selectedAnotherAddressTypeTextview.setText(MapActivity.searchResult.getCoordToAddressResponse().getCoordToAddressDocuments().get(selectedItemPosition).getCoordToAddressRoadAddress().getRegion1DepthName());
                 }
                 break;
         }
@@ -832,16 +825,16 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
         switch (dataType)
         {
             case MapController.TYPE_ADDRESS:
-                itemPositionMax = locationSearchResult.getAddressResponse().getAddressResponseDocumentsList().size() - 1;
+                itemPositionMax = MapActivity.searchResult.getAddressResponse().getAddressResponseDocumentsList().size() - 1;
                 break;
             case MapController.TYPE_PLACE_KEYWORD:
-                itemPositionMax = locationSearchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().size() - 1;
+                itemPositionMax = MapActivity.searchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().size() - 1;
                 break;
             case MapController.TYPE_PLACE_CATEGORY:
-                itemPositionMax = locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().size() - 1;
+                itemPositionMax = MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().size() - 1;
                 break;
             case MapController.TYPE_COORD_TO_ADDRESS:
-                itemPositionMax = locationSearchResult.getCoordToAddressResponse().getCoordToAddressDocuments().size() - 1;
+                itemPositionMax = MapActivity.searchResult.getCoordToAddressResponse().getCoordToAddressDocuments().size() - 1;
                 break;
         }
     }
@@ -867,6 +860,11 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     {
         this.selectedItemPosition = selectedItemPosition;
         return this;
+    }
+
+    public void clearData()
+    {
+        removeAllPoiItems();
     }
 
 }

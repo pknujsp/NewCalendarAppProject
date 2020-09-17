@@ -23,12 +23,10 @@ import net.daum.mf.map.api.MapPoint;
 public class SearchFragment extends Fragment implements SearchCategoryViewAdapter.OnCategoryClickListener, MapActivity.OnBackPressedListener
 {
     public static final String TAG = "Search Fragment";
-    public static final LocalApiPlaceParameter parameter = new LocalApiPlaceParameter();
-    // localapi 파라미터 객체를 전달하지 않고 static으로 만들어 편하게 사용
+
     private static SearchFragment instance;
     private FragmentSearchBinding binding;
     private SearchCategoryViewAdapter searchCategoryViewAdapter;
-
     private MapController.OnDownloadListener onDownloadListener;
 
     public SearchFragment(Activity activity)
@@ -73,7 +71,7 @@ public class SearchFragment extends Fragment implements SearchCategoryViewAdapte
             {
                 MapPoint.GeoCoordinate currentMapPoint = MapFragment.currentMapPoint.getMapPointGeoCoord();
 
-                parameter.setQuery(binding.searchEdittext.getText().toString()).setX(currentMapPoint.longitude).setY(currentMapPoint.latitude)
+                MapActivity.parameters.setQuery(binding.searchEdittext.getText().toString()).setX(currentMapPoint.longitude).setY(currentMapPoint.latitude)
                         .setSort(LocalApiPlaceParameter.SORT_ACCURACY).setPage("1");
                 ((MapActivity) getActivity()).onFragmentChanged(SearchResultFragment.TAG, new Bundle());
             }
@@ -120,9 +118,8 @@ public class SearchFragment extends Fragment implements SearchCategoryViewAdapte
     public void onBackPressed()
     {
         binding.searchEdittext.setText("");
-        MapFragment.isMain = true;
-
-        ((MapActivity) getActivity()).onFragmentChanged(MapFragment.TAG, new Bundle());
+        MapFragment.getInstance(getActivity()).setMain();
+        getActivity().getSupportFragmentManager().popBackStackImmediate();
     }
 
     @Override
@@ -130,7 +127,7 @@ public class SearchFragment extends Fragment implements SearchCategoryViewAdapte
     {
         MapPoint.GeoCoordinate currentMapPoint = MapFragment.currentMapPoint.getMapPointGeoCoord();
 
-        parameter.setQuery(description).setX(currentMapPoint.longitude).setY(currentMapPoint.latitude)
+        MapActivity.parameters.setQuery(description).setX(currentMapPoint.longitude).setY(currentMapPoint.latitude)
                 .setSort(LocalApiPlaceParameter.SORT_ACCURACY).setPage("1");
         ((MapActivity) getActivity()).onFragmentChanged(SearchResultFragment.TAG, new Bundle());
     }

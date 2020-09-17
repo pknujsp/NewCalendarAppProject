@@ -16,6 +16,7 @@ import com.zerodsoft.scheduleweather.activity.mapactivity.Fragment.SearchFragmen
 import com.zerodsoft.scheduleweather.activity.mapactivity.Fragment.SearchResultController;
 import com.zerodsoft.scheduleweather.activity.mapactivity.Fragment.SearchResultFragment;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.activity.mapactivity.Fragment.SearchResultHeaderFragment;
 import com.zerodsoft.scheduleweather.recyclerviewadapter.SearchResultViewAdapter;
 import com.zerodsoft.scheduleweather.recyclerviewadapter.SearchResultViewPagerAdapter;
 import com.zerodsoft.scheduleweather.retrofit.LocalApiPlaceParameter;
@@ -35,6 +36,9 @@ public class MapActivity extends AppCompatActivity implements MapController.OnDo
     private final int fragmentViewId;
     private MapController mapController;
 
+    public static final LocalApiPlaceParameter parameters = new LocalApiPlaceParameter();
+    public static LocationSearchResult searchResult = new LocationSearchResult();
+
     public MapActivity()
     {
         fragmentViewId = R.id.map_activity_fragment_layout;
@@ -42,17 +46,16 @@ public class MapActivity extends AppCompatActivity implements MapController.OnDo
     }
 
     @Override
-    public void onDownloadedData(int dataType, String fragmentTag, LocationSearchResult locationSearchResult)
+    public void onDownloadedData(int dataType, String fragmentTag)
     {
         // 다운로드된 데이터를 전달
         if (fragmentTag.equals(SearchResultFragment.TAG))
         {
             // 초기 검색 결과
             SearchResultController searchResultController = SearchResultController.getInstance(this);
-            searchResultController.setDownloadedData(locationSearchResult);
+            searchResultController.setDownloadedData();
 
             MapFragment mapFragment = MapFragment.getInstance(this);
-            mapFragment.setLocationSearchResult(locationSearchResult);
             mapFragment.setPoiItems();
 
         } else if (fragmentTag.equals(SearchResultViewPagerAdapter.TAG))
@@ -61,21 +64,20 @@ public class MapActivity extends AppCompatActivity implements MapController.OnDo
             {
                 // 스크롤하면서 추가 데이터가 필요한 경우
                 SearchResultController searchResultController = SearchResultController.getInstance(this);
-                searchResultController.setDownloadedExtraData(dataType, locationSearchResult);
+                searchResultController.setDownloadedExtraData(dataType);
             } else
             {
                 // 스피너 사용, 내 위치/지도 중심으로 변경한 경우
 
             }
             MapFragment mapFragment = MapFragment.getInstance(this);
-            mapFragment.addExtraData(locationSearchResult);
+            mapFragment.addExtraData();
             mapFragment.setPoiItems();
 
         } else if (fragmentTag.equals(MapFragment.TAG))
         {
             // 지정된 주소 검색 완료
             MapFragment mapFragment = MapFragment.getInstance(this);
-            mapFragment.setSelectedLocationData(dataType, locationSearchResult);
         }
     }
 
@@ -99,11 +101,13 @@ public class MapActivity extends AppCompatActivity implements MapController.OnDo
         searchResultController.setChangeButtonDrawable();
 
         MapFragment mapFragment = MapFragment.getInstance(this);
-        mapFragment.setSelectedItemPosition(position).setDataType(dataType);
+        mapFragment.setDataType(dataType).onItemSelected(position);
         MapFragment.isClickedListItem = true;
         MapFragment.isMain = false;
-        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_search_result_list_container, mapFragment).commit();
         SearchResultController.isShowList = false;
+
+        searchResultController.setVisibility(SearchResultFragment.TAG, View.GONE);
+        getSupportFragmentManager().beginTransaction().hide(SearchFragment.getInstance(this)).commit();
     }
 
     public interface OnBackPressedListener
@@ -168,17 +172,17 @@ public class MapActivity extends AppCompatActivity implements MapController.OnDo
         {
             MapFragment mapFragment = MapFragment.getInstance(this);
             mapFragment.setInitialData(bundle);
-            fragmentTransaction.replace(fragmentViewId, mapFragment);
+            fragmentTransaction.add(fragmentViewId, mapFragment, MapFragment.TAG);
         } else if (fragmentTag.equals(SearchFragment.TAG))
         {
             // Map프래그먼트에서 상단 바를 터치한 경우
             SearchFragment searchFragment = SearchFragment.getInstance(this);
-            fragmentTransaction.replace(fragmentViewId, searchFragment);
+            fragmentTransaction.add(fragmentViewId, searchFragment, SearchFragment.TAG).addToBackStack(SearchFragment.TAG);
         } else if (fragmentTag.equals(SearchResultFragment.TAG))
         {
             SearchResultController searchResultController = SearchResultController.getInstance(this);
             searchResultController.setInitialData(bundle);
-            fragmentTransaction.replace(fragmentViewId, searchResultController);
+            fragmentTransaction.add(fragmentViewId, searchResultController, SearchResultController.TAG).addToBackStack(SearchResultController.TAG);
         }
         fragmentTransaction.commit();
     }
@@ -194,20 +198,18 @@ public class MapActivity extends AppCompatActivity implements MapController.OnDo
         {
             // to map
             // result header가 원래 자리에 있어야함
-            mapFragment.setZoomGpsButtonVisibility(View.VISIBLE);
-            mapFragment.setDataType(dataType);
+            mapFragment.setDataType(dataType).clickedMapButton();
             MapFragment.isClickedChangeButton = true;
             MapFragment.isMain = false;
 
-            fragmentTransaction.replace(R.id.fragment_search_result_list_container, mapFragment).commit();
+            searchResultController.setVisibility(SearchResultFragment.TAG, View.GONE);
+            fragmentTransaction.hide(SearchFragment.getInstance(this)).commit();
             SearchResultController.isShowList = false;
         } else
         {
             // to list
-            mapFragment.setZoomGpsButtonVisibility(View.INVISIBLE);
-            SearchResultFragment searchResultFragment = SearchResultFragment.getInstance(this);
-
-            fragmentTransaction.replace(R.id.fragment_search_result_list_container, searchResultFragment).commit();
+            searchResultController.setVisibility(SearchResultFragment.TAG, View.VISIBLE);
+            fragmentTransaction.show(SearchFragment.getInstance(this)).commit();
             SearchResultController.isShowList = true;
         }
     }
@@ -258,14 +260,16 @@ public class MapActivity extends AppCompatActivity implements MapController.OnDo
          */
         List<Fragment> fragments = getSupportFragmentManager().getFragments();
 
-        for (Fragment fragment : fragments)
+        for (int i = fragments.size() - 1; i >= 0; i--)
         {
-            if (fragment instanceof OnBackPressedListener)
+            if (fragments.get(i) instanceof OnBackPressedListener)
             {
-                ((OnBackPressedListener) fragment).onBackPressed();
+                ((OnBackPressedListener) fragments.get(i)).onBackPressed();
                 return;
             }
         }
+
+        // MapFragment가 Main인 경우에 수행됨
         setResult(RESULT_CANCELED);
         finish();
     }

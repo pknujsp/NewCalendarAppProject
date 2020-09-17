@@ -26,7 +26,6 @@ public class SearchResultHeaderFragment extends Fragment
     private ImageButton changeButton;
     private ImageButton closeButton;
     private TextView searchWordTextView;
-    private String searchWord;
 
     public static final int MAP = 0;
     public static final int LIST = 1;
@@ -115,7 +114,7 @@ public class SearchResultHeaderFragment extends Fragment
     @Override
     public void onStart()
     {
-        searchWordTextView.setText(searchWord);
+        searchWordTextView.setText(MapActivity.parameters.getQuery());
         super.onStart();
     }
 
@@ -129,8 +128,6 @@ public class SearchResultHeaderFragment extends Fragment
     {
         if (!bundle.isEmpty())
         {
-            LocalApiPlaceParameter parameter = bundle.getParcelable("parameter");
-            searchWord = parameter.getQuery();
         }
     }
 

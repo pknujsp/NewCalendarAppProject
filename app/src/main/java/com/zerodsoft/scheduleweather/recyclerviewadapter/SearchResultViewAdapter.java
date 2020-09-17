@@ -62,63 +62,63 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
         return isEnd;
     }
 
-    public void setAddressList(LocationSearchResult locationSearchResult)
+    public void setAddressList()
     {
-        addressList = locationSearchResult.getAddressResponse().getAddressResponseDocumentsList();
+        addressList = MapActivity.searchResult.getAddressResponse().getAddressResponseDocumentsList();
         dataType = MapController.TYPE_ADDRESS;
-        totalCount = locationSearchResult.getAddressResponse().getAddressResponseMeta().getTotalCount();
-        pageableCount = locationSearchResult.getAddressResponse().getAddressResponseMeta().getPageableCount();
-        isEnd = locationSearchResult.getAddressResponse().getAddressResponseMeta().isEnd();
+        totalCount = MapActivity.searchResult.getAddressResponse().getAddressResponseMeta().getTotalCount();
+        pageableCount = MapActivity.searchResult.getAddressResponse().getAddressResponseMeta().getPageableCount();
+        isEnd = MapActivity.searchResult.getAddressResponse().getAddressResponseMeta().isEnd();
         currentPage = 1;
     }
 
-    public void setPlaceKeywordList(LocationSearchResult locationSearchResult)
+    public void setPlaceKeywordList()
     {
-        placeKeywordList = locationSearchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments();
+        placeKeywordList = MapActivity.searchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments();
         dataType = MapController.TYPE_PLACE_KEYWORD;
-        totalCount = locationSearchResult.getPlaceKeywordResponse().getPlaceKeywordMeta().getTotalCount();
-        pageableCount = locationSearchResult.getPlaceKeywordResponse().getPlaceKeywordMeta().getPageableCount();
-        isEnd = locationSearchResult.getPlaceKeywordResponse().getPlaceKeywordMeta().isEnd();
+        totalCount = MapActivity.searchResult.getPlaceKeywordResponse().getPlaceKeywordMeta().getTotalCount();
+        pageableCount = MapActivity.searchResult.getPlaceKeywordResponse().getPlaceKeywordMeta().getPageableCount();
+        isEnd = MapActivity.searchResult.getPlaceKeywordResponse().getPlaceKeywordMeta().isEnd();
         currentPage = 1;
     }
 
-    public void setPlaceCategoryList(LocationSearchResult locationSearchResult)
+    public void setPlaceCategoryList()
     {
-        placeCategoryList = locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments();
+        placeCategoryList = MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments();
         dataType = MapController.TYPE_PLACE_CATEGORY;
-        totalCount = locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryMeta().getTotalCount();
-        pageableCount = locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryMeta().getPageableCount();
-        isEnd = locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryMeta().isEnd();
+        totalCount = MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryMeta().getTotalCount();
+        pageableCount = MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryMeta().getPageableCount();
+        isEnd = MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryMeta().isEnd();
         currentPage = 1;
     }
 
-    public void addAddressData(LocationSearchResult locationSearchResult)
+    public void addAddressData()
     {
         currentPage++;
-        isEnd = locationSearchResult.getAddressResponse().getAddressResponseMeta().isEnd();
-        for (int index = 0; index < locationSearchResult.getAddressResponse().getAddressResponseDocumentsList().size(); index++)
+        isEnd = MapActivity.searchResult.getAddressResponse().getAddressResponseMeta().isEnd();
+        for (int index = 0; index < MapActivity.searchResult.getAddressResponse().getAddressResponseDocumentsList().size(); index++)
         {
-            addressList.add(locationSearchResult.getAddressResponse().getAddressResponseDocumentsList().get(index));
+            addressList.add(MapActivity.searchResult.getAddressResponse().getAddressResponseDocumentsList().get(index));
         }
     }
 
-    public void addPlaceKeywordData(LocationSearchResult locationSearchResult)
+    public void addPlaceKeywordData()
     {
         currentPage++;
-        isEnd = locationSearchResult.getPlaceKeywordResponse().getPlaceKeywordMeta().isEnd();
-        for (int index = 0; index < locationSearchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().size(); index++)
+        isEnd = MapActivity.searchResult.getPlaceKeywordResponse().getPlaceKeywordMeta().isEnd();
+        for (int index = 0; index < MapActivity.searchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().size(); index++)
         {
-            placeKeywordList.add(locationSearchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().get(index));
+            placeKeywordList.add(MapActivity.searchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().get(index));
         }
     }
 
-    public void addPlaceCategoryData(LocationSearchResult locationSearchResult)
+    public void addPlaceCategoryData()
     {
         currentPage++;
-        isEnd = locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryMeta().isEnd();
-        for (int index = 0; index < locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().size(); index++)
+        isEnd = MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryMeta().isEnd();
+        for (int index = 0; index < MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().size(); index++)
         {
-            placeCategoryList.add(locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(index));
+            placeCategoryList.add(MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(index));
         }
     }
 

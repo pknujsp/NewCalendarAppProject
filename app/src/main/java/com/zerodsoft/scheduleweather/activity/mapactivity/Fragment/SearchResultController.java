@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -30,6 +31,12 @@ public class SearchResultController extends Fragment implements MapActivity.OnBa
 
     public static boolean isShowHeader = true;
     public static boolean isShowList = true;
+
+    private static final int HEADER_LAYOUT_ID = R.id.fragment_search_result_header_container;
+    private static final int LIST_LAYOUT_ID = R.id.fragment_search_result_list_container;
+
+    private FrameLayout headerLayout;
+    private FrameLayout listLayout;
 
     public SearchResultController(Activity activity)
     {
@@ -58,14 +65,14 @@ public class SearchResultController extends Fragment implements MapActivity.OnBa
         headerFragment.setChangeButtonDrawable();
     }
 
-    public void setDownloadedData(LocationSearchResult locationSearchResult)
+    public void setDownloadedData()
     {
-        listFragment.setDownloadedData(locationSearchResult);
+        listFragment.setDownloadedData();
     }
 
-    public void setDownloadedExtraData(int type, LocationSearchResult locationSearchResult)
+    public void setDownloadedExtraData(int type)
     {
-        listFragment.setDownloadedExtraData(type, locationSearchResult);
+        listFragment.setDownloadedExtraData(type);
     }
 
     @Nullable
@@ -78,10 +85,13 @@ public class SearchResultController extends Fragment implements MapActivity.OnBa
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
+        headerLayout = (FrameLayout) view.findViewById(HEADER_LAYOUT_ID);
+        listLayout = (FrameLayout) view.findViewById(LIST_LAYOUT_ID);
+
         FragmentTransaction fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
 
-        fragmentTransaction.add(R.id.fragment_search_result_header_container, headerFragment, SearchResultHeaderFragment.TAG);
-        fragmentTransaction.add(R.id.fragment_search_result_list_container, listFragment, SearchResultFragment.TAG);
+        fragmentTransaction.add(HEADER_LAYOUT_ID, headerFragment, SearchResultHeaderFragment.TAG);
+        fragmentTransaction.add(LIST_LAYOUT_ID, listFragment, SearchResultFragment.TAG);
         fragmentTransaction.show(headerFragment).show(listFragment).commit();
 
         super.onViewCreated(view, savedInstanceState);
@@ -105,11 +115,12 @@ public class SearchResultController extends Fragment implements MapActivity.OnBa
         if (isShowList)
         {
             // list인 경우
-            getActivity().getSupportFragmentManager().beginTransaction().remove(headerFragment).remove(listFragment).commit();
-            SearchFragment.parameter.clear();
+            MapActivity.parameters.clear();
             listFragment.clearHolderSparseArr();
-            SearchResultFragment.isFirstCreated = true;
-            ((MapActivity) getActivity()).onFragmentChanged(SearchFragment.TAG, new Bundle());
+
+            FragmentTransaction fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
+            fragmentTransaction.remove(headerFragment).remove(listFragment).commit();
+            getActivity().getSupportFragmentManager().popBackStackImmediate();
         } else
         {
             // map인 경우
@@ -117,6 +128,17 @@ public class SearchResultController extends Fragment implements MapActivity.OnBa
             {
                 ((MapActivity) getActivity()).changeMapOrList(MapController.TYPE_NOT);
             }
+        }
+    }
+
+    public void setVisibility(String fragmentTag, int visibility)
+    {
+        if (fragmentTag.equals(SearchResultHeaderFragment.TAG))
+        {
+            headerLayout.setVisibility(visibility);
+        } else if (fragmentTag.equals(SearchResultFragment.TAG))
+        {
+            listLayout.setVisibility(visibility);
         }
     }
 

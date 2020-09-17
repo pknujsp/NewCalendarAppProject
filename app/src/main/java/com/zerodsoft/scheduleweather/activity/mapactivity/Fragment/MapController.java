@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 
+import com.zerodsoft.scheduleweather.activity.mapactivity.MapActivity;
 import com.zerodsoft.scheduleweather.retrofit.HttpCommunicationClient;
 import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryCode;
 import com.zerodsoft.scheduleweather.retrofit.LocalApiPlaceParameter;
@@ -46,7 +47,7 @@ public class MapController
 
     public interface OnDownloadListener
     {
-        void onDownloadedData(int dataType, String fragmentTag, LocationSearchResult locationSearchResult);
+        void onDownloadedData(int dataType, String fragmentTag);
 
         void requestData(int dataType, String fragmentTag);
     }
@@ -93,12 +94,13 @@ public class MapController
                 locationSearchResult.setResultNum();
                 try
                 {
-                    onDownloadListener.onDownloadedData(dataType, fragmentTag, (LocationSearchResult) locationSearchResult.clone());
+                    MapActivity.searchResult = (LocationSearchResult) locationSearchResult.clone();
                 } catch (CloneNotSupportedException e)
                 {
                     e.printStackTrace();
                 }
 
+                onDownloadListener.onDownloadedData(dataType, fragmentTag);
                 locationSearchResult = null;
                 dataType = TYPE_NOT;
                 calledDownloadTotalCount = 0;
@@ -111,8 +113,8 @@ public class MapController
     {
         Querys querys = HttpCommunicationClient.getApiService();
         Map<String, String> queryMap = new HashMap<>();
-        queryMap.put("query", SearchFragment.parameter.getQuery());
-        queryMap.put("page", SearchFragment.parameter.getPage());
+        queryMap.put("query", MapActivity.parameters.getQuery());
+        queryMap.put("page", MapActivity.parameters.getPage());
         queryMap.put("AddressSize", "15");
         Call<AddressResponse> call = querys.getAddress(queryMap);
 
@@ -150,7 +152,7 @@ public class MapController
     public void searchPlaceKeyWord()
     {
         Querys querys = HttpCommunicationClient.getApiService();
-        Map<String, String> queryMap = SearchFragment.parameter.getParameterMap();
+        Map<String, String> queryMap = MapActivity.parameters.getParameterMap();
         Call<PlaceKeyword> call = querys.getPlaceKeyword(queryMap);
 
         call.enqueue(new Callback<PlaceKeyword>()
@@ -187,7 +189,7 @@ public class MapController
     public void searchPlaceCategory()
     {
         Querys querys = HttpCommunicationClient.getApiService();
-        Map<String, String> queryMap = SearchFragment.parameter.getParameterMap();
+        Map<String, String> queryMap = MapActivity.parameters.getParameterMap();
         Call<PlaceCategory> call = querys.getPlaceCategory(queryMap);
 
         call.enqueue(new Callback<PlaceCategory>()
@@ -225,7 +227,7 @@ public class MapController
     public void getCoordToAddress()
     {
         Querys querys = HttpCommunicationClient.getApiService();
-        Map<String, String> queryMap = SearchFragment.parameter.getParameterMap();
+        Map<String, String> queryMap = MapActivity.parameters.getParameterMap();
         Call<CoordToAddress> call = querys.getCoordToAddress(queryMap);
 
         call.enqueue(new Callback<CoordToAddress>()
@@ -267,12 +269,12 @@ public class MapController
 
         if (dataType == TYPE_NOT)
         {
-            String categoryName = getCategoryName(SearchFragment.parameter.getQuery());
+            String categoryName = getCategoryName(MapActivity.parameters.getQuery());
 
             if (categoryName != null)
             {
                 calledDownloadTotalCount = 1;
-                SearchFragment.parameter.setCategoryGroupCode(categoryName);
+                MapActivity.parameters.setCategoryGroupCode(categoryName);
                 searchPlaceCategory();
             } else
             {
