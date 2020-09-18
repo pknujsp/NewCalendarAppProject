@@ -96,30 +96,21 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
     {
         currentPage++;
         isEnd = MapActivity.searchResult.getAddressResponse().getAddressResponseMeta().isEnd();
-        for (int index = 0; index < MapActivity.searchResult.getAddressResponse().getAddressResponseDocumentsList().size(); index++)
-        {
-            addressList.add(MapActivity.searchResult.getAddressResponse().getAddressResponseDocumentsList().get(index));
-        }
+        addressList = MapActivity.searchResult.getAddressResponse().getAddressResponseDocumentsList();
     }
 
     public void addPlaceKeywordData()
     {
         currentPage++;
         isEnd = MapActivity.searchResult.getPlaceKeywordResponse().getPlaceKeywordMeta().isEnd();
-        for (int index = 0; index < MapActivity.searchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().size(); index++)
-        {
-            placeKeywordList.add(MapActivity.searchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().get(index));
-        }
+        placeKeywordList = MapActivity.searchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments();
     }
 
     public void addPlaceCategoryData()
     {
         currentPage++;
         isEnd = MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryMeta().isEnd();
-        for (int index = 0; index < MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().size(); index++)
-        {
-            placeCategoryList.add(MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(index));
-        }
+        placeCategoryList = MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments();
     }
 
     public int getDataType()
@@ -141,8 +132,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
     @Override
     public SearchResultViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType)
     {
-        LayoutInflater layoutInflater = (LayoutInflater) parent.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View view = layoutInflater.inflate(R.layout.search_recycler_view_item, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.search_recycler_view_item, parent, false);
         return new SearchResultViewHolder(view, dataType);
     }
 
@@ -192,19 +182,21 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
     @Override
     public int getItemCount()
     {
-        if (addressList != null)
+        int size = 0;
+
+        switch (dataType)
         {
-            return addressList.size();
-        } else if (placeCategoryList != null)
-        {
-            return placeCategoryList.size();
-        } else if (placeKeywordList != null)
-        {
-            return placeKeywordList.size();
-        } else
-        {
-            return 0;
+            case MapController.TYPE_ADDRESS:
+                size = addressList.size();
+                break;
+            case MapController.TYPE_PLACE_CATEGORY:
+                size = placeCategoryList.size();
+                break;
+            case MapController.TYPE_PLACE_KEYWORD:
+                size = placeKeywordList.size();
+                break;
         }
+        return size;
     }
 
     class SearchResultViewHolder extends RecyclerView.ViewHolder

@@ -65,7 +65,7 @@ public class SearchResultViewPagerAdapter extends RecyclerView.Adapter<SearchRes
         }
     }
 
-    public void setData()
+    public void setListData()
     {
         // 데이터 설정
         List<Integer> resultTypes = MapActivity.searchResult.getResultTypes();
@@ -185,9 +185,7 @@ public class SearchResultViewPagerAdapter extends RecyclerView.Adapter<SearchRes
 
             recyclerView.setLayoutManager(new LinearLayoutManager(activity));
             adapter = new SearchResultViewAdapter(activity);
-            recyclerView.setAdapter(adapter);
             recyclerView.setItemAnimator(new DefaultItemAnimator());
-
             recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener()
             {
                 @Override
@@ -230,7 +228,7 @@ public class SearchResultViewPagerAdapter extends RecyclerView.Adapter<SearchRes
                 adapter.setPlaceCategoryList();
             }
             adapter.setDownloadedDate(MapActivity.searchResult.getDownloadedDate());
-            adapter.notifyDataSetChanged();
+            recyclerView.setAdapter(adapter);
         }
     }
 }

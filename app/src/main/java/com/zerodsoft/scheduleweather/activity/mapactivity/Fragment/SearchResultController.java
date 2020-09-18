@@ -118,9 +118,13 @@ public class SearchResultController extends Fragment implements MapActivity.OnBa
             MapActivity.parameters.clear();
             listFragment.clearHolderSparseArr();
 
-            FragmentTransaction fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
+            FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
             fragmentTransaction.remove(headerFragment).remove(listFragment).commit();
-            getActivity().getSupportFragmentManager().popBackStackImmediate();
+            fragmentManager.popBackStackImmediate();
+
+            fragmentTransaction = fragmentManager.beginTransaction();
+            fragmentTransaction.show(SearchFragment.getInstance(getActivity())).commit();
         } else
         {
             // map인 경우

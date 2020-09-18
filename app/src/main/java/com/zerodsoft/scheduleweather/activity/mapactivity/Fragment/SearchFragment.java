@@ -6,6 +6,8 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -119,7 +121,11 @@ public class SearchFragment extends Fragment implements SearchCategoryViewAdapte
     {
         binding.searchEdittext.setText("");
         MapFragment.getInstance(getActivity()).setMain();
-        getActivity().getSupportFragmentManager().popBackStackImmediate();
+        FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+        fragmentManager.popBackStackImmediate();
+
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.show(MapFragment.getInstance(getActivity())).commit();
     }
 
     @Override

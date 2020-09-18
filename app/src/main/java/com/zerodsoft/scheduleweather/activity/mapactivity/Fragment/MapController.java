@@ -47,7 +47,7 @@ public class MapController
 
     public interface OnDownloadListener
     {
-        void onDownloadedData(int dataType, String fragmentTag);
+        void onDownloadedData(int dataType, LocationSearchResult downloadedResult, String fragmentTag);
 
         void requestData(int dataType, String fragmentTag);
     }
@@ -94,13 +94,12 @@ public class MapController
                 locationSearchResult.setResultNum();
                 try
                 {
-                    MapActivity.searchResult = (LocationSearchResult) locationSearchResult.clone();
+                    onDownloadListener.onDownloadedData(dataType, (LocationSearchResult) locationSearchResult.clone(), fragmentTag);
                 } catch (CloneNotSupportedException e)
                 {
                     e.printStackTrace();
                 }
 
-                onDownloadListener.onDownloadedData(dataType, fragmentTag);
                 locationSearchResult = null;
                 dataType = TYPE_NOT;
                 calledDownloadTotalCount = 0;

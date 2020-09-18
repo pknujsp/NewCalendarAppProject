@@ -595,44 +595,6 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
         binding.gpsButton.setVisibility(visibility);
     }
 
-
-    public void addExtraData()
-    {
-        /*
-        if (newLocationSearchResult.getAddressResponse() != null)
-        {
-            List<AddressResponseDocuments> documentList = locationSearchResult.getAddressResponse().getAddressResponseDocumentsList();
-            List<AddressResponseDocuments> newDocumentList = newLocationSearchResult.getAddressResponse().getAddressResponseDocumentsList();
-
-            for (AddressResponseDocuments document : newDocumentList)
-            {
-                documentList.add(document);
-            }
-        }
-        if (newLocationSearchResult.getPlaceCategoryResponse() != null)
-        {
-            List<PlaceCategoryDocuments> documentList = locationSearchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments();
-            List<PlaceCategoryDocuments> newDocumentList = newLocationSearchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments();
-
-            for (PlaceCategoryDocuments document : newDocumentList)
-            {
-                documentList.add(document);
-            }
-        }
-        if (newLocationSearchResult.getPlaceKeywordResponse() != null)
-        {
-            List<PlaceKeywordDocuments> documentList = locationSearchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments();
-            List<PlaceKeywordDocuments> newDocumentList = newLocationSearchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments();
-
-            for (PlaceKeywordDocuments document : newDocumentList)
-            {
-                documentList.add(document);
-            }
-        }
-
-         */
-    }
-
     public void setPoiItems()
     {
         int addressSize = 0;

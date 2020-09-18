@@ -28,13 +28,11 @@ import com.zerodsoft.scheduleweather.etc.ViewPagerIndicator;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.recyclerviewadapter.SearchResultViewPagerAdapter;
 import com.zerodsoft.scheduleweather.retrofit.LocalApiPlaceParameter;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.LocationSearchResult;
 
 import net.daum.mf.map.api.MapPoint;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class SearchResultFragment extends Fragment
 {
@@ -119,16 +117,13 @@ public class SearchResultFragment extends Fragment
         }
 
         viewPagerIndicator.createDot(0, indicatorLength);
-        searchResultViewPagerAdapter.setData();
-        searchResultViewPagerAdapter.notifyDataSetChanged();
-        // 리사이클러뷰 갱신이 안되는 오류
+        searchResultViewPagerAdapter.setListData();
     }
 
 
     public void setDownloadedExtraData(int type)
     {
         searchResultViewPagerAdapter.addExtraData(type);
-        searchResultViewPagerAdapter.notifyDataSetChanged();
     }
 
     private LocationListener locationListener = new LocationListener()
