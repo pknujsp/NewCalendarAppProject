@@ -50,13 +50,15 @@ public class SearchResultFragment extends Fragment
     private TextView rescanMyLocCenter;
     private LocationManager locationManager;
     private Spinner sortSpinner;
-    private SpinnerAdapter adapter;
+    private SpinnerAdapter spinnerAdapter;
     private ViewPagerIndicator viewPagerIndicator;
     private int indicatorLength;
 
+    private List<String> sortList;
+    private boolean isFirstCreated = true;
+
     public static final int SORT_ACCURACY = 0;
     public static final int SORT_DISTANCE = 1;
-    public int SELECTED_SORT = SORT_ACCURACY;
 
     private OnPageCallback onPageCallback;
 
@@ -79,10 +81,9 @@ public class SearchResultFragment extends Fragment
     public SearchResultFragment(Activity activity)
     {
         onDownloadListener = (MapController.OnDownloadListener) activity;
-        List<String> sortList = new ArrayList<>();
+        sortList = new ArrayList<>();
         sortList.add(SORT_ACCURACY, "정확도순");
         sortList.add(SORT_DISTANCE, "거리순");
-        adapter = new ArrayAdapter<>(activity, android.R.layout.simple_spinner_dropdown_item, sortList);
     }
 
     public void setInitialData(Bundle bundle)
@@ -97,27 +98,30 @@ public class SearchResultFragment extends Fragment
         searchResultViewPagerAdapter.clearHolderSparseArr();
     }
 
-    public void setDownloadedData()
+    public void setDownloadedData(boolean refresh)
     {
-        List<Integer> dataTypes = MapActivity.searchResult.getResultTypes();
-        indicatorLength = 0;
+        searchResultViewPagerAdapter.setListData(refresh);
 
-        for (int dataType : dataTypes)
+        if (!refresh)
         {
-            if (dataType == MapController.TYPE_PLACE_CATEGORY)
-            {
-                ++indicatorLength;
-            } else if (dataType == MapController.TYPE_PLACE_KEYWORD)
-            {
-                ++indicatorLength;
-            } else if (dataType == MapController.TYPE_ADDRESS)
-            {
-                ++indicatorLength;
-            }
-        }
+            List<Integer> dataTypes = MapActivity.searchResult.getResultTypes();
+            indicatorLength = 0;
 
-        viewPagerIndicator.createDot(0, indicatorLength);
-        searchResultViewPagerAdapter.setListData();
+            for (int dataType : dataTypes)
+            {
+                if (dataType == MapController.TYPE_PLACE_CATEGORY)
+                {
+                    ++indicatorLength;
+                } else if (dataType == MapController.TYPE_PLACE_KEYWORD)
+                {
+                    ++indicatorLength;
+                } else if (dataType == MapController.TYPE_ADDRESS)
+                {
+                    ++indicatorLength;
+                }
+            }
+            viewPagerIndicator.createDot(0, indicatorLength);
+        }
     }
 
 
@@ -136,7 +140,7 @@ public class SearchResultFragment extends Fragment
             MapActivity.parameters.setPage("1");
             // 자원해제
             locationManager.removeUpdates(locationListener);
-            onDownloadListener.requestData(MapController.TYPE_NOT, TAG);
+            onDownloadListener.requestData(MapController.TYPE_NOT, TAG, true);
         }
 
         @Override
@@ -189,8 +193,11 @@ public class SearchResultFragment extends Fragment
 
         searchResultViewPagerAdapter = new SearchResultViewPagerAdapter(getActivity());
         onPageCallback = new OnPageCallback();
+
+        spinnerAdapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_dropdown_item, sortList);
+        sortSpinner.setAdapter(spinnerAdapter);
         sortSpinner.setOnItemSelectedListener(onItemSelectedListener);
-        sortSpinner.setAdapter(adapter);
+
         viewPager2.setAdapter(searchResultViewPagerAdapter);
         viewPager2.registerOnPageChangeCallback(onPageCallback);
 
@@ -204,7 +211,7 @@ public class SearchResultFragment extends Fragment
                 MapActivity.parameters.setY(currentMapPoint.latitude);
                 MapActivity.parameters.setPage("1");
 
-                onDownloadListener.requestData(MapController.TYPE_NOT, TAG);
+                onDownloadListener.requestData(MapController.TYPE_NOT, TAG, true);
             }
         });
 
@@ -242,20 +249,9 @@ public class SearchResultFragment extends Fragment
     }
 
     @Override
-    public void onPause()
-    {
-        super.onPause();
-    }
-
-    @Override
-    public void onStop()
-    {
-        super.onStop();
-    }
-
-    @Override
     public void onDestroy()
     {
+        isFirstCreated = true;
         super.onDestroy();
     }
 
@@ -265,22 +261,12 @@ public class SearchResultFragment extends Fragment
         return searchResultViewPagerAdapter.getCurrentListType(onPageCallback.finalPosition);
     }
 
-    @Override
-    public void onSaveInstanceState(@NonNull Bundle outState)
+    private AdapterView.OnItemSelectedListener onItemSelectedListener = new AdapterView.OnItemSelectedListener()
     {
-        super.onSaveInstanceState(outState);
-    }
-
-    private final AdapterView.OnItemSelectedListener onItemSelectedListener = new AdapterView.OnItemSelectedListener()
-    {
-        boolean isInitializing = true;
-
+        // 결과 프래그먼트에서 스피너로 선택 후 뒤로 간 다음 다시 검색하여 재 실행하면 오류발생
         @Override
         public void onItemSelected(AdapterView<?> adapterView, View view, int index, long l)
         {
-            // 프래그먼트 재 실행 시에 발생하는 문제 수정 필요
-            SELECTED_SORT = index;
-
             switch (index)
             {
                 case SORT_ACCURACY:
@@ -291,7 +277,9 @@ public class SearchResultFragment extends Fragment
                     break;
             }
             MapActivity.parameters.setPage("1");
-            onDownloadListener.requestData(MapController.TYPE_NOT, TAG);
+            onDownloadListener.requestData(MapController.TYPE_NOT, TAG, true);
+
+            isFirstCreated = false;
         }
 
         @Override
@@ -300,7 +288,6 @@ public class SearchResultFragment extends Fragment
 
         }
     };
-
 
     class OnPageCallback extends ViewPager2.OnPageChangeCallback
     {

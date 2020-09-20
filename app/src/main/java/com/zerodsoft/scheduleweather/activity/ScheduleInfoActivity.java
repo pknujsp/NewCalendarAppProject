@@ -47,6 +47,10 @@ public class ScheduleInfoActivity extends AppCompatActivity implements Notificat
     public static final int EDIT_SCHEDULE = 60;
     public static final int EDIT_LOCATION = 70;
 
+    public static final int RESULT_DELETED = 80;
+    public static final int RESULT_SELECTED = 90;
+    public static final int RESULT_RESELECTED = 100;
+
     private com.zerodsoft.scheduleweather.databinding.ActivityScheduleBinding activityBinding;
     private ScheduleViewModel viewModel;
     private DatePickerFragment datePickerFragment;
@@ -511,9 +515,19 @@ public class ScheduleInfoActivity extends AppCompatActivity implements Notificat
                 Intent intent = new Intent(ScheduleInfoActivity.this, MapActivity.class);
                 int requestCode = 0;
 
-                if (activityBinding.getScheduleDto().getPlace() != ScheduleDTO.NOT_LOCATION || activityBinding.getScheduleDto().getAddress() != ScheduleDTO.NOT_LOCATION)
+                if (activityBinding.getScheduleDto().getPlace() == ScheduleDTO.SELECTED_LOCATION || activityBinding.getScheduleDto().getAddress() == ScheduleDTO.SELECTED_LOCATION)
                 {
                     requestCode = EDIT_LOCATION;
+                    Bundle bundle = new Bundle();
+
+                    if (activityBinding.getScheduleDto().getPlace() == ScheduleDTO.SELECTED_LOCATION)
+                    {
+                        bundle.putParcelable("place", activityBinding.getPlaceDto());
+                    } else if (activityBinding.getScheduleDto().getAddress() == ScheduleDTO.SELECTED_LOCATION)
+                    {
+                        bundle.putParcelable("address", activityBinding.getAddressDto());
+                    }
+                    intent.putExtras(bundle);
                 } else
                 {
                     requestCode = ADD_LOCATION;
@@ -542,41 +556,37 @@ public class ScheduleInfoActivity extends AppCompatActivity implements Notificat
     {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (resultCode == RESULT_OK)
+        if (resultCode == RESULT_SELECTED || resultCode == RESULT_RESELECTED)
         {
-            if (requestCode == ADD_LOCATION || requestCode == EDIT_LOCATION)
-            {
-                Bundle bundle = data.getExtras();
+            Bundle bundle = data.getExtras();
 
-                activityBinding.setPlaceDto(null);
-                activityBinding.setAddressDto(null);
-                activityBinding.getScheduleDto().setPlace(ScheduleDTO.NOT_LOCATION);
-                activityBinding.getScheduleDto().setAddress(ScheduleDTO.NOT_LOCATION);
-
-                switch (bundle.getInt("dataType"))
-                {
-                    case MapController.TYPE_ADDRESS:
-                        activityBinding.setAddressDto(bundle.getParcelable("address"));
-                        activityBinding.getScheduleDto().setAddress(ScheduleDTO.SELECTED_LOCATION);
-                        break;
-
-                    case MapController.TYPE_PLACE_KEYWORD:
-                    case MapController.TYPE_PLACE_CATEGORY:
-                        activityBinding.setPlaceDto(bundle.getParcelable("place"));
-                        activityBinding.getScheduleDto().setPlace(ScheduleDTO.SELECTED_LOCATION);
-                        break;
-                }
-            }
-        } else if (resultCode == RESULT_CANCELED)
-        {
-
-        } else
-        {
-            //delete
             activityBinding.setPlaceDto(null);
             activityBinding.setAddressDto(null);
             activityBinding.getScheduleDto().setPlace(ScheduleDTO.NOT_LOCATION);
             activityBinding.getScheduleDto().setAddress(ScheduleDTO.NOT_LOCATION);
+
+            switch (bundle.getInt("dataType"))
+            {
+                case MapController.TYPE_ADDRESS:
+                    activityBinding.setAddressDto(bundle.getParcelable("address"));
+                    activityBinding.getScheduleDto().setAddress(ScheduleDTO.SELECTED_LOCATION);
+                    break;
+
+                case MapController.TYPE_PLACE_KEYWORD:
+                case MapController.TYPE_PLACE_CATEGORY:
+                    activityBinding.setPlaceDto(bundle.getParcelable("place"));
+                    activityBinding.getScheduleDto().setPlace(ScheduleDTO.SELECTED_LOCATION);
+                    break;
+            }
+        } else if (resultCode == RESULT_DELETED)
+        {
+            activityBinding.setPlaceDto(null);
+            activityBinding.setAddressDto(null);
+            activityBinding.getScheduleDto().setPlace(ScheduleDTO.NOT_LOCATION);
+            activityBinding.getScheduleDto().setAddress(ScheduleDTO.NOT_LOCATION);
+        } else if (requestCode == RESULT_CANCELED)
+        {
+
         }
     }
 }

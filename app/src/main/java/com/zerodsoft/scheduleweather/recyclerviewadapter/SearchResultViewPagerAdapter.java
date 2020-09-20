@@ -65,28 +65,49 @@ public class SearchResultViewPagerAdapter extends RecyclerView.Adapter<SearchRes
         }
     }
 
-    public void setListData()
+    public void setListData(boolean refresh)
     {
-        // 데이터 설정
-        List<Integer> resultTypes = MapActivity.searchResult.getResultTypes();
-
-        existingPlaceCategory = false;
-        existingPlaceKeyword = false;
-        existingAddress = false;
-
-        for (int type : resultTypes)
+        if (refresh)
         {
-            if (type == MapController.TYPE_PLACE_CATEGORY)
+            int totalPageCount = holderSparseArray.size();
+            for (int i = 0; i < totalPageCount; i++)
             {
-                existingPlaceCategory = true;
-                break;
-            } else if (type == MapController.TYPE_ADDRESS)
-            {
-                existingAddress = true;
-            } else if (type == MapController.TYPE_PLACE_KEYWORD)
-            {
-                existingPlaceKeyword = true;
+                switch (holderSparseArray.get(i).dataType)
+                {
+                    case MapController.TYPE_ADDRESS:
+                        holderSparseArray.get(i).adapter.setAddressList();
+                        break;
+                    case MapController.TYPE_PLACE_KEYWORD:
+                        holderSparseArray.get(i).adapter.setPlaceKeywordList();
+                        break;
+                    case MapController.TYPE_PLACE_CATEGORY:
+                        holderSparseArray.get(i).adapter.setPlaceCategoryList();
+                        break;
+                }
+                holderSparseArray.get(i).adapter.notifyDataSetChanged();
             }
+        } else
+        {
+            existingPlaceCategory = false;
+            existingPlaceKeyword = false;
+            existingAddress = false;
+            List<Integer> resultTypes = MapActivity.searchResult.getResultTypes();
+
+            for (int type : resultTypes)
+            {
+                if (type == MapController.TYPE_PLACE_CATEGORY)
+                {
+                    existingPlaceCategory = true;
+                    break;
+                } else if (type == MapController.TYPE_ADDRESS)
+                {
+                    existingAddress = true;
+                } else if (type == MapController.TYPE_PLACE_KEYWORD)
+                {
+                    existingPlaceKeyword = true;
+                }
+            }
+            this.notifyDataSetChanged();
         }
     }
 
@@ -198,7 +219,7 @@ public class SearchResultViewPagerAdapter extends RecyclerView.Adapter<SearchRes
                         if (page < 45 && !adapter.isEnd())
                         {
                             MapActivity.parameters.setPage(Integer.toString(++page));
-                            onDownloadListener.requestData(dataType, TAG);
+                            onDownloadListener.requestData(dataType, TAG, true);
                             Toast.makeText(activity, "추가 데이터를 가져오는 중", Toast.LENGTH_SHORT).show();
                         }
                     }
@@ -227,7 +248,6 @@ public class SearchResultViewPagerAdapter extends RecyclerView.Adapter<SearchRes
                 resultNum.setText(Integer.toString(MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryMeta().getTotalCount()));
                 adapter.setPlaceCategoryList();
             }
-            adapter.setDownloadedDate(MapActivity.searchResult.getDownloadedDate());
             recyclerView.setAdapter(adapter);
         }
     }

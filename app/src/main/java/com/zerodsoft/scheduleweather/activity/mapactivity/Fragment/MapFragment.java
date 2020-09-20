@@ -38,6 +38,7 @@ import net.daum.mf.map.api.MapReverseGeoCoder;
 import net.daum.mf.map.api.MapView;
 
 import java.util.List;
+import java.util.Map;
 
 public class MapFragment extends Fragment implements MapView.POIItemEventListener, MapReverseGeoCoder.ReverseGeoCodingResultListener, MapView.MapViewEventListener
 {
@@ -57,6 +58,7 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     private MapPOIItem[] placePoiItems;
 
     private MapController.OnDownloadListener onDownloadListener;
+    private MapController.OnChoicedListener onChoicedListener;
 
     private boolean isOpendPoiInfo = false;
     private boolean isClickedPOI = false;
@@ -88,11 +90,11 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     public MapFragment(Activity activity)
     {
         onDownloadListener = (MapController.OnDownloadListener) activity;
+        onChoicedListener = (MapController.OnChoicedListener) activity;
     }
 
     public void setInitialData(Bundle bundle)
     {
-        // EDIT_LOCATION인 경우 데이터를 받아와서 화면에 표시
         if (bundle.isEmpty())
         {
 
@@ -104,14 +106,16 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
             if (selectedAddress != null)
             {
                 // 주소 검색 순서 : 좌표로 주소 변환
+                dataType = MapController.TYPE_COORD_TO_ADDRESS;
                 MapActivity.parameters.setX(Double.parseDouble(selectedAddress.getLongitude())).setY(Double.parseDouble(selectedAddress.getLatitude()));
-                onDownloadListener.requestData(MapController.TYPE_COORD_TO_ADDRESS, TAG);
+                onDownloadListener.requestData(MapController.TYPE_COORD_TO_ADDRESS, TAG, false);
             } else if (selectedPlace != null)
             {
                 // 장소 검색 순서 : 장소의 위경도 내 10M 반경에서 장소 이름 검색(여러개 나올 경우 장소ID와 일치하는 장소를 선택)
+                dataType = MapController.TYPE_PLACE_KEYWORD;
                 MapActivity.parameters.setQuery(selectedPlace.getPlaceName()).setX(Double.parseDouble(selectedPlace.getLongitude())).setY(Double.parseDouble(selectedPlace.getLatitude()))
                         .setRadius("10").setPage("1").setSort(LocalApiPlaceParameter.SORT_ACCURACY);
-                onDownloadListener.requestData(MapController.TYPE_PLACE_KEYWORD, TAG);
+                onDownloadListener.requestData(MapController.TYPE_PLACE_KEYWORD, TAG, false);
             }
         }
     }
@@ -158,7 +162,6 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
-
         bottomSheetBehavior = BottomSheetBehavior.from(binding.mapItemBottomSheet);
         bottomSheetBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback()
         {
@@ -213,12 +216,13 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
                 switch (dataType)
                 {
                     case MapController.TYPE_ADDRESS:
-                        lon = MapActivity.searchResult.getAddressResponse().getAddressResponseDocumentsList().get(selectedItemPosition).getX();
-                        lat = MapActivity.searchResult.getAddressResponse().getAddressResponseDocumentsList().get(selectedItemPosition).getY();
+                        AddressResponseDocuments addressDocument = MapActivity.searchResult.getAddressResponse().getAddressResponseDocumentsList().get(selectedItemPosition);
+                        lon = addressDocument.getX();
+                        lat = addressDocument.getY();
                         lonLat = LonLatConverter.convertLonLat(lon, lat);
 
                         AddressDTO addressDTO = new AddressDTO();
-                        addressDTO.setAddressName(MapActivity.searchResult.getAddressResponse().getAddressResponseDocumentsList().get(selectedItemPosition).getAddressName());
+                        addressDTO.setAddressName(addressDocument.getAddressName());
                         addressDTO.setLongitude(Double.toString(lon));
                         addressDTO.setLatitude(Double.toString(lat));
                         addressDTO.setWeatherX(Integer.toString(lonLat.getX()));
@@ -234,13 +238,14 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
                         break;
 
                     case MapController.TYPE_PLACE_KEYWORD:
-                        lon = MapActivity.searchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().get(selectedItemPosition).getX();
-                        lat = MapActivity.searchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().get(selectedItemPosition).getY();
+                        PlaceKeywordDocuments placeKeywordDocument = MapActivity.searchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().get(selectedItemPosition);
+                        lon = placeKeywordDocument.getX();
+                        lat = placeKeywordDocument.getY();
                         lonLat = LonLatConverter.convertLonLat(lon, lat);
 
                         PlaceDTO placeDTOKeyword = new PlaceDTO();
-                        placeDTOKeyword.setPlaceId(MapActivity.searchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().get(selectedItemPosition).getId());
-                        placeDTOKeyword.setPlaceName(MapActivity.searchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().get(selectedItemPosition).getPlaceName());
+                        placeDTOKeyword.setPlaceId(placeKeywordDocument.getId());
+                        placeDTOKeyword.setPlaceName(placeKeywordDocument.getPlaceName());
                         placeDTOKeyword.setLongitude(Double.toString(lon));
                         placeDTOKeyword.setLatitude(Double.toString(lat));
                         placeDTOKeyword.setWeatherX(Integer.toString(lonLat.getX()));
@@ -256,15 +261,16 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
                         break;
 
                     case MapController.TYPE_PLACE_CATEGORY:
-                        lon = Double.valueOf(MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(selectedItemPosition).getX());
-                        lat = Double.valueOf(MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(selectedItemPosition).getY());
+                        PlaceCategoryDocuments placeCategoryDocument = MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(selectedItemPosition);
+                        lon = Double.valueOf(placeCategoryDocument.getX());
+                        lat = Double.valueOf(placeCategoryDocument.getY());
                         lonLat = LonLatConverter.convertLonLat(lon, lat);
 
                         PlaceDTO placeDTOCategory = new PlaceDTO();
-                        placeDTOCategory.setPlaceId(MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(selectedItemPosition).getId());
-                        placeDTOCategory.setPlaceName(MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(selectedItemPosition).getPlaceName());
-                        placeDTOCategory.setLongitude(MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(selectedItemPosition).getX());
-                        placeDTOCategory.setLatitude(MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(selectedItemPosition).getY());
+                        placeDTOCategory.setPlaceId(placeCategoryDocument.getId());
+                        placeDTOCategory.setPlaceName(placeCategoryDocument.getPlaceName());
+                        placeDTOCategory.setLongitude(placeCategoryDocument.getX());
+                        placeDTOCategory.setLatitude(placeCategoryDocument.getY());
                         placeDTOCategory.setWeatherX(Integer.toString(lonLat.getX()));
                         placeDTOCategory.setWeatherY(Integer.toString(lonLat.getY()));
 
@@ -277,7 +283,7 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
                         }
                         break;
                 }
-                ((MapActivity) getActivity()).onChoicedLocation(bundle);
+                onChoicedListener.onChoicedLocation(bundle);
             }
         });
 
@@ -287,7 +293,10 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
             @Override
             public void onClick(View view)
             {
-
+                binding.gpsButton.performClick();
+                MapActivity.parameters.clear();
+                setMain();
+                MapActivity.isDeletedLocation = true;
             }
         });
 
@@ -420,7 +429,15 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     public void onStart()
     {
         bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
-        binding.gpsButton.performClick();
+
+        if (MapActivity.isSelectedLocation)
+        {
+            // edit인 경우
+            // 하단 시트의 위치 변경(취소) 버튼을 클릭하지 않으면 변경이 불가능하도록 설정
+            binding.mapHeaderBar.setClickable(false);
+        } else
+        {
+        }
         super.onStart();
     }
 
@@ -575,7 +592,6 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     public void onItemSelected(int selectedItemPosition)
     {
         // 리스트에서 아이템을 선택하였을 때에 수행됨
-
         binding.mapHeaderBar.setClickable(false);
         this.selectedItemPosition = selectedItemPosition;
         onChangeItems();
@@ -724,7 +740,7 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
 
         if (MapActivity.isSelectedLocation)
         {
-            binding.choiceLocationButton.setVisibility(View.VISIBLE);
+            binding.choiceLocationButton.setVisibility(View.GONE);
             binding.cancelLocationButton.setVisibility(View.VISIBLE);
         } else
         {

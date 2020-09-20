@@ -35,14 +35,15 @@ import net.daum.mf.map.api.MapPoint;
 
 import java.util.List;
 
-public class MapActivity extends AppCompatActivity implements MapController.OnDownloadListener, SearchResultViewAdapter.OnItemSelectedListener
+public class MapActivity extends AppCompatActivity implements MapController.OnDownloadListener, SearchResultViewAdapter.OnItemSelectedListener, MapController.OnChoicedListener
 {
     /*
-    오류 :
-
+    <오류>
+    결과의 dataType이 2개 이상인 경우, 스피너 재 선택/ 위치 기준 재지정 시 다운로드한 데이터 값 갱신에 오류
      */
     public static int requestCode = 0;
     public static boolean isSelectedLocation = false;
+    public static boolean isDeletedLocation = false;
     private final int fragmentViewId;
     private MapController mapController;
 
@@ -56,7 +57,7 @@ public class MapActivity extends AppCompatActivity implements MapController.OnDo
     }
 
     @Override
-    public void onDownloadedData(int dataType, LocationSearchResult downloadedResult, String fragmentTag)
+    public void onDownloadedData(int dataType, LocationSearchResult downloadedResult, String fragmentTag, boolean refresh)
     {
         // 다운로드된 데이터를 전달
         if (fragmentTag.equals(SearchResultFragment.TAG))
@@ -64,16 +65,13 @@ public class MapActivity extends AppCompatActivity implements MapController.OnDo
             searchResult = downloadedResult;
             // 초기 검색 결과
             SearchResultController searchResultController = SearchResultController.getInstance(this);
-            searchResultController.setDownloadedData();
+            searchResultController.setDownloadedData(refresh);
 
             MapFragment mapFragment = MapFragment.getInstance(this);
             mapFragment.setPoiItems();
 
         } else if (fragmentTag.equals(SearchResultViewPagerAdapter.TAG))
         {
-            // 해당 페이지에 해당되는 데이터만 가져오기 때문에 새로운 result객체를 저장하면
-            // 이전 데이터가 삭제됨
-            // 스크롤 후 무한 로딩
             switch (dataType)
             {
                 case MapController.TYPE_ADDRESS:
@@ -123,14 +121,17 @@ public class MapActivity extends AppCompatActivity implements MapController.OnDo
         } else if (fragmentTag.equals(MapFragment.TAG))
         {
             // 지정된 주소 검색 완료
+            searchResult = downloadedResult;
             MapFragment mapFragment = MapFragment.getInstance(this);
+            mapFragment.setPoiItems();
+            mapFragment.onItemSelected(0);
         }
     }
 
     @Override
-    public void requestData(int dataType, String fragmentTag)
+    public void requestData(int dataType, String fragmentTag, boolean refresh)
     {
-        mapController.selectLocation(dataType, fragmentTag);
+        mapController.selectLocation(dataType, fragmentTag, refresh);
     }
 
     public MapPoint.GeoCoordinate getMapCenterPoint()
@@ -183,6 +184,7 @@ public class MapActivity extends AppCompatActivity implements MapController.OnDo
                 bundle.putParcelable("selectedAddress", intent.getParcelableExtra("address"));
                 break;
         }
+        // Map프래그먼트 실행
         onFragmentChanged(MapFragment.TAG, bundle);
     }
 
@@ -263,6 +265,7 @@ public class MapActivity extends AppCompatActivity implements MapController.OnDo
         }
     }
 
+    @Override
     public void onChoicedLocation(Bundle bundle)
     {
         FragmentManager fragmentManager = getSupportFragmentManager();
@@ -271,15 +274,23 @@ public class MapActivity extends AppCompatActivity implements MapController.OnDo
 
         for (Fragment fragment : fragments)
         {
-            if (fragment instanceof SearchResultFragment || fragment instanceof MapFragment)
-            {
-                fragmentTransaction.remove(fragment).commit();
-                break;
-            }
+            fragmentTransaction.remove(fragment);
+            break;
         }
+        fragmentTransaction.commit();
+
+        MapActivity.parameters.clear();
+        MapFragment.getInstance(this).setMain();
+        SearchResultFragment.getInstance(this).clearHolderSparseArr();
 
         getIntent().putExtras(bundle);
-        setResult(RESULT_OK, getIntent());
+        if (isDeletedLocation)
+        {
+            setResult(ScheduleInfoActivity.RESULT_RESELECTED, getIntent());
+        } else
+        {
+            setResult(ScheduleInfoActivity.RESULT_SELECTED, getIntent());
+        }
         finish();
     }
 
@@ -319,7 +330,15 @@ public class MapActivity extends AppCompatActivity implements MapController.OnDo
         }
 
         // MapFragment가 Main인 경우에 수행됨
-        setResult(RESULT_CANCELED);
+        if (isDeletedLocation)
+        {
+            setResult(ScheduleInfoActivity.RESULT_DELETED);
+        } else
+        {
+            setResult(RESULT_CANCELED);
+        }
+        isSelectedLocation = false;
+        isDeletedLocation = false;
         finish();
     }
 }

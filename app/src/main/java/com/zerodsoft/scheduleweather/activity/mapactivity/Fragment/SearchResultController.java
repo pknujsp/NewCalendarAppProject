@@ -65,9 +65,9 @@ public class SearchResultController extends Fragment implements MapActivity.OnBa
         headerFragment.setChangeButtonDrawable();
     }
 
-    public void setDownloadedData()
+    public void setDownloadedData(boolean refresh)
     {
-        listFragment.setDownloadedData();
+        listFragment.setDownloadedData(refresh);
     }
 
     public void setDownloadedExtraData(int type)

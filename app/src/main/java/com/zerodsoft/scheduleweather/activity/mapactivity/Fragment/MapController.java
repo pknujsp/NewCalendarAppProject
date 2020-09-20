@@ -36,6 +36,7 @@ public class MapController
     private int calledDownloadTotalCount = 0;
     private String fragmentTag;
     private int dataType = TYPE_NOT;
+    private boolean refresh;
 
     private OnDownloadListener onDownloadListener;
 
@@ -47,9 +48,14 @@ public class MapController
 
     public interface OnDownloadListener
     {
-        void onDownloadedData(int dataType, LocationSearchResult downloadedResult, String fragmentTag);
+        void onDownloadedData(int dataType, LocationSearchResult downloadedResult, String fragmentTag, boolean refresh);
 
-        void requestData(int dataType, String fragmentTag);
+        void requestData(int dataType, String fragmentTag, boolean refresh);
+    }
+
+    public interface OnChoicedListener
+    {
+        void onChoicedLocation(Bundle bundle);
     }
 
     @SuppressLint("HandlerLeak")
@@ -94,12 +100,13 @@ public class MapController
                 locationSearchResult.setResultNum();
                 try
                 {
-                    onDownloadListener.onDownloadedData(dataType, (LocationSearchResult) locationSearchResult.clone(), fragmentTag);
+                    onDownloadListener.onDownloadedData(dataType, (LocationSearchResult) locationSearchResult.clone(), fragmentTag, refresh);
                 } catch (CloneNotSupportedException e)
                 {
                     e.printStackTrace();
                 }
 
+                refresh = false;
                 locationSearchResult = null;
                 dataType = TYPE_NOT;
                 calledDownloadTotalCount = 0;
@@ -260,11 +267,12 @@ public class MapController
         });
     }
 
-    public void selectLocation(int dataType, String fragmentTag)
+    public void selectLocation(int dataType, String fragmentTag, boolean refresh)
     {
         // 스크롤할때 추가 데이터를 받아옴, 선택된 위치의 정보를 가져옴
         this.dataType = dataType;
         this.fragmentTag = fragmentTag;
+        this.refresh = refresh;
 
         if (dataType == TYPE_NOT)
         {
@@ -284,6 +292,7 @@ public class MapController
             }
         } else
         {
+            // 선택된 위치의 정보를 가져올 경우
             calledDownloadTotalCount = 1;
 
             switch (dataType)

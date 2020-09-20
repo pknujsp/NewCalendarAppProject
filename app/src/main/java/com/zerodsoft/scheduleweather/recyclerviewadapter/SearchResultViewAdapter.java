@@ -41,9 +41,9 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
     private boolean isEnd;
     private int totalCount;
     private int pageableCount;
-    private Date downloadedDate;
 
     private OnItemSelectedListener onItemSelectedListener;
+    private MapController.OnChoicedListener onChoicedListener;
 
     public interface OnItemSelectedListener
     {
@@ -54,6 +54,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
     {
         this.context = activity.getApplicationContext();
         this.onItemSelectedListener = (OnItemSelectedListener) activity;
+        this.onChoicedListener = (MapController.OnChoicedListener) activity;
         this.currentPage = 1;
     }
 
@@ -121,11 +122,6 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
     public int getCurrentPage()
     {
         return currentPage;
-    }
-
-    public void setDownloadedDate(Date downloadedDate)
-    {
-        this.downloadedDate = downloadedDate;
     }
 
     @NonNull
@@ -225,6 +221,8 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
         private String placeName = null;
         private String placeId = null;
 
+        private int position;
+
         SearchResultViewHolder(View itemView, int type)
         {
             super(itemView);
@@ -265,6 +263,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
 
         public void onBindAddress(int position)
         {
+            this.position = position;
             addressListNumTextView.setText(Integer.toString(position + 1));
             addressTextView.setText(addressList.get(position).getAddressName());
 
@@ -302,68 +301,20 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
             switch (dataType)
             {
                 case MapController.TYPE_ADDRESS:
-                    setChoiceButtonListener();
+                    choiceAddressButton.setOnClickListener(choiceButtonListener);
                     break;
 
                 case MapController.TYPE_PLACE_KEYWORD:
                 case MapController.TYPE_PLACE_CATEGORY:
-                    setChoicePlaceButtonListener();
+                    choicePlaceButton.setOnClickListener(choiceButtonListener);
                     break;
             }
         }
 
-        private void setChoiceButtonListener()
-        {
-            choiceAddressButton.setOnClickListener(new View.OnClickListener()
-            {
-                @Override
-                public void onClick(View view)
-                {
-                    LonLat lonLat = LonLatConverter.convertLonLat(Double.valueOf(longitude), Double.valueOf(latitude));
-
-                    Bundle bundle = new Bundle();
-
-                    bundle.putInt("type", dataType);
-                    AddressDTO addressDTO = new AddressDTO();
-                    addressDTO.setAddressName(addressName);
-                    addressDTO.setLongitude(longitude);
-                    addressDTO.setLatitude(latitude);
-                    addressDTO.setWeatherX(Integer.toString(lonLat.getX()));
-                    addressDTO.setWeatherY(Integer.toString(lonLat.getY()));
-
-                    bundle.putParcelable("addressDTO", addressDTO);
-                    ((MapActivity) context).onChoicedLocation(bundle);
-                }
-            });
-        }
-
-        private void setChoicePlaceButtonListener()
-        {
-            choicePlaceButton.setOnClickListener(new View.OnClickListener()
-            {
-                @Override
-                public void onClick(View view)
-                {
-                    LonLat lonLat = LonLatConverter.convertLonLat(Double.valueOf(longitude), Double.valueOf(latitude));
-                    Bundle bundle = new Bundle();
-
-                    bundle.putInt("type", dataType);
-                    PlaceDTO placeDTO = new PlaceDTO();
-                    placeDTO.setPlaceId(placeId);
-                    placeDTO.setPlaceName(placeName);
-                    placeDTO.setLongitude(longitude);
-                    placeDTO.setLatitude(latitude);
-                    placeDTO.setWeatherX(Integer.toString(lonLat.getX()));
-                    placeDTO.setWeatherY(Integer.toString(lonLat.getY()));
-
-                    bundle.putParcelable("placeDTO", placeDTO);
-                    ((MapActivity) context).onChoicedLocation(bundle);
-                }
-            });
-        }
 
         public void onBindPlaceKeyword(int position)
         {
+            this.position = position;
             placeListNumTextView.setText(Integer.toString(position + 1));
             placeNameTextView.setText(placeKeywordList.get(position).getPlaceName());
             placeCategoryTextView.setText(placeKeywordList.get(position).getCategoryName());
@@ -378,6 +329,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
 
         public void onBindPlaceCategory(int position)
         {
+            this.position = position;
             placeListNumTextView.setText(Integer.toString(position + 1));
             placeNameTextView.setText(placeCategoryList.get(position).getPlaceName());
             placeCategoryTextView.setText(placeCategoryList.get(position).getCategoryName());
@@ -389,6 +341,90 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
             latitude = placeCategoryList.get(position).getY();
             longitude = placeCategoryList.get(position).getX();
         }
+
+        private final View.OnClickListener choiceButtonListener = new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                Bundle bundle = new Bundle();
+                bundle.putInt("dataType", dataType);
+                LonLat lonLat = null;
+                double lon, lat;
+
+                switch (dataType)
+                {
+                    case MapController.TYPE_ADDRESS:
+                        AddressResponseDocuments addressDocument = addressList.get(position);
+                        lon = addressDocument.getX();
+                        lat = addressDocument.getY();
+                        lonLat = LonLatConverter.convertLonLat(lon, lat);
+
+                        AddressDTO addressDTO = new AddressDTO();
+                        addressDTO.setAddressName(addressDocument.getAddressName());
+                        addressDTO.setLongitude(Double.toString(lon));
+                        addressDTO.setLatitude(Double.toString(lat));
+                        addressDTO.setWeatherX(Integer.toString(lonLat.getX()));
+                        addressDTO.setWeatherY(Integer.toString(lonLat.getY()));
+
+                        try
+                        {
+                            bundle.putParcelable("address", (AddressDTO) addressDTO.clone());
+                        } catch (CloneNotSupportedException e)
+                        {
+                            e.printStackTrace();
+                        }
+                        break;
+
+                    case MapController.TYPE_PLACE_KEYWORD:
+                        PlaceKeywordDocuments placeKeywordDocument = placeKeywordList.get(position);
+                        lon = placeKeywordDocument.getX();
+                        lat = placeKeywordDocument.getY();
+                        lonLat = LonLatConverter.convertLonLat(lon, lat);
+
+                        PlaceDTO placeDTOKeyword = new PlaceDTO();
+                        placeDTOKeyword.setPlaceId(placeKeywordDocument.getId());
+                        placeDTOKeyword.setPlaceName(placeKeywordDocument.getPlaceName());
+                        placeDTOKeyword.setLongitude(Double.toString(lon));
+                        placeDTOKeyword.setLatitude(Double.toString(lat));
+                        placeDTOKeyword.setWeatherX(Integer.toString(lonLat.getX()));
+                        placeDTOKeyword.setWeatherY(Integer.toString(lonLat.getY()));
+
+                        try
+                        {
+                            bundle.putParcelable("place", (PlaceDTO) placeDTOKeyword.clone());
+                        } catch (CloneNotSupportedException e)
+                        {
+                            e.printStackTrace();
+                        }
+                        break;
+
+                    case MapController.TYPE_PLACE_CATEGORY:
+                        PlaceCategoryDocuments placeCategoryDocument = placeCategoryList.get(position);
+                        lon = Double.valueOf(placeCategoryDocument.getX());
+                        lat = Double.valueOf(placeCategoryDocument.getY());
+                        lonLat = LonLatConverter.convertLonLat(lon, lat);
+
+                        PlaceDTO placeDTOCategory = new PlaceDTO();
+                        placeDTOCategory.setPlaceId(placeCategoryDocument.getId());
+                        placeDTOCategory.setPlaceName(placeCategoryDocument.getPlaceName());
+                        placeDTOCategory.setLongitude(placeCategoryDocument.getX());
+                        placeDTOCategory.setLatitude(placeCategoryDocument.getY());
+                        placeDTOCategory.setWeatherX(Integer.toString(lonLat.getX()));
+                        placeDTOCategory.setWeatherY(Integer.toString(lonLat.getY()));
+
+                        try
+                        {
+                            bundle.putParcelable("place", (PlaceDTO) placeDTOCategory.clone());
+                        } catch (CloneNotSupportedException e)
+                        {
+                            e.printStackTrace();
+                        }
+                        break;
+                }
+                onChoicedListener.onChoicedLocation(bundle);
+            }
+        };
 
         public LinearLayout getAddressLayout()
         {
