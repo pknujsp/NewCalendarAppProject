@@ -11,7 +11,7 @@ public class SelectedNotificationTime
     private int day = 0;
     private int hour = 0;
     private int minute = 0;
-    private int mainType = ScheduleDTO.NOT_NOTI;
+    private int mainType = ScheduleDTO.NOT_SELECTED;
     private String resultStr;
 
     private StringBuilder stringBuilder = new StringBuilder();
@@ -52,7 +52,7 @@ public class SelectedNotificationTime
     public SelectedNotificationTime setMainType(int mainType)
     {
         this.mainType = mainType;
-        if (mainType == ScheduleDTO.NOT_NOTI)
+        if (mainType == ScheduleDTO.NOT_SELECTED)
         {
             day = 0;
             hour = 0;
@@ -93,7 +93,7 @@ public class SelectedNotificationTime
                 stringBuilder.append(Integer.toString(hour)).append(" 시간 ");
                 stringBuilder.append(Integer.toString(minute)).append(" 분");
                 break;
-            case ScheduleDTO.NOT_NOTI:
+            case ScheduleDTO.NOT_SELECTED:
                 resultStr = "알림 없음";
                 return this;
         }

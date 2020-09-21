@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
 import android.widget.SpinnerAdapter;
@@ -24,6 +25,7 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.room.dto.AddressDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
 import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
+import com.zerodsoft.scheduleweather.utility.Clock;
 import com.zerodsoft.scheduleweather.viewmodel.ScheduleViewModel;
 
 import java.util.ArrayList;
@@ -33,7 +35,7 @@ import java.util.List;
 public class ScheduleInfoActivity extends AppCompatActivity implements NotificationFragment.OnNotificationTimeListener
 {
     /*
-        - 수정해야 하는 것
+       - 수정해야 하는 것
         일정 클릭 후 읽어 왔을때 제목, 하루종일 시간이 안나옴
         데이터 수정 클릭 한 뒤 edittext가 작동하지 않는 문제
         하단 버튼의 삭제 버튼 클릭 시 다이얼로그를 띄워서 재 확인을 하도록 해야함
@@ -67,18 +69,21 @@ public class ScheduleInfoActivity extends AppCompatActivity implements Notificat
         {
             case DatePickerFragment.START:
                 activityBinding.getScheduleDto().setStartDate(date);
+                activityBinding.startdateValue.setText(Clock.dateFormat2.format(date));
                 break;
 
             case DatePickerFragment.END:
                 activityBinding.getScheduleDto().setEndDate(date);
+                activityBinding.enddateValue.setText(Clock.dateFormat2.format(date));
                 break;
 
             case DatePickerFragment.ALL_DAY:
                 activityBinding.getScheduleDto().setStartDate(date);
                 activityBinding.getScheduleDto().setEndDate(date);
+                activityBinding.alldayValue.setText(Clock.dateFormat3.format(date));
                 break;
         }
-        activityBinding.setScheduleDto(activityBinding.getScheduleDto());
+
     }
 
     @Override
@@ -92,6 +97,15 @@ public class ScheduleInfoActivity extends AppCompatActivity implements Notificat
         scheduleDTO.setNotiHour(selectedNotificationTime.getHour());
         scheduleDTO.setNotiMinute(selectedNotificationTime.getMinute());
         scheduleDTO.setNotiTime(selectedNotificationTime.getTime());
+
+        if (scheduleDTO.getNotiMainType() == ScheduleDTO.NOT_SELECTED)
+        {
+            activityBinding.notificationValue.setText("");
+            activityBinding.notificationValue.setHint(getString(R.string.noti_time_not_selected));
+        } else
+        {
+            activityBinding.notificationValue.setText(selectedNotificationTime.getResultStr());
+        }
     }
 
 
@@ -111,47 +125,11 @@ public class ScheduleInfoActivity extends AppCompatActivity implements Notificat
         activityBinding.setNotification(null);
         activityBinding.setAddressDto(null);
 
-        activityBinding.subject.addTextChangedListener(new TextWatcher()
-        {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2)
-            {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2)
-            {
-                activityBinding.getScheduleDto().setSubject(charSequence.toString());
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable)
-            {
-
-            }
-        });
-
-        activityBinding.content.addTextChangedListener(new TextWatcher()
-        {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2)
-            {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2)
-            {
-                activityBinding.getScheduleDto().setContent(charSequence.toString());
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable)
-            {
-
-            }
-        });
+        EditTextWatcher editTextWatcher = new EditTextWatcher();
+        activityBinding.subject.addTextChangedListener(editTextWatcher);
+        activityBinding.subject.setOnFocusChangeListener(editTextWatcher);
+        activityBinding.content.addTextChangedListener(editTextWatcher);
+        activityBinding.content.setOnFocusChangeListener(editTextWatcher);
 
         setAccountSpinner();
         setAllDaySwitch();
@@ -198,22 +176,22 @@ public class ScheduleInfoActivity extends AppCompatActivity implements Notificat
                     }
 
                     //위치
-                    if (scheduleDTO.getPlace() != ScheduleDTO.NOT_LOCATION)
+                    if (viewModel.getPlace() != null)
                     {
                         activityBinding.setPlaceDto(viewModel.getPlace().getValue());
-                    } else if (scheduleDTO.getAddress() != ScheduleDTO.NOT_LOCATION)
+                    } else if (viewModel.getAddress() != null)
                     {
                         activityBinding.setAddressDto(viewModel.getAddress().getValue());
                     }
 
                     //알림
-                    if (scheduleDTO.getNotiMainType() != ScheduleDTO.NOT_NOTI)
+                    if (scheduleDTO.getNotiMainType() != ScheduleDTO.NOT_SELECTED)
                     {
                         SelectedNotificationTime selectedNotificationTime = new SelectedNotificationTime().setMainType(scheduleDTO.getNotiMainType());
 
                         switch (scheduleDTO.getNotiMainType())
                         {
-                            case ScheduleDTO.NOT_NOTI:
+                            case ScheduleDTO.NOT_SELECTED:
                                 selectedNotificationTime.setResultStr();
                             case ScheduleDTO.MAIN_DAY:
                                 selectedNotificationTime.setDay(scheduleDTO.getNotiDay()).setHour(scheduleDTO.getNotiHour())
@@ -270,7 +248,6 @@ public class ScheduleInfoActivity extends AppCompatActivity implements Notificat
         super.onStart();
     }
 
-
     private void setBottomButtons()
     {
         activityBinding.editScheduleButton.setOnClickListener(new View.OnClickListener()
@@ -326,20 +303,15 @@ public class ScheduleInfoActivity extends AppCompatActivity implements Notificat
             public void onClick(View view)
             {
                 // 제목, 날짜 필수 입력
-                if (activityBinding.subject.getText().toString().isEmpty())
+                if (activityBinding.getScheduleDto().getSubject().isEmpty())
                 {
                     Toast.makeText(ScheduleInfoActivity.this, "제목을 입력해주세요", Toast.LENGTH_SHORT).show();
-                } else if (activityBinding.getScheduleDto().getStartDate() == null || activityBinding.getScheduleDto().getEndDate() == null)
+                } else if (activityBinding.getScheduleDto().getStartDate().getTime() == ScheduleDTO.NOT_SELECTED
+                        || activityBinding.getScheduleDto().getEndDate().getTime() == ScheduleDTO.NOT_SELECTED)
                 {
                     Toast.makeText(ScheduleInfoActivity.this, "날짜를 지정해주세요", Toast.LENGTH_SHORT).show();
                 } else
                 {
-                    ScheduleDTO scheduleDTO = activityBinding.getScheduleDto();
-
-                    scheduleDTO.setCategory(ScheduleDTO.LOCAL_CATEGORY);
-                    scheduleDTO.setSubject(activityBinding.subject.getText().toString());
-                    scheduleDTO.setContent(activityBinding.content.getText().toString());
-
                     viewModel.setScheduleDTO(activityBinding.getScheduleDto());
                     viewModel.setAddressDTO(activityBinding.getAddressDto());
                     viewModel.setPlaceDTO(activityBinding.getPlaceDto());
@@ -382,8 +354,7 @@ public class ScheduleInfoActivity extends AppCompatActivity implements Notificat
         activityBinding.accountSpinner.setFocusable(isClickable);
         activityBinding.accountSpinner.setEnabled(isClickable);
 
-        activityBinding.subject.setClickable(isClickable);
-        activityBinding.subject.setFocusable(isClickable);
+        activityBinding.subject.setEnabled(isClickable);
 
         activityBinding.scheduleAlldaySwitch.setClickable(isClickable);
         activityBinding.scheduleAlldaySwitch.setFocusable(isClickable);
@@ -397,8 +368,7 @@ public class ScheduleInfoActivity extends AppCompatActivity implements Notificat
         activityBinding.enddateValue.setClickable(isClickable);
         activityBinding.enddateValue.setFocusable(isClickable);
 
-        activityBinding.content.setClickable(isClickable);
-        activityBinding.content.setFocusable(isClickable);
+        activityBinding.content.setEnabled(isClickable);
 
         activityBinding.location.setClickable(isClickable);
         activityBinding.location.setFocusable(isClickable);
@@ -410,11 +380,25 @@ public class ScheduleInfoActivity extends AppCompatActivity implements Notificat
     private void setAccountSpinner()
     {
         List<String> accountList = new ArrayList<>();
-        accountList.add("GOOGLE");
-        accountList.add("LOCAL");
+        accountList.add("구글 계정");
+        accountList.add("로컬");
 
         SpinnerAdapter adapter = new ArrayAdapter<>(ScheduleInfoActivity.this, android.R.layout.simple_spinner_dropdown_item, accountList);
         activityBinding.accountSpinner.setAdapter(adapter);
+        activityBinding.accountSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
+        {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int index, long l)
+            {
+                activityBinding.getScheduleDto().setCategory(index);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView)
+            {
+
+            }
+        });
     }
 
     private void setAllDaySwitch()
@@ -439,9 +423,16 @@ public class ScheduleInfoActivity extends AppCompatActivity implements Notificat
                     activityBinding.enddateLayout.setVisibility(View.VISIBLE);
                 }
 
-                activityBinding.getScheduleDto().setStartDate(null);
-                activityBinding.getScheduleDto().setEndDate(null);
-                activityBinding.setScheduleDto(activityBinding.getScheduleDto());
+                activityBinding.getScheduleDto().getStartDate().setTime(ScheduleDTO.NOT_SELECTED);
+                activityBinding.getScheduleDto().getEndDate().setTime(ScheduleDTO.NOT_SELECTED);
+
+                activityBinding.alldayValue.setText("");
+                activityBinding.startdateValue.setText("");
+                activityBinding.enddateValue.setText("");
+
+                activityBinding.alldayValue.setHint(getString(R.string.date_picker_category_end));
+                activityBinding.startdateValue.setHint(getString(R.string.date_picker_category_end));
+                activityBinding.enddateValue.setHint(getString(R.string.date_picker_category_end));
             }
         });
     }
@@ -515,15 +506,15 @@ public class ScheduleInfoActivity extends AppCompatActivity implements Notificat
                 Intent intent = new Intent(ScheduleInfoActivity.this, MapActivity.class);
                 int requestCode = 0;
 
-                if (activityBinding.getScheduleDto().getPlace() == ScheduleDTO.SELECTED_LOCATION || activityBinding.getScheduleDto().getAddress() == ScheduleDTO.SELECTED_LOCATION)
+                if (activityBinding.getAddressDto() != null || activityBinding.getPlaceDto() != null)
                 {
                     requestCode = EDIT_LOCATION;
                     Bundle bundle = new Bundle();
 
-                    if (activityBinding.getScheduleDto().getPlace() == ScheduleDTO.SELECTED_LOCATION)
+                    if (activityBinding.getPlaceDto() != null)
                     {
                         bundle.putParcelable("place", activityBinding.getPlaceDto());
-                    } else if (activityBinding.getScheduleDto().getAddress() == ScheduleDTO.SELECTED_LOCATION)
+                    } else if (activityBinding.getAddressDto() != null)
                     {
                         bundle.putParcelable("address", activityBinding.getAddressDto());
                     }
@@ -562,31 +553,69 @@ public class ScheduleInfoActivity extends AppCompatActivity implements Notificat
 
             activityBinding.setPlaceDto(null);
             activityBinding.setAddressDto(null);
-            activityBinding.getScheduleDto().setPlace(ScheduleDTO.NOT_LOCATION);
-            activityBinding.getScheduleDto().setAddress(ScheduleDTO.NOT_LOCATION);
+
 
             switch (bundle.getInt("dataType"))
             {
                 case MapController.TYPE_ADDRESS:
                     activityBinding.setAddressDto(bundle.getParcelable("address"));
-                    activityBinding.getScheduleDto().setAddress(ScheduleDTO.SELECTED_LOCATION);
                     break;
 
                 case MapController.TYPE_PLACE_KEYWORD:
                 case MapController.TYPE_PLACE_CATEGORY:
                     activityBinding.setPlaceDto(bundle.getParcelable("place"));
-                    activityBinding.getScheduleDto().setPlace(ScheduleDTO.SELECTED_LOCATION);
                     break;
             }
         } else if (resultCode == RESULT_DELETED)
         {
             activityBinding.setPlaceDto(null);
             activityBinding.setAddressDto(null);
-            activityBinding.getScheduleDto().setPlace(ScheduleDTO.NOT_LOCATION);
-            activityBinding.getScheduleDto().setAddress(ScheduleDTO.NOT_LOCATION);
         } else if (requestCode == RESULT_CANCELED)
         {
 
+        }
+    }
+
+    class EditTextWatcher implements TextWatcher, View.OnFocusChangeListener
+    {
+        int focusedViewId = View.NO_ID;
+
+        @Override
+        public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2)
+        {
+
+        }
+
+        @Override
+        public void onTextChanged(CharSequence charSequence, int i, int i1, int i2)
+        {
+            // 텍스트가 변경될 때 마다 수행
+
+        }
+
+        @Override
+        public void afterTextChanged(Editable editable)
+        {
+            // 텍스트가 변경된 후 수행
+            switch (focusedViewId)
+            {
+                case R.id.subject:
+                    activityBinding.getScheduleDto().setSubject(editable.toString());
+                    break;
+                case R.id.content:
+                    activityBinding.getScheduleDto().setContent(editable.toString());
+                    break;
+            }
+        }
+
+        @Override
+        public void onFocusChange(View view, boolean b)
+        {
+            if (b)
+            {
+                // focusing
+                focusedViewId = view.getId();
+            }
         }
     }
 }

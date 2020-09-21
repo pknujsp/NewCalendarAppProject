@@ -15,6 +15,7 @@ import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -50,9 +51,11 @@ public class SearchResultFragment extends Fragment
     private TextView rescanMyLocCenter;
     private LocationManager locationManager;
     private Spinner sortSpinner;
-    private SpinnerAdapter spinnerAdapter;
+    private ArrayAdapter<CharSequence> spinnerAdapter;
     private ViewPagerIndicator viewPagerIndicator;
     private int indicatorLength;
+
+    private SpinnerInteractionListener spinnerInteractionListener;
 
     private List<String> sortList;
     private boolean isFirstCreated = true;
@@ -191,12 +194,16 @@ public class SearchResultFragment extends Fragment
         viewPagerIndicator = (ViewPagerIndicator) view.findViewById(R.id.search_result_view_pager_indicator);
         sortSpinner = (Spinner) view.findViewById(R.id.search_sort_spinner);
 
+        spinnerInteractionListener = new SpinnerInteractionListener();
         searchResultViewPagerAdapter = new SearchResultViewPagerAdapter(getActivity());
         onPageCallback = new OnPageCallback();
 
-        spinnerAdapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_dropdown_item, sortList);
+        spinnerAdapter = ArrayAdapter.createFromResource(getActivity(),
+                R.array.map_search_result_sort_spinner, android.R.layout.simple_spinner_item);
+        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         sortSpinner.setAdapter(spinnerAdapter);
-        sortSpinner.setOnItemSelectedListener(onItemSelectedListener);
+        sortSpinner.setOnItemSelectedListener(spinnerInteractionListener);
+        sortSpinner.setOnTouchListener(spinnerInteractionListener);
 
         viewPager2.setAdapter(searchResultViewPagerAdapter);
         viewPager2.registerOnPageChangeCallback(onPageCallback);
@@ -267,19 +274,6 @@ public class SearchResultFragment extends Fragment
         @Override
         public void onItemSelected(AdapterView<?> adapterView, View view, int index, long l)
         {
-            switch (index)
-            {
-                case SORT_ACCURACY:
-                    MapActivity.parameters.setSort(LocalApiPlaceParameter.SORT_ACCURACY);
-                    break;
-                case SORT_DISTANCE:
-                    MapActivity.parameters.setSort(LocalApiPlaceParameter.SORT_DISTANCE);
-                    break;
-            }
-            MapActivity.parameters.setPage("1");
-            onDownloadListener.requestData(MapController.TYPE_NOT, TAG, true);
-
-            isFirstCreated = false;
         }
 
         @Override
@@ -299,6 +293,46 @@ public class SearchResultFragment extends Fragment
             finalPosition = position;
             viewPagerIndicator.selectDot(position);
             super.onPageSelected(position);
+        }
+    }
+
+    class SpinnerInteractionListener implements AdapterView.OnItemSelectedListener, View.OnTouchListener
+    {
+        boolean touched = false;
+
+        @Override
+        public void onItemSelected(AdapterView<?> adapterView, View view, int index, long l)
+        {
+            if (touched || isFirstCreated)
+            {
+                switch (index)
+                {
+                    case SORT_ACCURACY:
+                        MapActivity.parameters.setSort(LocalApiPlaceParameter.SORT_ACCURACY);
+                        break;
+                    case SORT_DISTANCE:
+                        MapActivity.parameters.setSort(LocalApiPlaceParameter.SORT_DISTANCE);
+                        break;
+                }
+                MapActivity.parameters.setPage("1");
+                onDownloadListener.requestData(MapController.TYPE_NOT, TAG, !isFirstCreated);
+
+                isFirstCreated = false;
+                touched = false;
+            }
+        }
+
+        @Override
+        public void onNothingSelected(AdapterView<?> adapterView)
+        {
+
+        }
+
+        @Override
+        public boolean onTouch(View view, MotionEvent motionEvent)
+        {
+            touched = true;
+            return false;
         }
     }
 }

@@ -99,11 +99,11 @@ public class ScheduleRepository
 
                 long scheduleId = scheduleDAO.insertNewSchedule(scheduleDTO);
 
-                if (scheduleDTO.getPlace() != ScheduleDTO.NOT_LOCATION)
+                if (placeDTO != null)
                 {
                     placeDTO.setScheduleId((int) scheduleId);
                     locationDAO.insertPlace(placeDTO);
-                } else if (scheduleDTO.getAddress() != ScheduleDTO.NOT_LOCATION)
+                } else if (addressDTO != null)
                 {
                     addressDTO.setScheduleId((int) scheduleId);
                     locationDAO.insertAddress(addressDTO);
@@ -129,69 +129,57 @@ public class ScheduleRepository
                 scheduleDTO.setUpdatedDate(calendar.getTime());
                 scheduleDAO.updateSchedule(scheduleDTO);
 
-                if (scheduleDTO.getPlace() != scheduleLiveData.getValue().getPlace())
+                if (scheduleDTO.addedLocation)
                 {
-                    // 위치가 추가 | 삭제된 경우
-                    if (scheduleDTO.getPlace() == ScheduleDTO.SELECTED_LOCATION)
+                    // 추가
+                    if (addressDTO != null)
                     {
-                        // 추가
+                        locationDAO.insertAddress(addressDTO);
+                    } else if (placeDTO != null)
+                    {
                         locationDAO.insertPlace(placeDTO);
-                    } else
+                    }
+
+                } else if (scheduleDTO.updatedLocation)
+                {
+                    // 변경
+                    // 장소 -> 장소, 주소 - > 주소, 장소 -> 주소, 주소 -> 장소
+
+                    if (addressLiveData.getValue() != null)
                     {
-                        // 삭제
+                        // 주소 -> 장소, 주소 - > 주소
+                        if (addressDTO != null)
+                        {
+                            locationDAO.updateAddress(addressDTO);
+                        } else if (placeDTO != null)
+                        {
+                            locationDAO.deleteAddress(scheduleDTO.getId());
+                            locationDAO.insertPlace(placeDTO);
+                        }
+                    } else if (placeLiveData.getValue() != null)
+                    {
+                        // 장소 -> 장소, 장소 -> 주소
+                        if (addressDTO != null)
+                        {
+                            locationDAO.deletePlace(scheduleDTO.getId());
+                            locationDAO.insertAddress(addressDTO);
+                        } else if (placeDTO != null)
+                        {
+                            locationDAO.updatePlace(placeDTO);
+                        }
+                    }
+
+                } else if (scheduleDTO.deletedLocation)
+                {
+                    // 삭제
+                    if (addressLiveData.getValue() != null)
+                    {
+                        locationDAO.deleteAddress(scheduleDTO.getId());
+                    } else if (placeLiveData.getValue() != null)
+                    {
                         locationDAO.deletePlace(scheduleDTO.getId());
                     }
-                } else
-                {
-                    // 위치가 변경 | 변경X 인 경우
-                    if (scheduleDTO.getPlace() == ScheduleDTO.SELECTED_LOCATION)
-                    {
-                        // 변경 | 변경X
-                        if (placeDTO != null)
-                        {
-                            // 변경
-                            locationDAO.updatePlace(placeDTO);
-                        } else
-                        {
-                            // 변경X
-                        }
-                    } else
-                    {
-                        // 위치 추가되지 않음
-                    }
-                }
 
-
-                if (scheduleDTO.getAddress() != scheduleLiveData.getValue().getAddress())
-                {
-                    // 위치가 추가 | 삭제된 경우
-                    if (scheduleDTO.getAddress() == ScheduleDTO.SELECTED_LOCATION)
-                    {
-                        // 추가
-                        locationDAO.insertAddress(addressDTO);
-                    } else
-                    {
-                        // 삭제
-                        locationDAO.deleteAddress(scheduleDTO.getId());
-                    }
-                } else
-                {
-                    // 위치가 변경 | 변경X 인 경우
-                    if (scheduleDTO.getAddress() == ScheduleDTO.SELECTED_LOCATION)
-                    {
-                        // 변경 | 변경X
-                        if (placeDTO != null)
-                        {
-                            // 변경
-                            locationDAO.updateAddress(addressDTO);
-                        } else
-                        {
-                            // 변경X
-                        }
-                    } else
-                    {
-                        // 위치 추가되지 않음
-                    }
                 }
             }
         });

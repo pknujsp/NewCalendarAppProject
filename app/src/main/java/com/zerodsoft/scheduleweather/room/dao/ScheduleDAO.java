@@ -21,12 +21,6 @@ public interface ScheduleDAO
     @Insert
     long insertNewSchedule(ScheduleDTO scheduleDTO);
 
-    @Query("UPDATE TB_SCHEDULE SET place_to_be_visited = :placeId WHERE id = :scheduleId")
-    void updatePlaceId(int scheduleId, int placeId);
-
-    @Query("UPDATE TB_SCHEDULE SET address_to_be_visited = :addressId WHERE id = :scheduleId")
-    void updateAddressId(int scheduleId, int addressId);
-
     @Query("SELECT * FROM TB_SCHEDULE WHERE id = :scheduleId")
     LiveData<ScheduleDTO> selectSchedule(int scheduleId);
 

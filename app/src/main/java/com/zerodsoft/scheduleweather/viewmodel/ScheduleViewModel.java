@@ -46,13 +46,8 @@ public class ScheduleViewModel extends AndroidViewModel
             {
                 if (input != null)
                 {
-                    if (input.getAddress() != ScheduleDTO.NOT_LOCATION)
-                    {
-                        addressLiveData = scheduleRepository.getAddressLiveData();
-                    } else if (input.getPlace() != ScheduleDTO.NOT_LOCATION)
-                    {
-                        placeLiveData = scheduleRepository.getPlaceLiveData();
-                    }
+                    addressLiveData = scheduleRepository.getAddressLiveData();
+                    placeLiveData = scheduleRepository.getPlaceLiveData();
                 } else
                 {
                     input = new ScheduleDTO();

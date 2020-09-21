@@ -159,7 +159,7 @@ public class NotificationFragment extends DialogFragment
                     break;
                 case R.id.notification_disable_radio:
                     // 일
-                    notification.setMainType(ScheduleDTO.NOT_NOTI);
+                    notification.setMainType(ScheduleDTO.NOT_SELECTED);
                     fragmentBinding.notiDayLayout.setVisibility(View.GONE);
                     fragmentBinding.notiHourLayout.setVisibility(View.GONE);
                     fragmentBinding.notiMinuteLayout.setVisibility(View.GONE);
@@ -340,7 +340,7 @@ public class NotificationFragment extends DialogFragment
             case ScheduleDTO.MAIN_MINUTE:
                 fragmentBinding.notificationMinuteRadio.performClick();
                 break;
-            case ScheduleDTO.NOT_NOTI:
+            case ScheduleDTO.NOT_SELECTED:
                 fragmentBinding.notificationDisableRadio.performClick();
                 break;
         }

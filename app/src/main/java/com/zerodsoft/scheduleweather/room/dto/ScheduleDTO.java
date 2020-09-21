@@ -54,12 +54,6 @@ public class ScheduleDTO implements Parcelable
     @ColumnInfo(name = "noti_time_minute")
     private int notiMinute;
 
-    @ColumnInfo(name = "place_to_be_visited")
-    private int place;
-
-    @ColumnInfo(name = "address_to_be_visited")
-    private int address;
-
     @ColumnInfo(name = "inserted_date")
     @TypeConverters({TypeConverter.class})
     private Date insertedDate;
@@ -68,17 +62,13 @@ public class ScheduleDTO implements Parcelable
     @TypeConverters({TypeConverter.class})
     private Date updatedDate;
 
-    @Ignore
-    public static final int NOT_LOCATION = 0;
-
-    @Ignore
-    public static final int SELECTED_LOCATION = 1;
 
     @Ignore
     public static final int DATE_NOT_ALLDAY = 0;
 
     @Ignore
     public static final int DATE_ALLDAY = 1;
+
 
     @Ignore
     public static final int GOOGLE_CATEGORY = 0;
@@ -96,14 +86,43 @@ public class ScheduleDTO implements Parcelable
     @Ignore
     public static final int MAIN_MINUTE = 4;
 
+
     @Ignore
-    public static final int NOT_NOTI = 5;
+    public static final int NOT_SELECTED = -1;
+
+
+    @Ignore
+    public boolean updatedLocation;
+
+    @Ignore
+    public boolean deletedLocation;
+
+    @Ignore
+    public boolean addedLocation;
 
     public ScheduleDTO()
     {
-        notiMainType = NOT_NOTI;
-        address = NOT_LOCATION;
-        place = NOT_LOCATION;
+        category = NOT_SELECTED;
+        notiMainType = NOT_SELECTED;
+        dateType = DATE_NOT_ALLDAY;
+        notiDay = NOT_SELECTED;
+        notiHour = NOT_SELECTED;
+        notiMinute = NOT_SELECTED;
+
+        subject = "";
+        content = "";
+
+        startDate = new Date();
+        endDate = new Date();
+        notiTime = new Date();
+        insertedDate = new Date();
+        updatedDate = new Date();
+
+        startDate.setTime(NOT_SELECTED);
+        endDate.setTime(NOT_SELECTED);
+        notiTime.setTime(NOT_SELECTED);
+        insertedDate.setTime(NOT_SELECTED);
+        updatedDate.setTime(NOT_SELECTED);
     }
 
     protected ScheduleDTO(Parcel in)
@@ -120,8 +139,6 @@ public class ScheduleDTO implements Parcelable
         notiDay = in.readInt();
         notiHour = in.readInt();
         notiMinute = in.readInt();
-        place = in.readInt();
-        address = in.readInt();
         insertedDate = (Date) in.readSerializable();
         updatedDate = (Date) in.readSerializable();
     }
@@ -181,26 +198,6 @@ public class ScheduleDTO implements Parcelable
         this.content = content;
     }
 
-
-    public int getPlace()
-    {
-        return place;
-    }
-
-    public void setPlace(int place)
-    {
-        this.place = place;
-    }
-
-    public int getAddress()
-    {
-        return address;
-    }
-
-    public void setAddress(int address)
-    {
-        this.address = address;
-    }
 
     public void setDateType(int dateType)
     {
@@ -323,8 +320,6 @@ public class ScheduleDTO implements Parcelable
         parcel.writeInt(notiDay);
         parcel.writeInt(notiHour);
         parcel.writeInt(notiMinute);
-        parcel.writeInt(place);
-        parcel.writeInt(address);
         parcel.writeSerializable(insertedDate);
         parcel.writeSerializable(updatedDate);
     }

@@ -438,6 +438,14 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
         } else
         {
         }
+
+        if (isMain)
+        {
+            binding.gpsButton.performClick();
+        } else
+        {
+
+        }
         super.onStart();
     }
 

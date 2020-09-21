@@ -86,6 +86,7 @@
                         android:layout_marginTop="16dp"
                         android:layout_marginEnd="16dp"
                         android:layout_marginBottom="16dp"
+                        android:labelFor="@id/subject"
                         android:text="제목"
                         android:textColor="@color/text_color"
                         android:textSize="@dimen/schedule_info_desc_text_size" />
@@ -102,7 +103,6 @@
                         android:focusableInTouchMode="true"
                         android:hint="@string/subject_default"
                         android:inputType="text"
-                        android:text="@{scheduleDto.subject != null ? scheduleDto.subject : null}"
                         android:textColor="@color/text_color"
                         android:textSize="@dimen/schedule_info_value_text_size" />
 
@@ -172,7 +172,7 @@
 
                             <TextView
                                 android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
+                                android:layout_height="match_parent"
                                 android:layout_gravity="center_vertical"
                                 android:text="@string/date_text_allday"
                                 android:textColor="@color/text_color"
@@ -185,7 +185,6 @@
                                 android:background="?attr/selectableItemBackground"
                                 android:clickable="true"
                                 android:hint="@string/date_text_allday"
-                                android:text="@{scheduleDto.startDate != null ? (scheduleDto.startDate.equals(scheduleDto.endDate) ? Clock.dateFormat3.format(scheduleDto.startDate) : null) : null}"
                                 android:textAlignment="textEnd"
                                 android:textColor="@color/text_color"
                                 android:textSize="@dimen/schedule_info_value_text_size"
@@ -213,7 +212,6 @@
                                 android:background="?attr/selectableItemBackground"
                                 android:clickable="true"
                                 android:hint="@string/start_date_text_not_allday"
-                                android:text="@{scheduleDto.startDate != null ? Clock.dateFormat2.format(scheduleDto.startDate) : null}"
                                 android:textAlignment="textEnd"
                                 android:textColor="@color/text_color"
                                 android:textSize="@dimen/schedule_info_value_text_size"
@@ -241,7 +239,6 @@
                                 android:background="?attr/selectableItemBackground"
                                 android:clickable="true"
                                 android:hint="@string/end_date_text_not_allday"
-                                android:text="@{scheduleDto.endDate != null ? Clock.dateFormat2.format(scheduleDto.endDate) : null}"
                                 android:textAlignment="textEnd"
                                 android:textColor="@color/text_color"
                                 android:textSize="@dimen/schedule_info_value_text_size"
@@ -264,6 +261,7 @@
                         android:layout_marginTop="16dp"
                         android:layout_marginEnd="16dp"
                         android:layout_marginBottom="16dp"
+                        android:labelFor="@id/content"
                         android:text="내용"
                         android:textColor="@color/text_color"
                         android:textSize="@dimen/schedule_info_desc_text_size" />
@@ -280,7 +278,6 @@
                         android:gravity="start|top"
                         android:hint="@string/content_default"
                         android:inputType="textMultiLine"
-                        android:text="@{scheduleDto.content != null ? scheduleDto.content : null}"
                         android:textAlignment="textStart"
                         android:textColor="@color/text_color"
                         android:textSize="@dimen/schedule_info_value_text_size" />
@@ -351,7 +348,6 @@
                         android:layout_marginBottom="8dp"
                         android:clickable="true"
                         android:hint="@string/noti_time_not_selected"
-                        android:text="@{notification != null ? notification.resultStr : null}"
                         android:textColor="@color/text_color"
                         android:textSize="@dimen/schedule_info_value_text_size" />
                 </LinearLayout>
