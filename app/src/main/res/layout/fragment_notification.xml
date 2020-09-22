@@ -21,9 +21,6 @@
             name="result"
             type="String" />
 
-        <variable
-            name="notificationObj"
-            type="com.zerodsoft.scheduleweather.etc.SelectedNotificationTime" />
     </data>
 
     <FrameLayout

@@ -36,9 +36,9 @@ public class ScheduleInfoActivity extends AppCompatActivity implements Notificat
 {
     /*
        - 수정해야 하는 것
-        일정 클릭 후 읽어 왔을때 제목, 하루종일 시간이 안나옴
         데이터 수정 클릭 한 뒤 edittext가 작동하지 않는 문제
         하단 버튼의 삭제 버튼 클릭 시 다이얼로그를 띄워서 재 확인을 하도록 해야함
+        일정을 클릭 했을때 데이터 읽기 실패
      */
     public static final int REQUEST_NEW_SCHEDULE = 0;
     public static final int REQUEST_SHOW_SCHEDULE = 10;
@@ -166,14 +166,26 @@ public class ScheduleInfoActivity extends AppCompatActivity implements Notificat
                 {
                     // 계정, 제목, 날짜, 내용, 위치 ,알림 내용을 화면에 표시하는 코드
 
+                    //계정
+                    activityBinding.accountSpinner.setSelection(scheduleDTO.getCategory());
+
+                    //제목
+                    activityBinding.subject.setText(scheduleDTO.getSubject());
+
                     //날짜
                     if (scheduleDTO.getDateType() == ScheduleDTO.DATE_ALLDAY)
                     {
                         activityBinding.scheduleAlldaySwitch.setChecked(true);
+                        activityBinding.alldayValue.setText(Clock.dateFormat3.format(scheduleDTO.getStartDate()));
                     } else
                     {
                         activityBinding.scheduleAlldaySwitch.setChecked(false);
+                        activityBinding.startdateValue.setText(Clock.dateFormat2.format(scheduleDTO.getStartDate()));
+                        activityBinding.enddateValue.setText(Clock.dateFormat2.format(scheduleDTO.getEndDate()));
                     }
+
+                    //내용
+                    activityBinding.content.setText(scheduleDTO.getContent());
 
                     //위치
                     if (viewModel.getPlace() != null)
@@ -206,6 +218,7 @@ public class ScheduleInfoActivity extends AppCompatActivity implements Notificat
                                 break;
                         }
                         activityBinding.setNotification(selectedNotificationTime);
+                        activityBinding.notificationValue.setText(selectedNotificationTime.getResultStr());
                     }
                 }
             }
@@ -306,8 +319,8 @@ public class ScheduleInfoActivity extends AppCompatActivity implements Notificat
                 if (activityBinding.getScheduleDto().getSubject().isEmpty())
                 {
                     Toast.makeText(ScheduleInfoActivity.this, "제목을 입력해주세요", Toast.LENGTH_SHORT).show();
-                } else if (activityBinding.getScheduleDto().getStartDate().getTime() == ScheduleDTO.NOT_SELECTED
-                        || activityBinding.getScheduleDto().getEndDate().getTime() == ScheduleDTO.NOT_SELECTED)
+                } else if (activityBinding.getScheduleDto().getStartDate() == null
+                        || activityBinding.getScheduleDto().getEndDate() == null)
                 {
                     Toast.makeText(ScheduleInfoActivity.this, "날짜를 지정해주세요", Toast.LENGTH_SHORT).show();
                 } else
@@ -423,15 +436,15 @@ public class ScheduleInfoActivity extends AppCompatActivity implements Notificat
                     activityBinding.enddateLayout.setVisibility(View.VISIBLE);
                 }
 
-                activityBinding.getScheduleDto().getStartDate().setTime(ScheduleDTO.NOT_SELECTED);
-                activityBinding.getScheduleDto().getEndDate().setTime(ScheduleDTO.NOT_SELECTED);
+                activityBinding.getScheduleDto().setStartDate(null);
+                activityBinding.getScheduleDto().setEndDate(null);
 
                 activityBinding.alldayValue.setText("");
                 activityBinding.startdateValue.setText("");
                 activityBinding.enddateValue.setText("");
 
-                activityBinding.alldayValue.setHint(getString(R.string.date_picker_category_end));
-                activityBinding.startdateValue.setHint(getString(R.string.date_picker_category_end));
+                activityBinding.alldayValue.setHint(getString(R.string.date_picker_category_all_day));
+                activityBinding.startdateValue.setHint(getString(R.string.date_picker_category_start));
                 activityBinding.enddateValue.setHint(getString(R.string.date_picker_category_end));
             }
         });

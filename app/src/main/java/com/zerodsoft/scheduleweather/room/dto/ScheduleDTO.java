@@ -111,18 +111,6 @@ public class ScheduleDTO implements Parcelable
 
         subject = "";
         content = "";
-
-        startDate = new Date();
-        endDate = new Date();
-        notiTime = new Date();
-        insertedDate = new Date();
-        updatedDate = new Date();
-
-        startDate.setTime(NOT_SELECTED);
-        endDate.setTime(NOT_SELECTED);
-        notiTime.setTime(NOT_SELECTED);
-        insertedDate.setTime(NOT_SELECTED);
-        updatedDate.setTime(NOT_SELECTED);
     }
 
     protected ScheduleDTO(Parcel in)

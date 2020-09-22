@@ -52,12 +52,6 @@ public class SelectedNotificationTime
     public SelectedNotificationTime setMainType(int mainType)
     {
         this.mainType = mainType;
-        if (mainType == ScheduleDTO.NOT_SELECTED)
-        {
-            day = 0;
-            hour = 0;
-            minute = 0;
-        }
         return this;
     }
 
@@ -68,7 +62,7 @@ public class SelectedNotificationTime
 
     public void clear()
     {
-        day = 1;
+        day = 0;
         hour = 0;
         minute = 0;
     }
@@ -109,34 +103,40 @@ public class SelectedNotificationTime
 
     public Date getTime()
     {
-        Calendar originalCalendar = Calendar.getInstance();
-        Calendar calendar = (Calendar) originalCalendar.clone();
-
-        switch (mainType)
+        if (mainType == ScheduleDTO.NOT_SELECTED)
         {
-            case ScheduleDTO.MAIN_DAY:
-                calendar.add(day, Calendar.DATE);
-                calendar.add(hour, Calendar.HOUR_OF_DAY);
-                calendar.add(minute, Calendar.MINUTE);
-                break;
-            case ScheduleDTO.MAIN_HOUR:
-                int quotient = (int) Math.floor(hour / 24);
-                int remainder = hour % 24;
+            return null;
+        } else
+        {
+            Calendar originalCalendar = Calendar.getInstance();
+            Calendar calendar = (Calendar) originalCalendar.clone();
 
-                if (quotient >= 1)
-                {
-                    calendar.add(quotient, Calendar.DATE);
-                }
-                if (remainder != 0)
-                {
-                    calendar.add(remainder, Calendar.HOUR_OF_DAY);
-                }
-                break;
-            case ScheduleDTO.MAIN_MINUTE:
-                calendar.add(minute, Calendar.MINUTE);
-                break;
+            switch (mainType)
+            {
+                case ScheduleDTO.MAIN_DAY:
+                    calendar.add(day, Calendar.DATE);
+                    calendar.add(hour, Calendar.HOUR_OF_DAY);
+                    calendar.add(minute, Calendar.MINUTE);
+                    break;
+                case ScheduleDTO.MAIN_HOUR:
+                    int quotient = (int) Math.floor(hour / 24);
+                    int remainder = hour % 24;
+
+                    if (quotient >= 1)
+                    {
+                        calendar.add(quotient, Calendar.DATE);
+                    }
+                    if (remainder != 0)
+                    {
+                        calendar.add(remainder, Calendar.HOUR_OF_DAY);
+                    }
+                    break;
+                case ScheduleDTO.MAIN_MINUTE:
+                    calendar.add(minute, Calendar.MINUTE);
+                    break;
+            }
+            return calendar.getTime();
         }
-        return calendar.getTime();
     }
 }
 

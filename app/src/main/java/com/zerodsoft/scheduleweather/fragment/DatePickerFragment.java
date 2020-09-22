@@ -1,61 +1,75 @@
 package com.zerodsoft.scheduleweather.fragment;
 
-import android.content.Context;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.NumberPicker;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.DialogFragment;
 
 import com.zerodsoft.scheduleweather.activity.ScheduleInfoActivity;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.DatepickerLayoutBinding;
+import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
 
 import java.util.Calendar;
 import java.util.Date;
 
 public class DatePickerFragment extends DialogFragment implements NumberPicker.OnValueChangeListener
 {
-    public static final String TAG = "DATE_PICKER_DIALOG";
+    /*
+    Schedule액티비티에서 날짜 선택 - 날짜 유형과 선택된 날짜를 전달 -
+    1. 날짜가 선택되어 있지 않은 경우 : 시스템 시각을 화면에 표시
+    2. 날짜가 선택된 경우 : 선택된 날짜를 화면에 표시
+
+     */
+    public static final String TAG = "DatePickerFragment";
     public static final int START = 10;
     public static final int END = 20;
     public static final int ALL_DAY = 30;
 
-    private static DatePickerFragment datePickerFragment = new DatePickerFragment();
+    private static DatePickerFragment instance;
     private DatepickerLayoutBinding binding;
-    private Calendar calendar = Calendar.getInstance();
+
+    private Calendar mainCalendar = Calendar.getInstance();
     private Calendar date = Calendar.getInstance();
-    private Calendar selectedDate = null;
+    private Calendar selectedDate = Calendar.getInstance();
 
     private String[] dayList;
     private int dateType;
 
-    private static final String[] days = new String[]{" 일", " 월", " 화", " 수", " 목", " 금", " 토"};
+    private String[] days;
 
     public void setDateType(int type)
     {
         dateType = type;
     }
 
+    public DatePickerFragment()
+    {
+
+    }
+
     public static DatePickerFragment getInstance()
     {
-        return datePickerFragment;
+        if (instance == null)
+        {
+            instance = new DatePickerFragment();
+        }
+        return instance;
     }
 
     @Override
-    public void onAttach(@NonNull Context context)
+    public void onCreate(@Nullable Bundle savedInstanceState)
     {
-        super.onAttach(context);
+        days = getResources().getStringArray(R.array.day_list);
+        super.onCreate(savedInstanceState);
     }
 
     @Nullable
@@ -83,11 +97,16 @@ public class DatePickerFragment extends DialogFragment implements NumberPicker.O
             @Override
             public void onClick(View view)
             {
-                int hourOfDay = 0;
 
-                if (dateType != ALL_DAY)
+                if (dateType == ALL_DAY)
+                {
+                    // all day
+                    date.set(binding.yearPicker.getValue(), binding.monthPicker.getValue() - 1, binding.dayPicker.getValue() + 1);
+                } else
                 {
                     // not all day
+                    int hourOfDay = 0;
+
                     if (binding.meridiemPicker.getValue() == Calendar.AM)
                     {
                         hourOfDay = binding.hourPicker.getValue();
@@ -95,7 +114,7 @@ public class DatePickerFragment extends DialogFragment implements NumberPicker.O
                         {
                             hourOfDay = 0;
                         }
-                    } else
+                    } else if (binding.meridiemPicker.getValue() == Calendar.PM)
                     {
                         hourOfDay = binding.hourPicker.getValue() + 12;
                         if (hourOfDay == 24)
@@ -104,25 +123,19 @@ public class DatePickerFragment extends DialogFragment implements NumberPicker.O
                         }
                     }
                     date.set(binding.yearPicker.getValue(), binding.monthPicker.getValue() - 1, binding.dayPicker.getValue() + 1, hourOfDay, binding.minutePicker.getValue());
-                } else
-                {
-                    // all day
-                    date.set(binding.yearPicker.getValue(), binding.monthPicker.getValue() - 1, binding.dayPicker.getValue() + 1);
                 }
 
                 // 시작/종료 날짜를 비교한다
                 // 시작 > 종료인 경우 날짜 설정 불가
                 switch (dateType)
                 {
-                    case ALL_DAY:
-                        break;
                     case START:
                         if (((ScheduleInfoActivity) getActivity()).getDate(END) != null)
                         {
                             // null, 시작<종료, 시작>종료, 시작==종료 인 경우로 나뉨
-                            if (((ScheduleInfoActivity) getActivity()).getDate(END).before(date.getTime()))
+                            if (((ScheduleInfoActivity) getActivity()).getDate(END).getTime() <= date.getTimeInMillis())
                             {
-                                //시작 > 종료 인 경우
+                                //시작 >= 종료 인 경우
                                 Toast.makeText(getActivity(), getString(R.string.date_picker_date_error), Toast.LENGTH_SHORT).show();
                                 return;
                             }
@@ -131,9 +144,9 @@ public class DatePickerFragment extends DialogFragment implements NumberPicker.O
                     case END:
                         if (((ScheduleInfoActivity) getActivity()).getDate(START) != null)
                         {
-                            if (((ScheduleInfoActivity) getActivity()).getDate(START).after(date.getTime()))
+                            if (((ScheduleInfoActivity) getActivity()).getDate(START).getTime() >= date.getTimeInMillis())
                             {
-                                //시작 > 종료 인 경우
+                                //시작 >= 종료 인 경우
                                 Toast.makeText(getActivity(), getString(R.string.date_picker_date_error), Toast.LENGTH_SHORT).show();
                                 return;
                             }
@@ -145,21 +158,24 @@ public class DatePickerFragment extends DialogFragment implements NumberPicker.O
             }
         });
 
-
         super.onViewCreated(view, savedInstanceState);
     }
 
     private void setDatePicker()
     {
-        binding.yearPicker.setMinValue(calendar.get(Calendar.YEAR) - 5);
-        binding.yearPicker.setMaxValue(calendar.get(Calendar.YEAR) + 5);
-        binding.yearPicker.setValue(calendar.get(Calendar.YEAR));
+        // year, month, date, meridiem, hour, minute
+
+        // 연도 설정
+        // 2010 ~ 2030년 범위로 설정
+        binding.yearPicker.setMinValue(2010);
+        binding.yearPicker.setMaxValue(2030);
+        binding.yearPicker.setValue(mainCalendar.get(Calendar.YEAR));
         binding.yearPicker.setDescendantFocusability(NumberPicker.FOCUS_BLOCK_DESCENDANTS);
         binding.yearPicker.setOnValueChangedListener(this);
 
         binding.monthPicker.setMinValue(1);
         binding.monthPicker.setMaxValue(12);
-        binding.monthPicker.setValue(calendar.get(Calendar.MONTH) + 1);
+        binding.monthPicker.setValue(mainCalendar.get(Calendar.MONTH) + 1);
         binding.monthPicker.setDescendantFocusability(NumberPicker.FOCUS_BLOCK_DESCENDANTS);
         binding.monthPicker.setOnValueChangedListener(this);
 
@@ -168,25 +184,24 @@ public class DatePickerFragment extends DialogFragment implements NumberPicker.O
         binding.dayPicker.setMinValue(0);
         binding.dayPicker.setMaxValue(dayList.length - 1);
         binding.dayPicker.setDisplayedValues(dayList);
-
-        binding.dayPicker.setValue(calendar.get(Calendar.DAY_OF_MONTH) - 1);
+        binding.dayPicker.setValue(mainCalendar.get(Calendar.DAY_OF_MONTH) - 1);
         binding.dayPicker.setDescendantFocusability(NumberPicker.FOCUS_BLOCK_DESCENDANTS);
 
         binding.meridiemPicker.setMinValue(0);
         binding.meridiemPicker.setMaxValue(1);
         binding.meridiemPicker.setDisplayedValues(new String[]{"오전", "오후"});
-        binding.meridiemPicker.setValue(calendar.get(Calendar.AM_PM));
+        binding.meridiemPicker.setValue(mainCalendar.get(Calendar.AM_PM));
         binding.meridiemPicker.setDescendantFocusability(NumberPicker.FOCUS_BLOCK_DESCENDANTS);
 
         binding.hourPicker.setMinValue(1);
         binding.hourPicker.setMaxValue(12);
 
-        if (calendar.get(Calendar.HOUR) == 0)
+        if (mainCalendar.get(Calendar.HOUR) == 0)
         {
             binding.hourPicker.setValue(12);
         } else
         {
-            binding.hourPicker.setValue(calendar.get(Calendar.HOUR));
+            binding.hourPicker.setValue(mainCalendar.get(Calendar.HOUR));
         }
         binding.hourPicker.setDescendantFocusability(NumberPicker.FOCUS_BLOCK_DESCENDANTS);
         binding.hourPicker.setOnValueChangedListener(this);
@@ -199,12 +214,10 @@ public class DatePickerFragment extends DialogFragment implements NumberPicker.O
 
     private void setSelectedDate()
     {
+        // year, month, date, meridiem, hour, minute
         binding.yearPicker.setValue(selectedDate.get(Calendar.YEAR));
-        changeDayPicker();
-
         binding.monthPicker.setValue(selectedDate.get(Calendar.MONTH) + 1);
         changeDayPicker();
-
         binding.dayPicker.setValue(selectedDate.get(Calendar.DAY_OF_MONTH) - 1);
         binding.meridiemPicker.setValue(selectedDate.get(Calendar.AM_PM));
 
@@ -230,9 +243,9 @@ public class DatePickerFragment extends DialogFragment implements NumberPicker.O
         layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT;
         getDialog().getWindow().setAttributes(layoutParams);
 
-        calendar.setTimeInMillis(System.currentTimeMillis());
-        calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), calendar.get(Calendar.HOUR_OF_DAY), 0, 0);
-        date.setTimeInMillis(calendar.getTimeInMillis());
+        mainCalendar.setTimeInMillis(System.currentTimeMillis());
+        mainCalendar.set(mainCalendar.get(Calendar.YEAR), mainCalendar.get(Calendar.MONTH), mainCalendar.get(Calendar.DAY_OF_MONTH), mainCalendar.get(Calendar.HOUR_OF_DAY), 0, 0);
+        date.setTimeInMillis(mainCalendar.getTimeInMillis());
         setDatePicker();
 
         //프래그먼트 헤더의 제목 설정
@@ -251,14 +264,15 @@ public class DatePickerFragment extends DialogFragment implements NumberPicker.O
                 binding.hourTextview.setVisibility(View.GONE);
                 binding.minuteTextview.setVisibility(View.GONE);
 
-                binding.meridiemTextview.setVisibility(View.GONE);
-                binding.hourTextview.setVisibility(View.GONE);
-                binding.minuteTextview.setVisibility(View.GONE);
+                binding.meridiemPicker.setVisibility(View.GONE);
+                binding.hourPicker.setVisibility(View.GONE);
+                binding.minutePicker.setVisibility(View.GONE);
                 break;
         }
 
         if (selectedDate != null)
         {
+            // 선택된 날짜가 있는 경우
             setSelectedDate();
         }
 
@@ -274,9 +288,6 @@ public class DatePickerFragment extends DialogFragment implements NumberPicker.O
     @Override
     public void onStop()
     {
-        // 선택된 날짜 초기화
-        date.setTimeInMillis(calendar.getTimeInMillis());
-        selectedDate = null;
         super.onStop();
     }
 
@@ -328,12 +339,14 @@ public class DatePickerFragment extends DialogFragment implements NumberPicker.O
 
     private void setDayList()
     {
+        // 해당 월의 마지막 날짜를 구함
         dayList = new String[date.getActualMaximum(Calendar.DAY_OF_MONTH)];
         int dayIndex = date.get(Calendar.DAY_OF_WEEK) - 1;
+        // Calendar.DAY_OF_WEEK : 1 = sunday, 7 = saturday
 
         for (int i = 1; i <= date.getActualMaximum(Calendar.DAY_OF_MONTH); i++)
         {
-            dayList[i - 1] = i + days[dayIndex++];
+            dayList[i - 1] = i + " " + days[dayIndex++];
 
             if (dayIndex == days.length)
             {
@@ -344,16 +357,14 @@ public class DatePickerFragment extends DialogFragment implements NumberPicker.O
 
     public void setSelectedDate(Date date)
     {
-        if (date != null)
-        {
-            if (selectedDate == null)
-            {
-                selectedDate = Calendar.getInstance();
-            }
-            selectedDate.setTime(date);
-        } else
+        if (date == null)
         {
             selectedDate = null;
+        } else
+        {
+            // 선택된 날짜가 있는 경우
+            selectedDate = (Calendar) mainCalendar.clone();
+            selectedDate.setTime(date);
         }
     }
 }

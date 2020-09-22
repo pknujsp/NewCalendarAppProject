@@ -18,6 +18,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -39,7 +40,6 @@ public class NotificationFragment extends DialogFragment
     private FragmentNotificationBinding fragmentBinding;
 
     private boolean buttonLongClick = false;
-    private boolean restartedFragment = false;
 
     public static NotificationFragment getInstance()
     {
@@ -84,26 +84,12 @@ public class NotificationFragment extends DialogFragment
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
-        fragmentBinding.notificationTypeRadioGroup.setOnCheckedChangeListener(onCheckedChangeListener);
-
-        fragmentBinding.notiCancelButton.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                dismiss();
-            }
-        });
-
-        fragmentBinding.notiOkButton.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                onNotificationTimeListener.onNotiTimeSelected(fragmentBinding.getNotificationObj());
-                dismiss();
-            }
-        });
+        RadioListener radioListener = new RadioListener();
+        fragmentBinding.notificationTypeRadioGroup.setOnCheckedChangeListener(radioListener);
+        fragmentBinding.notificationDayRadio.setOnTouchListener(radioListener);
+        fragmentBinding.notificationHourRadio.setOnTouchListener(radioListener);
+        fragmentBinding.notificationMinuteRadio.setOnTouchListener(radioListener);
+        fragmentBinding.notificationDisableRadio.setOnTouchListener(radioListener);
 
         fragmentBinding.minusNotiDayButton.setOnClickListener(onClickListener);
         fragmentBinding.plusNotiDayButton.setOnClickListener(onClickListener);
@@ -126,58 +112,27 @@ public class NotificationFragment extends DialogFragment
         fragmentBinding.minusNotiMinuteButton.setOnTouchListener(onTouchListener);
         fragmentBinding.plusNotiMinuteButton.setOnTouchListener(onTouchListener);
 
+        fragmentBinding.notiCancelButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                dismiss();
+            }
+        });
+
+        fragmentBinding.notiOkButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                onNotificationTimeListener.onNotiTimeSelected(notification);
+                dismiss();
+            }
+        });
+
         super.onViewCreated(view, savedInstanceState);
     }
-
-    final RadioGroup.OnCheckedChangeListener onCheckedChangeListener = new RadioGroup.OnCheckedChangeListener()
-    {
-        @Override
-        public void onCheckedChanged(RadioGroup radioGroup, int viewId)
-        {
-            switch (viewId)
-            {
-                case R.id.notification_day_radio:
-                    // 일
-                    notification.setMainType(ScheduleDTO.MAIN_DAY);
-                    fragmentBinding.notiDayLayout.setVisibility(View.VISIBLE);
-                    fragmentBinding.notiHourLayout.setVisibility(View.VISIBLE);
-                    fragmentBinding.notiMinuteLayout.setVisibility(View.VISIBLE);
-                    break;
-                case R.id.notification_hour_radio:
-                    // 시간
-                    notification.setMainType(ScheduleDTO.MAIN_HOUR);
-                    fragmentBinding.notiDayLayout.setVisibility(View.GONE);
-                    fragmentBinding.notiHourLayout.setVisibility(View.VISIBLE);
-                    fragmentBinding.notiMinuteLayout.setVisibility(View.VISIBLE);
-                    break;
-                case R.id.notification_minute_radio:
-                    // 분
-                    notification.setMainType(ScheduleDTO.MAIN_MINUTE);
-                    fragmentBinding.notiDayLayout.setVisibility(View.GONE);
-                    fragmentBinding.notiHourLayout.setVisibility(View.GONE);
-                    fragmentBinding.notiMinuteLayout.setVisibility(View.VISIBLE);
-                    break;
-                case R.id.notification_disable_radio:
-                    // 일
-                    notification.setMainType(ScheduleDTO.NOT_SELECTED);
-                    fragmentBinding.notiDayLayout.setVisibility(View.GONE);
-                    fragmentBinding.notiHourLayout.setVisibility(View.GONE);
-                    fragmentBinding.notiMinuteLayout.setVisibility(View.GONE);
-                    break;
-            }
-
-            if (!restartedFragment)
-            {
-                checkValue(viewId);
-                notification.setResultStr();
-            }
-
-            fragmentBinding.setDay(Integer.toString(notification.getDay()));
-            fragmentBinding.setHour(Integer.toString(notification.getHour()));
-            fragmentBinding.setMinute(Integer.toString(notification.getMinute()));
-            fragmentBinding.setResult(notification.getResultStr());
-        }
-    };
 
 
     final View.OnLongClickListener onLongClickListener = new View.OnLongClickListener()
@@ -306,7 +261,9 @@ public class NotificationFragment extends DialogFragment
                 break;
 
             case R.id.notification_minute_radio:
+                break;
             case R.id.notification_disable_radio:
+                notification.setDay(0).setHour(0).setMinute(0);
                 break;
         }
     }
@@ -315,8 +272,6 @@ public class NotificationFragment extends DialogFragment
     @Override
     public void onStart()
     {
-        super.onStart();
-
         Point point = new Point();
         getActivity().getWindowManager().getDefaultDisplay().getRealSize(point);
 
@@ -325,9 +280,6 @@ public class NotificationFragment extends DialogFragment
         layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT;
 
         getDialog().getWindow().setAttributes(layoutParams);
-
-        restartedFragment = false;
-        fragmentBinding.setNotificationObj(notification);
 
         switch (notification.getMainType())
         {
@@ -344,6 +296,7 @@ public class NotificationFragment extends DialogFragment
                 fragmentBinding.notificationDisableRadio.performClick();
                 break;
         }
+        super.onStart();
     }
 
     @Override
@@ -355,6 +308,65 @@ public class NotificationFragment extends DialogFragment
     public void setSelectedNotificationTime(SelectedNotificationTime selectedNotificationTime)
     {
         notification = selectedNotificationTime;
-        restartedFragment = true;
+    }
+
+    class RadioListener implements RadioGroup.OnCheckedChangeListener, View.OnTouchListener
+    {
+        boolean touched = false;
+
+        @Override
+        public boolean onTouch(View view, MotionEvent motionEvent)
+        {
+            touched = true;
+            return false;
+        }
+
+        @Override
+        public void onCheckedChanged(RadioGroup radioGroup, int buttonId)
+        {
+            switch (buttonId)
+            {
+                case R.id.notification_day_radio:
+                    // 일
+                    notification.setMainType(ScheduleDTO.MAIN_DAY);
+                    fragmentBinding.notiDayLayout.setVisibility(View.VISIBLE);
+                    fragmentBinding.notiHourLayout.setVisibility(View.VISIBLE);
+                    fragmentBinding.notiMinuteLayout.setVisibility(View.VISIBLE);
+                    break;
+                case R.id.notification_hour_radio:
+                    // 시간
+                    notification.setMainType(ScheduleDTO.MAIN_HOUR);
+                    fragmentBinding.notiDayLayout.setVisibility(View.GONE);
+                    fragmentBinding.notiHourLayout.setVisibility(View.VISIBLE);
+                    fragmentBinding.notiMinuteLayout.setVisibility(View.VISIBLE);
+                    break;
+                case R.id.notification_minute_radio:
+                    // 분
+                    notification.setMainType(ScheduleDTO.MAIN_MINUTE);
+                    fragmentBinding.notiDayLayout.setVisibility(View.GONE);
+                    fragmentBinding.notiHourLayout.setVisibility(View.GONE);
+                    fragmentBinding.notiMinuteLayout.setVisibility(View.VISIBLE);
+                    break;
+                case R.id.notification_disable_radio:
+                    // 일
+                    notification.setMainType(ScheduleDTO.NOT_SELECTED);
+                    fragmentBinding.notiDayLayout.setVisibility(View.GONE);
+                    fragmentBinding.notiHourLayout.setVisibility(View.GONE);
+                    fragmentBinding.notiMinuteLayout.setVisibility(View.GONE);
+                    break;
+            }
+
+            if (touched)
+            {
+                checkValue(buttonId);
+                notification.setResultStr();
+                touched = false;
+            }
+
+            fragmentBinding.setDay(Integer.toString(notification.getDay()));
+            fragmentBinding.setHour(Integer.toString(notification.getHour()));
+            fragmentBinding.setMinute(Integer.toString(notification.getMinute()));
+            fragmentBinding.setResult(notification.getResultStr());
+        }
     }
 }
