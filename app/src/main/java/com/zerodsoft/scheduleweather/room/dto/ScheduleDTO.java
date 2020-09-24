@@ -76,6 +76,9 @@ public class ScheduleDTO implements Parcelable
     @Ignore
     public static final int LOCAL_CATEGORY = 1;
 
+    @Ignore
+    public static final int ALL_CATEGORY = 2;
+
 
     @Ignore
     public static final int MAIN_DAY = 2;
@@ -314,7 +317,7 @@ public class ScheduleDTO implements Parcelable
 
     public boolean isEmpty()
     {
-        if (subject == null)
+        if (subject.isEmpty())
         {
             return true;
         } else

@@ -133,7 +133,7 @@ public class DatePickerFragment extends DialogFragment implements NumberPicker.O
                         if (((ScheduleInfoActivity) getActivity()).getDate(END) != null)
                         {
                             // null, 시작<종료, 시작>종료, 시작==종료 인 경우로 나뉨
-                            if (((ScheduleInfoActivity) getActivity()).getDate(END).getTime() <= date.getTimeInMillis())
+                            if (((ScheduleInfoActivity) getActivity()).getDate(END).getTime() < date.getTimeInMillis())
                             {
                                 //시작 >= 종료 인 경우
                                 Toast.makeText(getActivity(), getString(R.string.date_picker_date_error), Toast.LENGTH_SHORT).show();
@@ -144,7 +144,7 @@ public class DatePickerFragment extends DialogFragment implements NumberPicker.O
                     case END:
                         if (((ScheduleInfoActivity) getActivity()).getDate(START) != null)
                         {
-                            if (((ScheduleInfoActivity) getActivity()).getDate(START).getTime() >= date.getTimeInMillis())
+                            if (((ScheduleInfoActivity) getActivity()).getDate(START).getTime() > date.getTimeInMillis())
                             {
                                 //시작 >= 종료 인 경우
                                 Toast.makeText(getActivity(), getString(R.string.date_picker_date_error), Toast.LENGTH_SHORT).show();

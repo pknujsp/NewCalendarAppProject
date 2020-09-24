@@ -11,7 +11,9 @@ public class Clock
 {
     public static final int CURRENT_WEATHER = 0;
     public static final int N_FORECAST = 1;
+
     public static final TimeZone timeZone = TimeZone.getTimeZone("Asia/Seoul");
+
     public static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
     public static final SimpleDateFormat dateFormatSlash = new SimpleDateFormat("yyyy/MM/dd");
     public static final SimpleDateFormat timeFormat = new SimpleDateFormat("HHmm");
@@ -19,7 +21,8 @@ public class Clock
     public static final SimpleDateFormat dateFormat2 = new SimpleDateFormat("yyyy년 M월 d일 E a h시 m분");
     public static final SimpleDateFormat dateFormat3 = new SimpleDateFormat("yyyy년 M월 d일 E");
     public static final SimpleDateFormat DB_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-    
+    public static final SimpleDateFormat DATE_DAY_OF_WEEK_FORMAT = new SimpleDateFormat("d E");
+
     private Clock()
     {
     }

@@ -36,15 +36,11 @@ public class ScheduleInfoActivity extends AppCompatActivity implements Notificat
 {
     /*
        - 수정해야 하는 것
-        데이터 수정 클릭 한 뒤 edittext가 작동하지 않는 문제
         하단 버튼의 삭제 버튼 클릭 시 다이얼로그를 띄워서 재 확인을 하도록 해야함
-        일정을 클릭 했을때 데이터 읽기 실패
      */
     public static final int REQUEST_NEW_SCHEDULE = 0;
     public static final int REQUEST_SHOW_SCHEDULE = 10;
     public static final int ADD_LOCATION = 20;
-    public static final int DELETED_SCHEDULE = 30;
-    public static final int EDITED_SCHEDULE = 40;
     public static final int SHOW_SCHEDULE = 50;
     public static final int EDIT_SCHEDULE = 60;
     public static final int EDIT_LOCATION = 70;
@@ -567,7 +563,6 @@ public class ScheduleInfoActivity extends AppCompatActivity implements Notificat
             activityBinding.setPlaceDto(null);
             activityBinding.setAddressDto(null);
 
-
             switch (bundle.getInt("dataType"))
             {
                 case MapController.TYPE_ADDRESS:
@@ -583,7 +578,9 @@ public class ScheduleInfoActivity extends AppCompatActivity implements Notificat
         {
             activityBinding.setPlaceDto(null);
             activityBinding.setAddressDto(null);
-        } else if (requestCode == RESULT_CANCELED)
+            activityBinding.location.setText("");
+            activityBinding.location.setHint(getString(R.string.location_default));
+        } else if (resultCode == RESULT_CANCELED)
         {
 
         }
@@ -603,7 +600,6 @@ public class ScheduleInfoActivity extends AppCompatActivity implements Notificat
         public void onTextChanged(CharSequence charSequence, int i, int i1, int i2)
         {
             // 텍스트가 변경될 때 마다 수행
-
         }
 
         @Override

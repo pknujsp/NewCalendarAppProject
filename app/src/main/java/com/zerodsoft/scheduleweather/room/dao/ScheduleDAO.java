@@ -25,8 +25,16 @@ public interface ScheduleDAO
     LiveData<ScheduleDTO> selectSchedule(int scheduleId);
 
     @TypeConverters({TypeConverter.class})
-    @Query("SELECT * FROM TB_SCHEDULE WHERE category = :category AND ((Datetime(start_date) BETWEEN Datetime(:weekFirstDate) AND Datetime(:weekLastDate)) OR (Datetime(end_date) BETWEEN Datetime(:weekFirstDate) AND Datetime(:weekLastDate)))")
-    List<ScheduleDTO> selectSchedules(int category, Date weekFirstDate, Date weekLastDate);
+    @Query("SELECT * FROM TB_SCHEDULE WHERE category = :accountCategory AND (Datetime(start_date) >= Datetime(:startDate) AND Datetime(start_date) < Datetime(:endDate)) " +
+            "OR (Datetime(end_date) >= Datetime(:startDate) AND Datetime(end_date) < Datetime(:endDate)) " +
+            "OR (Datetime(start_date) < Datetime(:startDate) AND Datetime(end_date) > Datetime(:endDate))")
+    LiveData<List<ScheduleDTO>> selectSchedules(int accountCategory, Date startDate, Date endDate);
+
+    @TypeConverters({TypeConverter.class})
+    @Query("SELECT * FROM TB_SCHEDULE WHERE (Datetime(start_date) >= Datetime(:startDate) AND Datetime(start_date) < Datetime(:endDate)) " +
+            "OR (Datetime(end_date) >= Datetime(:startDate) AND Datetime(end_date) < Datetime(:endDate)) " +
+            "OR (Datetime(start_date) < Datetime(:startDate) AND Datetime(end_date) > Datetime(:endDate))")
+    LiveData<List<ScheduleDTO>> selectSchedules(Date startDate, Date endDate);
 
     @Update(onConflict = OnConflictStrategy.IGNORE)
     void updateSchedule(ScheduleDTO scheduleDTO);

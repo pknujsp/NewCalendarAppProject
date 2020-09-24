@@ -1,6 +1,7 @@
 package com.zerodsoft.scheduleweather;
 
 import android.content.Intent;
+import android.graphics.Point;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
@@ -24,6 +25,8 @@ public class AppMainActivity extends AppCompatActivity
     private WeekFragment weekFragment;
     private DayFragment dayFragment;
 
+    private static int DISPLAY_WIDTH = 0;
+    private static int DISPLAY_HEIGHT = 0;
 
     public static final int WEEK_FRAGMENT = 0;
     public static final int DAY_FRAGMENT = 1;
@@ -31,11 +34,28 @@ public class AppMainActivity extends AppCompatActivity
 
     private static int calendarFragmentType = WEEK_FRAGMENT;
 
+    public static int getDisplayHeight()
+    {
+        return DISPLAY_HEIGHT;
+    }
+
+    public static int getDisplayWidth()
+    {
+        return DISPLAY_WIDTH;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_app_main);
+
+        Point point = new Point();
+        getWindowManager().getDefaultDisplay().getRealSize(point);
+
+        DISPLAY_WIDTH = point.x;
+        DISPLAY_HEIGHT = point.y;
+
         Toolbar toolbar = findViewById(R.id.main_toolbar);
         FloatingActionButton fab = findViewById(R.id.fab);
         setSupportActionBar(toolbar);
@@ -45,7 +65,6 @@ public class AppMainActivity extends AppCompatActivity
         actionBar.setTitle("");
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setHomeAsUpIndicator(R.drawable.toolbar_menu_icon);
-
 
         onCalendarFragmentChanged(calendarFragmentType);
 
