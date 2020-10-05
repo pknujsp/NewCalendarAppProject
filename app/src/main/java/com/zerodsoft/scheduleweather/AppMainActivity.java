@@ -4,14 +4,16 @@ import android.content.Intent;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.Menu;
+import android.view.View;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.zerodsoft.scheduleweather.activity.ScheduleInfoActivity;
+import com.zerodsoft.scheduleweather.calendarfragment.CalendarTransactionFragment;
 import com.zerodsoft.scheduleweather.calendarfragment.DayFragment;
 import com.zerodsoft.scheduleweather.calendarfragment.MonthFragment;
 import com.zerodsoft.scheduleweather.calendarfragment.WeekFragment;
+import com.zerodsoft.scheduleweather.databinding.ActivityAppMainBinding;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
@@ -19,20 +21,20 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import java.time.Month;
+
 public class AppMainActivity extends AppCompatActivity
 {
-    private MonthFragment monthFragment;
-    private WeekFragment weekFragment;
-    private DayFragment dayFragment;
+    private ActivityAppMainBinding binding;
+    private CalendarTransactionFragment calendarTransactionFragment;
 
     private static int DISPLAY_WIDTH = 0;
     private static int DISPLAY_HEIGHT = 0;
+    private static int CALENDAR_VIEW_HEIGHT = 0;
 
     public static final int WEEK_FRAGMENT = 0;
     public static final int DAY_FRAGMENT = 1;
     public static final int MONTH_FRAGMENT = 2;
-
-    private static int calendarFragmentType = WEEK_FRAGMENT;
 
     public static int getDisplayHeight()
     {
@@ -48,7 +50,8 @@ public class AppMainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_app_main);
+        binding = ActivityAppMainBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
         Point point = new Point();
         getWindowManager().getDefaultDisplay().getRealSize(point);
@@ -56,8 +59,7 @@ public class AppMainActivity extends AppCompatActivity
         DISPLAY_WIDTH = point.x;
         DISPLAY_HEIGHT = point.y;
 
-        Toolbar toolbar = findViewById(R.id.main_toolbar);
-        FloatingActionButton fab = findViewById(R.id.fab);
+        Toolbar toolbar = binding.mainToolbar;
         setSupportActionBar(toolbar);
 
         ActionBar actionBar = getSupportActionBar();
@@ -66,7 +68,10 @@ public class AppMainActivity extends AppCompatActivity
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setHomeAsUpIndicator(R.drawable.toolbar_menu_icon);
 
-        onCalendarFragmentChanged(calendarFragmentType);
+        calendarTransactionFragment = new CalendarTransactionFragment();
+        getSupportFragmentManager().beginTransaction().add(R.id.calendar_layout, calendarTransactionFragment, CalendarTransactionFragment.TAG).commit();
+
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.add_schedule_button);
 
         fab.setOnClickListener(new View.OnClickListener()
         {
@@ -87,6 +92,12 @@ public class AppMainActivity extends AppCompatActivity
     }
 
     @Override
+    protected void onResume()
+    {
+        super.onResume();
+    }
+
+    @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data)
     {
         super.onActivityResult(requestCode, resultCode, data);
@@ -101,11 +112,6 @@ public class AppMainActivity extends AppCompatActivity
                 }
                 break;
             case RESULT_CANCELED:
-                switch (requestCode)
-                {
-                    case ScheduleInfoActivity.ADD_LOCATION:
-                    case ScheduleInfoActivity.REQUEST_SHOW_SCHEDULE:
-                }
                 break;
         }
     }
@@ -120,56 +126,33 @@ public class AppMainActivity extends AppCompatActivity
     @Override
     public boolean onOptionsItemSelected(MenuItem item)
     {
+        // toolbar menu
         switch (item.getItemId())
         {
             case android.R.id.home:
-                // drawerLayout.openDrawer(navigationView);
-                return true;
+                break;
             case R.id.menu_item_today:
-                weekFragment.goToToday();
-                return true;
+                // 오늘 날짜로 이동
+                break;
             case R.id.menu_item_refresh:
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
-
-    private void onCalendarFragmentChanged(int type)
-    {
-        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-
-        switch (type)
-        {
-            case MONTH_FRAGMENT:
-                if (monthFragment == null)
-                {
-                    monthFragment = new MonthFragment();
-                }
-                fragmentTransaction.replace(R.id.nav_host_fragment, monthFragment).commit();
+                // 달력 갱신
                 break;
-            case WEEK_FRAGMENT:
-                if (weekFragment == null)
-                {
-                    weekFragment = new WeekFragment();
-                }
-                fragmentTransaction.replace(R.id.nav_host_fragment, weekFragment).commit();
+            case R.id.monthFragment:
+                calendarTransactionFragment.replaceFragment(MonthFragment.TAG);
                 break;
-            case DAY_FRAGMENT:
-                if (dayFragment == null)
-                {
-                    dayFragment = new DayFragment();
-                }
-                fragmentTransaction.replace(R.id.nav_host_fragment, dayFragment).commit();
+            case R.id.weekFragment:
+                calendarTransactionFragment.replaceFragment(WeekFragment.TAG);
+                break;
+            case R.id.dayFragment:
+                calendarTransactionFragment.replaceFragment(DayFragment.TAG);
                 break;
         }
+        return super.onOptionsItemSelected(item);
     }
 
-    public void goToScheduleInfoAcitivity(int scheduleId)
+    public static int getCalendarViewHeight()
     {
-        Intent intent = new Intent(AppMainActivity.this, ScheduleInfoActivity.class);
-        intent.putExtra("scheduleId", scheduleId);
-        intent.putExtra("requestCode", ScheduleInfoActivity.REQUEST_SHOW_SCHEDULE);
-        startActivityForResult(intent, ScheduleInfoActivity.REQUEST_SHOW_SCHEDULE);
+        return CALENDAR_VIEW_HEIGHT;
     }
+
 }

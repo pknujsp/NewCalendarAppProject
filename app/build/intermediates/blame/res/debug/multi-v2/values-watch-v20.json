@@ -4,7 +4,7 @@
             "outputFile": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\build\\intermediates\\incremental\\mergeDebugResources\\merged.dir\\values-watch-v20\\values-watch-v20.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\Marx\\.gradle\\caches\\transforms-2\\files-2.1\\308cf7196b5ef02884707b1d44fe6884\\jetified-play-services-auth-18.0.0\\res\\values-watch-v20\\values.xml",
+                    "source": "C:\\Users\\Marx\\.gradle\\caches\\transforms-2\\files-2.1\\dcbca701db44d46a3d2880855b986a80\\jetified-play-services-auth-18.0.0\\res\\values-watch-v20\\values.xml",
                     "from": {
                         "startLines": "4,5,6,7,8,9,10,11",
                         "startColumns": "0,0,0,0,0,0,0,0",
@@ -21,7 +21,7 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\Marx\\.gradle\\caches\\transforms-2\\files-2.1\\f209091eb3926c649f0b3346884e478c\\appcompat-1.1.0\\res\\values-watch-v20\\values-watch-v20.xml",
+                    "source": "C:\\Users\\Marx\\.gradle\\caches\\transforms-2\\files-2.1\\5ef1505dc20547ac74ff9aa8da1b0902\\appcompat-1.2.0\\res\\values-watch-v20\\values-watch-v20.xml",
                     "from": {
                         "startLines": "2,5,8",
                         "startColumns": "4,4,4",

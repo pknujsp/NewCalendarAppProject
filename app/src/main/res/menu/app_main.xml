@@ -13,4 +13,14 @@
         android:icon="@drawable/refresh_icon"
         android:title="refresh"
         app:showAsAction="always" />
+
+    <item
+        android:id="@+id/monthFragment"
+        android:title="@string/calendar_type_month" />
+        <item
+            android:id="@+id/weekFragment"
+            android:title="@string/calendar_type_week" />
+        <item
+            android:id="@+id/dayFragment"
+            android:title="@string/calendar_type_day" />
 </menu>

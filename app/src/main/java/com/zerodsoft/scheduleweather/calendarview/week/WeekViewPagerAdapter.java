@@ -41,7 +41,6 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
 
     private Activity activity;
     private WeekFragment weekFragment;
-
     private Calendar today = Calendar.getInstance();
 
     @Override
@@ -95,8 +94,8 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
 
             weekDatesTextView.setLayoutParams(new LinearLayout.LayoutParams(WeekFragment.getSpacingBetweenDay(), ViewGroup.LayoutParams.WRAP_CONTENT));
             hoursView.setLayoutParams(new LinearLayout.LayoutParams(WeekFragment.getSpacingBetweenDay(), ViewGroup.LayoutParams.WRAP_CONTENT));
-            weekView.setLayoutParams(new LinearLayout.LayoutParams(WeekFragment.getDisplayWidth() - WeekFragment.getSpacingBetweenDay(), ViewGroup.LayoutParams.WRAP_CONTENT));
-            headerCalendarLayout.setLayoutParams(new LinearLayout.LayoutParams(WeekFragment.getDisplayWidth() - WeekFragment.getSpacingBetweenDay(), ViewGroup.LayoutParams.WRAP_CONTENT));
+            weekView.setLayoutParams(new LinearLayout.LayoutParams(AppMainActivity.getDisplayWidth() - WeekFragment.getSpacingBetweenDay(), ViewGroup.LayoutParams.WRAP_CONTENT));
+            headerCalendarLayout.setLayoutParams(new LinearLayout.LayoutParams(AppMainActivity.getDisplayWidth() - WeekFragment.getSpacingBetweenDay(), ViewGroup.LayoutParams.WRAP_CONTENT));
 
             eventListLayout.setVisibility(View.GONE);
 
@@ -112,7 +111,8 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
                     {
                         if (x >= eventGridInfo.getLeft() && x <= eventGridInfo.getRight() && y >= eventGridInfo.getTop() && y <= eventGridInfo.getBottom())
                         {
-                            ((AppMainActivity) activity).goToScheduleInfoAcitivity(eventGridInfo.getScheduleDTO().getId());
+                            // 오늘 날짜로 이동
+                            //   ((AppMainActivity) activity).goToScheduleInfoAcitivity(eventGridInfo.getScheduleDTO().getId());
                             break;
                         }
                     }
@@ -122,13 +122,19 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
             });
         }
 
+        public void setEventList(int position, List<ScheduleDTO> schedules)
+        {
+            // holderSparseArray.get(position).setData(schedules);
+        }
+
         public void onBindView(int position)
         {
             this.viewPosition = position;
 
             setWeekDates();
             weekHeaderView.setPosition(viewPosition);
-            weekView.setPosition(viewPosition).setCoordinateInfoInterface(weekHeaderView).setOnRefreshHoursViewListener(hoursView);
+            weekView.setPosition(viewPosition);
+            weekView.setCoordinateInfoInterface(weekHeaderView).setOnRefreshHoursViewListener(hoursView);
             clearEvents();
         }
 
@@ -161,7 +167,7 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
                     weekFirstDate = weekHeaderView.getWeekFirstDate();
                     weekLastDate = weekHeaderView.getWeekLastDate();
 
-                    schedules = AppDb.getInstance(activity).scheduleDAO().selectSchedules(AccountType.LOCAL.ordinal(), weekFirstDate, weekLastDate);
+                    schedules = (List<ScheduleDTO>) AppDb.getInstance(activity).scheduleDAO().selectSchedules(AccountType.LOCAL.ordinal(), weekFirstDate, weekLastDate);
 
                     coordinateInfos = weekHeaderView.getArray();
                     eventMatrix = new boolean[EVENT_ROW_MAX][7];
@@ -378,7 +384,7 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
 
             for (EventDrawingInfo eventDrawingInfo : eventDrawingInfoList)
             {
-                HeaderEventView headerEventView = new HeaderEventView(activity, eventDrawingInfo, WeekFragment.getDisplayWidth() - WeekFragment.getSpacingBetweenDay(), layoutHeight);
+                HeaderEventView headerEventView = new HeaderEventView(activity, eventDrawingInfo, AppMainActivity.getDisplayWidth() - WeekFragment.getSpacingBetweenDay(), layoutHeight);
                 eventGridInfos.add(new EventGridInfo(headerEventView.getViewRect(), eventDrawingInfo.getSchedule()));
                 eventListLayout.addView(headerEventView);
             }

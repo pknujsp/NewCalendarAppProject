@@ -80,7 +80,7 @@ public class HoursView extends View implements WeekView.OnRefreshHoursViewListen
         for (int i = 0; i < 24; i++)
         {
             // 이번 주 시간
-            canvas.drawText(DateHour.getHourString(i), 0f, WeekView.currentCoordinate.y + (spacingLine * i) + textHeight / 2, textPaint);
+           // canvas.drawText(DateHour.getHourString(i), 0f, WeekView.currentCoordinate.y + (spacingLine * i) + textHeight / 2, textPaint);
         }
     }
 

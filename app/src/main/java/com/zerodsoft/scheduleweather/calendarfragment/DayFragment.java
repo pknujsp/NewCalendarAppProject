@@ -1,7 +1,9 @@
 package com.zerodsoft.scheduleweather.calendarfragment;
 
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -10,28 +12,36 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendarview.day.DayViewPagerAdapter;
-import com.zerodsoft.scheduleweather.calendarview.week.WeekViewPagerAdapter;
+import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
 
-import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 
 public class DayFragment extends Fragment
 {
     public static final String TAG = "DAY_FRAGMENT";
-    public static final int firstViewPosition = Integer.MAX_VALUE / 2;
 
     private ViewPager2 dayViewPager;
     private DayViewPagerAdapter dayViewPagerAdapter;
-    private Calendar calendar;
+    private OnControlCalendar onControlCalendar;
 
-    public DayFragment()
+
+    public DayFragment(Fragment fragment)
     {
+        onControlCalendar = (OnControlCalendar) fragment;
     }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState)
     {
-        calendar = Calendar.getInstance();
         super.onCreate(savedInstanceState);
+    }
+
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
+    {
+        return inflater.inflate(R.layout.fragment_day, container, false);
     }
 
     @Override
@@ -39,9 +49,10 @@ public class DayFragment extends Fragment
     {
         dayViewPager = (ViewPager2) view.findViewById(R.id.day_viewpager);
 
-        dayViewPagerAdapter = new DayViewPagerAdapter(this, (Calendar) calendar.clone());
+        dayViewPagerAdapter = new DayViewPagerAdapter(DayFragment.this);
+        dayViewPager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
         dayViewPager.setAdapter(dayViewPagerAdapter);
-        dayViewPager.setCurrentItem(firstViewPosition, false);
+        dayViewPager.setCurrentItem(CalendarTransactionFragment.FIRST_VIEW_POSITION, false);
 
         OnPageChangeCallback onPageChangeCallback = new OnPageChangeCallback();
         dayViewPager.registerOnPageChangeCallback(onPageChangeCallback);
@@ -63,7 +74,12 @@ public class DayFragment extends Fragment
 
     class OnPageChangeCallback extends ViewPager2.OnPageChangeCallback
     {
-        private int currentPosition = firstViewPosition;
+        private int currentPosition = CalendarTransactionFragment.FIRST_VIEW_POSITION;
+        private int lastPosition;
+
+        public OnPageChangeCallback()
+        {
+        }
 
         @Override
         public void onPageScrollStateChanged(int state)
@@ -84,26 +100,26 @@ public class DayFragment extends Fragment
         public void onPageSelected(int position)
         {
             // drag 성공 시에만 SETTLING 직후 호출
-            super.onPageSelected(position);
+            lastPosition = currentPosition;
             currentPosition = position;
-            // 일정 목록을 가져와서 표시함 header view, week view
-            dayViewPager.setUserInputEnabled(false);
-            new Thread(new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    try
-                    {
-                        Thread.sleep(400);
-                        dayViewPager.setUserInputEnabled(true);
-                    } catch (InterruptedException e)
-                    {
-                        e.printStackTrace();
-                    }
 
-                }
-            }).start();
+            super.onPageSelected(position);
         }
+    }
+
+    public void onSelectedSchedules(int viewPosition, List<ScheduleDTO> schedules)
+    {
+        dayViewPagerAdapter.setData(viewPosition, schedules);
+    }
+
+    public void requestSchedules(int position, Date startDate, Date endDate)
+    {
+        // 해당 페이지에 해당하는 날짜에 대한 데이터 불러오기
+        onControlCalendar.requestSchedules(this, position, startDate, endDate);
+    }
+
+    public ViewPager2 getDayViewPager()
+    {
+        return dayViewPager;
     }
 }

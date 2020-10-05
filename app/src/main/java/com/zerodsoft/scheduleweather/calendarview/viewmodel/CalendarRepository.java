@@ -2,38 +2,45 @@ package com.zerodsoft.scheduleweather.calendarview.viewmodel;
 
 import android.app.Application;
 
+import androidx.arch.core.util.Function;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Transformations;
 
+import com.zerodsoft.scheduleweather.calendarfragment.CalendarTransactionFragment;
 import com.zerodsoft.scheduleweather.room.AppDb;
 import com.zerodsoft.scheduleweather.room.dao.ScheduleDAO;
 import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
 
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
 public class CalendarRepository
 {
     private ScheduleDAO scheduleDAO;
-    private LiveData<List<ScheduleDTO>> schedulesLiveData;
+    private MutableLiveData<List<ScheduleDTO>> schedulesLiveData = new MutableLiveData<>();
+    private LiveData<List<ScheduleDTO>> schedules;
 
     public CalendarRepository(Application application)
     {
         scheduleDAO = AppDb.getInstance(application.getApplicationContext()).scheduleDAO();
     }
 
-    public void selectSchedules(int accountCategory, Date startDate, Date endDate)
+    public void selectSchedules(Date startDate, Date endDate)
     {
-        if (accountCategory == ScheduleDTO.ALL_CATEGORY)
+        if (CalendarTransactionFragment.accountCategory == ScheduleDTO.ALL_CATEGORY)
         {
-            schedulesLiveData = scheduleDAO.selectSchedules(startDate, endDate);
+            schedules = scheduleDAO.selectSchedules(startDate, endDate);
         } else
         {
-            schedulesLiveData = scheduleDAO.selectSchedules(accountCategory, startDate, endDate);
+            schedules = scheduleDAO.selectSchedules(CalendarTransactionFragment.accountCategory, startDate, endDate);
         }
+        schedulesLiveData.postValue(schedules.getValue() != null ? schedules.getValue() : new ArrayList<ScheduleDTO>());
     }
 
-
-    public LiveData<List<ScheduleDTO>> getSchedulesLiveData()
+    public MutableLiveData<List<ScheduleDTO>> getSchedulesLiveData()
     {
         return schedulesLiveData;
     }

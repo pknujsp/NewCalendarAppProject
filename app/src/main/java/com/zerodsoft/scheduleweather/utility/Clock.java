@@ -22,6 +22,7 @@ public class Clock
     public static final SimpleDateFormat dateFormat3 = new SimpleDateFormat("yyyy년 M월 d일 E");
     public static final SimpleDateFormat DB_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     public static final SimpleDateFormat DATE_DAY_OF_WEEK_FORMAT = new SimpleDateFormat("d E");
+    public static final SimpleDateFormat DAY_OF_MONTH_FORMAT = new SimpleDateFormat("d");
 
     private Clock()
     {

@@ -12,8 +12,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.zerodsoft.scheduleweather.AppMainActivity;
 import com.zerodsoft.scheduleweather.calendarview.week.WeekViewPagerAdapter;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
+
+import java.util.Date;
+import java.util.List;
 
 
 public class WeekFragment extends Fragment
@@ -22,30 +27,19 @@ public class WeekFragment extends Fragment
     private ViewPager2 weekViewPager;
     private WeekViewPagerAdapter weekViewPagerAdapter;
 
-    private static int SPACING_BETWEEN_DAY = 0;
-    private static int DISPLAY_WIDTH = 0;
-    private static int DISPLAY_HEIGHT = 0;
+    private OnControlCalendar onControlCalendar;
+    private static int SPACING_BETWEEN_DAY = AppMainActivity.getDisplayWidth() / 8;
 
     private OnPageChangeCallback onPageChangeCallback;
 
-    public WeekFragment()
+    public WeekFragment(Fragment fragment)
     {
-
+        onControlCalendar = (OnControlCalendar) fragment;
     }
 
     public static int getSpacingBetweenDay()
     {
         return SPACING_BETWEEN_DAY;
-    }
-
-    public static int getDisplayHeight()
-    {
-        return DISPLAY_HEIGHT;
-    }
-
-    public static int getDisplayWidth()
-    {
-        return DISPLAY_WIDTH;
     }
 
     @Override
@@ -58,13 +52,6 @@ public class WeekFragment extends Fragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState)
     {
-        Point point = new Point();
-        getActivity().getWindowManager().getDefaultDisplay().getRealSize(point);
-
-        SPACING_BETWEEN_DAY = point.x / 8;
-        DISPLAY_WIDTH = point.x;
-        DISPLAY_HEIGHT = point.y;
-
         return inflater.inflate(R.layout.fragment_week, container, false);
     }
 
@@ -72,13 +59,13 @@ public class WeekFragment extends Fragment
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         onPageChangeCallback = new OnPageChangeCallback();
-        int height = DISPLAY_HEIGHT - getDisplayHeight();
 
         weekViewPager = (ViewPager2) view.findViewById(R.id.week_viewpager);
         weekViewPagerAdapter = new WeekViewPagerAdapter(getActivity(), this);
         weekViewPager.setAdapter(weekViewPagerAdapter);
         weekViewPager.setCurrentItem(WeekViewPagerAdapter.FIRST_VIEW_NUMBER, false);
         weekViewPager.registerOnPageChangeCallback(onPageChangeCallback);
+
         super.onViewCreated(view, savedInstanceState);
     }
 
@@ -145,5 +132,17 @@ public class WeekFragment extends Fragment
         {
             weekViewPager.setCurrentItem(WeekViewPagerAdapter.FIRST_VIEW_NUMBER, true);
         }
+    }
+
+    public void onSelectedSchedules(int viewPosition, List<ScheduleDTO> schedules)
+    {
+        //  weekViewPagerAdapter.setEventList(viewPosition, schedules);
+        weekViewPager.setUserInputEnabled(true);
+    }
+
+    public void requestSchedules( int position, Date startDate, Date endDate)
+    {
+        // 해당 페이지에 해당하는 날짜에 대한 데이터 불러오기
+        onControlCalendar.requestSchedules(this, position, startDate, endDate);
     }
 }

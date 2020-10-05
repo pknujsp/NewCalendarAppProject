@@ -39,14 +39,15 @@
         <attr name="WeekBackgroundColor" format="color" />
     </declare-styleable>
 
-    <declare-styleable name="WeekView">
-        <attr name="WeekDayHourTextColor" format="color" />
-        <attr name="WeekDayHourTextSize" format="dimension" />
-        <attr name="WeekDayViewBackgroundColor" format="color" />
-        <attr name="WeekDayViewLineThickness" format="dimension" />
-        <attr name="WeekDayViewLineColor" format="color" />
-        <attr name="WeekDayViewNewScheduleRectColor" format="color" />
-        <attr name="WeekDayViewNewScheduleRectThickness" format="dimension" />
+    <declare-styleable name="HourEventsView">
+        <attr name="HoursEventsHourTextColor" format="color" />
+        <attr name="HoursEventsHourTextSize" format="dimension" />
+        <attr name="HoursEventsEventTextSize" format="dimension" />
+        <attr name="HoursEventsBackgroundColor" format="color" />
+        <attr name="HoursEventsLineThickness" format="dimension" />
+        <attr name="HoursEventsLineColor" format="color" />
+        <attr name="HoursEventsNewScheduleRectColor" format="color" />
+        <attr name="HoursEventsNewScheduleRectThickness" format="dimension" />
     </declare-styleable>
 
     <declare-styleable name="ViewPagerIndicator">

@@ -83,13 +83,13 @@
                 android:id="@+id/week_view"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                custom:WeekDayHourTextColor="@android:color/black"
-                custom:WeekDayHourTextSize="@dimen/weekview_textsize"
-                custom:WeekDayViewBackgroundColor="@android:color/white"
-                custom:WeekDayViewLineColor="@android:color/darker_gray"
-                custom:WeekDayViewLineThickness="@dimen/line_thickness"
-                custom:WeekDayViewNewScheduleRectColor="@android:color/holo_blue_dark"
-                custom:WeekDayViewNewScheduleRectThickness="10dp" />
+                custom:HoursEventsHourTextColor="@android:color/black"
+                custom:HoursEventsHourTextSize="@dimen/weekview_textsize"
+                custom:HoursEventsBackgroundColor="@android:color/white"
+                custom:HoursEventsLineColor="@android:color/darker_gray"
+                custom:HoursEventsLineThickness="@dimen/line_thickness"
+                custom:HoursEventsNewScheduleRectColor="@android:color/holo_blue_dark"
+                custom:HoursEventsNewScheduleRectThickness="10dp" />
 
         </LinearLayout>
 
