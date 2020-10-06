@@ -140,7 +140,12 @@ public class WeekFragment extends Fragment
         weekViewPager.setUserInputEnabled(true);
     }
 
-    public void requestSchedules( int position, Date startDate, Date endDate)
+    public void setMonth(Date date)
+    {
+        onControlCalendar.setToolbarMonth(date);
+    }
+
+    public void requestSchedules(int position, Date startDate, Date endDate)
     {
         // 해당 페이지에 해당하는 날짜에 대한 데이터 불러오기
         onControlCalendar.requestSchedules(this, position, startDate, endDate);

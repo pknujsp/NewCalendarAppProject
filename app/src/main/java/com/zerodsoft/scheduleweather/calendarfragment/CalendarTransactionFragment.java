@@ -1,11 +1,14 @@
 package com.zerodsoft.scheduleweather.calendarfragment;
 
+import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -23,6 +26,7 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.ScheduleInfoActivity;
 import com.zerodsoft.scheduleweather.calendarview.viewmodel.CalendarViewModel;
 import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
+import com.zerodsoft.scheduleweather.utility.Clock;
 
 import java.util.Date;
 import java.util.List;
@@ -42,7 +46,7 @@ public class CalendarTransactionFragment extends Fragment implements OnControlCa
     private Fragment fragment;
 
 
-    public CalendarTransactionFragment()
+    public CalendarTransactionFragment(Activity activity)
     {
     }
 
@@ -95,6 +99,7 @@ public class CalendarTransactionFragment extends Fragment implements OnControlCa
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
+
         super.onViewCreated(view, savedInstanceState);
     }
 
@@ -147,6 +152,12 @@ public class CalendarTransactionFragment extends Fragment implements OnControlCa
     }
 
     @Override
+    public void setToolbarMonth(Date date)
+    {
+        ((TextView) getActivity().findViewById(R.id.calendar_month)).setText(Clock.YEAR_MONTH_FORMAT.format(date));
+    }
+
+    @Override
     public void requestSchedules(Fragment fragment, int viewPosition, Date startDate, Date endDate)
     {
         this.fragment = fragment;
@@ -158,6 +169,8 @@ public class CalendarTransactionFragment extends Fragment implements OnControlCa
 interface OnControlCalendar
 {
     void showSchedule(int scheduleId);
+
+    void setToolbarMonth(Date date);
 
     void requestSchedules(Fragment fragment, int viewPosition, Date startDate, Date endDate);
 }

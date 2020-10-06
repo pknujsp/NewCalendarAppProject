@@ -13,6 +13,7 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.zerodsoft.scheduleweather.AppMainActivity;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendarfragment.CalendarTransactionFragment;
 import com.zerodsoft.scheduleweather.calendarfragment.DayFragment;
@@ -63,8 +64,14 @@ public class DayViewPagerAdapter extends RecyclerView.Adapter<DayViewPagerAdapte
     @Override
     public void onBindViewHolder(@NonNull DayViewPagerHolder holder, int position)
     {
-        holder.onBind(position);
-        holderSparseArray.put(position, holder);
+    }
+
+    @Override
+    public void onViewAttachedToWindow(@NonNull DayViewPagerHolder holder)
+    {
+        holder.onBind(holder.getAdapterPosition());
+        holderSparseArray.put(holder.getAdapterPosition(), holder);
+        super.onViewAttachedToWindow(holder);
     }
 
     @Override
@@ -119,6 +126,8 @@ public class DayViewPagerAdapter extends RecyclerView.Adapter<DayViewPagerAdapte
             startDate = calendar.getTime();
             // 헤더의 날짜 설정
             setDate(startDate);
+            // 툴바의 month 설정
+            dayFragment.setMonth(startDate);
 
             // 24시간 뒤로 설정
             calendar.add(Calendar.DATE, 1);

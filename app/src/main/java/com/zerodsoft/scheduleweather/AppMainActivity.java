@@ -2,10 +2,13 @@ package com.zerodsoft.scheduleweather;
 
 import android.content.Intent;
 import android.graphics.Point;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.Menu;
 import android.view.View;
+import android.view.ViewTreeObserver;
+import android.widget.GridView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.zerodsoft.scheduleweather.activity.ScheduleInfoActivity;
@@ -14,14 +17,17 @@ import com.zerodsoft.scheduleweather.calendarfragment.DayFragment;
 import com.zerodsoft.scheduleweather.calendarfragment.MonthFragment;
 import com.zerodsoft.scheduleweather.calendarfragment.WeekFragment;
 import com.zerodsoft.scheduleweather.databinding.ActivityAppMainBinding;
+import com.zerodsoft.scheduleweather.utility.Clock;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.widget.PopupMenu;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import java.time.Month;
+import java.util.Date;
 
 public class AppMainActivity extends AppCompatActivity
 {
@@ -35,6 +41,8 @@ public class AppMainActivity extends AppCompatActivity
     public static final int WEEK_FRAGMENT = 0;
     public static final int DAY_FRAGMENT = 1;
     public static final int MONTH_FRAGMENT = 2;
+
+    private View customToolbar;
 
     public static int getDisplayHeight()
     {
@@ -59,30 +67,74 @@ public class AppMainActivity extends AppCompatActivity
         DISPLAY_WIDTH = point.x;
         DISPLAY_HEIGHT = point.y;
 
-        Toolbar toolbar = binding.mainToolbar;
-        setSupportActionBar(toolbar);
+
+        PopupMenu popupMenu = new PopupMenu(this, findViewById(R.id.calendar_type));
+        popupMenu.getMenuInflater().inflate(R.menu.calendar_type_menu, popupMenu.getMenu());
+        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener()
+        {
+            @Override
+            public boolean onMenuItemClick(MenuItem item)
+            {
+                switch (item.getItemId())
+                {
+                    case R.id.month_type:
+                        calendarTransactionFragment.replaceFragment(MonthFragment.TAG);
+                        break;
+                    case R.id.week_type:
+                        calendarTransactionFragment.replaceFragment(WeekFragment.TAG);
+                        break;
+                    case R.id.day_type:
+                        calendarTransactionFragment.replaceFragment(DayFragment.TAG);
+                        break;
+                }
+                return false;
+            }
+        });
+
+        setSupportActionBar(findViewById(R.id.main_toolbar));
 
         ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayShowCustomEnabled(true);
-        actionBar.setTitle("");
-        actionBar.setDisplayHomeAsUpEnabled(true);
-        actionBar.setHomeAsUpIndicator(R.drawable.toolbar_menu_icon);
+        actionBar.setDisplayHomeAsUpEnabled(false);
+        actionBar.setDisplayShowTitleEnabled(false);
+        actionBar.setDisplayShowHomeEnabled(false);
 
-        calendarTransactionFragment = new CalendarTransactionFragment();
-        getSupportFragmentManager().beginTransaction().add(R.id.calendar_layout, calendarTransactionFragment, CalendarTransactionFragment.TAG).commit();
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.add_schedule_button);
-
-        fab.setOnClickListener(new View.OnClickListener()
+        customToolbar = getLayoutInflater().inflate(R.layout.app_main_toolbar, null);
+        actionBar.setCustomView(customToolbar);
+        actionBar.getCustomView().setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view)
             {
-                Intent intent = new Intent(AppMainActivity.this, ScheduleInfoActivity.class);
-                intent.putExtra("requestCode", ScheduleInfoActivity.REQUEST_NEW_SCHEDULE);
-                startActivityForResult(intent, ScheduleInfoActivity.REQUEST_NEW_SCHEDULE);
+                switch (view.getId())
+                {
+                    case R.id.open_navigation_drawer:
+                        //
+                        break;
+                    case R.id.calendar_month:
+                        //
+                        break;
+                    case R.id.add_schedule:
+                        Intent intent = new Intent(AppMainActivity.this, ScheduleInfoActivity.class);
+                        intent.putExtra("requestCode", ScheduleInfoActivity.REQUEST_NEW_SCHEDULE);
+                        startActivityForResult(intent, ScheduleInfoActivity.REQUEST_NEW_SCHEDULE);
+                        break;
+                    case R.id.go_to_today:
+                        //
+                        break;
+                    case R.id.refresh_calendar:
+                        //
+                        break;
+                    case R.id.calendar_type:
+                        popupMenu.show();
+                        break;
+                }
             }
         });
+
+        customToolbar.getViewTreeObserver().addOnGlobalLayoutListener(mGlobalLayoutListener);
+        calendarTransactionFragment = new CalendarTransactionFragment(this);
+        getSupportFragmentManager().beginTransaction().add(R.id.calendar_layout, calendarTransactionFragment, CalendarTransactionFragment.TAG).commit();
     }
 
     @Override
@@ -116,43 +168,39 @@ public class AppMainActivity extends AppCompatActivity
         }
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu)
-    {
-        getMenuInflater().inflate(R.menu.app_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item)
-    {
-        // toolbar menu
-        switch (item.getItemId())
-        {
-            case android.R.id.home:
-                break;
-            case R.id.menu_item_today:
-                // 오늘 날짜로 이동
-                break;
-            case R.id.menu_item_refresh:
-                // 달력 갱신
-                break;
-            case R.id.monthFragment:
-                calendarTransactionFragment.replaceFragment(MonthFragment.TAG);
-                break;
-            case R.id.weekFragment:
-                calendarTransactionFragment.replaceFragment(WeekFragment.TAG);
-                break;
-            case R.id.dayFragment:
-                calendarTransactionFragment.replaceFragment(DayFragment.TAG);
-                break;
-        }
-        return super.onOptionsItemSelected(item);
-    }
 
     public static int getCalendarViewHeight()
     {
         return CALENDAR_VIEW_HEIGHT;
     }
+
+    ViewTreeObserver.OnGlobalLayoutListener mGlobalLayoutListener = new ViewTreeObserver.OnGlobalLayoutListener()
+    {
+        @Override
+        public void onGlobalLayout()
+        {
+            CALENDAR_VIEW_HEIGHT = DISPLAY_HEIGHT - customToolbar.getHeight();
+            //리스너 제거 (해당 뷰의 상태가 변할때 마다 호출되므로)
+            removeOnGlobalLayoutListener(customToolbar.getViewTreeObserver(), mGlobalLayoutListener);
+        }
+    };
+
+
+    private static void removeOnGlobalLayoutListener(ViewTreeObserver observer, ViewTreeObserver.OnGlobalLayoutListener listener)
+    {
+        if (observer == null)
+        {
+            return;
+        }
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN)
+        {
+            observer.removeGlobalOnLayoutListener(listener);
+        } else
+        {
+            observer.removeOnGlobalLayoutListener(listener);
+        }
+    }
+
 
 }

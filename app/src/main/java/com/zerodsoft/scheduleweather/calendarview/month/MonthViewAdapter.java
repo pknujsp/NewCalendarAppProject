@@ -38,14 +38,12 @@ class MonthViewAdapter extends BaseAdapter
     private Date[] nextMonthDays;
     private Date endDay;
 
-    private int cellHeight;
     private GridView gridView;
 
-    public MonthViewAdapter(Context context, Calendar calendar, int cellHeight, GridView gridView)
+    public MonthViewAdapter(Context context, Calendar calendar, GridView gridView)
     {
         this.context = context;
         this.calendar = calendar;
-        this.cellHeight = cellHeight;
         this.gridView = gridView;
         layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         setDays();
@@ -80,7 +78,7 @@ class MonthViewAdapter extends BaseAdapter
         view = layoutInflater.inflate(R.layout.month_event_cell, viewGroup, false);
 
         // 뷰의 높이를 화면의 1/6로 설정
-        cellHeight = gridView.getHeight() / 6;
+        view.getLayoutParams().height = MonthViewPagerAdapter.CELL_HEIGHT;
 
         TextView day = (TextView) view.findViewById(R.id.day_of_month);
         LinearLayout eventsList = (LinearLayout) view.findViewById(R.id.month_event_list);

@@ -118,6 +118,11 @@ public class DayFragment extends Fragment
         onControlCalendar.requestSchedules(this, position, startDate, endDate);
     }
 
+    public void setMonth(Date date)
+    {
+        onControlCalendar.setToolbarMonth(date);
+    }
+
     public ViewPager2 getDayViewPager()
     {
         return dayViewPager;

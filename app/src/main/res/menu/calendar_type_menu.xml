@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/month_type"
+        android:title="Month" />
+    <item
+        android:id="@+id/week_type"
+        android:title="Week" />
+    <item
+        android:id="@+id/day_type"
+        android:title="Day" />
+</menu>

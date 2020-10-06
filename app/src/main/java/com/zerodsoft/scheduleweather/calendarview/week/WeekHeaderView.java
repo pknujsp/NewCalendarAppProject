@@ -15,6 +15,7 @@ import android.view.View;
 
 import androidx.annotation.Nullable;
 
+import com.zerodsoft.scheduleweather.AppMainActivity;
 import com.zerodsoft.scheduleweather.calendarview.dto.CoordinateInfo;
 import com.zerodsoft.scheduleweather.calendarfragment.WeekFragment;
 import com.zerodsoft.scheduleweather.calendarview.EventDrawingInfo;
@@ -251,6 +252,8 @@ public class WeekHeaderView extends View implements WeekView.CoordinateInfoInter
         weekLastDay.add(Calendar.SECOND, -1);
 
         weekFirstDate = new Date(weekFirstDay.getTimeInMillis());
+        // 툴바의 month 설정
+
         weekLastDate = new Date(weekLastDay.getTimeInMillis());
 
         // 날짜를 그림
