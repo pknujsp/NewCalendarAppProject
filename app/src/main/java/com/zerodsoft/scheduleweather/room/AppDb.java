@@ -2,9 +2,11 @@ package com.zerodsoft.scheduleweather.room;
 
 import android.content.Context;
 
+import androidx.annotation.NonNull;
 import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
+import androidx.sqlite.db.SupportSQLiteDatabase;
 
 import com.zerodsoft.scheduleweather.room.dao.FavoriteLocDAO;
 import com.zerodsoft.scheduleweather.room.dao.LocationDAO;

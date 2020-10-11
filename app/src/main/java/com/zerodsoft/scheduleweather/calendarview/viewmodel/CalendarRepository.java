@@ -20,28 +20,39 @@ import java.util.List;
 public class CalendarRepository
 {
     private ScheduleDAO scheduleDAO;
-    private MutableLiveData<List<ScheduleDTO>> schedulesLiveData = new MutableLiveData<>();
-    private LiveData<List<ScheduleDTO>> schedules;
+    public MutableLiveData<List<ScheduleDTO>> schedules;
+
 
     public CalendarRepository(Application application)
     {
         scheduleDAO = AppDb.getInstance(application.getApplicationContext()).scheduleDAO();
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(1970, 5, 5);
+        schedules = new MutableLiveData<>();
+        schedules.setValue(new ArrayList<ScheduleDTO>());
     }
 
     public void selectSchedules(Date startDate, Date endDate)
     {
-        if (CalendarTransactionFragment.accountCategory == ScheduleDTO.ALL_CATEGORY)
+        new Thread(new Runnable()
         {
-            schedules = scheduleDAO.selectSchedules(startDate, endDate);
-        } else
-        {
-            schedules = scheduleDAO.selectSchedules(CalendarTransactionFragment.accountCategory, startDate, endDate);
-        }
-        schedulesLiveData.postValue(schedules.getValue() != null ? schedules.getValue() : new ArrayList<ScheduleDTO>());
+            @Override
+            public void run()
+            {
+                if (CalendarTransactionFragment.accountCategory == ScheduleDTO.ALL_CATEGORY)
+                {
+                    schedules.postValue(scheduleDAO.selectSchedulesNotLive(startDate, endDate));
+                } else
+                {
+                    schedules.postValue(scheduleDAO.selectSchedulesNotLive(CalendarTransactionFragment.accountCategory, startDate, endDate));
+                }
+            }
+        }).start();
+
     }
 
-    public MutableLiveData<List<ScheduleDTO>> getSchedulesLiveData()
+    public MutableLiveData<List<ScheduleDTO>> getSchedules()
     {
-        return schedulesLiveData;
+        return schedules;
     }
 }

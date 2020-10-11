@@ -38,7 +38,7 @@ public class CalendarTransactionFragment extends Fragment implements OnControlCa
     public static final String TAG = "CalendarTransactionFragment";
     private static final int CALENDAR_CONTAINER_VIEW_ID = R.id.calendar_container_view;
     public static final int FIRST_VIEW_POSITION = Integer.MAX_VALUE / 2;
-    public static int accountCategory;
+    public static int accountCategory = ScheduleDTO.ALL_CATEGORY;
 
     private CalendarViewModel calendarViewModel;
 
@@ -70,8 +70,7 @@ public class CalendarTransactionFragment extends Fragment implements OnControlCa
         // 마지막으로 사용된 달력의 종류 가져오기
 
         // 종류에 맞게 현재 날짜와 표시할 계정의 유형을 설정
-        accountCategory = ScheduleDTO.ALL_CATEGORY;
-        String calendarTag = DayFragment.TAG;
+        String calendarTag = MonthFragment.TAG;
 
         replaceFragment(calendarTag);
 
@@ -79,18 +78,21 @@ public class CalendarTransactionFragment extends Fragment implements OnControlCa
         calendarViewModel.getSchedulesLiveData().observe(getViewLifecycleOwner(), new Observer<List<ScheduleDTO>>()
         {
             @Override
-            public void onChanged(List<ScheduleDTO> scheduleList)
+            public void onChanged(@Nullable List<ScheduleDTO> scheduleList)
             {
                 // 요청한 프래그먼트에 데이터 전달
-                if (fragment instanceof MonthFragment)
+                if (!scheduleList.isEmpty())
                 {
-                    ((MonthFragment) fragment).onSelectedSchedules(viewPosition, scheduleList);
-                } else if (fragment instanceof WeekFragment)
-                {
-                    ((WeekFragment) fragment).onSelectedSchedules(viewPosition, scheduleList);
-                } else if (fragment instanceof DayFragment)
-                {
-                    ((DayFragment) fragment).onSelectedSchedules(viewPosition, scheduleList);
+                    if (fragment instanceof MonthFragment)
+                    {
+                        ((MonthFragment) fragment).onSelectedSchedules(viewPosition, scheduleList);
+                    } else if (fragment instanceof WeekFragment)
+                    {
+                        ((WeekFragment) fragment).onSelectedSchedules(viewPosition, scheduleList);
+                    } else if (fragment instanceof DayFragment)
+                    {
+                        ((DayFragment) fragment).onSelectedSchedules(viewPosition, scheduleList);
+                    }
                 }
             }
         });
@@ -99,7 +101,6 @@ public class CalendarTransactionFragment extends Fragment implements OnControlCa
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
-
         super.onViewCreated(view, savedInstanceState);
     }
 

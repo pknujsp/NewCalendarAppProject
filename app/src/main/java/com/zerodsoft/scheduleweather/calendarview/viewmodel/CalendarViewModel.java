@@ -70,14 +70,11 @@ public class CalendarViewModel extends AndroidViewModel
 
          */
         calendarRepository = new CalendarRepository(application);
-
-        //   calendarRepository.selectSchedules(accountCategory, startDate, endDate);
-        //   schedulesLiveData = calendarRepository.getSchedulesLiveData();
+        schedulesLiveData = calendarRepository.getSchedules();
     }
 
-    public LiveData<List<ScheduleDTO>> getSchedulesLiveData()
+    public MutableLiveData<List<ScheduleDTO>> getSchedulesLiveData()
     {
-        schedulesLiveData = calendarRepository.getSchedulesLiveData();
         return schedulesLiveData;
     }
 

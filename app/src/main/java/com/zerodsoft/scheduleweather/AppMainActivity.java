@@ -67,30 +67,6 @@ public class AppMainActivity extends AppCompatActivity
         DISPLAY_WIDTH = point.x;
         DISPLAY_HEIGHT = point.y;
 
-
-        PopupMenu popupMenu = new PopupMenu(this, findViewById(R.id.calendar_type));
-        popupMenu.getMenuInflater().inflate(R.menu.calendar_type_menu, popupMenu.getMenu());
-        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener()
-        {
-            @Override
-            public boolean onMenuItemClick(MenuItem item)
-            {
-                switch (item.getItemId())
-                {
-                    case R.id.month_type:
-                        calendarTransactionFragment.replaceFragment(MonthFragment.TAG);
-                        break;
-                    case R.id.week_type:
-                        calendarTransactionFragment.replaceFragment(WeekFragment.TAG);
-                        break;
-                    case R.id.day_type:
-                        calendarTransactionFragment.replaceFragment(DayFragment.TAG);
-                        break;
-                }
-                return false;
-            }
-        });
-
         setSupportActionBar(findViewById(R.id.main_toolbar));
 
         ActionBar actionBar = getSupportActionBar();
@@ -101,40 +77,59 @@ public class AppMainActivity extends AppCompatActivity
 
         customToolbar = getLayoutInflater().inflate(R.layout.app_main_toolbar, null);
         actionBar.setCustomView(customToolbar);
-        actionBar.getCustomView().setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                switch (view.getId())
-                {
-                    case R.id.open_navigation_drawer:
-                        //
-                        break;
-                    case R.id.calendar_month:
-                        //
-                        break;
-                    case R.id.add_schedule:
-                        Intent intent = new Intent(AppMainActivity.this, ScheduleInfoActivity.class);
-                        intent.putExtra("requestCode", ScheduleInfoActivity.REQUEST_NEW_SCHEDULE);
-                        startActivityForResult(intent, ScheduleInfoActivity.REQUEST_NEW_SCHEDULE);
-                        break;
-                    case R.id.go_to_today:
-                        //
-                        break;
-                    case R.id.refresh_calendar:
-                        //
-                        break;
-                    case R.id.calendar_type:
-                        popupMenu.show();
-                        break;
-                }
-            }
-        });
 
         customToolbar.getViewTreeObserver().addOnGlobalLayoutListener(mGlobalLayoutListener);
         calendarTransactionFragment = new CalendarTransactionFragment(this);
         getSupportFragmentManager().beginTransaction().add(R.id.calendar_layout, calendarTransactionFragment, CalendarTransactionFragment.TAG).commit();
+    }
+
+    public void onClickToolbar(View view)
+    {
+        switch (view.getId())
+        {
+            case R.id.open_navigation_drawer:
+                //
+                break;
+            case R.id.calendar_month:
+                //
+                break;
+            case R.id.add_schedule:
+                Intent intent = new Intent(AppMainActivity.this, ScheduleInfoActivity.class);
+                intent.putExtra("requestCode", ScheduleInfoActivity.REQUEST_NEW_SCHEDULE);
+                startActivityForResult(intent, ScheduleInfoActivity.REQUEST_NEW_SCHEDULE);
+                break;
+            case R.id.go_to_today:
+                //
+                break;
+            case R.id.refresh_calendar:
+                //
+                break;
+            case R.id.calendar_type:
+                PopupMenu popupMenu = new PopupMenu(AppMainActivity.this, view);
+                getMenuInflater().inflate(R.menu.calendar_type_menu, popupMenu.getMenu());
+                popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener()
+                {
+                    @Override
+                    public boolean onMenuItemClick(MenuItem item)
+                    {
+                        switch (item.getItemId())
+                        {
+                            case R.id.month_type:
+                                calendarTransactionFragment.replaceFragment(MonthFragment.TAG);
+                                break;
+                            case R.id.week_type:
+                                calendarTransactionFragment.replaceFragment(WeekFragment.TAG);
+                                break;
+                            case R.id.day_type:
+                                calendarTransactionFragment.replaceFragment(DayFragment.TAG);
+                                break;
+                        }
+                        return false;
+                    }
+                });
+                popupMenu.show();
+                break;
+        }
     }
 
     @Override

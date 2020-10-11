@@ -4,7 +4,7 @@
             "outputFile": "C:\\programming\\Android\\Android Projects\\ScheduleWeather\\app\\build\\intermediates\\incremental\\mergeDebugResources\\merged.dir\\values-en-rXC\\values-en-rXC.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\Marx\\.gradle\\caches\\transforms-2\\files-2.1\\5ef1505dc20547ac74ff9aa8da1b0902\\appcompat-1.2.0\\res\\values-en-rXC\\values-en-rXC.xml",
+                    "source": "C:\\Users\\Marx\\.gradle\\caches\\transforms-2\\files-2.1\\90b3ab6bb40e2534cc2302168c3b1fb6\\appcompat-1.2.0\\res\\values-en-rXC\\values-en-rXC.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29",
                         "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
@@ -14,7 +14,7 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\Marx\\.gradle\\caches\\transforms-2\\files-2.1\\a5e3b9806e97bde395c1e635697cc69f\\core-1.3.1\\res\\values-en-rXC\\values-en-rXC.xml",
+                    "source": "C:\\Users\\Marx\\.gradle\\caches\\transforms-2\\files-2.1\\30fbbdb66be3928ccd3ef02fd2243a52\\core-1.3.1\\res\\values-en-rXC\\values-en-rXC.xml",
                     "from": {
                         "startLines": "2",
                         "startColumns": "4",

@@ -58,10 +58,12 @@ public class MonthFragment extends Fragment
     {
         viewPagerAdapter.setData(viewPosition, schedules);
     }
+
     public void setMonth(Date date)
     {
         onControlCalendar.setToolbarMonth(date);
     }
+
     public void requestSchedules(int position, Date startDate, Date endDate)
     {
         // 해당 페이지에 해당하는 날짜에 대한 데이터 불러오기
