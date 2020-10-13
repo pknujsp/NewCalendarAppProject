@@ -290,6 +290,7 @@ public class ScheduleDTO implements Parcelable
         this.notiMinute = notiMinute;
     }
 
+
     @Override
     public int describeContents()
     {
@@ -317,7 +318,7 @@ public class ScheduleDTO implements Parcelable
 
     public boolean isEmpty()
     {
-        if (subject.isEmpty())
+        if (subject.isEmpty() && startDate == null)
         {
             return true;
         } else

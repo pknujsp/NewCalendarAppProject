@@ -15,20 +15,26 @@ import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 public class MonthCalendarView extends ViewGroup
 {
     private Calendar calendar;
     private final float HEADER_DAY_TEXT_SIZE;
     private final TextPaint HEADER_DAY_PAINT;
-    private SparseArray<EventDto> schedules;
 
     private int ITEM_WIDTH;
     private int ITEM_HEIGHT;
+
+    private final SparseArray<ItemLayoutCell> ITEM_LAYOUT_CELLS = new SparseArray<>(42);
 
     public MonthCalendarView(Context context, AttributeSet attrs)
     {
@@ -102,35 +108,104 @@ public class MonthCalendarView extends ViewGroup
         super.dispatchDraw(canvas);
     }
 
-    public void setSchedules(SparseArray<EventDto> list)
+    public void clear()
     {
-        schedules = list;
-        // 각각의 ITEMVIEW에 데이터 전달하고 다시 그림
-        int childCount = getChildCount();
+        ITEM_LAYOUT_CELLS.clear();
+    }
 
-        for (int index = 0; index < childCount; index++)
+    public void setSchedules(List<EventData> list)
+    {
+        // 이벤트 테이블에 데이터를 표시할 위치 설정
+        Integer[] indexes = setEventTable(list);
+
+        // 각각의 ITEMVIEW에 데이터 전달하고 다시 그림
+        for (int index = indexes[0]; index <= indexes[1]; index++)
         {
-            if (list.get(index) != null)
+            ((MonthCalendarItemView) getChildAt(index)).setItemLayoutCell(ITEM_LAYOUT_CELLS.get(index));
+            getChildAt(index).invalidate();
+        }
+    }
+
+    private Integer[] setEventTable(List<EventData> list)
+    {
+        int start = Integer.MAX_VALUE;
+        int end = Integer.MIN_VALUE;
+        ITEM_LAYOUT_CELLS.clear();
+
+        // 달력 뷰의 셀에 아이템을 삽입
+        for (EventData eventData : list)
+        {
+            for (int index = eventData.getStartIndex(); index <= eventData.getEndIndex(); index++)
             {
-                ((MonthCalendarItemView) getChildAt(index)).setSchedules(list.get(index).schedulesList);
+                if (ITEM_LAYOUT_CELLS.get(index) == null)
+                {
+                    ITEM_LAYOUT_CELLS.put(index, new ItemLayoutCell());
+                }
+            }
+            int startIndex = eventData.getStartIndex();
+            int endIndex = eventData.getEndIndex();
+
+            if (start > startIndex)
+            {
+                start = startIndex;
+            }
+            if (end < endIndex)
+            {
+                end = endIndex;
+            }
+
+            // 이벤트를 위치시킬 알맞은 행을 지정
+            // startDate부터 endDate까지 공통적으로 비어있는 행을 지정한다.
+            Set<Integer> rowSet = new TreeSet<>();
+
+            for (int index = startIndex; index <= endIndex; index++)
+            {
+                Set<Integer> set = new HashSet<>();
+                for (int row = 0; row < MonthCalendarItemView.EVENT_COUNT; row++)
+                {
+                    if (ITEM_LAYOUT_CELLS.get(index).rows.get(row).isEmpty())
+                    {
+                        set.add(row);
+                    }
+                }
+                if (index == startIndex)
+                {
+                    rowSet.addAll(set);
+                } else
+                {
+                    rowSet.retainAll(set);
+                    // 가능한 행이 없으면 종료
+                    if (rowSet.isEmpty())
+                    {
+                        break;
+                    }
+                }
+            }
+
+            if (rowSet.isEmpty())
+            {
+                // 가능한 행이 없는 경우
+                // 미 표시
+            } else
+            {
+                Iterator<Integer> iterator = rowSet.iterator();
+                int row = iterator.next();
+
+                // 셀에 삽입된 아이템의 위치를 알맞게 조정
+                // 같은 일정은 같은 위치의 셀에 있어야 한다.
+                // row가 MonthCalendarItemView.EVENT_COUNT - 1인 경우 빈 객체를 저장
+                for (int index = startIndex; index <= endIndex; index++)
+                {
+                    if (row == MonthCalendarItemView.EVENT_COUNT - 1)
+                    {
+                        ITEM_LAYOUT_CELLS.get(index).rows.put(row, new ScheduleDTO());
+                    } else
+                    {
+                        ITEM_LAYOUT_CELLS.get(index).rows.put(row, eventData.getSchedule());
+                    }
+                }
             }
         }
-        invalidate();
+        return new Integer[]{start, end};
     }
-
-    private List<ScheduleDTO> getSchedulesList(Date startDate, Date endDate)
-    {
-        /*
-        (Datetime(start_date) >= Datetime(:startDate) AND Datetime(start_date) < Datetime(:endDate))
-        OR
-        (Datetime(end_date) >= Datetime(:startDate) AND Datetime(end_date) < Datetime(:endDate))
-        OR
-        (Datetime(start_date) < Datetime(:startDate) AND Datetime(end_date) > Datetime(:endDate))
-         */
-        List<ScheduleDTO> schedules = new ArrayList<>();
-
-
-        return schedules;
-    }
-
 }

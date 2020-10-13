@@ -37,8 +37,9 @@ public class MonthCalendarItemView extends View
     private Paint LOCAL_EVENT_TEXT_PAINT;
 
     private float EVENT_TEXT_HEIGHT;
-    private final int SPACING_BETWEEN_EVENT = 12;
-    private final int TEXT_MARGIN = 8;
+    private static final int SPACING_BETWEEN_EVENT = 12;
+    private static final int TEXT_MARGIN = 8;
+    public static final int EVENT_COUNT = 5;
 
     private float x;
     private float y;
@@ -47,7 +48,7 @@ public class MonthCalendarItemView extends View
 
     private Date startDate;
     private Date endDate;
-    private List<ScheduleDTO> schedules;
+    private ItemLayoutCell itemLayoutCell;
 
     public MonthCalendarItemView(Context context, int dayTextColor)
     {
@@ -107,7 +108,7 @@ public class MonthCalendarItemView extends View
         y = rect.height() + 8;
 
         eventStartY = y + 16;
-        eventHeight = (getHeight() - eventStartY - SPACING_BETWEEN_EVENT * 2) / 5;
+        eventHeight = (getHeight() - eventStartY - SPACING_BETWEEN_EVENT * 4) / EVENT_COUNT;
 
         GOOGLE_EVENT_TEXT_PAINT.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_PX, eventHeight - TEXT_MARGIN, getContext().getResources().getDisplayMetrics()));
         LOCAL_EVENT_TEXT_PAINT.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_PX, eventHeight - TEXT_MARGIN, getContext().getResources().getDisplayMetrics()));
@@ -119,7 +120,7 @@ public class MonthCalendarItemView extends View
         super.onDraw(canvas);
         // 뷰를 그림
         drawView(canvas);
-        if (schedules != null)
+        if (itemLayoutCell != null)
         {
             drawEvent(canvas);
         }
@@ -132,8 +133,6 @@ public class MonthCalendarItemView extends View
 
     private void drawEvent(Canvas canvas)
     {
-        int count = 0;
-
         int leftMargin = 0;
         int rightMargin = 0;
 
@@ -142,70 +141,74 @@ public class MonthCalendarItemView extends View
         float top = 0;
         float bottom = 0;
 
-        for (ScheduleDTO schedule : schedules)
+        for (int count = 0; count < itemLayoutCell.rows.size(); count++)
         {
-            if (count == 4)
+            ScheduleDTO schedule = itemLayoutCell.rows.get(count);
+            if (!schedule.isEmpty())
             {
-                Paint extraPaint = new Paint();
-                extraPaint.setColor(Color.LTGRAY);
-
-                TextPaint textPaint = new TextPaint();
-                textPaint.setColor(Color.WHITE);
-                textPaint.setTextSize(LOCAL_EVENT_TEXT_PAINT.getTextSize());
-                textPaint.setTextAlign(Paint.Align.LEFT);
-
-                canvas.drawRect(2, top, getWidth() - 2, bottom, extraPaint);
-                canvas.drawText("More", 2 + TEXT_MARGIN, bottom - TEXT_MARGIN, textPaint);
-
-                break;
-            } else
-            {
-                // 시작/종료일이 date가 아니나, 일정에 포함되는 경우
-                if (schedule.getStartDate().before(startDate) && schedule.getEndDate().after(endDate))
-                {
-                    leftMargin = 0;
-                    rightMargin = 0;
-                }
-                // 시작일이 date인 경우
-                else if ((schedule.getEndDate().compareTo(startDate) >= 0 && schedule.getEndDate().before(endDate)) && schedule.getEndDate().after(endDate))
-                {
-                    leftMargin = 4;
-                    rightMargin = 0;
-                }
-                // 종료일이 date인 경우
-                else if ((schedule.getEndDate().compareTo(startDate) >= 0 && schedule.getEndDate().before(endDate)) && schedule.getStartDate().before(startDate))
-                {
-                    leftMargin = 0;
-                    rightMargin = 4;
-                }
-                // 시작/종료일이 date인 경우
-                else if ((schedule.getEndDate().compareTo(startDate) >= 0 && schedule.getEndDate().before(endDate)) && (schedule.getStartDate().compareTo(startDate) >= 0 && schedule.getStartDate().before(endDate)))
-                {
-                    leftMargin = 4;
-                    rightMargin = 4;
-                }
-
-                left = leftMargin;
-                right = getWidth() - rightMargin;
                 top = eventStartY + ((eventHeight + SPACING_BETWEEN_EVENT) * count);
                 bottom = top + eventHeight;
 
-                if (schedule.getCategory() == ScheduleDTO.GOOGLE_CATEGORY)
+                if (count == EVENT_COUNT - 1)
                 {
-                    canvas.drawRect(left, top, right, bottom, GOOGLE_EVENT_PAINT);
-                    canvas.drawText(schedule.getSubject().substring(0, 4), left + TEXT_MARGIN, bottom - TEXT_MARGIN, GOOGLE_EVENT_TEXT_PAINT);
+                    Paint extraPaint = new Paint();
+                    extraPaint.setColor(Color.LTGRAY);
+
+                    TextPaint textPaint = new TextPaint();
+                    textPaint.setColor(Color.WHITE);
+                    textPaint.setTextSize(LOCAL_EVENT_TEXT_PAINT.getTextSize());
+                    textPaint.setTextAlign(Paint.Align.LEFT);
+
+                    canvas.drawRect(2, top, getWidth() - 2, bottom, extraPaint);
+                    canvas.drawText("More", 2 + TEXT_MARGIN, bottom - TEXT_MARGIN, textPaint);
+
+                    break;
                 } else
                 {
-                    canvas.drawRect(left, top, right, bottom, LOCAL_EVENT_PAINT);
-                    canvas.drawText(schedule.getSubject().substring(0, 4), left + TEXT_MARGIN, bottom - TEXT_MARGIN, LOCAL_EVENT_TEXT_PAINT);
+                    // 시작/종료일이 date가 아니나, 일정에 포함되는 경우
+                    if (schedule.getStartDate().before(startDate) && schedule.getEndDate().after(endDate))
+                    {
+                        leftMargin = 0;
+                        rightMargin = 0;
+                    }
+                    // 시작일이 date인 경우
+                    else if ((schedule.getEndDate().compareTo(startDate) >= 0 && schedule.getEndDate().before(endDate)) && schedule.getEndDate().after(endDate))
+                    {
+                        leftMargin = 4;
+                        rightMargin = 0;
+                    }
+                    // 종료일이 date인 경우
+                    else if ((schedule.getEndDate().compareTo(startDate) >= 0 && schedule.getEndDate().before(endDate)) && schedule.getStartDate().before(startDate))
+                    {
+                        leftMargin = 0;
+                        rightMargin = 4;
+                    }
+                    // 시작/종료일이 date인 경우
+                    else if ((schedule.getEndDate().compareTo(startDate) >= 0 && schedule.getEndDate().before(endDate)) && (schedule.getStartDate().compareTo(startDate) >= 0 && schedule.getStartDate().before(endDate)))
+                    {
+                        leftMargin = 4;
+                        rightMargin = 4;
+                    }
+
+                    left = leftMargin;
+                    right = getWidth() - rightMargin;
+
+                    if (schedule.getCategory() == ScheduleDTO.GOOGLE_CATEGORY)
+                    {
+                        canvas.drawRect(left, top, right, bottom, GOOGLE_EVENT_PAINT);
+                        canvas.drawText(schedule.getSubject(), left + TEXT_MARGIN, bottom - TEXT_MARGIN, GOOGLE_EVENT_TEXT_PAINT);
+                    } else
+                    {
+                        canvas.drawRect(left, top, right, bottom, LOCAL_EVENT_PAINT);
+                        canvas.drawText(schedule.getSubject(), left + TEXT_MARGIN, bottom - TEXT_MARGIN, LOCAL_EVENT_TEXT_PAINT);
+                    }
                 }
             }
-            count++;
         }
     }
 
-    public void setSchedules(List<ScheduleDTO> schedules)
+    public void setItemLayoutCell(ItemLayoutCell itemLayoutCell)
     {
-        this.schedules = schedules;
+        this.itemLayoutCell = itemLayoutCell;
     }
 }
