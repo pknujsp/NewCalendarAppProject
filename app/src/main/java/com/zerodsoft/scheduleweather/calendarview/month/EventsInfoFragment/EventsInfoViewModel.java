@@ -1,0 +1,36 @@
+package com.zerodsoft.scheduleweather.calendarview.month.EventsInfoFragment;
+
+import android.app.Application;
+
+import androidx.annotation.NonNull;
+import androidx.lifecycle.AndroidViewModel;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
+
+import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
+
+import java.util.Date;
+import java.util.List;
+
+public class EventsInfoViewModel extends AndroidViewModel
+{
+    private EventsInfoRepository repository;
+    private MutableLiveData<List<ScheduleDTO>> schedulesMutableLiveData;
+
+    public EventsInfoViewModel(@NonNull Application application)
+    {
+        super(application);
+        repository = new EventsInfoRepository(application);
+    }
+
+    public MutableLiveData<List<ScheduleDTO>> getSchedulesMutableLiveData()
+    {
+        schedulesMutableLiveData = repository.getSchedulesMutableLiveData();
+        return schedulesMutableLiveData;
+    }
+
+    public void selectSchedules(Date startDate, Date endDate)
+    {
+        repository.selectSchedules(startDate, endDate);
+    }
+}

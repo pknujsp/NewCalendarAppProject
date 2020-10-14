@@ -11,14 +11,14 @@ import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.calendarview.day.DayViewPagerAdapter;
+import com.zerodsoft.scheduleweather.calendarview.month.EventsInfoFragment.MonthEventsInfoFragment;
 import com.zerodsoft.scheduleweather.calendarview.month.MonthViewPagerAdapter;
 import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
 
 import java.util.Date;
 import java.util.List;
 
-public class MonthFragment extends Fragment
+public class MonthFragment extends Fragment implements OnEventItemClickListener
 {
     public static final String TAG = "MonthFragment";
 
@@ -70,6 +70,14 @@ public class MonthFragment extends Fragment
         onControlCalendar.requestSchedules(this, position, startDate, endDate);
     }
 
+    @Override
+    public void onClicked(Date startDate, Date endDate)
+    {
+        MonthEventsInfoFragment monthEventsInfoFragment = new MonthEventsInfoFragment(startDate, endDate);
+        getActivity().getSupportFragmentManager().beginTransaction().add(monthEventsInfoFragment, MonthEventsInfoFragment.TAG).commit();
+    }
+
+
     class OnPageChangeCallback extends ViewPager2.OnPageChangeCallback
     {
         private int currentPosition = CalendarTransactionFragment.FIRST_VIEW_POSITION;
@@ -105,3 +113,4 @@ public class MonthFragment extends Fragment
         }
     }
 }
+

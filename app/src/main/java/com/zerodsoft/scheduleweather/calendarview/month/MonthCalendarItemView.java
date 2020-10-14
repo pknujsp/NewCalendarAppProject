@@ -18,6 +18,7 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.calendarview.month.EventsInfoFragment.MonthEventsInfoFragment;
 import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
 import com.zerodsoft.scheduleweather.utility.AppSettings;
 import com.zerodsoft.scheduleweather.utility.Clock;
@@ -29,16 +30,15 @@ import java.util.List;
 
 public class MonthCalendarItemView extends View
 {
-
     private TextPaint DAY_TEXT_PAINT;
     private Paint GOOGLE_EVENT_PAINT;
     private Paint LOCAL_EVENT_PAINT;
     private Paint GOOGLE_EVENT_TEXT_PAINT;
     private Paint LOCAL_EVENT_TEXT_PAINT;
 
-    private float EVENT_TEXT_HEIGHT;
     private static final int SPACING_BETWEEN_EVENT = 12;
     private static final int TEXT_MARGIN = 8;
+    public static final int EVENT_MARGIN = 4;
     public static final int EVENT_COUNT = 5;
 
     private float x;
@@ -74,20 +74,9 @@ public class MonthCalendarItemView extends View
         LOCAL_EVENT_TEXT_PAINT.setColor(AppSettings.getLocalEventTextColor());
         LOCAL_EVENT_TEXT_PAINT.setTextAlign(Paint.Align.LEFT);
 
-
         TypedValue backgroundValue = new TypedValue();
         context.getTheme().resolveAttribute(android.R.attr.selectableItemBackground, backgroundValue, true);
         setBackgroundResource(backgroundValue.resourceId);
-
-        setClickable(true);
-        setOnClickListener(new OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-
-            }
-        });
     }
 
     public MonthCalendarItemView setDate(Date startDate, Date endDate)
@@ -141,10 +130,11 @@ public class MonthCalendarItemView extends View
         float top = 0;
         float bottom = 0;
 
-        for (int count = 0; count < itemLayoutCell.rows.size(); count++)
+        for (int count = 0; count < itemLayoutCell.rows.length; count++)
         {
-            ScheduleDTO schedule = itemLayoutCell.rows.get(count);
-            if (!schedule.isEmpty())
+            ScheduleDTO schedule = itemLayoutCell.rows[count];
+
+            if (schedule != null)
             {
                 top = eventStartY + ((eventHeight + SPACING_BETWEEN_EVENT) * count);
                 bottom = top + eventHeight;
@@ -159,7 +149,7 @@ public class MonthCalendarItemView extends View
                     textPaint.setTextSize(LOCAL_EVENT_TEXT_PAINT.getTextSize());
                     textPaint.setTextAlign(Paint.Align.LEFT);
 
-                    canvas.drawRect(2, top, getWidth() - 2, bottom, extraPaint);
+                    canvas.drawRect(EVENT_MARGIN, top, getWidth() - EVENT_MARGIN, bottom, extraPaint);
                     canvas.drawText("More", 2 + TEXT_MARGIN, bottom - TEXT_MARGIN, textPaint);
 
                     break;
@@ -171,23 +161,23 @@ public class MonthCalendarItemView extends View
                         leftMargin = 0;
                         rightMargin = 0;
                     }
-                    // 시작일이 date인 경우
-                    else if ((schedule.getEndDate().compareTo(startDate) >= 0 && schedule.getEndDate().before(endDate)) && schedule.getEndDate().after(endDate))
+                    // 시작일이 date인 경우, 종료일은 endDate 이후
+                    else if (schedule.getEndDate().compareTo(endDate) >= 0 && schedule.getStartDate().compareTo(startDate) >= 0 && schedule.getStartDate().before(endDate))
                     {
-                        leftMargin = 4;
+                        leftMargin = EVENT_MARGIN;
                         rightMargin = 0;
                     }
-                    // 종료일이 date인 경우
-                    else if ((schedule.getEndDate().compareTo(startDate) >= 0 && schedule.getEndDate().before(endDate)) && schedule.getStartDate().before(startDate))
+                    // 종료일이 date인 경우, 시작일은 startDate이전
+                    else if (schedule.getEndDate().compareTo(startDate) >= 0 && schedule.getEndDate().before(endDate) && schedule.getStartDate().before(startDate))
                     {
                         leftMargin = 0;
-                        rightMargin = 4;
+                        rightMargin = EVENT_MARGIN;
                     }
                     // 시작/종료일이 date인 경우
-                    else if ((schedule.getEndDate().compareTo(startDate) >= 0 && schedule.getEndDate().before(endDate)) && (schedule.getStartDate().compareTo(startDate) >= 0 && schedule.getStartDate().before(endDate)))
+                    else if (schedule.getEndDate().compareTo(startDate) >= 0 && schedule.getEndDate().before(endDate) && schedule.getStartDate().compareTo(startDate) >= 0 && schedule.getStartDate().before(endDate))
                     {
-                        leftMargin = 4;
-                        rightMargin = 4;
+                        leftMargin = EVENT_MARGIN;
+                        rightMargin = EVENT_MARGIN;
                     }
 
                     left = leftMargin;
@@ -196,12 +186,21 @@ public class MonthCalendarItemView extends View
                     if (schedule.getCategory() == ScheduleDTO.GOOGLE_CATEGORY)
                     {
                         canvas.drawRect(left, top, right, bottom, GOOGLE_EVENT_PAINT);
-                        canvas.drawText(schedule.getSubject(), left + TEXT_MARGIN, bottom - TEXT_MARGIN, GOOGLE_EVENT_TEXT_PAINT);
+                        if (!schedule.isDrawed())
+                        {
+                            canvas.drawText(schedule.getSubject(), left + TEXT_MARGIN, bottom - TEXT_MARGIN, GOOGLE_EVENT_TEXT_PAINT);
+                            schedule.setDrawed(true);
+                        }
                     } else
                     {
                         canvas.drawRect(left, top, right, bottom, LOCAL_EVENT_PAINT);
-                        canvas.drawText(schedule.getSubject(), left + TEXT_MARGIN, bottom - TEXT_MARGIN, LOCAL_EVENT_TEXT_PAINT);
+                        if (!schedule.isDrawed())
+                        {
+                            canvas.drawText(schedule.getSubject(), left + TEXT_MARGIN, bottom - TEXT_MARGIN, LOCAL_EVENT_TEXT_PAINT);
+                            schedule.setDrawed(true);
+                        }
                     }
+
                 }
             }
         }
@@ -210,5 +209,15 @@ public class MonthCalendarItemView extends View
     public void setItemLayoutCell(ItemLayoutCell itemLayoutCell)
     {
         this.itemLayoutCell = itemLayoutCell;
+    }
+
+    public Date getStartDate()
+    {
+        return startDate;
+    }
+
+    public Date getEndDate()
+    {
+        return endDate;
     }
 }

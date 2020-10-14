@@ -11,6 +11,8 @@ import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.zerodsoft.scheduleweather.calendarfragment.OnEventItemClickListener;
+import com.zerodsoft.scheduleweather.calendarview.month.EventsInfoFragment.MonthEventsInfoFragment;
 import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
 
 import java.util.ArrayList;
@@ -25,7 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-public class MonthCalendarView extends ViewGroup
+public class MonthCalendarView extends ViewGroup implements OnEventItemClickListener
 {
     private Calendar calendar;
     private final float HEADER_DAY_TEXT_SIZE;
@@ -33,6 +35,8 @@ public class MonthCalendarView extends ViewGroup
 
     private int ITEM_WIDTH;
     private int ITEM_HEIGHT;
+
+    private OnEventItemClickListener onEventItemClickListener;
 
     private final SparseArray<ItemLayoutCell> ITEM_LAYOUT_CELLS = new SparseArray<>(42);
 
@@ -46,6 +50,11 @@ public class MonthCalendarView extends ViewGroup
         HEADER_DAY_PAINT.setTextAlign(Paint.Align.CENTER);
         HEADER_DAY_PAINT.setTextSize(HEADER_DAY_TEXT_SIZE);
         HEADER_DAY_PAINT.setColor(Color.BLACK);
+    }
+
+    public void setOnEventItemClickListener(OnEventItemClickListener onEventItemClickListener)
+    {
+        this.onEventItemClickListener = onEventItemClickListener;
     }
 
     @Override
@@ -135,15 +144,17 @@ public class MonthCalendarView extends ViewGroup
         // 달력 뷰의 셀에 아이템을 삽입
         for (EventData eventData : list)
         {
-            for (int index = eventData.getStartIndex(); index <= eventData.getEndIndex(); index++)
-            {
-                if (ITEM_LAYOUT_CELLS.get(index) == null)
-                {
-                    ITEM_LAYOUT_CELLS.put(index, new ItemLayoutCell());
-                }
-            }
             int startIndex = eventData.getStartIndex();
             int endIndex = eventData.getEndIndex();
+
+            if (startIndex == Integer.MIN_VALUE)
+            {
+                startIndex = 0;
+            }
+            if (endIndex == Integer.MAX_VALUE)
+            {
+                endIndex = 41;
+            }
 
             if (start > startIndex)
             {
@@ -152,6 +163,14 @@ public class MonthCalendarView extends ViewGroup
             if (end < endIndex)
             {
                 end = endIndex;
+            }
+
+            for (int index = startIndex; index <= endIndex; index++)
+            {
+                if (ITEM_LAYOUT_CELLS.get(index) == null)
+                {
+                    ITEM_LAYOUT_CELLS.put(index, new ItemLayoutCell());
+                }
             }
 
             // 이벤트를 위치시킬 알맞은 행을 지정
@@ -163,7 +182,7 @@ public class MonthCalendarView extends ViewGroup
                 Set<Integer> set = new HashSet<>();
                 for (int row = 0; row < MonthCalendarItemView.EVENT_COUNT; row++)
                 {
-                    if (ITEM_LAYOUT_CELLS.get(index).rows.get(row).isEmpty())
+                    if (ITEM_LAYOUT_CELLS.get(index).rows[row] == null)
                     {
                         set.add(row);
                     }
@@ -198,14 +217,21 @@ public class MonthCalendarView extends ViewGroup
                 {
                     if (row == MonthCalendarItemView.EVENT_COUNT - 1)
                     {
-                        ITEM_LAYOUT_CELLS.get(index).rows.put(row, new ScheduleDTO());
+                        ITEM_LAYOUT_CELLS.get(index).rows[row] = new ScheduleDTO();
                     } else
                     {
-                        ITEM_LAYOUT_CELLS.get(index).rows.put(row, eventData.getSchedule());
+                        ITEM_LAYOUT_CELLS.get(index).rows[row] = eventData.getSchedule();
                     }
                 }
             }
         }
         return new Integer[]{start, end};
     }
+
+    @Override
+    public void onClicked(Date startDate, Date endDate)
+    {
+        onEventItemClickListener.onClicked(startDate, endDate);
+    }
 }
+

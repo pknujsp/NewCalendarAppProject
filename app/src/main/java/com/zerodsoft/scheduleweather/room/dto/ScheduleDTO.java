@@ -103,6 +103,9 @@ public class ScheduleDTO implements Parcelable
     @Ignore
     public boolean addedLocation;
 
+    @Ignore
+    private boolean isDrawed;
+
     public ScheduleDTO()
     {
         category = NOT_SELECTED;
@@ -325,5 +328,15 @@ public class ScheduleDTO implements Parcelable
         {
             return false;
         }
+    }
+
+    public boolean isDrawed()
+    {
+        return isDrawed;
+    }
+
+    public void setDrawed(boolean drawed)
+    {
+        isDrawed = drawed;
     }
 }
