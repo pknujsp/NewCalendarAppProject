@@ -10,18 +10,34 @@ public class EventData
 {
     private int startIndex;
     private int endIndex;
-    int row;
+    private int row;
     private ScheduleDTO schedule;
 
-    public EventData(ScheduleDTO schedule)
+
+    public EventData(ScheduleDTO schedule, int startIndex, int endIndex)
     {
         this.schedule = schedule;
+        this.startIndex = startIndex;
+        this.endIndex = endIndex;
+    }
+
+    public EventData(ScheduleDTO schedule, int startIndex, int endIndex, int row)
+    {
+        this.schedule = schedule;
+        this.startIndex = startIndex;
+        this.endIndex = endIndex;
+        this.row = row;
     }
 
     public void setIndex(int startIndex, int endIndex)
     {
         this.startIndex = startIndex;
         this.endIndex = endIndex;
+    }
+
+    public void setRow(int row)
+    {
+        this.row = row;
     }
 
     public int getDateLength()
@@ -42,11 +58,6 @@ public class EventData
     public int getEndIndex()
     {
         return endIndex;
-    }
-
-    public void setRow(int row)
-    {
-        this.row = row;
     }
 
     public int getRow()

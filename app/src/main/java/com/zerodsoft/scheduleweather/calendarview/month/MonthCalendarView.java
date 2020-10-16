@@ -8,11 +8,13 @@ import android.graphics.Rect;
 import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.util.SparseArray;
+import android.util.SparseBooleanArray;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.zerodsoft.scheduleweather.calendarfragment.OnEventItemClickListener;
+import com.zerodsoft.scheduleweather.calendarview.dto.CoordinateInfo;
 import com.zerodsoft.scheduleweather.calendarview.month.EventsInfoFragment.MonthEventsInfoFragment;
 import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
 import com.zerodsoft.scheduleweather.utility.AppSettings;
@@ -51,7 +53,7 @@ public class MonthCalendarView extends ViewGroup
     float DAY_SPACE_HEIGHT;
     float EVENT_HEIGHT;
 
-    private Integer[] eventsIndexes;
+    private List<EventData> eventCellsList = new ArrayList<>();
 
     private OnEventItemClickListener onEventItemClickListener;
 
@@ -146,7 +148,8 @@ public class MonthCalendarView extends ViewGroup
     {
         super.onDraw(canvas);
         canvas.drawColor(Color.WHITE);
-        if (eventsIndexes != null)
+
+        if (!eventCellsList.isEmpty())
         {
             EVENT_HEIGHT = (ITEM_HEIGHT - DAY_SPACE_HEIGHT - SPACING_BETWEEN_EVENT * 4) / EVENT_COUNT;
 
@@ -170,89 +173,127 @@ public class MonthCalendarView extends ViewGroup
 
     private void drawEvents(Canvas canvas)
     {
-        for (int index = eventsIndexes[0]; index <= eventsIndexes[1]; index++)
+        for (EventData eventData : eventCellsList)
         {
-            ItemLayoutCell itemLayoutCell = ITEM_LAYOUT_CELLS.get(index);
+            final int startIndex = eventData.getStartIndex();
+            final int endIndex = eventData.getEndIndex();
+            final int row = eventData.getRow();
 
             int leftMargin = 0;
             int rightMargin = 0;
 
-            float startX = index % 7 == 0 ? 0 : ITEM_WIDTH * (index % 7);
-            float startY = ITEM_HEIGHT * (index / 7) + DAY_SPACE_HEIGHT;
+            float startX = 0f;
+            float startY = 0f;
+            float endX = 0f;
+            float endY = 0f;
+
+            int eventRowCount = endIndex / 7 - startIndex / 7 + 1;
 
             float left = 0;
             float right = 0;
             float top = 0;
             float bottom = 0;
 
-            Date startDate = ((MonthCalendarItemView) getChildAt(index)).getStartDate();
-            Date endDate = ((MonthCalendarItemView) getChildAt(index)).getEndDate();
+            Date startDate = ((MonthCalendarItemView) getChildAt(startIndex)).getStartDate();
+            Date endDate = ((MonthCalendarItemView) getChildAt(endIndex)).getEndDate();
 
-            for (int count = 0; count < itemLayoutCell.rows.length; count++)
+            ScheduleDTO schedule = eventData.getSchedule();
+
+            if (schedule.isEmpty())
             {
-                ScheduleDTO schedule = itemLayoutCell.rows[count];
+                Paint extraPaint = new Paint();
+                extraPaint.setColor(Color.LTGRAY);
 
-                if (schedule != null)
+                TextPaint textPaint = new TextPaint();
+                textPaint.setColor(Color.WHITE);
+                textPaint.setTextSize(LOCAL_EVENT_TEXT_PAINT.getTextSize());
+                textPaint.setTextAlign(Paint.Align.LEFT);
+
+                for (int index = startIndex; index <= endIndex; index++)
                 {
-                    top = startY + ((EVENT_HEIGHT + SPACING_BETWEEN_EVENT) * count);
+                    startX = index % 7 == 0 ? 0 : ITEM_WIDTH * (index % 7);
+                    startY = ITEM_HEIGHT * (index / 7) + DAY_SPACE_HEIGHT;
+
+                    top = startY + ((EVENT_HEIGHT + SPACING_BETWEEN_EVENT) * row);
                     bottom = top + EVENT_HEIGHT;
+                    left = startX + EVENT_MARGIN;
+                    right = startX + ITEM_WIDTH - EVENT_MARGIN;
 
-                    if (count == EVENT_COUNT - 1)
+                    canvas.drawRect(left, top, right, bottom, extraPaint);
+                    canvas.drawText("More", startX + EVENT_MARGIN + TEXT_MARGIN, bottom - TEXT_MARGIN, textPaint);
+                }
+            } else
+            {
+                // 시작/종료일이 date가 아니나, 일정에 포함되는 경우
+                if (schedule.getStartDate().before(startDate) && schedule.getEndDate().after(endDate))
+                {
+                    leftMargin = 0;
+                    rightMargin = 0;
+                }
+                // 시작일이 date인 경우, 종료일은 endDate 이후
+                else if (schedule.getEndDate().compareTo(endDate) >= 0 && schedule.getStartDate().compareTo(startDate) >= 0 && schedule.getStartDate().before(endDate))
+                {
+                    leftMargin = EVENT_MARGIN;
+                    rightMargin = 0;
+                }
+                // 종료일이 date인 경우, 시작일은 startDate이전
+                else if (schedule.getEndDate().compareTo(startDate) >= 0 && schedule.getEndDate().before(endDate) && schedule.getStartDate().before(startDate))
+                {
+                    leftMargin = 0;
+                    rightMargin = EVENT_MARGIN;
+                }
+                // 시작/종료일이 date인 경우
+                else if (schedule.getEndDate().compareTo(startDate) >= 0 && schedule.getEndDate().before(endDate) && schedule.getStartDate().compareTo(startDate) >= 0 && schedule.getStartDate().before(endDate))
+                {
+                    leftMargin = EVENT_MARGIN;
+                    rightMargin = EVENT_MARGIN;
+                }
+
+                for (int currentRowNum = 1; currentRowNum <= eventRowCount; currentRowNum++)
+                {
+                    if (currentRowNum == 1)
                     {
-                        Paint extraPaint = new Paint();
-                        extraPaint.setColor(Color.LTGRAY);
+                        startX = startIndex % 7 == 0 ? 0 : ITEM_WIDTH * (startIndex % 7);
 
-                        TextPaint textPaint = new TextPaint();
-                        textPaint.setColor(Color.WHITE);
-                        textPaint.setTextSize(LOCAL_EVENT_TEXT_PAINT.getTextSize());
-                        textPaint.setTextAlign(Paint.Align.LEFT);
-
-                        canvas.drawRect(startX + EVENT_MARGIN, top, startX + ITEM_WIDTH - EVENT_MARGIN, bottom, extraPaint);
-                        canvas.drawText("More", startX + EVENT_MARGIN + TEXT_MARGIN, bottom - TEXT_MARGIN, textPaint);
-
-                        break;
-                    } else
-                    {
-                        // 시작/종료일이 date가 아니나, 일정에 포함되는 경우
-                        if (schedule.getStartDate().before(startDate) && schedule.getEndDate().after(endDate))
+                        if (eventRowCount == 1)
                         {
-                            leftMargin = 0;
-                            rightMargin = 0;
-                        }
-                        // 시작일이 date인 경우, 종료일은 endDate 이후
-                        else if (schedule.getEndDate().compareTo(endDate) >= 0 && schedule.getStartDate().compareTo(startDate) >= 0 && schedule.getStartDate().before(endDate))
-                        {
-                            leftMargin = EVENT_MARGIN;
-                            rightMargin = 0;
-                        }
-                        // 종료일이 date인 경우, 시작일은 startDate이전
-                        else if (schedule.getEndDate().compareTo(startDate) >= 0 && schedule.getEndDate().before(endDate) && schedule.getStartDate().before(startDate))
-                        {
-                            leftMargin = 0;
-                            rightMargin = EVENT_MARGIN;
-                        }
-                        // 시작/종료일이 date인 경우
-                        else if (schedule.getEndDate().compareTo(startDate) >= 0 && schedule.getEndDate().before(endDate) && schedule.getStartDate().compareTo(startDate) >= 0 && schedule.getStartDate().before(endDate))
-                        {
-                            leftMargin = EVENT_MARGIN;
-                            rightMargin = EVENT_MARGIN;
-                        }
-
-                        left = startX + leftMargin;
-                        right = startX + ITEM_WIDTH - rightMargin;
-
-                        if (schedule.getCategory() == ScheduleDTO.GOOGLE_CATEGORY)
-                        {
-                            canvas.drawRect(left, top, right, bottom, GOOGLE_EVENT_PAINT);
-                            canvas.drawText(schedule.getSubject(), left + TEXT_MARGIN, bottom - TEXT_MARGIN, GOOGLE_EVENT_TEXT_PAINT);
+                            endX = endIndex % 7 == 0 ? 0 : ITEM_WIDTH * (endIndex % 7);
                         } else
                         {
-                            canvas.drawRect(left, top, right, bottom, LOCAL_EVENT_PAINT);
-                            canvas.drawText(schedule.getSubject(), left + TEXT_MARGIN, bottom - TEXT_MARGIN, LOCAL_EVENT_TEXT_PAINT);
+                            endX = getWidth() - ITEM_WIDTH;
                         }
+                    } else if (currentRowNum == eventRowCount)
+                    {
+                        startX = 0;
+                        endX = endIndex % 7 == 0 ? 0 : ITEM_WIDTH * (endIndex % 7);
+                    }
+
+                    if (currentRowNum != 1 && currentRowNum != eventRowCount)
+                    {
+                        startX = 0;
+                        endX = getWidth() - ITEM_WIDTH;
+                    }
+
+                    int week = startIndex / 7 + currentRowNum - 1;
+                    startY = ITEM_HEIGHT * (week) + DAY_SPACE_HEIGHT;
+
+                    top = startY + ((EVENT_HEIGHT + SPACING_BETWEEN_EVENT) * row);
+                    bottom = top + EVENT_HEIGHT;
+                    left = startX + leftMargin;
+                    right = endX + ITEM_WIDTH - rightMargin;
+
+                    if (schedule.getCategory() == ScheduleDTO.GOOGLE_CATEGORY)
+                    {
+                        canvas.drawRect(left, top, right, bottom, GOOGLE_EVENT_PAINT);
+                        canvas.drawText(schedule.getSubject(), left + TEXT_MARGIN, bottom - TEXT_MARGIN, GOOGLE_EVENT_TEXT_PAINT);
+                    } else
+                    {
+                        canvas.drawRect(left, top, right, bottom, LOCAL_EVENT_PAINT);
+                        canvas.drawText(schedule.getSubject(), left + TEXT_MARGIN, bottom - TEXT_MARGIN, LOCAL_EVENT_TEXT_PAINT);
                     }
                 }
             }
+
         }
 
 
@@ -261,22 +302,22 @@ public class MonthCalendarView extends ViewGroup
     public void clear()
     {
         ITEM_LAYOUT_CELLS.clear();
-        eventsIndexes = null;
+        eventCellsList.clear();
     }
 
     public void setSchedules(List<EventData> list)
     {
         // 이벤트 테이블에 데이터를 표시할 위치 설정
-        eventsIndexes = setEventTable(list);
+        setEventTable(list);
         invalidate();
     }
 
-    private Integer[] setEventTable(List<EventData> list)
+    private void setEventTable(List<EventData> list)
     {
         int start = Integer.MAX_VALUE;
         int end = Integer.MIN_VALUE;
         ITEM_LAYOUT_CELLS.clear();
-        eventsIndexes = null;
+        eventCellsList.clear();
 
         // 달력 뷰의 셀에 아이템을 삽입
         for (EventData eventData : list)
@@ -317,6 +358,7 @@ public class MonthCalendarView extends ViewGroup
             for (int index = startIndex; index <= endIndex; index++)
             {
                 Set<Integer> set = new HashSet<>();
+
                 for (int row = 0; row < EVENT_COUNT; row++)
                 {
                     if (ITEM_LAYOUT_CELLS.get(index).rows[row] == null)
@@ -324,6 +366,7 @@ public class MonthCalendarView extends ViewGroup
                         set.add(row);
                     }
                 }
+
                 if (index == startIndex)
                 {
                     rowSet.addAll(set);
@@ -350,20 +393,31 @@ public class MonthCalendarView extends ViewGroup
                 // 셀에 삽입된 아이템의 위치를 알맞게 조정
                 // 같은 일정은 같은 위치의 셀에 있어야 한다.
                 // row가 MonthCalendarItemView.EVENT_COUNT - 1인 경우 빈 객체를 저장
-                for (int index = startIndex; index <= endIndex; index++)
+                if (row == EVENT_COUNT - 1)
                 {
-                    if (row == EVENT_COUNT - 1)
-                    {
-                        ITEM_LAYOUT_CELLS.get(index).rows[row] = new ScheduleDTO();
-                    } else
-                    {
-                        ITEM_LAYOUT_CELLS.get(index).rows[row] = eventData.getSchedule();
-                    }
+                    eventCellsList.add(new EventData(new ScheduleDTO(), startIndex, endIndex, row));
+                } else
+                {
+                    eventCellsList.add(new EventData(eventData.getSchedule(), startIndex, endIndex, row));
+                }
+
+                for (int i = startIndex; i <= endIndex; i++)
+                {
+                    ITEM_LAYOUT_CELLS.get(i).rows[row] = true;
                 }
             }
         }
-        return new Integer[]{start, end};
     }
 
+    class ItemLayoutCell
+    {
+        public Boolean[] rows;
+
+        public ItemLayoutCell()
+        {
+            rows = new Boolean[MonthCalendarView.EVENT_COUNT];
+        }
+    }
 }
+
 

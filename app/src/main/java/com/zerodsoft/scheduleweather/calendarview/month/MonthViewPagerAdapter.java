@@ -122,13 +122,9 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
 
             for (ScheduleDTO schedule : schedulesList)
             {
-                EventData eventData = new EventData(schedule);
-
                 startDate.setTime(schedule.getStartDate());
                 endDate.setTime(schedule.getEndDate());
-
-                eventData.setIndex(getDateToIndex(startDate), getDateToIndex(endDate));
-                list.add(eventData);
+                list.add(new EventData(schedule, getDateToIndex(startDate), getDateToIndex(endDate)));
             }
             monthCalendarView.setSchedules(list);
         }
