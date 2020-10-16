@@ -18,4 +18,6 @@
     <dimen name="schedule_info_value_text_size">16sp</dimen>
     <dimen name="schedule_info_desc_text_size">16sp</dimen>
     <dimen name="main_toolbar_margin">8dp</dimen>
+
+    <dimen name="event_info_listview_spacing">8dp</dimen>
 </resources>

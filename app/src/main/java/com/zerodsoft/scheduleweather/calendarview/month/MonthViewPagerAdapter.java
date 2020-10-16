@@ -25,7 +25,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
-public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAdapter.MonthViewHolder> implements OnEventItemClickListener
+public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAdapter.MonthViewHolder>
 {
     public static final int TOTAL_DAY_COUNT = 42;
     public static final int FIRST_DAY = -1;
@@ -94,12 +94,6 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
         return Integer.MAX_VALUE;
     }
 
-    @Override
-    public void onClicked(Date startDate, Date endDate)
-    {
-        onEventItemClickListener.onClicked(startDate, endDate);
-    }
-
     class MonthViewHolder extends RecyclerView.ViewHolder
     {
         private int position;
@@ -154,7 +148,6 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
         {
             header = (LinearLayout) super.itemView.findViewById(R.id.month_header_days);
             monthCalendarView = (MonthCalendarView) super.itemView.findViewById(R.id.month_calendar_view);
-            monthCalendarView.setOnEventItemClickListener(MonthViewPagerAdapter.this);
 
             this.position = position;
 

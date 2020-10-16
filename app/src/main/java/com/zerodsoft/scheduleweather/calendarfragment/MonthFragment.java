@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
@@ -74,7 +75,7 @@ public class MonthFragment extends Fragment implements OnEventItemClickListener
     public void onClicked(Date startDate, Date endDate)
     {
         MonthEventsInfoFragment monthEventsInfoFragment = new MonthEventsInfoFragment(startDate, endDate);
-        getActivity().getSupportFragmentManager().beginTransaction().add(monthEventsInfoFragment, MonthEventsInfoFragment.TAG).commit();
+        monthEventsInfoFragment.show(getActivity().getSupportFragmentManager(), MonthEventsInfoFragment.TAG);
     }
 
 

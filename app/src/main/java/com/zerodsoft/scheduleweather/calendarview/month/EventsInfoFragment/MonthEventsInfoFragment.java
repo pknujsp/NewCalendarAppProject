@@ -1,9 +1,12 @@
 package com.zerodsoft.scheduleweather.calendarview.month.EventsInfoFragment;
 
+import android.content.Context;
+import android.graphics.Rect;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
@@ -14,8 +17,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.TextView;
 
+import com.zerodsoft.scheduleweather.AppMainActivity;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
 import com.zerodsoft.scheduleweather.utility.Clock;
@@ -23,7 +29,7 @@ import com.zerodsoft.scheduleweather.utility.Clock;
 import java.util.Date;
 import java.util.List;
 
-public class MonthEventsInfoFragment extends Fragment
+public class MonthEventsInfoFragment extends DialogFragment
 {
     public static final String TAG = "MonthEventsInfoFragment";
 
@@ -75,16 +81,23 @@ public class MonthEventsInfoFragment extends Fragment
     {
         super.onViewCreated(view, savedInstanceState);
         recyclerView = view.findViewById(R.id.events_info_events_list);
+        recyclerView.addItemDecoration(new RecyclerViewItemDecoration(getContext()));
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false));
         adapter = new EventsInfoRecyclerViewAdapter(startDate, endDate);
         recyclerView.setAdapter(adapter);
         ((TextView) view.findViewById(R.id.events_info_day)).setText(Clock.dateFormat3.format(startDate));
     }
 
+
     @Override
-    public void onStart()
+    public void onResume()
     {
-        super.onStart();
+        super.onResume();
+        Window window = getDialog().getWindow();
+        WindowManager.LayoutParams layoutParams = window.getAttributes();
+        layoutParams.width = (int) (AppMainActivity.getDisplayWidth() * 0.8);
+        layoutParams.height = (int) (AppMainActivity.getDisplayHeight() * 0.7);
+        window.setAttributes(layoutParams);
     }
 
     @Override
@@ -92,4 +105,38 @@ public class MonthEventsInfoFragment extends Fragment
     {
         super.onStop();
     }
+}
+
+class RecyclerViewItemDecoration extends RecyclerView.ItemDecoration
+{
+
+
+    private final int decorationHeight;
+    private Context context;
+
+    public RecyclerViewItemDecoration(Context context)
+    {
+        this.context = context;
+        decorationHeight = context.getResources().getDimensionPixelSize(R.dimen.event_info_listview_spacing);
+    }
+
+    @Override
+    public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state)
+    {
+        super.getItemOffsets(outRect, view, parent, state);
+
+        if (parent != null && view != null)
+        {
+            int itemPosition = parent.getChildAdapterPosition(view);
+            int totalCount = parent.getAdapter().getItemCount();
+
+            if (itemPosition >= 0 && itemPosition < totalCount - 1)
+            {
+                outRect.bottom = decorationHeight;
+            }
+
+        }
+
+    }
+
 }

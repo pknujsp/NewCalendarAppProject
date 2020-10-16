@@ -10,6 +10,6 @@ public class ItemLayoutCell
 
     public ItemLayoutCell()
     {
-        rows = new ScheduleDTO[MonthCalendarItemView.EVENT_COUNT];
+        rows = new ScheduleDTO[MonthCalendarView.EVENT_COUNT];
     }
 }

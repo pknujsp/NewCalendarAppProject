@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
+import com.zerodsoft.scheduleweather.utility.AppSettings;
 
 import java.util.Date;
 import java.util.List;
@@ -17,7 +18,7 @@ import java.util.List;
 public class EventsInfoRecyclerViewAdapter extends RecyclerView.Adapter<EventsInfoRecyclerViewAdapter.EventsInfoViewHolder>
 {
     private List<ScheduleDTO> schedulesList;
-    private static final int VIEW_MARGIN = 8;
+    private static final int VIEW_MARGIN = 16;
     private Date startDate;
     private Date endDate;
 
@@ -60,6 +61,7 @@ public class EventsInfoRecyclerViewAdapter extends RecyclerView.Adapter<EventsIn
         public EventsInfoViewHolder(View view)
         {
             super(view);
+            eventView = (TextView) view;
         }
 
         public void onBind(int position)
@@ -94,8 +96,18 @@ public class EventsInfoRecyclerViewAdapter extends RecyclerView.Adapter<EventsIn
                 layoutParams.rightMargin = VIEW_MARGIN;
             }
 
-            super.itemView.setLayoutParams(layoutParams);
-            ((TextView) super.itemView).setText(schedulesList.get(position).getSubject());
+            eventView.setLayoutParams(layoutParams);
+
+            if (schedulesList.get(position).getCategory() == ScheduleDTO.GOOGLE_CATEGORY)
+            {
+                eventView.setBackgroundColor(AppSettings.getGoogleEventBackgroundColor());
+                eventView.setTextColor(AppSettings.getGoogleEventTextColor());
+            } else
+            {
+                eventView.setBackgroundColor(AppSettings.getLocalEventBackgroundColor());
+                eventView.setTextColor(AppSettings.getLocalEventTextColor());
+            }
+            eventView.setText(schedulesList.get(position).getSubject());
         }
     }
 
