@@ -343,18 +343,14 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
         public int compare(ScheduleDTO t1, ScheduleDTO t2)
         {
             /*
-            compare() 메서드 작성법 :
-            첫 번째 파라미터로 넘어온 객체 < 두 번째 파라미터로 넘어온 객체: 음수 리턴
-            첫 번째 파라미터로 넘어온 객체 == 두 번째 파라미터로 넘어온 객체: 0 리턴
-            첫 번째 파라미터로 넘어온 객체 > 두 번째 파라미터로 넘어온 객체: 양수 리턴
             음수 또는 0이면 객체의 자리가 그대로 유지되며, 양수인 경우에는 두 객체의 자리가 변경된다.
              */
-            if ((t1.getEndDate().getTime() - t1.getStartDate().getTime()) > (t2.getEndDate().getTime() - t2.getStartDate().getTime()))
-            {
-                return -1;
-            } else
+            if ((t1.getEndDate().getTime() - t1.getStartDate().getTime()) < (t2.getEndDate().getTime() - t2.getStartDate().getTime()))
             {
                 return 1;
+            } else
+            {
+                return 0;
             }
         }
     };

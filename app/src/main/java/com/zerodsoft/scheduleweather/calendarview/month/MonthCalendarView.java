@@ -8,26 +8,20 @@ import android.graphics.Rect;
 import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.util.SparseArray;
-import android.util.SparseBooleanArray;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.zerodsoft.scheduleweather.calendarfragment.OnEventItemClickListener;
-import com.zerodsoft.scheduleweather.calendarview.dto.CoordinateInfo;
-import com.zerodsoft.scheduleweather.calendarview.month.EventsInfoFragment.MonthEventsInfoFragment;
 import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
 import com.zerodsoft.scheduleweather.utility.AppSettings;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -50,6 +44,9 @@ public class MonthCalendarView extends ViewGroup
     public static final int EVENT_MARGIN = 4;
     public static final int EVENT_COUNT = 5;
 
+    private int start;
+    private int end;
+
     float DAY_SPACE_HEIGHT;
     float EVENT_HEIGHT;
 
@@ -57,7 +54,7 @@ public class MonthCalendarView extends ViewGroup
 
     private OnEventItemClickListener onEventItemClickListener;
 
-    private final SparseArray<ItemLayoutCell> ITEM_LAYOUT_CELLS = new SparseArray<>(42);
+    private SparseArray<ItemCell> ITEM_LAYOUT_CELLS = new SparseArray<>(42);
 
     public MonthCalendarView(Context context, AttributeSet attrs)
     {
@@ -199,30 +196,7 @@ public class MonthCalendarView extends ViewGroup
 
             ScheduleDTO schedule = eventData.getSchedule();
 
-            if (schedule.isEmpty())
-            {
-                Paint extraPaint = new Paint();
-                extraPaint.setColor(Color.LTGRAY);
-
-                TextPaint textPaint = new TextPaint();
-                textPaint.setColor(Color.WHITE);
-                textPaint.setTextSize(LOCAL_EVENT_TEXT_PAINT.getTextSize());
-                textPaint.setTextAlign(Paint.Align.LEFT);
-
-                for (int index = startIndex; index <= endIndex; index++)
-                {
-                    startX = index % 7 == 0 ? 0 : ITEM_WIDTH * (index % 7);
-                    startY = ITEM_HEIGHT * (index / 7) + DAY_SPACE_HEIGHT;
-
-                    top = startY + ((EVENT_HEIGHT + SPACING_BETWEEN_EVENT) * row);
-                    bottom = top + EVENT_HEIGHT;
-                    left = startX + EVENT_MARGIN;
-                    right = startX + ITEM_WIDTH - EVENT_MARGIN;
-
-                    canvas.drawRect(left, top, right, bottom, extraPaint);
-                    canvas.drawText("More", startX + EVENT_MARGIN + TEXT_MARGIN, bottom - TEXT_MARGIN, textPaint);
-                }
-            } else
+            if (!schedule.isEmpty())
             {
                 // 시작/종료일이 date가 아니나, 일정에 포함되는 경우
                 if (schedule.getStartDate().before(startDate) && schedule.getEndDate().after(endDate))
@@ -296,6 +270,58 @@ public class MonthCalendarView extends ViewGroup
 
         }
 
+        float startX = 0f;
+        float startY = 0f;
+
+        float top = 0f;
+        float bottom = 0f;
+        float left = 0f;
+        float right = 0f;
+
+        Paint extraPaint = new Paint();
+        extraPaint.setColor(Color.LTGRAY);
+
+        TextPaint textPaint = new TextPaint();
+        textPaint.setColor(Color.WHITE);
+        textPaint.setTextSize(LOCAL_EVENT_TEXT_PAINT.getTextSize());
+        textPaint.setTextAlign(Paint.Align.LEFT);
+
+        // more 표시
+        for (int index = start; index <= end; index++)
+        {
+            int eventsNum = ITEM_LAYOUT_CELLS.get(index).eventsNum;
+            int displayedEventsNum = 0;
+            int lastRow = -1;
+
+            for (int row = EVENT_COUNT - 1; row >= 0; row--)
+            {
+                if (!ITEM_LAYOUT_CELLS.get(index).row[row])
+                {
+                    if (lastRow == -1)
+                    {
+                        lastRow = row;
+                    }
+                } else
+                {
+                    displayedEventsNum++;
+                }
+            }
+
+            // 날짜의 이벤트 개수 > 뷰에 표시된 이벤트의 개수 인 경우 마지막 행에 More를 표시
+            if (eventsNum > displayedEventsNum)
+            {
+                startX = index % 7 == 0 ? 0 : ITEM_WIDTH * (index % 7);
+                startY = ITEM_HEIGHT * (index / 7) + DAY_SPACE_HEIGHT;
+
+                top = startY + ((EVENT_HEIGHT + SPACING_BETWEEN_EVENT) * lastRow);
+                bottom = top + EVENT_HEIGHT;
+                left = startX + EVENT_MARGIN;
+                right = startX + ITEM_WIDTH - EVENT_MARGIN;
+
+                canvas.drawRect(left, top, right, bottom, extraPaint);
+                canvas.drawText("More", startX + EVENT_MARGIN + TEXT_MARGIN, bottom - TEXT_MARGIN, textPaint);
+            }
+        }
 
     }
 
@@ -314,10 +340,11 @@ public class MonthCalendarView extends ViewGroup
 
     private void setEventTable(List<EventData> list)
     {
-        int start = Integer.MAX_VALUE;
-        int end = Integer.MIN_VALUE;
         ITEM_LAYOUT_CELLS.clear();
         eventCellsList.clear();
+
+        start = Integer.MAX_VALUE;
+        end = Integer.MIN_VALUE;
 
         // 달력 뷰의 셀에 아이템을 삽입
         for (EventData eventData : list)
@@ -343,25 +370,25 @@ public class MonthCalendarView extends ViewGroup
                 end = endIndex;
             }
 
-            for (int index = startIndex; index <= endIndex; index++)
-            {
-                if (ITEM_LAYOUT_CELLS.get(index) == null)
-                {
-                    ITEM_LAYOUT_CELLS.put(index, new ItemLayoutCell());
-                }
-            }
-
             // 이벤트를 위치시킬 알맞은 행을 지정
             // startDate부터 endDate까지 공통적으로 비어있는 행을 지정한다.
             Set<Integer> rowSet = new TreeSet<>();
 
             for (int index = startIndex; index <= endIndex; index++)
             {
+                if (ITEM_LAYOUT_CELLS.get(index) == null)
+                {
+                    ITEM_LAYOUT_CELLS.put(index, new ItemCell());
+                }
+
+                // 이벤트 개수 수정
+                ITEM_LAYOUT_CELLS.get(index).eventsNum++;
+
                 Set<Integer> set = new HashSet<>();
 
                 for (int row = 0; row < EVENT_COUNT; row++)
                 {
-                    if (ITEM_LAYOUT_CELLS.get(index).rows[row] == null)
+                    if (!ITEM_LAYOUT_CELLS.get(index).row[row])
                     {
                         set.add(row);
                     }
@@ -390,33 +417,31 @@ public class MonthCalendarView extends ViewGroup
                 Iterator<Integer> iterator = rowSet.iterator();
                 int row = iterator.next();
 
-                // 셀에 삽입된 아이템의 위치를 알맞게 조정
-                // 같은 일정은 같은 위치의 셀에 있어야 한다.
-                // row가 MonthCalendarItemView.EVENT_COUNT - 1인 경우 빈 객체를 저장
-                if (row == EVENT_COUNT - 1)
+                if (row != EVENT_COUNT - 1)
                 {
-                    eventCellsList.add(new EventData(new ScheduleDTO(), startIndex, endIndex, row));
-                } else
-                {
+                    // 셀에 삽입된 아이템의 위치를 알맞게 조정
+                    // 같은 일정은 같은 위치의 셀에 있어야 한다.
+                    // row가 MonthCalendarItemView.EVENT_COUNT - 1인 경우 빈 객체를 저장
+                    for (int i = startIndex; i <= endIndex; i++)
+                    {
+                        ITEM_LAYOUT_CELLS.get(i).row[row] = true;
+                    }
                     eventCellsList.add(new EventData(eventData.getSchedule(), startIndex, endIndex, row));
-                }
-
-                for (int i = startIndex; i <= endIndex; i++)
-                {
-                    ITEM_LAYOUT_CELLS.get(i).rows[row] = true;
                 }
             }
         }
     }
 
-    class ItemLayoutCell
+    class ItemCell
     {
-        public Boolean[] rows;
+        boolean[] row;
+        int eventsNum;
 
-        public ItemLayoutCell()
+        public ItemCell()
         {
-            rows = new Boolean[MonthCalendarView.EVENT_COUNT];
+            row = new boolean[EVENT_COUNT];
         }
+
     }
 }
 
