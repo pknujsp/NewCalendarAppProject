@@ -31,26 +31,13 @@
                 android:layout_gravity="top"
                 android:textAlignment="center" />
 
-            <ListView
-                android:id="@+id/dayview_eventlist"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-
         </LinearLayout>
 
         <com.zerodsoft.scheduleweather.calendarview.day.DayView
             android:id="@+id/dayview"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1"
-            app:HoursEventsBackgroundColor="@android:color/white"
-            app:HoursEventsEventTextSize="10sp"
-            app:HoursEventsHourTextColor="@android:color/black"
-            app:HoursEventsHourTextSize="@dimen/weekview_textsize"
-            app:HoursEventsLineColor="@android:color/darker_gray"
-            app:HoursEventsLineThickness="@dimen/line_thickness"
-            app:HoursEventsNewScheduleRectColor="@android:color/holo_blue_dark"
-            app:HoursEventsNewScheduleRectThickness="10dp" />
+            android:layout_weight="1" />
 
     </LinearLayout>
 

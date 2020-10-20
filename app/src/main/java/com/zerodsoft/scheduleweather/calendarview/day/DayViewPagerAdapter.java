@@ -88,7 +88,6 @@ public class DayViewPagerAdapter extends RecyclerView.Adapter<DayViewPagerAdapte
         ListView allDayList;
         DayView dayView;
 
-        EventListAdapter eventListAdapter;
         List<ScheduleDTO> schedules;
         List<ScheduleDTO> allDaySchedules;
 
@@ -97,13 +96,9 @@ public class DayViewPagerAdapter extends RecyclerView.Adapter<DayViewPagerAdapte
         public DayViewPagerHolder(View view)
         {
             super(view);
-            allDayList = (ListView) view.findViewById(R.id.dayview_eventlist);
             headerDate = (TextView) view.findViewById(R.id.dayview_date);
             eventTotalNum = (TextView) view.findViewById(R.id.dayview_eventtotalnum);
             dayView = (DayView) view.findViewById(R.id.dayview);
-
-            eventListAdapter = new EventListAdapter();
-            allDayList.setAdapter(eventListAdapter);
         }
 
         public void onBind(int position)
@@ -158,16 +153,12 @@ public class DayViewPagerAdapter extends RecyclerView.Adapter<DayViewPagerAdapte
                 }
             }
 
-            // 하루종일 일정 리스트를 리스트 어댑터에 전달
-            eventListAdapter.setAllDaySchedules(allDaySchedules);
-            eventListAdapter.notifyDataSetChanged();
 
             // 전체 일정의 개수를 헤더 텍스트뷰에 표시
             eventTotalNum.setText(Integer.toString(schedules.size()));
-            eventListAdapter.notifyDataSetChanged();
 
             // DayView에 이벤트를 표시
-            dayView.setScheduleList(schedules);
+          //  dayView.setScheduleList(schedules);
             dayView.invalidate();
         }
     }

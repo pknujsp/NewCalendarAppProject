@@ -1,7 +1,6 @@
 package com.zerodsoft.scheduleweather.calendarview;
 
 import android.content.Context;
-import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -9,77 +8,66 @@ import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.Nullable;
 
-import com.zerodsoft.scheduleweather.calendarview.dto.CoordinateInfo;
+import com.zerodsoft.scheduleweather.AppMainActivity;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.calendarfragment.WeekFragment;
 import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
-import com.zerodsoft.scheduleweather.utility.AppSettings;
+import com.zerodsoft.scheduleweather.utility.DateHour;
 
 import java.util.Calendar;
 import java.util.List;
 
-public class HourEventsView extends View
+public class HourEventsView extends ViewGroup
 {
-    protected final int HOUR_TEXT_COLOR;
-    protected final int HOUR_TEXT_SIZE;
-    protected final int EVENT_TEXT_SIZE;
-    protected final int BACKGROUND_COLOR;
-    protected final int LINE_THICKNESS;
-    protected final int LINE_COLOR;
+    // 구분선 paint
+    protected final Paint DIVIDING_LINE_PAINT;
+    // 시각 paint
+    protected final Paint HOUR_PAINT;
+    // 일정 추가 rect drawable
     protected final Drawable NEW_SCHEDULE_RECT_DRAWABLE;
     protected final Drawable ADD_DRAWABLE;
-    protected final int TABLE_LAYOUT_MARGIN;
-    protected final int NEW_SCHEDULE_RECT_COLOR;
-    protected final int NEW_SCHEDULE_RECT_THICKNESS;
-
-    protected final int HOUR_TEXT_HEIGHT;
-    protected final Rect HOUR_TEXT_BOX_RECT;
-
-    protected final Paint HOUR_TEXT_PAINT;
-    protected final Paint EVENT_TEXT_PAINT;
-    protected final Paint HORIZONTAL_LINE_PAINT;
-    protected final Paint VERTICAL_LINE_PAINT;
-    protected final Paint BACKGROUND_PAINT;
-
+    // google event paint
+    // google event text paint
+    // local event paint
+    // local event text paint
     protected final Paint GOOGLE_EVENT_PAINT;
     protected final Paint LOCAL_EVENT_PAINT;
     protected final Paint GOOGLE_EVENT_TEXT_PAINT;
     protected final Paint LOCAL_EVENT_TEXT_PAINT;
+    protected final int LINE_THICKNESS;
+    protected final int SPACING_BETWEEN_HOURS = 140;
+    protected final int TABLE_TB_MARGIN = 32;
 
-    protected final Rect NEW_SCHEDULE_RECT;
-    protected final Paint NEW_SCHEDULE_PAINT;
-
-    protected final int SPACING_LINES_BETWEEN_HOUR;
-
-    protected int VIEW_WIDTH;
-    protected int VIEW_HEIGHT;
+    protected final int HOUR_TEXT_HEIGHT;
+    protected final int TEXT_MARGIN = 4;
+    protected final int EVENT_TEXT_HEIGHT;
 
     protected Context context;
-    protected int position;
+
+    protected final int VIEW_WIDTH;
+    protected final int VIEW_HEIGHT;
 
     protected float minStartY;
     protected float maxStartY;
 
-    protected PointF startPoint;
-    protected PointF endPoint;
-    protected float mDistanceY;
+    protected PointF rectStartPoint;
+    protected PointF rectEndPoint;
 
-    protected float startX;
-    protected float startY;
+    protected static float startX = 0f;
+    protected static float startY;
 
     protected Calendar startTime;
     protected Calendar endTime;
 
     protected SCROLL_DIRECTION currentScrollDirection = SCROLL_DIRECTION.NONE;
-    protected TIME_CATEGORY timeCategory = TIME_CATEGORY.NONE;
 
     protected final PointF currentTouchedPoint = new PointF(0f, 0f);
-    protected final PointF lastTouchedPoint = new PointF(0f, 0f);
-
-    protected List<ScheduleDTO> scheduleList;
 
     protected enum SCROLL_DIRECTION
     {NONE, VERTICAL, FINISHED}
@@ -87,126 +75,71 @@ public class HourEventsView extends View
     protected enum TIME_CATEGORY
     {NONE, START, END}
 
-    public interface OnRefreshHoursViewListener
-    {
-        void refreshHoursView();
-    }
-
-    public interface OnRefreshChildViewListener
-    {
-        void refreshChildView(int position);
-    }
-
-    public interface CoordinateInfoInterface
-    {
-        CoordinateInfo[] getArray();
-    }
-
     public HourEventsView(Context context, @Nullable AttributeSet attrs)
     {
         super(context, attrs);
         this.context = context;
-        TypedArray a = context.getTheme().obtainStyledAttributes(attrs, R.styleable.HourEventsView, 0, 0);
 
-        try
-        {
-            HOUR_TEXT_COLOR = a.getColor(R.styleable.HourEventsView_HoursEventsHourTextColor, 0);
-            HOUR_TEXT_SIZE = a.getDimensionPixelSize(R.styleable.HourEventsView_HoursEventsHourTextSize, 0);
-            EVENT_TEXT_SIZE = a.getDimensionPixelSize(R.styleable.HourEventsView_HoursEventsEventTextSize, 0);
-            BACKGROUND_COLOR = a.getColor(R.styleable.HourEventsView_HoursEventsBackgroundColor, 0);
-            LINE_THICKNESS = a.getDimensionPixelSize(R.styleable.HourEventsView_HoursEventsLineThickness, 0);
-            LINE_COLOR = a.getColor(R.styleable.HourEventsView_HoursEventsLineColor, 0);
-            NEW_SCHEDULE_RECT_COLOR = a.getColor(R.styleable.HourEventsView_HoursEventsNewScheduleRectColor, 0);
-            NEW_SCHEDULE_RECT_THICKNESS = a.getDimensionPixelSize(R.styleable.HourEventsView_HoursEventsNewScheduleRectThickness, 0);
-            TABLE_LAYOUT_MARGIN = HOUR_TEXT_SIZE;
-            NEW_SCHEDULE_RECT_DRAWABLE = context.getDrawable(R.drawable.new_schedule_range_rect);
-            ADD_DRAWABLE = context.getDrawable(R.drawable.add_schedule_blue);
-        } finally
-        {
-            a.recycle();
-        }
+        NEW_SCHEDULE_RECT_DRAWABLE = context.getDrawable(R.drawable.new_schedule_range_rect);
+        ADD_DRAWABLE = context.getDrawable(R.drawable.add_schedule_blue);
 
-        // initialize variable values of this view
-        HOUR_TEXT_PAINT = new Paint();
-        HOUR_TEXT_PAINT.setColor(HOUR_TEXT_COLOR);
-        HOUR_TEXT_PAINT.setTextSize(HOUR_TEXT_SIZE);
-        HOUR_TEXT_PAINT.setTextAlign(Paint.Align.LEFT);
+        LINE_THICKNESS = 2;
 
-        HOUR_TEXT_BOX_RECT = new Rect();
-        HOUR_TEXT_PAINT.getTextBounds("오전 12", 0, "오전 12".length(), HOUR_TEXT_BOX_RECT);
+        DIVIDING_LINE_PAINT = new Paint();
+        DIVIDING_LINE_PAINT.setColor(Color.GRAY);
 
-        HOUR_TEXT_HEIGHT = HOUR_TEXT_BOX_RECT.height();
-
-        BACKGROUND_PAINT = new Paint();
-        BACKGROUND_PAINT.setColor(BACKGROUND_COLOR);
-
-        HORIZONTAL_LINE_PAINT = new Paint();
-        HORIZONTAL_LINE_PAINT.setColor(LINE_COLOR);
-
-        VERTICAL_LINE_PAINT = new Paint();
-        VERTICAL_LINE_PAINT.setColor(LINE_COLOR);
-
-        EVENT_TEXT_PAINT = new Paint();
-        EVENT_TEXT_PAINT.setColor(Color.WHITE);
-        EVENT_TEXT_PAINT.setTextSize(EVENT_TEXT_SIZE);
+        HOUR_PAINT = new Paint();
+        HOUR_PAINT.setTextAlign(Paint.Align.LEFT);
+        HOUR_PAINT.setColor(Color.GRAY);
+        HOUR_PAINT.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 12, getResources().getDisplayMetrics()));
+        Rect rect = new Rect();
+        HOUR_PAINT.getTextBounds("0", 0, 1, rect);
+        HOUR_TEXT_HEIGHT = rect.height();
 
         GOOGLE_EVENT_PAINT = new Paint();
         LOCAL_EVENT_PAINT = new Paint();
-        GOOGLE_EVENT_PAINT.setColor(AppSettings.getGoogleEventBackgroundColor());
-        LOCAL_EVENT_PAINT.setColor(AppSettings.getLocalEventBackgroundColor());
-
-        LOCAL_EVENT_TEXT_PAINT = new Paint();
         GOOGLE_EVENT_TEXT_PAINT = new Paint();
+        LOCAL_EVENT_TEXT_PAINT = new Paint();
 
-        LOCAL_EVENT_TEXT_PAINT.setColor(AppSettings.getLocalEventTextColor());
-        LOCAL_EVENT_TEXT_PAINT.setTextSize(EVENT_TEXT_SIZE);
-        GOOGLE_EVENT_TEXT_PAINT.setColor(AppSettings.getGoogleEventTextColor());
-        GOOGLE_EVENT_TEXT_PAINT.setTextSize(EVENT_TEXT_SIZE);
+        GOOGLE_EVENT_TEXT_PAINT.setTextAlign(Paint.Align.LEFT);
+        LOCAL_EVENT_TEXT_PAINT.setTextAlign(Paint.Align.LEFT);
 
-        NEW_SCHEDULE_RECT = new Rect();
+        GOOGLE_EVENT_TEXT_PAINT.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 11, getResources().getDisplayMetrics()));
+        LOCAL_EVENT_TEXT_PAINT.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 11, getResources().getDisplayMetrics()));
 
-        NEW_SCHEDULE_PAINT = new Paint();
-        NEW_SCHEDULE_PAINT.setColor(NEW_SCHEDULE_RECT_COLOR);
-        NEW_SCHEDULE_PAINT.setAntiAlias(true);
-        NEW_SCHEDULE_PAINT.setStrokeWidth(NEW_SCHEDULE_RECT_THICKNESS);
+        GOOGLE_EVENT_TEXT_PAINT.getTextBounds("0", 0, 1, rect);
+        EVENT_TEXT_HEIGHT = rect.height();
 
-        SPACING_LINES_BETWEEN_HOUR = HOUR_TEXT_BOX_RECT.height() * 4;
+        VIEW_WIDTH = AppMainActivity.getDisplayWidth();
+        VIEW_HEIGHT = SPACING_BETWEEN_HOURS * 24 + TABLE_TB_MARGIN * 2;
+
+        setBackgroundColor(Color.WHITE);
+        setWillNotDraw(false);
     }
 
-
     @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
+    protected void onLayout(boolean changed, int left, int top, int right, int bottom)
     {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        // super.onLayout(changed, left, top, right, bottom);
+
+        minStartY = -(VIEW_HEIGHT - getHeight());
+        maxStartY = 0f;
     }
 
     @Override
     protected void onDraw(Canvas canvas)
     {
         super.onDraw(canvas);
-        canvas.drawRect(0f, 0f, getWidth(), getHeight(), BACKGROUND_PAINT);
+
+        for (int i = 0; i < 24; i++)
+        {
+            // 시간 표시
+            canvas.drawText(DateHour.getHourString(i), startX, startY + (SPACING_BETWEEN_HOURS * i) + HOUR_TEXT_HEIGHT / 2 + TABLE_TB_MARGIN, HOUR_PAINT);
+            // 가로 선 표시
+            canvas.drawLine(WeekFragment.getColumnWidth(), startY + (SPACING_BETWEEN_HOURS * i) + TABLE_TB_MARGIN, VIEW_WIDTH, startY + (SPACING_BETWEEN_HOURS * i) + TABLE_TB_MARGIN, DIVIDING_LINE_PAINT);
+        }
     }
 
-
-    @Override
-    public void layout(int l, int t, int r, int b)
-    {
-        super.layout(l, t, r, b);
-        VIEW_WIDTH = getWidth();
-        VIEW_HEIGHT = SPACING_LINES_BETWEEN_HOUR * 24;
-        minStartY = -(SPACING_LINES_BETWEEN_HOUR * 24 + TABLE_LAYOUT_MARGIN * 2 - getHeight());
-        maxStartY = TABLE_LAYOUT_MARGIN;
-    }
-
-    protected boolean isSameDay(Calendar day1, Calendar day2)
-    {
-        return day1.get(Calendar.YEAR) == day2.get(Calendar.YEAR) && day1.get(Calendar.DAY_OF_YEAR) == day2.get(Calendar.DAY_OF_YEAR);
-    }
-
-    protected boolean isSameClock(Calendar clock1, Calendar clock2)
-    {
-        return clock1.equals(clock2);
-    }
 
     protected void fixTimeError(TIME_CATEGORY timeCategory, Calendar originalTime)
     {
@@ -249,8 +182,8 @@ public class HourEventsView extends View
 
         for (int i = 0; i <= 23; i++)
         {
-            startHour = currentTouchedPoint.y + SPACING_LINES_BETWEEN_HOUR * i;
-            endHour = currentTouchedPoint.y + SPACING_LINES_BETWEEN_HOUR * (i + 1);
+            startHour = currentTouchedPoint.y + SPACING_BETWEEN_HOURS * i;
+            endHour = currentTouchedPoint.y + SPACING_BETWEEN_HOURS * (i + 1);
 
             if (y >= startHour && y < endHour)
             {
@@ -274,25 +207,4 @@ public class HourEventsView extends View
         return false;
     }
 
-
-    public HourEventsView setPosition(int position)
-    {
-        this.position = position;
-        return this;
-    }
-
-    public int getPosition()
-    {
-        return position;
-    }
-
-    public void setScheduleList(List<ScheduleDTO> scheduleList)
-    {
-        this.scheduleList = scheduleList;
-    }
-
-    public List<ScheduleDTO> getScheduleList()
-    {
-        return scheduleList;
-    }
 }

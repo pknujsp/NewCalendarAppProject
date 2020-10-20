@@ -17,7 +17,7 @@ import java.util.Date;
 
 public class MonthCalendarItemView extends View
 {
-    private TextPaint DAY_TEXT_PAINT;
+    private final TextPaint DAY_TEXT_PAINT;
 
     private float x;
     private float y;

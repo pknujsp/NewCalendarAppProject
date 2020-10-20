@@ -35,7 +35,6 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
     private Calendar calendar;
     private MonthFragment monthFragment;
     private Context context;
-    public static int CELL_HEIGHT;
 
     private OnEventItemClickListener onEventItemClickListener;
 
@@ -68,7 +67,6 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
     @Override
     public void onBindViewHolder(@NonNull MonthViewHolder holder, int position)
     {
-        // Log.e(getClass().getSimpleName(), "onBindViewHolder : " + position);
     }
 
     @Override
@@ -76,7 +74,6 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
     {
         holder.onBind(holder.getAdapterPosition());
         holderSparseArray.put(holder.getAdapterPosition(), holder);
-        Log.e(getClass().getSimpleName(), "onViewAttachedToWindow : " + holder.getAdapterPosition());
         super.onViewAttachedToWindow(holder);
     }
 
@@ -85,7 +82,6 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
     {
         super.onViewDetachedFromWindow(holder);
         holder.clearHolder();
-        Log.e(getClass().getSimpleName(), "onViewDetachedFromWindow : " + holder.getAdapterPosition());
     }
 
     @Override

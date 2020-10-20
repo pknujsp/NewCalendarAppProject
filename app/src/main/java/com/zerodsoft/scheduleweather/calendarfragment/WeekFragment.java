@@ -1,6 +1,5 @@
 package com.zerodsoft.scheduleweather.calendarfragment;
 
-import android.graphics.Point;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -21,14 +20,14 @@ import java.util.Date;
 import java.util.List;
 
 
-public class WeekFragment extends Fragment
+public class WeekFragment extends Fragment implements OnEventItemClickListener
 {
     public static final String TAG = "WEEK_FRAGMENT";
     private ViewPager2 weekViewPager;
     private WeekViewPagerAdapter weekViewPagerAdapter;
 
     private OnControlCalendar onControlCalendar;
-    private static int SPACING_BETWEEN_DAY = AppMainActivity.getDisplayWidth() / 8;
+    private static int COLUMN_WIDTH = AppMainActivity.getDisplayWidth() / 8;
 
     private OnPageChangeCallback onPageChangeCallback;
 
@@ -37,9 +36,9 @@ public class WeekFragment extends Fragment
         onControlCalendar = (OnControlCalendar) fragment;
     }
 
-    public static int getSpacingBetweenDay()
+    public static int getColumnWidth()
     {
-        return SPACING_BETWEEN_DAY;
+        return COLUMN_WIDTH;
     }
 
     @Override
@@ -61,12 +60,17 @@ public class WeekFragment extends Fragment
         onPageChangeCallback = new OnPageChangeCallback();
 
         weekViewPager = (ViewPager2) view.findViewById(R.id.week_viewpager);
-        weekViewPagerAdapter = new WeekViewPagerAdapter(getActivity(), this);
+        weekViewPagerAdapter = new WeekViewPagerAdapter(this);
         weekViewPager.setAdapter(weekViewPagerAdapter);
-        weekViewPager.setCurrentItem(WeekViewPagerAdapter.FIRST_VIEW_NUMBER, false);
+        weekViewPager.setCurrentItem(CalendarTransactionFragment.FIRST_VIEW_POSITION, false);
         weekViewPager.registerOnPageChangeCallback(onPageChangeCallback);
 
         super.onViewCreated(view, savedInstanceState);
+    }
+
+    public void setViewPagerSwipe(boolean value)
+    {
+        weekViewPager.setUserInputEnabled(!value);
     }
 
     @Override
@@ -75,9 +79,15 @@ public class WeekFragment extends Fragment
         super.onStart();
     }
 
+    @Override
+    public void onClicked(Date startDate, Date endDate)
+    {
+
+    }
+
     class OnPageChangeCallback extends ViewPager2.OnPageChangeCallback
     {
-        private int currentPosition = WeekViewPagerAdapter.FIRST_VIEW_NUMBER;
+        private int currentPosition = CalendarTransactionFragment.FIRST_VIEW_POSITION;
 
         public int getCurrentPosition()
         {
@@ -128,16 +138,15 @@ public class WeekFragment extends Fragment
 
     public void goToToday()
     {
-        if (onPageChangeCallback.getCurrentPosition() != WeekViewPagerAdapter.FIRST_VIEW_NUMBER)
+        if (onPageChangeCallback.getCurrentPosition() != CalendarTransactionFragment.FIRST_VIEW_POSITION)
         {
-            weekViewPager.setCurrentItem(WeekViewPagerAdapter.FIRST_VIEW_NUMBER, true);
+            weekViewPager.setCurrentItem(CalendarTransactionFragment.FIRST_VIEW_POSITION, true);
         }
     }
 
     public void onSelectedSchedules(int viewPosition, List<ScheduleDTO> schedules)
     {
-        //  weekViewPagerAdapter.setEventList(viewPosition, schedules);
-        weekViewPager.setUserInputEnabled(true);
+        weekViewPagerAdapter.setData(viewPosition, schedules);
     }
 
     public void setMonth(Date date)

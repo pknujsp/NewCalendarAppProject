@@ -41,7 +41,7 @@ public class MonthCalendarView extends ViewGroup
 
     private static final int SPACING_BETWEEN_EVENT = 12;
     private static final int TEXT_MARGIN = 8;
-    public static final int EVENT_MARGIN = 4;
+    public static final int EVENT_LR_MARGIN = 4;
     public static final int EVENT_COUNT = 5;
 
     private int start;
@@ -162,11 +162,6 @@ public class MonthCalendarView extends ViewGroup
         }
     }
 
-    @Override
-    protected void dispatchDraw(Canvas canvas)
-    {
-        super.dispatchDraw(canvas);
-    }
 
     private void drawEvents(Canvas canvas)
     {
@@ -207,20 +202,20 @@ public class MonthCalendarView extends ViewGroup
                 // 시작일이 date인 경우, 종료일은 endDate 이후
                 else if (schedule.getEndDate().compareTo(endDate) >= 0 && schedule.getStartDate().compareTo(startDate) >= 0 && schedule.getStartDate().before(endDate))
                 {
-                    leftMargin = EVENT_MARGIN;
+                    leftMargin = EVENT_LR_MARGIN;
                     rightMargin = 0;
                 }
                 // 종료일이 date인 경우, 시작일은 startDate이전
                 else if (schedule.getEndDate().compareTo(startDate) >= 0 && schedule.getEndDate().before(endDate) && schedule.getStartDate().before(startDate))
                 {
                     leftMargin = 0;
-                    rightMargin = EVENT_MARGIN;
+                    rightMargin = EVENT_LR_MARGIN;
                 }
                 // 시작/종료일이 date인 경우
                 else if (schedule.getEndDate().compareTo(startDate) >= 0 && schedule.getEndDate().before(endDate) && schedule.getStartDate().compareTo(startDate) >= 0 && schedule.getStartDate().before(endDate))
                 {
-                    leftMargin = EVENT_MARGIN;
-                    rightMargin = EVENT_MARGIN;
+                    leftMargin = EVENT_LR_MARGIN;
+                    rightMargin = EVENT_LR_MARGIN;
                 }
 
                 for (int currentRowNum = 1; currentRowNum <= eventRowCount; currentRowNum++)
@@ -289,40 +284,42 @@ public class MonthCalendarView extends ViewGroup
         // more 표시
         for (int index = start; index <= end; index++)
         {
-            int eventsNum = ITEM_LAYOUT_CELLS.get(index).eventsNum;
-            int displayedEventsNum = 0;
-            int lastRow = -1;
-
-            for (int row = EVENT_COUNT - 1; row >= 0; row--)
+            if (ITEM_LAYOUT_CELLS.get(index) != null)
             {
-                if (!ITEM_LAYOUT_CELLS.get(index).row[row])
+                int eventsNum = ITEM_LAYOUT_CELLS.get(index).eventsNum;
+                int displayedEventsNum = 0;
+                int lastRow = -1;
+
+                for (int row = EVENT_COUNT - 1; row >= 0; row--)
                 {
-                    if (lastRow == -1)
+                    if (!ITEM_LAYOUT_CELLS.get(index).row[row])
                     {
-                        lastRow = row;
+                        if (lastRow == -1)
+                        {
+                            lastRow = row;
+                        }
+                    } else
+                    {
+                        displayedEventsNum++;
                     }
-                } else
+                }
+
+                // 날짜의 이벤트 개수 > 뷰에 표시된 이벤트의 개수 인 경우 마지막 행에 More를 표시
+                if (eventsNum > displayedEventsNum)
                 {
-                    displayedEventsNum++;
+                    startX = index % 7 == 0 ? 0 : ITEM_WIDTH * (index % 7);
+                    startY = ITEM_HEIGHT * (index / 7) + DAY_SPACE_HEIGHT;
+
+                    top = startY + ((EVENT_HEIGHT + SPACING_BETWEEN_EVENT) * lastRow);
+                    bottom = top + EVENT_HEIGHT;
+                    left = startX + EVENT_LR_MARGIN;
+                    right = startX + ITEM_WIDTH - EVENT_LR_MARGIN;
+
+                    canvas.drawRect(left, top, right, bottom, extraPaint);
+                    canvas.drawText("More", startX + EVENT_LR_MARGIN + TEXT_MARGIN, bottom - TEXT_MARGIN, textPaint);
                 }
             }
-
-            // 날짜의 이벤트 개수 > 뷰에 표시된 이벤트의 개수 인 경우 마지막 행에 More를 표시
-            if (eventsNum > displayedEventsNum)
-            {
-                startX = index % 7 == 0 ? 0 : ITEM_WIDTH * (index % 7);
-                startY = ITEM_HEIGHT * (index / 7) + DAY_SPACE_HEIGHT;
-
-                top = startY + ((EVENT_HEIGHT + SPACING_BETWEEN_EVENT) * lastRow);
-                bottom = top + EVENT_HEIGHT;
-                left = startX + EVENT_MARGIN;
-                right = startX + ITEM_WIDTH - EVENT_MARGIN;
-
-                canvas.drawRect(left, top, right, bottom, extraPaint);
-                canvas.drawText("More", startX + EVENT_MARGIN + TEXT_MARGIN, bottom - TEXT_MARGIN, textPaint);
-            }
         }
-
     }
 
     public void clear()

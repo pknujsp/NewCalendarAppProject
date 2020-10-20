@@ -1,6 +1,7 @@
 package com.zerodsoft.scheduleweather.utility;
 
 import java.util.Calendar;
+import java.util.Date;
 
 public class DateHour
 {
@@ -35,8 +36,8 @@ public class DateHour
         return hourStrings[index];
     }
 
-    public static String getDate(Calendar calendar)
+    public static String getDate(Date date)
     {
-        return Integer.toString(calendar.get(Calendar.DATE));
+        return Clock.DAY_OF_MONTH_FORMAT.format(date);
     }
 }

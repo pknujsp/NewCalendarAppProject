@@ -5,7 +5,6 @@ import android.graphics.Canvas;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.widget.OverScroller;
@@ -23,7 +22,6 @@ import com.zerodsoft.scheduleweather.utility.DateHour;
 
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 
 public class DayView extends HourEventsView
 {
@@ -35,38 +33,13 @@ public class DayView extends HourEventsView
     private OverScroller overScroller;
     private GestureDetectorCompat gestureDetector;
 
-    private boolean haveEvents = false;
-
     private Calendar date;
-
-    private OnRefreshChildViewListener onRefreshChildViewListener;
-    private OnRefreshHoursViewListener onRefreshHoursViewListener;
-    private CoordinateInfoInterface coordinateInfoInterface;
-
-    private CoordinateInfo coordinateInfo;
-
-    public DayView setCoordinateInfoInterface(CoordinateInfoInterface coordinateInfoInterface)
-    {
-        this.coordinateInfoInterface = coordinateInfoInterface;
-        return this;
-    }
-
-    public DayView setOnRefreshChildViewListener(OnRefreshChildViewListener onRefreshChildViewListener)
-    {
-        this.onRefreshChildViewListener = onRefreshChildViewListener;
-        return this;
-    }
-
-    public DayView setOnRefreshHoursViewListener(OnRefreshHoursViewListener onRefreshHoursViewListener)
-    {
-        this.onRefreshHoursViewListener = onRefreshHoursViewListener;
-        return this;
-    }
 
     public DayView(Context context, @Nullable AttributeSet attrs)
     {
         super(context, attrs);
-        init();
+        gestureDetector = new GestureDetectorCompat(context, onGestureListener);
+        overScroller = new OverScroller(context);
     }
 
     public void setDate(Date date)
@@ -75,16 +48,6 @@ public class DayView extends HourEventsView
         this.date.setTime(date);
     }
 
-    private void init()
-    {
-        if (currentTouchedPoint.y == 0f)
-        {
-            currentTouchedPoint.y = (float) TABLE_LAYOUT_MARGIN;
-        }
-
-        gestureDetector = new GestureDetectorCompat(context, onGestureListener);
-        overScroller = new OverScroller(context);
-    }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
@@ -99,43 +62,17 @@ public class DayView extends HourEventsView
         drawView(canvas);
     }
 
-    @Override
-    public void layout(int l, int t, int r, int b)
-    {
-        super.layout(l, t, r, b);
-    }
 
     private void drawView(Canvas canvas)
     {
-        startX = currentTouchedPoint.x;
-        startY = currentTouchedPoint.y;
-
-        for (int i = 0; i < 24; i++)
-        {
-            // 시간 표시
-            canvas.drawText(DateHour.getHourString(i), 0f, currentTouchedPoint.y + (SPACING_LINES_BETWEEN_HOUR * i) + HOUR_TEXT_HEIGHT / 2, HOUR_TEXT_PAINT);
-        }
-
-        for (int i = 0; i <= 23; i++)
-        {
-            // 가로 선
-            // startX : 시간 텍스트 길이만큼 옆으로 간격벌려서 시작
-            canvas.drawLine(HOUR_TEXT_BOX_RECT.width(), startY + (SPACING_LINES_BETWEEN_HOUR * i), VIEW_WIDTH, startY + (SPACING_LINES_BETWEEN_HOUR * i), HORIZONTAL_LINE_PAINT);
-        }
-
         if (createdAddScheduleRect)
         {
             // 일정 추가 사각형 코드
-            startPoint = getTimePoint(TIME_CATEGORY.START);
-            endPoint = getTimePoint(TIME_CATEGORY.END);
+            rectStartPoint = getTimePoint(TIME_CATEGORY.START);
+            rectEndPoint = getTimePoint(TIME_CATEGORY.END);
 
-            NEW_SCHEDULE_RECT_DRAWABLE.setBounds(HOUR_TEXT_BOX_RECT.width(), (int) startPoint.y, VIEW_WIDTH, (int) endPoint.y);
+            // NEW_SCHEDULE_RECT_DRAWABLE.setBounds(HOUR_TEXT_BOX_RECT.width(), (int) rectStartPoint.y, VIEW_WIDTH, (int) rectEndPoint.y);
             NEW_SCHEDULE_RECT_DRAWABLE.draw(canvas);
-        }
-
-        if (haveEvents)
-        {
-            drawEvents(canvas);
         }
     }
 
@@ -155,14 +92,14 @@ public class DayView extends HourEventsView
         PointF point = new PointF(0f, 0f);
 
         // y
-        float startHour = currentTouchedPoint.y + SPACING_LINES_BETWEEN_HOUR * time.get(Calendar.HOUR_OF_DAY);
-        float endHour = currentTouchedPoint.y + SPACING_LINES_BETWEEN_HOUR * (time.get(Calendar.HOUR_OF_DAY) + 1);
+        float startHour = currentTouchedPoint.y + SPACING_BETWEEN_HOURS * time.get(Calendar.HOUR_OF_DAY);
+        float endHour = currentTouchedPoint.y + SPACING_BETWEEN_HOURS * (time.get(Calendar.HOUR_OF_DAY) + 1);
 
         if (time.get(Calendar.HOUR_OF_DAY) == 0 && timeCategory == TIME_CATEGORY.END)
         {
-            startHour = currentTouchedPoint.y + SPACING_LINES_BETWEEN_HOUR * 24;
+            startHour = currentTouchedPoint.y + SPACING_BETWEEN_HOURS * 24;
             // 다음 날 오전1시
-            endHour = currentTouchedPoint.y + SPACING_LINES_BETWEEN_HOUR * 25;
+            endHour = currentTouchedPoint.y + SPACING_BETWEEN_HOURS * 25;
         }
         float minute15Height = (endHour - startHour) / 4f;
 
@@ -182,9 +119,9 @@ public class DayView extends HourEventsView
         PointF point = new PointF(0f, 0f);
 
         // y
-        float hourY = currentTouchedPoint.y + SPACING_LINES_BETWEEN_HOUR * time.get(Calendar.HOUR_OF_DAY);
+        float hourY = currentTouchedPoint.y + SPACING_BETWEEN_HOURS * time.get(Calendar.HOUR_OF_DAY);
         int minute = time.get(Calendar.MINUTE);
-        float minute1Height = SPACING_LINES_BETWEEN_HOUR / 60f;
+        float minute1Height = SPACING_BETWEEN_HOURS / 60f;
 
         point.y = hourY + minute1Height * minute;
 
@@ -199,8 +136,8 @@ public class DayView extends HourEventsView
 
         for (int i = 0; i <= 23; i++)
         {
-            startHour = currentTouchedPoint.y + SPACING_LINES_BETWEEN_HOUR * i;
-            endHour = currentTouchedPoint.y + SPACING_LINES_BETWEEN_HOUR * (i + 1);
+            startHour = currentTouchedPoint.y + SPACING_BETWEEN_HOURS * i;
+            endHour = currentTouchedPoint.y + SPACING_BETWEEN_HOURS * (i + 1);
 
             if (y >= startHour && y < endHour)
             {
@@ -280,11 +217,11 @@ public class DayView extends HourEventsView
                 if (!changingStartTime && !changingEndTime)
                 {
                     // 새로운 일정 생성 박스가 생성되었으나, 스크롤이 첫 진행중인 경우
-                    if (e1.getY() >= startPoint.y - 30f && e1.getY() < startPoint.y + 30f)
+                    if (e1.getY() >= rectStartPoint.y - 30f && e1.getY() < rectStartPoint.y + 30f)
                     {
                         changingStartTime = true;
                         return true;
-                    } else if (e1.getY() >= endPoint.y - 30f && e1.getY() < endPoint.y + 30f)
+                    } else if (e1.getY() >= rectEndPoint.y - 30f && e1.getY() < rectEndPoint.y + 30f)
                     {
                         changingEndTime = true;
                         return true;
@@ -314,8 +251,6 @@ public class DayView extends HourEventsView
 
             if (currentScrollDirection == SCROLL_DIRECTION.VERTICAL)
             {
-                currentTouchedPoint.y -= distanceY;
-                mDistanceY = distanceY;
 
                 if (currentTouchedPoint.y >= maxStartY)
                 {
@@ -323,6 +258,9 @@ public class DayView extends HourEventsView
                 } else if (currentTouchedPoint.y <= minStartY)
                 {
                     currentTouchedPoint.y = minStartY;
+                } else
+                {
+                    currentTouchedPoint.y = e2.getY();
                 }
             }
             ViewCompat.postInvalidateOnAnimation(DayView.this);
@@ -346,7 +284,6 @@ public class DayView extends HourEventsView
         public boolean onDown(MotionEvent e)
         {
             overScroller.forceFinished(true);
-            lastTouchedPoint.y = currentTouchedPoint.y;
             return true;
         }
 
@@ -359,6 +296,7 @@ public class DayView extends HourEventsView
         @Override
         public void onLongPress(MotionEvent e)
         {
+            /*
             // 롱 클릭을 했을 때 실행됨
             // 롱 클릭한 좌표의 X가 테이블 내로 들어와있어야 함
             if (e.getX() >= HOUR_TEXT_BOX_RECT.width())
@@ -369,6 +307,8 @@ public class DayView extends HourEventsView
                     invalidate();
                 }
             }
+
+             */
         }
     };
 
@@ -490,9 +430,4 @@ public class DayView extends HourEventsView
         return 1;
     }
 
-    public void setScheduleList(List<ScheduleDTO> scheduleList)
-    {
-        super.setScheduleList(scheduleList);
-        setEventDrawingInfo();
-    }
 }

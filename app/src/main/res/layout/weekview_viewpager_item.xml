@@ -11,88 +11,17 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <LinearLayout
-            android:id="@+id/week_header_layout"
+        <com.zerodsoft.scheduleweather.calendarview.week.WeekHeaderView
+            android:id="@+id/week_header"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@android:color/white"
-            android:elevation="2dp"
-            android:fadingEdgeLength="1dp"
-            android:orientation="horizontal">
+            android:layout_height="wrap_content" />
 
-            <TextView
-                android:id="@+id/week_dates_textview"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="2dp"
-                android:background="@android:color/darker_gray"
-                android:text="23주"
-                android:textAlignment="center"
-                android:textColor="@android:color/white"
-                android:textSize="12sp" />
-
-            <LinearLayout
-                android:id="@+id/week_header_calendar_layout"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:orientation="vertical">
-
-                <com.zerodsoft.scheduleweather.calendarview.week.WeekHeaderView
-                    android:id="@+id/week_header_view"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    custom:firstDayOfWeek2="sunday"
-                    custom:headerAllBackgroundColor="@android:color/white"
-                    custom:headerDateBackgroundColor="@android:color/transparent"
-                    custom:headerDateTextColor="@android:color/black"
-                    custom:headerDateTextSize="@dimen/week_header_view_date_text_size"
-                    custom:headerDayBackgroundColor="@android:color/transparent"
-                    custom:headerDayTextColor="@android:color/black"
-                    custom:headerDayTextSize="@dimen/week_header_view_day_text_size"
-                    custom:headerExtraBackgroundColor="@android:color/transparent"
-                    custom:headerExtraButtonSize="15dp"
-                    custom:headerExtraTextColor="@android:color/black"
-                    custom:headerExtraTextSize="13sp"
-                    custom:headerRowMarginBottom="@dimen/week_header_view_day_row_margin"
-                    custom:headerRowMarginTop="@dimen/week_header_view_day_row_margin"
-                    custom:headerTodayTextColor="@android:color/holo_blue_dark" />
-
-                <RelativeLayout
-                    android:id="@+id/week_header_event_list_layout"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                </RelativeLayout>
-            </LinearLayout>
-        </LinearLayout>
-
-
-        <LinearLayout
-            android:id="@+id/week_table_layout"
+        <com.zerodsoft.scheduleweather.calendarview.week.WeekView
+            android:id="@+id/week_view"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <com.zerodsoft.scheduleweather.calendarview.HoursView
-                android:id="@+id/week_hours_view"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-
-            <com.zerodsoft.scheduleweather.calendarview.week.WeekView
-                android:id="@+id/week_view"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                custom:HoursEventsHourTextColor="@android:color/black"
-                custom:HoursEventsHourTextSize="@dimen/weekview_textsize"
-                custom:HoursEventsBackgroundColor="@android:color/white"
-                custom:HoursEventsLineColor="@android:color/darker_gray"
-                custom:HoursEventsLineThickness="@dimen/line_thickness"
-                custom:HoursEventsNewScheduleRectColor="@android:color/holo_blue_dark"
-                custom:HoursEventsNewScheduleRectThickness="10dp" />
-
-        </LinearLayout>
+            android:layout_height="wrap_content" />
 
     </LinearLayout>
+
 
 </FrameLayout>
