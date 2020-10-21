@@ -25,7 +25,6 @@ import java.util.Date;
 
 public class DayView extends HourEventsView
 {
-
     private boolean createdAddScheduleRect = false;
     private boolean changingStartTime = false;
     private boolean changingEndTime = false;
@@ -38,8 +37,8 @@ public class DayView extends HourEventsView
     public DayView(Context context, @Nullable AttributeSet attrs)
     {
         super(context, attrs);
-        gestureDetector = new GestureDetectorCompat(context, onGestureListener);
-        overScroller = new OverScroller(context);
+      //  gestureDetector = new GestureDetectorCompat(context, onGestureListener);
+      //  overScroller = new OverScroller(context);
     }
 
     public void setDate(Date date)
@@ -48,12 +47,6 @@ public class DayView extends HourEventsView
         this.date.setTime(date);
     }
 
-
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
-    {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-    }
 
     @Override
     protected void onDraw(Canvas canvas)
@@ -169,6 +162,7 @@ public class DayView extends HourEventsView
     @Override
     public boolean onTouchEvent(MotionEvent event)
     {
+        /*
         if (event.getAction() == MotionEvent.ACTION_UP)
         {
             if (currentScrollDirection == SCROLL_DIRECTION.VERTICAL)
@@ -189,7 +183,9 @@ public class DayView extends HourEventsView
                 return true;
             }
         }
-        return gestureDetector.onTouchEvent(event);
+
+         */
+        return true;
     }
 
     private final GestureDetector.OnGestureListener onGestureListener = new GestureDetector.SimpleOnGestureListener()
@@ -249,20 +245,7 @@ public class DayView extends HourEventsView
                 currentScrollDirection = SCROLL_DIRECTION.VERTICAL;
             }
 
-            if (currentScrollDirection == SCROLL_DIRECTION.VERTICAL)
-            {
 
-                if (currentTouchedPoint.y >= maxStartY)
-                {
-                    currentTouchedPoint.y = maxStartY;
-                } else if (currentTouchedPoint.y <= minStartY)
-                {
-                    currentTouchedPoint.y = minStartY;
-                } else
-                {
-                    currentTouchedPoint.y = e2.getY();
-                }
-            }
             ViewCompat.postInvalidateOnAnimation(DayView.this);
             return true;
         }
@@ -276,8 +259,8 @@ public class DayView extends HourEventsView
 
         private void fling(float velocityX, float velocityY)
         {
-            overScroller.fling(0, (int) currentTouchedPoint.y, 0, (int) velocityY, 0, 0, (int) minStartY, (int) maxStartY, 0, 0);
-            ViewCompat.postInvalidateOnAnimation(DayView.this);
+          //  overScroller.fling(0, (int) currentTouchedPoint.y, 0, (int) velocityY, 0, 0, (int) minStartY, (int) maxStartY, 0, 0);
+         //   ViewCompat.postInvalidateOnAnimation(DayView.this);
         }
 
         @Override

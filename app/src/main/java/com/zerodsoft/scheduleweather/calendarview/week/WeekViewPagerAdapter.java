@@ -1,6 +1,7 @@
 package com.zerodsoft.scheduleweather.calendarview.week;
 
 import android.content.Context;
+import android.util.Log;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -67,6 +68,7 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
     @Override
     public void onBindViewHolder(@NonNull WeekViewPagerHolder holder, int position)
     {
+        Log.e("ONBIND : ", String.valueOf(position));
     }
 
     @Override
@@ -75,13 +77,15 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
         holder.onBind(holder.getAdapterPosition());
         holderSparseArray.put(holder.getAdapterPosition(), holder);
         super.onViewAttachedToWindow(holder);
+
     }
 
     @Override
     public void onViewDetachedFromWindow(@NonNull WeekViewPagerHolder holder)
     {
-        super.onViewDetachedFromWindow(holder);
+        holderSparseArray.remove(holder.getAdapterPosition());
         holder.clearHolder();
+        super.onViewDetachedFromWindow(holder);
     }
 
     @Override
@@ -224,7 +228,6 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
                 return currentWeekDays[position];
             }
         }
-
 
     }
 

@@ -304,6 +304,7 @@ public class WeekHeaderView extends View
     {
         ITEM_LAYOUT_CELLS.clear();
         eventCellsList.clear();
+        rowNum = 0;
     }
 
     public void setSchedules(List<EventData> list)

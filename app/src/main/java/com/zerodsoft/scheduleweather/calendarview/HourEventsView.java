@@ -11,6 +11,7 @@ import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ScrollView;
 
 import androidx.annotation.Nullable;
 
@@ -41,7 +42,7 @@ public class HourEventsView extends ViewGroup
     protected final Paint GOOGLE_EVENT_TEXT_PAINT;
     protected final Paint LOCAL_EVENT_TEXT_PAINT;
     protected final int LINE_THICKNESS;
-    protected final int SPACING_BETWEEN_HOURS = 140;
+    protected final int SPACING_BETWEEN_HOURS;
     protected final int TABLE_TB_MARGIN = 32;
 
     protected final int HOUR_TEXT_HEIGHT;
@@ -53,14 +54,8 @@ public class HourEventsView extends ViewGroup
     protected final int VIEW_WIDTH;
     protected final int VIEW_HEIGHT;
 
-    protected float minStartY;
-    protected float maxStartY;
-
     protected PointF rectStartPoint;
     protected PointF rectEndPoint;
-
-    protected static float startX = 0f;
-    protected static float startY;
 
     protected Calendar startTime;
     protected Calendar endTime;
@@ -110,6 +105,8 @@ public class HourEventsView extends ViewGroup
         GOOGLE_EVENT_TEXT_PAINT.getTextBounds("0", 0, 1, rect);
         EVENT_TEXT_HEIGHT = rect.height();
 
+        SPACING_BETWEEN_HOURS = AppMainActivity.getDisplayHeight() * 2 / 24;
+
         VIEW_WIDTH = AppMainActivity.getDisplayWidth();
         VIEW_HEIGHT = SPACING_BETWEEN_HOURS * 24 + TABLE_TB_MARGIN * 2;
 
@@ -118,12 +115,15 @@ public class HourEventsView extends ViewGroup
     }
 
     @Override
-    protected void onLayout(boolean changed, int left, int top, int right, int bottom)
+    protected void onLayout(boolean b, int i, int i1, int i2, int i3)
     {
-        // super.onLayout(changed, left, top, right, bottom);
 
-        minStartY = -(VIEW_HEIGHT - getHeight());
-        maxStartY = 0f;
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
+    {
+        setMeasuredDimension(widthMeasureSpec, VIEW_HEIGHT);
     }
 
     @Override
@@ -134,9 +134,9 @@ public class HourEventsView extends ViewGroup
         for (int i = 0; i < 24; i++)
         {
             // 시간 표시
-            canvas.drawText(DateHour.getHourString(i), startX, startY + (SPACING_BETWEEN_HOURS * i) + HOUR_TEXT_HEIGHT / 2 + TABLE_TB_MARGIN, HOUR_PAINT);
+            canvas.drawText(DateHour.getHourString(i), 0, (SPACING_BETWEEN_HOURS * i) + HOUR_TEXT_HEIGHT / 2 + TABLE_TB_MARGIN, HOUR_PAINT);
             // 가로 선 표시
-            canvas.drawLine(WeekFragment.getColumnWidth(), startY + (SPACING_BETWEEN_HOURS * i) + TABLE_TB_MARGIN, VIEW_WIDTH, startY + (SPACING_BETWEEN_HOURS * i) + TABLE_TB_MARGIN, DIVIDING_LINE_PAINT);
+            canvas.drawLine(WeekFragment.getColumnWidth(), (SPACING_BETWEEN_HOURS * i) + TABLE_TB_MARGIN, VIEW_WIDTH, (SPACING_BETWEEN_HOURS * i) + TABLE_TB_MARGIN, DIVIDING_LINE_PAINT);
         }
     }
 

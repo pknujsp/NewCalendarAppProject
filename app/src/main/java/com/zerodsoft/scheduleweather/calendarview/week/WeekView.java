@@ -51,8 +51,8 @@ public class WeekView extends HourEventsView
     public WeekView(Context context, @Nullable AttributeSet attrs)
     {
         super(context, attrs);
-        gestureDetector = new GestureDetectorCompat(context, onGestureListener);
-        overScroller = new OverScroller(context);
+        // gestureDetector = new GestureDetectorCompat(context, onGestureListener);
+        // overScroller = new OverScroller(context);
     }
 
     public void setOnSwipeListener(OnSwipeListener onSwipeListener)
@@ -66,171 +66,76 @@ public class WeekView extends HourEventsView
     }
 
     @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
-    {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-    }
-
-    @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b)
     {
         super.onLayout(changed, l, t, r, b);
-        /*
-        // resolveSize : 실제 설정할 크기를 계산
-        ITEM_WIDTH = getWidth() / 7;
-        ITEM_HEIGHT = getHeight() / 6;
-        // childview의 크기 설정
-        measureChildren(ITEM_WIDTH, ITEM_HEIGHT);
 
-        int childCount = getChildCount();
-        int left = 0;
-        int right = 0;
-        int top = 0;
-        int bottom = 0;
-
-        for (int index = 0; index < childCount; index++)
+        if (eventSparseArr.size() >= 1)
         {
-            if (index % 7 == 0)
+            Calendar calendar = Calendar.getInstance();
+
+            float left = 0f;
+            float top = 0f;
+            float right = 0f;
+            float bottom = 0f;
+            float cellWidth = 0f;
+            int childCount = getChildCount();
+
+            for (int i = 0; i < childCount; i++)
             {
-                // 마지막 열 인경우 다음 행으로 넘어감
-                left = 0;
-                right = ITEM_WIDTH;
-            } else
-            {
-                left = ITEM_WIDTH * (index % 7);
-                right = ITEM_WIDTH * ((index % 7) + 1);
-            }
-            top = ITEM_HEIGHT * (index / 7);
-            bottom = ITEM_HEIGHT * ((index / 7) + 1);
+                WeekItemView childView = (WeekItemView) getChildAt(i);
+                ItemCell itemCell = childView.itemCell;
 
-            View childView = getChildAt(index);
-            childView.layout(left, top, right, bottom);
-        }
-         */
+                int column = itemCell.column;
+                int index = itemCell.index;
+                int columnCount = itemCell.columnCount;
 
-        Calendar calendar = Calendar.getInstance();
+                calendar.setTime(itemCell.schedule.getStartDate());
+                PointF startPoint = getPoint(calendar, index);
+                calendar.setTime(itemCell.schedule.getEndDate());
+                PointF endPoint = getPoint(calendar, index);
 
-        float left = 0f;
-        float top = 0f;
-        float right = 0f;
-        float bottom = 0f;
-        float cellWidth = 0f;
+                cellWidth = (WeekFragment.getColumnWidth() - (SPACING_BETWEEN_EVENTS * (columnCount - 1))) / columnCount;
 
-        for (int index = 0; index < 7; index++)
-        {
-            List<ItemCell> itemCells = eventSparseArr.get(index);
-            if (itemCells != null)
-            {
-                for (int i = 0; i < itemCells.size(); i++)
+                top = startPoint.y;
+                bottom = endPoint.y;
+                if (column == ItemCell.NOT_OVERLAP)
                 {
-                    int column = itemCells.get(i).column;
-                    int columnCount = itemCells.get(i).columnCount;
-
-                    calendar.setTime(itemCells.get(i).schedule.getStartDate());
-                    PointF startPoint = getPoint(calendar, index);
-                    calendar.setTime(itemCells.get(i).schedule.getEndDate());
-                    PointF endPoint = getPoint(calendar, index);
-
-                    cellWidth = (WeekFragment.getColumnWidth() - (SPACING_BETWEEN_EVENTS * (columnCount - 1))) / columnCount;
-
-                    top = startPoint.y;
-                    bottom = endPoint.y;
-                    if (column == ItemCell.NOT_OVERLAP)
-                    {
-                        left = startPoint.x;
-                    } else
-                    {
-                        left = startPoint.x + ((cellWidth + SPACING_BETWEEN_EVENTS) * column);
-                    }
-                    right = left + cellWidth;
-
-                    View childView = getChildAt(index);
-                    childView.measure((int) (right - left), (int) (bottom - top));
-                    childView.layout((int) left, (int) top, (int) right, (int) bottom);
+                    left = startPoint.x;
+                } else
+                {
+                    left = startPoint.x + ((cellWidth + SPACING_BETWEEN_EVENTS) * column);
                 }
+                right = left + cellWidth;
+
+                int width = (int) (right - left);
+                int height = (int) (bottom - top);
+
+                childView.measure(width, height);
+                childView.layout((int) left, (int) top, (int) right, (int) bottom);
             }
         }
     }
+
 
     @Override
     protected void onDraw(Canvas canvas)
     {
         super.onDraw(canvas);
+
         for (int i = 2; i <= 7; i++)
         {
             // 세로 선
-            canvas.drawLine(WeekFragment.getColumnWidth() * i, startY, WeekFragment.getColumnWidth() * i, startY + VIEW_HEIGHT - TABLE_TB_MARGIN, DIVIDING_LINE_PAINT);
+            canvas.drawLine(WeekFragment.getColumnWidth() * i, 0, WeekFragment.getColumnWidth() * i, VIEW_HEIGHT - TABLE_TB_MARGIN, DIVIDING_LINE_PAINT);
         }
-        if (eventSparseArr.size() >= 1)
-        {
-            GOOGLE_EVENT_PAINT.setColor(AppSettings.getGoogleEventBackgroundColor());
-            LOCAL_EVENT_PAINT.setColor(AppSettings.getLocalEventBackgroundColor());
-            GOOGLE_EVENT_TEXT_PAINT.setColor(AppSettings.getGoogleEventTextColor());
-            LOCAL_EVENT_TEXT_PAINT.setColor(AppSettings.getLocalEventTextColor());
-
-            drawEvents(canvas);
-            for (int i = 0; i < getChildCount(); i++)
-            {
-                getChildAt(i).invalidate();
-            }
-        }
-        drawWeekView(canvas);
     }
 
-    private void drawEvents(Canvas canvas)
+    @Override
+    protected void dispatchDraw(Canvas canvas)
     {
-        /*
-        Calendar calendar = Calendar.getInstance();
-
-        float left = 0f;
-        float top = 0f;
-        float right = 0f;
-        float bottom = 0f;
-        float cellWidth = 0f;
-
-        for (int index = 0; index < 7; index++)
-        {
-            List<ItemCell> itemCells = eventSparseArr.get(index);
-            if (itemCells != null)
-            {
-                for (int i = 0; i < itemCells.size(); i++)
-                {
-                    int column = itemCells.get(i).column;
-                    int columnCount = itemCells.get(i).columnCount;
-
-                    calendar.setTime(itemCells.get(i).schedule.getStartDate());
-                    PointF startPoint = getPoint(calendar, index);
-                    calendar.setTime(itemCells.get(i).schedule.getEndDate());
-                    PointF endPoint = getPoint(calendar, index);
-
-                    cellWidth = (WeekFragment.getColumnWidth() - (SPACING_BETWEEN_EVENTS * (columnCount - 1))) / columnCount;
-
-                    top = startPoint.y;
-                    bottom = endPoint.y;
-                    if (column == ItemCell.NOT_OVERLAP)
-                    {
-                        left = startPoint.x;
-                    } else
-                    {
-                        left = startPoint.x + ((cellWidth + SPACING_BETWEEN_EVENTS) * column);
-                    }
-                    right = left + cellWidth;
-
-                    if (itemCells.get(i).schedule.getCategory() == ScheduleDTO.GOOGLE_CATEGORY)
-                    {
-                        canvas.drawRect(left, top, right, bottom, GOOGLE_EVENT_PAINT);
-                        canvas.drawText(itemCells.get(i).schedule.getSubject(), left + TEXT_MARGIN, top + EVENT_TEXT_HEIGHT + TEXT_MARGIN, GOOGLE_EVENT_TEXT_PAINT);
-                    } else
-                    {
-                        canvas.drawRect(left, top, right, bottom, LOCAL_EVENT_PAINT);
-                        canvas.drawText(itemCells.get(i).schedule.getSubject(), left + TEXT_MARGIN, top + EVENT_TEXT_HEIGHT + TEXT_MARGIN, LOCAL_EVENT_TEXT_PAINT);
-                    }
-                }
-            }
-        }
-
-         */
+        super.dispatchDraw(canvas);
     }
+
 
     private PointF getPoint(Calendar time, int index)
     {
@@ -239,37 +144,17 @@ public class WeekView extends HourEventsView
         // x
         point.x = WeekFragment.getColumnWidth() * (index + 1);
 
-        /* 
-           가로선 그리기
-          canvas.drawLine(WeekFragment.getColumnWidth(), startY + (SPACING_BETWEEN_HOURS * i) + TABLE_TB_MARGIN, VIEW_WIDTH,
-           startY + (SPACING_BETWEEN_HOURS * i) + TABLE_TB_MARGIN, DIVIDING_LINE_PAINT);
-         */
-
         // y
         int hour = time.get(Calendar.HOUR_OF_DAY);
         int minute = time.get(Calendar.MINUTE);
 
-        float hourY = startY + (SPACING_BETWEEN_HOURS * hour) + TABLE_TB_MARGIN;
+        float hourY = SPACING_BETWEEN_HOURS * hour + TABLE_TB_MARGIN;
         float heightPerMinute = SPACING_BETWEEN_HOURS / 60f;
-
         point.y = hourY + heightPerMinute * minute;
 
         return point;
     }
 
-    private void drawWeekView(Canvas canvas)
-    {
-        /*
-        if (createdAddScheduleRect)
-        {
-            // 일정 추가 사각형 코드
-            rectStartPoint = getTimePoint(TIME_CATEGORY.START);
-            rectEndPoint = getTimePoint(TIME_CATEGORY.END);
-            NEW_SCHEDULE_RECT_DRAWABLE.setBounds((int) rectStartPoint.x, (int) rectStartPoint.y, (int) rectEndPoint.x + WeekFragment.getColumnWidth(), (int) rectEndPoint.y);
-            NEW_SCHEDULE_RECT_DRAWABLE.draw(canvas);
-        }
-         */
-    }
 
     /*
     private PointF getTimePoint(TIME_CATEGORY timeCategory)
@@ -383,6 +268,7 @@ public class WeekView extends HourEventsView
     public void clear()
     {
         eventSparseArr.clear();
+        removeAllViews();
     }
 
     public void setSchedules(List<EventData> list)
@@ -442,10 +328,12 @@ public class WeekView extends HourEventsView
                                 if (itemCells.get(i).column == ItemCell.NOT_OVERLAP)
                                 {
                                     itemCells.get(i).column = col++;
+                                    itemCells.get(i).index = index;
                                     overlappingList = new ArrayList<>();
                                     overlappingList.add(itemCells.get(i));
                                 }
                                 itemCells.get(j).column = col++;
+                                itemCells.get(j).index = index;
                                 overlappingList.add(itemCells.get(j));
                                 overlappingCount++;
                             }
@@ -455,6 +343,7 @@ public class WeekView extends HourEventsView
                         {
                             // 시간이 겹치지 않는 경우
                             itemCells.get(i).column = ItemCell.NOT_OVERLAP;
+                            itemCells.get(i).index = index;
                         } else
                         {
                             for (ItemCell cell : overlappingList)
@@ -466,8 +355,12 @@ public class WeekView extends HourEventsView
                 }
             }
         }
-
         removeAllViews();
+
+        GOOGLE_EVENT_PAINT.setColor(AppSettings.getGoogleEventBackgroundColor());
+        LOCAL_EVENT_PAINT.setColor(AppSettings.getLocalEventBackgroundColor());
+        GOOGLE_EVENT_TEXT_PAINT.setColor(AppSettings.getGoogleEventTextColor());
+        LOCAL_EVENT_TEXT_PAINT.setColor(AppSettings.getLocalEventTextColor());
 
         for (int index = 0; index < 7; index++)
         {
@@ -478,7 +371,7 @@ public class WeekView extends HourEventsView
                 for (int i = 0; i < itemCells.size(); i++)
                 {
                     WeekItemView child = new WeekItemView(context, itemCells.get(i));
-                    addView(child);
+                    this.addView(child);
                     child.setClickable(true);
                     child.setOnClickListener(new OnClickListener()
                     {
@@ -492,6 +385,8 @@ public class WeekView extends HourEventsView
                 }
             }
         }
+
+
     }
 
     private boolean isOverlapping(ScheduleDTO schedule1, ScheduleDTO schedule2)
@@ -515,6 +410,7 @@ public class WeekView extends HourEventsView
     @Override
     public boolean onTouchEvent(MotionEvent event)
     {
+        /*
         currentTouchedPoint.x = event.getX();
         currentTouchedPoint.y = event.getY();
 
@@ -540,6 +436,8 @@ public class WeekView extends HourEventsView
             }
         }
         gestureDetector.onTouchEvent(event);
+
+         */
         return true;
     }
 
@@ -547,11 +445,14 @@ public class WeekView extends HourEventsView
     public void computeScroll()
     {
         super.computeScroll();
+        /*
         if (overScroller.computeScrollOffset())
         {
             startY = overScroller.getCurrY();
             ViewCompat.postInvalidateOnAnimation(WeekView.this);
         }
+
+         */
     }
 
 
@@ -612,18 +513,6 @@ public class WeekView extends HourEventsView
                 onSwipeListener.onSwiped(true);
             }
 
-            if (currentScrollDirection == SCROLL_DIRECTION.VERTICAL)
-            {
-                startY -= distanceY;
-
-                if (startY >= maxStartY)
-                {
-                    startY = maxStartY;
-                } else if (startY <= minStartY)
-                {
-                    startY = minStartY;
-                }
-            }
             ViewCompat.postInvalidateOnAnimation(WeekView.this);
             return true;
         }
@@ -638,8 +527,8 @@ public class WeekView extends HourEventsView
 
         private void fling(float velocityX, float velocityY)
         {
-            overScroller.fling(0, (int) startY, 0, (int) velocityY, 0, 0, (int) minStartY, (int) maxStartY, 0, 0);
-            ViewCompat.postInvalidateOnAnimation(WeekView.this);
+            // overScroller.fling(0, (int) startY, 0, (int) velocityY, 0, 0, (int) minStartY, (int) maxStartY, 0, 0);
+            // ViewCompat.postInvalidateOnAnimation(WeekView.this);
         }
 
         @Override
@@ -673,6 +562,7 @@ public class WeekView extends HourEventsView
         public static final int NOT_OVERLAP = -1;
         public int column;
         public int columnCount;
+        public int index;
         public ScheduleDTO schedule;
 
         public ItemCell(ScheduleDTO schedule)
@@ -716,12 +606,12 @@ public class WeekView extends HourEventsView
 
             if (itemCell.schedule.getCategory() == ScheduleDTO.GOOGLE_CATEGORY)
             {
-                canvas.drawRect(getLeft(), getTop(), getRight(), getBottom(), GOOGLE_EVENT_PAINT);
-                canvas.drawText(itemCell.schedule.getSubject(), getLeft() + TEXT_MARGIN, getTop() + EVENT_TEXT_HEIGHT + TEXT_MARGIN, GOOGLE_EVENT_TEXT_PAINT);
+                canvas.drawRect(0, 0, getWidth(), getHeight(), GOOGLE_EVENT_PAINT);
+                canvas.drawText(itemCell.schedule.getSubject(), TEXT_MARGIN, EVENT_TEXT_HEIGHT + TEXT_MARGIN, GOOGLE_EVENT_TEXT_PAINT);
             } else
             {
-                canvas.drawRect(getLeft(), getTop(), getRight(), getBottom(), LOCAL_EVENT_PAINT);
-                canvas.drawText(itemCell.schedule.getSubject(), getLeft() + TEXT_MARGIN, getTop() + EVENT_TEXT_HEIGHT + TEXT_MARGIN, LOCAL_EVENT_TEXT_PAINT);
+                canvas.drawRect(0, 0, getWidth(), getHeight(), LOCAL_EVENT_PAINT);
+                canvas.drawText(itemCell.schedule.getSubject(), TEXT_MARGIN, EVENT_TEXT_HEIGHT + TEXT_MARGIN, LOCAL_EVENT_TEXT_PAINT);
             }
         }
     }
