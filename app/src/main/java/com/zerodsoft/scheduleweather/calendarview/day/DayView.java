@@ -299,11 +299,14 @@ public class DayView extends HourEventsView
     public void computeScroll()
     {
         super.computeScroll();
+        /*
         if (overScroller.computeScrollOffset())
         {
             currentTouchedPoint.y = overScroller.getCurrY();
             ViewCompat.postInvalidateOnAnimation(this);
         }
+
+         */
     }
 
     private void drawEvents(Canvas canvas)

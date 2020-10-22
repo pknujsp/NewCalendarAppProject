@@ -31,8 +31,8 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
     public static final int FIRST_DAY = -1;
     public static final int LAST_DAY = -2;
 
-    private SparseArray<MonthViewHolder> holderSparseArray = new SparseArray<>();
-    private Calendar calendar;
+    private final SparseArray<MonthViewHolder> holderSparseArray = new SparseArray<>();
+    private final Calendar calendar;
     private MonthFragment monthFragment;
     private Context context;
 
@@ -67,21 +67,30 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
     @Override
     public void onBindViewHolder(@NonNull MonthViewHolder holder, int position)
     {
+        holder.onBind();
+        holderSparseArray.put(holder.getAdapterPosition(), holder);
     }
 
     @Override
     public void onViewAttachedToWindow(@NonNull MonthViewHolder holder)
     {
-        holder.onBind(holder.getAdapterPosition());
-        holderSparseArray.put(holder.getAdapterPosition(), holder);
         super.onViewAttachedToWindow(holder);
+        // toolbar의 년월 설정
+        monthFragment.setMonth(holder.currentMonthDays[0].getTime());
     }
 
     @Override
     public void onViewDetachedFromWindow(@NonNull MonthViewHolder holder)
     {
         super.onViewDetachedFromWindow(holder);
+    }
+
+    @Override
+    public void onViewRecycled(@NonNull MonthViewHolder holder)
+    {
+        holderSparseArray.remove(holder.getAdapterPosition());
         holder.clearHolder();
+        super.onViewRecycled(holder);
     }
 
     @Override
@@ -92,8 +101,6 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
 
     class MonthViewHolder extends RecyclerView.ViewHolder
     {
-        private int position;
-        private LinearLayout header;
         private MonthCalendarView monthCalendarView;
 
         private Calendar[] previousMonthDays;
@@ -104,18 +111,18 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
         public MonthViewHolder(View view)
         {
             super(view);
+            monthCalendarView = (MonthCalendarView) view.findViewById(R.id.month_calendar_view);
         }
 
         public void setData(List<ScheduleDTO> schedulesList)
         {
             // 데이터를 일정 길이의 내림차순으로 정렬
             Collections.sort(schedulesList, comparator);
-            // 데이터를 일자별로 분류
-            List<EventData> list = new ArrayList<>();
 
             Calendar startDate = Calendar.getInstance();
             Calendar endDate = Calendar.getInstance();
-
+            List<EventData> list = new ArrayList<>();
+            // 데이터를 일자별로 분류
             for (ScheduleDTO schedule : schedulesList)
             {
                 startDate.setTime(schedule.getStartDate());
@@ -136,15 +143,10 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
             endDay = null;
         }
 
-        public void onBind(int position)
+        public void onBind()
         {
-            header = (LinearLayout) super.itemView.findViewById(R.id.month_header_days);
-            monthCalendarView = (MonthCalendarView) super.itemView.findViewById(R.id.month_calendar_view);
-
-            this.position = position;
-
             Calendar copiedCalendar = (Calendar) calendar.clone();
-            copiedCalendar.add(Calendar.MONTH, position - CalendarTransactionFragment.FIRST_VIEW_POSITION);
+            copiedCalendar.add(Calendar.MONTH, getAdapterPosition() - CalendarTransactionFragment.FIRST_VIEW_POSITION);
             monthCalendarView.setCalendar(copiedCalendar);
             setDays(copiedCalendar);
 
@@ -175,7 +177,8 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
                 });
                 monthCalendarView.addView(itemView);
             }
-            monthFragment.requestSchedules(position, getDay(FIRST_DAY).getTime(), getDay(LAST_DAY).getTime());
+            monthCalendarView.invalidate();
+            monthFragment.requestSchedules(getAdapterPosition(), getDay(FIRST_DAY).getTime(), getDay(LAST_DAY).getTime());
         }
 
         private void setDays(Calendar calendar)

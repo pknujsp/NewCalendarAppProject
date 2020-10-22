@@ -4,7 +4,6 @@ import android.content.Context;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -69,23 +68,31 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
     public void onBindViewHolder(@NonNull WeekViewPagerHolder holder, int position)
     {
         Log.e("ONBIND : ", String.valueOf(position));
+        holder.onBind(holder.getAdapterPosition());
+        holderSparseArray.put(holder.getAdapterPosition(), holder);
     }
 
     @Override
     public void onViewAttachedToWindow(@NonNull WeekViewPagerHolder holder)
     {
-        holder.onBind(holder.getAdapterPosition());
-        holderSparseArray.put(holder.getAdapterPosition(), holder);
         super.onViewAttachedToWindow(holder);
-
+        // toolbar의 년월 설정
+        weekFragment.setMonth(holder.getDay(FIRST_DAY).getTime());
     }
 
     @Override
     public void onViewDetachedFromWindow(@NonNull WeekViewPagerHolder holder)
     {
         holderSparseArray.remove(holder.getAdapterPosition());
-        holder.clearHolder();
         super.onViewDetachedFromWindow(holder);
+    }
+
+    @Override
+    public void onViewRecycled(@NonNull WeekViewPagerHolder holder)
+    {
+        holder.clear();
+        super.onViewRecycled(holder);
+        Log.e("RECYCLED : ", String.valueOf(holder.getAdapterPosition()));
     }
 
     @Override
@@ -112,17 +119,21 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
         public WeekViewPagerHolder(View view)
         {
             super(view);
+            weekView = (WeekView) view.findViewById(R.id.week_view);
+            weekHeaderView = (WeekHeaderView) view.findViewById(R.id.week_header);
+            weekView.setOnSwipeListener(WeekViewPagerAdapter.this::onSwiped);
         }
 
         public void setData(List<ScheduleDTO> schedulesList)
         {
             // 데이터를 일정 길이의 내림차순으로 정렬
             Collections.sort(schedulesList, comparator);
-            // 데이터를 일자별로 분류
-            List<EventData> list = new ArrayList<>();
 
             Calendar startDate = Calendar.getInstance();
             Calendar endDate = Calendar.getInstance();
+
+            // 데이터를 일자별로 분류
+            List<EventData> list = new ArrayList<>();
 
             for (ScheduleDTO schedule : schedulesList)
             {
@@ -141,12 +152,12 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
                     list2.add(eventData);
                 }
             }
-
             weekHeaderView.setSchedules(list);
             weekView.setSchedules(list2);
         }
 
-        public void clearHolder()
+
+        public void clear()
         {
             weekHeaderView.clear();
             weekView.clear();
@@ -154,21 +165,22 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
             endDay = null;
         }
 
-
         public void onBind(int position)
         {
             this.position = position;
-
-            weekView = (WeekView) super.itemView.findViewById(R.id.week_view);
-            weekHeaderView = (WeekHeaderView) super.itemView.findViewById(R.id.week_header);
-            weekView.setOnSwipeListener(WeekViewPagerAdapter.this::onSwiped);
 
             Calendar copiedCalendar = (Calendar) calendar.clone();
             copiedCalendar.add(Calendar.WEEK_OF_YEAR, position - CalendarTransactionFragment.FIRST_VIEW_POSITION);
             setDays(copiedCalendar);
 
+
             weekHeaderView.setInitValue(currentWeekDays, WeekFragment.getColumnWidth());
             weekView.setDaysOfWeek(currentWeekDays);
+
+            weekHeaderView.requestLayout();
+            weekHeaderView.invalidate();
+            weekView.requestLayout();
+            weekView.invalidate();
 
             weekFragment.requestSchedules(position, getDay(FIRST_DAY).getTime(), getDay(LAST_DAY).getTime());
         }

@@ -99,10 +99,10 @@ public class AppMainActivity extends AppCompatActivity
                 startActivityForResult(intent, ScheduleInfoActivity.REQUEST_NEW_SCHEDULE);
                 break;
             case R.id.go_to_today:
-                //
+
                 break;
             case R.id.refresh_calendar:
-                //
+
                 break;
             case R.id.calendar_type:
                 PopupMenu popupMenu = new PopupMenu(AppMainActivity.this, view);

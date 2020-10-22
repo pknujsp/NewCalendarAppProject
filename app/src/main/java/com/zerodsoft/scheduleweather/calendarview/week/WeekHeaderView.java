@@ -46,6 +46,9 @@ public class WeekHeaderView extends View
     private final Paint LOCAL_EVENT_PAINT;
     private final Paint LOCAL_EVENT_TEXT_PAINT;
 
+    // 구분선 paint
+    protected final Paint DIVIDING_LINE_PAINT;
+
     private static final int SPACING_BETWEEN_EVENT = 8;
     private static final int SPACING_BETWEEN_DAY_DATE = 12;
     private static final int TEXT_MARGIN = 4;
@@ -68,6 +71,8 @@ public class WeekHeaderView extends View
     public WeekHeaderView(Context context, @Nullable AttributeSet attrs)
     {
         super(context, attrs);
+        DIVIDING_LINE_PAINT = new Paint();
+        DIVIDING_LINE_PAINT.setColor(Color.GRAY);
 
         // 날짜 paint
         DATE_TEXT_PAINT = new Paint();
@@ -164,6 +169,11 @@ public class WeekHeaderView extends View
             canvas.drawText(DateHour.getDayString(i), startX + WeekFragment.getColumnWidth() / 2 + WeekFragment.getColumnWidth() * i, DAY_DATE_SPACE_HEIGHT / 2 - SPACING_BETWEEN_EVENT / 2, DAY_TEXT_PAINT);
             canvas.drawText(DateHour.getDate(daysOfWeek[i].getTime()), startX + WeekFragment.getColumnWidth() / 2 + WeekFragment.getColumnWidth() * i,
                     DAY_DATE_SPACE_HEIGHT - SPACING_BETWEEN_EVENT, DATE_TEXT_PAINT);
+        }
+        for (int i = 2; i <= 7; i++)
+        {
+            // 세로 선
+            canvas.drawLine(WeekFragment.getColumnWidth() * i, DAY_DATE_SPACE_HEIGHT - 12, WeekFragment.getColumnWidth() * i, getHeight(), DIVIDING_LINE_PAINT);
         }
     }
 
@@ -310,12 +320,9 @@ public class WeekHeaderView extends View
     public void setSchedules(List<EventData> list)
     {
         // 이벤트 테이블에 데이터를 표시할 위치 설정
-        if (!list.isEmpty())
-        {
-            setEventTable(list);
-            requestLayout();
-            invalidate();
-        }
+        setEventTable(list);
+        requestLayout();
+        invalidate();
     }
 
     private void setEventTable(List<EventData> list)

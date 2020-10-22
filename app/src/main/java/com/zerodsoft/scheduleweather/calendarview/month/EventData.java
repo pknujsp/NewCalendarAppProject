@@ -13,6 +13,11 @@ public class EventData
     private int row;
     private ScheduleDTO schedule;
 
+    public EventData(ScheduleDTO schedule, int row)
+    {
+        this.schedule = schedule;
+        this.row = row;
+    }
 
     public EventData(ScheduleDTO schedule, int startIndex, int endIndex)
     {

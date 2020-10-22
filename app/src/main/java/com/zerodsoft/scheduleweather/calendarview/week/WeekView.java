@@ -276,13 +276,9 @@ public class WeekView extends HourEventsView
         // 이벤트 테이블에 데이터를 표시할 위치 설정
         // 데이터가 없는 경우 진행하지 않음
         eventSparseArr.clear();
-
-        if (!list.isEmpty())
-        {
-            setEventTable(list);
-            requestLayout();
-            invalidate();
-        }
+        setEventTable(list);
+        requestLayout();
+        invalidate();
     }
 
     private void setEventTable(List<EventData> list)
@@ -295,7 +291,7 @@ public class WeekView extends HourEventsView
             {
                 eventSparseArr.put(index, new ArrayList<>());
             }
-            eventSparseArr.get(index).add(new ItemCell(eventData.getSchedule()));
+            eventSparseArr.get(index).add(new ItemCell(eventData.getSchedule(), index));
         }
 
         // 저장된 데이터가 표시될 위치를 설정
@@ -328,12 +324,10 @@ public class WeekView extends HourEventsView
                                 if (itemCells.get(i).column == ItemCell.NOT_OVERLAP)
                                 {
                                     itemCells.get(i).column = col++;
-                                    itemCells.get(i).index = index;
                                     overlappingList = new ArrayList<>();
                                     overlappingList.add(itemCells.get(i));
                                 }
                                 itemCells.get(j).column = col++;
-                                itemCells.get(j).index = index;
                                 overlappingList.add(itemCells.get(j));
                                 overlappingCount++;
                             }
@@ -343,7 +337,6 @@ public class WeekView extends HourEventsView
                         {
                             // 시간이 겹치지 않는 경우
                             itemCells.get(i).column = ItemCell.NOT_OVERLAP;
-                            itemCells.get(i).index = index;
                         } else
                         {
                             for (ItemCell cell : overlappingList)
@@ -565,10 +558,11 @@ public class WeekView extends HourEventsView
         public int index;
         public ScheduleDTO schedule;
 
-        public ItemCell(ScheduleDTO schedule)
+        public ItemCell(ScheduleDTO schedule, int index)
         {
             this.column = NOT_OVERLAP;
             this.columnCount = 1;
+            this.index = index;
             this.schedule = schedule;
         }
     }
