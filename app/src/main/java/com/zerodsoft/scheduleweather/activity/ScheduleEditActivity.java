@@ -18,7 +18,6 @@ import android.widget.Toast;
 
 import com.zerodsoft.scheduleweather.activity.mapactivity.Fragment.MapController;
 import com.zerodsoft.scheduleweather.activity.mapactivity.MapActivity;
-import com.zerodsoft.scheduleweather.etc.SelectedNotificationTime;
 import com.zerodsoft.scheduleweather.fragment.DatePickerFragment;
 import com.zerodsoft.scheduleweather.fragment.NotificationFragment;
 import com.zerodsoft.scheduleweather.R;
@@ -26,13 +25,14 @@ import com.zerodsoft.scheduleweather.room.dto.AddressDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
 import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
 import com.zerodsoft.scheduleweather.utility.Clock;
+import com.zerodsoft.scheduleweather.utility.ScheduleAlarm;
 import com.zerodsoft.scheduleweather.viewmodel.ScheduleViewModel;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class ScheduleInfoActivity extends AppCompatActivity implements NotificationFragment.OnNotificationTimeListener
+public class ScheduleEditActivity extends AppCompatActivity implements NotificationFragment.OnNotificationTimeListener
 {
     /*
        - 수정해야 하는 것
@@ -83,27 +83,20 @@ public class ScheduleInfoActivity extends AppCompatActivity implements Notificat
     }
 
     @Override
-    public void onNotiTimeSelected(SelectedNotificationTime selectedNotificationTime)
+    public void onNotiTimeSelected()
     {
-        activityBinding.setNotification(selectedNotificationTime);
-        ScheduleDTO scheduleDTO = activityBinding.getScheduleDto();
+        ScheduleAlarm.setNotiData(activityBinding.getScheduleDto());
 
-        scheduleDTO.setNotiMainType(selectedNotificationTime.getMainType());
-        scheduleDTO.setNotiDay(selectedNotificationTime.getDay());
-        scheduleDTO.setNotiHour(selectedNotificationTime.getHour());
-        scheduleDTO.setNotiMinute(selectedNotificationTime.getMinute());
-        scheduleDTO.setNotiTime(selectedNotificationTime.getTime());
-
-        if (scheduleDTO.getNotiMainType() == ScheduleDTO.NOT_SELECTED)
+        if (ScheduleAlarm.isEmpty())
         {
             activityBinding.notificationValue.setText("");
-            activityBinding.notificationValue.setHint(getString(R.string.noti_time_not_selected));
+            activityBinding.notificationValue.setHint(ScheduleAlarm.getResultText());
         } else
         {
-            activityBinding.notificationValue.setText(selectedNotificationTime.getResultStr());
+            activityBinding.notificationValue.setText(ScheduleAlarm.getResultText());
         }
-    }
 
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -118,7 +111,6 @@ public class ScheduleInfoActivity extends AppCompatActivity implements Notificat
 
         activityBinding.setScheduleDto(null);
         activityBinding.setPlaceDto(null);
-        activityBinding.setNotification(null);
         activityBinding.setAddressDto(null);
 
         EditTextWatcher editTextWatcher = new EditTextWatcher();
@@ -148,15 +140,13 @@ public class ScheduleInfoActivity extends AppCompatActivity implements Notificat
         setViewState();
 
         scheduleId = getIntent().getIntExtra("scheduleId", -1);
-        viewModel = new ViewModelProvider(this).get(ScheduleViewModel.class);
+        viewModel = new ViewModelProvider(this).get(ScheduleViewModel.class).selectSchedule(scheduleId);
         viewModel.getSchedule().observe(this, new Observer<ScheduleDTO>()
         {
             @Override
             public void onChanged(ScheduleDTO scheduleDTO)
             {
                 activityBinding.setScheduleDto(scheduleDTO);
-                activityBinding.setNotification(new SelectedNotificationTime());
-                activityBinding.getNotification().setResultStr();
 
                 if (!scheduleDTO.isEmpty())
                 {
@@ -193,28 +183,10 @@ public class ScheduleInfoActivity extends AppCompatActivity implements Notificat
                     }
 
                     //알림
-                    if (scheduleDTO.getNotiMainType() != ScheduleDTO.NOT_SELECTED)
+                    if (scheduleDTO.getNotiTime() != null)
                     {
-                        SelectedNotificationTime selectedNotificationTime = new SelectedNotificationTime().setMainType(scheduleDTO.getNotiMainType());
-
-                        switch (scheduleDTO.getNotiMainType())
-                        {
-                            case ScheduleDTO.NOT_SELECTED:
-                                selectedNotificationTime.setResultStr();
-                            case ScheduleDTO.MAIN_DAY:
-                                selectedNotificationTime.setDay(scheduleDTO.getNotiDay()).setHour(scheduleDTO.getNotiHour())
-                                        .setMinute(scheduleDTO.getNotiMinute()).setResultStr();
-                                break;
-                            case ScheduleDTO.MAIN_HOUR:
-                                selectedNotificationTime.setHour(scheduleDTO.getNotiHour())
-                                        .setMinute(scheduleDTO.getNotiMinute()).setResultStr();
-                                break;
-                            case ScheduleDTO.MAIN_MINUTE:
-                                selectedNotificationTime.setMinute(scheduleDTO.getNotiMinute()).setResultStr();
-                                break;
-                        }
-                        activityBinding.setNotification(selectedNotificationTime);
-                        activityBinding.notificationValue.setText(selectedNotificationTime.getResultStr());
+                        ScheduleAlarm.init(scheduleDTO);
+                        activityBinding.notificationValue.setText(ScheduleAlarm.getResultText());
                     }
                 }
             }
@@ -314,11 +286,11 @@ public class ScheduleInfoActivity extends AppCompatActivity implements Notificat
                 // 제목, 날짜 필수 입력
                 if (activityBinding.getScheduleDto().getSubject().isEmpty())
                 {
-                    Toast.makeText(ScheduleInfoActivity.this, "제목을 입력해주세요", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ScheduleEditActivity.this, "제목을 입력해주세요", Toast.LENGTH_SHORT).show();
                 } else if (activityBinding.getScheduleDto().getStartDate() == null
                         || activityBinding.getScheduleDto().getEndDate() == null)
                 {
-                    Toast.makeText(ScheduleInfoActivity.this, "날짜를 지정해주세요", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ScheduleEditActivity.this, "날짜를 지정해주세요", Toast.LENGTH_SHORT).show();
                 } else
                 {
                     viewModel.setScheduleDTO(activityBinding.getScheduleDto());
@@ -392,7 +364,7 @@ public class ScheduleInfoActivity extends AppCompatActivity implements Notificat
         accountList.add("구글 계정");
         accountList.add("로컬");
 
-        SpinnerAdapter adapter = new ArrayAdapter<>(ScheduleInfoActivity.this, android.R.layout.simple_spinner_dropdown_item, accountList);
+        SpinnerAdapter adapter = new ArrayAdapter<>(ScheduleEditActivity.this, android.R.layout.simple_spinner_dropdown_item, accountList);
         activityBinding.accountSpinner.setAdapter(adapter);
         activityBinding.accountSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
         {
@@ -492,11 +464,7 @@ public class ScheduleInfoActivity extends AppCompatActivity implements Notificat
             {
                 //알람 시각을 설정하는 다이얼로그 표시
                 //하루종일 인 경우와 아닌 경우 내용이 다르다
-                if (notificationFragment == null)
-                {
-                    notificationFragment = NotificationFragment.getInstance();
-                }
-                notificationFragment.setSelectedNotificationTime(activityBinding.getNotification());
+                notificationFragment.init(activityBinding.getScheduleDto());
                 notificationFragment.show(getSupportFragmentManager(), NotificationFragment.TAG);
             }
         };
@@ -512,7 +480,7 @@ public class ScheduleInfoActivity extends AppCompatActivity implements Notificat
             public void onClick(View view)
             {
                 //위치를 설정하는 액티비티 표시
-                Intent intent = new Intent(ScheduleInfoActivity.this, MapActivity.class);
+                Intent intent = new Intent(ScheduleEditActivity.this, MapActivity.class);
                 int requestCode = 0;
 
                 if (activityBinding.getAddressDto() != null || activityBinding.getPlaceDto() != null)

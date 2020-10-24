@@ -25,7 +25,7 @@
             <com.zerodsoft.scheduleweather.calendarview.week.WeekView
                 android:id="@+id/week_view"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="match_parent" />
         </ScrollView>
     </LinearLayout>
 

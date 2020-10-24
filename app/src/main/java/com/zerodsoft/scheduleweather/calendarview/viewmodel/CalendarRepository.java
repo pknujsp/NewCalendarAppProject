@@ -2,12 +2,9 @@ package com.zerodsoft.scheduleweather.calendarview.viewmodel;
 
 import android.app.Application;
 
-import androidx.arch.core.util.Function;
-import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.Transformations;
 
-import com.zerodsoft.scheduleweather.calendarfragment.CalendarTransactionFragment;
+import com.zerodsoft.scheduleweather.calendarfragment.EventTransactionFragment;
 import com.zerodsoft.scheduleweather.room.AppDb;
 import com.zerodsoft.scheduleweather.room.dao.ScheduleDAO;
 import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
@@ -39,12 +36,12 @@ public class CalendarRepository
             @Override
             public void run()
             {
-                if (CalendarTransactionFragment.accountCategory == ScheduleDTO.ALL_CATEGORY)
+                if (EventTransactionFragment.accountCategory == ScheduleDTO.ALL_CATEGORY)
                 {
                     schedules.postValue(scheduleDAO.selectSchedulesNotLive(startDate, endDate));
                 } else
                 {
-                    schedules.postValue(scheduleDAO.selectSchedulesNotLive(CalendarTransactionFragment.accountCategory, startDate, endDate));
+                    schedules.postValue(scheduleDAO.selectSchedulesNotLive(EventTransactionFragment.accountCategory, startDate, endDate));
                 }
             }
         }).start();

@@ -26,14 +26,14 @@ public class WeekFragment extends Fragment implements OnEventItemClickListener
     private ViewPager2 weekViewPager;
     private WeekViewPagerAdapter weekViewPagerAdapter;
 
-    private OnControlCalendar onControlCalendar;
+    private OnControlEvent onControlEvent;
     private static int COLUMN_WIDTH = AppMainActivity.getDisplayWidth() / 8;
 
     private OnPageChangeCallback onPageChangeCallback;
 
     public WeekFragment(Fragment fragment)
     {
-        onControlCalendar = (OnControlCalendar) fragment;
+        onControlEvent = (OnControlEvent) fragment;
     }
 
     public static int getColumnWidth()
@@ -62,7 +62,7 @@ public class WeekFragment extends Fragment implements OnEventItemClickListener
         weekViewPager = (ViewPager2) view.findViewById(R.id.week_viewpager);
         weekViewPagerAdapter = new WeekViewPagerAdapter(this);
         weekViewPager.setAdapter(weekViewPagerAdapter);
-        weekViewPager.setCurrentItem(CalendarTransactionFragment.FIRST_VIEW_POSITION, false);
+        weekViewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, false);
         weekViewPager.registerOnPageChangeCallback(onPageChangeCallback);
 
         super.onViewCreated(view, savedInstanceState);
@@ -87,7 +87,7 @@ public class WeekFragment extends Fragment implements OnEventItemClickListener
 
     class OnPageChangeCallback extends ViewPager2.OnPageChangeCallback
     {
-        private int currentPosition = CalendarTransactionFragment.FIRST_VIEW_POSITION;
+        private int currentPosition = EventTransactionFragment.FIRST_VIEW_POSITION;
 
         public int getCurrentPosition()
         {
@@ -138,9 +138,9 @@ public class WeekFragment extends Fragment implements OnEventItemClickListener
 
     public void goToToday()
     {
-        if (onPageChangeCallback.getCurrentPosition() != CalendarTransactionFragment.FIRST_VIEW_POSITION)
+        if (onPageChangeCallback.getCurrentPosition() != EventTransactionFragment.FIRST_VIEW_POSITION)
         {
-            weekViewPager.setCurrentItem(CalendarTransactionFragment.FIRST_VIEW_POSITION, true);
+            weekViewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, true);
         }
     }
 
@@ -151,12 +151,12 @@ public class WeekFragment extends Fragment implements OnEventItemClickListener
 
     public void setMonth(Date date)
     {
-        onControlCalendar.setToolbarMonth(date);
+        onControlEvent.setToolbarMonth(date);
     }
 
     public void requestSchedules(int position, Date startDate, Date endDate)
     {
         // 해당 페이지에 해당하는 날짜에 대한 데이터 불러오기
-        onControlCalendar.requestSchedules(this, position, startDate, endDate);
+        onControlEvent.requestSchedules(this, position, startDate, endDate);
     }
 }

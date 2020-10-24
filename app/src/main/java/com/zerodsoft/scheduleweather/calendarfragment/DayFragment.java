@@ -23,12 +23,11 @@ public class DayFragment extends Fragment
 
     private ViewPager2 dayViewPager;
     private DayViewPagerAdapter dayViewPagerAdapter;
-    private OnControlCalendar onControlCalendar;
-
+    private OnControlEvent onControlEvent;
 
     public DayFragment(Fragment fragment)
     {
-        onControlCalendar = (OnControlCalendar) fragment;
+        onControlEvent = (OnControlEvent) fragment;
     }
 
     @Override
@@ -52,7 +51,7 @@ public class DayFragment extends Fragment
         dayViewPagerAdapter = new DayViewPagerAdapter(DayFragment.this);
         dayViewPager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
         dayViewPager.setAdapter(dayViewPagerAdapter);
-        dayViewPager.setCurrentItem(CalendarTransactionFragment.FIRST_VIEW_POSITION, false);
+        dayViewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, false);
 
         OnPageChangeCallback onPageChangeCallback = new OnPageChangeCallback();
         dayViewPager.registerOnPageChangeCallback(onPageChangeCallback);
@@ -74,7 +73,7 @@ public class DayFragment extends Fragment
 
     class OnPageChangeCallback extends ViewPager2.OnPageChangeCallback
     {
-        private int currentPosition = CalendarTransactionFragment.FIRST_VIEW_POSITION;
+        private int currentPosition = EventTransactionFragment.FIRST_VIEW_POSITION;
         private int lastPosition;
 
         public OnPageChangeCallback()
@@ -115,16 +114,21 @@ public class DayFragment extends Fragment
     public void requestSchedules(int position, Date startDate, Date endDate)
     {
         // 해당 페이지에 해당하는 날짜에 대한 데이터 불러오기
-        onControlCalendar.requestSchedules(this, position, startDate, endDate);
+        onControlEvent.requestSchedules(this, position, startDate, endDate);
     }
 
     public void setMonth(Date date)
     {
-        onControlCalendar.setToolbarMonth(date);
+        onControlEvent.setToolbarMonth(date);
     }
 
     public ViewPager2 getDayViewPager()
     {
         return dayViewPager;
+    }
+
+    public void showSchedule(int scheduleId)
+    {
+        onControlEvent.showSchedule(scheduleId);
     }
 }

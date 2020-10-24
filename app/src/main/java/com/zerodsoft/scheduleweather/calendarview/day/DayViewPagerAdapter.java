@@ -4,25 +4,17 @@ import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CalendarView;
-import android.widget.ListView;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.zerodsoft.scheduleweather.AppMainActivity;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.calendarfragment.CalendarTransactionFragment;
+import com.zerodsoft.scheduleweather.calendarfragment.EventTransactionFragment;
 import com.zerodsoft.scheduleweather.calendarfragment.DayFragment;
-import com.zerodsoft.scheduleweather.calendarview.month.EventData;
-import com.zerodsoft.scheduleweather.calendarview.viewmodel.CalendarViewModel;
+import com.zerodsoft.scheduleweather.calendarfragment.OnControlEvent;
+import com.zerodsoft.scheduleweather.calendarfragment.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
-import com.zerodsoft.scheduleweather.utility.Clock;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
@@ -104,12 +96,13 @@ public class DayViewPagerAdapter extends RecyclerView.Adapter<DayViewPagerAdapte
             super(view);
             dayHeaderView = (DayHeaderView) view.findViewById(R.id.dayheaderview);
             dayView = (DayView) view.findViewById(R.id.dayview);
+            dayView.setAdapter(DayViewPagerAdapter.this);
         }
 
         public void onBind()
         {
             Calendar copiedCalendar = (Calendar) calendar.clone();
-            copiedCalendar.add(Calendar.DAY_OF_YEAR, getAdapterPosition() - CalendarTransactionFragment.FIRST_VIEW_POSITION);
+            copiedCalendar.add(Calendar.DAY_OF_YEAR, getAdapterPosition() - EventTransactionFragment.FIRST_VIEW_POSITION);
 
             startDate = copiedCalendar.getTime();
             copiedCalendar.add(Calendar.DAY_OF_YEAR, 1);
@@ -133,6 +126,7 @@ public class DayViewPagerAdapter extends RecyclerView.Adapter<DayViewPagerAdapte
             // 데이터를 일정 길이의 내림차순으로 정렬
             Collections.sort(schedules, comparator);
             dayHeaderView.setSchedules(schedules);
+            dayView.setSchedules(schedules);
         }
     }
 
@@ -153,4 +147,9 @@ public class DayViewPagerAdapter extends RecyclerView.Adapter<DayViewPagerAdapte
             }
         }
     };
+
+    public void showSchedule(int scheduleId)
+    {
+        dayFragment.showSchedule(scheduleId);
+    }
 }

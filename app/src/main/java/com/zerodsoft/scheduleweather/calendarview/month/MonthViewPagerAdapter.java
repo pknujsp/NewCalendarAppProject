@@ -2,18 +2,16 @@ package com.zerodsoft.scheduleweather.calendarview.month;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.util.Log;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.calendarfragment.CalendarTransactionFragment;
+import com.zerodsoft.scheduleweather.calendarfragment.EventTransactionFragment;
 import com.zerodsoft.scheduleweather.calendarfragment.MonthFragment;
 import com.zerodsoft.scheduleweather.calendarfragment.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
@@ -22,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 
 public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAdapter.MonthViewHolder>
@@ -146,7 +143,7 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
         public void onBind()
         {
             Calendar copiedCalendar = (Calendar) calendar.clone();
-            copiedCalendar.add(Calendar.MONTH, getAdapterPosition() - CalendarTransactionFragment.FIRST_VIEW_POSITION);
+            copiedCalendar.add(Calendar.MONTH, getAdapterPosition() - EventTransactionFragment.FIRST_VIEW_POSITION);
             monthCalendarView.setCalendar(copiedCalendar);
             setDays(copiedCalendar);
 

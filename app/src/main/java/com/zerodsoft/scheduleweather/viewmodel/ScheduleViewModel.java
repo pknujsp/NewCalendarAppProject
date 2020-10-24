@@ -1,23 +1,18 @@
 package com.zerodsoft.scheduleweather.viewmodel;
 
 import android.app.Application;
-import android.content.Context;
 
 import androidx.annotation.NonNull;
 import androidx.arch.core.util.Function;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.Transformations;
 
-import com.zerodsoft.scheduleweather.activity.ScheduleInfoActivity;
+import com.zerodsoft.scheduleweather.activity.ScheduleEditActivity;
 import com.zerodsoft.scheduleweather.repositories.ScheduleRepository;
 import com.zerodsoft.scheduleweather.room.dto.AddressDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
 import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
-import com.zerodsoft.scheduleweather.thread.RepositoryCallback;
-import com.zerodsoft.scheduleweather.thread.Result;
 
 public class ScheduleViewModel extends AndroidViewModel
 {
@@ -31,10 +26,22 @@ public class ScheduleViewModel extends AndroidViewModel
     private LiveData<PlaceDTO> placeLiveData;
     private LiveData<AddressDTO> addressLiveData;
 
+    private int scheduleId;
+
     public ScheduleViewModel(@NonNull Application application)
     {
         super(application);
-        scheduleRepository = new ScheduleRepository(application, ScheduleInfoActivity.scheduleId);
+        scheduleRepository = new ScheduleRepository(application);
+    }
+
+    public ScheduleViewModel selectSchedule(int scheduleId)
+    {
+        this.scheduleId = scheduleId;
+
+        scheduleRepository.selectSchedule(scheduleId);
+        scheduleRepository.selectAddress(scheduleId);
+        scheduleRepository.selectPlace(scheduleId);
+
         scheduleLiveData = scheduleRepository.getScheduleLiveData();
         addressLiveData = scheduleRepository.getAddressLiveData();
         placeLiveData = scheduleRepository.getPlaceLiveData();
@@ -55,6 +62,7 @@ public class ScheduleViewModel extends AndroidViewModel
                 return input;
             }
         });
+        return this;
     }
 
     public LiveData<ScheduleDTO> getSchedule()
@@ -74,7 +82,7 @@ public class ScheduleViewModel extends AndroidViewModel
 
     public void deleteSchedule()
     {
-        scheduleRepository.deleteSchedule(ScheduleInfoActivity.scheduleId);
+        scheduleRepository.deleteSchedule(ScheduleEditActivity.scheduleId);
     }
 
     public void updateSchedule()

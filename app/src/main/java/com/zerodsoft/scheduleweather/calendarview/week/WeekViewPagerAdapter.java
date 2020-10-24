@@ -10,7 +10,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.zerodsoft.scheduleweather.calendarfragment.CalendarTransactionFragment;
+import com.zerodsoft.scheduleweather.calendarfragment.EventTransactionFragment;
 import com.zerodsoft.scheduleweather.calendarfragment.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.calendarfragment.WeekFragment;
 import com.zerodsoft.scheduleweather.R;
@@ -170,7 +170,7 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
             this.position = position;
 
             Calendar copiedCalendar = (Calendar) calendar.clone();
-            copiedCalendar.add(Calendar.WEEK_OF_YEAR, position - CalendarTransactionFragment.FIRST_VIEW_POSITION);
+            copiedCalendar.add(Calendar.WEEK_OF_YEAR, position - EventTransactionFragment.FIRST_VIEW_POSITION);
             setDays(copiedCalendar);
 
 

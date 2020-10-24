@@ -36,45 +36,15 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <RadioGroup
-                android:id="@+id/notification_type_radio_group"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <RadioButton
-                    android:id="@+id/notification_day_radio"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/notification_type_day" />
-
-                <RadioButton
-                    android:id="@+id/notification_hour_radio"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/notification_type_hour" />
-
-                <RadioButton
-                    android:id="@+id/notification_minute_radio"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/notification_type_minute" />
-
-                <RadioButton
-                    android:id="@+id/notification_disable_radio"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/notification_type_disable_radio" />
-            </RadioGroup>
-
             <RelativeLayout
                 android:id="@+id/noti_day_layout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="left">
+                android:layout_gravity="left"
+                android:layout_marginTop="8dp">
 
                 <TextView
-                    android:id="@+id/noti_day_value_textview"
+                    android:id="@+id/noti_day"
                     android:layout_width="64dp"
                     android:layout_height="wrap_content"
                     android:layout_alignParentLeft="true"
@@ -88,7 +58,7 @@
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
                     android:layout_marginLeft="4dp"
-                    android:layout_toRightOf="@id/noti_day_value_textview"
+                    android:layout_toRightOf="@id/noti_day"
                     android:text="일"
                     android:textSize="14sp" />
 
@@ -125,7 +95,7 @@
 
 
                 <TextView
-                    android:id="@+id/noti_hour_value_textview"
+                    android:id="@+id/noti_hour"
                     android:layout_width="64dp"
                     android:layout_height="wrap_content"
                     android:layout_alignParentLeft="true"
@@ -139,7 +109,7 @@
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
                     android:layout_marginLeft="4dp"
-                    android:layout_toRightOf="@id/noti_hour_value_textview"
+                    android:layout_toRightOf="@id/noti_hour"
                     android:text="시간"
                     android:textSize="14sp" />
 
@@ -175,7 +145,7 @@
                 android:layout_marginTop="8dp">
 
                 <TextView
-                    android:id="@+id/noti_minute_value_textview"
+                    android:id="@+id/noti_minute"
                     android:layout_width="64dp"
                     android:layout_height="wrap_content"
                     android:layout_alignParentLeft="true"
@@ -189,7 +159,7 @@
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
                     android:layout_marginLeft="4dp"
-                    android:layout_toRightOf="@id/noti_minute_value_textview"
+                    android:layout_toRightOf="@id/noti_minute"
                     android:text="분"
                     android:textSize="14sp" />
 
@@ -218,7 +188,7 @@
             </RelativeLayout>
 
             <TextView
-                android:id="@+id/noti_result_value_textview"
+                android:id="@+id/noti_result"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"

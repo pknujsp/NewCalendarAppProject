@@ -13,10 +13,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
-import com.zerodsoft.scheduleweather.activity.ScheduleInfoActivity;
+import com.zerodsoft.scheduleweather.activity.ScheduleEditActivity;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.DatepickerLayoutBinding;
-import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -130,10 +129,10 @@ public class DatePickerFragment extends DialogFragment implements NumberPicker.O
                 switch (dateType)
                 {
                     case START:
-                        if (((ScheduleInfoActivity) getActivity()).getDate(END) != null)
+                        if (((ScheduleEditActivity) getActivity()).getDate(END) != null)
                         {
                             // null, 시작<종료, 시작>종료, 시작==종료 인 경우로 나뉨
-                            if (((ScheduleInfoActivity) getActivity()).getDate(END).getTime() < date.getTimeInMillis())
+                            if (((ScheduleEditActivity) getActivity()).getDate(END).getTime() < date.getTimeInMillis())
                             {
                                 //시작 >= 종료 인 경우
                                 Toast.makeText(getActivity(), getString(R.string.date_picker_date_error), Toast.LENGTH_SHORT).show();
@@ -142,9 +141,9 @@ public class DatePickerFragment extends DialogFragment implements NumberPicker.O
                         }
                         break;
                     case END:
-                        if (((ScheduleInfoActivity) getActivity()).getDate(START) != null)
+                        if (((ScheduleEditActivity) getActivity()).getDate(START) != null)
                         {
-                            if (((ScheduleInfoActivity) getActivity()).getDate(START).getTime() > date.getTimeInMillis())
+                            if (((ScheduleEditActivity) getActivity()).getDate(START).getTime() > date.getTimeInMillis())
                             {
                                 //시작 >= 종료 인 경우
                                 Toast.makeText(getActivity(), getString(R.string.date_picker_date_error), Toast.LENGTH_SHORT).show();
@@ -153,7 +152,7 @@ public class DatePickerFragment extends DialogFragment implements NumberPicker.O
                         }
                         break;
                 }
-                ((ScheduleInfoActivity) getActivity()).onDateSelected(date.getTime(), dateType);
+                ((ScheduleEditActivity) getActivity()).onDateSelected(date.getTime(), dateType);
                 dismiss();
             }
         });

@@ -13,4 +13,6 @@
     <color name="accent">#2789e4</color>
     <color name="text_color">@android:color/black</color>
 
+    <color name="black_high_emphasis">#DD000000</color>
+    <color name="black_medium_emphasis">#99000000</color>
 </resources>

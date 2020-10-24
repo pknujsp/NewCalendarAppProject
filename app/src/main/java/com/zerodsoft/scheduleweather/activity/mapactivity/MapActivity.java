@@ -8,16 +8,14 @@ import androidx.fragment.app.FragmentTransaction;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.LinearLayout;
 
-import com.zerodsoft.scheduleweather.activity.ScheduleInfoActivity;
+import com.zerodsoft.scheduleweather.activity.ScheduleEditActivity;
 import com.zerodsoft.scheduleweather.activity.mapactivity.Fragment.MapController;
 import com.zerodsoft.scheduleweather.activity.mapactivity.Fragment.MapFragment;
 import com.zerodsoft.scheduleweather.activity.mapactivity.Fragment.SearchFragment;
 import com.zerodsoft.scheduleweather.activity.mapactivity.Fragment.SearchResultController;
 import com.zerodsoft.scheduleweather.activity.mapactivity.Fragment.SearchResultFragment;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.activity.mapactivity.Fragment.SearchResultHeaderFragment;
 import com.zerodsoft.scheduleweather.recyclerviewadapter.SearchResultViewAdapter;
 import com.zerodsoft.scheduleweather.recyclerviewadapter.SearchResultViewPagerAdapter;
 import com.zerodsoft.scheduleweather.retrofit.LocalApiPlaceParameter;
@@ -28,8 +26,6 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.placecategoryrespons
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placecategoryresponse.PlaceCategoryDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placekeywordresponse.PlaceKeyword;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placekeywordresponse.PlaceKeywordDocuments;
-import com.zerodsoft.scheduleweather.room.dto.AddressDTO;
-import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
 
 import net.daum.mf.map.api.MapPoint;
 
@@ -174,11 +170,11 @@ public class MapActivity extends AppCompatActivity implements MapController.OnDo
 
         switch (requestCode)
         {
-            case ScheduleInfoActivity.ADD_LOCATION:
+            case ScheduleEditActivity.ADD_LOCATION:
                 isSelectedLocation = false;
                 break;
 
-            case ScheduleInfoActivity.EDIT_LOCATION:
+            case ScheduleEditActivity.EDIT_LOCATION:
                 isSelectedLocation = true;
                 bundle.putParcelable("selectedPlace", intent.getParcelableExtra("place"));
                 bundle.putParcelable("selectedAddress", intent.getParcelableExtra("address"));
@@ -286,10 +282,10 @@ public class MapActivity extends AppCompatActivity implements MapController.OnDo
         getIntent().putExtras(bundle);
         if (isDeletedLocation)
         {
-            setResult(ScheduleInfoActivity.RESULT_RESELECTED, getIntent());
+            setResult(ScheduleEditActivity.RESULT_RESELECTED, getIntent());
         } else
         {
-            setResult(ScheduleInfoActivity.RESULT_SELECTED, getIntent());
+            setResult(ScheduleEditActivity.RESULT_SELECTED, getIntent());
         }
         finish();
     }
@@ -332,7 +328,7 @@ public class MapActivity extends AppCompatActivity implements MapController.OnDo
         // MapFragment가 Main인 경우에 수행됨
         if (isDeletedLocation)
         {
-            setResult(ScheduleInfoActivity.RESULT_DELETED);
+            setResult(ScheduleEditActivity.RESULT_DELETED);
         } else
         {
             setResult(RESULT_CANCELED);

@@ -38,9 +38,6 @@ public class ScheduleDTO implements Parcelable
     @TypeConverters({TypeConverter.class})
     private Date endDate;
 
-    @ColumnInfo(name = "noti_main_type")
-    private int notiMainType;
-
     @ColumnInfo(name = "noti_time")
     @TypeConverters({TypeConverter.class})
     private Date notiTime;
@@ -81,16 +78,6 @@ public class ScheduleDTO implements Parcelable
 
 
     @Ignore
-    public static final int MAIN_DAY = 2;
-
-    @Ignore
-    public static final int MAIN_HOUR = 3;
-
-    @Ignore
-    public static final int MAIN_MINUTE = 4;
-
-
-    @Ignore
     public static final int NOT_SELECTED = -1;
 
 
@@ -109,11 +96,7 @@ public class ScheduleDTO implements Parcelable
     public ScheduleDTO()
     {
         category = NOT_SELECTED;
-        notiMainType = NOT_SELECTED;
         dateType = DATE_NOT_ALLDAY;
-        notiDay = NOT_SELECTED;
-        notiHour = NOT_SELECTED;
-        notiMinute = NOT_SELECTED;
 
         subject = "";
         content = "";
@@ -128,7 +111,6 @@ public class ScheduleDTO implements Parcelable
         dateType = in.readInt();
         startDate = (Date) in.readSerializable();
         endDate = (Date) in.readSerializable();
-        notiMainType = in.readInt();
         notiTime = (Date) in.readSerializable();
         notiDay = in.readInt();
         notiHour = in.readInt();
@@ -253,15 +235,6 @@ public class ScheduleDTO implements Parcelable
         this.updatedDate = updatedDate;
     }
 
-    public int getNotiMainType()
-    {
-        return notiMainType;
-    }
-
-    public void setNotiMainType(int notiMainType)
-    {
-        this.notiMainType = notiMainType;
-    }
 
     public int getNotiDay()
     {
@@ -310,7 +283,6 @@ public class ScheduleDTO implements Parcelable
         parcel.writeInt(dateType);
         parcel.writeSerializable(startDate);
         parcel.writeSerializable(endDate);
-        parcel.writeInt(notiMainType);
         parcel.writeSerializable(notiTime);
         parcel.writeInt(notiDay);
         parcel.writeInt(notiHour);
@@ -328,15 +300,5 @@ public class ScheduleDTO implements Parcelable
         {
             return false;
         }
-    }
-
-    public boolean isDrawed()
-    {
-        return isDrawed;
-    }
-
-    public void setDrawed(boolean drawed)
-    {
-        isDrawed = drawed;
     }
 }

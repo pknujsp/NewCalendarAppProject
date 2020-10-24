@@ -5,34 +5,25 @@ import android.graphics.Point;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.MenuItem;
-import android.view.Menu;
 import android.view.View;
 import android.view.ViewTreeObserver;
-import android.widget.GridView;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.zerodsoft.scheduleweather.activity.ScheduleInfoActivity;
-import com.zerodsoft.scheduleweather.calendarfragment.CalendarTransactionFragment;
+import com.zerodsoft.scheduleweather.activity.ScheduleEditActivity;
+import com.zerodsoft.scheduleweather.calendarfragment.EventTransactionFragment;
 import com.zerodsoft.scheduleweather.calendarfragment.DayFragment;
 import com.zerodsoft.scheduleweather.calendarfragment.MonthFragment;
 import com.zerodsoft.scheduleweather.calendarfragment.WeekFragment;
 import com.zerodsoft.scheduleweather.databinding.ActivityAppMainBinding;
-import com.zerodsoft.scheduleweather.utility.Clock;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.widget.PopupMenu;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-
-import java.time.Month;
-import java.util.Date;
 
 public class AppMainActivity extends AppCompatActivity
 {
     private ActivityAppMainBinding binding;
-    private CalendarTransactionFragment calendarTransactionFragment;
+    private EventTransactionFragment calendarTransactionFragment;
 
     private static int DISPLAY_WIDTH = 0;
     private static int DISPLAY_HEIGHT = 0;
@@ -79,8 +70,8 @@ public class AppMainActivity extends AppCompatActivity
         actionBar.setCustomView(customToolbar);
 
         customToolbar.getViewTreeObserver().addOnGlobalLayoutListener(mGlobalLayoutListener);
-        calendarTransactionFragment = new CalendarTransactionFragment(this);
-        getSupportFragmentManager().beginTransaction().add(R.id.calendar_layout, calendarTransactionFragment, CalendarTransactionFragment.TAG).commit();
+        calendarTransactionFragment = new EventTransactionFragment(this);
+        getSupportFragmentManager().beginTransaction().add(R.id.calendar_layout, calendarTransactionFragment, EventTransactionFragment.TAG).commit();
     }
 
     public void onClickToolbar(View view)
@@ -94,9 +85,9 @@ public class AppMainActivity extends AppCompatActivity
                 //
                 break;
             case R.id.add_schedule:
-                Intent intent = new Intent(AppMainActivity.this, ScheduleInfoActivity.class);
-                intent.putExtra("requestCode", ScheduleInfoActivity.REQUEST_NEW_SCHEDULE);
-                startActivityForResult(intent, ScheduleInfoActivity.REQUEST_NEW_SCHEDULE);
+                Intent intent = new Intent(AppMainActivity.this, ScheduleEditActivity.class);
+                intent.putExtra("requestCode", ScheduleEditActivity.REQUEST_NEW_SCHEDULE);
+                startActivityForResult(intent, ScheduleEditActivity.REQUEST_NEW_SCHEDULE);
                 break;
             case R.id.go_to_today:
 
@@ -154,8 +145,8 @@ public class AppMainActivity extends AppCompatActivity
             case RESULT_OK:
                 switch (requestCode)
                 {
-                    case ScheduleInfoActivity.ADD_LOCATION:
-                    case ScheduleInfoActivity.REQUEST_SHOW_SCHEDULE:
+                    case ScheduleEditActivity.ADD_LOCATION:
+                    case ScheduleEditActivity.REQUEST_SHOW_SCHEDULE:
                 }
                 break;
             case RESULT_CANCELED:

@@ -19,15 +19,12 @@
             name="addressDto"
             type="com.zerodsoft.scheduleweather.room.dto.AddressDTO" />
 
-        <variable
-            name="notification"
-            type="com.zerodsoft.scheduleweather.etc.SelectedNotificationTime" />
     </data>
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".activity.ScheduleInfoActivity">
+        tools:context=".activity.ScheduleEditActivity">
 
         <ScrollView
             android:id="@+id/schedule_scroll_view"

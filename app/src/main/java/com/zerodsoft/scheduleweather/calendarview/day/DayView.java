@@ -3,25 +3,25 @@ package com.zerodsoft.scheduleweather.calendarview.day;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.PointF;
-import android.graphics.RectF;
 import android.util.AttributeSet;
-import android.view.GestureDetector;
-import android.view.MotionEvent;
+import android.view.View;
 import android.widget.OverScroller;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.core.view.GestureDetectorCompat;
-import androidx.core.view.ViewCompat;
 
+import com.zerodsoft.scheduleweather.calendarfragment.OnControlEvent;
+import com.zerodsoft.scheduleweather.calendarfragment.OnEventItemClickListener;
+import com.zerodsoft.scheduleweather.calendarfragment.WeekFragment;
 import com.zerodsoft.scheduleweather.calendarview.HourEventsView;
-import com.zerodsoft.scheduleweather.calendarview.dto.CoordinateInfo;
-import com.zerodsoft.scheduleweather.calendarview.week.WeekView;
 import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
-import com.zerodsoft.scheduleweather.utility.DateHour;
+import com.zerodsoft.scheduleweather.utility.AppSettings;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 public class DayView extends HourEventsView
 {
@@ -31,14 +31,22 @@ public class DayView extends HourEventsView
 
     private OverScroller overScroller;
     private GestureDetectorCompat gestureDetector;
-
     private Calendar date;
+    private List<ItemCell> itemCells = new ArrayList<>();
+    private final int SPACING_BETWEEN_EVENTS = 5;
+
+    private DayViewPagerAdapter adapter;
 
     public DayView(Context context, @Nullable AttributeSet attrs)
     {
         super(context, attrs);
-      //  gestureDetector = new GestureDetectorCompat(context, onGestureListener);
-      //  overScroller = new OverScroller(context);
+        //  gestureDetector = new GestureDetectorCompat(context, onGestureListener);
+        //  overScroller = new OverScroller(context);
+    }
+
+    public void setAdapter(DayViewPagerAdapter adapter)
+    {
+        this.adapter = adapter;
     }
 
     public void setDate(Date date)
@@ -47,12 +55,74 @@ public class DayView extends HourEventsView
         this.date.setTime(date);
     }
 
+    @Override
+    protected void onLayout(boolean changed, int l, int t, int r, int b)
+    {
+        super.onLayout(changed, l, t, r, b);
+
+        if (!itemCells.isEmpty())
+        {
+            Calendar calendar = Calendar.getInstance();
+
+            float left = 0f;
+            float top = 0f;
+            float right = 0f;
+            float bottom = 0f;
+            float cellWidth = 0f;
+            int childCount = getChildCount();
+
+            for (int i = 0; i < childCount; i++)
+            {
+                DayItemView childView = (DayItemView) getChildAt(i);
+                ItemCell itemCell = childView.itemCell;
+
+                int column = itemCell.column;
+                int columnCount = itemCell.columnCount;
+
+                calendar.setTime(itemCell.schedule.getStartDate());
+                PointF startPoint = getPoint(calendar);
+                calendar.setTime(itemCell.schedule.getEndDate());
+                PointF endPoint = getPoint(calendar);
+
+                cellWidth = (getWidth() - WeekFragment.getColumnWidth() - (SPACING_BETWEEN_EVENTS * (columnCount - 1))) / columnCount;
+
+                top = startPoint.y;
+                bottom = endPoint.y;
+                if (column == ItemCell.NOT_OVERLAP)
+                {
+                    left = startPoint.x;
+                } else
+                {
+                    left = startPoint.x + ((cellWidth + SPACING_BETWEEN_EVENTS) * column);
+                }
+                right = left + cellWidth;
+
+                int width = (int) (right - left);
+                int height = (int) (bottom - top);
+
+                childView.measure(width, height);
+                childView.layout((int) left, (int) top, (int) right, (int) bottom);
+            }
+        }
+    }
 
     @Override
     protected void onDraw(Canvas canvas)
     {
         super.onDraw(canvas);
         drawView(canvas);
+    }
+
+    private PointF getPoint(Calendar time)
+    {
+        // y
+        int hour = time.get(Calendar.HOUR_OF_DAY);
+        int minute = time.get(Calendar.MINUTE);
+
+        float hourY = SPACING_BETWEEN_HOURS * hour + TABLE_TB_MARGIN;
+        float heightPerMinute = SPACING_BETWEEN_HOURS / 60f;
+
+        return new PointF(WeekFragment.getColumnWidth(), hourY + heightPerMinute * minute);
     }
 
 
@@ -107,313 +177,152 @@ public class DayView extends HourEventsView
         return point;
     }
 
-    private PointF getPoint(Calendar time, int dayOfWeek)
+    public void clear()
     {
-        PointF point = new PointF(0f, 0f);
-
-        // y
-        float hourY = currentTouchedPoint.y + SPACING_BETWEEN_HOURS * time.get(Calendar.HOUR_OF_DAY);
-        int minute = time.get(Calendar.MINUTE);
-        float minute1Height = SPACING_BETWEEN_HOURS / 60f;
-
-        point.y = hourY + minute1Height * minute;
-
-        return point;
+        itemCells.clear();
+        removeAllViews();
     }
 
-    private boolean setStartTime(float y)
+    public void setSchedules(List<ScheduleDTO> list)
     {
-        // 터치한 y좌표에 해당하는 start시간을 설정한다
-        startTime = (Calendar) date.clone();
-        float startHour, endHour;
+        // 이벤트 테이블에 데이터를 표시할 위치 설정
+        // 데이터가 없는 경우 진행하지 않음
+        itemCells.clear();
+        setEventTable(list);
+        requestLayout();
+        invalidate();
+    }
 
-        for (int i = 0; i <= 23; i++)
+    private void setEventTable(List<ScheduleDTO> list)
+    {
+        // 저장된 데이터가 표시될 위치를 설정
+        for (ScheduleDTO scheduleDTO : list)
         {
-            startHour = currentTouchedPoint.y + SPACING_BETWEEN_HOURS * i;
-            endHour = currentTouchedPoint.y + SPACING_BETWEEN_HOURS * (i + 1);
+            itemCells.add(new ItemCell(scheduleDTO));
+        }
 
-            if (y >= startHour && y < endHour)
+        for (int i = 0; i < itemCells.size() - 1; i++)
+        {
+            if (itemCells.get(i).column != ItemCell.NOT_OVERLAP)
             {
-                float minute15Height = (endHour - startHour) / 4f;
-                y = y - startHour;
+                continue;
+            }
+            int col = 0;
+            int overlappingCount = 0;
+            List<ItemCell> overlappingList = null;
 
-                for (int j = 0; j <= 3; j++)
+            for (int j = i + 1; j < itemCells.size(); j++)
+            {
+                if (isOverlapping(itemCells.get(i).schedule, itemCells.get(j).schedule))
                 {
-                    if (y >= minute15Height * j && y <= minute15Height * (j + 1))
+                    // 시간이 겹치는 경우
+                    if (itemCells.get(i).column == ItemCell.NOT_OVERLAP)
                     {
-                        int year = startTime.get(Calendar.YEAR);
-                        int month = startTime.get(Calendar.MONTH);
-                        int date = startTime.get(Calendar.DAY_OF_MONTH);
-
-                        startTime.set(year, month, date, i, j * 15);
-                        endTime = (Calendar) startTime.clone();
-                        endTime.add(Calendar.HOUR_OF_DAY, 1);
-
-                        return true;
+                        itemCells.get(i).column = col++;
+                        overlappingList = new ArrayList<>();
+                        overlappingList.add(itemCells.get(i));
                     }
-                }
-            }
-        }
-        return false;
-
-    }
-
-
-    @Override
-    public boolean onTouchEvent(MotionEvent event)
-    {
-        /*
-        if (event.getAction() == MotionEvent.ACTION_UP)
-        {
-            if (currentScrollDirection == SCROLL_DIRECTION.VERTICAL)
-            {
-                currentScrollDirection = SCROLL_DIRECTION.FINISHED;
-            } else if (changingStartTime || changingEndTime)
-            {
-                if (changingStartTime)
-                {
-                    changingStartTime = false;
-                } else
-                {
-                    changingEndTime = false;
-                }
-                invalidate();
-                Toast.makeText(context, "start : " + startTime.get(Calendar.HOUR_OF_DAY) + " : " + startTime.get(Calendar.MINUTE) + "\n"
-                        + "end : " + endTime.get(Calendar.HOUR_OF_DAY) + " : " + endTime.get(Calendar.MINUTE), Toast.LENGTH_SHORT).show();
-                return true;
-            }
-        }
-
-         */
-        return true;
-    }
-
-    private final GestureDetector.OnGestureListener onGestureListener = new GestureDetector.SimpleOnGestureListener()
-    {
-        @Override
-        public boolean onSingleTapUp(MotionEvent e)
-        {
-            // 한번 빠르게 터치했다가 뗐을때 실행됨
-            if (createdAddScheduleRect)
-            {
-                createdAddScheduleRect = false;
-                DayView.this.invalidate();
-            }
-            return true;
-        }
-
-        @Override
-        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY)
-        {
-            // e1 firstDown, e2 move
-
-            if (createdAddScheduleRect)
-            {
-                // 시작, 종료 날짜를 조절하는 코드
-                if (!changingStartTime && !changingEndTime)
-                {
-                    // 새로운 일정 생성 박스가 생성되었으나, 스크롤이 첫 진행중인 경우
-                    if (e1.getY() >= rectStartPoint.y - 30f && e1.getY() < rectStartPoint.y + 30f)
-                    {
-                        changingStartTime = true;
-                        return true;
-                    } else if (e1.getY() >= rectEndPoint.y - 30f && e1.getY() < rectEndPoint.y + 30f)
-                    {
-                        changingEndTime = true;
-                        return true;
-                    }
-                } else
-                {
-                    // start or endtime을 수정중인 경우
-                    if (changingStartTime)
-                    {
-                        changeTime(e2.getY(), TIME_CATEGORY.START);
-                    } else if (changingEndTime)
-                    {
-                        changeTime(e2.getY(), TIME_CATEGORY.END);
-                    }
-                    ViewCompat.postInvalidateOnAnimation(DayView.this);
-                    return true;
+                    itemCells.get(j).column = col++;
+                    overlappingList.add(itemCells.get(j));
+                    overlappingCount++;
                 }
             }
 
-            if (currentScrollDirection == SCROLL_DIRECTION.FINISHED)
+            if (overlappingCount == 0)
             {
-                currentScrollDirection = SCROLL_DIRECTION.NONE;
-            } else if (currentScrollDirection == SCROLL_DIRECTION.NONE)
-            {
-                currentScrollDirection = SCROLL_DIRECTION.VERTICAL;
-            }
-
-
-            ViewCompat.postInvalidateOnAnimation(DayView.this);
-            return true;
-        }
-
-        @Override
-        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY)
-        {
-            fling(velocityX, velocityY);
-            return true;
-        }
-
-        private void fling(float velocityX, float velocityY)
-        {
-          //  overScroller.fling(0, (int) currentTouchedPoint.y, 0, (int) velocityY, 0, 0, (int) minStartY, (int) maxStartY, 0, 0);
-         //   ViewCompat.postInvalidateOnAnimation(DayView.this);
-        }
-
-        @Override
-        public boolean onDown(MotionEvent e)
-        {
-            overScroller.forceFinished(true);
-            return true;
-        }
-
-        @Override
-        public boolean onSingleTapConfirmed(MotionEvent e)
-        {
-            return super.onSingleTapConfirmed(e);
-        }
-
-        @Override
-        public void onLongPress(MotionEvent e)
-        {
-            /*
-            // 롱 클릭을 했을 때 실행됨
-            // 롱 클릭한 좌표의 X가 테이블 내로 들어와있어야 함
-            if (e.getX() >= HOUR_TEXT_BOX_RECT.width())
-            {
-                if (setStartTime(e.getY()))
-                {
-                    createdAddScheduleRect = true;
-                    invalidate();
-                }
-            }
-
-             */
-        }
-    };
-
-    @Override
-    public void computeScroll()
-    {
-        super.computeScroll();
-        /*
-        if (overScroller.computeScrollOffset())
-        {
-            currentTouchedPoint.y = overScroller.getCurrY();
-            ViewCompat.postInvalidateOnAnimation(this);
-        }
-
-         */
-    }
-
-    private void drawEvents(Canvas canvas)
-    {
-        RectF rect = new RectF();
-
-        /*
-        for (int dayOfWeek = 0; dayOfWeek < 7; dayOfWeek++)
-        {
-            for (EventDrawingInfo eventDrawingInfo : eventDrawingInfoList.get(dayOfWeek))
-            {
-                if (eventDrawingInfo.getAccountType() == AccountType.GOOGLE)
-                {
-                    rect.set(eventDrawingInfo.getStartPoint().x, eventDrawingInfo.getStartPoint().y,
-                            eventDrawingInfo.getEndPoint().x, eventDrawingInfo.getEndPoint().y);
-                    canvas.drawRect(rect, GOOGLE_EVENT_PAINT);
-                    canvas.drawText(eventDrawingInfo.getSchedule().getSubject(),
-                            (eventDrawingInfo.getEndPoint().x - eventDrawingInfo.getStartPoint().x) / 2, eventDrawingInfo.getEndPoint().y, GOOGLE_EVENT_TEXT_PAINT);
-                } else
-                {
-                    rect.set(eventDrawingInfo.getStartPoint().x, eventDrawingInfo.getStartPoint().y,
-                            eventDrawingInfo.getEndPoint().x, eventDrawingInfo.getEndPoint().y);
-                    canvas.drawRect(rect, LOCAL_EVENT_PAINT);
-                    canvas.drawText(eventDrawingInfo.getSchedule().getSubject(),
-                            (eventDrawingInfo.getEndPoint().x - eventDrawingInfo.getStartPoint().x) / 2, eventDrawingInfo.getEndPoint().y, LOCAL_EVENT_TEXT_PAINT);
-                }
-
-            }
-        }
-
-         */
-    }
-
-    public void setEventDrawingInfo()
-    {
-        /*
-        int dayOfWeek;
-        PointF startPoint = new PointF();
-        PointF endPoint = new PointF();
-
-        for (ScheduleDTO schedule : scheduleList)
-        {
-            dayOfWeek = calcEventPosition(startPoint, endPoint, schedule);
-            if (schedule.getCategory() == ScheduleDTO.GOOGLE_CATEGORY)
-            {
-                eventDrawingInfoList.get(dayOfWeek).add(new EventDrawingInfo(new PointF(startPoint.x, startPoint.y), new PointF(endPoint.x, endPoint.y), schedule, AccountType.GOOGLE));
+                // 시간이 겹치지 않는 경우
+                itemCells.get(i).column = ItemCell.NOT_OVERLAP;
             } else
             {
-                eventDrawingInfoList.get(dayOfWeek).add(new EventDrawingInfo(new PointF(startPoint.x, startPoint.y), new PointF(endPoint.x, endPoint.y), schedule, AccountType.LOCAL));
+                for (ItemCell cell : overlappingList)
+                {
+                    cell.columnCount = overlappingCount + 1;
+                }
             }
         }
 
+        removeAllViews();
 
-         */
+        GOOGLE_EVENT_PAINT.setColor(AppSettings.getGoogleEventBackgroundColor());
+        LOCAL_EVENT_PAINT.setColor(AppSettings.getLocalEventBackgroundColor());
+        GOOGLE_EVENT_TEXT_PAINT.setColor(AppSettings.getGoogleEventTextColor());
+        LOCAL_EVENT_TEXT_PAINT.setColor(AppSettings.getLocalEventTextColor());
+
+        for (int i = 0; i < itemCells.size(); i++)
+        {
+            DayItemView child = new DayItemView(context, itemCells.get(i));
+            this.addView(child);
+            child.setClickable(true);
+            child.setOnClickListener(new OnClickListener()
+            {
+                @Override
+                public void onClick(View view)
+                {
+                    adapter.showSchedule(((DayItemView) view).itemCell.schedule.getId());
+                }
+            });
+        }
     }
 
-    private int calcEventPosition(PointF startPoint, PointF endPoint, ScheduleDTO schedule)
+    private boolean isOverlapping(ScheduleDTO schedule1, ScheduleDTO schedule2)
     {
-        /*
-        int dayOfWeek = 0;
-        Calendar startTime = Calendar.getInstance();
-        Calendar endTime = Calendar.getInstance();
+        long start1 = schedule1.getStartDate().getTime();
+        long end1 = schedule1.getEndDate().getTime();
 
-        startTime.setTimeInMillis(schedule.getStartDate().getTime());
-        endTime.setTimeInMillis(schedule.getEndDate().getTime());
+        long start2 = schedule2.getStartDate().getTime();
+        long end2 = schedule2.getEndDate().getTime();
 
-        if (isSameDay(startTime, endTime))
+        if ((start1 > start2 && start1 < end2) || (end1 > start2 && end1 < end2)
+                || (start1 < start2 && end1 > end2))
         {
-            for (int i = 0; i < 7; i++)
-            {
-                if (isSameDay(startTime, coordinateInfos[i].getDate()))
-                {
-                    dayOfWeek = i;
-                    break;
-                }
-            }
-            startPoint = getPoint(startTime, dayOfWeek);
-            endPoint = getPoint(endTime, dayOfWeek);
-
-            // 다른 이벤트와 시간대가 겹치는 부분이 있는지 여부 확인
-            for (EventDrawingInfo eventDrawingInfo : eventDrawingInfoList.get(dayOfWeek))
-            {
-                // 추가할 이벤트의 진행 시각이 다른 이벤트의 진행 시각을 모두 포함 하는 경우
-                if (startTime.getTimeInMillis() <= eventDrawingInfo.getSchedule().getStartDate().getTime()
-                        && endTime.getTimeInMillis() >= eventDrawingInfo.getSchedule().getEndDate().getTime())
-                {
-                    startPoint.x = startPoint.x + 3f;
-                }
-                // 추가할 이벤트의 시작시각 또는 종료시각이 다른 이벤트의 진행 시각 사이에 있는 경우
-                else if ((startTime.getTimeInMillis() >= eventDrawingInfo.getSchedule().getStartDate().getTime()
-                        && startTime.getTimeInMillis() < eventDrawingInfo.getSchedule().getEndDate().getTime())
-                        || (endTime.getTimeInMillis() > eventDrawingInfo.getSchedule().getStartDate().getTime()
-                        && endTime.getTimeInMillis() <= eventDrawingInfo.getSchedule().getEndDate().getTime()))
-                {
-                    startPoint.x = startPoint.x + 3f;
-                }
-            }
-
-            return dayOfWeek;
+            return true;
         } else
         {
-            // 시작 시각과 종료 시각이 같은 날이 아니므로 그리지않음
-            return -1;
+            return false;
+        }
+    }
+
+    class ItemCell
+    {
+        public static final int NOT_OVERLAP = -1;
+        public int column;
+        public int columnCount;
+
+        public ScheduleDTO schedule;
+
+        public ItemCell(ScheduleDTO schedule)
+        {
+            this.column = NOT_OVERLAP;
+            this.columnCount = 1;
+            this.schedule = schedule;
+        }
+    }
+
+    class DayItemView extends View
+    {
+        public ItemCell itemCell;
+
+        public DayItemView(Context context, ItemCell itemCell)
+        {
+            super(context);
+            this.itemCell = itemCell;
         }
 
-         */
-        return 1;
+        @Override
+        protected void onDraw(Canvas canvas)
+        {
+            super.onDraw(canvas);
+
+            if (itemCell.schedule.getCategory() == ScheduleDTO.GOOGLE_CATEGORY)
+            {
+                canvas.drawRect(0, 0, getWidth(), getHeight(), GOOGLE_EVENT_PAINT);
+                canvas.drawText(itemCell.schedule.getSubject(), TEXT_MARGIN, EVENT_TEXT_HEIGHT + TEXT_MARGIN, GOOGLE_EVENT_TEXT_PAINT);
+            } else
+            {
+                canvas.drawRect(0, 0, getWidth(), getHeight(), LOCAL_EVENT_PAINT);
+                canvas.drawText(itemCell.schedule.getSubject(), TEXT_MARGIN, EVENT_TEXT_HEIGHT + TEXT_MARGIN, LOCAL_EVENT_TEXT_PAINT);
+            }
+        }
     }
 
 }

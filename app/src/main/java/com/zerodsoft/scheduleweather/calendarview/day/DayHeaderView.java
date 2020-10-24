@@ -19,6 +19,7 @@ import com.zerodsoft.scheduleweather.calendarview.month.EventData;
 import com.zerodsoft.scheduleweather.calendarview.week.WeekHeaderView;
 import com.zerodsoft.scheduleweather.calendarview.week.WeekView;
 import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
+import com.zerodsoft.scheduleweather.utility.AppSettings;
 import com.zerodsoft.scheduleweather.utility.Clock;
 
 import java.util.ArrayList;
@@ -45,9 +46,9 @@ public class DayHeaderView extends ViewGroup
     protected final Paint DIVIDING_LINE_PAINT;
 
     private static final int SPACING_BETWEEN_EVENT = 8;
-    private static final int DAY_DATE_TB_MARGIN = 12;
+    private static final int DAY_DATE_TB_MARGIN = 16;
     private static final int TEXT_MARGIN = 4;
-    public static final int EVENT_LR_MARGIN = 4;
+    public static final int EVENT_LR_MARGIN = 8;
     public static final int EVENT_COUNT = 6;
 
     private final float EVENT_HEIGHT;
@@ -68,17 +69,16 @@ public class DayHeaderView extends ViewGroup
         DIVIDING_LINE_PAINT = new Paint();
         DIVIDING_LINE_PAINT.setColor(Color.GRAY);
 
-
         // 날짜, 요일 paint
         DAY_DATE_TEXT_PAINT = new Paint();
         DAY_DATE_TEXT_PAINT.setTextAlign(Paint.Align.CENTER);
         DAY_DATE_TEXT_PAINT.setColor(Color.BLACK);
-        DAY_DATE_TEXT_PAINT.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 16, context.getResources().getDisplayMetrics()));
+        DAY_DATE_TEXT_PAINT.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 15, context.getResources().getDisplayMetrics()));
 
         Rect rect = new Rect();
         DAY_DATE_TEXT_PAINT.getTextBounds("1", 0, 1, rect);
 
-        DAY_DATE_SPACE_HEIGHT = DAY_DATE_TB_MARGIN + rect.height();
+        DAY_DATE_SPACE_HEIGHT = DAY_DATE_TB_MARGIN * 2 + rect.height();
 
         // set background
         setBackgroundColor(Color.WHITE);
@@ -152,29 +152,36 @@ public class DayHeaderView extends ViewGroup
 
                 ScheduleDTO schedule = child.schedule;
 
-                // 시작/종료일이 date가 아니나, 일정에 포함되는 경우
-                if (schedule.getStartDate().before(today) && schedule.getEndDate().after(tomorrow))
-                {
-                    leftMargin = 0;
-                    rightMargin = 0;
-                }
-                // 시작일이 date인 경우, 종료일은 endDate 이후
-                else if (schedule.getEndDate().compareTo(tomorrow) >= 0 && schedule.getStartDate().compareTo(today) >= 0 && schedule.getStartDate().before(tomorrow))
-                {
-                    leftMargin = EVENT_LR_MARGIN;
-                    rightMargin = 0;
-                }
-                // 종료일이 date인 경우, 시작일은 startDate이전
-                else if (schedule.getEndDate().compareTo(today) >= 0 && schedule.getEndDate().before(tomorrow) && schedule.getStartDate().before(today))
-                {
-                    leftMargin = 0;
-                    rightMargin = EVENT_LR_MARGIN;
-                }
-                // 시작/종료일이 date인 경우
-                else if (schedule.getEndDate().compareTo(today) >= 0 && schedule.getEndDate().before(tomorrow) && schedule.getStartDate().compareTo(today) >= 0 && schedule.getStartDate().before(tomorrow))
+                if (schedule.isEmpty())
                 {
                     leftMargin = EVENT_LR_MARGIN;
                     rightMargin = EVENT_LR_MARGIN;
+                } else
+                {
+                    // 시작/종료일이 date가 아니나, 일정에 포함되는 경우
+                    if (schedule.getStartDate().before(today) && schedule.getEndDate().after(tomorrow))
+                    {
+                        leftMargin = 0;
+                        rightMargin = 0;
+                    }
+                    // 시작일이 date인 경우, 종료일은 endDate 이후
+                    else if (schedule.getEndDate().compareTo(tomorrow) >= 0 && schedule.getStartDate().compareTo(today) >= 0 && schedule.getStartDate().before(tomorrow))
+                    {
+                        leftMargin = EVENT_LR_MARGIN;
+                        rightMargin = 0;
+                    }
+                    // 종료일이 date인 경우, 시작일은 startDate이전
+                    else if (schedule.getEndDate().compareTo(today) >= 0 && schedule.getEndDate().before(tomorrow) && schedule.getStartDate().before(today))
+                    {
+                        leftMargin = 0;
+                        rightMargin = EVENT_LR_MARGIN;
+                    }
+                    // 시작/종료일이 date인 경우
+                    else if (schedule.getEndDate().compareTo(today) >= 0 && schedule.getEndDate().before(tomorrow) && schedule.getStartDate().compareTo(today) >= 0 && schedule.getStartDate().before(tomorrow))
+                    {
+                        leftMargin = EVENT_LR_MARGIN;
+                        rightMargin = EVENT_LR_MARGIN;
+                    }
                 }
 
                 top = DAY_DATE_SPACE_HEIGHT + (EVENT_HEIGHT + SPACING_BETWEEN_EVENT) * row;
@@ -249,10 +256,15 @@ public class DayHeaderView extends ViewGroup
 
         removeAllViews();
 
+        GOOGLE_EVENT_PAINT.setColor(AppSettings.getGoogleEventBackgroundColor());
+        LOCAL_EVENT_PAINT.setColor(AppSettings.getLocalEventBackgroundColor());
+        GOOGLE_EVENT_TEXT_PAINT.setColor(AppSettings.getGoogleEventTextColor());
+        LOCAL_EVENT_TEXT_PAINT.setColor(AppSettings.getLocalEventTextColor());
+
         for (EventData eventData : eventCellsList)
         {
             DayHeaderEventView child = new DayHeaderEventView(getContext(), eventData.getSchedule());
-            addView(child, eventData.getRow());
+            addView(child);
         }
     }
 

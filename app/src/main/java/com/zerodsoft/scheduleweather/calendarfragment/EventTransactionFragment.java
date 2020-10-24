@@ -1,11 +1,9 @@
 package com.zerodsoft.scheduleweather.calendarfragment;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -13,26 +11,22 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.zerodsoft.scheduleweather.AppMainActivity;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.activity.ScheduleInfoActivity;
+import com.zerodsoft.scheduleweather.activity.ScheduleEditActivity;
 import com.zerodsoft.scheduleweather.calendarview.viewmodel.CalendarViewModel;
 import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
+import com.zerodsoft.scheduleweather.scheduleinfo.ScheduleInfoActivity;
 import com.zerodsoft.scheduleweather.utility.Clock;
 
 import java.util.Date;
 import java.util.List;
 
 
-public class CalendarTransactionFragment extends Fragment implements OnControlCalendar
+public class EventTransactionFragment extends Fragment implements OnControlEvent
 {
     // 달력 프래그먼트를 관리하는 프래그먼트
     public static final String TAG = "CalendarTransactionFragment";
@@ -46,7 +40,7 @@ public class CalendarTransactionFragment extends Fragment implements OnControlCa
     private Fragment fragment;
 
 
-    public CalendarTransactionFragment(Activity activity)
+    public EventTransactionFragment(Activity activity)
     {
     }
 
@@ -118,10 +112,10 @@ public class CalendarTransactionFragment extends Fragment implements OnControlCa
 
     public void showScheduleInfo(int scheduleId)
     {
-        Intent intent = new Intent(getActivity(), ScheduleInfoActivity.class);
+        Intent intent = new Intent(getActivity(), ScheduleEditActivity.class);
         intent.putExtra("scheduleId", scheduleId);
-        intent.putExtra("requestCode", ScheduleInfoActivity.REQUEST_SHOW_SCHEDULE);
-        startActivityForResult(intent, ScheduleInfoActivity.REQUEST_SHOW_SCHEDULE);
+        intent.putExtra("requestCode", ScheduleEditActivity.REQUEST_SHOW_SCHEDULE);
+        startActivityForResult(intent, ScheduleEditActivity.REQUEST_SHOW_SCHEDULE);
     }
 
     public void replaceFragment(String fragmentTag)
@@ -131,15 +125,15 @@ public class CalendarTransactionFragment extends Fragment implements OnControlCa
         switch (fragmentTag)
         {
             case MonthFragment.TAG:
-                fragment = new MonthFragment(CalendarTransactionFragment.this);
+                fragment = new MonthFragment(EventTransactionFragment.this);
                 fragmentTransaction.replace(CALENDAR_CONTAINER_VIEW_ID, (MonthFragment) fragment, MonthFragment.TAG);
                 break;
             case WeekFragment.TAG:
-                fragment = new WeekFragment(CalendarTransactionFragment.this);
+                fragment = new WeekFragment(EventTransactionFragment.this);
                 fragmentTransaction.replace(CALENDAR_CONTAINER_VIEW_ID, (WeekFragment) fragment, WeekFragment.TAG);
                 break;
             case DayFragment.TAG:
-                fragment = new DayFragment(CalendarTransactionFragment.this);
+                fragment = new DayFragment(EventTransactionFragment.this);
                 fragmentTransaction.replace(CALENDAR_CONTAINER_VIEW_ID, (DayFragment) fragment, DayFragment.TAG);
                 break;
         }
@@ -149,7 +143,9 @@ public class CalendarTransactionFragment extends Fragment implements OnControlCa
     @Override
     public void showSchedule(int scheduleId)
     {
-
+        Intent intent = new Intent(getActivity(), ScheduleInfoActivity.class);
+        intent.putExtra("scheduleId", scheduleId);
+        startActivity(intent);
     }
 
     @Override
@@ -167,11 +163,3 @@ public class CalendarTransactionFragment extends Fragment implements OnControlCa
     }
 }
 
-interface OnControlCalendar
-{
-    void showSchedule(int scheduleId);
-
-    void setToolbarMonth(Date date);
-
-    void requestSchedules(Fragment fragment, int viewPosition, Date startDate, Date endDate);
-}

@@ -111,4 +111,10 @@
     <string name="friday">금</string>
     <string name="saturday">토</string>
 
+    <string name="schedule_info_time">시간</string>
+    <string name="schedule_info_content">내용</string>
+    <string name="schedule_info_location">위치</string>
+    <string name="schedule_info_alarm">알림</string>
+    <string name="schedule_info_account">계정</string>
+
 </resources>

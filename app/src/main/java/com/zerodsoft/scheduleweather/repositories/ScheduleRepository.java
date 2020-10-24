@@ -29,15 +29,11 @@ public class ScheduleRepository
     private LiveData<PlaceDTO> placeLiveData;
     private LiveData<AddressDTO> addressLiveData;
 
-    public ScheduleRepository(Application application, int scheduleId)
+    public ScheduleRepository(Application application)
     {
         AppDb appDb = AppDb.getInstance(application);
         scheduleDAO = appDb.scheduleDAO();
         locationDAO = appDb.locationDAO();
-
-        selectSchedule(scheduleId);
-        selectAddress(scheduleId);
-        selectPlace(scheduleId);
     }
 
     public void selectSchedule(int scheduleId)

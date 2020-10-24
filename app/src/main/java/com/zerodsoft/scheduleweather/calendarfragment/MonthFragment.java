@@ -7,7 +7,6 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
@@ -23,13 +22,13 @@ public class MonthFragment extends Fragment implements OnEventItemClickListener
 {
     public static final String TAG = "MonthFragment";
 
-    private OnControlCalendar onControlCalendar;
+    private OnControlEvent onControlEvent;
     private ViewPager2 viewPager;
     private MonthViewPagerAdapter viewPagerAdapter;
 
     public MonthFragment(Fragment fragment)
     {
-        onControlCalendar = (OnControlCalendar) fragment;
+        onControlEvent = (OnControlEvent) fragment;
     }
 
     @Nullable
@@ -47,7 +46,7 @@ public class MonthFragment extends Fragment implements OnEventItemClickListener
         viewPagerAdapter = new MonthViewPagerAdapter(this);
         viewPager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
         viewPager.setAdapter(viewPagerAdapter);
-        viewPager.setCurrentItem(CalendarTransactionFragment.FIRST_VIEW_POSITION, false);
+        viewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, false);
 
         OnPageChangeCallback onPageChangeCallback = new OnPageChangeCallback();
         viewPager.registerOnPageChangeCallback(onPageChangeCallback);
@@ -62,13 +61,13 @@ public class MonthFragment extends Fragment implements OnEventItemClickListener
 
     public void setMonth(Date date)
     {
-        onControlCalendar.setToolbarMonth(date);
+        onControlEvent.setToolbarMonth(date);
     }
 
     public void requestSchedules(int position, Date startDate, Date endDate)
     {
         // 해당 페이지에 해당하는 날짜에 대한 데이터 불러오기
-        onControlCalendar.requestSchedules(this, position, startDate, endDate);
+        onControlEvent.requestSchedules(this, position, startDate, endDate);
     }
 
     @Override
@@ -81,7 +80,7 @@ public class MonthFragment extends Fragment implements OnEventItemClickListener
 
     class OnPageChangeCallback extends ViewPager2.OnPageChangeCallback
     {
-        private int currentPosition = CalendarTransactionFragment.FIRST_VIEW_POSITION;
+        private int currentPosition = EventTransactionFragment.FIRST_VIEW_POSITION;
         private int lastPosition;
 
         public OnPageChangeCallback()

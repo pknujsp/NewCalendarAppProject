@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".scheduleinfo.ScheduleInfoFragment">
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/schedule_subject"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginBottom="16dp"
+                    android:text="제목"
+                    android:textColor="@color/black_high_emphasis"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/time_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="top|left"
+                        android:text="@string/schedule_info_time"
+                        android:textColor="@color/black_medium_emphasis"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:id="@+id/schedule_time"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="8dp"
+                        android:layout_weight="1"
+                        android:gravity="top|left"
+                        android:text="시간"
+                        android:textColor="@color/black_high_emphasis"
+                        android:textSize="15sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/content_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="top|left"
+                        android:text="@string/schedule_info_content"
+                        android:textColor="@color/black_medium_emphasis"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:id="@+id/schedule_content"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="8dp"
+                        android:layout_weight="1"
+                        android:gravity="top|left"
+                        android:lineSpacingMultiplier="1.5"
+                        android:text="내용"
+                        android:textColor="@color/black_high_emphasis"
+                        android:textSize="15sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/location_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="top|left"
+                        android:text="@string/schedule_info_location"
+                        android:textColor="@color/black_medium_emphasis"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:id="@+id/schedule_location"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="8dp"
+                        android:layout_weight="1"
+                        android:gravity="top|left"
+                        android:text="위치"
+                        android:textColor="@color/black_high_emphasis"
+                        android:textSize="15sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/alarm_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="top|left"
+                        android:text="@string/schedule_info_alarm"
+                        android:textColor="@color/black_medium_emphasis"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:id="@+id/schedule_alarm"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="8dp"
+                        android:layout_weight="1"
+                        android:gravity="top|left"
+                        android:text="알람"
+                        android:textColor="@color/black_high_emphasis"
+                        android:textSize="15sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/account_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="top|left"
+                        android:text="@string/schedule_info_account"
+                        android:textColor="@color/black_medium_emphasis"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:id="@+id/schedule_account"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="8dp"
+                        android:layout_weight="1"
+                        android:gravity="top|left"
+                        android:text="계정"
+                        android:textColor="@color/black_high_emphasis"
+                        android:textSize="15sp" />
+                </LinearLayout>
+
+            </LinearLayout>
+        </ScrollView>
+
+    </FrameLayout>
+</layout>
