@@ -9,7 +9,6 @@ import android.os.Message;
 import com.zerodsoft.scheduleweather.activity.mapactivity.MapActivity;
 import com.zerodsoft.scheduleweather.retrofit.HttpCommunicationClient;
 import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryCode;
-import com.zerodsoft.scheduleweather.retrofit.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.Querys;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.LocationSearchResult;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponse;
@@ -117,7 +116,7 @@ public class MapController
 
     public void searchAddress()
     {
-        Querys querys = HttpCommunicationClient.getApiService();
+        Querys querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.KAKAO);
         Map<String, String> queryMap = new HashMap<>();
         queryMap.put("query", MapActivity.parameters.getQuery());
         queryMap.put("page", MapActivity.parameters.getPage());
@@ -157,7 +156,7 @@ public class MapController
 
     public void searchPlaceKeyWord()
     {
-        Querys querys = HttpCommunicationClient.getApiService();
+        Querys querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.KAKAO);
         Map<String, String> queryMap = MapActivity.parameters.getParameterMap();
         Call<PlaceKeyword> call = querys.getPlaceKeyword(queryMap);
 
@@ -194,7 +193,7 @@ public class MapController
 
     public void searchPlaceCategory()
     {
-        Querys querys = HttpCommunicationClient.getApiService();
+        Querys querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.KAKAO);
         Map<String, String> queryMap = MapActivity.parameters.getParameterMap();
         Call<PlaceCategory> call = querys.getPlaceCategory(queryMap);
 
@@ -232,7 +231,7 @@ public class MapController
 
     public void getCoordToAddress()
     {
-        Querys querys = HttpCommunicationClient.getApiService();
+        Querys querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.KAKAO);
         Map<String, String> queryMap = MapActivity.parameters.getParameterMap();
         Call<CoordToAddress> call = querys.getCoordToAddress(queryMap);
 

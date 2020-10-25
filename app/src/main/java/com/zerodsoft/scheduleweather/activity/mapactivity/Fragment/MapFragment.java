@@ -22,8 +22,7 @@ import android.view.ViewGroup;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.activity.mapactivity.MapActivity;
 import com.zerodsoft.scheduleweather.databinding.FragmentMapBinding;
-import com.zerodsoft.scheduleweather.retrofit.LocalApiPlaceParameter;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.LocationSearchResult;
+import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponseDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placecategoryresponse.PlaceCategoryDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placekeywordresponse.PlaceKeywordDocuments;
@@ -38,7 +37,6 @@ import net.daum.mf.map.api.MapReverseGeoCoder;
 import net.daum.mf.map.api.MapView;
 
 import java.util.List;
-import java.util.Map;
 
 public class MapFragment extends Fragment implements MapView.POIItemEventListener, MapReverseGeoCoder.ReverseGeoCodingResultListener, MapView.MapViewEventListener
 {
@@ -219,7 +217,7 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
                         AddressResponseDocuments addressDocument = MapActivity.searchResult.getAddressResponse().getAddressResponseDocumentsList().get(selectedItemPosition);
                         lon = addressDocument.getX();
                         lat = addressDocument.getY();
-                        lonLat = LonLatConverter.convertLonLat(lon, lat);
+                        lonLat = LonLatConverter.lonLatToGridXY(lon, lat);
 
                         AddressDTO addressDTO = new AddressDTO();
                         addressDTO.setAddressName(addressDocument.getAddressName());
@@ -241,7 +239,7 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
                         PlaceKeywordDocuments placeKeywordDocument = MapActivity.searchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().get(selectedItemPosition);
                         lon = placeKeywordDocument.getX();
                         lat = placeKeywordDocument.getY();
-                        lonLat = LonLatConverter.convertLonLat(lon, lat);
+                        lonLat = LonLatConverter.lonLatToGridXY(lon, lat);
 
                         PlaceDTO placeDTOKeyword = new PlaceDTO();
                         placeDTOKeyword.setPlaceId(placeKeywordDocument.getId());
@@ -264,7 +262,7 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
                         PlaceCategoryDocuments placeCategoryDocument = MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(selectedItemPosition);
                         lon = Double.valueOf(placeCategoryDocument.getX());
                         lat = Double.valueOf(placeCategoryDocument.getY());
-                        lonLat = LonLatConverter.convertLonLat(lon, lat);
+                        lonLat = LonLatConverter.lonLatToGridXY(lon, lat);
 
                         PlaceDTO placeDTOCategory = new PlaceDTO();
                         placeDTOCategory.setPlaceId(placeCategoryDocument.getId());

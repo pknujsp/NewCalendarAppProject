@@ -15,8 +15,6 @@ import android.widget.TextView;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.mapactivity.MapActivity;
-import com.zerodsoft.scheduleweather.recyclerviewadapter.SearchResultViewAdapter;
-import com.zerodsoft.scheduleweather.retrofit.LocalApiPlaceParameter;
 
 public class SearchResultHeaderFragment extends Fragment
 {

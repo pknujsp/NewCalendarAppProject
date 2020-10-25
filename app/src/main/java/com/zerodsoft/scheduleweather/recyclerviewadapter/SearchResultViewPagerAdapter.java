@@ -15,9 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.mapactivity.Fragment.MapController;
-import com.zerodsoft.scheduleweather.activity.mapactivity.Fragment.SearchFragment;
 import com.zerodsoft.scheduleweather.activity.mapactivity.MapActivity;
-import com.zerodsoft.scheduleweather.retrofit.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.LocationSearchResult;
 
 import java.util.List;

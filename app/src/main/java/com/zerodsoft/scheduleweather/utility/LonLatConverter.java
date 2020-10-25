@@ -16,7 +16,7 @@ public class LonLatConverter
 
     }
 
-    public static LonLat convertLonLat(double lon, double lat)
+    public static LonLat lonLatToGridXY(double lon, double lat)
     {
         double degrad = Math.PI / 180.0;
         double re = RE / GRID;

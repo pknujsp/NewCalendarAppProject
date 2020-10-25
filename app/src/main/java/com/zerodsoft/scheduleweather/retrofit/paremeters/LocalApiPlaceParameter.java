@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.retrofit;
+package com.zerodsoft.scheduleweather.retrofit.paremeters;
 
 import android.os.Parcel;
 import android.os.Parcelable;

@@ -18,7 +18,7 @@ import com.zerodsoft.scheduleweather.activity.mapactivity.Fragment.SearchResultF
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.recyclerviewadapter.SearchResultViewAdapter;
 import com.zerodsoft.scheduleweather.recyclerviewadapter.SearchResultViewPagerAdapter;
-import com.zerodsoft.scheduleweather.retrofit.LocalApiPlaceParameter;
+import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.LocationSearchResult;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponseDocuments;

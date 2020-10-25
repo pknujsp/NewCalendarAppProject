@@ -16,7 +16,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.zerodsoft.scheduleweather.activity.mapactivity.Fragment.MapController;
 import com.zerodsoft.scheduleweather.activity.mapactivity.MapActivity;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.LocationSearchResult;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponseDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placecategoryresponse.PlaceCategoryDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placekeywordresponse.PlaceKeywordDocuments;
@@ -25,7 +24,6 @@ import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
 import com.zerodsoft.scheduleweather.utility.LonLat;
 import com.zerodsoft.scheduleweather.utility.LonLatConverter;
 
-import java.util.Date;
 import java.util.List;
 
 public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultViewAdapter.SearchResultViewHolder>
@@ -358,7 +356,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
                         AddressResponseDocuments addressDocument = addressList.get(position);
                         lon = addressDocument.getX();
                         lat = addressDocument.getY();
-                        lonLat = LonLatConverter.convertLonLat(lon, lat);
+                        lonLat = LonLatConverter.lonLatToGridXY(lon, lat);
 
                         AddressDTO addressDTO = new AddressDTO();
                         addressDTO.setAddressName(addressDocument.getAddressName());
@@ -380,7 +378,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
                         PlaceKeywordDocuments placeKeywordDocument = placeKeywordList.get(position);
                         lon = placeKeywordDocument.getX();
                         lat = placeKeywordDocument.getY();
-                        lonLat = LonLatConverter.convertLonLat(lon, lat);
+                        lonLat = LonLatConverter.lonLatToGridXY(lon, lat);
 
                         PlaceDTO placeDTOKeyword = new PlaceDTO();
                         placeDTOKeyword.setPlaceId(placeKeywordDocument.getId());
@@ -403,7 +401,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
                         PlaceCategoryDocuments placeCategoryDocument = placeCategoryList.get(position);
                         lon = Double.valueOf(placeCategoryDocument.getX());
                         lat = Double.valueOf(placeCategoryDocument.getY());
-                        lonLat = LonLatConverter.convertLonLat(lon, lat);
+                        lonLat = LonLatConverter.lonLatToGridXY(lon, lat);
 
                         PlaceDTO placeDTOCategory = new PlaceDTO();
                         placeDTOCategory.setPlaceId(placeCategoryDocument.getId());
