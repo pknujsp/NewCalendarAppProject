@@ -128,99 +128,103 @@ public class ScheduleEditActivity extends AppCompatActivity implements Notificat
 
         requestCode = getIntent().getIntExtra("requestCode", 0);
 
+        scheduleId = getIntent().getIntExtra("scheduleId", -1);
+        viewModel = new ViewModelProvider(this).get(ScheduleViewModel.class).selectSchedule(scheduleId);
+
         switch (requestCode)
         {
             case REQUEST_NEW_SCHEDULE:
                 activityState = EDIT_SCHEDULE;
+                activityBinding.setScheduleDto(new ScheduleDTO());
                 break;
             case REQUEST_SHOW_SCHEDULE:
                 activityState = SHOW_SCHEDULE;
+
+                viewModel.getSchedule().observe(this, new Observer<ScheduleDTO>()
+                {
+                    @Override
+                    public void onChanged(ScheduleDTO scheduleDTO)
+                    {
+                        activityBinding.setScheduleDto(scheduleDTO);
+
+                        if (!scheduleDTO.isEmpty())
+                        {
+                            // 계정, 제목, 날짜, 내용, 위치 ,알림 내용을 화면에 표시하는 코드
+
+                            //계정
+                            activityBinding.accountSpinner.setSelection(scheduleDTO.getCategory());
+
+                            //제목
+                            activityBinding.subject.setText(scheduleDTO.getSubject());
+
+                            //날짜
+                            if (scheduleDTO.getDateType() == ScheduleDTO.DATE_ALLDAY)
+                            {
+                                activityBinding.scheduleAlldaySwitch.setChecked(true);
+                                activityBinding.alldayValue.setText(Clock.dateFormat3.format(scheduleDTO.getStartDate()));
+                            } else
+                            {
+                                activityBinding.scheduleAlldaySwitch.setChecked(false);
+                                activityBinding.startdateValue.setText(Clock.dateFormat2.format(scheduleDTO.getStartDate()));
+                                activityBinding.enddateValue.setText(Clock.dateFormat2.format(scheduleDTO.getEndDate()));
+                            }
+
+                            //내용
+                            activityBinding.content.setText(scheduleDTO.getContent());
+
+                            //위치
+                            if (viewModel.getPlace() != null)
+                            {
+                                activityBinding.setPlaceDto(viewModel.getPlace().getValue());
+                            } else if (viewModel.getAddress() != null)
+                            {
+                                activityBinding.setAddressDto(viewModel.getAddress().getValue());
+                            }
+
+                            //알림
+                            if (scheduleDTO.getNotiTime() != null)
+                            {
+                                ScheduleAlarm.init(scheduleDTO);
+                                activityBinding.notificationValue.setText(ScheduleAlarm.getResultText());
+                            }
+                        }
+                    }
+                });
+
+                viewModel.getAddress().observe(this, new Observer<AddressDTO>()
+                {
+                    @Override
+                    public void onChanged(AddressDTO addressDTO)
+                    {
+                        if (addressDTO != null)
+                        {
+                            activityBinding.setAddressDto(addressDTO);
+                        } else
+                        {
+                            activityBinding.setAddressDto(null);
+                        }
+                    }
+                });
+
+                viewModel.getPlace().observe(this, new Observer<PlaceDTO>()
+                {
+                    @Override
+                    public void onChanged(PlaceDTO placeDTO)
+                    {
+                        if (placeDTO != null)
+                        {
+                            activityBinding.setPlaceDto(placeDTO);
+                        } else
+                        {
+                            activityBinding.setPlaceDto(null);
+                        }
+                    }
+                });
                 break;
         }
         setViewState();
 
-        scheduleId = getIntent().getIntExtra("scheduleId", -1);
-        viewModel = new ViewModelProvider(this).get(ScheduleViewModel.class).selectSchedule(scheduleId);
-        viewModel.getSchedule().observe(this, new Observer<ScheduleDTO>()
-        {
-            @Override
-            public void onChanged(ScheduleDTO scheduleDTO)
-            {
-                activityBinding.setScheduleDto(scheduleDTO);
 
-                if (!scheduleDTO.isEmpty())
-                {
-                    // 계정, 제목, 날짜, 내용, 위치 ,알림 내용을 화면에 표시하는 코드
-
-                    //계정
-                    activityBinding.accountSpinner.setSelection(scheduleDTO.getCategory());
-
-                    //제목
-                    activityBinding.subject.setText(scheduleDTO.getSubject());
-
-                    //날짜
-                    if (scheduleDTO.getDateType() == ScheduleDTO.DATE_ALLDAY)
-                    {
-                        activityBinding.scheduleAlldaySwitch.setChecked(true);
-                        activityBinding.alldayValue.setText(Clock.dateFormat3.format(scheduleDTO.getStartDate()));
-                    } else
-                    {
-                        activityBinding.scheduleAlldaySwitch.setChecked(false);
-                        activityBinding.startdateValue.setText(Clock.dateFormat2.format(scheduleDTO.getStartDate()));
-                        activityBinding.enddateValue.setText(Clock.dateFormat2.format(scheduleDTO.getEndDate()));
-                    }
-
-                    //내용
-                    activityBinding.content.setText(scheduleDTO.getContent());
-
-                    //위치
-                    if (viewModel.getPlace() != null)
-                    {
-                        activityBinding.setPlaceDto(viewModel.getPlace().getValue());
-                    } else if (viewModel.getAddress() != null)
-                    {
-                        activityBinding.setAddressDto(viewModel.getAddress().getValue());
-                    }
-
-                    //알림
-                    if (scheduleDTO.getNotiTime() != null)
-                    {
-                        ScheduleAlarm.init(scheduleDTO);
-                        activityBinding.notificationValue.setText(ScheduleAlarm.getResultText());
-                    }
-                }
-            }
-        });
-
-        viewModel.getAddress().observe(this, new Observer<AddressDTO>()
-        {
-            @Override
-            public void onChanged(AddressDTO addressDTO)
-            {
-                if (addressDTO != null)
-                {
-                    activityBinding.setAddressDto(addressDTO);
-                } else
-                {
-                    activityBinding.setAddressDto(null);
-                }
-            }
-        });
-
-        viewModel.getPlace().observe(this, new Observer<PlaceDTO>()
-        {
-            @Override
-            public void onChanged(PlaceDTO placeDTO)
-            {
-                if (placeDTO != null)
-                {
-                    activityBinding.setPlaceDto(placeDTO);
-                } else
-                {
-                    activityBinding.setPlaceDto(null);
-                }
-            }
-        });
     }
 
     @Override

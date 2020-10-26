@@ -26,7 +26,7 @@ public class WeekViewModel extends AndroidViewModel
     {
         super(application);
         context = application.getApplicationContext();
-        scheduleDAO = AppDb.getInstance(application).scheduleDAO();
+        scheduleDAO = AppDb.getInstance(application.getApplicationContext()).scheduleDAO();
     }
 
     /*

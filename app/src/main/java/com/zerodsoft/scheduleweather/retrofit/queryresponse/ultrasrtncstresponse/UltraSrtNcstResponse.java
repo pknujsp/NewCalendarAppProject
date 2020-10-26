@@ -44,10 +44,9 @@ public class UltraSrtNcstResponse implements Parcelable
         parcel.writeParcelable(body, i);
     }
 
-    public UltraSrtNcstResponse setBody(UltraSrtNcstBody body)
+    public void setBody(UltraSrtNcstBody body)
     {
         this.body = body;
-        return this;
     }
 
     public UltraSrtNcstBody getBody()

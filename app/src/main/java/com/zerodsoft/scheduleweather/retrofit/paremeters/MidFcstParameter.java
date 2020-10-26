@@ -20,6 +20,14 @@ public class MidFcstParameter implements Cloneable
     {
     }
 
+    public MidFcstParameter(String numOfRows, String pageNo, String regId, String tmFc)
+    {
+        this.numOfRows = numOfRows;
+        this.pageNo = pageNo;
+        this.regId = regId;
+        this.tmFc = tmFc;
+    }
+
     public Map<String, String> getMap()
     {
         map.clear();
@@ -80,9 +88,8 @@ public class MidFcstParameter implements Cloneable
         return this;
     }
 
-    @Override
-    public Object clone() throws CloneNotSupportedException
+    public MidFcstParameter deepCopy()
     {
-        return super.clone();
+        return new MidFcstParameter(numOfRows, pageNo, regId, tmFc);
     }
 }

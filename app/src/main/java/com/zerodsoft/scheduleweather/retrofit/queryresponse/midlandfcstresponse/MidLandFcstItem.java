@@ -206,10 +206,9 @@ public class MidLandFcstItem implements Parcelable
         return regId;
     }
 
-    public MidLandFcstItem setRegId(String regId)
+    public void setRegId(String regId)
     {
         this.regId = regId;
-        return this;
     }
 
     public String getRnSt10()
@@ -217,10 +216,9 @@ public class MidLandFcstItem implements Parcelable
         return rnSt10;
     }
 
-    public MidLandFcstItem setRnSt10(String rnSt10)
+    public void setRnSt10(String rnSt10)
     {
         this.rnSt10 = rnSt10;
-        return this;
     }
 
     public String getRnSt3Am()
@@ -228,10 +226,9 @@ public class MidLandFcstItem implements Parcelable
         return rnSt3Am;
     }
 
-    public MidLandFcstItem setRnSt3Am(String rnSt3Am)
+    public void setRnSt3Am(String rnSt3Am)
     {
         this.rnSt3Am = rnSt3Am;
-        return this;
     }
 
     public String getRnSt3Pm()
@@ -239,10 +236,9 @@ public class MidLandFcstItem implements Parcelable
         return rnSt3Pm;
     }
 
-    public MidLandFcstItem setRnSt3Pm(String rnSt3Pm)
+    public void setRnSt3Pm(String rnSt3Pm)
     {
         this.rnSt3Pm = rnSt3Pm;
-        return this;
     }
 
     public String getRnSt4Am()
@@ -250,10 +246,9 @@ public class MidLandFcstItem implements Parcelable
         return rnSt4Am;
     }
 
-    public MidLandFcstItem setRnSt4Am(String rnSt4Am)
+    public void setRnSt4Am(String rnSt4Am)
     {
         this.rnSt4Am = rnSt4Am;
-        return this;
     }
 
     public String getRnSt4Pm()
@@ -261,10 +256,9 @@ public class MidLandFcstItem implements Parcelable
         return rnSt4Pm;
     }
 
-    public MidLandFcstItem setRnSt4Pm(String rnSt4Pm)
+    public void setRnSt4Pm(String rnSt4Pm)
     {
         this.rnSt4Pm = rnSt4Pm;
-        return this;
     }
 
     public String getRnSt5Am()
@@ -272,10 +266,9 @@ public class MidLandFcstItem implements Parcelable
         return rnSt5Am;
     }
 
-    public MidLandFcstItem setRnSt5Am(String rnSt5Am)
+    public void setRnSt5Am(String rnSt5Am)
     {
         this.rnSt5Am = rnSt5Am;
-        return this;
     }
 
     public String getRnSt5Pm()
@@ -283,10 +276,9 @@ public class MidLandFcstItem implements Parcelable
         return rnSt5Pm;
     }
 
-    public MidLandFcstItem setRnSt5Pm(String rnSt5Pm)
+    public void setRnSt5Pm(String rnSt5Pm)
     {
         this.rnSt5Pm = rnSt5Pm;
-        return this;
     }
 
     public String getRnSt6Am()
@@ -294,10 +286,9 @@ public class MidLandFcstItem implements Parcelable
         return rnSt6Am;
     }
 
-    public MidLandFcstItem setRnSt6Am(String rnSt6Am)
+    public void setRnSt6Am(String rnSt6Am)
     {
         this.rnSt6Am = rnSt6Am;
-        return this;
     }
 
     public String getRnSt6Pm()
@@ -305,10 +296,9 @@ public class MidLandFcstItem implements Parcelable
         return rnSt6Pm;
     }
 
-    public MidLandFcstItem setRnSt6Pm(String rnSt6Pm)
+    public void setRnSt6Pm(String rnSt6Pm)
     {
         this.rnSt6Pm = rnSt6Pm;
-        return this;
     }
 
     public String getRnSt7Am()
@@ -316,10 +306,9 @@ public class MidLandFcstItem implements Parcelable
         return rnSt7Am;
     }
 
-    public MidLandFcstItem setRnSt7Am(String rnSt7Am)
+    public void setRnSt7Am(String rnSt7Am)
     {
         this.rnSt7Am = rnSt7Am;
-        return this;
     }
 
     public String getRnSt7Pm()
@@ -327,10 +316,9 @@ public class MidLandFcstItem implements Parcelable
         return rnSt7Pm;
     }
 
-    public MidLandFcstItem setRnSt7Pm(String rnSt7Pm)
+    public void setRnSt7Pm(String rnSt7Pm)
     {
         this.rnSt7Pm = rnSt7Pm;
-        return this;
     }
 
     public String getRnSt8()
@@ -338,10 +326,9 @@ public class MidLandFcstItem implements Parcelable
         return rnSt8;
     }
 
-    public MidLandFcstItem setRnSt8(String rnSt8)
+    public void setRnSt8(String rnSt8)
     {
         this.rnSt8 = rnSt8;
-        return this;
     }
 
     public String getRnSt9()
@@ -349,10 +336,9 @@ public class MidLandFcstItem implements Parcelable
         return rnSt9;
     }
 
-    public MidLandFcstItem setRnSt9(String rnSt9)
+    public void setRnSt9(String rnSt9)
     {
         this.rnSt9 = rnSt9;
-        return this;
     }
 
     public String getWf10()
@@ -360,10 +346,9 @@ public class MidLandFcstItem implements Parcelable
         return wf10;
     }
 
-    public MidLandFcstItem setWf10(String wf10)
+    public void setWf10(String wf10)
     {
         this.wf10 = wf10;
-        return this;
     }
 
     public String getWf3Am()
@@ -371,10 +356,9 @@ public class MidLandFcstItem implements Parcelable
         return wf3Am;
     }
 
-    public MidLandFcstItem setWf3Am(String wf3Am)
+    public void setWf3Am(String wf3Am)
     {
         this.wf3Am = wf3Am;
-        return this;
     }
 
     public String getWf3Pm()
@@ -382,10 +366,9 @@ public class MidLandFcstItem implements Parcelable
         return wf3Pm;
     }
 
-    public MidLandFcstItem setWf3Pm(String wf3Pm)
+    public void setWf3Pm(String wf3Pm)
     {
         this.wf3Pm = wf3Pm;
-        return this;
     }
 
     public String getWf4Am()
@@ -393,10 +376,9 @@ public class MidLandFcstItem implements Parcelable
         return wf4Am;
     }
 
-    public MidLandFcstItem setWf4Am(String wf4Am)
+    public void setWf4Am(String wf4Am)
     {
         this.wf4Am = wf4Am;
-        return this;
     }
 
     public String getWf4Pm()
@@ -404,10 +386,9 @@ public class MidLandFcstItem implements Parcelable
         return wf4Pm;
     }
 
-    public MidLandFcstItem setWf4Pm(String wf4Pm)
+    public void setWf4Pm(String wf4Pm)
     {
         this.wf4Pm = wf4Pm;
-        return this;
     }
 
     public String getWf5Am()
@@ -415,10 +396,9 @@ public class MidLandFcstItem implements Parcelable
         return wf5Am;
     }
 
-    public MidLandFcstItem setWf5Am(String wf5Am)
+    public void setWf5Am(String wf5Am)
     {
         this.wf5Am = wf5Am;
-        return this;
     }
 
     public String getWf5Pm()
@@ -426,10 +406,9 @@ public class MidLandFcstItem implements Parcelable
         return wf5Pm;
     }
 
-    public MidLandFcstItem setWf5Pm(String wf5Pm)
+    public void setWf5Pm(String wf5Pm)
     {
         this.wf5Pm = wf5Pm;
-        return this;
     }
 
     public String getWf6Am()
@@ -437,10 +416,9 @@ public class MidLandFcstItem implements Parcelable
         return wf6Am;
     }
 
-    public MidLandFcstItem setWf6Am(String wf6Am)
+    public void setWf6Am(String wf6Am)
     {
         this.wf6Am = wf6Am;
-        return this;
     }
 
     public String getWf6Pm()
@@ -448,10 +426,9 @@ public class MidLandFcstItem implements Parcelable
         return wf6Pm;
     }
 
-    public MidLandFcstItem setWf6Pm(String wf6Pm)
+    public void setWf6Pm(String wf6Pm)
     {
         this.wf6Pm = wf6Pm;
-        return this;
     }
 
     public String getWf7Am()
@@ -459,10 +436,9 @@ public class MidLandFcstItem implements Parcelable
         return wf7Am;
     }
 
-    public MidLandFcstItem setWf7Am(String wf7Am)
+    public void setWf7Am(String wf7Am)
     {
         this.wf7Am = wf7Am;
-        return this;
     }
 
     public String getWf7Pm()
@@ -470,10 +446,9 @@ public class MidLandFcstItem implements Parcelable
         return wf7Pm;
     }
 
-    public MidLandFcstItem setWf7Pm(String wf7Pm)
+    public void setWf7Pm(String wf7Pm)
     {
         this.wf7Pm = wf7Pm;
-        return this;
     }
 
     public String getWf8()
@@ -481,10 +456,9 @@ public class MidLandFcstItem implements Parcelable
         return wf8;
     }
 
-    public MidLandFcstItem setWf8(String wf8)
+    public void setWf8(String wf8)
     {
         this.wf8 = wf8;
-        return this;
     }
 
     public String getWf9()
@@ -492,9 +466,8 @@ public class MidLandFcstItem implements Parcelable
         return wf9;
     }
 
-    public MidLandFcstItem setWf9(String wf9)
+    public void setWf9(String wf9)
     {
         this.wf9 = wf9;
-        return this;
     }
 }

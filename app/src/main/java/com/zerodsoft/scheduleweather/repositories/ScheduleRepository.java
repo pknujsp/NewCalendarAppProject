@@ -14,6 +14,7 @@ import com.zerodsoft.scheduleweather.room.dao.ScheduleDAO;
 import com.zerodsoft.scheduleweather.room.dto.AddressDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
 import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
+import com.zerodsoft.scheduleweather.viewmodel.ScheduleData;
 
 
 import java.util.Calendar;
@@ -29,9 +30,11 @@ public class ScheduleRepository
     private LiveData<PlaceDTO> placeLiveData;
     private LiveData<AddressDTO> addressLiveData;
 
+    private MutableLiveData<ScheduleData> scheduleDataLiveData = new MutableLiveData<>();
+
     public ScheduleRepository(Application application)
     {
-        AppDb appDb = AppDb.getInstance(application);
+        AppDb appDb = AppDb.getInstance(application.getApplicationContext());
         scheduleDAO = appDb.scheduleDAO();
         locationDAO = appDb.locationDAO();
     }
@@ -66,6 +69,28 @@ public class ScheduleRepository
         return placeLiveData;
     }
 
+    public void selectScheduleData(int scheduleId)
+    {
+        App.executorService.execute(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                ScheduleData scheduleData = new ScheduleData();
+
+                scheduleData.setSchedule(scheduleDAO.selectScheduleNotLive(scheduleId));
+                scheduleData.setAddress(locationDAO.selectAddressNotLive(scheduleId));
+                scheduleData.setPlace(locationDAO.selectPlaceNotLive(scheduleId));
+
+                scheduleDataLiveData.postValue(scheduleData);
+            }
+        });
+    }
+
+    public MutableLiveData<ScheduleData> getScheduleDataLiveData()
+    {
+        return scheduleDataLiveData;
+    }
 
     public void deleteSchedule(int scheduleId)
     {

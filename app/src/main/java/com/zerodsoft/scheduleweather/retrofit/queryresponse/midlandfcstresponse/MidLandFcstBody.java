@@ -12,12 +12,11 @@ public class MidLandFcstBody implements Parcelable
 {
     @Expose
     @SerializedName("items")
-    private List<MidLandFcstItem> items;
-
+    private MidLandFcstItems items;
 
     protected MidLandFcstBody(Parcel in)
     {
-        items = in.createTypedArrayList(MidLandFcstItem.CREATOR);
+        items = in.readParcelable(MidLandFcstItems.class.getClassLoader());
     }
 
     public static final Creator<MidLandFcstBody> CREATOR = new Creator<MidLandFcstBody>()
@@ -44,16 +43,15 @@ public class MidLandFcstBody implements Parcelable
     @Override
     public void writeToParcel(Parcel parcel, int i)
     {
-        parcel.writeTypedList(items);
+        parcel.writeParcelable(items, i);
     }
 
-    public MidLandFcstBody setItems(List<MidLandFcstItem> items)
+    public void setItems(MidLandFcstItems items)
     {
         this.items = items;
-        return this;
     }
 
-    public List<MidLandFcstItem> getItems()
+    public MidLandFcstItems getItems()
     {
         return items;
     }

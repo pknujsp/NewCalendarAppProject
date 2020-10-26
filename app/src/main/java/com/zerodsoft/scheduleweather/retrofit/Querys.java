@@ -19,20 +19,25 @@ import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.http.GET;
+import retrofit2.http.Headers;
 import retrofit2.http.QueryMap;
 
 public interface Querys
 {
     // kakao map
+    @Headers({"Authorization: " + HttpCommunicationClient.KAKAO_APP_KEY})
     @GET("search/address.json")
     Call<AddressResponse> getAddress(@QueryMap(encoded = true) Map<String, String> queryMap);
 
+    @Headers({"Authorization: " + HttpCommunicationClient.KAKAO_APP_KEY})
     @GET("search/keyword.json")
     Call<PlaceKeyword> getPlaceKeyword(@QueryMap(encoded = true) Map<String, String> queryMap);
 
+    @Headers({"Authorization: " + HttpCommunicationClient.KAKAO_APP_KEY})
     @GET("search/category.json")
     Call<PlaceCategory> getPlaceCategory(@QueryMap(encoded = true) Map<String, String> queryMap);
 
+    @Headers({"Authorization: " + HttpCommunicationClient.KAKAO_APP_KEY})
     @GET("geo/coord2address.json")
     Call<CoordToAddress> getCoordToAddress(@QueryMap(encoded = true) Map<String, String> queryMap);
 

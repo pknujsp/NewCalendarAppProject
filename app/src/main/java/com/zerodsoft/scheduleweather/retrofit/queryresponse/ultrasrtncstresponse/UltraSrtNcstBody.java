@@ -12,12 +12,11 @@ public class UltraSrtNcstBody implements Parcelable
 {
     @Expose
     @SerializedName("items")
-    private List<UltraSrtNcstItem> items;
-
+    private UltraSrtNcstItems items;
 
     protected UltraSrtNcstBody(Parcel in)
     {
-        items = in.createTypedArrayList(UltraSrtNcstItem.CREATOR);
+        items = in.readParcelable(UltraSrtNcstItems.class.getClassLoader());
     }
 
     public static final Creator<UltraSrtNcstBody> CREATOR = new Creator<UltraSrtNcstBody>()
@@ -44,16 +43,15 @@ public class UltraSrtNcstBody implements Parcelable
     @Override
     public void writeToParcel(Parcel parcel, int i)
     {
-        parcel.writeTypedList(items);
+        parcel.writeParcelable(items, i);
     }
 
-    public UltraSrtNcstBody setItems(List<UltraSrtNcstItem> items)
+    public void setItems(UltraSrtNcstItems items)
     {
         this.items = items;
-        return this;
     }
 
-    public List<UltraSrtNcstItem> getItems()
+    public UltraSrtNcstItems getItems()
     {
         return items;
     }

@@ -6,6 +6,8 @@ import androidx.annotation.NonNull;
 import androidx.arch.core.util.Function;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.Transformations;
 
 import com.zerodsoft.scheduleweather.activity.ScheduleEditActivity;
@@ -13,6 +15,8 @@ import com.zerodsoft.scheduleweather.repositories.ScheduleRepository;
 import com.zerodsoft.scheduleweather.room.dto.AddressDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
 import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
+
+import java.util.Set;
 
 public class ScheduleViewModel extends AndroidViewModel
 {
@@ -26,6 +30,8 @@ public class ScheduleViewModel extends AndroidViewModel
     private LiveData<PlaceDTO> placeLiveData;
     private LiveData<AddressDTO> addressLiveData;
 
+    private MutableLiveData<ScheduleData> scheduleDataLiveData = new MutableLiveData<>();
+
     private int scheduleId;
 
     public ScheduleViewModel(@NonNull Application application)
@@ -36,16 +42,8 @@ public class ScheduleViewModel extends AndroidViewModel
 
     public ScheduleViewModel selectSchedule(int scheduleId)
     {
-        this.scheduleId = scheduleId;
-
         scheduleRepository.selectSchedule(scheduleId);
-        scheduleRepository.selectAddress(scheduleId);
-        scheduleRepository.selectPlace(scheduleId);
-
-        scheduleLiveData = scheduleRepository.getScheduleLiveData();
-        addressLiveData = scheduleRepository.getAddressLiveData();
-        placeLiveData = scheduleRepository.getPlaceLiveData();
-
+        /*
         scheduleLiveData = Transformations.map(scheduleLiveData, new Function<ScheduleDTO, ScheduleDTO>()
         {
             @Override
@@ -63,22 +61,53 @@ public class ScheduleViewModel extends AndroidViewModel
             }
         });
         return this;
+
+         */
+        return this;
+    }
+
+    public ScheduleViewModel selectScheduleData(int scheduleId)
+    {
+        scheduleRepository.selectScheduleData(scheduleId);
+        return this;
+    }
+
+    public MutableLiveData<ScheduleData> getScheduleDataLiveData()
+    {
+        scheduleDataLiveData = scheduleRepository.getScheduleDataLiveData();
+        return scheduleDataLiveData;
+    }
+
+    public ScheduleViewModel selectPlace(int scheduleId)
+    {
+        scheduleRepository.selectPlace(scheduleId);
+        return this;
+    }
+
+    public ScheduleViewModel selectAddress(int scheduleId)
+    {
+        scheduleRepository.selectAddress(scheduleId);
+        return this;
     }
 
     public LiveData<ScheduleDTO> getSchedule()
     {
+        scheduleLiveData = scheduleRepository.getScheduleLiveData();
         return scheduleLiveData;
     }
 
     public LiveData<PlaceDTO> getPlace()
     {
+        placeLiveData = scheduleRepository.getPlaceLiveData();
         return placeLiveData;
     }
 
     public LiveData<AddressDTO> getAddress()
     {
+        addressLiveData = scheduleRepository.getAddressLiveData();
         return addressLiveData;
     }
+
 
     public void deleteSchedule()
     {

@@ -45,10 +45,9 @@ public class VilageFcstRoot implements Parcelable
         parcel.writeParcelable(response, i);
     }
 
-    public VilageFcstRoot setResponse(VilageFcstResponse response)
+    public void setResponse(VilageFcstResponse response)
     {
         this.response = response;
-        return this;
     }
 
     public VilageFcstResponse getResponse()

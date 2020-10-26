@@ -22,6 +22,16 @@ public class VilageFcstParameter implements Cloneable
 
     }
 
+    public VilageFcstParameter(String numOfRows, String pageNo, String baseDate, String baseTime, String nx, String ny)
+    {
+        this.numOfRows = numOfRows;
+        this.pageNo = pageNo;
+        this.baseDate = baseDate;
+        this.baseTime = baseTime;
+        this.nx = nx;
+        this.ny = ny;
+    }
+
     public Map<String, String> getMap()
     {
         map.clear();
@@ -105,9 +115,8 @@ public class VilageFcstParameter implements Cloneable
         return this;
     }
 
-    @Override
-    public Object clone() throws CloneNotSupportedException
+    public VilageFcstParameter deepCopy()
     {
-        return super.clone();
+        return new VilageFcstParameter(numOfRows, pageNo, baseDate, baseTime, nx, ny);
     }
 }

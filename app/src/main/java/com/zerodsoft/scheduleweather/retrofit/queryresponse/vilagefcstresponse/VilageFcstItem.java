@@ -93,10 +93,9 @@ public class VilageFcstItem implements Parcelable
         return baseDate;
     }
 
-    public VilageFcstItem setBaseDate(String baseDate)
+    public void setBaseDate(String baseDate)
     {
         this.baseDate = baseDate;
-        return this;
     }
 
     public String getBaseTime()
@@ -104,10 +103,9 @@ public class VilageFcstItem implements Parcelable
         return baseTime;
     }
 
-    public VilageFcstItem setBaseTime(String baseTime)
+    public void setBaseTime(String baseTime)
     {
         this.baseTime = baseTime;
-        return this;
     }
 
     public String getCategory()
@@ -115,10 +113,9 @@ public class VilageFcstItem implements Parcelable
         return category;
     }
 
-    public VilageFcstItem setCategory(String category)
+    public void setCategory(String category)
     {
         this.category = category;
-        return this;
     }
 
     public String getFcstDate()
@@ -126,10 +123,9 @@ public class VilageFcstItem implements Parcelable
         return fcstDate;
     }
 
-    public VilageFcstItem setFcstDate(String fcstDate)
+    public void setFcstDate(String fcstDate)
     {
         this.fcstDate = fcstDate;
-        return this;
     }
 
     public String getFcstTime()
@@ -137,10 +133,9 @@ public class VilageFcstItem implements Parcelable
         return fcstTime;
     }
 
-    public VilageFcstItem setFcstTime(String fcstTime)
+    public void setFcstTime(String fcstTime)
     {
         this.fcstTime = fcstTime;
-        return this;
     }
 
     public String getFcstValue()
@@ -148,10 +143,9 @@ public class VilageFcstItem implements Parcelable
         return fcstValue;
     }
 
-    public VilageFcstItem setFcstValue(String fcstValue)
+    public void setFcstValue(String fcstValue)
     {
         this.fcstValue = fcstValue;
-        return this;
     }
 
     public String getNx()
@@ -159,10 +153,9 @@ public class VilageFcstItem implements Parcelable
         return nx;
     }
 
-    public VilageFcstItem setNx(String nx)
+    public void setNx(String nx)
     {
         this.nx = nx;
-        return this;
     }
 
     public String getNy()
@@ -170,9 +163,8 @@ public class VilageFcstItem implements Parcelable
         return ny;
     }
 
-    public VilageFcstItem setNy(String ny)
+    public void setNy(String ny)
     {
         this.ny = ny;
-        return this;
     }
 }

@@ -44,10 +44,9 @@ public class VilageFcstResponse implements Parcelable
         parcel.writeParcelable(body, i);
     }
 
-    public VilageFcstResponse setBody(VilageFcstBody body)
+    public void setBody(VilageFcstBody body)
     {
         this.body = body;
-        return this;
     }
 
     public VilageFcstBody getBody()

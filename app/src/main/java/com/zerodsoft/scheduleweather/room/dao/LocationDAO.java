@@ -26,6 +26,12 @@ public interface LocationDAO
     @Query("SELECT * FROM TB_ADDRESS WHERE schedule_id = :scheduleId")
     LiveData<AddressDTO> selectAddress(int scheduleId);
 
+    @Query("SELECT * FROM TB_PLACE WHERE schedule_id = :scheduleId")
+    PlaceDTO selectPlaceNotLive(int scheduleId);
+
+    @Query("SELECT * FROM TB_ADDRESS WHERE schedule_id = :scheduleId")
+   AddressDTO selectAddressNotLive(int scheduleId);
+
     @Update(onConflict = OnConflictStrategy.IGNORE)
     void updatePlace(PlaceDTO placeDTO);
 

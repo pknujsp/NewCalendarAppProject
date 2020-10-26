@@ -12,11 +12,11 @@ public class MidTaBody implements Parcelable
 {
     @Expose
     @SerializedName("items")
-    private List<MidTaItem> items;
+    private MidTaItems items;
 
     protected MidTaBody(Parcel in)
     {
-        items = in.createTypedArrayList(MidTaItem.CREATOR);
+        items = in.readParcelable(MidTaItems.class.getClassLoader());
     }
 
     public static final Creator<MidTaBody> CREATOR = new Creator<MidTaBody>()
@@ -43,16 +43,15 @@ public class MidTaBody implements Parcelable
     @Override
     public void writeToParcel(Parcel parcel, int i)
     {
-        parcel.writeTypedList(items);
+        parcel.writeParcelable(items, i);
     }
 
-    public MidTaBody setItems(List<MidTaItem> items)
+    public void setItems(MidTaItems items)
     {
         this.items = items;
-        return this;
     }
 
-    public List<MidTaItem> getItems()
+    public MidTaItems getItems()
     {
         return items;
     }

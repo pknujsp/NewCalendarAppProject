@@ -24,6 +24,9 @@ public interface ScheduleDAO
     @Query("SELECT * FROM TB_SCHEDULE WHERE id = :scheduleId")
     LiveData<ScheduleDTO> selectSchedule(int scheduleId);
 
+    @Query("SELECT * FROM TB_SCHEDULE WHERE id = :scheduleId")
+    ScheduleDTO selectScheduleNotLive(int scheduleId);
+
     @TypeConverters({TypeConverter.class})
     @Query("SELECT * FROM TB_SCHEDULE WHERE category = :accountCategory AND (Datetime(start_date) >= Datetime(:startDate) AND Datetime(start_date) < Datetime(:endDate)) " +
             "OR (Datetime(end_date) >= Datetime(:startDate) AND Datetime(end_date) < Datetime(:endDate)) " +

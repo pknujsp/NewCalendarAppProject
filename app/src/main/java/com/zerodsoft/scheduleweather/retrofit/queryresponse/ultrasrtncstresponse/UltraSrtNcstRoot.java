@@ -45,10 +45,9 @@ public class UltraSrtNcstRoot implements Parcelable
         parcel.writeParcelable(response, i);
     }
 
-    public UltraSrtNcstRoot setResponse(UltraSrtNcstResponse response)
+    public void setResponse(UltraSrtNcstResponse response)
     {
         this.response = response;
-        return this;
     }
 
     public UltraSrtNcstResponse getResponse()

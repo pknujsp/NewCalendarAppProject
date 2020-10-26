@@ -12,11 +12,12 @@ public class VilageFcstBody implements Parcelable
 {
     @Expose
     @SerializedName("items")
-    private List<VilageFcstItem> items;
+    private VilageFcstItems items;
+
 
     protected VilageFcstBody(Parcel in)
     {
-        items = in.createTypedArrayList(VilageFcstItem.CREATOR);
+        items = in.readParcelable(VilageFcstItems.class.getClassLoader());
     }
 
     public static final Creator<VilageFcstBody> CREATOR = new Creator<VilageFcstBody>()
@@ -43,16 +44,15 @@ public class VilageFcstBody implements Parcelable
     @Override
     public void writeToParcel(Parcel parcel, int i)
     {
-        parcel.writeTypedList(items);
+        parcel.writeParcelable(items, i);
     }
 
-    public VilageFcstBody setItems(List<VilageFcstItem> items)
+    public void setItems(VilageFcstItems items)
     {
         this.items = items;
-        return this;
     }
 
-    public List<VilageFcstItem> getItems()
+    public VilageFcstItems getItems()
     {
         return items;
     }

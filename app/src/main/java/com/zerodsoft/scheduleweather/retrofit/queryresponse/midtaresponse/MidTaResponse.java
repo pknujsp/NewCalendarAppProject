@@ -45,10 +45,9 @@ public class MidTaResponse implements Parcelable
         parcel.writeParcelable(body, i);
     }
 
-    public MidTaResponse setBody(MidTaBody body)
+    public void setBody(MidTaBody body)
     {
         this.body = body;
-        return this;
     }
 
     public MidTaBody getBody()

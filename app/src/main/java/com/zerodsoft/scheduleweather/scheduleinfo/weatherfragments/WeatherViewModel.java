@@ -1,10 +1,14 @@
 package com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments;
 
 import android.app.Application;
+import android.content.Context;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.SavedStateHandle;
+import androidx.lifecycle.ViewModel;
 
 import com.zerodsoft.scheduleweather.retrofit.paremeters.MidFcstParameter;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.VilageFcstParameter;
@@ -13,10 +17,11 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.midtaresponse.MidTaI
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.ultrasrtfcstresponse.UltraSrtFcstItem;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.ultrasrtncstresponse.UltraSrtNcstItem;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.vilagefcstresponse.VilageFcstItem;
+import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
 
 import java.util.List;
 
-public class WeatherViewModel extends AndroidViewModel
+public class WeatherViewModel extends ViewModel
 {
     private WeatherRepository weatherRepository;
 
@@ -26,10 +31,24 @@ public class WeatherViewModel extends AndroidViewModel
     private MutableLiveData<List<MidLandFcstItem>> midLandFcstLiveData = new MutableLiveData<>();
     private MutableLiveData<List<MidTaItem>> midTaLiveData = new MutableLiveData<>();
 
-    public WeatherViewModel(@NonNull Application application)
+    private LiveData<List<WeatherAreaCodeDTO>> areaCodeLiveData;
+
+    public void init(Context context, int x, int y)
     {
-        super(application);
-        weatherRepository = new WeatherRepository(application);
+        weatherRepository = new WeatherRepository(context);
+        selectAreaCode(x, y);
+    }
+
+    public LiveData<List<WeatherAreaCodeDTO>> getAreaCodeLiveData()
+    {
+        areaCodeLiveData = weatherRepository.getAreaCodeLiveData();
+        return areaCodeLiveData;
+    }
+
+    public WeatherViewModel selectAreaCode(int x, int y)
+    {
+        weatherRepository.selectAreaCode(x, y);
+        return this;
     }
 
     public WeatherViewModel getUltraSrtNcstData(VilageFcstParameter parameter)

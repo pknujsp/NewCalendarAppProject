@@ -19,12 +19,13 @@ import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
 import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class ScheduleTabViewPager extends FragmentStateAdapter
 {
-    private final int TAB_COUNT = 3;
     private List<Fragment> fragments;
+    private static final int ITEM_COUNT = 3;
 
     public ScheduleTabViewPager(FragmentActivity fragmentActivity)
     {
@@ -42,6 +43,11 @@ public class ScheduleTabViewPager extends FragmentStateAdapter
         return this;
     }
 
+    public void addFragment(Fragment fragment, int index)
+    {
+        fragments.add(index, fragment);
+        notifyDataSetChanged();
+    }
 
     @NonNull
     @Override

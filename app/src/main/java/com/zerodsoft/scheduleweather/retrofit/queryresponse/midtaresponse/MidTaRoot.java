@@ -44,10 +44,9 @@ public class MidTaRoot implements Parcelable
         parcel.writeParcelable(response, i);
     }
 
-    public MidTaRoot setResponse(MidTaResponse response)
+    public void setResponse(MidTaResponse response)
     {
         this.response = response;
-        return this;
     }
 
     public MidTaResponse getResponse()

@@ -80,10 +80,9 @@ public class UltraSrtNcstItem implements Parcelable
         return baseDate;
     }
 
-    public UltraSrtNcstItem setBaseDate(String baseDate)
+    public void setBaseDate(String baseDate)
     {
         this.baseDate = baseDate;
-        return this;
     }
 
     public String getBaseTime()
@@ -91,10 +90,9 @@ public class UltraSrtNcstItem implements Parcelable
         return baseTime;
     }
 
-    public UltraSrtNcstItem setBaseTime(String baseTime)
+    public void setBaseTime(String baseTime)
     {
         this.baseTime = baseTime;
-        return this;
     }
 
     public String getCategory()
@@ -102,10 +100,9 @@ public class UltraSrtNcstItem implements Parcelable
         return category;
     }
 
-    public UltraSrtNcstItem setCategory(String category)
+    public void setCategory(String category)
     {
         this.category = category;
-        return this;
     }
 
     public String getNx()
@@ -113,10 +110,9 @@ public class UltraSrtNcstItem implements Parcelable
         return nx;
     }
 
-    public UltraSrtNcstItem setNx(String nx)
+    public void setNx(String nx)
     {
         this.nx = nx;
-        return this;
     }
 
     public String getNy()
@@ -124,10 +120,9 @@ public class UltraSrtNcstItem implements Parcelable
         return ny;
     }
 
-    public UltraSrtNcstItem setNy(String ny)
+    public void setNy(String ny)
     {
         this.ny = ny;
-        return this;
     }
 
     public String getObsrValue()
@@ -135,9 +130,8 @@ public class UltraSrtNcstItem implements Parcelable
         return obsrValue;
     }
 
-    public UltraSrtNcstItem setObsrValue(String obsrValue)
+    public void setObsrValue(String obsrValue)
     {
         this.obsrValue = obsrValue;
-        return this;
     }
 }

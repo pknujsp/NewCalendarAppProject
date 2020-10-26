@@ -12,7 +12,10 @@ import android.view.View;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.room.dto.AddressDTO;
+import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
 import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
+import com.zerodsoft.scheduleweather.viewmodel.ScheduleData;
 import com.zerodsoft.scheduleweather.viewmodel.ScheduleViewModel;
 
 import java.util.ArrayList;
@@ -30,19 +33,21 @@ public class ScheduleInfoActivity extends AppCompatActivity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_schedule_info);
+
         viewPager = (ViewPager2) findViewById(R.id.schedule_viewpager);
         tabLayout = (TabLayout) findViewById(R.id.schedule_tab);
 
+
         int scheduleId = getIntent().getIntExtra("scheduleId", -1);
 
-        viewModel = new ViewModelProvider(this).get(ScheduleViewModel.class).selectSchedule(scheduleId);
-        viewModel.getSchedule().observe(this, new Observer<ScheduleDTO>()
+        viewModel = new ViewModelProvider(this).get(ScheduleViewModel.class).selectScheduleData(scheduleId);
+        viewModel.getScheduleDataLiveData().observe(this, new Observer<ScheduleData>()
         {
             @Override
-            public void onChanged(ScheduleDTO scheduleDTO)
+            public void onChanged(ScheduleData scheduleData)
             {
                 ScheduleTabViewPager adapter = new ScheduleTabViewPager(ScheduleInfoActivity.this);
-                viewPager.setAdapter(adapter.setFragments(scheduleDTO, viewModel.getAddress().getValue(), viewModel.getPlace().getValue()));
+                viewPager.setAdapter(adapter.setFragments(scheduleData.getSchedule(), scheduleData.getAddress(), scheduleData.getPlace()));
 
                 String[] tabs = {"일정", "날씨", "지도"};
 
@@ -56,7 +61,6 @@ public class ScheduleInfoActivity extends AppCompatActivity
                 }).attach();
             }
         });
-
 
     }
 

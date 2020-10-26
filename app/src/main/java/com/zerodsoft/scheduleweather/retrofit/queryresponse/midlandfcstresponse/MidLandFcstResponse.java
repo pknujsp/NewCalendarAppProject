@@ -45,10 +45,9 @@ public class MidLandFcstResponse implements Parcelable
         parcel.writeParcelable(body, i);
     }
 
-    public MidLandFcstResponse setBody(MidLandFcstBody body)
+    public void setBody(MidLandFcstBody body)
     {
         this.body = body;
-        return this;
     }
 
     public MidLandFcstBody getBody()

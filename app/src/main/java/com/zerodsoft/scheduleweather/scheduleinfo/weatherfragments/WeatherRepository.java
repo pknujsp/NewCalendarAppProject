@@ -1,7 +1,9 @@
 package com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments;
 
 import android.app.Application;
+import android.content.Context;
 
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.zerodsoft.scheduleweather.retrofit.HttpCommunicationClient;
@@ -18,6 +20,9 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.ultrasrtncstresponse
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.ultrasrtncstresponse.UltraSrtNcstRoot;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.vilagefcstresponse.VilageFcstItem;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.vilagefcstresponse.VilageFcstRoot;
+import com.zerodsoft.scheduleweather.room.AppDb;
+import com.zerodsoft.scheduleweather.room.dao.WeatherAreaCodeDAO;
+import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
 import com.zerodsoft.scheduleweather.utility.Clock;
 
 import java.util.Calendar;
@@ -35,9 +40,23 @@ public class WeatherRepository
     private MutableLiveData<List<MidLandFcstItem>> midLandFcstLiveData = new MutableLiveData<>();
     private MutableLiveData<List<MidTaItem>> midTaLiveData = new MutableLiveData<>();
 
-    public WeatherRepository(Application application)
-    {
+    private LiveData<List<WeatherAreaCodeDTO>> areaCodeLiveData;
 
+    private WeatherAreaCodeDAO weatherAreaCodeDAO;
+
+    public WeatherRepository(Context context)
+    {
+        weatherAreaCodeDAO = AppDb.getInstance(context).weatherAreaCodeDAO();
+    }
+
+    public void selectAreaCode(int x, int y)
+    {
+        areaCodeLiveData = weatherAreaCodeDAO.selectAreaCode(Integer.toString(x), Integer.toString(y));
+    }
+
+    public LiveData<List<WeatherAreaCodeDTO>> getAreaCodeLiveData()
+    {
+        return areaCodeLiveData;
     }
 
     public void getUltraSrtNcstData(VilageFcstParameter parameter)
@@ -50,7 +69,7 @@ public class WeatherRepository
         {
             calendar.add(Calendar.HOUR_OF_DAY, -1);
         }
-        parameter.setBaseDate(Clock.WEATHER_DATE_FORMAT.format(calendar.getTime()));
+        parameter.setBaseDate(Clock.yyyyMMdd_FORMAT.format(calendar.getTime()));
         parameter.setBaseTime(Clock.WEATHER_TIME_FORMAT.format(calendar.getTime()) + "00");
 
         Call<UltraSrtNcstRoot> call = querys.getUltraSrtNcstData(parameter.getMap());
@@ -60,7 +79,7 @@ public class WeatherRepository
             @Override
             public void onResponse(Call<UltraSrtNcstRoot> call, Response<UltraSrtNcstRoot> response)
             {
-                List<UltraSrtNcstItem> items = response.body().getResponse().getBody().getItems();
+                List<UltraSrtNcstItem> items = response.body().getResponse().getBody().getItems().getItem();
                 ultraSrtNcstLiveData.setValue(items);
             }
 
@@ -82,7 +101,7 @@ public class WeatherRepository
         {
             calendar.add(Calendar.HOUR_OF_DAY, -1);
         }
-        parameter.setBaseDate(Clock.WEATHER_DATE_FORMAT.format(calendar.getTime()));
+        parameter.setBaseDate(Clock.yyyyMMdd_FORMAT.format(calendar.getTime()));
         parameter.setBaseTime(Clock.WEATHER_TIME_FORMAT.format(calendar.getTime()) + "30");
 
         Call<UltraSrtFcstRoot> call = querys.getUltraSrtFcstData(parameter.getMap());
@@ -92,7 +111,7 @@ public class WeatherRepository
             @Override
             public void onResponse(Call<UltraSrtFcstRoot> call, Response<UltraSrtFcstRoot> response)
             {
-                List<UltraSrtFcstItem> items = response.body().getResponse().getBody().getItems();
+                List<UltraSrtFcstItem> items = response.body().getResponse().getBody().getItems().getItem();
                 ultraSrtFcstLiveData.setValue(items);
             }
 
@@ -133,7 +152,7 @@ public class WeatherRepository
             calendar.set(Calendar.HOUR_OF_DAY, baseHour);
         }
 
-        parameter.setBaseDate(Clock.WEATHER_DATE_FORMAT.format(calendar.getTime()));
+        parameter.setBaseDate(Clock.yyyyMMdd_FORMAT.format(calendar.getTime()));
         parameter.setBaseTime(Clock.WEATHER_TIME_FORMAT.format(calendar.getTime()) + "00");
 
         Call<VilageFcstRoot> call = querys.getVilageFcstData(parameter.getMap());
@@ -143,7 +162,7 @@ public class WeatherRepository
             @Override
             public void onResponse(Call<VilageFcstRoot> call, Response<VilageFcstRoot> response)
             {
-                List<VilageFcstItem> items = response.body().getResponse().getBody().getItems();
+                List<VilageFcstItem> items = response.body().getResponse().getBody().getItems().getItem();
                 vilageFcstLiveData.setValue(items);
             }
 
@@ -165,14 +184,14 @@ public class WeatherRepository
 
         if (hour >= 18 && minute >= 1)
         {
-            parameter.setTmFc(Clock.yyyyMMdd_FORMAT.format(calendar) + "1800");
+            parameter.setTmFc(Clock.yyyyMMdd_FORMAT.format(calendar.getTime()) + "1800");
         } else if (hour >= 6 && minute >= 1)
         {
-            parameter.setTmFc(Clock.yyyyMMdd_FORMAT.format(calendar) + "0600");
+            parameter.setTmFc(Clock.yyyyMMdd_FORMAT.format(calendar.getTime()) + "0600");
         } else
         {
             calendar.add(Calendar.DAY_OF_YEAR, -1);
-            parameter.setTmFc(Clock.yyyyMMdd_FORMAT.format(calendar) + "1800");
+            parameter.setTmFc(Clock.yyyyMMdd_FORMAT.format(calendar.getTime()) + "1800");
         }
 
         Call<MidLandFcstRoot> call = querys.getMidLandFcstData(parameter.getMap());
@@ -182,7 +201,7 @@ public class WeatherRepository
             @Override
             public void onResponse(Call<MidLandFcstRoot> call, Response<MidLandFcstRoot> response)
             {
-                List<MidLandFcstItem> items = response.body().getResponse().getBody().getItems();
+                List<MidLandFcstItem> items = response.body().getResponse().getBody().getItems().getItem();
                 midLandFcstLiveData.setValue(items);
             }
 
@@ -204,14 +223,14 @@ public class WeatherRepository
 
         if (hour >= 18 && minute >= 1)
         {
-            parameter.setTmFc(Clock.yyyyMMdd_FORMAT.format(calendar) + "1800");
+            parameter.setTmFc(Clock.yyyyMMdd_FORMAT.format(calendar.getTime()) + "1800");
         } else if (hour >= 6 && minute >= 1)
         {
-            parameter.setTmFc(Clock.yyyyMMdd_FORMAT.format(calendar) + "0600");
+            parameter.setTmFc(Clock.yyyyMMdd_FORMAT.format(calendar.getTime()) + "0600");
         } else
         {
             calendar.add(Calendar.DAY_OF_YEAR, -1);
-            parameter.setTmFc(Clock.yyyyMMdd_FORMAT.format(calendar) + "1800");
+            parameter.setTmFc(Clock.yyyyMMdd_FORMAT.format(calendar.getTime()) + "1800");
         }
 
         Call<MidTaRoot> call = querys.getMidTaData(parameter.getMap());
@@ -221,7 +240,7 @@ public class WeatherRepository
             @Override
             public void onResponse(Call<MidTaRoot> call, Response<MidTaRoot> response)
             {
-                List<MidTaItem> items = response.body().getResponse().getBody().getItems();
+                List<MidTaItem> items = response.body().getResponse().getBody().getItems().getItem();
                 midTaLiveData.setValue(items);
             }
 
