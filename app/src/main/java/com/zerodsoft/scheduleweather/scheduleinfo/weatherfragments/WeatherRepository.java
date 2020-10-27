@@ -1,7 +1,11 @@
 package com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments;
 
-import android.app.Application;
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.os.Parcelable;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -23,8 +27,10 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.vilagefcstresponse.V
 import com.zerodsoft.scheduleweather.room.AppDb;
 import com.zerodsoft.scheduleweather.room.dao.WeatherAreaCodeDAO;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
+import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.resultdata.WeatherData;
 import com.zerodsoft.scheduleweather.utility.Clock;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
@@ -34,24 +40,130 @@ import retrofit2.Response;
 
 public class WeatherRepository
 {
-    private MutableLiveData<List<UltraSrtNcstItem>> ultraSrtNcstLiveData = new MutableLiveData<>();
-    private MutableLiveData<List<UltraSrtFcstItem>> ultraSrtFcstLiveData = new MutableLiveData<>();
-    private MutableLiveData<List<VilageFcstItem>> vilageFcstLiveData = new MutableLiveData<>();
-    private MutableLiveData<List<MidLandFcstItem>> midLandFcstLiveData = new MutableLiveData<>();
-    private MutableLiveData<List<MidTaItem>> midTaLiveData = new MutableLiveData<>();
-
+    private MutableLiveData<List<WeatherData>> weatherDataLiveData = new MutableLiveData<>();
     private LiveData<List<WeatherAreaCodeDTO>> areaCodeLiveData;
 
     private WeatherAreaCodeDAO weatherAreaCodeDAO;
+    private final Calendar downloadedCalendar;
+
+    private static final String ULTRA_SRT_NCST = "ULTRA_SRT_NCST";
+    private static final String ULTRA_SRT_FCST = "ULTRA_SRT_FCST";
+    private static final String VILAGE_FCST = "VILAGE_FCST";
+    private static final String MID_LAND_FCST = "MID_LAND_FCST";
+    private static final String MID_TA_FCST = "MID_TA_FCST";
+
+    private List<WeatherData> weatherDataList = new ArrayList<>();
+
+    private int currentDownloadCount = 0;
+    private final int DOWNLOADED_TOTAL_COUNT = 5;
+
+    @SuppressLint("HandlerLeak")
+    private final Handler handler = new Handler()
+    {
+
+
+        @Override
+        public void handleMessage(Message msg)
+        {
+            super.handleMessage(msg);
+            Bundle bundle = msg.getData();
+
+            switch (bundle.getString("TYPE"))
+            {
+                case ULTRA_SRT_NCST: // nx,ny가 일치하는 인덱스에 데이터 삽입
+                    List<UltraSrtNcstItem> ultraSrtNcstItems = bundle.getParcelableArrayList(ULTRA_SRT_NCST);
+                    for (WeatherData weatherData : weatherDataList)
+                    {
+                        if (weatherData.getNx().equals(ultraSrtNcstItems.get(0).getNx()) && weatherData.getNy().equals(ultraSrtNcstItems.get(0).getNy()))
+                        {
+                            weatherData.setUltraSrtNcstData(ultraSrtNcstItems);
+                            break;
+                        }
+                    }
+                    break;
+
+                case ULTRA_SRT_FCST:
+                    List<UltraSrtFcstItem> ultraSrtFcstItems = bundle.getParcelableArrayList(ULTRA_SRT_FCST);
+                    for (WeatherData weatherData : weatherDataList)
+                    {
+                        if (weatherData.getNx().equals(ultraSrtFcstItems.get(0).getNx()) && weatherData.getNy().equals(ultraSrtFcstItems.get(0).getNy()))
+                        {
+                            weatherData.setUltraShortFcstDataList(ultraSrtFcstItems);
+                            break;
+                        }
+                    }
+                    break;
+                case VILAGE_FCST:
+                    List<VilageFcstItem> vilageFcstItems = bundle.getParcelableArrayList(VILAGE_FCST);
+                    for (WeatherData weatherData : weatherDataList)
+                    {
+                        if (weatherData.getNx().equals(vilageFcstItems.get(0).getNx()) && weatherData.getNy().equals(vilageFcstItems.get(0).getNy()))
+                        {
+                            weatherData.setVilageFcstDataList(vilageFcstItems);
+                            break;
+                        }
+                    }
+                    break;
+                case MID_LAND_FCST:
+                    List<MidLandFcstItem> midLandFcstItems = bundle.getParcelableArrayList(MID_LAND_FCST);
+                    for (WeatherData weatherData : weatherDataList)
+                    {
+                        if (weatherData.getMidLandFcstRegId().equals(midLandFcstItems.get(0).getRegId()))
+                        {
+                            weatherData.setMidLandFcstData(midLandFcstItems.get(0));
+                        }
+                    }
+
+                    break;
+
+                case MID_TA_FCST:
+                    List<MidTaItem> midTaItems = bundle.getParcelableArrayList(MID_TA_FCST);
+                    for (WeatherData weatherData : weatherDataList)
+                    {
+                        if (weatherData.getMidTaFcstRegId().equals(midTaItems.get(0).getRegId()))
+                        {
+                            weatherData.setMidTaFcstData(midTaItems.get(0));
+                        }
+                    }
+                    break;
+            }
+
+            ++currentDownloadCount;
+
+            if (currentDownloadCount == DOWNLOADED_TOTAL_COUNT)
+            {
+                for (WeatherData weatherData : weatherDataList)
+                {
+                    weatherData.setMidFcstDataList();
+                }
+                weatherDataLiveData.setValue(weatherDataList);
+                currentDownloadCount = 0;
+            }
+
+        }
+    };
 
     public WeatherRepository(Context context)
     {
         weatherAreaCodeDAO = AppDb.getInstance(context).weatherAreaCodeDAO();
+        downloadedCalendar = Calendar.getInstance(Clock.TIME_ZONE);
     }
 
     public void selectAreaCode(int x, int y)
     {
         areaCodeLiveData = weatherAreaCodeDAO.selectAreaCode(Integer.toString(x), Integer.toString(y));
+    }
+
+    public void getAllWeathersData(VilageFcstParameter vilageFcstParameter, MidFcstParameter midLandFcstParameter, MidFcstParameter midTaFcstParameter, WeatherAreaCodeDTO weatherAreaCode)
+    {
+        weatherDataList.add(new WeatherData(weatherAreaCode.getPhase1() + " " + weatherAreaCode.getPhase2() + " " + weatherAreaCode.getPhase3(),
+                weatherAreaCode.getX(), weatherAreaCode.getY(), weatherAreaCode.getMidLandFcstCode(), weatherAreaCode.getMidTaCode(), (Calendar) downloadedCalendar.clone()));
+
+        getUltraSrtNcstData(vilageFcstParameter.deepCopy());
+        getUltraSrtFcstData(vilageFcstParameter.deepCopy());
+        getVilageFcstData(vilageFcstParameter.deepCopy());
+        getMidLandFcstData(midLandFcstParameter.deepCopy());
+        getMidTaData(midTaFcstParameter.deepCopy());
     }
 
     public LiveData<List<WeatherAreaCodeDTO>> getAreaCodeLiveData()
@@ -63,7 +175,7 @@ public class WeatherRepository
     {
         Querys querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.VILAGE_FCST);
         //basetime설정
-        Calendar calendar = Calendar.getInstance(Clock.TIME_ZONE);
+        Calendar calendar = (Calendar) downloadedCalendar.clone();
 
         if (calendar.get(Calendar.MINUTE) < 40)
         {
@@ -80,7 +192,12 @@ public class WeatherRepository
             public void onResponse(Call<UltraSrtNcstRoot> call, Response<UltraSrtNcstRoot> response)
             {
                 List<UltraSrtNcstItem> items = response.body().getResponse().getBody().getItems().getItem();
-                ultraSrtNcstLiveData.setValue(items);
+                Message message = handler.obtainMessage();
+                Bundle bundle = new Bundle();
+                bundle.putParcelableArrayList(ULTRA_SRT_NCST, (ArrayList<? extends Parcelable>) items);
+                bundle.putString("TYPE", ULTRA_SRT_NCST);
+                message.setData(bundle);
+                handler.sendMessage(message);
             }
 
             @Override
@@ -95,7 +212,7 @@ public class WeatherRepository
     {
         Querys querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.VILAGE_FCST);
         //basetime설정
-        Calendar calendar = Calendar.getInstance(Clock.TIME_ZONE);
+        Calendar calendar = (Calendar) downloadedCalendar.clone();
 
         if (calendar.get(Calendar.MINUTE) < 45)
         {
@@ -112,7 +229,12 @@ public class WeatherRepository
             public void onResponse(Call<UltraSrtFcstRoot> call, Response<UltraSrtFcstRoot> response)
             {
                 List<UltraSrtFcstItem> items = response.body().getResponse().getBody().getItems().getItem();
-                ultraSrtFcstLiveData.setValue(items);
+                Message message = handler.obtainMessage();
+                Bundle bundle = new Bundle();
+                bundle.putParcelableArrayList(ULTRA_SRT_FCST, (ArrayList<? extends Parcelable>) items);
+                bundle.putString("TYPE", ULTRA_SRT_FCST);
+                message.setData(bundle);
+                handler.sendMessage(message);
             }
 
             @Override
@@ -127,7 +249,7 @@ public class WeatherRepository
     {
         Querys querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.VILAGE_FCST);
         //basetime설정
-        Calendar calendar = Calendar.getInstance(Clock.TIME_ZONE);
+        Calendar calendar = (Calendar) downloadedCalendar.clone();
 
         int hour = calendar.get(Calendar.HOUR_OF_DAY);
         int i = hour >= 0 && hour <= 2 ? 7 : hour / 3 - 1;
@@ -163,7 +285,12 @@ public class WeatherRepository
             public void onResponse(Call<VilageFcstRoot> call, Response<VilageFcstRoot> response)
             {
                 List<VilageFcstItem> items = response.body().getResponse().getBody().getItems().getItem();
-                vilageFcstLiveData.setValue(items);
+                Message message = handler.obtainMessage();
+                Bundle bundle = new Bundle();
+                bundle.putParcelableArrayList(VILAGE_FCST, (ArrayList<? extends Parcelable>) items);
+                bundle.putString("TYPE", VILAGE_FCST);
+                message.setData(bundle);
+                handler.sendMessage(message);
             }
 
             @Override
@@ -178,7 +305,7 @@ public class WeatherRepository
     {
         Querys querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.MID_FCST);
 
-        Calendar calendar = Calendar.getInstance(Clock.TIME_ZONE);
+        Calendar calendar = (Calendar) downloadedCalendar.clone();
         int hour = calendar.get(Calendar.HOUR_OF_DAY);
         int minute = calendar.get(Calendar.MINUTE);
 
@@ -202,7 +329,12 @@ public class WeatherRepository
             public void onResponse(Call<MidLandFcstRoot> call, Response<MidLandFcstRoot> response)
             {
                 List<MidLandFcstItem> items = response.body().getResponse().getBody().getItems().getItem();
-                midLandFcstLiveData.setValue(items);
+                Message message = handler.obtainMessage();
+                Bundle bundle = new Bundle();
+                bundle.putParcelableArrayList(MID_LAND_FCST, (ArrayList<? extends Parcelable>) items);
+                bundle.putString("TYPE", MID_LAND_FCST);
+                message.setData(bundle);
+                handler.sendMessage(message);
             }
 
             @Override
@@ -217,7 +349,7 @@ public class WeatherRepository
     {
         Querys querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.MID_FCST);
 
-        Calendar calendar = Calendar.getInstance(Clock.TIME_ZONE);
+        Calendar calendar = (Calendar) downloadedCalendar.clone();
         int hour = calendar.get(Calendar.HOUR_OF_DAY);
         int minute = calendar.get(Calendar.MINUTE);
 
@@ -241,7 +373,12 @@ public class WeatherRepository
             public void onResponse(Call<MidTaRoot> call, Response<MidTaRoot> response)
             {
                 List<MidTaItem> items = response.body().getResponse().getBody().getItems().getItem();
-                midTaLiveData.setValue(items);
+                Message message = handler.obtainMessage();
+                Bundle bundle = new Bundle();
+                bundle.putParcelableArrayList(MID_TA_FCST, (ArrayList<? extends Parcelable>) items);
+                bundle.putString("TYPE", MID_TA_FCST);
+                message.setData(bundle);
+                handler.sendMessage(message);
             }
 
             @Override
@@ -252,28 +389,9 @@ public class WeatherRepository
         });
     }
 
-    public MutableLiveData<List<UltraSrtNcstItem>> getUltraSrtNcstLiveData()
-    {
-        return ultraSrtNcstLiveData;
-    }
 
-    public MutableLiveData<List<UltraSrtFcstItem>> getUltraSrtFcstLiveData()
+    public MutableLiveData<List<WeatherData>> getWeatherDataLiveData()
     {
-        return ultraSrtFcstLiveData;
-    }
-
-    public MutableLiveData<List<VilageFcstItem>> getVilageFcstLiveData()
-    {
-        return vilageFcstLiveData;
-    }
-
-    public MutableLiveData<List<MidLandFcstItem>> getMidLandFcstLiveData()
-    {
-        return midLandFcstLiveData;
-    }
-
-    public MutableLiveData<List<MidTaItem>> getMidTaLiveData()
-    {
-        return midTaLiveData;
+        return weatherDataLiveData;
     }
 }

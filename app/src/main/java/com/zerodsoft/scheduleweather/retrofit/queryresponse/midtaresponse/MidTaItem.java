@@ -6,7 +6,7 @@ import android.os.Parcelable;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class MidTaItem implements Parcelable
+public class MidTaItem implements Parcelable, Cloneable
 {
     @Expose
     @SerializedName("regId")
@@ -336,4 +336,11 @@ public class MidTaItem implements Parcelable
         String[] arr = {taMax3, taMax4, taMax5, taMax6, taMax7, taMax8, taMax9, taMax10};
         return arr;
     }
+
+    @Override
+    public Object clone() throws CloneNotSupportedException
+    {
+        return super.clone();
+    }
+
 }

@@ -1,12 +1,16 @@
-package com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments;
+package com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.resultdata.responseresult;
 
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.ultrasrtfcstresponse.UltraSrtFcstItem;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.ultrasrtncstresponse.UltraSrtNcstItem;
+import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.WeatherDataConverter;
 
 import java.util.List;
 
 public class UltraSrtNcstData
 {
+    //nx
+    private String nx;
+    //ny
+    private String ny;
     //기온
     private String temperature;
     //1시간 강수량
@@ -20,8 +24,23 @@ public class UltraSrtNcstData
     //풍속
     private String windSpeed;
 
+    public UltraSrtNcstData(String nx, String ny, String temperature, String precipitation1Hour, String humidity, String precipitationForm, String windDirection, String windSpeed)
+    {
+        this.nx = nx;
+        this.ny = ny;
+        this.temperature = temperature;
+        this.precipitation1Hour = precipitation1Hour;
+        this.humidity = humidity;
+        this.precipitationForm = precipitationForm;
+        this.windDirection = windDirection;
+        this.windSpeed = windSpeed;
+    }
+
     public UltraSrtNcstData(List<UltraSrtNcstItem> items)
     {
+        nx = items.get(0).getNx();
+        ny = items.get(0).getNy();
+
         for (UltraSrtNcstItem item : items)
         {
             if (item.getCategory().equals("T1H"))
@@ -110,5 +129,20 @@ public class UltraSrtNcstData
     {
         this.windSpeed = windSpeed;
         return this;
+    }
+
+    public String getNx()
+    {
+        return nx;
+    }
+
+    public String getNy()
+    {
+        return ny;
+    }
+
+    public UltraSrtNcstData deepCopy()
+    {
+        return new UltraSrtNcstData(nx, ny, temperature, precipitation1Hour, humidity, precipitationForm, windDirection, windSpeed);
     }
 }

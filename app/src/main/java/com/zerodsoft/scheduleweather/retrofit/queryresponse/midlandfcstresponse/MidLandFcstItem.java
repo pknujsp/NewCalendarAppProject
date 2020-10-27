@@ -6,7 +6,9 @@ import android.os.Parcelable;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class MidLandFcstItem implements Parcelable
+import java.util.Optional;
+
+public class MidLandFcstItem implements Parcelable, Cloneable
 {
     //중기육상예보
     @Expose
@@ -469,5 +471,11 @@ public class MidLandFcstItem implements Parcelable
     public void setWf9(String wf9)
     {
         this.wf9 = wf9;
+    }
+
+    @Override
+    public Object clone() throws CloneNotSupportedException
+    {
+        return super.clone();
     }
 }

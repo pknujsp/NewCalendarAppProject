@@ -18,6 +18,7 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.ultrasrtfcstresponse
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.ultrasrtncstresponse.UltraSrtNcstItem;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.vilagefcstresponse.VilageFcstItem;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
+import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.resultdata.WeatherData;
 
 import java.util.List;
 
@@ -25,13 +26,8 @@ public class WeatherViewModel extends ViewModel
 {
     private WeatherRepository weatherRepository;
 
-    private MutableLiveData<List<UltraSrtNcstItem>> ultraSrtNcstLiveData = new MutableLiveData<>();
-    private MutableLiveData<List<UltraSrtFcstItem>> ultraSrtFcstLiveData = new MutableLiveData<>();
-    private MutableLiveData<List<VilageFcstItem>> vilageFcstLiveData = new MutableLiveData<>();
-    private MutableLiveData<List<MidLandFcstItem>> midLandFcstLiveData = new MutableLiveData<>();
-    private MutableLiveData<List<MidTaItem>> midTaLiveData = new MutableLiveData<>();
-
     private LiveData<List<WeatherAreaCodeDTO>> areaCodeLiveData;
+    private MutableLiveData<List<WeatherData>> weatherDataLiveData;
 
     public void init(Context context, int x, int y)
     {
@@ -51,63 +47,14 @@ public class WeatherViewModel extends ViewModel
         return this;
     }
 
-    public WeatherViewModel getUltraSrtNcstData(VilageFcstParameter parameter)
+    public void getAllWeathersData(VilageFcstParameter vilageFcstParameter, MidFcstParameter midLandFcstParameter, MidFcstParameter midTaFcstParameter, WeatherAreaCodeDTO weatherAreaCode)
     {
-        weatherRepository.getUltraSrtNcstData(parameter);
-        return this;
+        weatherRepository.getAllWeathersData(vilageFcstParameter, midLandFcstParameter, midTaFcstParameter, weatherAreaCode);
     }
 
-    public WeatherViewModel getUltraSrtFcstData(VilageFcstParameter parameter)
+    public MutableLiveData<List<WeatherData>> getWeatherDataLiveData()
     {
-        weatherRepository.getUltraSrtFcstData(parameter);
-        return this;
-    }
-
-    public WeatherViewModel getVilageFcstData(VilageFcstParameter parameter)
-    {
-        weatherRepository.getVilageFcstData(parameter);
-        return this;
-    }
-
-    public WeatherViewModel getMidLandFcstData(MidFcstParameter parameter)
-    {
-        weatherRepository.getMidLandFcstData(parameter);
-        return this;
-    }
-
-    public WeatherViewModel getMidTaData(MidFcstParameter parameter)
-    {
-        weatherRepository.getMidTaData(parameter);
-        return this;
-    }
-
-    public MutableLiveData<List<UltraSrtNcstItem>> getUltraSrtNcstLiveData()
-    {
-        ultraSrtNcstLiveData = weatherRepository.getUltraSrtNcstLiveData();
-        return ultraSrtNcstLiveData;
-    }
-
-    public MutableLiveData<List<UltraSrtFcstItem>> getUltraSrtFcstLiveData()
-    {
-        ultraSrtFcstLiveData = weatherRepository.getUltraSrtFcstLiveData();
-        return ultraSrtFcstLiveData;
-    }
-
-    public MutableLiveData<List<VilageFcstItem>> getVilageFcstLiveData()
-    {
-        vilageFcstLiveData = weatherRepository.getVilageFcstLiveData();
-        return vilageFcstLiveData;
-    }
-
-    public MutableLiveData<List<MidLandFcstItem>> getMidLandFcstLiveData()
-    {
-        midLandFcstLiveData = weatherRepository.getMidLandFcstLiveData();
-        return midLandFcstLiveData;
-    }
-
-    public MutableLiveData<List<MidTaItem>> getMidTaLiveData()
-    {
-        midTaLiveData = weatherRepository.getMidTaLiveData();
-        return midTaLiveData;
+        weatherDataLiveData = weatherRepository.getWeatherDataLiveData();
+        return weatherDataLiveData;
     }
 }

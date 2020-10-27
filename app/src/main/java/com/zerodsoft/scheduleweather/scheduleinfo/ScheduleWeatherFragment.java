@@ -1,18 +1,17 @@
 package com.zerodsoft.scheduleweather.scheduleinfo;
 
-import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.viewpager2.widget.ViewPager2;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.MidFcstParameter;
@@ -24,14 +23,17 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.ultrasrtncstresponse
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.vilagefcstresponse.VilageFcstItem;
 import com.zerodsoft.scheduleweather.room.dto.AddressDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
-import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
-import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.UltraSrtNcstData;
+import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.WeatherViewPagerAdapter;
+import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.resultdata.responseresult.UltraSrtNcstData;
 import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.WeatherDataConverter;
 import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.WeatherViewModel;
+import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.resultdata.WeatherData;
 import com.zerodsoft.scheduleweather.utility.LonLat;
 import com.zerodsoft.scheduleweather.utility.LonLatConverter;
 
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 
@@ -41,12 +43,14 @@ public class ScheduleWeatherFragment extends Fragment
     private PlaceDTO place;
     private AddressDTO address;
 
+    private ViewPager2 viewPager;
+    private List<WeatherData> weatherDataList = new ArrayList<>();
+
     public ScheduleWeatherFragment(PlaceDTO place, AddressDTO address)
     {
         this.place = place;
         this.address = address;
     }
-
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -96,78 +100,41 @@ public class ScheduleWeatherFragment extends Fragment
                 if (weatherAreaCodes != null)
                 {
                     // regId설정하는 코드 작성
-                    String midLandFcstRegId = weatherAreaCodes.get(0).getMidLandFcstCode();
-                    String midTaRegId = weatherAreaCodes.get(0).getMidTaCode();
+                    for (WeatherAreaCodeDTO weatherAreaCode : weatherAreaCodes)
+                    {
+                        String midLandFcstRegId = weatherAreaCode.getMidLandFcstCode();
+                        String midTaRegId = weatherAreaCode.getMidTaCode();
 
-                    vilageFcstParameter.setNx(weatherAreaCodes.get(0).getX()).setNy(weatherAreaCodes.get(0).getY()).setNumOfRows("10").setPageNo("1");
-                    midLandFcstParameter.setNumOfRows("10").setPageNo("1").setRegId(midLandFcstRegId);
-                    midTaParameter.setNumOfRows("10").setPageNo("1").setRegId(midTaRegId);
+                        Calendar calendar = null;
 
-                    viewModel.getUltraSrtNcstData(vilageFcstParameter.deepCopy())
-                            .getUltraSrtFcstData(vilageFcstParameter.deepCopy()).getVilageFcstData(vilageFcstParameter.deepCopy())
-                            .getMidLandFcstData(midLandFcstParameter.deepCopy()).getMidTaData(midTaParameter.deepCopy());
+                        vilageFcstParameter.setNx(weatherAreaCode.getX()).setNy(weatherAreaCode.getY()).setNumOfRows("10").setPageNo("1");
+                        midLandFcstParameter.setNumOfRows("10").setPageNo("1").setRegId(midLandFcstRegId);
+                        midTaParameter.setNumOfRows("10").setPageNo("1").setRegId(midTaRegId);
+
+                        viewModel.getAllWeathersData(vilageFcstParameter, midLandFcstParameter, midTaParameter, weatherAreaCode);
+                    }
                 }
             }
         });
 
-        //초단기실황
-        viewModel.getUltraSrtNcstLiveData().observe(getViewLifecycleOwner(), new Observer<List<UltraSrtNcstItem>>()
+        viewModel.getWeatherDataLiveData().observe(getViewLifecycleOwner(), new Observer<List<WeatherData>>()
         {
             @Override
-            public void onChanged(List<UltraSrtNcstItem> ultraSrtNcstItems)
+            public void onChanged(List<WeatherData> weatherDataList)
             {
-                UltraSrtNcstData ultraSrtNcstData = new UltraSrtNcstData(ultraSrtNcstItems);
-                Toast.makeText(getActivity(), ultraSrtNcstData.getTemperature(), Toast.LENGTH_SHORT).show();
+                if (weatherDataList != null)
+                {
+                    viewPager.setAdapter(new WeatherViewPagerAdapter(ScheduleWeatherFragment.this, weatherDataList));
+                }
             }
         });
 
-        //초단기예보
-        viewModel.getUltraSrtFcstLiveData().
-                observe(getViewLifecycleOwner(), new Observer<List<UltraSrtFcstItem>>()
-
-                {
-                    @Override
-                    public void onChanged(List<UltraSrtFcstItem> ultraSrtFcstItems)
-                    {
-
-                    }
-                });
-
-        //동네예보
-        viewModel.getVilageFcstLiveData().
-                observe(getViewLifecycleOwner(), new Observer<List<VilageFcstItem>>()
-
-                {
-                    @Override
-                    public void onChanged(List<VilageFcstItem> vilageFcstItems)
-                    {
-
-                    }
-                });
-
-        //중기육상예보
-        viewModel.getMidLandFcstLiveData().
-                observe(getViewLifecycleOwner(), new Observer<List<MidLandFcstItem>>()
-
-                {
-                    @Override
-                    public void onChanged(List<MidLandFcstItem> midLandFcstItems)
-                    {
-
-                    }
-                });
-
-        //중기기온
-        viewModel.getMidTaLiveData().
-                observe(getViewLifecycleOwner(), new Observer<List<MidTaItem>>()
-
-                {
-                    @Override
-                    public void onChanged(List<MidTaItem> midTaItems)
-                    {
-                    }
-                });
     }
 
-
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
+    {
+        super.onViewCreated(view, savedInstanceState);
+        viewPager = view.findViewById(R.id.location_items_pager);
+    }
 }
