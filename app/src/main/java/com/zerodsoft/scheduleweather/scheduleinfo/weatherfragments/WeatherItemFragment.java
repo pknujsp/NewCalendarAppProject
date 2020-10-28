@@ -1,6 +1,7 @@
 package com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments;
 
 import android.content.Context;
+import android.graphics.Canvas;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,29 +14,41 @@ import androidx.fragment.app.Fragment;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.resultdata.WeatherData;
+import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.views.MidFcstView;
+import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.views.UltraSrtNcstView;
+import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.views.VilageFcstView;
 
-public class WeatherItemFragment extends Fragment
+public class WeatherItemView extends ViewGroup
 {
     private WeatherData weatherData;
     private Context context;
 
-    public WeatherItemFragment(Context context, WeatherData weatherData)
+    private UltraSrtNcstView ultraSrtNcstView;
+    private VilageFcstView vilageFcstView;
+    private MidFcstView midFcstView;
+
+    public WeatherItemView(Context context, WeatherData weatherData)
     {
+        super(context);
         this.context = context;
         this.weatherData = weatherData;
+
+        ultraSrtNcstView = new UltraSrtNcstView(context, weatherData.getUltraSrtNcstData(), weatherData.getUltraShortFcstDataList().get(0));
+        addView(ultraSrtNcstView);
+
+        setWillNotDraw(false);
     }
 
-    @Nullable
+
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
+    protected void onLayout(boolean b, int i, int i1, int i2, int i3)
     {
-        return inflater.inflate(R.layout.weather_recycler_view_item, container, false);
+
     }
 
     @Override
-    public void onStart()
+    protected void onDraw(Canvas canvas)
     {
-        super.onStart();
-        Toast.makeText(getActivity(), weatherData.getUltraSrtNcstData().getTemperature(), Toast.LENGTH_SHORT).show();
+        super.onDraw(canvas);
     }
 }

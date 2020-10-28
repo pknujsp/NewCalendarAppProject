@@ -54,83 +54,47 @@ public class WeatherRepository
 
     private List<WeatherData> weatherDataList = new ArrayList<>();
 
-    private int currentDownloadCount = 0;
-    private final int DOWNLOADED_TOTAL_COUNT = 5;
-
     @SuppressLint("HandlerLeak")
     private final Handler handler = new Handler()
     {
-
+        private int currentDownloadCount = 0;
 
         @Override
         public void handleMessage(Message msg)
         {
             super.handleMessage(msg);
             Bundle bundle = msg.getData();
+            int index = bundle.getInt("INDEX");
 
             switch (bundle.getString("TYPE"))
             {
                 case ULTRA_SRT_NCST: // nx,ny가 일치하는 인덱스에 데이터 삽입
                     List<UltraSrtNcstItem> ultraSrtNcstItems = bundle.getParcelableArrayList(ULTRA_SRT_NCST);
-                    for (WeatherData weatherData : weatherDataList)
-                    {
-                        if (weatherData.getNx().equals(ultraSrtNcstItems.get(0).getNx()) && weatherData.getNy().equals(ultraSrtNcstItems.get(0).getNy()))
-                        {
-                            weatherData.setUltraSrtNcstData(ultraSrtNcstItems);
-                            break;
-                        }
-                    }
+                    weatherDataList.get(index).setUltraSrtNcstData(ultraSrtNcstItems);
                     break;
 
                 case ULTRA_SRT_FCST:
                     List<UltraSrtFcstItem> ultraSrtFcstItems = bundle.getParcelableArrayList(ULTRA_SRT_FCST);
-                    for (WeatherData weatherData : weatherDataList)
-                    {
-                        if (weatherData.getNx().equals(ultraSrtFcstItems.get(0).getNx()) && weatherData.getNy().equals(ultraSrtFcstItems.get(0).getNy()))
-                        {
-                            weatherData.setUltraShortFcstDataList(ultraSrtFcstItems);
-                            break;
-                        }
-                    }
+                    weatherDataList.get(index).setUltraShortFcstDataList(ultraSrtFcstItems);
                     break;
+
                 case VILAGE_FCST:
                     List<VilageFcstItem> vilageFcstItems = bundle.getParcelableArrayList(VILAGE_FCST);
-                    for (WeatherData weatherData : weatherDataList)
-                    {
-                        if (weatherData.getNx().equals(vilageFcstItems.get(0).getNx()) && weatherData.getNy().equals(vilageFcstItems.get(0).getNy()))
-                        {
-                            weatherData.setVilageFcstDataList(vilageFcstItems);
-                            break;
-                        }
-                    }
+                    weatherDataList.get(index).setVilageFcstDataList(vilageFcstItems);
                     break;
+
                 case MID_LAND_FCST:
                     List<MidLandFcstItem> midLandFcstItems = bundle.getParcelableArrayList(MID_LAND_FCST);
-                    for (WeatherData weatherData : weatherDataList)
-                    {
-                        if (weatherData.getMidLandFcstRegId().equals(midLandFcstItems.get(0).getRegId()))
-                        {
-                            weatherData.setMidLandFcstData(midLandFcstItems.get(0));
-                        }
-                    }
-
+                    weatherDataList.get(index).setMidLandFcstData(midLandFcstItems.get(0));
                     break;
 
                 case MID_TA_FCST:
                     List<MidTaItem> midTaItems = bundle.getParcelableArrayList(MID_TA_FCST);
-                    for (WeatherData weatherData : weatherDataList)
-                    {
-                        if (weatherData.getMidTaFcstRegId().equals(midTaItems.get(0).getRegId()))
-                        {
-                            weatherData.setMidTaFcstData(midTaItems.get(0));
-                        }
-                    }
+                    weatherDataList.get(index).setMidTaFcstData(midTaItems.get(0));
                     break;
             }
 
-            ++currentDownloadCount;
-
-            if (currentDownloadCount == DOWNLOADED_TOTAL_COUNT)
+            if (++currentDownloadCount == (index + 1) * 5)
             {
                 for (WeatherData weatherData : weatherDataList)
                 {
@@ -156,14 +120,16 @@ public class WeatherRepository
 
     public void getAllWeathersData(VilageFcstParameter vilageFcstParameter, MidFcstParameter midLandFcstParameter, MidFcstParameter midTaFcstParameter, WeatherAreaCodeDTO weatherAreaCode)
     {
-        weatherDataList.add(new WeatherData(weatherAreaCode.getPhase1() + " " + weatherAreaCode.getPhase2() + " " + weatherAreaCode.getPhase3(),
+        weatherDataList.add(new WeatherData(weatherDataList.size(), weatherAreaCode.getPhase1() + " " + weatherAreaCode.getPhase2() + " " + weatherAreaCode.getPhase3(),
                 weatherAreaCode.getX(), weatherAreaCode.getY(), weatherAreaCode.getMidLandFcstCode(), weatherAreaCode.getMidTaCode(), (Calendar) downloadedCalendar.clone()));
 
-        getUltraSrtNcstData(vilageFcstParameter.deepCopy());
-        getUltraSrtFcstData(vilageFcstParameter.deepCopy());
-        getVilageFcstData(vilageFcstParameter.deepCopy());
-        getMidLandFcstData(midLandFcstParameter.deepCopy());
-        getMidTaData(midTaFcstParameter.deepCopy());
+        int index = weatherDataList.get(weatherDataList.size() - 1).getIndex();
+
+        getUltraSrtNcstData(vilageFcstParameter.deepCopy(), index);
+        getUltraSrtFcstData(vilageFcstParameter.deepCopy(), index);
+        getVilageFcstData(vilageFcstParameter.deepCopy(), index);
+        getMidLandFcstData(midLandFcstParameter.deepCopy(), index);
+        getMidTaData(midTaFcstParameter.deepCopy(), index);
     }
 
     public LiveData<List<WeatherAreaCodeDTO>> getAreaCodeLiveData()
@@ -171,7 +137,7 @@ public class WeatherRepository
         return areaCodeLiveData;
     }
 
-    public void getUltraSrtNcstData(VilageFcstParameter parameter)
+    public void getUltraSrtNcstData(VilageFcstParameter parameter, int index)
     {
         Querys querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.VILAGE_FCST);
         //basetime설정
@@ -196,6 +162,7 @@ public class WeatherRepository
                 Bundle bundle = new Bundle();
                 bundle.putParcelableArrayList(ULTRA_SRT_NCST, (ArrayList<? extends Parcelable>) items);
                 bundle.putString("TYPE", ULTRA_SRT_NCST);
+                bundle.putInt("INDEX", index);
                 message.setData(bundle);
                 handler.sendMessage(message);
             }
@@ -208,7 +175,7 @@ public class WeatherRepository
         });
     }
 
-    public void getUltraSrtFcstData(VilageFcstParameter parameter)
+    public void getUltraSrtFcstData(VilageFcstParameter parameter, int index)
     {
         Querys querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.VILAGE_FCST);
         //basetime설정
@@ -233,6 +200,7 @@ public class WeatherRepository
                 Bundle bundle = new Bundle();
                 bundle.putParcelableArrayList(ULTRA_SRT_FCST, (ArrayList<? extends Parcelable>) items);
                 bundle.putString("TYPE", ULTRA_SRT_FCST);
+                bundle.putInt("INDEX", index);
                 message.setData(bundle);
                 handler.sendMessage(message);
             }
@@ -245,7 +213,7 @@ public class WeatherRepository
         });
     }
 
-    public void getVilageFcstData(VilageFcstParameter parameter)
+    public void getVilageFcstData(VilageFcstParameter parameter, int index)
     {
         Querys querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.VILAGE_FCST);
         //basetime설정
@@ -289,6 +257,7 @@ public class WeatherRepository
                 Bundle bundle = new Bundle();
                 bundle.putParcelableArrayList(VILAGE_FCST, (ArrayList<? extends Parcelable>) items);
                 bundle.putString("TYPE", VILAGE_FCST);
+                bundle.putInt("INDEX", index);
                 message.setData(bundle);
                 handler.sendMessage(message);
             }
@@ -301,7 +270,7 @@ public class WeatherRepository
         });
     }
 
-    public void getMidLandFcstData(MidFcstParameter parameter)
+    public void getMidLandFcstData(MidFcstParameter parameter, int index)
     {
         Querys querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.MID_FCST);
 
@@ -333,6 +302,7 @@ public class WeatherRepository
                 Bundle bundle = new Bundle();
                 bundle.putParcelableArrayList(MID_LAND_FCST, (ArrayList<? extends Parcelable>) items);
                 bundle.putString("TYPE", MID_LAND_FCST);
+                bundle.putInt("INDEX", index);
                 message.setData(bundle);
                 handler.sendMessage(message);
             }
@@ -345,7 +315,7 @@ public class WeatherRepository
         });
     }
 
-    public void getMidTaData(MidFcstParameter parameter)
+    public void getMidTaData(MidFcstParameter parameter, int index)
     {
         Querys querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.MID_FCST);
 
@@ -377,6 +347,7 @@ public class WeatherRepository
                 Bundle bundle = new Bundle();
                 bundle.putParcelableArrayList(MID_TA_FCST, (ArrayList<? extends Parcelable>) items);
                 bundle.putString("TYPE", MID_TA_FCST);
+                bundle.putInt("INDEX", index);
                 message.setData(bundle);
                 handler.sendMessage(message);
             }

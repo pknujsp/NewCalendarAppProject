@@ -8,7 +8,7 @@ import java.util.Map;
 public class MidFcstParameter implements Cloneable
 {
     private String serviceKey = HttpCommunicationClient.MID_FCST_INFO_SERVICE_SERVICE_KEY;
-    private String numOfRows;
+    private String numOfRows = "300";
     private String pageNo;
     private String dataType = HttpCommunicationClient.DATATYPE;
     private String regId;
@@ -20,9 +20,8 @@ public class MidFcstParameter implements Cloneable
     {
     }
 
-    public MidFcstParameter(String numOfRows, String pageNo, String regId, String tmFc)
+    public MidFcstParameter(String pageNo, String regId, String tmFc)
     {
-        this.numOfRows = numOfRows;
         this.pageNo = pageNo;
         this.regId = regId;
         this.tmFc = tmFc;
@@ -90,6 +89,6 @@ public class MidFcstParameter implements Cloneable
 
     public MidFcstParameter deepCopy()
     {
-        return new MidFcstParameter(numOfRows, pageNo, regId, tmFc);
+        return new MidFcstParameter(pageNo, regId, tmFc);
     }
 }

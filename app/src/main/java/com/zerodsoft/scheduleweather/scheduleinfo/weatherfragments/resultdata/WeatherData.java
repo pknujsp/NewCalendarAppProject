@@ -14,7 +14,12 @@ import com.zerodsoft.scheduleweather.utility.Clock;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class WeatherData
 {
@@ -45,8 +50,11 @@ public class WeatherData
     //중기기온예보 데이터
     private MidTaItem midTaFcstData;
 
-    public WeatherData(String areaName, String nx, String ny, String midLandFcstRegId, String midTaFcstRegId, Calendar downloadedDate)
+    private final int index;
+
+    public WeatherData(int index, String areaName, String nx, String ny, String midLandFcstRegId, String midTaFcstRegId, Calendar downloadedDate)
     {
+        this.index = index;
         this.areaName = areaName;
         this.nx = nx;
         this.ny = ny;
@@ -55,6 +63,10 @@ public class WeatherData
         this.downloadedDate = (Calendar) downloadedDate.clone();
     }
 
+    public int getIndex()
+    {
+        return index;
+    }
 
     public WeatherData setUltraSrtNcstData(List<UltraSrtNcstItem> ultraSrtNcstItems)
     {
@@ -169,85 +181,87 @@ public class WeatherData
 
     public WeatherData setUltraShortFcstDataList(List<UltraSrtFcstItem> items)
     {
-        String lastDate = null;
-        String lastTime = null;
-        List<UltraSrtFcstItem> sameDateTimeItems = new ArrayList<>();
+        String dateTime = null;
+        Map<String, List<UltraSrtFcstItem>> map = new HashMap<>();
 
-        for (int i = 0; i < items.size(); )
+        //데이터를 날짜별로 분류해서 map에 저장
+        for (UltraSrtFcstItem item : items)
         {
-            lastDate = items.get(i).getFcstDate();
-            lastTime = items.get(i).getFcstTime();
-
-            sameDateTimeItems.add(items.get(i));
-
-            for (int j = i; j < items.size(); j++)
+            dateTime = item.getFcstDate() + item.getFcstTime();
+            if (map.get(dateTime) == null)
             {
-                if (lastDate.equals(items.get(j).getFcstDate()) && lastTime.equals(items.get(j).getFcstTime()))
+                map.put(dateTime, new ArrayList<>());
+            }
+            map.get(dateTime).add(item);
+        }
+
+        //카테고리와 값으로 되어있는 데이터를 날짜별로 조합하여 초단기예보 객체를 생성
+        Set set = map.keySet();
+        Iterator iterator = set.iterator();
+
+        while (iterator.hasNext())
+        {
+            ultraShortFcstDataList.add(new UltraSrtFcstData(map.get(iterator.next())));
+        }
+
+        //초단기예보 데이터 리스트를 날짜 오름차순으로 정렬
+        Collections.sort(ultraShortFcstDataList, new Comparator<UltraSrtFcstData>()
+        {
+            @Override
+            public int compare(UltraSrtFcstData t1, UltraSrtFcstData t2)
+            {
+                if ((t1.getDate() + t1.getTime()).compareTo(t2.getDate() + t2.getTime()) > 0)
                 {
-                    sameDateTimeItems.add(items.get(j));
-
-                    if (j == items.size())
-                    {
-                        List<UltraSrtFcstItem> list = new ArrayList<>(sameDateTimeItems.size());
-                        Collections.copy(list, sameDateTimeItems);
-                        ultraShortFcstDataList.add(new UltraSrtFcstData(list));
-                        sameDateTimeItems.clear();
-
-                        i = j;
-                    }
+                    return 1;
                 } else
                 {
-                    List<UltraSrtFcstItem> list = new ArrayList<>(sameDateTimeItems.size());
-                    Collections.copy(list, sameDateTimeItems);
-                    ultraShortFcstDataList.add(new UltraSrtFcstData(list));
-                    sameDateTimeItems.clear();
-
-                    i = j;
+                    return 0;
                 }
             }
-        }
+        });
         return this;
     }
 
     public WeatherData setVilageFcstDataList(List<VilageFcstItem> items)
     {
-        String lastDate = null;
-        String lastTime = null;
-        List<VilageFcstItem> sameDateTimeItems = new ArrayList<>();
+        String dateTime = null;
+        Map<String, List<VilageFcstItem>> map = new HashMap<>();
 
-        for (int i = 0; i < items.size(); )
+        //데이터를 날짜별로 분류해서 map에 저장
+        for (VilageFcstItem item : items)
         {
-            lastDate = items.get(i).getFcstDate();
-            lastTime = items.get(i).getFcstTime();
-
-            sameDateTimeItems.add(items.get(i));
-
-            for (int j = i; j < items.size(); j++)
+            dateTime = item.getFcstDate() + item.getFcstTime();
+            if (map.get(dateTime) == null)
             {
-                if (lastDate.equals(items.get(j).getFcstDate()) && lastTime.equals(items.get(j).getFcstTime()))
+                map.put(dateTime, new ArrayList<>());
+            }
+            map.get(dateTime).add(item);
+        }
+
+        //카테고리와 값으로 되어있는 데이터를 날짜별로 조합하여 초단기예보 객체를 생성
+        Set set = map.keySet();
+        Iterator iterator = set.iterator();
+
+        while (iterator.hasNext())
+        {
+            vilageFcstDataList.add(new VilageFcstData(map.get(iterator.next())));
+        }
+
+        //초단기예보 데이터 리스트를 날짜 오름차순으로 정렬
+        Collections.sort(vilageFcstDataList, new Comparator<VilageFcstData>()
+        {
+            @Override
+            public int compare(VilageFcstData t1, VilageFcstData t2)
+            {
+                if ((t1.getDate() + t1.getTime()).compareTo(t2.getDate() + t2.getTime()) > 0)
                 {
-                    sameDateTimeItems.add(items.get(j));
-
-                    if (j == items.size())
-                    {
-                        List<VilageFcstItem> list = new ArrayList<>(sameDateTimeItems.size());
-                        Collections.copy(list, sameDateTimeItems);
-                        vilageFcstDataList.add(new VilageFcstData(list));
-                        sameDateTimeItems.clear();
-
-                        i = j;
-                    }
+                    return 1;
                 } else
                 {
-                    List<VilageFcstItem> list = new ArrayList<>(sameDateTimeItems.size());
-                    Collections.copy(list, sameDateTimeItems);
-                    vilageFcstDataList.add(new VilageFcstData(list));
-                    sameDateTimeItems.clear();
-
-                    i = j;
+                    return 0;
                 }
             }
-        }
+        });
         return this;
     }
 }

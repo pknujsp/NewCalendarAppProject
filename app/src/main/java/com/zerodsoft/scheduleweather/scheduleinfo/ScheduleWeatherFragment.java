@@ -100,19 +100,17 @@ public class ScheduleWeatherFragment extends Fragment
                 if (weatherAreaCodes != null)
                 {
                     // regId설정하는 코드 작성
-                    for (WeatherAreaCodeDTO weatherAreaCode : weatherAreaCodes)
-                    {
-                        String midLandFcstRegId = weatherAreaCode.getMidLandFcstCode();
-                        String midTaRegId = weatherAreaCode.getMidTaCode();
+                    WeatherAreaCodeDTO weatherAreaCode = weatherAreaCodes.get(0);
 
-                        Calendar calendar = null;
+                    String midLandFcstRegId = weatherAreaCode.getMidLandFcstCode();
+                    String midTaRegId = weatherAreaCode.getMidTaCode();
 
-                        vilageFcstParameter.setNx(weatherAreaCode.getX()).setNy(weatherAreaCode.getY()).setNumOfRows("10").setPageNo("1");
-                        midLandFcstParameter.setNumOfRows("10").setPageNo("1").setRegId(midLandFcstRegId);
-                        midTaParameter.setNumOfRows("10").setPageNo("1").setRegId(midTaRegId);
+                    vilageFcstParameter.setNx(weatherAreaCode.getX()).setNy(weatherAreaCode.getY()).setNumOfRows("10").setPageNo("1");
+                    midLandFcstParameter.setNumOfRows("10").setPageNo("1").setRegId(midLandFcstRegId);
+                    midTaParameter.setNumOfRows("10").setPageNo("1").setRegId(midTaRegId);
 
-                        viewModel.getAllWeathersData(vilageFcstParameter, midLandFcstParameter, midTaParameter, weatherAreaCode);
-                    }
+                    viewModel.getAllWeathersData(vilageFcstParameter, midLandFcstParameter, midTaParameter, weatherAreaCode);
+
                 }
             }
         });

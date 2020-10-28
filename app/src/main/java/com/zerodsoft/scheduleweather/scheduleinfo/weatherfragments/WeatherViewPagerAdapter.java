@@ -11,15 +11,15 @@ import java.util.List;
 
 public class WeatherViewPagerAdapter extends FragmentStateAdapter
 {
-    private List<WeatherItemFragment> fragmentList;
+    private List<WeatherItemView> viewList;
 
     public WeatherViewPagerAdapter(@NonNull Fragment fragment, List<WeatherData> weatherDataList)
     {
         super(fragment);
-        fragmentList = new ArrayList<>(weatherDataList.size());
+        viewList = new ArrayList<>(weatherDataList.size());
         for (WeatherData weatherData : weatherDataList)
         {
-            fragmentList.add(new WeatherItemFragment(fragment.getContext(), weatherData));
+            viewList.add(new WeatherItemView(fragment.getContext(), weatherData));
         }
     }
 
@@ -27,12 +27,12 @@ public class WeatherViewPagerAdapter extends FragmentStateAdapter
     @Override
     public Fragment createFragment(int position)
     {
-        return fragmentList.get(position);
+        return viewList.get(position);
     }
 
     @Override
     public int getItemCount()
     {
-        return fragmentList.size();
+        return viewList.size();
     }
 }

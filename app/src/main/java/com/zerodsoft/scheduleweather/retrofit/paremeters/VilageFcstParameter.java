@@ -8,7 +8,7 @@ import java.util.Map;
 public class VilageFcstParameter implements Cloneable
 {
     private String serviceKey = HttpCommunicationClient.VILAGE_FCST_INFO_SERVICE_SERVICE_KEY;
-    private String numOfRows;
+    private String numOfRows = "300";
     private String pageNo;
     private String dataType = HttpCommunicationClient.DATATYPE;
     private String baseDate;
@@ -22,9 +22,8 @@ public class VilageFcstParameter implements Cloneable
 
     }
 
-    public VilageFcstParameter(String numOfRows, String pageNo, String baseDate, String baseTime, String nx, String ny)
+    public VilageFcstParameter(String pageNo, String baseDate, String baseTime, String nx, String ny)
     {
-        this.numOfRows = numOfRows;
         this.pageNo = pageNo;
         this.baseDate = baseDate;
         this.baseTime = baseTime;
@@ -117,6 +116,6 @@ public class VilageFcstParameter implements Cloneable
 
     public VilageFcstParameter deepCopy()
     {
-        return new VilageFcstParameter(numOfRows, pageNo, baseDate, baseTime, nx, ny);
+        return new VilageFcstParameter(pageNo, baseDate, baseTime, nx, ny);
     }
 }

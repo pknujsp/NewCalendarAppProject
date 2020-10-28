@@ -7,9 +7,35 @@ import com.zerodsoft.scheduleweather.R;
 public class WeatherDataConverter
 {
     public static Context context;
+    /*
+- 하늘상태(SKY) 코드 : 맑음(1), 구름많음(3), 흐림(4)
+- 강수형태(PTY) 코드 : 없음(0), 비(1), 비/눈,진눈개비비2), 눈(3), 소나기(4), 빗방울(5), 빗방울/눈날림(6), 눈날림(7)
+
+SKY와 PTY는 별개의 데이터
+     */
 
     private WeatherDataConverter()
     {
+    }
+
+    public static int getSkyDrawableId(String sky, String precipitaionForm)
+    {
+        int id = 0;
+
+        switch (sky)
+        {
+            case "1":
+                id = R.drawable.fine_icon;
+                break;
+            case "3":
+                id = R.drawable.partly_cloudy_icon;
+                break;
+            case "4":
+                id = R.drawable.cloudy_icon;
+                break;
+        }
+
+        return id;
     }
 
     public static String convertPrecipitationForm(String value)
