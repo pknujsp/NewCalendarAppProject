@@ -1,8 +1,13 @@
 package com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.resultdata.responseresult;
 
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.vilagefcstresponse.VilageFcstItem;
-import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.WeatherDataConverter;
+import android.provider.ContactsContract;
 
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.vilagefcstresponse.VilageFcstItem;
+import com.zerodsoft.scheduleweather.utility.Clock;
+import com.zerodsoft.scheduleweather.utility.WeatherDataConverter;
+
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 public class VilageFcstData
@@ -12,10 +17,7 @@ public class VilageFcstData
     //ny
     private String ny;
 
-    //일자
-    private String date;
-    //시각
-    private String time;
+    private Date dateTime;
 
     //강수확률 POP
     private String chanceOfShower;
@@ -44,8 +46,18 @@ public class VilageFcstData
     {
         nx = items.get(0).getNx();
         ny = items.get(0).getNy();
-        date = items.get(0).getFcstDate();
-        time = items.get(0).getFcstTime().substring(0, 2);
+        String date = items.get(0).getFcstDate();
+        String time = items.get(0).getFcstTime().substring(0, 2);
+
+        int year = Integer.parseInt(date.substring(0, 4));
+        int month = Integer.parseInt(date.substring(4, 6));
+        int day = Integer.parseInt(date.substring(6, 8));
+        int hour = Integer.parseInt(time.substring(0, 2));
+
+        Calendar calendar = Calendar.getInstance(Clock.TIME_ZONE);
+        calendar.set(year, month - 1, day, hour, 0, 0);
+
+        dateTime = calendar.getTime();
 
         for (VilageFcstItem item : items)
         {
@@ -96,14 +108,9 @@ public class VilageFcstData
         return ny;
     }
 
-    public String getDate()
+    public Date getDateTime()
     {
-        return date;
-    }
-
-    public String getTime()
-    {
-        return time;
+        return dateTime;
     }
 
     public String getChanceOfShower()

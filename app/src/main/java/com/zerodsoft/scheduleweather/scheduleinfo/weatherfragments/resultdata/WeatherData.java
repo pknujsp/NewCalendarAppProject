@@ -63,6 +63,11 @@ public class WeatherData
         this.downloadedDate = (Calendar) downloadedDate.clone();
     }
 
+    public Calendar getDownloadedDate()
+    {
+        return (Calendar) downloadedDate.clone();
+    }
+
     public int getIndex()
     {
         return index;
@@ -210,7 +215,7 @@ public class WeatherData
             @Override
             public int compare(UltraSrtFcstData t1, UltraSrtFcstData t2)
             {
-                if ((t1.getDate() + t1.getTime()).compareTo(t2.getDate() + t2.getTime()) > 0)
+                if ((t1.getDateTime()).compareTo(t2.getDateTime()) > 0)
                 {
                     return 1;
                 } else
@@ -253,7 +258,7 @@ public class WeatherData
             @Override
             public int compare(VilageFcstData t1, VilageFcstData t2)
             {
-                if ((t1.getDate() + t1.getTime()).compareTo(t2.getDate() + t2.getTime()) > 0)
+                if ((t1.getDateTime()).compareTo(t2.getDateTime()) > 0)
                 {
                     return 1;
                 } else

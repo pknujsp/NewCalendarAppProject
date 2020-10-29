@@ -7,13 +7,19 @@ import android.graphics.Paint;
 import android.graphics.PointF;
 import android.graphics.drawable.Drawable;
 import android.text.TextPaint;
-import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.View;
 
-import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.WeatherDataConverter;
+import com.luckycatlabs.sunrisesunset.SunriseSunsetCalculator;
+import com.luckycatlabs.sunrisesunset.dto.Location;
+import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
+import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.SunSetRiseData;
 import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.resultdata.responseresult.UltraSrtFcstData;
 import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.resultdata.responseresult.UltraSrtNcstData;
+import com.zerodsoft.scheduleweather.utility.Clock;
+import com.zerodsoft.scheduleweather.utility.WeatherDataConverter;
+
+import java.util.Calendar;
 
 
 public class UltraSrtNcstView extends View
@@ -39,8 +45,10 @@ public class UltraSrtNcstView extends View
     private PointF humidityPoint;
     private PointF windPoint;
 
+    private SunSetRiseData sunSetRiseData;
+
     public UltraSrtNcstView(Context context, UltraSrtNcstData ncstData,
-                            UltraSrtFcstData fcstData)
+                            UltraSrtFcstData fcstData, SunSetRiseData sunSetRiseData)
     {
         super(context);
 
@@ -69,17 +77,24 @@ public class UltraSrtNcstView extends View
         HUMIDITY_WIND_PAINT.setTextAlign(Paint.Align.CENTER);
         HUMIDITY_WIND_PAINT.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 16f, context.getResources().getDisplayMetrics()));
 
-        MARGIN = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, context.getResources().getDisplayMetrics());
+        MARGIN = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32f, context.getResources().getDisplayMetrics());
+
+        setBackgroundColor(Color.WHITE);
 
         this.ncstData = ncstData;
         this.fcstData = fcstData;
-        setBackgroundColor(Color.WHITE);
+        this.sunSetRiseData = sunSetRiseData;
+
+        init();
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
     {
-        int height = 500;
+        int height = (int) (MARGIN + AREA_NAME_PAINT.ascent() - AREA_NAME_PAINT.descent() + MARGIN + TEMP_PAINT.ascent()
+                - TEMP_PAINT.descent() + MARGIN + SKY_PAINT.ascent()
+                - SKY_PAINT.descent() + MARGIN + LABEL_PAINT.ascent() - LABEL_PAINT.descent()
+                + MARGIN + HUMIDITY_WIND_PAINT.ascent() - HUMIDITY_WIND_PAINT.descent() + MARGIN);
         setMeasuredDimension(widthMeasureSpec, height);
     }
 
@@ -108,5 +123,12 @@ public class UltraSrtNcstView extends View
 
         //기온
         canvas.drawText(ncstData.getTemperature() + "ºC", tempPoint.x, tempPoint.y, TEMP_PAINT);
+    }
+
+    private void init()
+    {
+        //SKY IMG설정
+        boolean day = sunSetRiseData.getDate().after(sunSetRiseData.getSunset()) ? false : sunSetRiseData.getDate().before(sunSetRiseData.getSunrise()) ? false : true;
+        skyDrawable = getContext().getDrawable(WeatherDataConverter.getSkyDrawableId(fcstData.getSky(), ncstData.getPrecipitationForm(), day));
     }
 }

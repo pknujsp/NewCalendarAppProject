@@ -2,38 +2,39 @@
     <string name="app_name">Test Calendar</string>
     <string name="area_name">지역명</string>
     <string name="rainfall">강수량(mm)</string>
-    <string name="east_west_wind">동서바람성분(m/s)</string>
-    <string name="north_south_wind">남북바람성분(m/s)</string>
     <string name="humidity">습도(%)</string>
     <string name="precipitation_form">강수형태</string>
     <string name="wind_direction">풍향</string>
     <string name="wind_speed">풍속(m/s)</string>
     <string name="temperature">기온(℃)</string>
-    <string name="download_current_weather">현재 날씨 다운로드</string>
-    <string name="precipitation_form_code_0">없음</string>
-    <string name="precipitation_form_code_1">비</string>
-    <string name="precipitation_form_code_2">진눈개비</string>
-    <string name="precipitation_form_code_3">눈</string>
-    <string name="precipitation_form_code_4">소나기</string>
-    <string name="wind_direction_value_0">북</string>
-    <string name="wind_direction_value_1">북북동</string>
-    <string name="wind_direction_value_2">북동</string>
-    <string name="wind_direction_value_3">동북동</string>
-    <string name="wind_direction_value_4">동</string>
-    <string name="wind_direction_value_5">동남동</string>
-    <string name="wind_direction_value_6">남동</string>
-    <string name="wind_direction_value_7">남남동</string>
-    <string name="wind_direction_value_8">남</string>
-    <string name="wind_direction_value_9">남남서</string>
-    <string name="wind_direction_value_10">남서</string>
-    <string name="wind_direction_value_11">서남서</string>
-    <string name="wind_direction_value_12">서</string>
-    <string name="wind_direction_value_13">서북서</string>
-    <string name="wind_direction_value_14">북서</string>
-    <string name="wind_direction_value_15">북북서</string>
-    <string name="wind_direction_value_16">북</string>
-    <string name="sky_clear">맑음</string>
-    <string name="sky_partly_cloudy">구름 많음</string>
+
+    <!-- 날씨상태  -->
+    <string name="rain">비</string>
+    <string name="sleet">진눈깨비</string>
+    <string name="snow">눈</string>
+    <string name="shower">소나기</string>
+
+    <!-- 16방위표 -->
+    <string name="nne">북북동</string>
+    <string name="ne">북동</string>
+    <string name="ene">동북동</string>
+    <string name="e">동</string>
+    <string name="ese">동남동</string>
+    <string name="se">남동</string>
+    <string name="sse">남남동</string>
+    <string name="s">남</string>
+    <string name="ssw">남남서</string>
+    <string name="sw">남서</string>
+    <string name="wsw">서남서</string>
+    <string name="w">서</string>
+    <string name="wnw">서북서</string>
+    <string name="nw">북서</string>
+    <string name="nnw">북북서</string>
+    <string name="n">북</string>
+
+    <!-- 하늘상태 sky -->
+    <string name="sky_sunny">맑음</string>
+    <string name="sky_cloud">구름 많음</string>
     <string name="sky_cloudy">흐림</string>
 
     <!-- TODO: Remove or change this placeholder text -->

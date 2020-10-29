@@ -1,7 +1,7 @@
 package com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.resultdata.responseresult;
 
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.ultrasrtncstresponse.UltraSrtNcstItem;
-import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.WeatherDataConverter;
+import com.zerodsoft.scheduleweather.utility.WeatherDataConverter;
 
 import java.util.List;
 
@@ -23,6 +23,7 @@ public class UltraSrtNcstData
     private String windDirection;
     //풍속
     private String windSpeed;
+
 
     public UltraSrtNcstData(String nx, String ny, String temperature, String precipitation1Hour, String humidity, String precipitationForm, String windDirection, String windSpeed)
     {
@@ -64,6 +65,7 @@ public class UltraSrtNcstData
             }
         }
     }
+
 
     public String getTemperature()
     {

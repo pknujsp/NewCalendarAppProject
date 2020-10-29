@@ -100,6 +100,8 @@ dependencies {
 
     // Java language implementation
     implementation "androidx.fragment:fragment:${fragment_version}"
+
+    implementation 'com.luckycatlabs:SunriseSunsetCalculator:1.2'
 }
 android {
     packagingOptions {
