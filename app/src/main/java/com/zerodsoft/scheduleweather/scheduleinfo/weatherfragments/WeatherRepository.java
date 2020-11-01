@@ -6,23 +6,31 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Parcelable;
+import android.util.Log;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.retrofit.HttpCommunicationClient;
 import com.zerodsoft.scheduleweather.retrofit.Querys;
+import com.zerodsoft.scheduleweather.retrofit.RetrofitCallback;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.MidFcstParameter;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.VilageFcstParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.midlandfcstresponse.MidLandFcstItem;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.midlandfcstresponse.MidLandFcstItems;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.midlandfcstresponse.MidLandFcstRoot;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.midtaresponse.MidTaItem;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.midtaresponse.MidTaItems;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.midtaresponse.MidTaRoot;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.ultrasrtfcstresponse.UltraSrtFcstItem;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.ultrasrtfcstresponse.UltraSrtFcstItems;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.ultrasrtfcstresponse.UltraSrtFcstRoot;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.ultrasrtncstresponse.UltraSrtNcstItem;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.ultrasrtncstresponse.UltraSrtNcstItems;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.ultrasrtncstresponse.UltraSrtNcstRoot;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.vilagefcstresponse.VilageFcstItem;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.vilagefcstresponse.VilageFcstItems;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.vilagefcstresponse.VilageFcstRoot;
 import com.zerodsoft.scheduleweather.room.AppDb;
 import com.zerodsoft.scheduleweather.room.dao.WeatherAreaCodeDAO;
@@ -30,6 +38,7 @@ import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
 import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.resultdata.WeatherData;
 import com.zerodsoft.scheduleweather.utility.Clock;
 
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -40,6 +49,9 @@ import retrofit2.Response;
 
 public class WeatherRepository
 {
+    /*
+    서버로 부터 응답이 15초 이상 없는 경우 업데이트 취소 후 업데이트 실패 안내 메시지 표시
+     */
     private MutableLiveData<List<WeatherData>> weatherDataLiveData = new MutableLiveData<>();
     private LiveData<List<WeatherAreaCodeDTO>> areaCodeLiveData;
 
@@ -64,33 +76,29 @@ public class WeatherRepository
         {
             super.handleMessage(msg);
             Bundle bundle = msg.getData();
-            int index = bundle.getInt("INDEX");
 
-            switch (bundle.getString("TYPE"))
+            int index = bundle.getInt("INDEX");
+            String type = bundle.getString("TYPE");
+            switch (type)
             {
                 case ULTRA_SRT_NCST: // nx,ny가 일치하는 인덱스에 데이터 삽입
-                    List<UltraSrtNcstItem> ultraSrtNcstItems = bundle.getParcelableArrayList(ULTRA_SRT_NCST);
-                    weatherDataList.get(index).setUltraSrtNcstData(ultraSrtNcstItems);
+                    weatherDataList.get(index).setUltraSrtNcstItemsDataWrapper((DataWrapper<UltraSrtNcstItems>) msg.obj);
                     break;
 
                 case ULTRA_SRT_FCST:
-                    List<UltraSrtFcstItem> ultraSrtFcstItems = bundle.getParcelableArrayList(ULTRA_SRT_FCST);
-                    weatherDataList.get(index).setUltraShortFcstDataList(ultraSrtFcstItems);
+                    weatherDataList.get(index).setUltraSrtFcstItemsDataWrapper((DataWrapper<UltraSrtFcstItems>) msg.obj);
                     break;
 
                 case VILAGE_FCST:
-                    List<VilageFcstItem> vilageFcstItems = bundle.getParcelableArrayList(VILAGE_FCST);
-                    weatherDataList.get(index).setVilageFcstDataList(vilageFcstItems);
+                    weatherDataList.get(index).setVilageFcstItemsDataWrapper((DataWrapper<VilageFcstItems>) msg.obj);
                     break;
 
                 case MID_LAND_FCST:
-                    List<MidLandFcstItem> midLandFcstItems = bundle.getParcelableArrayList(MID_LAND_FCST);
-                    weatherDataList.get(index).setMidLandFcstData(midLandFcstItems.get(0));
+                    weatherDataList.get(index).setMidLandFcstItemsDataWrapper((DataWrapper<MidLandFcstItems>) msg.obj);
                     break;
 
                 case MID_TA_FCST:
-                    List<MidTaItem> midTaItems = bundle.getParcelableArrayList(MID_TA_FCST);
-                    weatherDataList.get(index).setMidTaFcstData(midTaItems.get(0));
+                    weatherDataList.get(index).setMidTaItemsDataWrapper((DataWrapper<MidTaItems>) msg.obj);
                     break;
             }
 
@@ -98,7 +106,7 @@ public class WeatherRepository
             {
                 for (WeatherData weatherData : weatherDataList)
                 {
-                    weatherData.setMidFcstDataList();
+                    weatherData.setFinalData();
                 }
                 weatherDataLiveData.setValue(weatherDataList);
                 currentDownloadCount = 0;
@@ -120,8 +128,9 @@ public class WeatherRepository
 
     public void getAllWeathersData(VilageFcstParameter vilageFcstParameter, MidFcstParameter midLandFcstParameter, MidFcstParameter midTaFcstParameter, WeatherAreaCodeDTO weatherAreaCode)
     {
-        weatherDataList.add(new WeatherData(weatherDataList.size(), weatherAreaCode.getPhase1() + " " + weatherAreaCode.getPhase2() + " " + weatherAreaCode.getPhase3(),
-                weatherAreaCode.getX(), weatherAreaCode.getY(), weatherAreaCode.getMidLandFcstCode(), weatherAreaCode.getMidTaCode(), (Calendar) downloadedCalendar.clone()));
+        //시간 업데이트
+        downloadedCalendar.setTimeInMillis(System.currentTimeMillis());
+        weatherDataList.add(new WeatherData(weatherDataList.size(), downloadedCalendar, weatherAreaCode));
 
         int index = weatherDataList.get(weatherDataList.size() - 1).getIndex();
 
@@ -152,25 +161,36 @@ public class WeatherRepository
 
         Call<UltraSrtNcstRoot> call = querys.getUltraSrtNcstData(parameter.getMap());
 
-        call.enqueue(new Callback<UltraSrtNcstRoot>()
+        call.enqueue(new RetrofitCallback<UltraSrtNcstRoot>()
         {
             @Override
-            public void onResponse(Call<UltraSrtNcstRoot> call, Response<UltraSrtNcstRoot> response)
+            protected void handleResponse(UltraSrtNcstRoot data)
             {
-                List<UltraSrtNcstItem> items = response.body().getResponse().getBody().getItems().getItem();
                 Message message = handler.obtainMessage();
                 Bundle bundle = new Bundle();
-                bundle.putParcelableArrayList(ULTRA_SRT_NCST, (ArrayList<? extends Parcelable>) items);
                 bundle.putString("TYPE", ULTRA_SRT_NCST);
                 bundle.putInt("INDEX", index);
                 message.setData(bundle);
+                message.obj = new DataWrapper<UltraSrtNcstItems>(data.getResponse().getBody().getItems());
                 handler.sendMessage(message);
             }
 
             @Override
-            public void onFailure(Call<UltraSrtNcstRoot> call, Throwable t)
+            protected void handleError(Response<UltraSrtNcstRoot> response)
             {
 
+            }
+
+            @Override
+            protected void handleFailure(Exception e)
+            {
+                Message message = handler.obtainMessage();
+                Bundle bundle = new Bundle();
+                bundle.putString("TYPE", ULTRA_SRT_NCST);
+                bundle.putInt("INDEX", index);
+                message.setData(bundle);
+                message.obj = new DataWrapper<UltraSrtNcstItems>(e);
+                handler.sendMessage(message);
             }
         });
     }
@@ -190,25 +210,36 @@ public class WeatherRepository
 
         Call<UltraSrtFcstRoot> call = querys.getUltraSrtFcstData(parameter.getMap());
 
-        call.enqueue(new Callback<UltraSrtFcstRoot>()
+        call.enqueue(new RetrofitCallback<UltraSrtFcstRoot>()
         {
             @Override
-            public void onResponse(Call<UltraSrtFcstRoot> call, Response<UltraSrtFcstRoot> response)
+            protected void handleResponse(UltraSrtFcstRoot data)
             {
-                List<UltraSrtFcstItem> items = response.body().getResponse().getBody().getItems().getItem();
                 Message message = handler.obtainMessage();
                 Bundle bundle = new Bundle();
-                bundle.putParcelableArrayList(ULTRA_SRT_FCST, (ArrayList<? extends Parcelable>) items);
                 bundle.putString("TYPE", ULTRA_SRT_FCST);
                 bundle.putInt("INDEX", index);
                 message.setData(bundle);
+                message.obj = new DataWrapper<UltraSrtFcstItems>(data.getResponse().getBody().getItems());
                 handler.sendMessage(message);
             }
 
             @Override
-            public void onFailure(Call<UltraSrtFcstRoot> call, Throwable t)
+            protected void handleError(Response<UltraSrtFcstRoot> response)
             {
 
+            }
+
+            @Override
+            protected void handleFailure(Exception e)
+            {
+                Message message = handler.obtainMessage();
+                Bundle bundle = new Bundle();
+                bundle.putString("TYPE", ULTRA_SRT_FCST);
+                bundle.putInt("INDEX", index);
+                message.setData(bundle);
+                message.obj = new DataWrapper<UltraSrtFcstItems>(e);
+                handler.sendMessage(message);
             }
         });
     }
@@ -247,25 +278,36 @@ public class WeatherRepository
 
         Call<VilageFcstRoot> call = querys.getVilageFcstData(parameter.getMap());
 
-        call.enqueue(new Callback<VilageFcstRoot>()
+        call.enqueue(new RetrofitCallback<VilageFcstRoot>()
         {
             @Override
-            public void onResponse(Call<VilageFcstRoot> call, Response<VilageFcstRoot> response)
+            protected void handleResponse(VilageFcstRoot data)
             {
-                List<VilageFcstItem> items = response.body().getResponse().getBody().getItems().getItem();
                 Message message = handler.obtainMessage();
                 Bundle bundle = new Bundle();
-                bundle.putParcelableArrayList(VILAGE_FCST, (ArrayList<? extends Parcelable>) items);
                 bundle.putString("TYPE", VILAGE_FCST);
                 bundle.putInt("INDEX", index);
                 message.setData(bundle);
+                message.obj = new DataWrapper<VilageFcstItems>(data.getResponse().getBody().getItems());
                 handler.sendMessage(message);
             }
 
             @Override
-            public void onFailure(Call<VilageFcstRoot> call, Throwable t)
+            protected void handleError(Response<VilageFcstRoot> response)
             {
 
+            }
+
+            @Override
+            protected void handleFailure(Exception e)
+            {
+                Message message = handler.obtainMessage();
+                Bundle bundle = new Bundle();
+                bundle.putString("TYPE", VILAGE_FCST);
+                bundle.putInt("INDEX", index);
+                message.setData(bundle);
+                message.obj = new DataWrapper<VilageFcstItems>(e);
+                handler.sendMessage(message);
             }
         });
     }
@@ -292,25 +334,36 @@ public class WeatherRepository
 
         Call<MidLandFcstRoot> call = querys.getMidLandFcstData(parameter.getMap());
 
-        call.enqueue(new Callback<MidLandFcstRoot>()
+        call.enqueue(new RetrofitCallback<MidLandFcstRoot>()
         {
             @Override
-            public void onResponse(Call<MidLandFcstRoot> call, Response<MidLandFcstRoot> response)
+            protected void handleResponse(MidLandFcstRoot data)
             {
-                List<MidLandFcstItem> items = response.body().getResponse().getBody().getItems().getItem();
                 Message message = handler.obtainMessage();
                 Bundle bundle = new Bundle();
-                bundle.putParcelableArrayList(MID_LAND_FCST, (ArrayList<? extends Parcelable>) items);
                 bundle.putString("TYPE", MID_LAND_FCST);
                 bundle.putInt("INDEX", index);
                 message.setData(bundle);
+                message.obj = new DataWrapper<MidLandFcstItems>(data.getResponse().getBody().getItems());
                 handler.sendMessage(message);
             }
 
             @Override
-            public void onFailure(Call<MidLandFcstRoot> call, Throwable t)
+            protected void handleError(Response<MidLandFcstRoot> response)
             {
 
+            }
+
+            @Override
+            protected void handleFailure(Exception e)
+            {
+                Message message = handler.obtainMessage();
+                Bundle bundle = new Bundle();
+                bundle.putString("TYPE", MID_LAND_FCST);
+                bundle.putInt("INDEX", index);
+                message.setData(bundle);
+                message.obj = new DataWrapper<MidLandFcstItems>(e);
+                handler.sendMessage(message);
             }
         });
     }
@@ -337,25 +390,36 @@ public class WeatherRepository
 
         Call<MidTaRoot> call = querys.getMidTaData(parameter.getMap());
 
-        call.enqueue(new Callback<MidTaRoot>()
+        call.enqueue(new RetrofitCallback<MidTaRoot>()
         {
             @Override
-            public void onResponse(Call<MidTaRoot> call, Response<MidTaRoot> response)
+            protected void handleResponse(MidTaRoot data)
             {
-                List<MidTaItem> items = response.body().getResponse().getBody().getItems().getItem();
                 Message message = handler.obtainMessage();
                 Bundle bundle = new Bundle();
-                bundle.putParcelableArrayList(MID_TA_FCST, (ArrayList<? extends Parcelable>) items);
                 bundle.putString("TYPE", MID_TA_FCST);
                 bundle.putInt("INDEX", index);
                 message.setData(bundle);
+                message.obj = new DataWrapper<MidTaItems>(data.getResponse().getBody().getItems());
                 handler.sendMessage(message);
             }
 
             @Override
-            public void onFailure(Call<MidTaRoot> call, Throwable t)
+            protected void handleError(Response<MidTaRoot> response)
             {
 
+            }
+
+            @Override
+            protected void handleFailure(Exception e)
+            {
+                Message message = handler.obtainMessage();
+                Bundle bundle = new Bundle();
+                bundle.putString("TYPE", MID_TA_FCST);
+                bundle.putInt("INDEX", index);
+                message.setData(bundle);
+                message.obj = new DataWrapper<MidTaItems>(e);
+                handler.sendMessage(message);
             }
         });
     }

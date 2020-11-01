@@ -38,18 +38,17 @@ public class WeatherItemView extends ViewGroup
     private MidFcstView midFcstView;
     private WeatherAreaCodeDTO weatherAreaCode;
 
-    private List<SunSetRiseData> sunSetRiseList;
+    private List<SunSetRiseData> sunSetRiseList = new ArrayList<>();
 
-    public WeatherItemView(Context context, WeatherData weatherData, WeatherAreaCodeDTO weatherAreaCode)
+    public WeatherItemView(Context context, WeatherData weatherData)
     {
         super(context);
         this.context = context;
         this.weatherData = weatherData;
-        this.weatherAreaCode = weatherAreaCode;
 
         init();
 
-        ultraSrtNcstView = new UltraSrtNcstView(context, weatherData.getUltraSrtNcstData(), weatherData.getUltraShortFcstDataList().get(0), sunSetRiseList.get(0));
+        ultraSrtNcstView = new UltraSrtNcstView(context, weatherData, sunSetRiseList.get(0));
         addView(ultraSrtNcstView);
 
         setWillNotDraw(false);
@@ -63,6 +62,12 @@ public class WeatherItemView extends ViewGroup
     }
 
     @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
+    {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+    }
+
+    @Override
     protected void onDraw(Canvas canvas)
     {
         super.onDraw(canvas);
@@ -70,20 +75,20 @@ public class WeatherItemView extends ViewGroup
 
     private void init()
     {
-        sunSetRiseList = new ArrayList<>();
-
         //동네예보 마지막 날 까지의 일몰/일출 시간 데이터를 구성
+        sunSetRiseList.clear();
+
         List<Calendar> dates = new ArrayList<>();
 
         Date firstDate = weatherData.getDownloadedDate().getTime();
-        Calendar endDate = Calendar.getInstance(Clock.TIME_ZONE);
-        endDate.setTime(weatherData.getVilageFcstDataList().get(weatherData.getVilageFcstDataList().size() - 1).getDateTime());
+        Calendar endDate = (Calendar) weatherData.getDownloadedDate().clone();
+        endDate.add(2, Calendar.DAY_OF_YEAR);
 
-        Calendar calendar = Calendar.getInstance(Clock.TIME_ZONE);
-        calendar.setTime(firstDate);
+        Calendar calendar = (Calendar) weatherData.getDownloadedDate().clone();
 
         int i = 0;
         boolean finished = false;
+
         while (!finished)
         {
             if (calendar.get(Calendar.YEAR) == endDate.get(Calendar.YEAR) && calendar.get(Calendar.DAY_OF_YEAR) == endDate.get(Calendar.DAY_OF_YEAR))

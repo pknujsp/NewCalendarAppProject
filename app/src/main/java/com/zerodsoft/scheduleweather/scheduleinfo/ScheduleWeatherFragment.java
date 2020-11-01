@@ -95,15 +95,11 @@ public class ScheduleWeatherFragment extends Fragment
                     // regId설정하는 코드 작성
                     WeatherAreaCodeDTO weatherAreaCode = weatherAreaCodes.get(0);
 
-                    String midLandFcstRegId = weatherAreaCode.getMidLandFcstCode();
-                    String midTaRegId = weatherAreaCode.getMidTaCode();
-
                     vilageFcstParameter.setNx(weatherAreaCode.getX()).setNy(weatherAreaCode.getY()).setNumOfRows("10").setPageNo("1");
-                    midLandFcstParameter.setNumOfRows("10").setPageNo("1").setRegId(midLandFcstRegId);
-                    midTaParameter.setNumOfRows("10").setPageNo("1").setRegId(midTaRegId);
+                    midLandFcstParameter.setNumOfRows("10").setPageNo("1").setRegId(weatherAreaCode.getMidLandFcstCode());
+                    midTaParameter.setNumOfRows("10").setPageNo("1").setRegId(weatherAreaCode.getMidTaCode());
 
                     viewModel.getAllWeathersData(vilageFcstParameter, midLandFcstParameter, midTaParameter, weatherAreaCode);
-
                 }
             }
         });
@@ -119,7 +115,6 @@ public class ScheduleWeatherFragment extends Fragment
                 }
             }
         });
-
     }
 
     @Override
