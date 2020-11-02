@@ -21,48 +21,45 @@ SKY와 PTY는 별개의 데이터
     {
         int id = 0;
 
-        switch (sky)
+
+        if (sky.equals(context.getString(R.string.sky_sunny)))
         {
-            case "1":
-                if (day)
-                {
-                    id = R.drawable.sunny_day_icon;
-                } else
-                {
-                    id = R.drawable.sunny_night_icon;
-                }
-                break;
-            case "3":
-                if (day)
-                {
-                    id = R.drawable.cloud_day_icon;
-                } else
-                {
-                    id = R.drawable.cloud_night_icon;
-                }
-                break;
-            case "4":
-                id = R.drawable.cloudy_icon;
-                break;
+            if (day)
+            {
+                id = R.drawable.sunny_day_icon;
+            } else
+            {
+                id = R.drawable.sunny_night_icon;
+            }
+        } else if (sky.equals(context.getString(R.string.sky_cloud)))
+        {
+            if (day)
+            {
+                id = R.drawable.cloud_day_icon;
+            } else
+            {
+                id = R.drawable.cloud_night_icon;
+            }
+        } else if (sky.equals(context.getString(R.string.sky_cloudy)))
+        {
+            id = R.drawable.cloudy_icon;
         }
 
-        switch (precipitaionForm)
+        if (precipitaionForm.equals(context.getString(R.string.rain)))
         {
-            case "1":
-            case "5":
-                id = R.drawable.rain_icon;
-                break;
-            case "2":
-            case "6":
-                id = R.drawable.sleet_icon;
-                break;
-            case "3":
-            case "7":
-                id = R.drawable.snow_icon;
-                break;
-            case "4":
-                id = R.drawable.shower_icon;
-                break;
+            id = R.drawable.rain_icon;
+
+        } else if (precipitaionForm.equals(context.getString(R.string.sleet)))
+        {
+            id = R.drawable.sleet_icon;
+
+        } else if (precipitaionForm.equals(context.getString(R.string.snow)))
+        {
+            id = R.drawable.snow_icon;
+
+        } else if (precipitaionForm.equals(context.getString(R.string.shower)))
+        {
+            id = R.drawable.shower_icon;
         }
 
         return id;

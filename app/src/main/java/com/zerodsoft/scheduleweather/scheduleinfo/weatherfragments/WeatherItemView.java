@@ -2,6 +2,7 @@ package com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.icu.util.ChineseCalendar;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -45,20 +46,14 @@ public class WeatherItemView extends ViewGroup
         super(context);
         this.context = context;
         this.weatherData = weatherData;
+        this.weatherAreaCode = weatherData.getWeatherAreaCode();
 
         init();
 
         ultraSrtNcstView = new UltraSrtNcstView(context, weatherData, sunSetRiseList.get(0));
-        addView(ultraSrtNcstView);
+        addView(ultraSrtNcstView, 0);
 
         setWillNotDraw(false);
-    }
-
-
-    @Override
-    protected void onLayout(boolean b, int i, int i1, int i2, int i3)
-    {
-
     }
 
     @Override
@@ -66,6 +61,28 @@ public class WeatherItemView extends ViewGroup
     {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
+
+
+    @Override
+    protected void onLayout(boolean b, int i, int i1, int i2, int i3)
+    {
+        View child = getChildAt(0);
+        int height = getHeight();
+
+        int ultraSrtNcstViewHeight = (int) (height * 0.2);
+        int ultraSrtFcstViewHeight = (int) (height * 0.4);
+        int vilageFcstViewHeight = (int) (height * 0.6);
+        int midFcstViewHeight = (int) (height * 0.8);
+        child.measure(getWidth(), ultraSrtNcstViewHeight);
+
+        int left = 0;
+        int right = getWidth();
+        int top = 0;
+        int bottom = ultraSrtNcstViewHeight;
+
+        child.layout(left, top, right, bottom);
+    }
+
 
     @Override
     protected void onDraw(Canvas canvas)
@@ -80,9 +97,8 @@ public class WeatherItemView extends ViewGroup
 
         List<Calendar> dates = new ArrayList<>();
 
-        Date firstDate = weatherData.getDownloadedDate().getTime();
         Calendar endDate = (Calendar) weatherData.getDownloadedDate().clone();
-        endDate.add(2, Calendar.DAY_OF_YEAR);
+        endDate.add(Calendar.DAY_OF_YEAR, 2);
 
         Calendar calendar = (Calendar) weatherData.getDownloadedDate().clone();
 

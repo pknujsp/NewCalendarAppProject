@@ -4,6 +4,7 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -35,7 +36,7 @@ public class WeatherViewPagerAdapter extends RecyclerView.Adapter<WeatherViewPag
     @Override
     public WeatherViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType)
     {
-        return new WeatherViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.weather_recycler_view_item, parent));
+        return new WeatherViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.weather_recycler_view_item, parent, false));
     }
 
     @Override
@@ -60,7 +61,7 @@ public class WeatherViewPagerAdapter extends RecyclerView.Adapter<WeatherViewPag
 
         public void onBind()
         {
-            ViewGroup viewGroup = (ViewGroup) itemView.getRootView();
+            FrameLayout viewGroup = (FrameLayout) itemView.findViewById(R.id.weather_container);
             viewGroup.addView(viewList.get(getAdapterPosition()));
         }
     }

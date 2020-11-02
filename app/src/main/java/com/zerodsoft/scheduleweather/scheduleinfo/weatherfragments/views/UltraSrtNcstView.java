@@ -53,6 +53,11 @@ public class UltraSrtNcstView extends View
     private final int LABEL_TEXT_HEIGHT;
     private final int HUMIDITY_WIND_TEXT_HEIGHT;
 
+    private final int TEMP_TEXT_WIDTH;
+    private final int SKY_TEXT_WIDTH;
+    private final int LABEL_TEXT_WIDTH;
+    private final int HUMIDITY_WIND_TEXT_WIDTH;
+
     private UltraSrtNcstData ultraSrtNcstData;
     private SunSetRiseData sunSetRiseData;
     private WeatherData weatherData;
@@ -65,39 +70,47 @@ public class UltraSrtNcstView extends View
         AREA_NAME_PAINT = new TextPaint();
         AREA_NAME_PAINT.setColor(Color.BLACK);
         AREA_NAME_PAINT.setTextAlign(Paint.Align.CENTER);
-        AREA_NAME_PAINT.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 18f, context.getResources().getDisplayMetrics()));
+        AREA_NAME_PAINT.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 19f, context.getResources().getDisplayMetrics()));
         AREA_NAME_PAINT.getTextBounds("1", 0, 1, rect);
         AREA_NAME_TEXT_HEIGHT = rect.height();
 
         TEMP_PAINT = new TextPaint();
         TEMP_PAINT.setColor(Color.BLACK);
         TEMP_PAINT.setTextAlign(Paint.Align.LEFT);
-        TEMP_PAINT.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 24f, context.getResources().getDisplayMetrics()));
-        TEMP_PAINT.getTextBounds("1", 0, 1, rect);
+        TEMP_PAINT.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 14f, context.getResources().getDisplayMetrics()));
+        String testValue = "22.0 C";
+        TEMP_PAINT.getTextBounds(testValue, 0, testValue.length(), rect);
         TEMP_TEXT_HEIGHT = rect.height();
+        TEMP_TEXT_WIDTH = rect.width();
 
         SKY_PAINT = new TextPaint();
         SKY_PAINT.setColor(Color.BLACK);
         SKY_PAINT.setTextAlign(Paint.Align.LEFT);
-        SKY_PAINT.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 16f, context.getResources().getDisplayMetrics()));
-        SKY_PAINT.getTextBounds("1", 0, 1, rect);
+        SKY_PAINT.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 14f, context.getResources().getDisplayMetrics()));
+        testValue = "맑음";
+        SKY_PAINT.getTextBounds(testValue, 0, testValue.length(), rect);
         SKY_TEXT_HEIGHT = rect.height();
+        SKY_TEXT_WIDTH = rect.width();
 
         LABEL_PAINT = new TextPaint();
         LABEL_PAINT.setColor(Color.GRAY);
         LABEL_PAINT.setTextAlign(Paint.Align.CENTER);
         LABEL_PAINT.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 13f, context.getResources().getDisplayMetrics()));
-        LABEL_PAINT.getTextBounds("1", 0, 1, rect);
+        testValue = "습도";
+        LABEL_PAINT.getTextBounds(testValue, 0, testValue.length(), rect);
         LABEL_TEXT_HEIGHT = rect.height();
+        LABEL_TEXT_WIDTH = rect.width();
 
         HUMIDITY_WIND_PAINT = new TextPaint();
         HUMIDITY_WIND_PAINT.setColor(Color.BLACK);
         HUMIDITY_WIND_PAINT.setTextAlign(Paint.Align.CENTER);
-        HUMIDITY_WIND_PAINT.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 16f, context.getResources().getDisplayMetrics()));
-        HUMIDITY_WIND_PAINT.getTextBounds("1", 0, 1, rect);
+        HUMIDITY_WIND_PAINT.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 14f, context.getResources().getDisplayMetrics()));
+        testValue = "70%";
+        HUMIDITY_WIND_PAINT.getTextBounds(testValue, 0, testValue.length(), rect);
         HUMIDITY_WIND_TEXT_HEIGHT = rect.height();
+        HUMIDITY_WIND_TEXT_WIDTH = rect.width();
 
-        MARGIN = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32f, context.getResources().getDisplayMetrics());
+        MARGIN = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, context.getResources().getDisplayMetrics());
 
         setBackgroundColor(Color.WHITE);
 
@@ -111,31 +124,35 @@ public class UltraSrtNcstView extends View
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
     {
-        final int displayWidth = AppMainActivity.getDisplayWidth();
-        // 지역명, 이미지, 습도|바람 레이블과 값 텍스트뷰의 높이로 뷰의 높이를 지정한다
-        int skyImgWidth = displayWidth / 4;
-        int skyImgHeight = skyImgWidth;
-        skyDrawablePoint = new PointF(displayWidth / 3 - skyImgWidth / 2, (int) (AREA_NAME_TEXT_HEIGHT + MARGIN * 2.6));
-
-        skyDrawable.setBounds((int) skyDrawablePoint.x, (int) skyDrawablePoint.y, (int) (skyDrawablePoint.x + skyImgWidth), (int) (skyDrawablePoint.y + skyImgHeight));
-
-        int height = (int) (MARGIN + AREA_NAME_TEXT_HEIGHT + MARGIN * 2.6 + skyImgHeight + MARGIN * 0.6 + LABEL_TEXT_HEIGHT + MARGIN * 0.4 + HUMIDITY_WIND_TEXT_HEIGHT + MARGIN * 2);
-        setMeasuredDimension(widthMeasureSpec, height);
+        setMeasuredDimension(widthMeasureSpec, heightMeasureSpec);
     }
 
-    @SuppressLint("DrawAllocation")
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom)
     {
         super.onLayout(changed, left, top, right, bottom);
 
-        areaNamePoint = new PointF(getWidth() / 2, MARGIN - AREA_NAME_PAINT.ascent());
-        tempPoint = new PointF(getWidth() / 2, skyDrawablePoint.y);
-        skyPoint = new PointF(tempPoint.x, tempPoint.y + TEMP_TEXT_HEIGHT + 20);
-        humidityLabelPoint = new PointF(getWidth() * 0.25f, skyDrawablePoint.y + skyDrawable.getBounds().height() + MARGIN * 0.6f);
-        windLabelPoint = new PointF(getWidth() * 0.75f, skyDrawablePoint.y + skyDrawable.getBounds().height() + MARGIN * 0.6f);
-        humidityPoint = new PointF(humidityLabelPoint.x, (float) (humidityLabelPoint.y + MARGIN * 0.4f));
-        windPoint = new PointF(windLabelPoint.x, (float) (windLabelPoint.y + MARGIN * 0.4f));
+        final int width = getWidth();
+        final int height = getHeight();
+
+        // 지역명, 이미지, 습도|바람 레이블과 값 텍스트뷰의 높이로 뷰의 높이를 지정한다
+        int skyImgWidth = width / 8;
+        int skyImgHeight = skyImgWidth;
+        int x = width / 8;
+        int y = (int) (AREA_NAME_TEXT_HEIGHT + MARGIN * 2.8f);
+
+        skyDrawable.setBounds(x, y, x + skyImgWidth, y + skyImgHeight);
+
+        Rect skyDrawableRect = skyDrawable.getBounds();
+
+        areaNamePoint = new PointF(width / 2, MARGIN - AREA_NAME_PAINT.ascent());
+        skyDrawablePoint = new PointF(skyDrawableRect.left, skyDrawableRect.top);
+        tempPoint = new PointF(skyDrawablePoint.x + skyDrawableRect.width() + MARGIN * 0.5f, skyDrawablePoint.y + 8);
+        skyPoint = new PointF(skyDrawablePoint.x + skyDrawableRect.width() + MARGIN * 0.5f, tempPoint.y + TEMP_TEXT_HEIGHT * 1.4f);
+        humidityLabelPoint = new PointF(tempPoint.x + TEMP_TEXT_WIDTH * 2, skyDrawablePoint.y - 8);
+        windLabelPoint = new PointF(humidityLabelPoint.x + LABEL_TEXT_WIDTH * 3, skyDrawablePoint.y - 8);
+        humidityPoint = new PointF(tempPoint.x, humidityLabelPoint.y + LABEL_TEXT_HEIGHT * 1.4f);
+        windPoint = new PointF(humidityLabelPoint.x, humidityLabelPoint.y + LABEL_TEXT_HEIGHT * 1.4f);
     }
 
     @Override

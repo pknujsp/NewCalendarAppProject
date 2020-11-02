@@ -152,7 +152,7 @@ public class WeatherData
      */
     public WeatherData setUltraSrtNcstData()
     {
-        if (ultraSrtNcstItemsDataWrapper.getException() != null)
+        if (ultraSrtNcstItemsDataWrapper.getException() == null)
         {
             List<UltraSrtNcstItem> items = ultraSrtNcstItemsDataWrapper.getData().getItem();
             UltraSrtNcstData ultraSrtNcstData = new UltraSrtNcstData(items);
@@ -170,7 +170,7 @@ public class WeatherData
     */
     public WeatherData setMidFcstDataList()
     {
-        if (midLandFcstItemsDataWrapper.getException() != null || midTaItemsDataWrapper.getException() != null)
+        if (midLandFcstItemsDataWrapper.getException() == null && midTaItemsDataWrapper.getException() == null)
         {
             //중기예보 데이터 생성 3~10일후
             Calendar copiedCalendar = (Calendar) downloadedDate.clone();
@@ -231,7 +231,7 @@ public class WeatherData
     */
     public WeatherData setUltraSrtFcstDataList()
     {
-        if (ultraSrtFcstItemsDataWrapper.getException() != null)
+        if (ultraSrtFcstItemsDataWrapper.getException() == null)
         {
             String dateTime = null;
             Map<String, List<UltraSrtFcstItem>> map = new HashMap<>();
@@ -289,7 +289,7 @@ public class WeatherData
      */
     public WeatherData setVilageFcstDataList()
     {
-        if (vilageFcstItemsDataWrapper.getException() != null)
+        if (vilageFcstItemsDataWrapper.getException() == null)
         {
             String dateTime = null;
             Map<String, List<VilageFcstItem>> map = new HashMap<>();
