@@ -19,7 +19,7 @@
             android:orientation="horizontal">
 
             <ImageButton
-                android:id="@+id/refresh_weather_data"
+                android:id="@+id/refresh_weather_data_button"
                 android:layout_width="16dp"
                 android:layout_height="16dp"
                 android:layout_centerVertical="true"

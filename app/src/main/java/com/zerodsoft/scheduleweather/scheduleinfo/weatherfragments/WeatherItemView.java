@@ -41,16 +41,12 @@ public class WeatherItemView extends ViewGroup
 
     private List<SunSetRiseData> sunSetRiseList = new ArrayList<>();
 
-    public WeatherItemView(Context context, WeatherData weatherData)
+    public WeatherItemView(Context context)
     {
         super(context);
         this.context = context;
-        this.weatherData = weatherData;
-        this.weatherAreaCode = weatherData.getWeatherAreaCode();
 
-        init();
-
-        ultraSrtNcstView = new UltraSrtNcstView(context, weatherData, sunSetRiseList.get(0));
+        ultraSrtNcstView = new UltraSrtNcstView(context);
         addView(ultraSrtNcstView, 0);
 
         setWillNotDraw(false);
@@ -62,25 +58,10 @@ public class WeatherItemView extends ViewGroup
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 
-
     @Override
     protected void onLayout(boolean b, int i, int i1, int i2, int i3)
     {
-        View child = getChildAt(0);
-        int height = getHeight();
-
-        int ultraSrtNcstViewHeight = (int) (height * 0.2);
-        int ultraSrtFcstViewHeight = (int) (height * 0.4);
-        int vilageFcstViewHeight = (int) (height * 0.6);
-        int midFcstViewHeight = (int) (height * 0.8);
-        child.measure(getWidth(), ultraSrtNcstViewHeight);
-
-        int left = 0;
-        int right = getWidth();
-        int top = 0;
-        int bottom = ultraSrtNcstViewHeight;
-
-        child.layout(left, top, right, bottom);
+     
     }
 
 
@@ -97,10 +78,10 @@ public class WeatherItemView extends ViewGroup
 
         List<Calendar> dates = new ArrayList<>();
 
-        Calendar endDate = (Calendar) weatherData.getDownloadedDate().clone();
+        Calendar endDate = weatherData.getDownloadedDate();
         endDate.add(Calendar.DAY_OF_YEAR, 2);
 
-        Calendar calendar = (Calendar) weatherData.getDownloadedDate().clone();
+        Calendar calendar = weatherData.getDownloadedDate();
 
         int i = 0;
         boolean finished = false;
@@ -115,8 +96,8 @@ public class WeatherItemView extends ViewGroup
             calendar.add(Calendar.DAY_OF_YEAR, 1);
         }
 
-        SunriseSunsetCalculator sunriseSunsetCalculator = new SunriseSunsetCalculator(new Location(weatherAreaCode.getLatitudeSecondsDivide100(), weatherAreaCode.getLongitudeSecondsDivide100())
-                , Clock.TIME_ZONE);
+        SunriseSunsetCalculator sunriseSunsetCalculator = new SunriseSunsetCalculator(new Location(weatherData.getWeatherAreaCode().getLatitudeSecondsDivide100(),
+                weatherData.getWeatherAreaCode().getLongitudeSecondsDivide100()), Clock.TIME_ZONE);
         Calendar sunRise = null;
         Calendar sunSet = null;
 
@@ -126,5 +107,13 @@ public class WeatherItemView extends ViewGroup
             sunSet = sunriseSunsetCalculator.getOfficialSunsetCalendarForDate(date);
             sunSetRiseList.add(new SunSetRiseData(date.getTime(), sunRise.getTime(), sunSet.getTime()));
         }
+    }
+
+    public void setWeatherData(WeatherData weatherData)
+    {
+        this.weatherData = weatherData;
+        init();
+        ultraSrtNcstView.setWeatherData(weatherData, sunSetRiseList.get(0));
+        ultraSrtNcstView.invalidate();
     }
 }

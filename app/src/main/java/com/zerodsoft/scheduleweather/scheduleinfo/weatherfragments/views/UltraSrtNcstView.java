@@ -61,8 +61,9 @@ public class UltraSrtNcstView extends View
     private UltraSrtNcstData ultraSrtNcstData;
     private SunSetRiseData sunSetRiseData;
     private WeatherData weatherData;
+    private Rect skyDrawableRect;
 
-    public UltraSrtNcstView(Context context, WeatherData weatherData, SunSetRiseData sunSetRiseData)
+    public UltraSrtNcstView(Context context)
     {
         super(context);
         Rect rect = new Rect();
@@ -112,19 +113,13 @@ public class UltraSrtNcstView extends View
 
         MARGIN = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, context.getResources().getDisplayMetrics());
 
-        setBackgroundColor(Color.WHITE);
-
-        this.weatherData = weatherData;
-        this.ultraSrtNcstData = weatherData.getUltraSrtNcstFinalData().getData();
-        this.sunSetRiseData = sunSetRiseData;
-
-        init();
+        setBackgroundColor(Color.LTGRAY);
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
     {
-        setMeasuredDimension(widthMeasureSpec, heightMeasureSpec);
+        setMeasuredDimension(widthMeasureSpec, 500);
     }
 
     @Override
@@ -132,8 +127,7 @@ public class UltraSrtNcstView extends View
     {
         super.onLayout(changed, left, top, right, bottom);
 
-        final int width = getWidth();
-        final int height = getHeight();
+        int width = getWidth();
 
         // 지역명, 이미지, 습도|바람 레이블과 값 텍스트뷰의 높이로 뷰의 높이를 지정한다
         int skyImgWidth = width / 8;
@@ -141,9 +135,7 @@ public class UltraSrtNcstView extends View
         int x = width / 8;
         int y = (int) (AREA_NAME_TEXT_HEIGHT + MARGIN * 2.8f);
 
-        skyDrawable.setBounds(x, y, x + skyImgWidth, y + skyImgHeight);
-
-        Rect skyDrawableRect = skyDrawable.getBounds();
+        skyDrawableRect = new Rect(x, y, x + skyImgWidth, y + skyImgHeight);
 
         areaNamePoint = new PointF(width / 2, MARGIN - AREA_NAME_PAINT.ascent());
         skyDrawablePoint = new PointF(skyDrawableRect.left, skyDrawableRect.top);
@@ -159,6 +151,14 @@ public class UltraSrtNcstView extends View
     protected void onDraw(Canvas canvas)
     {
         super.onDraw(canvas);
+        if (weatherData != null)
+        {
+            drawValue(canvas);
+        }
+    }
+
+    private void drawValue(Canvas canvas)
+    {
         //지역명
         canvas.drawText(weatherData.getAreaName(), areaNamePoint.x, areaNamePoint.y, AREA_NAME_PAINT);
         //구름이미지
@@ -181,5 +181,15 @@ public class UltraSrtNcstView extends View
         //SKY IMG설정
         boolean day = sunSetRiseData.getDate().after(sunSetRiseData.getSunset()) ? false : sunSetRiseData.getDate().before(sunSetRiseData.getSunrise()) ? false : true;
         skyDrawable = getContext().getDrawable(WeatherDataConverter.getSkyDrawableId(weatherData.getUltraSrtFcstFinalData().getData().get(0).getSky(), ultraSrtNcstData.getPrecipitationForm(), day));
+        skyDrawable.setBounds(skyDrawableRect);
+    }
+
+    public void setWeatherData(WeatherData weatherData, SunSetRiseData sunSetRiseData)
+    {
+        this.weatherData = weatherData;
+        this.ultraSrtNcstData = weatherData.getUltraSrtNcstFinalData().getData();
+        this.sunSetRiseData = sunSetRiseData;
+
+        init();
     }
 }

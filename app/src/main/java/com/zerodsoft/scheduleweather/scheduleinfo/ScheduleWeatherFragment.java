@@ -1,5 +1,6 @@
 package com.zerodsoft.scheduleweather.scheduleinfo;
 
+import android.media.Image;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -12,6 +13,9 @@ import androidx.viewpager2.widget.ViewPager2;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AnimationUtils;
+import android.view.animation.RotateAnimation;
+import android.widget.ImageButton;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.MidFcstParameter;
@@ -35,9 +39,11 @@ public class ScheduleWeatherFragment extends Fragment
     private WeatherViewModel viewModel;
     private PlaceDTO place;
     private AddressDTO address;
+    private ImageButton refreshButton;
+
+    private WeatherViewPagerAdapter adapter;
 
     private ViewPager2 viewPager;
-    private List<WeatherData> weatherDataList = new ArrayList<>();
 
     public ScheduleWeatherFragment(PlaceDTO place, AddressDTO address)
     {
@@ -99,6 +105,10 @@ public class ScheduleWeatherFragment extends Fragment
                     midLandFcstParameter.setNumOfRows("10").setPageNo("1").setRegId(weatherAreaCode.getMidLandFcstCode());
                     midTaParameter.setNumOfRows("10").setPageNo("1").setRegId(weatherAreaCode.getMidTaCode());
 
+                    adapter = new WeatherViewPagerAdapter(ScheduleWeatherFragment.this, 1);
+                    viewPager.setAdapter(adapter);
+                    rotateRefreshButton(true);
+
                     viewModel.getAllWeathersData(vilageFcstParameter, midLandFcstParameter, midTaParameter, weatherAreaCode);
                 }
             }
@@ -111,7 +121,9 @@ public class ScheduleWeatherFragment extends Fragment
             {
                 if (weatherDataList != null)
                 {
-                    viewPager.setAdapter(new WeatherViewPagerAdapter(ScheduleWeatherFragment.this, weatherDataList));
+                    adapter.setData(weatherDataList);
+                    adapter.notifyDataSetChanged();
+                    rotateRefreshButton(false);
                 }
             }
         });
@@ -122,5 +134,28 @@ public class ScheduleWeatherFragment extends Fragment
     {
         super.onViewCreated(view, savedInstanceState);
         viewPager = view.findViewById(R.id.location_items_pager);
+        refreshButton = (ImageButton) view.findViewById(R.id.refresh_weather_data_button);
+
+        refreshButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+               // rotateRefreshButton(true);
+            }
+        });
+
+    }
+
+    public void rotateRefreshButton(boolean value)
+    {
+        if (value)
+        {
+            RotateAnimation rotateAnimation = (RotateAnimation) AnimationUtils.loadAnimation(getContext(), R.anim.rotate);
+            refreshButton.startAnimation(rotateAnimation);
+        } else
+        {
+            refreshButton.getAnimation().cancel();
+        }
     }
 }
