@@ -38,14 +38,14 @@ public class UltraSrtNcstView extends View
     private final int MARGIN;
     private Drawable skyDrawable;
 
-    private PointF areaNamePoint;
-    private PointF skyDrawablePoint;
-    private PointF tempPoint;
-    private PointF skyPoint;
-    private PointF humidityLabelPoint;
-    private PointF windLabelPoint;
-    private PointF humidityPoint;
-    private PointF windPoint;
+    private Point areaNamePoint;
+    private Point skyDrawablePoint;
+    private Point tempPoint;
+    private Point skyPoint;
+    private Point humidityLabelPoint;
+    private Point windLabelPoint;
+    private Point humidityPoint;
+    private Point windPoint;
 
     private final int AREA_NAME_TEXT_HEIGHT;
     private final int TEMP_TEXT_HEIGHT;
@@ -62,6 +62,8 @@ public class UltraSrtNcstView extends View
     private SunSetRiseData sunSetRiseData;
     private WeatherData weatherData;
     private Rect skyDrawableRect;
+
+    private final int HEIGHT;
 
     public UltraSrtNcstView(Context context)
     {
@@ -111,7 +113,33 @@ public class UltraSrtNcstView extends View
         HUMIDITY_WIND_TEXT_HEIGHT = rect.height();
         HUMIDITY_WIND_TEXT_WIDTH = rect.width();
 
-        MARGIN = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, context.getResources().getDisplayMetrics());
+        MARGIN = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16f, context.getResources().getDisplayMetrics());
+
+        // 지역명, 이미지, 습도|바람 레이블과 값 텍스트뷰의 높이로 뷰의 높이를 지정한다
+        final int dp_12 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 12f, getResources().getDisplayMetrics());
+        final int dp_16 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16f, getResources().getDisplayMetrics());
+        final int dp_32 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32f, getResources().getDisplayMetrics());
+        final int width = AppMainActivity.getDisplayWidth();
+
+        int skyImgWidth = dp_32;
+        int skyImgHeight = dp_32;
+
+        areaNamePoint = new Point(width / 2, (int) (MARGIN - AREA_NAME_PAINT.ascent()));
+        skyDrawableRect = new Rect(MARGIN, areaNamePoint.y + MARGIN, MARGIN + skyImgWidth, areaNamePoint.y + MARGIN + skyImgHeight);
+        skyDrawablePoint = new Point(skyDrawableRect.left, skyDrawableRect.top);
+
+        final int skyDrawableCenterY = skyDrawableRect.centerY();
+
+        tempPoint = new Point(skyDrawableRect.right + dp_12, skyDrawableCenterY - (skyDrawableCenterY - skyDrawableRect.top) / 2);
+        skyPoint = new Point(skyDrawableRect.right + dp_12, skyDrawableCenterY + (skyDrawableCenterY - skyDrawableRect.top) / 2);
+
+        humidityLabelPoint = new Point(width / 2, areaNamePoint.y + dp_16);
+        windLabelPoint = new Point(humidityLabelPoint.x + (width / 4), areaNamePoint.y + dp_16);
+
+        humidityPoint = new Point(humidityLabelPoint.x, humidityLabelPoint.y + dp_16);
+        windPoint = new Point(windLabelPoint.x, windLabelPoint.y + dp_16);
+
+        HEIGHT = MARGIN * 3 + AREA_NAME_TEXT_HEIGHT + skyImgHeight;
 
         setBackgroundColor(Color.LTGRAY);
     }
@@ -119,32 +147,13 @@ public class UltraSrtNcstView extends View
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
     {
-        setMeasuredDimension(widthMeasureSpec, 500);
+        setMeasuredDimension(widthMeasureSpec, HEIGHT);
     }
 
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom)
     {
-        super.onLayout(changed, left, top, right, bottom);
-
-        int width = getWidth();
-
-        // 지역명, 이미지, 습도|바람 레이블과 값 텍스트뷰의 높이로 뷰의 높이를 지정한다
-        int skyImgWidth = width / 8;
-        int skyImgHeight = skyImgWidth;
-        int x = width / 8;
-        int y = (int) (AREA_NAME_TEXT_HEIGHT + MARGIN * 2.8f);
-
-        skyDrawableRect = new Rect(x, y, x + skyImgWidth, y + skyImgHeight);
-
-        areaNamePoint = new PointF(width / 2, MARGIN - AREA_NAME_PAINT.ascent());
-        skyDrawablePoint = new PointF(skyDrawableRect.left, skyDrawableRect.top);
-        tempPoint = new PointF(skyDrawablePoint.x + skyDrawableRect.width() + MARGIN * 0.5f, skyDrawablePoint.y + 8);
-        skyPoint = new PointF(skyDrawablePoint.x + skyDrawableRect.width() + MARGIN * 0.5f, tempPoint.y + TEMP_TEXT_HEIGHT * 1.4f);
-        humidityLabelPoint = new PointF(tempPoint.x + TEMP_TEXT_WIDTH * 2, skyDrawablePoint.y - 8);
-        windLabelPoint = new PointF(humidityLabelPoint.x + LABEL_TEXT_WIDTH * 3, skyDrawablePoint.y - 8);
-        humidityPoint = new PointF(tempPoint.x, humidityLabelPoint.y + LABEL_TEXT_HEIGHT * 1.4f);
-        windPoint = new PointF(humidityLabelPoint.x, humidityLabelPoint.y + LABEL_TEXT_HEIGHT * 1.4f);
+        super.onLayout(changed, left + MARGIN, top, right, bottom);
     }
 
     @Override
@@ -166,14 +175,15 @@ public class UltraSrtNcstView extends View
         //기온
         canvas.drawText(ultraSrtNcstData.getTemperature() + "ºC", tempPoint.x, tempPoint.y, TEMP_PAINT);
         //하늘상태
-        canvas.drawText(ultraSrtNcstData.getPrecipitationForm(), skyPoint.x, skyPoint.y, SKY_PAINT);
+        canvas.drawText(WeatherDataConverter.getSky(ultraSrtNcstData.getPrecipitationForm(), weatherData.getUltraSrtFcstFinalData().getData().get(0).getSky()),
+                skyPoint.x, skyPoint.y, SKY_PAINT);
         //습도, 바람 레이블
         canvas.drawText("습도", humidityLabelPoint.x, humidityLabelPoint.y, LABEL_PAINT);
         canvas.drawText("바람", windLabelPoint.x, windLabelPoint.y, LABEL_PAINT);
         //습도, 바람 값
         canvas.drawText(ultraSrtNcstData.getHumidity(), humidityPoint.x, humidityPoint.y, HUMIDITY_WIND_PAINT);
         canvas.drawText(ultraSrtNcstData.getWindSpeed() + "m/s, " + ultraSrtNcstData.getWindDirection() + "\n"
-                + WeatherDataConverter.getWindSpeedDescription(ultraSrtNcstData.getWindSpeed()), humidityPoint.x, humidityPoint.y, HUMIDITY_WIND_PAINT);
+                + WeatherDataConverter.getWindSpeedDescription(ultraSrtNcstData.getWindSpeed()), windPoint.x, windPoint.y, HUMIDITY_WIND_PAINT);
     }
 
     private void init()

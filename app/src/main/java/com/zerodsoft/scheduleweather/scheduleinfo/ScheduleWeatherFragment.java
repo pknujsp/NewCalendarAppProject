@@ -141,7 +141,7 @@ public class ScheduleWeatherFragment extends Fragment
             @Override
             public void onClick(View view)
             {
-               // rotateRefreshButton(true);
+                // rotateRefreshButton(true);
             }
         });
 

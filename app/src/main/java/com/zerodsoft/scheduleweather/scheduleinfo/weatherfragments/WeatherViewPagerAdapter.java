@@ -13,8 +13,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.ultrasrtncstresponse.UltraSrtNcstItem;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
 import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.resultdata.WeatherData;
+import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.views.UltraSrtNcstView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -62,14 +64,13 @@ public class WeatherViewPagerAdapter extends RecyclerView.Adapter<WeatherViewPag
 
         public void onBind()
         {
-            FrameLayout viewGroup = (FrameLayout) itemView.findViewById(R.id.weather_container);
-            weatherItemView = new WeatherItemView(itemView.getContext());
-            viewGroup.addView(weatherItemView, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+            weatherItemView = (WeatherItemView) itemView.findViewById(R.id.weather_item_view);
         }
 
         public void setData(WeatherData weatherData)
         {
             weatherItemView.setWeatherData(weatherData);
+            weatherItemView.invalidate();
         }
     }
 

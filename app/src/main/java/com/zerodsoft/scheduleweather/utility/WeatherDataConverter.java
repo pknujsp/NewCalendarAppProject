@@ -17,7 +17,7 @@ SKY와 PTY는 별개의 데이터
     {
     }
 
-    public static int getSkyDrawableId(String sky, String precipitaionForm, boolean day)
+    public static int getSkyDrawableId(String sky, String precipitationForm, boolean day)
     {
         int id = 0;
 
@@ -45,19 +45,19 @@ SKY와 PTY는 별개의 데이터
             id = R.drawable.cloudy_icon;
         }
 
-        if (precipitaionForm.equals(context.getString(R.string.rain)))
+        if (precipitationForm.equals(context.getString(R.string.rain)))
         {
             id = R.drawable.rain_icon;
 
-        } else if (precipitaionForm.equals(context.getString(R.string.sleet)))
+        } else if (precipitationForm.equals(context.getString(R.string.sleet)))
         {
             id = R.drawable.sleet_icon;
 
-        } else if (precipitaionForm.equals(context.getString(R.string.snow)))
+        } else if (precipitationForm.equals(context.getString(R.string.snow)))
         {
             id = R.drawable.snow_icon;
 
-        } else if (precipitaionForm.equals(context.getString(R.string.shower)))
+        } else if (precipitationForm.equals(context.getString(R.string.shower)))
         {
             id = R.drawable.shower_icon;
         }
@@ -181,16 +181,47 @@ SKY와 PTY는 별개의 데이터
         double speed = Double.valueOf(windSpeed);
         if (speed >= 14)
         {
-            return "매우 강한";
+            return "매우 강한 바람";
         } else if (speed >= 9)
         {
-            return "강한";
+            return "강한 바람";
         } else if (speed >= 4)
         {
-            return "약간 강한";
+            return "약간 강한 바람";
         } else
         {
-            return "약한";
+            return "약한 바람";
         }
+    }
+
+    public static String getSky(String precipitationForm, String sky)
+    {
+        String value = null;
+        if (sky.equals(context.getString(R.string.sky_sunny)))
+        {
+            value = context.getString(R.string.sky_sunny);
+        } else if (sky.equals(context.getString(R.string.sky_cloud)))
+        {
+            value = context.getString(R.string.sky_cloud);
+        } else if (sky.equals(context.getString(R.string.sky_cloudy)))
+        {
+            value = context.getString(R.string.sky_cloudy);
+        }
+
+        if (precipitationForm.equals(context.getString(R.string.rain)))
+        {
+            value = context.getString(R.string.rain);
+        } else if (precipitationForm.equals(context.getString(R.string.sleet)))
+        {
+            value = context.getString(R.string.sleet);
+        } else if (precipitationForm.equals(context.getString(R.string.snow)))
+        {
+            value = context.getString(R.string.snow);
+        } else if (precipitationForm.equals(context.getString(R.string.shower)))
+        {
+            value = context.getString(R.string.shower);
+        }
+
+        return value;
     }
 }

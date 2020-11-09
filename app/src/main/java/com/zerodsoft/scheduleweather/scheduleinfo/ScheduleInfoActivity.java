@@ -35,6 +35,7 @@ public class ScheduleInfoActivity extends AppCompatActivity
         setContentView(R.layout.activity_schedule_info);
 
         viewPager = (ViewPager2) findViewById(R.id.schedule_viewpager);
+        viewPager.setUserInputEnabled(false);
         tabLayout = (TabLayout) findViewById(R.id.schedule_tab);
 
 

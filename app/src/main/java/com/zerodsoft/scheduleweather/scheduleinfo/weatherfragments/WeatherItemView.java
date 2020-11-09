@@ -4,9 +4,11 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.icu.util.ChineseCalendar;
 import android.os.Bundle;
+import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -19,6 +21,7 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
 import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.resultdata.WeatherData;
 import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.views.MidFcstView;
+import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.views.UltraSrtFcstView;
 import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.views.UltraSrtNcstView;
 import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.views.VilageFcstView;
 import com.zerodsoft.scheduleweather.utility.Clock;
@@ -29,46 +32,71 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-public class WeatherItemView extends ViewGroup
+public class WeatherItemView extends LinearLayout
 {
     private WeatherData weatherData;
-    private Context context;
 
     private UltraSrtNcstView ultraSrtNcstView;
+    private UltraSrtFcstView ultraSrtFcstView;
     private VilageFcstView vilageFcstView;
     private MidFcstView midFcstView;
     private WeatherAreaCodeDTO weatherAreaCode;
 
     private List<SunSetRiseData> sunSetRiseList = new ArrayList<>();
 
-    public WeatherItemView(Context context)
+    public WeatherItemView(Context context, @Nullable AttributeSet attrs)
     {
-        super(context);
-        this.context = context;
+        super(context, attrs);
 
         ultraSrtNcstView = new UltraSrtNcstView(context);
-        addView(ultraSrtNcstView, 0);
+        ultraSrtFcstView = new UltraSrtFcstView(context);
 
+        addView(ultraSrtNcstView, 0);
+        addView(ultraSrtFcstView, 1);
         setWillNotDraw(false);
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
     {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        for (int i = 0, count = getChildCount(); i < count; i++)
+        {
+            final View child = getChildAt(i);
+            if (child.getVisibility() != GONE)
+            {
+                //Measurement Subview
+                measureChild(child, widthMeasureSpec, heightMeasureSpec);
+            }
+        }
+        //In onMeasure, this method must be called to set the final measurement width and height.
+        setMeasuredDimension(MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.getSize(heightMeasureSpec));
     }
 
     @Override
     protected void onLayout(boolean b, int i, int i1, int i2, int i3)
     {
-     
+        int lastTop = 0;
+        for (int index = 0, count = getChildCount(); index < count; index++)
+        {
+            final View child = getChildAt(index);
+            if (child.getVisibility() != GONE)
+            {
+                child.layout(0, lastTop, child.getMeasuredWidth(), lastTop + child.getMeasuredHeight());
+                lastTop += child.getMeasuredHeight();
+            }
+        }
     }
-
 
     @Override
     protected void onDraw(Canvas canvas)
     {
         super.onDraw(canvas);
+    }
+
+    @Override
+    protected void dispatchDraw(Canvas canvas)
+    {
+        super.dispatchDraw(canvas);
     }
 
     private void init()
@@ -114,6 +142,7 @@ public class WeatherItemView extends ViewGroup
         this.weatherData = weatherData;
         init();
         ultraSrtNcstView.setWeatherData(weatherData, sunSetRiseList.get(0));
-        ultraSrtNcstView.invalidate();
+        ultraSrtFcstView.setWeatherData(weatherData, sunSetRiseList);
+        invalidate();
     }
 }
