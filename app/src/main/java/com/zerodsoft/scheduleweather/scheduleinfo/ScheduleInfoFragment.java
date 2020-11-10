@@ -16,18 +16,20 @@ import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
 import com.zerodsoft.scheduleweather.utility.Clock;
 import com.zerodsoft.scheduleweather.utility.ScheduleAlarm;
 
+import java.util.List;
+
 public class ScheduleInfoFragment extends Fragment
 {
     public static final String TAG = "ScheduleInfoFragment";
     private FragmentScheduleInfoBinding binding;
 
     private ScheduleDTO schedule;
-    private PlaceDTO place;
-    private AddressDTO address;
+    private List<AddressDTO> addresses;
+    private List<PlaceDTO> places;
 
-    public ScheduleInfoFragment(ScheduleDTO schedule, PlaceDTO place, AddressDTO address)
+    public ScheduleInfoFragment(ScheduleDTO schedule, List<AddressDTO> addresses, List<PlaceDTO> places)
     {
-        setSchedule(schedule, place, address);
+        setSchedule(schedule, addresses, places);
     }
 
     @Override
@@ -44,11 +46,11 @@ public class ScheduleInfoFragment extends Fragment
         return binding.getRoot();
     }
 
-    public ScheduleInfoFragment setSchedule(ScheduleDTO schedule, PlaceDTO place, AddressDTO address)
+    public ScheduleInfoFragment setSchedule(ScheduleDTO schedule, List<AddressDTO> addresses, List<PlaceDTO> places)
     {
         this.schedule = schedule;
-        this.place = place;
-        this.address = address;
+        this.places = places;
+        this.addresses = addresses;
         return this;
     }
 
@@ -77,12 +79,12 @@ public class ScheduleInfoFragment extends Fragment
         // 위치
         String location = null;
 
-        if (place != null)
+        if (places != null)
         {
-            location = place.getPlaceName();
-        } else if (address != null)
+            location = places.get(0).getPlaceName();
+        } else if (addresses != null)
         {
-            location = address.getAddressName();
+            location = addresses.get(0).getAddressName();
         } else
         {
             location = "";

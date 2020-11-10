@@ -33,12 +33,14 @@ public class ScheduleTabViewPager extends FragmentStateAdapter
         fragments = new ArrayList<>();
     }
 
-    public ScheduleTabViewPager setFragments(ScheduleDTO schedule, AddressDTO address, PlaceDTO place)
+    public ScheduleTabViewPager setFragments(ScheduleDTO schedule, List<AddressDTO> addresses, List<PlaceDTO> places)
     {
         fragments.clear();
-        fragments.add(new ScheduleInfoFragment(schedule, place, address));
-        fragments.add(new ScheduleWeatherFragment(place, address));
-        fragments.add(new ScheduleMapFragment(place, address));
+
+
+        fragments.add(new ScheduleInfoFragment(schedule, addresses, places));
+        fragments.add(new ScheduleWeatherFragment(addresses, places));
+        fragments.add(new ScheduleMapFragment(addresses, places));
 
         return this;
     }

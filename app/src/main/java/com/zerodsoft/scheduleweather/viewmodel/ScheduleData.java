@@ -4,25 +4,18 @@ import com.zerodsoft.scheduleweather.room.dto.AddressDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
 import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
 
+import java.util.List;
+
 public class ScheduleData
 {
     private ScheduleDTO schedule;
-    private AddressDTO address;
-    private PlaceDTO place;
+    private List<AddressDTO> addresses;
+    private List<PlaceDTO> places;
 
     public ScheduleData()
     {
     }
 
-    public void setAddress(AddressDTO address)
-    {
-        this.address = address;
-    }
-
-    public void setPlace(PlaceDTO place)
-    {
-        this.place = place;
-    }
 
     public void setSchedule(ScheduleDTO schedule)
     {
@@ -34,13 +27,23 @@ public class ScheduleData
         return schedule;
     }
 
-    public AddressDTO getAddress()
+    public List<AddressDTO> getAddresses()
     {
-        return address;
+        return addresses;
     }
 
-    public PlaceDTO getPlace()
+    public void setAddresses(List<AddressDTO> addresses)
     {
-        return place;
+        this.addresses = addresses;
+    }
+
+    public List<PlaceDTO> getPlaces()
+    {
+        return places;
+    }
+
+    public void setPlaces(List<PlaceDTO> places)
+    {
+        this.places = places;
     }
 }

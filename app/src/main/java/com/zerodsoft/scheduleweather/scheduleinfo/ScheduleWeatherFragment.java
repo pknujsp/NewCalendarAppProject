@@ -16,6 +16,7 @@ import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
 import android.view.animation.RotateAnimation;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.MidFcstParameter;
@@ -36,19 +37,17 @@ import java.util.List;
 
 public class ScheduleWeatherFragment extends Fragment
 {
-    private WeatherViewModel viewModel;
-    private PlaceDTO place;
-    private AddressDTO address;
     private ImageButton refreshButton;
-
     private WeatherViewPagerAdapter adapter;
-
     private ViewPager2 viewPager;
 
-    public ScheduleWeatherFragment(PlaceDTO place, AddressDTO address)
+    private List<PlaceDTO> places;
+    private List<AddressDTO> addresses;
+
+    public ScheduleWeatherFragment(List<AddressDTO> addresses, List<PlaceDTO> places)
     {
-        this.place = place;
-        this.address = address;
+        this.places = places;
+        this.addresses = addresses;
     }
 
     @Override
@@ -62,89 +61,17 @@ public class ScheduleWeatherFragment extends Fragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState)
     {
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_schedule_weather, container, false);
     }
 
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState)
-    {
-        super.onActivityCreated(savedInstanceState);
-        VilageFcstParameter vilageFcstParameter = new VilageFcstParameter();
-        MidFcstParameter midLandFcstParameter = new MidFcstParameter();
-        MidFcstParameter midTaParameter = new MidFcstParameter();
-
-        double longitude = 0;
-        double latitude = 0;
-
-        if (place != null)
-        {
-            longitude = Double.valueOf(place.getLongitude());
-            latitude = Double.valueOf(place.getLatitude());
-        } else if (address != null)
-        {
-            longitude = Double.valueOf(address.getLongitude());
-            latitude = Double.valueOf(address.getLatitude());
-        }
-
-        LonLat lonLat = LonLatConverter.lonLatToGridXY(longitude, latitude);
-
-        viewModel = new ViewModelProvider(this).get(WeatherViewModel.class);
-        viewModel.init(getContext(), lonLat.getX(), lonLat.getY());
-        viewModel.getAreaCodeLiveData().observe(getViewLifecycleOwner(), new Observer<List<WeatherAreaCodeDTO>>()
-        {
-            @Override
-            public void onChanged(List<WeatherAreaCodeDTO> weatherAreaCodes)
-            {
-                if (weatherAreaCodes != null)
-                {
-                    // regId설정하는 코드 작성
-                    WeatherAreaCodeDTO weatherAreaCode = weatherAreaCodes.get(0);
-
-                    vilageFcstParameter.setNx(weatherAreaCode.getX()).setNy(weatherAreaCode.getY()).setNumOfRows("10").setPageNo("1");
-                    midLandFcstParameter.setNumOfRows("10").setPageNo("1").setRegId(weatherAreaCode.getMidLandFcstCode());
-                    midTaParameter.setNumOfRows("10").setPageNo("1").setRegId(weatherAreaCode.getMidTaCode());
-
-                    adapter = new WeatherViewPagerAdapter(ScheduleWeatherFragment.this, 1);
-                    viewPager.setAdapter(adapter);
-                    rotateRefreshButton(true);
-
-                    viewModel.getAllWeathersData(vilageFcstParameter, midLandFcstParameter, midTaParameter, weatherAreaCode);
-                }
-            }
-        });
-
-        viewModel.getWeatherDataLiveData().observe(getViewLifecycleOwner(), new Observer<List<WeatherData>>()
-        {
-            @Override
-            public void onChanged(List<WeatherData> weatherDataList)
-            {
-                if (weatherDataList != null)
-                {
-                    adapter.setData(weatherDataList);
-                    adapter.notifyDataSetChanged();
-                    rotateRefreshButton(false);
-                }
-            }
-        });
-    }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
         viewPager = view.findViewById(R.id.location_items_pager);
-        refreshButton = (ImageButton) view.findViewById(R.id.refresh_weather_data_button);
-
-        refreshButton.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                // rotateRefreshButton(true);
-            }
-        });
-
+        adapter = new WeatherViewPagerAdapter(getActivity(), places, addresses);
+        viewPager.setAdapter(adapter);
     }
 
     public void rotateRefreshButton(boolean value)

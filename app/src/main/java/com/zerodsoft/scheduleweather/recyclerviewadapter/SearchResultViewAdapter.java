@@ -387,6 +387,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
                         placeDTOKeyword.setLatitude(Double.toString(lat));
                         placeDTOKeyword.setWeatherX(Integer.toString(lonLat.getX()));
                         placeDTOKeyword.setWeatherY(Integer.toString(lonLat.getY()));
+                        placeDTOKeyword.setAddressName(placeKeywordDocument.getAddressName());
 
                         try
                         {
@@ -410,6 +411,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
                         placeDTOCategory.setLatitude(placeCategoryDocument.getY());
                         placeDTOCategory.setWeatherX(Integer.toString(lonLat.getX()));
                         placeDTOCategory.setWeatherY(Integer.toString(lonLat.getY()));
+                        placeDTOCategory.setAddressName(placeCategoryDocument.getAddressName());
 
                         try
                         {

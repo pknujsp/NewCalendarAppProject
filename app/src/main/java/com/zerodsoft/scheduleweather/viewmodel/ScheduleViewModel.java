@@ -32,7 +32,6 @@ public class ScheduleViewModel extends AndroidViewModel
 
     private MutableLiveData<ScheduleData> scheduleDataLiveData = new MutableLiveData<>();
 
-    private int scheduleId;
 
     public ScheduleViewModel(@NonNull Application application)
     {
@@ -43,26 +42,6 @@ public class ScheduleViewModel extends AndroidViewModel
     public ScheduleViewModel selectSchedule(int scheduleId)
     {
         scheduleRepository.selectSchedule(scheduleId);
-        /*
-        scheduleLiveData = Transformations.map(scheduleLiveData, new Function<ScheduleDTO, ScheduleDTO>()
-        {
-            @Override
-            public ScheduleDTO apply(ScheduleDTO input)
-            {
-                if (input != null)
-                {
-                    addressLiveData = scheduleRepository.getAddressLiveData();
-                    placeLiveData = scheduleRepository.getPlaceLiveData();
-                } else
-                {
-                    input = new ScheduleDTO();
-                }
-                return input;
-            }
-        });
-        return this;
-
-         */
         return this;
     }
 

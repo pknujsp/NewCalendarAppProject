@@ -35,9 +35,8 @@ public class ScheduleInfoActivity extends AppCompatActivity
         setContentView(R.layout.activity_schedule_info);
 
         viewPager = (ViewPager2) findViewById(R.id.schedule_viewpager);
-        viewPager.setUserInputEnabled(false);
         tabLayout = (TabLayout) findViewById(R.id.schedule_tab);
-
+        viewPager.setUserInputEnabled(false);
 
         int scheduleId = getIntent().getIntExtra("scheduleId", -1);
 
@@ -48,7 +47,7 @@ public class ScheduleInfoActivity extends AppCompatActivity
             public void onChanged(ScheduleData scheduleData)
             {
                 ScheduleTabViewPager adapter = new ScheduleTabViewPager(ScheduleInfoActivity.this);
-                viewPager.setAdapter(adapter.setFragments(scheduleData.getSchedule(), scheduleData.getAddress(), scheduleData.getPlace()));
+                viewPager.setAdapter(adapter.setFragments(scheduleData.getSchedule(), scheduleData.getAddresses(), scheduleData.getPlaces()));
 
                 String[] tabs = {"일정", "날씨", "지도"};
 
@@ -64,5 +63,6 @@ public class ScheduleInfoActivity extends AppCompatActivity
         });
 
     }
+
 
 }

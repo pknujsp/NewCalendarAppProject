@@ -79,8 +79,8 @@ public class ScheduleRepository
                 ScheduleData scheduleData = new ScheduleData();
 
                 scheduleData.setSchedule(scheduleDAO.selectScheduleNotLive(scheduleId));
-                scheduleData.setAddress(locationDAO.selectAddressNotLive(scheduleId));
-                scheduleData.setPlace(locationDAO.selectPlaceNotLive(scheduleId));
+                scheduleData.setAddresses(locationDAO.selectAddressesNotLive(scheduleId));
+                scheduleData.setPlaces(locationDAO.selectPlacesNotLive(scheduleId));
 
                 scheduleDataLiveData.postValue(scheduleData);
             }

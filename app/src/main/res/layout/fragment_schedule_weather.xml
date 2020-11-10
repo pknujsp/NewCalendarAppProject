@@ -6,44 +6,9 @@
     android:layout_height="match_parent"
     tools:context=".scheduleinfo.ScheduleWeatherFragment">
 
-    <LinearLayout
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/location_items_pager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical">
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="12dp"
-            android:layout_marginRight="12dp"
-            android:orientation="horizontal">
-
-            <ImageButton
-                android:id="@+id/refresh_weather_data_button"
-                android:layout_width="16dp"
-                android:layout_height="16dp"
-                android:layout_centerVertical="true"
-                android:layout_toLeftOf="@id/refreshed_dateTime"
-                android:background="?attr/selectableItemBackground"
-                android:scaleType="centerInside"
-                android:src="@drawable/refresh_icon" />
-
-            <TextView
-                android:id="@+id/refreshed_dateTime"
-                android:layout_width="wrap_content"
-                android:layout_height="16dp"
-                android:layout_alignParentRight="true"
-                android:layout_centerVertical="true"
-                android:layout_marginLeft="4dp"
-                android:height="16dp"
-                android:gravity="left|center_vertical"
-                android:text="TextView" />
-        </RelativeLayout>
-
-        <androidx.viewpager2.widget.ViewPager2
-            android:id="@+id/location_items_pager"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="horizontal" />
-    </LinearLayout>
+        android:orientation="horizontal" />
 </FrameLayout>

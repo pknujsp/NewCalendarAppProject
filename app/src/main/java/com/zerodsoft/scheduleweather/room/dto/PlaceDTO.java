@@ -30,6 +30,9 @@ public class PlaceDTO implements Parcelable, Cloneable
     @ColumnInfo(name = "place_name")
     private String placeName;
 
+    @ColumnInfo(name = "address_name")
+    private String addressName;
+
     @ColumnInfo(name = "latitude")
     private String latitude;
 
@@ -52,6 +55,7 @@ public class PlaceDTO implements Parcelable, Cloneable
         scheduleId = in.readInt();
         placeId = in.readString();
         placeName = in.readString();
+        addressName = in.readString();
         latitude = in.readString();
         longitude = in.readString();
         weatherX = in.readString();
@@ -153,6 +157,16 @@ public class PlaceDTO implements Parcelable, Cloneable
         this.weatherY = weatherY;
     }
 
+    public void setAddressName(String addressName)
+    {
+        this.addressName = addressName;
+    }
+
+    public String getAddressName()
+    {
+        return addressName;
+    }
+
     @Override
     public int describeContents()
     {
@@ -166,6 +180,7 @@ public class PlaceDTO implements Parcelable, Cloneable
         parcel.writeInt(scheduleId);
         parcel.writeString(placeId);
         parcel.writeString(placeName);
+        parcel.writeString(addressName);
         parcel.writeString(latitude);
         parcel.writeString(longitude);
         parcel.writeString(weatherX);

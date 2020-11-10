@@ -13,12 +13,14 @@ import com.zerodsoft.scheduleweather.room.dto.AddressDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
 import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
 
+import java.util.List;
+
 
 public class ScheduleMapFragment extends Fragment
 {
 
 
-    public ScheduleMapFragment(PlaceDTO place, AddressDTO address)
+    public ScheduleMapFragment(List<AddressDTO> addresses, List<PlaceDTO> places)
     {
        // setSchedule(schedule, place, address);
     }

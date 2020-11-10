@@ -10,7 +10,9 @@ import android.graphics.drawable.Drawable;
 import android.text.TextPaint;
 import android.util.TypedValue;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.HorizontalScrollView;
 import android.widget.ScrollView;
 
 import com.zerodsoft.scheduleweather.R;
@@ -27,7 +29,7 @@ import java.util.Map;
 
 public class UltraSrtFcstView extends FrameLayout
 {
-    private ScrollView scrollView;
+    private HorizontalScrollView scrollView;
     private UltraSrtFcstItemView itemView;
 
     private final TextPaint labelTextPaint;
@@ -105,34 +107,31 @@ public class UltraSrtFcstView extends FrameLayout
         ITEM_WIDTH = rect.width();
         VIEW_HEIGHT = humidityPoint.y + textDescent + TEXT_MARGIN_TB;
 
-        scrollView = new ScrollView(context);
-        scrollView.setSmoothScrollingEnabled(true);
+        scrollView = new HorizontalScrollView(context);
         scrollView.setHorizontalScrollBarEnabled(true);
-        scrollView.setClickable(true);
-        addView(scrollView, 0);
+
+        addView(scrollView, 0, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         itemView = new UltraSrtFcstItemView(context);
-        ((ScrollView) getChildAt(0)).addView(itemView, 0);
-
-        setBackgroundColor(Color.LTGRAY);
+        ((HorizontalScrollView) getChildAt(0)).addView(itemView, 0);
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
     {
-        setMeasuredDimension(viewWidth, VIEW_HEIGHT);
-        ((ScrollView) getChildAt(0)).measure(viewWidth, VIEW_HEIGHT);
-        ((ScrollView) getChildAt(0)).getChildAt(0).measure(viewWidth, VIEW_HEIGHT);
+        setMeasuredDimension(widthMeasureSpec, VIEW_HEIGHT);
+        ((HorizontalScrollView) getChildAt(0)).getChildAt(0).measure(viewWidth, VIEW_HEIGHT);
+        ((HorizontalScrollView) getChildAt(0)).measure(viewWidth, VIEW_HEIGHT);
     }
 
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom)
     {
         super.onLayout(changed, left, top, right, bottom);
+        View child = ((HorizontalScrollView) getChildAt(0)).getChildAt(0);
 
-        View child = ((ScrollView) getChildAt(0)).getChildAt(0);
-        ((ScrollView) getChildAt(0)).layout(LABEL_TEXT_WIDTH + DP_8, 0, LABEL_TEXT_WIDTH + DP_8 + child.getMeasuredWidth(), child.getMeasuredHeight());
-        child.layout(LABEL_TEXT_WIDTH + DP_8, 0, LABEL_TEXT_WIDTH + DP_8 + child.getMeasuredWidth(), child.getMeasuredHeight());
+        ((HorizontalScrollView) getChildAt(0)).layout(LABEL_TEXT_WIDTH + DP_8, 0, getWidth(), child.getHeight());
+        child.layout(0, 0, child.getWidth(), child.getHeight());
     }
 
     @Override
@@ -158,9 +157,9 @@ public class UltraSrtFcstView extends FrameLayout
         return this;
     }
 
+
     class UltraSrtFcstItemView extends View
     {
-
         public UltraSrtFcstItemView(Context context)
         {
             super(context);

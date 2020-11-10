@@ -248,6 +248,7 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
                         placeDTOKeyword.setLatitude(Double.toString(lat));
                         placeDTOKeyword.setWeatherX(Integer.toString(lonLat.getX()));
                         placeDTOKeyword.setWeatherY(Integer.toString(lonLat.getY()));
+                        placeDTOKeyword.setAddressName(placeKeywordDocument.getAddressName());
 
                         try
                         {
@@ -271,6 +272,7 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
                         placeDTOCategory.setLatitude(placeCategoryDocument.getY());
                         placeDTOCategory.setWeatherX(Integer.toString(lonLat.getX()));
                         placeDTOCategory.setWeatherY(Integer.toString(lonLat.getY()));
+                        placeDTOCategory.setAddressName(placeCategoryDocument.getAddressName());
 
                         try
                         {
