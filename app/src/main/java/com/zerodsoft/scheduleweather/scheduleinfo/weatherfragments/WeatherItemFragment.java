@@ -1,19 +1,14 @@
 package com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments;
 
-import android.content.Context;
-import android.graphics.Canvas;
 import android.os.Bundle;
-import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -27,7 +22,7 @@ import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
 import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.resultdata.WeatherData;
 import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.views.MidFcstView;
-import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.views.UltraSrtFcstView;
+import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.views.UltraSrtFcstFragment;
 import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.views.UltraSrtNcstFragment;
 import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.views.VilageFcstView;
 import com.zerodsoft.scheduleweather.utility.Clock;
@@ -47,7 +42,7 @@ public class WeatherItemFragment extends Fragment
     private final String ADDRESSNAME;
 
     private UltraSrtNcstFragment ultraSrtNcstFragment;
-    private UltraSrtFcstView ultraSrtFcstView;
+    private UltraSrtFcstFragment ultraSrtFcstFragment;
     private VilageFcstView vilageFcstView;
     private MidFcstView midFcstView;
     private WeatherAreaCodeDTO weatherAreaCode;
@@ -79,6 +74,7 @@ public class WeatherItemFragment extends Fragment
         super.onViewCreated(view, savedInstanceState);
         FragmentManager fragmentManager = getChildFragmentManager();
         ultraSrtNcstFragment = (UltraSrtNcstFragment) fragmentManager.findFragmentById(R.id.ultra_srt_ncst_fragment);
+        ultraSrtFcstFragment = (UltraSrtFcstFragment) fragmentManager.findFragmentById(R.id.ultra_srt_fcst_fragment);
     }
 
     @Override
@@ -174,7 +170,7 @@ public class WeatherItemFragment extends Fragment
         this.weatherData = weatherData;
         init();
         ultraSrtNcstFragment.setWeatherData(weatherData, sunSetRiseList.get(0));
-      //  ultraSrtFcstView.setWeatherData(weatherData, sunSetRiseList);
+        ultraSrtFcstFragment.setWeatherData(weatherData, sunSetRiseList);
     }
 
 }
