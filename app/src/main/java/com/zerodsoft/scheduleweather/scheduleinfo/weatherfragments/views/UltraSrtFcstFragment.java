@@ -3,16 +3,13 @@ package com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.views;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
-import android.media.Image;
 import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -28,8 +25,8 @@ import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.resultdata.re
 import com.zerodsoft.scheduleweather.utility.Clock;
 import com.zerodsoft.scheduleweather.utility.WeatherDataConverter;
 
-import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 public class UltraSrtFcstFragment extends Fragment
@@ -61,10 +58,10 @@ public class UltraSrtFcstFragment extends Fragment
     {
         this.weatherData = weatherData;
         this.sunSetRiseDataList = sunSetRiseDataList;
-        setScrollView();
+        setTable();
     }
 
-    private void setScrollView()
+    private void setTable()
     {
         final int DP48 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 48f, getResources().getDisplayMetrics());
         final int DP32 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32f, getResources().getDisplayMetrics());
@@ -197,7 +194,8 @@ public class UltraSrtFcstFragment extends Fragment
             if (sunSetRiseCalendar.get(Calendar.DAY_OF_YEAR) == calendar.get(Calendar.DAY_OF_YEAR) &&
                     sunSetRiseCalendar.get(Calendar.YEAR) == calendar.get(Calendar.YEAR))
             {
-                boolean day = calendar.after(sunSetRiseData.getSunrise()) && calendar.before(sunSetRiseData.getSunset());
+                Date calendarDate = calendar.getTime();
+                boolean day = calendarDate.after(sunSetRiseData.getSunrise()) && calendarDate.before(sunSetRiseData.getSunset()) ? true : false;
                 drawable = getContext().getDrawable(WeatherDataConverter.getSkyDrawableId(data.getSky(), data.getPrecipitationForm(), day));
             }
         }

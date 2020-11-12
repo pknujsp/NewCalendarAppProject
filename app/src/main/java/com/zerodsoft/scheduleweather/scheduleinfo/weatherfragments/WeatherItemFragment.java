@@ -24,7 +24,7 @@ import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.resultdata.We
 import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.views.MidFcstView;
 import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.views.UltraSrtFcstFragment;
 import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.views.UltraSrtNcstFragment;
-import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.views.VilageFcstView;
+import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.views.VilageFcstFragment;
 import com.zerodsoft.scheduleweather.utility.Clock;
 import com.zerodsoft.scheduleweather.utility.LonLat;
 import com.zerodsoft.scheduleweather.utility.LonLatConverter;
@@ -43,7 +43,7 @@ public class WeatherItemFragment extends Fragment
 
     private UltraSrtNcstFragment ultraSrtNcstFragment;
     private UltraSrtFcstFragment ultraSrtFcstFragment;
-    private VilageFcstView vilageFcstView;
+    private VilageFcstFragment vilageFcstFragment;
     private MidFcstView midFcstView;
     private WeatherAreaCodeDTO weatherAreaCode;
 
@@ -75,6 +75,7 @@ public class WeatherItemFragment extends Fragment
         FragmentManager fragmentManager = getChildFragmentManager();
         ultraSrtNcstFragment = (UltraSrtNcstFragment) fragmentManager.findFragmentById(R.id.ultra_srt_ncst_fragment);
         ultraSrtFcstFragment = (UltraSrtFcstFragment) fragmentManager.findFragmentById(R.id.ultra_srt_fcst_fragment);
+        vilageFcstFragment = (VilageFcstFragment) fragmentManager.findFragmentById(R.id.vilage_fcst_fragment);
     }
 
     @Override
@@ -171,6 +172,7 @@ public class WeatherItemFragment extends Fragment
         init();
         ultraSrtNcstFragment.setWeatherData(weatherData, sunSetRiseList.get(0));
         ultraSrtFcstFragment.setWeatherData(weatherData, sunSetRiseList);
+        vilageFcstFragment.setWeatherData(weatherData, sunSetRiseList);
     }
 
 }

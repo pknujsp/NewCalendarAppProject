@@ -15,6 +15,7 @@ public class Clock
     public static final SimpleDateFormat WEATHER_TIME_FORMAT = new SimpleDateFormat("HH");
     public static final SimpleDateFormat WEATHER_DATE_FORMAT = new SimpleDateFormat("MMdd");
     public static final SimpleDateFormat MdE_FORMAT = new SimpleDateFormat("M/d E");
+    public static final SimpleDateFormat MdHH_FORMAT = new SimpleDateFormat("M/d HH");
     public static final SimpleDateFormat dateFormat2 = new SimpleDateFormat("yyyy년 M월 d일 E a h시 m분");
     public static final SimpleDateFormat dateFormat3 = new SimpleDateFormat("yyyy년 M월 d일 E");
     public static final SimpleDateFormat DB_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");

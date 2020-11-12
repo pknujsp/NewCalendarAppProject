@@ -314,19 +314,15 @@ public class WeatherData
                 vilageFcstDataList.add(new VilageFcstData(map.get(iterator.next())));
             }
 
-            //초단기예보 데이터 리스트를 날짜 오름차순으로 정렬
-            Collections.sort(vilageFcstDataList, new Comparator<VilageFcstData>()
+            //동네예보 데이터 리스트를 날짜 오름차순으로 정렬
+            Collections.sort(vilageFcstDataList, (t1, t2) ->
             {
-                @Override
-                public int compare(VilageFcstData t1, VilageFcstData t2)
+                if (t1.getDateTime().after(t2.getDateTime()))
                 {
-                    if ((t1.getDateTime()).compareTo(t2.getDateTime()) > 0)
-                    {
-                        return 1;
-                    } else
-                    {
-                        return 0;
-                    }
+                    return 1;
+                } else
+                {
+                    return -1;
                 }
             });
 

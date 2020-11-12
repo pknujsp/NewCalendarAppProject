@@ -21,7 +21,6 @@ SKY와 PTY는 별개의 데이터
     {
         int id = 0;
 
-
         if (sky.equals(context.getString(R.string.sky_sunny)))
         {
             if (day)

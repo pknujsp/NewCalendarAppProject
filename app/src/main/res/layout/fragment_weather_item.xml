@@ -10,12 +10,21 @@
         android:id="@+id/ultra_srt_ncst_fragment"
         android:name="com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.views.UltraSrtNcstFragment"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp" />
 
     <fragment
         android:id="@+id/ultra_srt_fcst_fragment"
         android:name="com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.views.UltraSrtFcstFragment"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp" />
+
+    <fragment
+        android:id="@+id/vilage_fcst_fragment"
+        android:name="com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.views.VilageFcstFragment"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp" />
 
 </LinearLayout>
