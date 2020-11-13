@@ -66,8 +66,9 @@ public class UltraSrtFcstFragment extends Fragment
         final int DP48 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 48f, getResources().getDisplayMetrics());
         final int DP32 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32f, getResources().getDisplayMetrics());
         final List<UltraSrtFcstData> dataList = weatherData.getUltraSrtFcstFinalData().getData();
-        final int dataSize = dataList.size();
-        final int viewWidth = dataSize * DP48;
+        final int DATA_SIZE = dataList.size();
+        final int VIEW_WIDTH = DATA_SIZE * DP48;
+
         //시각, 하늘, 기온, 바람, 습도 순으로 행 등록
         Context context = getContext();
 
@@ -81,7 +82,7 @@ public class UltraSrtFcstFragment extends Fragment
         clockLabel.setText(getString(R.string.clock));
         clockRow.addView(clockLabel, new TableRow.LayoutParams(DP48, ViewGroup.LayoutParams.WRAP_CONTENT));
 
-        for (int col = 0; col < dataSize; col++)
+        for (int col = 0; col < DATA_SIZE; col++)
         {
             TextView textView = new TextView(context);
             textView.setTextColor(Color.BLACK);
@@ -91,7 +92,7 @@ public class UltraSrtFcstFragment extends Fragment
             clockRow.addView(textView, new TableRow.LayoutParams(DP48, ViewGroup.LayoutParams.WRAP_CONTENT));
         }
 
-        table.addView(clockRow, new TableLayout.LayoutParams(viewWidth, ViewGroup.LayoutParams.WRAP_CONTENT));
+        table.addView(clockRow, new TableLayout.LayoutParams(VIEW_WIDTH, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         //하늘 ---------------------------------------------------------------------------
         TableRow skyRow = new TableRow(context);
@@ -103,14 +104,14 @@ public class UltraSrtFcstFragment extends Fragment
         skyLabel.setText(getString(R.string.sky));
         skyRow.addView(skyLabel, new TableRow.LayoutParams(DP48, ViewGroup.LayoutParams.MATCH_PARENT));
 
-        for (int col = 0; col < dataSize; col++)
+        for (int col = 0; col < DATA_SIZE; col++)
         {
             ImageView imageView = new ImageView(context);
             imageView.setImageDrawable(getSkyImage(dataList.get(col)));
             skyRow.addView(imageView, new TableRow.LayoutParams(DP32, DP32));
         }
 
-        table.addView(skyRow, new TableLayout.LayoutParams(viewWidth, ViewGroup.LayoutParams.WRAP_CONTENT));
+        table.addView(skyRow, new TableLayout.LayoutParams(VIEW_WIDTH, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         //기온 ------------------------------------------------------------------------------
         TableRow tempRow = new TableRow(context);
@@ -122,7 +123,7 @@ public class UltraSrtFcstFragment extends Fragment
         tempLabel.setText(getString(R.string.temperature));
         tempRow.addView(tempLabel, new TableRow.LayoutParams(DP48, ViewGroup.LayoutParams.WRAP_CONTENT));
 
-        for (int col = 0; col < dataSize; col++)
+        for (int col = 0; col < DATA_SIZE; col++)
         {
             TextView textView = new TextView(context);
             textView.setTextColor(Color.BLACK);
@@ -132,7 +133,7 @@ public class UltraSrtFcstFragment extends Fragment
             tempRow.addView(textView, new TableRow.LayoutParams(DP48, ViewGroup.LayoutParams.WRAP_CONTENT));
         }
 
-        table.addView(tempRow, new TableLayout.LayoutParams(viewWidth, ViewGroup.LayoutParams.WRAP_CONTENT));
+        table.addView(tempRow, new TableLayout.LayoutParams(VIEW_WIDTH, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         //바람 ------------------------------------------------------------------------------
         TableRow windRow = new TableRow(context);
@@ -144,7 +145,7 @@ public class UltraSrtFcstFragment extends Fragment
         windLabel.setText(getString(R.string.wind));
         windRow.addView(windLabel, new TableRow.LayoutParams(DP48, ViewGroup.LayoutParams.MATCH_PARENT));
 
-        for (int col = 0; col < dataSize; col++)
+        for (int col = 0; col < DATA_SIZE; col++)
         {
             TextView textView = new TextView(context);
             textView.setTextColor(Color.BLACK);
@@ -154,7 +155,7 @@ public class UltraSrtFcstFragment extends Fragment
             windRow.addView(textView, new TableRow.LayoutParams(DP48, ViewGroup.LayoutParams.WRAP_CONTENT));
         }
 
-        table.addView(windRow, new TableLayout.LayoutParams(viewWidth, ViewGroup.LayoutParams.WRAP_CONTENT));
+        table.addView(windRow, new TableLayout.LayoutParams(VIEW_WIDTH, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         //습도 ------------------------------------------------------------------------------
         TableRow humidityRow = new TableRow(context);
@@ -166,7 +167,7 @@ public class UltraSrtFcstFragment extends Fragment
         humidityLabel.setText(getString(R.string.humidity));
         humidityRow.addView(humidityLabel, new TableRow.LayoutParams(DP48, ViewGroup.LayoutParams.WRAP_CONTENT));
 
-        for (int col = 0; col < dataSize; col++)
+        for (int col = 0; col < DATA_SIZE; col++)
         {
             TextView textView = new TextView(context);
             textView.setTextColor(Color.BLACK);
@@ -176,7 +177,7 @@ public class UltraSrtFcstFragment extends Fragment
             humidityRow.addView(textView, new TableRow.LayoutParams(DP48, ViewGroup.LayoutParams.WRAP_CONTENT));
         }
 
-        table.addView(humidityRow, new TableLayout.LayoutParams(viewWidth, ViewGroup.LayoutParams.WRAP_CONTENT));
+        table.addView(humidityRow, new TableLayout.LayoutParams(VIEW_WIDTH, ViewGroup.LayoutParams.WRAP_CONTENT));
         table.invalidate();
     }
 
