@@ -3,18 +3,19 @@ package com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.views;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.Point;
+import android.graphics.PointF;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.TextPaint;
-import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
@@ -28,13 +29,12 @@ import androidx.fragment.app.Fragment;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.SunSetRiseData;
 import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.resultdata.WeatherData;
-import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.resultdata.responseresult.UltraSrtFcstData;
 import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.resultdata.responseresult.VilageFcstData;
 import com.zerodsoft.scheduleweather.utility.Clock;
 import com.zerodsoft.scheduleweather.utility.WeatherDataConverter;
 
+import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedList;
@@ -77,12 +77,11 @@ public class VilageFcstFragment extends Fragment
     private void setTable()
     {
         Context context = getContext();
-
         final int ITEM_WIDTH = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 50f, getResources().getDisplayMetrics());
         final int MARGIN = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, getResources().getDisplayMetrics());
         final int DP24 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, getResources().getDisplayMetrics());
         final int DP34 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 34f, getResources().getDisplayMetrics());
-        final int DP90 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 90f, getResources().getDisplayMetrics());
+        final int DP80 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 80f, getResources().getDisplayMetrics());
 
         List<VilageFcstData> dataList = weatherData.getVilageFcstFinalData().getData();
         final int DATA_SIZE = dataList.size();
@@ -90,9 +89,9 @@ public class VilageFcstFragment extends Fragment
 
         //시각, 하늘, 기온, 강수량, 강수확률, 바람, 습도 순으로 행 등록
         TableRow clockRow = new TableRow(context);
-        TableRow skyRow = new TableRow(context);
-        TempRow tempRow = new TempRow(context);
-        TableRow rainfallRow = new TableRow(context);
+        SkyView skyRow = new SkyView(context, dataList);
+        TempView tempRow = new TempView(context, dataList);
+        RainfallView rainfallRow = new RainfallView(context, dataList);
         TableRow chanceOfShowerRow = new TableRow(context);
         TableRow windRow = new TableRow(context);
         TableRow humidityRow = new TableRow(context);
@@ -118,9 +117,9 @@ public class VilageFcstFragment extends Fragment
         clockLabelParams.bottomMargin = MARGIN;
         LinearLayout.LayoutParams skyLabelParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, DP24);
         skyLabelParams.bottomMargin = MARGIN;
-        LinearLayout.LayoutParams tempLabelParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, DP90);
-        tempLabelParams.bottomMargin = MARGIN;
+        LinearLayout.LayoutParams tempLabelParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, DP80);
         LinearLayout.LayoutParams rainfallLabelParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, DP24);
+        rainfallLabelParams.topMargin = MARGIN;
         rainfallLabelParams.bottomMargin = MARGIN;
         LinearLayout.LayoutParams chanceOfShowerLabelParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, DP24);
         chanceOfShowerLabelParams.bottomMargin = MARGIN;
@@ -159,29 +158,13 @@ public class VilageFcstFragment extends Fragment
         }
 
         //하늘 ---------------------------------------------------------------------------
-        for (int col = 0; col < DATA_SIZE; col++)
-        {
-            ImageView imageView = new ImageView(context);
-            imageView.setImageDrawable(getSkyImage(dataList.get(col)));
-            TableRow.LayoutParams layoutParams = new TableRow.LayoutParams(ITEM_WIDTH, DP24);
-            layoutParams.gravity = Gravity.CENTER;
-            skyRow.addView(imageView, layoutParams);
-        }
+        skyRow.measure(VIEW_WIDTH, DP24 + MARGIN);
 
         //기온 ------------------------------------------------------------------------------
-        tempRow.setTempList(dataList);
-        tempRow.measure(ITEM_WIDTH, DP90);
+        tempRow.measure(VIEW_WIDTH, DP80 + MARGIN);
 
         //강수량 ------------------------------------------------------------------------------
-        for (int col = 0; col < DATA_SIZE; col++)
-        {
-            TextView textView = new TextView(context);
-            setValueTextView(textView, dataList.get(col).getRainPrecipitation6Hour());
-
-            TableRow.LayoutParams textParams = new TableRow.LayoutParams(ITEM_WIDTH, DP24);
-            textParams.gravity = Gravity.CENTER;
-            rainfallRow.addView(textView, textParams);
-        }
+        rainfallRow.measure(VIEW_WIDTH, DP24 + MARGIN);
 
         //강수확률 ------------------------------------------------------------------------------
         for (int col = 0; col < DATA_SIZE; col++)
@@ -218,12 +201,9 @@ public class VilageFcstFragment extends Fragment
 
         TableLayout.LayoutParams clockRowParams = new TableLayout.LayoutParams(VIEW_WIDTH, ViewGroup.LayoutParams.WRAP_CONTENT);
         clockRowParams.bottomMargin = MARGIN;
-        TableLayout.LayoutParams skyRowParams = new TableLayout.LayoutParams(VIEW_WIDTH, ViewGroup.LayoutParams.WRAP_CONTENT);
-        skyRowParams.bottomMargin = MARGIN;
-        TableLayout.LayoutParams tempRowParams = new TableLayout.LayoutParams(VIEW_WIDTH, ViewGroup.LayoutParams.WRAP_CONTENT);
-        tempRowParams.bottomMargin = MARGIN;
-        TableLayout.LayoutParams rainfallRowParams = new TableLayout.LayoutParams(VIEW_WIDTH, ViewGroup.LayoutParams.WRAP_CONTENT);
-        rainfallRowParams.bottomMargin = MARGIN;
+        TableLayout.LayoutParams skyRowParams = new TableLayout.LayoutParams(VIEW_WIDTH, DP24 + MARGIN);
+        TableLayout.LayoutParams tempRowParams = new TableLayout.LayoutParams(VIEW_WIDTH, DP80 + MARGIN);
+        TableLayout.LayoutParams rainfallRowParams = new TableLayout.LayoutParams(VIEW_WIDTH, DP24 + MARGIN);
         TableLayout.LayoutParams chanceOfShowerRowParams = new TableLayout.LayoutParams(VIEW_WIDTH, ViewGroup.LayoutParams.WRAP_CONTENT);
         chanceOfShowerRowParams.bottomMargin = MARGIN;
         TableLayout.LayoutParams windRowParams = new TableLayout.LayoutParams(VIEW_WIDTH, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -237,10 +217,6 @@ public class VilageFcstFragment extends Fragment
         table.addView(chanceOfShowerRow, chanceOfShowerRowParams);
         table.addView(windRow, windRowParams);
         table.addView(humidityRow, humidityRowParams);
-
-        table.invalidate();
-        tempRow.requestLayout();
-        tempRow.invalidate();
     }
 
     private void setLabelTextView(TextView textView, String labelText)
@@ -281,16 +257,75 @@ public class VilageFcstFragment extends Fragment
         return drawable;
     }
 
-    class TempRow extends TableRow
+    class SkyView extends View
+    {
+        private List<Drawable> skyImageList;
+
+        public SkyView(Context context, List<VilageFcstData> dataList)
+        {
+            super(context);
+
+            skyImageList = new LinkedList<>();
+            for (int i = 0; i < dataList.size() - 1; i++)
+            {
+                skyImageList.add(getSkyImage(dataList.get(i)));
+            }
+
+            setWillNotDraw(false);
+        }
+
+        @Override
+        protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
+        {
+            setMeasuredDimension(widthMeasureSpec, heightMeasureSpec);
+        }
+
+        @Override
+        protected void onLayout(boolean changed, int left, int top, int right, int bottom)
+        {
+            final int MARGIN = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, getResources().getDisplayMetrics());
+            super.onLayout(changed, left, top, right, bottom - MARGIN);
+        }
+
+        @Override
+        protected void onDraw(Canvas canvas)
+        {
+            super.onDraw(canvas);
+            drawImages(canvas);
+        }
+
+        private void drawImages(Canvas canvas)
+        {
+            final int COLUMN_WIDTH = getWidth() / (skyImageList.size() + 1);
+            final int RADIUS = getHeight() / 2;
+            final int TOP = 0;
+            final int BOTTOM = getHeight();
+            final int LEFT = COLUMN_WIDTH - RADIUS;
+            final int RIGHT = COLUMN_WIDTH + RADIUS;
+            final Rect RECT = new Rect(LEFT, TOP, RIGHT, BOTTOM);
+
+            int index = 0;
+            for (Drawable image : skyImageList)
+            {
+                image.setBounds(RECT);
+                image.draw(canvas);
+
+                RECT.offset(COLUMN_WIDTH, 0);
+                index++;
+            }
+        }
+    }
+
+    class TempView extends View
     {
         private List<String> tempList;
-        private double maxTemp;
-        private double minTemp;
+        private final float MAX_TEMP;
+        private final float MIN_TEMP;
         private final TextPaint TEMP_PAINT;
         private final Paint LINE_PAINT;
         private final Paint CIRCLE_PAINT;
 
-        public TempRow(Context context)
+        public TempView(Context context, List<VilageFcstData> dataList)
         {
             super(context);
             TEMP_PAINT = new TextPaint();
@@ -301,10 +336,38 @@ public class VilageFcstFragment extends Fragment
             LINE_PAINT = new Paint();
             LINE_PAINT.setAntiAlias(true);
             LINE_PAINT.setColor(Color.GRAY);
+            LINE_PAINT.setStyle(Paint.Style.FILL);
+            LINE_PAINT.setStrokeWidth(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1f, getResources().getDisplayMetrics()));
 
             CIRCLE_PAINT = new Paint();
             CIRCLE_PAINT.setAntiAlias(true);
             CIRCLE_PAINT.setColor(Color.GRAY);
+            CIRCLE_PAINT.setStyle(Paint.Style.FILL);
+
+            tempList = new LinkedList<>();
+
+            float max = Float.MIN_VALUE;
+            float min = Float.MAX_VALUE;
+            float temp = 0f;
+
+            for (VilageFcstData data : dataList)
+            {
+                temp = Float.parseFloat(data.getTemp3Hour());
+                tempList.add(data.getTemp3Hour());
+
+                // 최대,최소 기온 구하기
+                if (temp > max)
+                {
+                    max = temp;
+                } else if (temp < min)
+                {
+                    min = temp;
+                }
+            }
+            MAX_TEMP = max;
+            MIN_TEMP = min;
+
+            setWillNotDraw(false);
         }
 
         @Override
@@ -316,7 +379,8 @@ public class VilageFcstFragment extends Fragment
         @Override
         protected void onLayout(boolean changed, int l, int t, int r, int b)
         {
-            super.onLayout(changed, l, t, r, b);
+            final int MARGIN = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, getResources().getDisplayMetrics());
+            super.onLayout(changed, l, t, r, b - MARGIN);
         }
 
         @Override
@@ -328,46 +392,136 @@ public class VilageFcstFragment extends Fragment
 
         private void drawGraph(Canvas canvas)
         {
-            final int width = getWidth();
-            final int itemWidth = width / tempList.size();
-            final int SPACING = (int) ((-width) / ((maxTemp - minTemp) * 10));
-            double temp = 0;
+            // 텍스트의 높이+원의 반지름 만큼 뷰의 상/하단에 여백을 설정한다.
+            final float TEXT_HEIGHT = TEMP_PAINT.descent() - TEMP_PAINT.ascent();
+            final float RADIUS = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 2f, getResources().getDisplayMetrics());
+
+            final float VIEW_WIDTH = getWidth();
+            final float VIEW_HEIGHT = getHeight() - ((TEXT_HEIGHT + RADIUS) * 2);
+            final float COLUMN_WIDTH = VIEW_WIDTH / tempList.size();
+            final float SPACING = ((VIEW_HEIGHT) / (MAX_TEMP - MIN_TEMP)) / 10f;
+
+            float temp = 0f;
             float x = 0f;
             float y = 0f;
-            final float RADIUS = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 3f, getResources().getDisplayMetrics());
+
+            PointF lastColumnPoint = new PointF();
 
             int index = 0;
             for (String value : tempList)
             {
-                temp = Double.parseDouble(value);
-                x = itemWidth / 2 + itemWidth * index;
-                y = (float) ((10 * (maxTemp - temp)) * SPACING);
+                temp = Float.parseFloat(value);
+                x = COLUMN_WIDTH / 2f + COLUMN_WIDTH * index;
+                y = (10f * (MAX_TEMP - temp)) * SPACING + TEXT_HEIGHT + RADIUS;
                 canvas.drawCircle(x, y, RADIUS, CIRCLE_PAINT);
-                canvas.drawText(value, x, y + 20, TEMP_PAINT);
+                canvas.drawText(value, x, y + RADIUS + TEXT_HEIGHT, TEMP_PAINT);
+
+                if (index != 0)
+                {
+                    canvas.drawLine(lastColumnPoint.x, lastColumnPoint.y, x, y, LINE_PAINT);
+                }
+
+                lastColumnPoint.set(x, y);
+                index++;
             }
         }
 
-        public void setTempList(List<VilageFcstData> dataList)
+
+    }
+
+    class RainfallView extends View
+    {
+        List<String> rainfallList;
+        final int COLUMN_SIZE;
+        final TextPaint VALUE_PAINT;
+        final Paint RECT_PAINT;
+
+        public RainfallView(Context context, List<VilageFcstData> dataList)
         {
-            tempList = new LinkedList<>();
+            super(context);
 
-            maxTemp = Double.MIN_VALUE;
-            minTemp = Double.MAX_VALUE;
-            double temp = 0;
-
+            COLUMN_SIZE = dataList.size();
+            rainfallList = new LinkedList<>();
             for (VilageFcstData data : dataList)
             {
-                temp = Double.parseDouble(data.getTemp3Hour());
-                tempList.add(data.getTemp3Hour());
-
-                // 최대,최소 기온 구하기
-                if (temp > maxTemp)
+                if (data.getRainPrecipitation6Hour() != null)
                 {
-                    maxTemp = temp;
-                } else if (temp < minTemp)
-                {
-                    minTemp = temp;
+                    rainfallList.add(data.getRainPrecipitation6Hour());
                 }
+            }
+
+            VALUE_PAINT = new TextPaint();
+            VALUE_PAINT.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 13f, getResources().getDisplayMetrics()));
+            VALUE_PAINT.setColor(Color.BLACK);
+            VALUE_PAINT.setTextAlign(Paint.Align.CENTER);
+
+            RECT_PAINT = new Paint();
+            RECT_PAINT.setStyle(Paint.Style.FILL);
+            RECT_PAINT.setColor(Color.GRAY);
+        }
+
+        @Override
+        protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
+        {
+            super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        }
+
+        @Override
+        protected void onLayout(boolean changed, int left, int top, int right, int bottom)
+        {
+            final int MARGIN = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, getResources().getDisplayMetrics());
+            super.onLayout(changed, left, top, right, bottom - MARGIN);
+        }
+
+        @Override
+        protected void onDraw(Canvas canvas)
+        {
+            super.onDraw(canvas);
+            drawView(canvas);
+        }
+
+        private void drawView(Canvas canvas)
+        {
+            final float MARGIN = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 2, getResources().getDisplayMetrics());
+            final int COLUMN_WIDTH = getWidth() / COLUMN_SIZE;
+            final int COLUMN_WIDTH_HALF = COLUMN_WIDTH / 2;
+            final float TOP = 0;
+            final float BOTTOM = getHeight();
+            float left = 0f;
+            float right = 0f;
+            float x = 0f;
+            final float Y = getHeight() / 2f;
+
+            RectF rect = new RectF();
+            rect.top = TOP;
+            rect.bottom = BOTTOM;
+
+            int index = 0;
+            for (String value : rainfallList)
+            {
+                // 첫번째 자료는 발표시간+1시간 부터 발표시간+7시간 까지
+                if (index == 0)
+                {
+                    left = 0;
+                    right = COLUMN_WIDTH + COLUMN_WIDTH_HALF - MARGIN;
+                } else if (index == rainfallList.size() - 1)
+                {
+                    left = getWidth() - COLUMN_WIDTH_HALF + MARGIN;
+                    right = getWidth();
+                } else
+                {
+                    left = COLUMN_WIDTH + COLUMN_WIDTH_HALF + ((COLUMN_WIDTH * 2) * (index - 1));
+                    right = left + (COLUMN_WIDTH * 2);
+                    left += MARGIN;
+                    right -= MARGIN;
+                }
+                rect.left = left;
+                rect.right = right;
+
+                canvas.drawRect(left, TOP, right, BOTTOM, RECT_PAINT);
+                canvas.drawText(value, rect.centerX(), Y, VALUE_PAINT);
+
+                index++;
             }
         }
     }
