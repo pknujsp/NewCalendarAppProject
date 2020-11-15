@@ -79,7 +79,7 @@ public class VilageFcstFragment extends Fragment
         Context context = getContext();
         final int ITEM_WIDTH = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 50f, getResources().getDisplayMetrics());
         final int MARGIN = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, getResources().getDisplayMetrics());
-        final int DP24 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, getResources().getDisplayMetrics());
+        final int DP22 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 22f, getResources().getDisplayMetrics());
         final int DP34 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 34f, getResources().getDisplayMetrics());
         final int DP80 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 80f, getResources().getDisplayMetrics());
 
@@ -115,17 +115,17 @@ public class VilageFcstFragment extends Fragment
 
         LinearLayout.LayoutParams clockLabelParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, DP34);
         clockLabelParams.bottomMargin = MARGIN;
-        LinearLayout.LayoutParams skyLabelParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, DP24);
+        LinearLayout.LayoutParams skyLabelParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, DP22);
         skyLabelParams.bottomMargin = MARGIN;
         LinearLayout.LayoutParams tempLabelParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, DP80);
-        LinearLayout.LayoutParams rainfallLabelParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, DP24);
-        rainfallLabelParams.topMargin = MARGIN;
+        tempLabelParams.bottomMargin = MARGIN;
+        LinearLayout.LayoutParams rainfallLabelParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, DP22);
         rainfallLabelParams.bottomMargin = MARGIN;
-        LinearLayout.LayoutParams chanceOfShowerLabelParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, DP24);
+        LinearLayout.LayoutParams chanceOfShowerLabelParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, DP22);
         chanceOfShowerLabelParams.bottomMargin = MARGIN;
         LinearLayout.LayoutParams windLabelParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, DP34);
         windLabelParams.bottomMargin = MARGIN;
-        LinearLayout.LayoutParams humidityLabelParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, DP24);
+        LinearLayout.LayoutParams humidityLabelParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, DP22);
 
         clockLabelParams.gravity = Gravity.CENTER;
         skyLabelParams.gravity = Gravity.CENTER;
@@ -158,13 +158,13 @@ public class VilageFcstFragment extends Fragment
         }
 
         //하늘 ---------------------------------------------------------------------------
-        skyRow.measure(VIEW_WIDTH, DP24 + MARGIN);
+        skyRow.measure(VIEW_WIDTH, DP22 + MARGIN);
 
         //기온 ------------------------------------------------------------------------------
         tempRow.measure(VIEW_WIDTH, DP80 + MARGIN);
 
         //강수량 ------------------------------------------------------------------------------
-        rainfallRow.measure(VIEW_WIDTH, DP24 + MARGIN);
+        rainfallRow.measure(VIEW_WIDTH, DP22 + MARGIN);
 
         //강수확률 ------------------------------------------------------------------------------
         for (int col = 0; col < DATA_SIZE; col++)
@@ -172,7 +172,7 @@ public class VilageFcstFragment extends Fragment
             TextView textView = new TextView(context);
             setValueTextView(textView, dataList.get(col).getChanceOfShower());
 
-            TableRow.LayoutParams textParams = new TableRow.LayoutParams(ITEM_WIDTH, DP24);
+            TableRow.LayoutParams textParams = new TableRow.LayoutParams(ITEM_WIDTH, DP22);
             textParams.gravity = Gravity.CENTER;
             chanceOfShowerRow.addView(textView, textParams);
         }
@@ -194,16 +194,16 @@ public class VilageFcstFragment extends Fragment
             TextView textView = new TextView(context);
             setValueTextView(textView, dataList.get(col).getHumidity());
 
-            TableRow.LayoutParams textParams = new TableRow.LayoutParams(ITEM_WIDTH, DP24);
+            TableRow.LayoutParams textParams = new TableRow.LayoutParams(ITEM_WIDTH, DP22);
             textParams.gravity = Gravity.CENTER;
             humidityRow.addView(textView, textParams);
         }
 
         TableLayout.LayoutParams clockRowParams = new TableLayout.LayoutParams(VIEW_WIDTH, ViewGroup.LayoutParams.WRAP_CONTENT);
         clockRowParams.bottomMargin = MARGIN;
-        TableLayout.LayoutParams skyRowParams = new TableLayout.LayoutParams(VIEW_WIDTH, DP24 + MARGIN);
+        TableLayout.LayoutParams skyRowParams = new TableLayout.LayoutParams(VIEW_WIDTH, DP22 + MARGIN);
         TableLayout.LayoutParams tempRowParams = new TableLayout.LayoutParams(VIEW_WIDTH, DP80 + MARGIN);
-        TableLayout.LayoutParams rainfallRowParams = new TableLayout.LayoutParams(VIEW_WIDTH, DP24 + MARGIN);
+        TableLayout.LayoutParams rainfallRowParams = new TableLayout.LayoutParams(VIEW_WIDTH, DP22 + MARGIN);
         TableLayout.LayoutParams chanceOfShowerRowParams = new TableLayout.LayoutParams(VIEW_WIDTH, ViewGroup.LayoutParams.WRAP_CONTENT);
         chanceOfShowerRowParams.bottomMargin = MARGIN;
         TableLayout.LayoutParams windRowParams = new TableLayout.LayoutParams(VIEW_WIDTH, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -393,11 +393,12 @@ public class VilageFcstFragment extends Fragment
         private void drawGraph(Canvas canvas)
         {
             // 텍스트의 높이+원의 반지름 만큼 뷰의 상/하단에 여백을 설정한다.
+            final int MARGIN = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, getResources().getDisplayMetrics());
             final float TEXT_HEIGHT = TEMP_PAINT.descent() - TEMP_PAINT.ascent();
             final float RADIUS = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 2f, getResources().getDisplayMetrics());
 
             final float VIEW_WIDTH = getWidth();
-            final float VIEW_HEIGHT = getHeight() - ((TEXT_HEIGHT + RADIUS) * 2);
+            final float VIEW_HEIGHT = getHeight() - MARGIN - ((TEXT_HEIGHT + RADIUS) * 2);
             final float COLUMN_WIDTH = VIEW_WIDTH / tempList.size();
             final float SPACING = ((VIEW_HEIGHT) / (MAX_TEMP - MIN_TEMP)) / 10f;
 
@@ -482,15 +483,16 @@ public class VilageFcstFragment extends Fragment
 
         private void drawView(Canvas canvas)
         {
-            final float MARGIN = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 2, getResources().getDisplayMetrics());
+            final float MARGIN_B = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, getResources().getDisplayMetrics());
+            final float MARGIN_LR = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 2f, getResources().getDisplayMetrics());
             final int COLUMN_WIDTH = getWidth() / COLUMN_SIZE;
             final int COLUMN_WIDTH_HALF = COLUMN_WIDTH / 2;
             final float TOP = 0;
-            final float BOTTOM = getHeight();
+            final float BOTTOM = getHeight() - MARGIN_B;
             float left = 0f;
             float right = 0f;
             float x = 0f;
-            final float Y = getHeight() / 2f;
+            final float Y = BOTTOM / 2f + VALUE_PAINT.descent();
 
             RectF rect = new RectF();
             rect.top = TOP;
@@ -503,17 +505,13 @@ public class VilageFcstFragment extends Fragment
                 if (index == 0)
                 {
                     left = 0;
-                    right = COLUMN_WIDTH + COLUMN_WIDTH_HALF - MARGIN;
-                } else if (index == rainfallList.size() - 1)
-                {
-                    left = getWidth() - COLUMN_WIDTH_HALF + MARGIN;
-                    right = getWidth();
+                    right = COLUMN_WIDTH + COLUMN_WIDTH_HALF - MARGIN_LR;
                 } else
                 {
                     left = COLUMN_WIDTH + COLUMN_WIDTH_HALF + ((COLUMN_WIDTH * 2) * (index - 1));
                     right = left + (COLUMN_WIDTH * 2);
-                    left += MARGIN;
-                    right -= MARGIN;
+                    left += MARGIN_LR;
+                    right -= MARGIN_LR;
                 }
                 rect.left = left;
                 rect.right = right;

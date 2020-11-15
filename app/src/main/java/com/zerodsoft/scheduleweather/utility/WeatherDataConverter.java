@@ -12,6 +12,17 @@ public class WeatherDataConverter
 - 강수형태(PTY) 코드 : 없음(0), 비(1), 비/눈/진눈깨비(2), 눈(3), 소나기(4), 빗방울(5), 빗방울/눈날림(6), 눈날림(7)
 SKY와 PTY는 별개의 데이터
      */
+    private static final String SUNNY = "맑음";
+    private static final String CLOUD = "구름많음";
+    private static final String CLOUD_RAIN = "구름많고 비";
+    private static final String CLOUD_SNOW = "구름많고 눈";
+    private static final String CLOUD_RAIN_SNOW = "구름많고 비/눈";
+    private static final String CLOUD_SNOW_RAIN = "구름많고 눈/비";
+    private static final String CLOUDY = "흐림";
+    private static final String CLOUDY_RAIN = "흐리고 비";
+    private static final String CLOUDY_SNOW = "흐리고 눈";
+    private static final String CLOUDY_RAIN_SNOW = "흐리고 비/눈";
+    private static final String CLOUDY_SNOW_RAIN = "흐리고 눈/비";
 
     private WeatherDataConverter()
     {
@@ -21,7 +32,7 @@ SKY와 PTY는 별개의 데이터
     {
         int id = 0;
 
-        if (sky.equals(context.getString(R.string.sky_sunny)))
+        if (sky.equals(SUNNY))
         {
             if (day)
             {
@@ -30,7 +41,7 @@ SKY와 PTY는 별개의 데이터
             {
                 id = R.drawable.sunny_night_icon;
             }
-        } else if (sky.equals(context.getString(R.string.sky_cloud)))
+        } else if (sky.equals(CLOUD))
         {
             if (day)
             {
@@ -39,7 +50,7 @@ SKY와 PTY는 별개의 데이터
             {
                 id = R.drawable.cloud_night_icon;
             }
-        } else if (sky.equals(context.getString(R.string.sky_cloudy)))
+        } else if (sky.equals(CLOUDY))
         {
             id = R.drawable.cloudy_icon;
         }
@@ -59,6 +70,48 @@ SKY와 PTY는 별개의 데이터
         } else if (precipitationForm.equals(context.getString(R.string.shower)))
         {
             id = R.drawable.shower_icon;
+        }
+
+        return id;
+    }
+
+    public static int getSkyDrawableId(String sky)
+    {
+        int id = 0;
+
+        if (sky.equals(SUNNY))
+        {
+            id = R.drawable.sunny_day_icon;
+        } else if (sky.equals(CLOUD))
+        {
+            id = R.drawable.cloud_day_icon;
+        } else if (sky.equals(CLOUD_RAIN))
+        {
+            id = R.drawable.rain_icon;
+        } else if (sky.equals(CLOUD_SNOW))
+        {
+            id = R.drawable.snow_icon;
+        } else if (sky.equals(CLOUD_RAIN_SNOW))
+        {
+            id = R.drawable.rain_icon;
+        } else if (sky.equals(CLOUD_SNOW_RAIN))
+        {
+            id = R.drawable.snow_icon;
+        } else if (sky.equals(CLOUDY))
+        {
+            id = R.drawable.cloudy_icon;
+        } else if (sky.equals(CLOUDY_RAIN))
+        {
+            id = R.drawable.rain_icon;
+        } else if (sky.equals(CLOUDY_SNOW))
+        {
+            id = R.drawable.snow_icon;
+        } else if (sky.equals(CLOUDY_RAIN_SNOW))
+        {
+            id = R.drawable.rain_icon;
+        } else if (sky.equals(CLOUDY_SNOW_RAIN))
+        {
+            id = R.drawable.snow_icon;
         }
 
         return id;
@@ -163,13 +216,13 @@ SKY와 PTY는 별개의 데이터
         switch (value)
         {
             case "1":
-                convertedValue = context.getString(R.string.sky_sunny);
+                convertedValue = SUNNY;
                 break;
             case "3":
-                convertedValue = context.getString(R.string.sky_cloud);
+                convertedValue = CLOUD;
                 break;
             case "4":
-                convertedValue = context.getString(R.string.sky_cloudy);
+                convertedValue = CLOUDY;
                 break;
         }
         return convertedValue;

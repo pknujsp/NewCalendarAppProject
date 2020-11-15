@@ -21,7 +21,7 @@ import com.zerodsoft.scheduleweather.room.dto.AddressDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
 import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.resultdata.WeatherData;
-import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.views.MidFcstView;
+import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.views.MidFcstFragment;
 import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.views.UltraSrtFcstFragment;
 import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.views.UltraSrtNcstFragment;
 import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.views.VilageFcstFragment;
@@ -44,7 +44,7 @@ public class WeatherItemFragment extends Fragment
     private UltraSrtNcstFragment ultraSrtNcstFragment;
     private UltraSrtFcstFragment ultraSrtFcstFragment;
     private VilageFcstFragment vilageFcstFragment;
-    private MidFcstView midFcstView;
+    private MidFcstFragment midFcstFragment;
     private WeatherAreaCodeDTO weatherAreaCode;
 
     private WeatherViewModel viewModel;
@@ -76,6 +76,7 @@ public class WeatherItemFragment extends Fragment
         ultraSrtNcstFragment = (UltraSrtNcstFragment) fragmentManager.findFragmentById(R.id.ultra_srt_ncst_fragment);
         ultraSrtFcstFragment = (UltraSrtFcstFragment) fragmentManager.findFragmentById(R.id.ultra_srt_fcst_fragment);
         vilageFcstFragment = (VilageFcstFragment) fragmentManager.findFragmentById(R.id.vilage_fcst_fragment);
+        midFcstFragment = (MidFcstFragment) fragmentManager.findFragmentById(R.id.mid_fcst_fragment);
     }
 
     @Override
@@ -173,6 +174,7 @@ public class WeatherItemFragment extends Fragment
         ultraSrtNcstFragment.setWeatherData(weatherData, sunSetRiseList.get(0));
         ultraSrtFcstFragment.setWeatherData(weatherData, sunSetRiseList);
         vilageFcstFragment.setWeatherData(weatherData, sunSetRiseList);
+        midFcstFragment.setWeatherData(weatherData);
     }
 
 }
