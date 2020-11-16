@@ -32,7 +32,9 @@ public class DayViewPagerAdapter extends RecyclerView.Adapter<DayViewPagerAdapte
     {
         this.dayFragment = dayFragment;
         calendar = Calendar.getInstance();
+        // 날짜를 오늘 0시0분0초로 설정
         calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), 0, 0, 0);
+        dayFragment.setMonth(calendar.getTime());
     }
 
     public void setData(int position, List<ScheduleDTO> schedules)
@@ -58,8 +60,6 @@ public class DayViewPagerAdapter extends RecyclerView.Adapter<DayViewPagerAdapte
     public void onViewAttachedToWindow(@NonNull DayViewPagerHolder holder)
     {
         super.onViewAttachedToWindow(holder);
-        // 툴바의 month 설정
-        dayFragment.setMonth(holder.startDate);
     }
 
     @Override
@@ -80,6 +80,11 @@ public class DayViewPagerAdapter extends RecyclerView.Adapter<DayViewPagerAdapte
     public int getItemCount()
     {
         return Integer.MAX_VALUE;
+    }
+
+    public Date getDay(int position)
+    {
+        return holderSparseArray.get(position).startDate;
     }
 
     class DayViewPagerHolder extends RecyclerView.ViewHolder

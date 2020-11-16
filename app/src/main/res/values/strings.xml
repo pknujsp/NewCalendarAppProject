@@ -1,20 +1,27 @@
 <resources>
     <string name="app_name">Test Calendar</string>
     <string name="area_name">지역명</string>
-    <string name="rainfall">강수량(mm)</string>
-    <string name="humidity">습도(%)</string>
+    <string name="rainfall">강수량\n(mm)</string>
+    <string name="humidity">습도\n(%)</string>
+    <string name="humidity_not_n">습도(%)</string>
     <string name="precipitation_form">강수형태</string>
-    <string name="chance_of_shower">강수확률(%)</string>
+    <string name="chance_of_shower">강수확률\n(%)</string>
     <string name="wind_direction">풍향</string>
     <string name="wind_speed">풍속</string>
-    <string name="temperature">기온(ºC)</string>
+    <string name="temperature">기온\n(ºC)</string>
     <string name="clock">시각</string>
     <string name="cloud">구름</string>
-    <string name="wind">바람(m/s)</string>
+    <string name="wind">바람\n(m/s)</string>
+    <string name="wind_not_n">바람(m/s)</string>
     <string name="sky">하늘</string>
     <string name="date">날짜</string>
     <string name="am">오전</string>
     <string name="pm">오후</string>
+
+    <string name="ultra_srt_ncst">현재 날씨</string>
+    <string name="ultra_srt_fcst">시간별 예보</string>
+    <string name="vilage_fcst">3일 예보</string>
+    <string name="mid_fcst">주간 예보</string>
 
     <!-- 날씨상태  -->
     <string name="rain">비</string>

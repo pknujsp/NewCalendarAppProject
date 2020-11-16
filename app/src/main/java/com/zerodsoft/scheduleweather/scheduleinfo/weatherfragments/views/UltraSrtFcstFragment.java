@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -22,6 +23,7 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.SunSetRiseData;
 import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.resultdata.WeatherData;
 import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.resultdata.responseresult.UltraSrtFcstData;
+import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.resultdata.responseresult.VilageFcstData;
 import com.zerodsoft.scheduleweather.utility.Clock;
 import com.zerodsoft.scheduleweather.utility.WeatherDataConverter;
 
@@ -34,6 +36,7 @@ public class UltraSrtFcstFragment extends Fragment
     private WeatherData weatherData;
     private List<SunSetRiseData> sunSetRiseDataList;
     private TableLayout table;
+    private LinearLayout headerCol;
 
     public UltraSrtFcstFragment()
     {
@@ -52,6 +55,7 @@ public class UltraSrtFcstFragment extends Fragment
     {
         super.onViewCreated(view, savedInstanceState);
         table = (TableLayout) view.findViewById(R.id.ultra_srt_fcst_table);
+        headerCol = (LinearLayout) view.findViewById(R.id.ultra_srt_fcst_header_col);
     }
 
     public void setWeatherData(WeatherData weatherData, List<SunSetRiseData> sunSetRiseDataList)
@@ -63,122 +67,161 @@ public class UltraSrtFcstFragment extends Fragment
 
     private void setTable()
     {
-        final int DP48 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 48f, getResources().getDisplayMetrics());
-        final int DP32 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32f, getResources().getDisplayMetrics());
-        final List<UltraSrtFcstData> dataList = weatherData.getUltraSrtFcstFinalData().getData();
-        final int DATA_SIZE = dataList.size();
-        final int VIEW_WIDTH = DATA_SIZE * DP48;
-
-        //시각, 하늘, 기온, 바람, 습도 순으로 행 등록
         Context context = getContext();
+        final int ITEM_WIDTH = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 45f, getResources().getDisplayMetrics());
+        final int MARGIN = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4f, getResources().getDisplayMetrics());
+        final int DP22 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 22f, getResources().getDisplayMetrics());
+        final int DP34 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 34f, getResources().getDisplayMetrics());
 
-        // 시각 --------------------------------------------------------------------------
+        List<UltraSrtFcstData> dataList = weatherData.getUltraSrtFcstFinalData().getData();
+        final int DATA_SIZE = dataList.size();
+        final int VIEW_WIDTH = DATA_SIZE * ITEM_WIDTH;
+
+        //시각, 하늘, 기온, 강수량, 강수확률, 바람, 습도 순으로 행 등록
         TableRow clockRow = new TableRow(context);
-        TextView clockLabel = new TextView(context);
-
-        clockLabel.setTextColor(Color.GRAY);
-        clockLabel.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f);
-        clockLabel.setGravity(Gravity.CENTER);
-        clockLabel.setText(getString(R.string.clock));
-        clockRow.addView(clockLabel, new TableRow.LayoutParams(DP48, ViewGroup.LayoutParams.WRAP_CONTENT));
-
-        for (int col = 0; col < DATA_SIZE; col++)
-        {
-            TextView textView = new TextView(context);
-            textView.setTextColor(Color.BLACK);
-            textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f);
-            textView.setGravity(Gravity.CENTER);
-            textView.setText(Clock.WEATHER_TIME_FORMAT.format(dataList.get(col).getDateTime()));
-            clockRow.addView(textView, new TableRow.LayoutParams(DP48, ViewGroup.LayoutParams.WRAP_CONTENT));
-        }
-
-        table.addView(clockRow, new TableLayout.LayoutParams(VIEW_WIDTH, ViewGroup.LayoutParams.WRAP_CONTENT));
-
-        //하늘 ---------------------------------------------------------------------------
         TableRow skyRow = new TableRow(context);
-        TextView skyLabel = new TextView(context);
-
-        skyLabel.setTextColor(Color.GRAY);
-        skyLabel.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f);
-        skyLabel.setGravity(Gravity.CENTER);
-        skyLabel.setText(getString(R.string.sky));
-        skyRow.addView(skyLabel, new TableRow.LayoutParams(DP48, ViewGroup.LayoutParams.MATCH_PARENT));
-
-        for (int col = 0; col < DATA_SIZE; col++)
-        {
-            ImageView imageView = new ImageView(context);
-            imageView.setImageDrawable(getSkyImage(dataList.get(col)));
-            skyRow.addView(imageView, new TableRow.LayoutParams(DP32, DP32));
-        }
-
-        table.addView(skyRow, new TableLayout.LayoutParams(VIEW_WIDTH, ViewGroup.LayoutParams.WRAP_CONTENT));
-
-        //기온 ------------------------------------------------------------------------------
         TableRow tempRow = new TableRow(context);
-        TextView tempLabel = new TextView(context);
-
-        tempLabel.setTextColor(Color.GRAY);
-        tempLabel.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f);
-        tempLabel.setGravity(Gravity.CENTER);
-        tempLabel.setText(getString(R.string.temperature));
-        tempRow.addView(tempLabel, new TableRow.LayoutParams(DP48, ViewGroup.LayoutParams.WRAP_CONTENT));
-
-        for (int col = 0; col < DATA_SIZE; col++)
-        {
-            TextView textView = new TextView(context);
-            textView.setTextColor(Color.BLACK);
-            textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f);
-            textView.setGravity(Gravity.CENTER);
-            textView.setText(dataList.get(col).getTemperature());
-            tempRow.addView(textView, new TableRow.LayoutParams(DP48, ViewGroup.LayoutParams.WRAP_CONTENT));
-        }
-
-        table.addView(tempRow, new TableLayout.LayoutParams(VIEW_WIDTH, ViewGroup.LayoutParams.WRAP_CONTENT));
-
-        //바람 ------------------------------------------------------------------------------
         TableRow windRow = new TableRow(context);
-        TextView windLabel = new TextView(context);
-
-        windLabel.setTextColor(Color.GRAY);
-        windLabel.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f);
-        windLabel.setGravity(Gravity.CENTER);
-        windLabel.setText(getString(R.string.wind));
-        windRow.addView(windLabel, new TableRow.LayoutParams(DP48, ViewGroup.LayoutParams.MATCH_PARENT));
-
-        for (int col = 0; col < DATA_SIZE; col++)
-        {
-            TextView textView = new TextView(context);
-            textView.setTextColor(Color.BLACK);
-            textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f);
-            textView.setGravity(Gravity.CENTER);
-            textView.setText(dataList.get(col).getWindSpeed() + "m/s, " + dataList.get(col).getWindDirection());
-            windRow.addView(textView, new TableRow.LayoutParams(DP48, ViewGroup.LayoutParams.WRAP_CONTENT));
-        }
-
-        table.addView(windRow, new TableLayout.LayoutParams(VIEW_WIDTH, ViewGroup.LayoutParams.WRAP_CONTENT));
-
-        //습도 ------------------------------------------------------------------------------
         TableRow humidityRow = new TableRow(context);
+
+        //label column 설정
+        TextView clockLabel = new TextView(context);
+        TextView skyLabel = new TextView(context);
+        TextView tempLabel = new TextView(context);
+        TextView windLabel = new TextView(context);
         TextView humidityLabel = new TextView(context);
 
-        humidityLabel.setTextColor(Color.GRAY);
-        humidityLabel.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f);
-        humidityLabel.setGravity(Gravity.CENTER);
-        humidityLabel.setText(getString(R.string.humidity));
-        humidityRow.addView(humidityLabel, new TableRow.LayoutParams(DP48, ViewGroup.LayoutParams.WRAP_CONTENT));
+        setLabelTextView(clockLabel, getString(R.string.clock));
+        setLabelTextView(skyLabel, getString(R.string.sky));
+        setLabelTextView(tempLabel, getString(R.string.temperature));
+        setLabelTextView(windLabel, getString(R.string.wind));
+        setLabelTextView(humidityLabel, getString(R.string.humidity));
 
+        LinearLayout.LayoutParams clockLabelParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, DP22);
+        clockLabelParams.topMargin = MARGIN;
+        clockLabelParams.bottomMargin = MARGIN;
+        LinearLayout.LayoutParams skyLabelParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, DP22);
+        skyLabelParams.topMargin = MARGIN;
+        skyLabelParams.bottomMargin = MARGIN;
+        LinearLayout.LayoutParams tempLabelParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, DP34);
+        tempLabelParams.topMargin = MARGIN;
+        tempLabelParams.bottomMargin = MARGIN;
+        LinearLayout.LayoutParams windLabelParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, DP34);
+        windLabelParams.topMargin = MARGIN;
+        windLabelParams.bottomMargin = MARGIN;
+        LinearLayout.LayoutParams humidityLabelParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, DP34);
+        humidityLabelParams.topMargin = MARGIN;
+        humidityLabelParams.bottomMargin = MARGIN;
+
+        clockLabelParams.gravity = Gravity.CENTER;
+        skyLabelParams.gravity = Gravity.CENTER;
+        tempLabelParams.gravity = Gravity.CENTER;
+        windLabelParams.gravity = Gravity.CENTER;
+        humidityLabelParams.gravity = Gravity.CENTER;
+
+        headerCol.addView(clockLabel, clockLabelParams);
+        headerCol.addView(skyLabel, skyLabelParams);
+        headerCol.addView(tempLabel, tempLabelParams);
+        headerCol.addView(windLabel, windLabelParams);
+        headerCol.addView(humidityLabel, humidityLabelParams);
+
+        //시각 --------------------------------------------------------------------------
         for (int col = 0; col < DATA_SIZE; col++)
         {
             TextView textView = new TextView(context);
-            textView.setTextColor(Color.BLACK);
-            textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f);
-            textView.setGravity(Gravity.CENTER);
-            textView.setText(dataList.get(col).getHumidity());
-            humidityRow.addView(textView, new TableRow.LayoutParams(DP48, ViewGroup.LayoutParams.WRAP_CONTENT));
+            setValueTextView(textView, Clock.WEATHER_TIME_FORMAT.format(dataList.get(col).getDateTime()));
+
+            TableRow.LayoutParams textParams = new TableRow.LayoutParams(ITEM_WIDTH, DP22);
+            textParams.gravity = Gravity.CENTER;
+            clockRow.addView(textView, textParams);
         }
 
-        table.addView(humidityRow, new TableLayout.LayoutParams(VIEW_WIDTH, ViewGroup.LayoutParams.WRAP_CONTENT));
-        table.invalidate();
+        //하늘 ---------------------------------------------------------------------------
+        for (int col = 0; col < DATA_SIZE; col++)
+        {
+            ImageView sky = new ImageView(context);
+            sky.setScaleType(ImageView.ScaleType.FIT_CENTER);
+
+            sky.setImageDrawable(getSkyImage(dataList.get(col)));
+
+            TableRow.LayoutParams params = new TableRow.LayoutParams(ITEM_WIDTH, DP22);
+            params.gravity = Gravity.CENTER;
+            skyRow.addView(sky, params);
+        }
+
+        //기온 ------------------------------------------------------------------------------
+        for (int col = 0; col < DATA_SIZE; col++)
+        {
+            TextView textView = new TextView(context);
+            setValueTextView(textView, dataList.get(col).getTemperature());
+
+            TableRow.LayoutParams textParams = new TableRow.LayoutParams(ITEM_WIDTH, DP34);
+            textParams.gravity = Gravity.CENTER;
+            tempRow.addView(textView, textParams);
+        }
+
+
+        //바람 ------------------------------------------------------------------------------
+        for (int col = 0; col < DATA_SIZE; col++)
+        {
+            TextView textView = new TextView(context);
+            setValueTextView(textView, dataList.get(col).getWindSpeed() + "\n" + dataList.get(col).getWindDirection());
+
+            TableRow.LayoutParams textParams = new TableRow.LayoutParams(ITEM_WIDTH, DP34);
+            textParams.gravity = Gravity.CENTER;
+            windRow.addView(textView, textParams);
+        }
+
+        //습도 ------------------------------------------------------------------------------
+        for (int col = 0; col < DATA_SIZE; col++)
+        {
+            TextView textView = new TextView(context);
+            setValueTextView(textView, dataList.get(col).getHumidity());
+
+            TableRow.LayoutParams textParams = new TableRow.LayoutParams(ITEM_WIDTH, DP34);
+            textParams.gravity = Gravity.CENTER;
+            humidityRow.addView(textView, textParams);
+        }
+
+        TableLayout.LayoutParams clockRowParams = new TableLayout.LayoutParams(VIEW_WIDTH, ViewGroup.LayoutParams.WRAP_CONTENT);
+        clockRowParams.topMargin = MARGIN;
+        clockRowParams.bottomMargin = MARGIN;
+        TableLayout.LayoutParams skyRowParams = new TableLayout.LayoutParams(VIEW_WIDTH, ViewGroup.LayoutParams.WRAP_CONTENT);
+        skyRowParams.topMargin = MARGIN;
+        skyRowParams.bottomMargin = MARGIN;
+        TableLayout.LayoutParams tempRowParams = new TableLayout.LayoutParams(VIEW_WIDTH, ViewGroup.LayoutParams.WRAP_CONTENT);
+        tempRowParams.topMargin = MARGIN;
+        tempRowParams.bottomMargin = MARGIN;
+        TableLayout.LayoutParams windRowParams = new TableLayout.LayoutParams(VIEW_WIDTH, ViewGroup.LayoutParams.WRAP_CONTENT);
+        windRowParams.topMargin = MARGIN;
+        windRowParams.bottomMargin = MARGIN;
+        TableLayout.LayoutParams humidityRowParams = new TableLayout.LayoutParams(VIEW_WIDTH, ViewGroup.LayoutParams.WRAP_CONTENT);
+        humidityRowParams.topMargin = MARGIN;
+        humidityRowParams.bottomMargin = MARGIN;
+
+        table.addView(clockRow, clockRowParams);
+        table.addView(skyRow, skyRowParams);
+        table.addView(tempRow, tempRowParams);
+        table.addView(windRow, windRowParams);
+        table.addView(humidityRow, humidityRowParams);
+    }
+
+    private void setLabelTextView(TextView textView, String labelText)
+    {
+        textView.setTextColor(Color.GRAY);
+        textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 13);
+        textView.setGravity(Gravity.CENTER);
+        textView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+        textView.setText(labelText);
+    }
+
+    private void setValueTextView(TextView textView, String value)
+    {
+        textView.setTextColor(Color.BLACK);
+        textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 13);
+        textView.setGravity(Gravity.CENTER);
+        textView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+        textView.setText(value);
     }
 
     private Drawable getSkyImage(UltraSrtFcstData data)

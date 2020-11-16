@@ -15,12 +15,14 @@ import com.zerodsoft.scheduleweather.calendarfragment.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.calendarfragment.WeekFragment;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendarview.month.EventData;
+import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 
 
@@ -44,12 +46,14 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
         context = weekFragment.getContext();
         calendar = Calendar.getInstance();
 
-        // 날짜를 이번 달 1일 0시 0분으로 설정
+        // 날짜를 이번 주 일요일 0시 0분으로 설정
         int amount = -(calendar.get(Calendar.DAY_OF_WEEK) - 1);
         calendar.add(Calendar.DAY_OF_YEAR, amount);
         calendar.set(Calendar.HOUR_OF_DAY, 0);
         calendar.set(Calendar.MINUTE, 0);
         calendar.set(Calendar.SECOND, 0);
+
+        weekFragment.setMonth(calendar.getTime());
     }
 
     public void setData(int position, List<ScheduleDTO> schedules)
@@ -76,8 +80,6 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
     public void onViewAttachedToWindow(@NonNull WeekViewPagerHolder holder)
     {
         super.onViewAttachedToWindow(holder);
-        // toolbar의 년월 설정
-        weekFragment.setMonth(holder.getDay(FIRST_DAY).getTime());
     }
 
     @Override
@@ -99,6 +101,11 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
     public int getItemCount()
     {
         return Integer.MAX_VALUE;
+    }
+
+    public Date getWeek(int position)
+    {
+        return holderSparseArray.get(position).getDay(FIRST_DAY).getTime();
     }
 
     @Override

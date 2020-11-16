@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.zerodsoft.scheduleweather.AppMainActivity;
+import com.zerodsoft.scheduleweather.calendarfragment.EventsInfoFragment.EventsInfoFragment;
 import com.zerodsoft.scheduleweather.calendarview.week.WeekViewPagerAdapter;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
@@ -82,7 +83,8 @@ public class WeekFragment extends Fragment implements OnEventItemClickListener
     @Override
     public void onClicked(Date startDate, Date endDate)
     {
-
+        EventsInfoFragment eventsInfoFragment = new EventsInfoFragment(startDate, endDate);
+        eventsInfoFragment.show(getActivity().getSupportFragmentManager(), EventsInfoFragment.TAG);
     }
 
     class OnPageChangeCallback extends ViewPager2.OnPageChangeCallback
@@ -115,6 +117,7 @@ public class WeekFragment extends Fragment implements OnEventItemClickListener
             // drag 성공 시에만 SETTLING 직후 호출
             super.onPageSelected(position);
             currentPosition = position;
+            setMonth(weekViewPagerAdapter.getWeek(currentPosition));
             // 일정 목록을 가져와서 표시함 header view, week view
             weekViewPager.setUserInputEnabled(false);
             new Thread(new Runnable()

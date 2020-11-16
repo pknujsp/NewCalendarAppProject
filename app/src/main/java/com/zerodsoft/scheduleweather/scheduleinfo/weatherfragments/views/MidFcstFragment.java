@@ -74,13 +74,13 @@ public class MidFcstFragment extends Fragment
     {
         final int COLUMN_WIDTH = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 80f, getResources().getDisplayMetrics());
         final int IMAGE_DIAMETER = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 22f, getResources().getDisplayMetrics());
-        final int MARGIN_TB = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, getResources().getDisplayMetrics());
+        final int MARGIN_TB = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4f, getResources().getDisplayMetrics());
         final int DIVISION_LINE_WIDTH = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1f, getResources().getDisplayMetrics());
         final int DP4 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4f, getResources().getDisplayMetrics());
 
         final int DATE_ROW_HEIGHT = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 34f, getResources().getDisplayMetrics());
         final int SKY_ROW_HEIGHT = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 30f, getResources().getDisplayMetrics());
-        final int CHANCE_OF_SHOWER_HEIGHT = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 22f, getResources().getDisplayMetrics());
+        final int CHANCE_OF_SHOWER_HEIGHT = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 30f, getResources().getDisplayMetrics());
         final int TEMP_HEIGHT = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 90f, getResources().getDisplayMetrics());
 
         List<MidFcstData> dataList = weatherData.getMidFcstFinalData().getData();
@@ -104,9 +104,13 @@ public class MidFcstFragment extends Fragment
         chanceOfShowerLabel.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 13f);
 
         dateLabel.setGravity(Gravity.CENTER);
+        dateLabel.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
         skyLabel.setGravity(Gravity.CENTER);
+        skyLabel.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
         tempLabel.setGravity(Gravity.CENTER);
+        tempLabel.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
         chanceOfShowerLabel.setGravity(Gravity.CENTER);
+        chanceOfShowerLabel.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
 
         dateLabel.setTextColor(Color.GRAY);
         skyLabel.setTextColor(Color.GRAY);
@@ -114,17 +118,22 @@ public class MidFcstFragment extends Fragment
         chanceOfShowerLabel.setTextColor(Color.GRAY);
 
         dateLabel.setText(getString(R.string.date));
-        skyLabel.setText(getString(R.string.sky) + "(" + getString(R.string.am) + "/" + getString(R.string.pm) + ")");
+        skyLabel.setText(getString(R.string.sky) + "\n" + "(" + getString(R.string.am) + "/" + getString(R.string.pm) + ")");
         tempLabel.setText(getString(R.string.temperature));
         chanceOfShowerLabel.setText(getString(R.string.chance_of_shower));
 
         LinearLayout.LayoutParams dateParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, DATE_ROW_HEIGHT);
+        dateParams.topMargin = MARGIN_TB;
         dateParams.bottomMargin = MARGIN_TB;
         LinearLayout.LayoutParams skyParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, SKY_ROW_HEIGHT);
+        skyParams.topMargin = MARGIN_TB;
         skyParams.bottomMargin = MARGIN_TB;
         LinearLayout.LayoutParams chanceOfShowerParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, CHANCE_OF_SHOWER_HEIGHT);
+        chanceOfShowerParams.topMargin = MARGIN_TB;
         chanceOfShowerParams.bottomMargin = MARGIN_TB;
         LinearLayout.LayoutParams tempParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, TEMP_HEIGHT);
+        tempParams.topMargin = MARGIN_TB;
+        tempParams.bottomMargin = MARGIN_TB;
 
         dateParams.gravity = Gravity.CENTER;
         skyParams.gravity = Gravity.CENTER;
@@ -230,15 +239,20 @@ public class MidFcstFragment extends Fragment
         }
 
         //기온 ------------------------------------------------------------------------------
-        tempRow.measure(VIEW_WIDTH, TEMP_HEIGHT + MARGIN_TB);
+        tempRow.measure(VIEW_WIDTH, TEMP_HEIGHT);
 
         TableLayout.LayoutParams dateRowParams = new TableLayout.LayoutParams(VIEW_WIDTH, ViewGroup.LayoutParams.WRAP_CONTENT);
+        dateRowParams.topMargin = MARGIN_TB;
         dateRowParams.bottomMargin = MARGIN_TB;
         TableLayout.LayoutParams skyRowParams = new TableLayout.LayoutParams(VIEW_WIDTH, ViewGroup.LayoutParams.WRAP_CONTENT);
+        skyRowParams.topMargin = MARGIN_TB;
         skyRowParams.bottomMargin = MARGIN_TB;
         TableLayout.LayoutParams chanceOfShowerRowParams = new TableLayout.LayoutParams(VIEW_WIDTH, ViewGroup.LayoutParams.WRAP_CONTENT);
+        chanceOfShowerRowParams.topMargin = MARGIN_TB;
         chanceOfShowerRowParams.bottomMargin = MARGIN_TB;
-        TableLayout.LayoutParams tempRowParams = new TableLayout.LayoutParams(VIEW_WIDTH, TEMP_HEIGHT + MARGIN_TB);
+        TableLayout.LayoutParams tempRowParams = new TableLayout.LayoutParams(VIEW_WIDTH, TEMP_HEIGHT);
+        tempRowParams.topMargin = MARGIN_TB;
+        tempRowParams.bottomMargin = MARGIN_TB;
 
         table.addView(dateRow, dateRowParams);
         table.addView(skyRow, skyRowParams);
@@ -250,6 +264,7 @@ public class MidFcstFragment extends Fragment
     {
         textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 13f);
         textView.setGravity(Gravity.CENTER);
+        textView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
         textView.setTextColor(Color.BLACK);
     }
 
@@ -337,8 +352,8 @@ public class MidFcstFragment extends Fragment
         @Override
         protected void onLayout(boolean changed, int l, int t, int r, int b)
         {
-            final int MARGIN = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, getResources().getDisplayMetrics());
-            super.onLayout(changed, l, t, r, b - MARGIN);
+            final int MARGIN = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4f, getResources().getDisplayMetrics());
+            super.onLayout(changed, l, t, r, b);
         }
 
         @Override
@@ -351,12 +366,11 @@ public class MidFcstFragment extends Fragment
         private void drawGraph(Canvas canvas)
         {
             // 텍스트의 높이+원의 반지름 만큼 뷰의 상/하단에 여백을 설정한다.
-            final int MARGIN = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, getResources().getDisplayMetrics());
             final float TEXT_HEIGHT = TEMP_PAINT.descent() - TEMP_PAINT.ascent();
             final float RADIUS = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 2f, getResources().getDisplayMetrics());
 
             final float VIEW_WIDTH = getWidth();
-            final float VIEW_HEIGHT = getHeight() - MARGIN - ((TEXT_HEIGHT + RADIUS) * 2);
+            final float VIEW_HEIGHT = getHeight() - ((TEXT_HEIGHT + RADIUS) * 2);
             final float COLUMN_WIDTH = VIEW_WIDTH / maxTempList.size();
             final float SPACING = ((VIEW_HEIGHT) / (MAX_TEMP - MIN_TEMP)) / 10f;
 

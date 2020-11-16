@@ -1,10 +1,9 @@
-package com.zerodsoft.scheduleweather.calendarview.month.EventsInfoFragment;
+package com.zerodsoft.scheduleweather.calendarfragment.EventsInfoFragment;
 
 import android.app.Application;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
-import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;

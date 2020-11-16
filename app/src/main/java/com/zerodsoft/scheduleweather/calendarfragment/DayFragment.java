@@ -101,7 +101,7 @@ public class DayFragment extends Fragment
             // drag 성공 시에만 SETTLING 직후 호출
             lastPosition = currentPosition;
             currentPosition = position;
-
+            setMonth(dayViewPagerAdapter.getDay(currentPosition));
             super.onPageSelected(position);
         }
     }
@@ -120,11 +120,6 @@ public class DayFragment extends Fragment
     public void setMonth(Date date)
     {
         onControlEvent.setToolbarMonth(date);
-    }
-
-    public ViewPager2 getDayViewPager()
-    {
-        return dayViewPager;
     }
 
     public void showSchedule(int scheduleId)

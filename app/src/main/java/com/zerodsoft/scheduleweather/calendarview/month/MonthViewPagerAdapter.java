@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 
 public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAdapter.MonthViewHolder>
@@ -47,6 +48,8 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
         calendar.set(Calendar.HOUR_OF_DAY, 0);
         calendar.set(Calendar.MINUTE, 0);
         calendar.set(Calendar.SECOND, 0);
+
+        monthFragment.setMonth(calendar.getTime());
     }
 
     public void setData(int position, List<ScheduleDTO> schedules)
@@ -72,8 +75,6 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
     public void onViewAttachedToWindow(@NonNull MonthViewHolder holder)
     {
         super.onViewAttachedToWindow(holder);
-        // toolbar의 년월 설정
-        monthFragment.setMonth(holder.currentMonthDays[0].getTime());
     }
 
     @Override
@@ -94,6 +95,11 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
     public int getItemCount()
     {
         return Integer.MAX_VALUE;
+    }
+
+    public Date getMonth(int position)
+    {
+        return holderSparseArray.get(position).currentMonthDays[0].getTime();
     }
 
     class MonthViewHolder extends RecyclerView.ViewHolder

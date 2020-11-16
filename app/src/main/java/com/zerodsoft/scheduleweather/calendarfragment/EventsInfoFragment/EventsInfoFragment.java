@@ -1,16 +1,15 @@
-package com.zerodsoft.scheduleweather.calendarview.month.EventsInfoFragment;
+package com.zerodsoft.scheduleweather.calendarfragment.EventsInfoFragment;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Rect;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -24,12 +23,13 @@ import android.widget.TextView;
 import com.zerodsoft.scheduleweather.AppMainActivity;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
+import com.zerodsoft.scheduleweather.scheduleinfo.ScheduleInfoActivity;
 import com.zerodsoft.scheduleweather.utility.Clock;
 
 import java.util.Date;
 import java.util.List;
 
-public class MonthEventsInfoFragment extends DialogFragment
+public class EventsInfoFragment extends DialogFragment
 {
     public static final String TAG = "MonthEventsInfoFragment";
 
@@ -40,7 +40,7 @@ public class MonthEventsInfoFragment extends DialogFragment
     private EventsInfoRecyclerViewAdapter adapter;
     private RecyclerView recyclerView;
 
-    public MonthEventsInfoFragment(Date startDate, Date endDate)
+    public EventsInfoFragment(Date startDate, Date endDate)
     {
         this.startDate = startDate;
         this.endDate = endDate;
@@ -69,6 +69,7 @@ public class MonthEventsInfoFragment extends DialogFragment
         });
     }
 
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState)
@@ -83,7 +84,7 @@ public class MonthEventsInfoFragment extends DialogFragment
         recyclerView = view.findViewById(R.id.events_info_events_list);
         recyclerView.addItemDecoration(new RecyclerViewItemDecoration(getContext()));
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false));
-        adapter = new EventsInfoRecyclerViewAdapter(startDate, endDate);
+        adapter = new EventsInfoRecyclerViewAdapter(EventsInfoFragment.this, startDate, endDate);
         recyclerView.setAdapter(adapter);
         ((TextView) view.findViewById(R.id.events_info_day)).setText(Clock.dateFormat3.format(startDate));
     }
@@ -104,6 +105,13 @@ public class MonthEventsInfoFragment extends DialogFragment
     public void onStop()
     {
         super.onStop();
+    }
+
+    public void showSchedule(int scheduleId)
+    {
+        Intent intent = new Intent(getActivity(), ScheduleInfoActivity.class);
+        intent.putExtra("scheduleId", scheduleId);
+        startActivity(intent);
     }
 }
 

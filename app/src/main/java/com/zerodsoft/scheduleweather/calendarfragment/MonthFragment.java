@@ -11,7 +11,7 @@ import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.calendarview.month.EventsInfoFragment.MonthEventsInfoFragment;
+import com.zerodsoft.scheduleweather.calendarfragment.EventsInfoFragment.EventsInfoFragment;
 import com.zerodsoft.scheduleweather.calendarview.month.MonthViewPagerAdapter;
 import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
 
@@ -73,8 +73,13 @@ public class MonthFragment extends Fragment implements OnEventItemClickListener
     @Override
     public void onClicked(Date startDate, Date endDate)
     {
-        MonthEventsInfoFragment monthEventsInfoFragment = new MonthEventsInfoFragment(startDate, endDate);
-        monthEventsInfoFragment.show(getActivity().getSupportFragmentManager(), MonthEventsInfoFragment.TAG);
+        EventsInfoFragment eventsInfoFragment = new EventsInfoFragment(startDate, endDate);
+        eventsInfoFragment.show(getActivity().getSupportFragmentManager(), EventsInfoFragment.TAG);
+    }
+
+    public void showSchedule(int scheduleId)
+    {
+        onControlEvent.showSchedule(scheduleId);
     }
 
 
@@ -108,7 +113,7 @@ public class MonthFragment extends Fragment implements OnEventItemClickListener
             // drag 성공 시에만 SETTLING 직후 호출
             lastPosition = currentPosition;
             currentPosition = position;
-
+            setMonth(viewPagerAdapter.getMonth(currentPosition));
             super.onPageSelected(position);
         }
     }
