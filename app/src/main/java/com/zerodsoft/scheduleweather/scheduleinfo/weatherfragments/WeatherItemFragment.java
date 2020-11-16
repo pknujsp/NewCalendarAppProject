@@ -31,6 +31,7 @@ import com.zerodsoft.scheduleweather.utility.LonLatConverter;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.LinkedList;
 import java.util.List;
 
 public class WeatherItemFragment extends Fragment
@@ -98,8 +99,28 @@ public class WeatherItemFragment extends Fragment
             {
                 if (weatherAreaCodes != null)
                 {
+                    List<LocationPoint> locationPoints = new LinkedList<>();
+                    for (WeatherAreaCodeDTO weatherAreaCodeDTO : weatherAreaCodes)
+                    {
+                        locationPoints.add(new LocationPoint(Double.parseDouble(weatherAreaCodeDTO.getLatitudeSecondsDivide100()), Double.parseDouble(weatherAreaCodeDTO.getLongitudeSecondsDivide100())));
+                    }
+
+                    int index = 0;
+                    double minDistance = Double.MAX_VALUE;
+                    double distance = 0;
+                    // 점 사이의 거리 계산
+                    for (int i = 0; i < locationPoints.size(); i++)
+                    {
+                        distance = Math.sqrt(Math.pow(LONGITUDE - locationPoints.get(i).longitude, 2) + Math.pow(LATITUDE - locationPoints.get(i).latitude, 2));
+                        if (distance < minDistance)
+                        {
+                            minDistance = distance;
+                            index = i;
+                        }
+                    }
+
                     // regId설정하는 코드 작성
-                    WeatherAreaCodeDTO weatherAreaCode = weatherAreaCodes.get(0);
+                    WeatherAreaCodeDTO weatherAreaCode = weatherAreaCodes.get(index);
 
                     vilageFcstParameter.setNx(weatherAreaCode.getX()).setNy(weatherAreaCode.getY()).setNumOfRows("10").setPageNo("1");
                     midLandFcstParameter.setNumOfRows("10").setPageNo("1").setRegId(weatherAreaCode.getMidLandFcstCode());
@@ -175,6 +196,28 @@ public class WeatherItemFragment extends Fragment
         ultraSrtFcstFragment.setWeatherData(weatherData, sunSetRiseList);
         vilageFcstFragment.setWeatherData(weatherData, sunSetRiseList);
         midFcstFragment.setWeatherData(weatherData);
+    }
+
+    class LocationPoint
+    {
+        private double latitude;
+        private double longitude;
+
+        public LocationPoint(double latitude, double longitude)
+        {
+            this.latitude = latitude;
+            this.longitude = longitude;
+        }
+
+        public double getLatitude()
+        {
+            return latitude;
+        }
+
+        public double getLongitude()
+        {
+            return longitude;
+        }
     }
 
 }
