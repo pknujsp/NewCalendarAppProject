@@ -88,10 +88,10 @@ public class WeatherItemFragment extends Fragment
         MidFcstParameter midLandFcstParameter = new MidFcstParameter();
         MidFcstParameter midTaParameter = new MidFcstParameter();
 
-        LonLat lonLat = LonLatConverter.lonLatToGridXY(LONGITUDE, LATITUDE);
+        LonLat lonLat = LonLatConverter.convertGrid(LONGITUDE, LATITUDE);
 
         viewModel = new ViewModelProvider(this).get(WeatherViewModel.class);
-        viewModel.init(getContext(), lonLat.getX(), lonLat.getY());
+        viewModel.init(getContext(), lonLat);
         viewModel.getAreaCodeLiveData().observe(getViewLifecycleOwner(), new Observer<List<WeatherAreaCodeDTO>>()
         {
             @Override

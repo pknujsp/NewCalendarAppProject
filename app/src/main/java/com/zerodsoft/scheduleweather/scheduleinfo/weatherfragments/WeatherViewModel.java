@@ -19,6 +19,7 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.ultrasrtncstresponse
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.vilagefcstresponse.VilageFcstItem;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
 import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.resultdata.WeatherData;
+import com.zerodsoft.scheduleweather.utility.LonLat;
 
 import java.util.List;
 
@@ -29,10 +30,10 @@ public class WeatherViewModel extends ViewModel
     private LiveData<List<WeatherAreaCodeDTO>> areaCodeLiveData;
     private MutableLiveData<List<WeatherData>> weatherDataLiveData;
 
-    public void init(Context context, int x, int y)
+    public void init(Context context, LonLat lonLat)
     {
         weatherRepository = new WeatherRepository(context);
-        selectAreaCode(x, y);
+        selectAreaCode(lonLat);
     }
 
     public LiveData<List<WeatherAreaCodeDTO>> getAreaCodeLiveData()
@@ -41,9 +42,9 @@ public class WeatherViewModel extends ViewModel
         return areaCodeLiveData;
     }
 
-    public WeatherViewModel selectAreaCode(int x, int y)
+    public WeatherViewModel selectAreaCode(LonLat lonLat)
     {
-        weatherRepository.selectAreaCode(x, y);
+        weatherRepository.selectAreaCode(lonLat);
         return this;
     }
 

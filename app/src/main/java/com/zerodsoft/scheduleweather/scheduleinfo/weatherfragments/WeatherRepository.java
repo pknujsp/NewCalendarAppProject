@@ -37,6 +37,7 @@ import com.zerodsoft.scheduleweather.room.dao.WeatherAreaCodeDAO;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
 import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.resultdata.WeatherData;
 import com.zerodsoft.scheduleweather.utility.Clock;
+import com.zerodsoft.scheduleweather.utility.LonLat;
 
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
@@ -121,9 +122,11 @@ public class WeatherRepository
         downloadedCalendar = Calendar.getInstance(Clock.TIME_ZONE);
     }
 
-    public void selectAreaCode(int x, int y)
+    public void selectAreaCode(LonLat lonLat)
     {
-        areaCodeLiveData = weatherAreaCodeDAO.selectAreaCode(Integer.toString(x), Integer.toString(y));
+        areaCodeLiveData = weatherAreaCodeDAO.selectAreaCode(Integer.toString(lonLat.getLatitude_degree()),
+                Integer.toString(lonLat.getLatitude_minutes()), Integer.toString(lonLat.getLongitude_degree()),
+                Integer.toString(lonLat.getLongitude_minutes()));
     }
 
     public void getAllWeathersData(VilageFcstParameter vilageFcstParameter, MidFcstParameter midLandFcstParameter, MidFcstParameter midTaFcstParameter, WeatherAreaCodeDTO weatherAreaCode)

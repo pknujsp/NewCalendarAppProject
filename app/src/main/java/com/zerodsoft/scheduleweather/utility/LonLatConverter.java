@@ -55,4 +55,33 @@ public class LonLatConverter
 
         return lonLat;
     }
+
+    public static LonLat convertGrid(double longitude, double latitude)
+    {
+        LonLat lonLat = new LonLat();
+
+        final int LAT_DEGREE = (int) latitude;
+        final int LON_DEGREE = (int) longitude;
+
+        final double lat_minutes = (latitude - (double) LAT_DEGREE) * 60;
+        final double lon_minutes = (longitude - (double) LON_DEGREE) * 60;
+
+        final int LAT_MINUTES = (int) lat_minutes;
+        final int LON_MINUTES = (int) lon_minutes;
+
+        final double LAT_SECONDS = (lat_minutes - (double) LAT_MINUTES) * 60;
+        final double LON_SECONDS = (lon_minutes - (double) LON_MINUTES) * 60;
+
+        //도 변환
+        lonLat.setLatitude_degree(LAT_DEGREE);
+        lonLat.setLongitude_degree(LON_DEGREE);
+        //분 변환
+        lonLat.setLatitude_minutes(LAT_MINUTES);
+        lonLat.setLongitude_minutes(LON_MINUTES);
+        //초 변환
+        lonLat.setLatitude_seconds(LAT_SECONDS);
+        lonLat.setLongitude_seconds(LON_SECONDS);
+
+        return lonLat;
+    }
 }
