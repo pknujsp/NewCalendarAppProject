@@ -124,9 +124,7 @@ public class WeatherRepository
 
     public void selectAreaCode(LonLat lonLat)
     {
-        areaCodeLiveData = weatherAreaCodeDAO.selectAreaCode(Integer.toString(lonLat.getLatitude_degree()),
-                Integer.toString(lonLat.getLatitude_minutes()), Integer.toString(lonLat.getLongitude_degree()),
-                Integer.toString(lonLat.getLongitude_minutes()));
+        areaCodeLiveData = weatherAreaCodeDAO.selectAreaCode(lonLat.getLatitude(), lonLat.getLongitude());
     }
 
     public void getAllWeathersData(VilageFcstParameter vilageFcstParameter, MidFcstParameter midLandFcstParameter, MidFcstParameter midTaFcstParameter, WeatherAreaCodeDTO weatherAreaCode)

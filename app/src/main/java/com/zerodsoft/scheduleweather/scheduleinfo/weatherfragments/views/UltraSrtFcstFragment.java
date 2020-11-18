@@ -129,7 +129,7 @@ public class UltraSrtFcstFragment extends Fragment
         for (int col = 0; col < DATA_SIZE; col++)
         {
             TextView textView = new TextView(context);
-            setValueTextView(textView, Clock.WEATHER_TIME_FORMAT.format(dataList.get(col).getDateTime()));
+            setValueTextView(textView, Clock.H_FORMAT.format(dataList.get(col).getDateTime()));
 
             TableRow.LayoutParams textParams = new TableRow.LayoutParams(ITEM_WIDTH, DP22);
             textParams.gravity = Gravity.CENTER;

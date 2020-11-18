@@ -151,13 +151,20 @@ public class VilageFcstFragment extends Fragment
         headerCol.addView(humidityLabel, humidityLabelParams);
 
         //시각 --------------------------------------------------------------------------
-        String[] clockStrs = null;
+        Calendar date = Calendar.getInstance();
 
         for (int col = 0; col < DATA_SIZE; col++)
         {
             TextView textView = new TextView(context);
-            clockStrs = Clock.MdHH_FORMAT.format(dataList.get(col).getDateTime()).split(" ");
-            setValueTextView(textView, clockStrs[0] + "\n" + clockStrs[1]);
+            date.setTime(dataList.get(col).getDateTime());
+
+            if (date.get(Calendar.HOUR_OF_DAY) == 0 || col == 0)
+            {
+                setValueTextView(textView, Clock.MdE_FORMAT.format(date.getTime()) + "\n" + Integer.toString(date.get(Calendar.HOUR_OF_DAY)));
+            } else
+            {
+                setValueTextView(textView, Integer.toString(date.get(Calendar.HOUR_OF_DAY)));
+            }
 
             TableRow.LayoutParams textParams = new TableRow.LayoutParams(ITEM_WIDTH, DP34);
             textParams.gravity = Gravity.CENTER;

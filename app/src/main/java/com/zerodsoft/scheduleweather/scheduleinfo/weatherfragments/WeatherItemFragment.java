@@ -89,6 +89,7 @@ public class WeatherItemFragment extends Fragment
         MidFcstParameter midTaParameter = new MidFcstParameter();
 
         LonLat lonLat = LonLatConverter.convertGrid(LONGITUDE, LATITUDE);
+        lonLat.setLongitude(LONGITUDE).setLatitude(LATITUDE);
 
         viewModel = new ViewModelProvider(this).get(WeatherViewModel.class);
         viewModel.init(getContext(), lonLat);

@@ -352,7 +352,6 @@ public class MidFcstFragment extends Fragment
         @Override
         protected void onLayout(boolean changed, int l, int t, int r, int b)
         {
-            final int MARGIN = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4f, getResources().getDisplayMetrics());
             super.onLayout(changed, l, t, r, b);
         }
 
@@ -367,6 +366,8 @@ public class MidFcstFragment extends Fragment
         {
             // 텍스트의 높이+원의 반지름 만큼 뷰의 상/하단에 여백을 설정한다.
             final float TEXT_HEIGHT = TEMP_PAINT.descent() - TEMP_PAINT.ascent();
+            final float TEXT_ASCENT = -TEMP_PAINT.ascent();
+            final float TEXT_DESCENT = TEMP_PAINT.descent();
             final float RADIUS = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 2f, getResources().getDisplayMetrics());
 
             final float VIEW_WIDTH = getWidth();
@@ -385,21 +386,18 @@ public class MidFcstFragment extends Fragment
 
             for (int index = 0; index < maxTempList.size(); index++)
             {
-                String minTemp = minTempList.get(index);
-                String maxTemp = maxTempList.get(index);
-
-                min = Float.parseFloat(minTemp);
-                max = Float.parseFloat(maxTemp);
+                min = Float.parseFloat(minTempList.get(index));
+                max = Float.parseFloat(maxTempList.get(index));
 
                 x = COLUMN_WIDTH / 2f + COLUMN_WIDTH * index;
                 minY = (10f * (MAX_TEMP - min)) * SPACING + TEXT_HEIGHT + RADIUS;
                 maxY = (10f * (MAX_TEMP - max)) * SPACING + TEXT_HEIGHT + RADIUS;
 
                 canvas.drawCircle(x, minY, RADIUS, CIRCLE_PAINT);
-                canvas.drawText(minTemp, x, minY + RADIUS + TEXT_HEIGHT, TEMP_PAINT);
+                canvas.drawText(minTempList.get(index), x, minY + RADIUS + TEXT_HEIGHT, TEMP_PAINT);
 
                 canvas.drawCircle(x, maxY, RADIUS, CIRCLE_PAINT);
-                canvas.drawText(maxTemp, x, maxY + RADIUS + TEXT_HEIGHT, TEMP_PAINT);
+                canvas.drawText(maxTempList.get(index), x, maxY - RADIUS - TEXT_HEIGHT + TEXT_ASCENT, TEMP_PAINT);
 
                 if (index != 0)
                 {
