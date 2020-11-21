@@ -1,25 +1,15 @@
 package com.zerodsoft.scheduleweather.scheduleinfo;
 
-import android.location.Address;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
-import androidx.fragment.app.FragmentManager;
-import androidx.lifecycle.Lifecycle;
-import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
-import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.room.dto.AddressDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
 import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class ScheduleTabViewPager extends FragmentStateAdapter
@@ -40,7 +30,7 @@ public class ScheduleTabViewPager extends FragmentStateAdapter
 
         fragments.add(new ScheduleInfoFragment(schedule, addresses, places));
         fragments.add(new ScheduleWeatherFragment(addresses, places));
-        fragments.add(new ScheduleMapFragment(addresses, places));
+        fragments.add(new InfoAroundLocationFragment(addresses, places));
 
         return this;
     }

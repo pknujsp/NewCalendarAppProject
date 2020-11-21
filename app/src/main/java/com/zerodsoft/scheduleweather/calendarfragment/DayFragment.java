@@ -24,6 +24,7 @@ public class DayFragment extends Fragment
     private ViewPager2 dayViewPager;
     private DayViewPagerAdapter dayViewPagerAdapter;
     private OnControlEvent onControlEvent;
+    private int currentPosition = EventTransactionFragment.FIRST_VIEW_POSITION;
 
     public DayFragment(Fragment fragment)
     {
@@ -73,8 +74,6 @@ public class DayFragment extends Fragment
 
     class OnPageChangeCallback extends ViewPager2.OnPageChangeCallback
     {
-        private int currentPosition = EventTransactionFragment.FIRST_VIEW_POSITION;
-        private int lastPosition;
 
         public OnPageChangeCallback()
         {
@@ -99,7 +98,6 @@ public class DayFragment extends Fragment
         public void onPageSelected(int position)
         {
             // drag 성공 시에만 SETTLING 직후 호출
-            lastPosition = currentPosition;
             currentPosition = position;
             setMonth(dayViewPagerAdapter.getDay(currentPosition));
             super.onPageSelected(position);
@@ -115,6 +113,12 @@ public class DayFragment extends Fragment
     {
         // 해당 페이지에 해당하는 날짜에 대한 데이터 불러오기
         onControlEvent.requestSchedules(this, position, startDate, endDate);
+    }
+
+    public void refreshView()
+    {
+        onControlEvent.requestSchedules(this, currentPosition, dayViewPagerAdapter.getDate(currentPosition, DayViewPagerAdapter.FIRST_DAY),
+                dayViewPagerAdapter.getDate(currentPosition, DayViewPagerAdapter.LAST_DAY));
     }
 
     public void setMonth(Date date)

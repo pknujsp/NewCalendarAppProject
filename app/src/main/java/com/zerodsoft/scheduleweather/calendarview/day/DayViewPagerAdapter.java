@@ -11,8 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendarfragment.EventTransactionFragment;
 import com.zerodsoft.scheduleweather.calendarfragment.DayFragment;
-import com.zerodsoft.scheduleweather.calendarfragment.OnControlEvent;
-import com.zerodsoft.scheduleweather.calendarfragment.OnEventItemClickListener;
+import com.zerodsoft.scheduleweather.calendarview.DateGetter;
 import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
 
 import java.util.Calendar;
@@ -22,19 +21,21 @@ import java.util.Date;
 import java.util.List;
 
 
-public class DayViewPagerAdapter extends RecyclerView.Adapter<DayViewPagerAdapter.DayViewPagerHolder>
+public class DayViewPagerAdapter extends RecyclerView.Adapter<DayViewPagerAdapter.DayViewPagerHolder> implements DateGetter
 {
     private DayFragment dayFragment;
     private final SparseArray<DayViewPagerHolder> holderSparseArray = new SparseArray<>();
-    private final Calendar calendar;
+    private final Calendar CALENDAR;
+    public static final int FIRST_DAY = -1;
+    public static final int LAST_DAY = -2;
 
     public DayViewPagerAdapter(DayFragment dayFragment)
     {
         this.dayFragment = dayFragment;
-        calendar = Calendar.getInstance();
+        CALENDAR = Calendar.getInstance();
         // 날짜를 오늘 0시0분0초로 설정
-        calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), 0, 0, 0);
-        dayFragment.setMonth(calendar.getTime());
+        CALENDAR.set(CALENDAR.get(Calendar.YEAR), CALENDAR.get(Calendar.MONTH), CALENDAR.get(Calendar.DAY_OF_MONTH), 0, 0, 0);
+        dayFragment.setMonth(CALENDAR.getTime());
     }
 
     public void setData(int position, List<ScheduleDTO> schedules)
@@ -71,7 +72,7 @@ public class DayViewPagerAdapter extends RecyclerView.Adapter<DayViewPagerAdapte
     @Override
     public void onViewRecycled(@NonNull DayViewPagerHolder holder)
     {
-        holderSparseArray.remove(holder.getAdapterPosition());
+        holderSparseArray.remove(holder.getOldPosition());
         holder.clear();
         super.onViewRecycled(holder);
     }
@@ -85,6 +86,20 @@ public class DayViewPagerAdapter extends RecyclerView.Adapter<DayViewPagerAdapte
     public Date getDay(int position)
     {
         return holderSparseArray.get(position).startDate;
+    }
+
+    @Override
+    public Date getDate(int position, int dateType)
+    {
+        Date date = null;
+        if (dateType == FIRST_DAY)
+        {
+            date = (Date) holderSparseArray.get(position).startDate.clone();
+        } else
+        {
+            date = (Date) holderSparseArray.get(position).endDate.clone();
+        }
+        return date;
     }
 
     class DayViewPagerHolder extends RecyclerView.ViewHolder
@@ -106,7 +121,7 @@ public class DayViewPagerAdapter extends RecyclerView.Adapter<DayViewPagerAdapte
 
         public void onBind()
         {
-            Calendar copiedCalendar = (Calendar) calendar.clone();
+            Calendar copiedCalendar = (Calendar) CALENDAR.clone();
             copiedCalendar.add(Calendar.DAY_OF_YEAR, getAdapterPosition() - EventTransactionFragment.FIRST_VIEW_POSITION);
 
             startDate = copiedCalendar.getTime();
@@ -124,6 +139,7 @@ public class DayViewPagerAdapter extends RecyclerView.Adapter<DayViewPagerAdapte
         public void clear()
         {
             dayHeaderView.clear();
+            dayView.clear();
         }
 
         public void setData(List<ScheduleDTO> schedules)

@@ -14,6 +14,7 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendarfragment.EventTransactionFragment;
 import com.zerodsoft.scheduleweather.calendarfragment.MonthFragment;
 import com.zerodsoft.scheduleweather.calendarfragment.OnEventItemClickListener;
+import com.zerodsoft.scheduleweather.calendarview.DateGetter;
 import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
 
 import java.util.ArrayList;
@@ -23,7 +24,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
-public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAdapter.MonthViewHolder>
+public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAdapter.MonthViewHolder> implements DateGetter
 {
     public static final int TOTAL_DAY_COUNT = 42;
     public static final int FIRST_DAY = -1;
@@ -57,6 +58,12 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
         holderSparseArray.get(position).setData(schedules);
     }
 
+    @Override
+    public Date getDate(int position, int dateType)
+    {
+        return holderSparseArray.get(position).getDay(dateType).getTime();
+    }
+
     @NonNull
     @Override
     public MonthViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType)
@@ -86,7 +93,7 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
     @Override
     public void onViewRecycled(@NonNull MonthViewHolder holder)
     {
-        holderSparseArray.remove(holder.getAdapterPosition());
+        holderSparseArray.remove(holder.getOldPosition());
         holder.clearHolder();
         super.onViewRecycled(holder);
     }

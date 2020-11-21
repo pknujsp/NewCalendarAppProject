@@ -49,7 +49,7 @@ public class ScheduleInfoActivity extends AppCompatActivity
                 ScheduleTabViewPager adapter = new ScheduleTabViewPager(ScheduleInfoActivity.this);
                 viewPager.setAdapter(adapter.setFragments(scheduleData.getSchedule(), scheduleData.getAddresses(), scheduleData.getPlaces()));
 
-                String[] tabs = {"일정", "날씨", "지도"};
+                String[] tabs = {"일정", "날씨", "주변 정보"};
 
                 new TabLayoutMediator(tabLayout, viewPager, new TabLayoutMediator.TabConfigurationStrategy()
                 {

@@ -25,6 +25,8 @@ public class MonthFragment extends Fragment implements OnEventItemClickListener
     private OnControlEvent onControlEvent;
     private ViewPager2 viewPager;
     private MonthViewPagerAdapter viewPagerAdapter;
+    private int currentPosition = EventTransactionFragment.FIRST_VIEW_POSITION;
+
 
     public MonthFragment(Fragment fragment)
     {
@@ -70,6 +72,13 @@ public class MonthFragment extends Fragment implements OnEventItemClickListener
         onControlEvent.requestSchedules(this, position, startDate, endDate);
     }
 
+    public void refreshView()
+    {
+        onControlEvent.requestSchedules(this, currentPosition, viewPagerAdapter.getDate(currentPosition, MonthViewPagerAdapter.FIRST_DAY),
+                viewPagerAdapter.getDate(currentPosition, MonthViewPagerAdapter.LAST_DAY));
+        viewPagerAdapter.notifyDataSetChanged();
+    }
+
     @Override
     public void onClicked(Date startDate, Date endDate)
     {
@@ -85,8 +94,6 @@ public class MonthFragment extends Fragment implements OnEventItemClickListener
 
     class OnPageChangeCallback extends ViewPager2.OnPageChangeCallback
     {
-        private int currentPosition = EventTransactionFragment.FIRST_VIEW_POSITION;
-        private int lastPosition;
 
         public OnPageChangeCallback()
         {
@@ -111,7 +118,6 @@ public class MonthFragment extends Fragment implements OnEventItemClickListener
         public void onPageSelected(int position)
         {
             // drag 성공 시에만 SETTLING 직후 호출
-            lastPosition = currentPosition;
             currentPosition = position;
             setMonth(viewPagerAdapter.getMonth(currentPosition));
             super.onPageSelected(position);

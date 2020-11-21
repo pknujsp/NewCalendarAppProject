@@ -14,6 +14,7 @@ import com.zerodsoft.scheduleweather.calendarfragment.EventTransactionFragment;
 import com.zerodsoft.scheduleweather.calendarfragment.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.calendarfragment.WeekFragment;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.calendarview.DateGetter;
 import com.zerodsoft.scheduleweather.calendarview.month.EventData;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
@@ -26,7 +27,7 @@ import java.util.Date;
 import java.util.List;
 
 
-public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdapter.WeekViewPagerHolder> implements OnSwipeListener
+public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdapter.WeekViewPagerHolder> implements OnSwipeListener, DateGetter
 {
     private SparseArray<WeekViewPagerHolder> holderSparseArray = new SparseArray<>();
     private WeekFragment weekFragment;
@@ -60,6 +61,7 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
     {
         holderSparseArray.get(position).setData(schedules);
     }
+
 
     @NonNull
     @Override
@@ -112,6 +114,12 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
     public void onSwiped(boolean value)
     {
         weekFragment.setViewPagerSwipe(value);
+    }
+
+    @Override
+    public Date getDate(int position, int dateType)
+    {
+        return holderSparseArray.get(position).getDay(dateType).getTime();
     }
 
     class WeekViewPagerHolder extends RecyclerView.ViewHolder

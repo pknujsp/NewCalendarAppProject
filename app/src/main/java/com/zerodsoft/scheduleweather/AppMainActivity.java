@@ -19,6 +19,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentManager;
 
 public class AppMainActivity extends AppCompatActivity
 {
@@ -145,8 +146,10 @@ public class AppMainActivity extends AppCompatActivity
             case RESULT_OK:
                 switch (requestCode)
                 {
-                    case ScheduleEditActivity.ADD_LOCATION:
-                    case ScheduleEditActivity.REQUEST_SHOW_SCHEDULE:
+                    case ScheduleEditActivity.REQUEST_NEW_SCHEDULE:
+                        //새로운 일정이 추가됨 -> 달력 이벤트 갱신
+                        calendarTransactionFragment.refreshCalendar();
+                        break;
                 }
                 break;
             case RESULT_CANCELED:

@@ -79,7 +79,6 @@ public class ScheduleEditActivity extends AppCompatActivity implements Notificat
                 activityBinding.alldayValue.setText(Clock.dateFormat3.format(date));
                 break;
         }
-
     }
 
     @Override

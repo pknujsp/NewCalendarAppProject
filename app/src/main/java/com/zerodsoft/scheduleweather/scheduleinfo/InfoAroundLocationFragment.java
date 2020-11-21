@@ -16,11 +16,11 @@ import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
 import java.util.List;
 
 
-public class ScheduleMapFragment extends Fragment
+public class InfoAroundLocationFragment extends Fragment
 {
 
 
-    public ScheduleMapFragment(List<AddressDTO> addresses, List<PlaceDTO> places)
+    public InfoAroundLocationFragment(List<AddressDTO> addresses, List<PlaceDTO> places)
     {
        // setSchedule(schedule, place, address);
     }

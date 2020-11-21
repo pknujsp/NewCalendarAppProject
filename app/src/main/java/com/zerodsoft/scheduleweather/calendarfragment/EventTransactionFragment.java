@@ -11,6 +11,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
@@ -160,6 +161,21 @@ public class EventTransactionFragment extends Fragment implements OnControlEvent
         this.fragment = fragment;
         this.viewPosition = viewPosition;
         calendarViewModel.selectSchedules(startDate, endDate);
+    }
+
+    public void refreshCalendar()
+    {
+        //일정이 추가/삭제되면 영향을 받은 일정의 시작날짜에 해당하는 달력의 위치로 이동한다.
+        if (fragment instanceof MonthFragment)
+        {
+            ((MonthFragment) fragment).refreshView();
+        } else if (fragment instanceof WeekFragment)
+        {
+            ((WeekFragment) fragment).refreshView();
+        } else if (fragment instanceof DayFragment)
+        {
+            ((DayFragment) fragment).refreshView();
+        }
     }
 }
 

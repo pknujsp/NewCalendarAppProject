@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 
 import com.zerodsoft.scheduleweather.AppMainActivity;
 import com.zerodsoft.scheduleweather.calendarfragment.EventsInfoFragment.EventsInfoFragment;
+import com.zerodsoft.scheduleweather.calendarview.month.MonthViewPagerAdapter;
 import com.zerodsoft.scheduleweather.calendarview.week.WeekViewPagerAdapter;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
@@ -26,6 +27,8 @@ public class WeekFragment extends Fragment implements OnEventItemClickListener
     public static final String TAG = "WEEK_FRAGMENT";
     private ViewPager2 weekViewPager;
     private WeekViewPagerAdapter weekViewPagerAdapter;
+    private int currentPosition = EventTransactionFragment.FIRST_VIEW_POSITION;
+
 
     private OnControlEvent onControlEvent;
     private static int COLUMN_WIDTH = AppMainActivity.getDisplayWidth() / 8;
@@ -87,9 +90,9 @@ public class WeekFragment extends Fragment implements OnEventItemClickListener
         eventsInfoFragment.show(getActivity().getSupportFragmentManager(), EventsInfoFragment.TAG);
     }
 
+
     class OnPageChangeCallback extends ViewPager2.OnPageChangeCallback
     {
-        private int currentPosition = EventTransactionFragment.FIRST_VIEW_POSITION;
 
         public int getCurrentPosition()
         {
@@ -161,5 +164,11 @@ public class WeekFragment extends Fragment implements OnEventItemClickListener
     {
         // 해당 페이지에 해당하는 날짜에 대한 데이터 불러오기
         onControlEvent.requestSchedules(this, position, startDate, endDate);
+    }
+
+    public void refreshView()
+    {
+        onControlEvent.requestSchedules(this, currentPosition, weekViewPagerAdapter.getDate(currentPosition, WeekViewPagerAdapter.FIRST_DAY),
+                weekViewPagerAdapter.getDate(currentPosition, WeekViewPagerAdapter.LAST_DAY));
     }
 }
