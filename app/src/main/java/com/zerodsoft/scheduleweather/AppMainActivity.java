@@ -21,6 +21,8 @@ import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
 
+import java.util.Date;
+
 public class AppMainActivity extends AppCompatActivity
 {
     private ActivityAppMainBinding binding;
@@ -91,7 +93,7 @@ public class AppMainActivity extends AppCompatActivity
                 startActivityForResult(intent, ScheduleEditActivity.REQUEST_NEW_SCHEDULE);
                 break;
             case R.id.go_to_today:
-
+                calendarTransactionFragment.goToToday();
                 break;
             case R.id.refresh_calendar:
 
@@ -148,7 +150,7 @@ public class AppMainActivity extends AppCompatActivity
                 {
                     case ScheduleEditActivity.REQUEST_NEW_SCHEDULE:
                         //새로운 일정이 추가됨 -> 달력 이벤트 갱신
-                        calendarTransactionFragment.refreshCalendar();
+                        calendarTransactionFragment.refreshCalendar((Date) data.getSerializableExtra("startDate"));
                         break;
                 }
                 break;

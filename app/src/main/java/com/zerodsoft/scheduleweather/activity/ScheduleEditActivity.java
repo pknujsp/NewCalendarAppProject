@@ -1,7 +1,9 @@
 package com.zerodsoft.scheduleweather.activity;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -9,6 +11,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -24,7 +28,7 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.room.dto.AddressDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
 import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
-import com.zerodsoft.scheduleweather.utility.Clock;
+import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.utility.ScheduleAlarm;
 import com.zerodsoft.scheduleweather.viewmodel.ScheduleViewModel;
 
@@ -65,18 +69,18 @@ public class ScheduleEditActivity extends AppCompatActivity implements Notificat
         {
             case DatePickerFragment.START:
                 activityBinding.getScheduleDto().setStartDate(date);
-                activityBinding.startdateValue.setText(Clock.dateFormat2.format(date));
+                activityBinding.startdateValue.setText(ClockUtil.dateFormat2.format(date));
                 break;
 
             case DatePickerFragment.END:
                 activityBinding.getScheduleDto().setEndDate(date);
-                activityBinding.enddateValue.setText(Clock.dateFormat2.format(date));
+                activityBinding.enddateValue.setText(ClockUtil.dateFormat2.format(date));
                 break;
 
             case DatePickerFragment.ALL_DAY:
                 activityBinding.getScheduleDto().setStartDate(date);
                 activityBinding.getScheduleDto().setEndDate(date);
-                activityBinding.alldayValue.setText(Clock.dateFormat3.format(date));
+                activityBinding.alldayValue.setText(ClockUtil.dateFormat3.format(date));
                 break;
         }
     }
@@ -84,17 +88,66 @@ public class ScheduleEditActivity extends AppCompatActivity implements Notificat
     @Override
     public void onNotiTimeSelected()
     {
-        ScheduleAlarm.setNotiData(activityBinding.getScheduleDto());
-
         if (ScheduleAlarm.isEmpty())
         {
             activityBinding.notificationValue.setText("");
-            activityBinding.notificationValue.setHint(ScheduleAlarm.getResultText());
+            activityBinding.notificationValue.setHint(R.string.noti_time_not_selected);
         } else
         {
-            activityBinding.notificationValue.setText(ScheduleAlarm.getResultText());
+            activityBinding.getScheduleDto().setNotiDay(ScheduleAlarm.getDAY());
+            activityBinding.getScheduleDto().setNotiHour(ScheduleAlarm.getHOUR());
+            activityBinding.getScheduleDto().setNotiMinute(ScheduleAlarm.getMINUTE());
+            activityBinding.notificationValue.setText(ScheduleAlarm.getResultText(getApplicationContext()));
         }
 
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        getMenuInflater().inflate(R.menu.schuedule_edit_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        switch (item.getItemId())
+        {
+            case R.id.save_schedule_button:
+                // 제목, 날짜 필수 입력
+                if (activityBinding.getScheduleDto().getSubject().isEmpty())
+                {
+                    Toast.makeText(ScheduleEditActivity.this, "제목을 입력해주세요", Toast.LENGTH_SHORT).show();
+                } else if (activityBinding.getScheduleDto().getStartDate() == null
+                        || activityBinding.getScheduleDto().getEndDate() == null)
+                {
+                    Toast.makeText(ScheduleEditActivity.this, "날짜를 지정해주세요", Toast.LENGTH_SHORT).show();
+                } else
+                {
+                    ScheduleAlarm.setNotiData(activityBinding.getScheduleDto());
+                    viewModel.setScheduleDTO(activityBinding.getScheduleDto());
+                    viewModel.setAddressDTO(activityBinding.getAddressDto());
+                    viewModel.setPlaceDTO(activityBinding.getPlaceDto());
+
+                    if (requestCode == REQUEST_SHOW_SCHEDULE)
+                    {
+                        viewModel.updateSchedule();
+                    } else if (requestCode == REQUEST_NEW_SCHEDULE)
+                    {
+                        viewModel.insertSchedule();
+                    }
+                    getIntent().putExtra("startDate", activityBinding.getScheduleDto().getStartDate());
+                    setResult(RESULT_OK, getIntent());
+                    finish();
+                }
+                break;
+            case android.R.id.home:
+                setResult(RESULT_CANCELED);
+                finish();
+                break;
+        }
+        return true;
     }
 
     @Override
@@ -103,6 +156,12 @@ public class ScheduleEditActivity extends AppCompatActivity implements Notificat
         super.onCreate(savedInstanceState);
         activityBinding = com.zerodsoft.scheduleweather.databinding.ActivityScheduleBinding.inflate(getLayoutInflater());
         setContentView(activityBinding.getRoot());
+
+        Toolbar toolbar = activityBinding.scheduleEditToolbar;
+        setSupportActionBar(toolbar);
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setTitle(R.string.schedule_add);
+        actionBar.setDisplayHomeAsUpEnabled(true);
 
         activityBinding.alldayLayout.setVisibility(View.GONE);
         activityBinding.startdateLayout.setVisibility(View.VISIBLE);
@@ -123,7 +182,6 @@ public class ScheduleEditActivity extends AppCompatActivity implements Notificat
         setDateTextView();
         setLocationButton();
         setNotiValue();
-        setBottomButtons();
 
         requestCode = getIntent().getIntExtra("requestCode", 0);
 
@@ -160,12 +218,12 @@ public class ScheduleEditActivity extends AppCompatActivity implements Notificat
                             if (scheduleDTO.getDateType() == ScheduleDTO.DATE_ALLDAY)
                             {
                                 activityBinding.scheduleAlldaySwitch.setChecked(true);
-                                activityBinding.alldayValue.setText(Clock.dateFormat3.format(scheduleDTO.getStartDate()));
+                                activityBinding.alldayValue.setText(ClockUtil.dateFormat3.format(scheduleDTO.getStartDate()));
                             } else
                             {
                                 activityBinding.scheduleAlldaySwitch.setChecked(false);
-                                activityBinding.startdateValue.setText(Clock.dateFormat2.format(scheduleDTO.getStartDate()));
-                                activityBinding.enddateValue.setText(Clock.dateFormat2.format(scheduleDTO.getEndDate()));
+                                activityBinding.startdateValue.setText(ClockUtil.dateFormat2.format(scheduleDTO.getStartDate()));
+                                activityBinding.enddateValue.setText(ClockUtil.dateFormat2.format(scheduleDTO.getEndDate()));
                             }
 
                             //내용
@@ -184,7 +242,7 @@ public class ScheduleEditActivity extends AppCompatActivity implements Notificat
                             if (scheduleDTO.getNotiTime() != null)
                             {
                                 ScheduleAlarm.init(scheduleDTO);
-                                activityBinding.notificationValue.setText(ScheduleAlarm.getResultText());
+                                activityBinding.notificationValue.setText(ScheduleAlarm.getResultText(getApplicationContext()));
                             }
                         }
                     }
@@ -221,8 +279,6 @@ public class ScheduleEditActivity extends AppCompatActivity implements Notificat
                 });
                 break;
         }
-        setViewState();
-
 
     }
 
@@ -232,105 +288,6 @@ public class ScheduleEditActivity extends AppCompatActivity implements Notificat
         super.onStart();
     }
 
-    private void setBottomButtons()
-    {
-        activityBinding.editScheduleButton.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                activityState = EDIT_SCHEDULE;
-                setViewState();
-            }
-        });
-
-        activityBinding.shareScheduleButton.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-
-            }
-        });
-
-        activityBinding.deleteScheduleButton.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                viewModel.deleteSchedule();
-            }
-        });
-
-        activityBinding.cancelEditScheduleButton.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                switch (requestCode)
-                {
-                    case REQUEST_SHOW_SCHEDULE:
-                        activityState = SHOW_SCHEDULE;
-                        setViewState();
-                        break;
-                    case REQUEST_NEW_SCHEDULE:
-                        setResult(RESULT_CANCELED);
-                        finish();
-                        break;
-                }
-            }
-        });
-
-        activityBinding.saveScheduleButton.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                // 제목, 날짜 필수 입력
-                if (activityBinding.getScheduleDto().getSubject().isEmpty())
-                {
-                    Toast.makeText(ScheduleEditActivity.this, "제목을 입력해주세요", Toast.LENGTH_SHORT).show();
-                } else if (activityBinding.getScheduleDto().getStartDate() == null
-                        || activityBinding.getScheduleDto().getEndDate() == null)
-                {
-                    Toast.makeText(ScheduleEditActivity.this, "날짜를 지정해주세요", Toast.LENGTH_SHORT).show();
-                } else
-                {
-                    viewModel.setScheduleDTO(activityBinding.getScheduleDto());
-                    viewModel.setAddressDTO(activityBinding.getAddressDto());
-                    viewModel.setPlaceDTO(activityBinding.getPlaceDto());
-
-                    if (requestCode == REQUEST_SHOW_SCHEDULE)
-                    {
-                        viewModel.updateSchedule();
-                    } else if (requestCode == REQUEST_NEW_SCHEDULE)
-                    {
-                        viewModel.insertSchedule();
-                    }
-                    setResult(RESULT_OK);
-                    finish();
-                }
-            }
-        });
-    }
-
-    private void setViewState()
-    {
-        // 하단 버튼 상태, 뷰의 수정 여부 설정
-        switch (activityState)
-        {
-            case SHOW_SCHEDULE:
-                activityBinding.scheduleInfoButtons.setVisibility(View.VISIBLE);
-                activityBinding.scheduleEditButtons.setVisibility(View.GONE);
-                setEnableButtons(false);
-                break;
-            case EDIT_SCHEDULE:
-                activityBinding.scheduleInfoButtons.setVisibility(View.GONE);
-                activityBinding.scheduleEditButtons.setVisibility(View.VISIBLE);
-                setEnableButtons(true);
-                break;
-        }
-    }
 
     private void setEnableButtons(boolean isClickable)
     {
@@ -467,6 +424,10 @@ public class ScheduleEditActivity extends AppCompatActivity implements Notificat
             {
                 //알람 시각을 설정하는 다이얼로그 표시
                 //하루종일 인 경우와 아닌 경우 내용이 다르다
+                if (notificationFragment == null)
+                {
+                    notificationFragment = NotificationFragment.getInstance();
+                }
                 notificationFragment.init(activityBinding.getScheduleDto());
                 notificationFragment.show(getSupportFragmentManager(), NotificationFragment.TAG);
             }

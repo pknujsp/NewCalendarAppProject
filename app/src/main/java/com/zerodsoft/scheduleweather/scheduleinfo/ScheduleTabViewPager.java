@@ -27,7 +27,6 @@ public class ScheduleTabViewPager extends FragmentStateAdapter
     {
         fragments.clear();
 
-
         fragments.add(new ScheduleInfoFragment(schedule, addresses, places));
         fragments.add(new ScheduleWeatherFragment(addresses, places));
         fragments.add(new InfoAroundLocationFragment(addresses, places));

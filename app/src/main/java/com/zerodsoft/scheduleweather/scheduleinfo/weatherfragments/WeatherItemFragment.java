@@ -25,7 +25,7 @@ import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.views.MidFcst
 import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.views.UltraSrtFcstFragment;
 import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.views.UltraSrtNcstFragment;
 import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.views.VilageFcstFragment;
-import com.zerodsoft.scheduleweather.utility.Clock;
+import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.utility.LonLat;
 import com.zerodsoft.scheduleweather.utility.LonLatConverter;
 
@@ -177,7 +177,7 @@ public class WeatherItemFragment extends Fragment
         }
 
         SunriseSunsetCalculator sunriseSunsetCalculator = new SunriseSunsetCalculator(new Location(weatherData.getWeatherAreaCode().getLatitudeSecondsDivide100(),
-                weatherData.getWeatherAreaCode().getLongitudeSecondsDivide100()), Clock.TIME_ZONE);
+                weatherData.getWeatherAreaCode().getLongitudeSecondsDivide100()), ClockUtil.TIME_ZONE);
         Calendar sunRise = null;
         Calendar sunSet = null;
 

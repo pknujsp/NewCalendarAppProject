@@ -57,6 +57,11 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
         weekFragment.setMonth(calendar.getTime());
     }
 
+    public Calendar getCalendar()
+    {
+        return (Calendar) calendar.clone();
+    }
+
     public void setData(int position, List<ScheduleDTO> schedules)
     {
         holderSparseArray.get(position).setData(schedules);

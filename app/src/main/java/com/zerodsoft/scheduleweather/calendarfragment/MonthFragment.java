@@ -14,7 +14,9 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendarfragment.EventsInfoFragment.EventsInfoFragment;
 import com.zerodsoft.scheduleweather.calendarview.month.MonthViewPagerAdapter;
 import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
+import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -25,6 +27,7 @@ public class MonthFragment extends Fragment implements OnEventItemClickListener
     private OnControlEvent onControlEvent;
     private ViewPager2 viewPager;
     private MonthViewPagerAdapter viewPagerAdapter;
+    private OnPageChangeCallback onPageChangeCallback;
     private int currentPosition = EventTransactionFragment.FIRST_VIEW_POSITION;
 
 
@@ -50,7 +53,7 @@ public class MonthFragment extends Fragment implements OnEventItemClickListener
         viewPager.setAdapter(viewPagerAdapter);
         viewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, false);
 
-        OnPageChangeCallback onPageChangeCallback = new OnPageChangeCallback();
+        onPageChangeCallback = new OnPageChangeCallback(viewPagerAdapter.getCalendar());
         viewPager.registerOnPageChangeCallback(onPageChangeCallback);
 
         super.onViewCreated(view, savedInstanceState);
@@ -72,11 +75,27 @@ public class MonthFragment extends Fragment implements OnEventItemClickListener
         onControlEvent.requestSchedules(this, position, startDate, endDate);
     }
 
-    public void refreshView()
+    public void refreshView(Date startDate)
     {
-        onControlEvent.requestSchedules(this, currentPosition, viewPagerAdapter.getDate(currentPosition, MonthViewPagerAdapter.FIRST_DAY),
-                viewPagerAdapter.getDate(currentPosition, MonthViewPagerAdapter.LAST_DAY));
-        viewPagerAdapter.notifyDataSetChanged();
+        //시작 날짜의 해당 월로 달력 변경
+        viewPagerAdapter = new MonthViewPagerAdapter(this);
+        //시작 날짜가 화면에 표시되도록 달력 날짜를 변경
+        Calendar viewCalendar = viewPagerAdapter.getCalendar();
+        //두 날짜 사이의 월수 차이
+        int monthDifference = ClockUtil.calcDateDifference(ClockUtil.MONTH, startDate, viewCalendar);
+        viewPager.setAdapter(viewPagerAdapter);
+        viewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION + monthDifference, false);
+
+        onPageChangeCallback = new OnPageChangeCallback(viewPagerAdapter.getCalendar());
+        viewPager.registerOnPageChangeCallback(onPageChangeCallback);
+    }
+
+    public void goToToday()
+    {
+        if (currentPosition != EventTransactionFragment.FIRST_VIEW_POSITION)
+        {
+            viewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, true);
+        }
     }
 
     @Override
@@ -94,9 +113,12 @@ public class MonthFragment extends Fragment implements OnEventItemClickListener
 
     class OnPageChangeCallback extends ViewPager2.OnPageChangeCallback
     {
+        private final Calendar calendar;
+        private Calendar copiedCalendar;
 
-        public OnPageChangeCallback()
+        public OnPageChangeCallback(Calendar calendar)
         {
+            this.calendar = calendar;
         }
 
         @Override
@@ -119,7 +141,12 @@ public class MonthFragment extends Fragment implements OnEventItemClickListener
         {
             // drag 성공 시에만 SETTLING 직후 호출
             currentPosition = position;
-            setMonth(viewPagerAdapter.getMonth(currentPosition));
+
+            copiedCalendar = (Calendar) calendar.clone();
+            copiedCalendar.add(Calendar.MONTH, currentPosition - EventTransactionFragment.FIRST_VIEW_POSITION);
+
+            //error point-------------------------------------------------------------------------
+            setMonth(copiedCalendar.getTime());
             super.onPageSelected(position);
         }
     }

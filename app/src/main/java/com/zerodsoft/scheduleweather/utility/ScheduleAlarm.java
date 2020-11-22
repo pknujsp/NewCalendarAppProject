@@ -1,115 +1,118 @@
 package com.zerodsoft.scheduleweather.utility;
 
+import android.content.Context;
+
+import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
 
 import java.util.Calendar;
 
 public class ScheduleAlarm
 {
-    private static int day = 0;
-    private static int hour = 0;
-    private static int minute = 0;
+    private static int DAY;
+    private static int HOUR;
+    private static int MINUTE;
+    private static final Calendar DATE_TIME;
+    private static String result;
 
-    private static final StringBuilder stringBuilder = new StringBuilder();
-    private static final Calendar dateTime = Calendar.getInstance();
+    private ScheduleAlarm()
+    {
+    }
 
+    static
+    {
+        DAY = 0;
+        HOUR = 0;
+        MINUTE = 0;
+        DATE_TIME = Calendar.getInstance(ClockUtil.TIME_ZONE);
+    }
 
     public static void init(ScheduleDTO schedule)
     {
-        ScheduleAlarm.day = schedule.getNotiDay();
-        ScheduleAlarm.hour = schedule.getNotiHour();
-        ScheduleAlarm.minute = schedule.getNotiMinute();
+        DAY = schedule.getNotiDay();
+        HOUR = schedule.getNotiHour();
+        MINUTE = schedule.getNotiMinute();
     }
 
     public static void init(int day, int hour, int minute)
     {
-        ScheduleAlarm.day = day;
-        ScheduleAlarm.hour = hour;
-        ScheduleAlarm.minute = minute;
+        ScheduleAlarm.DAY = day;
+        ScheduleAlarm.HOUR = hour;
+        ScheduleAlarm.MINUTE = minute;
     }
 
-    public static void setDay(int day)
+    public static void setDAY(int DAY)
     {
-        ScheduleAlarm.day = day;
+        ScheduleAlarm.DAY = DAY;
     }
 
-    public static void setHour(int hour)
+    public static void setHOUR(int HOUR)
     {
-        ScheduleAlarm.hour = hour;
+        ScheduleAlarm.HOUR = HOUR;
     }
 
-    public static void setMinute(int minute)
+    public static void setMINUTE(int MINUTE)
     {
-        ScheduleAlarm.minute = minute;
+        ScheduleAlarm.MINUTE = MINUTE;
     }
 
-    public static int getDay()
+    public static int getDAY()
     {
-        return day;
+        return DAY;
     }
 
-    public static int getHour()
+    public static int getHOUR()
     {
-        return hour;
+        return HOUR;
     }
 
-    public static int getMinute()
+    public static int getMINUTE()
     {
-        return minute;
+        return MINUTE;
     }
 
-    public static String getResultText()
+    public static String getResultText(Context context)
     {
-        if (stringBuilder.length() != 0)
+        result = "";
+        if (ScheduleAlarm.getDAY() != 0)
         {
-            stringBuilder.delete(0, stringBuilder.length());
+            result += ScheduleAlarm.getDAY() + context.getString(R.string.notification_type_day) + " ";
+        }
+        if (ScheduleAlarm.getHOUR() != 0)
+        {
+            result += ScheduleAlarm.getHOUR() + context.getString(R.string.notification_type_hour) + " ";
+        }
+        if (ScheduleAlarm.getMINUTE() != 0)
+        {
+            result += ScheduleAlarm.getMINUTE() + context.getString(R.string.notification_type_minute) + " ";
         }
 
-        if (day != 0 && hour != 0 && minute != 0)
-        {
-            if (day != 0)
-            {
-                stringBuilder.append(day).append("일 ");
-            }
-            if (hour != 0)
-            {
-                stringBuilder.append(hour).append("시간 ");
-            }
-            if (minute != 0)
-            {
-                stringBuilder.append(minute).append("분 ");
-            }
-
-            stringBuilder.append("전에 알림");
-        } else
-        {
-            stringBuilder.append("알림 없음");
-        }
-        return stringBuilder.toString();
+        return result += context.getString(R.string.notification_before);
     }
+
 
     public static void setNotiData(ScheduleDTO schedule)
     {
-        if (day != 0 && hour != 0 && minute != 0)
+        if (DAY != 0 || HOUR != 0 || MINUTE != 0)
         {
-            dateTime.setTime(schedule.getStartDate());
+            DATE_TIME.setTime(schedule.getStartDate());
 
-            dateTime.add(Calendar.DAY_OF_YEAR, -day);
-            dateTime.add(Calendar.HOUR_OF_DAY, -hour);
-            dateTime.add(Calendar.MINUTE, -minute);
-            schedule.setNotiTime(dateTime.getTime());
+            DATE_TIME.add(Calendar.DAY_OF_YEAR, -DAY);
+            DATE_TIME.add(Calendar.HOUR_OF_DAY, -HOUR);
+            DATE_TIME.add(Calendar.MINUTE, -MINUTE);
+            schedule.setNotiTime(DATE_TIME.getTime());
         } else
         {
             schedule.setNotiTime(null);
         }
-        schedule.setNotiDay(day);
-        schedule.setNotiHour(hour);
-        schedule.setNotiMinute(minute);
+        schedule.setNotiDay(DAY);
+        schedule.setNotiHour(HOUR);
+        schedule.setNotiMinute(MINUTE);
     }
 
     public static boolean isEmpty()
     {
-        if (day != 0 && hour != 0 && minute != 0)
+        if (DAY == 0 && HOUR == 0 && MINUTE == 0)
         {
             return true;
         } else

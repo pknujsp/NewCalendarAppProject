@@ -3,25 +3,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <data>
-
-        <variable
-            name="day"
-            type="String" />
-
-        <variable
-            name="hour"
-            type="String" />
-
-        <variable
-            name="minute"
-            type="String" />
-
-        <variable
-            name="result"
-            type="String" />
-
-    </data>
 
     <FrameLayout
         android:id="@+id/fragment_notification"
@@ -49,7 +30,6 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentLeft="true"
                     android:layout_centerVertical="true"
-                    android:text="@{day}"
                     android:textSize="14sp" />
 
                 <TextView
@@ -100,7 +80,6 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentLeft="true"
                     android:layout_centerVertical="true"
-                    android:text="@{hour}"
                     android:textSize="14sp" />
 
                 <TextView
@@ -150,7 +129,6 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentLeft="true"
                     android:layout_centerVertical="true"
-                    android:text="@{minute}"
                     android:textSize="14sp" />
 
                 <TextView
@@ -187,16 +165,18 @@
 
             </RelativeLayout>
 
+
             <TextView
                 android:id="@+id/noti_result"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center"
                 android:layout_marginTop="16dp"
                 android:layout_marginBottom="16dp"
-                android:text="@{result}"
-                android:textAlignment="center"
+                android:gravity="center"
                 android:textSize="15sp"
                 android:textStyle="bold" />
+
 
             <LinearLayout
                 android:layout_width="match_parent"

@@ -49,7 +49,6 @@ public class NotificationFragment extends DialogFragment
         public void handleMessage(Message msg)
         {
             moveValue(msg.what);
-            fragmentBinding.setResult(ScheduleAlarm.getResultText());
             handler.sendEmptyMessageDelayed(msg.what, 50);
         }
     };
@@ -58,7 +57,6 @@ public class NotificationFragment extends DialogFragment
     {
         public void onNotiTimeSelected();
     }
-
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState)
@@ -163,7 +161,6 @@ public class NotificationFragment extends DialogFragment
         public void onClick(View view)
         {
             moveValue(view.getId());
-            fragmentBinding.setResult(ScheduleAlarm.getResultText());
         }
     };
 
@@ -174,16 +171,19 @@ public class NotificationFragment extends DialogFragment
             case R.id.minus_noti_day_button:
                 if (day != 0)
                 {
-                    fragmentBinding.setDay(Integer.toString(--day));
+                    fragmentBinding.notiDay.setText(Integer.toString(--day));
+                    ScheduleAlarm.setDAY(day);
                 }
                 break;
             case R.id.plus_noti_day_button:
-                fragmentBinding.setDay(Integer.toString(++day));
+                fragmentBinding.notiDay.setText(Integer.toString(++day));
+                ScheduleAlarm.setDAY(day);
                 break;
             case R.id.minus_noti_hour_button:
                 if (hour != 0)
                 {
-                    fragmentBinding.setHour(Integer.toString(--hour));
+                    fragmentBinding.notiHour.setText(Integer.toString(--hour));
+                    ScheduleAlarm.setHOUR(hour);
                 }
                 break;
             case R.id.plus_noti_hour_button:
@@ -193,13 +193,14 @@ public class NotificationFragment extends DialogFragment
                 {
                     hour = 23;
                 }
-
-                fragmentBinding.setHour(Integer.toString(hour));
+                fragmentBinding.notiHour.setText(Integer.toString(hour));
+                ScheduleAlarm.setHOUR(hour);
                 break;
             case R.id.minus_noti_minute_button:
                 if (minute != 0)
                 {
-                    fragmentBinding.setMinute(Integer.toString(--minute));
+                    fragmentBinding.notiMinute.setText(Integer.toString(--minute));
+                    ScheduleAlarm.setMINUTE(minute);
                 }
                 break;
             case R.id.plus_noti_minute_button:
@@ -209,10 +210,11 @@ public class NotificationFragment extends DialogFragment
                 {
                     minute = 59;
                 }
-
-                fragmentBinding.setMinute(Integer.toString(minute));
+                fragmentBinding.notiMinute.setText(Integer.toString(minute));
+                ScheduleAlarm.setMINUTE(minute);
                 break;
         }
+        fragmentBinding.notiResult.setText(ScheduleAlarm.getResultText(getContext()));
     }
 
 
@@ -240,9 +242,9 @@ public class NotificationFragment extends DialogFragment
     public void init(ScheduleDTO schedule)
     {
         ScheduleAlarm.init(schedule);
-        day = ScheduleAlarm.getDay();
-        hour = ScheduleAlarm.getHour();
-        minute = ScheduleAlarm.getMinute();
+        day = ScheduleAlarm.getDAY();
+        hour = ScheduleAlarm.getHOUR();
+        minute = ScheduleAlarm.getMINUTE();
     }
 
 }

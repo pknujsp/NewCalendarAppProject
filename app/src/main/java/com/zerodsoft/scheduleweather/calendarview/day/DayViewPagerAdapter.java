@@ -13,6 +13,7 @@ import com.zerodsoft.scheduleweather.calendarfragment.EventTransactionFragment;
 import com.zerodsoft.scheduleweather.calendarfragment.DayFragment;
 import com.zerodsoft.scheduleweather.calendarview.DateGetter;
 import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
+import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import java.util.Calendar;
 import java.util.Collections;
@@ -32,15 +33,22 @@ public class DayViewPagerAdapter extends RecyclerView.Adapter<DayViewPagerAdapte
     public DayViewPagerAdapter(DayFragment dayFragment)
     {
         this.dayFragment = dayFragment;
-        CALENDAR = Calendar.getInstance();
+        CALENDAR = Calendar.getInstance(ClockUtil.TIME_ZONE);
         // 날짜를 오늘 0시0분0초로 설정
-        CALENDAR.set(CALENDAR.get(Calendar.YEAR), CALENDAR.get(Calendar.MONTH), CALENDAR.get(Calendar.DAY_OF_MONTH), 0, 0, 0);
+        CALENDAR.set(Calendar.HOUR_OF_DAY, 0);
+        CALENDAR.set(Calendar.MINUTE, 0);
+        CALENDAR.set(Calendar.SECOND, 0);
         dayFragment.setMonth(CALENDAR.getTime());
     }
 
     public void setData(int position, List<ScheduleDTO> schedules)
     {
         holderSparseArray.get(position).setData(schedules);
+    }
+
+    public Calendar getCALENDAR()
+    {
+        return (Calendar) CALENDAR.clone();
     }
 
     @NonNull

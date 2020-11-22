@@ -1,9 +1,7 @@
 package com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.resultdata.responseresult;
 
-import android.provider.ContactsContract;
-
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.vilagefcstresponse.VilageFcstItem;
-import com.zerodsoft.scheduleweather.utility.Clock;
+import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.utility.WeatherDataConverter;
 
 import java.util.Calendar;
@@ -54,7 +52,7 @@ public class VilageFcstData
         int day = Integer.parseInt(date.substring(6, 8));
         int hour = Integer.parseInt(time.substring(0, 2));
 
-        Calendar calendar = Calendar.getInstance(Clock.TIME_ZONE);
+        Calendar calendar = Calendar.getInstance(ClockUtil.TIME_ZONE);
         calendar.set(year, month - 1, day, hour, 0, 0);
 
         dateTime = calendar.getTime();

@@ -4,8 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
-
-        <import type="com.zerodsoft.scheduleweather.utility.Clock" />
+        <import type="com.zerodsoft.scheduleweather.utility.ClockUtil" />
 
         <variable
             name="scheduleDto"
@@ -18,7 +17,6 @@
         <variable
             name="addressDto"
             type="com.zerodsoft.scheduleweather.room.dto.AddressDTO" />
-
     </data>
 
     <RelativeLayout
@@ -26,11 +24,17 @@
         android:layout_height="match_parent"
         tools:context=".activity.ScheduleEditActivity">
 
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/schedule_edit_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/toolbar_height"
+            android:layout_alignParentTop="true" />
+
         <ScrollView
             android:id="@+id/schedule_scroll_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentTop="true">
+            android:layout_below="@id/schedule_edit_toolbar">
 
             <LinearLayout
                 android:id="@+id/schedule_root_layout"
@@ -350,68 +354,5 @@
                 </LinearLayout>
             </LinearLayout>
         </ScrollView>
-
-        <LinearLayout
-            android:id="@+id/schedule_bottom_layout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:elevation="2dp"
-            android:orientation="vertical">
-
-            <LinearLayout
-                android:id="@+id/schedule_info_buttons"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <Button
-                    android:id="@+id/delete_schedule_button"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:background="?attr/selectableItemBackground"
-                    android:text="@string/delete_button" />
-
-                <Button
-                    android:id="@+id/share_schedule_button"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:background="?attr/selectableItemBackground"
-                    android:text="@string/share_button" />
-
-                <Button
-                    android:id="@+id/edit_schedule_button"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:background="?attr/selectableItemBackground"
-                    android:text="@string/edit_button" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/schedule_edit_buttons"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <Button
-                    android:id="@+id/cancel_edit_schedule_button"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:background="?attr/selectableItemBackground"
-                    android:text="@string/cancel_button" />
-
-                <Button
-                    android:id="@+id/save_schedule_button"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:background="?attr/selectableItemBackground"
-                    android:text="@string/save_button" />
-            </LinearLayout>
-        </LinearLayout>
     </RelativeLayout>
 </layout>

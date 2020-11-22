@@ -14,22 +14,14 @@ import android.view.ViewGroup;
 import androidx.annotation.Nullable;
 
 import com.zerodsoft.scheduleweather.calendarfragment.OnEventItemClickListener;
-import com.zerodsoft.scheduleweather.calendarfragment.WeekFragment;
 import com.zerodsoft.scheduleweather.calendarview.month.EventData;
-import com.zerodsoft.scheduleweather.calendarview.week.WeekHeaderView;
-import com.zerodsoft.scheduleweather.calendarview.week.WeekView;
 import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
 import com.zerodsoft.scheduleweather.utility.AppSettings;
-import com.zerodsoft.scheduleweather.utility.Clock;
+import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 
 public class DayHeaderView extends ViewGroup
 {
@@ -206,7 +198,7 @@ public class DayHeaderView extends ViewGroup
         super.onDraw(canvas);
 
         // 날짜와 요일 그리기
-        canvas.drawText(Clock.DATE_DAY_OF_WEEK_FORMAT.format(today), getWidth() / 2, DAY_DATE_SPACE_HEIGHT - DAY_DATE_TB_MARGIN, DAY_DATE_TEXT_PAINT);
+        canvas.drawText(ClockUtil.DATE_DAY_OF_WEEK_FORMAT.format(today), getWidth() / 2, DAY_DATE_SPACE_HEIGHT - DAY_DATE_TB_MARGIN, DAY_DATE_TEXT_PAINT);
     }
 
     public void clear()

@@ -23,8 +23,7 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.SunSetRiseData;
 import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.resultdata.WeatherData;
 import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.resultdata.responseresult.UltraSrtFcstData;
-import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.resultdata.responseresult.VilageFcstData;
-import com.zerodsoft.scheduleweather.utility.Clock;
+import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.utility.WeatherDataConverter;
 
 import java.util.Calendar;
@@ -129,7 +128,7 @@ public class UltraSrtFcstFragment extends Fragment
         for (int col = 0; col < DATA_SIZE; col++)
         {
             TextView textView = new TextView(context);
-            setValueTextView(textView, Clock.H_FORMAT.format(dataList.get(col).getDateTime()));
+            setValueTextView(textView, ClockUtil.H_FORMAT.format(dataList.get(col).getDateTime()));
 
             TableRow.LayoutParams textParams = new TableRow.LayoutParams(ITEM_WIDTH, DP22);
             textParams.gravity = Gravity.CENTER;

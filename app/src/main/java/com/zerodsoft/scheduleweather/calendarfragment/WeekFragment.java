@@ -13,11 +13,12 @@ import android.view.ViewGroup;
 
 import com.zerodsoft.scheduleweather.AppMainActivity;
 import com.zerodsoft.scheduleweather.calendarfragment.EventsInfoFragment.EventsInfoFragment;
-import com.zerodsoft.scheduleweather.calendarview.month.MonthViewPagerAdapter;
 import com.zerodsoft.scheduleweather.calendarview.week.WeekViewPagerAdapter;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
+import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -61,12 +62,13 @@ public class WeekFragment extends Fragment implements OnEventItemClickListener
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
-        onPageChangeCallback = new OnPageChangeCallback();
 
         weekViewPager = (ViewPager2) view.findViewById(R.id.week_viewpager);
         weekViewPagerAdapter = new WeekViewPagerAdapter(this);
         weekViewPager.setAdapter(weekViewPagerAdapter);
         weekViewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, false);
+
+        onPageChangeCallback = new OnPageChangeCallback(weekViewPagerAdapter.getCalendar());
         weekViewPager.registerOnPageChangeCallback(onPageChangeCallback);
 
         super.onViewCreated(view, savedInstanceState);
@@ -93,11 +95,14 @@ public class WeekFragment extends Fragment implements OnEventItemClickListener
 
     class OnPageChangeCallback extends ViewPager2.OnPageChangeCallback
     {
+        private final Calendar calendar;
+        private Calendar copiedCalendar;
 
-        public int getCurrentPosition()
+        public OnPageChangeCallback(Calendar calendar)
         {
-            return currentPosition;
+            this.calendar = calendar;
         }
+
 
         @Override
         public void onPageScrollStateChanged(int state)
@@ -120,7 +125,11 @@ public class WeekFragment extends Fragment implements OnEventItemClickListener
             // drag 성공 시에만 SETTLING 직후 호출
             super.onPageSelected(position);
             currentPosition = position;
-            setMonth(weekViewPagerAdapter.getWeek(currentPosition));
+
+            copiedCalendar = (Calendar) calendar.clone();
+            copiedCalendar.add(Calendar.WEEK_OF_YEAR, currentPosition - EventTransactionFragment.FIRST_VIEW_POSITION);
+
+            setMonth(copiedCalendar.getTime());
             // 일정 목록을 가져와서 표시함 header view, week view
             weekViewPager.setUserInputEnabled(false);
             new Thread(new Runnable()
@@ -144,7 +153,7 @@ public class WeekFragment extends Fragment implements OnEventItemClickListener
 
     public void goToToday()
     {
-        if (onPageChangeCallback.getCurrentPosition() != EventTransactionFragment.FIRST_VIEW_POSITION)
+        if (currentPosition != EventTransactionFragment.FIRST_VIEW_POSITION)
         {
             weekViewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, true);
         }
@@ -166,9 +175,18 @@ public class WeekFragment extends Fragment implements OnEventItemClickListener
         onControlEvent.requestSchedules(this, position, startDate, endDate);
     }
 
-    public void refreshView()
+    public void refreshView(Date startDate)
     {
-        onControlEvent.requestSchedules(this, currentPosition, weekViewPagerAdapter.getDate(currentPosition, WeekViewPagerAdapter.FIRST_DAY),
-                weekViewPagerAdapter.getDate(currentPosition, WeekViewPagerAdapter.LAST_DAY));
+        //시작 날짜의 해당 월로 달력 변경
+        weekViewPagerAdapter = new WeekViewPagerAdapter(this);
+        //시작 날짜가 화면에 표시되도록 달력 날짜를 변경
+        Calendar viewCalendar = weekViewPagerAdapter.getCalendar();
+        //두 날짜 사이의 월수 차이
+        int weekDifference = ClockUtil.calcDateDifference(ClockUtil.WEEK, startDate, viewCalendar);
+        weekViewPager.setAdapter(weekViewPagerAdapter);
+        weekViewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION + weekDifference, false);
+
+        onPageChangeCallback = new OnPageChangeCallback(weekViewPagerAdapter.getCalendar());
+        weekViewPager.registerOnPageChangeCallback(onPageChangeCallback);
     }
 }

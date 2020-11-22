@@ -70,8 +70,12 @@ public class ScheduleWeatherFragment extends Fragment
     {
         super.onViewCreated(view, savedInstanceState);
         viewPager = view.findViewById(R.id.location_items_pager);
-        adapter = new WeatherViewPagerAdapter(getActivity(), places, addresses);
-        viewPager.setAdapter(adapter);
+
+        if (!places.isEmpty() || !addresses.isEmpty())
+        {
+            adapter = new WeatherViewPagerAdapter(getActivity(), places, addresses);
+            viewPager.setAdapter(adapter);
+        }
     }
 
     public void rotateRefreshButton(boolean value)

@@ -13,7 +13,7 @@ import com.zerodsoft.scheduleweather.databinding.FragmentScheduleInfoBinding;
 import com.zerodsoft.scheduleweather.room.dto.AddressDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
 import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
-import com.zerodsoft.scheduleweather.utility.Clock;
+import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.utility.ScheduleAlarm;
 
 import java.util.List;
@@ -66,10 +66,10 @@ public class ScheduleInfoFragment extends Fragment
 
         if (schedule.getStartDate().equals(schedule.getEndDate()))
         {
-            time = Clock.dateFormat3.format(schedule.getStartDate());
+            time = ClockUtil.dateFormat3.format(schedule.getStartDate());
         } else
         {
-            time = Clock.dateFormat2.format(schedule.getStartDate()) + " -> " + Clock.dateFormat2.format(schedule.getEndDate());
+            time = ClockUtil.dateFormat2.format(schedule.getStartDate()) + " -> " + ClockUtil.dateFormat2.format(schedule.getEndDate());
         }
         binding.scheduleTime.setText(time);
 
@@ -79,10 +79,10 @@ public class ScheduleInfoFragment extends Fragment
         // 위치
         String location = null;
 
-        if (places != null)
+        if (!places.isEmpty())
         {
             location = places.get(0).getPlaceName();
-        } else if (addresses != null)
+        } else if (!addresses.isEmpty())
         {
             location = addresses.get(0).getAddressName();
         } else
@@ -93,8 +93,17 @@ public class ScheduleInfoFragment extends Fragment
         binding.scheduleLocation.setText(location);
 
         // 알람
-        binding.scheduleAlarm.setText(ScheduleAlarm.getResultText());
-
+        ScheduleAlarm.setDAY(schedule.getNotiDay());
+        ScheduleAlarm.setHOUR(schedule.getNotiHour());
+        ScheduleAlarm.setMINUTE(schedule.getNotiMinute());
+        if (!ScheduleAlarm.isEmpty())
+        {
+            binding.scheduleAlarm.setText(ScheduleAlarm.getResultText(getContext()));
+        } else
+        {
+            binding.scheduleAlarm.setText("");
+            binding.scheduleAlarm.setHint(R.string.noti_time_not_selected);
+        }
         // 계정
         if (schedule.getCategory() == ScheduleDTO.GOOGLE_CATEGORY)
         {

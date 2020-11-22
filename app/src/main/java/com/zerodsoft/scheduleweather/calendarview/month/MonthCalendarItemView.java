@@ -2,16 +2,13 @@ package com.zerodsoft.scheduleweather.calendarview.month;
 
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.text.TextPaint;
 import android.util.TypedValue;
 import android.view.View;
 
-import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
-import com.zerodsoft.scheduleweather.utility.AppSettings;
-import com.zerodsoft.scheduleweather.utility.Clock;
+import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import java.util.Date;
 
@@ -61,7 +58,7 @@ public class MonthCalendarItemView extends View
     protected void onDraw(Canvas canvas)
     {
         super.onDraw(canvas);
-        canvas.drawText(Clock.DAY_OF_MONTH_FORMAT.format(startDate), x, y, DAY_TEXT_PAINT);
+        canvas.drawText(ClockUtil.DAY_OF_MONTH_FORMAT.format(startDate), x, y, DAY_TEXT_PAINT);
     }
 
     public Date getStartDate()

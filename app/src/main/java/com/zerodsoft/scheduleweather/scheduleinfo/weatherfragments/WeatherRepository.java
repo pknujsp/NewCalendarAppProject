@@ -5,8 +5,6 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.os.Parcelable;
-import android.util.Log;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -17,35 +15,28 @@ import com.zerodsoft.scheduleweather.retrofit.Querys;
 import com.zerodsoft.scheduleweather.retrofit.RetrofitCallback;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.MidFcstParameter;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.VilageFcstParameter;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.midlandfcstresponse.MidLandFcstItem;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.midlandfcstresponse.MidLandFcstItems;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.midlandfcstresponse.MidLandFcstRoot;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.midtaresponse.MidTaItem;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.midtaresponse.MidTaItems;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.midtaresponse.MidTaRoot;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.ultrasrtfcstresponse.UltraSrtFcstItem;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.ultrasrtfcstresponse.UltraSrtFcstItems;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.ultrasrtfcstresponse.UltraSrtFcstRoot;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.ultrasrtncstresponse.UltraSrtNcstItem;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.ultrasrtncstresponse.UltraSrtNcstItems;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.ultrasrtncstresponse.UltraSrtNcstRoot;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.vilagefcstresponse.VilageFcstItem;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.vilagefcstresponse.VilageFcstItems;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.vilagefcstresponse.VilageFcstRoot;
 import com.zerodsoft.scheduleweather.room.AppDb;
 import com.zerodsoft.scheduleweather.room.dao.WeatherAreaCodeDAO;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
 import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.resultdata.WeatherData;
-import com.zerodsoft.scheduleweather.utility.Clock;
+import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.utility.LonLat;
 
-import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
 import retrofit2.Call;
-import retrofit2.Callback;
 import retrofit2.Response;
 
 public class WeatherRepository
@@ -119,7 +110,7 @@ public class WeatherRepository
     public WeatherRepository(Context context)
     {
         weatherAreaCodeDAO = AppDb.getInstance(context).weatherAreaCodeDAO();
-        downloadedCalendar = Calendar.getInstance(Clock.TIME_ZONE);
+        downloadedCalendar = Calendar.getInstance(ClockUtil.TIME_ZONE);
     }
 
     public void selectAreaCode(LonLat lonLat)
@@ -157,8 +148,8 @@ public class WeatherRepository
         {
             calendar.add(Calendar.HOUR_OF_DAY, -1);
         }
-        parameter.setBaseDate(Clock.yyyyMMdd_FORMAT.format(calendar.getTime()));
-        parameter.setBaseTime(Clock.WEATHER_TIME_FORMAT.format(calendar.getTime()) + "00");
+        parameter.setBaseDate(ClockUtil.yyyyMMdd_FORMAT.format(calendar.getTime()));
+        parameter.setBaseTime(ClockUtil.WEATHER_TIME_FORMAT.format(calendar.getTime()) + "00");
 
         Call<UltraSrtNcstRoot> call = querys.getUltraSrtNcstData(parameter.getMap());
 
@@ -206,8 +197,8 @@ public class WeatherRepository
         {
             calendar.add(Calendar.HOUR_OF_DAY, -1);
         }
-        parameter.setBaseDate(Clock.yyyyMMdd_FORMAT.format(calendar.getTime()));
-        parameter.setBaseTime(Clock.WEATHER_TIME_FORMAT.format(calendar.getTime()) + "30");
+        parameter.setBaseDate(ClockUtil.yyyyMMdd_FORMAT.format(calendar.getTime()));
+        parameter.setBaseTime(ClockUtil.WEATHER_TIME_FORMAT.format(calendar.getTime()) + "30");
 
         Call<UltraSrtFcstRoot> call = querys.getUltraSrtFcstData(parameter.getMap());
 
@@ -274,8 +265,8 @@ public class WeatherRepository
             calendar.set(Calendar.HOUR_OF_DAY, baseHour);
         }
 
-        parameter.setBaseDate(Clock.yyyyMMdd_FORMAT.format(calendar.getTime()));
-        parameter.setBaseTime(Clock.WEATHER_TIME_FORMAT.format(calendar.getTime()) + "00");
+        parameter.setBaseDate(ClockUtil.yyyyMMdd_FORMAT.format(calendar.getTime()));
+        parameter.setBaseTime(ClockUtil.WEATHER_TIME_FORMAT.format(calendar.getTime()) + "00");
 
         Call<VilageFcstRoot> call = querys.getVilageFcstData(parameter.getMap());
 
@@ -323,14 +314,14 @@ public class WeatherRepository
 
         if (hour >= 18 && minute >= 1)
         {
-            parameter.setTmFc(Clock.yyyyMMdd_FORMAT.format(calendar.getTime()) + "1800");
+            parameter.setTmFc(ClockUtil.yyyyMMdd_FORMAT.format(calendar.getTime()) + "1800");
         } else if (hour >= 6 && minute >= 1)
         {
-            parameter.setTmFc(Clock.yyyyMMdd_FORMAT.format(calendar.getTime()) + "0600");
+            parameter.setTmFc(ClockUtil.yyyyMMdd_FORMAT.format(calendar.getTime()) + "0600");
         } else
         {
             calendar.add(Calendar.DAY_OF_YEAR, -1);
-            parameter.setTmFc(Clock.yyyyMMdd_FORMAT.format(calendar.getTime()) + "1800");
+            parameter.setTmFc(ClockUtil.yyyyMMdd_FORMAT.format(calendar.getTime()) + "1800");
         }
 
         Call<MidLandFcstRoot> call = querys.getMidLandFcstData(parameter.getMap());
@@ -379,14 +370,14 @@ public class WeatherRepository
 
         if (hour >= 18 && minute >= 1)
         {
-            parameter.setTmFc(Clock.yyyyMMdd_FORMAT.format(calendar.getTime()) + "1800");
+            parameter.setTmFc(ClockUtil.yyyyMMdd_FORMAT.format(calendar.getTime()) + "1800");
         } else if (hour >= 6 && minute >= 1)
         {
-            parameter.setTmFc(Clock.yyyyMMdd_FORMAT.format(calendar.getTime()) + "0600");
+            parameter.setTmFc(ClockUtil.yyyyMMdd_FORMAT.format(calendar.getTime()) + "0600");
         } else
         {
             calendar.add(Calendar.DAY_OF_YEAR, -1);
-            parameter.setTmFc(Clock.yyyyMMdd_FORMAT.format(calendar.getTime()) + "1800");
+            parameter.setTmFc(ClockUtil.yyyyMMdd_FORMAT.format(calendar.getTime()) + "1800");
         }
 
         Call<MidTaRoot> call = querys.getMidTaData(parameter.getMap());

@@ -16,6 +16,7 @@ import com.zerodsoft.scheduleweather.calendarfragment.MonthFragment;
 import com.zerodsoft.scheduleweather.calendarfragment.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.calendarview.DateGetter;
 import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
+import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -42,7 +43,7 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
         this.monthFragment = monthFragment;
         this.onEventItemClickListener = (OnEventItemClickListener) monthFragment;
         context = monthFragment.getContext();
-        calendar = Calendar.getInstance();
+        calendar = Calendar.getInstance(ClockUtil.TIME_ZONE);
 
         // 날짜를 이번 달 1일 0시 0분으로 설정
         calendar.set(Calendar.DAY_OF_MONTH, 1);
@@ -51,6 +52,11 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
         calendar.set(Calendar.SECOND, 0);
 
         monthFragment.setMonth(calendar.getTime());
+    }
+
+    public Calendar getCalendar()
+    {
+        return (Calendar) calendar.clone();
     }
 
     public void setData(int position, List<ScheduleDTO> schedules)

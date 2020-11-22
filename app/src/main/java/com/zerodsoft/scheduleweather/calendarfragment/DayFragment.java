@@ -13,7 +13,9 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendarview.day.DayViewPagerAdapter;
 import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
+import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -24,6 +26,7 @@ public class DayFragment extends Fragment
     private ViewPager2 dayViewPager;
     private DayViewPagerAdapter dayViewPagerAdapter;
     private OnControlEvent onControlEvent;
+    private OnPageChangeCallback onPageChangeCallback;
     private int currentPosition = EventTransactionFragment.FIRST_VIEW_POSITION;
 
     public DayFragment(Fragment fragment)
@@ -54,7 +57,7 @@ public class DayFragment extends Fragment
         dayViewPager.setAdapter(dayViewPagerAdapter);
         dayViewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, false);
 
-        OnPageChangeCallback onPageChangeCallback = new OnPageChangeCallback();
+        onPageChangeCallback = new OnPageChangeCallback(dayViewPagerAdapter.getCALENDAR());
         dayViewPager.registerOnPageChangeCallback(onPageChangeCallback);
 
         super.onViewCreated(view, savedInstanceState);
@@ -74,9 +77,12 @@ public class DayFragment extends Fragment
 
     class OnPageChangeCallback extends ViewPager2.OnPageChangeCallback
     {
+        private Calendar calendar;
+        private Calendar copiedCalendar;
 
-        public OnPageChangeCallback()
+        public OnPageChangeCallback(Calendar calendar)
         {
+            this.calendar = calendar;
         }
 
         @Override
@@ -99,7 +105,11 @@ public class DayFragment extends Fragment
         {
             // drag 성공 시에만 SETTLING 직후 호출
             currentPosition = position;
-            setMonth(dayViewPagerAdapter.getDay(currentPosition));
+
+            copiedCalendar = (Calendar) calendar.clone();
+            copiedCalendar.add(Calendar.DAY_OF_YEAR, currentPosition - EventTransactionFragment.FIRST_VIEW_POSITION);
+
+            setMonth(copiedCalendar.getTime());
             super.onPageSelected(position);
         }
     }
@@ -115,10 +125,19 @@ public class DayFragment extends Fragment
         onControlEvent.requestSchedules(this, position, startDate, endDate);
     }
 
-    public void refreshView()
+    public void refreshView(Date startDate)
     {
-        onControlEvent.requestSchedules(this, currentPosition, dayViewPagerAdapter.getDate(currentPosition, DayViewPagerAdapter.FIRST_DAY),
-                dayViewPagerAdapter.getDate(currentPosition, DayViewPagerAdapter.LAST_DAY));
+        //시작 날짜의 해당 월로 달력 변경
+        dayViewPagerAdapter = new DayViewPagerAdapter(this);
+        //시작 날짜가 화면에 표시되도록 달력 날짜를 변경
+        Calendar viewCalendar = dayViewPagerAdapter.getCALENDAR();
+        //두 날짜 사이의 월수 차이
+        int dayDifference = ClockUtil.calcDateDifference(ClockUtil.DAY, startDate, viewCalendar);
+        dayViewPager.setAdapter(dayViewPagerAdapter);
+        dayViewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION + dayDifference, false);
+
+        onPageChangeCallback = new OnPageChangeCallback(dayViewPagerAdapter.getCALENDAR());
+        dayViewPager.registerOnPageChangeCallback(onPageChangeCallback);
     }
 
     public void setMonth(Date date)
@@ -129,5 +148,13 @@ public class DayFragment extends Fragment
     public void showSchedule(int scheduleId)
     {
         onControlEvent.showSchedule(scheduleId);
+    }
+
+    public void goToToday()
+    {
+        if (currentPosition != EventTransactionFragment.FIRST_VIEW_POSITION)
+        {
+            dayViewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, true);
+        }
     }
 }

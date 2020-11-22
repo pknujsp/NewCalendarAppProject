@@ -134,4 +134,9 @@
     <string name="schedule_info_alarm">알림</string>
     <string name="schedule_info_account">계정</string>
 
+    <string name="schedule_edit">일정 변경</string>
+    <string name="schedule_add">일정 추가</string>
+
+    <string name="notification_before">전에 알림</string>
+
 </resources>

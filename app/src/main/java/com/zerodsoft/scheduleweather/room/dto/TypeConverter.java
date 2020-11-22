@@ -1,6 +1,6 @@
 package com.zerodsoft.scheduleweather.room.dto;
 
-import com.zerodsoft.scheduleweather.utility.Clock;
+import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import java.text.ParseException;
 import java.util.Date;
@@ -14,7 +14,7 @@ public class TypeConverter
         {
             try
             {
-                return Clock.DB_DATE_FORMAT.parse(value);
+                return ClockUtil.DB_DATE_FORMAT.parse(value);
             } catch (ParseException e)
             {
 
@@ -28,6 +28,6 @@ public class TypeConverter
     @androidx.room.TypeConverter
     public static String dateToTime(Date value)
     {
-        return value != null ? Clock.DB_DATE_FORMAT.format(value) : null;
+        return value != null ? ClockUtil.DB_DATE_FORMAT.format(value) : null;
     }
 }
