@@ -9,12 +9,14 @@
         android:id="@+id/week_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@android:color/white"
         android:orientation="vertical">
 
         <com.zerodsoft.scheduleweather.calendarview.week.WeekHeaderView
             android:id="@+id/week_header"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp" />
 
         <ScrollView
             android:layout_width="match_parent"

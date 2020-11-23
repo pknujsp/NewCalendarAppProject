@@ -78,7 +78,6 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
     @Override
     public void onBindViewHolder(@NonNull WeekViewPagerHolder holder, int position)
     {
-        Log.e("ONBIND : ", String.valueOf(position));
         holder.onBind(holder.getAdapterPosition());
         holderSparseArray.put(holder.getAdapterPosition(), holder);
     }
@@ -92,16 +91,15 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
     @Override
     public void onViewDetachedFromWindow(@NonNull WeekViewPagerHolder holder)
     {
-        holderSparseArray.remove(holder.getAdapterPosition());
         super.onViewDetachedFromWindow(holder);
     }
 
     @Override
     public void onViewRecycled(@NonNull WeekViewPagerHolder holder)
     {
+        holderSparseArray.remove(holder.getOldPosition());
         holder.clear();
         super.onViewRecycled(holder);
-        Log.e("RECYCLED : ", String.valueOf(holder.getAdapterPosition()));
     }
 
     @Override
@@ -134,7 +132,6 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
 
         private int position;
         private Calendar[] currentWeekDays;
-        private Calendar endDay;
 
         public WeekViewPagerHolder(View view)
         {
@@ -142,6 +139,7 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
             weekView = (WeekView) view.findViewById(R.id.week_view);
             weekHeaderView = (WeekHeaderView) view.findViewById(R.id.week_header);
             weekView.setOnSwipeListener(WeekViewPagerAdapter.this::onSwiped);
+            weekHeaderView.setOnEventItemClickListener(weekFragment);
         }
 
         public void setData(List<ScheduleDTO> schedulesList)
@@ -182,7 +180,6 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
             weekHeaderView.clear();
             weekView.clear();
             currentWeekDays = null;
-            endDay = null;
         }
 
         public void onBind(int position)
@@ -193,8 +190,7 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
             copiedCalendar.add(Calendar.WEEK_OF_YEAR, position - EventTransactionFragment.FIRST_VIEW_POSITION);
             setDays(copiedCalendar);
 
-
-            weekHeaderView.setInitValue(currentWeekDays, WeekFragment.getColumnWidth());
+            weekHeaderView.setInitValue(currentWeekDays);
             weekView.setDaysOfWeek(currentWeekDays);
 
             weekHeaderView.requestLayout();
@@ -208,15 +204,13 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
         private void setDays(Calendar calendar)
         {
             // 일요일 부터 토요일까지
-            currentWeekDays = new Calendar[7];
+            currentWeekDays = new Calendar[8];
 
-            for (int i = 0; i < 7; i++)
+            for (int i = 0; i < 8; i++)
             {
                 currentWeekDays[i] = (Calendar) calendar.clone();
                 calendar.add(Calendar.DAY_OF_YEAR, 1);
             }
-            endDay = (Calendar) calendar.clone();
-            calendar.add(Calendar.WEEK_OF_YEAR, -1);
         }
 
         public int getDateToIndex(Calendar date)
@@ -240,7 +234,7 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
             }
 
             // 달력에 표시된 마지막 날짜 이후 인 경우
-            else if (date.compareTo(endDay) >= 0)
+            else if (date.compareTo(currentWeekDays[7]) >= 0)
             {
                 return Integer.MAX_VALUE;
             }
@@ -254,7 +248,7 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
                 return currentWeekDays[0];
             } else if (position == LAST_DAY)
             {
-                return endDay;
+                return currentWeekDays[7];
             } else
             {
                 return currentWeekDays[position];

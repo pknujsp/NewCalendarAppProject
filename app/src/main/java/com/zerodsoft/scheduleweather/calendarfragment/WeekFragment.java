@@ -30,9 +30,8 @@ public class WeekFragment extends Fragment implements OnEventItemClickListener
     private WeekViewPagerAdapter weekViewPagerAdapter;
     private int currentPosition = EventTransactionFragment.FIRST_VIEW_POSITION;
 
-
     private OnControlEvent onControlEvent;
-    private static int COLUMN_WIDTH = AppMainActivity.getDisplayWidth() / 8;
+    private static final int COLUMN_WIDTH = AppMainActivity.getDisplayWidth() / 8;
 
     private OnPageChangeCallback onPageChangeCallback;
 
