@@ -17,7 +17,6 @@ import androidx.annotation.Nullable;
 
 import com.zerodsoft.scheduleweather.AppMainActivity;
 import com.zerodsoft.scheduleweather.calendarfragment.OnEventItemClickListener;
-import com.zerodsoft.scheduleweather.calendarfragment.WeekFragment;
 import com.zerodsoft.scheduleweather.calendarview.month.EventData;
 import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
 import com.zerodsoft.scheduleweather.utility.AppSettings;
@@ -46,6 +45,9 @@ public class WeekHeaderView extends ViewGroup
     private final Paint LOCAL_EVENT_PAINT;
     private final TextPaint LOCAL_EVENT_TEXT_PAINT;
 
+    private final TextPaint MORE_EVENTS_TEXT_PAINT;
+    private final Paint MORE_EVENTS_RECT_PAINT;
+
     private final Rect WEEK_OF_YEAR_RECT;
 
     // 구분선 paint
@@ -64,9 +66,9 @@ public class WeekHeaderView extends ViewGroup
     private final int EVENTS_MAX_COUNTS = 6;
     private final int HEADER_TEXT_HEIGHT;
 
-    private int start;
-    private int end;
-    private int rowNum = 0;
+    private int START_INDEX;
+    private int END_INDEX;
+    private int ROWS_COUNT = 0;
 
     private Calendar[] daysOfWeek;
 
@@ -153,6 +155,14 @@ public class WeekHeaderView extends ViewGroup
         WEEK_OF_YEAR_RECT.top = dp6;
         WEEK_OF_YEAR_RECT.bottom = (int) (WEEK_OF_YEAR_RECT.top + HEADER_TEXT_HEIGHT + TEXT_MARGIN_TB);
 
+        MORE_EVENTS_RECT_PAINT = new Paint();
+        MORE_EVENTS_RECT_PAINT.setColor(Color.LTGRAY);
+
+        MORE_EVENTS_TEXT_PAINT = new TextPaint();
+        MORE_EVENTS_TEXT_PAINT.setColor(Color.WHITE);
+        MORE_EVENTS_TEXT_PAINT.setTextSize(EVENT_TEXT_SIZE);
+        MORE_EVENTS_TEXT_PAINT.setTextAlign(Paint.Align.LEFT);
+
         TypedValue backgroundValue = new TypedValue();
         getContext().getTheme().resolveAttribute(android.R.attr.selectableItemBackground, backgroundValue, true);
 
@@ -182,9 +192,9 @@ public class WeekHeaderView extends ViewGroup
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
     {
         int eventsRowHeight = 0;
-        if (rowNum >= 1)
+        if (ROWS_COUNT > 0)
         {
-            eventsRowHeight = (int) (EVENT_BAR_HEIGHT * rowNum);
+            eventsRowHeight = (int) ((EVENT_BAR_HEIGHT + SPACING_EVENT_BAR_TB) * (ROWS_COUNT - 1) + EVENT_BAR_HEIGHT);
         }
         setMeasuredDimension(widthMeasureSpec, (int) (COLUMN_NORMAL_HEIGHT + eventsRowHeight));
     }
@@ -238,65 +248,56 @@ public class WeekHeaderView extends ViewGroup
 
     private void drawEvents(Canvas canvas)
     {
+        int leftMargin = 0;
+        int rightMargin = 0;
+
+        float startX = 0f;
+        float startY = 0f;
+        float endX = 0f;
+
+        float left = 0;
+        float right = 0;
+        float top = 0;
+        float bottom = 0;
+
         for (EventData eventData : eventCellsList)
         {
+            ScheduleDTO schedule = eventData.getSchedule();
             int startIndex = eventData.getStartIndex();
             int endIndex = eventData.getEndIndex();
             int row = eventData.getRow();
+            int dateLength = eventData.getDateLength();
 
-            int leftMargin = 0;
-            int rightMargin = 0;
-
-            float startX = 0f;
-            float startY = 0f;
-            float endX = 0f;
-            float endY = 0f;
-
-            float left = 0;
-            float right = 0;
-            float top = 0;
-            float bottom = 0;
-
-            Calendar startDate = daysOfWeek[startIndex];
-            Calendar endDate = daysOfWeek[endIndex];
-
-            ScheduleDTO schedule = eventData.getSchedule();
-
-            // 시작/종료일이 date가 아니나, 일정에 포함되는 경우
-            if (schedule.getStartDate().before(startDate.getTime()) && schedule.getEndDate().after(endDate.getTime()))
+            // 이번 주 이전 - 이번 주 이후
+            if (dateLength == EventData.BEFORE_AFTER)
             {
                 leftMargin = 0;
                 rightMargin = 0;
-            }
-            // 시작일이 date인 경우, 종료일은 endDate 이후
-            else if (schedule.getEndDate().compareTo(endDate.getTime()) >= 0 && schedule.getStartDate().compareTo(startDate.getTime()) >= 0 && schedule.getStartDate().before(endDate.getTime()))
+            } else if (dateLength == EventData.BEFORE_THISWEEK)
             {
-                leftMargin = EVENT_BAR_LR_MARGIN;
-                rightMargin = 0;
-            }
-            // 종료일이 date인 경우, 시작일은 startDate이전
-            else if (schedule.getEndDate().compareTo(startDate.getTime()) >= 0 && schedule.getEndDate().before(endDate.getTime()) && schedule.getStartDate().before(startDate.getTime()))
-            {
+                // 이번 주 이전 - 이번 주 내
                 leftMargin = 0;
                 rightMargin = EVENT_BAR_LR_MARGIN;
-            }
-            // 시작/종료일이 date인 경우
-            else if (schedule.getEndDate().compareTo(startDate.getTime()) >= 0 && schedule.getEndDate().before(endDate.getTime()) && schedule.getStartDate().compareTo(startDate.getTime()) >= 0 && schedule.getStartDate().before(endDate.getTime()))
+            } else if (dateLength == EventData.THISWEEK_AFTER)
             {
+                // 이번 주 내 - 이번 주 이후
+                leftMargin = EVENT_BAR_LR_MARGIN;
+                rightMargin = 0;
+            } else if (dateLength == EventData.THISWEEK_THISWEEK)
+            {
+                // 이번 주 내 - 이번 주 내
                 leftMargin = EVENT_BAR_LR_MARGIN;
                 rightMargin = EVENT_BAR_LR_MARGIN;
             }
 
-            startX = startIndex % 7 == 0 ? 0 : COLUMN_WIDTH * (startIndex % 7);
-            startX += COLUMN_WIDTH;
-            endX = endIndex % 7 == 0 ? 0 : COLUMN_WIDTH * (endIndex % 7);
-            endX += COLUMN_WIDTH;
+            startX = COLUMN_WIDTH * (startIndex + 1);
+            endX = COLUMN_WIDTH * (endIndex + 2);
             startY = COLUMN_NORMAL_HEIGHT + (EVENT_BAR_HEIGHT + SPACING_EVENT_BAR_TB) * row;
 
             top = startY;
             bottom = top + EVENT_BAR_HEIGHT;
             left = startX + leftMargin;
-            right = endX + COLUMN_WIDTH - rightMargin;
+            right = endX - rightMargin;
 
             if (schedule.getCategory() == ScheduleDTO.GOOGLE_CATEGORY)
             {
@@ -309,60 +310,29 @@ public class WeekHeaderView extends ViewGroup
             }
         }
 
-        float startX = 0f;
-        float startY = 0f;
-
-        float top = 0f;
-        float bottom = 0f;
-        float left = 0f;
-        float right = 0f;
-
-        Paint extraPaint = new Paint();
-        extraPaint.setColor(Color.LTGRAY);
-
-        TextPaint textPaint = new TextPaint();
-        textPaint.setColor(Color.WHITE);
-        textPaint.setTextSize(LOCAL_EVENT_TEXT_PAINT.getTextSize());
-        textPaint.setTextAlign(Paint.Align.LEFT);
-
         // more 표시
-        for (int index = start; index <= end; index++)
+        for (int index = START_INDEX; index <= END_INDEX; index++)
         {
             if (ITEM_LAYOUT_CELLS.get(index) == null)
             {
                 continue;
-            }
-            int eventsNum = ITEM_LAYOUT_CELLS.get(index).eventsNum;
-            int displayedEventsNum = 0;
-            int lastRow = -1;
-
-            for (int row = EVENTS_MAX_COUNTS - 1; row >= 0; row--)
+            } else
             {
-                if (!ITEM_LAYOUT_CELLS.get(index).row[row])
+                // 날짜의 이벤트 개수 > 뷰에 표시된 이벤트의 개수 인 경우 마지막 행에 More를 표시
+                if (ITEM_LAYOUT_CELLS.get(index).eventsCount >= EVENTS_MAX_COUNTS)
                 {
-                    if (lastRow == -1)
-                    {
-                        lastRow = row;
-                    }
-                } else
-                {
-                    displayedEventsNum++;
+                    startX = COLUMN_WIDTH * (index + 1);
+                    endX = COLUMN_WIDTH * (index + 2);
+                    startY = COLUMN_NORMAL_HEIGHT + (EVENT_BAR_HEIGHT + SPACING_EVENT_BAR_TB) * (EVENTS_MAX_COUNTS - 1);
+
+                    top = startY;
+                    bottom = top + EVENT_BAR_HEIGHT;
+                    left = startX + EVENT_BAR_LR_MARGIN;
+                    right = endX - EVENT_BAR_LR_MARGIN;
+
+                    canvas.drawRect(left, top, right, bottom, MORE_EVENTS_RECT_PAINT);
+                    canvas.drawText("More", startX + EVENT_TEXT_MARGIN, bottom - EVENT_TEXT_MARGIN, MORE_EVENTS_TEXT_PAINT);
                 }
-            }
-
-            // 날짜의 이벤트 개수 > 뷰에 표시된 이벤트의 개수 인 경우 마지막 행에 More를 표시
-            if (eventsNum > displayedEventsNum)
-            {
-                startX = index % 7 == 1 ? 0 : WeekFragment.getColumnWidth() * (index % 7);
-                startX += WeekFragment.getColumnWidth();
-
-                top = COLUMN_NORMAL_HEIGHT + (EVENT_BAR_HEIGHT + SPACING_EVENT_BAR_TB) * lastRow;
-                bottom = top + EVENT_BAR_HEIGHT;
-                left = startX + EVENT_BAR_LR_MARGIN;
-                right = startX + WeekFragment.getColumnWidth() - EVENT_BAR_LR_MARGIN;
-
-                canvas.drawRect(left, top, right, bottom, extraPaint);
-                canvas.drawText("More", startX + EVENT_BAR_LR_MARGIN + EVENT_TEXT_MARGIN, bottom - EVENT_TEXT_MARGIN, textPaint);
             }
         }
 
@@ -382,7 +352,7 @@ public class WeekHeaderView extends ViewGroup
     {
         ITEM_LAYOUT_CELLS.clear();
         eventCellsList.clear();
-        rowNum = 0;
+        ROWS_COUNT = 0;
     }
 
     public void setSchedules(List<EventData> list)
@@ -398,33 +368,51 @@ public class WeekHeaderView extends ViewGroup
         ITEM_LAYOUT_CELLS.clear();
         eventCellsList.clear();
 
-        start = Integer.MAX_VALUE;
-        end = Integer.MIN_VALUE;
+        START_INDEX = Integer.MAX_VALUE;
+        END_INDEX = Integer.MIN_VALUE;
 
-        rowNum = 0;
+        ROWS_COUNT = 0;
 
         // 달력 뷰의 셀에 아이템을 삽입
         for (EventData eventData : list)
         {
             int startIndex = eventData.getStartIndex();
             int endIndex = eventData.getEndIndex();
+            int dateLength = 0;
 
-            if (startIndex == Integer.MIN_VALUE)
+            if (startIndex == -1 && endIndex == 7)
+            {
+                dateLength = EventData.BEFORE_AFTER;
+            } else if (startIndex == -1 && endIndex <= 6)
+            {
+                // 이번 주 이전 - 이번 주 내
+                dateLength = EventData.BEFORE_THISWEEK;
+            } else if (startIndex >= 0 && endIndex == 7)
+            {
+                // 이번 주 내 - 이번 주 이후
+                dateLength = EventData.THISWEEK_AFTER;
+            } else if (startIndex >= 0 && endIndex <= 6)
+            {
+                // 이번 주 내 - 이번 주 내
+                dateLength = EventData.THISWEEK_THISWEEK;
+            }
+
+            if (startIndex == -1)
             {
                 startIndex = 0;
             }
-            if (endIndex == Integer.MAX_VALUE)
+            if (endIndex == 7)
             {
                 endIndex = 6;
             }
 
-            if (start > startIndex)
+            if (START_INDEX > startIndex)
             {
-                start = startIndex;
+                START_INDEX = startIndex;
             }
-            if (end < endIndex)
+            if (END_INDEX < endIndex)
             {
-                end = endIndex;
+                END_INDEX = endIndex;
             }
 
             // 이벤트를 위치시킬 알맞은 행을 지정
@@ -438,14 +426,14 @@ public class WeekHeaderView extends ViewGroup
                     ITEM_LAYOUT_CELLS.put(index, new ItemCell());
                 }
 
-                // 이벤트 개수 수정
-                ITEM_LAYOUT_CELLS.get(index).eventsNum++;
+                // 이벤트 개수 증가
+                ITEM_LAYOUT_CELLS.get(index).eventsCount++;
 
                 Set<Integer> set = new HashSet<>();
 
                 for (int row = 0; row < EVENTS_MAX_COUNTS; row++)
                 {
-                    if (!ITEM_LAYOUT_CELLS.get(index).row[row])
+                    if (!ITEM_LAYOUT_CELLS.get(index).rows[row])
                     {
                         set.add(row);
                     }
@@ -457,11 +445,6 @@ public class WeekHeaderView extends ViewGroup
                 } else
                 {
                     rowSet.retainAll(set);
-                    // 가능한 행이 없으면 종료
-                    if (rowSet.isEmpty())
-                    {
-                        break;
-                    }
                 }
             }
 
@@ -474,9 +457,9 @@ public class WeekHeaderView extends ViewGroup
                 Iterator<Integer> iterator = rowSet.iterator();
                 int row = iterator.next();
 
-                if (row > rowNum)
+                if (row > ROWS_COUNT)
                 {
-                    rowNum = row + 1;
+                    ROWS_COUNT = row;
                 }
 
                 if (row < EVENTS_MAX_COUNTS - 1)
@@ -486,22 +469,23 @@ public class WeekHeaderView extends ViewGroup
                     // row가 MonthCalendarItemView.EVENT_COUNT - 1인 경우 빈 객체를 저장
                     for (int i = startIndex; i <= endIndex; i++)
                     {
-                        ITEM_LAYOUT_CELLS.get(i).row[row] = true;
+                        ITEM_LAYOUT_CELLS.get(i).rows[row] = true;
                     }
-                    eventCellsList.add(new EventData(eventData.getSchedule(), startIndex, endIndex, row));
+                    eventCellsList.add(eventData.setStartIndex(startIndex).setEndIndex(endIndex).setRow(row).setDateLength(dateLength));
                 }
             }
         }
+        ROWS_COUNT++;
     }
 
     class ItemCell
     {
-        boolean[] row;
-        int eventsNum;
+        boolean[] rows;
+        int eventsCount;
 
         public ItemCell()
         {
-            row = new boolean[EVENTS_MAX_COUNTS];
+            rows = new boolean[EVENTS_MAX_COUNTS];
         }
     }
 

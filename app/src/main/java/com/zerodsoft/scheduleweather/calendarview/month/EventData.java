@@ -8,8 +8,14 @@ import java.util.List;
 
 public class EventData
 {
+    public static final int BEFORE_AFTER = 0;
+    public static final int BEFORE_THISWEEK = 1;
+    public static final int THISWEEK_AFTER = 2;
+    public static final int THISWEEK_THISWEEK = 3;
+
     private int startIndex;
     private int endIndex;
+    private int dateLength;
     private int row;
     private ScheduleDTO schedule;
 
@@ -34,20 +40,15 @@ public class EventData
         this.row = row;
     }
 
-    public void setIndex(int startIndex, int endIndex)
-    {
-        this.startIndex = startIndex;
-        this.endIndex = endIndex;
-    }
-
-    public void setRow(int row)
-    {
-        this.row = row;
-    }
 
     public int getDateLength()
     {
-        return endIndex - startIndex + 1;
+        return dateLength;
+    }
+
+    public boolean isDaySchedule()
+    {
+        return endIndex == startIndex;
     }
 
     public ScheduleDTO getSchedule()
@@ -68,5 +69,29 @@ public class EventData
     public int getRow()
     {
         return row;
+    }
+
+    public EventData setRow(int row)
+    {
+        this.row = row;
+        return this;
+    }
+
+    public EventData setDateLength(int dateLength)
+    {
+        this.dateLength = dateLength;
+        return this;
+    }
+
+    public EventData setStartIndex(int startIndex)
+    {
+        this.startIndex = startIndex;
+        return this;
+    }
+
+    public EventData setEndIndex(int endIndex)
+    {
+        this.endIndex = endIndex;
+        return this;
     }
 }

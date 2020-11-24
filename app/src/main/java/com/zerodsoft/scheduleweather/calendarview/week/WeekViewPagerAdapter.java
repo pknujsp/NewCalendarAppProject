@@ -165,7 +165,7 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
             // weekview에 표시하기 위해 하루 내의 일정만 저장
             for (EventData eventData : list)
             {
-                if (eventData.getDateLength() == 1 && !eventData.getSchedule().getStartDate().equals(eventData.getSchedule().getEndDate()))
+                if (eventData.isDaySchedule())
                 {
                     list2.add(eventData);
                 }
@@ -215,30 +215,28 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
 
         public int getDateToIndex(Calendar date)
         {
-            int index = 0;
-
-            for (int i = 0; i < currentWeekDays.length; i++)
-            {
-                if (currentWeekDays[i].get(Calendar.YEAR) == date.get(Calendar.YEAR) && currentWeekDays[i].get(Calendar.DAY_OF_YEAR) == date.get(Calendar.DAY_OF_YEAR))
-                {
-                    index = i;
-                    return index;
-                }
-            }
-
+            int i = 0;
             // 달력에 표시된 첫 날짜 이전 인 경우
             if (date.before(currentWeekDays[0]))
             {
-                // 이전 달 날짜가 들어가지 않을 때
-                return Integer.MIN_VALUE;
-            }
-
-            // 달력에 표시된 마지막 날짜 이후 인 경우
-            else if (date.compareTo(currentWeekDays[7]) >= 0)
+                // 이번 주 이전인 경우
+                i = -1;
+            } else if (date.compareTo(currentWeekDays[7]) >= 0)
             {
-                return Integer.MAX_VALUE;
+                // 이번 주 이후인 경우
+                i = 7;
+            } else
+            {
+                for (int index = 0; index <= 6; index++)
+                {
+                    if (currentWeekDays[index].get(Calendar.YEAR) == date.get(Calendar.YEAR) && currentWeekDays[index].get(Calendar.DAY_OF_YEAR) == date.get(Calendar.DAY_OF_YEAR))
+                    {
+                        i = index;
+                        break;
+                    }
+                }
             }
-            return -1;
+            return i;
         }
 
         public Calendar getDay(int position)
