@@ -25,4 +25,7 @@
     <dimen name="toolbar_height">56dp</dimen>
 
     <dimen name="event_info_listview_spacing">8dp</dimen>
+
+    <dimen name="map_itemlist_margin">8dp</dimen>
+    <dimen name="info_around_location_margin">8dp</dimen>
 </resources>

@@ -139,4 +139,25 @@
 
     <string name="notification_before">전에 알림</string>
 
+    <string name="info_around_location">주변 정보</string>
+
+    <string name="supermarket">대형마트</string>
+    <string name="convenience_store">편의점</string>
+    <string name="parking_lot">주차장</string>
+    <string name="gas_station">주유소</string>
+    <string name="ev_station">전기차 충전소</string>
+    <string name="fcev_station">수소 충전소</string>
+    <string name="subway_station">지하철역</string>
+    <string name="bank">은행</string>
+    <string name="cultural_facilities">문화시설</string>
+    <string name="brokerage">중개업소</string>
+    <string name="public_institutions">공공기관</string>
+    <string name="attractions">관광명소</string>
+    <string name="accomodations">숙박</string>
+    <string name="restaurant">음식점</string>
+    <string name="cafe">카페</string>
+    <string name="hospital">병원</string>
+    <string name="pharmacy">약국</string>
+    <string name="atm">ATM</string>
+
 </resources>
