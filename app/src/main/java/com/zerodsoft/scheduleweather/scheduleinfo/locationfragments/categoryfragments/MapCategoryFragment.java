@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -11,17 +12,13 @@ import androidx.fragment.app.Fragment;
 
 import com.zerodsoft.scheduleweather.R;
 
-public class DefaultCategoryFragment extends Fragment
+public class MapCategoryFragment extends Fragment
 {
-    private final double LATITUDE;
-    private final double LONGITUDE;
-    private final String LOCATION_NAME;
+    private final String CATEGORY_NAME;
 
-    public DefaultCategoryFragment(String locationName, double latitude, double longitude)
+    public MapCategoryFragment(String categoryName)
     {
-        this.LATITUDE = latitude;
-        this.LONGITUDE = longitude;
-        this.LOCATION_NAME = locationName;
+        CATEGORY_NAME = categoryName;
     }
 
     @Nullable
@@ -29,5 +26,18 @@ public class DefaultCategoryFragment extends Fragment
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
     {
         return inflater.inflate(R.layout.fragment_map_category_common, container, false);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
+    {
+        super.onViewCreated(view, savedInstanceState);
+        ((TextView) view.findViewById(R.id.map_category_name)).setText(CATEGORY_NAME);
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState)
+    {
+        super.onActivityCreated(savedInstanceState);
     }
 }

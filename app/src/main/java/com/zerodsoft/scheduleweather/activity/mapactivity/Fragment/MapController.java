@@ -316,8 +316,7 @@ public class MapController
 
     private String getCategoryName(String searchWord)
     {
-        KakaoLocalApiCategoryCode.loadCategoryMap();
-        String categoryName = KakaoLocalApiCategoryCode.getName(searchWord);
+        String categoryName = KakaoLocalApiCategoryCode.getDescription(searchWord);
 
         if (categoryName != null)
         {

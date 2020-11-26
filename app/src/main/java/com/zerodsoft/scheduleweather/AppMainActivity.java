@@ -14,6 +14,7 @@ import com.zerodsoft.scheduleweather.calendarfragment.DayFragment;
 import com.zerodsoft.scheduleweather.calendarfragment.MonthFragment;
 import com.zerodsoft.scheduleweather.calendarfragment.WeekFragment;
 import com.zerodsoft.scheduleweather.databinding.ActivityAppMainBinding;
+import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryCode;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
@@ -55,6 +56,8 @@ public class AppMainActivity extends AppCompatActivity
         binding = ActivityAppMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        init();
+
         Point point = new Point();
         getWindowManager().getDefaultDisplay().getRealSize(point);
 
@@ -75,6 +78,11 @@ public class AppMainActivity extends AppCompatActivity
         customToolbar.getViewTreeObserver().addOnGlobalLayoutListener(mGlobalLayoutListener);
         calendarTransactionFragment = new EventTransactionFragment(this);
         getSupportFragmentManager().beginTransaction().add(R.id.calendar_layout, calendarTransactionFragment, EventTransactionFragment.TAG).commit();
+    }
+
+    private void init()
+    {
+        KakaoLocalApiCategoryCode.loadCategoryMap(getApplicationContext());
     }
 
     public void onClickToolbar(View view)

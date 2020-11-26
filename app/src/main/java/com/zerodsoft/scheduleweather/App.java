@@ -1,6 +1,7 @@
 package com.zerodsoft.scheduleweather;
 
 import android.app.Activity;
+import android.content.Context;
 import android.graphics.Point;
 import android.os.Handler;
 import android.os.Looper;
@@ -15,5 +16,4 @@ public class App extends android.app.Application
 {
     public static ExecutorService executorService = Executors.newSingleThreadExecutor();
     public static Handler mainThreadHandler = HandlerCompat.createAsync(Looper.getMainLooper());
-
 }

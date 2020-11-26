@@ -29,7 +29,6 @@ public class SearchCategoryViewAdapter extends RecyclerView.Adapter<SearchCatego
 
     public SearchCategoryViewAdapter(SearchFragment searchFragment)
     {
-        KakaoLocalApiCategoryCode.loadCategoryMap();
         categoryList = KakaoLocalApiCategoryCode.toArrayList();
         this.onCategoryClickListener = searchFragment;
     }

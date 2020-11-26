@@ -4,13 +4,22 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentContainerView;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.scheduleinfo.locationfragments.categoryfragments.MapCategoryFragment;
+
+import java.util.LinkedList;
+import java.util.List;
 
 public class LocationItemFragment extends Fragment
 {
@@ -42,11 +51,35 @@ public class LocationItemFragment extends Fragment
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
+        FrameLayout categoryFragmentContainerView = (FrameLayout) view.findViewById(R.id.map_category_fragment_container);
+
         // 위치 이름 표시
         ((TextView) view.findViewById(R.id.location_name)).setText(LOCATION_NAME + " " + getString(R.string.info_around_location));
         // 표시할 정보를 가져옴
+
         // 정보를 표시할 프래그먼트를 각각 생성
         // 편의점, ATM 정보를 보여주기로 했다고 가정
+        List<String> categoryNames = new LinkedList<>();
+        categoryNames.add(getString(R.string.atm));
+        categoryNames.add(getString(R.string.convenience_store));
 
+        List<MapCategoryFragment> categoryFragments = new LinkedList<>();
+        for (String categoryName : categoryNames)
+        {
+            categoryFragments.add(new MapCategoryFragment(categoryName));
+        }
+
+        FragmentManager fragmentManager = getParentFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+        // fragment container view를 추가하고 프래그먼트를 추가
+        for (MapCategoryFragment fragment : categoryFragments)
+        {
+            FragmentContainerView containerView = new FragmentContainerView(getContext());
+            containerView.setId(View.generateViewId());
+            categoryFragmentContainerView.addView(containerView, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+            fragmentTransaction.add(containerView.getId(), fragment);
+        }
+        fragmentTransaction.commit();
     }
 }

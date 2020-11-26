@@ -34,11 +34,6 @@ public class ScheduleTabViewPager extends FragmentStateAdapter
         return this;
     }
 
-    public void addFragment(Fragment fragment, int index)
-    {
-        fragments.add(index, fragment);
-        notifyDataSetChanged();
-    }
 
     @NonNull
     @Override

@@ -143,9 +143,14 @@
 
     <string name="supermarket">대형마트</string>
     <string name="convenience_store">편의점</string>
+    <string name="kindergarten">어린이집/유치원</string>
+    <string name="school">학교</string>
+    <string name="academy">학원</string>
     <string name="parking_lot">주차장</string>
     <string name="gas_station">주유소</string>
+    <string name="station">주유소/충전소</string>
     <string name="ev_station">전기차 충전소</string>
+    <string name="lpg_station">가스 충전소</string>
     <string name="fcev_station">수소 충전소</string>
     <string name="subway_station">지하철역</string>
     <string name="bank">은행</string>

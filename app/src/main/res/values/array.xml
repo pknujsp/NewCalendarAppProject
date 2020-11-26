@@ -14,4 +14,46 @@
         <item>금</item>
         <item>토</item>
     </string-array>
+
+    <string-array name="kakao_local_api_category_name">
+        <item>대형마트</item>
+        <item>편의점</item>
+        <item>어린이집/유치원</item>
+        <item>학교</item>
+        <item>학원</item>
+        <item>주차장</item>
+        <item>주유소/충전소</item>
+        <item>지하철역</item>
+        <item>은행</item>
+        <item>문화시설</item>
+        <item>중개업소</item>
+        <item>공공기관</item>
+        <item>관광명소</item>
+        <item>숙박</item>
+        <item>음식점</item>
+        <item>카페</item>
+        <item>병원</item>
+        <item>약국</item>
+    </string-array>
+
+    <string-array name="kakao_local_api_category_description">
+        <item>MT1</item>
+        <item>CS2</item>
+        <item>PS3</item>
+        <item>SC4</item>
+        <item>AC5</item>
+        <item>PK6</item>
+        <item>OL7</item>
+        <item>SW8</item>
+        <item>BK9</item>
+        <item>CT1</item>
+        <item>AG2</item>
+        <item>PO3</item>
+        <item>AT4</item>
+        <item>AD5</item>
+        <item>FD6</item>
+        <item>CE7</item>
+        <item>HP8</item>
+        <item>PM9</item>
+    </string-array>
 </resources>

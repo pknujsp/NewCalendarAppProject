@@ -23,10 +23,13 @@ public class InfoAroundLocationFragment extends Fragment
 {
     private ViewPager2 viewPager;
     private LocationViewPagerAdapter viewPagerAdapter;
+    private List<AddressDTO> addresses;
+    private List<PlaceDTO> places;
 
     public InfoAroundLocationFragment(List<AddressDTO> addresses, List<PlaceDTO> places)
     {
-        viewPagerAdapter = new LocationViewPagerAdapter(this, addresses, places);
+        this.addresses = addresses;
+        this.places = places;
     }
 
 
@@ -47,6 +50,7 @@ public class InfoAroundLocationFragment extends Fragment
     {
         super.onViewCreated(view, savedInstanceState);
         viewPager = (ViewPager2) view.findViewById(R.id.around_location_viewpager);
+        viewPagerAdapter = new LocationViewPagerAdapter(this, addresses, places);
         viewPager.setAdapter(viewPagerAdapter);
     }
 }

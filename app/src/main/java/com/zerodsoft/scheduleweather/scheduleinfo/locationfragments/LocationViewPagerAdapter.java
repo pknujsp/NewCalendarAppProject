@@ -8,6 +8,7 @@ import com.zerodsoft.scheduleweather.room.dto.AddressDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 public class LocationViewPagerAdapter extends FragmentStateAdapter
@@ -17,7 +18,7 @@ public class LocationViewPagerAdapter extends FragmentStateAdapter
     public LocationViewPagerAdapter(@NonNull Fragment fragment, List<AddressDTO> addresses, List<PlaceDTO> places)
     {
         super(fragment);
-        fragments = new ArrayList<>();
+        fragments = new LinkedList<>();
 
         for (AddressDTO address : addresses)
         {
