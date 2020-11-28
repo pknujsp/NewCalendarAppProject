@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
@@ -51,7 +52,7 @@ public class LocationItemFragment extends Fragment
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
-        FrameLayout categoryFragmentContainerView = (FrameLayout) view.findViewById(R.id.map_category_fragment_container);
+        LinearLayout categoryFragmentContainerView = (LinearLayout) view.findViewById(R.id.map_category_fragment_container);
 
         // 위치 이름 표시
         ((TextView) view.findViewById(R.id.location_name)).setText(LOCATION_NAME + " " + getString(R.string.info_around_location));

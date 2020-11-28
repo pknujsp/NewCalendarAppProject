@@ -28,4 +28,6 @@
 
     <dimen name="map_itemlist_margin">8dp</dimen>
     <dimen name="info_around_location_margin">8dp</dimen>
+
+    <dimen name="info_around_location_item_margin">12dp</dimen>
 </resources>

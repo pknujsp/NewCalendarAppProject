@@ -2,7 +2,9 @@ package com.zerodsoft.scheduleweather.scheduleinfo;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentContainerView;
+import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
@@ -39,6 +41,13 @@ public class ScheduleInfoActivity extends AppCompatActivity
     private ScheduleWeatherFragment scheduleWeatherFragment;
     private InfoAroundLocationFragment infoAroundLocationFragment;
 
+    private FragmentManager fragmentManager;
+
+    private static final String TAG_INFO = "info";
+    private static final String TAG_WEATHER = "weather";
+    private static final String TAG_LOCATION = "location";
+    private Fragment currentFragment = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -49,6 +58,8 @@ public class ScheduleInfoActivity extends AppCompatActivity
 
         // List<Integer> navGraphIds = Arrays.asList(R.navigation.navigation_schedule_info, R.navigation.navigation_schedule_weather, R.navigation.navigation_schedule_location);
         bottomNavigationView.setOnNavigationItemSelectedListener(onNavigationItemSelectedListener);
+
+        fragmentManager = getSupportFragmentManager();
 
         int scheduleId = getIntent().getIntExtra("scheduleId", -1);
 
@@ -61,8 +72,12 @@ public class ScheduleInfoActivity extends AppCompatActivity
                 scheduleInfoFragment = new ScheduleInfoFragment(scheduleData.getSchedule(), scheduleData.getAddresses(), scheduleData.getPlaces());
                 scheduleWeatherFragment = new ScheduleWeatherFragment(scheduleData.getAddresses(), scheduleData.getPlaces());
                 infoAroundLocationFragment = new InfoAroundLocationFragment(scheduleData.getAddresses(), scheduleData.getPlaces());
-                getSupportFragmentManager().beginTransaction().add(R.id.schedule_fragment_container, scheduleInfoFragment).commitAllowingStateLoss();
-
+                fragmentManager.beginTransaction().add(R.id.schedule_fragment_container, scheduleInfoFragment, TAG_INFO).hide(scheduleInfoFragment)
+                        .add(R.id.schedule_fragment_container, scheduleWeatherFragment, TAG_WEATHER).hide(infoAroundLocationFragment)
+                        .add(R.id.schedule_fragment_container, infoAroundLocationFragment, TAG_LOCATION).hide(scheduleWeatherFragment)
+                        .show(scheduleInfoFragment)
+                        .commit();
+                currentFragment = scheduleInfoFragment;
             }
         });
 
@@ -104,21 +119,34 @@ public class ScheduleInfoActivity extends AppCompatActivity
         @Override
         public boolean onNavigationItemSelected(@NonNull MenuItem item)
         {
-            FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+            Fragment newFragment = null;
+
             switch (item.getItemId())
             {
                 case R.id.schedule_info:
-                    fragmentTransaction.replace(R.id.schedule_fragment_container, scheduleInfoFragment);
+                    newFragment = scheduleInfoFragment;
                     break;
                 case R.id.schedule_weather:
-                    fragmentTransaction.replace(R.id.schedule_fragment_container, scheduleWeatherFragment);
+                    newFragment = scheduleWeatherFragment;
                     break;
                 case R.id.schedule_location:
-                    fragmentTransaction.replace(R.id.schedule_fragment_container, infoAroundLocationFragment);
+                    newFragment = infoAroundLocationFragment;
                     break;
             }
-            fragmentTransaction.commitAllowingStateLoss();
+
+            //현재 표시된 프래그먼트와 변경할 프래그먼트가 같은 경우 변경하지 않음
+            if (currentFragment != newFragment)
+            {
+                fragmentManager.beginTransaction().hide(currentFragment).show(newFragment).commit();
+                currentFragment = newFragment;
+            }
             return true;
         }
     };
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState)
+    {
+        super.onSaveInstanceState(outState);
+    }
 }
