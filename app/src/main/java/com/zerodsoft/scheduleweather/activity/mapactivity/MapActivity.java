@@ -24,8 +24,8 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.Addr
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponseDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placecategoryresponse.PlaceCategory;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placecategoryresponse.PlaceCategoryDocuments;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.placekeywordresponse.PlaceKeyword;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.placekeywordresponse.PlaceKeywordDocuments;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceResponse;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
 
 import net.daum.mf.map.api.MapPoint;
 
@@ -95,16 +95,16 @@ public class MapActivity extends AppCompatActivity implements MapController.OnDo
                     categoryResponse.setPlaceCategoryMeta(downloadedResult.getPlaceCategoryResponse().getPlaceCategoryMeta());
                     break;
                 case MapController.TYPE_PLACE_KEYWORD:
-                    PlaceKeyword keywordResponse = searchResult.getPlaceKeywordResponse();
-                    List<PlaceKeywordDocuments> categoryExtraDocuments = downloadedResult.getPlaceKeywordResponse().getPlaceKeywordDocuments();
-                    List<PlaceKeywordDocuments> categoryExistingDocuments = keywordResponse.getPlaceKeywordDocuments();
+                    PlaceResponse keywordResponse = searchResult.getPlaceResponseResponse();
+                    List<PlaceDocuments> categoryExtraDocuments = downloadedResult.getPlaceResponseResponse().getPlaceDocuments();
+                    List<PlaceDocuments> categoryExistingDocuments = keywordResponse.getPlaceDocuments();
 
-                    for (PlaceKeywordDocuments document : categoryExtraDocuments)
+                    for (PlaceDocuments document : categoryExtraDocuments)
                     {
                         categoryExistingDocuments.add(document);
                     }
 
-                    keywordResponse.setPlaceKeywordMeta(downloadedResult.getPlaceKeywordResponse().getPlaceKeywordMeta());
+                    keywordResponse.setPlaceMeta(downloadedResult.getPlaceResponseResponse().getPlaceMeta());
                     break;
             }
             SearchResultController searchResultController = SearchResultController.getInstance(this);

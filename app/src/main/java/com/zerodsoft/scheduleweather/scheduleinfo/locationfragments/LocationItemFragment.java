@@ -22,17 +22,13 @@ import com.zerodsoft.scheduleweather.scheduleinfo.locationfragments.categoryfrag
 import java.util.LinkedList;
 import java.util.List;
 
-public class LocationItemFragment extends Fragment
+public class LocationItemFragment extends Fragment implements LocationInfoGetter
 {
-    private final double LATITUDE;
-    private final double LONGITUDE;
-    private final String LOCATION_NAME;
+    private final LocationInfo locationInfo;
 
     public LocationItemFragment(String locationName, double latitude, double longitude)
     {
-        this.LATITUDE = latitude;
-        this.LONGITUDE = longitude;
-        this.LOCATION_NAME = locationName;
+        locationInfo = new LocationInfo(latitude, longitude, locationName);
     }
 
     @Nullable
@@ -55,7 +51,7 @@ public class LocationItemFragment extends Fragment
         LinearLayout categoryFragmentContainerView = (LinearLayout) view.findViewById(R.id.map_category_fragment_container);
 
         // 위치 이름 표시
-        ((TextView) view.findViewById(R.id.location_name)).setText(LOCATION_NAME + " " + getString(R.string.info_around_location));
+        ((TextView) view.findViewById(R.id.location_name)).setText(locationInfo.getLocationName() + " " + getString(R.string.info_around_location));
         // 표시할 정보를 가져옴
 
         // 정보를 표시할 프래그먼트를 각각 생성
@@ -67,7 +63,7 @@ public class LocationItemFragment extends Fragment
         List<MapCategoryFragment> categoryFragments = new LinkedList<>();
         for (String categoryName : categoryNames)
         {
-            categoryFragments.add(new MapCategoryFragment(categoryName));
+            categoryFragments.add(new MapCategoryFragment(categoryName, this));
         }
 
         FragmentManager fragmentManager = getParentFragmentManager();
@@ -82,5 +78,11 @@ public class LocationItemFragment extends Fragment
             fragmentTransaction.add(containerView.getId(), fragment);
         }
         fragmentTransaction.commit();
+    }
+
+    @Override
+    public LocationInfo getLocationInfo()
+    {
+        return locationInfo.copy();
     }
 }

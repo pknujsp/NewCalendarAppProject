@@ -2,17 +2,12 @@ package com.zerodsoft.scheduleweather.retrofit;
 
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.coordtoaddressresponse.CoordToAddress;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.midlandfcstresponse.MidLandFcstResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.midlandfcstresponse.MidLandFcstRoot;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.midtaresponse.MidTaResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.midtaresponse.MidTaRoot;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placecategoryresponse.PlaceCategory;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.placekeywordresponse.PlaceKeyword;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.ultrasrtfcstresponse.UltraSrtFcstResponse;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.ultrasrtfcstresponse.UltraSrtFcstRoot;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.ultrasrtncstresponse.UltraSrtNcstResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.ultrasrtncstresponse.UltraSrtNcstRoot;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.vilagefcstresponse.VilageFcstResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.vilagefcstresponse.VilageFcstRoot;
 
 import java.util.Map;
@@ -31,7 +26,7 @@ public interface Querys
 
     @Headers({"Authorization: " + HttpCommunicationClient.KAKAO_APP_KEY})
     @GET("search/keyword.json")
-    Call<PlaceKeyword> getPlaceKeyword(@QueryMap(encoded = true) Map<String, String> queryMap);
+    Call<PlaceResponse> getPlaceKeyword(@QueryMap(encoded = true) Map<String, String> queryMap);
 
     @Headers({"Authorization: " + HttpCommunicationClient.KAKAO_APP_KEY})
     @GET("search/category.json")

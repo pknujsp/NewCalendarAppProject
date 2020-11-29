@@ -7,7 +7,7 @@ import com.zerodsoft.scheduleweather.activity.mapactivity.Fragment.MapController
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.coordtoaddressresponse.CoordToAddress;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placecategoryresponse.PlaceCategory;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.placekeywordresponse.PlaceKeyword;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceResponse;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -16,7 +16,7 @@ import java.util.List;
 public class LocationSearchResult implements Parcelable, Cloneable
 {
     private AddressResponse addressResponse;
-    private PlaceKeyword placeKeywordResponse;
+    private PlaceResponse placeResponseResponse;
     private PlaceCategory placeCategoryResponse;
     private CoordToAddress coordToAddressResponse;
     private Date downloadedDate;
@@ -27,10 +27,10 @@ public class LocationSearchResult implements Parcelable, Cloneable
     {
     }
 
-    public LocationSearchResult(AddressResponse addressResponse, PlaceKeyword placeKeywordResponse, PlaceCategory placeCategoryResponse, CoordToAddress coordToAddressResponse, Date downloadedDate, int resultNum)
+    public LocationSearchResult(AddressResponse addressResponse, PlaceResponse placeResponseResponse, PlaceCategory placeCategoryResponse, CoordToAddress coordToAddressResponse, Date downloadedDate, int resultNum)
     {
         this.addressResponse = addressResponse;
-        this.placeKeywordResponse = placeKeywordResponse;
+        this.placeResponseResponse = placeResponseResponse;
         this.placeCategoryResponse = placeCategoryResponse;
         this.coordToAddressResponse = coordToAddressResponse;
         this.downloadedDate = downloadedDate;
@@ -40,7 +40,7 @@ public class LocationSearchResult implements Parcelable, Cloneable
     protected LocationSearchResult(Parcel in)
     {
         addressResponse = in.readParcelable(AddressResponse.class.getClassLoader());
-        placeKeywordResponse = in.readParcelable(PlaceKeyword.class.getClassLoader());
+        placeResponseResponse = in.readParcelable(PlaceResponse.class.getClassLoader());
         placeCategoryResponse = in.readParcelable(PlaceCategory.class.getClassLoader());
         coordToAddressResponse = in.readParcelable(CoordToAddress.class.getClassLoader());
         downloadedDate = (Date) in.readSerializable();
@@ -73,14 +73,14 @@ public class LocationSearchResult implements Parcelable, Cloneable
         return this;
     }
 
-    public PlaceKeyword getPlaceKeywordResponse()
+    public PlaceResponse getPlaceResponseResponse()
     {
-        return placeKeywordResponse;
+        return placeResponseResponse;
     }
 
-    public LocationSearchResult setPlaceKeywordResponse(PlaceKeyword placeKeywordResponse)
+    public LocationSearchResult setPlaceResponseResponse(PlaceResponse placeResponseResponse)
     {
-        this.placeKeywordResponse = placeKeywordResponse;
+        this.placeResponseResponse = placeResponseResponse;
         return this;
     }
 
@@ -149,7 +149,7 @@ public class LocationSearchResult implements Parcelable, Cloneable
     public void writeToParcel(Parcel parcel, int i)
     {
         parcel.writeParcelable(addressResponse, i);
-        parcel.writeParcelable(placeKeywordResponse, i);
+        parcel.writeParcelable(placeResponseResponse, i);
         parcel.writeParcelable(placeCategoryResponse, i);
         parcel.writeParcelable(coordToAddressResponse, i);
         parcel.writeSerializable(downloadedDate);
@@ -168,9 +168,9 @@ public class LocationSearchResult implements Parcelable, Cloneable
                 types.add(MapController.TYPE_ADDRESS);
             }
         }
-        if (placeKeywordResponse != null)
+        if (placeResponseResponse != null)
         {
-            if (placeKeywordResponse.getPlaceKeywordDocuments().size() > 0)
+            if (placeResponseResponse.getPlaceDocuments().size() > 0)
             {
                 types.add(MapController.TYPE_PLACE_KEYWORD);
             }

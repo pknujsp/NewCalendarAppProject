@@ -14,7 +14,7 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.LocationSearchResult
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.coordtoaddressresponse.CoordToAddress;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placecategoryresponse.PlaceCategory;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.placekeywordresponse.PlaceKeyword;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceResponse;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -82,7 +82,7 @@ public class MapController
                         locationSearchResult.setAddressResponse(bundle.getParcelable("response"));
                         break;
                     case TYPE_PLACE_KEYWORD:
-                        locationSearchResult.setPlaceKeywordResponse(bundle.getParcelable("response"));
+                        locationSearchResult.setPlaceResponseResponse(bundle.getParcelable("response"));
                         break;
                     case TYPE_PLACE_CATEGORY:
                         locationSearchResult.setPlaceCategoryResponse(bundle.getParcelable("response"));
@@ -158,34 +158,34 @@ public class MapController
     {
         Querys querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.KAKAO);
         Map<String, String> queryMap = MapActivity.parameters.getParameterMap();
-        Call<PlaceKeyword> call = querys.getPlaceKeyword(queryMap);
+        Call<PlaceResponse> call = querys.getPlaceKeyword(queryMap);
 
-        call.enqueue(new Callback<PlaceKeyword>()
+        call.enqueue(new Callback<PlaceResponse>()
         {
             @Override
-            public void onResponse(Call<PlaceKeyword> call, Response<PlaceKeyword> response)
+            public void onResponse(Call<PlaceResponse> call, Response<PlaceResponse> response)
             {
-                PlaceKeyword placeKeywordResponse = response.body();
+                PlaceResponse placeResponseResponse = response.body();
 
                 Message message = handler.obtainMessage();
                 message.what = TYPE_PLACE_KEYWORD;
                 Bundle bundle = new Bundle();
 
-                if (placeKeywordResponse.getPlaceKeywordDocuments().isEmpty())
+                if (placeResponseResponse.getPlaceDocuments().isEmpty())
                 {
                     bundle.putBoolean("isEmpty", true);
                 } else
                 {
                     bundle.putBoolean("isEmpty", false);
                 }
-                bundle.putParcelable("response", placeKeywordResponse);
+                bundle.putParcelable("response", placeResponseResponse);
 
                 message.setData(bundle);
                 handler.sendMessage(message);
             }
 
             @Override
-            public void onFailure(Call<PlaceKeyword> call, Throwable t)
+            public void onFailure(Call<PlaceResponse> call, Throwable t)
             {
             }
         });

@@ -18,7 +18,7 @@ import com.zerodsoft.scheduleweather.activity.mapactivity.MapActivity;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponseDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placecategoryresponse.PlaceCategoryDocuments;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.placekeywordresponse.PlaceKeywordDocuments;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.AddressDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
 import com.zerodsoft.scheduleweather.utility.LonLat;
@@ -29,7 +29,7 @@ import java.util.List;
 public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultViewAdapter.SearchResultViewHolder>
 {
     private List<AddressResponseDocuments> addressList = null;
-    private List<PlaceKeywordDocuments> placeKeywordList = null;
+    private List<PlaceDocuments> placeKeywordList = null;
     private List<PlaceCategoryDocuments> placeCategoryList = null;
 
     private int dataType;
@@ -73,11 +73,11 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
 
     public void setPlaceKeywordList()
     {
-        placeKeywordList = MapActivity.searchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments();
+        placeKeywordList = MapActivity.searchResult.getPlaceResponseResponse().getPlaceDocuments();
         dataType = MapController.TYPE_PLACE_KEYWORD;
-        totalCount = MapActivity.searchResult.getPlaceKeywordResponse().getPlaceKeywordMeta().getTotalCount();
-        pageableCount = MapActivity.searchResult.getPlaceKeywordResponse().getPlaceKeywordMeta().getPageableCount();
-        isEnd = MapActivity.searchResult.getPlaceKeywordResponse().getPlaceKeywordMeta().isEnd();
+        totalCount = MapActivity.searchResult.getPlaceResponseResponse().getPlaceMeta().getTotalCount();
+        pageableCount = MapActivity.searchResult.getPlaceResponseResponse().getPlaceMeta().getPageableCount();
+        isEnd = MapActivity.searchResult.getPlaceResponseResponse().getPlaceMeta().isEnd();
         currentPage = 1;
     }
 
@@ -101,8 +101,8 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
     public void addPlaceKeywordData()
     {
         currentPage++;
-        isEnd = MapActivity.searchResult.getPlaceKeywordResponse().getPlaceKeywordMeta().isEnd();
-        placeKeywordList = MapActivity.searchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments();
+        isEnd = MapActivity.searchResult.getPlaceResponseResponse().getPlaceMeta().isEnd();
+        placeKeywordList = MapActivity.searchResult.getPlaceResponseResponse().getPlaceDocuments();
     }
 
     public void addPlaceCategoryData()
@@ -375,7 +375,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
                         break;
 
                     case MapController.TYPE_PLACE_KEYWORD:
-                        PlaceKeywordDocuments placeKeywordDocument = placeKeywordList.get(position);
+                        PlaceDocuments placeKeywordDocument = placeKeywordList.get(position);
                         lon = placeKeywordDocument.getX();
                         lat = placeKeywordDocument.getY();
                         lonLat = LonLatConverter.lonLatToGridXY(lon, lat);

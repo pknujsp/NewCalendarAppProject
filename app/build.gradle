@@ -106,6 +106,17 @@ dependencies {
     implementation "androidx.fragment:fragment:${fragment_version}"
 
     implementation 'com.luckycatlabs:SunriseSunsetCalculator:1.2'
+
+    def paging_version = "2.1.2"
+
+    implementation "androidx.paging:paging-runtime:$paging_version" // For Kotlin use paging-runtime-ktx
+
+    // alternatively - without Android dependencies for testing
+    testImplementation "androidx.paging:paging-common:$paging_version" // For Kotlin use paging-common-ktx
+
+    // optional - RxJava support
+    implementation "androidx.paging:paging-rxjava2:$paging_version" // For Kotlin use paging-rxjava2-ktx
+
 }
 android {
     packagingOptions {

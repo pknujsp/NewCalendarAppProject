@@ -238,7 +238,7 @@ public class SearchResultViewPagerAdapter extends RecyclerView.Adapter<SearchRes
             } else if (type == MapController.TYPE_PLACE_KEYWORD)
             {
                 dataTypeTextView.setText(activity.getString(R.string.result_place));
-                resultNum.setText(Integer.toString(MapActivity.searchResult.getPlaceKeywordResponse().getPlaceKeywordMeta().getTotalCount()));
+                resultNum.setText(Integer.toString(MapActivity.searchResult.getPlaceResponseResponse().getPlaceMeta().getTotalCount()));
                 adapter.setPlaceKeywordList();
             } else if (type == MapController.TYPE_PLACE_CATEGORY)
             {

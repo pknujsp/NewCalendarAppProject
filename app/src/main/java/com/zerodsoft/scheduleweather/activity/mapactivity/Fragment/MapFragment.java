@@ -25,7 +25,7 @@ import com.zerodsoft.scheduleweather.databinding.FragmentMapBinding;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponseDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placecategoryresponse.PlaceCategoryDocuments;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.placekeywordresponse.PlaceKeywordDocuments;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.AddressDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
 import com.zerodsoft.scheduleweather.utility.LonLat;
@@ -236,7 +236,7 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
                         break;
 
                     case MapController.TYPE_PLACE_KEYWORD:
-                        PlaceKeywordDocuments placeKeywordDocument = MapActivity.searchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().get(selectedItemPosition);
+                        PlaceDocuments placeKeywordDocument = MapActivity.searchResult.getPlaceResponseResponse().getPlaceDocuments().get(selectedItemPosition);
                         lon = placeKeywordDocument.getX();
                         lat = placeKeywordDocument.getY();
                         lonLat = LonLatConverter.lonLatToGridXY(lon, lat);
@@ -633,7 +633,7 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
             if (dataType == MapController.TYPE_PLACE_KEYWORD)
             {
                 placeDataType = dataType;
-                placeSize = MapActivity.searchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().size();
+                placeSize = MapActivity.searchResult.getPlaceResponseResponse().getPlaceDocuments().size();
             } else if (dataType == MapController.TYPE_PLACE_CATEGORY)
             {
                 placeDataType = dataType;
@@ -660,9 +660,9 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
 
                 if (placeDataType == MapController.TYPE_PLACE_KEYWORD)
                 {
-                    placePoiItems[i].setItemName(MapActivity.searchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().get(i).getPlaceName());
-                    mapPoint = MapPoint.mapPointWithGeoCoord(MapActivity.searchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().get(i).getY(),
-                            MapActivity.searchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().get(i).getX());
+                    placePoiItems[i].setItemName(MapActivity.searchResult.getPlaceResponseResponse().getPlaceDocuments().get(i).getPlaceName());
+                    mapPoint = MapPoint.mapPointWithGeoCoord(MapActivity.searchResult.getPlaceResponseResponse().getPlaceDocuments().get(i).getY(),
+                            MapActivity.searchResult.getPlaceResponseResponse().getPlaceDocuments().get(i).getX());
                 } else if (placeDataType == MapController.TYPE_PLACE_CATEGORY)
                 {
                     placePoiItems[i].setItemName(MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(i).getPlaceName());
@@ -775,10 +775,10 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
                 break;
 
             case MapController.TYPE_PLACE_KEYWORD:
-                binding.selectedPlaceAddressTextview.setText(MapActivity.searchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().get(selectedItemPosition).getAddressName());
-                binding.selectedPlaceCategoryTextview.setText(MapActivity.searchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().get(selectedItemPosition).getCategoryName());
-                binding.selectedPlaceDescriptionTextview.setText(MapActivity.searchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().get(selectedItemPosition).getCategoryGroupName());
-                binding.selectedPlaceNameTextview.setText(MapActivity.searchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().get(selectedItemPosition).getPlaceName());
+                binding.selectedPlaceAddressTextview.setText(MapActivity.searchResult.getPlaceResponseResponse().getPlaceDocuments().get(selectedItemPosition).getAddressName());
+                binding.selectedPlaceCategoryTextview.setText(MapActivity.searchResult.getPlaceResponseResponse().getPlaceDocuments().get(selectedItemPosition).getCategoryName());
+                binding.selectedPlaceDescriptionTextview.setText(MapActivity.searchResult.getPlaceResponseResponse().getPlaceDocuments().get(selectedItemPosition).getCategoryGroupName());
+                binding.selectedPlaceNameTextview.setText(MapActivity.searchResult.getPlaceResponseResponse().getPlaceDocuments().get(selectedItemPosition).getPlaceName());
                 break;
 
             case MapController.TYPE_PLACE_CATEGORY:
@@ -814,7 +814,7 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
                 itemPositionMax = MapActivity.searchResult.getAddressResponse().getAddressResponseDocumentsList().size() - 1;
                 break;
             case MapController.TYPE_PLACE_KEYWORD:
-                itemPositionMax = MapActivity.searchResult.getPlaceKeywordResponse().getPlaceKeywordDocuments().size() - 1;
+                itemPositionMax = MapActivity.searchResult.getPlaceResponseResponse().getPlaceDocuments().size() - 1;
                 break;
             case MapController.TYPE_PLACE_CATEGORY:
                 itemPositionMax = MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().size() - 1;
