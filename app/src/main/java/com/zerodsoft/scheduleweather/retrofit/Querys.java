@@ -4,7 +4,6 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.Addr
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.coordtoaddressresponse.CoordToAddress;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.midlandfcstresponse.MidLandFcstRoot;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.midtaresponse.MidTaRoot;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.placecategoryresponse.PlaceCategory;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.ultrasrtfcstresponse.UltraSrtFcstRoot;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.ultrasrtncstresponse.UltraSrtNcstRoot;
@@ -30,7 +29,7 @@ public interface Querys
 
     @Headers({"Authorization: " + HttpCommunicationClient.KAKAO_APP_KEY})
     @GET("search/category.json")
-    Call<PlaceCategory> getPlaceCategory(@QueryMap(encoded = true) Map<String, String> queryMap);
+    Call<PlaceResponse> getPlaceCategory(@QueryMap(encoded = true) Map<String, String> queryMap);
 
     @Headers({"Authorization: " + HttpCommunicationClient.KAKAO_APP_KEY})
     @GET("geo/coord2address.json")

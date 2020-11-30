@@ -32,18 +32,22 @@
                 android:layout_alignParentRight="true"
                 android:layout_centerVertical="true"
                 android:layout_marginRight="@dimen/info_around_location_margin"
-                android:background="@drawable/text_button"
+                android:background="?attr/selectableItemBackground"
                 android:minWidth="64dp"
                 android:text="@string/show_more"
                 android:textColor="@color/colorPrimary" />
 
         </RelativeLayout>
 
-        <androidx.recyclerview.widget.RecyclerView
+
+        <com.zerodsoft.scheduleweather.ImprovedScrollingRecyclerView
             android:id="@+id/map_category_itemsview"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal" />
+            android:nestedScrollingEnabled="false"
+            android:orientation="horizontal"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp" />
 
     </LinearLayout>
 

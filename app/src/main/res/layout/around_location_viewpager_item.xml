@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -20,10 +21,10 @@
             android:textSize="21sp"
             android:textStyle="bold" />
 
-        <ScrollView
-            android:id="@+id/map_category_scrollview"
+        <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="match_parent"
+            android:overScrollMode="never">
 
             <LinearLayout
                 android:id="@+id/map_category_fragment_container"
@@ -31,7 +32,7 @@
                 android:layout_height="match_parent"
                 android:orientation="vertical" />
 
-        </ScrollView>
+        </androidx.core.widget.NestedScrollView>
     </LinearLayout>
 
 </FrameLayout>

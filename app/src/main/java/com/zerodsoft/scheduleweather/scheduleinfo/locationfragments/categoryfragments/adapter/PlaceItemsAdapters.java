@@ -1,10 +1,13 @@
-package com.zerodsoft.scheduleweather.scheduleinfo.locationfragments.categoryfragments.adapters;
+package com.zerodsoft.scheduleweather.scheduleinfo.locationfragments.categoryfragments.adapter;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.paging.AsyncPagedListDiffer;
 import androidx.paging.PagedListAdapter;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
@@ -12,18 +15,21 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
 
-public class AroundLocationRecyclerViewAdapter extends PagedListAdapter<PlaceDocuments, AroundLocationRecyclerViewAdapter.ItemViewHolder>
+public class PlaceItemsAdapters extends PagedListAdapter<PlaceDocuments, PlaceItemsAdapters.ItemViewHolder>
 {
     class ItemViewHolder extends RecyclerView.ViewHolder
     {
+        private TextView placeNameTextView;
+
         public ItemViewHolder(View view)
         {
             super(view);
+            placeNameTextView = (TextView) view.findViewById(R.id.place_item_name);
         }
 
-        public void bind()
+        public void bind(PlaceDocuments item)
         {
-
+            placeNameTextView.setText(item.getPlaceName());
         }
     }
 
@@ -42,7 +48,7 @@ public class AroundLocationRecyclerViewAdapter extends PagedListAdapter<PlaceDoc
         }
     };
 
-    public AroundLocationRecyclerViewAdapter()
+    public PlaceItemsAdapters()
     {
         super(ITEM_CALLBACK);
     }
@@ -57,8 +63,7 @@ public class AroundLocationRecyclerViewAdapter extends PagedListAdapter<PlaceDoc
     @Override
     public void onBindViewHolder(@NonNull ItemViewHolder holder, int position)
     {
-        PlaceDocuments item = getItem(position);
-        holder.bind();
+        holder.bind(getItem(position));
     }
 
 }

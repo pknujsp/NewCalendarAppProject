@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.recyclerviewadapter;
+package com.zerodsoft.scheduleweather.activity.mapactivity.Fragment.recyclerviewadapter;
 
 import android.app.Activity;
 import android.content.Context;
@@ -17,7 +17,6 @@ import com.zerodsoft.scheduleweather.activity.mapactivity.Fragment.MapController
 import com.zerodsoft.scheduleweather.activity.mapactivity.MapActivity;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponseDocuments;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.placecategoryresponse.PlaceCategoryDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.AddressDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
@@ -30,7 +29,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
 {
     private List<AddressResponseDocuments> addressList = null;
     private List<PlaceDocuments> placeKeywordList = null;
-    private List<PlaceCategoryDocuments> placeCategoryList = null;
+   // private List<PlaceCategoryDocuments> placeCategoryList = null;
 
     private int dataType;
     private Context context;
@@ -83,12 +82,15 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
 
     public void setPlaceCategoryList()
     {
+        /*
         placeCategoryList = MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments();
         dataType = MapController.TYPE_PLACE_CATEGORY;
         totalCount = MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryMeta().getTotalCount();
         pageableCount = MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryMeta().getPageableCount();
         isEnd = MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryMeta().isEnd();
         currentPage = 1;
+
+         */
     }
 
     public void addAddressData()
@@ -108,8 +110,8 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
     public void addPlaceCategoryData()
     {
         currentPage++;
-        isEnd = MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryMeta().isEnd();
-        placeCategoryList = MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments();
+      //  isEnd = MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryMeta().isEnd();
+       // placeCategoryList = MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments();
     }
 
     public int getDataType()
@@ -184,7 +186,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
                 size = addressList.size();
                 break;
             case MapController.TYPE_PLACE_CATEGORY:
-                size = placeCategoryList.size();
+              //  size = placeCategoryList.size();
                 break;
             case MapController.TYPE_PLACE_KEYWORD:
                 size = placeKeywordList.size();
@@ -329,6 +331,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
         {
             this.position = position;
             placeListNumTextView.setText(Integer.toString(position + 1));
+            /*
             placeNameTextView.setText(placeCategoryList.get(position).getPlaceName());
             placeCategoryTextView.setText(placeCategoryList.get(position).getCategoryName());
             placeAddressTextView.setText(placeCategoryList.get(position).getAddressName());
@@ -338,6 +341,8 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
             placeId = placeCategoryList.get(position).getId();
             latitude = placeCategoryList.get(position).getY();
             longitude = placeCategoryList.get(position).getX();
+
+             */
         }
 
         private final View.OnClickListener choiceButtonListener = new View.OnClickListener()
@@ -399,6 +404,7 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
                         break;
 
                     case MapController.TYPE_PLACE_CATEGORY:
+                        /*
                         PlaceCategoryDocuments placeCategoryDocument = placeCategoryList.get(position);
                         lon = Double.valueOf(placeCategoryDocument.getX());
                         lat = Double.valueOf(placeCategoryDocument.getY());
@@ -420,6 +426,8 @@ public class SearchResultViewAdapter extends RecyclerView.Adapter<SearchResultVi
                         {
                             e.printStackTrace();
                         }
+
+                         */
                         break;
                 }
                 onChoicedListener.onChoicedLocation(bundle);

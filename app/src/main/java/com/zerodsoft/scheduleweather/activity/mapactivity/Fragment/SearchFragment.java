@@ -17,7 +17,7 @@ import android.view.ViewGroup;
 
 import com.zerodsoft.scheduleweather.activity.mapactivity.MapActivity;
 import com.zerodsoft.scheduleweather.databinding.FragmentSearchBinding;
-import com.zerodsoft.scheduleweather.recyclerviewadapter.SearchCategoryViewAdapter;
+import com.zerodsoft.scheduleweather.activity.mapactivity.Fragment.recyclerviewadapter.SearchCategoryViewAdapter;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 
 import net.daum.mf.map.api.MapPoint;

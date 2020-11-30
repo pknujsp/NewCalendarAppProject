@@ -30,4 +30,7 @@
     <dimen name="info_around_location_margin">8dp</dimen>
 
     <dimen name="info_around_location_item_margin">12dp</dimen>
+
+    <dimen name="map_item_cardview_width">90dp</dimen>
+    <dimen name="map_item_cardview_height">80dp</dimen>
 </resources>

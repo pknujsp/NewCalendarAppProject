@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.recyclerviewadapter;
+package com.zerodsoft.scheduleweather.activity.mapactivity.Fragment.recyclerviewadapter;
 
 import android.app.Activity;
 import android.util.SparseArray;
@@ -243,7 +243,7 @@ public class SearchResultViewPagerAdapter extends RecyclerView.Adapter<SearchRes
             } else if (type == MapController.TYPE_PLACE_CATEGORY)
             {
                 dataTypeTextView.setText(activity.getString(R.string.result_place));
-                resultNum.setText(Integer.toString(MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryMeta().getTotalCount()));
+               // resultNum.setText(Integer.toString(MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryMeta().getTotalCount()));
                 adapter.setPlaceCategoryList();
             }
             recyclerView.setAdapter(adapter);

@@ -13,7 +13,6 @@ import com.zerodsoft.scheduleweather.retrofit.Querys;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.LocationSearchResult;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.coordtoaddressresponse.CoordToAddress;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.placecategoryresponse.PlaceCategory;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceResponse;
 
 import java.util.Date;
@@ -85,7 +84,6 @@ public class MapController
                         locationSearchResult.setPlaceResponseResponse(bundle.getParcelable("response"));
                         break;
                     case TYPE_PLACE_CATEGORY:
-                        locationSearchResult.setPlaceCategoryResponse(bundle.getParcelable("response"));
                         break;
                     case TYPE_COORD_TO_ADDRESS:
                         locationSearchResult.setCoordToAddressResponse(bundle.getParcelable("response"));
@@ -195,20 +193,20 @@ public class MapController
     {
         Querys querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.KAKAO);
         Map<String, String> queryMap = MapActivity.parameters.getParameterMap();
-        Call<PlaceCategory> call = querys.getPlaceCategory(queryMap);
+        Call<PlaceResponse> call = querys.getPlaceCategory(queryMap);
 
-        call.enqueue(new Callback<PlaceCategory>()
+        call.enqueue(new Callback<PlaceResponse>()
         {
             @Override
-            public void onResponse(Call<PlaceCategory> call, Response<PlaceCategory> response)
+            public void onResponse(Call<PlaceResponse> call, Response<PlaceResponse> response)
             {
-                PlaceCategory placeCategoryResponse = response.body();
+                PlaceResponse placeCategoryResponse = response.body();
 
                 Message message = handler.obtainMessage();
                 message.what = TYPE_PLACE_CATEGORY;
                 Bundle bundle = new Bundle();
 
-                if (placeCategoryResponse.getPlaceCategoryDocuments().isEmpty())
+                if (placeCategoryResponse.getPlaceDocuments().isEmpty())
                 {
                     bundle.putBoolean("isEmpty", true);
                 } else
@@ -223,7 +221,7 @@ public class MapController
             }
 
             @Override
-            public void onFailure(Call<PlaceCategory> call, Throwable t)
+            public void onFailure(Call<PlaceResponse> call, Throwable t)
             {
             }
         });

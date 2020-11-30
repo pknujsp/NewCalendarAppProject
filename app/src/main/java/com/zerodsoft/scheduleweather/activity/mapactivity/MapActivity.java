@@ -16,14 +16,12 @@ import com.zerodsoft.scheduleweather.activity.mapactivity.Fragment.SearchFragmen
 import com.zerodsoft.scheduleweather.activity.mapactivity.Fragment.SearchResultController;
 import com.zerodsoft.scheduleweather.activity.mapactivity.Fragment.SearchResultFragment;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.recyclerviewadapter.SearchResultViewAdapter;
-import com.zerodsoft.scheduleweather.recyclerviewadapter.SearchResultViewPagerAdapter;
+import com.zerodsoft.scheduleweather.activity.mapactivity.Fragment.recyclerviewadapter.SearchResultViewAdapter;
+import com.zerodsoft.scheduleweather.activity.mapactivity.Fragment.recyclerviewadapter.SearchResultViewPagerAdapter;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.LocationSearchResult;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponseDocuments;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.placecategoryresponse.PlaceCategory;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.placecategoryresponse.PlaceCategoryDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
 
@@ -83,7 +81,8 @@ public class MapActivity extends AppCompatActivity implements MapController.OnDo
                     addressResponse.setAddressResponseMeta(downloadedResult.getAddressResponse().getAddressResponseMeta());
                     break;
                 case MapController.TYPE_PLACE_CATEGORY:
-                    PlaceCategory categoryResponse = searchResult.getPlaceCategoryResponse();
+                    /*
+                    PlaceResponse categoryResponse = searchResult.getPlaceCategoryResponse();
                     List<PlaceCategoryDocuments> keywordExtraDocuments = downloadedResult.getPlaceCategoryResponse().getPlaceCategoryDocuments();
                     List<PlaceCategoryDocuments> keywordExistingDocuments = categoryResponse.getPlaceCategoryDocuments();
 
@@ -93,6 +92,7 @@ public class MapActivity extends AppCompatActivity implements MapController.OnDo
                     }
 
                     categoryResponse.setPlaceCategoryMeta(downloadedResult.getPlaceCategoryResponse().getPlaceCategoryMeta());
+                    */
                     break;
                 case MapController.TYPE_PLACE_KEYWORD:
                     PlaceResponse keywordResponse = searchResult.getPlaceResponseResponse();

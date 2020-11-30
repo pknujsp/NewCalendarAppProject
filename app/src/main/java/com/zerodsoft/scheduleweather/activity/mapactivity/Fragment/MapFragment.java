@@ -24,7 +24,6 @@ import com.zerodsoft.scheduleweather.activity.mapactivity.MapActivity;
 import com.zerodsoft.scheduleweather.databinding.FragmentMapBinding;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponseDocuments;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.placecategoryresponse.PlaceCategoryDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.AddressDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
@@ -260,6 +259,7 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
                         break;
 
                     case MapController.TYPE_PLACE_CATEGORY:
+                        /*
                         PlaceCategoryDocuments placeCategoryDocument = MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(selectedItemPosition);
                         lon = Double.valueOf(placeCategoryDocument.getX());
                         lat = Double.valueOf(placeCategoryDocument.getY());
@@ -281,6 +281,8 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
                         {
                             e.printStackTrace();
                         }
+
+                         */
                         break;
                 }
                 onChoicedListener.onChoicedLocation(bundle);
@@ -637,7 +639,8 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
             } else if (dataType == MapController.TYPE_PLACE_CATEGORY)
             {
                 placeDataType = dataType;
-                placeSize = MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().size();
+                //
+                // placeSize = MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().size();
             } else if (dataType == MapController.TYPE_ADDRESS)
             {
                 addressDataType = dataType;
@@ -665,9 +668,12 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
                             MapActivity.searchResult.getPlaceResponseResponse().getPlaceDocuments().get(i).getX());
                 } else if (placeDataType == MapController.TYPE_PLACE_CATEGORY)
                 {
+                    /*
                     placePoiItems[i].setItemName(MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(i).getPlaceName());
                     mapPoint = MapPoint.mapPointWithGeoCoord(Double.valueOf(MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(i).getY()),
                             Double.valueOf(MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(i).getX()));
+
+                     */
                 }
 
                 placePoiItems[i].setTag(i);
@@ -782,12 +788,15 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
                 break;
 
             case MapController.TYPE_PLACE_CATEGORY:
+                /*
                 binding.selectedPlaceAddressTextview.setText(MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(selectedItemPosition).getAddressName());
                 binding.selectedPlaceCategoryTextview.setText(MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(selectedItemPosition).getCategoryName());
                 binding.selectedPlaceDescriptionTextview.setText(MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(selectedItemPosition).getCategoryGroupName());
                 binding.selectedPlaceNameTextview.setText(MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(selectedItemPosition).getPlaceName());
                 break;
 
+
+                 */
             case MapController.TYPE_COORD_TO_ADDRESS:
                 if (MapActivity.searchResult.getCoordToAddressResponse().getCoordToAddressDocuments().get(selectedItemPosition).getCoordToAddressAddress() != null)
                 {
@@ -817,7 +826,7 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
                 itemPositionMax = MapActivity.searchResult.getPlaceResponseResponse().getPlaceDocuments().size() - 1;
                 break;
             case MapController.TYPE_PLACE_CATEGORY:
-                itemPositionMax = MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().size() - 1;
+               // itemPositionMax = MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().size() - 1;
                 break;
             case MapController.TYPE_COORD_TO_ADDRESS:
                 itemPositionMax = MapActivity.searchResult.getCoordToAddressResponse().getCoordToAddressDocuments().size() - 1;

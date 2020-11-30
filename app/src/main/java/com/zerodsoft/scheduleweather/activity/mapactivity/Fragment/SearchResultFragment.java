@@ -26,7 +26,7 @@ import android.widget.TextView;
 import com.zerodsoft.scheduleweather.activity.mapactivity.MapActivity;
 import com.zerodsoft.scheduleweather.etc.ViewPagerIndicator;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.recyclerviewadapter.SearchResultViewPagerAdapter;
+import com.zerodsoft.scheduleweather.activity.mapactivity.Fragment.recyclerviewadapter.SearchResultViewPagerAdapter;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 
 import net.daum.mf.map.api.MapPoint;

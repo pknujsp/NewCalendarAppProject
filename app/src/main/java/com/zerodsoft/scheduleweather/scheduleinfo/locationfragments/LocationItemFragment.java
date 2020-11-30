@@ -4,9 +4,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -17,7 +15,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.scheduleinfo.locationfragments.categoryfragments.MapCategoryFragment;
+import com.zerodsoft.scheduleweather.scheduleinfo.locationfragments.categoryfragments.PlaceItemsFragment;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -60,17 +58,17 @@ public class LocationItemFragment extends Fragment implements LocationInfoGetter
         categoryNames.add(getString(R.string.atm));
         categoryNames.add(getString(R.string.convenience_store));
 
-        List<MapCategoryFragment> categoryFragments = new LinkedList<>();
+        List<PlaceItemsFragment> categoryFragments = new LinkedList<>();
         for (String categoryName : categoryNames)
         {
-            categoryFragments.add(new MapCategoryFragment(categoryName, this));
+            categoryFragments.add(new PlaceItemsFragment(categoryName, this));
         }
 
         FragmentManager fragmentManager = getParentFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
         // fragment container view를 추가하고 프래그먼트를 추가
-        for (MapCategoryFragment fragment : categoryFragments)
+        for (PlaceItemsFragment fragment : categoryFragments)
         {
             FragmentContainerView containerView = new FragmentContainerView(getContext());
             containerView.setId(View.generateViewId());
