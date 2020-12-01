@@ -31,15 +31,6 @@ public class ImprovedScrollingRecyclerView extends RecyclerView
                                          int defStyleAttr)
     {
         super(context, attrs, defStyleAttr);
-        addOnScrollListener(new OnScrollListener()
-        {
-            @Override
-            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState)
-            {
-                super.onScrollStateChanged(recyclerView, newState);
-                scrolling = newState != RecyclerView.SCROLL_STATE_IDLE;
-            }
-        });
     }
 
     @Override
@@ -51,32 +42,24 @@ public class ImprovedScrollingRecyclerView extends RecyclerView
             return super.onInterceptTouchEvent(e);
         }
 
-        allowScroll = true;
-
-        switch (e.getAction())
+        switch (e.getActionMasked())
         {
             case MotionEvent.ACTION_DOWN:
-            {
                 lastX = e.getX();
                 lastY = e.getY();
                 Log.e("IMRPOVED_RECYCLER_VIEW", "ACTION DOWN");
+                allowScroll = false;
                 break;
-            }
+
             case MotionEvent.ACTION_MOVE:
-            {
-                // We're moving, so check if we're trying
-                // to scroll vertically or horizontally so we don't intercept the wrong event.
-                float currentX = e.getX();
-                float currentY = e.getY();
-                float dx = Math.abs(currentX - lastX);
-                float dy = Math.abs(currentY - lastY);
+                float dx = Math.abs(e.getX() - lastX);
+                float dy = Math.abs(e.getY() - lastY);
                 allowScroll = dy > dx ? layoutManager.canScrollVertically() : layoutManager.canScrollHorizontally();
                 Log.e("IMRPOVED_RECYCLER_VIEW", "ACTION_MOVE");
                 break;
-            }
         }
 
-        return super.onInterceptTouchEvent(e);
+        return allowScroll;
     }
 
 }
