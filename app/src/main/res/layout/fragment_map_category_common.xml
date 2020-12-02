@@ -1,54 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginTop="@dimen/info_around_location_item_margin"
-    android:layout_marginBottom="@dimen/info_around_location_item_margin">
+    android:layout_marginBottom="@dimen/info_around_location_item_margin"
+    android:orientation="vertical">
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="horizontal">
 
-        <RelativeLayout
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/map_category_name"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="@dimen/info_around_location_margin"
+            android:textColor="@android:color/black"
+            android:textSize="20sp" />
 
-            <TextView
-                android:id="@+id/map_category_name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentLeft="true"
-                android:layout_centerVertical="true"
-                android:layout_marginLeft="@dimen/info_around_location_margin"
-                android:textColor="@android:color/black"
-                android:textSize="20sp" />
+        <Button
+            android:id="@+id/map_category_more"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="@dimen/info_around_location_margin"
+            android:background="?attr/selectableItemBackground"
+            android:minWidth="64dp"
+            android:text="@string/show_more"
+            android:textColor="@color/colorPrimary" />
 
-            <Button
-                android:id="@+id/map_category_more"
-                android:layout_width="wrap_content"
-                android:layout_height="36dp"
-                android:layout_alignParentRight="true"
-                android:layout_centerVertical="true"
-                android:layout_marginRight="@dimen/info_around_location_margin"
-                android:background="?attr/selectableItemBackground"
-                android:minWidth="64dp"
-                android:text="@string/show_more"
-                android:textColor="@color/colorPrimary" />
-
-        </RelativeLayout>
+    </RelativeLayout>
 
 
-        <com.zerodsoft.scheduleweather.ImprovedScrollingRecyclerView
-            android:id="@+id/map_category_itemsview"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:nestedScrollingEnabled="false"
-            android:orientation="horizontal"
-            android:paddingTop="4dp"
-            android:paddingBottom="4dp" />
+    <com.zerodsoft.scheduleweather.ImprovedScrollingRecyclerView
+        android:id="@+id/map_category_itemsview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:nestedScrollingEnabled="false"
+        android:orientation="horizontal"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp" />
 
-    </LinearLayout>
-
-</FrameLayout>
+</LinearLayout>
