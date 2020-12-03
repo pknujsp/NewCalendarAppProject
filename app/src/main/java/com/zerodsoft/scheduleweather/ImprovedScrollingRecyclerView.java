@@ -33,58 +33,92 @@ public class ImprovedScrollingRecyclerView extends RecyclerView
                                          int defStyleAttr)
     {
         super(context, attrs, defStyleAttr);
-        addOnScrollListener(new OnScrollListener()
-        {
-            @Override
-            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState)
-            {
-                super.onScrollStateChanged(recyclerView, newState);
-                isScrolling = newState != SCROLL_STATE_IDLE;
-                Log.e(TAG, "onScrollStateChanged");
-            }
-
-        });
-        setOnTouchListener(new OnTouchListener()
-        {
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent)
-            {
-                view.getParent().requestDisallowInterceptTouchEvent(true);
-                return false;
-            }
-        });
+        ImprovedTouchListener listener = new ImprovedTouchListener();
+        addOnScrollListener(listener);
+        addOnItemTouchListener(listener);
     }
 
-    @Override
-    public boolean onInterceptTouchEvent(MotionEvent e)
+    class ImprovedTouchListener extends RecyclerView.OnScrollListener implements OnItemTouchListener
     {
-        /*
-        switch (e.getActionMasked())
+        private int scrollState = RecyclerView.SCROLL_STATE_IDLE;
+        private int scrollPointerId = -1;
+        private int initialTouchX = 0;
+        private int initialTouchY = 0;
+        private float dx = 0;
+        private float dy = 0;
+
+        @Override
+        public boolean onInterceptTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e)
         {
-            case MotionEvent.ACTION_DOWN:
+            switch (e.getActionMasked())
             {
-                lastX = e.getX();
-                lastY = e.getY();
+                case MotionEvent.ACTION_DOWN:
+                {
+                    scrollPointerId = e.getPointerId(0);
+                    initialTouchX = (int) (e.getX() + 0.5f);
+                    initialTouchY = (int) (e.getY() + 0.5f);
+                }
+                break;
+                case MotionEvent.ACTION_POINTER_DOWN:
+                {
+                    int actionIndex = e.getActionIndex();
+                    scrollPointerId = e.getPointerId(actionIndex);
+                    initialTouchX = (int) (e.getX(actionIndex) + 0.5f);
+                    initialTouchY = (int) (e.getY(actionIndex) + 0.5f);
+                }
+                break;
+                case MotionEvent.ACTION_MOVE:
+                {
+                    int index = e.findPointerIndex(scrollPointerId);
+                    if (index >= 0 && scrollState != RecyclerView.SCROLL_STATE_DRAGGING)
+                    {
+                        int x = (int) (e.getX(index) + 0.5f);
+                        int y = (int) (e.getY(index) + 0.5f);
+                        dx = x - initialTouchX;
+                        dy = y - initialTouchY;
+                    }
+                    break;
+                }
             }
-            break;
-            case MotionEvent.ACTION_UP:
-            {
-                float currentX = e.getX();
-                float currentY = e.getY();
-                allowScroll = (!(Math.abs(currentX - lastX) <= 30)) || (!(Math.abs(currentY - lastY) <= 30));
-            }
-            break;
-            case MotionEvent.ACTION_MOVE:
-            {
-
-            }
-            break;
+            return false;
         }
-        return allowScroll;
 
-         */
+        @Override
+        public void onTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e)
+        {
 
-        return super.onInterceptTouchEvent(e);
+        }
+
+        @Override
+        public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept)
+        {
+
+        }
+
+        @Override
+        public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState)
+        {
+            int oldState = scrollState;
+            scrollState = newState;
+
+            if (oldState == RecyclerView.SCROLL_STATE_IDLE && newState == RecyclerView.SCROLL_STATE_DRAGGING)
+            {
+                LayoutManager layoutManager = recyclerView.getLayoutManager();
+                if (layoutManager != null)
+                {
+                    boolean canScrollHorizontally = layoutManager.canScrollHorizontally();
+                    boolean canScrollVertically = layoutManager.canScrollVertically();
+
+                    if (canScrollHorizontally != canScrollVertically)
+                    {
+                        if ((canScrollHorizontally && Math.abs(dy) > Math.abs(dx))
+                                || (canScrollVertically && Math.abs(dx) > Math.abs(dy)))
+                        {
+                            recyclerView.stopScroll();
+                        }
+                    }
+                }
+            }
+        }
     }
-
 }
