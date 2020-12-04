@@ -5,29 +5,18 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentContainerView;
 import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.os.Bundle;
 import android.view.MenuItem;
-import android.view.View;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.tabs.TabLayout;
-import com.google.android.material.tabs.TabLayoutMediator;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.room.dto.AddressDTO;
-import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
-import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
 import com.zerodsoft.scheduleweather.viewmodel.ScheduleData;
 import com.zerodsoft.scheduleweather.viewmodel.ScheduleViewModel;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 public class ScheduleInfoActivity extends AppCompatActivity
 {
@@ -39,7 +28,7 @@ public class ScheduleInfoActivity extends AppCompatActivity
 
     private ScheduleInfoFragment scheduleInfoFragment;
     private ScheduleWeatherFragment scheduleWeatherFragment;
-    private InfoAroundLocationFragment infoAroundLocationFragment;
+    private PlacesAroundLocationFragment placesAroundLocationFragment;
 
     private FragmentManager fragmentManager;
 
@@ -71,10 +60,10 @@ public class ScheduleInfoActivity extends AppCompatActivity
             {
                 scheduleInfoFragment = new ScheduleInfoFragment(scheduleData.getSchedule(), scheduleData.getAddresses(), scheduleData.getPlaces());
                 scheduleWeatherFragment = new ScheduleWeatherFragment(scheduleData.getAddresses(), scheduleData.getPlaces());
-                infoAroundLocationFragment = new InfoAroundLocationFragment(scheduleData.getAddresses(), scheduleData.getPlaces());
+                placesAroundLocationFragment = new PlacesAroundLocationFragment(scheduleData.getAddresses(), scheduleData.getPlaces());
                 fragmentManager.beginTransaction().add(R.id.schedule_fragment_container, scheduleInfoFragment, TAG_INFO).hide(scheduleInfoFragment)
-                        .add(R.id.schedule_fragment_container, scheduleWeatherFragment, TAG_WEATHER).hide(infoAroundLocationFragment)
-                        .add(R.id.schedule_fragment_container, infoAroundLocationFragment, TAG_LOCATION).hide(scheduleWeatherFragment)
+                        .add(R.id.schedule_fragment_container, scheduleWeatherFragment, TAG_WEATHER).hide(placesAroundLocationFragment)
+                        .add(R.id.schedule_fragment_container, placesAroundLocationFragment, TAG_LOCATION).hide(scheduleWeatherFragment)
                         .show(scheduleInfoFragment)
                         .commit();
                 currentFragment = scheduleInfoFragment;
@@ -130,7 +119,7 @@ public class ScheduleInfoActivity extends AppCompatActivity
                     newFragment = scheduleWeatherFragment;
                     break;
                 case R.id.schedule_location:
-                    newFragment = infoAroundLocationFragment;
+                    newFragment = placesAroundLocationFragment;
                     break;
             }
 

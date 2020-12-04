@@ -1,15 +1,9 @@
-package com.zerodsoft.scheduleweather.scheduleinfo.locationfragments.categoryfragments.model;
-
-import android.os.Bundle;
-import android.os.Message;
+package com.zerodsoft.scheduleweather.scheduleinfo.placefragments.categoryview.model;
 
 import androidx.annotation.NonNull;
-import androidx.paging.PageKeyedDataSource;
 import androidx.paging.PositionalDataSource;
 
-import com.zerodsoft.scheduleweather.activity.mapactivity.MapActivity;
 import com.zerodsoft.scheduleweather.retrofit.HttpCommunicationClient;
-import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategory;
 import com.zerodsoft.scheduleweather.retrofit.Querys;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;

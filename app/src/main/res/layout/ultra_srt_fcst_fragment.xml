@@ -13,7 +13,8 @@
 
     <HorizontalScrollView
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:nestedScrollingEnabled="false">
 
         <TableLayout
             android:id="@+id/ultra_srt_fcst_table"

@@ -4,9 +4,13 @@
     android:id="@+id/item_cardview"
     android:layout_width="@dimen/map_item_cardview_width"
     android:layout_height="wrap_content"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground"
     android:minHeight="@dimen/map_item_cardview_height"
-    app:cardElevation="0dp"
-    app:cardUseCompatPadding="false">
+    app:cardBackgroundColor="@color/white"
+    app:cardCornerRadius="@dimen/place_item_cardview_corner_radius"
+    app:cardPreventCornerOverlap="true">
 
     <LinearLayout
         android:id="@+id/map_place_item_rows"

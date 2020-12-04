@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.scheduleinfo.locationfragments.categoryfragments.viewmodel;
+package com.zerodsoft.scheduleweather.scheduleinfo.placefragments.categoryview.viewmodel;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -8,20 +8,20 @@ import androidx.paging.PagedList;
 
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
-import com.zerodsoft.scheduleweather.scheduleinfo.locationfragments.categoryfragments.model.PlaceItemDataSource;
-import com.zerodsoft.scheduleweather.scheduleinfo.locationfragments.categoryfragments.model.PlaceItemDataSourceFactory;
+import com.zerodsoft.scheduleweather.scheduleinfo.placefragments.categoryview.model.PlaceItemDataSource;
+import com.zerodsoft.scheduleweather.scheduleinfo.placefragments.categoryview.model.PlaceItemDataSourceFactory;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-public class AroundLocationViewModel extends ViewModel
+public class PlacesAroundLocationViewModel extends ViewModel
 {
     private LiveData<PagedList<PlaceDocuments>> pagedListLiveData;
     private PlaceItemDataSourceFactory dataSourceFactory;
     private MutableLiveData<PlaceItemDataSource> dataSourceMutableLiveData;
     private Executor executor;
 
-    public AroundLocationViewModel()
+    public PlacesAroundLocationViewModel()
     {
     }
 

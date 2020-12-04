@@ -12,11 +12,12 @@
     <color name="toolbar_text">#8f000000</color>
     <color name="accent">#2789e4</color>
     <color name="text_color">@android:color/black</color>
-
+    <color name="transparent">#00FFFFFF</color>
     <color name="black_high_emphasis">#DD000000</color>
     <color name="black_medium_emphasis">#99000000</color>
     <color name="light_blue_400">#FF29B6F6</color>
     <color name="light_blue_600">#FF039BE5</color>
     <color name="gray_400">#FFBDBDBD</color>
     <color name="gray_600">#FF757575</color>
+    <color name="white">#FFFFFF</color>
 </resources>

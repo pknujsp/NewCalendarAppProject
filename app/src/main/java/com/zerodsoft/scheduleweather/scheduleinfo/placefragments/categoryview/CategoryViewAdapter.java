@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.scheduleinfo.locationfragments;
+package com.zerodsoft.scheduleweather.scheduleinfo.placefragments.categoryview;
 
 import android.content.Context;
 import android.util.TypedValue;
@@ -16,8 +16,10 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.RecyclerViewItemDecoration;
 import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryCode;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
-import com.zerodsoft.scheduleweather.scheduleinfo.locationfragments.categoryfragments.adapter.PlaceItemsAdapters;
-import com.zerodsoft.scheduleweather.scheduleinfo.locationfragments.categoryfragments.viewmodel.AroundLocationViewModel;
+import com.zerodsoft.scheduleweather.scheduleinfo.placefragments.LocationInfo;
+import com.zerodsoft.scheduleweather.scheduleinfo.placefragments.PlacesFragment;
+import com.zerodsoft.scheduleweather.scheduleinfo.placefragments.categoryview.adapter.PlaceItemsAdapters;
+import com.zerodsoft.scheduleweather.scheduleinfo.placefragments.categoryview.viewmodel.PlacesAroundLocationViewModel;
 
 import java.util.List;
 
@@ -26,9 +28,9 @@ public class CategoryViewAdapter extends RecyclerView.Adapter<CategoryViewAdapte
     private LocationInfo locationInfo;
     private Context context;
     private List<String> categories;
-    private LocationItemFragment fragment;
+    private PlacesFragment fragment;
 
-    public CategoryViewAdapter(LocationInfo locationInfo, List<String> categories, LocationItemFragment fragment)
+    public CategoryViewAdapter(LocationInfo locationInfo, List<String> categories, PlacesFragment fragment)
     {
         this.locationInfo = locationInfo;
         this.categories = categories;
@@ -58,7 +60,7 @@ public class CategoryViewAdapter extends RecyclerView.Adapter<CategoryViewAdapte
     class CategoryViewHolder extends RecyclerView.ViewHolder
     {
         private RecyclerView itemRecyclerView;
-        private AroundLocationViewModel viewModel;
+        private PlacesAroundLocationViewModel viewModel;
         private PlaceItemsAdapters adapter;
 
         public CategoryViewHolder(View view)
@@ -67,7 +69,7 @@ public class CategoryViewAdapter extends RecyclerView.Adapter<CategoryViewAdapte
             itemRecyclerView = (RecyclerView) view.findViewById(R.id.map_category_itemsview);
             itemRecyclerView.setLayoutManager(new LinearLayoutManager(view.getContext(), RecyclerView.HORIZONTAL, false));
             itemRecyclerView.addItemDecoration(new RecyclerViewItemDecoration((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, context.getResources().getDisplayMetrics())));
-            viewModel = new ViewModelProvider(fragment).get(AroundLocationViewModel.class);
+            viewModel = new ViewModelProvider(fragment).get(PlacesAroundLocationViewModel.class);
         }
 
         public void onBind(String query)

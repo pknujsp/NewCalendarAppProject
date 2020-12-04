@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.scheduleinfo.locationfragments;
+package com.zerodsoft.scheduleweather.scheduleinfo.placefragments;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -13,26 +13,27 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.scheduleinfo.placefragments.categoryview.CategoryViewAdapter;
 
 import java.util.LinkedList;
 import java.util.List;
 
-public class LocationItemFragment extends Fragment implements LocationInfoGetter
+public class PlacesFragment extends Fragment implements LocationInfoGetter
 {
     private final LocationInfo locationInfo;
     private RecyclerView categoryRecyclerView;
     private CategoryViewAdapter adapter;
 
-    public LocationItemFragment(String locationName, double latitude, double longitude)
+    public PlacesFragment(LocationInfo locationInfo)
     {
-        locationInfo = new LocationInfo(latitude, longitude, locationName);
+        this.locationInfo = locationInfo;
     }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
     {
-        return inflater.inflate(R.layout.around_location_viewpager_item, container, false);
+        return inflater.inflate(R.layout.place_categories_fragment, container, false);
     }
 
     @Override
@@ -48,7 +49,7 @@ public class LocationItemFragment extends Fragment implements LocationInfoGetter
         // 위치 이름 표시
         ((TextView) view.findViewById(R.id.location_name)).setText(locationInfo.getLocationName() + " " + getString(R.string.info_around_location));
 
-        categoryRecyclerView = (RecyclerView) view.findViewById(R.id.map_category_fragment_container);
+        categoryRecyclerView = (RecyclerView) view.findViewById(R.id.map_category_view_container);
         categoryRecyclerView.setLayoutManager(new LinearLayoutManager(view.getContext(), LinearLayoutManager.VERTICAL, false));
 
         // 표시할 정보를 가져옴

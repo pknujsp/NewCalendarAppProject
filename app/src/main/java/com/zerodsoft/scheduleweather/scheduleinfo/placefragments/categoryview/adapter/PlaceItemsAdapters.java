@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.scheduleinfo.locationfragments.categoryfragments.adapter;
+package com.zerodsoft.scheduleweather.scheduleinfo.placefragments.categoryview.adapter;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -6,8 +6,6 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.paging.AsyncPagedListDiffer;
 import androidx.paging.PagedListAdapter;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;

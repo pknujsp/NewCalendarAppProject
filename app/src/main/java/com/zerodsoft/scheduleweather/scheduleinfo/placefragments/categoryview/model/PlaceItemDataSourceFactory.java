@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.scheduleinfo.locationfragments.categoryfragments.model;
+package com.zerodsoft.scheduleweather.scheduleinfo.placefragments.categoryview.model;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.MutableLiveData;
@@ -6,7 +6,6 @@ import androidx.paging.DataSource;
 
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
-import com.zerodsoft.scheduleweather.scheduleinfo.locationfragments.categoryfragments.model.PlaceItemDataSource;
 
 public class PlaceItemDataSourceFactory extends DataSource.Factory<Integer, PlaceDocuments>
 {

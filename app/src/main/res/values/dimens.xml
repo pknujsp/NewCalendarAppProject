@@ -33,4 +33,6 @@
 
     <dimen name="map_item_cardview_width">100dp</dimen>
     <dimen name="map_item_cardview_height">90dp</dimen>
+
+    <dimen name="place_item_cardview_corner_radius">1dp</dimen>
 </resources>

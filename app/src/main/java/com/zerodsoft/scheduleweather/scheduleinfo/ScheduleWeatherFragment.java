@@ -1,14 +1,11 @@
 package com.zerodsoft.scheduleweather.scheduleinfo;
 
-import android.media.Image;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProvider;
-import androidx.viewpager2.widget.ViewPager2;
+import androidx.fragment.app.FragmentManager;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,20 +13,13 @@ import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
 import android.view.animation.RotateAnimation;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.retrofit.paremeters.MidFcstParameter;
-import com.zerodsoft.scheduleweather.retrofit.paremeters.VilageFcstParameter;
 import com.zerodsoft.scheduleweather.room.dto.AddressDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
-import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
-import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.WeatherViewPagerAdapter;
+import com.zerodsoft.scheduleweather.scheduleinfo.placefragments.LocationInfo;
+import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.WeatherItemFragment;
 import com.zerodsoft.scheduleweather.utility.WeatherDataConverter;
-import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.WeatherViewModel;
-import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.resultdata.WeatherData;
-import com.zerodsoft.scheduleweather.utility.LonLat;
-import com.zerodsoft.scheduleweather.utility.LonLatConverter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,9 +28,10 @@ import java.util.List;
 public class ScheduleWeatherFragment extends Fragment
 {
     private ImageButton refreshButton;
-    private WeatherViewPagerAdapter adapter;
-    private ViewPager2 viewPager;
+    private int fragmentContainerId;
 
+    private FragmentManager fragmentManager;
+    private List<Fragment> fragments;
     private List<PlaceDTO> places;
     private List<AddressDTO> addresses;
 
@@ -69,13 +60,25 @@ public class ScheduleWeatherFragment extends Fragment
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
-        viewPager = view.findViewById(R.id.location_items_pager);
+        fragmentContainerId = R.id.weather_fragment_container_view;
 
         if (!places.isEmpty() || !addresses.isEmpty())
         {
-            adapter = new WeatherViewPagerAdapter(getActivity(), places, addresses);
-            viewPager.setAdapter(adapter);
+            fragments = new ArrayList<>();
+
+            for (int i = 0; i < places.size(); i++)
+            {
+                fragments.add(new WeatherItemFragment(new LocationInfo(Double.parseDouble(places.get(i).getLatitude()), Double.parseDouble(places.get(i).getLongitude())
+                        , places.get(i).getAddressName())));
+            }
+            for (int i = 0; i < addresses.size(); i++)
+            {
+                fragments.add(new WeatherItemFragment(new LocationInfo(Double.parseDouble(addresses.get(i).getLatitude()), Double.parseDouble(addresses.get(i).getLongitude())
+                        , addresses.get(i).getAddressName())));
+            }
         }
+        fragmentManager = getChildFragmentManager();
+        fragmentManager.beginTransaction().add(fragmentContainerId, fragments.get(0)).commitAllowingStateLoss();
     }
 
     public void rotateRefreshButton(boolean value)

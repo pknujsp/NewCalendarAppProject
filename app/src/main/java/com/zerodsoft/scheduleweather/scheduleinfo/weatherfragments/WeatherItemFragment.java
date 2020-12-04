@@ -20,7 +20,9 @@ import com.zerodsoft.scheduleweather.retrofit.paremeters.VilageFcstParameter;
 import com.zerodsoft.scheduleweather.room.dto.AddressDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
+import com.zerodsoft.scheduleweather.scheduleinfo.placefragments.LocationInfo;
 import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.resultdata.WeatherData;
+import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.viewmodel.WeatherViewModel;
 import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.views.MidFcstFragment;
 import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.views.UltraSrtFcstFragment;
 import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.views.UltraSrtNcstFragment;
@@ -38,9 +40,7 @@ public class WeatherItemFragment extends Fragment
 {
     private WeatherData weatherData;
 
-    private final double LATITUDE;
-    private final double LONGITUDE;
-    private final String ADDRESSNAME;
+    private LocationInfo locationInfo;
 
     private UltraSrtNcstFragment ultraSrtNcstFragment;
     private UltraSrtFcstFragment ultraSrtFcstFragment;
@@ -54,11 +54,9 @@ public class WeatherItemFragment extends Fragment
 
     private List<SunSetRiseData> sunSetRiseList = new ArrayList<>();
 
-    public WeatherItemFragment(double latitude, double longitude, String addressName)
+    public WeatherItemFragment(LocationInfo locationInfo)
     {
-        LATITUDE = latitude;
-        LONGITUDE = longitude;
-        ADDRESSNAME = addressName;
+        this.locationInfo = locationInfo;
     }
 
 
@@ -88,8 +86,8 @@ public class WeatherItemFragment extends Fragment
         MidFcstParameter midLandFcstParameter = new MidFcstParameter();
         MidFcstParameter midTaParameter = new MidFcstParameter();
 
-        LonLat lonLat = LonLatConverter.convertGrid(LONGITUDE, LATITUDE);
-        lonLat.setLongitude(LONGITUDE).setLatitude(LATITUDE);
+        LonLat lonLat = LonLatConverter.convertGrid(locationInfo.getLongitude(), locationInfo.getLatitude());
+        lonLat.setLongitude(locationInfo.getLongitude()).setLatitude(locationInfo.getLatitude());
 
         viewModel = new ViewModelProvider(this).get(WeatherViewModel.class);
         viewModel.init(getContext(), lonLat);
@@ -112,7 +110,7 @@ public class WeatherItemFragment extends Fragment
                     // 점 사이의 거리 계산
                     for (int i = 0; i < locationPoints.size(); i++)
                     {
-                        distance = Math.sqrt(Math.pow(LONGITUDE - locationPoints.get(i).longitude, 2) + Math.pow(LATITUDE - locationPoints.get(i).latitude, 2));
+                        distance = Math.sqrt(Math.pow(locationInfo.getLongitude() - locationPoints.get(i).longitude, 2) + Math.pow(locationInfo.getLatitude() - locationPoints.get(i).latitude, 2));
                         if (distance < minDistance)
                         {
                             minDistance = distance;

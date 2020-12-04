@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments;
+package com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.repository;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
