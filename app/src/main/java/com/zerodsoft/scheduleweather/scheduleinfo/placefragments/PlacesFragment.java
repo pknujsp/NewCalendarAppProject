@@ -51,33 +51,6 @@ public class PlacesFragment extends Fragment implements LocationInfoGetter
 
         categoryRecyclerView = (RecyclerView) view.findViewById(R.id.map_category_view_container);
         categoryRecyclerView.setLayoutManager(new LinearLayoutManager(view.getContext(), LinearLayoutManager.VERTICAL, false));
-
-        // 표시할 정보를 가져옴
-
-        /*
-        // 정보를 표시할 프래그먼트를 각각 생성
-
-
-        List<PlaceItemsFragment> categoryFragments = new LinkedList<>();
-        for (String categoryName : categoryNames)
-        {
-            categoryFragments.add(new PlaceItemsFragment(categoryName, this));
-        }
-
-        FragmentManager fragmentManager = getParentFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-
-        // fragment container view를 추가하고 프래그먼트를 추가
-        for (PlaceItemsFragment fragment : categoryFragments)
-        {
-            FragmentContainerView containerView = new FragmentContainerView(getContext());
-            containerView.setId(View.generateViewId());
-            categoryFragmentContainerView.addView(containerView, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-            fragmentTransaction.add(containerView.getId(), fragment);
-        }
-        fragmentTransaction.commit();
-
-         */
     }
 
     @Override

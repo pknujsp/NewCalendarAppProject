@@ -14,13 +14,12 @@ import com.zerodsoft.scheduleweather.calendarfragment.DayFragment;
 import com.zerodsoft.scheduleweather.calendarfragment.MonthFragment;
 import com.zerodsoft.scheduleweather.calendarfragment.WeekFragment;
 import com.zerodsoft.scheduleweather.databinding.ActivityAppMainBinding;
-import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryCode;
+import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentManager;
 
 import java.util.Date;
 
@@ -82,7 +81,7 @@ public class AppMainActivity extends AppCompatActivity
 
     private void init()
     {
-        KakaoLocalApiCategoryCode.loadCategoryMap(getApplicationContext());
+        KakaoLocalApiCategoryUtil.loadCategoryMap(getApplicationContext());
     }
 
     public void onClickToolbar(View view)

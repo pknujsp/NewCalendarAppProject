@@ -8,7 +8,7 @@ import android.os.Message;
 
 import com.zerodsoft.scheduleweather.activity.mapactivity.MapActivity;
 import com.zerodsoft.scheduleweather.retrofit.HttpCommunicationClient;
-import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryCode;
+import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
 import com.zerodsoft.scheduleweather.retrofit.Querys;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.LocationSearchResult;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponse;
@@ -314,7 +314,7 @@ public class MapController
 
     private String getCategoryName(String searchWord)
     {
-        String categoryName = KakaoLocalApiCategoryCode.getDescription(searchWord);
+        String categoryName = KakaoLocalApiCategoryUtil.getDescription(searchWord);
 
         if (categoryName != null)
         {

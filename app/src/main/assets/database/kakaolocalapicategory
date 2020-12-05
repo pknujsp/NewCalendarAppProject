@@ -1,0 +1,94 @@
+{
+  "categories": [
+    {
+      "id": 0,
+      "name": "대형마트",
+      "description": "MT1"
+    },
+    {
+      "id": 1,
+      "name": "편의점",
+      "description": "CS2"
+    },
+    {
+      "id": 2,
+      "name": "어린이집/유치원",
+      "description": "PS3"
+    },
+    {
+      "id": 3,
+      "name": "학교",
+      "description": "SC4"
+    },
+    {
+      "id": 4,
+      "name": "학원",
+      "description": "AC5"
+    },
+    {
+      "id": 5,
+      "name": "주차장",
+      "description": "PK6"
+    },
+    {
+      "id": 6,
+      "name": "주유소/충전소",
+      "description": "OL7"
+    },
+    {
+      "id": 7,
+      "name": "지하철역",
+      "description": "SW8"
+    },
+    {
+      "id": 8,
+      "name": "은행",
+      "description": "BK9"
+    },
+    {
+      "id": 9,
+      "name": "문화시설",
+      "description": "CT1"
+    },
+    {
+      "id": 10,
+      "name": "중개업소",
+      "description": "AG2"
+    },
+    {
+      "id": 11,
+      "name": "공공기관",
+      "description": "PO3"
+    },
+    {
+      "id": 12,
+      "name": "관광명소",
+      "description": "AT4"
+    },
+    {
+      "id": 13,
+      "name": "숙박",
+      "description": "AD5"
+    },
+    {
+      "id": 14,
+      "name": "음식점",
+      "description": "FD6"
+    },
+    {
+      "id": 15,
+      "name": "카페",
+      "description": "CE7"
+    },
+    {
+      "id": 16,
+      "name": "병원",
+      "description": "HP8"
+    },
+    {
+      "id": 17,
+      "name": "약국",
+      "description": "PM9"
+    }
+  ]
+}

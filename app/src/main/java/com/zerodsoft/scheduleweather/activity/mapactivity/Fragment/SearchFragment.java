@@ -18,6 +18,7 @@ import android.view.ViewGroup;
 import com.zerodsoft.scheduleweather.activity.mapactivity.MapActivity;
 import com.zerodsoft.scheduleweather.databinding.FragmentSearchBinding;
 import com.zerodsoft.scheduleweather.activity.mapactivity.Fragment.recyclerviewadapter.SearchCategoryViewAdapter;
+import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategory;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 
 import net.daum.mf.map.api.MapPoint;
@@ -129,11 +130,11 @@ public class SearchFragment extends Fragment implements SearchCategoryViewAdapte
     }
 
     @Override
-    public void selectedCategory(String name, String description)
+    public void selectedCategory(KakaoLocalApiCategory category)
     {
         MapPoint.GeoCoordinate currentMapPoint = MapFragment.currentMapPoint.getMapPointGeoCoord();
 
-        MapActivity.parameters.setQuery(description).setX(currentMapPoint.longitude).setY(currentMapPoint.latitude)
+        MapActivity.parameters.setQuery(category.getDescription()).setX(currentMapPoint.longitude).setY(currentMapPoint.latitude)
                 .setSort(LocalApiPlaceParameter.SORT_ACCURACY).setPage("1");
         ((MapActivity) getActivity()).onFragmentChanged(SearchResultFragment.TAG, new Bundle());
     }

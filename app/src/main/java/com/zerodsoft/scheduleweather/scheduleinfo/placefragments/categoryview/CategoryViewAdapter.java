@@ -14,7 +14,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.RecyclerViewItemDecoration;
-import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryCode;
+import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategory;
+import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.scheduleinfo.placefragments.LocationInfo;
 import com.zerodsoft.scheduleweather.scheduleinfo.placefragments.PlacesFragment;
@@ -80,15 +81,7 @@ public class CategoryViewAdapter extends RecyclerView.Adapter<CategoryViewAdapte
             placeParameter.setPage(LocalApiPlaceParameter.DEFAULT_PAGE).setRadius(LocalApiPlaceParameter.DEFAULT_RADIUS)
                     .setSize(LocalApiPlaceParameter.DEFAULT_SIZE).setSort(LocalApiPlaceParameter.SORT_ACCURACY)
                     .setX(locationInfo.getLongitude()).setY(locationInfo.getLatitude());
-            String categoryDescription = KakaoLocalApiCategoryCode.getDescription(query);
-
-            if (categoryDescription == null)
-            {
-                placeParameter.setQuery(query);
-            } else
-            {
-                placeParameter.setCategoryGroupCode(categoryDescription);
-            }
+            KakaoLocalApiCategoryUtil.setSearchValue(placeParameter, query);
             adapter = new PlaceItemsAdapters();
 
             viewModel.init(placeParameter);

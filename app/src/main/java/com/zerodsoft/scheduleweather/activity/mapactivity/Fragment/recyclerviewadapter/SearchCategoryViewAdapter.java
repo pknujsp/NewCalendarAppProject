@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.zerodsoft.scheduleweather.activity.mapactivity.Fragment.SearchFragment;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategory;
-import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryCode;
+import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
 
 import java.util.List;
 
@@ -22,14 +22,14 @@ public class SearchCategoryViewAdapter extends RecyclerView.Adapter<SearchCatego
 
     public interface OnCategoryClickListener
     {
-        void selectedCategory(String name, String description);
+        void selectedCategory(KakaoLocalApiCategory category);
     }
 
     private OnCategoryClickListener onCategoryClickListener;
 
     public SearchCategoryViewAdapter(SearchFragment searchFragment)
     {
-        categoryList = KakaoLocalApiCategoryCode.toArrayList();
+        categoryList = KakaoLocalApiCategoryUtil.toArrayList();
         this.onCategoryClickListener = searchFragment;
     }
 
@@ -51,7 +51,7 @@ public class SearchCategoryViewAdapter extends RecyclerView.Adapter<SearchCatego
             @Override
             public void onClick(View view)
             {
-                onCategoryClickListener.selectedCategory(holder.getName(), holder.getDescription());
+                onCategoryClickListener.selectedCategory(holder.getCategoryInfo());
             }
         });
     }
@@ -79,14 +79,9 @@ public class SearchCategoryViewAdapter extends RecyclerView.Adapter<SearchCatego
             categoryDescriptionTextView.setText(categoryInfo.getDescription());
         }
 
-        public String getName()
+        public KakaoLocalApiCategory getCategoryInfo()
         {
-            return categoryInfo.getName();
-        }
-
-        public String getDescription()
-        {
-            return categoryDescriptionTextView.getText().toString();
+            return categoryInfo;
         }
 
         public TextView getCategoryDescriptionTextView()
