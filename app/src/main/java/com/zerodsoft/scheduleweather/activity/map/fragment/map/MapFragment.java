@@ -66,12 +66,7 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
 
     private MapReverseGeoCoder mapReverseGeoCoder;
 
-    private AddressDTO selectedAddress;
-    private PlaceDTO selectedPlace;
-
     private BottomSheetBehavior bottomSheetBehavior;
-    private int selectedItemPosition;
-    private int itemPositionMax;
 
     public static MapFragment getInstance(Activity activity)
     {
@@ -93,22 +88,12 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
 
         } else
         {
-            selectedPlace = bundle.getParcelable("selectedPlace");
-            selectedAddress = bundle.getParcelable("selectedAddress");
-
             if (selectedAddress != null)
             {
                 // 주소 검색 순서 : 좌표로 주소 변환
-                dataType = MapController.TYPE_COORD_TO_ADDRESS;
-                MapActivity.parameters.setX(selectedAddress.getLongitude()).setY(selectedAddress.getLatitude());
-                onDownloadListener.requestData(MapController.TYPE_COORD_TO_ADDRESS, TAG, false);
             } else if (selectedPlace != null)
             {
                 // 장소 검색 순서 : 장소의 위경도 내 10M 반경에서 장소 이름 검색(여러개 나올 경우 장소ID와 일치하는 장소를 선택)
-                dataType = MapController.TYPE_PLACE_KEYWORD;
-                MapActivity.parameters.setQuery(selectedPlace.getPlaceName()).setX(selectedPlace.getLongitude()).setY(selectedPlace.getLatitude())
-                        .setRadius("10").setPage("1").setSort(LocalApiPlaceParameter.SORT_ACCURACY);
-                onDownloadListener.requestData(MapController.TYPE_PLACE_KEYWORD, TAG, false);
             }
         }
     }
@@ -201,87 +186,7 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
             @Override
             public void onClick(View view)
             {
-                Bundle bundle = new Bundle();
-                bundle.putInt("dataType", dataType);
-                LonLat lonLat = null;
-                double lon, lat;
 
-                switch (dataType)
-                {
-                    case MapController.TYPE_ADDRESS:
-                        AddressResponseDocuments addressDocument = MapActivity.searchResult.getAddressResponse().getAddressResponseDocumentsList().get(selectedItemPosition);
-                        lon = addressDocument.getX();
-                        lat = addressDocument.getY();
-                        lonLat = LonLatConverter.lonLatToGridXY(lon, lat);
-
-                        AddressDTO addressDTO = new AddressDTO();
-                        addressDTO.setAddressName(addressDocument.getAddressName());
-                        addressDTO.setLongitude(Double.toString(lon));
-                        addressDTO.setLatitude(Double.toString(lat));
-                        addressDTO.setWeatherX(Integer.toString(lonLat.getX()));
-                        addressDTO.setWeatherY(Integer.toString(lonLat.getY()));
-
-                        try
-                        {
-                            bundle.putParcelable("address", (AddressDTO) addressDTO.clone());
-                        } catch (CloneNotSupportedException e)
-                        {
-                            e.printStackTrace();
-                        }
-                        break;
-
-                    case MapController.TYPE_PLACE_KEYWORD:
-                        PlaceDocuments placeKeywordDocument = MapActivity.searchResult.getPlaceResponseResponse().getPlaceDocuments().get(selectedItemPosition);
-                        lon = placeKeywordDocument.getX();
-                        lat = placeKeywordDocument.getY();
-                        lonLat = LonLatConverter.lonLatToGridXY(lon, lat);
-
-                        PlaceDTO placeDTOKeyword = new PlaceDTO();
-                        placeDTOKeyword.setPlaceId(placeKeywordDocument.getId());
-                        placeDTOKeyword.setPlaceName(placeKeywordDocument.getPlaceName());
-                        placeDTOKeyword.setLongitude(Double.toString(lon));
-                        placeDTOKeyword.setLatitude(Double.toString(lat));
-                        placeDTOKeyword.setWeatherX(Integer.toString(lonLat.getX()));
-                        placeDTOKeyword.setWeatherY(Integer.toString(lonLat.getY()));
-                        placeDTOKeyword.setAddressName(placeKeywordDocument.getAddressName());
-
-                        try
-                        {
-                            bundle.putParcelable("place", (PlaceDTO) placeDTOKeyword.clone());
-                        } catch (CloneNotSupportedException e)
-                        {
-                            e.printStackTrace();
-                        }
-                        break;
-
-                    case MapController.TYPE_PLACE_CATEGORY:
-                        /*
-                        PlaceCategoryDocuments placeCategoryDocument = MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(selectedItemPosition);
-                        lon = Double.valueOf(placeCategoryDocument.getX());
-                        lat = Double.valueOf(placeCategoryDocument.getY());
-                        lonLat = LonLatConverter.lonLatToGridXY(lon, lat);
-
-                        PlaceDTO placeDTOCategory = new PlaceDTO();
-                        placeDTOCategory.setPlaceId(placeCategoryDocument.getId());
-                        placeDTOCategory.setPlaceName(placeCategoryDocument.getPlaceName());
-                        placeDTOCategory.setLongitude(placeCategoryDocument.getX());
-                        placeDTOCategory.setLatitude(placeCategoryDocument.getY());
-                        placeDTOCategory.setWeatherX(Integer.toString(lonLat.getX()));
-                        placeDTOCategory.setWeatherY(Integer.toString(lonLat.getY()));
-                        placeDTOCategory.setAddressName(placeCategoryDocument.getAddressName());
-
-                        try
-                        {
-                            bundle.putParcelable("place", (PlaceDTO) placeDTOCategory.clone());
-                        } catch (CloneNotSupportedException e)
-                        {
-                            e.printStackTrace();
-                        }
-
-                         */
-                        break;
-                }
-                onChoicedListener.onChoicedLocation(bundle);
             }
         });
 
@@ -291,10 +196,6 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
             @Override
             public void onClick(View view)
             {
-                binding.gpsButton.performClick();
-                MapActivity.parameters.clear();
-                setMain();
-                MapActivity.isDeletedLocation = true;
             }
         });
 
@@ -304,17 +205,6 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
             @Override
             public void onClick(View view)
             {
-                /*
-                if (selectedItemPosition < itemPositionMax)
-                {
-                    ++selectedItemPosition;
-                } else
-                {
-                    selectedItemPosition = 0;
-                }
-                //  ((MapActivity) getActivity()).onItemSelected(selectedItemPosition);
-
-                 */
             }
         });
 
@@ -323,61 +213,15 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
             @Override
             public void onClick(View view)
             {
-                /*
-                if (selectedItemPosition == 0)
-                {
-                    selectedItemPosition = itemPositionMax;
-                } else
-                {
-                    --selectedItemPosition;
-                }
-                //  ((MapActivity) getActivity()).onItemSelected(selectedItemPosition);
-
-                 */
             }
         });
 
-        binding.addressTextview.setText(currentAddress);
-        mapView = new MapView(getActivity());
-        binding.mapView.addView(mapView);
-
-        mapView.setPOIItemEventListener(this);
-        mapView.setMapViewEventListener(this);
-        mapView.setCurrentLocationEventListener(new MapView.CurrentLocationEventListener()
-        {
-            @Override
-            public void onCurrentLocationUpdate(MapView mapView, MapPoint mapPoint, float v)
-            {
-                // 단말의 현위치 좌표값을 통보받을 수 있다.
-                currentMapPoint = MapPoint.mapPointWithGeoCoord(mapPoint.getMapPointGeoCoord().latitude, mapPoint.getMapPointGeoCoord().longitude);
-                mapView.setMapCenterPoint(currentMapPoint, true);
-            }
-
-            @Override
-            public void onCurrentLocationDeviceHeadingUpdate(MapView mapView, float v)
-            {
-
-            }
-
-            @Override
-            public void onCurrentLocationUpdateFailed(MapView mapView)
-            {
-                // 현위치 갱신 작업에 실패한 경우 호출된다.
-            }
-
-            @Override
-            public void onCurrentLocationUpdateCancelled(MapView mapView)
-            {
-                // 현위치 트랙킹 기능이 사용자에 의해 취소된 경우 호출된다.
-            }
-        });
 
         binding.mapHeaderBar.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view)
             {
-                ((MapActivity) getActivity()).onFragmentChanged(SearchFragment.TAG, new Bundle());
             }
         });
 
@@ -419,6 +263,41 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
                     locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
                     locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
                 }
+            }
+        });
+
+        binding.gpsButton.performClick();
+        mapView = new MapView(getActivity());
+        binding.mapView.addView(mapView);
+
+        mapView.setPOIItemEventListener(this);
+        mapView.setMapViewEventListener(this);
+        mapView.setCurrentLocationEventListener(new MapView.CurrentLocationEventListener()
+        {
+            @Override
+            public void onCurrentLocationUpdate(MapView mapView, MapPoint mapPoint, float v)
+            {
+                // 단말의 현위치 좌표값을 통보받을 수 있다.
+                currentMapPoint = MapPoint.mapPointWithGeoCoord(mapPoint.getMapPointGeoCoord().latitude, mapPoint.getMapPointGeoCoord().longitude);
+                mapView.setMapCenterPoint(currentMapPoint, true);
+            }
+
+            @Override
+            public void onCurrentLocationDeviceHeadingUpdate(MapView mapView, float v)
+            {
+
+            }
+
+            @Override
+            public void onCurrentLocationUpdateFailed(MapView mapView)
+            {
+                // 현위치 갱신 작업에 실패한 경우 호출된다.
+            }
+
+            @Override
+            public void onCurrentLocationUpdateCancelled(MapView mapView)
+            {
+                // 현위치 트랙킹 기능이 사용자에 의해 취소된 경우 호출된다.
             }
         });
     }
@@ -822,7 +701,7 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
                 itemPositionMax = MapActivity.searchResult.getPlaceResponseResponse().getPlaceDocuments().size() - 1;
                 break;
             case MapController.TYPE_PLACE_CATEGORY:
-               // itemPositionMax = MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().size() - 1;
+                // itemPositionMax = MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().size() - 1;
                 break;
             case MapController.TYPE_COORD_TO_ADDRESS:
                 itemPositionMax = MapActivity.searchResult.getCoordToAddressResponse().getCoordToAddressDocuments().size() - 1;
