@@ -2,11 +2,10 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/fragment_search_result_list"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#FFFFFF"
-    tools:context=".activity.mapactivity.Fragment.SearchResultFragment">
+    tools:context=".activity.map.fragment.searchresult.SearchResultFragment">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -15,35 +14,37 @@
 
 
         <RelativeLayout
-            android:id="@+id/search_result_rescan_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <TextView
-                android:id="@+id/search_result_map_center_rescan"
+            <Button
+                android:id="@+id/search_around_map_center"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="20dp"
                 android:layout_alignParentLeft="true"
-                android:layout_alignParentRight="false"
-                android:layout_marginEnd="16dp"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="8dp"
                 android:background="?attr/selectableItemBackground"
                 android:clickable="true"
-                android:padding="8dp"
+                android:focusable="true"
+                android:gravity="center"
                 android:text="@string/result_activity_map_center"
                 android:textColor="@android:color/black"
-                android:textSize="12sp" />
+                android:textSize="12dp" />
 
-            <TextView
-                android:id="@+id/search_result_myloc_center_rescan"
+            <Button
+                android:id="@+id/search_around_current_location"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_toRightOf="@id/search_result_map_center_rescan"
+                android:layout_height="20dp"
+                android:layout_centerVertical="true"
+                android:layout_toRightOf="@id/search_around_map_center"
                 android:background="?attr/selectableItemBackground"
                 android:clickable="true"
-                android:padding="8dp"
+                android:focusable="true"
+                android:gravity="center"
                 android:text="@string/result_activity_myloc_center"
                 android:textColor="@android:color/black"
-                android:textSize="12sp" />
+                android:textSize="12dp" />
 
             <Spinner
                 android:id="@+id/search_sort_spinner"
@@ -55,18 +56,9 @@
 
         </RelativeLayout>
 
-        <com.zerodsoft.scheduleweather.etc.ViewPagerIndicator
-            android:id="@+id/search_result_view_pager_indicator"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:layout_centerVertical="true"
-            android:gravity="center"
-            app:IndicatorSelectedDotDrawable="@drawable/selected_dot_indicator"
-            app:IndicatorUnselectedDotDrawable="@drawable/unselected_dot_indicator" />
 
         <androidx.viewpager2.widget.ViewPager2
-            android:id="@+id/search_result_viewpager"
+            android:id="@+id/map_search_result_viewpager"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="horizontal"
@@ -74,4 +66,13 @@
 
     </LinearLayout>
 
+    <com.zerodsoft.scheduleweather.etc.ViewPagerIndicator
+        android:id="@+id/map_result_view_pager_indicator"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="24dp"
+        android:gravity="center"
+        app:IndicatorSelectedDotDrawable="@drawable/selected_dot_indicator"
+        app:IndicatorUnselectedDotDrawable="@drawable/unselected_dot_indicator" />
 </FrameLayout>

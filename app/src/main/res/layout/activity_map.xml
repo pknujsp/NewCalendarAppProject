@@ -5,14 +5,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context=".activity.mapactivity.MapActivity">
+    tools:context=".activity.map.MapActivity">
 
-    <FrameLayout
-        android:id="@+id/map_activity_fragment_layout"
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/map_activity_fragment_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:fitsSystemWindows="true"
-        tools:context=".activity.mapactivity.MapActivity">
+        tools:context=".activity.map.MapActivity">
 
-    </FrameLayout>
+    </androidx.fragment.app.FragmentContainerView>
 </FrameLayout>

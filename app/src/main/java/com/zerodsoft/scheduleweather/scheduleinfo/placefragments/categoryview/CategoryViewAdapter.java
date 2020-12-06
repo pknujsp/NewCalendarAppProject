@@ -14,13 +14,12 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.RecyclerViewItemDecoration;
-import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategory;
 import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.scheduleinfo.placefragments.LocationInfo;
 import com.zerodsoft.scheduleweather.scheduleinfo.placefragments.PlacesFragment;
 import com.zerodsoft.scheduleweather.scheduleinfo.placefragments.categoryview.adapter.PlaceItemsAdapters;
-import com.zerodsoft.scheduleweather.scheduleinfo.placefragments.categoryview.viewmodel.PlacesAroundLocationViewModel;
+import com.zerodsoft.scheduleweather.kakaomap.viewmodel.PlacesViewModel;
 
 import java.util.List;
 
@@ -61,7 +60,7 @@ public class CategoryViewAdapter extends RecyclerView.Adapter<CategoryViewAdapte
     class CategoryViewHolder extends RecyclerView.ViewHolder
     {
         private RecyclerView itemRecyclerView;
-        private PlacesAroundLocationViewModel viewModel;
+        private PlacesViewModel viewModel;
         private PlaceItemsAdapters adapter;
 
         public CategoryViewHolder(View view)
@@ -70,7 +69,7 @@ public class CategoryViewAdapter extends RecyclerView.Adapter<CategoryViewAdapte
             itemRecyclerView = (RecyclerView) view.findViewById(R.id.map_category_itemsview);
             itemRecyclerView.setLayoutManager(new LinearLayoutManager(view.getContext(), RecyclerView.HORIZONTAL, false));
             itemRecyclerView.addItemDecoration(new RecyclerViewItemDecoration((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, context.getResources().getDisplayMetrics())));
-            viewModel = new ViewModelProvider(fragment).get(PlacesAroundLocationViewModel.class);
+            viewModel = new ViewModelProvider(fragment).get(PlacesViewModel.class);
         }
 
         public void onBind(String query)
@@ -80,8 +79,9 @@ public class CategoryViewAdapter extends RecyclerView.Adapter<CategoryViewAdapte
             LocalApiPlaceParameter placeParameter = new LocalApiPlaceParameter();
             placeParameter.setPage(LocalApiPlaceParameter.DEFAULT_PAGE).setRadius(LocalApiPlaceParameter.DEFAULT_RADIUS)
                     .setSize(LocalApiPlaceParameter.DEFAULT_SIZE).setSort(LocalApiPlaceParameter.SORT_ACCURACY)
-                    .setX(locationInfo.getLongitude()).setY(locationInfo.getLatitude());
-            KakaoLocalApiCategoryUtil.setSearchValue(placeParameter, query);
+                    .setX(Double.toString(locationInfo.getLongitude()))
+                    .setY(Double.toString(locationInfo.getLatitude()));
+            KakaoLocalApiCategoryUtil.setParameterQuery(placeParameter, query);
             adapter = new PlaceItemsAdapters();
 
             viewModel.init(placeParameter);

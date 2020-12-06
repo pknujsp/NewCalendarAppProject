@@ -8,7 +8,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewTreeObserver;
 
-import com.zerodsoft.scheduleweather.activity.ScheduleEditActivity;
+import com.zerodsoft.scheduleweather.activity.editschedule.ScheduleEditActivity;
 import com.zerodsoft.scheduleweather.calendarfragment.EventTransactionFragment;
 import com.zerodsoft.scheduleweather.calendarfragment.DayFragment;
 import com.zerodsoft.scheduleweather.calendarfragment.MonthFragment;
@@ -81,7 +81,7 @@ public class AppMainActivity extends AppCompatActivity
 
     private void init()
     {
-        KakaoLocalApiCategoryUtil.loadCategoryMap(getApplicationContext());
+        KakaoLocalApiCategoryUtil.loadCategories(getApplicationContext());
     }
 
     public void onClickToolbar(View view)

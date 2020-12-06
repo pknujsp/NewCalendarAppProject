@@ -3,23 +3,15 @@ package com.zerodsoft.scheduleweather.retrofit;
 import android.content.Context;
 
 import com.google.gson.Gson;
-import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 public class KakaoLocalApiCategoryUtil
 {
-    private static Map<String, KakaoLocalApiCategory> categoryMap = null;
     private static List<KakaoLocalApiCategory> categoryList = null;
 
     private KakaoLocalApiCategoryUtil()
@@ -27,7 +19,7 @@ public class KakaoLocalApiCategoryUtil
 
     }
 
-    public static void loadCategoryMap(Context context)
+    public static void loadCategories(Context context)
     {
         // jsom파일에서 데이터 읽기
         StringBuilder jsonString = new StringBuilder();
@@ -45,42 +37,35 @@ public class KakaoLocalApiCategoryUtil
         }
         Gson gson = new Gson();
         CategoryJsonItem result = gson.fromJson(jsonString.toString(), CategoryJsonItem.class);
-
-        categoryMap = new HashMap<>();
         categoryList = result.categories;
-
-        for (KakaoLocalApiCategory category : categoryList)
-        {
-            categoryMap.put(category.getName(), category);
-        }
     }
 
-    public static void setSearchValue(LocalApiPlaceParameter parameter, String word)
+    public static void setParameterQuery(LocalApiPlaceParameter parameter, String word)
     {
-        String categoryDescription = KakaoLocalApiCategoryUtil.getDescription(word);
-
-        if (categoryDescription == null)
+        try
+        {
+            int id = Integer.parseInt(word);
+            String categoryName = KakaoLocalApiCategoryUtil.getName(id);
+            parameter.setCategoryGroupCode(categoryName);
+        } catch (NumberFormatException | IndexOutOfBoundsException e)
         {
             parameter.setQuery(word);
-        } else
-        {
-            parameter.setCategoryGroupCode(categoryDescription);
         }
     }
 
-    public static List<KakaoLocalApiCategory> toArrayList()
+    public static List<KakaoLocalApiCategory> getList()
     {
         return categoryList;
     }
 
-    public static String getDescription(int id)
+    public static String getName(int id) throws IndexOutOfBoundsException
     {
-        return categoryList.get(id).getDescription();
+        return categoryList.get(id).getName();
     }
 
-    public static String getDescription(String searchWord)
+    public static KakaoLocalApiCategory getCategoryInfo(int position)
     {
-        return categoryMap.get(searchWord).getDescription();
+        return categoryList.get(position);
     }
 
     class CategoryJsonItem

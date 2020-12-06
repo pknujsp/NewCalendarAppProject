@@ -3,7 +3,6 @@ package com.zerodsoft.scheduleweather.retrofit.queryresponse;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import com.zerodsoft.scheduleweather.activity.mapactivity.Fragment.MapController;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.coordtoaddressresponse.CoordToAddress;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceResponse;

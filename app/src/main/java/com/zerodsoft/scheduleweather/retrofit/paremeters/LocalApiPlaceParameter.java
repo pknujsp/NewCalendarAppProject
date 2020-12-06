@@ -67,9 +67,9 @@ public class LocalApiPlaceParameter implements Parcelable, Cloneable
         return x;
     }
 
-    public LocalApiPlaceParameter setX(double x)
+    public LocalApiPlaceParameter setX(String x)
     {
-        this.x = Double.toString(x);
+        this.x = x;
         return this;
     }
 
@@ -78,9 +78,9 @@ public class LocalApiPlaceParameter implements Parcelable, Cloneable
         return y;
     }
 
-    public LocalApiPlaceParameter setY(double y)
+    public LocalApiPlaceParameter setY(String y)
     {
-        this.y = Double.toString(y);
+        this.y = y;
         return this;
     }
 
@@ -238,5 +238,22 @@ public class LocalApiPlaceParameter implements Parcelable, Cloneable
     public Object clone() throws CloneNotSupportedException
     {
         return super.clone();
+    }
+
+    public LocalApiPlaceParameter copy()
+    {
+        /*
+          private String query;
+    private String categoryGroupCode;
+    private String x;
+    private String y;
+    private String radius;
+    private String page;
+    private String size;
+    private String sort;
+    private String rect;
+         */
+        return new LocalApiPlaceParameter().setQuery(query).setCategoryGroupCode(categoryGroupCode)
+                .setX(x).setY(y).setRadius(radius).setPage(page).setSize(size).setSort(sort).setRect(rect);
     }
 }

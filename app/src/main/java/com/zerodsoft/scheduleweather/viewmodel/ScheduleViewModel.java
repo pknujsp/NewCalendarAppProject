@@ -3,20 +3,15 @@ package com.zerodsoft.scheduleweather.viewmodel;
 import android.app.Application;
 
 import androidx.annotation.NonNull;
-import androidx.arch.core.util.Function;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.Transformations;
 
-import com.zerodsoft.scheduleweather.activity.ScheduleEditActivity;
+import com.zerodsoft.scheduleweather.activity.editschedule.ScheduleEditActivity;
 import com.zerodsoft.scheduleweather.repositories.ScheduleRepository;
 import com.zerodsoft.scheduleweather.room.dto.AddressDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
 import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
-
-import java.util.Set;
 
 public class ScheduleViewModel extends AndroidViewModel
 {

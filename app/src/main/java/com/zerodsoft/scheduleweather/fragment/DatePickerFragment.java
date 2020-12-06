@@ -13,7 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
-import com.zerodsoft.scheduleweather.activity.ScheduleEditActivity;
+import com.zerodsoft.scheduleweather.activity.editschedule.ScheduleEditActivity;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.DatepickerLayoutBinding;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;

@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.activity.mapactivity.Fragment.recyclerviewadapter;
+package com.zerodsoft.scheduleweather.activity.map.fragment.search;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -9,7 +9,6 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.zerodsoft.scheduleweather.activity.mapactivity.Fragment.SearchFragment;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategory;
 import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
@@ -29,7 +28,7 @@ public class SearchCategoryViewAdapter extends RecyclerView.Adapter<SearchCatego
 
     public SearchCategoryViewAdapter(SearchFragment searchFragment)
     {
-        categoryList = KakaoLocalApiCategoryUtil.toArrayList();
+        categoryList = KakaoLocalApiCategoryUtil.getList();
         this.onCategoryClickListener = searchFragment;
     }
 

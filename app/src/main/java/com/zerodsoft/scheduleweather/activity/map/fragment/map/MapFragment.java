@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.activity.mapactivity.Fragment;
+package com.zerodsoft.scheduleweather.activity.map.fragment.map;
 
 import android.Manifest;
 import android.app.Activity;
@@ -20,7 +20,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
-import com.zerodsoft.scheduleweather.activity.mapactivity.MapActivity;
+import com.zerodsoft.scheduleweather.activity.map.MapActivity;
+import com.zerodsoft.scheduleweather.activity.map.fragment.search.SearchFragment;
 import com.zerodsoft.scheduleweather.databinding.FragmentMapBinding;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponseDocuments;
@@ -54,9 +55,6 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     private MapPOIItem[] addressPoiItems;
     private MapPOIItem[] placePoiItems;
 
-    private MapController.OnDownloadListener onDownloadListener;
-    private MapController.OnChoicedListener onChoicedListener;
-
     private boolean isOpendPoiInfo = false;
     private boolean isClickedPOI = false;
     public static boolean isMain = true;
@@ -86,8 +84,6 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
 
     public MapFragment(Activity activity)
     {
-        onDownloadListener = (MapController.OnDownloadListener) activity;
-        onChoicedListener = (MapController.OnChoicedListener) activity;
     }
 
     public void setInitialData(Bundle bundle)
@@ -104,13 +100,13 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
             {
                 // 주소 검색 순서 : 좌표로 주소 변환
                 dataType = MapController.TYPE_COORD_TO_ADDRESS;
-                MapActivity.parameters.setX(Double.parseDouble(selectedAddress.getLongitude())).setY(Double.parseDouble(selectedAddress.getLatitude()));
+                MapActivity.parameters.setX(selectedAddress.getLongitude()).setY(selectedAddress.getLatitude());
                 onDownloadListener.requestData(MapController.TYPE_COORD_TO_ADDRESS, TAG, false);
             } else if (selectedPlace != null)
             {
                 // 장소 검색 순서 : 장소의 위경도 내 10M 반경에서 장소 이름 검색(여러개 나올 경우 장소ID와 일치하는 장소를 선택)
                 dataType = MapController.TYPE_PLACE_KEYWORD;
-                MapActivity.parameters.setQuery(selectedPlace.getPlaceName()).setX(Double.parseDouble(selectedPlace.getLongitude())).setY(Double.parseDouble(selectedPlace.getLatitude()))
+                MapActivity.parameters.setQuery(selectedPlace.getPlaceName()).setX(selectedPlace.getLongitude()).setY(selectedPlace.getLatitude())
                         .setRadius("10").setPage("1").setSort(LocalApiPlaceParameter.SORT_ACCURACY);
                 onDownloadListener.requestData(MapController.TYPE_PLACE_KEYWORD, TAG, false);
             }

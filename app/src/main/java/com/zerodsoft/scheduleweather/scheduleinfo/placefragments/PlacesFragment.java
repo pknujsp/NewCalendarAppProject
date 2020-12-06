@@ -57,10 +57,11 @@ public class PlacesFragment extends Fragment implements LocationInfoGetter
     public void onActivityCreated(@Nullable Bundle savedInstanceState)
     {
         super.onActivityCreated(savedInstanceState);
-        // 편의점, ATM 정보를 보여주기로 했다고 가정
+        // 편의점, 주차장, ATM을 보여주기로 했다고 가정
         List<String> categories = new LinkedList<>();
+        categories.add("1");
+        categories.add("5");
         categories.add(getString(R.string.atm));
-        categories.add(getString(R.string.convenience_store));
 
         adapter = new CategoryViewAdapter(locationInfo.copy(), categories, this);
         categoryRecyclerView.setAdapter(adapter);

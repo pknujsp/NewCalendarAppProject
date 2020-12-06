@@ -7,7 +7,7 @@
         android:id="@+id/map_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".activity.mapactivity.Fragment.MapFragment">
+        tools:context=".activity.map.fragment.map.MapFragment">
 
         <LinearLayout
             android:id="@+id/map_header_bar"

@@ -1,5 +1,6 @@
 package com.zerodsoft.scheduleweather.scheduleinfo.placefragments.categoryview.adapter;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,10 +12,15 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.kakaomap.callback.PlaceItemCallback;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
+
+import java.util.Calendar;
 
 public class PlaceItemsAdapters extends PagedListAdapter<PlaceDocuments, PlaceItemsAdapters.ItemViewHolder>
 {
+    private Context context;
+
     class ItemViewHolder extends RecyclerView.ViewHolder
     {
         private TextView placeNameTextView;
@@ -31,24 +37,10 @@ public class PlaceItemsAdapters extends PagedListAdapter<PlaceDocuments, PlaceIt
         }
     }
 
-    private static DiffUtil.ItemCallback<PlaceDocuments> ITEM_CALLBACK = new DiffUtil.ItemCallback<PlaceDocuments>()
+    public PlaceItemsAdapters(Context context)
     {
-        @Override
-        public boolean areItemsTheSame(@NonNull PlaceDocuments oldItem, @NonNull PlaceDocuments newItem)
-        {
-            return oldItem.getId().equals(newItem.getId());
-        }
-
-        @Override
-        public boolean areContentsTheSame(@NonNull PlaceDocuments oldItem, @NonNull PlaceDocuments newItem)
-        {
-            return oldItem.getId().equals(newItem.getId());
-        }
-    };
-
-    public PlaceItemsAdapters()
-    {
-        super(ITEM_CALLBACK);
+        super(new PlaceItemCallback());
+        this.context = context;
     }
 
     @NonNull

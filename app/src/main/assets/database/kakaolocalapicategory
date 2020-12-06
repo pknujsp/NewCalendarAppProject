@@ -2,93 +2,93 @@
   "categories": [
     {
       "id": 0,
-      "name": "대형마트",
-      "description": "MT1"
+      "description": "대형마트",
+      "name": "MT1"
     },
     {
       "id": 1,
-      "name": "편의점",
-      "description": "CS2"
+      "description": "편의점",
+      "name": "CS2"
     },
     {
       "id": 2,
-      "name": "어린이집/유치원",
-      "description": "PS3"
+      "description": "어린이집/유치원",
+      "name": "PS3"
     },
     {
       "id": 3,
-      "name": "학교",
-      "description": "SC4"
+      "description": "학교",
+      "name": "SC4"
     },
     {
       "id": 4,
-      "name": "학원",
-      "description": "AC5"
+      "description": "학원",
+      "name": "AC5"
     },
     {
       "id": 5,
-      "name": "주차장",
-      "description": "PK6"
+      "description": "주차장",
+      "name": "PK6"
     },
     {
       "id": 6,
-      "name": "주유소/충전소",
-      "description": "OL7"
+      "description": "주유소/충전소",
+      "name": "OL7"
     },
     {
       "id": 7,
-      "name": "지하철역",
-      "description": "SW8"
+      "description": "지하철역",
+      "name": "SW8"
     },
     {
       "id": 8,
-      "name": "은행",
-      "description": "BK9"
+      "description": "은행",
+      "name": "BK9"
     },
     {
       "id": 9,
-      "name": "문화시설",
-      "description": "CT1"
+      "description": "문화시설",
+      "name": "CT1"
     },
     {
       "id": 10,
-      "name": "중개업소",
-      "description": "AG2"
+      "description": "중개업소",
+      "name": "AG2"
     },
     {
       "id": 11,
-      "name": "공공기관",
-      "description": "PO3"
+      "description": "공공기관",
+      "name": "PO3"
     },
     {
       "id": 12,
-      "name": "관광명소",
-      "description": "AT4"
+      "description": "관광명소",
+      "name": "AT4"
     },
     {
       "id": 13,
-      "name": "숙박",
-      "description": "AD5"
+      "description": "숙박",
+      "name": "AD5"
     },
     {
       "id": 14,
-      "name": "음식점",
-      "description": "FD6"
+      "description": "음식점",
+      "name": "FD6"
     },
     {
       "id": 15,
-      "name": "카페",
-      "description": "CE7"
+      "description": "카페",
+      "name": "CE7"
     },
     {
       "id": 16,
-      "name": "병원",
-      "description": "HP8"
+      "description": "병원",
+      "name": "HP8"
     },
     {
       "id": 17,
-      "name": "약국",
-      "description": "PM9"
+      "description": "약국",
+      "name": "PM9"
     }
   ]
 }

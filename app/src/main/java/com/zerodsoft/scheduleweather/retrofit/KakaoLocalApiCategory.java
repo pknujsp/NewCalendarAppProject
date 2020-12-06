@@ -3,8 +3,8 @@ package com.zerodsoft.scheduleweather.retrofit;
 public class KakaoLocalApiCategory
 {
     private int id;
-    private String name;
     private String description;
+    private String name;
 
     public KakaoLocalApiCategory(String name, String description)
     {
@@ -12,7 +12,7 @@ public class KakaoLocalApiCategory
         this.description = description;
     }
 
-    public KakaoLocalApiCategory(int id, String name, String description)
+    public KakaoLocalApiCategory(int id, String description, String name)
     {
         this.id = id;
         this.name = name;

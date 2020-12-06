@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.activity;
+package com.zerodsoft.scheduleweather.activity.editschedule;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
@@ -20,8 +20,8 @@ import android.widget.CompoundButton;
 import android.widget.SpinnerAdapter;
 import android.widget.Toast;
 
-import com.zerodsoft.scheduleweather.activity.mapactivity.Fragment.MapController;
-import com.zerodsoft.scheduleweather.activity.mapactivity.MapActivity;
+import com.zerodsoft.scheduleweather.activity.map.MapActivity;
+import com.zerodsoft.scheduleweather.databinding.ActivityScheduleBinding;
 import com.zerodsoft.scheduleweather.fragment.DatePickerFragment;
 import com.zerodsoft.scheduleweather.fragment.NotificationFragment;
 import com.zerodsoft.scheduleweather.R;
@@ -53,7 +53,7 @@ public class ScheduleEditActivity extends AppCompatActivity implements Notificat
     public static final int RESULT_SELECTED = 90;
     public static final int RESULT_RESELECTED = 100;
 
-    private com.zerodsoft.scheduleweather.databinding.ActivityScheduleBinding activityBinding;
+    private ActivityScheduleBinding activityBinding;
     private ScheduleViewModel viewModel;
     private DatePickerFragment datePickerFragment;
     private NotificationFragment notificationFragment;
@@ -497,6 +497,7 @@ public class ScheduleEditActivity extends AppCompatActivity implements Notificat
 
             switch (bundle.getInt("dataType"))
             {
+                /*
                 case MapController.TYPE_ADDRESS:
                     activityBinding.setAddressDto(bundle.getParcelable("address"));
                     break;
@@ -505,6 +506,8 @@ public class ScheduleEditActivity extends AppCompatActivity implements Notificat
                 case MapController.TYPE_PLACE_CATEGORY:
                     activityBinding.setPlaceDto(bundle.getParcelable("place"));
                     break;
+
+                 */
             }
         } else if (resultCode == RESULT_DELETED)
         {

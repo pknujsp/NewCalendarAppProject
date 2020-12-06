@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.activity.mapactivity.Fragment;
+package com.zerodsoft.scheduleweather.activity.map.fragment.searchresult;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -14,48 +14,23 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.activity.mapactivity.MapActivity;
+import com.zerodsoft.scheduleweather.activity.map.MapActivity;
+import com.zerodsoft.scheduleweather.activity.map.fragment.dto.SearchData;
+import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.interfaces.ResultFragmentChanger;
 
 public class SearchResultHeaderFragment extends Fragment
 {
     public static final String TAG = "SearchResultHeaderFragment";
-    private static SearchResultHeaderFragment instance;
-
     private ImageButton changeButton;
     private ImageButton closeButton;
     private TextView searchWordTextView;
+    private SearchData searchData;
+    private ResultFragmentChanger resultFragmentChanger;
 
-    public static final int MAP = 0;
-    public static final int LIST = 1;
-
-    private CurrentListTypeGetter currentListTypeGetter;
-
-    public SearchResultHeaderFragment(Activity activity)
+    public SearchResultHeaderFragment(SearchData searchData, Fragment fragment)
     {
-
-    }
-
-    public static SearchResultHeaderFragment getInstance(Activity activity)
-    {
-        if (instance == null)
-        {
-            instance = new SearchResultHeaderFragment(activity);
-        }
-        return instance;
-    }
-
-    public interface CurrentListTypeGetter
-    {
-        int getCurrentListType();
-    }
-
-    public void setCurrentListTypeGetter(SearchResultController searchResultController)
-    {
-        this.currentListTypeGetter = (CurrentListTypeGetter) searchResultController;
-    }
-
-    public SearchResultHeaderFragment()
-    {
+        this.searchData = searchData;
+        this.resultFragmentChanger = (ResultFragmentChanger) fragment;
     }
 
 
@@ -78,6 +53,8 @@ public class SearchResultHeaderFragment extends Fragment
         changeButton = (ImageButton) view.findViewById(R.id.search_result_change_button);
         closeButton = (ImageButton) view.findViewById(R.id.search_result_map_close_button);
 
+        searchWordTextView.setText(searchData.getSearchWord());
+
         searchWordTextView.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -94,7 +71,7 @@ public class SearchResultHeaderFragment extends Fragment
             public void onClick(View view)
             {
                 // list(map)인 경우 map(list)로
-                ((MapActivity) getActivity()).changeMapOrList(currentListTypeGetter.getCurrentListType());
+                resultFragmentChanger.changeFragment();
             }
         });
 
@@ -122,22 +99,16 @@ public class SearchResultHeaderFragment extends Fragment
         super.onResume();
     }
 
-    public void setInitialData(Bundle bundle)
+    public void setChangeButtonDrawable(int type)
     {
-        if (!bundle.isEmpty())
+        switch (type)
         {
-        }
-    }
-
-    public void setChangeButtonDrawable()
-    {
-        if (SearchResultController.isShowList)
-        {
-            // Map으로 전환할때
-            changeButton.setImageDrawable(getResources().getDrawable(R.drawable.list_icon, null));
-        } else
-        {
-            changeButton.setImageDrawable(getResources().getDrawable(R.drawable.map_icon, null));
+            case SearchResultFragmentController.MAP:
+                changeButton.setImageDrawable(getResources().getDrawable(R.drawable.map_icon, null));
+                break;
+            case SearchResultFragmentController.LIST:
+                changeButton.setImageDrawable(getResources().getDrawable(R.drawable.list_icon, null));
+                break;
         }
     }
 }

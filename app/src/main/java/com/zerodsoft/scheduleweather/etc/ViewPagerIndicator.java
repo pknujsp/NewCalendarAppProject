@@ -20,7 +20,7 @@ public class ViewPagerIndicator extends LinearLayout
     private Context context;
     private List<ImageView> dotList = new ArrayList<>();
 
-    final private float padding = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4.5f, getResources().getDisplayMetrics());
+    private final float PADDING = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4.5f, getResources().getDisplayMetrics());
 
     private Drawable unselectedDrawable;
     private Drawable selectedDrawable;
@@ -43,8 +43,8 @@ public class ViewPagerIndicator extends LinearLayout
             selectedDrawable = tr.getDrawable(R.styleable.ViewPagerIndicator_IndicatorSelectedDotDrawable);
         } finally
         {
-            tr.recycle();
         }
+        tr.recycle();
     }
 
     public void createDot(int position, int length)
@@ -54,7 +54,7 @@ public class ViewPagerIndicator extends LinearLayout
         for (int i = 0; i < length; i++)
         {
             ImageView imageView = new ImageView(context);
-            imageView.setPadding((int) padding, 0, (int) padding, 0);
+            imageView.setPadding((int) PADDING, 0, (int) PADDING, 0);
             dotList.add(imageView);
 
             addView(dotList.get(i));

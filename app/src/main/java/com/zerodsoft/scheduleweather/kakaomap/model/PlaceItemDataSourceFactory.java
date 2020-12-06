@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.scheduleinfo.placefragments.categoryview.model;
+package com.zerodsoft.scheduleweather.kakaomap.model;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.MutableLiveData;
