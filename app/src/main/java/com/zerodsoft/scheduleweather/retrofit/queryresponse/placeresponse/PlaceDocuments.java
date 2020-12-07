@@ -229,4 +229,10 @@ public class PlaceDocuments implements Parcelable
     {
         this.distance = distance;
     }
+
+    @Override
+    public Object clone() throws CloneNotSupportedException
+    {
+        return super.clone();
+    }
 }

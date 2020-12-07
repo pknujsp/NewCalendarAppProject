@@ -1,7 +1,6 @@
 package com.zerodsoft.scheduleweather.activity.map.fragment.map;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
@@ -12,25 +11,34 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.paging.PagedList;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.map.MapActivity;
-import com.zerodsoft.scheduleweather.activity.map.fragment.search.SearchFragment;
-import com.zerodsoft.scheduleweather.databinding.FragmentMapBinding;
+import com.zerodsoft.scheduleweather.activity.map.fragment.interfaces.ICatchedLocation;
+import com.zerodsoft.scheduleweather.kakaomap.viewmodel.AddressViewModel;
+import com.zerodsoft.scheduleweather.kakaomap.viewmodel.PlacesViewModel;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponseDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.AddressDTO;
+import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
-import com.zerodsoft.scheduleweather.utility.LonLat;
-import com.zerodsoft.scheduleweather.utility.LonLatConverter;
 
+import net.daum.mf.map.api.MapCircle;
 import net.daum.mf.map.api.MapPOIItem;
 import net.daum.mf.map.api.MapPoint;
 import net.daum.mf.map.api.MapReverseGeoCoder;
@@ -42,14 +50,10 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
 {
     // list에서 item클릭 시 poiitem이 선택되고 맵 중앙좌표가 해당item의 좌표로 변경되면서 하단 시트가 올라온다
     public static final String TAG = "MapFragment";
-    private static MapFragment instance;
-    public static MapPoint currentMapPoint = MapPoint.mapPointWithGeoCoord(37.53737528, 127.00557633);
-
-    private FragmentMapBinding binding;
+    public MapPoint currentMapPoint = MapPoint.mapPointWithGeoCoord(37.53737528, 127.00557633);
     private MapView mapView;
-
+    private CoordinatorLayout mapViewContainer;
     private int dataType;
-
     private LocationManager locationManager;
 
     private MapPOIItem[] addressPoiItems;
@@ -62,41 +66,27 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     public static boolean isClickedListItem = false;
     public static boolean isShowingPreviousItem = false;
 
+    private ImageButton gpsButton;
+    private TextView currentAddress;
+
     private String currentAddress = "";
-
     private MapReverseGeoCoder mapReverseGeoCoder;
-
     private BottomSheetBehavior bottomSheetBehavior;
 
-    public static MapFragment getInstance(Activity activity)
+    private LinearLayout bottomSheet;
+
+    private AddressViewModel addressViewModel;
+    private PlacesViewModel placeViewModel;
+    private ICatchedLocation iCatchedLocation;
+
+    private AddressResponseDocuments selectedAddressDocument;
+    private PlaceDocuments selectedPlaceDocument;
+
+    public MapFragment(ICatchedLocation iCatchedLocation)
     {
-        if (instance == null)
-        {
-            instance = new MapFragment(activity);
-        }
-        return instance;
+        this.iCatchedLocation = iCatchedLocation;
     }
 
-    public MapFragment(Activity activity)
-    {
-    }
-
-    public void setInitialData(Bundle bundle)
-    {
-        if (bundle.isEmpty())
-        {
-
-        } else
-        {
-            if (selectedAddress != null)
-            {
-                // 주소 검색 순서 : 좌표로 주소 변환
-            } else if (selectedPlace != null)
-            {
-                // 장소 검색 순서 : 장소의 위경도 내 10M 반경에서 장소 이름 검색(여러개 나올 경우 장소ID와 일치하는 장소를 선택)
-            }
-        }
-    }
 
     private final LocationListener locationListener = new LocationListener()
     {
@@ -105,7 +95,6 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
         {
             currentMapPoint = MapPoint.mapPointWithGeoCoord(location.getLatitude(), location.getLongitude());
             mapView.setMapCenterPoint(currentMapPoint, true);
-            // 자원해제
             locationManager.removeUpdates(locationListener);
         }
 
@@ -132,15 +121,16 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
     {
-        binding = FragmentMapBinding.inflate(inflater, container, false);
-        return binding.getRoot();
+        return inflater.inflate(R.layout.fragment_map, container, false);
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
-        bottomSheetBehavior = BottomSheetBehavior.from(binding.mapItemBottomSheet);
+        mapViewContainer = (CoordinatorLayout) view.findViewById(R.id.map_view);
+        bottomSheet = (LinearLayout) view.findViewById(R.id.map_item_bottom_sheet);
+        bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
         bottomSheetBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback()
         {
             @Override
@@ -162,70 +152,7 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
             }
         });
 
-        binding.addFavoriteLocationButton.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-
-            }
-        });
-
-        binding.shareLocationButton.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-
-            }
-        });
-
-
-        binding.choiceLocationButton.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-
-            }
-        });
-
-
-        binding.cancelLocationButton.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-            }
-        });
-
-
-        binding.rightLocationButton.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-            }
-        });
-
-        binding.leftLocationButton.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-            }
-        });
-
-
-        binding.mapHeaderBar.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-            }
-        });
-
-        binding.zoomInButton.setOnClickListener(new View.OnClickListener()
+        ((ImageButton) view.findViewById(R.id.zoom_in_button)).setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view)
@@ -234,7 +161,7 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
             }
         });
 
-        binding.zoomOutButton.setOnClickListener(new View.OnClickListener()
+        ((ImageButton) view.findViewById(R.id.zoom_out_button)).setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view)
@@ -243,7 +170,8 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
             }
         });
 
-        binding.gpsButton.setOnClickListener(new View.OnClickListener()
+        gpsButton = (ImageButton) view.findViewById(R.id.gps_button);
+        gpsButton.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view)
@@ -266,113 +194,135 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
             }
         });
 
-        binding.gpsButton.performClick();
+        currentAddress = (TextView) view.findViewById(R.id.current_address);
+
+        initMapView();
+    }
+
+    private void initMapView()
+    {
         mapView = new MapView(getActivity());
-        binding.mapView.addView(mapView);
+        mapViewContainer.addView(mapView);
 
         mapView.setPOIItemEventListener(this);
         mapView.setMapViewEventListener(this);
-        mapView.setCurrentLocationEventListener(new MapView.CurrentLocationEventListener()
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState)
+    {
+        super.onActivityCreated(savedInstanceState);
+
+        LocationDTO selectedLocation = iCatchedLocation.getLocation();
+
+        if (selectedLocation != null)
         {
-            @Override
-            public void onCurrentLocationUpdate(MapView mapView, MapPoint mapPoint, float v)
+            if (selectedLocation instanceof AddressDTO)
             {
-                // 단말의 현위치 좌표값을 통보받을 수 있다.
-                currentMapPoint = MapPoint.mapPointWithGeoCoord(mapPoint.getMapPointGeoCoord().latitude, mapPoint.getMapPointGeoCoord().longitude);
-                mapView.setMapCenterPoint(currentMapPoint, true);
-            }
+                // 주소 검색 순서 : 좌표로 주소 변환
+                AddressDTO address = iCatchedLocation.getAddress();
+                addressViewModel = new ViewModelProvider(this).get(AddressViewModel.class);
 
-            @Override
-            public void onCurrentLocationDeviceHeadingUpdate(MapView mapView, float v)
+                LocalApiPlaceParameter parameter = new LocalApiPlaceParameter();
+                parameter.setX(address.getLongitude()).setY(address.getLatitude());
+                addressViewModel.init(parameter);
+
+                addressViewModel.getPagedListMutableLiveData().observe(getViewLifecycleOwner(), new Observer<PagedList<AddressResponseDocuments>>()
+                {
+                    @Override
+                    public void onChanged(PagedList<AddressResponseDocuments> addressResponseDocuments)
+                    {
+                        //주소는 바로 나온다, 해당 좌표를 설정
+                        try
+                        {
+                            selectedAddressDocument = (AddressResponseDocuments) addressResponseDocuments.get(0).clone();
+                        } catch (CloneNotSupportedException e)
+                        {
+                            e.printStackTrace();
+                        }
+                        currentMapPoint.getMapPointGeoCoord().latitude = selectedAddressDocument.getY();
+                        currentMapPoint.getMapPointGeoCoord().longitude = selectedAddressDocument.getX();
+
+                        mapView.setMapCenterPoint(currentMapPoint, false);
+                        mapView.removeAllPOIItems();
+                        createPoiItem(selectedAddressDocument.getAddressName());
+                        mapView.selectPOIItem(mapView.getPOIItems()[0], false);
+                    }
+                });
+            } else if (selectedLocation instanceof PlaceDTO)
             {
+                // 장소 검색 순서 : 장소의 위경도 내 10M 반경에서 장소 이름 검색(여러개 나올 경우 장소ID와 일치하는 장소를 선택)
+                PlaceDTO place = iCatchedLocation.getPlace();
+                placeViewModel = new ViewModelProvider(this).get(PlacesViewModel.class);
 
-            }
+                LocalApiPlaceParameter parameter = new LocalApiPlaceParameter();
+                parameter.setX(place.getLongitude()).setY(place.getLatitude()).setPage(LocalApiPlaceParameter.DEFAULT_PAGE)
+                        .setSize(LocalApiPlaceParameter.DEFAULT_SIZE).setSort(LocalApiPlaceParameter.SORT_ACCURACY)
+                        .setRadius("10").setQuery(place.getPlaceName());
+                placeViewModel.init(parameter);
 
-            @Override
-            public void onCurrentLocationUpdateFailed(MapView mapView)
-            {
-                // 현위치 갱신 작업에 실패한 경우 호출된다.
-            }
+                placeViewModel.getPagedListMutableLiveData().observe(getViewLifecycleOwner(), new Observer<PagedList<PlaceDocuments>>()
+                {
+                    @Override
+                    public void onChanged(PagedList<PlaceDocuments> placeDocuments)
+                    {
+                        //찾는 장소의 ID와 일치하는 장소가 있는지 확인
+                        List<PlaceDocuments> placeDocumentsList = placeDocuments.snapshot();
+                        PlaceDTO place = iCatchedLocation.getPlace();
 
-            @Override
-            public void onCurrentLocationUpdateCancelled(MapView mapView)
-            {
-                // 현위치 트랙킹 기능이 사용자에 의해 취소된 경우 호출된다.
+                        for (PlaceDocuments document : placeDocumentsList)
+                        {
+                            if (place.getId() == Integer.parseInt(document.getId()))
+                            {
+                                try
+                                {
+                                    selectedPlaceDocument = (PlaceDocuments) document.clone();
+                                } catch (CloneNotSupportedException e)
+                                {
+                                    e.printStackTrace();
+                                }
+                                break;
+                            }
+                        }
+                        currentMapPoint.getMapPointGeoCoord().latitude = selectedPlaceDocument.getY();
+                        currentMapPoint.getMapPointGeoCoord().longitude = selectedPlaceDocument.getX();
+
+                        mapView.setMapCenterPoint(currentMapPoint, false);
+                        mapView.removeAllPOIItems();
+                        createPoiItem(selectedPlaceDocument.getPlaceName());
+                        mapView.selectPOIItem(mapView.getPOIItems()[0], false);
+                    }
+                });
             }
-        });
+        } else
+        {
+            gpsButton.performClick();
+        }
     }
 
     @Override
     public void onStart()
     {
         bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
-
-        if (MapActivity.isSelectedLocation)
-        {
-            // edit인 경우
-            // 하단 시트의 위치 변경(취소) 버튼을 클릭하지 않으면 변경이 불가능하도록 설정
-            binding.mapHeaderBar.setClickable(false);
-        } else
-        {
-        }
-
-        if (isMain)
-        {
-            binding.gpsButton.performClick();
-        } else
-        {
-
-        }
         super.onStart();
     }
 
-    public void setMain()
+    private void createPoiItem(String itemName)
     {
-        binding.mapHeaderBar.setClickable(true);
-        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
-        isMain = true;
-        isClickedListItem = false;
-        isClickedChangeButton = false;
-        isShowingPreviousItem = false;
-        isClickedPOI = false;
-        isOpendPoiInfo = false;
-        clearData();
-    }
-
-    public void clickedMapButton()
-    {
-        // 검색 후 아이템을 선택 또는 지도 버튼을 클릭한 경우
-        addPoiItems();
-        binding.mapHeaderBar.setClickable(false);
-        mapView.fitMapViewAreaToShowAllPOIItems();
-    }
-
-    @Override
-    public void onResume()
-    {
-        super.onResume();
-    }
-
-    @Override
-    public void onPause()
-    {
-        isClickedListItem = false;
-        isClickedChangeButton = false;
-        super.onPause();
-    }
-
-    @Override
-    public void onStop()
-    {
-        super.onStop();
+        MapPOIItem poiItem = new MapPOIItem();
+        poiItem.setItemName(itemName);
+        poiItem.setMapPoint(currentMapPoint);
+        poiItem.setMarkerType(MapPOIItem.MarkerType.BluePin); // 기본으로 제공하는 BluePin 마커 모양.
+        poiItem.setSelectedMarkerType(MapPOIItem.MarkerType.RedPin); // 마커를 클릭했을때, 기본으로 제공하는 RedPin 마커 모양.
+        mapView.addPOIItem(poiItem);
     }
 
 
     @Override
-    public void onReverseGeoCoderFoundAddress(MapReverseGeoCoder mapReverseGeoCoder, String address)
+    public void onReverseGeoCoderFoundAddress(MapReverseGeoCoder mapReverseGeoCoder, String
+            address)
     {
-        currentAddress = address;
-        binding.addressTextview.setText(currentAddress);
+        currentAddress.setText(address);
     }
 
     @Override
@@ -463,13 +413,15 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     }
 
     @Override
-    public void onCalloutBalloonOfPOIItemTouched(MapView mapView, MapPOIItem mapPOIItem, MapPOIItem.CalloutBalloonButtonType calloutBalloonButtonType)
+    public void onCalloutBalloonOfPOIItemTouched(MapView mapView, MapPOIItem
+            mapPOIItem, MapPOIItem.CalloutBalloonButtonType calloutBalloonButtonType)
     {
 
     }
 
     @Override
-    public void onDraggablePOIItemMoved(MapView mapView, MapPOIItem mapPOIItem, MapPoint mapPoint)
+    public void onDraggablePOIItemMoved(MapView mapView, MapPOIItem mapPOIItem, MapPoint
+            mapPoint)
     {
 
     }
@@ -477,8 +429,6 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     public void onItemSelected(int selectedItemPosition)
     {
         // 리스트에서 아이템을 선택하였을 때에 수행됨
-        binding.mapHeaderBar.setClickable(false);
-        this.selectedItemPosition = selectedItemPosition;
         onChangeItems();
         addPoiItems();
         mapView.selectPOIItem(mapView.getPOIItems()[selectedItemPosition], true);
@@ -487,13 +437,6 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
         currentMapPoint = MapPoint.mapPointWithGeoCoord(mapView.getPOIItems()[selectedItemPosition].getMapPoint().getMapPointGeoCoord().latitude,
                 mapView.getPOIItems()[selectedItemPosition].getMapPoint().getMapPointGeoCoord().longitude);
         mapView.setMapCenterPoint(currentMapPoint, true);
-    }
-
-    public void setZoomGpsButtonVisibility(int visibility)
-    {
-        binding.zoomInButton.setVisibility(visibility);
-        binding.zoomOutButton.setVisibility(visibility);
-        binding.gpsButton.setVisibility(visibility);
     }
 
     public void setPoiItems()
@@ -718,23 +661,4 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
 
         bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
     }
-
-
-    public MapFragment setDataType(int dataType)
-    {
-        this.dataType = dataType;
-        return this;
-    }
-
-    public MapFragment setSelectedItemPosition(int selectedItemPosition)
-    {
-        this.selectedItemPosition = selectedItemPosition;
-        return this;
-    }
-
-    public void clearData()
-    {
-        removeAllPoiItems();
-    }
-
 }

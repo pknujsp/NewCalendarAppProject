@@ -149,4 +149,10 @@ public class AddressResponseDocuments implements Parcelable
         parcel.writeParcelable(this.addressResponseAddress, i);
         parcel.writeParcelable(this.addressResponseRoadAddress, i);
     }
+
+    @Override
+    public Object clone() throws CloneNotSupportedException
+    {
+        return super.clone();
+    }
 }

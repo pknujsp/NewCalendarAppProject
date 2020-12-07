@@ -26,6 +26,7 @@ import com.zerodsoft.scheduleweather.fragment.DatePickerFragment;
 import com.zerodsoft.scheduleweather.fragment.NotificationFragment;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.room.dto.AddressDTO;
+import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
 import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
@@ -38,30 +39,22 @@ import java.util.List;
 
 public class ScheduleEditActivity extends AppCompatActivity implements NotificationFragment.OnNotificationTimeListener
 {
-    /*
-       - 수정해야 하는 것
-        하단 버튼의 삭제 버튼 클릭 시 다이얼로그를 띄워서 재 확인을 하도록 해야함
-     */
-    public static final int REQUEST_NEW_SCHEDULE = 0;
-    public static final int REQUEST_SHOW_SCHEDULE = 10;
-    public static final int ADD_LOCATION = 20;
-    public static final int SHOW_SCHEDULE = 50;
     public static final int EDIT_SCHEDULE = 60;
+    public static final int ADD_SCHEDULE = 50;
     public static final int EDIT_LOCATION = 70;
+    public static final int ADD_LOCATION = 20;
 
-    public static final int RESULT_DELETED = 80;
-    public static final int RESULT_SELECTED = 90;
-    public static final int RESULT_RESELECTED = 100;
+    public static final int LOCATION_DELETED = 80;
+    public static final int LOCATION_SELECTED = 90;
+    public static final int LOCATION_RESELECTED = 100;
 
     private ActivityScheduleBinding activityBinding;
     private ScheduleViewModel viewModel;
     private DatePickerFragment datePickerFragment;
     private NotificationFragment notificationFragment;
 
-    public static int scheduleId = 0;
-
+    private int scheduleId;
     private int requestCode;
-    private int activityState;
 
     public void onDateSelected(Date date, int dateType)
     {
@@ -289,33 +282,9 @@ public class ScheduleEditActivity extends AppCompatActivity implements Notificat
     }
 
 
-    private void setEnableButtons(boolean isClickable)
+    private void setViewState(boolean state)
     {
-        activityBinding.accountSpinner.setClickable(isClickable);
-        activityBinding.accountSpinner.setFocusable(isClickable);
-        activityBinding.accountSpinner.setEnabled(isClickable);
 
-        activityBinding.subject.setEnabled(isClickable);
-
-        activityBinding.scheduleAlldaySwitch.setClickable(isClickable);
-        activityBinding.scheduleAlldaySwitch.setFocusable(isClickable);
-
-        activityBinding.alldayValue.setClickable(isClickable);
-        activityBinding.alldayValue.setFocusable(isClickable);
-
-        activityBinding.startdateValue.setClickable(isClickable);
-        activityBinding.startdateValue.setFocusable(isClickable);
-
-        activityBinding.enddateValue.setClickable(isClickable);
-        activityBinding.enddateValue.setFocusable(isClickable);
-
-        activityBinding.content.setEnabled(isClickable);
-
-        activityBinding.location.setClickable(isClickable);
-        activityBinding.location.setFocusable(isClickable);
-
-        activityBinding.notificationValue.setClickable(isClickable);
-        activityBinding.notificationValue.setFocusable(isClickable);
     }
 
     private void setAccountSpinner()
@@ -444,26 +413,33 @@ public class ScheduleEditActivity extends AppCompatActivity implements Notificat
             public void onClick(View view)
             {
                 //위치를 설정하는 액티비티 표시
-                Intent intent = new Intent(ScheduleEditActivity.this, MapActivity.class);
                 int requestCode = 0;
+                Bundle bundle = new Bundle();
+                LocationDTO location = null;
 
-                if (activityBinding.getAddressDto() != null || activityBinding.getPlaceDto() != null)
+                try
                 {
-                    requestCode = EDIT_LOCATION;
-                    Bundle bundle = new Bundle();
-
                     if (activityBinding.getPlaceDto() != null)
                     {
-                        bundle.putParcelable("place", activityBinding.getPlaceDto());
+                        location = (PlaceDTO) activityBinding.getPlaceDto().clone();
                     } else if (activityBinding.getAddressDto() != null)
                     {
-                        bundle.putParcelable("address", activityBinding.getAddressDto());
+                        location = (AddressDTO) activityBinding.getAddressDto().clone();
                     }
-                    intent.putExtras(bundle);
+                } catch (CloneNotSupportedException e)
+                {
+                }
+                if (location != null)
+                {
+                    requestCode = EDIT_LOCATION;
+                    bundle.putParcelable("location", location);
                 } else
                 {
                     requestCode = ADD_LOCATION;
                 }
+
+                Intent intent = new Intent(ScheduleEditActivity.this, MapActivity.class);
+                intent.putExtras(bundle);
                 intent.putExtra("requestCode", requestCode);
                 startActivityForResult(intent, requestCode);
             }
@@ -488,7 +464,7 @@ public class ScheduleEditActivity extends AppCompatActivity implements Notificat
     {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (resultCode == RESULT_SELECTED || resultCode == RESULT_RESELECTED)
+        if (resultCode == LOCATION_SELECTED || resultCode == LOCATION_RESELECTED)
         {
             Bundle bundle = data.getExtras();
 
@@ -509,7 +485,7 @@ public class ScheduleEditActivity extends AppCompatActivity implements Notificat
 
                  */
             }
-        } else if (resultCode == RESULT_DELETED)
+        } else if (resultCode == LOCATION_DELETED)
         {
             activityBinding.setPlaceDto(null);
             activityBinding.setAddressDto(null);

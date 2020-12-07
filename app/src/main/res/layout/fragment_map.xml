@@ -23,7 +23,7 @@
             app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
             <TextView
-                android:id="@+id/address_textview"
+                android:id="@+id/current_address"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
@@ -38,18 +38,10 @@
             android:layout_height="32dp"
             android:layout_gravity="top|center"
             android:background="@drawable/map_button_rect"
-            android:elevation="2dp"
             android:src="@drawable/zoom_in_icon"
-            app:layout_anchor="@id/dummy_one"
-            app:layout_anchorGravity="top|center" />
-
-        <View
-            android:id="@+id/dummy_one"
-            android:layout_width="1dp"
-            android:layout_height="8dp"
-            android:layout_gravity="top|center"
             app:layout_anchor="@id/zoom_out_button"
             app:layout_anchorGravity="top|center" />
+
 
         <ImageButton
             android:id="@+id/zoom_out_button"
@@ -57,7 +49,6 @@
             android:layout_height="32dp"
             android:layout_gravity="top|center"
             android:background="@drawable/map_button_rect"
-            android:elevation="2dp"
             android:src="@drawable/zoom_out_icon"
             app:layout_anchor="@id/dummy_two"
             app:layout_anchorGravity="top|center" />
@@ -76,7 +67,6 @@
             android:layout_height="32dp"
             android:layout_gravity="top"
             android:background="@drawable/map_button_rect"
-            android:elevation="2dp"
             android:src="@drawable/gps_not_fixed_icon"
             app:layout_anchor="@id/dummy_three"
             app:layout_anchorGravity="left|top" />
@@ -95,105 +85,13 @@
             android:id="@+id/map_item_bottom_sheet"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@color/white"
             android:elevation="2dp"
             android:orientation="vertical"
             app:behavior_hideable="true"
             app:behavior_peekHeight="20dp"
             app:layout_behavior="@string/bottom_sheet_behavior">
 
-            <LinearLayout
-                android:id="@+id/item_place_layout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="#FFFFFF"
-                android:orientation="vertical"
-                android:padding="10dp">
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="4dp"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:id="@+id/selected_place_name_textview"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginRight="4dp"
-                        android:clickable="true"
-                        android:textColor="@color/colorPrimary"
-                        android:textSize="16sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/selected_place_category_textview"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:textColor="@android:color/darker_gray"
-                        android:textSize="13sp" />
-                </LinearLayout>
-
-
-                <TextView
-                    android:id="@+id/selected_place_address_textview"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="4dp"
-                    android:textColor="@color/text_color" />
-
-
-                <TextView
-                    android:id="@+id/selected_place_description_textview"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:clickable="true" />
-
-            </LinearLayout>
-
-
-            <LinearLayout
-                android:id="@+id/item_address_layout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="#FFFFFF"
-                android:orientation="vertical"
-                android:padding="10dp">
-
-                <TextView
-                    android:id="@+id/selected_address_name_textview"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:clickable="true"
-                    android:textColor="@color/colorPrimary"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:id="@+id/selected_another_address_type_textview"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="4dp"
-                        android:background="@android:color/darker_gray"
-                        android:padding="2dp"
-                        android:textColor="@android:color/white" />
-
-                    <TextView
-                        android:id="@+id/selected_another_address_textview"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:textColor="@android:color/darker_gray"
-                        android:textSize="14sp" />
-                </LinearLayout>
-
-
-            </LinearLayout>
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/map_bottom_sheet_toolbar"

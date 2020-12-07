@@ -14,7 +14,7 @@ import androidx.room.PrimaryKey;
                 parentColumns = "id",
                 childColumns = "schedule_id"
         ))
-public class AddressDTO implements Parcelable, Cloneable
+public class AddressDTO extends LocationDTO implements Parcelable, Cloneable
 {
     @ColumnInfo(name = "id", index = true)
     @PrimaryKey(autoGenerate = true)
@@ -40,11 +40,13 @@ public class AddressDTO implements Parcelable, Cloneable
 
     public AddressDTO()
     {
+        super();
 
     }
 
     public AddressDTO(Parcel in)
     {
+        super();
         id = in.readInt();
         scheduleId = in.readInt();
         addressName = in.readString();

@@ -13,6 +13,7 @@ import com.zerodsoft.scheduleweather.kakaomap.model.PlaceItemDataSourceFactory;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponseDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
+import com.zerodsoft.scheduleweather.room.dto.AddressDTO;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -44,6 +45,7 @@ public class AddressViewModel extends ViewModel
                 .setFetchExecutor(executor)
                 .build();
     }
+
 
     public LiveData<PagedList<AddressResponseDocuments>> getPagedListMutableLiveData()
     {
