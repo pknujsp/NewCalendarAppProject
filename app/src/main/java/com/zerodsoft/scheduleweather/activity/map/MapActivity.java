@@ -1,28 +1,21 @@
 package com.zerodsoft.scheduleweather.activity.map;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
-import android.content.Intent;
 import android.os.Bundle;
 
-import com.zerodsoft.scheduleweather.activity.editschedule.ScheduleEditActivity;
 import com.zerodsoft.scheduleweather.activity.map.fragment.interfaces.FragmentReplace;
 import com.zerodsoft.scheduleweather.activity.map.fragment.interfaces.ICatchedLocation;
 import com.zerodsoft.scheduleweather.activity.map.fragment.map.MapFragment;
 import com.zerodsoft.scheduleweather.activity.map.fragment.search.SearchFragment;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.SearchResultFragmentController;
-import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.SearchResultFragment;
+import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.SearchResultListFragment;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.LocationSearchResult;
 import com.zerodsoft.scheduleweather.room.dto.AddressDTO;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
-
-import java.util.List;
 
 public class MapActivity extends AppCompatActivity implements FragmentReplace, ICatchedLocation
 {
@@ -30,7 +23,7 @@ public class MapActivity extends AppCompatActivity implements FragmentReplace, I
 
     private MapFragment mapFragment;
     private SearchFragment searchFragment;
-    private SearchResultFragment searchResultFragment;
+    private SearchResultListFragment searchResultListFragment;
     private FragmentManager fragmentManager;
 
     private LocationDTO selectedLocation;
@@ -56,12 +49,12 @@ public class MapActivity extends AppCompatActivity implements FragmentReplace, I
             break;
             case SearchFragment.TAG:
             {
-                searchFragment = new SearchFragment();
+               // searchFragment = new SearchFragment();
                 fragmentTransaction.hide(mapFragment).add(FRAGMENT_CONTAINER_ID, searchFragment, SearchFragment.TAG)
                         .addToBackStack(SearchFragment.TAG);
             }
             break;
-            case SearchResultFragment.TAG:
+            case SearchResultListFragment.TAG:
             {
                 SearchResultFragmentController searchResultFragmentController = new SearchResultFragmentController(bundle);
                 fragmentTransaction.hide(searchFragment).add(FRAGMENT_CONTAINER_ID, searchResultFragmentController, SearchResultFragmentController.TAG)

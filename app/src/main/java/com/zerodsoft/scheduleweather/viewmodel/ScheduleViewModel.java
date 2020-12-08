@@ -85,7 +85,7 @@ public class ScheduleViewModel extends AndroidViewModel
 
     public void deleteSchedule()
     {
-        scheduleRepository.deleteSchedule(ScheduleEditActivity.scheduleId);
+       // scheduleRepository.deleteSchedule(ScheduleEditActivity.scheduleId);
     }
 
     public void updateSchedule()

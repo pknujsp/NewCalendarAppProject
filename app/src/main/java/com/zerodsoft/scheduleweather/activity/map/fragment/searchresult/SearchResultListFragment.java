@@ -21,23 +21,18 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 
-import com.zerodsoft.scheduleweather.activity.map.MapActivity;
 import com.zerodsoft.scheduleweather.activity.map.fragment.dto.SearchData;
-import com.zerodsoft.scheduleweather.activity.map.fragment.map.MapFragment;
-import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.adapter.SearchResultAdapter;
+import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.adapter.SearchResultListAdapter;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.interfaces.IndicatorCreater;
 import com.zerodsoft.scheduleweather.etc.ViewPagerIndicator;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 
-import net.daum.mf.map.api.MapPoint;
-
-public class SearchResultFragment extends Fragment implements IndicatorCreater
+public class SearchResultListFragment extends Fragment implements IndicatorCreater
 {
     public static final String TAG = "SearchResultFragment";
-    private String searchWord;
     private ViewPager2 fragmentsViewPager;
-    private SearchResultAdapter searchResultAdapter;
+    private SearchResultListAdapter searchResultListAdapter;
     private Button searchAroundMapCenter;
     private Button searchAroundCurrentLocation;
     private LocationManager locationManager;
@@ -61,9 +56,7 @@ public class SearchResultFragment extends Fragment implements IndicatorCreater
         @Override
         public void onLocationChanged(Location location)
         {
-            MapActivity.parameters.setX(Double.toString(location.getLongitude()));
-            MapActivity.parameters.setY(Double.toString(location.getLatitude()));
-            MapActivity.parameters.setPage("1");
+
             // 자원해제
             locationManager.removeUpdates(locationListener);
         }
@@ -88,7 +81,7 @@ public class SearchResultFragment extends Fragment implements IndicatorCreater
     };
 
 
-    public SearchResultFragment(SearchData searchData)
+    public SearchResultListFragment(SearchData searchData)
     {
         this.searchData = searchData;
     }
@@ -110,6 +103,8 @@ public class SearchResultFragment extends Fragment implements IndicatorCreater
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
+        super.onViewCreated(view, savedInstanceState);
+
         fragmentsViewPager = (ViewPager2) view.findViewById(R.id.map_search_result_viewpager);
         locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
         searchAroundMapCenter = (Button) view.findViewById(R.id.search_around_map_center);
@@ -117,7 +112,7 @@ public class SearchResultFragment extends Fragment implements IndicatorCreater
         viewPagerIndicator = (ViewPagerIndicator) view.findViewById(R.id.map_result_view_pager_indicator);
         sortSpinner = (Spinner) view.findViewById(R.id.search_sort_spinner);
 
-        searchResultAdapter = new SearchResultAdapter(getActivity(), this, searchWord, parameter);
+        searchResultListAdapter = new SearchResultListAdapter(this, searchData);
         onPageCallback = new OnPageCallback();
 
         spinnerAdapter = ArrayAdapter.createFromResource(getActivity(),
@@ -125,7 +120,7 @@ public class SearchResultFragment extends Fragment implements IndicatorCreater
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         sortSpinner.setAdapter(spinnerAdapter);
 
-        fragmentsViewPager.setAdapter(searchResultAdapter);
+        fragmentsViewPager.setAdapter(searchResultListAdapter);
         fragmentsViewPager.registerOnPageChangeCallback(onPageCallback);
 
         searchAroundMapCenter.setOnClickListener(new View.OnClickListener()
@@ -133,10 +128,7 @@ public class SearchResultFragment extends Fragment implements IndicatorCreater
             @Override
             public void onClick(View view)
             {
-                MapPoint.GeoCoordinate currentMapPoint = MapFragment.currentMapPoint.getMapPointGeoCoord();
-                MapActivity.parameters.setX(Double.toString(currentMapPoint.longitude));
-                MapActivity.parameters.setY(Double.toString(currentMapPoint.latitude));
-                MapActivity.parameters.setPage("1");
+
             }
         });
 
@@ -158,7 +150,6 @@ public class SearchResultFragment extends Fragment implements IndicatorCreater
                 }
             }
         });
-        super.onViewCreated(view, savedInstanceState);
     }
 
 

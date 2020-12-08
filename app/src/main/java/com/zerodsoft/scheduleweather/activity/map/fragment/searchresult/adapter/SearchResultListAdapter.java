@@ -5,9 +5,9 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
+import com.zerodsoft.scheduleweather.activity.map.fragment.dto.SearchData;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.AddressListFragment;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.PlaceListFragment;
-import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.SearchResultFragment;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.interfaces.FragmentRemover;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.interfaces.IndicatorCreater;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
@@ -15,18 +15,19 @@ import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import java.util.LinkedList;
 import java.util.List;
 
-public class SearchResultAdapter extends FragmentStateAdapter implements FragmentRemover
+public class SearchResultListAdapter extends FragmentStateAdapter implements FragmentRemover
 {
     private List<Fragment> fragments;
     private IndicatorCreater indicatorCreater;
 
-    public SearchResultAdapter(@NonNull FragmentActivity fragmentActivity, Fragment fragment, String searchWord, LocalApiPlaceParameter parameter)
+
+    public SearchResultListAdapter(@NonNull Fragment fragment, SearchData searchData)
     {
-        super(fragmentActivity);
-        indicatorCreater = (IndicatorCreater) fragment;
+        super(fragment);
+        this.indicatorCreater = (IndicatorCreater) this;
         fragments = new LinkedList<>();
-        fragments.add(new AddressListFragment(searchWord, parameter.copy()));
-        fragments.add(new PlaceListFragment(searchWord, parameter.copy()));
+        fragments.add(new AddressListFragment(fragment, searchData));
+        fragments.add(new PlaceListFragment(fragment, searchData));
     }
 
     @NonNull

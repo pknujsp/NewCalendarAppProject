@@ -14,6 +14,8 @@ import androidx.annotation.Nullable;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.paging.PagedList;
@@ -29,6 +31,8 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.map.MapActivity;
 import com.zerodsoft.scheduleweather.activity.map.fragment.interfaces.ICatchedLocation;
+import com.zerodsoft.scheduleweather.activity.map.fragment.search.SearchFragment;
+import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.interfaces.IMapInfo;
 import com.zerodsoft.scheduleweather.kakaomap.viewmodel.AddressViewModel;
 import com.zerodsoft.scheduleweather.kakaomap.viewmodel.PlacesViewModel;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
@@ -38,7 +42,6 @@ import com.zerodsoft.scheduleweather.room.dto.AddressDTO;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
 
-import net.daum.mf.map.api.MapCircle;
 import net.daum.mf.map.api.MapPOIItem;
 import net.daum.mf.map.api.MapPoint;
 import net.daum.mf.map.api.MapReverseGeoCoder;
@@ -46,11 +49,12 @@ import net.daum.mf.map.api.MapView;
 
 import java.util.List;
 
-public class MapFragment extends Fragment implements MapView.POIItemEventListener, MapReverseGeoCoder.ReverseGeoCodingResultListener, MapView.MapViewEventListener
+public class MapFragment extends Fragment implements MapView.POIItemEventListener, MapReverseGeoCoder.ReverseGeoCodingResultListener, MapView.MapViewEventListener, IMapInfo
 {
     // list에서 item클릭 시 poiitem이 선택되고 맵 중앙좌표가 해당item의 좌표로 변경되면서 하단 시트가 올라온다
     public static final String TAG = "MapFragment";
-    public MapPoint currentMapPoint = MapPoint.mapPointWithGeoCoord(37.53737528, 127.00557633);
+
+    private MapPoint currentMapPoint = MapPoint.mapPointWithGeoCoord(37.53737528, 127.00557633);
     private MapView mapView;
     private CoordinatorLayout mapViewContainer;
     private int dataType;
@@ -59,21 +63,14 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     private MapPOIItem[] addressPoiItems;
     private MapPOIItem[] placePoiItems;
 
-    private boolean isOpendPoiInfo = false;
-    private boolean isClickedPOI = false;
-    public static boolean isMain = true;
-    public static boolean isClickedChangeButton = false;
-    public static boolean isClickedListItem = false;
-    public static boolean isShowingPreviousItem = false;
-
     private ImageButton gpsButton;
     private TextView currentAddress;
 
-    private String currentAddress = "";
     private MapReverseGeoCoder mapReverseGeoCoder;
     private BottomSheetBehavior bottomSheetBehavior;
 
     private LinearLayout bottomSheet;
+    private LinearLayout headerBar;
 
     private AddressViewModel addressViewModel;
     private PlacesViewModel placeViewModel;
@@ -86,7 +83,6 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     {
         this.iCatchedLocation = iCatchedLocation;
     }
-
 
     private final LocationListener locationListener = new LocationListener()
     {
@@ -128,6 +124,7 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
+        headerBar = (LinearLayout) view.findViewById(R.id.map_header_bar);
         mapViewContainer = (CoordinatorLayout) view.findViewById(R.id.map_view);
         bottomSheet = (LinearLayout) view.findViewById(R.id.map_item_bottom_sheet);
         bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
@@ -149,6 +146,18 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
             public void onSlide(@NonNull View bottomSheet, float slideOffset)
             {
 
+            }
+        });
+
+        headerBar.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                SearchFragment searchFragment = new SearchFragment(MapFragment.this);
+                FragmentManager fragmentManager = getParentFragmentManager();
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                fragmentTransaction.hide(MapFragment.this).add(R.id.map_activity_fragment_container, searchFragment, SearchFragment.TAG).addToBackStack(null).commit();
             }
         });
 
@@ -206,6 +215,18 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
 
         mapView.setPOIItemEventListener(this);
         mapView.setMapViewEventListener(this);
+
+        ApplicationInfo ai = null;
+        try
+        {
+            ai = getActivity().getPackageManager().getApplicationInfo(getActivity().getPackageName(), PackageManager.GET_META_DATA);
+        } catch (PackageManager.NameNotFoundException e)
+        {
+            e.printStackTrace();
+        }
+
+        mapReverseGeoCoder = new MapReverseGeoCoder(ai.metaData.getString("com.kakao.sdk.AppKey"), currentMapPoint
+                , this, getActivity());
     }
 
     @Override
@@ -382,17 +403,9 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     @Override
     public void onMapViewMoveFinished(MapView mapView, MapPoint mapPoint)
     {
-        currentMapPoint = MapPoint.mapPointWithGeoCoord(mapPoint.getMapPointGeoCoord().latitude, mapPoint.getMapPointGeoCoord().longitude);
-        ApplicationInfo ai = null;
-        try
-        {
-            ai = getActivity().getPackageManager().getApplicationInfo(getActivity().getPackageName(), PackageManager.GET_META_DATA);
-        } catch (PackageManager.NameNotFoundException e)
-        {
-            e.printStackTrace();
-        }
-        mapReverseGeoCoder = new MapReverseGeoCoder(ai.metaData.getString("com.kakao.sdk.AppKey"), currentMapPoint
-                , this, getActivity());
+        currentMapPoint.getMapPointGeoCoord().longitude = mapPoint.getMapPointGeoCoord().longitude;
+        currentMapPoint.getMapPointGeoCoord().latitude = mapPoint.getMapPointGeoCoord().latitude;
+
         mapReverseGeoCoder.startFindingAddress(MapReverseGeoCoder.AddressType.ShortAddress);
     }
 
@@ -400,7 +413,6 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     public void onPOIItemSelected(MapView mapView, MapPOIItem mapPOIItem)
     {
         // poiitem을 선택하였을 경우에 수행됨
-        isOpendPoiInfo = true;
         onShowItem(mapPOIItem.getTag());
         currentMapPoint = MapPoint.mapPointWithGeoCoord(mapPOIItem.getMapPoint().getMapPointGeoCoord().latitude, mapPOIItem.getMapPoint().getMapPointGeoCoord().longitude);
         mapView.setMapCenterPoint(currentMapPoint, true);
@@ -426,121 +438,6 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
 
     }
 
-    public void onItemSelected(int selectedItemPosition)
-    {
-        // 리스트에서 아이템을 선택하였을 때에 수행됨
-        onChangeItems();
-        addPoiItems();
-        mapView.selectPOIItem(mapView.getPOIItems()[selectedItemPosition], true);
-        isOpendPoiInfo = true;
-        onShowItem(selectedItemPosition);
-        currentMapPoint = MapPoint.mapPointWithGeoCoord(mapView.getPOIItems()[selectedItemPosition].getMapPoint().getMapPointGeoCoord().latitude,
-                mapView.getPOIItems()[selectedItemPosition].getMapPoint().getMapPointGeoCoord().longitude);
-        mapView.setMapCenterPoint(currentMapPoint, true);
-    }
-
-    public void setPoiItems()
-    {
-        int addressSize = 0;
-        int placeSize = 0;
-        int placeDataType = 0;
-        int addressDataType = 0;
-        removeAllPoiItems();
-
-        List<Integer> dataTypes = MapActivity.searchResult.getResultTypes();
-        for (int dataType : dataTypes)
-        {
-            if (dataType == MapController.TYPE_PLACE_KEYWORD)
-            {
-                placeDataType = dataType;
-                placeSize = MapActivity.searchResult.getPlaceResponseResponse().getPlaceDocuments().size();
-            } else if (dataType == MapController.TYPE_PLACE_CATEGORY)
-            {
-                placeDataType = dataType;
-                //
-                // placeSize = MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().size();
-            } else if (dataType == MapController.TYPE_ADDRESS)
-            {
-                addressDataType = dataType;
-                addressSize = MapActivity.searchResult.getAddressResponse().getAddressResponseDocumentsList().size();
-            } else if (dataType == MapController.TYPE_COORD_TO_ADDRESS)
-            {
-                addressDataType = dataType;
-                addressSize = 1;
-            }
-        }
-
-        if (placeSize > 0)
-        {
-            placePoiItems = new MapPOIItem[placeSize];
-
-            for (int i = 0; i < placeSize; i++)
-            {
-                MapPoint mapPoint = null;
-                placePoiItems[i] = new MapPOIItem();
-
-                if (placeDataType == MapController.TYPE_PLACE_KEYWORD)
-                {
-                    placePoiItems[i].setItemName(MapActivity.searchResult.getPlaceResponseResponse().getPlaceDocuments().get(i).getPlaceName());
-                    mapPoint = MapPoint.mapPointWithGeoCoord(MapActivity.searchResult.getPlaceResponseResponse().getPlaceDocuments().get(i).getY(),
-                            MapActivity.searchResult.getPlaceResponseResponse().getPlaceDocuments().get(i).getX());
-                } else if (placeDataType == MapController.TYPE_PLACE_CATEGORY)
-                {
-                    /*
-                    placePoiItems[i].setItemName(MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(i).getPlaceName());
-                    mapPoint = MapPoint.mapPointWithGeoCoord(Double.valueOf(MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(i).getY()),
-                            Double.valueOf(MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(i).getX()));
-
-                     */
-                }
-
-                placePoiItems[i].setTag(i);
-                placePoiItems[i].setMapPoint(mapPoint);
-                placePoiItems[i].setMarkerType(MapPOIItem.MarkerType.BluePin); // 기본으로 제공하는 BluePin 마커 모양.
-                placePoiItems[i].setSelectedMarkerType(MapPOIItem.MarkerType.RedPin); // 마커를 클릭했을때, 기본으로 제공하는 RedPin 마커 모양.
-            }
-        }
-        if (addressSize > 0)
-        {
-            addressPoiItems = new MapPOIItem[addressSize];
-
-            for (int i = 0; i < addressSize; i++)
-            {
-                MapPoint mapPoint = null;
-                addressPoiItems[i] = new MapPOIItem();
-
-                if (addressDataType == MapController.TYPE_ADDRESS)
-                {
-                    addressPoiItems[i].setItemName(MapActivity.searchResult.getAddressResponse().getAddressResponseDocumentsList().get(i).getAddressName());
-                    mapPoint = MapPoint.mapPointWithGeoCoord(MapActivity.searchResult.getAddressResponse().getAddressResponseDocumentsList().get(i).getY(),
-                            MapActivity.searchResult.getAddressResponse().getAddressResponseDocumentsList().get(i).getX());
-                } else if (addressDataType == MapController.TYPE_COORD_TO_ADDRESS)
-                {
-                    addressPoiItems[i].setItemName(selectedAddress.getAddressName());
-                    mapPoint = MapPoint.mapPointWithGeoCoord(Double.parseDouble(selectedAddress.getLatitude()),
-                            Double.parseDouble(selectedAddress.getLongitude()));
-                }
-
-                addressPoiItems[i].setTag(i);
-                addressPoiItems[i].setMapPoint(mapPoint);
-                addressPoiItems[i].setMarkerType(MapPOIItem.MarkerType.BluePin); // 기본으로 제공하는 BluePin 마커 모양.
-                addressPoiItems[i].setSelectedMarkerType(MapPOIItem.MarkerType.RedPin); // 마커를 클릭했을때, 기본으로 제공하는 RedPin 마커 모양.
-            }
-        }
-    }
-
-    public void addPoiItems()
-    {
-        mapView.removeAllPOIItems();
-
-        if (dataType == MapController.TYPE_COORD_TO_ADDRESS || dataType == MapController.TYPE_ADDRESS)
-        {
-            mapView.addPOIItems(addressPoiItems);
-        } else if (dataType == MapController.TYPE_PLACE_CATEGORY || dataType == MapController.TYPE_PLACE_KEYWORD)
-        {
-            mapView.addPOIItems(placePoiItems);
-        }
-    }
 
     public void removeAllPoiItems()
     {
@@ -549,115 +446,15 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
         mapView.removeAllPOIItems();
     }
 
+    @Override
     public MapPoint.GeoCoordinate getMapCenterPoint()
     {
         return mapView.getMapCenterPoint().getMapPointGeoCoord();
     }
 
-    private void setLayoutVisibility()
-    {
-        switch (dataType)
-        {
-            case MapController.TYPE_ADDRESS:
-                binding.itemAddressLayout.setVisibility(View.VISIBLE);
-                binding.itemPlaceLayout.setVisibility(View.GONE);
-                break;
-            case MapController.TYPE_PLACE_CATEGORY:
-            case MapController.TYPE_PLACE_KEYWORD:
-                // keyword, category
-                binding.itemPlaceLayout.setVisibility(View.VISIBLE);
-                binding.itemAddressLayout.setVisibility(View.GONE);
-                break;
-        }
-
-        if (MapActivity.isSelectedLocation)
-        {
-            binding.choiceLocationButton.setVisibility(View.GONE);
-            binding.cancelLocationButton.setVisibility(View.VISIBLE);
-        } else
-        {
-            binding.choiceLocationButton.setVisibility(View.VISIBLE);
-            binding.cancelLocationButton.setVisibility(View.GONE);
-        }
-    }
-
-    private void setViewData()
-    {
-        switch (dataType)
-        {
-            case MapController.TYPE_ADDRESS:
-                binding.selectedAddressNameTextview.setText(MapActivity.searchResult.getAddressResponse().getAddressResponseDocumentsList().get(selectedItemPosition).getAddressName());
-                if (MapActivity.searchResult.getAddressResponse().getAddressResponseDocumentsList().get(selectedItemPosition).getAddressTypeStr().equals("도로명"))
-                {
-                    binding.selectedAnotherAddressTextview.setText(MapActivity.searchResult.getAddressResponse().getAddressResponseDocumentsList().get(selectedItemPosition).getAddressResponseRoadAddress().getAddressName());
-                } else
-                {
-                    // 지번
-                    binding.selectedAnotherAddressTextview.setText(MapActivity.searchResult.getAddressResponse().getAddressResponseDocumentsList().get(selectedItemPosition).getAddressResponseAddress().getAddressName());
-                }
-                binding.selectedAnotherAddressTypeTextview.setText(MapActivity.searchResult.getAddressResponse().getAddressResponseDocumentsList().get(selectedItemPosition).getAddressTypeStr());
-                break;
-
-            case MapController.TYPE_PLACE_KEYWORD:
-                binding.selectedPlaceAddressTextview.setText(MapActivity.searchResult.getPlaceResponseResponse().getPlaceDocuments().get(selectedItemPosition).getAddressName());
-                binding.selectedPlaceCategoryTextview.setText(MapActivity.searchResult.getPlaceResponseResponse().getPlaceDocuments().get(selectedItemPosition).getCategoryName());
-                binding.selectedPlaceDescriptionTextview.setText(MapActivity.searchResult.getPlaceResponseResponse().getPlaceDocuments().get(selectedItemPosition).getCategoryGroupName());
-                binding.selectedPlaceNameTextview.setText(MapActivity.searchResult.getPlaceResponseResponse().getPlaceDocuments().get(selectedItemPosition).getPlaceName());
-                break;
-
-            case MapController.TYPE_PLACE_CATEGORY:
-                /*
-                binding.selectedPlaceAddressTextview.setText(MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(selectedItemPosition).getAddressName());
-                binding.selectedPlaceCategoryTextview.setText(MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(selectedItemPosition).getCategoryName());
-                binding.selectedPlaceDescriptionTextview.setText(MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(selectedItemPosition).getCategoryGroupName());
-                binding.selectedPlaceNameTextview.setText(MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().get(selectedItemPosition).getPlaceName());
-                break;
-
-
-                 */
-            case MapController.TYPE_COORD_TO_ADDRESS:
-                if (MapActivity.searchResult.getCoordToAddressResponse().getCoordToAddressDocuments().get(selectedItemPosition).getCoordToAddressAddress() != null)
-                {
-                    // 지번
-                    binding.selectedAddressNameTextview.setText(MapActivity.searchResult.getCoordToAddressResponse().getCoordToAddressDocuments().get(selectedItemPosition).getCoordToAddressAddress().getAddressName());
-                    binding.selectedAnotherAddressTextview.setText(MapActivity.searchResult.getCoordToAddressResponse().getCoordToAddressDocuments().get(selectedItemPosition).getCoordToAddressAddress().getMainAddressNo());
-                    binding.selectedAnotherAddressTypeTextview.setText(MapActivity.searchResult.getCoordToAddressResponse().getCoordToAddressDocuments().get(selectedItemPosition).getCoordToAddressAddress().getRegion1DepthName());
-                } else
-                {
-                    // 도로명
-                    binding.selectedAddressNameTextview.setText(MapActivity.searchResult.getCoordToAddressResponse().getCoordToAddressDocuments().get(selectedItemPosition).getCoordToAddressRoadAddress().getAddressName());
-                    binding.selectedAnotherAddressTextview.setText(MapActivity.searchResult.getCoordToAddressResponse().getCoordToAddressDocuments().get(selectedItemPosition).getCoordToAddressRoadAddress().getRoadName());
-                    binding.selectedAnotherAddressTypeTextview.setText(MapActivity.searchResult.getCoordToAddressResponse().getCoordToAddressDocuments().get(selectedItemPosition).getCoordToAddressRoadAddress().getRegion1DepthName());
-                }
-                break;
-        }
-    }
-
-    public void onChangeItems()
-    {
-        switch (dataType)
-        {
-            case MapController.TYPE_ADDRESS:
-                itemPositionMax = MapActivity.searchResult.getAddressResponse().getAddressResponseDocumentsList().size() - 1;
-                break;
-            case MapController.TYPE_PLACE_KEYWORD:
-                itemPositionMax = MapActivity.searchResult.getPlaceResponseResponse().getPlaceDocuments().size() - 1;
-                break;
-            case MapController.TYPE_PLACE_CATEGORY:
-                // itemPositionMax = MapActivity.searchResult.getPlaceCategoryResponse().getPlaceCategoryDocuments().size() - 1;
-                break;
-            case MapController.TYPE_COORD_TO_ADDRESS:
-                itemPositionMax = MapActivity.searchResult.getCoordToAddressResponse().getCoordToAddressDocuments().size() - 1;
-                break;
-        }
-    }
 
     public void onShowItem(int position)
     {
-        selectedItemPosition = position;
-
-        setLayoutVisibility();
-        setViewData();
 
         bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
     }

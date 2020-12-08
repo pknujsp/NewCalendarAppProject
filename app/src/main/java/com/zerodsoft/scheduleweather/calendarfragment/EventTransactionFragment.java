@@ -110,13 +110,6 @@ public class EventTransactionFragment extends Fragment implements OnControlEvent
         super.onStart();
     }
 
-    public void showScheduleInfo(int scheduleId)
-    {
-        Intent intent = new Intent(getActivity(), ScheduleEditActivity.class);
-        intent.putExtra("scheduleId", scheduleId);
-        intent.putExtra("requestCode", ScheduleEditActivity.REQUEST_SHOW_SCHEDULE);
-        startActivityForResult(intent, ScheduleEditActivity.REQUEST_SHOW_SCHEDULE);
-    }
 
     public void replaceFragment(String fragmentTag)
     {

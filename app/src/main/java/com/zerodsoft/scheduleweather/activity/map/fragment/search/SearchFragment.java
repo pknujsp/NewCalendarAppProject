@@ -14,24 +14,33 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.zerodsoft.scheduleweather.activity.map.MapActivity;
+import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.map.fragment.dto.SearchData;
+import com.zerodsoft.scheduleweather.activity.map.fragment.interfaces.OnSelectedMapCategory;
 import com.zerodsoft.scheduleweather.activity.map.fragment.map.MapFragment;
-import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.SearchResultFragment;
+import com.zerodsoft.scheduleweather.activity.map.fragment.search.adapter.PlaceCategoriesAdapter;
 import com.zerodsoft.scheduleweather.activity.map.fragment.interfaces.CustomOnBackPressed;
+import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.SearchResultFragmentController;
+import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.interfaces.IMapInfo;
 import com.zerodsoft.scheduleweather.databinding.FragmentSearchBinding;
+import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategory;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 
 import net.daum.mf.map.api.MapPoint;
 
-public class SearchFragment extends Fragment implements CustomOnBackPressed
+import java.util.List;
+
+public class SearchFragment extends Fragment implements CustomOnBackPressed, OnSelectedMapCategory
 {
     public static final String TAG = "SearchFragment";
     private FragmentSearchBinding binding;
-    private SearchCategoryViewAdapter searchCategoryViewAdapter;
+    private PlaceCategoriesAdapter categoriesAdapter;
+    private IMapInfo iMapInfo;
 
-    public SearchFragment()
+
+    public SearchFragment(IMapInfo iMapInfo)
     {
+        this.iMapInfo = iMapInfo;
     }
 
 
@@ -52,9 +61,11 @@ public class SearchFragment extends Fragment implements CustomOnBackPressed
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
-        searchCategoryViewAdapter = new SearchCategoryViewAdapter(this);
-        binding.categoryRecyclerview.setLayoutManager(new LinearLayoutManager(getActivity(), RecyclerView.HORIZONTAL, false));
-        binding.categoryRecyclerview.setAdapter(searchCategoryViewAdapter);
+        super.onViewCreated(view, savedInstanceState);
+
+        categoriesAdapter = new PlaceCategoriesAdapter(this);
+        binding.categoriesRecyclerview.setLayoutManager(new LinearLayoutManager(getActivity(), RecyclerView.HORIZONTAL, false));
+        binding.categoriesRecyclerview.setAdapter(categoriesAdapter);
 
         binding.searchButton.setOnClickListener(new View.OnClickListener()
         {
@@ -73,14 +84,12 @@ public class SearchFragment extends Fragment implements CustomOnBackPressed
                 onBackPressed();
             }
         });
-
-        super.onViewCreated(view, savedInstanceState);
     }
 
 
     private void search(String searchWord)
     {
-        MapPoint.GeoCoordinate currentMapPoint = MapFragment.currentMapPoint.getMapPointGeoCoord();
+        MapPoint.GeoCoordinate currentMapPoint = iMapInfo.getMapCenterPoint();
 
         LocalApiPlaceParameter parameter = new LocalApiPlaceParameter()
                 .setX(Double.toString(currentMapPoint.longitude)).setY(Double.toString(currentMapPoint.latitude))
@@ -89,17 +98,37 @@ public class SearchFragment extends Fragment implements CustomOnBackPressed
         Bundle bundle = new Bundle();
         SearchData searchData = new SearchData(searchWord, parameter);
         bundle.putParcelable("searchData", searchData);
-        ((MapActivity) getActivity()).replaceFragment(SearchResultFragment.TAG, bundle);
+
+        SearchResultFragmentController searchResultFragmentController = new SearchResultFragmentController(bundle);
+        FragmentManager fragmentManager = getParentFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.hide(SearchFragment.this).add(R.id.map_activity_fragment_container, searchResultFragmentController, SearchFragment.TAG).addToBackStack(null).commit();
+    }
+
+    @Override
+    public void onSelectedMapCategory(KakaoLocalApiCategory category)
+    {
+        search(Integer.toString(category.getId()));
     }
 
     @Override
     public void onBackPressed()
     {
-        MapFragment.getInstance(getActivity()).setMain();
         FragmentManager fragmentManager = getParentFragmentManager();
         fragmentManager.popBackStackImmediate();
 
+        List<Fragment> fragments = fragmentManager.getFragments();
+        MapFragment mapFragment = null;
+        for (Fragment fragment : fragments)
+        {
+            if (fragment instanceof MapFragment)
+            {
+                mapFragment = (MapFragment) fragment;
+                break;
+            }
+        }
+
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.show(MapFragment.getInstance(getActivity())).commit();
+        fragmentTransaction.show(mapFragment).commit();
     }
 }

@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.RecyclerViewItemDecoration;
+import com.zerodsoft.scheduleweather.activity.map.fragment.dto.SearchData;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.interfaces.FragmentRemover;
 import com.zerodsoft.scheduleweather.kakaomap.viewmodel.PlacesViewModel;
 import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
@@ -25,18 +26,16 @@ import com.zerodsoft.scheduleweather.scheduleinfo.placefragments.categoryview.ad
 
 public class PlaceListFragment extends Fragment
 {
-    private String searchWord;
-    private LocalApiPlaceParameter parameter;
+    private SearchData searchData;
     private RecyclerView itemRecyclerView;
     private PlacesViewModel viewModel;
     private PlaceItemsAdapters adapter;
     private FragmentRemover fragmentRemover;
 
-    public PlaceListFragment(Fragment fragment, String searchWord, LocalApiPlaceParameter parameter)
+    public PlaceListFragment(Fragment fragment, SearchData searchData)
     {
         this.fragmentRemover = (FragmentRemover) fragment;
-        this.searchWord = searchWord;
-        this.parameter = parameter;
+        this.searchData = new SearchData(searchData.getSearchWord(), searchData.getParameter().copy());
     }
 
     @Override
@@ -53,10 +52,10 @@ public class PlaceListFragment extends Fragment
     {
         super.onActivityCreated(savedInstanceState);
 
-        KakaoLocalApiCategoryUtil.setParameterQuery(parameter, searchWord);
+        KakaoLocalApiCategoryUtil.setParameterQuery(searchData.getParameter(), searchData.getSearchWord());
         adapter = new PlaceItemsAdapters(getContext());
 
-        viewModel.init(parameter);
+        viewModel.init(searchData.getParameter());
         viewModel.getPagedListMutableLiveData().observe(getViewLifecycleOwner(), new Observer<PagedList<PlaceDocuments>>()
         {
             @Override

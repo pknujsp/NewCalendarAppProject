@@ -29,7 +29,7 @@ public class SearchResultHeaderFragment extends Fragment
 
     public SearchResultHeaderFragment(SearchData searchData, Fragment fragment)
     {
-        this.searchData = searchData;
+        this.searchData = new SearchData(searchData.getSearchWord(), searchData.getParameter().copy());
         this.resultFragmentChanger = (ResultFragmentChanger) fragment;
     }
 
@@ -89,7 +89,7 @@ public class SearchResultHeaderFragment extends Fragment
     @Override
     public void onStart()
     {
-        searchWordTextView.setText(MapActivity.parameters.getQuery());
+        searchWordTextView.setText(searchData.getSearchWord());
         super.onStart();
     }
 

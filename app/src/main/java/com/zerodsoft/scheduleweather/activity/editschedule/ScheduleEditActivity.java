@@ -123,10 +123,10 @@ public class ScheduleEditActivity extends AppCompatActivity implements Notificat
                     viewModel.setAddressDTO(activityBinding.getAddressDto());
                     viewModel.setPlaceDTO(activityBinding.getPlaceDto());
 
-                    if (requestCode == REQUEST_SHOW_SCHEDULE)
+                    if (requestCode == EDIT_SCHEDULE)
                     {
                         viewModel.updateSchedule();
-                    } else if (requestCode == REQUEST_NEW_SCHEDULE)
+                    } else if (requestCode == ADD_SCHEDULE)
                     {
                         viewModel.insertSchedule();
                     }
@@ -183,12 +183,10 @@ public class ScheduleEditActivity extends AppCompatActivity implements Notificat
 
         switch (requestCode)
         {
-            case REQUEST_NEW_SCHEDULE:
-                activityState = EDIT_SCHEDULE;
+            case ADD_SCHEDULE:
                 activityBinding.setScheduleDto(new ScheduleDTO());
                 break;
-            case REQUEST_SHOW_SCHEDULE:
-                activityState = SHOW_SCHEDULE;
+            case EDIT_SCHEDULE:
 
                 viewModel.getSchedule().observe(this, new Observer<ScheduleDTO>()
                 {

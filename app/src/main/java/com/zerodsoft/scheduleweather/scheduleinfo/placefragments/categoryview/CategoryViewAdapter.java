@@ -82,7 +82,7 @@ public class CategoryViewAdapter extends RecyclerView.Adapter<CategoryViewAdapte
                     .setX(Double.toString(locationInfo.getLongitude()))
                     .setY(Double.toString(locationInfo.getLatitude()));
             KakaoLocalApiCategoryUtil.setParameterQuery(placeParameter, query);
-            adapter = new PlaceItemsAdapters();
+            adapter = new PlaceItemsAdapters(context);
 
             viewModel.init(placeParameter);
             viewModel.getPagedListMutableLiveData().observe(fragment.getViewLifecycleOwner(), adapter::submitList);

@@ -96,8 +96,8 @@ public class AppMainActivity extends AppCompatActivity
                 break;
             case R.id.add_schedule:
                 Intent intent = new Intent(AppMainActivity.this, ScheduleEditActivity.class);
-                intent.putExtra("requestCode", ScheduleEditActivity.REQUEST_NEW_SCHEDULE);
-                startActivityForResult(intent, ScheduleEditActivity.REQUEST_NEW_SCHEDULE);
+                intent.putExtra("requestCode", ScheduleEditActivity.ADD_SCHEDULE);
+                startActivityForResult(intent, ScheduleEditActivity.ADD_SCHEDULE);
                 break;
             case R.id.go_to_today:
                 calendarTransactionFragment.goToToday();
@@ -155,7 +155,7 @@ public class AppMainActivity extends AppCompatActivity
             case RESULT_OK:
                 switch (requestCode)
                 {
-                    case ScheduleEditActivity.REQUEST_NEW_SCHEDULE:
+                    case ScheduleEditActivity.ADD_SCHEDULE:
                         //새로운 일정이 추가됨 -> 달력 이벤트 갱신
                         calendarTransactionFragment.refreshCalendar((Date) data.getSerializableExtra("startDate"));
                         break;
