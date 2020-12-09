@@ -9,6 +9,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
@@ -53,11 +54,11 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
 {
     // list에서 item클릭 시 poiitem이 선택되고 맵 중앙좌표가 해당item의 좌표로 변경되면서 하단 시트가 올라온다
     public static final String TAG = "MapFragment";
+    private static MapFragment instance;
 
     private MapPoint currentMapPoint = MapPoint.mapPointWithGeoCoord(37.53737528, 127.00557633);
     private MapView mapView;
     private CoordinatorLayout mapViewContainer;
-    private int dataType;
     private LocationManager locationManager;
 
     private MapPOIItem[] addressPoiItems;
@@ -79,9 +80,22 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     private AddressResponseDocuments selectedAddressDocument;
     private PlaceDocuments selectedPlaceDocument;
 
+    private OnBackPressedCallback onBackPressedCallback;
+
     public MapFragment(ICatchedLocation iCatchedLocation)
     {
         this.iCatchedLocation = iCatchedLocation;
+    }
+
+    public static MapFragment getInstance()
+    {
+        return instance;
+    }
+
+    public static MapFragment newInstance(ICatchedLocation iCatchedLocation)
+    {
+        instance = new MapFragment(iCatchedLocation);
+        return instance;
     }
 
     private final LocationListener locationListener = new LocationListener()
@@ -112,6 +126,21 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
 
         }
     };
+
+    @Override
+    public void onAttach(@NonNull Context context)
+    {
+        super.onAttach(context);
+        onBackPressedCallback = new OnBackPressedCallback(true)
+        {
+            @Override
+            public void handleOnBackPressed()
+            {
+                requireActivity().onBackPressed();
+            }
+        };
+        // requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
+    }
 
     @Nullable
     @Override
@@ -154,10 +183,10 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
             @Override
             public void onClick(View view)
             {
-                SearchFragment searchFragment = new SearchFragment(MapFragment.this);
-                FragmentManager fragmentManager = getParentFragmentManager();
+                FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
                 FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                fragmentTransaction.hide(MapFragment.this).add(R.id.map_activity_fragment_container, searchFragment, SearchFragment.TAG).addToBackStack(null).commit();
+                fragmentTransaction.add(R.id.map_activity_fragment_container, SearchFragment.newInstance(MapFragment.this), SearchFragment.TAG)
+                        .addToBackStack(null).hide(MapFragment.this).commit();
             }
         });
 

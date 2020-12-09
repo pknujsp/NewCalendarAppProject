@@ -55,7 +55,7 @@ public class PlaceCategoriesAdapter extends RecyclerView.Adapter<PlaceCategories
         {
             super(view);
             categoryDescriptionTextView = (TextView) view.findViewById(R.id.category_description_textview);
-            itemView.setOnClickListener(new View.OnClickListener()
+            categoryDescriptionTextView.setOnClickListener(new View.OnClickListener()
             {
                 @Override
                 public void onClick(View view)

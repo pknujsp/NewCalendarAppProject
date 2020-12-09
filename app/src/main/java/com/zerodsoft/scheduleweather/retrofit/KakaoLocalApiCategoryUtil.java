@@ -40,17 +40,22 @@ public class KakaoLocalApiCategoryUtil
         categoryList = result.categories;
     }
 
-    public static void setParameterQuery(LocalApiPlaceParameter parameter, String word)
+
+    public static boolean isCategory(String word)
     {
+        boolean isCategory = false;
         try
         {
             int id = Integer.parseInt(word);
-            String categoryName = KakaoLocalApiCategoryUtil.getName(id);
-            parameter.setCategoryGroupCode(categoryName);
-        } catch (NumberFormatException | IndexOutOfBoundsException e)
+            if (id >= 0 && id < categoryList.size())
+            {
+                isCategory = true;
+            }
+        } catch (NumberFormatException e)
         {
-            parameter.setQuery(word);
+            isCategory = false;
         }
+        return isCategory;
     }
 
     public static List<KakaoLocalApiCategory> getList()
@@ -66,6 +71,11 @@ public class KakaoLocalApiCategoryUtil
     public static KakaoLocalApiCategory getCategoryInfo(int position)
     {
         return categoryList.get(position);
+    }
+
+    public static String getDescription(int id)
+    {
+        return categoryList.get(id).getDescription();
     }
 
     class CategoryJsonItem

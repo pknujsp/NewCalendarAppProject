@@ -81,7 +81,14 @@ public class CategoryViewAdapter extends RecyclerView.Adapter<CategoryViewAdapte
                     .setSize(LocalApiPlaceParameter.DEFAULT_SIZE).setSort(LocalApiPlaceParameter.SORT_ACCURACY)
                     .setX(Double.toString(locationInfo.getLongitude()))
                     .setY(Double.toString(locationInfo.getLatitude()));
-            KakaoLocalApiCategoryUtil.setParameterQuery(placeParameter, query);
+
+            if (KakaoLocalApiCategoryUtil.isCategory(query))
+            {
+                placeParameter.setCategoryGroupCode(KakaoLocalApiCategoryUtil.getName(Integer.parseInt(query)));
+            } else
+            {
+                placeParameter.setQuery(query);
+            }
             adapter = new PlaceItemsAdapters(context);
 
             viewModel.init(placeParameter);

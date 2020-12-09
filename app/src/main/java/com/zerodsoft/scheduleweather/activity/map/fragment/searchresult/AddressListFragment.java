@@ -1,7 +1,9 @@
 package com.zerodsoft.scheduleweather.activity.map.fragment.searchresult;
 
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -31,10 +33,17 @@ public class AddressListFragment extends Fragment
     private AddressesAdapter adapter;
     private FragmentRemover fragmentRemover;
 
-    public AddressListFragment(Fragment fragment, SearchData searchData)
+    public AddressListFragment(FragmentRemover fragmentRemover, SearchData searchData)
     {
-        this.fragmentRemover = (FragmentRemover) fragment;
+        this.fragmentRemover = fragmentRemover;
         this.searchData = new SearchData(searchData.getSearchWord(), searchData.getParameter().copy());
+    }
+
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
+    {
+        return inflater.inflate(R.layout.map_search_result_viewpager_item, container, false);
     }
 
     @Override
@@ -51,25 +60,36 @@ public class AddressListFragment extends Fragment
     {
         super.onActivityCreated(savedInstanceState);
 
-        KakaoLocalApiCategoryUtil.setParameterQuery(searchData.getParameter(), searchData.getSearchWord());
-        adapter = new AddressesAdapter(getContext());
-
-        viewModel.init(searchData.getParameter());
-        viewModel.getPagedListMutableLiveData().observe(getViewLifecycleOwner(), new Observer<PagedList<AddressResponseDocuments>>()
+        LocalApiPlaceParameter parameter = searchData.getParameter();
+        if (KakaoLocalApiCategoryUtil.isCategory(searchData.getSearchWord()))
         {
-            @Override
-            public void onChanged(PagedList<AddressResponseDocuments> addressResponseDocuments)
+            // fragmentRemover.removeFragment(this);
+        } else
+        {
+            parameter.setQuery(searchData.getSearchWord());
+            adapter = new AddressesAdapter(getContext());
+            itemRecyclerView.setAdapter(adapter);
+
+            viewModel.init(searchData.getParameter());
+            viewModel.getPagedListMutableLiveData().observe(getViewLifecycleOwner(), new CustomLiveDataObserver<PagedList<AddressResponseDocuments>>()
             {
-                // 검색 결과가 없으면 이 프래그먼트를 삭제한다.
-                if (addressResponseDocuments.isEmpty())
+                @Override
+                public void onChanged(PagedList<AddressResponseDocuments> addressResponseDocuments)
                 {
-                    fragmentRemover.removeFragment(AddressListFragment.this);
-                } else
-                {
+                    // 검색 결과가 없으면 이 프래그먼트를 삭제한다.
+                    // fragmentRemover.removeFragment(AddressListFragment.this);
                     adapter.submitList(addressResponseDocuments);
                 }
-            }
-        });
-        itemRecyclerView.setAdapter(adapter);
+            });
+        }
+    }
+
+    abstract class CustomLiveDataObserver<T> implements Observer<T>
+    {
+        @Override
+        public void onChanged(T element)
+        {
+
+        }
     }
 }

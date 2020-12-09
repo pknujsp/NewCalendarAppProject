@@ -50,8 +50,15 @@ public class PlaceItemDataSource extends PositionalDataSource<PlaceDocuments>
             @Override
             public void onResponse(Call<PlaceResponse> call, Response<PlaceResponse> response)
             {
-                List<PlaceDocuments> placeDocuments = response.body().getPlaceDocuments();
-                placeMeta = response.body().getPlaceMeta();
+                List<PlaceDocuments> placeDocuments = null;
+                if (placeDocuments == null)
+                {
+                    placeDocuments = new ArrayList<>();
+                } else
+                {
+                    placeDocuments = response.body().getPlaceDocuments();
+                    placeMeta = response.body().getPlaceMeta();
+                }
 
                 callback.onResult(placeDocuments, 0, placeDocuments.size());
             }

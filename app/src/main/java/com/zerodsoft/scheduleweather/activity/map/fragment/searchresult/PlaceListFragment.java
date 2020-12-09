@@ -2,7 +2,9 @@ package com.zerodsoft.scheduleweather.activity.map.fragment.searchresult;
 
 import android.os.Bundle;
 import android.util.TypedValue;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -32,10 +34,17 @@ public class PlaceListFragment extends Fragment
     private PlaceItemsAdapters adapter;
     private FragmentRemover fragmentRemover;
 
-    public PlaceListFragment(Fragment fragment, SearchData searchData)
+    public PlaceListFragment(FragmentRemover fragmentRemover, SearchData searchData)
     {
-        this.fragmentRemover = (FragmentRemover) fragment;
+        this.fragmentRemover = fragmentRemover;
         this.searchData = new SearchData(searchData.getSearchWord(), searchData.getParameter().copy());
+    }
+
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
+    {
+        return inflater.inflate(R.layout.map_search_result_viewpager_item, container, false);
     }
 
     @Override
@@ -52,7 +61,15 @@ public class PlaceListFragment extends Fragment
     {
         super.onActivityCreated(savedInstanceState);
 
-        KakaoLocalApiCategoryUtil.setParameterQuery(searchData.getParameter(), searchData.getSearchWord());
+        LocalApiPlaceParameter parameter = searchData.getParameter();
+
+        if (KakaoLocalApiCategoryUtil.isCategory(searchData.getSearchWord()))
+        {
+            parameter.setCategoryGroupCode(KakaoLocalApiCategoryUtil.getName(Integer.parseInt(searchData.getSearchWord())));
+        } else
+        {
+            parameter.setQuery(searchData.getSearchWord());
+        }
         adapter = new PlaceItemsAdapters(getContext());
 
         viewModel.init(searchData.getParameter());
@@ -61,13 +78,8 @@ public class PlaceListFragment extends Fragment
             @Override
             public void onChanged(PagedList<PlaceDocuments> placeDocuments)
             {
-                if (placeDocuments.isEmpty())
-                {
-                    fragmentRemover.removeFragment(PlaceListFragment.this);
-                } else
-                {
-                    adapter.submitList(placeDocuments);
-                }
+                //  fragmentRemover.removeFragment(PlaceListFragment.this);
+                adapter.submitList(placeDocuments);
             }
         });
         itemRecyclerView.setAdapter(adapter);

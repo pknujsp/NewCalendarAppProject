@@ -17,10 +17,12 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.map.MapActivity;
 import com.zerodsoft.scheduleweather.activity.map.fragment.dto.SearchData;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.interfaces.ResultFragmentChanger;
+import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
 
 public class SearchResultHeaderFragment extends Fragment
 {
     public static final String TAG = "SearchResultHeaderFragment";
+    private static SearchResultHeaderFragment instance;
     private ImageButton changeButton;
     private ImageButton closeButton;
     private TextView searchWordTextView;
@@ -33,6 +35,16 @@ public class SearchResultHeaderFragment extends Fragment
         this.resultFragmentChanger = (ResultFragmentChanger) fragment;
     }
 
+    public static SearchResultHeaderFragment getInstance()
+    {
+        return instance;
+    }
+
+    public static SearchResultHeaderFragment newInstance(SearchData searchData, Fragment fragment)
+    {
+        instance = new SearchResultHeaderFragment(searchData, fragment);
+        return instance;
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -53,7 +65,8 @@ public class SearchResultHeaderFragment extends Fragment
         changeButton = (ImageButton) view.findViewById(R.id.search_result_change_button);
         closeButton = (ImageButton) view.findViewById(R.id.search_result_map_close_button);
 
-        searchWordTextView.setText(searchData.getSearchWord());
+        searchWordTextView.setText(KakaoLocalApiCategoryUtil.isCategory(searchData.getSearchWord()) ? KakaoLocalApiCategoryUtil.getDescription(Integer.parseInt(searchData.getSearchWord()))
+                : searchData.getSearchWord());
 
         searchWordTextView.setOnClickListener(new View.OnClickListener()
         {
@@ -89,7 +102,6 @@ public class SearchResultHeaderFragment extends Fragment
     @Override
     public void onStart()
     {
-        searchWordTextView.setText(searchData.getSearchWord());
         super.onStart();
     }
 

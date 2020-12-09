@@ -44,8 +44,15 @@ public class AddressItemDataSource extends PositionalDataSource<AddressResponseD
             @Override
             public void onResponse(Call<AddressResponse> call, Response<AddressResponse> response)
             {
-                List<AddressResponseDocuments> addressDocuments = response.body().getAddressResponseDocumentsList();
-                addressMeta = response.body().getAddressResponseMeta();
+                List<AddressResponseDocuments> addressDocuments = null;
+                if (response.body() == null)
+                {
+                    addressDocuments = new ArrayList<>();
+                } else
+                {
+                    addressDocuments = response.body().getAddressResponseDocumentsList();
+                    addressMeta = response.body().getAddressResponseMeta();
+                }
                 callback.onResult(addressDocuments, 0, addressDocuments.size());
             }
 

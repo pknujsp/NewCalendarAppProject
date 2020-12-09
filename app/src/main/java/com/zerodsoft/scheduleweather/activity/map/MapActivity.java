@@ -20,10 +20,6 @@ import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
 public class MapActivity extends AppCompatActivity implements FragmentReplace, ICatchedLocation
 {
     private final int FRAGMENT_CONTAINER_ID;
-
-    private MapFragment mapFragment;
-    private SearchFragment searchFragment;
-    private SearchResultListFragment searchResultListFragment;
     private FragmentManager fragmentManager;
 
     private LocationDTO selectedLocation;
@@ -38,32 +34,7 @@ public class MapActivity extends AppCompatActivity implements FragmentReplace, I
     @Override
     public void replaceFragment(String fragmentTag, Bundle bundle)
     {
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
-        switch (fragmentTag)
-        {
-            case MapFragment.TAG:
-            {
-                fragmentTransaction.add(FRAGMENT_CONTAINER_ID, mapFragment, MapFragment.TAG);
-            }
-            break;
-            case SearchFragment.TAG:
-            {
-               // searchFragment = new SearchFragment();
-                fragmentTransaction.hide(mapFragment).add(FRAGMENT_CONTAINER_ID, searchFragment, SearchFragment.TAG)
-                        .addToBackStack(SearchFragment.TAG);
-            }
-            break;
-            case SearchResultListFragment.TAG:
-            {
-                SearchResultFragmentController searchResultFragmentController = new SearchResultFragmentController(bundle);
-                fragmentTransaction.hide(searchFragment).add(FRAGMENT_CONTAINER_ID, searchResultFragmentController, SearchResultFragmentController.TAG)
-                        .addToBackStack(SearchResultFragmentController.TAG);
-            }
-            break;
-        }
-
-        fragmentTransaction.commit();
     }
 
     public void init(Bundle bundle)
@@ -93,14 +64,14 @@ public class MapActivity extends AppCompatActivity implements FragmentReplace, I
         //선택된 위치가 있는지 여부 확인
         init(getIntent().getExtras());
         // Map프래그먼트 추가/실행
-        mapFragment = new MapFragment(this);
-        fragmentManager.beginTransaction().add(FRAGMENT_CONTAINER_ID, mapFragment, MapFragment.TAG).commit();
+        fragmentManager.beginTransaction().add(FRAGMENT_CONTAINER_ID, MapFragment.newInstance(this), MapFragment.TAG).commit();
     }
 
     @Override
     public void onBackPressed()
     {
-
+        setResult(RESULT_CANCELED);
+        finish();
     }
 
     @Override

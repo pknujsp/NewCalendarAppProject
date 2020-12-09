@@ -31,6 +31,8 @@ import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 public class SearchResultListFragment extends Fragment implements IndicatorCreater
 {
     public static final String TAG = "SearchResultFragment";
+    private static SearchResultListFragment instance;
+
     private ViewPager2 fragmentsViewPager;
     private SearchResultListAdapter searchResultListAdapter;
     private Button searchAroundMapCenter;
@@ -42,7 +44,6 @@ public class SearchResultListFragment extends Fragment implements IndicatorCreat
     private SearchData searchData;
 
     private OnPageCallback onPageCallback;
-    private LocalApiPlaceParameter parameter;
 
     @Override
     public void setIndicator(int fragmentSize)
@@ -56,7 +57,6 @@ public class SearchResultListFragment extends Fragment implements IndicatorCreat
         @Override
         public void onLocationChanged(Location location)
         {
-
             // 자원해제
             locationManager.removeUpdates(locationListener);
         }
@@ -83,9 +83,19 @@ public class SearchResultListFragment extends Fragment implements IndicatorCreat
 
     public SearchResultListFragment(SearchData searchData)
     {
-        this.searchData = searchData;
+        this.searchData = new SearchData(searchData.getSearchWord(), searchData.getParameter().copy());
     }
 
+    public static SearchResultListFragment getInstance()
+    {
+        return instance;
+    }
+
+    public static SearchResultListFragment newInstance(SearchData searchData)
+    {
+        instance = new SearchResultListFragment(searchData);
+        return instance;
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -106,7 +116,7 @@ public class SearchResultListFragment extends Fragment implements IndicatorCreat
         super.onViewCreated(view, savedInstanceState);
 
         fragmentsViewPager = (ViewPager2) view.findViewById(R.id.map_search_result_viewpager);
-        locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+        locationManager = (LocationManager) requireActivity().getSystemService(Context.LOCATION_SERVICE);
         searchAroundMapCenter = (Button) view.findViewById(R.id.search_around_map_center);
         searchAroundCurrentLocation = (Button) view.findViewById(R.id.search_around_current_location);
         viewPagerIndicator = (ViewPagerIndicator) view.findViewById(R.id.map_result_view_pager_indicator);
@@ -115,7 +125,7 @@ public class SearchResultListFragment extends Fragment implements IndicatorCreat
         searchResultListAdapter = new SearchResultListAdapter(this, searchData);
         onPageCallback = new OnPageCallback();
 
-        spinnerAdapter = ArrayAdapter.createFromResource(getActivity(),
+        spinnerAdapter = ArrayAdapter.createFromResource(getContext(),
                 R.array.map_search_result_sort_spinner, android.R.layout.simple_spinner_item);
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         sortSpinner.setAdapter(spinnerAdapter);

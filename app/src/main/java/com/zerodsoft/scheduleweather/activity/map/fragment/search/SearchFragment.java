@@ -1,7 +1,9 @@
 package com.zerodsoft.scheduleweather.activity.map.fragment.search;
 
+import android.content.Context;
 import android.os.Bundle;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -19,7 +21,6 @@ import com.zerodsoft.scheduleweather.activity.map.fragment.dto.SearchData;
 import com.zerodsoft.scheduleweather.activity.map.fragment.interfaces.OnSelectedMapCategory;
 import com.zerodsoft.scheduleweather.activity.map.fragment.map.MapFragment;
 import com.zerodsoft.scheduleweather.activity.map.fragment.search.adapter.PlaceCategoriesAdapter;
-import com.zerodsoft.scheduleweather.activity.map.fragment.interfaces.CustomOnBackPressed;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.SearchResultFragmentController;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.interfaces.IMapInfo;
 import com.zerodsoft.scheduleweather.databinding.FragmentSearchBinding;
@@ -30,24 +31,52 @@ import net.daum.mf.map.api.MapPoint;
 
 import java.util.List;
 
-public class SearchFragment extends Fragment implements CustomOnBackPressed, OnSelectedMapCategory
+public class SearchFragment extends Fragment implements OnSelectedMapCategory
 {
     public static final String TAG = "SearchFragment";
+    private static SearchFragment instance;
     private FragmentSearchBinding binding;
     private PlaceCategoriesAdapter categoriesAdapter;
     private IMapInfo iMapInfo;
-
+    private OnBackPressedCallback onBackPressedCallback;
+    private FragmentManager fragmentManager;
 
     public SearchFragment(IMapInfo iMapInfo)
     {
         this.iMapInfo = iMapInfo;
     }
 
+    public static SearchFragment getInstance()
+    {
+        return instance;
+    }
+
+    public static SearchFragment newInstance(IMapInfo iMapInfo)
+    {
+        instance = new SearchFragment(iMapInfo);
+        return instance;
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    public void onAttach(@NonNull Context context)
+    {
+        super.onAttach(context);
+        onBackPressedCallback = new OnBackPressedCallback(true)
+        {
+            @Override
+            public void handleOnBackPressed()
+            {
+                fragmentManager.popBackStackImmediate();
+                fragmentManager.beginTransaction().show(MapFragment.getInstance()).commit();
+            }
+        };
+        requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
     }
 
     @Override
@@ -63,6 +92,7 @@ public class SearchFragment extends Fragment implements CustomOnBackPressed, OnS
     {
         super.onViewCreated(view, savedInstanceState);
 
+        fragmentManager = requireActivity().getSupportFragmentManager();
         categoriesAdapter = new PlaceCategoriesAdapter(this);
         binding.categoriesRecyclerview.setLayoutManager(new LinearLayoutManager(getActivity(), RecyclerView.HORIZONTAL, false));
         binding.categoriesRecyclerview.setAdapter(categoriesAdapter);
@@ -81,7 +111,7 @@ public class SearchFragment extends Fragment implements CustomOnBackPressed, OnS
             @Override
             public void onClick(View view)
             {
-                onBackPressed();
+                onBackPressedCallback.handleOnBackPressed();
             }
         });
     }
@@ -96,13 +126,12 @@ public class SearchFragment extends Fragment implements CustomOnBackPressed, OnS
                 .setSort(LocalApiPlaceParameter.SORT_ACCURACY).setPage(LocalApiPlaceParameter.DEFAULT_PAGE);
 
         Bundle bundle = new Bundle();
-        SearchData searchData = new SearchData(searchWord, parameter);
-        bundle.putParcelable("searchData", searchData);
+        bundle.putParcelable("searchData", new SearchData(searchWord, parameter));
 
-        SearchResultFragmentController searchResultFragmentController = new SearchResultFragmentController(bundle);
         FragmentManager fragmentManager = getParentFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.hide(SearchFragment.this).add(R.id.map_activity_fragment_container, searchResultFragmentController, SearchFragment.TAG).addToBackStack(null).commit();
+        fragmentTransaction.add(R.id.map_activity_fragment_container, SearchResultFragmentController.newInstance(bundle), SearchResultFragmentController.TAG)
+                .addToBackStack(null).hide(SearchFragment.this).commit();
     }
 
     @Override
@@ -111,24 +140,4 @@ public class SearchFragment extends Fragment implements CustomOnBackPressed, OnS
         search(Integer.toString(category.getId()));
     }
 
-    @Override
-    public void onBackPressed()
-    {
-        FragmentManager fragmentManager = getParentFragmentManager();
-        fragmentManager.popBackStackImmediate();
-
-        List<Fragment> fragments = fragmentManager.getFragments();
-        MapFragment mapFragment = null;
-        for (Fragment fragment : fragments)
-        {
-            if (fragment instanceof MapFragment)
-            {
-                mapFragment = (MapFragment) fragment;
-                break;
-            }
-        }
-
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.show(mapFragment).commit();
-    }
 }
