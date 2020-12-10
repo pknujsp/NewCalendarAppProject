@@ -41,10 +41,10 @@ public class PlacesAdapter extends PagedListAdapter<PlaceDocuments, PlacesAdapte
         public void bind(PlaceDocuments item)
         {
             placeName.setText(item.getPlaceName());
-            placeIndex.setText(Integer.toString(getAdapterPosition()));
+            placeIndex.setText(String.valueOf(getAdapterPosition() + 1));
             placeCategory.setText(item.getCategoryName());
             placeAddressName.setText(item.getAddressName());
-            placeDistance.setText(item.getDistance());
+            placeDistance.setText(item.getDistance() + "M");
         }
     }
 

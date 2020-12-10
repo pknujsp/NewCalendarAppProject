@@ -1,6 +1,5 @@
 package com.zerodsoft.scheduleweather.activity.map.fragment.searchresult;
 
-import android.app.Activity;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -14,7 +13,6 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.activity.map.MapActivity;
 import com.zerodsoft.scheduleweather.activity.map.fragment.dto.SearchData;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.interfaces.ResultFragmentChanger;
 import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
@@ -26,12 +24,12 @@ public class SearchResultHeaderFragment extends Fragment
     private ImageButton changeButton;
     private ImageButton closeButton;
     private TextView searchWordTextView;
-    private SearchData searchData;
+    private final String SEARCH_WORD;
     private ResultFragmentChanger resultFragmentChanger;
 
     public SearchResultHeaderFragment(SearchData searchData, Fragment fragment)
     {
-        this.searchData = new SearchData(searchData.getSearchWord(), searchData.getParameter().copy());
+        this.SEARCH_WORD = searchData.getSearchWord();
         this.resultFragmentChanger = (ResultFragmentChanger) fragment;
     }
 
@@ -65,8 +63,8 @@ public class SearchResultHeaderFragment extends Fragment
         changeButton = (ImageButton) view.findViewById(R.id.search_result_change_button);
         closeButton = (ImageButton) view.findViewById(R.id.search_result_map_close_button);
 
-        searchWordTextView.setText(KakaoLocalApiCategoryUtil.isCategory(searchData.getSearchWord()) ? KakaoLocalApiCategoryUtil.getDescription(Integer.parseInt(searchData.getSearchWord()))
-                : searchData.getSearchWord());
+        searchWordTextView.setText(KakaoLocalApiCategoryUtil.isCategory(SEARCH_WORD) ? KakaoLocalApiCategoryUtil.getDescription(Integer.parseInt(SEARCH_WORD))
+                : SEARCH_WORD);
 
         searchWordTextView.setOnClickListener(new View.OnClickListener()
         {

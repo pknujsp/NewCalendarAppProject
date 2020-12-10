@@ -20,6 +20,10 @@ public class AddressResponseMeta implements Parcelable
     @Expose
     private boolean isEnd;
 
+    public AddressResponseMeta()
+    {
+    }
+
     protected AddressResponseMeta(Parcel in)
     {
         totalCount = in.readInt();

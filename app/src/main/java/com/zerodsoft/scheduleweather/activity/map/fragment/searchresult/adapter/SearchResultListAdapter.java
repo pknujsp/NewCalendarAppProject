@@ -12,6 +12,7 @@ import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.interfac
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.interfaces.IndicatorCreater;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -20,12 +21,11 @@ public class SearchResultListAdapter extends FragmentStateAdapter implements Fra
     private List<Fragment> fragments;
     private IndicatorCreater indicatorCreater;
 
-
     public SearchResultListAdapter(@NonNull Fragment fragment, SearchData searchData)
     {
         super(fragment);
         this.indicatorCreater = (IndicatorCreater) fragment;
-        fragments = new LinkedList<>();
+        fragments = new ArrayList<>();
         fragments.add(new AddressListFragment(this, searchData));
         fragments.add(new PlaceListFragment(this, searchData));
     }

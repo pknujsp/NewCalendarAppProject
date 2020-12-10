@@ -51,9 +51,10 @@ public class PlaceItemDataSource extends PositionalDataSource<PlaceDocuments>
             public void onResponse(Call<PlaceResponse> call, Response<PlaceResponse> response)
             {
                 List<PlaceDocuments> placeDocuments = null;
-                if (placeDocuments == null)
+                if (response.body() == null)
                 {
                     placeDocuments = new ArrayList<>();
+                    placeMeta = new PlaceMeta();
                 } else
                 {
                     placeDocuments = response.body().getPlaceDocuments();
@@ -66,6 +67,9 @@ public class PlaceItemDataSource extends PositionalDataSource<PlaceDocuments>
             @Override
             public void onFailure(Call<PlaceResponse> call, Throwable t)
             {
+                List<PlaceDocuments> placeDocuments = new ArrayList<>();
+                placeMeta = new PlaceMeta();
+                callback.onResult(placeDocuments, 0, placeDocuments.size());
             }
         });
     }
@@ -103,6 +107,8 @@ public class PlaceItemDataSource extends PositionalDataSource<PlaceDocuments>
                 @Override
                 public void onFailure(Call<PlaceResponse> call, Throwable t)
                 {
+                    List<PlaceDocuments> placeDocuments = new ArrayList<>();
+                    callback.onResult(placeDocuments);
                 }
             });
         } else

@@ -39,18 +39,17 @@ public class AddressesAdapter extends PagedListAdapter<AddressResponseDocuments,
         public void bind(AddressResponseDocuments item)
         {
             addressName.setText(item.getAddressName());
-            addressIndex.setText(Integer.toString(getAdapterPosition()));
+            addressIndex.setText(String.valueOf(getAdapterPosition() + 1));
 
             if (item.getAddressResponseRoadAddress() != null)
             {
-                anotherAddressType.setText((R.string.region_addr));
-                anotherAddressName.setText(item.getAddressResponseAddress().getAddressName());
-            } else if (item.getAddressResponseAddress() != null)
-            {
                 anotherAddressType.setText(context.getString(R.string.road_addr));
                 anotherAddressName.setText(item.getAddressResponseRoadAddress().getAddressName());
+            } else if (item.getAddressResponseAddress() != null)
+            {
+                anotherAddressType.setText(context.getString(R.string.region_addr));
+                anotherAddressName.setText(item.getAddressResponseAddress().getAddressName());
             }
-
         }
     }
 

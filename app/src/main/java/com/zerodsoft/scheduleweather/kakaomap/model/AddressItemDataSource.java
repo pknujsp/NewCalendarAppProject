@@ -48,6 +48,7 @@ public class AddressItemDataSource extends PositionalDataSource<AddressResponseD
                 if (response.body() == null)
                 {
                     addressDocuments = new ArrayList<>();
+                    addressMeta = new AddressResponseMeta();
                 } else
                 {
                     addressDocuments = response.body().getAddressResponseDocumentsList();
@@ -59,7 +60,9 @@ public class AddressItemDataSource extends PositionalDataSource<AddressResponseD
             @Override
             public void onFailure(Call<AddressResponse> call, Throwable t)
             {
-
+                List<AddressResponseDocuments> addressDocuments = new ArrayList<>();
+                addressMeta = new AddressResponseMeta();
+                callback.onResult(addressDocuments, 0, addressDocuments.size());
             }
         });
     }
@@ -88,7 +91,8 @@ public class AddressItemDataSource extends PositionalDataSource<AddressResponseD
                 @Override
                 public void onFailure(Call<AddressResponse> call, Throwable t)
                 {
-
+                    List<AddressResponseDocuments> addressDocuments = new ArrayList<>();
+                    callback.onResult(addressDocuments);
                 }
             });
         } else

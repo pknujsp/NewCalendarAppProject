@@ -24,6 +24,10 @@ public class PlaceMeta implements Parcelable
     @Expose
     private PlaceSameName placeSameName;
 
+    public PlaceMeta()
+    {
+    }
+
     protected PlaceMeta(Parcel in)
     {
         totalCount = in.readInt();

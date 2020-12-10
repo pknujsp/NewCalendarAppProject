@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.RecyclerViewItemDecoration;
 import com.zerodsoft.scheduleweather.activity.map.fragment.dto.SearchData;
+import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.adapter.PlacesAdapter;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.interfaces.FragmentRemover;
 import com.zerodsoft.scheduleweather.kakaomap.viewmodel.PlacesViewModel;
 import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
@@ -31,7 +32,7 @@ public class PlaceListFragment extends Fragment
     private SearchData searchData;
     private RecyclerView itemRecyclerView;
     private PlacesViewModel viewModel;
-    private PlaceItemsAdapters adapter;
+    private PlacesAdapter adapter;
     private FragmentRemover fragmentRemover;
 
     public PlaceListFragment(FragmentRemover fragmentRemover, SearchData searchData)
@@ -70,7 +71,8 @@ public class PlaceListFragment extends Fragment
         {
             parameter.setQuery(searchData.getSearchWord());
         }
-        adapter = new PlaceItemsAdapters(getContext());
+        adapter = new PlacesAdapter(getContext());
+        itemRecyclerView.setAdapter(adapter);
 
         viewModel.init(searchData.getParameter());
         viewModel.getPagedListMutableLiveData().observe(getViewLifecycleOwner(), new Observer<PagedList<PlaceDocuments>>()
@@ -82,7 +84,6 @@ public class PlaceListFragment extends Fragment
                 adapter.submitList(placeDocuments);
             }
         });
-        itemRecyclerView.setAdapter(adapter);
     }
 
 }

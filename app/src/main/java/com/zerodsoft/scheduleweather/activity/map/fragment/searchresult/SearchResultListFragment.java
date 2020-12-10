@@ -26,7 +26,6 @@ import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.adapter.
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.interfaces.IndicatorCreater;
 import com.zerodsoft.scheduleweather.etc.ViewPagerIndicator;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 
 public class SearchResultListFragment extends Fragment implements IndicatorCreater
 {
@@ -122,16 +121,17 @@ public class SearchResultListFragment extends Fragment implements IndicatorCreat
         viewPagerIndicator = (ViewPagerIndicator) view.findViewById(R.id.map_result_view_pager_indicator);
         sortSpinner = (Spinner) view.findViewById(R.id.search_sort_spinner);
 
-        searchResultListAdapter = new SearchResultListAdapter(this, searchData);
-        onPageCallback = new OnPageCallback();
-
         spinnerAdapter = ArrayAdapter.createFromResource(getContext(),
                 R.array.map_search_result_sort_spinner, android.R.layout.simple_spinner_item);
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         sortSpinner.setAdapter(spinnerAdapter);
 
+        searchResultListAdapter = new SearchResultListAdapter(this, searchData);
+        onPageCallback = new OnPageCallback();
+
         fragmentsViewPager.setAdapter(searchResultListAdapter);
         fragmentsViewPager.registerOnPageChangeCallback(onPageCallback);
+        viewPagerIndicator.createDot(0, 2);
 
         searchAroundMapCenter.setOnClickListener(new View.OnClickListener()
         {
@@ -180,13 +180,13 @@ public class SearchResultListFragment extends Fragment implements IndicatorCreat
 
     class OnPageCallback extends ViewPager2.OnPageChangeCallback
     {
-        public int finalPosition;
+        public int lastPosition;
 
         @Override
         public void onPageSelected(int position)
         {
             super.onPageSelected(position);
-            finalPosition = position;
+            lastPosition = position;
             viewPagerIndicator.selectDot(position);
         }
     }

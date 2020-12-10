@@ -20,7 +20,7 @@ public class ViewPagerIndicator extends LinearLayout
     private Context context;
     private List<ImageView> dotList = new ArrayList<>();
 
-    private final float PADDING = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4.5f, getResources().getDisplayMetrics());
+    private final float PADDING = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4f, getResources().getDisplayMetrics());
 
     private Drawable unselectedDrawable;
     private Drawable selectedDrawable;
