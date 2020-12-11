@@ -1,11 +1,9 @@
 package com.zerodsoft.scheduleweather.activity.map.fragment.searchresult;
 
 import android.os.Bundle;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -17,28 +15,30 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.RecyclerViewItemDecoration;
 import com.zerodsoft.scheduleweather.activity.map.fragment.dto.SearchData;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.adapter.PlacesAdapter;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.interfaces.FragmentRemover;
+import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.interfaces.IMapSearch;
 import com.zerodsoft.scheduleweather.kakaomap.viewmodel.PlacesViewModel;
 import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
-import com.zerodsoft.scheduleweather.scheduleinfo.placefragments.categoryview.adapter.PlaceItemsAdapters;
 
 public class PlaceListFragment extends Fragment
 {
     private SearchData searchData;
+    private LocalApiPlaceParameter parameter = new LocalApiPlaceParameter();
     private RecyclerView itemRecyclerView;
     private PlacesViewModel viewModel;
     private PlacesAdapter adapter;
     private FragmentRemover fragmentRemover;
+    private IMapSearch iMapSearch;
 
-    public PlaceListFragment(FragmentRemover fragmentRemover, SearchData searchData)
+    public PlaceListFragment(Fragment fragment, FragmentRemover fragmentRemover, SearchData searchData)
     {
+        this.iMapSearch = (IMapSearch) fragment;
         this.fragmentRemover = fragmentRemover;
-        this.searchData = new SearchData(searchData.getSearchWord(), searchData.getParameter().copy());
+        this.searchData = searchData;
     }
 
     @Nullable
@@ -62,7 +62,19 @@ public class PlaceListFragment extends Fragment
     {
         super.onActivityCreated(savedInstanceState);
 
-        LocalApiPlaceParameter parameter = searchData.getParameter();
+        parameter.setY(Double.toString(iMapSearch.getLatitude())).setX(Double.toString(iMapSearch.getLongitude()))
+                .setSize(LocalApiPlaceParameter.DEFAULT_SIZE).setPage(LocalApiPlaceParameter.DEFAULT_PAGE);
+
+        //검색 정렬 기준 설정
+        switch (iMapSearch.getSortCriteria())
+        {
+            case SearchResultListFragment.SEARCH_CRITERIA_SORT_TYPE_ACCURACY:
+                parameter.setSort(LocalApiPlaceParameter.SORT_ACCURACY);
+                break;
+            case SearchResultListFragment.SEARCH_CRITERIA_SORT_TYPE_DISTANCE:
+                parameter.setSort(LocalApiPlaceParameter.SORT_DISTANCE);
+                break;
+        }
 
         if (KakaoLocalApiCategoryUtil.isCategory(searchData.getSearchWord()))
         {
@@ -74,7 +86,7 @@ public class PlaceListFragment extends Fragment
         adapter = new PlacesAdapter(getContext());
         itemRecyclerView.setAdapter(adapter);
 
-        viewModel.init(searchData.getParameter());
+        viewModel.init(parameter);
         viewModel.getPagedListMutableLiveData().observe(getViewLifecycleOwner(), new Observer<PagedList<PlaceDocuments>>()
         {
             @Override

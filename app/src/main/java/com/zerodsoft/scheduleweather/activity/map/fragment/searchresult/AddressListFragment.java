@@ -19,24 +19,23 @@ import com.zerodsoft.scheduleweather.activity.map.fragment.dto.SearchData;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.adapter.AddressesAdapter;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.interfaces.FragmentRemover;
 import com.zerodsoft.scheduleweather.kakaomap.viewmodel.AddressViewModel;
-import com.zerodsoft.scheduleweather.kakaomap.viewmodel.PlacesViewModel;
 import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponseDocuments;
-import com.zerodsoft.scheduleweather.scheduleinfo.placefragments.categoryview.adapter.PlaceItemsAdapters;
 
 public class AddressListFragment extends Fragment
 {
     private SearchData searchData;
+    private LocalApiPlaceParameter parameter = new LocalApiPlaceParameter();
     private RecyclerView itemRecyclerView;
     private AddressViewModel viewModel;
     private AddressesAdapter adapter;
     private FragmentRemover fragmentRemover;
 
-    public AddressListFragment(FragmentRemover fragmentRemover, SearchData searchData)
+    public AddressListFragment( FragmentRemover fragmentRemover, SearchData searchData)
     {
         this.fragmentRemover = fragmentRemover;
-        this.searchData = new SearchData(searchData.getSearchWord(), searchData.getParameter().copy());
+        this.searchData = searchData;
     }
 
     @Nullable
@@ -60,7 +59,8 @@ public class AddressListFragment extends Fragment
     {
         super.onActivityCreated(savedInstanceState);
 
-        LocalApiPlaceParameter parameter = searchData.getParameter();
+        parameter.setQuery(searchData.getSearchWord()).setPage(LocalApiPlaceParameter.DEFAULT_PAGE)
+                .setSize(LocalApiPlaceParameter.DEFAULT_SIZE);
         if (KakaoLocalApiCategoryUtil.isCategory(searchData.getSearchWord()))
         {
             // fragmentRemover.removeFragment(this);
@@ -70,7 +70,7 @@ public class AddressListFragment extends Fragment
             adapter = new AddressesAdapter(getContext());
             itemRecyclerView.setAdapter(adapter);
 
-            viewModel.init(searchData.getParameter());
+            viewModel.init(parameter);
             viewModel.getPagedListMutableLiveData().observe(getViewLifecycleOwner(), new CustomLiveDataObserver<PagedList<AddressResponseDocuments>>()
             {
                 @Override

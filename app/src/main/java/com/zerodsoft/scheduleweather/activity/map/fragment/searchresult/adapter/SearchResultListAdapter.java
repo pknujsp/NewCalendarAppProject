@@ -27,7 +27,7 @@ public class SearchResultListAdapter extends FragmentStateAdapter implements Fra
         this.indicatorCreater = (IndicatorCreater) fragment;
         fragments = new ArrayList<>();
         fragments.add(new AddressListFragment(this, searchData));
-        fragments.add(new PlaceListFragment(this, searchData));
+        fragments.add(new PlaceListFragment(fragment,this, searchData));
     }
 
     @NonNull

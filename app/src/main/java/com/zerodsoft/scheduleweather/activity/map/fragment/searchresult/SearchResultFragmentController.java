@@ -15,6 +15,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.activity.map.fragment.dto.SearchData;
 import com.zerodsoft.scheduleweather.activity.map.fragment.map.MapFragment;
 import com.zerodsoft.scheduleweather.activity.map.fragment.search.SearchFragment;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.interfaces.ResultFragmentChanger;
@@ -40,11 +41,11 @@ public class SearchResultFragmentController extends Fragment implements ResultFr
     public static final int MAP = 0;
     public static final int LIST = 1;
 
-
     public SearchResultFragmentController(Bundle bundle)
     {
-        headerFragment = SearchResultHeaderFragment.newInstance(bundle.getParcelable("searchData"), SearchResultFragmentController.this);
-        listFragment = SearchResultListFragment.newInstance(bundle.getParcelable("searchData"));
+        SearchData searchData = bundle.getParcelable("searchData");
+        headerFragment = SearchResultHeaderFragment.newInstance(searchData, SearchResultFragmentController.this);
+        listFragment = SearchResultListFragment.newInstance(searchData);
     }
 
     public static SearchResultFragmentController getInstance()

@@ -7,19 +7,22 @@ import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 
 public class SearchData implements Parcelable
 {
-    private String searchWord;
-    private LocalApiPlaceParameter parameter;
+    private final String searchWord;
+    private final double latitude;
+    private final double longitude;
 
-    public SearchData(String searchWord, LocalApiPlaceParameter parameter)
+    public SearchData(String searchWord, double latitude, double longitude)
     {
         this.searchWord = searchWord;
-        this.parameter = parameter;
+        this.latitude = latitude;
+        this.longitude = longitude;
     }
 
     protected SearchData(Parcel in)
     {
         searchWord = in.readString();
-        parameter = in.readParcelable(LocalApiPlaceParameter.class.getClassLoader());
+        latitude = in.readDouble();
+        longitude = in.readDouble();
     }
 
     public static final Creator<SearchData> CREATOR = new Creator<SearchData>()
@@ -37,16 +40,6 @@ public class SearchData implements Parcelable
         }
     };
 
-    public LocalApiPlaceParameter getParameter()
-    {
-        return parameter;
-    }
-
-    public String getSearchWord()
-    {
-        return searchWord;
-    }
-
     @Override
     public int describeContents()
     {
@@ -57,6 +50,22 @@ public class SearchData implements Parcelable
     public void writeToParcel(Parcel parcel, int i)
     {
         parcel.writeString(searchWord);
-        parcel.writeParcelable(parameter, i);
+        parcel.writeDouble(latitude);
+        parcel.writeDouble(longitude);
+    }
+
+    public String getSearchWord()
+    {
+        return searchWord;
+    }
+
+    public double getLongitude()
+    {
+        return longitude;
+    }
+
+    public double getLatitude()
+    {
+        return latitude;
     }
 }

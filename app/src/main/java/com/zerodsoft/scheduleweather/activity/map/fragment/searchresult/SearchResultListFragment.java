@@ -23,14 +23,23 @@ import android.widget.Spinner;
 
 import com.zerodsoft.scheduleweather.activity.map.fragment.dto.SearchData;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.adapter.SearchResultListAdapter;
+import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.interfaces.IMapSearch;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.interfaces.IndicatorCreater;
 import com.zerodsoft.scheduleweather.etc.ViewPagerIndicator;
 import com.zerodsoft.scheduleweather.R;
 
-public class SearchResultListFragment extends Fragment implements IndicatorCreater
+public class SearchResultListFragment extends Fragment implements IndicatorCreater, IMapSearch
 {
     public static final String TAG = "SearchResultFragment";
     private static SearchResultListFragment instance;
+
+    public static final int SEARCH_CRITERIA_MAP_POINT_MAP_CENTER = 0;
+    public static final int SEARCH_CRITERIA_MAP_POINT_CURRENT_LOCATION = 1;
+    public static final int SEARCH_CRITERIA_SORT_TYPE_DISTANCE = 2;
+    public static final int SEARCH_CRITERIA_SORT_TYPE_ACCURACY = 3;
+
+    private static int searchMapPointCriteria = SEARCH_CRITERIA_MAP_POINT_CURRENT_LOCATION;
+    private static int searchSortTypeCriteria = SEARCH_CRITERIA_SORT_TYPE_ACCURACY;
 
     private ViewPager2 fragmentsViewPager;
     private SearchResultListAdapter searchResultListAdapter;
@@ -44,6 +53,10 @@ public class SearchResultListFragment extends Fragment implements IndicatorCreat
 
     private OnPageCallback onPageCallback;
 
+    private double mapLatitude;
+    private double mapLongitude;
+
+
     @Override
     public void setIndicator(int fragmentSize)
     {
@@ -56,6 +69,8 @@ public class SearchResultListFragment extends Fragment implements IndicatorCreat
         @Override
         public void onLocationChanged(Location location)
         {
+            mapLatitude = location.getLatitude();
+            mapLongitude = location.getLongitude();
             // 자원해제
             locationManager.removeUpdates(locationListener);
         }
@@ -82,7 +97,7 @@ public class SearchResultListFragment extends Fragment implements IndicatorCreat
 
     public SearchResultListFragment(SearchData searchData)
     {
-        this.searchData = new SearchData(searchData.getSearchWord(), searchData.getParameter().copy());
+        this.searchData = searchData;
     }
 
     public static SearchResultListFragment getInstance()
@@ -138,7 +153,7 @@ public class SearchResultListFragment extends Fragment implements IndicatorCreat
             @Override
             public void onClick(View view)
             {
-
+                searchMapPointCriteria = SEARCH_CRITERIA_MAP_POINT_MAP_CENTER;
             }
         });
 
@@ -147,6 +162,8 @@ public class SearchResultListFragment extends Fragment implements IndicatorCreat
             @Override
             public void onClick(View view)
             {
+                searchMapPointCriteria = SEARCH_CRITERIA_MAP_POINT_CURRENT_LOCATION;
+
                 boolean isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
                 boolean isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
 
@@ -169,6 +186,17 @@ public class SearchResultListFragment extends Fragment implements IndicatorCreat
         @Override
         public void onItemSelected(AdapterView<?> adapterView, View view, int index, long l)
         {
+            switch (index)
+            {
+                case 0:
+                    //거리 순서
+                    searchSortTypeCriteria = SEARCH_CRITERIA_SORT_TYPE_DISTANCE;
+                    break;
+                case 1:
+                    //정확도 순서
+                    searchSortTypeCriteria = SEARCH_CRITERIA_SORT_TYPE_ACCURACY;
+                    break;
+            }
         }
 
         @Override
@@ -177,6 +205,31 @@ public class SearchResultListFragment extends Fragment implements IndicatorCreat
 
         }
     };
+
+    @Override
+    public int getMapPointCriteria()
+    {
+        return searchMapPointCriteria;
+    }
+
+    @Override
+    public int getSortCriteria()
+    {
+        return searchSortTypeCriteria;
+    }
+
+    @Override
+    public double getLatitude()
+    {
+        return mapLatitude;
+        //인터페이스로 MapFragment에서 맵 센터 좌표를 가져온다
+    }
+
+    @Override
+    public double getLongitude()
+    {
+        return mapLongitude;
+    }
 
     class OnPageCallback extends ViewPager2.OnPageChangeCallback
     {
@@ -190,4 +243,5 @@ public class SearchResultListFragment extends Fragment implements IndicatorCreat
             viewPagerIndicator.selectDot(position);
         }
     }
+
 }

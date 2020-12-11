@@ -121,12 +121,8 @@ public class SearchFragment extends Fragment implements OnSelectedMapCategory
     {
         MapPoint.GeoCoordinate currentMapPoint = iMapInfo.getMapCenterPoint();
 
-        LocalApiPlaceParameter parameter = new LocalApiPlaceParameter()
-                .setX(Double.toString(currentMapPoint.longitude)).setY(Double.toString(currentMapPoint.latitude))
-                .setSort(LocalApiPlaceParameter.SORT_ACCURACY).setPage(LocalApiPlaceParameter.DEFAULT_PAGE);
-
         Bundle bundle = new Bundle();
-        bundle.putParcelable("searchData", new SearchData(searchWord, parameter));
+        bundle.putParcelable("searchData", new SearchData(searchWord, currentMapPoint.latitude, currentMapPoint.longitude));
 
         FragmentManager fragmentManager = getParentFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
