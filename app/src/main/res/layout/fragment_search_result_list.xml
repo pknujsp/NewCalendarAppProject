@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -7,75 +7,22 @@
     android:background="#FFFFFF"
     tools:context=".activity.map.fragment.searchresult.SearchResultListFragment">
 
-
-    <RelativeLayout
-        android:id="@+id/map_search_result_header"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true">
-
-        <Button
-            android:id="@+id/search_around_map_center"
-            android:layout_width="wrap_content"
-            android:layout_height="20dp"
-            android:layout_alignParentLeft="true"
-            android:layout_centerVertical="true"
-            android:layout_marginEnd="8dp"
-            android:background="?attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true"
-            android:gravity="center"
-            android:text="@string/result_activity_map_center"
-            android:textColor="@android:color/black"
-            android:textSize="12dp" />
-
-        <Button
-            android:id="@+id/search_around_current_location"
-            android:layout_width="wrap_content"
-            android:layout_height="20dp"
-            android:layout_centerVertical="true"
-            android:layout_toRightOf="@id/search_around_map_center"
-            android:background="?attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true"
-            android:gravity="center"
-            android:text="@string/result_activity_myloc_center"
-            android:textColor="@android:color/black"
-            android:textSize="12dp" />
-
-        <Spinner
-            android:id="@+id/search_sort_spinner"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_centerVertical="true" />
-
-
-    </RelativeLayout>
-
-    <FrameLayout
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/map_search_result_viewpager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/map_search_result_header"
-        android:layout_alignParentBottom="true">
+        android:orientation="horizontal"
+        android:visibility="visible" />
 
-        <androidx.viewpager2.widget.ViewPager2
-            android:id="@+id/map_search_result_viewpager"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="horizontal"
-            android:visibility="visible" />
+    <com.zerodsoft.scheduleweather.etc.ViewPagerIndicator
+        android:id="@+id/map_result_view_pager_indicator"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="24dp"
+        android:gravity="center"
+        app:IndicatorSelectedDotDrawable="@drawable/selected_dot_indicator"
+        app:IndicatorUnselectedDotDrawable="@drawable/unselected_dot_indicator" />
 
-        <com.zerodsoft.scheduleweather.etc.ViewPagerIndicator
-            android:id="@+id/map_result_view_pager_indicator"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|center_horizontal"
-            android:layout_marginBottom="24dp"
-            android:gravity="center"
-            app:IndicatorSelectedDotDrawable="@drawable/selected_dot_indicator"
-            app:IndicatorUnselectedDotDrawable="@drawable/unselected_dot_indicator" />
-    </FrameLayout>
-
-</RelativeLayout>
+</FrameLayout>
 

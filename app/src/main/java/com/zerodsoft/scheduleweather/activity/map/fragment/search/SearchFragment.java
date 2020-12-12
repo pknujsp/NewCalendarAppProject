@@ -17,19 +17,13 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.activity.map.fragment.dto.SearchData;
+import com.zerodsoft.scheduleweather.activity.map.fragment.interfaces.IMapPoint;
 import com.zerodsoft.scheduleweather.activity.map.fragment.interfaces.OnSelectedMapCategory;
 import com.zerodsoft.scheduleweather.activity.map.fragment.map.MapFragment;
 import com.zerodsoft.scheduleweather.activity.map.fragment.search.adapter.PlaceCategoriesAdapter;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.SearchResultFragmentController;
-import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.interfaces.IMapInfo;
 import com.zerodsoft.scheduleweather.databinding.FragmentSearchBinding;
 import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategory;
-import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
-
-import net.daum.mf.map.api.MapPoint;
-
-import java.util.List;
 
 public class SearchFragment extends Fragment implements OnSelectedMapCategory
 {
@@ -37,13 +31,13 @@ public class SearchFragment extends Fragment implements OnSelectedMapCategory
     private static SearchFragment instance;
     private FragmentSearchBinding binding;
     private PlaceCategoriesAdapter categoriesAdapter;
-    private IMapInfo iMapInfo;
+    private IMapPoint iMapPoint;
     private OnBackPressedCallback onBackPressedCallback;
     private FragmentManager fragmentManager;
 
-    public SearchFragment(IMapInfo iMapInfo)
+    public SearchFragment(IMapPoint iMapPoint)
     {
-        this.iMapInfo = iMapInfo;
+        this.iMapPoint = iMapPoint;
     }
 
     public static SearchFragment getInstance()
@@ -51,9 +45,9 @@ public class SearchFragment extends Fragment implements OnSelectedMapCategory
         return instance;
     }
 
-    public static SearchFragment newInstance(IMapInfo iMapInfo)
+    public static SearchFragment newInstance(IMapPoint iMapPoint)
     {
-        instance = new SearchFragment(iMapInfo);
+        instance = new SearchFragment(iMapPoint);
         return instance;
     }
 
@@ -119,14 +113,12 @@ public class SearchFragment extends Fragment implements OnSelectedMapCategory
 
     private void search(String searchWord)
     {
-        MapPoint.GeoCoordinate currentMapPoint = iMapInfo.getMapCenterPoint();
-
         Bundle bundle = new Bundle();
-        bundle.putParcelable("searchData", new SearchData(searchWord, currentMapPoint.latitude, currentMapPoint.longitude));
+        bundle.putString("searchWord", searchWord);
 
         FragmentManager fragmentManager = getParentFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.add(R.id.map_activity_fragment_container, SearchResultFragmentController.newInstance(bundle), SearchResultFragmentController.TAG)
+        fragmentTransaction.add(R.id.map_activity_fragment_container, SearchResultFragmentController.newInstance(bundle, iMapPoint), SearchResultFragmentController.TAG)
                 .addToBackStack(null).hide(SearchFragment.this).commit();
     }
 

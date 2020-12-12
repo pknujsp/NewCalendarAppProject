@@ -4,6 +4,8 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -11,11 +13,11 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.paging.PagedList;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.activity.map.fragment.dto.SearchData;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.adapter.AddressesAdapter;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.interfaces.FragmentRemover;
 import com.zerodsoft.scheduleweather.kakaomap.viewmodel.AddressViewModel;
@@ -25,17 +27,17 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.Addr
 
 public class AddressListFragment extends Fragment
 {
-    private SearchData searchData;
     private LocalApiPlaceParameter parameter = new LocalApiPlaceParameter();
     private RecyclerView itemRecyclerView;
     private AddressViewModel viewModel;
     private AddressesAdapter adapter;
     private FragmentRemover fragmentRemover;
+    private final String SEARCH_WORD;
 
-    public AddressListFragment( FragmentRemover fragmentRemover, SearchData searchData)
+    public AddressListFragment(FragmentRemover fragmentRemover, String searchWord)
     {
         this.fragmentRemover = fragmentRemover;
-        this.searchData = searchData;
+        this.SEARCH_WORD = searchWord;
     }
 
     @Nullable
@@ -49,8 +51,12 @@ public class AddressListFragment extends Fragment
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
+        ((RelativeLayout) view.findViewById(R.id.map_search_result_header)).setVisibility(View.INVISIBLE);
+        ((RelativeLayout) view.findViewById(R.id.map_search_result_header)).setEnabled(false);
+        ((TextView) view.findViewById(R.id.map_search_result_type)).setText(getString(R.string.result_address));
         itemRecyclerView = (RecyclerView) view.findViewById(R.id.map_search_result_recyclerview);
         itemRecyclerView.setLayoutManager(new LinearLayoutManager(view.getContext(), RecyclerView.VERTICAL, false));
+        itemRecyclerView.addItemDecoration(new DividerItemDecoration(view.getContext(), DividerItemDecoration.VERTICAL));
         viewModel = new ViewModelProvider(this).get(AddressViewModel.class);
     }
 
@@ -59,14 +65,14 @@ public class AddressListFragment extends Fragment
     {
         super.onActivityCreated(savedInstanceState);
 
-        parameter.setQuery(searchData.getSearchWord()).setPage(LocalApiPlaceParameter.DEFAULT_PAGE)
+        parameter.setQuery(SEARCH_WORD).setPage(LocalApiPlaceParameter.DEFAULT_PAGE)
                 .setSize(LocalApiPlaceParameter.DEFAULT_SIZE);
-        if (KakaoLocalApiCategoryUtil.isCategory(searchData.getSearchWord()))
+        if (KakaoLocalApiCategoryUtil.isCategory(SEARCH_WORD))
         {
             // fragmentRemover.removeFragment(this);
         } else
         {
-            parameter.setQuery(searchData.getSearchWord());
+            parameter.setQuery(SEARCH_WORD);
             adapter = new AddressesAdapter(getContext());
             itemRecyclerView.setAdapter(adapter);
 

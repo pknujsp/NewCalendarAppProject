@@ -30,10 +30,9 @@ import android.widget.TextView;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.activity.map.MapActivity;
 import com.zerodsoft.scheduleweather.activity.map.fragment.interfaces.ICatchedLocation;
+import com.zerodsoft.scheduleweather.activity.map.fragment.interfaces.IMapPoint;
 import com.zerodsoft.scheduleweather.activity.map.fragment.search.SearchFragment;
-import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.interfaces.IMapInfo;
 import com.zerodsoft.scheduleweather.kakaomap.viewmodel.AddressViewModel;
 import com.zerodsoft.scheduleweather.kakaomap.viewmodel.PlacesViewModel;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
@@ -50,7 +49,7 @@ import net.daum.mf.map.api.MapView;
 
 import java.util.List;
 
-public class MapFragment extends Fragment implements MapView.POIItemEventListener, MapReverseGeoCoder.ReverseGeoCodingResultListener, MapView.MapViewEventListener, IMapInfo
+public class MapFragment extends Fragment implements MapView.POIItemEventListener, MapReverseGeoCoder.ReverseGeoCodingResultListener, MapView.MapViewEventListener, IMapPoint
 {
     // list에서 item클릭 시 poiitem이 선택되고 맵 중앙좌표가 해당item의 좌표로 변경되면서 하단 시트가 올라온다
     public static final String TAG = "MapFragment";
@@ -475,16 +474,21 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
         mapView.removeAllPOIItems();
     }
 
-    @Override
-    public MapPoint.GeoCoordinate getMapCenterPoint()
-    {
-        return mapView.getMapCenterPoint().getMapPointGeoCoord();
-    }
-
 
     public void onShowItem(int position)
     {
-
         bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+    }
+
+    @Override
+    public double getLatitude()
+    {
+        return mapView.getMapCenterPoint().getMapPointGeoCoord().latitude;
+    }
+
+    @Override
+    public double getLongitude()
+    {
+        return mapView.getMapCenterPoint().getMapPointGeoCoord().longitude;
     }
 }

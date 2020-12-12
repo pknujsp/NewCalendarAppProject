@@ -15,12 +15,10 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.activity.map.fragment.dto.SearchData;
+import com.zerodsoft.scheduleweather.activity.map.fragment.interfaces.IMapPoint;
 import com.zerodsoft.scheduleweather.activity.map.fragment.map.MapFragment;
 import com.zerodsoft.scheduleweather.activity.map.fragment.search.SearchFragment;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.interfaces.ResultFragmentChanger;
-
-import java.util.List;
 
 public class SearchResultFragmentController extends Fragment implements ResultFragmentChanger
 {
@@ -35,17 +33,14 @@ public class SearchResultFragmentController extends Fragment implements ResultFr
     private boolean isShowHeader = true;
     private boolean isShowList = true;
 
-    private FrameLayout headerLayout;
-    private FrameLayout listLayout;
-
     public static final int MAP = 0;
     public static final int LIST = 1;
 
-    public SearchResultFragmentController(Bundle bundle)
+    public SearchResultFragmentController(Bundle bundle, IMapPoint iMapPoint)
     {
-        SearchData searchData = bundle.getParcelable("searchData");
-        headerFragment = SearchResultHeaderFragment.newInstance(searchData, SearchResultFragmentController.this);
-        listFragment = SearchResultListFragment.newInstance(searchData);
+        String searchWord = bundle.getString("searchWord");
+        headerFragment = SearchResultHeaderFragment.newInstance(searchWord, SearchResultFragmentController.this);
+        listFragment = SearchResultListFragment.newInstance(searchWord, iMapPoint);
     }
 
     public static SearchResultFragmentController getInstance()
@@ -53,9 +48,9 @@ public class SearchResultFragmentController extends Fragment implements ResultFr
         return instance;
     }
 
-    public static SearchResultFragmentController newInstance(Bundle bundle)
+    public static SearchResultFragmentController newInstance(Bundle bundle, IMapPoint iMapPoint)
     {
-        instance = new SearchResultFragmentController(bundle);
+        instance = new SearchResultFragmentController(bundle, iMapPoint);
         return instance;
     }
 

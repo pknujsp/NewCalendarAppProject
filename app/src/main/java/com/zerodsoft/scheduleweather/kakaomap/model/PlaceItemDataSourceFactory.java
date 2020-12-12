@@ -3,9 +3,12 @@ package com.zerodsoft.scheduleweather.kakaomap.model;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.MutableLiveData;
 import androidx.paging.DataSource;
+import androidx.paging.PositionalDataSource;
 
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
+
+import java.util.List;
 
 public class PlaceItemDataSourceFactory extends DataSource.Factory<Integer, PlaceDocuments>
 {
@@ -27,6 +30,7 @@ public class PlaceItemDataSourceFactory extends DataSource.Factory<Integer, Plac
         liveData.postValue(dataSource);
         return dataSource;
     }
+
 
     public MutableLiveData<PlaceItemDataSource> getLiveData()
     {

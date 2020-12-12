@@ -20,9 +20,12 @@ public class PlacesViewModel extends ViewModel
     private PlaceItemDataSourceFactory dataSourceFactory;
     private MutableLiveData<PlaceItemDataSource> dataSourceMutableLiveData;
     private Executor executor;
+    private PagedList.Config config;
 
     public PlacesViewModel()
     {
+        executor = Executors.newFixedThreadPool(5);
+        pagedListLiveData = new MutableLiveData<>();
     }
 
     public void init(LocalApiPlaceParameter placeParameter)
@@ -30,13 +33,12 @@ public class PlacesViewModel extends ViewModel
         dataSourceFactory = new PlaceItemDataSourceFactory(placeParameter);
         dataSourceMutableLiveData = dataSourceFactory.getLiveData();
 
-        PagedList.Config config = (new PagedList.Config.Builder())
+        config = (new PagedList.Config.Builder())
                 .setEnablePlaceholders(false)
                 .setInitialLoadSizeHint(Integer.parseInt(LocalApiPlaceParameter.DEFAULT_SIZE))
                 .setPageSize(1)
                 .setPrefetchDistance(4)
                 .build();
-        executor = Executors.newFixedThreadPool(5);
         pagedListLiveData = new LivePagedListBuilder<Integer, PlaceDocuments>(dataSourceFactory, config)
                 .setFetchExecutor(executor)
                 .build();

@@ -116,4 +116,5 @@ public class PlaceItemDataSource extends PositionalDataSource<PlaceDocuments>
             callback.onResult(new ArrayList<PlaceDocuments>(0));
         }
     }
+
 }

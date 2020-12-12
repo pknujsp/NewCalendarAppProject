@@ -13,7 +13,6 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.activity.map.fragment.dto.SearchData;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.interfaces.ResultFragmentChanger;
 import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
 
@@ -27,9 +26,9 @@ public class SearchResultHeaderFragment extends Fragment
     private final String SEARCH_WORD;
     private ResultFragmentChanger resultFragmentChanger;
 
-    public SearchResultHeaderFragment(SearchData searchData, Fragment fragment)
+    public SearchResultHeaderFragment(String searchWord, Fragment fragment)
     {
-        this.SEARCH_WORD = searchData.getSearchWord();
+        this.SEARCH_WORD = searchWord;
         this.resultFragmentChanger = (ResultFragmentChanger) fragment;
     }
 
@@ -38,9 +37,9 @@ public class SearchResultHeaderFragment extends Fragment
         return instance;
     }
 
-    public static SearchResultHeaderFragment newInstance(SearchData searchData, Fragment fragment)
+    public static SearchResultHeaderFragment newInstance(String searchWord, Fragment fragment)
     {
-        instance = new SearchResultHeaderFragment(searchData, fragment);
+        instance = new SearchResultHeaderFragment(searchWord, fragment);
         return instance;
     }
 
