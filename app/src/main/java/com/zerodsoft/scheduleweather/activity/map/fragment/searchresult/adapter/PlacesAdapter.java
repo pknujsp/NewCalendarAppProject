@@ -8,17 +8,25 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.paging.LivePagedListBuilder;
 import androidx.paging.PagedList;
 import androidx.paging.PagedListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.activity.map.fragment.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.kakaomap.callback.PlaceItemCallback;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
 
 public class PlacesAdapter extends PagedListAdapter<PlaceDocuments, PlacesAdapter.ItemViewHolder>
 {
     private Context context;
+    private IMapData iMapData;
 
     class ItemViewHolder extends RecyclerView.ViewHolder
     {
@@ -36,6 +44,14 @@ public class PlacesAdapter extends PagedListAdapter<PlaceDocuments, PlacesAdapte
             placeCategory = (TextView) view.findViewById(R.id.place_category);
             placeAddressName = (TextView) view.findViewById(R.id.place_address_name);
             placeDistance = (TextView) view.findViewById(R.id.place_distance);
+            view.getRootView().setOnClickListener(new View.OnClickListener()
+            {
+                @Override
+                public void onClick(View view)
+                {
+                    iMapData.selectPlacePoiItem(getAdapterPosition());
+                }
+            });
         }
 
         public void bind(PlaceDocuments item)
@@ -48,10 +64,11 @@ public class PlacesAdapter extends PagedListAdapter<PlaceDocuments, PlacesAdapte
         }
     }
 
-    public PlacesAdapter(Context context)
+    public PlacesAdapter(Context context, IMapData iMapData)
     {
         super(new PlaceItemCallback());
         this.context = context;
+        this.iMapData = iMapData;
     }
 
     @NonNull
@@ -67,15 +84,5 @@ public class PlacesAdapter extends PagedListAdapter<PlaceDocuments, PlacesAdapte
         holder.bind(getItem(position));
     }
 
-    @Override
-    public void submitList(@Nullable PagedList<PlaceDocuments> pagedList, @Nullable Runnable commitCallback)
-    {
-        super.submitList(pagedList, commitCallback);
-    }
 
-    @Override
-    public void submitList(@Nullable PagedList<PlaceDocuments> pagedList)
-    {
-        super.submitList(pagedList);
-    }
 }

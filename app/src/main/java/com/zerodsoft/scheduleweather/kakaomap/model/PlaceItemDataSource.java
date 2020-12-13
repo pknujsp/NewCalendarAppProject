@@ -30,6 +30,8 @@ public class PlaceItemDataSource extends PositionalDataSource<PlaceDocuments>
         this.localApiPlaceParameter = localApiParameter;
     }
 
+
+
     @Override
     public void loadInitial(@NonNull LoadInitialParams params, @NonNull LoadInitialCallback<PlaceDocuments> callback)
     {
@@ -60,7 +62,6 @@ public class PlaceItemDataSource extends PositionalDataSource<PlaceDocuments>
                     placeDocuments = response.body().getPlaceDocuments();
                     placeMeta = response.body().getPlaceMeta();
                 }
-
                 callback.onResult(placeDocuments, 0, placeDocuments.size());
             }
 

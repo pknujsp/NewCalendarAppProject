@@ -1,8 +1,11 @@
 package com.zerodsoft.scheduleweather.kakaomap.viewmodel;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
+import androidx.paging.DataSource;
 import androidx.paging.LivePagedListBuilder;
 import androidx.paging.PagedList;
 
@@ -35,8 +38,8 @@ public class PlacesViewModel extends ViewModel
 
         config = (new PagedList.Config.Builder())
                 .setEnablePlaceholders(false)
-                .setInitialLoadSizeHint(Integer.parseInt(LocalApiPlaceParameter.DEFAULT_SIZE))
-                .setPageSize(1)
+                .setInitialLoadSizeHint(Integer.parseInt(LocalApiPlaceParameter.DEFAULT_SIZE) * 2)
+                .setPageSize(15)
                 .setPrefetchDistance(4)
                 .build();
         pagedListLiveData = new LivePagedListBuilder<Integer, PlaceDocuments>(dataSourceFactory, config)
@@ -48,4 +51,5 @@ public class PlacesViewModel extends ViewModel
     {
         return pagedListLiveData;
     }
+
 }

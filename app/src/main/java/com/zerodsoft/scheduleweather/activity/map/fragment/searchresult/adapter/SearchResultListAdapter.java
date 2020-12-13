@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
+import com.zerodsoft.scheduleweather.activity.map.fragment.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.activity.map.fragment.interfaces.IMapPoint;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.AddressListFragment;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.PlaceListFragment;
@@ -18,13 +19,13 @@ public class SearchResultListAdapter extends FragmentStateAdapter implements Fra
     private List<Fragment> fragments;
     private IndicatorCreater indicatorCreater;
 
-    public SearchResultListAdapter(@NonNull Fragment fragment, IMapPoint iMapPoint, String searchWord)
+    public SearchResultListAdapter(@NonNull Fragment fragment, IMapPoint iMapPoint, IMapData iMapData, String searchWord)
     {
         super(fragment);
         this.indicatorCreater = (IndicatorCreater) fragment;
         fragments = new ArrayList<>();
-        fragments.add(new AddressListFragment(this, searchWord));
-        fragments.add(new PlaceListFragment(iMapPoint, this, searchWord));
+        fragments.add(new AddressListFragment(this,searchWord,iMapData));
+        fragments.add(new PlaceListFragment(iMapPoint, this, searchWord,iMapData));
     }
 
     @NonNull

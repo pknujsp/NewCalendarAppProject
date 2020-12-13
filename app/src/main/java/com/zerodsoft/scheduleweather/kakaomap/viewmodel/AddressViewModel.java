@@ -36,8 +36,8 @@ public class AddressViewModel extends ViewModel
 
         PagedList.Config config = (new PagedList.Config.Builder())
                 .setEnablePlaceholders(false)
-                .setInitialLoadSizeHint(Integer.parseInt(LocalApiPlaceParameter.DEFAULT_SIZE))
-                .setPageSize(1)
+                .setInitialLoadSizeHint(Integer.parseInt(LocalApiPlaceParameter.DEFAULT_SIZE) * 2)
+                .setPageSize(15)
                 .setPrefetchDistance(4)
                 .build();
         executor = Executors.newFixedThreadPool(5);

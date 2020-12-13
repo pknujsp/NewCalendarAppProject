@@ -1,5 +1,6 @@
 package com.zerodsoft.scheduleweather.activity.map;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -25,6 +26,7 @@ public class MapActivity extends AppCompatActivity implements FragmentReplace, I
     private LocationDTO selectedLocation;
     private AddressDTO selectedAddress;
     private PlaceDTO selectedPlace;
+    private OnBackPressedCallback onBackPressedCallback;
 
     public MapActivity()
     {
@@ -65,14 +67,19 @@ public class MapActivity extends AppCompatActivity implements FragmentReplace, I
         init(getIntent().getExtras());
         // Map프래그먼트 추가/실행
         fragmentManager.beginTransaction().add(FRAGMENT_CONTAINER_ID, MapFragment.newInstance(this), MapFragment.TAG).commit();
+
+        onBackPressedCallback = new OnBackPressedCallback(true)
+        {
+            @Override
+            public void handleOnBackPressed()
+            {
+                setResult(RESULT_CANCELED);
+                finish();
+            }
+        };
+        getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
     }
 
-    @Override
-    public void onBackPressed()
-    {
-        setResult(RESULT_CANCELED);
-        finish();
-    }
 
     @Override
     public LocationDTO getLocation()

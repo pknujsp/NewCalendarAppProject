@@ -18,4 +18,5 @@ public class PlaceItemCallback extends DiffUtil.ItemCallback<PlaceDocuments>
     {
         return oldItem.getId().equals(newItem.getId());
     }
+
 }

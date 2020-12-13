@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -18,6 +19,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.activity.map.fragment.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.adapter.AddressesAdapter;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.interfaces.FragmentRemover;
 import com.zerodsoft.scheduleweather.kakaomap.viewmodel.AddressViewModel;
@@ -32,12 +34,15 @@ public class AddressListFragment extends Fragment
     private AddressViewModel viewModel;
     private AddressesAdapter adapter;
     private FragmentRemover fragmentRemover;
+    private ProgressBar progressBar;
+    private IMapData iMapData;
     private final String SEARCH_WORD;
 
-    public AddressListFragment(FragmentRemover fragmentRemover, String searchWord)
+    public AddressListFragment(FragmentRemover fragmentRemover, String searchWord, IMapData iMapData)
     {
         this.fragmentRemover = fragmentRemover;
         this.SEARCH_WORD = searchWord;
+        this.iMapData = iMapData;
     }
 
     @Nullable
@@ -51,9 +56,11 @@ public class AddressListFragment extends Fragment
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
-        ((RelativeLayout) view.findViewById(R.id.map_search_result_header)).setVisibility(View.INVISIBLE);
+        ((RelativeLayout) view.findViewById(R.id.map_search_result_header)).setVisibility(View.GONE);
         ((RelativeLayout) view.findViewById(R.id.map_search_result_header)).setEnabled(false);
         ((TextView) view.findViewById(R.id.map_search_result_type)).setText(getString(R.string.result_address));
+
+        progressBar = (ProgressBar) view.findViewById(R.id.map_request_progress_bar);
         itemRecyclerView = (RecyclerView) view.findViewById(R.id.map_search_result_recyclerview);
         itemRecyclerView.setLayoutManager(new LinearLayoutManager(view.getContext(), RecyclerView.VERTICAL, false));
         itemRecyclerView.addItemDecoration(new DividerItemDecoration(view.getContext(), DividerItemDecoration.VERTICAL));
@@ -65,11 +72,14 @@ public class AddressListFragment extends Fragment
     {
         super.onActivityCreated(savedInstanceState);
 
+        progressBar.setVisibility(View.VISIBLE);
+
         parameter.setQuery(SEARCH_WORD).setPage(LocalApiPlaceParameter.DEFAULT_PAGE)
                 .setSize(LocalApiPlaceParameter.DEFAULT_SIZE);
         if (KakaoLocalApiCategoryUtil.isCategory(SEARCH_WORD))
         {
             // fragmentRemover.removeFragment(this);
+            progressBar.setVisibility(View.GONE);
         } else
         {
             parameter.setQuery(SEARCH_WORD);
@@ -85,6 +95,7 @@ public class AddressListFragment extends Fragment
                     // 검색 결과가 없으면 이 프래그먼트를 삭제한다.
                     // fragmentRemover.removeFragment(AddressListFragment.this);
                     adapter.submitList(addressResponseDocuments);
+                    progressBar.setVisibility(View.GONE);
                 }
             });
         }

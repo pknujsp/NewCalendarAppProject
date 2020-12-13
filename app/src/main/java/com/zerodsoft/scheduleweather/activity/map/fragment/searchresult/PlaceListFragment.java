@@ -9,14 +9,17 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -31,6 +34,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.activity.map.fragment.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.activity.map.fragment.interfaces.IMapPoint;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.adapter.PlacesAdapter;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.interfaces.FragmentRemover;
@@ -62,20 +66,24 @@ public class PlaceListFragment extends Fragment
 
     private Button searchAroundMapCenterButton;
     private Button searchAroundCurrentLocationButton;
+    private ProgressBar progressBar;
     private LocationManager locationManager;
     private Spinner sortSpinner;
     private ArrayAdapter<CharSequence> spinnerAdapter;
 
+    private Timer timer;
+
     private double mapLatitude;
     private double mapLongitude;
-
+    private IMapData iMapData;
     private final String SEARCH_WORD;
 
-    public PlaceListFragment(IMapPoint iMapPoint, FragmentRemover fragmentRemover, String searchWord)
+    public PlaceListFragment(IMapPoint iMapPoint, FragmentRemover fragmentRemover, String searchWord, IMapData iMapData)
     {
         this.iMapPoint = iMapPoint;
         this.fragmentRemover = fragmentRemover;
         this.SEARCH_WORD = searchWord;
+        this.iMapData = iMapData;
     }
 
     private final LocationListener locationListener = new LocationListener()
@@ -83,9 +91,12 @@ public class PlaceListFragment extends Fragment
         @Override
         public void onLocationChanged(Location location)
         {
+            timer.cancel();
             locationManager.removeUpdates(locationListener);
             mapLongitude = location.getLongitude();
             mapLatitude = location.getLatitude();
+            Toast.makeText(getActivity(), "현재위치" + location.getProvider() + "\n위도 : "
+                    + Double.toString(mapLatitude) + "\n경도:" + Double.toString(mapLongitude), Toast.LENGTH_SHORT).show();
             requestPlacesNow();
         }
 
@@ -134,12 +145,14 @@ public class PlaceListFragment extends Fragment
         sortSpinner.setOnItemSelectedListener(onItemSelectedListener);
         replaceButtonStyle();
 
+        progressBar = (ProgressBar) view.findViewById(R.id.map_request_progress_bar);
+
         searchAroundMapCenterButton.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view)
             {
-                clickableCriteriaSelector(false);
+                enabledViews(false);
                 currSearchMapPointCriteria = SEARCH_CRITERIA_MAP_POINT_MAP_CENTER;
                 replaceButtonStyle();
                 requestPlaces();
@@ -151,7 +164,7 @@ public class PlaceListFragment extends Fragment
             @Override
             public void onClick(View view)
             {
-                clickableCriteriaSelector(false);
+                enabledViews(false);
                 currSearchMapPointCriteria = SEARCH_CRITERIA_MAP_POINT_CURRENT_LOCATION;
                 replaceButtonStyle();
                 requestPlaces();
@@ -159,7 +172,7 @@ public class PlaceListFragment extends Fragment
         });
 
         itemRecyclerView = (RecyclerView) view.findViewById(R.id.map_search_result_recyclerview);
-        itemRecyclerView.setLayoutManager(new LinearLayoutManager(view.getContext(), RecyclerView.VERTICAL, false));
+        itemRecyclerView.setLayoutManager(new CustomGridLayoutManager(view.getContext(), RecyclerView.VERTICAL, false));
         itemRecyclerView.addItemDecoration(new DividerItemDecoration(view.getContext(), DividerItemDecoration.VERTICAL));
         viewModel = new ViewModelProvider(this).get(PlacesViewModel.class);
     }
@@ -168,6 +181,7 @@ public class PlaceListFragment extends Fragment
     public void onActivityCreated(@Nullable Bundle savedInstanceState)
     {
         super.onActivityCreated(savedInstanceState);
+        enabledViews(false);
         requestPlaces();
     }
 
@@ -191,7 +205,7 @@ public class PlaceListFragment extends Fragment
         @Override
         public void onItemSelected(AdapterView<?> adapterView, View view, int index, long l)
         {
-            clickableCriteriaSelector(false);
+            enabledViews(false);
             switch (index)
             {
                 case 0:
@@ -222,13 +236,16 @@ public class PlaceListFragment extends Fragment
                 int fineLocationPermission = ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION);
                 int coarseLocationPermission = ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION);
 
-                //  locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
-                locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+
+                timer = new Timer();
+                timer.schedule(new RequestLocationTimer(), 2000);
+
             } else
             {
                 //gps켜달라고 요청하기
+                enabledViews(true);
                 showRequestDialog();
-                clickableCriteriaSelector(true);
             }
         } else
         {
@@ -240,7 +257,9 @@ public class PlaceListFragment extends Fragment
     private void requestPlacesNow()
     {
         setParameter();
-        adapter = new PlacesAdapter(getContext());
+        adapter = new PlacesAdapter(getContext(), iMapData);
+        adapter.registerAdapterDataObserver(adapterDataObserver);
+        itemRecyclerView.removeAllViews();
         itemRecyclerView.setAdapter(adapter);
         viewModel.init(parameter);
         viewModel.getPagedListMutableLiveData().observe(getViewLifecycleOwner(), observer);
@@ -252,7 +271,7 @@ public class PlaceListFragment extends Fragment
         public void onChanged(PagedList<PlaceDocuments> placeDocuments)
         {
             adapter.submitList(placeDocuments);
-            clickableCriteriaSelector(true);
+            enabledViews(true);
         }
     };
 
@@ -275,6 +294,7 @@ public class PlaceListFragment extends Fragment
                     public void onClick(DialogInterface dialogInterface, int i)
                     {
                         currSearchMapPointCriteria = SEARCH_CRITERIA_MAP_POINT_MAP_CENTER;
+                        enabledViews(false);
                         requestPlacesNow();
                     }
                 })
@@ -284,6 +304,7 @@ public class PlaceListFragment extends Fragment
 
     private void setParameter()
     {
+        parameter.clear();
         parameter.setY(Double.toString(getLatitude())).setX(Double.toString(getLongitude()))
                 .setSize(LocalApiPlaceParameter.DEFAULT_SIZE).setPage(LocalApiPlaceParameter.DEFAULT_PAGE);
 
@@ -306,11 +327,15 @@ public class PlaceListFragment extends Fragment
         }
     }
 
-    private void clickableCriteriaSelector(boolean state)
+    private void enabledViews(boolean state)
     {
         searchAroundCurrentLocationButton.setClickable(state);
         searchAroundMapCenterButton.setClickable(state);
         sortSpinner.setClickable(state);
+        sortSpinner.setEnabled(state);
+        progressBar.setVisibility(state ? View.GONE : View.VISIBLE);
+        ((CustomGridLayoutManager) itemRecyclerView.getLayoutManager()).setScrollEnabled(state);
+        itemRecyclerView.setClickable(state);
     }
 
     private double getLatitude()
@@ -322,4 +347,93 @@ public class PlaceListFragment extends Fragment
     {
         return currSearchMapPointCriteria == SEARCH_CRITERIA_MAP_POINT_CURRENT_LOCATION ? mapLongitude : iMapPoint.getLongitude();
     }
+
+    class RequestLocationTimer extends TimerTask
+    {
+        @Override
+        public void run()
+        {
+            timer.cancel();
+
+            getActivity().runOnUiThread(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    int fineLocationPermission = ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION);
+                    int coarseLocationPermission = ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION);
+                    locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
+                }
+            });
+            locationManager.removeUpdates(locationListener);
+        }
+    }
+
+    class CustomGridLayoutManager extends LinearLayoutManager
+    {
+        private boolean isScrollEnabled = true;
+
+
+        public CustomGridLayoutManager(Context context, int orientation, boolean reverseLayout)
+        {
+            super(context, orientation, reverseLayout);
+        }
+
+        public void setScrollEnabled(boolean flag)
+        {
+            this.isScrollEnabled = flag;
+        }
+
+        @Override
+        public boolean canScrollVertically()
+        {
+            return isScrollEnabled && super.canScrollVertically();
+        }
+    }
+
+    private final RecyclerView.AdapterDataObserver adapterDataObserver = new RecyclerView.AdapterDataObserver()
+    {
+        @Override
+        public void onChanged()
+        {
+            super.onChanged();
+            Log.e(getClass().getName(), "onChanged");
+        }
+
+        @Override
+        public void onItemRangeChanged(int positionStart, int itemCount)
+        {
+            super.onItemRangeChanged(positionStart, itemCount);
+            Log.e(getClass().getName(), "onItemRangeChanged");
+        }
+
+        @Override
+        public void onItemRangeChanged(int positionStart, int itemCount, @Nullable Object payload)
+        {
+            super.onItemRangeChanged(positionStart, itemCount, payload);
+            Log.e(getClass().getName(), "onItemRangeChanged");
+        }
+
+        @Override
+        public void onItemRangeInserted(int positionStart, int itemCount)
+        {
+            super.onItemRangeInserted(positionStart, itemCount);
+            Log.e(getClass().getName(), "onItemRangeInserted");
+            iMapData.createPlacesPoiItems(adapter.getCurrentList().snapshot());
+        }
+
+        @Override
+        public void onItemRangeRemoved(int positionStart, int itemCount)
+        {
+            super.onItemRangeRemoved(positionStart, itemCount);
+            Log.e(getClass().getName(), "onItemRangeRemoved");
+        }
+
+        @Override
+        public void onItemRangeMoved(int fromPosition, int toPosition, int itemCount)
+        {
+            super.onItemRangeMoved(fromPosition, toPosition, itemCount);
+            Log.e(getClass().getName(), "onItemRangeMoved");
+        }
+    };
 }

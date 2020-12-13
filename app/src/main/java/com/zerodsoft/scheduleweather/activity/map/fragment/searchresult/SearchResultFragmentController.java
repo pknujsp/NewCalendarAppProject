@@ -15,6 +15,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.activity.map.fragment.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.activity.map.fragment.interfaces.IMapPoint;
 import com.zerodsoft.scheduleweather.activity.map.fragment.map.MapFragment;
 import com.zerodsoft.scheduleweather.activity.map.fragment.search.SearchFragment;
@@ -30,17 +31,19 @@ public class SearchResultFragmentController extends Fragment implements ResultFr
     private SearchResultListFragment listFragment;
     private FragmentManager fragmentManager;
 
-    private boolean isShowHeader = true;
     private boolean isShowList = true;
 
     public static final int MAP = 0;
     public static final int LIST = 1;
 
-    public SearchResultFragmentController(Bundle bundle, IMapPoint iMapPoint)
+    private IMapData iMapData;
+
+    public SearchResultFragmentController(Bundle bundle, IMapPoint iMapPoint, IMapData iMapData)
     {
         String searchWord = bundle.getString("searchWord");
         headerFragment = SearchResultHeaderFragment.newInstance(searchWord, SearchResultFragmentController.this);
-        listFragment = SearchResultListFragment.newInstance(searchWord, iMapPoint);
+        listFragment = SearchResultListFragment.newInstance(searchWord, iMapPoint, iMapData);
+        this.iMapData = iMapData;
     }
 
     public static SearchResultFragmentController getInstance()
@@ -48,9 +51,9 @@ public class SearchResultFragmentController extends Fragment implements ResultFr
         return instance;
     }
 
-    public static SearchResultFragmentController newInstance(Bundle bundle, IMapPoint iMapPoint)
+    public static SearchResultFragmentController newInstance(Bundle bundle, IMapPoint iMapPoint, IMapData iMapData)
     {
-        instance = new SearchResultFragmentController(bundle, iMapPoint);
+        instance = new SearchResultFragmentController(bundle, iMapPoint, iMapData);
         return instance;
     }
 
@@ -66,10 +69,8 @@ public class SearchResultFragmentController extends Fragment implements ResultFr
                 if (isShowList)
                 {
                     // list인 경우
-                    FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                    fragmentManager.popBackStackImmediate();
-
-                    fragmentTransaction.show(SearchFragment.getInstance()).commit();
+                    fragmentManager.beginTransaction().remove(SearchResultFragmentController.this).show(SearchFragment.getInstance()).commit();
+                    iMapData.removeAllPoiItems();
                 } else
                 {
                     // map인 경우
@@ -78,6 +79,13 @@ public class SearchResultFragmentController extends Fragment implements ResultFr
             }
         };
         requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
+    }
+
+    @Override
+    public void onDetach()
+    {
+        super.onDetach();
+        onBackPressedCallback.remove();
     }
 
     @Nullable
@@ -121,13 +129,15 @@ public class SearchResultFragmentController extends Fragment implements ResultFr
             // to map
             // 버튼 이미지, 프래그먼트 숨김/보이기 설정
             headerFragment.setChangeButtonDrawable(MAP);
-
+            iMapData.showAllPoiItems();
             fragmentTransaction.hide(listFragment).hide(headerFragment).show(MapFragment.getInstance()).show(headerFragment).commit();
+            isShowList = false;
         } else
         {
             // to list
             headerFragment.setChangeButtonDrawable(LIST);
-            fragmentTransaction.hide(MapFragment.getInstance()).hide(headerFragment).show(listFragment).show(headerFragment).commit();
+            fragmentTransaction.hide(headerFragment).hide(MapFragment.getInstance()).show(listFragment).show(headerFragment).commit();
+            isShowList = true;
         }
     }
 

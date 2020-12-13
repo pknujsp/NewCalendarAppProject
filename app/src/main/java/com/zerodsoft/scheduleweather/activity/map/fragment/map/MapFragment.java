@@ -30,9 +30,12 @@ import android.widget.TextView;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.activity.map.MapActivity;
 import com.zerodsoft.scheduleweather.activity.map.fragment.interfaces.ICatchedLocation;
+import com.zerodsoft.scheduleweather.activity.map.fragment.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.activity.map.fragment.interfaces.IMapPoint;
 import com.zerodsoft.scheduleweather.activity.map.fragment.search.SearchFragment;
+import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.SearchResultFragmentController;
 import com.zerodsoft.scheduleweather.kakaomap.viewmodel.AddressViewModel;
 import com.zerodsoft.scheduleweather.kakaomap.viewmodel.PlacesViewModel;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
@@ -49,7 +52,7 @@ import net.daum.mf.map.api.MapView;
 
 import java.util.List;
 
-public class MapFragment extends Fragment implements MapView.POIItemEventListener, MapReverseGeoCoder.ReverseGeoCodingResultListener, MapView.MapViewEventListener, IMapPoint
+public class MapFragment extends Fragment implements MapView.POIItemEventListener, MapReverseGeoCoder.ReverseGeoCodingResultListener, MapView.MapViewEventListener, IMapPoint, IMapData
 {
     // list에서 item클릭 시 poiitem이 선택되고 맵 중앙좌표가 해당item의 좌표로 변경되면서 하단 시트가 올라온다
     public static final String TAG = "MapFragment";
@@ -59,9 +62,6 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     private MapView mapView;
     private CoordinatorLayout mapViewContainer;
     private LocationManager locationManager;
-
-    private MapPOIItem[] addressPoiItems;
-    private MapPOIItem[] placePoiItems;
 
     private ImageButton gpsButton;
     private TextView currentAddress;
@@ -80,6 +80,8 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     private PlaceDocuments selectedPlaceDocument;
 
     private OnBackPressedCallback onBackPressedCallback;
+
+    private String appKey;
 
     public MapFragment(ICatchedLocation iCatchedLocation)
     {
@@ -103,7 +105,8 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
         public void onLocationChanged(Location location)
         {
             currentMapPoint = MapPoint.mapPointWithGeoCoord(location.getLatitude(), location.getLongitude());
-            mapView.setMapCenterPoint(currentMapPoint, true);
+            mapView.setMapCenterPoint(currentMapPoint, false);
+            mapReverseGeoCoder.startFindingAddress(MapReverseGeoCoder.AddressType.ShortAddress);
             locationManager.removeUpdates(locationListener);
         }
 
@@ -130,15 +133,38 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     public void onAttach(@NonNull Context context)
     {
         super.onAttach(context);
+        FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
+        List<Fragment> fragments = fragmentManager.getFragments();
+        boolean isSearchResultState = false;
+        for (Fragment fragment : fragments)
+        {
+            if (fragment instanceof SearchResultFragmentController)
+            {
+                //검색 결과를 보여주고 있는 경우
+                isSearchResultState = true;
+            }
+        }
+
         onBackPressedCallback = new OnBackPressedCallback(true)
         {
             @Override
             public void handleOnBackPressed()
             {
-                requireActivity().onBackPressed();
+                ((MapActivity) getActivity()).getOnBackPressedDispatcher().onBackPressed();
             }
         };
-        // requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
+
+        if (!isSearchResultState)
+        {
+            requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
+        }
+    }
+
+    @Override
+    public void onDetach()
+    {
+        super.onDetach();
+        onBackPressedCallback.remove();
     }
 
     @Nullable
@@ -185,7 +211,7 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
                 FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
                 FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
                 fragmentTransaction.add(R.id.map_activity_fragment_container, SearchFragment.newInstance(MapFragment.this), SearchFragment.TAG)
-                        .addToBackStack(null).hide(MapFragment.this).commit();
+                        .hide(MapFragment.this).commit();
             }
         });
 
@@ -232,8 +258,6 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
         });
 
         currentAddress = (TextView) view.findViewById(R.id.current_address);
-
-        initMapView();
     }
 
     private void initMapView()
@@ -252,9 +276,9 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
         {
             e.printStackTrace();
         }
+        appKey = ai.metaData.getString("com.kakao.sdk.AppKey");
 
-        mapReverseGeoCoder = new MapReverseGeoCoder(ai.metaData.getString("com.kakao.sdk.AppKey"), currentMapPoint
-                , this, getActivity());
+
     }
 
     @Override
@@ -292,6 +316,7 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
                         currentMapPoint.getMapPointGeoCoord().latitude = selectedAddressDocument.getY();
                         currentMapPoint.getMapPointGeoCoord().longitude = selectedAddressDocument.getX();
 
+                        initMapView();
                         mapView.setMapCenterPoint(currentMapPoint, false);
                         mapView.removeAllPOIItems();
                         createPoiItem(selectedAddressDocument.getAddressName());
@@ -336,6 +361,7 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
                         currentMapPoint.getMapPointGeoCoord().latitude = selectedPlaceDocument.getY();
                         currentMapPoint.getMapPointGeoCoord().longitude = selectedPlaceDocument.getX();
 
+                        initMapView();
                         mapView.setMapCenterPoint(currentMapPoint, false);
                         mapView.removeAllPOIItems();
                         createPoiItem(selectedPlaceDocument.getPlaceName());
@@ -345,7 +371,50 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
             }
         } else
         {
-            gpsButton.performClick();
+            if (locationManager == null)
+            {
+                locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
+            }
+            boolean isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+            boolean isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+
+            int fineLocationPermission = ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION);
+            int coarseLocationPermission = ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION);
+
+            if (isGpsEnabled || isNetworkEnabled)
+            {
+                locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, new LocationListener()
+                {
+                    @Override
+                    public void onLocationChanged(Location location)
+                    {
+
+                        currentMapPoint = MapPoint.mapPointWithGeoCoord(location.getLatitude(), location.getLongitude());
+                        initMapView();
+                        mapView.setMapCenterPoint(currentMapPoint, false);
+                        mapReverseGeoCoder.startFindingAddress(MapReverseGeoCoder.AddressType.ShortAddress);
+                        locationManager.removeUpdates(this);
+                    }
+
+                    @Override
+                    public void onStatusChanged(String s, int i, Bundle bundle)
+                    {
+
+                    }
+
+                    @Override
+                    public void onProviderEnabled(String s)
+                    {
+
+                    }
+
+                    @Override
+                    public void onProviderDisabled(String s)
+                    {
+
+                    }
+                });
+            }
         }
     }
 
@@ -363,6 +432,7 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
         poiItem.setMapPoint(currentMapPoint);
         poiItem.setMarkerType(MapPOIItem.MarkerType.BluePin); // 기본으로 제공하는 BluePin 마커 모양.
         poiItem.setSelectedMarkerType(MapPOIItem.MarkerType.RedPin); // 마커를 클릭했을때, 기본으로 제공하는 RedPin 마커 모양.
+        mapView.removeAllPOIItems();
         mapView.addPOIItem(poiItem);
     }
 
@@ -433,7 +503,7 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     {
         currentMapPoint.getMapPointGeoCoord().longitude = mapPoint.getMapPointGeoCoord().longitude;
         currentMapPoint.getMapPointGeoCoord().latitude = mapPoint.getMapPointGeoCoord().latitude;
-
+        mapReverseGeoCoder = new MapReverseGeoCoder(appKey, currentMapPoint, this, getActivity());
         mapReverseGeoCoder.startFindingAddress(MapReverseGeoCoder.AddressType.ShortAddress);
     }
 
@@ -441,9 +511,9 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     public void onPOIItemSelected(MapView mapView, MapPOIItem mapPOIItem)
     {
         // poiitem을 선택하였을 경우에 수행됨
-        onShowItem(mapPOIItem.getTag());
+        // onShowItem(mapPOIItem.getTag());
         currentMapPoint = MapPoint.mapPointWithGeoCoord(mapPOIItem.getMapPoint().getMapPointGeoCoord().latitude, mapPOIItem.getMapPoint().getMapPointGeoCoord().longitude);
-        mapView.setMapCenterPoint(currentMapPoint, true);
+        mapView.setMapCenterPoint(currentMapPoint, false);
     }
 
     @Override
@@ -466,15 +536,6 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
 
     }
 
-
-    public void removeAllPoiItems()
-    {
-        addressPoiItems = null;
-        placePoiItems = null;
-        mapView.removeAllPOIItems();
-    }
-
-
     public void onShowItem(int position)
     {
         bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
@@ -490,5 +551,101 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     public double getLongitude()
     {
         return mapView.getMapCenterPoint().getMapPointGeoCoord().longitude;
+    }
+
+    @Override
+    public void createPlacesPoiItems(List<PlaceDocuments> placeDocuments)
+    {
+        mapView.removeAllPOIItems();
+        CustomPoiItem[] poiItems = new CustomPoiItem[placeDocuments.size()];
+
+        int index = 0;
+        for (PlaceDocuments document : placeDocuments)
+        {
+            poiItems[index] = new CustomPoiItem();
+            poiItems[index].setItemName(document.getPlaceName());
+            poiItems[index].setMapPoint(MapPoint.mapPointWithGeoCoord(document.getY(), document.getX()));
+            poiItems[index].setPlaceDocument(document);
+            poiItems[index].setTag(index);
+            poiItems[index].setMarkerType(MapPOIItem.MarkerType.BluePin); // 기본으로 제공하는 BluePin 마커 모양.
+            poiItems[index].setSelectedMarkerType(MapPOIItem.MarkerType.RedPin); // 마커를 클릭했을때, 기본으로 제공하는 RedPin 마커 모양.
+            index++;
+        }
+        mapView.addPOIItems(poiItems);
+    }
+
+    @Override
+    public void createAddressesPoiItems(List<AddressResponseDocuments> addressDocuments)
+    {
+        mapView.removeAllPOIItems();
+
+        if (!addressDocuments.isEmpty())
+        {
+            CustomPoiItem[] poiItems = new CustomPoiItem[addressDocuments.size()];
+
+            int index = 0;
+            for (AddressResponseDocuments document : addressDocuments)
+            {
+                poiItems[index] = new CustomPoiItem();
+                poiItems[index].setItemName(document.getAddressName());
+                poiItems[index].setMapPoint(MapPoint.mapPointWithGeoCoord(document.getY(), document.getX()));
+                poiItems[index].setAddressDocument(document);
+                poiItems[index].setTag(index);
+                poiItems[index].setMarkerType(MapPOIItem.MarkerType.BluePin); // 기본으로 제공하는 BluePin 마커 모양.
+                poiItems[index].setSelectedMarkerType(MapPOIItem.MarkerType.RedPin); // 마커를 클릭했을때, 기본으로 제공하는 RedPin 마커 모양.
+                index++;
+            }
+            mapView.addPOIItems(poiItems);
+        }
+    }
+
+    @Override
+    public void selectPlacePoiItem(int index)
+    {
+        mapView.selectPOIItem(mapView.getPOIItems()[index], false);
+    }
+
+    @Override
+    public void selectAddressPoiItem(int index)
+    {
+        mapView.selectPOIItem(mapView.getPOIItems()[index], false);
+    }
+
+    @Override
+    public void removeAllPoiItems()
+    {
+        mapView.removeAllPOIItems();
+    }
+
+    @Override
+    public void showAllPoiItems()
+    {
+        mapView.fitMapViewAreaToShowAllPOIItems();
+    }
+
+    class CustomPoiItem extends MapPOIItem
+    {
+        private AddressResponseDocuments addressDocument;
+        private PlaceDocuments placeDocument;
+
+        private void setAddressDocument(AddressResponseDocuments document)
+        {
+            this.addressDocument = document;
+        }
+
+        public void setPlaceDocument(PlaceDocuments placeDocument)
+        {
+            this.placeDocument = placeDocument;
+        }
+
+        public AddressResponseDocuments getAddressDocument()
+        {
+            return addressDocument;
+        }
+
+        public PlaceDocuments getPlaceDocument()
+        {
+            return placeDocument;
+        }
     }
 }

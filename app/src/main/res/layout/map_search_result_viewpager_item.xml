@@ -59,11 +59,29 @@
         android:textColor="@color/black_high_emphasis"
         android:textSize="18sp" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/map_search_result_recyclerview"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:nestedScrollingEnabled="false" />
+        android:layout_weight="1">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/map_search_result_recyclerview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:nestedScrollingEnabled="false" />
+
+        <ProgressBar
+            android:id="@+id/map_request_progress_bar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:background="@color/gray_300"
+            android:indeterminateOnly="true"
+            android:paddingLeft="16dp"
+            android:paddingTop="8dp"
+            android:paddingRight="16dp"
+            android:paddingBottom="8dp" />
+    </FrameLayout>
+
 
 </LinearLayout>

@@ -21,6 +21,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 
+import com.zerodsoft.scheduleweather.activity.map.fragment.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.activity.map.fragment.interfaces.IMapPoint;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.adapter.SearchResultListAdapter;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.interfaces.IMapSearch;
@@ -41,6 +42,7 @@ public class SearchResultListFragment extends Fragment implements IndicatorCreat
 
     private OnPageCallback onPageCallback;
     private IMapPoint iMapPoint;
+    private IMapData iMapData;
 
     @Override
     public void setIndicator(int fragmentSize)
@@ -48,10 +50,11 @@ public class SearchResultListFragment extends Fragment implements IndicatorCreat
         viewPagerIndicator.createDot(0, fragmentSize);
     }
 
-    public SearchResultListFragment(String searchWord, IMapPoint iMapPoint)
+    public SearchResultListFragment(String searchWord, IMapPoint iMapPoint, IMapData iMapData)
     {
         this.SEARCH_WORD = searchWord;
         this.iMapPoint = iMapPoint;
+        this.iMapData = iMapData;
     }
 
     public static SearchResultListFragment getInstance()
@@ -59,9 +62,9 @@ public class SearchResultListFragment extends Fragment implements IndicatorCreat
         return instance;
     }
 
-    public static SearchResultListFragment newInstance(String searchWord, IMapPoint iMapPoint)
+    public static SearchResultListFragment newInstance(String searchWord, IMapPoint iMapPoint, IMapData iMapData)
     {
-        instance = new SearchResultListFragment(searchWord, iMapPoint);
+        instance = new SearchResultListFragment(searchWord, iMapPoint, iMapData);
         return instance;
     }
 
@@ -86,7 +89,7 @@ public class SearchResultListFragment extends Fragment implements IndicatorCreat
         fragmentsViewPager = (ViewPager2) view.findViewById(R.id.map_search_result_viewpager);
         viewPagerIndicator = (ViewPagerIndicator) view.findViewById(R.id.map_result_view_pager_indicator);
 
-        searchResultListAdapter = new SearchResultListAdapter(this, iMapPoint, SEARCH_WORD);
+        searchResultListAdapter = new SearchResultListAdapter(this, iMapPoint, iMapData, SEARCH_WORD);
         onPageCallback = new OnPageCallback();
 
         fragmentsViewPager.setAdapter(searchResultListAdapter);
