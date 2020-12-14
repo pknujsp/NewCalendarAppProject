@@ -12,7 +12,6 @@ import android.os.Bundle;
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -24,6 +23,7 @@ import androidx.paging.PagedList;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -60,7 +60,7 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
 
     private MapPoint currentMapPoint = MapPoint.mapPointWithGeoCoord(37.53737528, 127.00557633);
     private MapView mapView;
-    private CoordinatorLayout mapViewContainer;
+    private FrameLayout mapViewContainer;
     private LocationManager locationManager;
 
     private ImageButton gpsButton;
@@ -81,7 +81,13 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
 
     private OnBackPressedCallback onBackPressedCallback;
 
+    private BottomSheetItemView bottomSheetPlaceItemView;
+    private BottomSheetItemView bottomSheetAddressItemView;
+
     private String appKey;
+
+    private final int PLACE_ITEM = 0;
+    private final int ADDRESS_ITEM = 1;
 
     public MapFragment(ICatchedLocation iCatchedLocation)
     {
@@ -106,7 +112,7 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
         {
             currentMapPoint = MapPoint.mapPointWithGeoCoord(location.getLatitude(), location.getLongitude());
             mapView.setMapCenterPoint(currentMapPoint, false);
-            mapReverseGeoCoder.startFindingAddress(MapReverseGeoCoder.AddressType.ShortAddress);
+            mapReverseGeoCoder.startFindingAddress(MapReverseGeoCoder.AddressType.FullAddress);
             locationManager.removeUpdates(locationListener);
         }
 
@@ -179,9 +185,20 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     {
         super.onViewCreated(view, savedInstanceState);
         headerBar = (LinearLayout) view.findViewById(R.id.map_header_bar);
-        mapViewContainer = (CoordinatorLayout) view.findViewById(R.id.map_view);
+        mapViewContainer = (FrameLayout) view.findViewById(R.id.map_view);
         bottomSheet = (LinearLayout) view.findViewById(R.id.map_item_bottom_sheet);
+
+        bottomSheetPlaceItemView = (BottomSheetItemView) LayoutInflater.from(getContext()).inflate(R.layout.map_bottom_sheet_place, bottomSheet, false);
+        bottomSheetAddressItemView = (BottomSheetItemView) LayoutInflater.from(getContext()).inflate(R.layout.map_bottom_sheet_address, bottomSheet, false);
+        bottomSheet.addView(bottomSheetPlaceItemView, PLACE_ITEM);
+        bottomSheet.addView(bottomSheetAddressItemView, ADDRESS_ITEM);
+
+        bottomSheetAddressItemView.setVisibility(View.GONE);
+        bottomSheetPlaceItemView.setVisibility(View.GONE);
+
         bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
+        bottomSheetBehavior.setDraggable(true);
+        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
         bottomSheetBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback()
         {
             @Override
@@ -199,7 +216,10 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
             @Override
             public void onSlide(@NonNull View bottomSheet, float slideOffset)
             {
-
+                if (slideOffset == 0)
+                {
+                    bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+                }
             }
         });
 
@@ -277,8 +297,7 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
             e.printStackTrace();
         }
         appKey = ai.metaData.getString("com.kakao.sdk.AppKey");
-
-
+        mapReverseGeoCoder = new MapReverseGeoCoder(appKey, currentMapPoint, this, getActivity());
     }
 
     @Override
@@ -388,7 +407,6 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
                     @Override
                     public void onLocationChanged(Location location)
                     {
-
                         currentMapPoint = MapPoint.mapPointWithGeoCoord(location.getLatitude(), location.getLongitude());
                         initMapView();
                         mapView.setMapCenterPoint(currentMapPoint, false);
@@ -421,7 +439,6 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     @Override
     public void onStart()
     {
-        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
         super.onStart();
     }
 
@@ -503,7 +520,7 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     {
         currentMapPoint.getMapPointGeoCoord().longitude = mapPoint.getMapPointGeoCoord().longitude;
         currentMapPoint.getMapPointGeoCoord().latitude = mapPoint.getMapPointGeoCoord().latitude;
-        mapReverseGeoCoder = new MapReverseGeoCoder(appKey, currentMapPoint, this, getActivity());
+        mapReverseGeoCoder = new MapReverseGeoCoder(appKey, mapPoint, this, getActivity());
         mapReverseGeoCoder.startFindingAddress(MapReverseGeoCoder.AddressType.ShortAddress);
     }
 
@@ -511,9 +528,21 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     public void onPOIItemSelected(MapView mapView, MapPOIItem mapPOIItem)
     {
         // poiitem을 선택하였을 경우에 수행됨
-        // onShowItem(mapPOIItem.getTag());
+        if (((CustomPoiItem) mapPOIItem).getAddressDocument() != null)
+        {
+            bottomSheetAddressItemView.setAddress(((CustomPoiItem) mapPOIItem).getAddressDocument());
+            bottomSheetAddressItemView.setVisibility(View.VISIBLE);
+            bottomSheetPlaceItemView.setVisibility(View.GONE);
+        } else if (((CustomPoiItem) mapPOIItem).getPlaceDocument() != null)
+        {
+            bottomSheetPlaceItemView.setPlace(((CustomPoiItem) mapPOIItem).getPlaceDocument());
+            bottomSheetAddressItemView.setVisibility(View.GONE);
+            bottomSheetPlaceItemView.setVisibility(View.VISIBLE);
+        }
         currentMapPoint = MapPoint.mapPointWithGeoCoord(mapPOIItem.getMapPoint().getMapPointGeoCoord().latitude, mapPOIItem.getMapPoint().getMapPointGeoCoord().longitude);
         mapView.setMapCenterPoint(currentMapPoint, false);
+
+        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
     }
 
     @Override
@@ -536,11 +565,6 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
 
     }
 
-    public void onShowItem(int position)
-    {
-        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-    }
-
     @Override
     public double getLatitude()
     {
@@ -557,21 +581,25 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     public void createPlacesPoiItems(List<PlaceDocuments> placeDocuments)
     {
         mapView.removeAllPOIItems();
-        CustomPoiItem[] poiItems = new CustomPoiItem[placeDocuments.size()];
 
-        int index = 0;
-        for (PlaceDocuments document : placeDocuments)
+        if (!placeDocuments.isEmpty())
         {
-            poiItems[index] = new CustomPoiItem();
-            poiItems[index].setItemName(document.getPlaceName());
-            poiItems[index].setMapPoint(MapPoint.mapPointWithGeoCoord(document.getY(), document.getX()));
-            poiItems[index].setPlaceDocument(document);
-            poiItems[index].setTag(index);
-            poiItems[index].setMarkerType(MapPOIItem.MarkerType.BluePin); // 기본으로 제공하는 BluePin 마커 모양.
-            poiItems[index].setSelectedMarkerType(MapPOIItem.MarkerType.RedPin); // 마커를 클릭했을때, 기본으로 제공하는 RedPin 마커 모양.
-            index++;
+            CustomPoiItem[] poiItems = new CustomPoiItem[placeDocuments.size()];
+
+            int index = 0;
+            for (PlaceDocuments document : placeDocuments)
+            {
+                poiItems[index] = new CustomPoiItem();
+                poiItems[index].setItemName(document.getPlaceName());
+                poiItems[index].setMapPoint(MapPoint.mapPointWithGeoCoord(document.getY(), document.getX()));
+                poiItems[index].setPlaceDocument(document);
+                poiItems[index].setTag(index);
+                poiItems[index].setMarkerType(MapPOIItem.MarkerType.BluePin); // 기본으로 제공하는 BluePin 마커 모양.
+                poiItems[index].setSelectedMarkerType(MapPOIItem.MarkerType.RedPin); // 마커를 클릭했을때, 기본으로 제공하는 RedPin 마커 모양.
+                index++;
+            }
+            mapView.addPOIItems(poiItems);
         }
-        mapView.addPOIItems(poiItems);
     }
 
     @Override
@@ -648,4 +676,5 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
             return placeDocument;
         }
     }
+
 }

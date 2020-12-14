@@ -83,7 +83,16 @@ public class AddressListFragment extends Fragment
         } else
         {
             parameter.setQuery(SEARCH_WORD);
-            adapter = new AddressesAdapter(getContext());
+            adapter = new AddressesAdapter(getContext(), iMapData);
+            adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver()
+            {
+                @Override
+                public void onItemRangeInserted(int positionStart, int itemCount)
+                {
+                    super.onItemRangeInserted(positionStart, itemCount);
+                    iMapData.createAddressesPoiItems(adapter.getCurrentList().snapshot());
+                }
+            });
             itemRecyclerView.setAdapter(adapter);
 
             viewModel.init(parameter);

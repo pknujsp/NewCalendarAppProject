@@ -13,12 +13,14 @@ import androidx.paging.PagedListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.activity.map.fragment.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.kakaomap.callback.AddressItemCallback;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponseDocuments;
 
 public class AddressesAdapter extends PagedListAdapter<AddressResponseDocuments, AddressesAdapter.ItemViewHolder>
 {
     private Context context;
+    private IMapData iMapData;
 
     class ItemViewHolder extends RecyclerView.ViewHolder
     {
@@ -34,6 +36,14 @@ public class AddressesAdapter extends PagedListAdapter<AddressResponseDocuments,
             addressIndex = (TextView) view.findViewById(R.id.address_index);
             anotherAddressName = (TextView) view.findViewById(R.id.another_address_name);
             anotherAddressType = (TextView) view.findViewById(R.id.another_address_type);
+            view.getRootView().setOnClickListener(new View.OnClickListener()
+            {
+                @Override
+                public void onClick(View view)
+                {
+                    iMapData.selectPlacePoiItem(getAdapterPosition());
+                }
+            });
         }
 
         public void bind(AddressResponseDocuments item)
@@ -53,10 +63,11 @@ public class AddressesAdapter extends PagedListAdapter<AddressResponseDocuments,
         }
     }
 
-    public AddressesAdapter(Context context)
+    public AddressesAdapter(Context context, IMapData iMapData)
     {
         super(new AddressItemCallback());
         this.context = context;
+        this.iMapData = iMapData;
     }
 
     @NonNull
