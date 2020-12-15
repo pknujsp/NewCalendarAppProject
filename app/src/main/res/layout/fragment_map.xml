@@ -43,7 +43,6 @@
             android:layout_height="wrap_content"
             android:layout_gravity="right"
             android:layout_marginRight="36dp"
-            android:layout_marginBottom="70dp"
             android:background="@color/transparent"
             app:layout_anchor="@id/map_item_bottom_sheet"
             app:layout_anchorGravity="right|top"
@@ -72,6 +71,12 @@
                 android:layout_marginTop="48dp"
                 android:background="@drawable/map_button_rect"
                 android:src="@drawable/gps_not_fixed_icon" />
+
+            <View
+                android:layout_width="1dp"
+                android:layout_height="@dimen/map_button_size"
+                android:layout_below="@id/gps_button"
+                android:background="@color/transparent" />
 
         </RelativeLayout>
 

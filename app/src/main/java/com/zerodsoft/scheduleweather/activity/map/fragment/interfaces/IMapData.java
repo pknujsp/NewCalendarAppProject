@@ -11,11 +11,11 @@ public interface IMapData
 
     void createAddressesPoiItems(List<AddressResponseDocuments> addressDocuments);
 
-    void selectPlacePoiItem(int index);
-
-    void selectAddressPoiItem(int index);
+    void selectPoiItem(int index);
 
     void removeAllPoiItems();
 
     void showAllPoiItems();
+
+    void deselectPoiItem();
 }

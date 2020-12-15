@@ -41,7 +41,7 @@ public class AddressesAdapter extends PagedListAdapter<AddressResponseDocuments,
                 @Override
                 public void onClick(View view)
                 {
-                    iMapData.selectPlacePoiItem(getAdapterPosition());
+                    iMapData.selectPoiItem(getAdapterPosition());
                 }
             });
         }

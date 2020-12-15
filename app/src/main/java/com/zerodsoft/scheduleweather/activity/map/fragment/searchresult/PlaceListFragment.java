@@ -7,6 +7,10 @@ import android.content.Intent;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
+import android.net.NetworkRequest;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
@@ -38,6 +42,7 @@ import com.zerodsoft.scheduleweather.activity.map.fragment.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.activity.map.fragment.interfaces.IMapPoint;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.adapter.PlacesAdapter;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.interfaces.FragmentRemover;
+import com.zerodsoft.scheduleweather.activity.map.util.RequestLocationTimer;
 import com.zerodsoft.scheduleweather.kakaomap.viewmodel.PlacesViewModel;
 import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
@@ -71,6 +76,8 @@ public class PlaceListFragment extends Fragment
     private Spinner sortSpinner;
     private ArrayAdapter<CharSequence> spinnerAdapter;
 
+    private ConnectivityManager.NetworkCallback networkCallback;
+    private ConnectivityManager connectivityManager;
     private Timer timer;
 
     private double mapLatitude;
@@ -119,6 +126,12 @@ public class PlaceListFragment extends Fragment
         }
     };
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setNetworkCallback();
+    }
 
     @Nullable
     @Override
@@ -185,6 +198,13 @@ public class PlaceListFragment extends Fragment
         requestPlaces();
     }
 
+    @Override
+    public void onDestroy()
+    {
+        super.onDestroy();
+        connectivityManager.unregisterNetworkCallback(networkCallback);
+    }
+
     private void replaceButtonStyle()
     {
         switch (currSearchMapPointCriteria)
@@ -227,30 +247,102 @@ public class PlaceListFragment extends Fragment
         }
     };
 
-    private void requestPlaces()
+
+    private void setNetworkCallback()
     {
-        if (currSearchMapPointCriteria == SEARCH_CRITERIA_MAP_POINT_CURRENT_LOCATION)
+        connectivityManager = (ConnectivityManager) getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+        networkCallback = new ConnectivityManager.NetworkCallback()
         {
-            if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) && locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))
+            @Override
+            public void onAvailable(Network network)
             {
-                int fineLocationPermission = ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION);
-                int coarseLocationPermission = ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION);
+                super.onAvailable(network);
+                Toast.makeText(getActivity(), "재 연결됨", Toast.LENGTH_SHORT).show();
+            }
 
-                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+            @Override
+            public void onLost(Network network)
+            {
+                super.onLost(network);
+                Toast.makeText(getActivity(), "연결 끊김", Toast.LENGTH_SHORT).show();
+            }
+        };
+        NetworkRequest.Builder builder = new NetworkRequest.Builder();
+        builder.addTransportType(NetworkCapabilities.TRANSPORT_WIFI);
+        builder.addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR);
+        connectivityManager.registerNetworkCallback(builder.build(), networkCallback);
+    }
 
-                timer = new Timer();
-                timer.schedule(new RequestLocationTimer(), 2000);
+    private boolean checkNetwork()
+    {
+        if (connectivityManager.getActiveNetwork() == null)
+        {
+            return false;
+        } else
+        {
+            NetworkCapabilities nc = connectivityManager.getNetworkCapabilities(connectivityManager.getActiveNetwork());
 
+            if (nc.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ||
+                    nc.hasTransport(NetworkCapabilities.TRANSPORT_WIFI))
+            {
+                return true;
             } else
             {
-                //gps켜달라고 요청하기
-                enabledViews(true);
-                showRequestDialog();
+                return false;
+            }
+        }
+    }
+
+    private void requestPlaces()
+    {
+        if (checkNetwork())
+        {
+            if (currSearchMapPointCriteria == SEARCH_CRITERIA_MAP_POINT_CURRENT_LOCATION)
+            {
+                boolean isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+                boolean isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+                if (isGpsEnabled && isNetworkEnabled)
+                {
+                    int fineLocationPermission = ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION);
+                    int coarseLocationPermission = ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION);
+
+                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+
+                    timer = new Timer();
+                    timer.schedule(new RequestLocationTimer()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            timer.cancel();
+                            getActivity().runOnUiThread(new Runnable()
+                            {
+                                @Override
+                                public void run()
+                                {
+                                    locationManager.removeUpdates(locationListener);
+                                    int fineLocationPermission = ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION);
+                                    int coarseLocationPermission = ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION);
+                                    locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
+                                }
+                            });
+
+                        }
+                    }, 2000);
+                } else
+                {
+                    //gps켜달라고 요청하기
+                    enabledViews(true);
+                    showRequestDialog();
+                }
+            } else
+            {
+                currSearchMapPointCriteria = SEARCH_CRITERIA_MAP_POINT_MAP_CENTER;
+                requestPlacesNow();
             }
         } else
         {
-            currSearchMapPointCriteria = SEARCH_CRITERIA_MAP_POINT_MAP_CENTER;
-            requestPlacesNow();
+            Toast.makeText(getActivity(), getString(R.string.map_network_not_connected), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -294,6 +386,7 @@ public class PlaceListFragment extends Fragment
                     public void onClick(DialogInterface dialogInterface, int i)
                     {
                         currSearchMapPointCriteria = SEARCH_CRITERIA_MAP_POINT_MAP_CENTER;
+                        replaceButtonStyle();
                         enabledViews(false);
                         requestPlacesNow();
                     }
@@ -346,27 +439,6 @@ public class PlaceListFragment extends Fragment
     private double getLongitude()
     {
         return currSearchMapPointCriteria == SEARCH_CRITERIA_MAP_POINT_CURRENT_LOCATION ? mapLongitude : iMapPoint.getLongitude();
-    }
-
-    class RequestLocationTimer extends TimerTask
-    {
-        @Override
-        public void run()
-        {
-            timer.cancel();
-
-            getActivity().runOnUiThread(new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    int fineLocationPermission = ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION);
-                    int coarseLocationPermission = ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION);
-                    locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
-                }
-            });
-            locationManager.removeUpdates(locationListener);
-        }
     }
 
     class CustomGridLayoutManager extends LinearLayoutManager

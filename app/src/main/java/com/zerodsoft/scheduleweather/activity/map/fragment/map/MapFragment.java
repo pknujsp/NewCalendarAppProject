@@ -2,16 +2,24 @@ package com.zerodsoft.scheduleweather.activity.map.fragment.map;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
+import android.net.NetworkRequest;
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -20,6 +28,8 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.paging.PagedList;
 
+import android.provider.Settings;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,6 +37,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.R;
@@ -36,6 +47,7 @@ import com.zerodsoft.scheduleweather.activity.map.fragment.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.activity.map.fragment.interfaces.IMapPoint;
 import com.zerodsoft.scheduleweather.activity.map.fragment.search.SearchFragment;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.SearchResultFragmentController;
+import com.zerodsoft.scheduleweather.activity.map.util.RequestLocationTimer;
 import com.zerodsoft.scheduleweather.kakaomap.viewmodel.AddressViewModel;
 import com.zerodsoft.scheduleweather.kakaomap.viewmodel.PlacesViewModel;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
@@ -51,6 +63,7 @@ import net.daum.mf.map.api.MapReverseGeoCoder;
 import net.daum.mf.map.api.MapView;
 
 import java.util.List;
+import java.util.Timer;
 
 public class MapFragment extends Fragment implements MapView.POIItemEventListener, MapReverseGeoCoder.ReverseGeoCodingResultListener, MapView.MapViewEventListener, IMapPoint, IMapData
 {
@@ -58,7 +71,7 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     public static final String TAG = "MapFragment";
     private static MapFragment instance;
 
-    private MapPoint currentMapPoint = MapPoint.mapPointWithGeoCoord(37.53737528, 127.00557633);
+    private MapPoint currentMapPoint;
     private MapView mapView;
     private FrameLayout mapViewContainer;
     private LocationManager locationManager;
@@ -81,13 +94,16 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
 
     private OnBackPressedCallback onBackPressedCallback;
 
+    private ConnectivityManager.NetworkCallback networkCallback;
     private BottomSheetItemView bottomSheetPlaceItemView;
     private BottomSheetItemView bottomSheetAddressItemView;
 
+    private ConnectivityManager connectivityManager;
     private String appKey;
 
-    private final int PLACE_ITEM = 0;
-    private final int ADDRESS_ITEM = 1;
+    private static final int PLACE_ITEM = 0;
+    private static final int ADDRESS_ITEM = 1;
+    private int selectedPoiItemIndex;
 
     public MapFragment(ICatchedLocation iCatchedLocation)
     {
@@ -105,13 +121,20 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
         return instance;
     }
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setNetworkCallback();
+    }
+
     private final LocationListener locationListener = new LocationListener()
     {
         @Override
         public void onLocationChanged(Location location)
         {
-            currentMapPoint = MapPoint.mapPointWithGeoCoord(location.getLatitude(), location.getLongitude());
-            mapView.setMapCenterPoint(currentMapPoint, false);
+            setMapCenterPoint(location.getLatitude(), location.getLongitude());
+            mapReverseGeoCoder = new MapReverseGeoCoder(appKey, mapView.getMapCenterPoint(), MapFragment.this, getActivity());
             mapReverseGeoCoder.startFindingAddress(MapReverseGeoCoder.AddressType.FullAddress);
             locationManager.removeUpdates(locationListener);
         }
@@ -134,6 +157,12 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
 
         }
     };
+
+    private void setMapCenterPoint(double latitude, double longitude)
+    {
+        currentMapPoint = MapPoint.mapPointWithGeoCoord(latitude, longitude);
+        mapView.setMapCenterPoint(currentMapPoint, true);
+    }
 
     @Override
     public void onAttach(@NonNull Context context)
@@ -187,6 +216,8 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
         headerBar = (LinearLayout) view.findViewById(R.id.map_header_bar);
         mapViewContainer = (FrameLayout) view.findViewById(R.id.map_view);
         bottomSheet = (LinearLayout) view.findViewById(R.id.map_item_bottom_sheet);
+
+        locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
 
         bottomSheetPlaceItemView = (BottomSheetItemView) LayoutInflater.from(getContext()).inflate(R.layout.map_bottom_sheet_place, bottomSheet, false);
         bottomSheetAddressItemView = (BottomSheetItemView) LayoutInflater.from(getContext()).inflate(R.layout.map_bottom_sheet_address, bottomSheet, false);
@@ -259,30 +290,102 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
             @Override
             public void onClick(View view)
             {
-                if (locationManager == null)
-                {
-                    locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
-                }
                 boolean isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
                 boolean isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
 
                 int fineLocationPermission = ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION);
                 int coarseLocationPermission = ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION);
 
-                if (isGpsEnabled || isNetworkEnabled)
+                if (checkNetwork())
                 {
-                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
-                    locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
+                    if (isGpsEnabled && isNetworkEnabled)
+                    {
+                        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+                        Timer timer = new Timer();
+                        timer.schedule(new RequestLocationTimer()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                timer.cancel();
+                                getActivity().runOnUiThread(new Runnable()
+                                {
+                                    @Override
+                                    public void run()
+                                    {
+                                        locationManager.removeUpdates(locationListener);
+                                        int fineLocationPermission = ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION);
+                                        int coarseLocationPermission = ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION);
+                                        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
+                                    }
+                                });
+
+                            }
+                        }, 2000);
+                    } else if (!isGpsEnabled)
+                    {
+                        showRequestDialog();
+                    }
+                } else
+                {
+                    Toast.makeText(getActivity(), getString(R.string.map_network_not_connected), Toast.LENGTH_SHORT).show();
                 }
             }
         });
 
         currentAddress = (TextView) view.findViewById(R.id.current_address);
+        initMapView();
     }
+
+    private boolean checkNetwork()
+    {
+        if (connectivityManager.getActiveNetwork() == null)
+        {
+            return false;
+        } else
+        {
+            NetworkCapabilities nc = connectivityManager.getNetworkCapabilities(connectivityManager.getActiveNetwork());
+
+            if (nc.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ||
+                    nc.hasTransport(NetworkCapabilities.TRANSPORT_WIFI))
+            {
+                return true;
+            } else
+            {
+                return false;
+            }
+        }
+    }
+
+    private void setNetworkCallback()
+    {
+        connectivityManager = (ConnectivityManager) getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+        networkCallback = new ConnectivityManager.NetworkCallback()
+        {
+            @Override
+            public void onAvailable(Network network)
+            {
+                super.onAvailable(network);
+                Toast.makeText(getActivity(), "재 연결됨", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onLost(Network network)
+            {
+                super.onLost(network);
+                Toast.makeText(getActivity(), "연결 끊김", Toast.LENGTH_SHORT).show();
+            }
+        };
+        NetworkRequest.Builder builder = new NetworkRequest.Builder();
+        builder.addTransportType(NetworkCapabilities.TRANSPORT_WIFI);
+        builder.addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR);
+        connectivityManager.registerNetworkCallback(builder.build(), networkCallback);
+    }
+
 
     private void initMapView()
     {
-        mapView = new MapView(getActivity());
+        mapView = new MapView(requireActivity());
         mapViewContainer.addView(mapView);
 
         mapView.setPOIItemEventListener(this);
@@ -301,145 +404,160 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     }
 
     @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState)
+    public void onDestroy()
     {
-        super.onActivityCreated(savedInstanceState);
-
-        LocationDTO selectedLocation = iCatchedLocation.getLocation();
-
-        if (selectedLocation != null)
-        {
-            if (selectedLocation instanceof AddressDTO)
-            {
-                // 주소 검색 순서 : 좌표로 주소 변환
-                AddressDTO address = iCatchedLocation.getAddress();
-                addressViewModel = new ViewModelProvider(this).get(AddressViewModel.class);
-
-                LocalApiPlaceParameter parameter = new LocalApiPlaceParameter();
-                parameter.setX(address.getLongitude()).setY(address.getLatitude());
-                addressViewModel.init(parameter);
-
-                addressViewModel.getPagedListMutableLiveData().observe(getViewLifecycleOwner(), new Observer<PagedList<AddressResponseDocuments>>()
-                {
-                    @Override
-                    public void onChanged(PagedList<AddressResponseDocuments> addressResponseDocuments)
-                    {
-                        //주소는 바로 나온다, 해당 좌표를 설정
-                        try
-                        {
-                            selectedAddressDocument = (AddressResponseDocuments) addressResponseDocuments.get(0).clone();
-                        } catch (CloneNotSupportedException e)
-                        {
-                            e.printStackTrace();
-                        }
-                        currentMapPoint.getMapPointGeoCoord().latitude = selectedAddressDocument.getY();
-                        currentMapPoint.getMapPointGeoCoord().longitude = selectedAddressDocument.getX();
-
-                        initMapView();
-                        mapView.setMapCenterPoint(currentMapPoint, false);
-                        mapView.removeAllPOIItems();
-                        createPoiItem(selectedAddressDocument.getAddressName());
-                        mapView.selectPOIItem(mapView.getPOIItems()[0], false);
-                    }
-                });
-            } else if (selectedLocation instanceof PlaceDTO)
-            {
-                // 장소 검색 순서 : 장소의 위경도 내 10M 반경에서 장소 이름 검색(여러개 나올 경우 장소ID와 일치하는 장소를 선택)
-                PlaceDTO place = iCatchedLocation.getPlace();
-                placeViewModel = new ViewModelProvider(this).get(PlacesViewModel.class);
-
-                LocalApiPlaceParameter parameter = new LocalApiPlaceParameter();
-                parameter.setX(place.getLongitude()).setY(place.getLatitude()).setPage(LocalApiPlaceParameter.DEFAULT_PAGE)
-                        .setSize(LocalApiPlaceParameter.DEFAULT_SIZE).setSort(LocalApiPlaceParameter.SORT_ACCURACY)
-                        .setRadius("10").setQuery(place.getPlaceName());
-                placeViewModel.init(parameter);
-
-                placeViewModel.getPagedListMutableLiveData().observe(getViewLifecycleOwner(), new Observer<PagedList<PlaceDocuments>>()
-                {
-                    @Override
-                    public void onChanged(PagedList<PlaceDocuments> placeDocuments)
-                    {
-                        //찾는 장소의 ID와 일치하는 장소가 있는지 확인
-                        List<PlaceDocuments> placeDocumentsList = placeDocuments.snapshot();
-                        PlaceDTO place = iCatchedLocation.getPlace();
-
-                        for (PlaceDocuments document : placeDocumentsList)
-                        {
-                            if (place.getId() == Integer.parseInt(document.getId()))
-                            {
-                                try
-                                {
-                                    selectedPlaceDocument = (PlaceDocuments) document.clone();
-                                } catch (CloneNotSupportedException e)
-                                {
-                                    e.printStackTrace();
-                                }
-                                break;
-                            }
-                        }
-                        currentMapPoint.getMapPointGeoCoord().latitude = selectedPlaceDocument.getY();
-                        currentMapPoint.getMapPointGeoCoord().longitude = selectedPlaceDocument.getX();
-
-                        initMapView();
-                        mapView.setMapCenterPoint(currentMapPoint, false);
-                        mapView.removeAllPOIItems();
-                        createPoiItem(selectedPlaceDocument.getPlaceName());
-                        mapView.selectPOIItem(mapView.getPOIItems()[0], false);
-                    }
-                });
-            }
-        } else
-        {
-            if (locationManager == null)
-            {
-                locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
-            }
-            boolean isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-            boolean isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-
-            int fineLocationPermission = ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION);
-            int coarseLocationPermission = ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION);
-
-            if (isGpsEnabled || isNetworkEnabled)
-            {
-                locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, new LocationListener()
-                {
-                    @Override
-                    public void onLocationChanged(Location location)
-                    {
-                        currentMapPoint = MapPoint.mapPointWithGeoCoord(location.getLatitude(), location.getLongitude());
-                        initMapView();
-                        mapView.setMapCenterPoint(currentMapPoint, false);
-                        mapReverseGeoCoder.startFindingAddress(MapReverseGeoCoder.AddressType.ShortAddress);
-                        locationManager.removeUpdates(this);
-                    }
-
-                    @Override
-                    public void onStatusChanged(String s, int i, Bundle bundle)
-                    {
-
-                    }
-
-                    @Override
-                    public void onProviderEnabled(String s)
-                    {
-
-                    }
-
-                    @Override
-                    public void onProviderDisabled(String s)
-                    {
-
-                    }
-                });
-            }
-        }
+        super.onDestroy();
+        connectivityManager.unregisterNetworkCallback(networkCallback);
     }
 
     @Override
-    public void onStart()
+    public void onActivityCreated(@Nullable Bundle savedInstanceState)
     {
-        super.onStart();
+        super.onActivityCreated(savedInstanceState);
+        if (checkNetwork())
+        {
+            LocationDTO selectedLocation = iCatchedLocation.getLocation();
+
+            if (selectedLocation != null)
+            {
+                if (selectedLocation instanceof AddressDTO)
+                {
+                    // 주소 검색 순서 : 좌표로 주소 변환
+                    AddressDTO address = iCatchedLocation.getAddress();
+                    addressViewModel = new ViewModelProvider(this).get(AddressViewModel.class);
+
+                    LocalApiPlaceParameter parameter = new LocalApiPlaceParameter();
+                    parameter.setX(address.getLongitude()).setY(address.getLatitude());
+                    addressViewModel.init(parameter);
+
+                    addressViewModel.getPagedListMutableLiveData().observe(getViewLifecycleOwner(), new Observer<PagedList<AddressResponseDocuments>>()
+                    {
+                        @Override
+                        public void onChanged(PagedList<AddressResponseDocuments> addressResponseDocuments)
+                        {
+                            //주소는 바로 나온다, 해당 좌표를 설정
+                            try
+                            {
+                                selectedAddressDocument = (AddressResponseDocuments) addressResponseDocuments.get(0).clone();
+                            } catch (CloneNotSupportedException e)
+                            {
+                                e.printStackTrace();
+                            }
+                            setMapCenterPoint(selectedAddressDocument.getY(), selectedAddressDocument.getX());
+                            mapView.removeAllPOIItems();
+                            createPoiItem(selectedAddressDocument.getAddressName());
+                            mapView.selectPOIItem(mapView.getPOIItems()[0], false);
+                        }
+                    });
+                } else if (selectedLocation instanceof PlaceDTO)
+                {
+                    // 장소 검색 순서 : 장소의 위경도 내 10M 반경에서 장소 이름 검색(여러개 나올 경우 장소ID와 일치하는 장소를 선택)
+                    PlaceDTO place = iCatchedLocation.getPlace();
+                    placeViewModel = new ViewModelProvider(this).get(PlacesViewModel.class);
+
+                    LocalApiPlaceParameter parameter = new LocalApiPlaceParameter();
+                    parameter.setX(place.getLongitude()).setY(place.getLatitude()).setPage(LocalApiPlaceParameter.DEFAULT_PAGE)
+                            .setSize(LocalApiPlaceParameter.DEFAULT_SIZE).setSort(LocalApiPlaceParameter.SORT_ACCURACY)
+                            .setRadius("10").setQuery(place.getPlaceName());
+                    placeViewModel.init(parameter);
+
+                    placeViewModel.getPagedListMutableLiveData().observe(getViewLifecycleOwner(), new Observer<PagedList<PlaceDocuments>>()
+                    {
+                        @Override
+                        public void onChanged(PagedList<PlaceDocuments> placeDocuments)
+                        {
+                            //찾는 장소의 ID와 일치하는 장소가 있는지 확인
+                            List<PlaceDocuments> placeDocumentsList = placeDocuments.snapshot();
+                            PlaceDTO place = iCatchedLocation.getPlace();
+
+                            for (PlaceDocuments document : placeDocumentsList)
+                            {
+                                if (place.getId() == Integer.parseInt(document.getId()))
+                                {
+                                    try
+                                    {
+                                        selectedPlaceDocument = (PlaceDocuments) document.clone();
+                                    } catch (CloneNotSupportedException e)
+                                    {
+                                        e.printStackTrace();
+                                    }
+                                    break;
+                                }
+                            }
+                            setMapCenterPoint(selectedPlaceDocument.getY(), selectedPlaceDocument.getX());
+                            mapView.removeAllPOIItems();
+                            createPoiItem(selectedPlaceDocument.getPlaceName());
+                            mapView.selectPOIItem(mapView.getPOIItems()[0], false);
+                        }
+                    });
+                }
+            } else
+            {
+                boolean isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+                boolean isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+
+                int fineLocationPermission = ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION);
+                int coarseLocationPermission = ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION);
+
+                if (isGpsEnabled && isNetworkEnabled)
+                {
+                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+                    Timer timer = new Timer();
+                    timer.schedule(new RequestLocationTimer()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            timer.cancel();
+                            getActivity().runOnUiThread(new Runnable()
+                            {
+                                @Override
+                                public void run()
+                                {
+                                    locationManager.removeUpdates(locationListener);
+                                    int fineLocationPermission = ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION);
+                                    int coarseLocationPermission = ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION);
+                                    locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
+                                }
+                            });
+
+                        }
+                    }, 2000);
+                } else if (!isGpsEnabled)
+                {
+                    showRequestDialog();
+                }
+            }
+        } else
+        {
+            Toast.makeText(getActivity(), getString(R.string.map_network_not_connected), Toast.LENGTH_SHORT).show();
+        }
+
+    }
+
+    private void showRequestDialog()
+    {
+        new AlertDialog.Builder(getActivity())
+                .setMessage(getString(R.string.request_to_make_gps_on))
+                .setPositiveButton(getString(R.string.check), new
+                        DialogInterface.OnClickListener()
+                        {
+                            @Override
+                            public void onClick(DialogInterface paramDialogInterface, int paramInt)
+                            {
+                                startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                            }
+                        })
+                .setNegativeButton(getString(R.string.no), new DialogInterface.OnClickListener()
+                {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i)
+                    {
+
+                    }
+                })
+                .setCancelable(false)
+                .show();
     }
 
     private void createPoiItem(String itemName)
@@ -452,7 +570,6 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
         mapView.removeAllPOIItems();
         mapView.addPOIItem(poiItem);
     }
-
 
     @Override
     public void onReverseGeoCoderFoundAddress(MapReverseGeoCoder mapReverseGeoCoder, String
@@ -476,7 +593,7 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     @Override
     public void onMapViewCenterPointMoved(MapView mapView, MapPoint mapPoint)
     {
-
+        //지도가 움직일 때 마다 호출된다
     }
 
     @Override
@@ -488,7 +605,10 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     @Override
     public void onMapViewSingleTapped(MapView mapView, MapPoint mapPoint)
     {
-
+        if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED)
+        {
+            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+        }
     }
 
     @Override
@@ -518,10 +638,14 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     @Override
     public void onMapViewMoveFinished(MapView mapView, MapPoint mapPoint)
     {
-        currentMapPoint.getMapPointGeoCoord().longitude = mapPoint.getMapPointGeoCoord().longitude;
-        currentMapPoint.getMapPointGeoCoord().latitude = mapPoint.getMapPointGeoCoord().latitude;
-        mapReverseGeoCoder = new MapReverseGeoCoder(appKey, mapPoint, this, getActivity());
-        mapReverseGeoCoder.startFindingAddress(MapReverseGeoCoder.AddressType.ShortAddress);
+        if (checkNetwork())
+        {
+            mapReverseGeoCoder = new MapReverseGeoCoder(appKey, mapPoint, this, getActivity());
+            mapReverseGeoCoder.startFindingAddress(MapReverseGeoCoder.AddressType.FullAddress);
+        } else
+        {
+            Toast.makeText(getActivity(), getString(R.string.map_network_not_connected), Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
@@ -539,11 +663,10 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
             bottomSheetAddressItemView.setVisibility(View.GONE);
             bottomSheetPlaceItemView.setVisibility(View.VISIBLE);
         }
-        currentMapPoint = MapPoint.mapPointWithGeoCoord(mapPOIItem.getMapPoint().getMapPointGeoCoord().latitude, mapPOIItem.getMapPoint().getMapPointGeoCoord().longitude);
-        mapView.setMapCenterPoint(currentMapPoint, false);
-
+        setMapCenterPoint(mapPOIItem.getMapPoint().getMapPointGeoCoord().latitude, mapPOIItem.getMapPoint().getMapPointGeoCoord().longitude);
         bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
     }
+
 
     @Override
     public void onCalloutBalloonOfPOIItemTouched(MapView mapView, MapPOIItem mapPOIItem)
@@ -619,8 +742,8 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
                 poiItems[index].setMapPoint(MapPoint.mapPointWithGeoCoord(document.getY(), document.getX()));
                 poiItems[index].setAddressDocument(document);
                 poiItems[index].setTag(index);
-                poiItems[index].setMarkerType(MapPOIItem.MarkerType.BluePin); // 기본으로 제공하는 BluePin 마커 모양.
-                poiItems[index].setSelectedMarkerType(MapPOIItem.MarkerType.RedPin); // 마커를 클릭했을때, 기본으로 제공하는 RedPin 마커 모양.
+                poiItems[index].setMarkerType(MapPOIItem.MarkerType.BluePin);
+                poiItems[index].setSelectedMarkerType(MapPOIItem.MarkerType.RedPin);
                 index++;
             }
             mapView.addPOIItems(poiItems);
@@ -628,15 +751,10 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     }
 
     @Override
-    public void selectPlacePoiItem(int index)
+    public void selectPoiItem(int index)
     {
         mapView.selectPOIItem(mapView.getPOIItems()[index], false);
-    }
-
-    @Override
-    public void selectAddressPoiItem(int index)
-    {
-        mapView.selectPOIItem(mapView.getPOIItems()[index], false);
+        selectedPoiItemIndex = index;
     }
 
     @Override
@@ -649,6 +767,13 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     public void showAllPoiItems()
     {
         mapView.fitMapViewAreaToShowAllPOIItems();
+    }
+
+    @Override
+    public void deselectPoiItem()
+    {
+        mapView.deselectPOIItem(mapView.getPOIItems()[selectedPoiItemIndex]);
+        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
     }
 
     class CustomPoiItem extends MapPOIItem

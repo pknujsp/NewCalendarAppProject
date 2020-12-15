@@ -135,6 +135,7 @@ public class SearchResultFragmentController extends Fragment implements ResultFr
         } else
         {
             // to list
+            iMapData.deselectPoiItem();
             headerFragment.setChangeButtonDrawable(LIST);
             fragmentTransaction.hide(headerFragment).hide(MapFragment.getInstance()).show(listFragment).show(headerFragment).commit();
             isShowList = true;
