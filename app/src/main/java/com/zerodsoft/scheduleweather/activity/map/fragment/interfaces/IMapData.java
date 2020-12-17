@@ -11,6 +11,10 @@ public interface IMapData
 
     void createAddressesPoiItems(List<AddressResponseDocuments> addressDocuments);
 
+    void createPlacePoiItem(PlaceDocuments document);
+
+    void createAddressPoiItem(AddressResponseDocuments document);
+
     void selectPoiItem(int index);
 
     void removeAllPoiItems();

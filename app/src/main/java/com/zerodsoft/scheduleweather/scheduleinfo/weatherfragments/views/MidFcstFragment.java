@@ -325,7 +325,8 @@ public class MidFcstFragment extends Fragment
                 if (maxTemp > max)
                 {
                     max = maxTemp;
-                } else if (minTemp < min)
+                }
+                if (minTemp < min)
                 {
                     min = minTemp;
                 }

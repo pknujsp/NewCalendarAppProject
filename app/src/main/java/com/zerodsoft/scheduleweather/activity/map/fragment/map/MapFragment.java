@@ -63,6 +63,7 @@ import net.daum.mf.map.api.MapReverseGeoCoder;
 import net.daum.mf.map.api.MapView;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Timer;
 
 public class MapFragment extends Fragment implements MapView.POIItemEventListener, MapReverseGeoCoder.ReverseGeoCodingResultListener, MapView.MapViewEventListener, IMapPoint, IMapData
@@ -133,7 +134,7 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
         @Override
         public void onLocationChanged(Location location)
         {
-            setMapCenterPoint(location.getLatitude(), location.getLongitude());
+            mapView.setMapCenterPoint(MapPoint.mapPointWithGeoCoord(location.getLatitude(), location.getLongitude()), true);
             mapReverseGeoCoder = new MapReverseGeoCoder(appKey, mapView.getMapCenterPoint(), MapFragment.this, getActivity());
             mapReverseGeoCoder.startFindingAddress(MapReverseGeoCoder.AddressType.FullAddress);
             locationManager.removeUpdates(locationListener);
@@ -158,11 +159,6 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
         }
     };
 
-    private void setMapCenterPoint(double latitude, double longitude)
-    {
-        currentMapPoint = MapPoint.mapPointWithGeoCoord(latitude, longitude);
-        mapView.setMapCenterPoint(currentMapPoint, true);
-    }
 
     @Override
     public void onAttach(@NonNull Context context)
@@ -400,7 +396,7 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
             e.printStackTrace();
         }
         appKey = ai.metaData.getString("com.kakao.sdk.AppKey");
-        mapReverseGeoCoder = new MapReverseGeoCoder(appKey, currentMapPoint, this, getActivity());
+        mapReverseGeoCoder = new MapReverseGeoCoder(appKey, mapView.getMapCenterPoint(), this, getActivity());
     }
 
     @Override
@@ -443,7 +439,7 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
                             {
                                 e.printStackTrace();
                             }
-                            setMapCenterPoint(selectedAddressDocument.getY(), selectedAddressDocument.getX());
+                            mapView.setMapCenterPoint(MapPoint.mapPointWithGeoCoord(selectedAddressDocument.getY(), selectedAddressDocument.getX()), true);
                             mapView.removeAllPOIItems();
                             createPoiItem(selectedAddressDocument.getAddressName());
                             mapView.selectPOIItem(mapView.getPOIItems()[0], false);
@@ -484,7 +480,7 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
                                     break;
                                 }
                             }
-                            setMapCenterPoint(selectedPlaceDocument.getY(), selectedPlaceDocument.getX());
+                            mapView.setMapCenterPoint(MapPoint.mapPointWithGeoCoord(selectedPlaceDocument.getY(), selectedPlaceDocument.getX()), true);
                             mapView.removeAllPOIItems();
                             createPoiItem(selectedPlaceDocument.getPlaceName());
                             mapView.selectPOIItem(mapView.getPOIItems()[0], false);
@@ -564,7 +560,7 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
     {
         MapPOIItem poiItem = new MapPOIItem();
         poiItem.setItemName(itemName);
-        poiItem.setMapPoint(currentMapPoint);
+        poiItem.setMapPoint(mapView.getMapCenterPoint());
         poiItem.setMarkerType(MapPOIItem.MarkerType.BluePin); // 기본으로 제공하는 BluePin 마커 모양.
         poiItem.setSelectedMarkerType(MapPOIItem.MarkerType.RedPin); // 마커를 클릭했을때, 기본으로 제공하는 RedPin 마커 모양.
         mapView.removeAllPOIItems();
@@ -663,7 +659,7 @@ public class MapFragment extends Fragment implements MapView.POIItemEventListene
             bottomSheetAddressItemView.setVisibility(View.GONE);
             bottomSheetPlaceItemView.setVisibility(View.VISIBLE);
         }
-        setMapCenterPoint(mapPOIItem.getMapPoint().getMapPointGeoCoord().latitude, mapPOIItem.getMapPoint().getMapPointGeoCoord().longitude);
+        mapView.setMapCenterPoint(MapPoint.mapPointWithGeoCoord(mapPOIItem.getMapPoint().getMapPointGeoCoord().latitude, mapPOIItem.getMapPoint().getMapPointGeoCoord().longitude), true);
         bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
     }
 

@@ -1,10 +1,11 @@
-package com.zerodsoft.scheduleweather.scheduleinfo.placefragments.categoryview;
+package com.zerodsoft.scheduleweather.scheduleinfo.placefragments.adapter;
 
 import android.content.Context;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -16,10 +17,11 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.RecyclerViewItemDecoration;
 import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
+import com.zerodsoft.scheduleweather.kakaomap.viewmodel.PlacesViewModel;
 import com.zerodsoft.scheduleweather.scheduleinfo.placefragments.LocationInfo;
 import com.zerodsoft.scheduleweather.scheduleinfo.placefragments.PlacesFragment;
-import com.zerodsoft.scheduleweather.scheduleinfo.placefragments.categoryview.adapter.PlaceItemsAdapters;
-import com.zerodsoft.scheduleweather.kakaomap.viewmodel.PlacesViewModel;
+import com.zerodsoft.scheduleweather.scheduleinfo.placefragments.interfaces.IPlaceItem;
+import com.zerodsoft.scheduleweather.scheduleinfo.placefragments.interfaces.IPlacesFragment;
 
 import java.util.List;
 
@@ -29,12 +31,16 @@ public class CategoryViewAdapter extends RecyclerView.Adapter<CategoryViewAdapte
     private Context context;
     private List<String> categories;
     private PlacesFragment fragment;
+    private IPlaceItem iPlaceItem;
+    private IPlacesFragment iPlacesFragment;
+
 
     public CategoryViewAdapter(LocationInfo locationInfo, List<String> categories, PlacesFragment fragment)
     {
         this.locationInfo = locationInfo;
         this.categories = categories;
-        this.fragment = fragment;
+        this.iPlaceItem = (IPlaceItem) fragment;
+        this.iPlacesFragment = (IPlacesFragment) fragment;
     }
 
     @NonNull
@@ -62,6 +68,7 @@ public class CategoryViewAdapter extends RecyclerView.Adapter<CategoryViewAdapte
         private RecyclerView itemRecyclerView;
         private PlacesViewModel viewModel;
         private PlaceItemsAdapters adapter;
+        private String categoryDescription;
 
         public CategoryViewHolder(View view)
         {
@@ -69,13 +76,11 @@ public class CategoryViewAdapter extends RecyclerView.Adapter<CategoryViewAdapte
             itemRecyclerView = (RecyclerView) view.findViewById(R.id.map_category_itemsview);
             itemRecyclerView.setLayoutManager(new LinearLayoutManager(view.getContext(), RecyclerView.HORIZONTAL, false));
             itemRecyclerView.addItemDecoration(new RecyclerViewItemDecoration((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, context.getResources().getDisplayMetrics())));
-            viewModel = new ViewModelProvider(fragment).get(PlacesViewModel.class);
+            viewModel = new ViewModelProvider(iPlacesFragment.getViewModelStoreOwner()).get(PlacesViewModel.class);
         }
 
         public void onBind(String query)
         {
-            ((TextView) itemView.findViewById(R.id.map_category_name)).setText(query);
-
             LocalApiPlaceParameter placeParameter = new LocalApiPlaceParameter();
             placeParameter.setPage(LocalApiPlaceParameter.DEFAULT_PAGE).setRadius(LocalApiPlaceParameter.DEFAULT_RADIUS)
                     .setSize(LocalApiPlaceParameter.DEFAULT_SIZE).setSort(LocalApiPlaceParameter.SORT_ACCURACY)
@@ -85,18 +90,30 @@ public class CategoryViewAdapter extends RecyclerView.Adapter<CategoryViewAdapte
             if (KakaoLocalApiCategoryUtil.isCategory(query))
             {
                 placeParameter.setCategoryGroupCode(KakaoLocalApiCategoryUtil.getName(Integer.parseInt(query)));
+                categoryDescription = KakaoLocalApiCategoryUtil.getDescription(Integer.parseInt(query));
             } else
             {
                 placeParameter.setQuery(query);
+                categoryDescription = query;
             }
-            adapter = new PlaceItemsAdapters(context);
-
             viewModel.init(placeParameter);
-            viewModel.getPagedListMutableLiveData().observe(fragment.getViewLifecycleOwner(), adapter::submitList);
+            viewModel.getPagedListMutableLiveData().observe(iPlacesFragment.getLifeCycleOwner(), adapter::submitList);
+
+            adapter = new PlaceItemsAdapters(iPlaceItem);
             itemRecyclerView.setAdapter(adapter);
+
+            ((TextView) itemView.findViewById(R.id.map_category_name)).setText(categoryDescription);
+
+            ((Button) itemView.findViewById(R.id.map_category_more)).setOnClickListener(new View.OnClickListener()
+            {
+                @Override
+                public void onClick(View view)
+                {
+                    iPlaceItem.onClickedMore(adapter.getCurrentList().snapshot(), categoryDescription);
+                }
+            });
         }
 
     }
-
 
 }

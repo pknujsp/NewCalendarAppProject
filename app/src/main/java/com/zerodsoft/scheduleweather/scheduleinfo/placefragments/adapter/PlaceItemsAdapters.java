@@ -1,25 +1,24 @@
-package com.zerodsoft.scheduleweather.scheduleinfo.placefragments.categoryview.adapter;
+package com.zerodsoft.scheduleweather.scheduleinfo.placefragments.adapter;
 
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.paging.PagedListAdapter;
-import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.kakaomap.callback.PlaceItemCallback;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
-
-import java.util.Calendar;
+import com.zerodsoft.scheduleweather.scheduleinfo.placefragments.interfaces.IPlaceItem;
 
 public class PlaceItemsAdapters extends PagedListAdapter<PlaceDocuments, PlaceItemsAdapters.ItemViewHolder>
 {
-    private Context context;
+    private IPlaceItem iPlaceItem;
 
     class ItemViewHolder extends RecyclerView.ViewHolder
     {
@@ -29,6 +28,14 @@ public class PlaceItemsAdapters extends PagedListAdapter<PlaceDocuments, PlaceIt
         {
             super(view);
             placeNameTextView = (TextView) view.findViewById(R.id.place_item_name);
+            view.getRootView().setOnClickListener(new View.OnClickListener()
+            {
+                @Override
+                public void onClick(View view)
+                {
+                    iPlaceItem.onClickedItem(getItem(getAdapterPosition()));
+                }
+            });
         }
 
         public void bind(PlaceDocuments item)
@@ -37,10 +44,10 @@ public class PlaceItemsAdapters extends PagedListAdapter<PlaceDocuments, PlaceIt
         }
     }
 
-    public PlaceItemsAdapters(Context context)
+    public PlaceItemsAdapters(IPlaceItem iPlaceItem)
     {
         super(new PlaceItemCallback());
-        this.context = context;
+        this.iPlaceItem = iPlaceItem;
     }
 
     @NonNull

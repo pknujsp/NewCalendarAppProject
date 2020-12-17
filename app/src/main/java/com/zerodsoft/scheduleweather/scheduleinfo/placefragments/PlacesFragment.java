@@ -5,20 +5,27 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.ViewModelStoreOwner;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.scheduleinfo.placefragments.categoryview.CategoryViewAdapter;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
+import com.zerodsoft.scheduleweather.scheduleinfo.placefragments.adapter.CategoryViewAdapter;
+import com.zerodsoft.scheduleweather.scheduleinfo.placefragments.interfaces.IPlaceItem;
+import com.zerodsoft.scheduleweather.scheduleinfo.placefragments.interfaces.IPlacesFragment;
+import com.zerodsoft.scheduleweather.scheduleinfo.placefragments.interfaces.LocationInfoGetter;
 
 import java.util.LinkedList;
 import java.util.List;
 
-public class PlacesFragment extends Fragment implements LocationInfoGetter
+public class PlacesFragment extends Fragment implements LocationInfoGetter, IPlaceItem, IPlacesFragment
 {
     private final LocationInfo locationInfo;
     private RecyclerView categoryRecyclerView;
@@ -71,5 +78,29 @@ public class PlacesFragment extends Fragment implements LocationInfoGetter
     public LocationInfo getLocationInfo()
     {
         return locationInfo.copy();
+    }
+
+    @Override
+    public void onClickedItem(PlaceDocuments document)
+    {
+        Toast.makeText(getActivity(), document.getPlaceName(), Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onClickedMore(List<PlaceDocuments> placeDocuments, String categoryDescription)
+    {
+
+    }
+
+    @Override
+    public LifecycleOwner getLifeCycleOwner()
+    {
+        return getViewLifecycleOwner();
+    }
+
+    @Override
+    public ViewModelStoreOwner getViewModelStoreOwner()
+    {
+        return this;
     }
 }

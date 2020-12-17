@@ -31,10 +31,10 @@
 
     <dimen name="info_around_location_item_margin">12dp</dimen>
 
-    <dimen name="map_item_cardview_width">100dp</dimen>
-    <dimen name="map_item_cardview_height">90dp</dimen>
+    <dimen name="map_item_cardview_width">120dp</dimen>
+    <dimen name="map_item_cardview_height">100dp</dimen>
 
-    <dimen name="place_item_cardview_corner_radius">1dp</dimen>
+    <dimen name="place_item_cardview_corner_radius">6dp</dimen>
 
     <dimen name="map_button_size">36dp</dimen>
 </resources>

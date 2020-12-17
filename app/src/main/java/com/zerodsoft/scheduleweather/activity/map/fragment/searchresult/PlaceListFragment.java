@@ -102,8 +102,8 @@ public class PlaceListFragment extends Fragment
             locationManager.removeUpdates(locationListener);
             mapLongitude = location.getLongitude();
             mapLatitude = location.getLatitude();
-            Toast.makeText(getActivity(), "현재위치" + location.getProvider() + "\n위도 : "
-                    + Double.toString(mapLatitude) + "\n경도:" + Double.toString(mapLongitude), Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), "Provider : " + location.getProvider() + "\n위도 : "
+                    + Double.toString(mapLatitude) + "\n경도 :" + Double.toString(mapLongitude), Toast.LENGTH_SHORT).show();
             requestPlacesNow();
         }
 
