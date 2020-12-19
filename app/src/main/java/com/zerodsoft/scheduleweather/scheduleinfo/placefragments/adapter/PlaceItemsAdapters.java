@@ -1,11 +1,9 @@
 package com.zerodsoft.scheduleweather.scheduleinfo.placefragments.adapter;
 
-import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.paging.PagedListAdapter;
@@ -14,11 +12,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.kakaomap.callback.PlaceItemCallback;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
-import com.zerodsoft.scheduleweather.scheduleinfo.placefragments.interfaces.IPlaceItem;
+import com.zerodsoft.scheduleweather.scheduleinfo.placefragments.interfaces.IClickedPlaceItem;
 
 public class PlaceItemsAdapters extends PagedListAdapter<PlaceDocuments, PlaceItemsAdapters.ItemViewHolder>
 {
-    private IPlaceItem iPlaceItem;
+    private IClickedPlaceItem iClickedPlaceItem;
 
     class ItemViewHolder extends RecyclerView.ViewHolder
     {
@@ -33,7 +31,7 @@ public class PlaceItemsAdapters extends PagedListAdapter<PlaceDocuments, PlaceIt
                 @Override
                 public void onClick(View view)
                 {
-                    iPlaceItem.onClickedItem(getItem(getAdapterPosition()));
+                    iClickedPlaceItem.onClickedItem(getItem(getAdapterPosition()));
                 }
             });
         }
@@ -44,10 +42,10 @@ public class PlaceItemsAdapters extends PagedListAdapter<PlaceDocuments, PlaceIt
         }
     }
 
-    public PlaceItemsAdapters(IPlaceItem iPlaceItem)
+    public PlaceItemsAdapters(IClickedPlaceItem iClickedPlaceItem)
     {
         super(new PlaceItemCallback());
-        this.iPlaceItem = iPlaceItem;
+        this.iClickedPlaceItem = iClickedPlaceItem;
     }
 
     @NonNull

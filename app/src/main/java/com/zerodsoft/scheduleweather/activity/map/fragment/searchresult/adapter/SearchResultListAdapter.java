@@ -4,8 +4,8 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
-import com.zerodsoft.scheduleweather.activity.map.fragment.interfaces.IMapData;
-import com.zerodsoft.scheduleweather.activity.map.fragment.interfaces.IMapPoint;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapData;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapPoint;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.AddressListFragment;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.PlaceListFragment;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.interfaces.FragmentRemover;

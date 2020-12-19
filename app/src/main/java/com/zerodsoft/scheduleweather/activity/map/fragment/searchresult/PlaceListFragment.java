@@ -38,8 +38,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.activity.map.fragment.interfaces.IMapData;
-import com.zerodsoft.scheduleweather.activity.map.fragment.interfaces.IMapPoint;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapData;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapPoint;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.adapter.PlacesAdapter;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.interfaces.FragmentRemover;
 import com.zerodsoft.scheduleweather.activity.map.util.RequestLocationTimer;
@@ -49,7 +49,6 @@ import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
 
 import java.util.Timer;
-import java.util.TimerTask;
 
 public class PlaceListFragment extends Fragment
 {

@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.activity.map.fragment.interfaces;
+package com.zerodsoft.scheduleweather.kakaomap.interfaces;
 
 public interface IMapPoint
 {

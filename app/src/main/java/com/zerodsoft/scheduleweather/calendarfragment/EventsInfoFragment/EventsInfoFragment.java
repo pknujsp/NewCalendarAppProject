@@ -46,6 +46,10 @@ public class EventsInfoFragment extends DialogFragment
         this.endDate = endDate;
     }
 
+    public EventsInfoFragment()
+    {
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState)
     {

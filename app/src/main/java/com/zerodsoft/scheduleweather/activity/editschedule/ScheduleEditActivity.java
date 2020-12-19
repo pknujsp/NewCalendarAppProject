@@ -25,6 +25,7 @@ import com.zerodsoft.scheduleweather.databinding.ActivityScheduleBinding;
 import com.zerodsoft.scheduleweather.fragment.DatePickerFragment;
 import com.zerodsoft.scheduleweather.fragment.NotificationFragment;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponse;
 import com.zerodsoft.scheduleweather.room.dto.AddressDTO;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
@@ -469,19 +470,15 @@ public class ScheduleEditActivity extends AppCompatActivity implements Notificat
             activityBinding.setPlaceDto(null);
             activityBinding.setAddressDto(null);
 
-            switch (bundle.getInt("dataType"))
+            AddressDTO address = bundle.getParcelable("address");
+            PlaceDTO place = bundle.getParcelable("place");
+
+            if (address != null)
             {
-                /*
-                case MapController.TYPE_ADDRESS:
-                    activityBinding.setAddressDto(bundle.getParcelable("address"));
-                    break;
-
-                case MapController.TYPE_PLACE_KEYWORD:
-                case MapController.TYPE_PLACE_CATEGORY:
-                    activityBinding.setPlaceDto(bundle.getParcelable("place"));
-                    break;
-
-                 */
+                activityBinding.setAddressDto(address);
+            } else if (place != null)
+            {
+                activityBinding.setPlaceDto(place);
             }
         } else if (resultCode == LOCATION_DELETED)
         {

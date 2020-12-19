@@ -1,30 +1,19 @@
 package com.zerodsoft.scheduleweather.activity.map.fragment.searchresult;
 
-import android.Manifest;
-import android.content.Context;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.Spinner;
 
-import com.zerodsoft.scheduleweather.activity.map.fragment.interfaces.IMapData;
-import com.zerodsoft.scheduleweather.activity.map.fragment.interfaces.IMapPoint;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapData;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapPoint;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.adapter.SearchResultListAdapter;
-import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.interfaces.IMapSearch;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.interfaces.IndicatorCreater;
 import com.zerodsoft.scheduleweather.etc.ViewPagerIndicator;
 import com.zerodsoft.scheduleweather.R;

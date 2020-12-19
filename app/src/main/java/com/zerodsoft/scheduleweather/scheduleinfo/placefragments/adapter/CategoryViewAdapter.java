@@ -15,32 +15,35 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.RecyclerViewItemDecoration;
-import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.kakaomap.viewmodel.PlacesViewModel;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.scheduleinfo.placefragments.LocationInfo;
-import com.zerodsoft.scheduleweather.scheduleinfo.placefragments.PlacesFragment;
+import com.zerodsoft.scheduleweather.scheduleinfo.placefragments.fragment.PlacesFragment;
+import com.zerodsoft.scheduleweather.scheduleinfo.placefragments.interfaces.IClickedPlaceItem;
 import com.zerodsoft.scheduleweather.scheduleinfo.placefragments.interfaces.IPlaceItem;
-import com.zerodsoft.scheduleweather.scheduleinfo.placefragments.interfaces.IPlacesFragment;
+import com.zerodsoft.scheduleweather.scheduleinfo.placefragments.model.PlaceCategory;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-public class CategoryViewAdapter extends RecyclerView.Adapter<CategoryViewAdapter.CategoryViewHolder>
+public class CategoryViewAdapter extends RecyclerView.Adapter<CategoryViewAdapter.CategoryViewHolder> implements IPlaceItem
 {
-    private LocationInfo locationInfo;
+    private LocationInfo LocationInfo;
     private Context context;
-    private List<String> categories;
+    private List<PlaceCategory> categories;
+    private IClickedPlaceItem iClickedPlaceItem;
     private PlacesFragment fragment;
-    private IPlaceItem iPlaceItem;
-    private IPlacesFragment iPlacesFragment;
+    private Map<String, CategoryViewHolder> viewHolderMap;
 
-
-    public CategoryViewAdapter(LocationInfo locationInfo, List<String> categories, PlacesFragment fragment)
+    public CategoryViewAdapter(LocationInfo LocationInfo, List<PlaceCategory> categories, PlacesFragment fragment)
     {
-        this.locationInfo = locationInfo;
+        this.LocationInfo = LocationInfo;
         this.categories = categories;
-        this.iPlaceItem = (IPlaceItem) fragment;
-        this.iPlacesFragment = (IPlacesFragment) fragment;
+        this.iClickedPlaceItem = (IClickedPlaceItem) fragment;
+        this.fragment = fragment;
+        this.viewHolderMap = new HashMap<>();
     }
 
     @NonNull
@@ -54,8 +57,21 @@ public class CategoryViewAdapter extends RecyclerView.Adapter<CategoryViewAdapte
     @Override
     public void onBindViewHolder(@NonNull CategoryViewHolder holder, int position)
     {
-        holder.onBind(categories.get(position));
+        holder.onBind();
     }
+
+    @Override
+    public List<PlaceDocuments> getPlaceItems(String categoryName)
+    {
+        return viewHolderMap.get(categoryName).adapter.getCurrentList().snapshot();
+    }
+
+    @Override
+    public List<String> getCategoryNames()
+    {
+        return null;
+    }
+
 
     @Override
     public int getItemCount()
@@ -76,31 +92,32 @@ public class CategoryViewAdapter extends RecyclerView.Adapter<CategoryViewAdapte
             itemRecyclerView = (RecyclerView) view.findViewById(R.id.map_category_itemsview);
             itemRecyclerView.setLayoutManager(new LinearLayoutManager(view.getContext(), RecyclerView.HORIZONTAL, false));
             itemRecyclerView.addItemDecoration(new RecyclerViewItemDecoration((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, context.getResources().getDisplayMetrics())));
-            viewModel = new ViewModelProvider(iPlacesFragment.getViewModelStoreOwner()).get(PlacesViewModel.class);
+            viewModel = new ViewModelProvider(fragment).get(PlacesViewModel.class);
         }
 
-        public void onBind(String query)
+        public void onBind()
         {
             LocalApiPlaceParameter placeParameter = new LocalApiPlaceParameter();
             placeParameter.setPage(LocalApiPlaceParameter.DEFAULT_PAGE).setRadius(LocalApiPlaceParameter.DEFAULT_RADIUS)
                     .setSize(LocalApiPlaceParameter.DEFAULT_SIZE).setSort(LocalApiPlaceParameter.SORT_ACCURACY)
-                    .setX(Double.toString(locationInfo.getLongitude()))
-                    .setY(Double.toString(locationInfo.getLatitude()));
+                    .setX(Double.toString(LocationInfo.getLongitude()))
+                    .setY(Double.toString(LocationInfo.getLatitude()));
 
-            if (KakaoLocalApiCategoryUtil.isCategory(query))
+            PlaceCategory placeCategory = categories.get(getAdapterPosition());
+            if (placeCategory.getCategoryCode() == null)
             {
-                placeParameter.setCategoryGroupCode(KakaoLocalApiCategoryUtil.getName(Integer.parseInt(query)));
-                categoryDescription = KakaoLocalApiCategoryUtil.getDescription(Integer.parseInt(query));
+                placeParameter.setQuery(placeCategory.getCategoryName());
             } else
             {
-                placeParameter.setQuery(query);
-                categoryDescription = query;
+                placeParameter.setCategoryGroupCode(placeCategory.getCategoryCode());
             }
-            viewModel.init(placeParameter);
-            viewModel.getPagedListMutableLiveData().observe(iPlacesFragment.getLifeCycleOwner(), adapter::submitList);
+            categoryDescription = placeCategory.getCategoryName();
 
-            adapter = new PlaceItemsAdapters(iPlaceItem);
+            adapter = new PlaceItemsAdapters(iClickedPlaceItem);
             itemRecyclerView.setAdapter(adapter);
+
+            viewModel.init(placeParameter);
+            viewModel.getPagedListMutableLiveData().observe(fragment.getLifeCycleOwner(), adapter::submitList);
 
             ((TextView) itemView.findViewById(R.id.map_category_name)).setText(categoryDescription);
 
@@ -109,9 +126,11 @@ public class CategoryViewAdapter extends RecyclerView.Adapter<CategoryViewAdapte
                 @Override
                 public void onClick(View view)
                 {
-                    iPlaceItem.onClickedMore(adapter.getCurrentList().snapshot(), categoryDescription);
+                    iClickedPlaceItem.onClickedMore(categoryDescription);
                 }
             });
+
+            viewHolderMap.put(categoryDescription, this);
         }
 
     }

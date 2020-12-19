@@ -1,6 +1,8 @@
 package com.zerodsoft.scheduleweather.kakaomap.fragment;
 
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
@@ -8,6 +10,8 @@ import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.NetworkRequest;
 import android.os.Bundle;
+import android.provider.ContactsContract;
+import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,12 +22,13 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.activity.map.fragment.interfaces.IMapData;
-import com.zerodsoft.scheduleweather.activity.map.fragment.interfaces.IMapPoint;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapData;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapPoint;
 import com.zerodsoft.scheduleweather.activity.map.fragment.map.BottomSheetItemView;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponseDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
@@ -36,23 +41,25 @@ import java.util.List;
 
 public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, MapView.POIItemEventListener, MapView.MapViewEventListener
 {
-    private MapView mapView;
-    private ConnectivityManager.NetworkCallback networkCallback;
-    private ConnectivityManager connectivityManager;
-    private String appKey;
-    private BottomSheetBehavior bottomSheetBehavior;
+    protected MapView mapView;
+    protected ConnectivityManager.NetworkCallback networkCallback;
+    protected ConnectivityManager connectivityManager;
+    protected String appKey;
+    protected BottomSheetBehavior bottomSheetBehavior;
 
-    private LinearLayout headerBar;
-    private FrameLayout mapViewContainer;
-    private LinearLayout bottomSheet;
+    protected LinearLayout headerBar;
+    protected FrameLayout mapViewContainer;
+    protected LinearLayout bottomSheet;
 
-    private BottomSheetItemView bottomSheetPlaceItemView;
-    private BottomSheetItemView bottomSheetAddressItemView;
+    protected ImageButton gpsButton;
 
-    private final int PLACE_ITEM = 0;
-    private final int ADDRESS_ITEM = 1;
+    protected BottomSheetItemView bottomSheetPlaceItemView;
+    protected BottomSheetItemView bottomSheetAddressItemView;
 
-    private int selectedPoiItemIndex;
+    protected int selectedPoiItemIndex;
+
+    protected static final int PLACE_ITEM = 0;
+    protected static final int ADDRESS_ITEM = 1;
 
     public KakaoMapFragment()
     {
@@ -87,9 +94,12 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
         headerBar = (LinearLayout) view.findViewById(R.id.map_header_bar);
         mapViewContainer = (FrameLayout) view.findViewById(R.id.map_view);
         bottomSheet = (LinearLayout) view.findViewById(R.id.map_item_bottom_sheet);
+        gpsButton = (ImageButton) view.findViewById(R.id.gps_button);
 
-        bottomSheetPlaceItemView = (BottomSheetItemView) LayoutInflater.from(getContext()).inflate(R.layout.map_bottom_sheet_place, bottomSheet, false);
-        bottomSheetAddressItemView = (BottomSheetItemView) LayoutInflater.from(getContext()).inflate(R.layout.map_bottom_sheet_address, bottomSheet, false);
+        LayoutInflater layoutInflater = getLayoutInflater();
+        bottomSheetPlaceItemView = (BottomSheetItemView) layoutInflater.inflate(R.layout.map_bottom_sheet_place, bottomSheet, false);
+        bottomSheetAddressItemView = (BottomSheetItemView) layoutInflater.inflate(R.layout.map_bottom_sheet_address, bottomSheet, false);
+
         bottomSheet.addView(bottomSheetPlaceItemView, PLACE_ITEM);
         bottomSheet.addView(bottomSheetAddressItemView, ADDRESS_ITEM);
 
@@ -115,6 +125,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
                 switch (newState)
                 {
                     case BottomSheetBehavior.STATE_HIDDEN:
+                        mapView.deselectPOIItem(mapView.getPOIItems()[selectedPoiItemIndex]);
                         break;
                 }
             }
@@ -125,7 +136,6 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
                 if (slideOffset == 0)
                 {
                     bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
-                    deselectPoiItem();
                 }
             }
         });
@@ -148,10 +158,11 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
             }
         });
 
+
         initMapView();
     }
 
-    private boolean checkNetwork()
+    protected boolean checkNetwork()
     {
         if (connectivityManager.getActiveNetwork() == null)
         {
@@ -171,7 +182,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
         }
     }
 
-    private void setNetworkCallback()
+    protected void setNetworkCallback()
     {
         connectivityManager = (ConnectivityManager) getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
         networkCallback = new ConnectivityManager.NetworkCallback()
@@ -197,7 +208,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     }
 
 
-    private void initMapView()
+    protected void initMapView()
     {
         mapView = new MapView(requireActivity());
         mapViewContainer.addView(mapView);
@@ -211,6 +222,31 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
             e.printStackTrace();
         }
         appKey = ai.metaData.getString("com.kakao.sdk.AppKey");
+    }
+
+    protected void showRequestGpsDialog()
+    {
+        new AlertDialog.Builder(getActivity())
+                .setMessage(getString(R.string.request_to_make_gps_on))
+                .setPositiveButton(getString(R.string.check), new
+                        DialogInterface.OnClickListener()
+                        {
+                            @Override
+                            public void onClick(DialogInterface paramDialogInterface, int paramInt)
+                            {
+                                startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                            }
+                        })
+                .setNegativeButton(getString(R.string.no), new DialogInterface.OnClickListener()
+                {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i)
+                    {
+
+                    }
+                })
+                .setCancelable(false)
+                .show();
     }
 
     @Override
@@ -308,30 +344,6 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
         selectedPoiItemIndex = index;
     }
 
-    @Override
-    public void createAddressPoiItem(AddressResponseDocuments document)
-    {
-        MapPOIItem poiItem = new MapPOIItem();
-        poiItem.setItemName(document.getAddressName());
-        poiItem.setMapPoint(MapPoint.mapPointWithGeoCoord(document.getY(), document.getX()));
-        poiItem.setMarkerType(MapPOIItem.MarkerType.BluePin); // 기본으로 제공하는 BluePin 마커 모양.
-        poiItem.setSelectedMarkerType(MapPOIItem.MarkerType.RedPin); // 마커를 클릭했을때, 기본으로 제공하는 RedPin 마커 모양.
-        mapView.removeAllPOIItems();
-        mapView.addPOIItem(poiItem);
-    }
-
-    @Override
-    public void createPlacePoiItem(PlaceDocuments document)
-    {
-        MapPOIItem poiItem = new MapPOIItem();
-        poiItem.setItemName(document.getPlaceName());
-        poiItem.setMapPoint(MapPoint.mapPointWithGeoCoord(document.getY(), document.getX()));
-        poiItem.setMarkerType(MapPOIItem.MarkerType.BluePin); // 기본으로 제공하는 BluePin 마커 모양.
-        poiItem.setSelectedMarkerType(MapPOIItem.MarkerType.RedPin); // 마커를 클릭했을때, 기본으로 제공하는 RedPin 마커 모양.
-        mapView.removeAllPOIItems();
-        mapView.addPOIItem(poiItem);
-    }
-
 
     @Override
     public void removeAllPoiItems()
@@ -425,6 +437,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
             bottomSheetPlaceItemView.setVisibility(View.VISIBLE);
         }
         mapView.setMapCenterPoint(mapPOIItem.getMapPoint(), true);
+        selectedPoiItemIndex = mapPOIItem.getTag();
         bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
     }
 
@@ -446,7 +459,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
 
     }
 
-    class CustomPoiItem extends MapPOIItem
+    protected class CustomPoiItem extends MapPOIItem
     {
         private AddressResponseDocuments addressDocument;
         private PlaceDocuments placeDocument;
@@ -461,6 +474,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
             this.placeDocument = placeDocument;
         }
 
+
         public AddressResponseDocuments getAddressDocument()
         {
             return addressDocument;
@@ -470,5 +484,6 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
         {
             return placeDocument;
         }
+
     }
 }

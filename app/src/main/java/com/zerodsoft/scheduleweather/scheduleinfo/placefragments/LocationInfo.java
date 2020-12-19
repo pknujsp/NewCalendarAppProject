@@ -2,9 +2,9 @@ package com.zerodsoft.scheduleweather.scheduleinfo.placefragments;
 
 public class LocationInfo
 {
-    private double latitude;
-    private double longitude;
-    private String locationName;
+    private final double latitude;
+    private final double longitude;
+    private final String locationName;
 
     public LocationInfo(double latitude, double longitude, String locationName)
     {

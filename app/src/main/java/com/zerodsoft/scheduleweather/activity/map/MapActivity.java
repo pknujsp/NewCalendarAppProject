@@ -3,16 +3,13 @@ package com.zerodsoft.scheduleweather.activity.map;
 import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 
 import android.os.Bundle;
 
+import com.zerodsoft.scheduleweather.activity.editschedule.ScheduleEditActivity;
 import com.zerodsoft.scheduleweather.activity.map.fragment.interfaces.FragmentReplace;
-import com.zerodsoft.scheduleweather.activity.map.fragment.interfaces.ICatchedLocation;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.ICatchedLocation;
 import com.zerodsoft.scheduleweather.activity.map.fragment.map.MapFragment;
-import com.zerodsoft.scheduleweather.activity.map.fragment.search.SearchFragment;
-import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.SearchResultFragmentController;
-import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.SearchResultListFragment;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.room.dto.AddressDTO;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
@@ -97,5 +94,21 @@ public class MapActivity extends AppCompatActivity implements FragmentReplace, I
     public AddressDTO getAddress()
     {
         return selectedAddress;
+    }
+
+    @Override
+    public void choiceLocation(LocationDTO locationDTO)
+    {
+        Bundle bundle = new Bundle();
+        if (locationDTO instanceof AddressDTO)
+        {
+            bundle.putParcelable("address", (AddressDTO) locationDTO);
+        } else
+        {
+            bundle.putParcelable("place", (PlaceDTO) locationDTO);
+        }
+        getIntent().putExtras(bundle);
+        setResult(ScheduleEditActivity.LOCATION_SELECTED, getIntent());
+        finish();
     }
 }

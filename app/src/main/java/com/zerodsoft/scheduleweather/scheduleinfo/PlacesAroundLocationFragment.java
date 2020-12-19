@@ -5,7 +5,6 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentContainerView;
 import androidx.fragment.app.FragmentManager;
 
 import android.view.LayoutInflater;
@@ -16,7 +15,7 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.room.dto.AddressDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
 import com.zerodsoft.scheduleweather.scheduleinfo.placefragments.LocationInfo;
-import com.zerodsoft.scheduleweather.scheduleinfo.placefragments.PlacesFragment;
+import com.zerodsoft.scheduleweather.scheduleinfo.placefragments.fragment.PlacesFragment;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -68,6 +67,6 @@ public class PlacesAroundLocationFragment extends Fragment
         }
 
         fragmentManager = getChildFragmentManager();
-        fragmentManager.beginTransaction().add(fragmentContainerId, fragments.get(0)).commitAllowingStateLoss();
+        fragmentManager.beginTransaction().add(fragmentContainerId, fragments.get(0)).commit();
     }
 }

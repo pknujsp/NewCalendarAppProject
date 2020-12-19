@@ -2,11 +2,8 @@ package com.zerodsoft.scheduleweather.scheduleinfo.placefragments.interfaces;
 
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
 
-import java.util.List;
-
-public interface IPlaceItem
+public interface IClickedPlaceItem
 {
-    List<PlaceDocuments> getPlaceItems(String categoryName);
-
-    List<String> getCategoryNames();
+    void onClickedItem(PlaceDocuments document);
+    void onClickedMore(String categoryDescription);
 }

@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.activity.map.fragment.interfaces;
+package com.zerodsoft.scheduleweather.kakaomap.interfaces;
 
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponseDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
@@ -10,10 +10,6 @@ public interface IMapData
     void createPlacesPoiItems(List<PlaceDocuments> placeDocuments);
 
     void createAddressesPoiItems(List<AddressResponseDocuments> addressDocuments);
-
-    void createPlacePoiItem(PlaceDocuments document);
-
-    void createAddressPoiItem(AddressResponseDocuments document);
 
     void selectPoiItem(int index);
 

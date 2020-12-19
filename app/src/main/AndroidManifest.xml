@@ -16,7 +16,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".scheduleinfo.ScheduleInfoActivity"></activity>
+        <activity
+            android:name=".scheduleinfo.ScheduleInfoActivity"
+            android:theme="@style/Theme.MaterialComponents.Light.NoActionBar" />
         <activity
             android:name=".activity.map.MapActivity"
             android:taskAffinity="com.zerodsoft.scheduleweather.Activity.MapActivity" />

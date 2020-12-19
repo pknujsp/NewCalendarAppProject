@@ -40,7 +40,7 @@ public class WeatherItemFragment extends Fragment
 {
     private WeatherData weatherData;
 
-    private LocationInfo locationInfo;
+    private LocationInfo LocationInfo;
 
     private UltraSrtNcstFragment ultraSrtNcstFragment;
     private UltraSrtFcstFragment ultraSrtFcstFragment;
@@ -54,9 +54,9 @@ public class WeatherItemFragment extends Fragment
 
     private List<SunSetRiseData> sunSetRiseList = new ArrayList<>();
 
-    public WeatherItemFragment(LocationInfo locationInfo)
+    public WeatherItemFragment(LocationInfo LocationInfo)
     {
-        this.locationInfo = locationInfo;
+        this.LocationInfo = LocationInfo;
     }
 
 
@@ -86,8 +86,8 @@ public class WeatherItemFragment extends Fragment
         MidFcstParameter midLandFcstParameter = new MidFcstParameter();
         MidFcstParameter midTaParameter = new MidFcstParameter();
 
-        LonLat lonLat = LonLatConverter.convertGrid(locationInfo.getLongitude(), locationInfo.getLatitude());
-        lonLat.setLongitude(locationInfo.getLongitude()).setLatitude(locationInfo.getLatitude());
+        LonLat lonLat = LonLatConverter.convertGrid(LocationInfo.getLongitude(), LocationInfo.getLatitude());
+        lonLat.setLongitude(LocationInfo.getLongitude()).setLatitude(LocationInfo.getLatitude());
 
         viewModel = new ViewModelProvider(this).get(WeatherViewModel.class);
         viewModel.init(getContext(), lonLat);
@@ -110,7 +110,7 @@ public class WeatherItemFragment extends Fragment
                     // 점 사이의 거리 계산
                     for (int i = 0; i < locationPoints.size(); i++)
                     {
-                        distance = Math.sqrt(Math.pow(locationInfo.getLongitude() - locationPoints.get(i).longitude, 2) + Math.pow(locationInfo.getLatitude() - locationPoints.get(i).latitude, 2));
+                        distance = Math.sqrt(Math.pow(LocationInfo.getLongitude() - locationPoints.get(i).longitude, 2) + Math.pow(LocationInfo.getLatitude() - locationPoints.get(i).latitude, 2));
                         if (distance < minDistance)
                         {
                             minDistance = distance;
