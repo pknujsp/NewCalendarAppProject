@@ -9,4 +9,6 @@ public interface IPlaceItem
     List<PlaceDocuments> getPlaceItems(String categoryName);
 
     List<String> getCategoryNames();
+
+    int getPlaceItemsSize(String categoryName);
 }

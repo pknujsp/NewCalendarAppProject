@@ -1,7 +1,10 @@
 package com.zerodsoft.scheduleweather.scheduleinfo;
 
+import android.content.Context;
 import android.os.Bundle;
 
+import androidx.activity.OnBackPressedCallback;
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
 import android.view.LayoutInflater;
@@ -31,6 +34,8 @@ public class ScheduleInfoFragment extends Fragment
     {
         setSchedule(schedule, addresses, places);
     }
+
+
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -113,4 +118,5 @@ public class ScheduleInfoFragment extends Fragment
             binding.scheduleAccount.setText("로컬");
         }
     }
+
 }

@@ -1,5 +1,6 @@
 package com.zerodsoft.scheduleweather.scheduleinfo.placefragments.fragment;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -7,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -17,8 +19,10 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.activity.map.MapActivity;
 import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
+import com.zerodsoft.scheduleweather.scheduleinfo.ScheduleInfoActivity;
 import com.zerodsoft.scheduleweather.scheduleinfo.placefragments.LocationInfo;
 import com.zerodsoft.scheduleweather.scheduleinfo.placefragments.adapter.CategoryViewAdapter;
 import com.zerodsoft.scheduleweather.scheduleinfo.placefragments.interfaces.IClickedPlaceItem;
@@ -50,6 +54,7 @@ public class PlacesFragment extends Fragment implements LocationInfoGetter, ICli
     {
         return inflater.inflate(R.layout.place_categories_fragment, container, false);
     }
+
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState)
@@ -124,14 +129,13 @@ public class PlacesFragment extends Fragment implements LocationInfoGetter, ICli
 
         if (mapFragment == null)
         {
-            mapFragment = PlacesMapFragment.newInstance(this);
-            mapFragment.setSelectedCategoryName(categoryDescription);
-            fragmentManager.beginTransaction().add(R.id.places_around_location_fragment_container, mapFragment, PlacesMapFragment.TAG).hide(this).commit();
+            mapFragment = PlacesMapFragment.newInstance(this, categoryDescription);
+            fragmentManager.beginTransaction().add(R.id.places_around_location_fragment_container, mapFragment, PlacesMapFragment.TAG).commit();
+            fragmentManager.beginTransaction().show(mapFragment).hide(this).addToBackStack(null).commit();
         } else
         {
-            mapFragment.setSelectedCategoryName(categoryDescription);
-            mapFragment.init();
-            fragmentManager.beginTransaction().show(mapFragment).hide(this).commit();
+            mapFragment.selectChip(categoryDescription);
+            fragmentManager.beginTransaction().show(mapFragment).hide(this).addToBackStack(null).commit();
         }
     }
 
@@ -141,6 +145,8 @@ public class PlacesFragment extends Fragment implements LocationInfoGetter, ICli
         super.onDestroy();
         PlacesMapFragment.close();
     }
+
+
 
     @Override
     public LifecycleOwner getLifeCycleOwner()
@@ -170,5 +176,11 @@ public class PlacesFragment extends Fragment implements LocationInfoGetter, ICli
             names.add(category.getCategoryName());
         }
         return names;
+    }
+
+    @Override
+    public int getPlaceItemsSize(String categoryName)
+    {
+        return adapter.getPlaceItemsSize(categoryName);
     }
 }

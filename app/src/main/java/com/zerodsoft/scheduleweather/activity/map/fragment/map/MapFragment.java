@@ -274,9 +274,6 @@ public class MapFragment extends KakaoMapFragment implements MapReverseGeoCoder.
 
     private void init()
     {
-        mapView.setPOIItemEventListener(this);
-        mapView.setMapViewEventListener(this);
-
         mapReverseGeoCoder = new MapReverseGeoCoder(appKey, mapView.getMapCenterPoint(), this, getActivity());
     }
 

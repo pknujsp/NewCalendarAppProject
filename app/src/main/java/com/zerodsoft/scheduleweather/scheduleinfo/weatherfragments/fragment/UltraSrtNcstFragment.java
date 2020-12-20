@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.views;
+package com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.fragment;
 
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;

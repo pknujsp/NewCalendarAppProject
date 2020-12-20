@@ -20,7 +20,7 @@
 
         <fragment
             android:id="@+id/ultra_srt_ncst_fragment"
-            android:name="com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.views.UltraSrtNcstFragment"
+            android:name="com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.fragment.UltraSrtNcstFragment"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp" />
@@ -36,7 +36,7 @@
 
         <fragment
             android:id="@+id/ultra_srt_fcst_fragment"
-            android:name="com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.views.UltraSrtFcstFragment"
+            android:name="com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.fragment.UltraSrtFcstFragment"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp" />
@@ -52,7 +52,7 @@
 
         <fragment
             android:id="@+id/vilage_fcst_fragment"
-            android:name="com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.views.VilageFcstFragment"
+            android:name="com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.fragment.VilageFcstFragment"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp" />
@@ -68,7 +68,7 @@
 
         <fragment
             android:id="@+id/mid_fcst_fragment"
-            android:name="com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.views.MidFcstFragment"
+            android:name="com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.fragment.MidFcstFragment"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 

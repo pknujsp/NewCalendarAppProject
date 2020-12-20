@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments;
+package com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.fragment;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -21,12 +21,13 @@ import com.zerodsoft.scheduleweather.room.dto.AddressDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
 import com.zerodsoft.scheduleweather.scheduleinfo.placefragments.LocationInfo;
+import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.SunSetRiseData;
 import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.resultdata.WeatherData;
 import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.viewmodel.WeatherViewModel;
-import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.views.MidFcstFragment;
-import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.views.UltraSrtFcstFragment;
-import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.views.UltraSrtNcstFragment;
-import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.views.VilageFcstFragment;
+import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.fragment.MidFcstFragment;
+import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.fragment.UltraSrtFcstFragment;
+import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.fragment.UltraSrtNcstFragment;
+import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.fragment.VilageFcstFragment;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.utility.LonLat;
 import com.zerodsoft.scheduleweather.utility.LonLatConverter;
@@ -46,11 +47,8 @@ public class WeatherItemFragment extends Fragment
     private UltraSrtFcstFragment ultraSrtFcstFragment;
     private VilageFcstFragment vilageFcstFragment;
     private MidFcstFragment midFcstFragment;
-    private WeatherAreaCodeDTO weatherAreaCode;
 
     private WeatherViewModel viewModel;
-    private PlaceDTO place;
-    private AddressDTO address;
 
     private List<SunSetRiseData> sunSetRiseList = new ArrayList<>();
 
@@ -58,7 +56,6 @@ public class WeatherItemFragment extends Fragment
     {
         this.LocationInfo = LocationInfo;
     }
-
 
     @Nullable
     @Override
@@ -161,7 +158,6 @@ public class WeatherItemFragment extends Fragment
 
         Calendar calendar = weatherData.getDownloadedDate();
 
-        int i = 0;
         boolean finished = false;
 
         while (!finished)

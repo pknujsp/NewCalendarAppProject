@@ -14,6 +14,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.zerodsoft.scheduleweather.R;
@@ -50,9 +51,9 @@ public class PlacesMapFragment extends KakaoMapFragment
         return instance;
     }
 
-    public static PlacesMapFragment newInstance(IPlaceItem iPlaceItem)
+    public static PlacesMapFragment newInstance(IPlaceItem iPlaceItem, String selectedCategoryName)
     {
-        instance = new PlacesMapFragment(iPlaceItem);
+        instance = new PlacesMapFragment(iPlaceItem, selectedCategoryName);
         return instance;
     }
 
@@ -61,9 +62,10 @@ public class PlacesMapFragment extends KakaoMapFragment
         instance = null;
     }
 
-    public PlacesMapFragment(IPlaceItem iPlaceItem)
+    public PlacesMapFragment(IPlaceItem iPlaceItem, String selectedCategoryName)
     {
         this.iPlaceItem = iPlaceItem;
+        this.selectedCategoryName = selectedCategoryName;
     }
 
     @Override
@@ -81,18 +83,9 @@ public class PlacesMapFragment extends KakaoMapFragment
             @Override
             public void handleOnBackPressed()
             {
-                FragmentManager fragmentManager = getParentFragmentManager();
-                PlacesFragment placesFragment = null;
-                List<Fragment> fragments = fragmentManager.getFragments();
-                for (Fragment fragment : fragments)
-                {
-                    if (fragment instanceof PlacesFragment)
-                    {
-                        placesFragment = (PlacesFragment) fragment;
-                        break;
-                    }
-                }
-                fragmentManager.beginTransaction().hide(PlacesMapFragment.this).show(placesFragment).commit();
+                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+                onBackPressedCallback.remove();
+                getParentFragmentManager().popBackStack();
             }
         };
         requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
@@ -109,6 +102,7 @@ public class PlacesMapFragment extends KakaoMapFragment
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
+
         headerBar.setVisibility(View.GONE);
         gpsButton.setVisibility(View.GONE);
         bottomSheet.findViewById(R.id.choice_location_button).setVisibility(View.GONE);
@@ -116,6 +110,8 @@ public class PlacesMapFragment extends KakaoMapFragment
 
         chipGroup = new ChipGroup(getContext());
         chipGroup.setSingleSelection(true);
+        chipGroup.setSingleLine(true);
+        chipGroup.setSelectionRequired(true);
 
         FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         layoutParams.gravity = Gravity.TOP;
@@ -128,31 +124,40 @@ public class PlacesMapFragment extends KakaoMapFragment
         {
             View child = layoutInflater.inflate(R.layout.choicechip, chipGroup, false);
             ((Chip) child).setText(categoryName);
+            child.setOnClickListener(chipOnClickListener);
             chipGroup.addView(child);
         }
-
-        chipGroup.setOnCheckedChangeListener(new ChipGroup.OnCheckedChangeListener()
-        {
-            @Override
-            public void onCheckedChanged(ChipGroup group, int checkedId)
-            {
-                Chip chip = (Chip) chipGroup.findViewById(checkedId);
-                selectedCategoryName = chip.getText().toString();
-                // 선택한 카테고리로 데이터 리스트 변경
-                List<PlaceDocuments> documents = iPlaceItem.getPlaceItems(selectedCategoryName);
-                createPlacesPoiItems(documents);
-                showAllPoiItems();
-            }
-        });
-
-        mapView.setPOIItemEventListener(this);
-        mapView.setMapViewEventListener(this);
     }
+
+    private final View.OnClickListener chipOnClickListener = new View.OnClickListener()
+    {
+        @Override
+        public void onClick(View view)
+        {
+            final String chipCategory = ((Chip) view).getText().toString();
+
+            if (selectedCategoryName.equals(chipCategory))
+            {
+                if (mapView.getPOIItems().length != iPlaceItem.getPlaceItemsSize(selectedCategoryName))
+                {
+                    refreshPlaceItems();
+                } else
+                {
+                    showAllPoiItems();
+                }
+            } else
+            {
+                selectedCategoryName = chipCategory;
+                refreshPlaceItems();
+            }
+        }
+    };
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState)
     {
         super.onActivityCreated(savedInstanceState);
+        selectChip();
     }
 
 
@@ -160,7 +165,6 @@ public class PlacesMapFragment extends KakaoMapFragment
     public void onStart()
     {
         super.onStart();
-        init();
     }
 
     @Override
@@ -182,21 +186,37 @@ public class PlacesMapFragment extends KakaoMapFragment
         super.onDestroy();
     }
 
-    public void setSelectedCategoryName(String selectedCategoryName)
-    {
-        this.selectedCategoryName = selectedCategoryName;
-    }
-
-    public void init()
+    public void selectChip()
     {
         int chipsCount = chipGroup.getChildCount();
         for (int i = 0; i < chipsCount; i++)
         {
             if (((Chip) chipGroup.getChildAt(i)).getText().equals(selectedCategoryName))
             {
-                chipGroup.check(chipGroup.getChildAt(i).getId());
+                ((Chip) chipGroup.getChildAt(i)).performClick();
                 break;
             }
         }
+    }
+
+    public void selectChip(String selectedCategoryName)
+    {
+        requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
+        int chipsCount = chipGroup.getChildCount();
+        for (int i = 0; i < chipsCount; i++)
+        {
+            if (((Chip) chipGroup.getChildAt(i)).getText().equals(selectedCategoryName))
+            {
+                ((Chip) chipGroup.getChildAt(i)).performClick();
+                break;
+            }
+        }
+    }
+
+    public void refreshPlaceItems()
+    {
+        List<PlaceDocuments> documents = iPlaceItem.getPlaceItems(selectedCategoryName);
+        createPlacesPoiItems(documents);
+        showAllPoiItems();
     }
 }

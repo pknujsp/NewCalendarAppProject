@@ -1,5 +1,6 @@
 package com.zerodsoft.scheduleweather.scheduleinfo;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
@@ -30,12 +31,29 @@ public class ScheduleInfoActivity extends AppCompatActivity
     private ScheduleWeatherFragment scheduleWeatherFragment;
     private PlacesAroundLocationFragment placesAroundLocationFragment;
 
+    private OnBackPressedCallback onBackPressedCallback;
+
     private FragmentManager fragmentManager;
 
     private static final String TAG_INFO = "info";
     private static final String TAG_WEATHER = "weather";
     private static final String TAG_LOCATION = "location";
     private Fragment currentFragment = null;
+
+    @Override
+    public void onAttachedToWindow()
+    {
+        super.onAttachedToWindow();
+        onBackPressedCallback = new OnBackPressedCallback(true)
+        {
+            @Override
+            public void handleOnBackPressed()
+            {
+                finish();
+            }
+        };
+        getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -45,7 +63,6 @@ public class ScheduleInfoActivity extends AppCompatActivity
         bottomNavigationView = (BottomNavigationView) findViewById(R.id.schedule_bottom_nav);
         fragmentContainerView = (FragmentContainerView) findViewById(R.id.schedule_fragment_container);
 
-        // List<Integer> navGraphIds = Arrays.asList(R.navigation.navigation_schedule_info, R.navigation.navigation_schedule_weather, R.navigation.navigation_schedule_location);
         bottomNavigationView.setOnNavigationItemSelectedListener(onNavigationItemSelectedListener);
 
         fragmentManager = getSupportFragmentManager();
@@ -70,37 +87,7 @@ public class ScheduleInfoActivity extends AppCompatActivity
             }
         });
 
-        /*
-        viewPager = (ViewPager2) findViewById(R.id.schedule_viewpager);
-        tabLayout = (TabLayout) findViewById(R.id.schedule_tab);
-        viewPager.setUserInputEnabled(false);
 
-        int scheduleId = getIntent().getIntExtra("scheduleId", -1);
-
-        viewModel = new ViewModelProvider(this).get(ScheduleViewModel.class).selectScheduleData(scheduleId);
-        viewModel.getScheduleDataLiveData().observe(this, new Observer<ScheduleData>()
-        {
-            @Override
-            public void onChanged(ScheduleData scheduleData)
-            {
-                ScheduleTabViewPager adapter = new ScheduleTabViewPager(ScheduleInfoActivity.this);
-                viewPager.setAdapter(adapter.setFragments(scheduleData.getSchedule(), scheduleData.getAddresses(), scheduleData.getPlaces()));
-
-                String[] tabs = {"일정", "날씨", "주변 정보"};
-
-                new TabLayoutMediator(tabLayout, viewPager, new TabLayoutMediator.TabConfigurationStrategy()
-                {
-                    @Override
-                    public void onConfigureTab(@NonNull TabLayout.Tab tab, int position)
-                    {
-                        tab.setText(tabs[position]);
-                    }
-                }).attach();
-            }
-        });
-
-
-         */
     }
 
     private final BottomNavigationView.OnNavigationItemSelectedListener onNavigationItemSelectedListener = new BottomNavigationView.OnNavigationItemSelectedListener()
@@ -138,4 +125,12 @@ public class ScheduleInfoActivity extends AppCompatActivity
     {
         super.onSaveInstanceState(outState);
     }
+
+    @Override
+    protected void onDestroy()
+    {
+        super.onDestroy();
+        onBackPressedCallback.remove();
+    }
+
 }

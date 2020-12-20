@@ -72,6 +72,12 @@ public class CategoryViewAdapter extends RecyclerView.Adapter<CategoryViewAdapte
         return null;
     }
 
+    @Override
+    public int getPlaceItemsSize(String categoryName)
+    {
+        return viewHolderMap.get(categoryName).adapter.getCurrentList().size();
+    }
+
 
     @Override
     public int getItemCount()

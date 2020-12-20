@@ -51,6 +51,9 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     protected FrameLayout mapViewContainer;
     protected LinearLayout bottomSheet;
 
+    protected ImageButton nextItemButton;
+    protected ImageButton previousItemButton;
+
     protected ImageButton gpsButton;
 
     protected BottomSheetItemView bottomSheetPlaceItemView;
@@ -140,6 +143,29 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
             }
         });
 
+        previousItemButton = (ImageButton) bottomSheet.findViewById(R.id.left_location_button);
+        nextItemButton = (ImageButton) bottomSheet.findViewById(R.id.right_location_button);
+
+        previousItemButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                int index = selectedPoiItemIndex != 0 ? selectedPoiItemIndex - 1 : mapView.getPOIItems().length - 1;
+                selectPoiItem(index);
+            }
+        });
+
+        nextItemButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                int index = selectedPoiItemIndex == mapView.getPOIItems().length - 1 ? 0 : selectedPoiItemIndex + 1;
+                selectPoiItem(index);
+            }
+        });
+
         ((ImageButton) view.findViewById(R.id.zoom_in_button)).setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -158,8 +184,10 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
             }
         });
 
-
         initMapView();
+
+        mapView.setPOIItemEventListener(this);
+        mapView.setMapViewEventListener(this);
     }
 
     protected boolean checkNetwork()
@@ -304,12 +332,14 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
                 poiItems[index].setMapPoint(MapPoint.mapPointWithGeoCoord(document.getY(), document.getX()));
                 poiItems[index].setPlaceDocument(document);
                 poiItems[index].setTag(index);
+                poiItems[index].setMoveToCenterOnSelect(true);
                 poiItems[index].setMarkerType(MapPOIItem.MarkerType.BluePin); // 기본으로 제공하는 BluePin 마커 모양.
                 poiItems[index].setSelectedMarkerType(MapPOIItem.MarkerType.RedPin); // 마커를 클릭했을때, 기본으로 제공하는 RedPin 마커 모양.
                 index++;
             }
             mapView.addPOIItems(poiItems);
         }
+        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
     }
 
     @Override
@@ -331,17 +361,19 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
                 poiItems[index].setTag(index);
                 poiItems[index].setMarkerType(MapPOIItem.MarkerType.BluePin);
                 poiItems[index].setSelectedMarkerType(MapPOIItem.MarkerType.RedPin);
+                poiItems[index].setMoveToCenterOnSelect(true);
                 index++;
             }
             mapView.addPOIItems(poiItems);
         }
+        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
     }
 
     @Override
     public void selectPoiItem(int index)
     {
-        mapView.selectPOIItem(mapView.getPOIItems()[index], false);
-        selectedPoiItemIndex = index;
+        mapView.selectPOIItem(mapView.getPOIItems()[index], true);
+        onPOIItemSelected(mapView, mapView.getPOIItems()[index]);
     }
 
 
@@ -438,7 +470,11 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
         }
         mapView.setMapCenterPoint(mapPOIItem.getMapPoint(), true);
         selectedPoiItemIndex = mapPOIItem.getTag();
-        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+
+        if (bottomSheetBehavior.getState() != BottomSheetBehavior.STATE_EXPANDED)
+        {
+            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+        }
     }
 
     @Override

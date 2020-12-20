@@ -18,7 +18,7 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.room.dto.AddressDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
 import com.zerodsoft.scheduleweather.scheduleinfo.placefragments.LocationInfo;
-import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.WeatherItemFragment;
+import com.zerodsoft.scheduleweather.scheduleinfo.weatherfragments.fragment.WeatherItemFragment;
 import com.zerodsoft.scheduleweather.utility.WeatherDataConverter;
 
 import java.util.ArrayList;
@@ -28,18 +28,21 @@ import java.util.List;
 public class ScheduleWeatherFragment extends Fragment
 {
     private ImageButton refreshButton;
-    private int fragmentContainerId;
+    private final int fragmentContainerId;
 
     private FragmentManager fragmentManager;
     private List<Fragment> fragments;
     private List<PlaceDTO> places;
     private List<AddressDTO> addresses;
 
+
     public ScheduleWeatherFragment(List<AddressDTO> addresses, List<PlaceDTO> places)
     {
         this.places = places;
         this.addresses = addresses;
+        fragmentContainerId = R.id.weather_fragment_container_view;
     }
+
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -60,7 +63,6 @@ public class ScheduleWeatherFragment extends Fragment
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
-        fragmentContainerId = R.id.weather_fragment_container_view;
 
         if (!places.isEmpty() || !addresses.isEmpty())
         {
@@ -78,8 +80,9 @@ public class ScheduleWeatherFragment extends Fragment
             }
         }
         fragmentManager = getChildFragmentManager();
-        fragmentManager.beginTransaction().add(fragmentContainerId, fragments.get(0)).commitAllowingStateLoss();
+        fragmentManager.beginTransaction().add(fragmentContainerId, fragments.get(0)).commit();
     }
+
 
     public void rotateRefreshButton(boolean value)
     {

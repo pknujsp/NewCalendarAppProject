@@ -77,6 +77,12 @@ public class MapActivity extends AppCompatActivity implements FragmentReplace, I
         getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
     }
 
+    @Override
+    protected void onDestroy()
+    {
+        super.onDestroy();
+        onBackPressedCallback.remove();
+    }
 
     @Override
     public LocationDTO getLocation()
