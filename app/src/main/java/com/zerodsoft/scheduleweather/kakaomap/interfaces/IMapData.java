@@ -18,4 +18,6 @@ public interface IMapData
     void showAllPoiItems();
 
     void deselectPoiItem();
+
+    void backToPreviousView();
 }

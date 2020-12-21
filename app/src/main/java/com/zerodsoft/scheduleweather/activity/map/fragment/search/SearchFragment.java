@@ -17,6 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.etc.FragmentStateCallback;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapPoint;
 import com.zerodsoft.scheduleweather.activity.map.fragment.interfaces.OnSelectedMapCategory;
@@ -36,11 +37,13 @@ public class SearchFragment extends Fragment implements OnSelectedMapCategory
     private IMapData iMapData;
     private OnBackPressedCallback onBackPressedCallback;
     private FragmentManager fragmentManager;
+    private FragmentStateCallback fragmentStateCallback;
 
-    public SearchFragment(Fragment fragment)
+    public SearchFragment(Fragment fragment, FragmentStateCallback fragmentStateCallback)
     {
         this.iMapPoint = (IMapPoint) fragment;
         this.iMapData = (IMapData) fragment;
+        this.fragmentStateCallback = fragmentStateCallback;
     }
 
     public static SearchFragment getInstance()
@@ -48,9 +51,9 @@ public class SearchFragment extends Fragment implements OnSelectedMapCategory
         return instance;
     }
 
-    public static SearchFragment newInstance(Fragment fragment)
+    public static SearchFragment newInstance(Fragment fragment, FragmentStateCallback fragmentStateCallback)
     {
-        instance = new SearchFragment(fragment);
+        instance = new SearchFragment(fragment, fragmentStateCallback);
         return instance;
     }
 
@@ -69,7 +72,8 @@ public class SearchFragment extends Fragment implements OnSelectedMapCategory
             @Override
             public void handleOnBackPressed()
             {
-                fragmentManager.beginTransaction().remove(SearchFragment.this).show(MapFragment.getInstance()).commit();
+                // fragmentManager.beginTransaction().remove(SearchFragment.this).show(MapFragment.getInstance()).commit();
+                fragmentManager.popBackStack();
             }
         };
         requireActivity().getOnBackPressedDispatcher().addCallback(SearchFragment.this, onBackPressedCallback);
@@ -79,6 +83,7 @@ public class SearchFragment extends Fragment implements OnSelectedMapCategory
     public void onDetach()
     {
         super.onDetach();
+        fragmentStateCallback.onChangedState(FragmentStateCallback.ON_DETACH);
         onBackPressedCallback.remove();
     }
 
@@ -128,7 +133,7 @@ public class SearchFragment extends Fragment implements OnSelectedMapCategory
         FragmentManager fragmentManager = getParentFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.add(R.id.map_activity_fragment_container, SearchResultFragmentController.newInstance(bundle, iMapPoint, iMapData), SearchResultFragmentController.TAG)
-                .addToBackStack(null).hide(SearchFragment.this).commit();
+                .hide(SearchFragment.this).addToBackStack(null).commit();
     }
 
     @Override

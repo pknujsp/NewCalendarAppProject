@@ -83,7 +83,7 @@ public class PlacesMapFragment extends KakaoMapFragment
             @Override
             public void handleOnBackPressed()
             {
-                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+                backToPreviousView();
                 onBackPressedCallback.remove();
                 getParentFragmentManager().popBackStack();
             }
@@ -103,7 +103,7 @@ public class PlacesMapFragment extends KakaoMapFragment
     {
         super.onViewCreated(view, savedInstanceState);
 
-        headerBar.setVisibility(View.GONE);
+        searchButton.setVisibility(View.GONE);
         gpsButton.setVisibility(View.GONE);
         bottomSheet.findViewById(R.id.choice_location_button).setVisibility(View.GONE);
         bottomSheet.findViewById(R.id.cancel_location_button).setVisibility(View.GONE);

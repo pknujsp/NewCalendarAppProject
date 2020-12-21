@@ -7,7 +7,6 @@ import androidx.fragment.app.FragmentManager;
 import android.os.Bundle;
 
 import com.zerodsoft.scheduleweather.activity.editschedule.ScheduleEditActivity;
-import com.zerodsoft.scheduleweather.activity.map.fragment.interfaces.FragmentReplace;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.ICatchedLocation;
 import com.zerodsoft.scheduleweather.activity.map.fragment.map.MapFragment;
 import com.zerodsoft.scheduleweather.R;
@@ -15,7 +14,7 @@ import com.zerodsoft.scheduleweather.room.dto.AddressDTO;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
 
-public class MapActivity extends AppCompatActivity implements FragmentReplace, ICatchedLocation
+public class MapActivity extends AppCompatActivity implements ICatchedLocation
 {
     private final int FRAGMENT_CONTAINER_ID;
     private FragmentManager fragmentManager;
@@ -30,11 +29,6 @@ public class MapActivity extends AppCompatActivity implements FragmentReplace, I
         FRAGMENT_CONTAINER_ID = R.id.map_activity_fragment_container;
     }
 
-    @Override
-    public void replaceFragment(String fragmentTag, Bundle bundle)
-    {
-
-    }
 
     public void init(Bundle bundle)
     {

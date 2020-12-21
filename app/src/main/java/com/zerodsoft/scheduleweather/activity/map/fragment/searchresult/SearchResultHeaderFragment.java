@@ -1,9 +1,11 @@
 package com.zerodsoft.scheduleweather.activity.map.fragment.searchresult;
 
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 
 import android.view.LayoutInflater;
@@ -26,10 +28,13 @@ public class SearchResultHeaderFragment extends Fragment
     private final String SEARCH_WORD;
     private ResultFragmentChanger resultFragmentChanger;
 
-    public SearchResultHeaderFragment(String searchWord, Fragment fragment)
+    private Drawable mapIcon;
+    private Drawable listIcon;
+
+    public SearchResultHeaderFragment(String searchWord, ResultFragmentChanger resultFragmentChanger)
     {
         this.SEARCH_WORD = searchWord;
-        this.resultFragmentChanger = (ResultFragmentChanger) fragment;
+        this.resultFragmentChanger = resultFragmentChanger;
     }
 
     public static SearchResultHeaderFragment getInstance()
@@ -37,9 +42,9 @@ public class SearchResultHeaderFragment extends Fragment
         return instance;
     }
 
-    public static SearchResultHeaderFragment newInstance(String searchWord, Fragment fragment)
+    public static SearchResultHeaderFragment newInstance(String searchWord, ResultFragmentChanger resultFragmentChanger)
     {
-        instance = new SearchResultHeaderFragment(searchWord, fragment);
+        instance = new SearchResultHeaderFragment(searchWord, resultFragmentChanger);
         return instance;
     }
 
@@ -64,6 +69,9 @@ public class SearchResultHeaderFragment extends Fragment
 
         searchWordTextView.setText(KakaoLocalApiCategoryUtil.isCategory(SEARCH_WORD) ? KakaoLocalApiCategoryUtil.getDescription(Integer.parseInt(SEARCH_WORD))
                 : SEARCH_WORD);
+
+        mapIcon = ResourcesCompat.getDrawable(getResources(), R.drawable.map_icon, null);
+        listIcon = ResourcesCompat.getDrawable(getResources(), R.drawable.list_icon, null);
 
         searchWordTextView.setOnClickListener(new View.OnClickListener()
         {
@@ -113,10 +121,10 @@ public class SearchResultHeaderFragment extends Fragment
         switch (type)
         {
             case SearchResultFragmentController.MAP:
-                changeButton.setImageDrawable(getResources().getDrawable(R.drawable.map_icon, null));
+                changeButton.setImageDrawable(mapIcon);
                 break;
             case SearchResultFragmentController.LIST:
-                changeButton.setImageDrawable(getResources().getDrawable(R.drawable.list_icon, null));
+                changeButton.setImageDrawable(listIcon);
                 break;
         }
     }

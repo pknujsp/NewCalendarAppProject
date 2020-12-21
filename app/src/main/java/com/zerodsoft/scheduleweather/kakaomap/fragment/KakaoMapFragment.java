@@ -18,6 +18,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -35,19 +36,20 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceD
 
 import net.daum.mf.map.api.MapPOIItem;
 import net.daum.mf.map.api.MapPoint;
+import net.daum.mf.map.api.MapReverseGeoCoder;
 import net.daum.mf.map.api.MapView;
 
 import java.util.List;
 
-public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, MapView.POIItemEventListener, MapView.MapViewEventListener
+public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, MapView.POIItemEventListener, MapView.MapViewEventListener, MapReverseGeoCoder.ReverseGeoCodingResultListener
 {
     protected MapView mapView;
     protected ConnectivityManager.NetworkCallback networkCallback;
     protected ConnectivityManager connectivityManager;
     protected String appKey;
     protected BottomSheetBehavior bottomSheetBehavior;
+    protected MapReverseGeoCoder mapReverseGeoCoder;
 
-    protected LinearLayout headerBar;
     protected FrameLayout mapViewContainer;
     protected LinearLayout bottomSheet;
 
@@ -56,6 +58,9 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
 
     protected ImageButton gpsButton;
 
+    protected ImageButton searchButton;
+    protected TextView currentAddressTextView;
+
     protected BottomSheetItemView bottomSheetPlaceItemView;
     protected BottomSheetItemView bottomSheetAddressItemView;
 
@@ -63,6 +68,8 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
 
     protected static final int PLACE_ITEM = 0;
     protected static final int ADDRESS_ITEM = 1;
+
+    protected boolean isSelectedPoiItem = false;
 
     public KakaoMapFragment()
     {
@@ -94,10 +101,13 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     {
         super.onViewCreated(view, savedInstanceState);
 
-        headerBar = (LinearLayout) view.findViewById(R.id.map_header_bar);
         mapViewContainer = (FrameLayout) view.findViewById(R.id.map_view);
         bottomSheet = (LinearLayout) view.findViewById(R.id.map_item_bottom_sheet);
         gpsButton = (ImageButton) view.findViewById(R.id.gps_button);
+        searchButton = (ImageButton) view.findViewById(R.id.map_view_search_button);
+        currentAddressTextView = (TextView) view.findViewById(R.id.current_address);
+        previousItemButton = (ImageButton) bottomSheet.findViewById(R.id.left_location_button);
+        nextItemButton = (ImageButton) bottomSheet.findViewById(R.id.right_location_button);
 
         LayoutInflater layoutInflater = getLayoutInflater();
         bottomSheetPlaceItemView = (BottomSheetItemView) layoutInflater.inflate(R.layout.map_bottom_sheet_place, bottomSheet, false);
@@ -128,7 +138,10 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
                 switch (newState)
                 {
                     case BottomSheetBehavior.STATE_HIDDEN:
-                        mapView.deselectPOIItem(mapView.getPOIItems()[selectedPoiItemIndex]);
+                        if (isSelectedPoiItem)
+                        {
+                            deselectPoiItem();
+                        }
                         break;
                 }
             }
@@ -142,9 +155,6 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
                 }
             }
         });
-
-        previousItemButton = (ImageButton) bottomSheet.findViewById(R.id.left_location_button);
-        nextItemButton = (ImageButton) bottomSheet.findViewById(R.id.right_location_button);
 
         previousItemButton.setOnClickListener(new View.OnClickListener()
         {
@@ -194,6 +204,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     {
         if (connectivityManager.getActiveNetwork() == null)
         {
+            Toast.makeText(getActivity(), getString(R.string.map_network_not_connected), Toast.LENGTH_SHORT).show();
             return false;
         } else
         {
@@ -205,6 +216,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
                 return true;
             } else
             {
+                Toast.makeText(getActivity(), getString(R.string.map_network_not_connected), Toast.LENGTH_SHORT).show();
                 return false;
             }
         }
@@ -250,6 +262,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
             e.printStackTrace();
         }
         appKey = ai.metaData.getString("com.kakao.sdk.AppKey");
+        mapReverseGeoCoder = new MapReverseGeoCoder(appKey, mapView.getMapCenterPoint(), this, getActivity());
     }
 
     protected void showRequestGpsDialog()
@@ -318,8 +331,10 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     @Override
     public void createPlacesPoiItems(List<PlaceDocuments> placeDocuments)
     {
-        mapView.removeAllPOIItems();
-
+        if (mapView.getPOIItems().length > 0)
+        {
+            mapView.removeAllPOIItems();
+        }
         if (!placeDocuments.isEmpty())
         {
             CustomPoiItem[] poiItems = new CustomPoiItem[placeDocuments.size()];
@@ -339,13 +354,20 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
             }
             mapView.addPOIItems(poiItems);
         }
-        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+
+        if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED)
+        {
+            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+        }
     }
 
     @Override
     public void createAddressesPoiItems(List<AddressResponseDocuments> addressDocuments)
     {
-        mapView.removeAllPOIItems();
+        if (mapView.getPOIItems().length > 0)
+        {
+            mapView.removeAllPOIItems();
+        }
 
         if (!addressDocuments.isEmpty())
         {
@@ -366,7 +388,10 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
             }
             mapView.addPOIItems(poiItems);
         }
-        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+        if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED)
+        {
+            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+        }
     }
 
     @Override
@@ -393,7 +418,20 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     public void deselectPoiItem()
     {
         mapView.deselectPOIItem(mapView.getPOIItems()[selectedPoiItemIndex]);
-        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+        isSelectedPoiItem = false;
+    }
+
+    @Override
+    public void backToPreviousView()
+    {
+        if (isSelectedPoiItem)
+        {
+            deselectPoiItem();
+        }
+        if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED)
+        {
+            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+        }
     }
 
     @Override
@@ -417,10 +455,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     @Override
     public void onMapViewSingleTapped(MapView mapView, MapPoint mapPoint)
     {
-        if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED)
-        {
-            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
-        }
+        backToPreviousView();
     }
 
     @Override
@@ -450,7 +485,11 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     @Override
     public void onMapViewMoveFinished(MapView mapView, MapPoint mapPoint)
     {
-
+        if (checkNetwork())
+        {
+            mapReverseGeoCoder = new MapReverseGeoCoder(appKey, mapPoint, this, getActivity());
+            mapReverseGeoCoder.startFindingAddress(MapReverseGeoCoder.AddressType.ShortAddress);
+        }
     }
 
     @Override
@@ -468,8 +507,8 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
             bottomSheetAddressItemView.setVisibility(View.GONE);
             bottomSheetPlaceItemView.setVisibility(View.VISIBLE);
         }
-        mapView.setMapCenterPoint(mapPOIItem.getMapPoint(), true);
         selectedPoiItemIndex = mapPOIItem.getTag();
+        isSelectedPoiItem = true;
 
         if (bottomSheetBehavior.getState() != BottomSheetBehavior.STATE_EXPANDED)
         {
@@ -494,6 +533,19 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     {
 
     }
+
+    @Override
+    public void onReverseGeoCoderFoundAddress(MapReverseGeoCoder mapReverseGeoCoder, String
+            address)
+    {
+        currentAddressTextView.setText(address);
+    }
+
+    @Override
+    public void onReverseGeoCoderFailedToFindAddress(MapReverseGeoCoder mapReverseGeoCoder)
+    {
+    }
+
 
     protected class CustomPoiItem extends MapPOIItem
     {

@@ -40,7 +40,7 @@ public class SearchResultFragmentController extends Fragment implements ResultFr
     public SearchResultFragmentController(Bundle bundle, IMapPoint iMapPoint, IMapData iMapData)
     {
         String searchWord = bundle.getString("searchWord");
-        headerFragment = SearchResultHeaderFragment.newInstance(searchWord, SearchResultFragmentController.this);
+        headerFragment = SearchResultHeaderFragment.newInstance(searchWord, this);
         listFragment = SearchResultListFragment.newInstance(searchWord, iMapPoint, iMapData);
         this.iMapData = iMapData;
     }
@@ -68,7 +68,8 @@ public class SearchResultFragmentController extends Fragment implements ResultFr
                 if (isShowList)
                 {
                     // list인 경우
-                    fragmentManager.beginTransaction().remove(SearchResultFragmentController.this).show(SearchFragment.getInstance()).commit();
+                    //  fragmentManager.beginTransaction().remove(SearchResultFragmentController.this).show(SearchFragment.getInstance()).commit();
+                    fragmentManager.popBackStack();
                     iMapData.removeAllPoiItems();
                 } else
                 {
@@ -107,38 +108,26 @@ public class SearchResultFragmentController extends Fragment implements ResultFr
     }
 
     @Override
-    public void onStart()
-    {
-        super.onStart();
-    }
-
-    @Override
-    public void onResume()
-    {
-        super.onResume();
-    }
-
-
-    @Override
     public void changeFragment()
     {
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        headerFragment.setChangeButtonDrawable(isShowList ? LIST : MAP);
+
         if (isShowList)
         {
             // to map
             // 버튼 이미지, 프래그먼트 숨김/보이기 설정
-            headerFragment.setChangeButtonDrawable(MAP);
             iMapData.showAllPoiItems();
-            fragmentTransaction.hide(listFragment).hide(headerFragment).show(MapFragment.getInstance()).show(headerFragment).commit();
-            isShowList = false;
+            fragmentTransaction.hide(listFragment).hide(headerFragment).show(MapFragment.getInstance()).show(headerFragment).addToBackStack(null).commit();
         } else
         {
             // to list
-            iMapData.deselectPoiItem();
-            headerFragment.setChangeButtonDrawable(LIST);
-            fragmentTransaction.hide(headerFragment).hide(MapFragment.getInstance()).show(listFragment).show(headerFragment).commit();
-            isShowList = true;
+            iMapData.backToPreviousView();
+            // fragmentTransaction.hide(headerFragment).hide(MapFragment.getInstance()).show(listFragment).show(headerFragment).addToBackStack(null).commit();
+            fragmentManager.popBackStack();
         }
+
+        isShowList = !isShowList;
     }
 
 }

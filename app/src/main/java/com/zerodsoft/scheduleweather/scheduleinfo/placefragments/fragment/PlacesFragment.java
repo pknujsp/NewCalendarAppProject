@@ -147,7 +147,6 @@ public class PlacesFragment extends Fragment implements LocationInfoGetter, ICli
     }
 
 
-
     @Override
     public LifecycleOwner getLifeCycleOwner()
     {

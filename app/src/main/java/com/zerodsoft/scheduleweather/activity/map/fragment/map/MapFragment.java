@@ -28,6 +28,7 @@ import android.widget.Toast;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.map.MapActivity;
+import com.zerodsoft.scheduleweather.etc.FragmentStateCallback;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.ICatchedLocation;
 import com.zerodsoft.scheduleweather.activity.map.fragment.search.SearchFragment;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.SearchResultFragmentController;
@@ -51,16 +52,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 
-public class MapFragment extends KakaoMapFragment implements MapReverseGeoCoder.ReverseGeoCodingResultListener
+public class MapFragment extends KakaoMapFragment
 {
     // list에서 item클릭 시 poiitem이 선택되고 맵 중앙좌표가 해당item의 좌표로 변경되면서 하단 시트가 올라온다
     public static final String TAG = "MapFragment";
     private static MapFragment instance;
 
-    private TextView currentAddress;
-
     private LocationManager locationManager;
-    private MapReverseGeoCoder mapReverseGeoCoder;
 
     private AddressViewModel addressViewModel;
     private PlacesViewModel placeViewModel;
@@ -128,17 +126,6 @@ public class MapFragment extends KakaoMapFragment implements MapReverseGeoCoder.
     public void onAttach(@NonNull Context context)
     {
         super.onAttach(context);
-        FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
-        List<Fragment> fragments = fragmentManager.getFragments();
-        boolean isSearchResultState = false;
-        for (Fragment fragment : fragments)
-        {
-            if (fragment instanceof SearchResultFragmentController)
-            {
-                //검색 결과를 보여주고 있는 경우
-                isSearchResultState = true;
-            }
-        }
 
         onBackPressedCallback = new OnBackPressedCallback(true)
         {
@@ -148,11 +135,7 @@ public class MapFragment extends KakaoMapFragment implements MapReverseGeoCoder.
                 ((MapActivity) getActivity()).getOnBackPressedDispatcher().onBackPressed();
             }
         };
-
-        if (!isSearchResultState)
-        {
-            requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
-        }
+        requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
     }
 
     @Override
@@ -173,8 +156,6 @@ public class MapFragment extends KakaoMapFragment implements MapReverseGeoCoder.
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
-
-        init();
 
         locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
 
@@ -209,15 +190,26 @@ public class MapFragment extends KakaoMapFragment implements MapReverseGeoCoder.
             }
         });
 
-        headerBar.setOnClickListener(new View.OnClickListener()
+        searchButton.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view)
             {
                 FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
                 FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                fragmentTransaction.add(R.id.map_activity_fragment_container, SearchFragment.newInstance(MapFragment.this), SearchFragment.TAG)
-                        .hide(MapFragment.this).commit();
+                fragmentTransaction.add(R.id.map_activity_fragment_container, SearchFragment.newInstance(MapFragment.this, new FragmentStateCallback()
+                {
+                    @Override
+                    public void onChangedState(int state)
+                    {
+                        if (state == ON_DETACH)
+                        {
+                            searchButton.setVisibility(View.VISIBLE);
+                        }
+                    }
+                }), SearchFragment.TAG)
+                        .hide(MapFragment.this).addToBackStack(null).commit();
+                searchButton.setVisibility(View.GONE);
             }
         });
 
@@ -262,20 +254,11 @@ public class MapFragment extends KakaoMapFragment implements MapReverseGeoCoder.
                     {
                         showRequestGpsDialog();
                     }
-                } else
-                {
-                    Toast.makeText(getActivity(), getString(R.string.map_network_not_connected), Toast.LENGTH_SHORT).show();
                 }
             }
         });
-
-        currentAddress = (TextView) view.findViewById(R.id.current_address);
     }
 
-    private void init()
-    {
-        mapReverseGeoCoder = new MapReverseGeoCoder(appKey, mapView.getMapCenterPoint(), this, getActivity());
-    }
 
     @Override
     public void onDestroy()
@@ -401,46 +384,9 @@ public class MapFragment extends KakaoMapFragment implements MapReverseGeoCoder.
                     showRequestGpsDialog();
                 }
             }
-        } else
-        {
-            Toast.makeText(getActivity(), getString(R.string.map_network_not_connected), Toast.LENGTH_SHORT).show();
         }
 
     }
 
-
-    @Override
-    public void onReverseGeoCoderFoundAddress(MapReverseGeoCoder mapReverseGeoCoder, String
-            address)
-    {
-        currentAddress.setText(address);
-    }
-
-    @Override
-    public void onReverseGeoCoderFailedToFindAddress(MapReverseGeoCoder mapReverseGeoCoder)
-    {
-
-    }
-
-
-    @Override
-    public void onMapViewSingleTapped(MapView mapView, MapPoint mapPoint)
-    {
-        super.onMapViewSingleTapped(mapView, mapPoint);
-    }
-
-
-    @Override
-    public void onMapViewMoveFinished(MapView mapView, MapPoint mapPoint)
-    {
-        if (checkNetwork())
-        {
-            mapReverseGeoCoder = new MapReverseGeoCoder(appKey, mapPoint, this, getActivity());
-            mapReverseGeoCoder.startFindingAddress(MapReverseGeoCoder.AddressType.FullAddress);
-        } else
-        {
-            Toast.makeText(getActivity(), getString(R.string.map_network_not_connected), Toast.LENGTH_SHORT).show();
-        }
-    }
 
 }
