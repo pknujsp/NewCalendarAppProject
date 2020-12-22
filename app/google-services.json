@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "269839782849",
+    "project_id": "login-4617e",
+    "storage_bucket": "login-4617e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:269839782849:android:d915ff2741886e2d271540",
+        "android_client_info": {
+          "package_name": "com.zerodsoft.scheduleweather"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "269839782849-pgndlruor2l0q49naa3pcfr8dmnuslam.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.zerodsoft.scheduleweather",
+            "certificate_hash": "e53e793cb69cb41bd99735dd4b01fda8acb15ab3"
+          }
+        },
+        {
+          "client_id": "269839782849-dbj3t8krq91rse1ffr1jmuv0s2l80upv.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAxmBUYre_rCuim186brC71qqEjg7TMZyA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "269839782849-dbj3t8krq91rse1ffr1jmuv0s2l80upv.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

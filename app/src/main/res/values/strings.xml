@@ -116,9 +116,13 @@
     <string name="notification_type_minute">분</string>
     <string name="notification_type_disable_radio">알림 없음</string>
 
+    <string name="calendar_type">달력 유형</string>
     <string name="calendar_type_month">월</string>
     <string name="calendar_type_week">주</string>
     <string name="calendar_type_day">일</string>
+
+    <string name="favorite_location">주소/장소 즐겨찾기</string>
+    <string name="app_settings">설정</string>
 
     <string name="sunday">일</string>
     <string name="monday">월</string>
@@ -136,9 +140,14 @@
 
     <string name="schedule_edit">일정 변경</string>
     <string name="schedule_add">일정 추가</string>
+    <string name="show_schedules">일정 표시</string>
 
     <string name="notification_before">전에 알림</string>
 
+    <string name="schedules_in_device">휴대전화 내 일정</string>
+
+    <string name="login">로그인</string>
+    <string name="logout">로그아웃</string>
     <string name="info_around_location">주변</string>
 
     <string name="supermarket">대형마트</string>

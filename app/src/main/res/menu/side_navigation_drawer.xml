@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group
+        android:id="@+id/calendar_type_group"
+        android:checkableBehavior="single">
+
+        <item android:title="@string/calendar_type">
+
+            <menu>
+                <item
+                    android:id="@+id/month_type"
+                    android:icon="@drawable/icon_calendar_type"
+                    android:title="@string/calendar_type_month" />
+                <item
+                    android:id="@+id/week_type"
+                    android:icon="@drawable/icon_calendar_type"
+                    android:title="@string/calendar_type_week" />
+                <item
+                    android:id="@+id/day_type"
+                    android:icon="@drawable/icon_calendar_type"
+                    android:title="@string/calendar_type_day" />
+            </menu>
+        </item>
+    </group>
+
+    <group
+        android:id="@+id/etc_group"
+        android:checkableBehavior="single">
+
+        <item android:title="기타">
+
+            <menu>
+                <item
+                    android:id="@+id/favorite"
+                    android:title="@string/favorite_location" />
+                <item
+                    android:id="@+id/app_setting"
+                    android:title="@string/app_settings" />
+
+            </menu>
+        </item>
+    </group>
+</menu>
