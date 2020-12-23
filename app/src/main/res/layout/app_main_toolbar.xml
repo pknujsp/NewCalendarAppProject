@@ -54,22 +54,11 @@
         android:id="@+id/refresh_calendar"
         android:layout_width="@dimen/toolbar_image_size"
         android:layout_height="@dimen/toolbar_image_size"
-        android:layout_centerVertical="true"
-        android:layout_marginRight="@dimen/toolbar_left_right_margin"
-        android:layout_toLeftOf="@id/calendar_type"
-        android:background="?attr/selectableItemBackground"
-        android:onClick="onClickToolbar"
-        android:src="@drawable/refresh_icon" />
-
-    <ImageButton
-        android:id="@+id/calendar_type"
-        android:layout_width="@dimen/toolbar_image_size"
-        android:layout_height="@dimen/toolbar_image_size"
         android:layout_alignParentRight="true"
         android:layout_centerVertical="true"
         android:layout_marginEnd="@dimen/toolbar_start_end_margin"
         android:background="?attr/selectableItemBackground"
         android:onClick="onClickToolbar"
-        android:src="@drawable/icon_calendar_type" />
+        android:src="@drawable/refresh_icon" />
 
 </RelativeLayout>

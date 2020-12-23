@@ -1,31 +1,22 @@
 package com.zerodsoft.scheduleweather;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Point;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewTreeObserver;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.auth.api.signin.GoogleSignInResult;
-import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.ApiException;
-import com.google.android.gms.common.api.GoogleApi;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
-import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.common.api.Status;
-import com.google.android.gms.tasks.OnCanceledListener;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.checkbox.MaterialCheckBox;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
@@ -38,41 +29,31 @@ import com.zerodsoft.scheduleweather.calendarfragment.DayFragment;
 import com.zerodsoft.scheduleweather.calendarfragment.MonthFragment;
 import com.zerodsoft.scheduleweather.calendarfragment.WeekFragment;
 import com.zerodsoft.scheduleweather.databinding.ActivityAppMainBinding;
+import com.zerodsoft.scheduleweather.databinding.SideNavHeaderBinding;
 import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.databinding.DataBindingUtil;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import java.util.Date;
 
-public class AppMainActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener
+public class AppMainActivity extends AppCompatActivity
 {
     private EventTransactionFragment calendarTransactionFragment;
 
+    private static final int REQ_SIGN_GOOGLE = 100;
     private static int DISPLAY_WIDTH = 0;
     private static int DISPLAY_HEIGHT = 0;
-    private static int CALENDAR_VIEW_HEIGHT = 0;
-
-    public static final int WEEK_FRAGMENT = 0;
-    public static final int DAY_FRAGMENT = 1;
-    public static final int MONTH_FRAGMENT = 2;
-
-    private View customToolbar;
-
-    private NavigationView navigationView;
-    private View navHeader;
-    private TextView googleLogin;
-    private TextView googleLogout;
-    private DrawerLayout drawerLayout;
 
     private FirebaseAuth firebaseAuth;
-    private GoogleApiClient googleApiClient;
     private GoogleSignInClient googleSignInClient;
-    private static final int REQ_SIGN_GOOGLE = 100;
+
+    private ActivityAppMainBinding mainBinding;
+    private SideNavHeaderBinding sideNavHeaderBinding;
 
     public static int getDisplayHeight()
     {
@@ -88,16 +69,10 @@ public class AppMainActivity extends AppCompatActivity implements GoogleApiClien
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_app_main);
+        mainBinding = DataBindingUtil.setContentView(this, R.layout.activity_app_main);
+        sideNavHeaderBinding = SideNavHeaderBinding.bind(mainBinding.sideNavigation.getHeaderView(0));
 
         init();
-
-
-        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        navigationView = (NavigationView) findViewById(R.id.side_navigation);
-        navHeader = navigationView.getHeaderView(0);
-        googleLogin = (TextView) navHeader.findViewById(R.id.google_login);
-        googleLogout = (TextView) navHeader.findViewById(R.id.google_logout);
         setNavigationView();
 
         Point point = new Point();
@@ -106,7 +81,7 @@ public class AppMainActivity extends AppCompatActivity implements GoogleApiClien
         DISPLAY_WIDTH = point.x;
         DISPLAY_HEIGHT = point.y;
 
-        setSupportActionBar(findViewById(R.id.main_toolbar));
+        setSupportActionBar(mainBinding.mainToolbar);
 
         ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayShowCustomEnabled(true);
@@ -114,25 +89,15 @@ public class AppMainActivity extends AppCompatActivity implements GoogleApiClien
         actionBar.setDisplayShowTitleEnabled(false);
         actionBar.setDisplayShowHomeEnabled(false);
 
-        customToolbar = getLayoutInflater().inflate(R.layout.app_main_toolbar, null);
+        View customToolbar = getLayoutInflater().inflate(R.layout.app_main_toolbar, null);
         actionBar.setCustomView(customToolbar);
-
-        customToolbar.getViewTreeObserver().addOnGlobalLayoutListener(mGlobalLayoutListener);
 
         GoogleSignInOptions googleSignInOptions = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.default_web_client_id))
                 .requestEmail()
                 .build();
 
-        /*
-        googleApiClient = new GoogleApiClient.Builder(this)
-                .enableAutoManage(this, this)
-                .addApi(Auth.GOOGLE_SIGN_IN_API, googleSignInOptions)
-                .build();
-*/
-
         googleSignInClient = GoogleSignIn.getClient(this, googleSignInOptions);
-
         firebaseAuth = FirebaseAuth.getInstance();
 
         calendarTransactionFragment = new EventTransactionFragment(this);
@@ -142,55 +107,68 @@ public class AppMainActivity extends AppCompatActivity implements GoogleApiClien
     private void init()
     {
         KakaoLocalApiCategoryUtil.loadCategories(getApplicationContext());
+
+        sideNavHeaderBinding.signinGoogle.setVisibility(View.VISIBLE);
+        sideNavHeaderBinding.signoutGoogle.setVisibility(View.GONE);
+        sideNavHeaderBinding.googleAccountEmail.setVisibility(View.GONE);
     }
 
     private void setNavigationView()
     {
-        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener()
+        mainBinding.sideNavigation.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener()
         {
+            @SuppressLint("NonConstantResourceId")
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item)
             {
                 switch (item.getItemId())
                 {
-                    case R.id.google_login:
-                        loginGoogle();
+                    case R.id.month_type:
+                        calendarTransactionFragment.replaceFragment(MonthFragment.TAG);
                         break;
-                    case R.id.google_logout:
-                        logoutGoogle();
+                    case R.id.week_type:
+                        calendarTransactionFragment.replaceFragment(WeekFragment.TAG);
+                        break;
+                    case R.id.day_type:
+                        calendarTransactionFragment.replaceFragment(DayFragment.TAG);
+                        break;
+                    case R.id.favorite:
+                        break;
+                    case R.id.app_setting:
                         break;
                 }
+                mainBinding.drawerLayout.closeDrawer(mainBinding.sideNavigation);
                 return true;
             }
         });
 
-        googleLogin.setOnClickListener(new View.OnClickListener()
+        sideNavHeaderBinding.signinGoogle.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view)
             {
-                loginGoogle();
+                signInGoogle();
             }
         });
-        googleLogout.setOnClickListener(new View.OnClickListener()
+        sideNavHeaderBinding.signoutGoogle.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view)
             {
-                logoutGoogle();
+                signOutGoogle();
             }
         });
     }
 
+    @SuppressLint("NonConstantResourceId")
     public void onClickToolbar(View view)
     {
         switch (view.getId())
         {
             case R.id.open_navigation_drawer:
-                drawerLayout.openDrawer(navigationView);
+                mainBinding.drawerLayout.openDrawer(mainBinding.sideNavigation);
                 break;
             case R.id.calendar_month:
-                //
                 break;
             case R.id.add_schedule:
                 Intent intent = new Intent(AppMainActivity.this, ScheduleEditActivity.class);
@@ -201,32 +179,6 @@ public class AppMainActivity extends AppCompatActivity implements GoogleApiClien
                 calendarTransactionFragment.goToToday();
                 break;
             case R.id.refresh_calendar:
-
-                break;
-            case R.id.calendar_type:
-                PopupMenu popupMenu = new PopupMenu(AppMainActivity.this, view);
-                getMenuInflater().inflate(R.menu.calendar_type_menu, popupMenu.getMenu());
-                popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener()
-                {
-                    @Override
-                    public boolean onMenuItemClick(MenuItem item)
-                    {
-                        switch (item.getItemId())
-                        {
-                            case R.id.month_type:
-                                calendarTransactionFragment.replaceFragment(MonthFragment.TAG);
-                                break;
-                            case R.id.week_type:
-                                calendarTransactionFragment.replaceFragment(WeekFragment.TAG);
-                                break;
-                            case R.id.day_type:
-                                calendarTransactionFragment.replaceFragment(DayFragment.TAG);
-                                break;
-                        }
-                        return false;
-                    }
-                });
-                popupMenu.show();
                 break;
         }
     }
@@ -235,6 +187,8 @@ public class AppMainActivity extends AppCompatActivity implements GoogleApiClien
     protected void onStart()
     {
         super.onStart();
+        FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
+        // updateUI
     }
 
     @Override
@@ -252,16 +206,14 @@ public class AppMainActivity extends AppCompatActivity implements GoogleApiClien
         {
             case REQ_SIGN_GOOGLE:
                 Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
-
                 try
                 {
                     GoogleSignInAccount googleSignInAccount = task.getResult(ApiException.class);
-                    onResultLogin(googleSignInAccount.getIdToken());
+                    firebaseAuthWithGoogle(googleSignInAccount.getIdToken());
                 } catch (ApiException e)
                 {
 
                 }
-
         }
 
         switch (resultCode)
@@ -280,96 +232,63 @@ public class AppMainActivity extends AppCompatActivity implements GoogleApiClien
         }
     }
 
-    private void onResultLogin(String idToken)
+    private void firebaseAuthWithGoogle(String idToken)
     {
         AuthCredential authCredential = GoogleAuthProvider.getCredential(idToken, null);
-        firebaseAuth.signInWithCredential(authCredential).addOnCompleteListener(this, new OnCompleteListener<AuthResult>()
-        {
-            @Override
-            public void onComplete(@NonNull Task<AuthResult> task)
-            {
-                if (task.isSuccessful())
+        firebaseAuth.signInWithCredential(authCredential)
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>()
                 {
-                    FirebaseUser user = firebaseAuth.getCurrentUser();
-                    Toast.makeText(AppMainActivity.this, user.getEmail(), Toast.LENGTH_SHORT).show();
-
-                    /*
-                    Intent intent = new Intent(getApplicationContext(), ResultActivity.class);
-                    intent.putExtra("nickName", googleSignInAccount.getDisplayName());
-                    intent.putExtras("photoUrl", String.valueOf(googleSignInAccount.getPhotoUrl()));
-                    startActivity(intent);
-
-                     */
-
-                } else
-                {
-                    Toast.makeText(AppMainActivity.this, "로그인 실패", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task)
+                    {
+                        if (task.isSuccessful())
+                        {
+                            FirebaseUser user = firebaseAuth.getCurrentUser();
+                            Toast.makeText(AppMainActivity.this, "로그인 성공", Toast.LENGTH_SHORT).show();
+                            // 이메일 주소 표시, 로그인 버튼 날리기
+                            sideNavHeaderBinding.googleAccountEmail.setVisibility(View.VISIBLE);
+                            sideNavHeaderBinding.googleAccountEmail.setText(user.getEmail());
+                            sideNavHeaderBinding.signinGoogle.setVisibility(View.GONE);
+                            sideNavHeaderBinding.signoutGoogle.setVisibility(View.VISIBLE);
+                        } else
+                        {
+                            Toast.makeText(AppMainActivity.this, "로그인 실패", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
     }
 
 
-    public static int getCalendarViewHeight()
-    {
-        return CALENDAR_VIEW_HEIGHT;
-    }
-
-    ViewTreeObserver.OnGlobalLayoutListener mGlobalLayoutListener = new ViewTreeObserver.OnGlobalLayoutListener()
-    {
-        @Override
-        public void onGlobalLayout()
-        {
-            CALENDAR_VIEW_HEIGHT = DISPLAY_HEIGHT - customToolbar.getHeight();
-            //리스너 제거 (해당 뷰의 상태가 변할때 마다 호출되므로)
-            removeOnGlobalLayoutListener(customToolbar.getViewTreeObserver(), mGlobalLayoutListener);
-        }
-    };
-
-
-    private static void removeOnGlobalLayoutListener(ViewTreeObserver observer, ViewTreeObserver.OnGlobalLayoutListener listener)
-    {
-        if (observer == null)
-        {
-            return;
-        }
-
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN)
-        {
-            observer.removeGlobalOnLayoutListener(listener);
-        } else
-        {
-            observer.removeOnGlobalLayoutListener(listener);
-        }
-    }
-
-    private void loginGoogle()
+    private void signInGoogle()
     {
         Intent intent = googleSignInClient.getSignInIntent();
         startActivityForResult(intent, REQ_SIGN_GOOGLE);
     }
 
-    private void logoutGoogle()
+    private void signOutGoogle()
     {
-        firebaseAuth.signOut();
-        // Google sign out
-        googleSignInClient.signOut().addOnCompleteListener(this, new OnCompleteListener<Void>()
+        if (firebaseAuth.getCurrentUser() != null)
         {
-            @Override
-            public void onComplete(@NonNull Task<Void> task)
+            firebaseAuth.signOut();
+            // Google sign out
+            googleSignInClient.signOut().addOnCompleteListener(this, new OnCompleteListener<Void>()
             {
-                if (task.isSuccessful())
+                @Override
+                public void onComplete(@NonNull Task<Void> task)
                 {
-                    Toast.makeText(AppMainActivity.this, "로그아웃 완료", Toast.LENGTH_SHORT).show();
+                    if (task.isSuccessful())
+                    {
+                        Toast.makeText(AppMainActivity.this, "로그아웃 완료", Toast.LENGTH_SHORT).show();
+                        sideNavHeaderBinding.googleAccountEmail.setVisibility(View.GONE);
+                        sideNavHeaderBinding.signinGoogle.setVisibility(View.VISIBLE);
+                        sideNavHeaderBinding.signoutGoogle.setVisibility(View.GONE);
+                    }
                 }
-            }
-        });
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult)
-    {
-
+            });
+        } else
+        {
+            Toast.makeText(AppMainActivity.this, "로그인 되어 있지 않음", Toast.LENGTH_SHORT).show();
+        }
     }
 
 }

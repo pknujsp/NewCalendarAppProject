@@ -26,4 +26,14 @@
         <item name="exampleColor">@color/light_blue_400</item>
     </style>
 
+    <style name="SideNavigation.Account.Title" parent="Widget.AppCompat.TextView">
+        <item name="android:textSize">15sp</item>
+        <item name="android:layout_marginLeft">12dp</item>
+    </style>
+
+    <style name="SideNavigation.Account.Sign" parent="Widget.AppCompat.TextView">
+        <item name="android:textSize">14sp</item>
+        <item name="android:layout_marginLeft">8dp</item>
+    </style>
+
 </resources>

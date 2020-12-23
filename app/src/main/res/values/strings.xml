@@ -144,7 +144,8 @@
 
     <string name="notification_before">전에 알림</string>
 
-    <string name="schedules_in_device">휴대전화 내 일정</string>
+    <string name="schedules_in_google">구글 일정</string>
+    <string name="schedules_in_device">휴대전화 일정</string>
 
     <string name="login">로그인</string>
     <string name="logout">로그아웃</string>
