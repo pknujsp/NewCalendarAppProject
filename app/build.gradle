@@ -67,12 +67,6 @@ dependencies {
     implementation 'com.google.android.gms:play-services-identity:17.0.0'
     implementation 'com.google.android.gms:play-services-auth:19.0.0'
 
-    implementation('com.google.api-client:google-api-client-android:1.31.1') {
-        exclude group: 'org.apache.httpcomponents'
-    }
-    implementation('com.google.apis:google-api-services-calendar:v3-rev99-1.19.0') {
-        exclude group: 'org.apache.httpcomponents'
-    }
     implementation 'pub.devrel:easypermissions:0.3.0'
 
     def room_version = '2.2.5'
@@ -126,6 +120,16 @@ dependencies {
 
     implementation 'com.github.bumptech.glide:glide:4.11.0'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.11.0'
+
+    implementation ('com.google.api-client:google-api-client-android:1.31.1')
+    {
+        exclude group: 'org.apache.httpcomponents', module: 'httpclient'
+    }
+    implementation 'com.google.oauth-client:google-oauth-client-jetty:1.23.0'
+    implementation 'com.google.apis:google-api-services-calendar:v3-rev305-1.23.0'
+
+    implementation 'androidx.media:media:1.2.1'
+
 }
 
 apply plugin: 'com.google.gms.google-services'
@@ -134,14 +138,10 @@ apply plugin: 'com.google.gms.google-services'
 android {
     packagingOptions {
         exclude 'META-INF/proguard/coroutines.pro'
+        exclude 'META-INF/DEPENDENCIES'
     }
     splits {
-        abi {
-            enable true
-            reset()
-            include 'x86', 'armeabi-v7a'
-            universalApk true
-        }
+
     }
 
 }
