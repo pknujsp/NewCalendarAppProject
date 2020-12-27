@@ -147,9 +147,14 @@
     <string name="schedules_in_google">구글 일정</string>
     <string name="schedules_in_device">휴대전화 일정</string>
 
-    <string name="login">로그인</string>
-    <string name="logout">로그아웃</string>
+    <string name="signin">로그인</string>
+    <string name="signout">로그아웃</string>
+    <string name="connect">연결</string>
+    <string name="disconnect">연결 해제</string>
     <string name="info_around_location">주변</string>
+
+    <string name="connected_google_calendar">구글 캘린더 연결됨</string>
+    <string name="disconnected_google_calendar">구글 캘린더 연결해제됨</string>
 
     <string name="supermarket">대형마트</string>
     <string name="convenience_store">편의점</string>

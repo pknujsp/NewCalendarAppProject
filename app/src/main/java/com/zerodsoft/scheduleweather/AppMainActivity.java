@@ -1,55 +1,24 @@
 package com.zerodsoft.scheduleweather;
 
-import android.Manifest;
 import android.accounts.AccountManager;
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
+import android.content.SharedPreferences;
 import android.graphics.Point;
 import android.os.Bundle;
+import android.util.TypedValue;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.TextView;
+import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInClient;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.common.api.ApiException;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
+import com.google.android.gms.auth.UserRecoverableAuthException;
 import com.google.android.material.checkbox.MaterialCheckBox;
 import com.google.android.material.navigation.NavigationView;
-import com.google.api.client.auth.oauth2.Credential;
-import com.google.api.client.extensions.android.http.AndroidHttp;
-import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
-import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
-import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
-import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
-import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
-import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
-import com.google.api.client.http.HttpTransport;
-import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.json.JsonFactory;
-import com.google.api.client.json.jackson2.JacksonFactory;
-import com.google.api.client.util.DateTime;
-import com.google.api.client.util.ExponentialBackOff;
-import com.google.api.client.util.store.FileDataStoreFactory;
-import com.google.api.services.calendar.Calendar;
-import com.google.api.services.calendar.CalendarScopes;
-import com.google.api.services.calendar.model.CalendarList;
 import com.google.api.services.calendar.model.CalendarListEntry;
-import com.google.api.services.calendar.model.Event;
-import com.google.api.services.calendar.model.Events;
-import com.google.firebase.auth.AuthCredential;
-import com.google.firebase.auth.AuthResult;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseAuthProvider;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.GoogleAuthCredential;
-import com.google.firebase.auth.GoogleAuthProvider;
 import com.zerodsoft.scheduleweather.activity.editschedule.ScheduleEditActivity;
 import com.zerodsoft.scheduleweather.calendarfragment.EventTransactionFragment;
 import com.zerodsoft.scheduleweather.calendarfragment.DayFragment;
@@ -57,58 +26,37 @@ import com.zerodsoft.scheduleweather.calendarfragment.MonthFragment;
 import com.zerodsoft.scheduleweather.calendarfragment.WeekFragment;
 import com.zerodsoft.scheduleweather.databinding.ActivityAppMainBinding;
 import com.zerodsoft.scheduleweather.databinding.SideNavHeaderBinding;
+import com.zerodsoft.scheduleweather.googlecalendar.CustomCalendar;
+import com.zerodsoft.scheduleweather.googlecalendar.GoogleCalendar;
+import com.zerodsoft.scheduleweather.googlecalendar.GoogleCalendarViewModel;
+import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
 import androidx.databinding.DataBindingUtil;
-import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.security.GeneralSecurityException;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-import pub.devrel.easypermissions.AfterPermissionGranted;
-
 public class AppMainActivity extends AppCompatActivity
 {
     private EventTransactionFragment calendarTransactionFragment;
 
-    private static final int REQ_SIGN_GOOGLE = 100;
     private static int DISPLAY_WIDTH = 0;
     private static int DISPLAY_HEIGHT = 0;
 
-    private static final int REQUEST_ACCOUNT_PICKER = 1000;
-    private static final int REQUEST_AUTHORIZATION = 1001;
-    private static final int REQUEST_GOOGLE_PLAY_SERVICES = 1002;
-    private static final int REQUEST_PERMISSION_GET_ACCOUNTS = 1003;
-
-    private static final String PREF_ACCOUNT_NAME = "accountName";
-    private static final String[] SCOPES = {CalendarScopes.CALENDAR};
-
-    private static final String APPLICATION_NAME = "test calendar";
-    private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
-    private static final String TOKENS_DIRECTORY_PATH = "tokens";
-    private static final String CREDENTIALS_FILE_PATH = "/client_secret.json";
-
-    private FirebaseAuth firebaseAuth;
-    private GoogleSignInClient googleSignInClient;
-    private GoogleAccountCredential googleAccountCredential;
-    private Calendar calendarService;
-
     private ActivityAppMainBinding mainBinding;
     private SideNavHeaderBinding sideNavHeaderBinding;
+    private GoogleCalendarViewModel googleCalendarViewModel;
 
     public static int getDisplayHeight()
     {
@@ -130,6 +78,18 @@ public class AppMainActivity extends AppCompatActivity
         init();
         setNavigationView();
 
+        String accountName = getPreferences(Context.MODE_PRIVATE).getString(GoogleCalendar.GOOGLE_ACCOUNT_NAME, "");
+        if (!accountName.isEmpty())
+        {
+            sideNavHeaderBinding.connectGoogle.performClick();
+            googleCalendarViewModel.getCalendarList();
+
+            sideNavHeaderBinding.connectGoogle.setVisibility(View.GONE);
+            sideNavHeaderBinding.disconnectGoogle.setVisibility(View.VISIBLE);
+            sideNavHeaderBinding.googleAccountEmail.setVisibility(View.VISIBLE);
+            sideNavHeaderBinding.googleAccountEmail.setText(accountName);
+        }
+
         Point point = new Point();
         getWindowManager().getDefaultDisplay().getRealSize(point);
 
@@ -147,20 +107,7 @@ public class AppMainActivity extends AppCompatActivity
         View customToolbar = getLayoutInflater().inflate(R.layout.app_main_toolbar, null);
         actionBar.setCustomView(customToolbar);
 
-        GoogleSignInOptions googleSignInOptions = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.default_web_client_id))
-                .requestEmail()
-                .build();
-
-        googleSignInClient = GoogleSignIn.getClient(this, googleSignInOptions);
-        firebaseAuth = FirebaseAuth.getInstance();
-
-        googleAccountCredential = GoogleAccountCredential.usingOAuth2(
-                getApplicationContext(),
-                Arrays.asList(SCOPES)
-        ).setBackOff(new ExponentialBackOff());
-
-        calendarTransactionFragment = new EventTransactionFragment(this);
+        calendarTransactionFragment = new EventTransactionFragment();
         getSupportFragmentManager().beginTransaction().add(R.id.calendar_layout, calendarTransactionFragment, EventTransactionFragment.TAG).commit();
     }
 
@@ -168,9 +115,50 @@ public class AppMainActivity extends AppCompatActivity
     {
         KakaoLocalApiCategoryUtil.loadCategories(getApplicationContext());
 
-        sideNavHeaderBinding.signinGoogle.setVisibility(View.VISIBLE);
-        sideNavHeaderBinding.signoutGoogle.setVisibility(View.GONE);
+        sideNavHeaderBinding.connectGoogle.setVisibility(View.VISIBLE);
+        sideNavHeaderBinding.disconnectGoogle.setVisibility(View.GONE);
         sideNavHeaderBinding.googleAccountEmail.setVisibility(View.GONE);
+
+        googleCalendarViewModel = new ViewModelProvider(this).get(GoogleCalendarViewModel.class);
+
+        googleCalendarViewModel.getCalendarListLiveData().observe(this, new Observer<DataWrapper<List<CalendarListEntry>>>()
+        {
+            @Override
+            public void onChanged(DataWrapper<List<CalendarListEntry>> listDataWrapper)
+            {
+                if (listDataWrapper.getData() != null)
+                {
+                    List<CalendarListEntry> calendarList = listDataWrapper.getData();
+                    googleCalendarViewModel.getEvents(null);
+
+                    final int DP_32 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32f, getResources().getDisplayMetrics());
+                    sideNavHeaderBinding.googleCalendarList.removeAllViews();
+
+                    for (CalendarListEntry calendarListEntry : calendarList)
+                    {
+                        MaterialCheckBox calendarCheckBox = new MaterialCheckBox(AppMainActivity.this);
+                        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, DP_32);
+                        calendarCheckBox.setLayoutParams(layoutParams);
+                        calendarCheckBox.setText(calendarListEntry.getSummary());
+                        sideNavHeaderBinding.googleCalendarList.addView(calendarCheckBox);
+                    }
+                } else if (listDataWrapper.getException() != null)
+                {
+                    startActivityForResult(((UserRecoverableAuthIOException) listDataWrapper.getException()).getIntent(), 100);
+                }
+            }
+        });
+        googleCalendarViewModel.getEventsLiveData().observe(this, new Observer<DataWrapper<List<CustomCalendar>>>()
+        {
+            @Override
+            public void onChanged(DataWrapper<List<CustomCalendar>> listDataWrapper)
+            {
+                if (listDataWrapper != null)
+                {
+                    Toast.makeText(AppMainActivity.this, "events count : " + listDataWrapper.getData().size(), Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 
     private void setNavigationView()
@@ -202,21 +190,37 @@ public class AppMainActivity extends AppCompatActivity
             }
         });
 
-        sideNavHeaderBinding.signinGoogle.setOnClickListener(new View.OnClickListener()
+        sideNavHeaderBinding.connectGoogle.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view)
             {
-                // signInGoogle();
-                chooseGoogleAccount();
+                GoogleCalendar.init(AppMainActivity.this);
+                try
+                {
+                    GoogleCalendar.connect();
+                } catch (IOException | GeneralSecurityException e)
+                {
+                    e.printStackTrace();
+                }
             }
         });
-        sideNavHeaderBinding.signoutGoogle.setOnClickListener(new View.OnClickListener()
+        sideNavHeaderBinding.disconnectGoogle.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view)
             {
-                signOutGoogle();
+                sideNavHeaderBinding.googleCalendarList.removeAllViews();
+                sideNavHeaderBinding.connectGoogle.setVisibility(View.VISIBLE);
+                sideNavHeaderBinding.disconnectGoogle.setVisibility(View.GONE);
+                sideNavHeaderBinding.googleAccountEmail.setVisibility(View.GONE);
+
+                SharedPreferences settings = getPreferences(Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = settings.edit();
+                editor.putString(GoogleCalendar.GOOGLE_ACCOUNT_NAME, "");
+                editor.apply();
+
+                GoogleCalendar.disconnect();
             }
         });
     }
@@ -248,8 +252,6 @@ public class AppMainActivity extends AppCompatActivity
     protected void onStart()
     {
         super.onStart();
-        FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
-        // updateUI
     }
 
     @Override
@@ -265,27 +267,34 @@ public class AppMainActivity extends AppCompatActivity
 
         switch (requestCode)
         {
-            case REQ_SIGN_GOOGLE:
-                Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
-                try
-                {
-                    GoogleSignInAccount googleSignInAccount = task.getResult(ApiException.class);
-                    firebaseAuthWithGoogle(googleSignInAccount.getIdToken());
-                } catch (ApiException e)
-                {
-
-                }
-                break;
-
-            case REQUEST_ACCOUNT_PICKER:
+            case GoogleCalendar.REQUEST_ACCOUNT_PICKER:
                 if (resultCode == RESULT_OK && data != null && data.getExtras() != null)
                 {
-                    String accountName = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
-                    if (accountName != null)
+                    String keyAccountName = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
+                    if (keyAccountName != null)
                     {
-                        googleAccountCredential.setSelectedAccountName(accountName);
-                        getCalendars();
+                        try
+                        {
+                            GoogleCalendar.setAccount(keyAccountName);
+                            googleCalendarViewModel.getCalendarList();
+
+                            SharedPreferences settings = getPreferences(Context.MODE_PRIVATE);
+                            SharedPreferences.Editor editor = settings.edit();
+                            editor.putString(GoogleCalendar.GOOGLE_ACCOUNT_NAME, keyAccountName);
+                            editor.apply();
+
+                            sideNavHeaderBinding.connectGoogle.setVisibility(View.GONE);
+                            sideNavHeaderBinding.disconnectGoogle.setVisibility(View.VISIBLE);
+                            sideNavHeaderBinding.googleAccountEmail.setVisibility(View.VISIBLE);
+                            sideNavHeaderBinding.googleAccountEmail.setText(keyAccountName);
+                        } catch (IOException | GeneralSecurityException e)
+                        {
+                            e.printStackTrace();
+                        }
                     }
+                } else if (resultCode == RESULT_CANCELED)
+                {
+
                 }
                 break;
         }
@@ -306,152 +315,6 @@ public class AppMainActivity extends AppCompatActivity
         }
     }
 
-    private void firebaseAuthWithGoogle(String idToken)
-    {
-        AuthCredential authCredential = GoogleAuthProvider.getCredential(idToken, null);
-        firebaseAuth.signInWithCredential(authCredential)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>()
-                {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task)
-                    {
-                        if (task.isSuccessful())
-                        {
-                            FirebaseUser user = firebaseAuth.getCurrentUser();
-                            Toast.makeText(AppMainActivity.this, "로그인 성공", Toast.LENGTH_SHORT).show();
-                            // 이메일 주소 표시, 로그인 버튼 날리기
-                            sideNavHeaderBinding.googleAccountEmail.setVisibility(View.VISIBLE);
-                            sideNavHeaderBinding.googleAccountEmail.setText(user.getEmail());
-                            sideNavHeaderBinding.signinGoogle.setVisibility(View.GONE);
-                            sideNavHeaderBinding.signoutGoogle.setVisibility(View.VISIBLE);
-                        } else
-                        {
-                            Toast.makeText(AppMainActivity.this, "로그인 실패", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                });
-    }
-
-
-    private void signInGoogle()
-    {
-        Intent intent = googleSignInClient.getSignInIntent();
-        startActivityForResult(intent, REQ_SIGN_GOOGLE);
-    }
-
-    private void signOutGoogle()
-    {
-        if (firebaseAuth.getCurrentUser() != null)
-        {
-            firebaseAuth.signOut();
-            // Google sign out
-            googleSignInClient.signOut().addOnCompleteListener(this, new OnCompleteListener<Void>()
-            {
-                @Override
-                public void onComplete(@NonNull Task<Void> task)
-                {
-                    if (task.isSuccessful())
-                    {
-                        Toast.makeText(AppMainActivity.this, "로그아웃 완료", Toast.LENGTH_SHORT).show();
-                        sideNavHeaderBinding.googleAccountEmail.setVisibility(View.GONE);
-                        sideNavHeaderBinding.signinGoogle.setVisibility(View.VISIBLE);
-                        sideNavHeaderBinding.signoutGoogle.setVisibility(View.GONE);
-                    }
-                }
-            });
-        } else
-        {
-            Toast.makeText(AppMainActivity.this, "로그인 되어 있지 않음", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-
-    private void chooseGoogleAccount()
-    {
-        int isPermission = ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.GET_ACCOUNTS);
-
-        if (isPermission == PackageManager.PERMISSION_GRANTED)
-        {
-            startActivityForResult(googleAccountCredential.newChooseAccountIntent(), REQUEST_ACCOUNT_PICKER);
-        }
-
-    }
-
-    private String getCalendarID(String calendarTitle)
-    {
-
-        String id = null;
-
-        // Iterate through entries in calendar list
-        String pageToken = null;
-        do
-        {
-            CalendarList calendarList = null;
-            try
-            {
-                calendarList = calendarService.calendarList().list().setPageToken(pageToken).execute();
-            } catch (UserRecoverableAuthIOException e)
-            {
-                startActivityForResult(e.getIntent(), REQUEST_AUTHORIZATION);
-            } catch (IOException e)
-            {
-                e.printStackTrace();
-            }
-            List<CalendarListEntry> items = calendarList.getItems();
-
-            for (CalendarListEntry calendarListEntry : items)
-            {
-                if (calendarListEntry.getSummary().equals(calendarTitle))
-                {
-                    id = calendarListEntry.getId();
-                }
-            }
-            pageToken = calendarList.getNextPageToken();
-        } while (pageToken != null);
-        return id;
-    }
-
-    private void getEvent() throws IOException
-    {
-        DateTime now = new DateTime(System.currentTimeMillis());
-
-        String calendarID = getCalendarID("jesp0305@gmail.com");
-
-        Events events = calendarService.events().list(calendarID)//"primary")
-                .setMaxResults(10)
-                .setTimeMin(now)
-                .setOrderBy("startTime")
-                .setSingleEvents(true)
-                .execute();
-        List<Event> items = events.getItems();
-    }
-
-    private void getCalendars()
-    {
-        Executor executor = Executors.newFixedThreadPool(1);
-        executor.execute(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                HttpTransport transport = AndroidHttp.newCompatibleTransport();
-                JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
-
-                calendarService = new Calendar
-                        .Builder(transport, jsonFactory, googleAccountCredential)
-                        .setApplicationName("test calendar")
-                        .build();
-
-                try
-                {
-                    getEvent();
-                } catch (IOException e)
-                {
-                    e.printStackTrace();
-                }
-            }
-        });
-    }
 
 }
 

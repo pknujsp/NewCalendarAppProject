@@ -30,7 +30,7 @@ public class EventTransactionFragment extends Fragment implements OnControlEvent
 {
     // 달력 프래그먼트를 관리하는 프래그먼트
     public static final String TAG = "CalendarTransactionFragment";
-    private static final int CALENDAR_CONTAINER_VIEW_ID = R.id.calendar_container_view;
+    private final int CALENDAR_CONTAINER_VIEW_ID = R.id.calendar_container_view;
     public static final int FIRST_VIEW_POSITION = Integer.MAX_VALUE / 2;
     public static int accountCategory = ScheduleDTO.ALL_CATEGORY;
 
@@ -39,8 +39,7 @@ public class EventTransactionFragment extends Fragment implements OnControlEvent
     private int viewPosition;
     private Fragment fragment;
 
-
-    public EventTransactionFragment(Activity activity)
+    public EventTransactionFragment()
     {
     }
 

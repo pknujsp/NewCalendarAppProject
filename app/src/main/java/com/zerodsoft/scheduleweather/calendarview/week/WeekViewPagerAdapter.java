@@ -108,10 +108,6 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
         return Integer.MAX_VALUE;
     }
 
-    public Date getWeek(int position)
-    {
-        return holderSparseArray.get(position).getDay(FIRST_DAY).getTime();
-    }
 
     @Override
     public void onSwiped(boolean value)

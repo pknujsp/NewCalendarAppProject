@@ -49,14 +49,15 @@
                 android:text="이메일 주소"
                 android:textSize="14sp" />
 
-            <com.google.android.material.checkbox.MaterialCheckBox
-                android:id="@+id/checkbox_show_google_schedules"
+
+            <LinearLayout
+                android:id="@+id/google_calendar_list"
                 android:layout_width="wrap_content"
-                android:layout_height="32dp"
-                android:text="@string/show_schedules" />
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
 
             <TextView
-                android:id="@+id/signin_google"
+                android:id="@+id/connect_google"
                 style="@style/SideNavigation.Account.Sign"
                 android:layout_width="wrap_content"
                 android:layout_height="32dp"
@@ -65,10 +66,10 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:gravity="center_vertical"
-                android:text="@string/login" />
+                android:text="@string/connect" />
 
             <TextView
-                android:id="@+id/signout_google"
+                android:id="@+id/disconnect_google"
                 style="@style/SideNavigation.Account.Sign"
                 android:layout_width="wrap_content"
                 android:layout_height="32dp"
@@ -77,7 +78,7 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:gravity="center_vertical"
-                android:text="@string/logout" />
+                android:text="@string/disconnect" />
 
         </LinearLayout>
 
