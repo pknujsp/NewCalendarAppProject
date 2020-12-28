@@ -1,16 +1,17 @@
 package com.zerodsoft.scheduleweather.googlecalendar;
 
+import android.app.Activity;
+
 import androidx.lifecycle.MutableLiveData;
 
 import com.google.api.services.calendar.model.Calendar;
 import com.google.api.services.calendar.model.CalendarListEntry;
 import com.google.api.services.calendar.model.Event;
-import com.google.common.util.concurrent.ListenableFutureTask;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -21,11 +22,18 @@ public class GoogleCalendarRepository
     private MutableLiveData<DataWrapper<Calendar>> calendarLiveData;
     private MutableLiveData<DataWrapper<List<CalendarListEntry>>> calendarListLiveData;
 
-    public GoogleCalendarRepository()
+    private GoogleCalendar googleCalendar;
+    private IGoogleCalendar iGoogleCalendar;
+
+    public GoogleCalendarRepository(Activity activity)
     {
+        this.iGoogleCalendar = (IGoogleCalendar) activity;
+
         eventsLiveData = new MutableLiveData<>();
         calendarLiveData = new MutableLiveData<>();
         calendarListLiveData = new MutableLiveData<>();
+
+        googleCalendar = GoogleCalendar.newInstance(activity);
     }
 
     public MutableLiveData<DataWrapper<Calendar>> getCalendarLiveData()
@@ -43,6 +51,17 @@ public class GoogleCalendarRepository
         return eventsLiveData;
     }
 
+    public void connect(String accountName) throws IOException, GeneralSecurityException
+    {
+        googleCalendar.connect(accountName);
+        iGoogleCalendar.onAccountSelectedState(true);
+    }
+
+    public void chooseAccount()
+    {
+        googleCalendar.requestAccountPicker();
+    }
+
     public void getCalendarList()
     {
         Executor executor = Executors.newSingleThreadExecutor();
@@ -54,7 +73,7 @@ public class GoogleCalendarRepository
                 DataWrapper<List<CalendarListEntry>> dataWrapper = null;
                 try
                 {
-                    List<CalendarListEntry> calendarList = GoogleCalendar.getCalendarList();
+                    List<CalendarListEntry> calendarList = googleCalendar.getCalendarList();
                     dataWrapper = new DataWrapper<>(calendarList);
                 } catch (IOException e)
                 {
@@ -81,8 +100,8 @@ public class GoogleCalendarRepository
 
                     for (CalendarListEntry calendarListEntry : calendarList)
                     {
-                        List<Event> events = GoogleCalendar.getEvents(calendarListEntry.getId());
-                        Calendar calendar = GoogleCalendar.getCalendar(calendarListEntry.getId());
+                        List<Event> events = googleCalendar.getEvents(calendarListEntry.getId());
+                        Calendar calendar = googleCalendar.getCalendar(calendarListEntry.getId());
 
                         customCalendarList.add(new CustomCalendar(calendar, events));
                     }
@@ -108,7 +127,7 @@ public class GoogleCalendarRepository
                 DataWrapper<Calendar> dataWrapper = null;
                 try
                 {
-                    Calendar calendar = GoogleCalendar.getCalendar(calendarId);
+                    Calendar calendar = googleCalendar.getCalendar(calendarId);
                     dataWrapper = new DataWrapper<>(calendar);
                 } catch (IOException e)
                 {
@@ -117,5 +136,10 @@ public class GoogleCalendarRepository
                 calendarLiveData.postValue(dataWrapper);
             }
         });
+    }
+
+    public void disconnect()
+    {
+        googleCalendar.disconnect();
     }
 }

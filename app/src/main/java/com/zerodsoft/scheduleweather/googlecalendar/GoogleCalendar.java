@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.os.Bundle;
 import android.widget.Toast;
 
 import androidx.core.content.ContextCompat;
@@ -38,62 +39,60 @@ public class GoogleCalendar
     public static final int REQUEST_ACCOUNT_PICKER = 1000;
     public static final int REQUEST_AUTHORIZATION = 1001;
     public static final int REQUEST_GOOGLE_PLAY_SERVICES = 1002;
-    public static final int REQUEST_PERMISSION_GET_ACCOUNTS = 1003;
+    public static final int REQUEST_PERMISSION_GET_ACCOUNTS_AUTO = 1003;
+    public static final int REQUEST_PERMISSION_GET_ACCOUNTS_SELF = 1004;
     public static final String GOOGLE_ACCOUNT_NAME = "GOOGLE_ACCOUNT_NAME";
-    private static final String[] SCOPES = {CalendarScopes.CALENDAR};
+    private final String[] SCOPES = {CalendarScopes.CALENDAR};
 
-    private static final String APPLICATION_NAME = "test calendar";
-    private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
-    private static final String TOKENS_DIRECTORY_PATH = "tokens";
-    private static final String CREDENTIALS_FILE_PATH = "/client_secret.json";
+    private final String APPLICATION_NAME = "test calendar";
+    private final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
+    private final String TOKENS_DIRECTORY_PATH = "tokens";
+    private final String CREDENTIALS_FILE_PATH = "/client_secret.json";
 
-    private static GoogleAccountCredential googleAccountCredential;
-    private static Calendar calendarService;
-    private static Activity activity;
+    private GoogleAccountCredential googleAccountCredential;
+    private Calendar calendarService;
+    private Activity activity;
 
-    public static void init(Activity activity)
+    private static GoogleCalendar instance;
+
+    public GoogleCalendar(Activity activity)
     {
-        GoogleCalendar.activity = activity;
+        this.activity = activity;
+        init();
+    }
+
+    public static GoogleCalendar newInstance(Activity activity)
+    {
+        instance = new GoogleCalendar(activity);
+        return instance;
+    }
+
+    public static GoogleCalendar getInstance()
+    {
+        return instance;
+    }
+
+    public void init()
+    {
         googleAccountCredential = GoogleAccountCredential.usingOAuth2(
                 activity.getApplicationContext(),
                 Arrays.asList(SCOPES)
         ).setBackOff(new ExponentialBackOff());
     }
 
-    public static void connect() throws IOException, GeneralSecurityException
+    public void disconnect()
     {
-        String accountName = activity.getPreferences(Context.MODE_PRIVATE).getString(GOOGLE_ACCOUNT_NAME, "");
-        if (!accountName.isEmpty())
-        {
-            setAccount(accountName);
-        } else
-        {
-            chooseGoogleAccount();
-        }
-    }
-
-    public static void disconnect()
-    {
-        Toast.makeText(activity, activity.getString(R.string.disconnected_google_calendar), Toast.LENGTH_SHORT).show();
         calendarService = null;
         googleAccountCredential = null;
         activity = null;
     }
 
-    public static void chooseGoogleAccount()
+    public void requestAccountPicker()
     {
-        int isPermission = ContextCompat.checkSelfPermission(activity.getApplicationContext(), Manifest.permission.GET_ACCOUNTS);
-
-        if (isPermission == PackageManager.PERMISSION_GRANTED)
-        {
-            activity.startActivityForResult(googleAccountCredential.newChooseAccountIntent(), REQUEST_ACCOUNT_PICKER);
-        } else
-        {
-            // 권한 허용 요청 다이얼로그 표시
-        }
+        activity.startActivityForResult(googleAccountCredential.newChooseAccountIntent(), REQUEST_ACCOUNT_PICKER);
     }
 
-    private static String getCalendarID(String calendarTitle)
+    private String getCalendarID(String calendarTitle)
     {
         String id = null;
         String pageToken = null;
@@ -125,16 +124,15 @@ public class GoogleCalendar
         return id;
     }
 
-    public static void setAccount(String keyAccountName) throws IOException, GeneralSecurityException
+    public void connect(String keyAccountName) throws IOException, GeneralSecurityException
     {
         googleAccountCredential.setSelectedAccountName(keyAccountName);
         initCalendarService();
-        Toast.makeText(activity, activity.getString(R.string.connected_google_calendar), Toast.LENGTH_SHORT).show();
     }
 
-    public static List<Event> getEvents(String calendarId) throws IOException
+    public List<Event> getEvents(String calendarId) throws IOException
     {
-        DateTime now = new DateTime(System.currentTimeMillis());
+        // DateTime now = new DateTime(System.currentTimeMillis());
         // String calendarId = getCalendarID(googleAccountCredential.getSelectedAccountName());
 
         Events events = calendarService.events().list(calendarId)
@@ -144,19 +142,19 @@ public class GoogleCalendar
         return events.getItems();
     }
 
-    public static List<CalendarListEntry> getCalendarList() throws IOException
+    public List<CalendarListEntry> getCalendarList() throws IOException
     {
         CalendarList calendarList = calendarService.calendarList().list().execute();
         return calendarList.getItems();
     }
 
-    public static com.google.api.services.calendar.model.Calendar getCalendar(String calendarId) throws IOException
+    public com.google.api.services.calendar.model.Calendar getCalendar(String calendarId) throws IOException
     {
         com.google.api.services.calendar.model.Calendar calendar = calendarService.calendars().get(calendarId).execute();
         return calendar;
     }
 
-    public static void initCalendarService() throws IOException, GeneralSecurityException
+    public void initCalendarService() throws IOException, GeneralSecurityException
     {
         final NetHttpTransport NET_HTTP_TRANSPORT = new NetHttpTransport.Builder().build();
         final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();

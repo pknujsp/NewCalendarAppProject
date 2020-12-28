@@ -1,10 +1,12 @@
 package com.zerodsoft.scheduleweather;
 
+import android.Manifest;
 import android.accounts.AccountManager;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.util.TypedValue;
@@ -14,7 +16,6 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import com.google.android.gms.auth.UserRecoverableAuthException;
 import com.google.android.material.checkbox.MaterialCheckBox;
 import com.google.android.material.navigation.NavigationView;
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
@@ -29,6 +30,7 @@ import com.zerodsoft.scheduleweather.databinding.SideNavHeaderBinding;
 import com.zerodsoft.scheduleweather.googlecalendar.CustomCalendar;
 import com.zerodsoft.scheduleweather.googlecalendar.GoogleCalendar;
 import com.zerodsoft.scheduleweather.googlecalendar.GoogleCalendarViewModel;
+import com.zerodsoft.scheduleweather.googlecalendar.IGoogleCalendar;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
 
@@ -36,6 +38,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
@@ -44,10 +47,8 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
-public class AppMainActivity extends AppCompatActivity
+public class AppMainActivity extends AppCompatActivity implements IGoogleCalendar
 {
     private EventTransactionFragment calendarTransactionFragment;
 
@@ -76,19 +77,10 @@ public class AppMainActivity extends AppCompatActivity
         sideNavHeaderBinding = SideNavHeaderBinding.bind(mainBinding.sideNavigation.getHeaderView(0));
 
         init();
+        initGoogleCalendarViewModel();
         setNavigationView();
 
-        String accountName = getPreferences(Context.MODE_PRIVATE).getString(GoogleCalendar.GOOGLE_ACCOUNT_NAME, "");
-        if (!accountName.isEmpty())
-        {
-            sideNavHeaderBinding.connectGoogle.performClick();
-            googleCalendarViewModel.getCalendarList();
-
-            sideNavHeaderBinding.connectGoogle.setVisibility(View.GONE);
-            sideNavHeaderBinding.disconnectGoogle.setVisibility(View.VISIBLE);
-            sideNavHeaderBinding.googleAccountEmail.setVisibility(View.VISIBLE);
-            sideNavHeaderBinding.googleAccountEmail.setText(accountName);
-        }
+        checkSavedGoogleAccount();
 
         Point point = new Point();
         getWindowManager().getDefaultDisplay().getRealSize(point);
@@ -118,8 +110,12 @@ public class AppMainActivity extends AppCompatActivity
         sideNavHeaderBinding.connectGoogle.setVisibility(View.VISIBLE);
         sideNavHeaderBinding.disconnectGoogle.setVisibility(View.GONE);
         sideNavHeaderBinding.googleAccountEmail.setVisibility(View.GONE);
+    }
 
+    private void initGoogleCalendarViewModel()
+    {
         googleCalendarViewModel = new ViewModelProvider(this).get(GoogleCalendarViewModel.class);
+        googleCalendarViewModel.init(this);
 
         googleCalendarViewModel.getCalendarListLiveData().observe(this, new Observer<DataWrapper<List<CalendarListEntry>>>()
         {
@@ -144,21 +140,54 @@ public class AppMainActivity extends AppCompatActivity
                     }
                 } else if (listDataWrapper.getException() != null)
                 {
-                    startActivityForResult(((UserRecoverableAuthIOException) listDataWrapper.getException()).getIntent(), 100);
+                    Exception exception = listDataWrapper.getException();
+
+                    if (exception instanceof UserRecoverableAuthIOException)
+                    {
+                        startActivityForResult(((UserRecoverableAuthIOException) listDataWrapper.getException()).getIntent(), GoogleCalendar.REQUEST_AUTHORIZATION);
+                    }
                 }
             }
         });
+
         googleCalendarViewModel.getEventsLiveData().observe(this, new Observer<DataWrapper<List<CustomCalendar>>>()
         {
             @Override
             public void onChanged(DataWrapper<List<CustomCalendar>> listDataWrapper)
             {
-                if (listDataWrapper != null)
+                if (listDataWrapper.getData() != null)
                 {
                     Toast.makeText(AppMainActivity.this, "events count : " + listDataWrapper.getData().size(), Toast.LENGTH_SHORT).show();
                 }
             }
         });
+    }
+
+    private void checkSavedGoogleAccount()
+    {
+        String accountName = getPreferences(Context.MODE_PRIVATE).getString(GoogleCalendar.GOOGLE_ACCOUNT_NAME, "");
+        if (!accountName.isEmpty())
+        {
+            // 저장된 계정이 있는 경우
+            int permission = ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.GET_ACCOUNTS);
+            if (permission == PackageManager.PERMISSION_GRANTED)
+            {
+                try
+                {
+                    googleCalendarViewModel.connect(accountName);
+                } catch (IOException | GeneralSecurityException e)
+                {
+                    e.printStackTrace();
+                }
+            } else if (permission == PackageManager.PERMISSION_DENIED)
+            {
+                // 권한 요청 화면 표시
+                requestPermissions(new String[]{Manifest.permission.GET_ACCOUNTS}, GoogleCalendar.REQUEST_PERMISSION_GET_ACCOUNTS_AUTO);
+            }
+        } else
+        {
+
+        }
     }
 
     private void setNavigationView()
@@ -195,13 +224,14 @@ public class AppMainActivity extends AppCompatActivity
             @Override
             public void onClick(View view)
             {
-                GoogleCalendar.init(AppMainActivity.this);
-                try
+                int permission = ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.GET_ACCOUNTS);
+                if (permission == PackageManager.PERMISSION_GRANTED)
                 {
-                    GoogleCalendar.connect();
-                } catch (IOException | GeneralSecurityException e)
+                    googleCalendarViewModel.requestAccountPicker();
+                } else if (permission == PackageManager.PERMISSION_DENIED)
                 {
-                    e.printStackTrace();
+                    // 권한 요청 화면 표시
+                    requestPermissions(new String[]{Manifest.permission.GET_ACCOUNTS}, GoogleCalendar.REQUEST_PERMISSION_GET_ACCOUNTS_SELF);
                 }
             }
         });
@@ -220,7 +250,10 @@ public class AppMainActivity extends AppCompatActivity
                 editor.putString(GoogleCalendar.GOOGLE_ACCOUNT_NAME, "");
                 editor.apply();
 
-                GoogleCalendar.disconnect();
+                googleCalendarViewModel.disconnect();
+                googleCalendarViewModel = null;
+                initGoogleCalendarViewModel();
+                Toast.makeText(AppMainActivity.this, getString(R.string.disconnected_google_calendar), Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -273,20 +306,13 @@ public class AppMainActivity extends AppCompatActivity
                     String keyAccountName = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
                     if (keyAccountName != null)
                     {
+                        SharedPreferences settings = getPreferences(Context.MODE_PRIVATE);
+                        SharedPreferences.Editor editor = settings.edit();
+                        editor.putString(GoogleCalendar.GOOGLE_ACCOUNT_NAME, keyAccountName);
+                        editor.apply();
                         try
                         {
-                            GoogleCalendar.setAccount(keyAccountName);
-                            googleCalendarViewModel.getCalendarList();
-
-                            SharedPreferences settings = getPreferences(Context.MODE_PRIVATE);
-                            SharedPreferences.Editor editor = settings.edit();
-                            editor.putString(GoogleCalendar.GOOGLE_ACCOUNT_NAME, keyAccountName);
-                            editor.apply();
-
-                            sideNavHeaderBinding.connectGoogle.setVisibility(View.GONE);
-                            sideNavHeaderBinding.disconnectGoogle.setVisibility(View.VISIBLE);
-                            sideNavHeaderBinding.googleAccountEmail.setVisibility(View.VISIBLE);
-                            sideNavHeaderBinding.googleAccountEmail.setText(keyAccountName);
+                            googleCalendarViewModel.connect(keyAccountName);
                         } catch (IOException | GeneralSecurityException e)
                         {
                             e.printStackTrace();
@@ -297,6 +323,16 @@ public class AppMainActivity extends AppCompatActivity
 
                 }
                 break;
+            case GoogleCalendar.REQUEST_AUTHORIZATION:
+                if (resultCode == RESULT_OK)
+                {
+                    googleCalendarViewModel.getCalendarList();
+                } else
+                {
+
+                }
+                break;
+
         }
 
         switch (resultCode)
@@ -315,6 +351,64 @@ public class AppMainActivity extends AppCompatActivity
         }
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults)
+    {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
+        switch (requestCode)
+        {
+            case GoogleCalendar.REQUEST_PERMISSION_GET_ACCOUNTS_AUTO:
+                if (grantResults.length > 0 &&
+                        grantResults[0] == PackageManager.PERMISSION_GRANTED)
+                {
+                    // 권한 허용됨
+                    String accountName = getPreferences(Context.MODE_PRIVATE).getString(GoogleCalendar.GOOGLE_ACCOUNT_NAME, "");
+
+                    try
+                    {
+                        googleCalendarViewModel.connect(accountName);
+                    } catch (IOException | GeneralSecurityException e)
+                    {
+                        e.printStackTrace();
+                    }
+                } else
+                {
+                    // 권한 거부됨
+                }
+                break;
+
+            case GoogleCalendar.REQUEST_PERMISSION_GET_ACCOUNTS_SELF:
+                if (grantResults.length > 0 &&
+                        grantResults[0] == PackageManager.PERMISSION_GRANTED)
+                {
+                    // 권한 허용됨
+                    googleCalendarViewModel.requestAccountPicker();
+                } else
+                {
+                    // 권한 거부됨
+                }
+                break;
+        }
+    }
+
+    @Override
+    public void onAccountSelectedState(boolean state)
+    {
+        if (state)
+        {
+            Toast.makeText(this, getString(R.string.connected_google_calendar), Toast.LENGTH_SHORT).show();
+            sideNavHeaderBinding.googleCalendarList.removeAllViews();
+            sideNavHeaderBinding.connectGoogle.setVisibility(View.GONE);
+            sideNavHeaderBinding.disconnectGoogle.setVisibility(View.VISIBLE);
+            sideNavHeaderBinding.googleAccountEmail.setVisibility(View.VISIBLE);
+            sideNavHeaderBinding.googleAccountEmail.setText(getPreferences(Context.MODE_PRIVATE).getString(GoogleCalendar.GOOGLE_ACCOUNT_NAME, ""));
+            googleCalendarViewModel.getCalendarList();
+        } else
+        {
+
+        }
+    }
 }
 
