@@ -27,8 +27,8 @@ import com.zerodsoft.scheduleweather.calendarfragment.MonthFragment;
 import com.zerodsoft.scheduleweather.calendarfragment.WeekFragment;
 import com.zerodsoft.scheduleweather.databinding.ActivityAppMainBinding;
 import com.zerodsoft.scheduleweather.databinding.SideNavHeaderBinding;
-import com.zerodsoft.scheduleweather.googlecalendar.CustomCalendar;
-import com.zerodsoft.scheduleweather.googlecalendar.GoogleCalendar;
+import com.zerodsoft.scheduleweather.googlecalendar.CustomGoogleCalendar;
+import com.zerodsoft.scheduleweather.googlecalendar.GoogleCalendarApi;
 import com.zerodsoft.scheduleweather.googlecalendar.GoogleCalendarViewModel;
 import com.zerodsoft.scheduleweather.googlecalendar.IGoogleCalendar;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
@@ -144,16 +144,16 @@ public class AppMainActivity extends AppCompatActivity implements IGoogleCalenda
 
                     if (exception instanceof UserRecoverableAuthIOException)
                     {
-                        startActivityForResult(((UserRecoverableAuthIOException) listDataWrapper.getException()).getIntent(), GoogleCalendar.REQUEST_AUTHORIZATION);
+                        startActivityForResult(((UserRecoverableAuthIOException) listDataWrapper.getException()).getIntent(), GoogleCalendarApi.REQUEST_AUTHORIZATION);
                     }
                 }
             }
         });
 
-        googleCalendarViewModel.getEventsLiveData().observe(this, new Observer<DataWrapper<List<CustomCalendar>>>()
+        googleCalendarViewModel.getEventsLiveData().observe(this, new Observer<DataWrapper<List<CustomGoogleCalendar>>>()
         {
             @Override
-            public void onChanged(DataWrapper<List<CustomCalendar>> listDataWrapper)
+            public void onChanged(DataWrapper<List<CustomGoogleCalendar>> listDataWrapper)
             {
                 if (listDataWrapper.getData() != null)
                 {
@@ -165,7 +165,7 @@ public class AppMainActivity extends AppCompatActivity implements IGoogleCalenda
 
     private void checkSavedGoogleAccount()
     {
-        String accountName = getPreferences(Context.MODE_PRIVATE).getString(GoogleCalendar.GOOGLE_ACCOUNT_NAME, "");
+        String accountName = getPreferences(Context.MODE_PRIVATE).getString(GoogleCalendarApi.GOOGLE_ACCOUNT_NAME, "");
         if (!accountName.isEmpty())
         {
             // 저장된 계정이 있는 경우
@@ -182,7 +182,7 @@ public class AppMainActivity extends AppCompatActivity implements IGoogleCalenda
             } else if (permission == PackageManager.PERMISSION_DENIED)
             {
                 // 권한 요청 화면 표시
-                requestPermissions(new String[]{Manifest.permission.GET_ACCOUNTS}, GoogleCalendar.REQUEST_PERMISSION_GET_ACCOUNTS_AUTO);
+                requestPermissions(new String[]{Manifest.permission.GET_ACCOUNTS}, GoogleCalendarApi.REQUEST_PERMISSION_GET_ACCOUNTS_AUTO);
             }
         } else
         {
@@ -231,7 +231,7 @@ public class AppMainActivity extends AppCompatActivity implements IGoogleCalenda
                 } else if (permission == PackageManager.PERMISSION_DENIED)
                 {
                     // 권한 요청 화면 표시
-                    requestPermissions(new String[]{Manifest.permission.GET_ACCOUNTS}, GoogleCalendar.REQUEST_PERMISSION_GET_ACCOUNTS_SELF);
+                    requestPermissions(new String[]{Manifest.permission.GET_ACCOUNTS}, GoogleCalendarApi.REQUEST_PERMISSION_GET_ACCOUNTS_SELF);
                 }
             }
         });
@@ -247,7 +247,7 @@ public class AppMainActivity extends AppCompatActivity implements IGoogleCalenda
 
                 SharedPreferences settings = getPreferences(Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = settings.edit();
-                editor.putString(GoogleCalendar.GOOGLE_ACCOUNT_NAME, "");
+                editor.putString(GoogleCalendarApi.GOOGLE_ACCOUNT_NAME, "");
                 editor.apply();
 
                 googleCalendarViewModel.disconnect();
@@ -300,7 +300,7 @@ public class AppMainActivity extends AppCompatActivity implements IGoogleCalenda
 
         switch (requestCode)
         {
-            case GoogleCalendar.REQUEST_ACCOUNT_PICKER:
+            case GoogleCalendarApi.REQUEST_ACCOUNT_PICKER:
                 if (resultCode == RESULT_OK && data != null && data.getExtras() != null)
                 {
                     String keyAccountName = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
@@ -308,7 +308,7 @@ public class AppMainActivity extends AppCompatActivity implements IGoogleCalenda
                     {
                         SharedPreferences settings = getPreferences(Context.MODE_PRIVATE);
                         SharedPreferences.Editor editor = settings.edit();
-                        editor.putString(GoogleCalendar.GOOGLE_ACCOUNT_NAME, keyAccountName);
+                        editor.putString(GoogleCalendarApi.GOOGLE_ACCOUNT_NAME, keyAccountName);
                         editor.apply();
                         try
                         {
@@ -323,7 +323,7 @@ public class AppMainActivity extends AppCompatActivity implements IGoogleCalenda
 
                 }
                 break;
-            case GoogleCalendar.REQUEST_AUTHORIZATION:
+            case GoogleCalendarApi.REQUEST_AUTHORIZATION:
                 if (resultCode == RESULT_OK)
                 {
                     googleCalendarViewModel.getCalendarList();
@@ -359,12 +359,12 @@ public class AppMainActivity extends AppCompatActivity implements IGoogleCalenda
 
         switch (requestCode)
         {
-            case GoogleCalendar.REQUEST_PERMISSION_GET_ACCOUNTS_AUTO:
+            case GoogleCalendarApi.REQUEST_PERMISSION_GET_ACCOUNTS_AUTO:
                 if (grantResults.length > 0 &&
                         grantResults[0] == PackageManager.PERMISSION_GRANTED)
                 {
                     // 권한 허용됨
-                    String accountName = getPreferences(Context.MODE_PRIVATE).getString(GoogleCalendar.GOOGLE_ACCOUNT_NAME, "");
+                    String accountName = getPreferences(Context.MODE_PRIVATE).getString(GoogleCalendarApi.GOOGLE_ACCOUNT_NAME, "");
 
                     try
                     {
@@ -379,7 +379,7 @@ public class AppMainActivity extends AppCompatActivity implements IGoogleCalenda
                 }
                 break;
 
-            case GoogleCalendar.REQUEST_PERMISSION_GET_ACCOUNTS_SELF:
+            case GoogleCalendarApi.REQUEST_PERMISSION_GET_ACCOUNTS_SELF:
                 if (grantResults.length > 0 &&
                         grantResults[0] == PackageManager.PERMISSION_GRANTED)
                 {
@@ -403,7 +403,7 @@ public class AppMainActivity extends AppCompatActivity implements IGoogleCalenda
             sideNavHeaderBinding.connectGoogle.setVisibility(View.GONE);
             sideNavHeaderBinding.disconnectGoogle.setVisibility(View.VISIBLE);
             sideNavHeaderBinding.googleAccountEmail.setVisibility(View.VISIBLE);
-            sideNavHeaderBinding.googleAccountEmail.setText(getPreferences(Context.MODE_PRIVATE).getString(GoogleCalendar.GOOGLE_ACCOUNT_NAME, ""));
+            sideNavHeaderBinding.googleAccountEmail.setText(getPreferences(Context.MODE_PRIVATE).getString(GoogleCalendarApi.GOOGLE_ACCOUNT_NAME, ""));
             googleCalendarViewModel.getCalendarList();
         } else
         {

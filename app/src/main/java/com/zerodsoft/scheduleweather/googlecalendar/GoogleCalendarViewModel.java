@@ -15,7 +15,7 @@ import java.util.List;
 
 public class GoogleCalendarViewModel extends ViewModel
 {
-    private MutableLiveData<DataWrapper<List<CustomCalendar>>> eventsLiveData;
+    private MutableLiveData<DataWrapper<List<CustomGoogleCalendar>>> eventsLiveData;
     private MutableLiveData<DataWrapper<Calendar>> calendarLiveData;
     private MutableLiveData<DataWrapper<List<CalendarListEntry>>> calendarListLiveData;
     private GoogleCalendarRepository repository;
@@ -34,7 +34,7 @@ public class GoogleCalendarViewModel extends ViewModel
         calendarListLiveData = repository.getCalendarListLiveData();
     }
 
-    public MutableLiveData<DataWrapper<List<CustomCalendar>>> getEventsLiveData()
+    public MutableLiveData<DataWrapper<List<CustomGoogleCalendar>>> getEventsLiveData()
     {
         return eventsLiveData;
     }

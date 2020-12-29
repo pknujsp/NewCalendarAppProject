@@ -18,11 +18,11 @@ import java.util.concurrent.Executors;
 
 public class GoogleCalendarRepository
 {
-    private MutableLiveData<DataWrapper<List<CustomCalendar>>> eventsLiveData;
+    private MutableLiveData<DataWrapper<List<CustomGoogleCalendar>>> eventsLiveData;
     private MutableLiveData<DataWrapper<Calendar>> calendarLiveData;
     private MutableLiveData<DataWrapper<List<CalendarListEntry>>> calendarListLiveData;
 
-    private GoogleCalendar googleCalendar;
+    private GoogleCalendarApi googleCalendarApi;
     private IGoogleCalendar iGoogleCalendar;
 
     public GoogleCalendarRepository(Activity activity)
@@ -33,7 +33,7 @@ public class GoogleCalendarRepository
         calendarLiveData = new MutableLiveData<>();
         calendarListLiveData = new MutableLiveData<>();
 
-        googleCalendar = GoogleCalendar.newInstance(activity);
+        googleCalendarApi = GoogleCalendarApi.newInstance(activity);
     }
 
     public MutableLiveData<DataWrapper<Calendar>> getCalendarLiveData()
@@ -46,20 +46,20 @@ public class GoogleCalendarRepository
         return calendarListLiveData;
     }
 
-    public MutableLiveData<DataWrapper<List<CustomCalendar>>> getEventsLiveData()
+    public MutableLiveData<DataWrapper<List<CustomGoogleCalendar>>> getEventsLiveData()
     {
         return eventsLiveData;
     }
 
     public void connect(String accountName) throws IOException, GeneralSecurityException
     {
-        googleCalendar.connect(accountName);
+        googleCalendarApi.connect(accountName);
         iGoogleCalendar.onAccountSelectedState(true);
     }
 
     public void chooseAccount()
     {
-        googleCalendar.requestAccountPicker();
+        googleCalendarApi.requestAccountPicker();
     }
 
     public void getCalendarList()
@@ -73,7 +73,7 @@ public class GoogleCalendarRepository
                 DataWrapper<List<CalendarListEntry>> dataWrapper = null;
                 try
                 {
-                    List<CalendarListEntry> calendarList = googleCalendar.getCalendarList();
+                    List<CalendarListEntry> calendarList = googleCalendarApi.getCalendarList();
                     dataWrapper = new DataWrapper<>(calendarList);
                 } catch (IOException e)
                 {
@@ -92,21 +92,21 @@ public class GoogleCalendarRepository
             @Override
             public void run()
             {
-                DataWrapper<List<CustomCalendar>> dataWrapper = null;
+                DataWrapper<List<CustomGoogleCalendar>> dataWrapper = null;
                 try
                 {
                     List<CalendarListEntry> calendarList = calendarListLiveData.getValue().getData();
-                    List<CustomCalendar> customCalendarList = new ArrayList<>();
+                    List<CustomGoogleCalendar> customGoogleCalendarList = new ArrayList<>();
 
                     for (CalendarListEntry calendarListEntry : calendarList)
                     {
-                        List<Event> events = googleCalendar.getEvents(calendarListEntry.getId());
-                        Calendar calendar = googleCalendar.getCalendar(calendarListEntry.getId());
+                        List<Event> events = googleCalendarApi.getEvents(calendarListEntry.getId());
+                        Calendar calendar = googleCalendarApi.getCalendar(calendarListEntry.getId());
 
-                        customCalendarList.add(new CustomCalendar(calendar, events));
+                        customGoogleCalendarList.add(new CustomGoogleCalendar(calendar, events));
                     }
 
-                    dataWrapper = new DataWrapper<>(customCalendarList);
+                    dataWrapper = new DataWrapper<>(customGoogleCalendarList);
                 } catch (Exception e)
                 {
                     dataWrapper = new DataWrapper<>(e);
@@ -127,7 +127,7 @@ public class GoogleCalendarRepository
                 DataWrapper<Calendar> dataWrapper = null;
                 try
                 {
-                    Calendar calendar = googleCalendar.getCalendar(calendarId);
+                    Calendar calendar = googleCalendarApi.getCalendar(calendarId);
                     dataWrapper = new DataWrapper<>(calendar);
                 } catch (IOException e)
                 {
@@ -140,6 +140,6 @@ public class GoogleCalendarRepository
 
     public void disconnect()
     {
-        googleCalendar.disconnect();
+        googleCalendarApi.disconnect();
     }
 }

@@ -2,26 +2,28 @@ package com.zerodsoft.scheduleweather.googlecalendar;
 
 import com.google.api.services.calendar.model.Calendar;
 import com.google.api.services.calendar.model.Event;
+import com.google.api.services.calendar.model.Events;
 
 import java.util.List;
 
-public class CustomCalendar
+public class CustomGoogleCalendar
 {
     private final Calendar googleCalendar;
-    private final List<Event> events;
+    private final Events events;
 
-    public CustomCalendar(Calendar googleCalendar, List<Event> events)
+    public CustomGoogleCalendar(Calendar googleCalendar, Events events)
     {
         this.googleCalendar = googleCalendar;
         this.events = events;
     }
+
 
     public Calendar getGoogleCalendar()
     {
         return googleCalendar;
     }
 
-    public List<Event> getEvents()
+    public Events getEvents()
     {
         return events;
     }

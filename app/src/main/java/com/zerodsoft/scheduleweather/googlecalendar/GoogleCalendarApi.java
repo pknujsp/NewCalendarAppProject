@@ -1,20 +1,12 @@
 package com.zerodsoft.scheduleweather.googlecalendar;
 
-import android.Manifest;
 import android.app.Activity;
-import android.content.Context;
-import android.content.pm.PackageManager;
-import android.os.Bundle;
-import android.widget.Toast;
-
-import androidx.core.content.ContextCompat;
 
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
-import com.google.api.client.util.DateTime;
 import com.google.api.client.util.ExponentialBackOff;
 import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.CalendarScopes;
@@ -22,18 +14,14 @@ import com.google.api.services.calendar.model.CalendarList;
 import com.google.api.services.calendar.model.CalendarListEntry;
 import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.Events;
-import com.zerodsoft.scheduleweather.AppMainActivity;
-import com.zerodsoft.scheduleweather.R;
 
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
-public class GoogleCalendar
+public class GoogleCalendarApi
 {
     public static final int REQ_SIGN_GOOGLE = 100;
     public static final int REQUEST_ACCOUNT_PICKER = 1000;
@@ -53,21 +41,21 @@ public class GoogleCalendar
     private Calendar calendarService;
     private Activity activity;
 
-    private static GoogleCalendar instance;
+    private static GoogleCalendarApi instance;
 
-    public GoogleCalendar(Activity activity)
+    public GoogleCalendarApi(Activity activity)
     {
         this.activity = activity;
         init();
     }
 
-    public static GoogleCalendar newInstance(Activity activity)
+    public static GoogleCalendarApi newInstance(Activity activity)
     {
-        instance = new GoogleCalendar(activity);
+        instance = new GoogleCalendarApi(activity);
         return instance;
     }
 
-    public static GoogleCalendar getInstance()
+    public static GoogleCalendarApi getInstance()
     {
         return instance;
     }
