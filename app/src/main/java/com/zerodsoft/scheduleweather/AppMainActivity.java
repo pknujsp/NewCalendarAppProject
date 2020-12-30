@@ -3,12 +3,15 @@ package com.zerodsoft.scheduleweather;
 import android.Manifest;
 import android.accounts.AccountManager;
 import android.annotation.SuppressLint;
+import android.content.ContentValues;
 import android.content.Context;
+import android.content.EntityIterator;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Point;
 import android.os.Bundle;
+import android.provider.CalendarContract;
 import android.util.TypedValue;
 import android.view.MenuItem;
 import android.view.View;
@@ -29,6 +32,7 @@ import com.zerodsoft.scheduleweather.databinding.ActivityAppMainBinding;
 import com.zerodsoft.scheduleweather.databinding.SideNavHeaderBinding;
 import com.zerodsoft.scheduleweather.googlecalendar.CustomGoogleCalendar;
 import com.zerodsoft.scheduleweather.googlecalendar.GoogleCalendarApi;
+import com.zerodsoft.scheduleweather.googlecalendar.GoogleCalendarProvider;
 import com.zerodsoft.scheduleweather.googlecalendar.GoogleCalendarViewModel;
 import com.zerodsoft.scheduleweather.googlecalendar.IGoogleCalendar;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
@@ -212,6 +216,9 @@ public class AppMainActivity extends AppCompatActivity implements IGoogleCalenda
                     case R.id.favorite:
                         break;
                     case R.id.app_setting:
+                        GoogleCalendarProvider provider = GoogleCalendarProvider.newInstance(getApplicationContext());
+                        provider.getAllCalendars();
+
                         break;
                 }
                 mainBinding.drawerLayout.closeDrawer(mainBinding.sideNavigation);

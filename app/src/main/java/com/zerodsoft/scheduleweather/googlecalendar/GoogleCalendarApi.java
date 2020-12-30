@@ -118,7 +118,7 @@ public class GoogleCalendarApi
         initCalendarService();
     }
 
-    public List<Event> getEvents(String calendarId) throws IOException
+    public Events getEvents(String calendarId) throws IOException
     {
         // DateTime now = new DateTime(System.currentTimeMillis());
         // String calendarId = getCalendarID(googleAccountCredential.getSelectedAccountName());
@@ -127,7 +127,7 @@ public class GoogleCalendarApi
                 .setOrderBy("startTime")
                 .setSingleEvents(true)
                 .execute();
-        return events.getItems();
+        return events;
     }
 
     public List<CalendarListEntry> getCalendarList() throws IOException

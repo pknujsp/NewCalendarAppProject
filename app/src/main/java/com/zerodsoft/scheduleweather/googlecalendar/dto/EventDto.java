@@ -1,6 +1,6 @@
 package com.zerodsoft.scheduleweather.googlecalendar.dto;
 
-public class GoogleCalendarEvent
+public class EventDto
 {
     // 제목
     private String title;

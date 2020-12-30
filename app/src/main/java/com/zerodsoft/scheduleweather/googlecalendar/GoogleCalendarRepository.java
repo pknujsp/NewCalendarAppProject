@@ -7,6 +7,7 @@ import androidx.lifecycle.MutableLiveData;
 import com.google.api.services.calendar.model.Calendar;
 import com.google.api.services.calendar.model.CalendarListEntry;
 import com.google.api.services.calendar.model.Event;
+import com.google.api.services.calendar.model.Events;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 
 import java.io.IOException;
@@ -100,7 +101,7 @@ public class GoogleCalendarRepository
 
                     for (CalendarListEntry calendarListEntry : calendarList)
                     {
-                        List<Event> events = googleCalendarApi.getEvents(calendarListEntry.getId());
+                        Events events = googleCalendarApi.getEvents(calendarListEntry.getId());
                         Calendar calendar = googleCalendarApi.getCalendar(calendarListEntry.getId());
 
                         customGoogleCalendarList.add(new CustomGoogleCalendar(calendar, events));

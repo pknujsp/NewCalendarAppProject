@@ -1,15 +1,21 @@
 package com.zerodsoft.scheduleweather.googlecalendar;
 
 import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
+import android.content.EntityIterator;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.CalendarContract;
 
 import com.google.api.client.util.DateTime;
+import com.google.api.services.calendar.model.Calendar;
+import com.google.api.services.calendar.model.CalendarList;
+import com.google.api.services.calendar.model.CalendarListEntry;
 import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.EventDateTime;
 import com.google.api.services.calendar.model.Events;
+import com.zerodsoft.scheduleweather.googlecalendar.dto.CalendarDto;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -103,7 +109,7 @@ public class GoogleCalendarProvider
                 event.setOrganizer(organizer);
 
                 Event.Creator creator = new Event.Creator();
-                CalendarContract.Events.
+                //  CalendarContract.Events.
             }
             cursor.close();
         }
@@ -115,5 +121,87 @@ public class GoogleCalendarProvider
         }
          */
         return customGoogleCalendarList;
+    }
+
+    public List<CalendarDto> getAllCalendars()
+    {
+        final String[] EVENT_PROJECTION =
+                {
+                        CalendarContract.Calendars.ALLOWED_ATTENDEE_TYPES,
+                        CalendarContract.Calendars.ACCOUNT_NAME,
+                        CalendarContract.Calendars.CALENDAR_DISPLAY_NAME,
+                        CalendarContract.Calendars.CALENDAR_LOCATION,
+                        CalendarContract.Calendars.CALENDAR_TIME_ZONE
+                };
+
+        final String SELECTION = "((" + CalendarContract.Calendars.OWNER_ACCOUNT + " = ? AND"
+                + CalendarContract.Calendars.ACCOUNT_NAME + " = ?"
+                + "))";
+
+
+        ContentResolver contentResolver = CONTEXT.getContentResolver();
+        Cursor cursor = contentResolver.query(CalendarContract.Calendars.CONTENT_URI, null, null, null, null);
+        List<CalendarDto> list = new ArrayList<>();
+
+        while (cursor.moveToNext())
+        {
+            CalendarDto calendarDto = new CalendarDto();
+
+            calendarDto.setALLOWED_ATTENDEE_TYPES(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_ATTENDEE_TYPES)));
+            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
+            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
+            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
+            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
+            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
+            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
+            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
+            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
+            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
+            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
+            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
+            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
+            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
+            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
+            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
+            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
+            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
+            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
+            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
+            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
+            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
+            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
+            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
+            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
+            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
+            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
+            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
+            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
+            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
+            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
+            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
+            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
+            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
+            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
+            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
+            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
+            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
+            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
+            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
+            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
+            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
+
+
+            ContentValues values = new ContentValues();
+            // content values 사용하기
+
+
+            calendarDto.set_ID(cursor.getLong(cursor.getColumnIndex(CalendarContract.Calendars._ID)));
+            calendarDto.setCALENDAR_DISPLAY_NAME(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.CALENDAR_DISPLAY_NAME)));
+            calendarDto.setACCOUNT_NAME(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ACCOUNT_NAME)));
+            calendarDto.setOWNER_ACCOUNT(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.OWNER_ACCOUNT)));
+
+
+        }
+        return list;
     }
 }
