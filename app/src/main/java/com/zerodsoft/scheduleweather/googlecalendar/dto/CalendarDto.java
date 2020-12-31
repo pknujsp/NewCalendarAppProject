@@ -1,5 +1,11 @@
 package com.zerodsoft.scheduleweather.googlecalendar.dto;
 
+import android.content.ContentValues;
+import android.database.Cursor;
+import android.database.MatrixCursor;
+
+import org.mortbay.jetty.servlet.Context;
+
 public class CalendarDto
 {
     private String ALLOWED_ATTENDEE_TYPES;

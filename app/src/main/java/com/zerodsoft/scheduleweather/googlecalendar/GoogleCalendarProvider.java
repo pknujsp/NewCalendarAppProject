@@ -1,32 +1,51 @@
 package com.zerodsoft.scheduleweather.googlecalendar;
 
 import android.content.ContentResolver;
-import android.content.ContentValues;
 import android.content.Context;
-import android.content.EntityIterator;
 import android.database.Cursor;
-import android.net.Uri;
 import android.provider.CalendarContract;
 
-import com.google.api.client.util.DateTime;
-import com.google.api.services.calendar.model.Calendar;
-import com.google.api.services.calendar.model.CalendarList;
-import com.google.api.services.calendar.model.CalendarListEntry;
-import com.google.api.services.calendar.model.Event;
-import com.google.api.services.calendar.model.EventDateTime;
-import com.google.api.services.calendar.model.Events;
 import com.zerodsoft.scheduleweather.googlecalendar.dto.CalendarDto;
+import com.zerodsoft.scheduleweather.googlecalendar.dto.EventDto;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class GoogleCalendarProvider
 {
-    public static final int REQUEST_READ_CALENDAR = 200;
-    private final Context CONTEXT;
-
     private static GoogleCalendarProvider instance;
+    public static final int REQUEST_READ_CALENDAR = 200;
+
+    private final Context CONTEXT;
+    private final String[] EVENTS_PROJECTION =
+            {
+                    CalendarContract.Events.TITLE,
+                    CalendarContract.Events.EVENT_COLOR_KEY,
+                    CalendarContract.Events.OWNER_ACCOUNT,
+                    CalendarContract.Events.CALENDAR_ID,
+                    CalendarContract.Events.ORGANIZER,
+                    CalendarContract.Events.EVENT_END_TIMEZONE,
+                    CalendarContract.Events.EVENT_TIMEZONE,
+                    CalendarContract.Events.ACCOUNT_NAME,
+                    CalendarContract.Events.ACCOUNT_TYPE,
+                    CalendarContract.Events.DTSTART,
+                    CalendarContract.Events.DTEND,
+                    CalendarContract.Events.RRULE,
+                    CalendarContract.Events.RDATE,
+                    CalendarContract.Events.EXRULE,
+                    CalendarContract.Events.EXDATE
+            };
+    private final String EVENTS_QUERY = "((" + CalendarContract.Events.CALENDAR_DISPLAY_NAME + " = ? AND "
+            + CalendarContract.Events.ACCOUNT_NAME + " = ? AND "
+            + CalendarContract.Events.ACCOUNT_TYPE + " = ? AND "
+            + CalendarContract.Events.CALENDAR_ID + " = ? AND "
+            + CalendarContract.Events.OWNER_ACCOUNT + " = ?"
+            + "))";
+    private final String EVENT_QUERY = "((" + CalendarContract.Events.ORIGINAL_ID + " = ? AND "
+            + CalendarContract.Events.OWNER_ACCOUNT + " = ? AND "
+            + CalendarContract.Events.CALENDAR_ID + " = ? AND "
+            + CalendarContract.Events.ORGANIZER + " = ?"
+            + "))";
 
     public static GoogleCalendarProvider newInstance(Context context)
     {
@@ -44,164 +63,78 @@ public class GoogleCalendarProvider
         this.CONTEXT = CONTEXT;
     }
 
-    public List<Events> getAllEvents(List<Integer> calendarIds)
+    public EventDto getEvent(int id, int calendarId, String ownerAccount, String organizer)
     {
-        final String[] EVENT_PROJECTION =
-                {
-                        CalendarContract.Calendars.ALLOWED_ATTENDEE_TYPES,
-                        CalendarContract.Calendars.ACCOUNT_NAME,
-                        CalendarContract.Calendars.CALENDAR_DISPLAY_NAME,
-                        CalendarContract.Calendars.CALENDAR_LOCATION,
-                        CalendarContract.Calendars.CALENDAR_TIME_ZONE
-                };
-
-        final String SELECTION = "((" + CalendarContract.Events.CALENDAR_ID + " = ?))";
-
-        String[] selectionArgs = new String[1];
-
-        Uri uri = CalendarContract.Events.CONTENT_URI;
-        ContentResolver contentResolver = CONTEXT.getContentResolver();
-        Cursor cursor = null;
-
-        List<Events> customGoogleCalendarList = new ArrayList<>();
-
-        EventDateTime startDateTime = new EventDateTime();
-        EventDateTime endDateTime = new EventDateTime();
-
-        for (int i = 0; i < calendarIds.size(); i++)
-        {
-            selectionArgs[0] = calendarIds.get(i).toString();
-
-            cursor = contentResolver.query(uri, null, SELECTION, selectionArgs, null);
-
-            Events events = new Events();
-            List<Event> eventList = new ArrayList<>();
-
-
-            while (cursor.moveToNext())
-            {
-                Event event = new Event();
-
-                startDateTime.setTimeZone(cursor.getString(cursor.getColumnIndex(CalendarContract.Events.EVENT_TIMEZONE)));
-                endDateTime.setTimeZone(cursor.getString(cursor.getColumnIndex(CalendarContract.Events.EVENT_END_TIMEZONE)));
-                startDateTime.setDateTime(new DateTime(cursor.getLong(cursor.getColumnIndex(CalendarContract.Events.DTSTART))));
-                endDateTime.setDateTime(new DateTime(cursor.getLong(cursor.getColumnIndex(CalendarContract.Events.DTEND))));
-
-                List<String> recurrences = new ArrayList<>();
-                recurrences.add(cursor.getString(cursor.getColumnIndex(CalendarContract.Events.RRULE)));
-                recurrences.add(cursor.getString(cursor.getColumnIndex(CalendarContract.Events.EXRULE)));
-                recurrences.add(cursor.getString(cursor.getColumnIndex(CalendarContract.Events.RDATE)));
-                recurrences.add(cursor.getString(cursor.getColumnIndex(CalendarContract.Events.EXDATE)));
-
-                event.setSummary(cursor.getString(cursor.getColumnIndex(CalendarContract.Events.TITLE)));
-                event.setStart(startDateTime.clone());
-                event.setEnd(endDateTime.clone());
-                event.setRecurrence(recurrences);
-                event.setId(cursor.getString(cursor.getColumnIndex(CalendarContract.Events.ORIGINAL_ID)));
-                event.setStatus(CalendarContract.Events.STATUS);
-                event.setDescription(cursor.getString(cursor.getColumnIndex(CalendarContract.Events.DESCRIPTION)));
-                event.setLocation(cursor.getString(cursor.getColumnIndex(CalendarContract.Events.EVENT_LOCATION)));
-                event.setColorId(cursor.getString(cursor.getColumnIndex(CalendarContract.Events.EVENT_COLOR_KEY)));
-
-                Event.Organizer organizer = new Event.Organizer();
-                organizer.setEmail(cursor.getString(cursor.getColumnIndex(CalendarContract.Events.ORGANIZER)));
-                organizer.setSelf(cursor.getInt(cursor.getColumnIndex(CalendarContract.Events.IS_ORGANIZER)) == 1);
-                event.setOrganizer(organizer);
-
-                Event.Creator creator = new Event.Creator();
-                //  CalendarContract.Events.
-            }
-            cursor.close();
-        }
-
-        /*
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_CALENDAR) != PackageManager.PERMISSION_GRANTED)
-        {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_CALENDAR}, REQUEST_READ_CALENDAR);
-        }
-         */
-        return customGoogleCalendarList;
-    }
-
-    public List<CalendarDto> getAllCalendars()
-    {
-        final String[] EVENT_PROJECTION =
-                {
-                        CalendarContract.Calendars.ALLOWED_ATTENDEE_TYPES,
-                        CalendarContract.Calendars.ACCOUNT_NAME,
-                        CalendarContract.Calendars.CALENDAR_DISPLAY_NAME,
-                        CalendarContract.Calendars.CALENDAR_LOCATION,
-                        CalendarContract.Calendars.CALENDAR_TIME_ZONE
-                };
-
-        final String SELECTION = "((" + CalendarContract.Calendars.OWNER_ACCOUNT + " = ? AND"
-                + CalendarContract.Calendars.ACCOUNT_NAME + " = ?"
-                + "))";
-
+        // 필요한 데이터 : ID, 캘린더 ID, 오너 계정, 조직자
+        String[] selectionArgs = new String[]{Integer.toString(id), ownerAccount, Integer.toString(calendarId), organizer};
 
         ContentResolver contentResolver = CONTEXT.getContentResolver();
-        Cursor cursor = contentResolver.query(CalendarContract.Calendars.CONTENT_URI, null, null, null, null);
-        List<CalendarDto> list = new ArrayList<>();
+        Cursor cursor = contentResolver.query(CalendarContract.Events.CONTENT_URI, null, EVENT_QUERY, selectionArgs, null);
+        EventDto eventDto = new EventDto();
 
         while (cursor.moveToNext())
         {
+            eventDto.setTITLE(cursor.getString(cursor.getColumnIndex(CalendarContract.Events.TITLE)));
+        }
+    }
+
+    public List<EventDto> getEvents(String calendarDisplayName, String accountName, String accountType, int calendarId, String ownerAccount)
+    {
+        // 필요한 데이터 : 제목, 색상, 오너 관련, 일정 길이, 반복 관련
+        String[] selectionArgs = new String[]{calendarDisplayName, accountName, accountType, Integer.toString(calendarId), ownerAccount};
+
+        ContentResolver contentResolver = CONTEXT.getContentResolver();
+        Cursor cursor = contentResolver.query(CalendarContract.Events.CONTENT_URI, EVENTS_PROJECTION, EVENTS_QUERY, selectionArgs, null);
+        List<EventDto> eventsList = new ArrayList<>();
+
+        while (cursor.moveToNext())
+        {
+            EventDto eventDto = new EventDto();
+            eventsList.add(eventDto);
+
+            eventDto.setTITLE(cursor.getString(cursor.getColumnIndex(CalendarContract.Events.TITLE)));
+            eventDto.setEVENT_COLOR_KEY(cursor.getInt(cursor.getColumnIndex(CalendarContract.Events.EVENT_COLOR_KEY)));
+            eventDto.setOWNER_ACCOUNT(cursor.getString(cursor.getColumnIndex(CalendarContract.Events.OWNER_ACCOUNT)));
+            eventDto.setCALENDAR_ID(cursor.getInt(cursor.getColumnIndex(CalendarContract.Events.CALENDAR_ID)));
+            eventDto.setORGANIZER(cursor.getString(cursor.getColumnIndex(CalendarContract.Events.ORGANIZER)));
+            eventDto.setEVENT_END_TIMEZONE(cursor.getString(cursor.getColumnIndex(CalendarContract.Events.EVENT_END_TIMEZONE)));
+            eventDto.setEVENT_TIMEZONE(cursor.getString(cursor.getColumnIndex(CalendarContract.Events.EVENT_TIMEZONE)));
+            eventDto.setACCOUNT_NAME(cursor.getString(cursor.getColumnIndex(CalendarContract.Events.ACCOUNT_NAME)));
+            eventDto.setACCOUNT_TYPE(cursor.getString(cursor.getColumnIndex(CalendarContract.Events.ACCOUNT_TYPE)));
+            eventDto.setDTSTART(cursor.getLong(cursor.getColumnIndex(CalendarContract.Events.DTSTART)));
+            eventDto.setDTEND(cursor.getLong(cursor.getColumnIndex(CalendarContract.Events.DTEND)));
+            eventDto.setRRULE(cursor.getString(cursor.getColumnIndex(CalendarContract.Events.RRULE)));
+            eventDto.setRDATE(cursor.getString(cursor.getColumnIndex(CalendarContract.Events.RDATE)));
+            eventDto.setEXRULE(cursor.getString(cursor.getColumnIndex(CalendarContract.Events.EXRULE)));
+            eventDto.setEXDATE(cursor.getString(cursor.getColumnIndex(CalendarContract.Events.EXDATE)));
+        }
+        cursor.close();
+        return eventsList;
+    }
+
+
+    public List<CalendarDto> getAllCalendars()
+    {
+        ContentResolver contentResolver = CONTEXT.getContentResolver();
+        Cursor cursor = contentResolver.query(CalendarContract.Calendars.CONTENT_URI, null, null, null, null);
+        List<CalendarDto> calendarsList = new ArrayList<>();
+
+        /*
+        필요한 데이터 : 달력 색상, 달력 이름, 소유자 계정, 계정 이름, 계정 타입, ID
+         */
+        while (cursor.moveToNext())
+        {
             CalendarDto calendarDto = new CalendarDto();
-
-            calendarDto.setALLOWED_ATTENDEE_TYPES(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_ATTENDEE_TYPES)));
-            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
-            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
-            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
-            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
-            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
-            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
-            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
-            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
-            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
-            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
-            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
-            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
-            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
-            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
-            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
-            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
-            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
-            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
-            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
-            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
-            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
-            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
-            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
-            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
-            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
-            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
-            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
-            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
-            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
-            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
-            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
-            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
-            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
-            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
-            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
-            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
-            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
-            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
-            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
-            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
-            calendarDto.setALLOWED_AVAILABILITY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ALLOWED_AVAILABILITY)));
-
-
-            ContentValues values = new ContentValues();
-            // content values 사용하기
-
+            calendarsList.add(calendarDto);
 
             calendarDto.set_ID(cursor.getLong(cursor.getColumnIndex(CalendarContract.Calendars._ID)));
             calendarDto.setCALENDAR_DISPLAY_NAME(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.CALENDAR_DISPLAY_NAME)));
             calendarDto.setACCOUNT_NAME(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ACCOUNT_NAME)));
             calendarDto.setOWNER_ACCOUNT(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.OWNER_ACCOUNT)));
-
-
+            calendarDto.setCALENDAR_COLOR_KEY(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.CALENDAR_COLOR_KEY)));
+            calendarDto.setACCOUNT_TYPE(cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ACCOUNT_TYPE)));
         }
-        return list;
+        cursor.close();
+        return calendarsList;
     }
 }
