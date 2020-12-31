@@ -11,9 +11,9 @@ import com.zerodsoft.scheduleweather.googlecalendar.dto.EventDto;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GoogleCalendarProvider
+public class CalendarProvider
 {
-    private static GoogleCalendarProvider instance;
+    private static CalendarProvider instance;
     public static final int REQUEST_READ_CALENDAR = 200;
 
     private final Context CONTEXT;
@@ -33,40 +33,44 @@ public class GoogleCalendarProvider
                     CalendarContract.Events.RRULE,
                     CalendarContract.Events.RDATE,
                     CalendarContract.Events.EXRULE,
-                    CalendarContract.Events.EXDATE
+                    CalendarContract.Events.EXDATE,
+                    CalendarContract.Events.EVENT_LOCATION,
+                    CalendarContract.Events.AVAILABILITY,
+                    CalendarContract.Events.ACCESS_LEVEL,
+                    CalendarContract.Events.HAS_ATTENDEE_DATA
             };
-    private final String EVENTS_QUERY = "((" + CalendarContract.Events.CALENDAR_DISPLAY_NAME + " = ? AND "
-            + CalendarContract.Events.ACCOUNT_NAME + " = ? AND "
+    private final String EVENTS_QUERY = "((" + CalendarContract.Events.ACCOUNT_NAME + " = ? AND "
             + CalendarContract.Events.ACCOUNT_TYPE + " = ? AND "
             + CalendarContract.Events.CALENDAR_ID + " = ? AND "
             + CalendarContract.Events.OWNER_ACCOUNT + " = ?"
             + "))";
     private final String EVENT_QUERY = "((" + CalendarContract.Events.ORIGINAL_ID + " = ? AND "
-            + CalendarContract.Events.OWNER_ACCOUNT + " = ? AND "
-            + CalendarContract.Events.CALENDAR_ID + " = ? AND "
-            + CalendarContract.Events.ORGANIZER + " = ?"
+            + CalendarContract.Events.CALENDAR_ID + " = ? AND"
+            + CalendarContract.Events.OWNER_ACCOUNT + " = ?"
             + "))";
 
-    public static GoogleCalendarProvider newInstance(Context context)
+    public static CalendarProvider newInstance(Context context)
     {
-        instance = new GoogleCalendarProvider(context);
+        instance = new CalendarProvider(context);
         return instance;
     }
 
-    public static GoogleCalendarProvider getInstance()
+    public static CalendarProvider getInstance()
     {
         return instance;
     }
 
-    public GoogleCalendarProvider(Context CONTEXT)
+    public CalendarProvider(Context CONTEXT)
     {
         this.CONTEXT = CONTEXT;
     }
 
-    public EventDto getEvent(int id, int calendarId, String ownerAccount, String organizer)
+    public EventDto getEvent(int id, int calendarId, String ownerAccount)
     {
-        // 필요한 데이터 : ID, 캘린더 ID, 오너 계정, 조직자
-        String[] selectionArgs = new String[]{Integer.toString(id), ownerAccount, Integer.toString(calendarId), organizer};
+        // 화면에 이벤트 정보를 표시하기 위해 기본적인 데이터만 가져온다.
+        // 요청 매개변수 : ID, 캘린더 ID, 오너 계정, 조직자
+        // 표시할 데이터 : 제목, 일정 기간, 반복, 위치, 알림, 설명, 소유 계정, 참석자, 바쁨/한가함, 공개 범위 참석 여부 확인 창, 색상
+        String[] selectionArgs = new String[]{Integer.toString(id), Integer.toString(calendarId), ownerAccount};
 
         ContentResolver contentResolver = CONTEXT.getContentResolver();
         Cursor cursor = contentResolver.query(CalendarContract.Events.CONTENT_URI, null, EVENT_QUERY, selectionArgs, null);
@@ -76,12 +80,14 @@ public class GoogleCalendarProvider
         {
             eventDto.setTITLE(cursor.getString(cursor.getColumnIndex(CalendarContract.Events.TITLE)));
         }
+        cursor.close();
+        return eventDto;
     }
 
-    public List<EventDto> getEvents(String calendarDisplayName, String accountName, String accountType, int calendarId, String ownerAccount)
+    public List<EventDto> getEvents(String accountName, String accountType, int calendarId, String ownerAccount)
     {
         // 필요한 데이터 : 제목, 색상, 오너 관련, 일정 길이, 반복 관련
-        String[] selectionArgs = new String[]{calendarDisplayName, accountName, accountType, Integer.toString(calendarId), ownerAccount};
+        String[] selectionArgs = new String[]{accountName, accountType, Integer.toString(calendarId), ownerAccount};
 
         ContentResolver contentResolver = CONTEXT.getContentResolver();
         Cursor cursor = contentResolver.query(CalendarContract.Events.CONTENT_URI, EVENTS_PROJECTION, EVENTS_QUERY, selectionArgs, null);

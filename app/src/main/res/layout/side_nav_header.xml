@@ -8,133 +8,13 @@
         android:orientation="vertical"
         android:padding="8dp">
 
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="4dp"
-            android:orientation="vertical">
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <ImageView
-                    android:id="@+id/google_icon"
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
-                    android:layout_gravity="center_vertical"
-                    android:background="@color/transparent"
-                    android:src="@drawable/icon_calendar_type" />
-
-                <TextView
-                    android:id="@+id/google_title"
-                    style="@style/SideNavigation.Account.Title"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:gravity="center_vertical|left"
-                    android:text="@string/schedules_in_google" />
-
-
-            </LinearLayout>
-
-            <TextView
-                android:id="@+id/google_account_email"
-                android:layout_width="wrap_content"
-                android:layout_height="32dp"
-                android:layout_gravity="center_vertical"
-                android:layout_marginLeft="8dp"
-                android:gravity="center_vertical"
-                android:text="이메일 주소"
-                android:textSize="14sp" />
-
-
-            <LinearLayout
-                android:id="@+id/google_calendar_list"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="vertical" />
-
-            <TextView
-                android:id="@+id/connect_google"
-                style="@style/SideNavigation.Account.Sign"
-                android:layout_width="wrap_content"
-                android:layout_height="32dp"
-                android:layout_gravity="center_vertical"
-                android:background="?attr/selectableItemBackground"
-                android:clickable="true"
-                android:focusable="true"
-                android:gravity="center_vertical"
-                android:text="@string/connect" />
-
-            <TextView
-                android:id="@+id/disconnect_google"
-                style="@style/SideNavigation.Account.Sign"
-                android:layout_width="wrap_content"
-                android:layout_height="32dp"
-                android:layout_gravity="center_vertical"
-                android:background="?attr/selectableItemBackground"
-                android:clickable="true"
-                android:focusable="true"
-                android:gravity="center_vertical"
-                android:text="@string/disconnect" />
-
-        </LinearLayout>
-
-        <View
+        <ExpandableListView
+            android:id="@+id/side_nav_calendar_list"
             android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
-            android:background="@color/gray_500" />
-
-        <LinearLayout
-            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="4dp"
-            android:orientation="vertical">
-
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <ImageView
-                    android:id="@+id/device_icon"
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
-                    android:layout_gravity="center_vertical"
-                    android:background="@color/transparent"
-                    android:src="@drawable/icon_calendar_type" />
-
-
-                <TextView
-                    android:id="@+id/local_title"
-                    style="@style/SideNavigation.Account.Title"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:gravity="center_vertical"
-                    android:text="@string/schedules_in_device" />
-
-            </LinearLayout>
-
-            <com.google.android.material.checkbox.MaterialCheckBox
-                android:id="@+id/checkbox_show_local_schedules"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/show_schedules" />
-
-        </LinearLayout>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginTop="8dp"
-            android:background="@color/gray_500" />
-
+            android:childDivider="#0f0"
+            android:divider="#f00"
+            android:dividerHeight="1dp" />
 
     </LinearLayout>
 </layout>

@@ -8,6 +8,8 @@ import com.google.api.services.calendar.model.Calendar;
 import com.google.api.services.calendar.model.CalendarListEntry;
 import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.Events;
+import com.zerodsoft.scheduleweather.googlecalendar.dto.CalendarDto;
+import com.zerodsoft.scheduleweather.googlecalendar.dto.EventDto;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 
 import java.io.IOException;
@@ -17,16 +19,18 @@ import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-public class GoogleCalendarRepository
+public class CalendarRepository
 {
-    private MutableLiveData<DataWrapper<List<CustomGoogleCalendar>>> eventsLiveData;
-    private MutableLiveData<DataWrapper<Calendar>> calendarLiveData;
-    private MutableLiveData<DataWrapper<List<CalendarListEntry>>> calendarListLiveData;
+    private MutableLiveData<DataWrapper<List<EventDto>>> eventsLiveData;
+    private MutableLiveData<DataWrapper<CalendarDto>> calendarLiveData;
+    private MutableLiveData<DataWrapper<List<CalendarDto>>> calendarListLiveData;
+    private MutableLiveData<DataWrapper<EventDto>> eventLiveData;
 
     private GoogleCalendarApi googleCalendarApi;
+    private CalendarProvider calendarProvider;
     private IGoogleCalendar iGoogleCalendar;
 
-    public GoogleCalendarRepository(Activity activity)
+    public CalendarRepository(Activity activity)
     {
         this.iGoogleCalendar = (IGoogleCalendar) activity;
 
@@ -35,19 +39,20 @@ public class GoogleCalendarRepository
         calendarListLiveData = new MutableLiveData<>();
 
         googleCalendarApi = GoogleCalendarApi.newInstance(activity);
+        calendarProvider = CalendarProvider.newInstance(activity.getApplicationContext());
     }
 
-    public MutableLiveData<DataWrapper<Calendar>> getCalendarLiveData()
+    public MutableLiveData<DataWrapper<CalendarDto>> getCalendarLiveData()
     {
         return calendarLiveData;
     }
 
-    public MutableLiveData<DataWrapper<List<CalendarListEntry>>> getCalendarListLiveData()
+    public MutableLiveData<DataWrapper<List<CalendarDto>>> getCalendarListLiveData()
     {
         return calendarListLiveData;
     }
 
-    public MutableLiveData<DataWrapper<List<CustomGoogleCalendar>>> getEventsLiveData()
+    public MutableLiveData<DataWrapper<List<EventDto>>> getEventsLiveData()
     {
         return eventsLiveData;
     }
@@ -58,13 +63,20 @@ public class GoogleCalendarRepository
         iGoogleCalendar.onAccountSelectedState(true);
     }
 
+    public void disconnect()
+    {
+        googleCalendarApi.disconnect();
+    }
+
     public void chooseAccount()
     {
         googleCalendarApi.requestAccountPicker();
     }
 
-    public void getCalendarList()
+    public void getAllCalendars()
     {
+        /*
+        구글 캘린더 api 이용법
         Executor executor = Executors.newSingleThreadExecutor();
         executor.execute(new Runnable()
         {
@@ -83,10 +95,23 @@ public class GoogleCalendarRepository
                 calendarListLiveData.postValue(dataWrapper);
             }
         });
+         */
+        DataWrapper<List<CalendarDto>> dataWrapper = null;
+
+        try
+        {
+            List<CalendarDto> calendarList = calendarProvider.getAllCalendars();
+            dataWrapper = new DataWrapper<>(calendarList);
+        } catch (Exception e)
+        {
+            dataWrapper = new DataWrapper<>(e);
+        }
+        calendarListLiveData.setValue(dataWrapper);
     }
 
-    public void getEvents(String calendarId)
+    public void getAllEvents()
     {
+        /*
         Executor executor = Executors.newSingleThreadExecutor();
         executor.execute(new Runnable()
         {
@@ -115,10 +140,30 @@ public class GoogleCalendarRepository
                 eventsLiveData.postValue(dataWrapper);
             }
         });
+         */
+        DataWrapper<List<EventDto>> dataWrapper = null;
+
+        try
+        {
+            List<EventDto> eventsList = new ArrayList<>();
+            List<CalendarDto> calendarsList = calendarListLiveData.getValue().getData();
+            for (CalendarDto calendar : calendarsList)
+            {
+                EventDto eventDto = new EventDto();
+                eventsList.add(eventDto);
+            }
+
+            dataWrapper = new DataWrapper<>(eventsList);
+        } catch (Exception e)
+        {
+            dataWrapper = new DataWrapper<>(e);
+        }
+        eventsLiveData.setValue(dataWrapper);
     }
 
     public void getCalendar(String calendarId)
     {
+        /*
         Executor executor = Executors.newSingleThreadExecutor();
         executor.execute(new Runnable()
         {
@@ -137,10 +182,8 @@ public class GoogleCalendarRepository
                 calendarLiveData.postValue(dataWrapper);
             }
         });
+
+         */
     }
 
-    public void disconnect()
-    {
-        googleCalendarApi.disconnect();
-    }
 }

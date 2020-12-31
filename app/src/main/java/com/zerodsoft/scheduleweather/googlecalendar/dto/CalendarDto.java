@@ -6,6 +6,8 @@ import android.database.MatrixCursor;
 
 import org.mortbay.jetty.servlet.Context;
 
+import java.util.List;
+
 public class CalendarDto
 {
     private String ALLOWED_ATTENDEE_TYPES;
@@ -53,8 +55,21 @@ public class CalendarDto
     private String CAL_SYNC9;
     private String CAL_SYNC10;
 
+    private List<EventDto> events;
+
     public CalendarDto()
     {
+    }
+
+    public CalendarDto setEvents(List<EventDto> events)
+    {
+        this.events = events;
+        return this;
+    }
+
+    public List<EventDto> getEvents()
+    {
+        return events;
     }
 
     public String getALLOWED_ATTENDEE_TYPES()
