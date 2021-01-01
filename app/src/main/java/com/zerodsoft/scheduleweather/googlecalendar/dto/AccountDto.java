@@ -1,10 +1,13 @@
 package com.zerodsoft.scheduleweather.googlecalendar.dto;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class AccountDto
 {
-    private List<CalendarDto> calendars;
+    private List<CalendarDto> calendars = new ArrayList<>();
+    private String accountName;
+    private String accountType;
 
     public AccountDto()
     {
@@ -19,5 +22,32 @@ public class AccountDto
     {
         this.calendars = calendars;
         return this;
+    }
+
+    public String getAccountName()
+    {
+        return accountName;
+    }
+
+    public AccountDto setAccountName(String accountName)
+    {
+        this.accountName = accountName;
+        return this;
+    }
+
+    public String getAccountType()
+    {
+        return accountType;
+    }
+
+    public AccountDto setAccountType(String accountType)
+    {
+        this.accountType = accountType;
+        return this;
+    }
+
+    public void addCalendar(CalendarDto calendarDto)
+    {
+        calendars.add(calendarDto);
     }
 }

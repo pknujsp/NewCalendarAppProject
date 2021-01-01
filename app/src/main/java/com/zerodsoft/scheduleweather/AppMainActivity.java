@@ -10,6 +10,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Point;
 import android.os.Bundle;
+import android.util.ArraySet;
 import android.util.TypedValue;
 import android.view.MenuItem;
 import android.view.View;
@@ -28,12 +29,12 @@ import com.zerodsoft.scheduleweather.calendarfragment.DayFragment;
 import com.zerodsoft.scheduleweather.calendarfragment.MonthFragment;
 import com.zerodsoft.scheduleweather.calendarfragment.WeekFragment;
 import com.zerodsoft.scheduleweather.databinding.ActivityAppMainBinding;
-import com.zerodsoft.scheduleweather.databinding.SideNavHeaderBinding;
 import com.zerodsoft.scheduleweather.googlecalendar.CustomGoogleCalendar;
 import com.zerodsoft.scheduleweather.googlecalendar.GoogleCalendarApi;
 import com.zerodsoft.scheduleweather.googlecalendar.CalendarProvider;
 import com.zerodsoft.scheduleweather.googlecalendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.googlecalendar.IGoogleCalendar;
+import com.zerodsoft.scheduleweather.googlecalendar.dto.AccountDto;
 import com.zerodsoft.scheduleweather.googlecalendar.dto.CalendarDto;
 import com.zerodsoft.scheduleweather.googlecalendar.dto.EventDto;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
@@ -43,6 +44,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.lifecycle.Observer;
@@ -50,10 +52,14 @@ import androidx.lifecycle.ViewModelProvider;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
-public class AppMainActivity extends AppCompatActivity implements IGoogleCalendar
+public class AppMainActivity extends AppCompatActivity implements IGoogleCalendar, ICalendarCheckBox
 {
     private EventTransactionFragment calendarTransactionFragment;
 
@@ -61,7 +67,6 @@ public class AppMainActivity extends AppCompatActivity implements IGoogleCalenda
     private static int DISPLAY_HEIGHT = 0;
 
     private ActivityAppMainBinding mainBinding;
-    private SideNavHeaderBinding sideNavHeaderBinding;
     private CalendarViewModel calendarViewModel;
     private CalendarsAdapter calendarsAdapter;
 
@@ -80,13 +85,10 @@ public class AppMainActivity extends AppCompatActivity implements IGoogleCalenda
     {
         super.onCreate(savedInstanceState);
         mainBinding = DataBindingUtil.setContentView(this, R.layout.activity_app_main);
-        sideNavHeaderBinding = SideNavHeaderBinding.bind(mainBinding.sideNavigation.getHeaderView(0));
 
         init();
-        initCalendarViewModel();
         setNavigationView();
-
-        checkSavedGoogleAccount();
+        initCalendarViewModel();
 
         Point point = new Point();
         getWindowManager().getDefaultDisplay().getRealSize(point);
@@ -119,6 +121,17 @@ public class AppMainActivity extends AppCompatActivity implements IGoogleCalenda
         calendarViewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
         calendarViewModel.init(this);
 
+        //권한 확인
+        int permissionState = ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.READ_CALENDAR);
+        if (permissionState == PackageManager.PERMISSION_GRANTED)
+        {
+            calendarViewModel.getCalendarList();
+        } else
+        {
+            requestPermissions(new String[]{Manifest.permission.READ_CALENDAR}, CalendarProvider.REQUEST_READ_CALENDAR);
+        }
+
+
         calendarViewModel.getCalendarListLiveData().observe(this, new Observer<DataWrapper<List<CalendarDto>>>()
         {
             @Override
@@ -126,10 +139,103 @@ public class AppMainActivity extends AppCompatActivity implements IGoogleCalenda
             {
                 if (listDataWrapper.getData() != null)
                 {
-                    // 계속 작성
-                    calendarsAdapter = new CalendarsAdapter(getApplicationContext(), null);
-                    sideNavHeaderBinding.sideNavCalendarList.setAdapter(calendarsAdapter);
+                    List<AccountDto> accountList = new ArrayList<>();
+                    List<CalendarDto> calendarList = listDataWrapper.getData();
+
+                    for (CalendarDto calendar : calendarList)
+                    {
+                        String accountName = calendar.getACCOUNT_NAME();
+                        String accountType = calendar.getACCOUNT_TYPE();
+                        boolean isExistingAccount = false;
+
+                        for (AccountDto account : accountList)
+                        {
+                            if (account.getAccountName().equals(accountName) &&
+                                    account.getAccountType().equals(accountType))
+                            {
+                                isExistingAccount = true;
+                                account.addCalendar(calendar);
+                                break;
+                            }
+                        }
+
+                        if (!isExistingAccount)
+                        {
+                            AccountDto accountDto = new AccountDto();
+                            accountList.add(accountDto);
+
+                            accountDto.setAccountName(accountName).setAccountType(accountType);
+                            accountDto.addCalendar(calendar);
+                        }
+                    }
+                    calendarsAdapter = new CalendarsAdapter(AppMainActivity.this, accountList);
+
+
+                    SharedPreferences sharedPreferences = getSharedPreferences(CalendarProvider.SELECTED_CALENDARS, Context.MODE_PRIVATE);
+                    Set<String> selectedCalendarSet = sharedPreferences.getStringSet(CalendarProvider.SELECTED_CALENDARS, new HashSet<>());
+                    // 선택된 캘린더가 이미 있는지 확인
+
+                    if (selectedCalendarSet.isEmpty())
+                    {
+                        for (AccountDto accountDto : accountList)
+                        {
+                            List<CalendarDto> calendarDtoList = accountDto.getCalendars();
+                            for (CalendarDto calendarDto : calendarDtoList)
+                            {
+                                selectedCalendarSet.add(calendarDto.getACCOUNT_NAME()
+                                        + calendarDto.get_ID());
+                            }
+                        }
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        editor.putStringSet(CalendarProvider.SELECTED_CALENDARS, selectedCalendarSet);
+                        editor.commit();
+                    }
+
+                    boolean[][] checkBoxStates = new boolean[accountList.size()][];
+
+                    for (int i = 0; i < accountList.size(); i++)
+                    {
+                        checkBoxStates[i] = new boolean[accountList.get(i).getCalendars().size()];
+                    }
+
+                    for (String value : selectedCalendarSet)
+                    {
+                        int group = 0;
+
+                        for (AccountDto accountDto : accountList)
+                        {
+                            List<CalendarDto> calendarDtoList = accountDto.getCalendars();
+                            int child = 0;
+
+                            for (CalendarDto calendarDto : calendarDtoList)
+                            {
+                                if (value.equals(calendarDto.getACCOUNT_NAME() + calendarDto.get_ID()))
+                                {
+                                    checkBoxStates[group][child] = true;
+                                    break;
+                                }
+                                child++;
+                            }
+                            group++;
+                        }
+                    }
+
+                    calendarsAdapter.setCheckBoxStates(checkBoxStates);
+                    mainBinding.sideNavCalendarList.setAdapter(calendarsAdapter);
                     expandAllGroup();
+                    // calendarViewModel.getEvents();
+                }
+            }
+        });
+
+        calendarViewModel.getEventsLiveData().observe(this, new Observer<DataWrapper<List<EventDto>>>()
+        {
+            @Override
+            public void onChanged(DataWrapper<List<EventDto>> listDataWrapper)
+            {
+                if (listDataWrapper.getData() != null)
+                {
+
                 }
             }
         });
@@ -168,25 +274,18 @@ public class AppMainActivity extends AppCompatActivity implements IGoogleCalenda
             }
         });
 
-        calendarViewModel.getEventsLiveData().observe(this, new Observer<DataWrapper<List<EventDto>>>()
-        {
-            @Override
-            public void onChanged(DataWrapper<List<EventDto>> listDataWrapper)
-            {
-
-            }
-        });
 
          */
     }
 
+    /*
     private void checkSavedGoogleAccount()
     {
         String accountName = getPreferences(Context.MODE_PRIVATE).getString(GoogleCalendarApi.GOOGLE_ACCOUNT_NAME, "");
         if (!accountName.isEmpty())
         {
             // 저장된 계정이 있는 경우
-            int permission = ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.GET_ACCOUNTS);
+            int permission = ContextCompat.checkSelfPermission(this, Manifest.permission.GET_ACCOUNTS);
             if (permission == PackageManager.PERMISSION_GRANTED)
             {
                 try
@@ -206,10 +305,11 @@ public class AppMainActivity extends AppCompatActivity implements IGoogleCalenda
 
         }
     }
+     */
 
     private void setNavigationView()
     {
-        sideNavHeaderBinding.sideNavCalendarList.setOnChildClickListener(new ExpandableListView.OnChildClickListener()
+        mainBinding.sideNavCalendarList.setOnChildClickListener(new ExpandableListView.OnChildClickListener()
         {
             @Override
             public boolean onChildClick(ExpandableListView expandableListView, View view, int i, int i1, long l)
@@ -218,7 +318,7 @@ public class AppMainActivity extends AppCompatActivity implements IGoogleCalenda
             }
         });
 
-        sideNavHeaderBinding.sideNavCalendarList.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener()
+        mainBinding.sideNavCalendarList.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener()
         {
             @Override
             public boolean onGroupClick(ExpandableListView expandableListView, View view, int i, long l)
@@ -304,7 +404,7 @@ public class AppMainActivity extends AppCompatActivity implements IGoogleCalenda
         int groupSize = calendarsAdapter.getGroupCount();
         for (int i = 0; i < groupSize; i++)
         {
-            sideNavHeaderBinding.sideNavCalendarList.expandGroup(i);
+            mainBinding.sideNavCalendarList.expandGroup(i);
         }
     }
 
@@ -313,7 +413,7 @@ public class AppMainActivity extends AppCompatActivity implements IGoogleCalenda
         int groupSize = calendarsAdapter.getGroupCount();
         for (int i = 0; i < groupSize; i++)
         {
-            sideNavHeaderBinding.sideNavCalendarList.collapseGroup(i);
+            mainBinding.sideNavCalendarList.collapseGroup(i);
         }
     }
 
@@ -449,6 +549,29 @@ public class AppMainActivity extends AppCompatActivity implements IGoogleCalenda
                     // 권한 거부됨
                 }
                 break;
+
+            case CalendarProvider.REQUEST_READ_CALENDAR:
+                if (grantResults.length > 0 &&
+                        grantResults[0] == PackageManager.PERMISSION_GRANTED)
+                {
+                    // 권한 허용됨
+                    calendarViewModel.getCalendarList();
+                } else
+                {
+                    // 권한 거부됨
+                }
+                break;
+
+            case CalendarProvider.REQUEST_WRITE_CALENDAR:
+                if (grantResults.length > 0 &&
+                        grantResults[0] == PackageManager.PERMISSION_GRANTED)
+                {
+                    // 권한 허용됨
+                } else
+                {
+                    // 권한 거부됨
+                }
+                break;
         }
     }
 
@@ -463,6 +586,39 @@ public class AppMainActivity extends AppCompatActivity implements IGoogleCalenda
         {
 
         }
+    }
+
+    @Override
+    public void onCheckedBox(String value, boolean state)
+    {
+        SharedPreferences sharedPreferences = getSharedPreferences(CalendarProvider.SELECTED_CALENDARS, Context.MODE_PRIVATE);
+        Set<String> selectedCalendarSet = sharedPreferences.getStringSet(CalendarProvider.SELECTED_CALENDARS, new HashSet<>());
+
+        //set가 비워져있지는 않는지 검사
+        if (!selectedCalendarSet.isEmpty())
+        {
+            for (String v : selectedCalendarSet)
+            {
+                if (v.equals(value))
+                {
+                    if (!state)
+                    {
+                        // 같은 값을 가진 것이 이미 추가되어있는 경우 선택해제 하는 것이므로 삭제한다.
+                        selectedCalendarSet.remove(value);
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        sharedPreferences.getStringSet(CalendarProvider.SELECTED_CALENDARS, selectedCalendarSet);
+                        editor.putStringSet(CalendarProvider.SELECTED_CALENDARS, selectedCalendarSet);
+                        editor.commit();
+                    }
+                    return;
+                }
+            }
+        }
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+
+        selectedCalendarSet.add(value);
+        editor.putStringSet(CalendarProvider.SELECTED_CALENDARS, selectedCalendarSet);
+        editor.commit();
     }
 }
 

@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.provider.CalendarContract;
 
+import com.zerodsoft.scheduleweather.googlecalendar.dto.AccountDto;
 import com.zerodsoft.scheduleweather.googlecalendar.dto.CalendarDto;
 import com.zerodsoft.scheduleweather.googlecalendar.dto.EventDto;
 
@@ -15,6 +16,8 @@ public class CalendarProvider
 {
     private static CalendarProvider instance;
     public static final int REQUEST_READ_CALENDAR = 200;
+    public static final int REQUEST_WRITE_CALENDAR = 300;
+    public static final String SELECTED_CALENDARS = "SELECTED_CALENDARS";
 
     private final Context CONTEXT;
     private final String[] EVENTS_PROJECTION =
@@ -143,4 +146,5 @@ public class CalendarProvider
         cursor.close();
         return calendarsList;
     }
+
 }

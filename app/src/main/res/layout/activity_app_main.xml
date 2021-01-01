@@ -26,16 +26,19 @@
                 android:layout_height="0dp"
                 android:layout_weight="1" />
 
-
         </LinearLayout>
 
         <com.google.android.material.navigation.NavigationView
             android:id="@+id/side_navigation"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:layout_gravity="start"
-            app:headerLayout="@layout/side_nav_header"
-            app:menu="@menu/side_navigation_drawer">
+            android:layout_gravity="start">
+
+            <ExpandableListView
+                android:id="@+id/side_nav_calendar_list"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:dividerHeight="1dp" />
 
         </com.google.android.material.navigation.NavigationView>
 
