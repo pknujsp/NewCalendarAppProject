@@ -39,7 +39,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:gravity="top|left"
-                        android:text="@string/schedule_info_time"
+                        android:text="@string/time"
                         android:textColor="@color/black_medium_emphasis"
                         android:textSize="13sp" />
 
@@ -66,7 +66,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:gravity="top|left"
-                        android:text="@string/schedule_info_content"
+                        android:text="@string/description"
                         android:textColor="@color/black_medium_emphasis"
                         android:textSize="13sp" />
 
@@ -94,7 +94,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:gravity="top|left"
-                        android:text="@string/schedule_info_location"
+                        android:text="@string/location"
                         android:textColor="@color/black_medium_emphasis"
                         android:textSize="13sp" />
 
@@ -121,7 +121,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:gravity="top|left"
-                        android:text="@string/schedule_info_alarm"
+                        android:text="@string/reminder"
                         android:textColor="@color/black_medium_emphasis"
                         android:textSize="13sp" />
 
@@ -148,7 +148,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:gravity="top|left"
-                        android:text="@string/schedule_info_account"
+                        android:text="@string/calendar"
                         android:textColor="@color/black_medium_emphasis"
                         android:textSize="13sp" />
 

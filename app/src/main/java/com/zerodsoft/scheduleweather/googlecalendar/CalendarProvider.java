@@ -1,8 +1,12 @@
 package com.zerodsoft.scheduleweather.googlecalendar;
 
 import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
+import android.content.EntityIterator;
 import android.database.Cursor;
+import android.net.Uri;
+import android.os.IBinder;
 import android.provider.CalendarContract;
 
 import com.zerodsoft.scheduleweather.googlecalendar.dto.AccountDto;
@@ -10,6 +14,8 @@ import com.zerodsoft.scheduleweather.googlecalendar.dto.CalendarDto;
 import com.zerodsoft.scheduleweather.googlecalendar.dto.EventDto;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 public class CalendarProvider
@@ -68,23 +74,38 @@ public class CalendarProvider
         this.CONTEXT = CONTEXT;
     }
 
-    public EventDto getEvent(int id, int calendarId, String ownerAccount)
+    public ContentValues getEvent(int calendarId, int eventId, String ownerAccount)
     {
         // 화면에 이벤트 정보를 표시하기 위해 기본적인 데이터만 가져온다.
         // 요청 매개변수 : ID, 캘린더 ID, 오너 계정, 조직자
         // 표시할 데이터 : 제목, 일정 기간, 반복, 위치, 알림, 설명, 소유 계정, 참석자, 바쁨/한가함, 공개 범위 참석 여부 확인 창, 색상
-        String[] selectionArgs = new String[]{Integer.toString(id), Integer.toString(calendarId), ownerAccount};
+        String[] selectionArgs = new String[]{Integer.toString(eventId), Integer.toString(calendarId), ownerAccount};
 
         ContentResolver contentResolver = CONTEXT.getContentResolver();
         Cursor cursor = contentResolver.query(CalendarContract.Events.CONTENT_URI, null, EVENT_QUERY, selectionArgs, null);
-        EventDto eventDto = new EventDto();
+        ContentValues contentValues = new ContentValues();
 
         while (cursor.moveToNext())
         {
-            eventDto.setTITLE(cursor.getString(cursor.getColumnIndex(CalendarContract.Events.TITLE)));
+            contentValues.put(CalendarContract.Events.TITLE, cursor.getString(cursor.getColumnIndex(CalendarContract.Events.TITLE)));
+            contentValues.put(CalendarContract.Events.CALENDAR_ID, cursor.getInt(cursor.getColumnIndex(CalendarContract.Events.CALENDAR_ID)));
+            contentValues.put(CalendarContract.Events.DTSTART, cursor.getLong(cursor.getColumnIndex(CalendarContract.Events.DTSTART)));
+            contentValues.put(CalendarContract.Events.DTEND, cursor.getLong(cursor.getColumnIndex(CalendarContract.Events.DTEND)));
+            contentValues.put(CalendarContract.Events.ALL_DAY, 1 == cursor.getInt(cursor.getColumnIndex(CalendarContract.Events.ALL_DAY)));
+            contentValues.put(CalendarContract.Events.EVENT_TIMEZONE, cursor.getString(cursor.getColumnIndex(CalendarContract.Events.EVENT_TIMEZONE)));
+            contentValues.put(CalendarContract.Events.EVENT_END_TIMEZONE, cursor.getString(cursor.getColumnIndex(CalendarContract.Events.EVENT_END_TIMEZONE)));
+            contentValues.put(CalendarContract.Events.RDATE, cursor.getString(cursor.getColumnIndex(CalendarContract.Events.RDATE)));
+            contentValues.put(CalendarContract.Events.RRULE, cursor.getString(cursor.getColumnIndex(CalendarContract.Events.RRULE)));
+            contentValues.put(CalendarContract.Events.EXDATE, cursor.getString(cursor.getColumnIndex(CalendarContract.Events.EXDATE)));
+            contentValues.put(CalendarContract.Events.EXRULE, cursor.getString(cursor.getColumnIndex(CalendarContract.Events.EXRULE)));
+            contentValues.put(CalendarContract.Events.HAS_ATTENDEE_DATA, 1 == cursor.getInt(cursor.getColumnIndex(CalendarContract.Events.HAS_ATTENDEE_DATA)));
+            contentValues.put(CalendarContract.Events.EVENT_LOCATION, cursor.getString(cursor.getColumnIndex(CalendarContract.Events.EVENT_LOCATION)));
+            contentValues.put(CalendarContract.Events.DESCRIPTION, cursor.getString(cursor.getColumnIndex(CalendarContract.Events.DESCRIPTION)));
+            contentValues.put(CalendarContract.Events.ACCESS_LEVEL, cursor.getInt(cursor.getColumnIndex(CalendarContract.Events.ACCESS_LEVEL)));
+            contentValues.put(CalendarContract.Events.AVAILABILITY, cursor.getInt(cursor.getColumnIndex(CalendarContract.Events.AVAILABILITY)));
         }
         cursor.close();
-        return eventDto;
+        return contentValues;
     }
 
     public List<EventDto> getEvents(String accountName, String accountType, int calendarId, String ownerAccount)
@@ -147,4 +168,41 @@ public class CalendarProvider
         return calendarsList;
     }
 
+    public long addEvent(EventDto eventDto)
+    {
+        ContentValues values = new ContentValues();
+
+        values.put(CalendarContract.Events.DTSTART, eventDto.getDTSTART());
+        values.put(CalendarContract.Events.DTEND, eventDto.getDTEND());
+        values.put(CalendarContract.Events.RRULE, eventDto.getRRULE());
+        values.put(CalendarContract.Events.TITLE, eventDto.getTITLE());
+        values.put(CalendarContract.Events.EVENT_LOCATION, eventDto.getEVENT_LOCATION());
+        values.put(CalendarContract.Events.CALENDAR_ID, eventDto.getCALENDAR_ID());
+        values.put(CalendarContract.Events.EVENT_TIMEZONE, eventDto.getEVENT_TIMEZONE());
+        values.put(CalendarContract.Events.DESCRIPTION,
+                eventDto.getDESCRIPTION());
+        values.put(CalendarContract.Events.ACCESS_LEVEL, eventDto.getACCESS_LEVEL());
+        values.put(CalendarContract.Events.SELF_ATTENDEE_STATUS,
+                eventDto.getSELF_ATTENDEE_STATUS());
+        values.put(CalendarContract.Events.ALL_DAY, eventDto.isALL_DAY());
+        values.put(CalendarContract.Events.ORGANIZER, eventDto.getORGANIZER());
+        values.put(CalendarContract.Events.GUESTS_CAN_INVITE_OTHERS, eventDto.isGUESTS_CAN_INVITE_OTHERS());
+        values.put(CalendarContract.Events.GUESTS_CAN_MODIFY, eventDto.isGUESTS_CAN_MODIFY());
+        values.put(CalendarContract.Events.AVAILABILITY, eventDto.getAVAILABILITY());
+
+        ContentResolver contentResolver = CONTEXT.getContentResolver();
+        Uri uri = contentResolver.insert(CalendarContract.Events.CONTENT_URI, values);
+
+        long eventID = Long.parseLong(uri.getLastPathSegment());
+        return eventID;
+    }
+
+
+    private Uri asSyncAdapter(Uri uri, String accountName, String accountType)
+    {
+        return uri.buildUpon()
+                .appendQueryParameter(android.provider.CalendarContract.CALLER_IS_SYNCADAPTER, "true")
+                .appendQueryParameter(CalendarContract.Calendars.ACCOUNT_NAME, accountName)
+                .appendQueryParameter(CalendarContract.Calendars.ACCOUNT_TYPE, accountType).build();
+    }
 }

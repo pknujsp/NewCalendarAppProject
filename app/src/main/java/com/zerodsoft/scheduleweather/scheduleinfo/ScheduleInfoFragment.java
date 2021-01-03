@@ -1,10 +1,7 @@
 package com.zerodsoft.scheduleweather.scheduleinfo;
 
-import android.content.Context;
 import android.os.Bundle;
 
-import androidx.activity.OnBackPressedCallback;
-import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
 import android.view.LayoutInflater;
@@ -71,10 +68,10 @@ public class ScheduleInfoFragment extends Fragment
 
         if (schedule.getStartDate().equals(schedule.getEndDate()))
         {
-            time = ClockUtil.dateFormat3.format(schedule.getStartDate());
+            time = ClockUtil.DATE_FORMAT_ALLDAY.format(schedule.getStartDate());
         } else
         {
-            time = ClockUtil.dateFormat2.format(schedule.getStartDate()) + " -> " + ClockUtil.dateFormat2.format(schedule.getEndDate());
+            time = ClockUtil.DATE_FORMAT_NOT_ALLDAY.format(schedule.getStartDate()) + " -> " + ClockUtil.DATE_FORMAT_NOT_ALLDAY.format(schedule.getEndDate());
         }
         binding.scheduleTime.setText(time);
 
@@ -107,7 +104,7 @@ public class ScheduleInfoFragment extends Fragment
         } else
         {
             binding.scheduleAlarm.setText("");
-            binding.scheduleAlarm.setHint(R.string.noti_time_not_selected);
+            binding.scheduleAlarm.setHint(R.string.not_reminder);
         }
         // 계정
         if (schedule.getCategory() == ScheduleDTO.GOOGLE_CATEGORY)

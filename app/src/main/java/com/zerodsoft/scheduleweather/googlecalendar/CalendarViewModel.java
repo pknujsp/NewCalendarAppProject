@@ -1,6 +1,7 @@
 package com.zerodsoft.scheduleweather.googlecalendar;
 
 import android.app.Activity;
+import android.content.ContentValues;
 
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
@@ -20,7 +21,7 @@ public class CalendarViewModel extends ViewModel
     private MutableLiveData<DataWrapper<List<EventDto>>> eventsLiveData;
     private MutableLiveData<DataWrapper<CalendarDto>> calendarLiveData;
     private MutableLiveData<DataWrapper<List<CalendarDto>>> calendarListLiveData;
-    private MutableLiveData<DataWrapper<EventDto>> eventLiveData;
+    private MutableLiveData<DataWrapper<ContentValues>> eventLiveData;
     private CalendarRepository repository;
 
     public CalendarViewModel()
@@ -35,6 +36,7 @@ public class CalendarViewModel extends ViewModel
         eventsLiveData = repository.getEventsLiveData();
         calendarLiveData = repository.getCalendarLiveData();
         calendarListLiveData = repository.getCalendarListLiveData();
+        eventLiveData = repository.getEventLiveData();
     }
 
     public MutableLiveData<DataWrapper<List<EventDto>>> getEventsLiveData()
@@ -52,7 +54,7 @@ public class CalendarViewModel extends ViewModel
         return calendarListLiveData;
     }
 
-    public MutableLiveData<DataWrapper<EventDto>> getEventLiveData()
+    public MutableLiveData<DataWrapper<ContentValues>> getEventLiveData()
     {
         return eventLiveData;
     }
@@ -81,5 +83,10 @@ public class CalendarViewModel extends ViewModel
     public void disconnect()
     {
         repository.disconnect();
+    }
+
+    public void getEvent(int calendarId, int eventId, String accountName)
+    {
+        repository.getEvent(calendarId, eventId, accountName);
     }
 }

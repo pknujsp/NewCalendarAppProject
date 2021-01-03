@@ -76,18 +76,18 @@ public class ScheduleAlarm
         result = "";
         if (ScheduleAlarm.getDAY() != 0)
         {
-            result += ScheduleAlarm.getDAY() + context.getString(R.string.notification_type_day) + " ";
+            result += ScheduleAlarm.getDAY() + context.getString(R.string.day) + " ";
         }
         if (ScheduleAlarm.getHOUR() != 0)
         {
-            result += ScheduleAlarm.getHOUR() + context.getString(R.string.notification_type_hour) + " ";
+            result += ScheduleAlarm.getHOUR() + context.getString(R.string.hour) + " ";
         }
         if (ScheduleAlarm.getMINUTE() != 0)
         {
-            result += ScheduleAlarm.getMINUTE() + context.getString(R.string.notification_type_minute) + " ";
+            result += ScheduleAlarm.getMINUTE() + context.getString(R.string.minute) + " ";
         }
 
-        return result += context.getString(R.string.notification_before);
+        return result += context.getString(R.string.remind_before);
     }
 
 

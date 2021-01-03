@@ -13,7 +13,7 @@ public class EventDto
     // 접근 수준 (참석자만, 공개, 기본)
     private int ACCESS_LEVEL;
     // 하루종일 일정인지 여부
-    private int ALL_DAY;
+    private boolean ALL_DAY;
     // 일정 상태 : 바쁨, 자유, 가변적
     private int AVAILABILITY;
     // 이벤트가 저장될 캘린더의 ID
@@ -162,12 +162,12 @@ public class EventDto
         return this;
     }
 
-    public int getALL_DAY()
+    public boolean isALL_DAY()
     {
         return ALL_DAY;
     }
 
-    public EventDto setALL_DAY(int ALL_DAY)
+    public EventDto setALL_DAY(boolean ALL_DAY)
     {
         this.ALL_DAY = ALL_DAY;
         return this;
@@ -677,5 +677,11 @@ public class EventDto
     {
         this.CAL_SYNC10 = CAL_SYNC10;
         return this;
+    }
+
+    @Override
+    public Object clone() throws CloneNotSupportedException
+    {
+        return super.clone();
     }
 }

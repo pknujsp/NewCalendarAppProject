@@ -24,10 +24,10 @@ import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
 import com.zerodsoft.scheduleweather.utility.ScheduleAlarm;
 
 
-public class NotificationFragment extends DialogFragment
+public class ReminderFragment extends DialogFragment
 {
     public static final String TAG = "NotificationFragment";
-    private static NotificationFragment notificationFragment = new NotificationFragment();
+    private static ReminderFragment reminderFragment = new ReminderFragment();
     private FragmentNotificationBinding fragmentBinding;
     private OnNotificationTimeListener onNotificationTimeListener;
 
@@ -37,9 +37,9 @@ public class NotificationFragment extends DialogFragment
     private int hour;
     private int minute;
 
-    public static NotificationFragment getInstance()
+    public static ReminderFragment getInstance()
     {
-        return notificationFragment;
+        return reminderFragment;
     }
 
     @SuppressLint("HandlerLeak")
@@ -55,7 +55,7 @@ public class NotificationFragment extends DialogFragment
 
     public interface OnNotificationTimeListener
     {
-        public void onNotiTimeSelected();
+        public void onReminderSelected();
     }
 
     @Override
@@ -112,7 +112,7 @@ public class NotificationFragment extends DialogFragment
             public void onClick(View view)
             {
                 ScheduleAlarm.init(day, hour, minute);
-                onNotificationTimeListener.onNotiTimeSelected();
+                onNotificationTimeListener.onReminderSelected();
                 dismiss();
             }
         });

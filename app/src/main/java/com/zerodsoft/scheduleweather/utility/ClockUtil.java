@@ -18,8 +18,8 @@ public class ClockUtil
     public static final SimpleDateFormat H_FORMAT = new SimpleDateFormat("H");
     public static final SimpleDateFormat WEATHER_DATE_FORMAT = new SimpleDateFormat("MMdd");
     public static final SimpleDateFormat MdE_FORMAT = new SimpleDateFormat("M/d E");
-    public static final SimpleDateFormat dateFormat2 = new SimpleDateFormat("yyyy년 M월 d일 E a h시 m분");
-    public static final SimpleDateFormat dateFormat3 = new SimpleDateFormat("yyyy년 M월 d일 E");
+    public static final SimpleDateFormat DATE_FORMAT_NOT_ALLDAY = new SimpleDateFormat("yyyy년 M월 d일 E a h시 m분");
+    public static final SimpleDateFormat DATE_FORMAT_ALLDAY = new SimpleDateFormat("yyyy년 M월 d일 E");
     public static final SimpleDateFormat DB_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     public static final SimpleDateFormat DATE_DAY_OF_WEEK_FORMAT = new SimpleDateFormat("d E");
     public static final SimpleDateFormat DAY_OF_MONTH_FORMAT = new SimpleDateFormat("d");

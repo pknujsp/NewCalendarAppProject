@@ -3,33 +3,24 @@ package com.zerodsoft.scheduleweather;
 import android.Manifest;
 import android.accounts.AccountManager;
 import android.annotation.SuppressLint;
-import android.app.ExpandableListActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Point;
 import android.os.Bundle;
-import android.util.ArraySet;
-import android.util.TypedValue;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ExpandableListView;
-import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import com.google.android.material.checkbox.MaterialCheckBox;
 import com.google.android.material.navigation.NavigationView;
-import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
-import com.google.api.services.calendar.model.CalendarListEntry;
-import com.zerodsoft.scheduleweather.activity.editschedule.ScheduleEditActivity;
+import com.zerodsoft.scheduleweather.activity.editevent.EventActivity;
 import com.zerodsoft.scheduleweather.calendarfragment.EventTransactionFragment;
 import com.zerodsoft.scheduleweather.calendarfragment.DayFragment;
 import com.zerodsoft.scheduleweather.calendarfragment.MonthFragment;
 import com.zerodsoft.scheduleweather.calendarfragment.WeekFragment;
 import com.zerodsoft.scheduleweather.databinding.ActivityAppMainBinding;
-import com.zerodsoft.scheduleweather.googlecalendar.CustomGoogleCalendar;
 import com.zerodsoft.scheduleweather.googlecalendar.GoogleCalendarApi;
 import com.zerodsoft.scheduleweather.googlecalendar.CalendarProvider;
 import com.zerodsoft.scheduleweather.googlecalendar.CalendarViewModel;
@@ -45,7 +36,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
@@ -55,7 +45,6 @@ import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -131,7 +120,6 @@ public class AppMainActivity extends AppCompatActivity implements IGoogleCalenda
             requestPermissions(new String[]{Manifest.permission.READ_CALENDAR}, CalendarProvider.REQUEST_READ_CALENDAR);
         }
 
-
         calendarViewModel.getCalendarListLiveData().observe(this, new Observer<DataWrapper<List<CalendarDto>>>()
         {
             @Override
@@ -171,8 +159,8 @@ public class AppMainActivity extends AppCompatActivity implements IGoogleCalenda
                     calendarsAdapter = new CalendarsAdapter(AppMainActivity.this, accountList);
 
 
-                    SharedPreferences sharedPreferences = getSharedPreferences(CalendarProvider.SELECTED_CALENDARS, Context.MODE_PRIVATE);
-                    Set<String> selectedCalendarSet = sharedPreferences.getStringSet(CalendarProvider.SELECTED_CALENDARS, new HashSet<>());
+                    SharedPreferences sharedPreferences = getSharedPreferences(getString(R.string.preferences_selected_caledars_key), Context.MODE_PRIVATE);
+                    Set<String> selectedCalendarSet = sharedPreferences.getStringSet(getString(R.string.preferences_selected_caledars_key), new HashSet<>());
                     // 선택된 캘린더가 이미 있는지 확인
 
                     if (selectedCalendarSet.isEmpty())
@@ -187,7 +175,7 @@ public class AppMainActivity extends AppCompatActivity implements IGoogleCalenda
                             }
                         }
                         SharedPreferences.Editor editor = sharedPreferences.edit();
-                        editor.putStringSet(CalendarProvider.SELECTED_CALENDARS, selectedCalendarSet);
+                        editor.putStringSet(getString(R.string.preferences_selected_caledars_key), selectedCalendarSet);
                         editor.commit();
                     }
 
@@ -428,9 +416,9 @@ public class AppMainActivity extends AppCompatActivity implements IGoogleCalenda
             case R.id.calendar_month:
                 break;
             case R.id.add_schedule:
-                Intent intent = new Intent(AppMainActivity.this, ScheduleEditActivity.class);
-                intent.putExtra("requestCode", ScheduleEditActivity.ADD_SCHEDULE);
-                startActivityForResult(intent, ScheduleEditActivity.ADD_SCHEDULE);
+                Intent intent = new Intent(AppMainActivity.this, EventActivity.class);
+                intent.putExtra("requestCode", EventActivity.NEW_EVENT);
+                startActivityForResult(intent, EventActivity.NEW_EVENT);
                 break;
             case R.id.go_to_today:
                 calendarTransactionFragment.goToToday();
@@ -499,7 +487,7 @@ public class AppMainActivity extends AppCompatActivity implements IGoogleCalenda
             case RESULT_OK:
                 switch (requestCode)
                 {
-                    case ScheduleEditActivity.ADD_SCHEDULE:
+                    case EventActivity.NEW_EVENT:
                         //새로운 일정이 추가됨 -> 달력 이벤트 갱신
                         calendarTransactionFragment.refreshCalendar((Date) data.getSerializableExtra("startDate"));
                         break;
@@ -591,8 +579,8 @@ public class AppMainActivity extends AppCompatActivity implements IGoogleCalenda
     @Override
     public void onCheckedBox(String value, boolean state)
     {
-        SharedPreferences sharedPreferences = getSharedPreferences(CalendarProvider.SELECTED_CALENDARS, Context.MODE_PRIVATE);
-        Set<String> selectedCalendarSet = sharedPreferences.getStringSet(CalendarProvider.SELECTED_CALENDARS, new HashSet<>());
+        SharedPreferences sharedPreferences = getSharedPreferences(getString(R.string.preferences_selected_caledars_key), Context.MODE_PRIVATE);
+        Set<String> selectedCalendarSet = sharedPreferences.getStringSet(getString(R.string.preferences_selected_caledars_key), new HashSet<>());
 
         //set가 비워져있지는 않는지 검사
         if (!selectedCalendarSet.isEmpty())
@@ -606,19 +594,24 @@ public class AppMainActivity extends AppCompatActivity implements IGoogleCalenda
                         // 같은 값을 가진 것이 이미 추가되어있는 경우 선택해제 하는 것이므로 삭제한다.
                         selectedCalendarSet.remove(value);
                         SharedPreferences.Editor editor = sharedPreferences.edit();
-                        sharedPreferences.getStringSet(CalendarProvider.SELECTED_CALENDARS, selectedCalendarSet);
-                        editor.putStringSet(CalendarProvider.SELECTED_CALENDARS, selectedCalendarSet);
+                        editor.remove(getString(R.string.preferences_selected_caledars_key));
                         editor.commit();
+                        SharedPreferences.Editor editor2 = sharedPreferences.edit();
+                        editor2.putStringSet(getString(R.string.preferences_selected_caledars_key), selectedCalendarSet);
+                        editor2.commit();
                     }
                     return;
                 }
             }
         }
         SharedPreferences.Editor editor = sharedPreferences.edit();
-
         selectedCalendarSet.add(value);
-        editor.putStringSet(CalendarProvider.SELECTED_CALENDARS, selectedCalendarSet);
+        editor.remove(getString(R.string.preferences_selected_caledars_key));
         editor.commit();
+        SharedPreferences.Editor editor2 = sharedPreferences.edit();
+        editor2.putStringSet(getString(R.string.preferences_selected_caledars_key), selectedCalendarSet);
+        editor2.commit();
     }
+
 }
 

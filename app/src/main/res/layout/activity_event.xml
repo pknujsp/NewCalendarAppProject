@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".activity.editevent.EventActivity">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/event_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/toolbar_height"
+            android:layout_alignParentTop="true" />
+
+        <ScrollView
+            android:id="@+id/schedule_scroll_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/event_toolbar">
+
+            <LinearLayout
+                android:id="@+id/schedule_root_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingLeft="8dp">
+
+                <include
+                    android:id="@+id/title_layout"
+                    layout="@layout/edit_event_title" />
+
+                <include
+                    android:id="@+id/calendar_layout"
+                    layout="@layout/edit_event_calendar" />
+
+                <include
+                    android:id="@+id/time_layout"
+                    layout="@layout/edit_event_time" />
+
+                <include
+                    android:id="@+id/repeater_layout"
+                    layout="@layout/edit_event_repeater" />
+
+                <include
+                    android:id="@+id/reminder_layout"
+                    layout="@layout/edit_event_reminder" />
+
+                <include
+                    android:id="@+id/description_layout"
+                    layout="@layout/edit_event_description" />
+
+                <include
+                    android:id="@+id/location_layout"
+                    layout="@layout/edit_event_location" />
+
+                <include
+                    android:id="@+id/attendee_layout"
+                    layout="@layout/edit_event_attendee" />
+
+                <include
+                    android:id="@+id/accesslevel_layout"
+                    layout="@layout/edit_event_accesslevel" />
+
+                <include
+                    android:id="@+id/availability_layout"
+                    layout="@layout/edit_event_availability" />
+            </LinearLayout>
+        </ScrollView>
+    </RelativeLayout>
+</layout>

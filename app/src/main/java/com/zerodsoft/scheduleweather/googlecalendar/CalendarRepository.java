@@ -1,6 +1,8 @@
 package com.zerodsoft.scheduleweather.googlecalendar;
 
 import android.app.Activity;
+import android.content.ContentValues;
+import android.content.Context;
 
 import androidx.lifecycle.MutableLiveData;
 
@@ -24,19 +26,22 @@ public class CalendarRepository
     private MutableLiveData<DataWrapper<List<EventDto>>> eventsLiveData;
     private MutableLiveData<DataWrapper<CalendarDto>> calendarLiveData;
     private MutableLiveData<DataWrapper<List<CalendarDto>>> calendarListLiveData;
-    private MutableLiveData<DataWrapper<EventDto>> eventLiveData;
+    private MutableLiveData<DataWrapper<ContentValues>> eventLiveData;
 
     private GoogleCalendarApi googleCalendarApi;
     private CalendarProvider calendarProvider;
     private IGoogleCalendar iGoogleCalendar;
+    private Context context;
 
     public CalendarRepository(Activity activity)
     {
         this.iGoogleCalendar = (IGoogleCalendar) activity;
+        this.context = activity.getApplicationContext();
 
         eventsLiveData = new MutableLiveData<>();
         calendarLiveData = new MutableLiveData<>();
         calendarListLiveData = new MutableLiveData<>();
+        eventLiveData = new MutableLiveData<>();
 
         googleCalendarApi = GoogleCalendarApi.newInstance(activity);
         calendarProvider = CalendarProvider.newInstance(activity.getApplicationContext());
@@ -71,6 +76,12 @@ public class CalendarRepository
     public void chooseAccount()
     {
         googleCalendarApi.requestAccountPicker();
+    }
+
+
+    public void getEvents()
+    {
+        // sharedpreferences에서 선택된 캘린더를 가져옴
     }
 
     public void getAllCalendars()
@@ -186,4 +197,13 @@ public class CalendarRepository
          */
     }
 
+    public void getEvent(int calendarId, int eventId, String accountName)
+    {
+        eventLiveData.setValue(new DataWrapper<>(calendarProvider.getEvent(calendarId, eventId, accountName)));
+    }
+
+    public MutableLiveData<DataWrapper<ContentValues>> getEventLiveData()
+    {
+        return eventLiveData;
+    }
 }

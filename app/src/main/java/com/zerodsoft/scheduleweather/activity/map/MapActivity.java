@@ -6,7 +6,7 @@ import androidx.fragment.app.FragmentManager;
 
 import android.os.Bundle;
 
-import com.zerodsoft.scheduleweather.activity.editschedule.ScheduleEditActivity;
+import com.zerodsoft.scheduleweather.activity.editevent.EventActivity;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.ICatchedLocation;
 import com.zerodsoft.scheduleweather.activity.map.fragment.map.MapFragment;
 import com.zerodsoft.scheduleweather.R;
@@ -108,7 +108,7 @@ public class MapActivity extends AppCompatActivity implements ICatchedLocation
             bundle.putParcelable("place", (PlaceDTO) locationDTO);
         }
         getIntent().putExtras(bundle);
-        setResult(ScheduleEditActivity.LOCATION_SELECTED, getIntent());
+        setResult(EventActivity.LOCATION_SELECTED, getIntent());
         finish();
     }
 }
