@@ -27,7 +27,7 @@ import com.zerodsoft.scheduleweather.utility.ScheduleAlarm;
 public class ReminderFragment extends DialogFragment
 {
     public static final String TAG = "NotificationFragment";
-    private static ReminderFragment reminderFragment = new ReminderFragment();
+    private static ReminderFragment instance;
     private FragmentNotificationBinding fragmentBinding;
     private OnNotificationTimeListener onNotificationTimeListener;
 
@@ -39,7 +39,12 @@ public class ReminderFragment extends DialogFragment
 
     public static ReminderFragment getInstance()
     {
-        return reminderFragment;
+        return instance;
+    }
+
+    public static ReminderFragment newInstance()
+    {
+        return instance;
     }
 
     @SuppressLint("HandlerLeak")

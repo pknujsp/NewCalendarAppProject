@@ -197,6 +197,39 @@ public class CalendarProvider
         return eventID;
     }
 
+    public List<ContentValues> getReminder(long eventId)
+    {
+        ContentResolver contentResolver = CONTEXT.getContentResolver();
+        Cursor cursor = CalendarContract.Reminders.query(contentResolver, eventId, null);
+        List<ContentValues> reminders = new ArrayList<>();
+
+        while (cursor.moveToNext())
+        {
+            ContentValues reminder = new ContentValues();
+            reminders.add(reminder);
+
+            /*
+            String[] columnNames = cursor.getColumnNames();
+            int columnIndex = 0;
+            int dataType = 0;
+
+            for (String column : columnNames)
+            {
+                columnIndex = cursor.getColumnIndex(column);
+                dataType = cursor.getType(columnIndex);
+                putValue(reminder, cursor, column, columnIndex, dataType);
+            }
+
+             */
+            reminder.put(CalendarContract.Reminders._COUNT, cursor.getInt(cursor.getColumnIndex(CalendarContract.Reminders._COUNT)));
+            reminder.put(CalendarContract.Reminders._ID, cursor.getLong(cursor.getColumnIndex(CalendarContract.Reminders._ID)));
+            reminder.put(CalendarContract.Reminders.EVENT_ID, cursor.getInt(cursor.getColumnIndex(CalendarContract.Reminders.EVENT_ID)));
+            reminder.put(CalendarContract.Reminders.METHOD, cursor.getInt(cursor.getColumnIndex(CalendarContract.Reminders.METHOD)));
+            reminder.put(CalendarContract.Reminders.MINUTES, cursor.getInt(cursor.getColumnIndex(CalendarContract.Reminders.MINUTES)));
+        }
+        cursor.close();
+        return reminders;
+    }
 
     private Uri asSyncAdapter(Uri uri, String accountName, String accountType)
     {
@@ -204,5 +237,26 @@ public class CalendarProvider
                 .appendQueryParameter(android.provider.CalendarContract.CALLER_IS_SYNCADAPTER, "true")
                 .appendQueryParameter(CalendarContract.Calendars.ACCOUNT_NAME, accountName)
                 .appendQueryParameter(CalendarContract.Calendars.ACCOUNT_TYPE, accountType).build();
+    }
+
+    private void putValue(ContentValues contentValues, Cursor cursor, String key, int columnIndex, int dataType)
+    {
+        switch (dataType)
+        {
+            case Cursor.FIELD_TYPE_BLOB:
+                contentValues.put(key, cursor.getBlob(columnIndex));
+                break;
+            case Cursor.FIELD_TYPE_FLOAT:
+                contentValues.put(key, cursor.getFloat(columnIndex));
+                break;
+            case Cursor.FIELD_TYPE_STRING:
+                contentValues.put(key, cursor.getString(columnIndex));
+                break;
+            case Cursor.FIELD_TYPE_INTEGER:
+                contentValues.put(key, cursor.getInt(columnIndex));
+                break;
+            case Cursor.FIELD_TYPE_NULL:
+                break;
+        }
     }
 }

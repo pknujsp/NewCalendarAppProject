@@ -15,6 +15,15 @@
         <item>토</item>
     </string-array>
 
+    <string-array name="repeater_list">
+        <item>반복 안함</item>
+        <item>매일</item>
+        <item>매주</item>
+        <item>매월</item>
+        <item>매년</item>
+        <item>맞춤설정</item>
+    </string-array>
+
     <string-array name="kakao_local_api_category_name">
         <item>대형마트</item>
         <item>편의점</item>

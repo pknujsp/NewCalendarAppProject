@@ -28,18 +28,26 @@ import com.zerodsoft.scheduleweather.databinding.ActivityEventBinding;
 import com.zerodsoft.scheduleweather.fragment.DatePickerFragment;
 import com.zerodsoft.scheduleweather.fragment.ReminderFragment;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.fragment.RepeaterFragment;
 import com.zerodsoft.scheduleweather.googlecalendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
-public class EventActivity extends AppCompatActivity implements ReminderFragment.OnNotificationTimeListener, IEventTime
+import biweekly.component.VEvent;
+import biweekly.property.RecurrenceProperty;
+import biweekly.property.RecurrenceRule;
+import biweekly.util.Frequency;
+import biweekly.util.Recurrence;
+
+public class EventActivity extends AppCompatActivity implements ReminderFragment.OnNotificationTimeListener, IEventTime, IEventRepeat
 {
     /*
-    필요한 프래그먼트 다이얼로그 : 시간, 시간대, 반복, 참석자, 알림
-    필요한  다이얼로그 : 접근 범위, 유효성
+    필요한 프래그먼트 다이얼로그 : 시간(o), 시간대, 반복, 참석자, 알림, 캘린더
+    필요한  다이얼로그 : 접근 범위(o), 유효성(o)
      */
     public static final int MODIFY_EVENT = 60;
     public static final int NEW_EVENT = 50;
@@ -53,6 +61,7 @@ public class EventActivity extends AppCompatActivity implements ReminderFragment
     private CalendarViewModel viewModel;
     private DatePickerFragment datePickerFragment;
     private ReminderFragment reminderFragment;
+    private RepeaterFragment repeaterFragment;
 
     private ContentValues modifiedValues;
     private ContentValues newEventValues;
@@ -60,9 +69,12 @@ public class EventActivity extends AppCompatActivity implements ReminderFragment
 
     private AlertDialog accessLevelDialog;
     private AlertDialog availabilityDialog;
+    private AlertDialog repeaterDialog;
 
     private long startDatetimeMillis;
     private long endDateMillis;
+
+    private String[] repeaterList;
 
     public EventActivity()
     {
@@ -105,23 +117,74 @@ public class EventActivity extends AppCompatActivity implements ReminderFragment
     {
         super.onCreate(savedInstanceState);
         activityBinding = DataBindingUtil.setContentView(this, R.layout.activity_event);
+        init();
 
-        Toolbar toolbar = activityBinding.eventToolbar;
-        setSupportActionBar(toolbar);
-        ActionBar actionBar = getSupportActionBar();
-        actionBar.setTitle(R.string.new_event);
-        actionBar.setDisplayHomeAsUpEnabled(true);
+        activityBinding.repeaterLayout.repeatValue.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                int checkedItem = 0;
 
-        EditTextWatcher editTextWatcher = new EditTextWatcher();
-        activityBinding.titleLayout.title.addTextChangedListener(editTextWatcher);
-        activityBinding.titleLayout.title.setOnFocusChangeListener(editTextWatcher);
-        activityBinding.descriptionLayout.description.addTextChangedListener(editTextWatcher);
-        activityBinding.descriptionLayout.description.setOnFocusChangeListener(editTextWatcher);
+                if (newEventValues != null)
+                {
+                    if (newEventValues.getAsString(CalendarContract.Events.RRULE) != null)
+                    {
+                        checkedItem = getRruleItemIndex(newEventValues.getAsString(CalendarContract.Events.RRULE));
+                    }
+                } else if (modifiedValues != null)
+                {
+                    if (modifiedValues.getAsString(CalendarContract.Events.RRULE) != null)
+                    {
+                        checkedItem = getRruleItemIndex(modifiedValues.getAsString(CalendarContract.Events.RRULE));
+                    }
+                }
 
-        setAllDaySwitch();
-        setTimeView();
-        setLocationView();
-        setReminder();
+                MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(EventActivity.this);
+                dialogBuilder.setSingleChoiceItems(repeaterList, checkedItem, new DialogInterface.OnClickListener()
+                {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int item)
+                    {
+                        String rRule = null;
+
+                        switch (item)
+                        {
+                            case 0:
+                                rRule = "";
+                                break;
+                            case 1:
+                                rRule = "FREQ=DAILY";
+                                break;
+                            case 2:
+                                rRule = "FREQ=WEEKLY";
+                                break;
+                            case 3:
+                                rRule = "FREQ=MONTHLY";
+                                break;
+                            case 4:
+                                rRule = "FREQ=YEARLY";
+                                break;
+                            case 5:
+                                // 직접 설정
+                                return;
+                        }
+
+                        if (newEventValues != null)
+                        {
+                            newEventValues.put(CalendarContract.Events.RRULE, rRule);
+                        } else if (modifiedValues != null)
+                        {
+                            modifiedValues.put(CalendarContract.Events.RRULE, rRule);
+                        }
+                        activityBinding.repeaterLayout.repeatValue.setText(repeaterList[item]);
+                        repeaterDialog.dismiss();
+                    }
+                }).setTitle(getString(R.string.repeater));
+                repeaterDialog = dialogBuilder.create();
+                repeaterDialog.show();
+            }
+        });
 
         activityBinding.accesslevelLayout.accesslevel.setOnClickListener(new View.OnClickListener()
         {
@@ -256,6 +319,19 @@ public class EventActivity extends AppCompatActivity implements ReminderFragment
                 setDateTimeText();
 
                 calendar = null;
+
+                // 시간, 시간대, 반복, 알림, 공개범위, 유효성 기본값 설정
+                newEventValues.put(CalendarContract.Events.DTSTART, startDatetimeMillis);
+                newEventValues.put(CalendarContract.Events.DTEND, startDatetimeMillis);
+                newEventValues.put(CalendarContract.Events.EVENT_TIMEZONE, startDatetimeMillis);
+                newEventValues.put(CalendarContract.Events.EVENT_END_TIMEZONE, startDatetimeMillis);
+                newEventValues.put(CalendarContract.Events.RRULE, "");
+                newEventValues.put(CalendarContract.Events.RDATE, "");
+                newEventValues.put(CalendarContract.Events.HAS_ATTENDEE_DATA, 0);
+                newEventValues.put(CalendarContract.Events.DURATION, "");
+                newEventValues.put(CalendarContract.Events.HAS_ALARM, 0);
+                newEventValues.put(CalendarContract.Events.ACCESS_LEVEL, CalendarContract.Events.ACCESS_DEFAULT);
+                newEventValues.put(CalendarContract.Events.AVAILABILITY, CalendarContract.Events.AVAILABILITY_FREE);
                 break;
 
             case MODIFY_EVENT:
@@ -265,7 +341,10 @@ public class EventActivity extends AppCompatActivity implements ReminderFragment
                 int eventId = intent.getIntExtra("eventId", 0);
                 String accountName = intent.getStringExtra("accountName");
 
+                // 이벤트, 알림을 가져온다
                 viewModel.getEvent(calendarId, eventId, accountName);
+                viewModel.getReminders(savedEventValues.getAsLong(CalendarContract.Events._ID));
+
                 viewModel.getEventLiveData().observe(this, new Observer<DataWrapper<ContentValues>>()
                 {
                     @Override
@@ -291,9 +370,7 @@ public class EventActivity extends AppCompatActivity implements ReminderFragment
                             // 시간대
 
                             // 반복
-
                             // 알림
-
                             // 설명
                             activityBinding.descriptionLayout.description.setText(savedEventValues.getAsString(CalendarContract.Events.DESCRIPTION));
                             // 위치
@@ -310,9 +387,74 @@ public class EventActivity extends AppCompatActivity implements ReminderFragment
                         }
                     }
                 });
+
+                viewModel.getReminderLiveData().observe(this, new Observer<DataWrapper<List<ContentValues>>>()
+                {
+                    @Override
+                    public void onChanged(DataWrapper<List<ContentValues>> listDataWrapper)
+                    {
+                        if (listDataWrapper.getData() != null)
+                        {
+                            List<ContentValues> reminders = listDataWrapper.getData();
+                            if (!reminders.isEmpty())
+                            {
+                                ContentValues reminder = reminders.get(0);
+
+                                int minute = reminder.getAsInteger(CalendarContract.Reminders.MINUTES);
+                            }
+                        }
+                    }
+                });
         }
 
 
+    }
+
+    private void init()
+    {
+        Toolbar toolbar = activityBinding.eventToolbar;
+        setSupportActionBar(toolbar);
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setTitle(R.string.new_event);
+        actionBar.setDisplayHomeAsUpEnabled(true);
+
+        EditTextWatcher editTextWatcher = new EditTextWatcher();
+        activityBinding.titleLayout.title.addTextChangedListener(editTextWatcher);
+        activityBinding.titleLayout.title.setOnFocusChangeListener(editTextWatcher);
+        activityBinding.descriptionLayout.description.addTextChangedListener(editTextWatcher);
+        activityBinding.descriptionLayout.description.setOnFocusChangeListener(editTextWatcher);
+
+        setAllDaySwitch();
+        setTimeView();
+        setLocationView();
+        setReminder();
+
+        repeaterFragment = RepeaterFragment.newInstance(EventActivity.this);
+        datePickerFragment = DatePickerFragment.newInstance(EventActivity.this);
+        reminderFragment = ReminderFragment.newInstance();
+
+        repeaterList = getResources().getStringArray(R.array.repeater_list);
+    }
+
+    private int getRruleItemIndex(String rrule)
+    {
+        // 설정 안함, 매일, 매주, 매월, 매년, 직접설정
+        // FREQ=MONTHLY
+        switch (rrule)
+        {
+            case "":
+                return 0;
+            case "FREQ=DAILY":
+                return 1;
+            case "FREQ=WEEKLY":
+                return 2;
+            case "FREQ=MONTHLY":
+                return 3;
+            case "FREQ=YEARLY":
+                return 4;
+            default:
+                return 5;
+        }
     }
 
     private int getAccessLevelItemIndex(int level)
@@ -367,10 +509,6 @@ public class EventActivity extends AppCompatActivity implements ReminderFragment
             {
                 //날짜 설정 다이얼로그 표시
                 //하루종일인 경우 : 연월일, 아닌 경우 : 연월일시분
-                if (datePickerFragment == null)
-                {
-                    datePickerFragment = DatePickerFragment.newInstance(EventActivity.this);
-                }
                 switch (view.getId())
                 {
                     case R.id.startdate:
@@ -397,10 +535,6 @@ public class EventActivity extends AppCompatActivity implements ReminderFragment
             @Override
             public void onClick(View view)
             {
-                if (reminderFragment == null)
-                {
-                    reminderFragment = ReminderFragment.getInstance();
-                }
                 // reminderFragment.init(activityBinding.getScheduleDto());
                 // reminderFragment.show(getSupportFragmentManager(), ReminderFragment.TAG);
             }

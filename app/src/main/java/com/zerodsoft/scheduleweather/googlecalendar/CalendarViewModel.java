@@ -22,6 +22,7 @@ public class CalendarViewModel extends ViewModel
     private MutableLiveData<DataWrapper<CalendarDto>> calendarLiveData;
     private MutableLiveData<DataWrapper<List<CalendarDto>>> calendarListLiveData;
     private MutableLiveData<DataWrapper<ContentValues>> eventLiveData;
+    private MutableLiveData<DataWrapper<List<ContentValues>>> reminderLiveData;
     private CalendarRepository repository;
 
     public CalendarViewModel()
@@ -37,6 +38,7 @@ public class CalendarViewModel extends ViewModel
         calendarLiveData = repository.getCalendarLiveData();
         calendarListLiveData = repository.getCalendarListLiveData();
         eventLiveData = repository.getEventLiveData();
+        reminderLiveData = repository.getReminderLiveData();
     }
 
     public MutableLiveData<DataWrapper<List<EventDto>>> getEventsLiveData()
@@ -88,5 +90,15 @@ public class CalendarViewModel extends ViewModel
     public void getEvent(int calendarId, int eventId, String accountName)
     {
         repository.getEvent(calendarId, eventId, accountName);
+    }
+
+    public void getReminders(long eventId)
+    {
+        repository.getReminders(eventId);
+    }
+
+    public MutableLiveData<DataWrapper<List<ContentValues>>> getReminderLiveData()
+    {
+        return reminderLiveData;
     }
 }

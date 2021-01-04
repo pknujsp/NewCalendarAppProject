@@ -27,6 +27,7 @@ public class CalendarRepository
     private MutableLiveData<DataWrapper<CalendarDto>> calendarLiveData;
     private MutableLiveData<DataWrapper<List<CalendarDto>>> calendarListLiveData;
     private MutableLiveData<DataWrapper<ContentValues>> eventLiveData;
+    private MutableLiveData<DataWrapper<List<ContentValues>>> reminderLiveData;
 
     private GoogleCalendarApi googleCalendarApi;
     private CalendarProvider calendarProvider;
@@ -42,6 +43,7 @@ public class CalendarRepository
         calendarLiveData = new MutableLiveData<>();
         calendarListLiveData = new MutableLiveData<>();
         eventLiveData = new MutableLiveData<>();
+        reminderLiveData = new MutableLiveData<>();
 
         googleCalendarApi = GoogleCalendarApi.newInstance(activity);
         calendarProvider = CalendarProvider.newInstance(activity.getApplicationContext());
@@ -60,6 +62,11 @@ public class CalendarRepository
     public MutableLiveData<DataWrapper<List<EventDto>>> getEventsLiveData()
     {
         return eventsLiveData;
+    }
+
+    public MutableLiveData<DataWrapper<List<ContentValues>>> getReminderLiveData()
+    {
+        return reminderLiveData;
     }
 
     public void connect(String accountName) throws IOException, GeneralSecurityException
@@ -205,5 +212,10 @@ public class CalendarRepository
     public MutableLiveData<DataWrapper<ContentValues>> getEventLiveData()
     {
         return eventLiveData;
+    }
+
+    public void getReminders(long eventId)
+    {
+        reminderLiveData.setValue(new DataWrapper<>(calendarProvider.getReminder(eventId)));
     }
 }
