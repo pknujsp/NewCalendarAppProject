@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.activity.editevent;
+package com.zerodsoft.scheduleweather.activity.editevent.interfaces;
 
 public interface IEventTime
 {

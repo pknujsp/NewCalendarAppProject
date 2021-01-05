@@ -24,6 +24,8 @@ public class ClockUtil
     public static final SimpleDateFormat DATE_DAY_OF_WEEK_FORMAT = new SimpleDateFormat("d E");
     public static final SimpleDateFormat DAY_OF_MONTH_FORMAT = new SimpleDateFormat("d");
     public static final SimpleDateFormat YEAR_MONTH_FORMAT = new SimpleDateFormat("yyyy/MM");
+    public static final SimpleDateFormat DAY_OF_WEEK_FORMAT = new SimpleDateFormat("E");
+    public static final SimpleDateFormat Md_FORMAT = new SimpleDateFormat("M월 d일");
 
     public static final int MONTH = 0;
     public static final int WEEK = 1;

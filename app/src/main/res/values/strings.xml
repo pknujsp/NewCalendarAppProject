@@ -89,9 +89,13 @@
 
 
     <string name="calendar_type">달력 유형</string>
-    <string name="calendar_type_month">월</string>
-    <string name="calendar_type_week">주</string>
-    <string name="calendar_type_day">일</string>
+    <string name="month">월</string>
+    <string name="week">주</string>
+    <string name="year">년</string>
+
+    <string name="day">일</string>
+    <string name="hour">시간</string>
+    <string name="minute">분</string>
 
     <string name="favorite_location">주소/장소 즐겨찾기</string>
     <string name="app_settings">설정</string>
@@ -159,16 +163,13 @@
     <string name="completed_selection">선택 완료</string>
     <string name="cancel">취소</string>
 
-    <string name="day">일</string>
-    <string name="hour">시간</string>
-    <string name="minute">분</string>
 
     <!-- 이벤트 라벨 -->
     <string name="title">제목</string>
     <string name="calendar">캘린더</string>
     <string name="time">시간</string>
     <string name="timezone">시간대</string>
-    <string name="repeater">반복</string>
+    <string name="recurrence">반복</string>
     <string name="reminder">알림</string>
     <string name="description">설명</string>
     <string name="location">위치</string>
@@ -178,7 +179,6 @@
 
     <!-- 이벤트 추가 액티비티 -->
     <string name="not_title">제목 추가(필수)</string>
-    <string name="not_repeat">반복 없음</string>
     <string name="all_day">하루 종일</string>
     <string name="startdate">시작일</string>
     <string name="enddate">종료일</string>
@@ -197,5 +197,21 @@
     <integer name="max_year">2040</integer>
     <integer name="min_year">2010</integer>
 
+
+    <!-- 반복 -->
+    <string name="not_recurrence">반복 안함</string>
+    <string name="recurrence_daily">매일</string>
+    <string name="recurrence_weekly">매주</string>
+    <string name="recurrence_monthly">매월</string>
+    <string name="recurrence_yearly">매년</string>
+    <string name="recurrence_custom">맞춤 설정</string>
+
+    <string name="repeat_cycle">반복 주기</string>
+
+    <string name="end">종료</string>
+    <string name="recurrence_day">반복 요일</string>
+    <string name="keeping_recurrence">계속 반복</string>
+    <string name="certain_recurrence_number">일정 반복 횟수</string>
+    <string name="recurrence_end_date">종료 날짜</string>
 
 </resources>

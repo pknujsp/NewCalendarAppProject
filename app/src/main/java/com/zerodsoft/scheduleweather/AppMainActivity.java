@@ -15,7 +15,7 @@ import android.widget.ExpandableListView;
 import android.widget.Toast;
 
 import com.google.android.material.navigation.NavigationView;
-import com.zerodsoft.scheduleweather.activity.editevent.EventActivity;
+import com.zerodsoft.scheduleweather.activity.editevent.activity.EventActivity;
 import com.zerodsoft.scheduleweather.calendarfragment.EventTransactionFragment;
 import com.zerodsoft.scheduleweather.calendarfragment.DayFragment;
 import com.zerodsoft.scheduleweather.calendarfragment.MonthFragment;

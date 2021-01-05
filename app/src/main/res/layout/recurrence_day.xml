@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.chip.ChipGroup xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    app:chipSpacingHorizontal="4dp">
+
+    <com.google.android.material.chip.Chip
+        android:id="@+id/recurrence_sunday"
+        style="@style/Widget.MaterialComponents.Chip.Choice"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/sunday" />
+
+    <com.google.android.material.chip.Chip
+        android:id="@+id/recurrence_monday"
+        style="@style/Widget.MaterialComponents.Chip.Choice"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/monday" />
+
+    <com.google.android.material.chip.Chip
+        android:id="@+id/recurrence_tuesday"
+        style="@style/Widget.MaterialComponents.Chip.Choice"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/tuesday" />
+
+    <com.google.android.material.chip.Chip
+        android:id="@+id/recurrence_wednesday"
+        style="@style/Widget.MaterialComponents.Chip.Choice"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/wednesday" />
+
+    <com.google.android.material.chip.Chip
+        android:id="@+id/recurrence_thursday"
+        style="@style/Widget.MaterialComponents.Chip.Choice"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/thursday" />
+
+    <com.google.android.material.chip.Chip
+        android:id="@+id/recurrence_friday"
+        style="@style/Widget.MaterialComponents.Chip.Choice"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/friday" />
+
+    <com.google.android.material.chip.Chip
+        android:id="@+id/recurrence_saturday"
+        style="@style/Widget.MaterialComponents.Chip.Choice"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/saturday" />
+
+</com.google.android.material.chip.ChipGroup>

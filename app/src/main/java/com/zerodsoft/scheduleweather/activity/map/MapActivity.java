@@ -6,7 +6,7 @@ import androidx.fragment.app.FragmentManager;
 
 import android.os.Bundle;
 
-import com.zerodsoft.scheduleweather.activity.editevent.EventActivity;
+import com.zerodsoft.scheduleweather.activity.editevent.activity.EventActivity;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.ICatchedLocation;
 import com.zerodsoft.scheduleweather.activity.map.fragment.map.MapFragment;
 import com.zerodsoft.scheduleweather.R;

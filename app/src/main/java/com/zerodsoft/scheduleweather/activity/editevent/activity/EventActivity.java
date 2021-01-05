@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.activity.editevent;
+package com.zerodsoft.scheduleweather.activity.editevent.activity;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
@@ -23,12 +23,13 @@ import android.view.View;
 import android.widget.CompoundButton;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.zerodsoft.scheduleweather.activity.editevent.interfaces.IEventRepeat;
+import com.zerodsoft.scheduleweather.activity.editevent.interfaces.IEventTime;
 import com.zerodsoft.scheduleweather.activity.map.MapActivity;
 import com.zerodsoft.scheduleweather.databinding.ActivityEventBinding;
-import com.zerodsoft.scheduleweather.fragment.DatePickerFragment;
-import com.zerodsoft.scheduleweather.fragment.ReminderFragment;
+import com.zerodsoft.scheduleweather.activity.editevent.fragment.DatePickerFragment;
+import com.zerodsoft.scheduleweather.activity.editevent.fragment.ReminderFragment;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.fragment.RepeaterFragment;
 import com.zerodsoft.scheduleweather.googlecalendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
@@ -36,12 +37,6 @@ import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-
-import biweekly.component.VEvent;
-import biweekly.property.RecurrenceProperty;
-import biweekly.property.RecurrenceRule;
-import biweekly.util.Frequency;
-import biweekly.util.Recurrence;
 
 public class EventActivity extends AppCompatActivity implements ReminderFragment.OnNotificationTimeListener, IEventTime, IEventRepeat
 {
@@ -57,11 +52,12 @@ public class EventActivity extends AppCompatActivity implements ReminderFragment
     public static final int LOCATION_SELECTED = 90;
     public static final int LOCATION_RESELECTED = 100;
 
+    public static final int REQUEST_RECURRENCE = 110;
+
     private ActivityEventBinding activityBinding;
     private CalendarViewModel viewModel;
     private DatePickerFragment datePickerFragment;
     private ReminderFragment reminderFragment;
-    private RepeaterFragment repeaterFragment;
 
     private ContentValues modifiedValues;
     private ContentValues newEventValues;
@@ -119,70 +115,34 @@ public class EventActivity extends AppCompatActivity implements ReminderFragment
         activityBinding = DataBindingUtil.setContentView(this, R.layout.activity_event);
         init();
 
-        activityBinding.repeaterLayout.repeatValue.setOnClickListener(new View.OnClickListener()
+        activityBinding.recurrenceLayout.recurrenceValue.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view)
             {
-                int checkedItem = 0;
+                Intent intent = new Intent(EventActivity.this, RecurrenceActivity.class);
+                // 반복 룰과 이벤트의 시작 시간 전달
+                String recurrenceRule = null;
 
                 if (newEventValues != null)
                 {
-                    if (newEventValues.getAsString(CalendarContract.Events.RRULE) != null)
-                    {
-                        checkedItem = getRruleItemIndex(newEventValues.getAsString(CalendarContract.Events.RRULE));
-                    }
+                    recurrenceRule = newEventValues.getAsString(CalendarContract.Events.RRULE);
                 } else if (modifiedValues != null)
                 {
-                    if (modifiedValues.getAsString(CalendarContract.Events.RRULE) != null)
-                    {
-                        checkedItem = getRruleItemIndex(modifiedValues.getAsString(CalendarContract.Events.RRULE));
-                    }
+                    recurrenceRule = modifiedValues.getAsString(CalendarContract.Events.RRULE);
                 }
 
-                MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(EventActivity.this);
-                dialogBuilder.setSingleChoiceItems(repeaterList, checkedItem, new DialogInterface.OnClickListener()
+                if (recurrenceRule == null)
                 {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int item)
-                    {
-                        String rRule = null;
+                    recurrenceRule = "";
+                }
 
-                        switch (item)
-                        {
-                            case 0:
-                                rRule = "";
-                                break;
-                            case 1:
-                                rRule = "FREQ=DAILY";
-                                break;
-                            case 2:
-                                rRule = "FREQ=WEEKLY";
-                                break;
-                            case 3:
-                                rRule = "FREQ=MONTHLY";
-                                break;
-                            case 4:
-                                rRule = "FREQ=YEARLY";
-                                break;
-                            case 5:
-                                // 직접 설정
-                                return;
-                        }
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTimeInMillis(startDatetimeMillis);
 
-                        if (newEventValues != null)
-                        {
-                            newEventValues.put(CalendarContract.Events.RRULE, rRule);
-                        } else if (modifiedValues != null)
-                        {
-                            modifiedValues.put(CalendarContract.Events.RRULE, rRule);
-                        }
-                        activityBinding.repeaterLayout.repeatValue.setText(repeaterList[item]);
-                        repeaterDialog.dismiss();
-                    }
-                }).setTitle(getString(R.string.repeater));
-                repeaterDialog = dialogBuilder.create();
-                repeaterDialog.show();
+                intent.putExtra("recurrenceRule", recurrenceRule);
+                intent.putExtra("eventStartDateTime", calendar);
+                startActivityForResult(intent, REQUEST_RECURRENCE);
             }
         });
 
@@ -429,11 +389,8 @@ public class EventActivity extends AppCompatActivity implements ReminderFragment
         setLocationView();
         setReminder();
 
-        repeaterFragment = RepeaterFragment.newInstance(EventActivity.this);
         datePickerFragment = DatePickerFragment.newInstance(EventActivity.this);
         reminderFragment = ReminderFragment.newInstance();
-
-        repeaterList = getResources().getStringArray(R.array.repeater_list);
     }
 
     private int getRruleItemIndex(String rrule)
@@ -584,12 +541,27 @@ public class EventActivity extends AppCompatActivity implements ReminderFragment
     {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (resultCode == LOCATION_SELECTED || resultCode == LOCATION_RESELECTED)
+        if (requestCode == REQUEST_RECURRENCE)
         {
+            if (resultCode == RESULT_OK)
+            {
+                String recurrenceRule = getIntent().getStringExtra("recurrenceRule");
+                if (newEventValues != null)
+                {
+                    newEventValues.put(CalendarContract.Events.RRULE, recurrenceRule);
+                } else if (modifiedValues != null)
+                {
+                    modifiedValues.put(CalendarContract.Events.RRULE, recurrenceRule);
+                }
+                activityBinding.recurrenceLayout.recurrenceValue.setText(recurrenceRule);
+            } else
+            {
 
-        } else if (resultCode == LOCATION_DELETED)
+            }
+        } else if (requestCode == NEW_LOCATION)
         {
-
+        } else if (requestCode == MODIFY_LOCATION)
+        {
         }
     }
 

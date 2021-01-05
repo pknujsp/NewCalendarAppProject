@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.fragment;
+package com.zerodsoft.scheduleweather.activity.editevent.fragment;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;

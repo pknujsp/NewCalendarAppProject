@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.fragment;
+package com.zerodsoft.scheduleweather.activity.editevent.fragment;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -11,7 +11,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.activity.editevent.IEventTime;
+import com.zerodsoft.scheduleweather.activity.editevent.interfaces.IEventTime;
 import com.zerodsoft.scheduleweather.databinding.DatepickerLayoutBinding;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 

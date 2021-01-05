@@ -6,7 +6,7 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".activity.editevent.EventActivity">
+        tools:context=".activity.editevent.activity.EventActivity">
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/event_toolbar"
@@ -40,8 +40,8 @@
                     layout="@layout/edit_event_time" />
 
                 <include
-                    android:id="@+id/repeater_layout"
-                    layout="@layout/edit_event_repeater" />
+                    android:id="@+id/recurrence_layout"
+                    layout="@layout/edit_event_recurrence" />
 
                 <include
                     android:id="@+id/reminder_layout"
