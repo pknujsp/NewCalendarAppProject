@@ -6,6 +6,8 @@ import androidx.databinding.DataBindingUtil;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -16,6 +18,11 @@ import com.zerodsoft.scheduleweather.databinding.ActivityRecurrenceBinding;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import java.util.Calendar;
+
+import biweekly.property.RecurrenceProperty;
+import biweekly.property.RecurrenceRule;
+import biweekly.util.Frequency;
+import biweekly.util.Recurrence;
 
 public class RecurrenceActivity extends AppCompatActivity
 {
@@ -146,6 +153,9 @@ public class RecurrenceActivity extends AppCompatActivity
             }
         });
 
+        binding.recurrenceCycle.addTextChangedListener(textWatcher);
+        binding.certainRecurrenceNumber.addTextChangedListener(textWatcher);
+
         switch (recurrenceRule)
         {
             case "":
@@ -169,6 +179,7 @@ public class RecurrenceActivity extends AppCompatActivity
                 binding.dateTypeSpinner.setSelection(0);
                 break;
             default:
+                // custom인 경우
                 break;
         }
     }
@@ -227,10 +238,22 @@ public class RecurrenceActivity extends AppCompatActivity
         }
     }
 
+    private void setRecurrenceRule()
+    {
+     
+    }
+
     private void onCompletedSelection()
     {
-        getIntent().putExtra("recurrenceRule", finalRecurrenceRule);
-        setResult(RESULT_OK, getIntent());
+        if (recurrenceRule.equals(finalRecurrenceRule))
+        {
+            setResult(RESULT_CANCELED);
+        } else
+        {
+            getIntent().putExtra("recurrenceRule", finalRecurrenceRule);
+            setResult(RESULT_OK, getIntent());
+        }
+
         finish();
     }
 
@@ -239,4 +262,40 @@ public class RecurrenceActivity extends AppCompatActivity
     {
         onCompletedSelection();
     }
+
+    private final TextWatcher textWatcher = new TextWatcher()
+    {
+        String previousValue;
+
+        @Override
+        public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2)
+        {
+            previousValue = charSequence.toString();
+        }
+
+        @Override
+        public void onTextChanged(CharSequence charSequence, int i, int i1, int i2)
+        {
+            if (!previousValue.equals(charSequence.toString()))
+            {
+                int value = Integer.parseInt(charSequence.toString());
+
+                if (value <= 0)
+                {
+                    if (binding.recurrenceCycle.isFocused())
+                    {
+                        binding.recurrenceCycle.setText("0");
+                    } else if (binding.certainRecurrenceNumber.isFocused())
+                    {
+                        binding.certainRecurrenceNumber.setText("0");
+                    }
+                }
+            }
+        }
+
+        @Override
+        public void afterTextChanged(Editable editable)
+        {
+        }
+    };
 }

@@ -96,13 +96,15 @@
                             android:textColor="@color/black" />
 
                         <EditText
-                            android:id="@+id/recurrence_count"
+                            android:id="@+id/recurrence_cycle"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:autofillHints="1"
                             android:ems="3"
                             android:inputType="number"
-                            android:maxEms="3" />
+                            android:maxEms="3"
+                            android:maxLength="3"
+                            android:selectAllOnFocus="true" />
 
                         <Spinner
                             android:id="@+id/date_type_spinner"
@@ -163,7 +165,9 @@
                             android:autofillHints="1"
                             android:ems="3"
                             android:inputType="number"
-                            android:maxEms="3" />
+                            android:maxEms="3"
+                            android:maxLength="3"
+                            android:selectAllOnFocus="true" />
 
                     </RelativeLayout>
 
