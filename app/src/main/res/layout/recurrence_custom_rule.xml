@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:text="@string/repeat_interval"
+            android:textColor="@color/black" />
+
+        <EditText
+            android:id="@+id/recurrence_interval"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:autofillHints="1"
+            android:ems="3"
+            android:inputType="number"
+            android:maxEms="3"
+            android:maxLength="3"
+            android:selectAllOnFocus="true"
+            android:text="1" />
+
+        <Spinner
+            android:id="@+id/date_type_spinner"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent" />
+
+    </LinearLayout>
+
+    <include
+        android:id="@+id/recurrence_day_view"
+        layout="@layout/recurrence_day" />
+
+    <RadioGroup
+        android:id="@+id/first_day_radio_group"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:checkedButton="@id/same_date_radio">
+
+
+        <RadioButton
+            android:id="@+id/same_date_radio"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <RadioButton
+            android:id="@+id/same_week_radio"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+    </RadioGroup>
+
+
+</LinearLayout>

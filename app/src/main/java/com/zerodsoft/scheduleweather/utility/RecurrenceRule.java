@@ -1,5 +1,6 @@
 package com.zerodsoft.scheduleweather.utility;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -38,7 +39,6 @@ public class RecurrenceRule
     public static final String WEEKDAY_FRIDAY = "FT";
     public static final String WEEKDAY_SATURDAY = "SA";
 
-
     private final Map<String, String> RULE_MAP;
 
     public RecurrenceRule()
@@ -51,20 +51,38 @@ public class RecurrenceRule
         RULE_MAP.put(type, value);
     }
 
+    public void putValue(String type, int value)
+    {
+        putValue(type, Integer.toString(value));
+    }
+
+
     public void putValue(String type, String... value)
     {
-        String[] values = new String[value.length];
+        String[] values = value.clone();
+        StringBuilder stringBuilder = new StringBuilder();
 
-        for (int i = 1; i < values.length; i++)
+        for (int i = 0; i < values.length - 1; i++)
         {
-            values[i] = value[i];
-            if (i != values.length - 1)
-            {
-                values[i] = values[i] + ",";
-            }
+            stringBuilder.append(values[i]).append(",");
         }
 
-        RULE_MAP.put(type, values.toString());
+        stringBuilder.append(values[values.length - 1]);
+
+        RULE_MAP.put(type, stringBuilder.toString());
+    }
+
+    public void putValue(String type, int... value)
+    {
+        int[] values = value.clone();
+        String[] strValues = new String[values.length];
+
+        for (int i = 0; i < values.length; i++)
+        {
+            strValues[i] = Integer.toString(values[i]);
+        }
+
+        putValue(type, strValues);
     }
 
     public void removeValue(String type)
@@ -102,8 +120,58 @@ public class RecurrenceRule
                 }
                 index++;
             }
-
             return rule.toString();
+        }
+    }
+
+    public String getValue(String type)
+    {
+        return RULE_MAP.get(type);
+    }
+
+    public int count()
+    {
+        return RULE_MAP.size();
+    }
+
+    public boolean isEmpty()
+    {
+        return RULE_MAP.isEmpty();
+    }
+
+    public void clear()
+    {
+        RULE_MAP.clear();
+    }
+
+    public boolean containsKey(String type)
+    {
+        return RULE_MAP.containsKey(type);
+    }
+
+    public void separateValues(String rule)
+    {
+        if (!rule.isEmpty())
+        {
+            final String COLON = ";";
+            final String EQUALS_SIGN = "=";
+            String[] separatedKeyValues = null;
+
+            if (rule.contains(COLON))
+            {
+                String[] separatedStr = null;
+                separatedStr = rule.split(COLON);
+
+                for (String s : separatedStr)
+                {
+                    separatedKeyValues = s.split(EQUALS_SIGN);
+                    putValue(separatedKeyValues[0], separatedKeyValues[1]);
+                }
+            } else
+            {
+                separatedKeyValues = rule.split(EQUALS_SIGN);
+                putValue(separatedKeyValues[0], separatedKeyValues[1]);
+            }
         }
     }
 }

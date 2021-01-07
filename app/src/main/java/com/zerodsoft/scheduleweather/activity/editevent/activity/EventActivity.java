@@ -545,7 +545,7 @@ public class EventActivity extends AppCompatActivity implements ReminderFragment
         {
             if (resultCode == RESULT_OK)
             {
-                String recurrenceRule = getIntent().getStringExtra("recurrenceRule");
+                String recurrenceRule = data.getStringExtra("recurrenceRule");
                 if (newEventValues != null)
                 {
                     newEventValues.put(CalendarContract.Events.RRULE, recurrenceRule);

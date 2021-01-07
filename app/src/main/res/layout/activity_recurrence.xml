@@ -29,14 +29,15 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp">
 
                 <RadioGroup
                     android:id="@+id/recurrence_radio_group"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="12dp"
-                    android:checkedButton="@id/not_recurrence_radio">
+                    android:layout_marginBottom="12dp">
 
                     <RadioButton
                         android:id="@+id/not_recurrence_radio"
@@ -76,126 +77,14 @@
 
                 </RadioGroup>
 
-                <LinearLayout
-                    android:id="@+id/recurrence_custom_view_container"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
+                <include
+                    android:id="@+id/recurrence_custom_rule"
+                    layout="@layout/recurrence_custom_rule" />
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="12dp"
-                        android:orientation="horizontal">
+                <include
+                    android:id="@+id/recurrence_detail_rule"
+                    layout="@layout/recurrence_detail_rule" />
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center_vertical"
-                            android:text="@string/repeat_cycle"
-                            android:textColor="@color/black" />
-
-                        <EditText
-                            android:id="@+id/recurrence_cycle"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:autofillHints="1"
-                            android:ems="3"
-                            android:inputType="number"
-                            android:maxEms="3"
-                            android:maxLength="3"
-                            android:selectAllOnFocus="true" />
-
-                        <Spinner
-                            android:id="@+id/date_type_spinner"
-                            android:layout_width="wrap_content"
-                            android:layout_height="match_parent" />
-
-                    </LinearLayout>
-
-                    <include
-                        android:id="@+id/recurrence_day_view"
-                        layout="@layout/recurrence_day" />
-
-                    <RadioGroup
-                        android:id="@+id/first_day_radio_group"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="12dp"
-                        android:checkedButton="@id/same_date_radio">
-
-
-                        <RadioButton
-                            android:id="@+id/same_date_radio"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content" />
-
-                        <RadioButton
-                            android:id="@+id/same_week_radio"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content" />
-
-                    </RadioGroup>
-
-                    <RadioButton
-                        android:id="@+id/keeping_recurrence_radio"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:checked="true"
-                        android:text="@string/keeping_recurrence" />
-
-                    <RelativeLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
-
-                        <RadioButton
-                            android:id="@+id/certain_recurrence_number_radio"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_alignParentLeft="true"
-                            android:layout_centerVertical="true"
-                            android:text="@string/certain_recurrence_number" />
-
-                        <EditText
-                            android:id="@+id/certain_recurrence_number"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_alignParentRight="true"
-                            android:layout_centerVertical="true"
-                            android:autofillHints="1"
-                            android:ems="3"
-                            android:inputType="number"
-                            android:maxEms="3"
-                            android:maxLength="3"
-                            android:selectAllOnFocus="true" />
-
-                    </RelativeLayout>
-
-                    <RelativeLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
-
-                        <RadioButton
-                            android:id="@+id/recurrence_end_date_radio"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_alignParentLeft="true"
-                            android:text="@string/recurrence_end_date" />
-
-                        <TextView
-                            android:id="@+id/recurrence_end_date"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_alignParentRight="true"
-                            android:layout_centerVertical="true"
-                            android:background="?attr/selectableItemBackground"
-                            android:clickable="true"
-                            android:focusable="true"
-                            android:text="@string/recurrence_end_date" />
-
-                    </RelativeLayout>
-
-                </LinearLayout>
             </LinearLayout>
         </ScrollView>
     </LinearLayout>

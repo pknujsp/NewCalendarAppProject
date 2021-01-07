@@ -206,7 +206,7 @@
     <string name="recurrence_yearly">매년</string>
     <string name="recurrence_custom">맞춤 설정</string>
 
-    <string name="repeat_cycle">반복 주기</string>
+    <string name="repeat_interval">반복 주기</string>
 
     <string name="end">종료</string>
     <string name="recurrence_day">반복 요일</string>
