@@ -89,11 +89,11 @@
 
 
     <string name="calendar_type">달력 유형</string>
+    <string name="day">일</string>
     <string name="month">월</string>
     <string name="week">주</string>
     <string name="year">년</string>
 
-    <string name="day">일</string>
     <string name="hour">시간</string>
     <string name="minute">분</string>
 
@@ -213,5 +213,8 @@
     <string name="keeping_recurrence">계속 반복</string>
     <string name="certain_recurrence_number">일정 반복 횟수</string>
     <string name="recurrence_end_date">종료 날짜</string>
+    <string name="datepicker">날짜 선택</string>
+    <string name="end_after_n_repetition">회 반복 후 종료</string>
+    <string name="ends_at">종료</string>
 
 </resources>

@@ -90,7 +90,7 @@ public class EventsInfoFragment extends DialogFragment
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false));
         adapter = new EventsInfoRecyclerViewAdapter(EventsInfoFragment.this, startDate, endDate);
         recyclerView.setAdapter(adapter);
-        ((TextView) view.findViewById(R.id.events_info_day)).setText(ClockUtil.DATE_FORMAT_ALLDAY.format(startDate));
+        ((TextView) view.findViewById(R.id.events_info_day)).setText(ClockUtil.YYYY_년_M_월_D_일_E.format(startDate));
     }
 
 

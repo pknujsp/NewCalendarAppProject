@@ -58,7 +58,7 @@ public class MonthCalendarItemView extends View
     protected void onDraw(Canvas canvas)
     {
         super.onDraw(canvas);
-        canvas.drawText(ClockUtil.DAY_OF_MONTH_FORMAT.format(startDate), x, y, DAY_TEXT_PAINT);
+        canvas.drawText(ClockUtil.D.format(startDate), x, y, DAY_TEXT_PAINT);
     }
 
     public Date getStartDate()

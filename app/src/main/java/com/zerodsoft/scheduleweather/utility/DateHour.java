@@ -37,6 +37,6 @@ public class DateHour
 
     public static String getDate(Date date)
     {
-        return ClockUtil.DAY_OF_MONTH_FORMAT.format(date);
+        return ClockUtil.D.format(date);
     }
 }

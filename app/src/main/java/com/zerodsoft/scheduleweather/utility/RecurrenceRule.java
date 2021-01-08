@@ -1,5 +1,9 @@
 package com.zerodsoft.scheduleweather.utility;
 
+import android.content.Context;
+
+import com.zerodsoft.scheduleweather.R;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -38,6 +42,9 @@ public class RecurrenceRule
     public static final String WEEKDAY_THURSDAY = "TH";
     public static final String WEEKDAY_FRIDAY = "FT";
     public static final String WEEKDAY_SATURDAY = "SA";
+
+    private static final String[] WEEKDAYS = {WEEKDAY_SUNDAY, WEEKDAY_MONDAY, WEEKDAY_TUESDAY, WEEKDAY_WEDNESDAY
+            , WEEKDAY_THURSDAY, WEEKDAY_FRIDAY, WEEKDAY_SATURDAY};
 
     private final Map<String, String> RULE_MAP;
 
@@ -88,6 +95,14 @@ public class RecurrenceRule
     public void removeValue(String type)
     {
         RULE_MAP.remove(type);
+    }
+
+    public void removeValue(String... types)
+    {
+        for (String type : types)
+        {
+            RULE_MAP.remove(type);
+        }
     }
 
     public String getRule()
@@ -147,6 +162,104 @@ public class RecurrenceRule
     public boolean containsKey(String type)
     {
         return RULE_MAP.containsKey(type);
+    }
+
+    public static String getDayOfWeek(int index)
+    {
+        return WEEKDAYS[index];
+    }
+
+    public static int getDayOfWeek(String day)
+    {
+        for (int i = 0; i < WEEKDAYS.length; i++)
+        {
+            if (WEEKDAYS[i].equals(day))
+            {
+                return i;
+            }
+        }
+        return 0;
+    }
+
+    public String interpret(Context context)
+    {
+        StringBuilder stringBuilder = new StringBuilder();
+        String freq = null;
+        String until = containsKey(UNTIL) ? getValue(UNTIL) + context.getString(R.string.ends_at) : "";
+        String count = containsKey(COUNT) ? getValue(COUNT) + context.getString(R.string.end_after_n_repetition) : "";
+
+        if (containsKey(INTERVAL))
+        {
+            if (getValue(INTERVAL).equals("1"))
+            {
+                switch (getValue(FREQ))
+                {
+                    case FREQ_DAILY:
+                        freq = context.getString(R.string.recurrence_daily);
+                        break;
+                    case FREQ_WEEKLY:
+                        freq = context.getString(R.string.recurrence_weekly) + getValue(BYDAY);
+                        break;
+                    case FREQ_MONTHLY:
+                        if (containsKey(BYDAY))
+                        {
+                            freq = context.getString(R.string.recurrence_monthly) + getValue(BYDAY);
+                        } else
+                        {
+                            freq = context.getString(R.string.recurrence_monthly);
+                        }
+                        break;
+                    case FREQ_YEARLY:
+                        freq = context.getString(R.string.recurrence_yearly);
+                        break;
+                }
+            } else
+            {
+                switch (getValue(FREQ))
+                {
+                    case FREQ_DAILY:
+                        freq = getValue(INTERVAL) + context.getString(R.string.day);
+                        break;
+                    case FREQ_WEEKLY:
+                        freq = getValue(INTERVAL) + context.getString(R.string.week) + getValue(BYDAY);
+                        break;
+                    case FREQ_MONTHLY:
+                        freq = getValue(INTERVAL) + context.getString(R.string.month);
+                        break;
+                    case FREQ_YEARLY:
+                        freq = getValue(INTERVAL) + context.getString(R.string.year);
+                        break;
+                }
+            }
+        } else
+        {
+            switch (getValue(FREQ))
+            {
+                case FREQ_DAILY:
+                    freq = context.getString(R.string.recurrence_daily);
+                    break;
+                case FREQ_WEEKLY:
+                    freq = context.getString(R.string.recurrence_weekly) + getValue(BYDAY);
+                    break;
+                case FREQ_MONTHLY:
+                    freq = context.getString(R.string.recurrence_monthly);
+                    break;
+                case FREQ_YEARLY:
+                    freq = context.getString(R.string.recurrence_yearly);
+                    break;
+            }
+        }
+        stringBuilder.append(freq);
+        if (!until.isEmpty())
+        {
+            stringBuilder.append(", ").append(until);
+        }
+        if (!count.isEmpty())
+        {
+            stringBuilder.append(", ").append(count);
+        }
+
+        return stringBuilder.toString();
     }
 
     public void separateValues(String rule)

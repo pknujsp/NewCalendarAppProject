@@ -33,6 +33,7 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.googlecalendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
+import com.zerodsoft.scheduleweather.utility.RecurrenceRule;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -545,15 +546,18 @@ public class EventActivity extends AppCompatActivity implements ReminderFragment
         {
             if (resultCode == RESULT_OK)
             {
-                String recurrenceRule = data.getStringExtra("recurrenceRule");
+                String rrule = data.getStringExtra("recurrenceRule");
+                RecurrenceRule recurrenceRule = new RecurrenceRule();
+                recurrenceRule.separateValues(rrule);
+                activityBinding.recurrenceLayout.recurrenceValue.setText(recurrenceRule.interpret(getApplicationContext()));
+
                 if (newEventValues != null)
                 {
-                    newEventValues.put(CalendarContract.Events.RRULE, recurrenceRule);
+                    newEventValues.put(CalendarContract.Events.RRULE, rrule);
                 } else if (modifiedValues != null)
                 {
-                    modifiedValues.put(CalendarContract.Events.RRULE, recurrenceRule);
+                    modifiedValues.put(CalendarContract.Events.RRULE, rrule);
                 }
-                activityBinding.recurrenceLayout.recurrenceValue.setText(recurrenceRule);
             } else
             {
 
@@ -598,11 +602,11 @@ public class EventActivity extends AppCompatActivity implements ReminderFragment
         Date end = new Date(endDateMillis);
 
         activityBinding.timeLayout.startdate.setText(activityBinding.timeLayout.timeAlldaySwitch.isChecked()
-                ? ClockUtil.DATE_FORMAT_ALLDAY.format(start)
+                ? ClockUtil.YYYY_년_M_월_D_일_E.format(start)
                 : ClockUtil.DATE_FORMAT_NOT_ALLDAY.format(start));
 
         activityBinding.timeLayout.enddate.setText(activityBinding.timeLayout.timeAlldaySwitch.isChecked()
-                ? ClockUtil.DATE_FORMAT_ALLDAY.format(end)
+                ? ClockUtil.YYYY_년_M_월_D_일_E.format(end)
                 : ClockUtil.DATE_FORMAT_NOT_ALLDAY.format(end));
     }
 

@@ -198,7 +198,7 @@ public class DayHeaderView extends ViewGroup
         super.onDraw(canvas);
 
         // 날짜와 요일 그리기
-        canvas.drawText(ClockUtil.DATE_DAY_OF_WEEK_FORMAT.format(today), getWidth() / 2, DAY_DATE_SPACE_HEIGHT - DAY_DATE_TB_MARGIN, DAY_DATE_TEXT_PAINT);
+        canvas.drawText(ClockUtil.D_E.format(today), getWidth() / 2, DAY_DATE_SPACE_HEIGHT - DAY_DATE_TB_MARGIN, DAY_DATE_TEXT_PAINT);
     }
 
     public void clear()

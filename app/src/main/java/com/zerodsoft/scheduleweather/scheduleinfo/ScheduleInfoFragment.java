@@ -68,7 +68,7 @@ public class ScheduleInfoFragment extends Fragment
 
         if (schedule.getStartDate().equals(schedule.getEndDate()))
         {
-            time = ClockUtil.DATE_FORMAT_ALLDAY.format(schedule.getStartDate());
+            time = ClockUtil.YYYY_년_M_월_D_일_E.format(schedule.getStartDate());
         } else
         {
             time = ClockUtil.DATE_FORMAT_NOT_ALLDAY.format(schedule.getStartDate()) + " -> " + ClockUtil.DATE_FORMAT_NOT_ALLDAY.format(schedule.getEndDate());

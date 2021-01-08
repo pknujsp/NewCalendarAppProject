@@ -148,8 +148,8 @@ public class WeatherRepository
         {
             calendar.add(Calendar.HOUR_OF_DAY, -1);
         }
-        parameter.setBaseDate(ClockUtil.yyyyMMdd_FORMAT.format(calendar.getTime()));
-        parameter.setBaseTime(ClockUtil.WEATHER_TIME_FORMAT.format(calendar.getTime()) + "00");
+        parameter.setBaseDate(ClockUtil.yyyyMMdd.format(calendar.getTime()));
+        parameter.setBaseTime(ClockUtil.HH.format(calendar.getTime()) + "00");
 
         Call<UltraSrtNcstRoot> call = querys.getUltraSrtNcstData(parameter.getMap());
 
@@ -197,8 +197,8 @@ public class WeatherRepository
         {
             calendar.add(Calendar.HOUR_OF_DAY, -1);
         }
-        parameter.setBaseDate(ClockUtil.yyyyMMdd_FORMAT.format(calendar.getTime()));
-        parameter.setBaseTime(ClockUtil.WEATHER_TIME_FORMAT.format(calendar.getTime()) + "30");
+        parameter.setBaseDate(ClockUtil.yyyyMMdd.format(calendar.getTime()));
+        parameter.setBaseTime(ClockUtil.HH.format(calendar.getTime()) + "30");
 
         Call<UltraSrtFcstRoot> call = querys.getUltraSrtFcstData(parameter.getMap());
 
@@ -265,8 +265,8 @@ public class WeatherRepository
             calendar.set(Calendar.HOUR_OF_DAY, baseHour);
         }
 
-        parameter.setBaseDate(ClockUtil.yyyyMMdd_FORMAT.format(calendar.getTime()));
-        parameter.setBaseTime(ClockUtil.WEATHER_TIME_FORMAT.format(calendar.getTime()) + "00");
+        parameter.setBaseDate(ClockUtil.yyyyMMdd.format(calendar.getTime()));
+        parameter.setBaseTime(ClockUtil.HH.format(calendar.getTime()) + "00");
 
         Call<VilageFcstRoot> call = querys.getVilageFcstData(parameter.getMap());
 
@@ -314,14 +314,14 @@ public class WeatherRepository
 
         if (hour >= 18 && minute >= 1)
         {
-            parameter.setTmFc(ClockUtil.yyyyMMdd_FORMAT.format(calendar.getTime()) + "1800");
+            parameter.setTmFc(ClockUtil.yyyyMMdd.format(calendar.getTime()) + "1800");
         } else if (hour >= 6 && minute >= 1)
         {
-            parameter.setTmFc(ClockUtil.yyyyMMdd_FORMAT.format(calendar.getTime()) + "0600");
+            parameter.setTmFc(ClockUtil.yyyyMMdd.format(calendar.getTime()) + "0600");
         } else
         {
             calendar.add(Calendar.DAY_OF_YEAR, -1);
-            parameter.setTmFc(ClockUtil.yyyyMMdd_FORMAT.format(calendar.getTime()) + "1800");
+            parameter.setTmFc(ClockUtil.yyyyMMdd.format(calendar.getTime()) + "1800");
         }
 
         Call<MidLandFcstRoot> call = querys.getMidLandFcstData(parameter.getMap());
@@ -370,14 +370,14 @@ public class WeatherRepository
 
         if (hour >= 18 && minute >= 1)
         {
-            parameter.setTmFc(ClockUtil.yyyyMMdd_FORMAT.format(calendar.getTime()) + "1800");
+            parameter.setTmFc(ClockUtil.yyyyMMdd.format(calendar.getTime()) + "1800");
         } else if (hour >= 6 && minute >= 1)
         {
-            parameter.setTmFc(ClockUtil.yyyyMMdd_FORMAT.format(calendar.getTime()) + "0600");
+            parameter.setTmFc(ClockUtil.yyyyMMdd.format(calendar.getTime()) + "0600");
         } else
         {
             calendar.add(Calendar.DAY_OF_YEAR, -1);
-            parameter.setTmFc(ClockUtil.yyyyMMdd_FORMAT.format(calendar.getTime()) + "1800");
+            parameter.setTmFc(ClockUtil.yyyyMMdd.format(calendar.getTime()) + "1800");
         }
 
         Call<MidTaRoot> call = querys.getMidTaData(parameter.getMap());
