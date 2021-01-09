@@ -38,6 +38,8 @@ import com.zerodsoft.scheduleweather.utility.RecurrenceRule;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
 
 public class EventActivity extends AppCompatActivity implements ReminderFragment.OnNotificationTimeListener, IEventTime, IEventRepeat
 {
@@ -54,6 +56,7 @@ public class EventActivity extends AppCompatActivity implements ReminderFragment
     public static final int LOCATION_RESELECTED = 100;
 
     public static final int REQUEST_RECURRENCE = 110;
+    public static final int REQUEST_TIMEZONE = 120;
 
     private ActivityEventBinding activityBinding;
     private CalendarViewModel viewModel;
@@ -261,6 +264,17 @@ public class EventActivity extends AppCompatActivity implements ReminderFragment
                 }).setTitle(getString(R.string.availability));
                 availabilityDialog = dialogBuilder.create();
                 availabilityDialog.show();
+            }
+        });
+
+        activityBinding.timeLayout.timezone.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                Intent intent = new Intent(EventActivity.this, TimeZoneActivity.class);
+                intent.putExtra("startDate", new Date(startDatetimeMillis));
+                startActivityForResult(intent, REQUEST_TIMEZONE);
             }
         });
 
@@ -566,6 +580,18 @@ public class EventActivity extends AppCompatActivity implements ReminderFragment
         {
         } else if (requestCode == MODIFY_LOCATION)
         {
+        } else if (requestCode == REQUEST_TIMEZONE)
+        {
+            TimeZone timeZone = (TimeZone) data.getSerializableExtra("timeZone");
+            activityBinding.timeLayout.timezone.setText(timeZone.getID());
+
+            if (newEventValues != null)
+            {
+                newEventValues.put(CalendarContract.Events.EVENT_TIMEZONE, timeZone.getID());
+            } else if (modifiedValues != null)
+            {
+                modifiedValues.put(CalendarContract.Events.EVENT_TIMEZONE, timeZone.getID());
+            }
         }
     }
 

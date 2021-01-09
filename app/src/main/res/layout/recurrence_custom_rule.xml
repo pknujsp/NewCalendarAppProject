@@ -41,15 +41,16 @@
 
     <include
         android:id="@+id/recurrence_day_view"
-        layout="@layout/recurrence_day" />
+        layout="@layout/recurrence_day"
+        android:visibility="gone" />
 
     <RadioGroup
         android:id="@+id/first_day_radio_group"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="12dp"
-        android:checkedButton="@id/same_date_radio">
-
+        android:checkedButton="@id/same_date_radio"
+        android:visibility="gone">
 
         <RadioButton
             android:id="@+id/same_date_radio"

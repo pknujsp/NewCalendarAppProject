@@ -183,15 +183,69 @@ public class RecurrenceRule
 
     public String interpret(Context context)
     {
-        StringBuilder stringBuilder = new StringBuilder();
-        String freq = null;
-        String until = containsKey(UNTIL) ? getValue(UNTIL) + context.getString(R.string.ends_at) : "";
-        String count = containsKey(COUNT) ? getValue(COUNT) + context.getString(R.string.end_after_n_repetition) : "";
-
-        if (containsKey(INTERVAL))
+        if (isEmpty())
         {
-            if (getValue(INTERVAL).equals("1"))
+            return "";
+        } else
+        {
+            String freq = null;
+            final String until = containsKey(UNTIL) ? getValue(UNTIL) + context.getString(R.string.up_to) : "";
+            final String count = containsKey(COUNT) ? getValue(COUNT) + context.getString(R.string.count) : "";
+
+            if (containsKey(INTERVAL))
             {
+
+                if (getValue(INTERVAL).equals("1"))
+                {
+                    switch (getValue(FREQ))
+                    {
+                        case FREQ_DAILY:
+                            freq = context.getString(R.string.recurrence_daily);
+                            break;
+                        case FREQ_WEEKLY:
+                            freq = context.getString(R.string.recurrence_weekly) + getValue(BYDAY);
+                            break;
+                        case FREQ_MONTHLY:
+                            if (containsKey(BYDAY))
+                            {
+                                freq = context.getString(R.string.recurrence_monthly) + getValue(BYDAY);
+                            } else
+                            {
+                                freq = context.getString(R.string.recurrence_monthly);
+                            }
+                            break;
+                        case FREQ_YEARLY:
+                            freq = context.getString(R.string.recurrence_yearly);
+                            break;
+                    }
+                } else
+                {
+                    switch (getValue(FREQ))
+                    {
+                        case FREQ_DAILY:
+                            freq = getValue(INTERVAL) + context.getString(R.string.repeat_days);
+                            break;
+                        case FREQ_WEEKLY:
+                            freq = getValue(INTERVAL) + context.getString(R.string.repeat_weeks) + getValue(BYDAY);
+                            break;
+                        case FREQ_MONTHLY:
+                            if (containsKey(BYDAY))
+                            {
+                                freq = getValue(INTERVAL) + context.getString(R.string.repeat_months) + getValue(BYDAY);
+                            } else
+                            {
+                                freq = getValue(INTERVAL) + context.getString(R.string.repeat_months);
+                            }
+                            break;
+                        case FREQ_YEARLY:
+                            freq = getValue(INTERVAL) + context.getString(R.string.repeat_years);
+                            break;
+                    }
+                }
+
+            } else
+            {
+
                 switch (getValue(FREQ))
                 {
                     case FREQ_DAILY:
@@ -213,53 +267,23 @@ public class RecurrenceRule
                         freq = context.getString(R.string.recurrence_yearly);
                         break;
                 }
-            } else
-            {
-                switch (getValue(FREQ))
-                {
-                    case FREQ_DAILY:
-                        freq = getValue(INTERVAL) + context.getString(R.string.day);
-                        break;
-                    case FREQ_WEEKLY:
-                        freq = getValue(INTERVAL) + context.getString(R.string.week) + getValue(BYDAY);
-                        break;
-                    case FREQ_MONTHLY:
-                        freq = getValue(INTERVAL) + context.getString(R.string.month);
-                        break;
-                    case FREQ_YEARLY:
-                        freq = getValue(INTERVAL) + context.getString(R.string.year);
-                        break;
-                }
-            }
-        } else
-        {
-            switch (getValue(FREQ))
-            {
-                case FREQ_DAILY:
-                    freq = context.getString(R.string.recurrence_daily);
-                    break;
-                case FREQ_WEEKLY:
-                    freq = context.getString(R.string.recurrence_weekly) + getValue(BYDAY);
-                    break;
-                case FREQ_MONTHLY:
-                    freq = context.getString(R.string.recurrence_monthly);
-                    break;
-                case FREQ_YEARLY:
-                    freq = context.getString(R.string.recurrence_yearly);
-                    break;
-            }
-        }
-        stringBuilder.append(freq);
-        if (!until.isEmpty())
-        {
-            stringBuilder.append(", ").append(until);
-        }
-        if (!count.isEmpty())
-        {
-            stringBuilder.append(", ").append(count);
-        }
 
-        return stringBuilder.toString();
+            }
+
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.append(freq);
+            if (!until.isEmpty())
+            {
+                stringBuilder.append(", ").append(until);
+            }
+            if (!count.isEmpty())
+            {
+                stringBuilder.append(", ").append(count);
+            }
+            stringBuilder.append(context.getString(R.string.recurrence));
+
+            return stringBuilder.toString();
+        }
     }
 
     public void separateValues(String rule)

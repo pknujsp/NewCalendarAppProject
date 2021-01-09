@@ -79,7 +79,8 @@
 
                 <include
                     android:id="@+id/recurrence_custom_rule"
-                    layout="@layout/recurrence_custom_rule" />
+                    layout="@layout/recurrence_custom_rule"
+                    android:visibility="gone" />
 
                 <include
                     android:id="@+id/recurrence_detail_rule"

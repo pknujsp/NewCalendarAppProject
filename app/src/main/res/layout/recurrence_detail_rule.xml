@@ -7,7 +7,7 @@
     android:orientation="vertical">
 
     <RadioButton
-        android:id="@+id/keeping_recurrence_radio"
+        android:id="@+id/not_end_radio"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/keeping_recurrence" />
@@ -18,13 +18,13 @@
         android:orientation="horizontal">
 
         <RadioButton
-            android:id="@+id/certain_recurrence_count_radio"
+            android:id="@+id/recurrence_count_radio"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical" />
 
         <EditText
-            android:id="@+id/certain_recurrence_count"
+            android:id="@+id/recurrence_count"
             android:layout_width="wrap_content"
             android:layout_height="48dp"
             android:autofillHints="1"
@@ -51,12 +51,12 @@
         android:orientation="horizontal">
 
         <RadioButton
-            android:id="@+id/recurrence_end_date_radio"
+            android:id="@+id/recurrence_until_radio"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
         <TextView
-            android:id="@+id/recurrence_end_date"
+            android:id="@+id/recurrence_until"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="?attr/selectableItemBackground"
@@ -72,6 +72,5 @@
 
 
     </LinearLayout>
-
 
 </LinearLayout>
