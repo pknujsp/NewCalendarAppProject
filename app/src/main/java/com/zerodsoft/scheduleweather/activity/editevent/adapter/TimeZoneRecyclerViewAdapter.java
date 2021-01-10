@@ -65,7 +65,7 @@ public class TimeZoneRecyclerViewAdapter extends RecyclerView.Adapter<TimeZoneRe
             @Override
             protected FilterResults performFiltering(CharSequence constraint)
             {
-                String charString = constraint.toString();
+                final String charString = constraint.toString();
                 if (charString.isEmpty())
                 {
                     filteredList = unFilteredList;

@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        tools:context=".activity.editevent.activity.ReminderActivity">
+
+        <RadioGroup
+            android:id="@+id/event_reminder_radio_group"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <RadioButton
+                android:id="@+id/not_remind_radio"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/not_reminder" />
+
+            <RadioButton
+                android:id="@+id/ok_remind_radio"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/ok_reminder" />
+
+        </RadioGroup>
+
+        <LinearLayout
+            android:id="@+id/reminder_selector"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+
+            <RelativeLayout
+                android:id="@+id/reminder_month"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:padding="8dp">
+
+                <TextView
+                    android:id="@+id/month_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:layout_centerHorizontal="true"
+                    android:text="@string/month"
+                    android:textSize="24sp" />
+
+                <ImageButton
+                    android:id="@+id/up_month"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:layout_below="@id/month_label"
+
+                    android:background="@drawable/up_down_button_background"
+                    android:src="@drawable/add_icon_white" />
+
+                <EditText
+                    android:id="@+id/reminder_month_value"
+                    android:layout_width="match_parent"
+                    android:layout_height="70dp"
+                    android:layout_below="@id/up_month"
+                    android:ems="2"
+                    android:maxEms="2"
+                    android:text="0"
+                    android:textSize="26sp" />
+
+                <ImageButton
+                    android:id="@+id/down_month"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:layout_below="@id/reminder_month_value"
+                    android:background="@drawable/up_down_button_background"
+                    android:src="@drawable/minus_icon_white" />
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/reminder_week"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:padding="8dp">
+
+                <TextView
+                    android:id="@+id/week_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:layout_centerHorizontal="true"
+                    android:text="@string/week"
+                    android:textSize="24sp" />
+
+                <ImageButton
+                    android:id="@+id/up_week"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:layout_below="@id/week_label"
+                    android:background="@drawable/up_down_button_background"
+                    android:src="@drawable/add_icon_white" />
+
+                <EditText
+                    android:id="@+id/reminder_week_value"
+                    android:layout_width="match_parent"
+                    android:layout_height="70dp"
+                    android:layout_below="@id/up_week"
+                    android:ems="2"
+                    android:maxEms="2"
+                    android:text="0"
+                    android:textSize="26sp" />
+
+                <ImageButton
+                    android:id="@+id/down_week"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:layout_below="@id/reminder_week_value"
+                    android:background="@drawable/up_down_button_background"
+                    android:src="@drawable/minus_icon_white" />
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/reminder_day"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:padding="8dp">
+
+                <TextView
+                    android:id="@+id/day_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:layout_centerHorizontal="true"
+                    android:text="@string/day"
+                    android:textSize="24sp" />
+
+                <ImageButton
+                    android:id="@+id/up_day"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:layout_below="@id/day_label"
+                    android:background="@drawable/up_down_button_background"
+                    android:src="@drawable/add_icon_white" />
+
+                <EditText
+                    android:id="@+id/reminder_day_value"
+                    android:layout_width="match_parent"
+                    android:layout_height="70dp"
+                    android:layout_below="@id/up_day"
+                    android:ems="2"
+                    android:maxEms="2"
+                    android:text="0"
+                    android:textSize="26sp" />
+
+                <ImageButton
+                    android:id="@+id/down_day"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:layout_below="@id/reminder_day_value"
+                    android:background="@drawable/up_down_button_background"
+                    android:src="@drawable/minus_icon_white" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/reminder_hour"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:padding="8dp">
+
+                <TextView
+                    android:id="@+id/hour_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:layout_centerHorizontal="true"
+                    android:text="@string/hour"
+                    android:textSize="24sp" />
+
+                <ImageButton
+                    android:id="@+id/up_hour"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:layout_below="@id/hour_label"
+                    android:background="@drawable/up_down_button_background"
+                    android:src="@drawable/add_icon_white" />
+
+                <EditText
+                    android:id="@+id/reminder_hour_value"
+                    android:layout_width="match_parent"
+                    android:layout_height="70dp"
+                    android:layout_below="@id/up_hour"
+                    android:ems="2"
+                    android:maxEms="2"
+                    android:text="0"
+                    android:textSize="26sp" />
+
+                <ImageButton
+                    android:id="@+id/down_hour"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:layout_below="@id/reminder_hour_value"
+                    android:background="@drawable/up_down_button_background"
+                    android:src="@drawable/minus_icon_white" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/reminder_minute"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:padding="8dp">
+
+                <TextView
+                    android:id="@+id/minute_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:layout_centerHorizontal="true"
+                    android:text="@string/week"
+                    android:textSize="24sp" />
+
+                <ImageButton
+                    android:id="@+id/up_minute"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:layout_below="@id/minute_label"
+                    android:background="@drawable/up_down_button_background"
+                    android:src="@drawable/add_icon_white" />
+
+                <EditText
+                    android:id="@+id/reminder_minute_value"
+                    android:layout_width="match_parent"
+                    android:layout_height="70dp"
+                    android:layout_below="@id/up_minute"
+                    android:ems="2"
+                    android:maxEms="2"
+                    android:text="0"
+                    android:textSize="26sp" />
+
+                <ImageButton
+                    android:id="@+id/down_minute"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:layout_below="@id/reminder_minute_value"
+                    android:background="@drawable/up_down_button_background"
+                    android:src="@drawable/minus_icon_white" />
+            </RelativeLayout>
+
+        </LinearLayout>
+    </LinearLayout>
+</layout>

@@ -16,7 +16,6 @@ public class ClockUtil
     public static final SimpleDateFormat yyyyMMdd = new SimpleDateFormat("yyyyMMdd");
     public static final SimpleDateFormat HH = new SimpleDateFormat("HH");
     public static final SimpleDateFormat H = new SimpleDateFormat("H");
-    public static final SimpleDateFormat MMdd = new SimpleDateFormat("MMdd");
     public static final SimpleDateFormat MdE_FORMAT = new SimpleDateFormat("M/d E");
     public static final SimpleDateFormat DATE_FORMAT_NOT_ALLDAY = new SimpleDateFormat("yyyy년 M월 d일 E a h시 m분");
     public static final SimpleDateFormat YYYY_년_M_월_D_일_E = new SimpleDateFormat("yyyy년 M월 d일 E");
@@ -26,6 +25,9 @@ public class ClockUtil
     public static final SimpleDateFormat YEAR_MONTH_FORMAT = new SimpleDateFormat("yyyy/MM");
     public static final SimpleDateFormat E = new SimpleDateFormat("E");
     public static final SimpleDateFormat M_월_D_일 = new SimpleDateFormat("M월 d일");
+
+    public static final SimpleDateFormat HOURS_12 = new SimpleDateFormat("a h:mm");
+    public static final SimpleDateFormat HOURS_24 = new SimpleDateFormat("H:mm");
 
     public static final int MONTH = 0;
     public static final int WEEK = 1;

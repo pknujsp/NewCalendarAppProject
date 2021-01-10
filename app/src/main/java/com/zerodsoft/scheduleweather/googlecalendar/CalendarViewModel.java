@@ -101,4 +101,19 @@ public class CalendarViewModel extends ViewModel
     {
         return reminderLiveData;
     }
+
+    public void addEvent(ContentValues event)
+    {
+        repository.addEvent(event);
+    }
+
+    public void modifyEvent(ContentValues event)
+    {
+        repository.modifyEvent(event);
+    }
+
+    public List<ContentValues> getCalendars()
+    {
+        return repository.getCalendars();
+    }
 }

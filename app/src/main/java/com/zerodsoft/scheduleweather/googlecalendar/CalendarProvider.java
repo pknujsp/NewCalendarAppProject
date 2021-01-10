@@ -168,7 +168,8 @@ public class CalendarProvider
         return calendarsList;
     }
 
-    public long addEvent(EventDto eventDto)
+    /*
+    public long addEvent(ContentValues eventDto)
     {
         ContentValues values = new ContentValues();
 
@@ -181,7 +182,7 @@ public class CalendarProvider
         values.put(CalendarContract.Events.EVENT_TIMEZONE, eventDto.getEVENT_TIMEZONE());
         values.put(CalendarContract.Events.DESCRIPTION,
                 eventDto.getDESCRIPTION());
-        values.put(CalendarContract.Events.ACCESS_LEVEL, eventDto.getACCESS_LEVEL());
+        values.put(CalendarContract.Events.ACCESS_LEVEL, eventDto.get());
         values.put(CalendarContract.Events.SELF_ATTENDEE_STATUS,
                 eventDto.getSELF_ATTENDEE_STATUS());
         values.put(CalendarContract.Events.ALL_DAY, eventDto.isALL_DAY());
@@ -196,6 +197,8 @@ public class CalendarProvider
         long eventID = Long.parseLong(uri.getLastPathSegment());
         return eventID;
     }
+
+     */
 
     public List<ContentValues> getReminder(long eventId)
     {
@@ -258,5 +261,54 @@ public class CalendarProvider
             case Cursor.FIELD_TYPE_NULL:
                 break;
         }
+    }
+
+    public List<ContentValues> getCalendars()
+    {
+        final String[] PROJECTION = {CalendarContract.Calendars._ID, CalendarContract.Calendars.NAME,
+                CalendarContract.Calendars.ACCOUNT_NAME, CalendarContract.Calendars.CALENDAR_DISPLAY_NAME, CalendarContract.Calendars.OWNER_ACCOUNT,
+                CalendarContract.Calendars.CALENDAR_COLOR, CalendarContract.Calendars.IS_PRIMARY};
+        ContentResolver contentResolver = CONTEXT.getContentResolver();
+        Cursor cursor = contentResolver.query(CalendarContract.Calendars.CONTENT_URI, PROJECTION, null, null, null);
+
+        final String GOOGLE_SECONDARY_CALENDAR = "@group.calendar.google.com";
+        List<ContentValues> calendarList = new ArrayList<>();
+
+        while (cursor.moveToNext())
+        {
+            if (cursor.getInt(6) == 1)
+            {
+                // another || google primary calendar
+                ContentValues calendar = new ContentValues();
+
+                calendar.put(CalendarContract.Calendars._ID, cursor.getString(0));
+                calendar.put(CalendarContract.Calendars.NAME, cursor.getString(1));
+                calendar.put(CalendarContract.Calendars.ACCOUNT_NAME, cursor.getString(2));
+                calendar.put(CalendarContract.Calendars.CALENDAR_DISPLAY_NAME, cursor.getString(3));
+                calendar.put(CalendarContract.Calendars.OWNER_ACCOUNT, cursor.getString(4));
+                calendar.put(CalendarContract.Calendars.CALENDAR_COLOR, cursor.getInt(5));
+
+                calendarList.add(calendar);
+            } else if (cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.OWNER_ACCOUNT)).contains(GOOGLE_SECONDARY_CALENDAR))
+            {
+                ContentValues calendar = new ContentValues();
+
+                calendar.put(CalendarContract.Calendars._ID, cursor.getString(0));
+                calendar.put(CalendarContract.Calendars.NAME, cursor.getString(1));
+                calendar.put(CalendarContract.Calendars.ACCOUNT_NAME, cursor.getString(2));
+                calendar.put(CalendarContract.Calendars.CALENDAR_DISPLAY_NAME, cursor.getString(3));
+                calendar.put(CalendarContract.Calendars.OWNER_ACCOUNT, cursor.getString(4));
+                calendar.put(CalendarContract.Calendars.CALENDAR_COLOR, cursor.getInt(5));
+
+                calendarList.add(calendar);
+                break;
+            }
+        }
+        cursor.close();
+        return calendarList;
+    }
+
+    public void modifyEvent(ContentValues event)
+    {
     }
 }

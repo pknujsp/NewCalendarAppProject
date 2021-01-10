@@ -35,62 +35,90 @@
 
         </LinearLayout>
 
-        <LinearLayout
-            android:id="@+id/startdate_layout"
+        <RelativeLayout
+            android:id="@+id/start_datetime_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:orientation="horizontal">
+            android:layout_marginBottom="8dp">
 
             <TextView
+                android:id="@+id/start_datetime_label"
                 style="@style/EditSchedule.Value"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
                 android:text="@string/startdate"
                 android:textColor="@color/black" />
 
             <TextView
-                android:id="@+id/startdate"
+                android:id="@+id/start_date"
                 style="@style/EditSchedule.Value"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_toRightOf="@id/start_datetime_label"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:hint="@string/startdate"
+                android:textAlignment="textStart" />
+
+            <TextView
+                android:id="@+id/start_time"
+                style="@style/EditSchedule.Value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
                 android:background="?attr/selectableItemBackground"
                 android:clickable="true"
                 android:focusable="true"
                 android:hint="@string/startdate"
                 android:textAlignment="textEnd" />
-        </LinearLayout>
+        </RelativeLayout>
 
-        <LinearLayout
-            android:id="@+id/enddate_layout"
+        <RelativeLayout
+            android:id="@+id/end_datetime_layout"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginBottom="8dp"
-            android:orientation="horizontal">
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp">
 
             <TextView
+                android:id="@+id/end_datetime_label"
                 style="@style/EditSchedule.Value"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
                 android:text="@string/enddate"
                 android:textColor="@color/black" />
 
             <TextView
-                android:id="@+id/enddate"
+                android:id="@+id/end_date"
                 style="@style/EditSchedule.Value"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_toRightOf="@id/end_datetime_label"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:hint="@string/enddate"
+                android:textAlignment="textStart" />
+
+            <TextView
+                android:id="@+id/end_time"
+                style="@style/EditSchedule.Value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
                 android:background="?attr/selectableItemBackground"
                 android:clickable="true"
                 android:focusable="true"
                 android:hint="@string/enddate"
                 android:textAlignment="textEnd" />
-        </LinearLayout>
+        </RelativeLayout>
 
         <LinearLayout
             android:id="@+id/timezone_layout"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="horizontal">
 
             <TextView

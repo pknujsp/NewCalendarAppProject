@@ -36,7 +36,7 @@ public class CalendarRepository
 
     public CalendarRepository(Activity activity)
     {
-        this.iGoogleCalendar = (IGoogleCalendar) activity;
+        // this.iGoogleCalendar = (IGoogleCalendar) activity;
         this.context = activity.getApplicationContext();
 
         eventsLiveData = new MutableLiveData<>();
@@ -217,5 +217,20 @@ public class CalendarRepository
     public void getReminders(long eventId)
     {
         reminderLiveData.setValue(new DataWrapper<>(calendarProvider.getReminder(eventId)));
+    }
+
+    public void addEvent(ContentValues event)
+    {
+        // calendarProvider.add(event);
+    }
+
+    public void modifyEvent(ContentValues event)
+    {
+        calendarProvider.modifyEvent(event);
+    }
+
+    public List<ContentValues> getCalendars()
+    {
+        return calendarProvider.getCalendars();
     }
 }
