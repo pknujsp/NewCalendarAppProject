@@ -1,26 +1,18 @@
-package com.zerodsoft.scheduleweather.activity.editevent.value;
+package com.zerodsoft.scheduleweather.utility.model;
 
-public class ReminderValue
+public class ReminderDto
 {
-    private int month;
     private int week;
     private int day;
     private int hour;
     private int minute;
 
-    public ReminderValue()
+    public ReminderDto(int week, int day, int hour, int minute)
     {
-    }
-
-    public int getMonth()
-    {
-        return month;
-    }
-
-    public ReminderValue setMonth(int month)
-    {
-        this.month = month;
-        return this;
+        this.week = week;
+        this.day = day;
+        this.hour = hour;
+        this.minute = minute;
     }
 
     public int getWeek()
@@ -28,7 +20,7 @@ public class ReminderValue
         return week;
     }
 
-    public ReminderValue setWeek(int week)
+    public ReminderDto setWeek(int week)
     {
         this.week = week;
         return this;
@@ -39,7 +31,7 @@ public class ReminderValue
         return day;
     }
 
-    public ReminderValue setDay(int day)
+    public ReminderDto setDay(int day)
     {
         this.day = day;
         return this;
@@ -50,7 +42,7 @@ public class ReminderValue
         return hour;
     }
 
-    public ReminderValue setHour(int hour)
+    public ReminderDto setHour(int hour)
     {
         this.hour = hour;
         return this;
@@ -61,7 +53,7 @@ public class ReminderValue
         return minute;
     }
 
-    public ReminderValue setMinute(int minute)
+    public ReminderDto setMinute(int minute)
     {
         this.minute = minute;
         return this;

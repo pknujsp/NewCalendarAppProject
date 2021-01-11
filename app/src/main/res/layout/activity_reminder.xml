@@ -9,6 +9,19 @@
         android:orientation="vertical"
         tools:context=".activity.editevent.activity.ReminderActivity">
 
+        <com.google.android.material.appbar.AppBarLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <com.google.android.material.appbar.MaterialToolbar
+                android:id="@+id/toolbar"
+                style="@style/Widget.MaterialComponents.Toolbar.Primary"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                app:title="@string/reminder" />
+
+        </com.google.android.material.appbar.AppBarLayout>
+
         <RadioGroup
             android:id="@+id/event_reminder_radio_group"
             android:layout_width="match_parent"
@@ -36,52 +49,6 @@
             android:orientation="horizontal"
             android:visibility="gone">
 
-
-            <RelativeLayout
-                android:id="@+id/reminder_month"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:padding="8dp">
-
-                <TextView
-                    android:id="@+id/month_label"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentTop="true"
-                    android:layout_centerHorizontal="true"
-                    android:text="@string/month"
-                    android:textSize="24sp" />
-
-                <ImageButton
-                    android:id="@+id/up_month"
-                    android:layout_width="match_parent"
-                    android:layout_height="50dp"
-                    android:layout_below="@id/month_label"
-
-                    android:background="@drawable/up_down_button_background"
-                    android:src="@drawable/add_icon_white" />
-
-                <EditText
-                    android:id="@+id/reminder_month_value"
-                    android:layout_width="match_parent"
-                    android:layout_height="70dp"
-                    android:layout_below="@id/up_month"
-                    android:ems="2"
-                    android:maxEms="2"
-                    android:text="0"
-                    android:textSize="26sp" />
-
-                <ImageButton
-                    android:id="@+id/down_month"
-                    android:layout_width="match_parent"
-                    android:layout_height="50dp"
-                    android:layout_below="@id/reminder_month_value"
-                    android:background="@drawable/up_down_button_background"
-                    android:src="@drawable/minus_icon_white" />
-
-            </RelativeLayout>
-
             <RelativeLayout
                 android:id="@+id/reminder_week"
                 android:layout_width="0dp"
@@ -95,6 +62,7 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentTop="true"
                     android:layout_centerHorizontal="true"
+                    android:layout_marginBottom="8dp"
                     android:text="@string/week"
                     android:textSize="24sp" />
 
@@ -112,6 +80,8 @@
                     android:layout_height="70dp"
                     android:layout_below="@id/up_week"
                     android:ems="2"
+                    android:gravity="center"
+                    android:inputType="number"
                     android:maxEms="2"
                     android:text="0"
                     android:textSize="26sp" />
@@ -139,6 +109,7 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentTop="true"
                     android:layout_centerHorizontal="true"
+                    android:layout_marginBottom="8dp"
                     android:text="@string/day"
                     android:textSize="24sp" />
 
@@ -156,6 +127,8 @@
                     android:layout_height="70dp"
                     android:layout_below="@id/up_day"
                     android:ems="2"
+                    android:gravity="center"
+                    android:inputType="number"
                     android:maxEms="2"
                     android:text="0"
                     android:textSize="26sp" />
@@ -182,6 +155,7 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentTop="true"
                     android:layout_centerHorizontal="true"
+                    android:layout_marginBottom="8dp"
                     android:text="@string/hour"
                     android:textSize="24sp" />
 
@@ -191,6 +165,8 @@
                     android:layout_height="50dp"
                     android:layout_below="@id/hour_label"
                     android:background="@drawable/up_down_button_background"
+                    android:gravity="center"
+                    android:inputType="number"
                     android:src="@drawable/add_icon_white" />
 
                 <EditText
@@ -199,6 +175,8 @@
                     android:layout_height="70dp"
                     android:layout_below="@id/up_hour"
                     android:ems="2"
+                    android:gravity="center"
+                    android:inputType="number"
                     android:maxEms="2"
                     android:text="0"
                     android:textSize="26sp" />
@@ -225,7 +203,8 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentTop="true"
                     android:layout_centerHorizontal="true"
-                    android:text="@string/week"
+                    android:layout_marginBottom="8dp"
+                    android:text="@string/minute"
                     android:textSize="24sp" />
 
                 <ImageButton
@@ -242,6 +221,8 @@
                     android:layout_height="70dp"
                     android:layout_below="@id/up_minute"
                     android:ems="2"
+                    android:gravity="center"
+                    android:inputType="number"
                     android:maxEms="2"
                     android:text="0"
                     android:textSize="26sp" />

@@ -16,6 +16,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.provider.CalendarContract;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -37,13 +38,17 @@ import com.zerodsoft.scheduleweather.databinding.ActivityEventBinding;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.googlecalendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
+import com.zerodsoft.scheduleweather.utility.CalendarEventUtil;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.utility.RecurrenceRule;
+import com.zerodsoft.scheduleweather.utility.model.ReminderDto;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.TimeZone;
 
 public class EventActivity extends AppCompatActivity implements IEventRepeat
@@ -59,6 +64,7 @@ public class EventActivity extends AppCompatActivity implements IEventRepeat
 
     public static final int REQUEST_RECURRENCE = 110;
     public static final int REQUEST_TIMEZONE = 120;
+    public static final int REQUEST_REMINDER = 130;
 
     private static final int START_DATETIME = 200;
     private static final int END_DATETIME = 210;
@@ -145,7 +151,6 @@ public class EventActivity extends AppCompatActivity implements IEventRepeat
         setAllDaySwitch();
         setTimeView();
         setLocationView();
-        setReminder();
 
         accessLevelItems = new String[]{getString(R.string.access_default), getString(R.string.access_public), getString(R.string.access_private)};
         availabilityItems = new String[]{getString(R.string.busy), getString(R.string.free)};
@@ -298,6 +303,22 @@ public class EventActivity extends AppCompatActivity implements IEventRepeat
 
         });
 
+        activityBinding.reminderLayout.reminder.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                Intent intent = new Intent(EventActivity.this, ReminderActivity.class);
+                intent.putExtra("hasAlarm", (Integer) getValue(CalendarContract.Events.HAS_ALARM));
+
+                if ((Integer) getValue(CalendarContract.Events.HAS_ALARM) == 1)
+                {
+                    intent.putExtra("minutes", (Integer) getValue(CalendarContract.Reminders.MINUTES));
+                }
+                startActivityForResult(intent, REQUEST_REMINDER);
+            }
+        });
+
         requestCode = getIntent().getIntExtra("requestCode", 0);
 
         switch (requestCode)
@@ -332,6 +353,9 @@ public class EventActivity extends AppCompatActivity implements IEventRepeat
                 //캘린더도 기본 값 설정
                 setCalendarValue(eventDefaultValue.getDefaultCalendar());
                 setCalendarText();
+
+                // 알림
+                putValue(CalendarContract.Events.HAS_ALARM, 0);
 
                 // 접근 범위
                 putValue(CalendarContract.Events.ACCESS_LEVEL, eventDefaultValue.getDefaultAccessLevel());
@@ -392,6 +416,8 @@ public class EventActivity extends AppCompatActivity implements IEventRepeat
 
                             // 반복
                             // 알림
+
+                            setReminderText();
                             // 설명
                             activityBinding.descriptionLayout.description.setText(savedEventValues.getAsString(CalendarContract.Events.DESCRIPTION));
                             // 위치
@@ -532,20 +558,6 @@ public class EventActivity extends AppCompatActivity implements IEventRepeat
         activityBinding.timeLayout.endTime.setOnClickListener(onClickListener);
     }
 
-    private void setReminder()
-    {
-        View.OnClickListener onClickListener = new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                // reminderFragment.init(activityBinding.getScheduleDto());
-                // reminderFragment.show(getSupportFragmentManager(), ReminderFragment.TAG);
-            }
-        };
-
-        activityBinding.reminderLayout.reminder.setOnClickListener(onClickListener);
-    }
 
     private void setLocationView()
     {
@@ -597,13 +609,7 @@ public class EventActivity extends AppCompatActivity implements IEventRepeat
                 recurrenceRule.separateValues(rrule);
                 activityBinding.recurrenceLayout.recurrenceValue.setText(recurrenceRule.interpret(getApplicationContext()));
 
-                if (newEventValues != null)
-                {
-                    newEventValues.put(CalendarContract.Events.RRULE, rrule);
-                } else if (modifiedValues != null)
-                {
-                    modifiedValues.put(CalendarContract.Events.RRULE, rrule);
-                }
+                putValue(CalendarContract.Events.RRULE, rrule);
             } else
             {
 
@@ -617,6 +623,58 @@ public class EventActivity extends AppCompatActivity implements IEventRepeat
             TimeZone timeZone = (TimeZone) data.getSerializableExtra("timeZone");
             putValue(CalendarContract.Events.EVENT_TIMEZONE, timeZone.getID());
             setTimeZoneText(timeZone);
+        } else if (requestCode == REQUEST_REMINDER)
+        {
+            if (resultCode == RESULT_OK)
+            {
+                if (data.getBooleanExtra("hasAlarm", false))
+                {
+                    final int minutes = data.getIntExtra("newMinutes", 0);
+                    putValue(CalendarContract.Reminders.MINUTES, minutes);
+                    putValue(CalendarContract.Events.HAS_ALARM, 1);
+                } else
+                {
+                    putValue(CalendarContract.Events.HAS_ALARM, 0);
+                    removeValue(CalendarContract.Reminders.MINUTES);
+                }
+                setReminderText();
+            } else
+            {
+
+            }
+        }
+    }
+
+    private void setReminderText()
+    {
+        if ((Integer) getValue(CalendarContract.Events.HAS_ALARM) == 1)
+        {
+            final int minutes = (Integer) getValue(CalendarContract.Reminders.MINUTES);
+            ReminderDto reminderDto = CalendarEventUtil.convertAlarmMinutes(minutes);
+
+            StringBuilder stringBuilder = new StringBuilder();
+            if (reminderDto.getWeek() > 0)
+            {
+                stringBuilder.append(reminderDto.getWeek()).append(getString(R.string.week)).append(" ");
+            }
+            if (reminderDto.getDay() > 0)
+            {
+                stringBuilder.append(reminderDto.getDay()).append(getString(R.string.day)).append(" ");
+            }
+            if (reminderDto.getHour() > 0)
+            {
+                stringBuilder.append(reminderDto.getHour()).append(getString(R.string.hour)).append(" ");
+            }
+            if (reminderDto.getMinute() > 0)
+            {
+                stringBuilder.append(reminderDto.getMinute()).append(getString(R.string.minute)).append(" ");
+            }
+            stringBuilder.append(getString(R.string.remind_before));
+
+            activityBinding.reminderLayout.reminder.setText(stringBuilder.toString());
+        } else
+        {
+            activityBinding.reminderLayout.reminder.setText(getString(R.string.not_reminder));
         }
     }
 
@@ -685,25 +743,47 @@ public class EventActivity extends AppCompatActivity implements IEventRepeat
         }
     }
 
+    private void removeValue(String dataType)
+    {
+        if (newEventValues != null)
+        {
+            newEventValues.remove(dataType);
+        } else
+        {
+            modifiedValues.remove(dataType);
+        }
+    }
+
     private Object getValue(String dataType)
+    {
+        if (newEventValues != null)
+        {
+            return newEventValues.get(dataType);
+        } else
+        {
+            return modifiedValues.get(dataType);
+        }
+    }
+
+    private boolean containsKey(String dataType)
     {
         if (newEventValues != null)
         {
             if (newEventValues.containsKey(dataType))
             {
-                return newEventValues.get(dataType);
+                return true;
             } else
             {
-                return null;
+                return false;
             }
         } else
         {
             if (modifiedValues.containsKey(dataType))
             {
-                return modifiedValues.get(dataType);
+                return true;
             } else
             {
-                return null;
+                return false;
             }
         }
     }
@@ -879,10 +959,12 @@ public class EventActivity extends AppCompatActivity implements IEventRepeat
                 {
                     startTimeHour = timePicker.getHour();
                     startTimeMinute = timePicker.getMinute();
+                    setTimeText(START_DATETIME);
                 } else
                 {
                     endTimeHour = timePicker.getHour();
                     endTimeMinute = timePicker.getMinute();
+                    setTimeText(END_DATETIME);
                 }
                 timePicker.dismiss();
             }
