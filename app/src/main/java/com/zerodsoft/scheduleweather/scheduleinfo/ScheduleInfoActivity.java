@@ -27,7 +27,6 @@ public class ScheduleInfoActivity extends AppCompatActivity
     private BottomNavigationView bottomNavigationView;
     private FragmentContainerView fragmentContainerView;
 
-    private ScheduleInfoFragment scheduleInfoFragment;
     private ScheduleWeatherFragment scheduleWeatherFragment;
     private PlacesAroundLocationFragment placesAroundLocationFragment;
 
@@ -75,15 +74,17 @@ public class ScheduleInfoActivity extends AppCompatActivity
             @Override
             public void onChanged(ScheduleData scheduleData)
             {
-                scheduleInfoFragment = new ScheduleInfoFragment(scheduleData.getSchedule(), scheduleData.getAddresses(), scheduleData.getPlaces());
+     /*
                 scheduleWeatherFragment = new ScheduleWeatherFragment(scheduleData.getAddresses(), scheduleData.getPlaces());
                 placesAroundLocationFragment = new PlacesAroundLocationFragment(scheduleData.getAddresses(), scheduleData.getPlaces());
                 fragmentManager.beginTransaction().add(R.id.schedule_fragment_container, scheduleInfoFragment, TAG_INFO).hide(scheduleInfoFragment)
                         .add(R.id.schedule_fragment_container, scheduleWeatherFragment, TAG_WEATHER).hide(placesAroundLocationFragment)
                         .add(R.id.schedule_fragment_container, placesAroundLocationFragment, TAG_LOCATION).hide(scheduleWeatherFragment)
-                        .show(scheduleInfoFragment)
+
                         .commit();
-                currentFragment = scheduleInfoFragment;
+
+
+      */
             }
         });
 

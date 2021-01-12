@@ -236,6 +236,7 @@
     <string name="count">회</string>
     <string name="up_to">까지</string>
     <string name="input_timezone">국가명 또는 시간대를 입력하세요</string>
+    <string name="notification_on_time">정시에 알림</string>
 
 
     <!-- 알림 -->

@@ -416,7 +416,6 @@ public class EventActivity extends AppCompatActivity implements IEventRepeat
 
                             // 반복
                             // 알림
-
                             setReminderText();
                             // 설명
                             activityBinding.descriptionLayout.description.setText(savedEventValues.getAsString(CalendarContract.Events.DESCRIPTION));
@@ -595,6 +594,19 @@ public class EventActivity extends AppCompatActivity implements IEventRepeat
         activityBinding.locationLayout.location.setOnClickListener(onClickListener);
     }
 
+    private void setRecurrenceText()
+    {
+        if (containsKey(CalendarContract.Events.RRULE))
+        {
+            RecurrenceRule recurrenceRule = new RecurrenceRule();
+            recurrenceRule.separateValues((String) getValue(CalendarContract.Events.RRULE));
+            activityBinding.recurrenceLayout.recurrenceValue.setText(recurrenceRule.interpret(getApplicationContext()));
+        } else
+        {
+            activityBinding.recurrenceLayout.recurrenceValue.setText("");
+        }
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data)
     {
@@ -605,11 +617,8 @@ public class EventActivity extends AppCompatActivity implements IEventRepeat
             if (resultCode == RESULT_OK)
             {
                 String rrule = data.getStringExtra("recurrenceRule");
-                RecurrenceRule recurrenceRule = new RecurrenceRule();
-                recurrenceRule.separateValues(rrule);
-                activityBinding.recurrenceLayout.recurrenceValue.setText(recurrenceRule.interpret(getApplicationContext()));
-
                 putValue(CalendarContract.Events.RRULE, rrule);
+                setRecurrenceText();
             } else
             {
 
@@ -669,12 +678,18 @@ public class EventActivity extends AppCompatActivity implements IEventRepeat
             {
                 stringBuilder.append(reminderDto.getMinute()).append(getString(R.string.minute)).append(" ");
             }
-            stringBuilder.append(getString(R.string.remind_before));
 
+            if (reminderDto.getMinute() == 0)
+            {
+                stringBuilder.append(getString(R.string.notification_on_time));
+            } else
+            {
+                stringBuilder.append(getString(R.string.remind_before));
+            }
             activityBinding.reminderLayout.reminder.setText(stringBuilder.toString());
         } else
         {
-            activityBinding.reminderLayout.reminder.setText(getString(R.string.not_reminder));
+            activityBinding.reminderLayout.reminder.setText("");
         }
     }
 

@@ -6,9 +6,11 @@ import androidx.databinding.DataBindingUtil;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.RadioGroup;
 
@@ -22,6 +24,15 @@ public class ReminderActivity extends AppCompatActivity
     private ActivityReminderBinding binding;
     private boolean hasAlarm = false;
     private int givedMinutes = 0;
+
+    private Handler repeatUpdateHandler = new Handler();
+    private boolean cIncrement = false;
+    private boolean cDecrement = false;
+
+    private final int WEEK = 0;
+    private final int DAY = 1;
+    private final int HOUR = 2;
+    private final int MINUTE = 3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -71,6 +82,11 @@ public class ReminderActivity extends AppCompatActivity
         binding.upHour.setOnLongClickListener(onUpLongClickListener);
         binding.upMinute.setOnLongClickListener(onUpLongClickListener);
 
+        binding.upWeek.setOnTouchListener(onTouchListener);
+        binding.upDay.setOnTouchListener(onTouchListener);
+        binding.upHour.setOnTouchListener(onTouchListener);
+        binding.upMinute.setOnTouchListener(onTouchListener);
+
         binding.downWeek.setOnClickListener(onDownClickListener);
         binding.downDay.setOnClickListener(onDownClickListener);
         binding.downHour.setOnClickListener(onDownClickListener);
@@ -80,6 +96,12 @@ public class ReminderActivity extends AppCompatActivity
         binding.downDay.setOnLongClickListener(onDownLongClickListener);
         binding.downHour.setOnLongClickListener(onDownLongClickListener);
         binding.downMinute.setOnLongClickListener(onDownLongClickListener);
+
+        binding.downWeek.setOnTouchListener(onTouchListener);
+        binding.downDay.setOnTouchListener(onTouchListener);
+        binding.downHour.setOnTouchListener(onTouchListener);
+        binding.downMinute.setOnTouchListener(onTouchListener);
+
 
         if (getIntent().getIntExtra("hasAlarm", 0) == 1)
         {
@@ -204,7 +226,7 @@ public class ReminderActivity extends AppCompatActivity
 
                 } else if (binding.reminderHourValue.isFocused())
                 {
-                    if (Integer.parseInt(charSequence.toString()) < 1)
+                    if (Integer.parseInt(charSequence.toString()) < 0)
                     {
                         binding.reminderHourValue.setText("0");
                     } else if (invalidValue)
@@ -214,7 +236,7 @@ public class ReminderActivity extends AppCompatActivity
 
                 } else if (binding.reminderDayValue.isFocused())
                 {
-                    if (Integer.parseInt(charSequence.toString()) < 1)
+                    if (Integer.parseInt(charSequence.toString()) < 0)
                     {
                         binding.reminderDayValue.setText("0");
                     } else if (invalidValue)
@@ -224,7 +246,7 @@ public class ReminderActivity extends AppCompatActivity
 
                 } else if (binding.reminderWeekValue.isFocused())
                 {
-                    if (Integer.parseInt(charSequence.toString()) < 1)
+                    if (Integer.parseInt(charSequence.toString()) < 0)
                     {
                         binding.reminderWeekValue.setText("0");
                     } else if (invalidValue)
@@ -243,22 +265,75 @@ public class ReminderActivity extends AppCompatActivity
         }
     };
 
+    private void increaseValue(int type)
+    {
+        int value = 0;
+        switch (type)
+        {
+            case WEEK:
+                value = Integer.parseInt(binding.reminderWeekValue.getText().toString());
+                binding.reminderWeekValue.setText(String.valueOf(++value));
+                break;
+            case DAY:
+                value = Integer.parseInt(binding.reminderDayValue.getText().toString());
+                binding.reminderDayValue.setText(String.valueOf(++value));
+                break;
+            case HOUR:
+                value = Integer.parseInt(binding.reminderHourValue.getText().toString());
+                binding.reminderHourValue.setText(String.valueOf(++value));
+                break;
+            case MINUTE:
+                value = Integer.parseInt(binding.reminderMinuteValue.getText().toString());
+                binding.reminderMinuteValue.setText(String.valueOf(value >= 59 ? 59 : ++value));
+                break;
+        }
+    }
+
+
+    private void decreaseValue(int type)
+    {
+        int value = 0;
+        switch (type)
+        {
+            case WEEK:
+                value = Integer.parseInt(binding.reminderWeekValue.getText().toString());
+                binding.reminderWeekValue.setText(String.valueOf(value <= 0 ? 0 : --value));
+                break;
+            case DAY:
+                value = Integer.parseInt(binding.reminderDayValue.getText().toString());
+                binding.reminderDayValue.setText(String.valueOf(value <= 0 ? 0 : --value));
+                break;
+            case HOUR:
+                value = Integer.parseInt(binding.reminderHourValue.getText().toString());
+                binding.reminderHourValue.setText(String.valueOf(value <= 0 ? 0 : --value));
+                break;
+            case MINUTE:
+                value = Integer.parseInt(binding.reminderMinuteValue.getText().toString());
+                binding.reminderMinuteValue.setText(String.valueOf(value <= 0 ? 0 : --value));
+                break;
+        }
+    }
+
     private final View.OnClickListener onUpClickListener = new View.OnClickListener()
     {
         @SuppressLint("NonConstantResourceId")
         @Override
         public void onClick(View view)
         {
-            int value = 0;
             switch (view.getId())
             {
                 case R.id.up_week:
-                    value = Integer.parseInt(binding.reminderWeekValue.getText().toString());
-                    binding.reminderWeekValue.setText(String.valueOf(++value));
+                    increaseValue(WEEK);
                     break;
                 case R.id.up_day:
+                    increaseValue(DAY);
+                    break;
                 case R.id.up_hour:
+                    increaseValue(HOUR);
+                    break;
                 case R.id.up_minute:
+                    increaseValue(MINUTE);
+                    break;
             }
         }
     };
@@ -269,12 +344,22 @@ public class ReminderActivity extends AppCompatActivity
         @Override
         public boolean onLongClick(View view)
         {
+            cIncrement = true;
+
             switch (view.getId())
             {
                 case R.id.up_week:
+                    repeatUpdateHandler.post(new RptUpdater(WEEK));
+                    return false;
                 case R.id.up_day:
+                    repeatUpdateHandler.post(new RptUpdater(DAY));
+                    return false;
                 case R.id.up_hour:
+                    repeatUpdateHandler.post(new RptUpdater(HOUR));
+                    return false;
                 case R.id.up_minute:
+                    repeatUpdateHandler.post(new RptUpdater(MINUTE));
+                    return false;
             }
             return true;
         }
@@ -286,16 +371,20 @@ public class ReminderActivity extends AppCompatActivity
         @Override
         public void onClick(View view)
         {
-            int value = 0;
             switch (view.getId())
             {
                 case R.id.down_week:
-                    value = Integer.parseInt(binding.reminderWeekValue.getText().toString());
-                    binding.reminderWeekValue.setText(String.valueOf(--value));
+                    decreaseValue(WEEK);
                     break;
                 case R.id.down_day:
+                    decreaseValue(DAY);
+                    break;
                 case R.id.down_hour:
+                    decreaseValue(HOUR);
+                    break;
                 case R.id.down_minute:
+                    decreaseValue(MINUTE);
+                    break;
             }
         }
     };
@@ -306,14 +395,67 @@ public class ReminderActivity extends AppCompatActivity
         @Override
         public boolean onLongClick(View view)
         {
+            cDecrement = true;
+
             switch (view.getId())
             {
                 case R.id.down_week:
+                    repeatUpdateHandler.post(new RptUpdater(WEEK));
+                    return false;
                 case R.id.down_day:
+                    repeatUpdateHandler.post(new RptUpdater(DAY));
+                    return false;
                 case R.id.down_hour:
+                    repeatUpdateHandler.post(new RptUpdater(HOUR));
+                    return false;
                 case R.id.down_minute:
+                    repeatUpdateHandler.post(new RptUpdater(MINUTE));
+                    return false;
             }
             return true;
         }
     };
+
+
+    private final View.OnTouchListener onTouchListener = new View.OnTouchListener()
+    {
+        @Override
+        public boolean onTouch(View view, MotionEvent event)
+        {
+            if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL)
+            {
+                if (cIncrement)
+                {
+                    cIncrement = false;
+                } else
+                {
+                    cDecrement = false;
+                }
+            }
+            return false;
+        }
+    };
+
+    class RptUpdater implements Runnable
+    {
+        int type;
+
+        public RptUpdater(int type)
+        {
+            this.type = type;
+        }
+
+        public void run()
+        {
+            if (cIncrement)
+            {
+                increaseValue(type);
+                repeatUpdateHandler.postDelayed(new RptUpdater(type), 40);
+            } else if (cDecrement)
+            {
+                decreaseValue(type);
+                repeatUpdateHandler.postDelayed(new RptUpdater(type), 40);
+            }
+        }
+    }
 }

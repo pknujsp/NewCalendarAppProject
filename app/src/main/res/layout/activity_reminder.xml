@@ -47,7 +47,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:orientation="horizontal"
-            android:visibility="gone">
+            android:visibility="visible">
 
             <RelativeLayout
                 android:id="@+id/reminder_week"
@@ -93,7 +93,6 @@
                     android:layout_below="@id/reminder_week_value"
                     android:background="@drawable/up_down_button_background"
                     android:src="@drawable/minus_icon_white" />
-
             </RelativeLayout>
 
             <RelativeLayout
