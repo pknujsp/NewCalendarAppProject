@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.googlecalendar;
+package com.zerodsoft.scheduleweather.calendar;
 
 import android.app.Activity;
 
@@ -12,7 +12,6 @@ import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.CalendarScopes;
 import com.google.api.services.calendar.model.CalendarList;
 import com.google.api.services.calendar.model.CalendarListEntry;
-import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.Events;
 
 

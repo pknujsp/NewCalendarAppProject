@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.googlecalendar;
+package com.zerodsoft.scheduleweather.calendar;
 
 import android.app.Activity;
 import android.content.ContentValues;
@@ -6,20 +6,14 @@ import android.content.Context;
 
 import androidx.lifecycle.MutableLiveData;
 
-import com.google.api.services.calendar.model.Calendar;
-import com.google.api.services.calendar.model.CalendarListEntry;
-import com.google.api.services.calendar.model.Event;
-import com.google.api.services.calendar.model.Events;
-import com.zerodsoft.scheduleweather.googlecalendar.dto.CalendarDto;
-import com.zerodsoft.scheduleweather.googlecalendar.dto.EventDto;
+import com.zerodsoft.scheduleweather.calendar.dto.CalendarDto;
+import com.zerodsoft.scheduleweather.calendar.dto.EventDto;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 public class CalendarRepository
 {
@@ -34,10 +28,9 @@ public class CalendarRepository
     private IGoogleCalendar iGoogleCalendar;
     private Context context;
 
-    public CalendarRepository(Activity activity)
+    public CalendarRepository(Context context)
     {
-        // this.iGoogleCalendar = (IGoogleCalendar) activity;
-        this.context = activity.getApplicationContext();
+        this.context = context;
 
         eventsLiveData = new MutableLiveData<>();
         calendarLiveData = new MutableLiveData<>();

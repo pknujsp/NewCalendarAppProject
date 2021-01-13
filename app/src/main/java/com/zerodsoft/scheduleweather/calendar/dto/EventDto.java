@@ -1,6 +1,4 @@
-package com.zerodsoft.scheduleweather.googlecalendar.dto;
-
-import lombok.Setter;
+package com.zerodsoft.scheduleweather.calendar.dto;
 
 public class EventDto
 {

@@ -16,7 +16,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.provider.CalendarContract;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -36,7 +35,7 @@ import com.zerodsoft.scheduleweather.activity.editevent.interfaces.IEventRepeat;
 import com.zerodsoft.scheduleweather.activity.map.MapActivity;
 import com.zerodsoft.scheduleweather.databinding.ActivityEventBinding;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.googlecalendar.CalendarViewModel;
+import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.utility.CalendarEventUtil;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
@@ -45,10 +44,8 @@ import com.zerodsoft.scheduleweather.utility.model.ReminderDto;
 
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.TimeZone;
 
 public class EventActivity extends AppCompatActivity implements IEventRepeat

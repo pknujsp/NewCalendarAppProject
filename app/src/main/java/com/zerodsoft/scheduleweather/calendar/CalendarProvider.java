@@ -1,21 +1,16 @@
-package com.zerodsoft.scheduleweather.googlecalendar;
+package com.zerodsoft.scheduleweather.calendar;
 
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.EntityIterator;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.IBinder;
 import android.provider.CalendarContract;
 
-import com.zerodsoft.scheduleweather.googlecalendar.dto.AccountDto;
-import com.zerodsoft.scheduleweather.googlecalendar.dto.CalendarDto;
-import com.zerodsoft.scheduleweather.googlecalendar.dto.EventDto;
+import com.zerodsoft.scheduleweather.calendar.dto.CalendarDto;
+import com.zerodsoft.scheduleweather.calendar.dto.EventDto;
 
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.List;
 
 public class CalendarProvider

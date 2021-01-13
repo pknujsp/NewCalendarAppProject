@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+
+    <TextView
+        android:id="@+id/event_startdatetime_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:text="@string/startdate"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/event_startdatetime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@id/event_startdatetime_label"
+        android:layout_alignParentRight="true"
+        android:text="2020"
+        android:textAlignment="textEnd"
+        android:textColor="@color/black"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/event_enddatetime_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/event_startdatetime_label"
+        android:layout_marginTop="8dp"
+        android:text="@string/enddate"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/event_enddatetime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@id/event_enddatetime_label"
+        android:layout_alignParentRight="true"
+        android:text="2020"
+        android:textAlignment="textEnd"
+        android:textColor="@color/black"
+        android:textSize="16sp" />
+
+
+    <RelativeLayout
+        android:id="@+id/event_timezone_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/event_enddatetime_label"
+        android:layout_alignParentLeft="true"
+        android:layout_marginTop="8dp">
+
+        <TextView
+            android:id="@+id/event_timezone_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/timezone"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/event_timezone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:text="default"
+            android:textAlignment="textEnd"
+            android:textColor="@color/black"
+            android:textSize="16sp" />
+    </RelativeLayout>
+
+
+</RelativeLayout>

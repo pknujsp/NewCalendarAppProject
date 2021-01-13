@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <View
+        android:id="@+id/calendar_color"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_gravity="center_vertical"
+        android:layout_marginRight="8dp"
+        android:background="@color/gray_500" />
+
+    <TextView
+        android:id="@+id/calendar_display_name"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_alignBottom="@id/calendar_color"
+        android:layout_toRightOf="@id/calendar_color"
+        android:gravity="center_vertical"
+        android:text="캘린더 명"
+        android:textColor="@color/black"
+        android:textSize="15sp" />
+
+
+    <TextView
+        android:id="@+id/calendar_account_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/calendar_color"
+        android:gravity="center_vertical"
+        android:text="계정 명"
+        android:textColor="@color/gray_600"
+        android:textSize="14sp" />
+</RelativeLayout>

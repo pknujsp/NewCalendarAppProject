@@ -188,6 +188,7 @@
     <!-- 이벤트 추가 액티비티 -->
     <string name="not_title">제목 추가(필수)</string>
     <string name="all_day">하루 종일</string>
+    <string name="not_allday">시간</string>
     <string name="startdate">시작일</string>
     <string name="enddate">종료일</string>
     <string name="request_reselect_date">날짜를 재 선택 해주세요</string>
@@ -237,6 +238,7 @@
     <string name="up_to">까지</string>
     <string name="input_timezone">국가명 또는 시간대를 입력하세요</string>
     <string name="notification_on_time">정시에 알림</string>
+    <string name="detail">상세정보</string>
 
 
     <!-- 알림 -->

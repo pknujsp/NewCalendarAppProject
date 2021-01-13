@@ -1,15 +1,14 @@
-package com.zerodsoft.scheduleweather.googlecalendar;
+package com.zerodsoft.scheduleweather.calendar;
 
 import android.app.Activity;
 import android.content.ContentValues;
+import android.content.Context;
 
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-import com.google.api.services.calendar.model.Calendar;
-import com.google.api.services.calendar.model.CalendarListEntry;
-import com.zerodsoft.scheduleweather.googlecalendar.dto.CalendarDto;
-import com.zerodsoft.scheduleweather.googlecalendar.dto.EventDto;
+import com.zerodsoft.scheduleweather.calendar.dto.CalendarDto;
+import com.zerodsoft.scheduleweather.calendar.dto.EventDto;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 
 import java.io.IOException;
@@ -27,18 +26,16 @@ public class CalendarViewModel extends ViewModel
 
     public CalendarViewModel()
     {
-
-    }
-
-    public void init(Activity activity)
-    {
-        repository = new CalendarRepository(activity);
-
         eventsLiveData = repository.getEventsLiveData();
         calendarLiveData = repository.getCalendarLiveData();
         calendarListLiveData = repository.getCalendarListLiveData();
         eventLiveData = repository.getEventLiveData();
         reminderLiveData = repository.getReminderLiveData();
+    }
+
+    public void init(Context context)
+    {
+        repository = new CalendarRepository(context);
     }
 
     public MutableLiveData<DataWrapper<List<EventDto>>> getEventsLiveData()

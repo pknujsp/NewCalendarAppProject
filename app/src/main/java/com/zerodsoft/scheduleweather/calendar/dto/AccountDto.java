@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.googlecalendar.dto;
+package com.zerodsoft.scheduleweather.calendar.dto;
 
 import java.util.ArrayList;
 import java.util.List;

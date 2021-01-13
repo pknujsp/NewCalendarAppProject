@@ -27,6 +27,7 @@ public class ScheduleInfoActivity extends AppCompatActivity
     private BottomNavigationView bottomNavigationView;
     private FragmentContainerView fragmentContainerView;
 
+    private EventFragment eventFragment;
     private ScheduleWeatherFragment scheduleWeatherFragment;
     private PlacesAroundLocationFragment placesAroundLocationFragment;
 
@@ -66,7 +67,14 @@ public class ScheduleInfoActivity extends AppCompatActivity
 
         fragmentManager = getSupportFragmentManager();
 
-        int scheduleId = getIntent().getIntExtra("scheduleId", -1);
+        int eventId = getIntent().getIntExtra("eventId", 0);
+        int calendarId = getIntent().getIntExtra("calendarId", 0);
+        String accountName = getIntent().getStringExtra("accountName");
+
+        Bundle bundle = new Bundle();
+        bundle.putInt("calendarId", calendarId);
+        bundle.putInt("eventId", eventId);
+        bundle.putString("accountName", accountName);
 
         viewModel = new ViewModelProvider(this).get(ScheduleViewModel.class).selectScheduleData(scheduleId);
         viewModel.getScheduleDataLiveData().observe(this, new Observer<ScheduleData>()
@@ -74,17 +82,15 @@ public class ScheduleInfoActivity extends AppCompatActivity
             @Override
             public void onChanged(ScheduleData scheduleData)
             {
-     /*
+                eventFragment = new EventFragment();
+                eventFragment.setArguments(bundle);
                 scheduleWeatherFragment = new ScheduleWeatherFragment(scheduleData.getAddresses(), scheduleData.getPlaces());
                 placesAroundLocationFragment = new PlacesAroundLocationFragment(scheduleData.getAddresses(), scheduleData.getPlaces());
-                fragmentManager.beginTransaction().add(R.id.schedule_fragment_container, scheduleInfoFragment, TAG_INFO).hide(scheduleInfoFragment)
+
+                fragmentManager.beginTransaction().add(R.id.schedule_fragment_container, eventFragment, TAG_INFO).hide(eventFragment)
                         .add(R.id.schedule_fragment_container, scheduleWeatherFragment, TAG_WEATHER).hide(placesAroundLocationFragment)
                         .add(R.id.schedule_fragment_container, placesAroundLocationFragment, TAG_LOCATION).hide(scheduleWeatherFragment)
-
                         .commit();
-
-
-      */
             }
         });
 

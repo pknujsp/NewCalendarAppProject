@@ -2,7 +2,6 @@ package com.zerodsoft.scheduleweather;
 
 import android.app.Activity;
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,10 +10,9 @@ import android.widget.CompoundButton;
 import android.widget.TextView;
 
 import com.google.android.material.checkbox.MaterialCheckBox;
-import com.zerodsoft.scheduleweather.googlecalendar.dto.AccountDto;
-import com.zerodsoft.scheduleweather.googlecalendar.dto.CalendarDto;
+import com.zerodsoft.scheduleweather.calendar.dto.AccountDto;
+import com.zerodsoft.scheduleweather.calendar.dto.CalendarDto;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class CalendarsAdapter extends BaseExpandableListAdapter
