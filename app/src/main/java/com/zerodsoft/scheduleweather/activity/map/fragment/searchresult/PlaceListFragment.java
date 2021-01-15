@@ -101,8 +101,6 @@ public class PlaceListFragment extends Fragment
             locationManager.removeUpdates(locationListener);
             mapLongitude = location.getLongitude();
             mapLatitude = location.getLatitude();
-            Toast.makeText(getActivity(), "Provider : " + location.getProvider() + "\n위도 : "
-                    + Double.toString(mapLatitude) + "\n경도 :" + Double.toString(mapLongitude), Toast.LENGTH_SHORT).show();
             requestPlacesNow();
         }
 
@@ -468,14 +466,12 @@ public class PlaceListFragment extends Fragment
         public void onChanged()
         {
             super.onChanged();
-            Log.e(getClass().getName(), "onChanged");
         }
 
         @Override
         public void onItemRangeChanged(int positionStart, int itemCount)
         {
             super.onItemRangeChanged(positionStart, itemCount);
-            Log.e(getClass().getName(), "onItemRangeChanged");
         }
 
         @Override

@@ -5,6 +5,6 @@
 
     <fragment
         android:id="@+id/scheduleInfoFragment"
-        android:name="com.zerodsoft.scheduleweather.scheduleinfo.ScheduleInfoFragment"
+        android:name="com.zerodsoft.scheduleweather.event.ScheduleInfoFragment"
         android:label="ScheduleInfoFragment" />
 </navigation>

@@ -23,7 +23,7 @@ import android.widget.TextView;
 import com.zerodsoft.scheduleweather.AppMainActivity;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
-import com.zerodsoft.scheduleweather.scheduleinfo.ScheduleInfoActivity;
+import com.zerodsoft.scheduleweather.event.EventActivity;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import java.util.Date;
@@ -113,7 +113,7 @@ public class EventsInfoFragment extends DialogFragment
 
     public void showSchedule(int scheduleId)
     {
-        Intent intent = new Intent(getActivity(), ScheduleInfoActivity.class);
+        Intent intent = new Intent(getActivity(), EventActivity.class);
         intent.putExtra("scheduleId", scheduleId);
         startActivity(intent);
     }

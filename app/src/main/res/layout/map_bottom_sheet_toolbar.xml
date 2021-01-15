@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@color/white"
+    android:padding="8dp">
+
+    <ImageButton
+        android:id="@+id/add_favorite_location_button"
+        app:srcCompat="@drawable/favorite_disabled_icon"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_alignParentLeft="true"
+        android:layout_centerVertical="true"
+        android:layout_marginRight="4dp"
+        android:background="?attr/selectableItemBackground" />
+
+    <ImageButton
+        android:id="@+id/share_location_button"
+        app:srcCompat="@drawable/share_icon"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_centerVertical="true"
+        android:layout_marginRight="8dp"
+        android:layout_toRightOf="@id/add_favorite_location_button"
+        android:background="?attr/selectableItemBackground" />
+
+    <Button
+        android:id="@+id/choice_location_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_marginRight="4dp"
+        android:layout_toRightOf="@id/share_location_button"
+        android:padding="4dp"
+        android:text="@string/choice"
+        android:textColor="@android:color/white"
+        android:textSize="12sp" />
+
+    <Button
+        android:id="@+id/cancel_location_button"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_marginRight="4dp"
+        android:layout_toRightOf="@id/choice_location_button"
+        android:text="@string/cancel_location"
+        android:textColor="@android:color/black"
+        android:textSize="12sp" />
+
+    <ImageButton
+        android:id="@+id/left_location_button"
+        app:srcCompat="@drawable/left_item_icon"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_centerVertical="true"
+        android:layout_marginRight="4dp"
+        android:layout_toLeftOf="@id/right_location_button"
+        android:background="?attr/selectableItemBackground" />
+
+    <ImageButton
+        android:id="@+id/right_location_button"
+        app:srcCompat="@drawable/right_item_icon"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:background="?attr/selectableItemBackground" />
+</RelativeLayout>

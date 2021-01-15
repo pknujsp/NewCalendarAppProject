@@ -1,33 +1,40 @@
 package com.zerodsoft.scheduleweather.kakaomap.fragment;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.NetworkRequest;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.activity.map.util.RequestLocationTimer;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.IBottomSheet;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapPoint;
 import com.zerodsoft.scheduleweather.activity.map.fragment.map.BottomSheetItemView;
@@ -40,41 +47,73 @@ import net.daum.mf.map.api.MapReverseGeoCoder;
 import net.daum.mf.map.api.MapView;
 
 import java.util.List;
+import java.util.Timer;
 
 public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, MapView.POIItemEventListener, MapView.MapViewEventListener, MapReverseGeoCoder.ReverseGeoCodingResultListener
 {
-    protected MapView mapView;
-    protected ConnectivityManager.NetworkCallback networkCallback;
-    protected ConnectivityManager connectivityManager;
-    protected String appKey;
-    protected BottomSheetBehavior bottomSheetBehavior;
-    protected MapReverseGeoCoder mapReverseGeoCoder;
+    public MapView mapView;
+    public ConnectivityManager.NetworkCallback networkCallback;
+    public ConnectivityManager connectivityManager;
+    public String appKey;
+    public MapReverseGeoCoder mapReverseGeoCoder;
+    public LocationManager locationManager;
 
-    protected FrameLayout mapViewContainer;
-    protected LinearLayout bottomSheet;
+    public FrameLayout mapViewContainer;
 
-    protected ImageButton nextItemButton;
-    protected ImageButton previousItemButton;
+    public ImageButton nextItemButton;
+    public ImageButton previousItemButton;
 
-    protected ImageButton gpsButton;
+    public ImageButton gpsButton;
 
-    protected ImageButton searchButton;
-    protected TextView currentAddressTextView;
+    public TextView currentAddressTextView;
+    private IBottomSheet iBottomSheet;
 
-    protected BottomSheetItemView bottomSheetPlaceItemView;
-    protected BottomSheetItemView bottomSheetAddressItemView;
+    public int selectedPoiItemIndex;
+    public boolean isSelectedPoiItem = false;
 
-    protected int selectedPoiItemIndex;
+    public static final int PLACE_ITEM = 0;
+    public static final int ADDRESS_ITEM = 1;
 
-    protected static final int PLACE_ITEM = 0;
-    protected static final int ADDRESS_ITEM = 1;
-
-    protected boolean isSelectedPoiItem = false;
 
     public KakaoMapFragment()
     {
 
     }
+
+    public void setiBottomSheet(IBottomSheet iBottomSheet)
+    {
+        this.iBottomSheet = iBottomSheet;
+    }
+
+    public final LocationListener locationListener = new LocationListener()
+    {
+        @Override
+        public void onLocationChanged(Location location)
+        {
+            mapView.setMapCenterPoint(MapPoint.mapPointWithGeoCoord(location.getLatitude(), location.getLongitude()), true);
+            mapReverseGeoCoder = new MapReverseGeoCoder(appKey, mapView.getMapCenterPoint(), KakaoMapFragment.this, getActivity());
+            mapReverseGeoCoder.startFindingAddress(MapReverseGeoCoder.AddressType.FullAddress);
+            locationManager.removeUpdates(locationListener);
+        }
+
+        @Override
+        public void onStatusChanged(String s, int i, Bundle bundle)
+        {
+
+        }
+
+        @Override
+        public void onProviderEnabled(String s)
+        {
+
+        }
+
+        @Override
+        public void onProviderDisabled(String s)
+        {
+
+        }
+    };
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState)
@@ -100,81 +139,12 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
+        locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
 
         mapViewContainer = (FrameLayout) view.findViewById(R.id.map_view);
-        bottomSheet = (LinearLayout) view.findViewById(R.id.map_item_bottom_sheet);
         gpsButton = (ImageButton) view.findViewById(R.id.gps_button);
-        searchButton = (ImageButton) view.findViewById(R.id.map_view_search_button);
         currentAddressTextView = (TextView) view.findViewById(R.id.current_address);
-        previousItemButton = (ImageButton) bottomSheet.findViewById(R.id.left_location_button);
-        nextItemButton = (ImageButton) bottomSheet.findViewById(R.id.right_location_button);
 
-        LayoutInflater layoutInflater = getLayoutInflater();
-        bottomSheetPlaceItemView = (BottomSheetItemView) layoutInflater.inflate(R.layout.map_bottom_sheet_place, bottomSheet, false);
-        bottomSheetAddressItemView = (BottomSheetItemView) layoutInflater.inflate(R.layout.map_bottom_sheet_address, bottomSheet, false);
-
-        bottomSheet.addView(bottomSheetPlaceItemView, PLACE_ITEM);
-        bottomSheet.addView(bottomSheetAddressItemView, ADDRESS_ITEM);
-
-        bottomSheetAddressItemView.setVisibility(View.GONE);
-        bottomSheetPlaceItemView.setVisibility(View.GONE);
-
-        bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
-        bottomSheetBehavior.setDraggable(true);
-        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
-
-        bottomSheetBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback()
-        {
-            @Override
-            public void onStateChanged(@NonNull View bottomSheet, int newState)
-            {
-             /*
-                STATE_COLLAPSED: 기본적인 상태이며, 일부분의 레이아웃만 보여지고 있는 상태. 이 높이는 behavior_peekHeight속성을 통해 변경 가능
-                STATE_DRAGGING: 드래그중인 상태
-                STATE_SETTLING: 드래그후 완전히 고정된 상태
-                STATE_EXPANDED: 확장된 상태
-                STATE_HIDDEN: 기본적으로 비활성화 상태이며, app:behavior_hideable을 사용하는 경우 완전히 숨겨져 있는 상태
-             */
-                switch (newState)
-                {
-                    case BottomSheetBehavior.STATE_HIDDEN:
-                        if (isSelectedPoiItem)
-                        {
-                            deselectPoiItem();
-                        }
-                        break;
-                }
-            }
-
-            @Override
-            public void onSlide(@NonNull View bottomSheet, float slideOffset)
-            {
-                if (slideOffset == 0)
-                {
-                    bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
-                }
-            }
-        });
-
-        previousItemButton.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                int index = selectedPoiItemIndex != 0 ? selectedPoiItemIndex - 1 : mapView.getPOIItems().length - 1;
-                selectPoiItem(index);
-            }
-        });
-
-        nextItemButton.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                int index = selectedPoiItemIndex == mapView.getPOIItems().length - 1 ? 0 : selectedPoiItemIndex + 1;
-                selectPoiItem(index);
-            }
-        });
 
         ((ImageButton) view.findViewById(R.id.zoom_in_button)).setOnClickListener(new View.OnClickListener()
         {
@@ -193,14 +163,57 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
                 mapView.zoomOut(true);
             }
         });
+        gpsButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                boolean isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+                boolean isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
 
+                int fineLocationPermission = ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION);
+                int coarseLocationPermission = ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION);
+
+                if (checkNetwork())
+                {
+                    if (isGpsEnabled && isNetworkEnabled)
+                    {
+                        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+                        Timer timer = new Timer();
+                        timer.schedule(new RequestLocationTimer()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                timer.cancel();
+                                getActivity().runOnUiThread(new Runnable()
+                                {
+                                    @Override
+                                    public void run()
+                                    {
+                                        locationManager.removeUpdates(locationListener);
+                                        int fineLocationPermission = ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION);
+                                        int coarseLocationPermission = ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION);
+                                        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
+                                    }
+                                });
+
+                            }
+                        }, 2000);
+                    } else if (!isGpsEnabled)
+                    {
+                        showRequestGpsDialog();
+                    }
+                }
+            }
+        });
         initMapView();
 
         mapView.setPOIItemEventListener(this);
         mapView.setMapViewEventListener(this);
     }
 
-    protected boolean checkNetwork()
+    public boolean checkNetwork()
     {
         if (connectivityManager.getActiveNetwork() == null)
         {
@@ -222,7 +235,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
         }
     }
 
-    protected void setNetworkCallback()
+    public void setNetworkCallback()
     {
         connectivityManager = (ConnectivityManager) getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
         networkCallback = new ConnectivityManager.NetworkCallback()
@@ -248,7 +261,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     }
 
 
-    protected void initMapView()
+    public void initMapView()
     {
         mapView = new MapView(requireActivity());
         mapViewContainer.addView(mapView);
@@ -265,7 +278,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
         mapReverseGeoCoder = new MapReverseGeoCoder(appKey, mapView.getMapCenterPoint(), this, getActivity());
     }
 
-    protected void showRequestGpsDialog()
+    public void showRequestGpsDialog()
     {
         new AlertDialog.Builder(getActivity())
                 .setMessage(getString(R.string.request_to_make_gps_on))
@@ -355,9 +368,9 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
             mapView.addPOIItems(poiItems);
         }
 
-        if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED)
+        if (iBottomSheet.getState() == BottomSheetBehavior.STATE_EXPANDED)
         {
-            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+            iBottomSheet.setState(BottomSheetBehavior.STATE_HIDDEN);
         }
     }
 
@@ -388,9 +401,9 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
             }
             mapView.addPOIItems(poiItems);
         }
-        if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED)
+        if (iBottomSheet.getState() == BottomSheetBehavior.STATE_EXPANDED)
         {
-            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+            iBottomSheet.setState(BottomSheetBehavior.STATE_HIDDEN);
         }
     }
 
@@ -428,9 +441,9 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
         {
             deselectPoiItem();
         }
-        if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED)
+        if (iBottomSheet.getState() == BottomSheetBehavior.STATE_EXPANDED)
         {
-            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+            iBottomSheet.setState(BottomSheetBehavior.STATE_HIDDEN);
         }
     }
 
@@ -498,21 +511,21 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
         // poiitem을 선택하였을 경우에 수행됨
         if (((CustomPoiItem) mapPOIItem).getAddressDocument() != null)
         {
-            bottomSheetAddressItemView.setAddress(((CustomPoiItem) mapPOIItem).getAddressDocument());
-            bottomSheetAddressItemView.setVisibility(View.VISIBLE);
-            bottomSheetPlaceItemView.setVisibility(View.GONE);
+            iBottomSheet.setAddress(((CustomPoiItem) mapPOIItem).getAddressDocument());
+            iBottomSheet.setVisibility(IBottomSheet.ADDRESS, View.VISIBLE);
+            iBottomSheet.setVisibility(IBottomSheet.PLACE, View.GONE);
         } else if (((CustomPoiItem) mapPOIItem).getPlaceDocument() != null)
         {
-            bottomSheetPlaceItemView.setPlace(((CustomPoiItem) mapPOIItem).getPlaceDocument());
-            bottomSheetAddressItemView.setVisibility(View.GONE);
-            bottomSheetPlaceItemView.setVisibility(View.VISIBLE);
+            iBottomSheet.setPlace(((CustomPoiItem) mapPOIItem).getPlaceDocument());
+            iBottomSheet.setVisibility(IBottomSheet.ADDRESS, View.GONE);
+            iBottomSheet.setVisibility(IBottomSheet.PLACE, View.VISIBLE);
         }
         selectedPoiItemIndex = mapPOIItem.getTag();
         isSelectedPoiItem = true;
 
-        if (bottomSheetBehavior.getState() != BottomSheetBehavior.STATE_EXPANDED)
+        if (iBottomSheet.getState() != BottomSheetBehavior.STATE_EXPANDED)
         {
-            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+            iBottomSheet.setState(BottomSheetBehavior.STATE_EXPANDED);
         }
     }
 
@@ -547,7 +560,8 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     }
 
 
-    protected class CustomPoiItem extends MapPOIItem
+
+    public class CustomPoiItem extends MapPOIItem
     {
         private AddressResponseDocuments addressDocument;
         private PlaceDocuments placeDocument;

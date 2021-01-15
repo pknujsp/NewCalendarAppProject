@@ -1,5 +1,6 @@
 package com.zerodsoft.scheduleweather.activity.map.fragment.search;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 
@@ -16,15 +17,17 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.SearchResultListFragment;
 import com.zerodsoft.scheduleweather.etc.FragmentStateCallback;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.IBottomSheet;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapPoint;
 import com.zerodsoft.scheduleweather.activity.map.fragment.interfaces.OnSelectedMapCategory;
-import com.zerodsoft.scheduleweather.activity.map.fragment.map.MapFragment;
 import com.zerodsoft.scheduleweather.activity.map.fragment.search.adapter.PlaceCategoriesAdapter;
-import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.SearchResultFragmentController;
 import com.zerodsoft.scheduleweather.databinding.FragmentSearchBinding;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapToolbar;
 import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategory;
 
 public class SearchFragment extends Fragment implements OnSelectedMapCategory
@@ -35,14 +38,18 @@ public class SearchFragment extends Fragment implements OnSelectedMapCategory
     private PlaceCategoriesAdapter categoriesAdapter;
     private IMapPoint iMapPoint;
     private IMapData iMapData;
+    private IMapToolbar iMapToolbar;
+    private IBottomSheet iBottomSheet;
     private OnBackPressedCallback onBackPressedCallback;
     private FragmentManager fragmentManager;
     private FragmentStateCallback fragmentStateCallback;
 
-    public SearchFragment(Fragment fragment, FragmentStateCallback fragmentStateCallback)
+    public SearchFragment(Activity activity, Fragment fragment, FragmentStateCallback fragmentStateCallback)
     {
         this.iMapPoint = (IMapPoint) fragment;
         this.iMapData = (IMapData) fragment;
+        this.iMapToolbar = (IMapToolbar) activity;
+        this.iBottomSheet = (IBottomSheet) activity;
         this.fragmentStateCallback = fragmentStateCallback;
     }
 
@@ -51,9 +58,9 @@ public class SearchFragment extends Fragment implements OnSelectedMapCategory
         return instance;
     }
 
-    public static SearchFragment newInstance(Fragment fragment, FragmentStateCallback fragmentStateCallback)
+    public static SearchFragment newInstance(Activity activity, Fragment fragment, FragmentStateCallback fragmentStateCallback)
     {
-        instance = new SearchFragment(fragment, fragmentStateCallback);
+        instance = new SearchFragment(activity, fragment, fragmentStateCallback);
         return instance;
     }
 
@@ -72,8 +79,10 @@ public class SearchFragment extends Fragment implements OnSelectedMapCategory
             @Override
             public void handleOnBackPressed()
             {
-                // fragmentManager.beginTransaction().remove(SearchFragment.this).show(MapFragment.getInstance()).commit();
                 fragmentManager.popBackStack();
+                iBottomSheet.setItemVisibility(View.VISIBLE);
+                iBottomSheet.setFragmentVisibility(View.GONE);
+                instance = null;
             }
         };
         requireActivity().getOnBackPressedDispatcher().addCallback(SearchFragment.this, onBackPressedCallback);
@@ -105,35 +114,22 @@ public class SearchFragment extends Fragment implements OnSelectedMapCategory
         binding.categoriesRecyclerview.setLayoutManager(new LinearLayoutManager(getActivity(), RecyclerView.HORIZONTAL, false));
         binding.categoriesRecyclerview.setAdapter(categoriesAdapter);
 
-        binding.searchButton.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                search(binding.searchEdittext.getText().toString());
-            }
-        });
 
-        binding.backButton.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                onBackPressedCallback.handleOnBackPressed();
-            }
-        });
     }
 
 
-    private void search(String searchWord)
+    public void search(String searchWord)
     {
         Bundle bundle = new Bundle();
         bundle.putString("searchWord", searchWord);
+        iBottomSheet.setState(BottomSheetBehavior.STATE_HIDDEN);
 
         FragmentManager fragmentManager = getParentFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.add(R.id.map_activity_fragment_container, SearchResultFragmentController.newInstance(bundle, iMapPoint, iMapData), SearchResultFragmentController.TAG)
+        fragmentTransaction.add(R.id.map_bottom_sheet_fragment_container, SearchResultListFragment.newInstance(searchWord, iMapPoint, iMapData, iMapToolbar, iBottomSheet), SearchResultListFragment.TAG)
                 .hide(SearchFragment.this).addToBackStack(null).commit();
+
+        iMapToolbar.changeOpenCloseMenuVisibility(true);
     }
 
     @Override

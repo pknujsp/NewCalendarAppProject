@@ -26,16 +26,17 @@ public class CalendarViewModel extends ViewModel
 
     public CalendarViewModel()
     {
-        eventsLiveData = repository.getEventsLiveData();
-        calendarLiveData = repository.getCalendarLiveData();
-        calendarListLiveData = repository.getCalendarListLiveData();
-        eventLiveData = repository.getEventLiveData();
-        reminderLiveData = repository.getReminderLiveData();
+
     }
 
     public void init(Context context)
     {
         repository = new CalendarRepository(context);
+        eventsLiveData = repository.getEventsLiveData();
+        calendarLiveData = repository.getCalendarLiveData();
+        calendarListLiveData = repository.getCalendarListLiveData();
+        eventLiveData = repository.getEventLiveData();
+        reminderLiveData = repository.getReminderLiveData();
     }
 
     public MutableLiveData<DataWrapper<List<EventDto>>> getEventsLiveData()

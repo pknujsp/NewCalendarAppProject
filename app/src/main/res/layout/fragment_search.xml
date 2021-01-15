@@ -6,7 +6,7 @@
     <FrameLayout
         android:id="@+id/fragment_search"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:background="#FFFFFF"
         tools:context=".activity.map.fragment.search.SearchFragment">
 
@@ -14,45 +14,6 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical">
-
-            <LinearLayout
-                android:id="@+id/search_toolbar"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/location_toolbar"
-                android:elevation="2dp"
-                android:orientation="horizontal">
-
-                <ImageButton
-                    android:id="@+id/back_button"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:layout_gravity="center"
-                    android:layout_margin="8dp"
-                    android:background="?attr/selectableItemBackground"
-                    android:src="@drawable/arrow_back_icon" />
-
-                <EditText
-                    android:id="@+id/search_edittext"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:layout_weight="1"
-                    android:ems="10"
-                    android:gravity="center_vertical"
-                    android:hint="검색어 입력"
-                    android:inputType="text"
-                    android:textColor="@color/text_color" />
-
-                <ImageButton
-                    android:id="@+id/search_button"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:layout_gravity="center"
-                    android:layout_margin="8dp"
-                    android:background="?attr/selectableItemBackground"
-                    android:src="@drawable/search_icon" />
-            </LinearLayout>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/categories_recyclerview"

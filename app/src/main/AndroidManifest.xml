@@ -19,10 +19,13 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".activity.editevent.activity.ReminderActivity"></activity>
+        <activity android:name=".kakaomap.KakaoMapActivity"></activity>
+        <activity android:name=".event.location.activity.MLocActivity" />
+        <activity android:name=".event.weather.activity.WLocActivity" />
+        <activity android:name=".activity.editevent.activity.ReminderActivity" />
         <activity android:name=".activity.editevent.activity.TimeZoneActivity" />
         <activity android:name=".activity.editevent.activity.RecurrenceActivity" />
-        <activity android:name=".scheduleinfo.ScheduleInfoActivity" />
+        <activity android:name=".event.EventActivity" />
         <activity
             android:name=".activity.map.MapActivity"
             android:taskAffinity="com.zerodsoft.scheduleweather.Activity.MapActivity" />

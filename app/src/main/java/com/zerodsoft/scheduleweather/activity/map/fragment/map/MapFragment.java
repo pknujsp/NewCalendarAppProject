@@ -2,9 +2,6 @@ package com.zerodsoft.scheduleweather.activity.map.fragment.map;
 
 import android.Manifest;
 import android.content.Context;
-import android.content.Intent;
-import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 
@@ -12,7 +9,6 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.Observer;
@@ -22,16 +18,12 @@ import androidx.paging.PagedList;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.map.MapActivity;
 import com.zerodsoft.scheduleweather.etc.FragmentStateCallback;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.ICatchedLocation;
 import com.zerodsoft.scheduleweather.activity.map.fragment.search.SearchFragment;
-import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.SearchResultFragmentController;
 import com.zerodsoft.scheduleweather.activity.map.util.RequestLocationTimer;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.KakaoMapFragment;
 import com.zerodsoft.scheduleweather.kakaomap.viewmodel.AddressViewModel;
@@ -43,11 +35,6 @@ import com.zerodsoft.scheduleweather.room.dto.AddressDTO;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
 
-import net.daum.mf.map.api.MapPOIItem;
-import net.daum.mf.map.api.MapPoint;
-import net.daum.mf.map.api.MapReverseGeoCoder;
-import net.daum.mf.map.api.MapView;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
@@ -58,11 +45,9 @@ public class MapFragment extends KakaoMapFragment
     public static final String TAG = "MapFragment";
     private static MapFragment instance;
 
-    private LocationManager locationManager;
-
     private AddressViewModel addressViewModel;
     private PlacesViewModel placeViewModel;
-    private final ICatchedLocation iCatchedLocation;
+    private ICatchedLocation iCatchedLocation;
 
     private AddressResponseDocuments selectedAddressDocument;
     private PlaceDocuments selectedPlaceDocument;
@@ -72,6 +57,10 @@ public class MapFragment extends KakaoMapFragment
     public MapFragment(ICatchedLocation iCatchedLocation)
     {
         this.iCatchedLocation = iCatchedLocation;
+    }
+
+    public MapFragment()
+    {
     }
 
     public static MapFragment getInstance()
@@ -89,37 +78,8 @@ public class MapFragment extends KakaoMapFragment
     public void onCreate(@Nullable Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+
     }
-
-    private final LocationListener locationListener = new LocationListener()
-    {
-        @Override
-        public void onLocationChanged(Location location)
-        {
-            mapView.setMapCenterPoint(MapPoint.mapPointWithGeoCoord(location.getLatitude(), location.getLongitude()), true);
-            mapReverseGeoCoder = new MapReverseGeoCoder(appKey, mapView.getMapCenterPoint(), MapFragment.this, getActivity());
-            mapReverseGeoCoder.startFindingAddress(MapReverseGeoCoder.AddressType.FullAddress);
-            locationManager.removeUpdates(locationListener);
-        }
-
-        @Override
-        public void onStatusChanged(String s, int i, Bundle bundle)
-        {
-
-        }
-
-        @Override
-        public void onProviderEnabled(String s)
-        {
-
-        }
-
-        @Override
-        public void onProviderDisabled(String s)
-        {
-
-        }
-    };
 
 
     @Override
@@ -157,106 +117,6 @@ public class MapFragment extends KakaoMapFragment
     {
         super.onViewCreated(view, savedInstanceState);
 
-        locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
-
-        bottomSheet.findViewById(R.id.choice_location_button).setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                LocationDTO locationDTO = null;
-                CustomPoiItem poiItem = (CustomPoiItem) mapView.getPOIItems()[selectedPoiItemIndex];
-                if (poiItem.getAddressDocument() != null)
-                {
-                    AddressResponseDocuments document = poiItem.getAddressDocument();
-                    AddressDTO addressDTO = new AddressDTO();
-                    addressDTO.setAddressName(document.getAddressName());
-                    addressDTO.setLatitude(Double.toString(document.getY()));
-                    addressDTO.setLongitude(Double.toString(document.getX()));
-
-                    locationDTO = addressDTO;
-                } else if (poiItem.getPlaceDocument() != null)
-                {
-                    PlaceDocuments document = poiItem.getPlaceDocument();
-                    PlaceDTO placeDTO = new PlaceDTO();
-                    placeDTO.setPlaceName(document.getPlaceName());
-                    placeDTO.setId(Integer.parseInt(document.getId()));
-                    placeDTO.setLongitude(Double.toString(document.getX()));
-                    placeDTO.setLatitude(Double.toString(document.getY()));
-
-                    locationDTO = placeDTO;
-                }
-                iCatchedLocation.choiceLocation(locationDTO);
-            }
-        });
-
-        searchButton.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
-                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                fragmentTransaction.add(R.id.map_activity_fragment_container, SearchFragment.newInstance(MapFragment.this, new FragmentStateCallback()
-                {
-                    @Override
-                    public void onChangedState(int state)
-                    {
-                        if (state == ON_DETACH)
-                        {
-                            searchButton.setVisibility(View.VISIBLE);
-                        }
-                    }
-                }), SearchFragment.TAG)
-                        .hide(MapFragment.this).addToBackStack(null).commit();
-                searchButton.setVisibility(View.GONE);
-            }
-        });
-
-        gpsButton.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                boolean isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-                boolean isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-
-                int fineLocationPermission = ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION);
-                int coarseLocationPermission = ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION);
-
-                if (checkNetwork())
-                {
-                    if (isGpsEnabled && isNetworkEnabled)
-                    {
-                        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
-                        Timer timer = new Timer();
-                        timer.schedule(new RequestLocationTimer()
-                        {
-                            @Override
-                            public void run()
-                            {
-                                timer.cancel();
-                                getActivity().runOnUiThread(new Runnable()
-                                {
-                                    @Override
-                                    public void run()
-                                    {
-                                        locationManager.removeUpdates(locationListener);
-                                        int fineLocationPermission = ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION);
-                                        int coarseLocationPermission = ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION);
-                                        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
-                                    }
-                                });
-
-                            }
-                        }, 2000);
-                    } else if (!isGpsEnabled)
-                    {
-                        showRequestGpsDialog();
-                    }
-                }
-            }
-        });
     }
 
 
@@ -272,7 +132,7 @@ public class MapFragment extends KakaoMapFragment
         super.onActivityCreated(savedInstanceState);
         if (checkNetwork())
         {
-            LocationDTO selectedLocation = iCatchedLocation.getLocation();
+            LocationDTO selectedLocation = null;
 
             if (selectedLocation != null)
             {

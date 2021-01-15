@@ -7,11 +7,13 @@ import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
 
 public interface ICatchedLocation
 {
-    LocationDTO getLocation();
+    AddressDTO getAddress();
 
     PlaceDTO getPlace();
 
-    AddressDTO getAddress();
+    LocationDTO getLocation();
+
+    void choiceLocation(String location);
 
     void choiceLocation(LocationDTO locationDTO);
 }

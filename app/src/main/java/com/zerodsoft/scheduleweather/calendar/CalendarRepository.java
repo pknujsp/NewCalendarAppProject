@@ -25,7 +25,6 @@ public class CalendarRepository
 
     private GoogleCalendarApi googleCalendarApi;
     private CalendarProvider calendarProvider;
-    private IGoogleCalendar iGoogleCalendar;
     private Context context;
 
     public CalendarRepository(Context context)
@@ -38,8 +37,7 @@ public class CalendarRepository
         eventLiveData = new MutableLiveData<>();
         reminderLiveData = new MutableLiveData<>();
 
-        googleCalendarApi = GoogleCalendarApi.newInstance(activity);
-        calendarProvider = CalendarProvider.newInstance(activity.getApplicationContext());
+        calendarProvider = CalendarProvider.newInstance(context);
     }
 
     public MutableLiveData<DataWrapper<CalendarDto>> getCalendarLiveData()
@@ -65,7 +63,7 @@ public class CalendarRepository
     public void connect(String accountName) throws IOException, GeneralSecurityException
     {
         googleCalendarApi.connect(accountName);
-        iGoogleCalendar.onAccountSelectedState(true);
+       // iGoogleCalendar.onAccountSelectedState(true);
     }
 
     public void disconnect()

@@ -47,7 +47,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class AppMainActivity extends AppCompatActivity implements IGoogleCalendar, ICalendarCheckBox
+public class AppMainActivity extends AppCompatActivity implements ICalendarCheckBox
 {
     private EventTransactionFragment calendarTransactionFragment;
 
@@ -562,18 +562,6 @@ public class AppMainActivity extends AppCompatActivity implements IGoogleCalenda
         }
     }
 
-    @Override
-    public void onAccountSelectedState(boolean state)
-    {
-        if (state)
-        {
-            Toast.makeText(this, getString(R.string.connected_google_calendar), Toast.LENGTH_SHORT).show();
-            calendarViewModel.getCalendarList();
-        } else
-        {
-
-        }
-    }
 
     @Override
     public void onCheckedBox(String value, boolean state)

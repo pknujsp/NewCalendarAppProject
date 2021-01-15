@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/transparent"
+    android:clickable="false">
+
+    <ImageButton
+        android:id="@+id/zoom_in_button"
+        android:layout_width="@dimen/map_button_size"
+        android:layout_height="@dimen/map_button_size"
+        android:layout_above="@id/zoom_out_button"
+        android:layout_alignParentRight="true"
+        android:background="@drawable/map_button_rect"
+        android:src="@drawable/zoom_in_icon" />
+
+    <ImageButton
+        android:id="@+id/zoom_out_button"
+        android:layout_width="@dimen/map_button_size"
+        android:layout_height="@dimen/map_button_size"
+        android:layout_above="@id/gps_button"
+        android:layout_alignParentRight="true"
+        android:background="@drawable/map_button_rect"
+        android:src="@drawable/zoom_out_icon" />
+
+    <ImageButton
+        android:id="@+id/gps_button"
+        android:layout_width="@dimen/map_button_size"
+        android:layout_height="@dimen/map_button_size"
+        android:layout_above="@id/button_dummy"
+        android:layout_alignParentRight="true"
+        android:layout_marginTop="48dp"
+        android:background="@drawable/map_button_rect"
+        android:src="@drawable/gps_not_fixed_icon" />
+
+
+    <TextView
+        android:id="@+id/current_address"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/button_dummy"
+        android:layout_alignParentLeft="true"
+        android:background="@color/map_view_button_color"
+        android:padding="2dp"
+        android:text="주소"
+        android:textColor="@color/black"
+        android:textSize="13sp" />
+
+
+    <View
+        android:id="@+id/button_dummy"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/map_button_size"
+        android:layout_alignParentBottom="true"
+        android:background="@color/transparent" />
+</RelativeLayout>

@@ -1,0 +1,65 @@
+package com.zerodsoft.scheduleweather.event.location;
+
+import android.os.Bundle;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+
+import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.room.dto.AddressDTO;
+import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
+import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
+import com.zerodsoft.scheduleweather.event.location.placefragments.LocationInfo;
+import com.zerodsoft.scheduleweather.event.location.placefragments.fragment.PlacesFragment;
+
+import java.util.LinkedList;
+
+
+public class PlacesAroundLocationFragment extends Fragment
+{
+    // 이벤트의 위치 값으로 정확한 위치를 지정하기 위해 위치 지정 액티비티 생성(카카오맵 검색 값 기반)
+    private LocationDTO locationDTO;
+
+    public PlacesAroundLocationFragment(LocationDTO locationDTO)
+    {
+        this.locationDTO = locationDTO;
+    }
+
+
+    @Override
+    public void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+    {
+        return inflater.inflate(R.layout.fragment_schedule_around_location, container, false);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
+    {
+        super.onViewCreated(view, savedInstanceState);
+        Fragment fragment = null;
+
+        if (locationDTO instanceof PlaceDTO)
+        {
+            PlaceDTO place = (PlaceDTO) locationDTO;
+            fragment = new PlacesFragment(new LocationInfo(Double.parseDouble(place.getLatitude()), Double.parseDouble(place.getLongitude()), place.getPlaceName()));
+        } else
+        {
+            AddressDTO address = (AddressDTO) locationDTO;
+            fragment = new PlacesFragment(new LocationInfo(Double.parseDouble(address.getLatitude()), Double.parseDouble(address.getLongitude()), address.getAddressName()));
+        }
+        FragmentManager fragmentManager = getChildFragmentManager();
+        fragmentManager.beginTransaction().add(R.id.places_around_location_fragment_container, fragment).commit();
+    }
+}

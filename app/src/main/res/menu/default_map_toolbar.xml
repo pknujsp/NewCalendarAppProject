@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <group android:id="@+id/view_type_group">
+        <item
+            android:id="@+id/list"
+            android:icon="@drawable/list_icon"
+            android:title="list"
+            android:visible="false"
+            app:showAsAction="always" />
+        <item
+            android:id="@+id/map"
+            android:icon="@drawable/map_icon"
+            android:title="map"
+            android:visible="false"
+            app:showAsAction="always" />
+    </group>
+
+
+    <group android:id="@+id/search_state_group">
+        <item
+            android:id="@+id/search"
+            android:icon="@drawable/ic_search_black_24dp"
+            android:title="search"
+            android:visible="true"
+            app:actionViewClass="androidx.appcompat.widget.SearchView"
+            app:showAsAction="always" />
+    </group>
+
+</menu>

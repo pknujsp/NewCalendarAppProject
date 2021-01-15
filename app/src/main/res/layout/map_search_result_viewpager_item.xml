@@ -13,7 +13,7 @@
         <Button
             android:id="@+id/search_around_map_center"
             android:layout_width="wrap_content"
-            android:layout_height="20dp"
+            android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
             android:layout_centerVertical="true"
             android:layout_marginEnd="8dp"
@@ -28,7 +28,7 @@
         <Button
             android:id="@+id/search_around_current_location"
             android:layout_width="wrap_content"
-            android:layout_height="20dp"
+            android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_toRightOf="@id/search_around_map_center"
             android:background="?attr/selectableItemBackground"

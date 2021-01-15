@@ -3,173 +3,19 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <androidx.coordinatorlayout.widget.CoordinatorLayout
+    <FrameLayout
+        android:id="@+id/map_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <FrameLayout
-            android:id="@+id/map_view"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-        </FrameLayout>
-
-
-        <RelativeLayout
+        <include
+            android:id="@+id/map_buttons_layout"
+            layout="@layout/map_buttons_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/transparent"
-            android:clickable="false"
             android:paddingLeft="36dp"
-            android:paddingRight="36dp"
-            app:layout_anchor="@id/map_item_bottom_sheet"
-            app:layout_anchorGravity="top"
-            app:layout_dodgeInsetEdges="bottom">
+            android:paddingRight="36dp" />
 
+    </FrameLayout>
 
-            <ImageButton
-                android:id="@+id/zoom_in_button"
-                android:layout_width="@dimen/map_button_size"
-                android:layout_height="@dimen/map_button_size"
-                android:layout_above="@id/zoom_out_button"
-                android:layout_alignParentRight="true"
-                android:background="@drawable/map_button_rect"
-                android:src="@drawable/zoom_in_icon" />
-
-            <ImageButton
-                android:id="@+id/zoom_out_button"
-                android:layout_width="@dimen/map_button_size"
-                android:layout_height="@dimen/map_button_size"
-                android:layout_above="@id/gps_button"
-                android:layout_alignParentRight="true"
-                android:background="@drawable/map_button_rect"
-                android:src="@drawable/zoom_out_icon" />
-
-            <ImageButton
-                android:id="@+id/gps_button"
-                android:layout_width="@dimen/map_button_size"
-                android:layout_height="@dimen/map_button_size"
-                android:layout_above="@id/button_dummy"
-                android:layout_alignParentRight="true"
-                android:layout_marginTop="48dp"
-                android:background="@drawable/map_button_rect"
-                android:src="@drawable/gps_not_fixed_icon" />
-
-            <ImageButton
-                android:id="@+id/map_view_search_button"
-                android:layout_width="@dimen/map_button_size"
-                android:layout_height="@dimen/map_button_size"
-                android:layout_above="@id/current_address"
-                android:layout_alignParentLeft="true"
-                android:layout_marginBottom="24dp"
-                android:background="@drawable/map_button_rect"
-                android:src="@drawable/search_icon" />
-
-            <TextView
-                android:id="@+id/current_address"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_above="@id/button_dummy"
-                android:layout_alignParentLeft="true"
-                android:background="@color/map_view_button_color"
-                android:padding="2dp"
-                android:text="주소"
-                android:textColor="@color/black"
-                android:textSize="13sp" />
-
-
-            <View
-                android:id="@+id/button_dummy"
-                android:layout_width="0dp"
-                android:layout_height="@dimen/map_button_size"
-                android:layout_alignParentBottom="true"
-                android:background="@color/transparent" />
-
-        </RelativeLayout>
-
-        <LinearLayout
-            android:id="@+id/map_item_bottom_sheet"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/white"
-            android:orientation="vertical"
-            android:padding="4dp"
-            app:behavior_hideable="true"
-            app:behavior_peekHeight="1dp"
-            app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
-
-
-            <RelativeLayout
-                android:id="@+id/map_bottom_sheet_toolbar"
-                android:layout_width="match_parent"
-                android:layout_height="40dp"
-                android:background="@color/white">
-
-                <ImageButton
-                    android:id="@+id/add_favorite_location_button"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:layout_alignParentLeft="true"
-                    android:layout_centerVertical="true"
-                    android:layout_marginRight="4dp"
-                    android:background="?attr/selectableItemBackground"
-                    app:srcCompat="@drawable/favorite_disabled_icon" />
-
-                <ImageButton
-                    android:id="@+id/share_location_button"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:layout_centerVertical="true"
-                    android:layout_marginRight="4dp"
-                    android:layout_toRightOf="@id/add_favorite_location_button"
-                    android:background="?attr/selectableItemBackground"
-                    app:srcCompat="@drawable/share_icon" />
-
-                <Button
-                    android:id="@+id/choice_location_button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="28dp"
-                    android:layout_centerVertical="true"
-                    android:layout_marginRight="4dp"
-                    android:layout_toRightOf="@id/share_location_button"
-                    android:background="@drawable/blue_button_rectangle"
-                    android:padding="4dp"
-                    android:text="@string/choice"
-                    android:textColor="@android:color/white"
-                    android:textSize="12sp" />
-
-                <Button
-                    android:id="@+id/cancel_location_button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="28dp"
-                    android:layout_centerVertical="true"
-                    android:layout_marginRight="4dp"
-                    android:layout_toRightOf="@id/choice_location_button"
-                    android:background="@drawable/white_button_shape"
-                    android:text="@string/cancel_location"
-                    android:textColor="@android:color/black"
-                    android:textSize="12sp" />
-
-                <ImageButton
-                    android:id="@+id/left_location_button"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:layout_centerVertical="true"
-                    android:layout_marginRight="4dp"
-                    android:layout_toLeftOf="@id/right_location_button"
-                    android:background="?attr/selectableItemBackground"
-                    app:srcCompat="@drawable/left_item_icon" />
-
-                <ImageButton
-                    android:id="@+id/right_location_button"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:layout_alignParentRight="true"
-                    android:layout_centerVertical="true"
-                    android:background="?attr/selectableItemBackground"
-                    app:srcCompat="@drawable/right_item_icon" />
-            </RelativeLayout>
-        </LinearLayout>
-
-    </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>

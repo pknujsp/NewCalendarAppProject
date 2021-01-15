@@ -24,8 +24,8 @@ public class SearchResultListAdapter extends FragmentStateAdapter implements Fra
         super(fragment);
         this.indicatorCreater = (IndicatorCreater) fragment;
         fragments = new ArrayList<>();
-        fragments.add(new AddressListFragment(this,searchWord,iMapData));
-        fragments.add(new PlaceListFragment(iMapPoint, this, searchWord,iMapData));
+        fragments.add(new AddressListFragment(this, searchWord, iMapData));
+        fragments.add(new PlaceListFragment(iMapPoint, this, searchWord, iMapData));
     }
 
     @NonNull
