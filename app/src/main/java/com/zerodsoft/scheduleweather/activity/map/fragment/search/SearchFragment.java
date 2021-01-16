@@ -64,6 +64,11 @@ public class SearchFragment extends Fragment implements OnSelectedMapCategory
         return instance;
     }
 
+    public static void close()
+    {
+        instance = null;
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
@@ -80,9 +85,11 @@ public class SearchFragment extends Fragment implements OnSelectedMapCategory
             public void handleOnBackPressed()
             {
                 fragmentManager.popBackStack();
+                fragmentStateCallback.onChangedState(FragmentStateCallback.ON_REMOVED);
                 iBottomSheet.setItemVisibility(View.VISIBLE);
                 iBottomSheet.setFragmentVisibility(View.GONE);
-                instance = null;
+                iBottomSheet.setState(BottomSheetBehavior.STATE_HIDDEN);
+                close();
             }
         };
         requireActivity().getOnBackPressedDispatcher().addCallback(SearchFragment.this, onBackPressedCallback);
@@ -92,7 +99,6 @@ public class SearchFragment extends Fragment implements OnSelectedMapCategory
     public void onDetach()
     {
         super.onDetach();
-        fragmentStateCallback.onChangedState(FragmentStateCallback.ON_DETACH);
         onBackPressedCallback.remove();
     }
 
@@ -113,8 +119,6 @@ public class SearchFragment extends Fragment implements OnSelectedMapCategory
         categoriesAdapter = new PlaceCategoriesAdapter(this);
         binding.categoriesRecyclerview.setLayoutManager(new LinearLayoutManager(getActivity(), RecyclerView.HORIZONTAL, false));
         binding.categoriesRecyclerview.setAdapter(categoriesAdapter);
-
-
     }
 
 
@@ -122,12 +126,11 @@ public class SearchFragment extends Fragment implements OnSelectedMapCategory
     {
         Bundle bundle = new Bundle();
         bundle.putString("searchWord", searchWord);
-        iBottomSheet.setState(BottomSheetBehavior.STATE_HIDDEN);
 
         FragmentManager fragmentManager = getParentFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.add(R.id.map_bottom_sheet_fragment_container, SearchResultListFragment.newInstance(searchWord, iMapPoint, iMapData, iMapToolbar, iBottomSheet), SearchResultListFragment.TAG)
-                .hide(SearchFragment.this).addToBackStack(null).commit();
+                .hide(SearchFragment.this).addToBackStack(SearchResultListFragment.TAG).commit();
 
         iMapToolbar.changeOpenCloseMenuVisibility(true);
     }

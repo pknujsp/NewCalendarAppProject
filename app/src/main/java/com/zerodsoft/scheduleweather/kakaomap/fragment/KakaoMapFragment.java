@@ -38,6 +38,7 @@ import com.zerodsoft.scheduleweather.kakaomap.interfaces.IBottomSheet;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapPoint;
 import com.zerodsoft.scheduleweather.activity.map.fragment.map.BottomSheetItemView;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapToolbar;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponseDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
 
@@ -66,7 +67,8 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     public ImageButton gpsButton;
 
     public TextView currentAddressTextView;
-    private IBottomSheet iBottomSheet;
+    public IBottomSheet iBottomSheet;
+    public IMapToolbar iMapToolbar;
 
     public int selectedPoiItemIndex;
     public boolean isSelectedPoiItem = false;
@@ -83,6 +85,12 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     public void setiBottomSheet(IBottomSheet iBottomSheet)
     {
         this.iBottomSheet = iBottomSheet;
+    }
+
+    public KakaoMapFragment setiMapToolbar(IMapToolbar iMapToolbar)
+    {
+        this.iMapToolbar = iMapToolbar;
+        return this;
     }
 
     public final LocationListener locationListener = new LocationListener()
@@ -558,7 +566,6 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     public void onReverseGeoCoderFailedToFindAddress(MapReverseGeoCoder mapReverseGeoCoder)
     {
     }
-
 
 
     public class CustomPoiItem extends MapPOIItem

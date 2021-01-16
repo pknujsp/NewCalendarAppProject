@@ -38,6 +38,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.IBottomSheet;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapPoint;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.adapter.PlacesAdapter;
@@ -83,13 +84,15 @@ public class PlaceListFragment extends Fragment
     private double mapLongitude;
     private IMapData iMapData;
     private final String SEARCH_WORD;
+    private IBottomSheet iBottomSheet;
 
-    public PlaceListFragment(IMapPoint iMapPoint, FragmentRemover fragmentRemover, String searchWord, IMapData iMapData)
+    public PlaceListFragment(IMapPoint iMapPoint, FragmentRemover fragmentRemover, String searchWord, IMapData iMapData, IBottomSheet iBottomSheet)
     {
         this.iMapPoint = iMapPoint;
         this.fragmentRemover = fragmentRemover;
         this.SEARCH_WORD = searchWord;
         this.iMapData = iMapData;
+        this.iBottomSheet = iBottomSheet;
     }
 
     private final LocationListener locationListener = new LocationListener()
@@ -346,7 +349,7 @@ public class PlaceListFragment extends Fragment
     private void requestPlacesNow()
     {
         setParameter();
-        adapter = new PlacesAdapter(getContext(), iMapData);
+        adapter = new PlacesAdapter(getContext(), iMapData, iBottomSheet);
         adapter.registerAdapterDataObserver(adapterDataObserver);
         itemRecyclerView.removeAllViews();
         itemRecyclerView.setAdapter(adapter);

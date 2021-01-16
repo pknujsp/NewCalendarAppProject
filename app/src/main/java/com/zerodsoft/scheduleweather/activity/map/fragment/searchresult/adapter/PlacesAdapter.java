@@ -11,6 +11,7 @@ import androidx.paging.PagedListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.IBottomSheet;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.kakaomap.callback.PlaceItemCallback;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
@@ -19,6 +20,7 @@ public class PlacesAdapter extends PagedListAdapter<PlaceDocuments, PlacesAdapte
 {
     private Context context;
     private IMapData iMapData;
+    private IBottomSheet iBottomSheet;
 
     class ItemViewHolder extends RecyclerView.ViewHolder
     {
@@ -42,6 +44,8 @@ public class PlacesAdapter extends PagedListAdapter<PlaceDocuments, PlacesAdapte
                 public void onClick(View view)
                 {
                     iMapData.selectPoiItem(getAdapterPosition());
+                    iBottomSheet.setItemVisibility(View.VISIBLE);
+                    iBottomSheet.setFragmentVisibility(View.GONE);
                 }
             });
         }
@@ -56,11 +60,12 @@ public class PlacesAdapter extends PagedListAdapter<PlaceDocuments, PlacesAdapte
         }
     }
 
-    public PlacesAdapter(Context context, IMapData iMapData)
+    public PlacesAdapter(Context context, IMapData iMapData, IBottomSheet iBottomSheet)
     {
         super(new PlaceItemCallback());
         this.context = context;
         this.iMapData = iMapData;
+        this.iBottomSheet = iBottomSheet;
     }
 
     @NonNull

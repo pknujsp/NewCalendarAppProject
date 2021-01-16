@@ -22,10 +22,12 @@ import android.view.ViewGroup;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.map.MapActivity;
 import com.zerodsoft.scheduleweather.etc.FragmentStateCallback;
+import com.zerodsoft.scheduleweather.kakaomap.KakaoMapActivity;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.ICatchedLocation;
 import com.zerodsoft.scheduleweather.activity.map.fragment.search.SearchFragment;
 import com.zerodsoft.scheduleweather.activity.map.util.RequestLocationTimer;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.KakaoMapFragment;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapToolbar;
 import com.zerodsoft.scheduleweather.kakaomap.viewmodel.AddressViewModel;
 import com.zerodsoft.scheduleweather.kakaomap.viewmodel.PlacesViewModel;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
@@ -248,5 +250,12 @@ public class MapFragment extends KakaoMapFragment
 
     }
 
-
+    @Override
+    public void selectPoiItem(int index)
+    {
+        iBottomSheet.setItemVisibility(View.VISIBLE);
+        iBottomSheet.setFragmentVisibility(View.GONE);
+        iMapToolbar.setViewTypeMenuVisibility(KakaoMapActivity.LIST);
+        super.selectPoiItem(index);
+    }
 }

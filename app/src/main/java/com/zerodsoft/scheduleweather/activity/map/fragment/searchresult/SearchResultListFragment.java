@@ -45,7 +45,6 @@ public class SearchResultListFragment extends Fragment implements IndicatorCreat
 
     private boolean isShowList = true;
 
-
     @Override
     public void setIndicator(int fragmentSize)
     {
@@ -119,14 +118,12 @@ public class SearchResultListFragment extends Fragment implements IndicatorCreat
         fragmentsViewPager = (ViewPager2) view.findViewById(R.id.map_search_result_viewpager);
         viewPagerIndicator = (ViewPagerIndicator) view.findViewById(R.id.map_result_view_pager_indicator);
 
-        searchResultListAdapter = new SearchResultListAdapter(this, iMapPoint, iMapData, SEARCH_WORD);
+        searchResultListAdapter = new SearchResultListAdapter(this, iMapPoint, iMapData, iBottomSheet, SEARCH_WORD);
         onPageCallback = new OnPageCallback();
 
         fragmentsViewPager.setAdapter(searchResultListAdapter);
         fragmentsViewPager.registerOnPageChangeCallback(onPageCallback);
         viewPagerIndicator.createDot(0, 2);
-
-        iBottomSheet.setState(BottomSheetBehavior.STATE_EXPANDED);
     }
 
 

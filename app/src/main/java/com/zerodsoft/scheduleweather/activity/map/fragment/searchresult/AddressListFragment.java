@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.IBottomSheet;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.adapter.AddressesAdapter;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.interfaces.FragmentRemover;
@@ -36,13 +37,15 @@ public class AddressListFragment extends Fragment
     private FragmentRemover fragmentRemover;
     private ProgressBar progressBar;
     private IMapData iMapData;
+    private IBottomSheet iBottomSheet;
     private final String SEARCH_WORD;
 
-    public AddressListFragment(FragmentRemover fragmentRemover, String searchWord, IMapData iMapData)
+    public AddressListFragment(FragmentRemover fragmentRemover, String searchWord, IMapData iMapData, IBottomSheet iBottomSheet)
     {
         this.fragmentRemover = fragmentRemover;
         this.SEARCH_WORD = searchWord;
         this.iMapData = iMapData;
+        this.iBottomSheet = iBottomSheet;
     }
 
     @Nullable
@@ -83,7 +86,7 @@ public class AddressListFragment extends Fragment
         } else
         {
             parameter.setQuery(SEARCH_WORD);
-            adapter = new AddressesAdapter(getContext(), iMapData);
+            adapter = new AddressesAdapter(getContext(), iMapData, iBottomSheet);
             adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver()
             {
                 @Override

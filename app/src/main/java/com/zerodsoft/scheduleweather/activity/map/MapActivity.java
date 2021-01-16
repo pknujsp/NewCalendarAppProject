@@ -42,6 +42,7 @@ public class MapActivity extends KakaoMapActivity
 
         kakaoMapFragment = (MapFragment) getSupportFragmentManager().findFragmentById(R.id.kakao_map_fragment);
         kakaoMapFragment.setiBottomSheet(this);
+        kakaoMapFragment.setiMapToolbar(this);
     }
 
 

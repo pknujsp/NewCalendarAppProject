@@ -13,12 +13,14 @@ import androidx.paging.PagedListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.IBottomSheet;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.kakaomap.callback.AddressItemCallback;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponseDocuments;
 
 public class AddressesAdapter extends PagedListAdapter<AddressResponseDocuments, AddressesAdapter.ItemViewHolder>
 {
+    private IBottomSheet iBottomSheet;
     private Context context;
     private IMapData iMapData;
 
@@ -42,6 +44,8 @@ public class AddressesAdapter extends PagedListAdapter<AddressResponseDocuments,
                 public void onClick(View view)
                 {
                     iMapData.selectPoiItem(getAdapterPosition());
+                    iBottomSheet.setItemVisibility(View.VISIBLE);
+                    iBottomSheet.setFragmentVisibility(View.GONE);
                 }
             });
         }
@@ -63,11 +67,12 @@ public class AddressesAdapter extends PagedListAdapter<AddressResponseDocuments,
         }
     }
 
-    public AddressesAdapter(Context context, IMapData iMapData)
+    public AddressesAdapter(Context context, IMapData iMapData, IBottomSheet iBottomSheet)
     {
         super(new AddressItemCallback());
         this.context = context;
         this.iMapData = iMapData;
+        this.iBottomSheet = iBottomSheet;
     }
 
     @NonNull

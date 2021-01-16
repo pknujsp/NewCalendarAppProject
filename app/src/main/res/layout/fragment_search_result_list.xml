@@ -11,8 +11,7 @@
         android:id="@+id/map_search_result_viewpager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="horizontal"
-        android:visibility="visible" />
+        android:orientation="horizontal" />
 
     <com.zerodsoft.scheduleweather.etc.ViewPagerIndicator
         android:id="@+id/map_result_view_pager_indicator"
@@ -25,4 +24,3 @@
         app:IndicatorUnselectedDotDrawable="@drawable/unselected_dot_indicator" />
 
 </FrameLayout>
-
