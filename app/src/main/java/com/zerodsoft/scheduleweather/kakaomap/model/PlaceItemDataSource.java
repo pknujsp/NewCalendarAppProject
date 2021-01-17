@@ -8,7 +8,7 @@ import com.zerodsoft.scheduleweather.retrofit.Querys;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceMeta;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceResponse;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceKakaoLocalResponse;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +37,7 @@ public class PlaceItemDataSource extends PositionalDataSource<PlaceDocuments>
     {
         querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.KAKAO);
         Map<String, String> queryMap = localApiPlaceParameter.getParameterMap();
-        Call<PlaceResponse> call = null;
+        Call<PlaceKakaoLocalResponse> call = null;
 
         if (localApiPlaceParameter.getQuery() == null)
         {
@@ -47,10 +47,10 @@ public class PlaceItemDataSource extends PositionalDataSource<PlaceDocuments>
             call = querys.getPlaceKeyword(queryMap);
         }
 
-        call.enqueue(new Callback<PlaceResponse>()
+        call.enqueue(new Callback<PlaceKakaoLocalResponse>()
         {
             @Override
-            public void onResponse(Call<PlaceResponse> call, Response<PlaceResponse> response)
+            public void onResponse(Call<PlaceKakaoLocalResponse> call, Response<PlaceKakaoLocalResponse> response)
             {
                 List<PlaceDocuments> placeDocuments = null;
                 if (response.body() == null)
@@ -66,7 +66,7 @@ public class PlaceItemDataSource extends PositionalDataSource<PlaceDocuments>
             }
 
             @Override
-            public void onFailure(Call<PlaceResponse> call, Throwable t)
+            public void onFailure(Call<PlaceKakaoLocalResponse> call, Throwable t)
             {
                 List<PlaceDocuments> placeDocuments = new ArrayList<>();
                 placeMeta = new PlaceMeta();
@@ -84,7 +84,7 @@ public class PlaceItemDataSource extends PositionalDataSource<PlaceDocuments>
         {
             localApiPlaceParameter.setPage(Integer.toString(Integer.parseInt(localApiPlaceParameter.getPage()) + 1));
             Map<String, String> queryMap = localApiPlaceParameter.getParameterMap();
-            Call<PlaceResponse> call = null;
+            Call<PlaceKakaoLocalResponse> call = null;
 
             if (localApiPlaceParameter.getQuery() == null)
             {
@@ -94,10 +94,10 @@ public class PlaceItemDataSource extends PositionalDataSource<PlaceDocuments>
                 call = querys.getPlaceKeyword(queryMap);
             }
 
-            call.enqueue(new Callback<PlaceResponse>()
+            call.enqueue(new Callback<PlaceKakaoLocalResponse>()
             {
                 @Override
-                public void onResponse(Call<PlaceResponse> call, Response<PlaceResponse> response)
+                public void onResponse(Call<PlaceKakaoLocalResponse> call, Response<PlaceKakaoLocalResponse> response)
                 {
                     List<PlaceDocuments> placeDocuments = response.body().getPlaceDocuments();
                     placeMeta = response.body().getPlaceMeta();
@@ -106,7 +106,7 @@ public class PlaceItemDataSource extends PositionalDataSource<PlaceDocuments>
                 }
 
                 @Override
-                public void onFailure(Call<PlaceResponse> call, Throwable t)
+                public void onFailure(Call<PlaceKakaoLocalResponse> call, Throwable t)
                 {
                     List<PlaceDocuments> placeDocuments = new ArrayList<>();
                     callback.onResult(placeDocuments);

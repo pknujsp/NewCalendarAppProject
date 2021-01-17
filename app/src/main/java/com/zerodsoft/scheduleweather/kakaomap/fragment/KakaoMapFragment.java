@@ -61,9 +61,6 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
 
     public FrameLayout mapViewContainer;
 
-    public ImageButton nextItemButton;
-    public ImageButton previousItemButton;
-
     public ImageButton gpsButton;
 
     public TextView currentAddressTextView;
@@ -368,7 +365,6 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
                 poiItems[index].setMapPoint(MapPoint.mapPointWithGeoCoord(document.getY(), document.getX()));
                 poiItems[index].setPlaceDocument(document);
                 poiItems[index].setTag(index);
-                poiItems[index].setMoveToCenterOnSelect(true);
                 poiItems[index].setMarkerType(MapPOIItem.MarkerType.BluePin); // 기본으로 제공하는 BluePin 마커 모양.
                 poiItems[index].setSelectedMarkerType(MapPOIItem.MarkerType.RedPin); // 마커를 클릭했을때, 기본으로 제공하는 RedPin 마커 모양.
                 index++;
@@ -376,10 +372,6 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
             mapView.addPOIItems(poiItems);
         }
 
-        if (iBottomSheet.getState() == BottomSheetBehavior.STATE_EXPANDED)
-        {
-            iBottomSheet.setState(BottomSheetBehavior.STATE_HIDDEN);
-        }
     }
 
     @Override
@@ -404,14 +396,9 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
                 poiItems[index].setTag(index);
                 poiItems[index].setMarkerType(MapPOIItem.MarkerType.BluePin);
                 poiItems[index].setSelectedMarkerType(MapPOIItem.MarkerType.RedPin);
-                poiItems[index].setMoveToCenterOnSelect(true);
                 index++;
             }
             mapView.addPOIItems(poiItems);
-        }
-        if (iBottomSheet.getState() == BottomSheetBehavior.STATE_EXPANDED)
-        {
-            iBottomSheet.setState(BottomSheetBehavior.STATE_HIDDEN);
         }
     }
 
@@ -448,10 +435,6 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
         if (isSelectedPoiItem)
         {
             deselectPoiItem();
-        }
-        if (iBottomSheet.getState() == BottomSheetBehavior.STATE_EXPANDED)
-        {
-            iBottomSheet.setState(BottomSheetBehavior.STATE_HIDDEN);
         }
     }
 
@@ -517,6 +500,8 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     public void onPOIItemSelected(MapView mapView, MapPOIItem mapPOIItem)
     {
         // poiitem을 선택하였을 경우에 수행됨
+        mapView.setMapCenterPoint(mapPOIItem.getMapPoint(), true);
+
         if (((CustomPoiItem) mapPOIItem).getAddressDocument() != null)
         {
             iBottomSheet.setAddress(((CustomPoiItem) mapPOIItem).getAddressDocument());

@@ -9,8 +9,6 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.paging.PagedList;
@@ -19,15 +17,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.map.MapActivity;
-import com.zerodsoft.scheduleweather.etc.FragmentStateCallback;
+import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.SearchResultListFragment;
 import com.zerodsoft.scheduleweather.kakaomap.KakaoMapActivity;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.ICatchedLocation;
-import com.zerodsoft.scheduleweather.activity.map.fragment.search.SearchFragment;
 import com.zerodsoft.scheduleweather.activity.map.util.RequestLocationTimer;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.KakaoMapFragment;
-import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapToolbar;
 import com.zerodsoft.scheduleweather.kakaomap.viewmodel.AddressViewModel;
 import com.zerodsoft.scheduleweather.kakaomap.viewmodel.PlacesViewModel;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
@@ -43,7 +38,7 @@ import java.util.Timer;
 
 public class MapFragment extends KakaoMapFragment
 {
-    // list에서 item클릭 시 poiitem이 선택되고 맵 중앙좌표가 해당item의 좌표로 변경되면서 하단 시트가 올라온다
+
     public static final String TAG = "MapFragment";
     private static MapFragment instance;
 
@@ -85,26 +80,9 @@ public class MapFragment extends KakaoMapFragment
 
 
     @Override
-    public void onAttach(@NonNull Context context)
-    {
-        super.onAttach(context);
-
-        onBackPressedCallback = new OnBackPressedCallback(true)
-        {
-            @Override
-            public void handleOnBackPressed()
-            {
-                ((MapActivity) getActivity()).getOnBackPressedDispatcher().onBackPressed();
-            }
-        };
-        requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
-    }
-
-    @Override
     public void onDetach()
     {
         super.onDetach();
-        onBackPressedCallback.remove();
     }
 
     @Nullable
@@ -255,7 +233,8 @@ public class MapFragment extends KakaoMapFragment
     {
         iBottomSheet.setItemVisibility(View.VISIBLE);
         iBottomSheet.setFragmentVisibility(View.GONE);
-        iMapToolbar.setViewTypeMenuVisibility(KakaoMapActivity.LIST);
+        SearchResultListFragment.getInstance().setShowList(false);
+        iMapToolbar.setMenuVisibility(KakaoMapActivity.MAP, true);
         super.selectPoiItem(index);
     }
 }

@@ -5,10 +5,11 @@ import android.os.Parcelable;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.KakaoLocalResponse;
 
 import java.util.List;
 
-public class PlaceResponse implements Parcelable
+public class PlaceKakaoLocalResponse extends KakaoLocalResponse implements Parcelable
 {
     @SerializedName("meta")
     @Expose
@@ -18,24 +19,24 @@ public class PlaceResponse implements Parcelable
     @Expose
     private List<PlaceDocuments> placeDocuments;
 
-    protected PlaceResponse(Parcel in)
+    protected PlaceKakaoLocalResponse(Parcel in)
     {
         placeMeta = in.readParcelable(PlaceMeta.class.getClassLoader());
         placeDocuments = in.createTypedArrayList(PlaceDocuments.CREATOR);
     }
 
-    public static final Creator<PlaceResponse> CREATOR = new Creator<PlaceResponse>()
+    public static final Creator<PlaceKakaoLocalResponse> CREATOR = new Creator<PlaceKakaoLocalResponse>()
     {
         @Override
-        public PlaceResponse createFromParcel(Parcel in)
+        public PlaceKakaoLocalResponse createFromParcel(Parcel in)
         {
-            return new PlaceResponse(in);
+            return new PlaceKakaoLocalResponse(in);
         }
 
         @Override
-        public PlaceResponse[] newArray(int size)
+        public PlaceKakaoLocalResponse[] newArray(int size)
         {
-            return new PlaceResponse[size];
+            return new PlaceKakaoLocalResponse[size];
         }
     };
 

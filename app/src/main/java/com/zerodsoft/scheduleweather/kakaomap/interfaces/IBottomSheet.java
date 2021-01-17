@@ -8,6 +8,8 @@ public interface IBottomSheet
     public static final int ADDRESS = 0;
     public static final int PLACE = 1;
     public static final int BOTTOM_SHEET = 2;
+    public static final int SEARCH_VIEW = 3;
+    public static final int SEARCH_RESULT_VIEW = 4;
 
     void setState(int state);
 
@@ -22,4 +24,7 @@ public interface IBottomSheet
     void setItemVisibility(int state);
 
     void setFragmentVisibility(int state);
+
+    void closeSearchView(int viewType);
+
 }

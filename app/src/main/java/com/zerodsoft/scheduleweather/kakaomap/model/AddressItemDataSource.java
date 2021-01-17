@@ -6,12 +6,9 @@ import androidx.paging.PositionalDataSource;
 import com.zerodsoft.scheduleweather.retrofit.HttpCommunicationClient;
 import com.zerodsoft.scheduleweather.retrofit.Querys;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponse;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressKakaoLocalResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponseDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponseMeta;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceMeta;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceResponse;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,14 +34,15 @@ public class AddressItemDataSource extends PositionalDataSource<AddressResponseD
     {
         querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.KAKAO);
         Map<String, String> queryMap = localApiPlaceParameter.getParameterMap();
-        Call<AddressResponse> call = querys.getAddress(queryMap);
+        Call<AddressKakaoLocalResponse> call = querys.getAddress(queryMap);
 
-        call.enqueue(new Callback<AddressResponse>()
+        call.enqueue(new Callback<AddressKakaoLocalResponse>()
         {
             @Override
-            public void onResponse(Call<AddressResponse> call, Response<AddressResponse> response)
+            public void onResponse(Call<AddressKakaoLocalResponse> call, Response<AddressKakaoLocalResponse> response)
             {
                 List<AddressResponseDocuments> addressDocuments = null;
+
                 if (response.body() == null)
                 {
                     addressDocuments = new ArrayList<>();
@@ -58,7 +56,7 @@ public class AddressItemDataSource extends PositionalDataSource<AddressResponseD
             }
 
             @Override
-            public void onFailure(Call<AddressResponse> call, Throwable t)
+            public void onFailure(Call<AddressKakaoLocalResponse> call, Throwable t)
             {
                 List<AddressResponseDocuments> addressDocuments = new ArrayList<>();
                 addressMeta = new AddressResponseMeta();
@@ -76,12 +74,12 @@ public class AddressItemDataSource extends PositionalDataSource<AddressResponseD
         {
             localApiPlaceParameter.setPage(Integer.toString(Integer.parseInt(localApiPlaceParameter.getPage()) + 1));
             Map<String, String> queryMap = localApiPlaceParameter.getParameterMap();
-            Call<AddressResponse> call = querys.getAddress(queryMap);
+            Call<AddressKakaoLocalResponse> call = querys.getAddress(queryMap);
 
-            call.enqueue(new Callback<AddressResponse>()
+            call.enqueue(new Callback<AddressKakaoLocalResponse>()
             {
                 @Override
-                public void onResponse(Call<AddressResponse> call, Response<AddressResponse> response)
+                public void onResponse(Call<AddressKakaoLocalResponse> call, Response<AddressKakaoLocalResponse> response)
                 {
                     List<AddressResponseDocuments> addressDocuments = response.body().getAddressResponseDocumentsList();
                     addressMeta = response.body().getAddressResponseMeta();
@@ -89,7 +87,7 @@ public class AddressItemDataSource extends PositionalDataSource<AddressResponseD
                 }
 
                 @Override
-                public void onFailure(Call<AddressResponse> call, Throwable t)
+                public void onFailure(Call<AddressKakaoLocalResponse> call, Throwable t)
                 {
                     List<AddressResponseDocuments> addressDocuments = new ArrayList<>();
                     callback.onResult(addressDocuments);

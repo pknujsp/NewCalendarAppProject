@@ -13,6 +13,18 @@
         android:layout_height="match_parent"
         android:orientation="horizontal" />
 
+    <ProgressBar
+        android:id="@+id/map_request_progress_bar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:background="@color/gray_300"
+        android:indeterminateOnly="true"
+        android:paddingLeft="16dp"
+        android:paddingTop="8dp"
+        android:paddingRight="16dp"
+        android:paddingBottom="8dp" />
+
     <com.zerodsoft.scheduleweather.etc.ViewPagerIndicator
         android:id="@+id/map_result_view_pager_indicator"
         android:layout_width="match_parent"

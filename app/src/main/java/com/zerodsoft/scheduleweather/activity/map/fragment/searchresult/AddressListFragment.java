@@ -23,6 +23,7 @@ import com.zerodsoft.scheduleweather.kakaomap.interfaces.IBottomSheet;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.adapter.AddressesAdapter;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.interfaces.FragmentRemover;
+import com.zerodsoft.scheduleweather.kakaomap.util.LocalParameterUtil;
 import com.zerodsoft.scheduleweather.kakaomap.viewmodel.AddressViewModel;
 import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
@@ -30,19 +31,16 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.Addr
 
 public class AddressListFragment extends Fragment
 {
-    private LocalApiPlaceParameter parameter = new LocalApiPlaceParameter();
     private RecyclerView itemRecyclerView;
     private AddressViewModel viewModel;
     private AddressesAdapter adapter;
-    private FragmentRemover fragmentRemover;
     private ProgressBar progressBar;
     private IMapData iMapData;
     private IBottomSheet iBottomSheet;
     private final String SEARCH_WORD;
 
-    public AddressListFragment(FragmentRemover fragmentRemover, String searchWord, IMapData iMapData, IBottomSheet iBottomSheet)
+    public AddressListFragment(String searchWord, IMapData iMapData, IBottomSheet iBottomSheet)
     {
-        this.fragmentRemover = fragmentRemover;
         this.SEARCH_WORD = searchWord;
         this.iMapData = iMapData;
         this.iBottomSheet = iBottomSheet;
@@ -77,15 +75,15 @@ public class AddressListFragment extends Fragment
 
         progressBar.setVisibility(View.VISIBLE);
 
-        parameter.setQuery(SEARCH_WORD).setPage(LocalApiPlaceParameter.DEFAULT_PAGE)
-                .setSize(LocalApiPlaceParameter.DEFAULT_SIZE);
+        LocalApiPlaceParameter parameter = LocalParameterUtil.getAddressParameter(SEARCH_WORD, LocalApiPlaceParameter.DEFAULT_SIZE
+                , LocalApiPlaceParameter.DEFAULT_PAGE);
+
         if (KakaoLocalApiCategoryUtil.isCategory(SEARCH_WORD))
         {
             // fragmentRemover.removeFragment(this);
             progressBar.setVisibility(View.GONE);
         } else
         {
-            parameter.setQuery(SEARCH_WORD);
             adapter = new AddressesAdapter(getContext(), iMapData, iBottomSheet);
             adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver()
             {
@@ -97,7 +95,6 @@ public class AddressListFragment extends Fragment
                 }
             });
             itemRecyclerView.setAdapter(adapter);
-
             viewModel.init(parameter);
             viewModel.getPagedListMutableLiveData().observe(getViewLifecycleOwner(), new CustomLiveDataObserver<PagedList<AddressResponseDocuments>>()
             {

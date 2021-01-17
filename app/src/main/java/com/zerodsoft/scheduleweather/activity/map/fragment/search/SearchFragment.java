@@ -17,10 +17,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.SearchResultListFragment;
 import com.zerodsoft.scheduleweather.etc.FragmentStateCallback;
+import com.zerodsoft.scheduleweather.kakaomap.KakaoMapActivity;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IBottomSheet;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapPoint;
@@ -84,12 +84,8 @@ public class SearchFragment extends Fragment implements OnSelectedMapCategory
             @Override
             public void handleOnBackPressed()
             {
-                fragmentManager.popBackStack();
-                fragmentStateCallback.onChangedState(FragmentStateCallback.ON_REMOVED);
-                iBottomSheet.setItemVisibility(View.VISIBLE);
-                iBottomSheet.setFragmentVisibility(View.GONE);
-                iBottomSheet.setState(BottomSheetBehavior.STATE_HIDDEN);
-                close();
+                iBottomSheet.closeSearchView(IBottomSheet.SEARCH_VIEW);
+                getParentFragmentManager().popBackStack();
             }
         };
         requireActivity().getOnBackPressedDispatcher().addCallback(SearchFragment.this, onBackPressedCallback);
@@ -132,13 +128,14 @@ public class SearchFragment extends Fragment implements OnSelectedMapCategory
         fragmentTransaction.add(R.id.map_bottom_sheet_fragment_container, SearchResultListFragment.newInstance(searchWord, iMapPoint, iMapData, iMapToolbar, iBottomSheet), SearchResultListFragment.TAG)
                 .hide(SearchFragment.this).addToBackStack(SearchResultListFragment.TAG).commit();
 
-        iMapToolbar.changeOpenCloseMenuVisibility(true);
+        iMapToolbar.setMenuVisibility(IMapToolbar.LIST, true);
     }
 
     @Override
     public void onSelectedMapCategory(KakaoLocalApiCategory category)
     {
         search(Integer.toString(category.getId()));
+        iMapToolbar.setText(category.getDescription());
     }
 
 }

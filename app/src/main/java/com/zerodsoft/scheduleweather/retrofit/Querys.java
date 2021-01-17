@@ -1,10 +1,10 @@
 package com.zerodsoft.scheduleweather.retrofit;
 
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponse;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressKakaoLocalResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.coordtoaddressresponse.CoordToAddress;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.midlandfcstresponse.MidLandFcstRoot;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.midtaresponse.MidTaRoot;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceResponse;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceKakaoLocalResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.ultrasrtfcstresponse.UltraSrtFcstRoot;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.ultrasrtncstresponse.UltraSrtNcstRoot;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.vilagefcstresponse.VilageFcstRoot;
@@ -21,15 +21,15 @@ public interface Querys
     // kakao map
     @Headers({"Authorization: " + HttpCommunicationClient.KAKAO_APP_KEY})
     @GET("search/address.json")
-    Call<AddressResponse> getAddress(@QueryMap(encoded = true) Map<String, String> queryMap);
+    Call<AddressKakaoLocalResponse> getAddress(@QueryMap(encoded = true) Map<String, String> queryMap);
 
     @Headers({"Authorization: " + HttpCommunicationClient.KAKAO_APP_KEY})
     @GET("search/keyword.json")
-    Call<PlaceResponse> getPlaceKeyword(@QueryMap(encoded = true) Map<String, String> queryMap);
+    Call<PlaceKakaoLocalResponse> getPlaceKeyword(@QueryMap(encoded = true) Map<String, String> queryMap);
 
     @Headers({"Authorization: " + HttpCommunicationClient.KAKAO_APP_KEY})
     @GET("search/category.json")
-    Call<PlaceResponse> getPlaceCategory(@QueryMap(encoded = true) Map<String, String> queryMap);
+    Call<PlaceKakaoLocalResponse> getPlaceCategory(@QueryMap(encoded = true) Map<String, String> queryMap);
 
     @Headers({"Authorization: " + HttpCommunicationClient.KAKAO_APP_KEY})
     @GET("geo/coord2address.json")

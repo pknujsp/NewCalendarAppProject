@@ -44,6 +44,7 @@ import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapPoint;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.adapter.PlacesAdapter;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.interfaces.FragmentRemover;
 import com.zerodsoft.scheduleweather.activity.map.util.RequestLocationTimer;
+import com.zerodsoft.scheduleweather.kakaomap.util.LocalParameterUtil;
 import com.zerodsoft.scheduleweather.kakaomap.viewmodel.PlacesViewModel;
 import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
@@ -53,20 +54,12 @@ import java.util.Timer;
 
 public class PlaceListFragment extends Fragment
 {
-    private LocalApiPlaceParameter parameter = new LocalApiPlaceParameter();
-
-    public static final int SEARCH_CRITERIA_MAP_POINT_MAP_CENTER = 0;
-    public static final int SEARCH_CRITERIA_MAP_POINT_CURRENT_LOCATION = 1;
-    public static final int SEARCH_CRITERIA_SORT_TYPE_DISTANCE = 2;
-    public static final int SEARCH_CRITERIA_SORT_TYPE_ACCURACY = 3;
-
-    private static int currSearchMapPointCriteria = SEARCH_CRITERIA_MAP_POINT_CURRENT_LOCATION;
-    private static int currSearchSortTypeCriteria = SEARCH_CRITERIA_SORT_TYPE_ACCURACY;
+    private static int currSearchMapPointCriteria = LocalApiPlaceParameter.SEARCH_CRITERIA_MAP_POINT_MAP_CENTER;
+    private static int currSearchSortTypeCriteria = LocalApiPlaceParameter.SEARCH_CRITERIA_SORT_TYPE_ACCURACY;
 
     private RecyclerView itemRecyclerView;
     private PlacesViewModel viewModel;
     private PlacesAdapter adapter;
-    private FragmentRemover fragmentRemover;
     private IMapPoint iMapPoint;
 
     private Button searchAroundMapCenterButton;
@@ -86,10 +79,9 @@ public class PlaceListFragment extends Fragment
     private final String SEARCH_WORD;
     private IBottomSheet iBottomSheet;
 
-    public PlaceListFragment(IMapPoint iMapPoint, FragmentRemover fragmentRemover, String searchWord, IMapData iMapData, IBottomSheet iBottomSheet)
+    public PlaceListFragment(IMapPoint iMapPoint, String searchWord, IMapData iMapData, IBottomSheet iBottomSheet)
     {
         this.iMapPoint = iMapPoint;
-        this.fragmentRemover = fragmentRemover;
         this.SEARCH_WORD = searchWord;
         this.iMapData = iMapData;
         this.iBottomSheet = iBottomSheet;
@@ -154,7 +146,7 @@ public class PlaceListFragment extends Fragment
                 R.array.map_search_result_sort_spinner, android.R.layout.simple_spinner_item);
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         sortSpinner.setAdapter(spinnerAdapter);
-        sortSpinner.setSelection(currSearchSortTypeCriteria == SEARCH_CRITERIA_SORT_TYPE_ACCURACY ? 1 : 0, false);
+        sortSpinner.setSelection(currSearchSortTypeCriteria == LocalApiPlaceParameter.SEARCH_CRITERIA_SORT_TYPE_ACCURACY ? 1 : 0, false);
         sortSpinner.setOnItemSelectedListener(onItemSelectedListener);
         replaceButtonStyle();
 
@@ -166,7 +158,7 @@ public class PlaceListFragment extends Fragment
             public void onClick(View view)
             {
                 enabledViews(false);
-                currSearchMapPointCriteria = SEARCH_CRITERIA_MAP_POINT_MAP_CENTER;
+                currSearchMapPointCriteria = LocalApiPlaceParameter.SEARCH_CRITERIA_MAP_POINT_MAP_CENTER;
                 replaceButtonStyle();
                 requestPlaces();
             }
@@ -178,7 +170,7 @@ public class PlaceListFragment extends Fragment
             public void onClick(View view)
             {
                 enabledViews(false);
-                currSearchMapPointCriteria = SEARCH_CRITERIA_MAP_POINT_CURRENT_LOCATION;
+                currSearchMapPointCriteria = LocalApiPlaceParameter.SEARCH_CRITERIA_MAP_POINT_CURRENT_LOCATION;
                 replaceButtonStyle();
                 requestPlaces();
             }
@@ -209,11 +201,11 @@ public class PlaceListFragment extends Fragment
     {
         switch (currSearchMapPointCriteria)
         {
-            case SEARCH_CRITERIA_MAP_POINT_CURRENT_LOCATION:
+            case LocalApiPlaceParameter.SEARCH_CRITERIA_MAP_POINT_CURRENT_LOCATION:
                 searchAroundCurrentLocationButton.setTextColor(getResources().getColor(R.color.gray_700, null));
                 searchAroundMapCenterButton.setTextColor(getResources().getColor(R.color.gray_500, null));
                 break;
-            case SEARCH_CRITERIA_MAP_POINT_MAP_CENTER:
+            case LocalApiPlaceParameter.SEARCH_CRITERIA_MAP_POINT_MAP_CENTER:
                 searchAroundCurrentLocationButton.setTextColor(getResources().getColor(R.color.gray_500, null));
                 searchAroundMapCenterButton.setTextColor(getResources().getColor(R.color.gray_700, null));
                 break;
@@ -230,11 +222,11 @@ public class PlaceListFragment extends Fragment
             {
                 case 0:
                     //거리 순서
-                    currSearchSortTypeCriteria = SEARCH_CRITERIA_SORT_TYPE_DISTANCE;
+                    currSearchSortTypeCriteria = LocalApiPlaceParameter.SEARCH_CRITERIA_SORT_TYPE_DISTANCE;
                     break;
                 case 1:
                     //정확도 순서
-                    currSearchSortTypeCriteria = SEARCH_CRITERIA_SORT_TYPE_ACCURACY;
+                    currSearchSortTypeCriteria = LocalApiPlaceParameter.SEARCH_CRITERIA_SORT_TYPE_ACCURACY;
                     break;
             }
             requestPlaces();
@@ -297,7 +289,7 @@ public class PlaceListFragment extends Fragment
     {
         if (checkNetwork())
         {
-            if (currSearchMapPointCriteria == SEARCH_CRITERIA_MAP_POINT_CURRENT_LOCATION)
+            if (currSearchMapPointCriteria == LocalApiPlaceParameter.SEARCH_CRITERIA_MAP_POINT_CURRENT_LOCATION)
             {
                 boolean isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
                 boolean isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
@@ -337,7 +329,7 @@ public class PlaceListFragment extends Fragment
                 }
             } else
             {
-                currSearchMapPointCriteria = SEARCH_CRITERIA_MAP_POINT_MAP_CENTER;
+                currSearchMapPointCriteria = LocalApiPlaceParameter.SEARCH_CRITERIA_MAP_POINT_MAP_CENTER;
                 requestPlacesNow();
             }
         } else
@@ -348,7 +340,9 @@ public class PlaceListFragment extends Fragment
 
     private void requestPlacesNow()
     {
-        setParameter();
+        LocalApiPlaceParameter parameter = LocalParameterUtil.getPlaceParameter(SEARCH_WORD, getLatitude(), getLongitude(),
+                LocalApiPlaceParameter.DEFAULT_SIZE, LocalApiPlaceParameter.DEFAULT_PAGE, currSearchSortTypeCriteria);
+
         adapter = new PlacesAdapter(getContext(), iMapData, iBottomSheet);
         adapter.registerAdapterDataObserver(adapterDataObserver);
         itemRecyclerView.removeAllViews();
@@ -385,7 +379,7 @@ public class PlaceListFragment extends Fragment
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i)
                     {
-                        currSearchMapPointCriteria = SEARCH_CRITERIA_MAP_POINT_MAP_CENTER;
+                        currSearchMapPointCriteria = LocalApiPlaceParameter.SEARCH_CRITERIA_MAP_POINT_MAP_CENTER;
                         replaceButtonStyle();
                         enabledViews(false);
                         requestPlacesNow();
@@ -395,30 +389,6 @@ public class PlaceListFragment extends Fragment
                 .show();
     }
 
-    private void setParameter()
-    {
-        parameter.clear();
-        parameter.setY(Double.toString(getLatitude())).setX(Double.toString(getLongitude()))
-                .setSize(LocalApiPlaceParameter.DEFAULT_SIZE).setPage(LocalApiPlaceParameter.DEFAULT_PAGE);
-
-        switch (currSearchSortTypeCriteria)
-        {
-            case SEARCH_CRITERIA_SORT_TYPE_ACCURACY:
-                parameter.setSort(LocalApiPlaceParameter.SORT_ACCURACY);
-                break;
-            case SEARCH_CRITERIA_SORT_TYPE_DISTANCE:
-                parameter.setSort(LocalApiPlaceParameter.SORT_DISTANCE);
-                break;
-        }
-
-        if (KakaoLocalApiCategoryUtil.isCategory(SEARCH_WORD))
-        {
-            parameter.setCategoryGroupCode(KakaoLocalApiCategoryUtil.getName(Integer.parseInt(SEARCH_WORD)));
-        } else
-        {
-            parameter.setQuery(SEARCH_WORD);
-        }
-    }
 
     private void enabledViews(boolean state)
     {
@@ -433,12 +403,12 @@ public class PlaceListFragment extends Fragment
 
     private double getLatitude()
     {
-        return currSearchMapPointCriteria == SEARCH_CRITERIA_MAP_POINT_CURRENT_LOCATION ? mapLatitude : iMapPoint.getLatitude();
+        return currSearchMapPointCriteria == LocalApiPlaceParameter.SEARCH_CRITERIA_MAP_POINT_CURRENT_LOCATION ? mapLatitude : iMapPoint.getLatitude();
     }
 
     private double getLongitude()
     {
-        return currSearchMapPointCriteria == SEARCH_CRITERIA_MAP_POINT_CURRENT_LOCATION ? mapLongitude : iMapPoint.getLongitude();
+        return currSearchMapPointCriteria == LocalApiPlaceParameter.SEARCH_CRITERIA_MAP_POINT_CURRENT_LOCATION ? mapLongitude : iMapPoint.getLongitude();
     }
 
     class CustomGridLayoutManager extends LinearLayoutManager

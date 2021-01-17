@@ -24,6 +24,11 @@ public class LocalApiPlaceParameter implements Parcelable, Cloneable
     public static final String SORT_ACCURACY = "accuracy";
     public static final String SORT_DISTANCE = "distance";
 
+    public static final int SEARCH_CRITERIA_MAP_POINT_MAP_CENTER = 0;
+    public static final int SEARCH_CRITERIA_MAP_POINT_CURRENT_LOCATION = 1;
+    public static final int SEARCH_CRITERIA_SORT_TYPE_DISTANCE = 2;
+    public static final int SEARCH_CRITERIA_SORT_TYPE_ACCURACY = 3;
+
 
     public static final Creator<LocalApiPlaceParameter> CREATOR = new Creator<LocalApiPlaceParameter>()
     {
@@ -242,17 +247,6 @@ public class LocalApiPlaceParameter implements Parcelable, Cloneable
 
     public LocalApiPlaceParameter copy()
     {
-        /*
-          private String query;
-    private String categoryGroupCode;
-    private String x;
-    private String y;
-    private String radius;
-    private String page;
-    private String size;
-    private String sort;
-    private String rect;
-         */
         return new LocalApiPlaceParameter().setQuery(query).setCategoryGroupCode(categoryGroupCode)
                 .setX(x).setY(y).setRadius(radius).setPage(page).setSize(size).setSort(sort).setRect(rect);
     }

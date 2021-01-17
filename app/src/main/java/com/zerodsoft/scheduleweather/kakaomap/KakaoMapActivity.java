@@ -16,6 +16,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 
+import com.google.android.material.behavior.HideBottomViewOnScrollBehavior;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.map.fragment.map.MapFragment;
@@ -23,6 +24,7 @@ import com.zerodsoft.scheduleweather.activity.map.fragment.search.SearchFragment
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.SearchResultListFragment;
 import com.zerodsoft.scheduleweather.databinding.ActivityKakaoMapBinding;
 import com.zerodsoft.scheduleweather.etc.FragmentStateCallback;
+import com.zerodsoft.scheduleweather.kakaomap.fragment.KakaoMapFragment;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IBottomSheet;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapToolbar;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponseDocuments;
@@ -34,11 +36,8 @@ public class KakaoMapActivity extends AppCompatActivity implements IBottomSheet,
 {
     public ActivityKakaoMapBinding binding;
     public BottomSheetBehavior bottomSheetBehavior;
-    public MapFragment kakaoMapFragment;
-
+    public KakaoMapFragment kakaoMapFragment;
     private SearchView searchView;
-    public static final int MAP = 0;
-    public static final int LIST = 1;
 
     public KakaoMapActivity()
     {
@@ -58,6 +57,7 @@ public class KakaoMapActivity extends AppCompatActivity implements IBottomSheet,
     {
         MenuInflater menuInflater = getMenuInflater();
         menuInflater.inflate(R.menu.default_map_toolbar, menu);
+
         searchView = (SearchView) menu.findItem(R.id.search).getActionView();
         searchView.setMaxWidth(Integer.MAX_VALUE);
         searchView.setQueryHint(getString(R.string.input_location));
@@ -66,27 +66,22 @@ public class KakaoMapActivity extends AppCompatActivity implements IBottomSheet,
             @Override
             public void onClick(View view)
             {
-                if (SearchFragment.getInstance() == null)
-                {
-                    setState(BottomSheetBehavior.STATE_HIDDEN);
-                    setItemVisibility(View.GONE);
-                    setFragmentVisibility(View.VISIBLE);
+                setState(BottomSheetBehavior.STATE_HIDDEN);
+                setItemVisibility(View.GONE);
+                setFragmentVisibility(View.VISIBLE);
 
-                    getSupportFragmentManager().beginTransaction()
-                            .add(binding.bottomSheet.mapBottomSheetFragmentContainer.getId(), SearchFragment.newInstance(KakaoMapActivity.this, kakaoMapFragment, new FragmentStateCallback()
+                getSupportFragmentManager().beginTransaction()
+                        .add(binding.bottomSheet.mapBottomSheetFragmentContainer.getId(), SearchFragment.newInstance(KakaoMapActivity.this, kakaoMapFragment, new FragmentStateCallback()
+                        {
+                            @Override
+                            public void onChangedState(int state)
                             {
-                                @Override
-                                public void onChangedState(int state)
+                                if (state == FragmentStateCallback.ON_REMOVED)
                                 {
-                                    if (state == FragmentStateCallback.ON_REMOVED)
-                                    {
-                                        searchView.setIconified(true);
-                                        searchView.clearFocus();
-                                    }
                                 }
-                            }), SearchFragment.TAG).addToBackStack(SearchFragment.TAG).commit();
-                    setState(BottomSheetBehavior.STATE_EXPANDED);
-                }
+                            }
+                        }), SearchFragment.TAG).addToBackStack(SearchFragment.TAG).commit();
+                setState(BottomSheetBehavior.STATE_EXPANDED);
             }
         });
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener()
@@ -129,17 +124,11 @@ public class KakaoMapActivity extends AppCompatActivity implements IBottomSheet,
                             searchView.setQuery("", false);
                             break;
                         case SearchResultListFragment.TAG:
-                            setState(BottomSheetBehavior.STATE_HIDDEN);
-                            setItemVisibility(View.VISIBLE);
-                            setFragmentVisibility(View.GONE);
-                            fragmentManager.popBackStack();
-                            fragmentManager.popBackStack();
-                            searchView.setIconified(true);
-                            searchView.clearFocus();
+                            closeSearchView(IBottomSheet.SEARCH_RESULT_VIEW);
                             break;
                     }
                 }
-                return true;
+                return false;
             }
         });
 
@@ -156,7 +145,7 @@ public class KakaoMapActivity extends AppCompatActivity implements IBottomSheet,
     private void initBottomSheet()
     {
         bottomSheetBehavior = BottomSheetBehavior.from(binding.bottomSheet.getRoot());
-        bottomSheetBehavior.setDraggable(true);
+        bottomSheetBehavior.setDraggable(false);
         bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
 
         bottomSheetBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback()
@@ -174,33 +163,6 @@ public class KakaoMapActivity extends AppCompatActivity implements IBottomSheet,
                 switch (newState)
                 {
                     case BottomSheetBehavior.STATE_HIDDEN:
-                        if (kakaoMapFragment.isSelectedPoiItem)
-                        {
-                            kakaoMapFragment.deselectPoiItem();
-                        }
-                        // 검색 화면인 경우
-                        FragmentManager fragmentManager = getSupportFragmentManager();
-                        final int topIndexStack = fragmentManager.getBackStackEntryCount() - 1;
-
-                        if (topIndexStack >= 0)
-                        {
-                            FragmentManager.BackStackEntry backStackEntry = fragmentManager.getBackStackEntryAt(topIndexStack);
-                            String name = backStackEntry.getName();
-
-                            switch (name)
-                            {
-                                case SearchFragment.TAG:
-                                    fragmentManager.popBackStack();
-                                    searchView.setIconified(true);
-                                    searchView.clearFocus();
-                                    setItemVisibility(View.VISIBLE);
-                                    setFragmentVisibility(View.GONE);
-                                    break;
-                                case SearchResultListFragment.TAG:
-                                    SearchResultListFragment.getInstance().changeFragment();
-                                    break;
-                            }
-                        }
                         break;
                 }
             }
@@ -208,10 +170,7 @@ public class KakaoMapActivity extends AppCompatActivity implements IBottomSheet,
             @Override
             public void onSlide(@NonNull View bottomSheet, float slideOffset)
             {
-                if (slideOffset == 0)
-                {
-                    bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
-                }
+
             }
         });
 
@@ -286,12 +245,38 @@ public class KakaoMapActivity extends AppCompatActivity implements IBottomSheet,
     }
 
     @Override
+    public void closeSearchView(int viewType)
+    {
+        switch (viewType)
+        {
+            case IBottomSheet.SEARCH_VIEW:
+                setState(BottomSheetBehavior.STATE_HIDDEN);
+                searchView.setIconified(true);
+                searchView.onActionViewCollapsed();
+                setItemVisibility(View.VISIBLE);
+                setFragmentVisibility(View.GONE);
+                break;
+
+            case IBottomSheet.SEARCH_RESULT_VIEW:
+                setState(BottomSheetBehavior.STATE_HIDDEN);
+                kakaoMapFragment.removeAllPoiItems();
+                setItemVisibility(View.VISIBLE);
+                setFragmentVisibility(View.GONE);
+                searchView.setIconified(true);
+                searchView.onActionViewCollapsed();
+                break;
+        }
+
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item)
     {
         switch (item.getItemId())
         {
-            case R.id.search:
-
+            case R.id.map:
+            case R.id.list:
+                SearchResultListFragment.getInstance().changeFragment();
                 break;
         }
         return super.onOptionsItemSelected(item);
@@ -304,19 +289,29 @@ public class KakaoMapActivity extends AppCompatActivity implements IBottomSheet,
     }
 
     @Override
-    public void setViewTypeMenuVisibility(int type)
+    public void setMenuVisibility(int type, boolean state)
     {
         switch (type)
         {
-            case MAP:
-                binding.mapSearchToolbar.getRoot().getMenu().getItem(1).setVisible(true);
-                binding.mapSearchToolbar.getRoot().getMenu().getItem(0).setVisible(false);
+            case IMapToolbar.MAP:
+                binding.mapSearchToolbar.getRoot().getMenu().findItem(R.id.list).setVisible(!state);
+                binding.mapSearchToolbar.getRoot().getMenu().findItem(R.id.map).setVisible(state);
                 break;
-            case LIST:
-                binding.mapSearchToolbar.getRoot().getMenu().getItem(1).setVisible(false);
-                binding.mapSearchToolbar.getRoot().getMenu().getItem(0).setVisible(true);
+            case IMapToolbar.LIST:
+                binding.mapSearchToolbar.getRoot().getMenu().findItem(R.id.list).setVisible(state);
+                binding.mapSearchToolbar.getRoot().getMenu().findItem(R.id.map).setVisible(!state);
+                break;
+            case IMapToolbar.ALL:
+                binding.mapSearchToolbar.getRoot().getMenu().findItem(R.id.list).setVisible(state);
+                binding.mapSearchToolbar.getRoot().getMenu().findItem(R.id.map).setVisible(state);
                 break;
         }
+    }
+
+    @Override
+    public void setText(String text)
+    {
+        searchView.setQuery(text, false);
     }
 
     /*
