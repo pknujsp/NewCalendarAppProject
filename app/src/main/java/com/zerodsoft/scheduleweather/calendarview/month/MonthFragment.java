@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.calendarfragment;
+package com.zerodsoft.scheduleweather.calendarview.month;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -11,8 +11,11 @@ import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.calendarfragment.EventsInfoFragment.EventsInfoFragment;
-import com.zerodsoft.scheduleweather.calendarview.month.MonthViewPagerAdapter;
+import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
+import com.zerodsoft.scheduleweather.calendarview.eventdialog.EventListOnDayFragment;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import java.util.Calendar;
@@ -23,16 +26,17 @@ public class MonthFragment extends Fragment implements OnEventItemClickListener
 {
     public static final String TAG = "MonthFragment";
 
-    private OnControlEvent onControlEvent;
+    private IControlEvent iControlEvent;
+    private IToolbar iToolbar;
     private ViewPager2 viewPager;
     private MonthViewPagerAdapter viewPagerAdapter;
     private OnPageChangeCallback onPageChangeCallback;
     private int currentPosition = EventTransactionFragment.FIRST_VIEW_POSITION;
 
-
-    public MonthFragment(Fragment fragment)
+    public MonthFragment(IControlEvent iControlEvent, IToolbar iToolbar)
     {
-        onControlEvent = (OnControlEvent) fragment;
+        this.iControlEvent = iControlEvent;
+        this.iToolbar = iToolbar;
     }
 
     @Nullable
@@ -45,39 +49,23 @@ public class MonthFragment extends Fragment implements OnEventItemClickListener
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
+        super.onViewCreated(view, savedInstanceState);
+
         viewPager = (ViewPager2) view.findViewById(R.id.month_viewpager);
 
-        viewPagerAdapter = new MonthViewPagerAdapter(this);
+        viewPagerAdapter = new MonthViewPagerAdapter(this, iToolbar);
         viewPager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
         viewPager.setAdapter(viewPagerAdapter);
         viewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, false);
 
         onPageChangeCallback = new OnPageChangeCallback(viewPagerAdapter.getCalendar());
         viewPager.registerOnPageChangeCallback(onPageChangeCallback);
-
-        super.onViewCreated(view, savedInstanceState);
-    }
-
-    public void onSelectedSchedules(int viewPosition, List<ScheduleDTO> schedules)
-    {
-        viewPagerAdapter.setData(viewPosition, schedules);
-    }
-
-    public void setMonth(Date date)
-    {
-        onControlEvent.setToolbarMonth(date);
-    }
-
-    public void requestSchedules(int position, Date startDate, Date endDate)
-    {
-        // 해당 페이지에 해당하는 날짜에 대한 데이터 불러오기
-        onControlEvent.requestSchedules(this, position, startDate, endDate);
     }
 
     public void refreshView(Date startDate)
     {
         //시작 날짜의 해당 월로 달력 변경
-        viewPagerAdapter = new MonthViewPagerAdapter(this);
+        viewPagerAdapter = new MonthViewPagerAdapter(this, iToolbar);
         //시작 날짜가 화면에 표시되도록 달력 날짜를 변경
         Calendar viewCalendar = viewPagerAdapter.getCalendar();
         //두 날짜 사이의 월수 차이
@@ -100,15 +88,9 @@ public class MonthFragment extends Fragment implements OnEventItemClickListener
     @Override
     public void onClicked(Date startDate, Date endDate)
     {
-        EventsInfoFragment eventsInfoFragment = new EventsInfoFragment(startDate, endDate);
-        eventsInfoFragment.show(getActivity().getSupportFragmentManager(), EventsInfoFragment.TAG);
+        EventListOnDayFragment eventListOnDayFragment = new EventListOnDayFragment(startDate, endDate);
+        eventListOnDayFragment.show(getParentFragmentManager(), EventListOnDayFragment.TAG);
     }
-
-    public void showSchedule(int scheduleId)
-    {
-        onControlEvent.showSchedule(scheduleId);
-    }
-
 
     class OnPageChangeCallback extends ViewPager2.OnPageChangeCallback
     {
@@ -145,7 +127,7 @@ public class MonthFragment extends Fragment implements OnEventItemClickListener
             copiedCalendar.add(Calendar.MONTH, currentPosition - EventTransactionFragment.FIRST_VIEW_POSITION);
 
             //error point-------------------------------------------------------------------------
-            setMonth(copiedCalendar.getTime());
+            iToolbar.setMonth(copiedCalendar.getTime());
             super.onPageSelected(position);
         }
     }

@@ -1,6 +1,8 @@
-package com.zerodsoft.scheduleweather.calendarview;
+package com.zerodsoft.scheduleweather.calendarview.model;
 
 import android.graphics.PointF;
+
+import com.zerodsoft.scheduleweather.calendarview.enums.AccountType;
 
 public class EventDrawingInfo
 {

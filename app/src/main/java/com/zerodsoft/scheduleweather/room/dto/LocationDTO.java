@@ -8,7 +8,7 @@ import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
 @Entity(tableName = "location_table")
-public class LocationDTO
+public class LocationDTO implements  Parcelable
 {
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "id")
@@ -38,6 +38,33 @@ public class LocationDTO
     public LocationDTO()
     {
     }
+
+    protected LocationDTO(Parcel in)
+    {
+        id = in.readInt();
+        calendarId = in.readInt();
+        accountName = in.readString();
+        eventId = in.readInt();
+        latitude = in.readDouble();
+        longitude = in.readDouble();
+        addressName = in.readString();
+        placeId = in.readString();
+    }
+
+    public static final Creator<LocationDTO> CREATOR = new Creator<LocationDTO>()
+    {
+        @Override
+        public LocationDTO createFromParcel(Parcel in)
+        {
+            return new LocationDTO(in);
+        }
+
+        @Override
+        public LocationDTO[] newArray(int size)
+        {
+            return new LocationDTO[size];
+        }
+    };
 
     public void setId(int id)
     {
@@ -120,4 +147,22 @@ public class LocationDTO
     }
 
 
+    @Override
+    public int describeContents()
+    {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i)
+    {
+        parcel.writeInt(id);
+        parcel.writeInt(calendarId);
+        parcel.writeString(accountName);
+        parcel.writeInt(eventId);
+        parcel.writeDouble(latitude);
+        parcel.writeDouble(longitude);
+        parcel.writeString(addressName);
+        parcel.writeString(placeId);
+    }
 }

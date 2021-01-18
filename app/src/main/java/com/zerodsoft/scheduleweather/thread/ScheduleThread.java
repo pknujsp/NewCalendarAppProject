@@ -5,8 +5,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 
-import com.zerodsoft.scheduleweather.calendarview.AccountType;
-import com.zerodsoft.scheduleweather.calendarview.CalendarType;
+import com.zerodsoft.scheduleweather.calendarview.enums.AccountType;
+import com.zerodsoft.scheduleweather.calendarview.enums.CalendarType;
 
 import java.util.Date;
 import java.util.List;

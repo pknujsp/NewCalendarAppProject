@@ -16,8 +16,7 @@ import androidx.annotation.Nullable;
 import androidx.core.view.GestureDetectorCompat;
 import androidx.core.view.ViewCompat;
 
-import com.zerodsoft.scheduleweather.calendarfragment.WeekFragment;
-import com.zerodsoft.scheduleweather.calendarview.HourEventsView;
+import com.zerodsoft.scheduleweather.calendarview.hourside.HourEventsView;
 import com.zerodsoft.scheduleweather.calendarview.month.EventData;
 import com.zerodsoft.scheduleweather.utility.AppSettings;
 

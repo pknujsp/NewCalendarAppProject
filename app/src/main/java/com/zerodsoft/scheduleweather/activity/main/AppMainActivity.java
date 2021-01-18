@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather;
+package com.zerodsoft.scheduleweather.activity.main;
 
 import android.Manifest;
 import android.accounts.AccountManager;
@@ -12,14 +12,18 @@ import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ExpandableListView;
-import android.widget.Toast;
+import android.widget.TextView;
 
 import com.google.android.material.navigation.NavigationView;
+import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.editevent.activity.EventActivity;
-import com.zerodsoft.scheduleweather.calendarfragment.EventTransactionFragment;
-import com.zerodsoft.scheduleweather.calendarfragment.DayFragment;
-import com.zerodsoft.scheduleweather.calendarfragment.MonthFragment;
-import com.zerodsoft.scheduleweather.calendarfragment.WeekFragment;
+import com.zerodsoft.scheduleweather.calendarview.CalendarsAdapter;
+import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
+import com.zerodsoft.scheduleweather.calendarview.day.DayFragment;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.ICalendarCheckBox;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
+import com.zerodsoft.scheduleweather.calendarview.month.MonthFragment;
+import com.zerodsoft.scheduleweather.calendarview.week.WeekFragment;
 import com.zerodsoft.scheduleweather.databinding.ActivityAppMainBinding;
 import com.zerodsoft.scheduleweather.calendar.GoogleCalendarApi;
 import com.zerodsoft.scheduleweather.calendar.CalendarProvider;
@@ -29,6 +33,7 @@ import com.zerodsoft.scheduleweather.calendar.dto.CalendarDto;
 import com.zerodsoft.scheduleweather.calendar.dto.EventDto;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
+import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -47,7 +52,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class AppMainActivity extends AppCompatActivity implements ICalendarCheckBox
+public class AppMainActivity extends AppCompatActivity implements ICalendarCheckBox, IToolbar
 {
     private EventTransactionFragment calendarTransactionFragment;
 
@@ -57,6 +62,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
     private ActivityAppMainBinding mainBinding;
     private CalendarViewModel calendarViewModel;
     private CalendarsAdapter calendarsAdapter;
+    private TextView currMonthTextView;
 
     public static int getDisplayHeight()
     {
@@ -94,9 +100,10 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 
         View customToolbar = getLayoutInflater().inflate(R.layout.app_main_toolbar, null);
         actionBar.setCustomView(customToolbar);
+        currMonthTextView = (TextView) customToolbar.findViewById(R.id.calendar_month);
 
-        calendarTransactionFragment = new EventTransactionFragment();
-        getSupportFragmentManager().beginTransaction().add(R.id.calendar_layout, calendarTransactionFragment, EventTransactionFragment.TAG).commit();
+        calendarTransactionFragment = new EventTransactionFragment(this);
+        getSupportFragmentManager().beginTransaction().add(R.id.calendar_fragment_container, calendarTransactionFragment, EventTransactionFragment.TAG).commit();
     }
 
     private void init()
@@ -210,7 +217,6 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
                     calendarsAdapter.setCheckBoxStates(checkBoxStates);
                     mainBinding.sideNavCalendarList.setAdapter(calendarsAdapter);
                     expandAllGroup();
-                    // calendarViewModel.getEvents();
                 }
             }
         });
@@ -600,5 +606,10 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
         editor2.commit();
     }
 
+    @Override
+    public void setMonth(Date dateTime)
+    {
+        currMonthTextView.setText(ClockUtil.YEAR_MONTH_FORMAT.format(dateTime));
+    }
 }
 

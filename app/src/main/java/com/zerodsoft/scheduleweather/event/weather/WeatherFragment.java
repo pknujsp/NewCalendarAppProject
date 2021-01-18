@@ -17,6 +17,7 @@ import android.widget.ImageButton;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.event.location.placefragments.LocationInfo;
 import com.zerodsoft.scheduleweather.event.weather.weatherfragments.fragment.WeatherItemFragment;
+import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.utility.WeatherDataConverter;
 
 import java.util.ArrayList;
@@ -26,20 +27,19 @@ public class WeatherFragment extends Fragment
 {
     // 이벤트의 위치 값으로 날씨를 표시할 정확한 위치를 지정하기 위해 위치 지정 액티비티 생성(기상청 지역 리스트 기반)
     private ImageButton refreshButton;
-    private FragmentManager fragmentManager;
-
+    private  LocationDTO location;
 
     public WeatherFragment()
     {
 
     }
 
-
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        WeatherDataConverter.context = getActivity().getApplicationContext();
+        WeatherDataConverter.context = getContext();
+        location = getArguments().getParcelable("location");
     }
 
     @Override
@@ -54,11 +54,10 @@ public class WeatherFragment extends Fragment
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
-
-
-
+        getParentFragmentManager().beginTransaction().add(R.id.weather_fragment_container_view,
+                new WeatherItemFragment(location), WeatherItemFragment.class.getName())
+                .commit();
     }
-
 
     public void rotateRefreshButton(boolean value)
     {

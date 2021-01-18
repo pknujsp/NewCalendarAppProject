@@ -237,26 +237,6 @@ public class CalendarProvider
                 .appendQueryParameter(CalendarContract.Calendars.ACCOUNT_TYPE, accountType).build();
     }
 
-    private void putValue(ContentValues contentValues, Cursor cursor, String key, int columnIndex, int dataType)
-    {
-        switch (dataType)
-        {
-            case Cursor.FIELD_TYPE_BLOB:
-                contentValues.put(key, cursor.getBlob(columnIndex));
-                break;
-            case Cursor.FIELD_TYPE_FLOAT:
-                contentValues.put(key, cursor.getFloat(columnIndex));
-                break;
-            case Cursor.FIELD_TYPE_STRING:
-                contentValues.put(key, cursor.getString(columnIndex));
-                break;
-            case Cursor.FIELD_TYPE_INTEGER:
-                contentValues.put(key, cursor.getInt(columnIndex));
-                break;
-            case Cursor.FIELD_TYPE_NULL:
-                break;
-        }
-    }
 
     public List<ContentValues> getCalendars()
     {
@@ -305,5 +285,12 @@ public class CalendarProvider
 
     public void modifyEvent(ContentValues event)
     {
+    }
+
+    public List<ContentValues> getInstances()
+    {
+        ContentResolver contentResolver = CONTEXT.getContentResolver();
+
+        Cursor cursor = contentResolver.query(CalendarContract.Instances.CONTENT_URI)
     }
 }

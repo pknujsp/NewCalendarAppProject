@@ -13,6 +13,7 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import android.content.ContentValues;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.provider.CalendarContract;
 import android.view.MenuItem;
@@ -22,12 +23,12 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.tabs.TabLayout;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
+import com.zerodsoft.scheduleweather.event.common.MLocActivity;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.event.EventFragment;
 import com.zerodsoft.scheduleweather.event.location.PlacesAroundLocationFragment;
 import com.zerodsoft.scheduleweather.event.weather.WeatherFragment;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
-import com.zerodsoft.scheduleweather.room.dto.AddressDTO;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
 public class EventActivity extends AppCompatActivity
@@ -39,7 +40,7 @@ public class EventActivity extends AppCompatActivity
     private BottomNavigationView bottomNavigationView;
     private FragmentContainerView fragmentContainerView;
 
-    private Bundle bundle;
+    private Bundle eventBundle;
 
     private EventFragment eventFragment;
     private WeatherFragment weatherFragment;
@@ -52,6 +53,7 @@ public class EventActivity extends AppCompatActivity
     private static final String TAG_INFO = "info";
     private static final String TAG_WEATHER = "weather";
     private static final String TAG_LOCATION = "location";
+    private static final int REQUEST_SELECT_LOCATION = 10;
     private Fragment currentFragment = null;
 
     @Override
@@ -96,8 +98,8 @@ public class EventActivity extends AppCompatActivity
             {
                 if (contentValuesDataWrapper.getData() != null)
                 {
-                    bundle = new Bundle();
-                    bundle.putParcelable("event", contentValuesDataWrapper.getData());
+                    eventBundle = new Bundle();
+                    eventBundle.putParcelable("event", contentValuesDataWrapper.getData());
                     ContentValues contentValues = contentValuesDataWrapper.getData();
 
                     // 이벤트 정보를 표시하기 전에 위치 값을 바탕으로 날씨, 주변정보등을
@@ -116,7 +118,7 @@ public class EventActivity extends AppCompatActivity
             {
                 if (locationDTO != null)
                 {
-                    if (locationDTO.getAccountName() != null)
+                    if (locationDTO.getAccountName() == null)
                     {
                         /*
                          <미 등록 상태>
@@ -143,7 +145,14 @@ public class EventActivity extends AppCompatActivity
                                     @Override
                                     public void onClick(DialogInterface dialogInterface, int i)
                                     {
+                                        Intent intent = new Intent(EventActivity.this, MLocActivity.class);
+                                        ContentValues event = eventBundle.getParcelable("event");
+                                        intent.putExtra("calendarId", event.getAsInteger(CalendarContract.Events.CALENDAR_ID));
+                                        intent.putExtra("eventId", event.getAsInteger(CalendarContract.Events._ID));
+                                        intent.putExtra("accountName", event.getAsString(CalendarContract.Events.ACCOUNT_NAME));
+                                        intent.putExtra("location", event.getAsString(CalendarContract.Events.EVENT_LOCATION));
 
+                                        startActivityForResult(intent, REQUEST_SELECT_LOCATION);
                                     }
                                 });
 
@@ -154,11 +163,14 @@ public class EventActivity extends AppCompatActivity
                         // 등록 상태
                         eventFragment = new EventFragment();
                         weatherFragment = new WeatherFragment();
-                        placesAroundLocationFragment = new PlacesAroundLocationFragment(new AddressDTO());
+                        placesAroundLocationFragment = new PlacesAroundLocationFragment();
 
-                        eventFragment.setArguments(bundle);
-                        weatherFragment.setArguments(bundle);
-                        placesAroundLocationFragment.setArguments(bundle);
+                        Bundle locationBundle = new Bundle();
+                        locationBundle.putParcelable("location", locationDTO);
+
+                        eventFragment.setArguments(eventBundle);
+                        weatherFragment.setArguments(locationBundle);
+                        placesAroundLocationFragment.setArguments(locationBundle);
 
                         fragmentManager.beginTransaction().add(R.id.schedule_fragment_container, eventFragment, TAG_INFO).hide(eventFragment)
                                 .add(R.id.schedule_fragment_container, weatherFragment, TAG_WEATHER).hide(placesAroundLocationFragment)

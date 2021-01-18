@@ -1,10 +1,12 @@
-package com.zerodsoft.scheduleweather.calendarfragment.EventsInfoFragment;
+package com.zerodsoft.scheduleweather.calendarview.viewmodel;
 
 import android.app.Application;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.MutableLiveData;
+
+import com.zerodsoft.scheduleweather.calendarview.repository.EventsInfoRepository;
 
 import java.util.Date;
 import java.util.List;

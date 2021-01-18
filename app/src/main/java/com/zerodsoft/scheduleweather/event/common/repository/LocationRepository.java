@@ -2,10 +2,9 @@ package com.zerodsoft.scheduleweather.event.common.repository;
 
 import android.app.Application;
 
-import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import com.zerodsoft.scheduleweather.App;
+import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.room.AppDb;
 import com.zerodsoft.scheduleweather.room.dao.LocationDAO;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;

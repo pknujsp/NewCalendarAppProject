@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.calendarfragment;
+package com.zerodsoft.scheduleweather.calendarview.day;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -11,7 +11,9 @@ import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.calendarview.day.DayViewPagerAdapter;
+import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import java.util.Calendar;
@@ -24,13 +26,15 @@ public class DayFragment extends Fragment
 
     private ViewPager2 dayViewPager;
     private DayViewPagerAdapter dayViewPagerAdapter;
-    private OnControlEvent onControlEvent;
+    private IControlEvent iControlEvent;
+    private IToolbar iToolbar;
     private OnPageChangeCallback onPageChangeCallback;
     private int currentPosition = EventTransactionFragment.FIRST_VIEW_POSITION;
 
-    public DayFragment(Fragment fragment)
+    public DayFragment(IControlEvent iControlEvent, IToolbar iToolbar)
     {
-        onControlEvent = (OnControlEvent) fragment;
+        this.iControlEvent = iControlEvent;
+        this.iToolbar = iToolbar;
     }
 
     @Override
@@ -121,7 +125,7 @@ public class DayFragment extends Fragment
     public void requestSchedules(int position, Date startDate, Date endDate)
     {
         // 해당 페이지에 해당하는 날짜에 대한 데이터 불러오기
-        onControlEvent.requestSchedules(this, position, startDate, endDate);
+        iControlEvent.requestEvent(position, startDate, endDate, );
     }
 
     public void refreshView(Date startDate)
@@ -141,12 +145,12 @@ public class DayFragment extends Fragment
 
     public void setMonth(Date date)
     {
-        onControlEvent.setToolbarMonth(date);
+        iControlEvent.setToolbarMonth(date);
     }
 
     public void showSchedule(int scheduleId)
     {
-        onControlEvent.showSchedule(scheduleId);
+        iControlEvent.showEventOnDayDialog(scheduleId, , );
     }
 
     public void goToToday()

@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather;
+package com.zerodsoft.scheduleweather.calendarview;
 
 import android.app.Activity;
 import android.content.Context;
@@ -10,6 +10,8 @@ import android.widget.CompoundButton;
 import android.widget.TextView;
 
 import com.google.android.material.checkbox.MaterialCheckBox;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.ICalendarCheckBox;
+import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendar.dto.AccountDto;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarDto;
 

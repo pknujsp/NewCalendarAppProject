@@ -9,11 +9,10 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.zerodsoft.scheduleweather.calendarfragment.EventTransactionFragment;
-import com.zerodsoft.scheduleweather.calendarfragment.OnEventItemClickListener;
-import com.zerodsoft.scheduleweather.calendarfragment.WeekFragment;
+import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.calendarview.DateGetter;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.DateGetter;
 import com.zerodsoft.scheduleweather.calendarview.month.EventData;
 
 import java.util.ArrayList;

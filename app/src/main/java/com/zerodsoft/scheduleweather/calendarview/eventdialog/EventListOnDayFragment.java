@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.calendarfragment.EventsInfoFragment;
+package com.zerodsoft.scheduleweather.calendarview.eventdialog;
 
 import android.content.Context;
 import android.content.Intent;
@@ -20,15 +20,17 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
 
-import com.zerodsoft.scheduleweather.AppMainActivity;
+import com.zerodsoft.scheduleweather.activity.main.AppMainActivity;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.calendarview.adapter.EventsInfoRecyclerViewAdapter;
+import com.zerodsoft.scheduleweather.calendarview.viewmodel.EventsInfoViewModel;
 import com.zerodsoft.scheduleweather.event.EventActivity;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import java.util.Date;
 import java.util.List;
 
-public class EventsInfoFragment extends DialogFragment
+public class EventListOnDayFragment extends DialogFragment
 {
     public static final String TAG = "MonthEventsInfoFragment";
 
@@ -39,13 +41,13 @@ public class EventsInfoFragment extends DialogFragment
     private EventsInfoRecyclerViewAdapter adapter;
     private RecyclerView recyclerView;
 
-    public EventsInfoFragment(Date startDate, Date endDate)
+    public EventListOnDayFragment(Date startDate, Date endDate)
     {
         this.startDate = startDate;
         this.endDate = endDate;
     }
 
-    public EventsInfoFragment()
+    public EventListOnDayFragment()
     {
     }
 
@@ -87,7 +89,7 @@ public class EventsInfoFragment extends DialogFragment
         recyclerView = view.findViewById(R.id.events_info_events_list);
         recyclerView.addItemDecoration(new RecyclerViewItemDecoration(getContext()));
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false));
-        adapter = new EventsInfoRecyclerViewAdapter(EventsInfoFragment.this, startDate, endDate);
+        adapter = new EventsInfoRecyclerViewAdapter(EventListOnDayFragment.this, startDate, endDate);
         recyclerView.setAdapter(adapter);
         ((TextView) view.findViewById(R.id.events_info_day)).setText(ClockUtil.YYYY_년_M_월_D_일_E.format(startDate));
     }
@@ -116,38 +118,39 @@ public class EventsInfoFragment extends DialogFragment
         intent.putExtra("scheduleId", scheduleId);
         startActivity(intent);
     }
-}
 
-class RecyclerViewItemDecoration extends RecyclerView.ItemDecoration
-{
-
-
-    private final int decorationHeight;
-    private Context context;
-
-    public RecyclerViewItemDecoration(Context context)
+    class RecyclerViewItemDecoration extends RecyclerView.ItemDecoration
     {
-        this.context = context;
-        decorationHeight = context.getResources().getDimensionPixelSize(R.dimen.event_info_listview_spacing);
-    }
 
-    @Override
-    public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state)
-    {
-        super.getItemOffsets(outRect, view, parent, state);
 
-        if (parent != null && view != null)
+        private final int decorationHeight;
+        private Context context;
+
+        public RecyclerViewItemDecoration(Context context)
         {
-            int itemPosition = parent.getChildAdapterPosition(view);
-            int totalCount = parent.getAdapter().getItemCount();
+            this.context = context;
+            decorationHeight = context.getResources().getDimensionPixelSize(R.dimen.event_info_listview_spacing);
+        }
 
-            if (itemPosition >= 0 && itemPosition < totalCount - 1)
+        @Override
+        public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state)
+        {
+            super.getItemOffsets(outRect, view, parent, state);
+
+            if (parent != null && view != null)
             {
-                outRect.bottom = decorationHeight;
+                int itemPosition = parent.getChildAdapterPosition(view);
+                int totalCount = parent.getAdapter().getItemCount();
+
+                if (itemPosition >= 0 && itemPosition < totalCount - 1)
+                {
+                    outRect.bottom = decorationHeight;
+                }
+
             }
 
         }
 
     }
-
 }
+

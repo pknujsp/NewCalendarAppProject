@@ -34,6 +34,7 @@ public class SearchFragment extends Fragment implements OnSelectedMapCategory
 {
     public static final String TAG = "SearchFragment";
     private static SearchFragment instance;
+
     private FragmentSearchBinding binding;
     private PlaceCategoriesAdapter categoriesAdapter;
     private IMapPoint iMapPoint;

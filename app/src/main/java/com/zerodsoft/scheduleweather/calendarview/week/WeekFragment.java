@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.calendarfragment;
+package com.zerodsoft.scheduleweather.calendarview.week;
 
 import android.os.Bundle;
 
@@ -11,9 +11,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.zerodsoft.scheduleweather.AppMainActivity;
-import com.zerodsoft.scheduleweather.calendarfragment.EventsInfoFragment.EventsInfoFragment;
-import com.zerodsoft.scheduleweather.calendarview.week.WeekViewPagerAdapter;
+import com.zerodsoft.scheduleweather.activity.main.AppMainActivity;
+import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
+import com.zerodsoft.scheduleweather.calendarview.eventdialog.EventListOnDayFragment;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
@@ -29,14 +32,16 @@ public class WeekFragment extends Fragment implements OnEventItemClickListener
     private WeekViewPagerAdapter weekViewPagerAdapter;
     private int currentPosition = EventTransactionFragment.FIRST_VIEW_POSITION;
 
-    private OnControlEvent onControlEvent;
+    private IControlEvent iControlEvent;
+    private IToolbar iToolbar;
     private static final int COLUMN_WIDTH = AppMainActivity.getDisplayWidth() / 8;
 
     private OnPageChangeCallback onPageChangeCallback;
 
-    public WeekFragment(Fragment fragment)
+    public WeekFragment(IControlEvent iControlEvent, IToolbar iToolbar)
     {
-        onControlEvent = (OnControlEvent) fragment;
+        this.iControlEvent = iControlEvent;
+        this.iToolbar = iToolbar;
     }
 
     public static int getColumnWidth()
@@ -86,8 +91,8 @@ public class WeekFragment extends Fragment implements OnEventItemClickListener
     @Override
     public void onClicked(Date startDate, Date endDate)
     {
-        EventsInfoFragment eventsInfoFragment = new EventsInfoFragment(startDate, endDate);
-        eventsInfoFragment.show(getActivity().getSupportFragmentManager(), EventsInfoFragment.TAG);
+        EventListOnDayFragment eventListOnDayFragment = new EventListOnDayFragment(startDate, endDate);
+        eventListOnDayFragment.show(getActivity().getSupportFragmentManager(), EventListOnDayFragment.TAG);
     }
 
 
@@ -164,13 +169,13 @@ public class WeekFragment extends Fragment implements OnEventItemClickListener
 
     public void setMonth(Date date)
     {
-        onControlEvent.setToolbarMonth(date);
+        iControlEvent.setToolbarMonth(date);
     }
 
     public void requestSchedules(int position, Date startDate, Date endDate)
     {
         // 해당 페이지에 해당하는 날짜에 대한 데이터 불러오기
-        onControlEvent.requestSchedules(this, position, startDate, endDate);
+        iControlEvent.requestEvent(position, startDate, endDate, );
     }
 
     public void refreshView(Date startDate)

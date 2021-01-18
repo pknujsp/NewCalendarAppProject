@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather;
+package com.zerodsoft.scheduleweather.etc;
 
 import android.content.Context;
 import android.util.AttributeSet;

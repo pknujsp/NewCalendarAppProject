@@ -32,7 +32,7 @@
                     layout="@layout/edit_event_title" />
 
                 <include
-                    android:id="@+id/calendar_layout"
+                    android:id="@+id/calendar_fragment_container"
                     layout="@layout/edit_event_calendar" />
 
                 <include

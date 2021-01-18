@@ -18,17 +18,14 @@ import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
 import com.zerodsoft.scheduleweather.event.location.placefragments.LocationInfo;
 import com.zerodsoft.scheduleweather.event.location.placefragments.fragment.PlacesFragment;
 
-import java.util.LinkedList;
-
 
 public class PlacesAroundLocationFragment extends Fragment
 {
     // 이벤트의 위치 값으로 정확한 위치를 지정하기 위해 위치 지정 액티비티 생성(카카오맵 검색 값 기반)
-    private LocationDTO locationDTO;
+    private LocationDTO location;
 
-    public PlacesAroundLocationFragment(LocationDTO locationDTO)
+    public PlacesAroundLocationFragment()
     {
-        this.locationDTO = locationDTO;
     }
 
 
@@ -36,6 +33,7 @@ public class PlacesAroundLocationFragment extends Fragment
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+        location = getArguments().getParcelable("location");
     }
 
     @Override
@@ -50,13 +48,13 @@ public class PlacesAroundLocationFragment extends Fragment
         super.onViewCreated(view, savedInstanceState);
         Fragment fragment = null;
 
-        if (locationDTO instanceof PlaceDTO)
+        if (location instanceof PlaceDTO)
         {
-            PlaceDTO place = (PlaceDTO) locationDTO;
+            PlaceDTO place = (PlaceDTO) location;
             fragment = new PlacesFragment(new LocationInfo(Double.parseDouble(place.getLatitude()), Double.parseDouble(place.getLongitude()), place.getPlaceName()));
         } else
         {
-            AddressDTO address = (AddressDTO) locationDTO;
+            AddressDTO address = (AddressDTO) location;
             fragment = new PlacesFragment(new LocationInfo(Double.parseDouble(address.getLatitude()), Double.parseDouble(address.getLongitude()), address.getAddressName()));
         }
         FragmentManager fragmentManager = getChildFragmentManager();

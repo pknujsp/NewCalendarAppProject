@@ -1,5 +1,6 @@
 package com.zerodsoft.scheduleweather.calendarview.month;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.graphics.Color;
 import android.util.SparseArray;
@@ -11,10 +12,12 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.calendarfragment.EventTransactionFragment;
-import com.zerodsoft.scheduleweather.calendarfragment.MonthFragment;
-import com.zerodsoft.scheduleweather.calendarfragment.OnEventItemClickListener;
-import com.zerodsoft.scheduleweather.calendarview.DateGetter;
+import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
+import com.zerodsoft.scheduleweather.calendarview.callback.EventCallback;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.DateGetter;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import java.util.ArrayList;
@@ -32,15 +35,16 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
 
     private final SparseArray<MonthViewHolder> holderSparseArray = new SparseArray<>();
     private final Calendar calendar;
-    private MonthFragment monthFragment;
-    private Context context;
+    private final Context context;
+    private final OnEventItemClickListener onEventItemClickListener;
+    private final IControlEvent iControlEvent;
+    private final IToolbar iToolbar;
 
-    private OnEventItemClickListener onEventItemClickListener;
-
-    public MonthViewPagerAdapter(MonthFragment monthFragment)
+    public MonthViewPagerAdapter(MonthFragment monthFragment, IToolbar iToolbar)
     {
-        this.monthFragment = monthFragment;
         this.onEventItemClickListener = (OnEventItemClickListener) monthFragment;
+        this.iControlEvent = (IControlEvent) monthFragment;
+        this.iToolbar = iToolbar;
         context = monthFragment.getContext();
         calendar = Calendar.getInstance(ClockUtil.TIME_ZONE);
 
@@ -50,7 +54,7 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
         calendar.set(Calendar.MINUTE, 0);
         calendar.set(Calendar.SECOND, 0);
 
-        monthFragment.setMonth(calendar.getTime());
+        iToolbar.setMonth(calendar.getTime());
     }
 
     public Calendar getCalendar()
@@ -58,10 +62,6 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
         return (Calendar) calendar.clone();
     }
 
-    public void setData(int position, List<ScheduleDTO> schedules)
-    {
-        holderSparseArray.get(position).setData(schedules);
-    }
 
     @Override
     public Date getDate(int position, int dateType)
@@ -129,10 +129,10 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
             monthCalendarView = (MonthCalendarView) view.findViewById(R.id.month_calendar_view);
         }
 
-        public void setData(List<ScheduleDTO> schedulesList)
+        public void setData(List<ContentValues> eventList)
         {
             // 데이터를 일정 길이의 내림차순으로 정렬
-            Collections.sort(schedulesList, comparator);
+            Collections.sort(eventList, comparator);
 
             Calendar startDate = Calendar.getInstance();
             Calendar endDate = Calendar.getInstance();
@@ -193,7 +193,14 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
                 monthCalendarView.addView(itemView);
             }
             monthCalendarView.invalidate();
-            monthFragment.requestSchedules(getAdapterPosition(), getDay(FIRST_DAY).getTime(), getDay(LAST_DAY).getTime());
+            iControlEvent.requestEvent(getAdapterPosition(), getDay(FIRST_DAY).getTime(), getDay(LAST_DAY).getTime(), new EventCallback()
+            {
+                @Override
+                public void onResult(List<ContentValues> list)
+                {
+
+                }
+            });
         }
 
         private void setDays(Calendar calendar)
@@ -317,37 +324,6 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
                 return null;
             }
         }
-
-
-        /*
-        ViewTreeObserver.OnGlobalLayoutListener mGlobalLayoutListener = new ViewTreeObserver.OnGlobalLayoutListener()
-        {
-            @Override
-            public void onGlobalLayout()
-            {
-                // CELL_HEIGHT = gridView.getHeight() / 6;
-                //리스너 제거 (해당 뷰의 상태가 변할때 마다 호출되므로)
-                removeOnGlobalLayoutListener(header.getViewTreeObserver(), mGlobalLayoutListener);
-            }
-        };
-
-
-        private void removeOnGlobalLayoutListener(ViewTreeObserver observer, ViewTreeObserver.OnGlobalLayoutListener listener)
-        {
-            if (observer == null)
-            {
-                return;
-            }
-
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN)
-            {
-                observer.removeGlobalOnLayoutListener(listener);
-            } else
-            {
-                observer.removeOnGlobalLayoutListener(listener);
-            }
-        }
-         */
     }
 
 

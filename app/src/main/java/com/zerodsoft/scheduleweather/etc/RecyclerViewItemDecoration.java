@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather;
+package com.zerodsoft.scheduleweather.etc;
 
 import android.graphics.Rect;
 import android.view.View;

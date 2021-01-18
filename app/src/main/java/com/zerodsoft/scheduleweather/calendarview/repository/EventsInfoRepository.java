@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.calendarfragment.EventsInfoFragment;
+package com.zerodsoft.scheduleweather.calendarview.repository;
 
 import android.app.Application;
 

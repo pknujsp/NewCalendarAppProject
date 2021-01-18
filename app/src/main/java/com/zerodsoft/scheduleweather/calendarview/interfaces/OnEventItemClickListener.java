@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.calendarfragment;
+package com.zerodsoft.scheduleweather.calendarview.interfaces;
 
 import java.util.Date;
 

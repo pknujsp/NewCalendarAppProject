@@ -1,43 +1,42 @@
-package com.zerodsoft.scheduleweather.calendarfragment;
+package com.zerodsoft.scheduleweather.calendarview;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProvider;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.calendarview.viewmodel.CalendarViewModel;
+import com.zerodsoft.scheduleweather.calendarview.callback.EventCallback;
+import com.zerodsoft.scheduleweather.calendarview.day.DayFragment;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
+import com.zerodsoft.scheduleweather.calendarview.month.MonthFragment;
+import com.zerodsoft.scheduleweather.calendarview.week.WeekFragment;
 import com.zerodsoft.scheduleweather.event.EventActivity;
-import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import java.util.Date;
-import java.util.List;
 
 
-public class EventTransactionFragment extends Fragment implements OnControlEvent
+public class EventTransactionFragment extends Fragment implements IControlEvent
 {
     // 달력 프래그먼트를 관리하는 프래그먼트
     public static final String TAG = "CalendarTransactionFragment";
-    private final int CALENDAR_CONTAINER_VIEW_ID = R.id.calendar_container_view;
     public static final int FIRST_VIEW_POSITION = Integer.MAX_VALUE / 2;
-    public static int accountCategory = ScheduleDTO.ALL_CATEGORY;
-
-    private CalendarViewModel calendarViewModel;
 
     private int viewPosition;
     private Fragment fragment;
+    private IToolbar iToolbar;
 
-    public EventTransactionFragment()
+    public EventTransactionFragment(Activity activity)
     {
+        this.iToolbar = (IToolbar) activity;
     }
 
     @Override
@@ -61,31 +60,7 @@ public class EventTransactionFragment extends Fragment implements OnControlEvent
 
         // 종류에 맞게 현재 날짜와 표시할 계정의 유형을 설정
         String calendarTag = MonthFragment.TAG;
-
         replaceFragment(calendarTag);
-
-        calendarViewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
-        calendarViewModel.getSchedulesLiveData().observe(getViewLifecycleOwner(), new Observer<List<ScheduleDTO>>()
-        {
-            @Override
-            public void onChanged(@Nullable List<ScheduleDTO> scheduleList)
-            {
-                // 요청한 프래그먼트에 데이터 전달
-                if (!scheduleList.isEmpty())
-                {
-                    if (fragment instanceof MonthFragment)
-                    {
-                        ((MonthFragment) fragment).onSelectedSchedules(viewPosition, scheduleList);
-                    } else if (fragment instanceof WeekFragment)
-                    {
-                        ((WeekFragment) fragment).onSelectedSchedules(viewPosition, scheduleList);
-                    } else if (fragment instanceof DayFragment)
-                    {
-                        ((DayFragment) fragment).onSelectedSchedules(viewPosition, scheduleList);
-                    }
-                }
-            }
-        });
     }
 
     @Override
@@ -109,46 +84,38 @@ public class EventTransactionFragment extends Fragment implements OnControlEvent
 
     public void replaceFragment(String fragmentTag)
     {
-        FragmentTransaction fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
+        FragmentTransaction fragmentTransaction = getParentFragmentManager().beginTransaction();
 
         switch (fragmentTag)
         {
             case MonthFragment.TAG:
-                fragment = new MonthFragment(EventTransactionFragment.this);
-                fragmentTransaction.replace(CALENDAR_CONTAINER_VIEW_ID, (MonthFragment) fragment, MonthFragment.TAG);
+                fragment = new MonthFragment(this, iToolbar);
+                fragmentTransaction.replace(R.id.calendar_container_layout, (MonthFragment) fragment, MonthFragment.TAG);
                 break;
             case WeekFragment.TAG:
-                fragment = new WeekFragment(EventTransactionFragment.this);
-                fragmentTransaction.replace(CALENDAR_CONTAINER_VIEW_ID, (WeekFragment) fragment, WeekFragment.TAG);
+                fragment = new WeekFragment(this, iToolbar);
+                fragmentTransaction.replace(R.id.calendar_container_layout, (WeekFragment) fragment, WeekFragment.TAG);
                 break;
             case DayFragment.TAG:
-                fragment = new DayFragment(EventTransactionFragment.this);
-                fragmentTransaction.replace(CALENDAR_CONTAINER_VIEW_ID, (DayFragment) fragment, DayFragment.TAG);
+                fragment = new DayFragment(this, iToolbar);
+                fragmentTransaction.replace(R.id.calendar_container_layout, (DayFragment) fragment, DayFragment.TAG);
                 break;
         }
         fragmentTransaction.commit();
     }
 
     @Override
-    public void showSchedule(int scheduleId)
+    public void showEventOnDayDialog(int calendarId, int eventId, String accountName)
     {
         Intent intent = new Intent(getActivity(), EventActivity.class);
-        intent.putExtra("scheduleId", scheduleId);
+        intent.putExtra("scheduleId", calendarId);
         startActivity(intent);
     }
 
     @Override
-    public void setToolbarMonth(Date date)
+    public void requestEvent(int viewPosition, Date startDate, Date endDate, EventCallback callback)
     {
-        ((TextView) getActivity().findViewById(R.id.calendar_month)).setText(ClockUtil.YEAR_MONTH_FORMAT.format(date));
-    }
-
-    @Override
-    public void requestSchedules(Fragment fragment, int viewPosition, Date startDate, Date endDate)
-    {
-        this.fragment = fragment;
         this.viewPosition = viewPosition;
-        calendarViewModel.selectSchedules(startDate, endDate);
     }
 
     public void refreshCalendar(Date startDate)

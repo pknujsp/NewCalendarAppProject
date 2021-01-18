@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather;
+package com.zerodsoft.scheduleweather.calendarview.interfaces;
 
 public interface ICalendarCheckBox
 {

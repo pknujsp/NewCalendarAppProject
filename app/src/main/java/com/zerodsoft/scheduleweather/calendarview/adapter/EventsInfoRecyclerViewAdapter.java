@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.calendarfragment.EventsInfoFragment;
+package com.zerodsoft.scheduleweather.calendarview.adapter;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.calendarview.eventdialog.EventListOnDayFragment;
 import com.zerodsoft.scheduleweather.utility.AppSettings;
 
 import java.util.Date;
@@ -17,12 +18,12 @@ import java.util.List;
 public class EventsInfoRecyclerViewAdapter extends RecyclerView.Adapter<EventsInfoRecyclerViewAdapter.EventsInfoViewHolder>
 {
     private List<ScheduleDTO> schedulesList;
-    private EventsInfoFragment fragment;
+    private EventListOnDayFragment fragment;
     private static final int VIEW_MARGIN = 16;
     private Date startDate;
     private Date endDate;
 
-    public EventsInfoRecyclerViewAdapter(EventsInfoFragment fragment, Date startDate, Date endDate)
+    public EventsInfoRecyclerViewAdapter(EventListOnDayFragment fragment, Date startDate, Date endDate)
     {
         this.fragment = fragment;
         this.startDate = startDate;

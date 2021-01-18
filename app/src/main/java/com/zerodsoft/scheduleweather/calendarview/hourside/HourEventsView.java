@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.calendarview;
+package com.zerodsoft.scheduleweather.calendarview.hourside;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -13,9 +13,9 @@ import android.view.ViewGroup;
 
 import androidx.annotation.Nullable;
 
-import com.zerodsoft.scheduleweather.AppMainActivity;
+import com.zerodsoft.scheduleweather.activity.main.AppMainActivity;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.calendarfragment.WeekFragment;
+import com.zerodsoft.scheduleweather.calendarview.week.WeekFragment;
 import com.zerodsoft.scheduleweather.utility.DateHour;
 
 import java.util.Calendar;

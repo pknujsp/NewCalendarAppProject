@@ -17,6 +17,7 @@ import com.luckycatlabs.sunrisesunset.dto.Location;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.MidFcstParameter;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.VilageFcstParameter;
+import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
 import com.zerodsoft.scheduleweather.event.location.placefragments.LocationInfo;
 import com.zerodsoft.scheduleweather.event.weather.weatherfragments.SunSetRiseData;
@@ -34,8 +35,7 @@ import java.util.List;
 public class WeatherItemFragment extends Fragment
 {
     private WeatherData weatherData;
-
-    private LocationInfo LocationInfo;
+    private LocationDTO locationDTO;
 
     private UltraSrtNcstFragment ultraSrtNcstFragment;
     private UltraSrtFcstFragment ultraSrtFcstFragment;
@@ -46,9 +46,9 @@ public class WeatherItemFragment extends Fragment
 
     private List<SunSetRiseData> sunSetRiseList = new ArrayList<>();
 
-    public WeatherItemFragment(LocationInfo LocationInfo)
+    public WeatherItemFragment(LocationDTO locationDTO)
     {
-        this.LocationInfo = LocationInfo;
+        this.locationDTO = locationDTO;
     }
 
     @Nullable
@@ -77,8 +77,8 @@ public class WeatherItemFragment extends Fragment
         MidFcstParameter midLandFcstParameter = new MidFcstParameter();
         MidFcstParameter midTaParameter = new MidFcstParameter();
 
-        LonLat lonLat = LonLatConverter.convertGrid(LocationInfo.getLongitude(), LocationInfo.getLatitude());
-        lonLat.setLongitude(LocationInfo.getLongitude()).setLatitude(LocationInfo.getLatitude());
+        LonLat lonLat = LonLatConverter.convertGrid(locationDTO.getLongitude(), locationDTO.getLatitude());
+        lonLat.setLongitude(locationDTO.getLongitude()).setLatitude(locationDTO.getLatitude());
 
         viewModel = new ViewModelProvider(this).get(WeatherViewModel.class);
         viewModel.init(getContext(), lonLat);
@@ -101,7 +101,7 @@ public class WeatherItemFragment extends Fragment
                     // 점 사이의 거리 계산
                     for (int i = 0; i < locationPoints.size(); i++)
                     {
-                        distance = Math.sqrt(Math.pow(LocationInfo.getLongitude() - locationPoints.get(i).longitude, 2) + Math.pow(LocationInfo.getLatitude() - locationPoints.get(i).latitude, 2));
+                        distance = Math.sqrt(Math.pow(locationDTO.getLongitude() - locationPoints.get(i).longitude, 2) + Math.pow(locationDTO.getLatitude() - locationPoints.get(i).latitude, 2));
                         if (distance < minDistance)
                         {
                             minDistance = distance;

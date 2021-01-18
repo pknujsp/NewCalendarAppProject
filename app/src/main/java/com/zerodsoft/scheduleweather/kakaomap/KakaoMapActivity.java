@@ -37,7 +37,7 @@ public class KakaoMapActivity extends AppCompatActivity implements IBottomSheet,
     public ActivityKakaoMapBinding binding;
     public BottomSheetBehavior bottomSheetBehavior;
     public KakaoMapFragment kakaoMapFragment;
-    private SearchView searchView;
+    public SearchView searchView;
 
     public KakaoMapActivity()
     {

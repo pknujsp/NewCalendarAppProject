@@ -10,8 +10,8 @@ import android.widget.OverScroller;
 import androidx.annotation.Nullable;
 import androidx.core.view.GestureDetectorCompat;
 
-import com.zerodsoft.scheduleweather.calendarfragment.WeekFragment;
-import com.zerodsoft.scheduleweather.calendarview.HourEventsView;
+import com.zerodsoft.scheduleweather.calendarview.week.WeekFragment;
+import com.zerodsoft.scheduleweather.calendarview.hourside.HourEventsView;
 import com.zerodsoft.scheduleweather.utility.AppSettings;
 
 import java.util.ArrayList;

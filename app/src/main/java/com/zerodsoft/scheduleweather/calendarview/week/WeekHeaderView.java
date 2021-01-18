@@ -15,8 +15,8 @@ import android.view.ViewGroup;
 
 import androidx.annotation.Nullable;
 
-import com.zerodsoft.scheduleweather.AppMainActivity;
-import com.zerodsoft.scheduleweather.calendarfragment.OnEventItemClickListener;
+import com.zerodsoft.scheduleweather.activity.main.AppMainActivity;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.calendarview.month.EventData;
 import com.zerodsoft.scheduleweather.utility.AppSettings;
 import com.zerodsoft.scheduleweather.utility.DateHour;
