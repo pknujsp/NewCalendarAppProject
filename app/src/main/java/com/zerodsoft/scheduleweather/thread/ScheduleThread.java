@@ -7,7 +7,6 @@ import android.os.Message;
 
 import com.zerodsoft.scheduleweather.calendarview.AccountType;
 import com.zerodsoft.scheduleweather.calendarview.CalendarType;
-import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
 
 import java.util.Date;
 import java.util.List;

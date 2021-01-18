@@ -27,7 +27,7 @@
         android:background="?attr/selectableItemBackground" />
 
     <Button
-        android:id="@+id/choice_location_button"
+        android:id="@+id/select_location_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
@@ -39,13 +39,13 @@
         android:textSize="12sp" />
 
     <Button
-        android:id="@+id/cancel_location_button"
+        android:id="@+id/remove_location_button"
         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
         android:layout_marginRight="4dp"
-        android:layout_toRightOf="@id/choice_location_button"
+        android:layout_toRightOf="@id/select_location_button"
         android:text="@string/cancel_location"
         android:textColor="@android:color/black"
         android:textSize="12sp" />

@@ -242,6 +242,9 @@
     <string name="notification_on_time">정시에 알림</string>
     <string name="detail">상세정보</string>
 
+    <string name="request_select_location_title">상세 위치 지정 요청</string>
+    <string name="request_select_location_description">날씨, 주변 정보 등을 표시하기 위해 상세한 주소/장소 정보를 선택하시겠습니까?</string>
+
 
     <!-- 알림 -->
 

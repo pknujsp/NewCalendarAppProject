@@ -15,7 +15,6 @@ import com.zerodsoft.scheduleweather.AppMainActivity;
 import com.zerodsoft.scheduleweather.calendarfragment.EventsInfoFragment.EventsInfoFragment;
 import com.zerodsoft.scheduleweather.calendarview.week.WeekViewPagerAdapter;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import java.util.Calendar;

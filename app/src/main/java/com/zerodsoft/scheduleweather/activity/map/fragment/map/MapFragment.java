@@ -1,7 +1,6 @@
 package com.zerodsoft.scheduleweather.activity.map.fragment.map;
 
 import android.Manifest;
-import android.content.Context;
 import android.location.LocationManager;
 import android.os.Bundle;
 
@@ -17,7 +16,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.zerodsoft.scheduleweather.activity.map.MapActivity;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.SearchResultListFragment;
 import com.zerodsoft.scheduleweather.kakaomap.KakaoMapActivity;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.ICatchedLocation;

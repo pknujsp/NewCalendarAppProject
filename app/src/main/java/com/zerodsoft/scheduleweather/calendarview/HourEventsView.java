@@ -9,20 +9,16 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.TypedValue;
-import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ScrollView;
 
 import androidx.annotation.Nullable;
 
 import com.zerodsoft.scheduleweather.AppMainActivity;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendarfragment.WeekFragment;
-import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
 import com.zerodsoft.scheduleweather.utility.DateHour;
 
 import java.util.Calendar;
-import java.util.List;
 
 public class HourEventsView extends ViewGroup
 {

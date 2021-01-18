@@ -16,7 +16,6 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendarview.viewmodel.CalendarViewModel;
-import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
 import com.zerodsoft.scheduleweather.event.EventActivity;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 

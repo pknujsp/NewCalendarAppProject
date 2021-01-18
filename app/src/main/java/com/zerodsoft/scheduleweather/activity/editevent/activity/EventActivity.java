@@ -32,7 +32,7 @@ import com.google.android.material.timepicker.TimeFormat;
 import com.zerodsoft.scheduleweather.activity.editevent.adapter.CalendarListAdapter;
 import com.zerodsoft.scheduleweather.activity.editevent.value.EventDefaultValue;
 import com.zerodsoft.scheduleweather.activity.editevent.interfaces.IEventRepeat;
-import com.zerodsoft.scheduleweather.activity.map.MapActivity;
+import com.zerodsoft.scheduleweather.activity.map.SelectLocationActivity;
 import com.zerodsoft.scheduleweather.databinding.ActivityEventBinding;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
@@ -563,7 +563,7 @@ public class EventActivity extends AppCompatActivity implements IEventRepeat
             public void onClick(View view)
             {
                 //위치를 설정하는 액티비티 표시
-                Intent intent = new Intent(EventActivity.this, MapActivity.class);
+                Intent intent = new Intent(EventActivity.this, SelectLocationActivity.class);
 
                 String location = null;
                 if (newEventValues != null)

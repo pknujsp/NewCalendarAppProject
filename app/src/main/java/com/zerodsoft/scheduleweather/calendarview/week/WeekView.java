@@ -1,14 +1,11 @@
 package com.zerodsoft.scheduleweather.calendarview.week;
 
-import android.content.ClipData;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.PointF;
-import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.SparseArray;
-import android.util.TypedValue;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -19,18 +16,15 @@ import androidx.annotation.Nullable;
 import androidx.core.view.GestureDetectorCompat;
 import androidx.core.view.ViewCompat;
 
-import com.zerodsoft.scheduleweather.calendarfragment.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.calendarfragment.WeekFragment;
 import com.zerodsoft.scheduleweather.calendarview.HourEventsView;
 import com.zerodsoft.scheduleweather.calendarview.month.EventData;
-import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
 import com.zerodsoft.scheduleweather.utility.AppSettings;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 
 public class WeekView extends HourEventsView

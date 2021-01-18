@@ -6,16 +6,12 @@ import android.graphics.PointF;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.OverScroller;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.core.view.GestureDetectorCompat;
 
-import com.zerodsoft.scheduleweather.calendarfragment.OnControlEvent;
-import com.zerodsoft.scheduleweather.calendarfragment.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.calendarfragment.WeekFragment;
 import com.zerodsoft.scheduleweather.calendarview.HourEventsView;
-import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
 import com.zerodsoft.scheduleweather.utility.AppSettings;
 
 import java.util.ArrayList;

@@ -9,8 +9,6 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 
 import com.zerodsoft.scheduleweather.room.AppDb;
-import com.zerodsoft.scheduleweather.room.dao.ScheduleDAO;
-import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
 
 import java.util.List;
 

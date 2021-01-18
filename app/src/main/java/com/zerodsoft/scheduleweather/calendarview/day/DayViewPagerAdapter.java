@@ -12,7 +12,6 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendarfragment.EventTransactionFragment;
 import com.zerodsoft.scheduleweather.calendarfragment.DayFragment;
 import com.zerodsoft.scheduleweather.calendarview.DateGetter;
-import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import java.util.Calendar;

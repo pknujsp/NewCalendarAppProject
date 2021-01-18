@@ -2,8 +2,6 @@ package com.zerodsoft.scheduleweather.calendarview;
 
 import android.graphics.PointF;
 
-import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
-
 public class EventDrawingInfo
 {
     private int startCol;

@@ -6,8 +6,6 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.zerodsoft.scheduleweather.calendarfragment.EventTransactionFragment;
 import com.zerodsoft.scheduleweather.room.AppDb;
-import com.zerodsoft.scheduleweather.room.dao.ScheduleDAO;
-import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
 
 import java.util.ArrayList;
 import java.util.Calendar;

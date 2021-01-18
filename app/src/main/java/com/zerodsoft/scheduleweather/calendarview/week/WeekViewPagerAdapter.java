@@ -1,7 +1,6 @@
 package com.zerodsoft.scheduleweather.calendarview.week;
 
 import android.content.Context;
-import android.util.Log;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,8 +15,6 @@ import com.zerodsoft.scheduleweather.calendarfragment.WeekFragment;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendarview.DateGetter;
 import com.zerodsoft.scheduleweather.calendarview.month.EventData;
-import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
-import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
 
 import java.util.ArrayList;
 import java.util.Calendar;

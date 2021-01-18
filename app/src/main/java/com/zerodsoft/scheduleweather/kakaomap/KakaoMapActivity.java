@@ -193,8 +193,35 @@ public class KakaoMapActivity extends AppCompatActivity implements IBottomSheet,
                 kakaoMapFragment.selectPoiItem(index);
             }
         });
+
+        binding.bottomSheet.mapBottomSheetToolbar.selectLocationButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                onSelectLocation();
+            }
+        });
+
+        binding.bottomSheet.mapBottomSheetToolbar.removeLocationButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                onRemoveLocation();
+            }
+        });
     }
 
+    public void onSelectLocation()
+    {
+
+    }
+
+    public void onRemoveLocation()
+    {
+
+    }
 
     @Override
     public void setState(int state)

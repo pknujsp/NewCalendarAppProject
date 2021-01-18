@@ -3,7 +3,6 @@ package com.zerodsoft.scheduleweather.utility;
 import android.content.Context;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
 
 import java.util.Calendar;
 

@@ -2,30 +2,24 @@ package com.zerodsoft.scheduleweather.room;
 
 import android.content.Context;
 
-import androidx.annotation.NonNull;
 import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
-import androidx.sqlite.db.SupportSQLiteDatabase;
 
 import com.zerodsoft.scheduleweather.room.dao.FavoriteLocDAO;
 import com.zerodsoft.scheduleweather.room.dao.LocationDAO;
-import com.zerodsoft.scheduleweather.room.dao.ScheduleDAO;
 import com.zerodsoft.scheduleweather.room.dao.WeatherAreaCodeDAO;
 import com.zerodsoft.scheduleweather.room.dto.AddressDTO;
-import com.zerodsoft.scheduleweather.room.dto.FavoriteLocDTO;
+import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
-import com.zerodsoft.scheduleweather.room.dto.ScheduleDTO;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
 
-@Database(entities = {FavoriteLocDTO.class, PlaceDTO.class, AddressDTO.class, ScheduleDTO.class, WeatherAreaCodeDTO.class}, version = 1, exportSchema = false)
+@Database(entities = {PlaceDTO.class, AddressDTO.class, LocationDTO.class, WeatherAreaCodeDTO.class}, version = 1, exportSchema = false)
 public abstract class AppDb extends RoomDatabase
 {
     private static volatile AppDb instance = null;
 
     public abstract FavoriteLocDAO favoriteLocDAO();
-
-    public abstract ScheduleDAO scheduleDAO();
 
     public abstract LocationDAO locationDAO();
 

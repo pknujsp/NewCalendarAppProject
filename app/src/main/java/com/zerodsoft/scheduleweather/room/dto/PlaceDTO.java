@@ -9,12 +9,7 @@ import androidx.room.ForeignKey;
 import androidx.room.PrimaryKey;
 
 
-@Entity(tableName = "TB_PLACE",
-        foreignKeys = @ForeignKey(
-                entity = ScheduleDTO.class,
-                parentColumns = "id",
-                childColumns = "schedule_id"
-        ))
+@Entity(tableName = "TB_PLACE")
 public class PlaceDTO extends LocationDTO implements Parcelable, Cloneable
 {
     @ColumnInfo(name = "id", index = true)
