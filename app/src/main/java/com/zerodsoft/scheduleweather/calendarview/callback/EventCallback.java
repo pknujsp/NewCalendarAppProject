@@ -1,12 +1,8 @@
 package com.zerodsoft.scheduleweather.calendarview.callback;
 
-import android.content.ContentValues;
-
-import java.util.List;
-
-public abstract class EventCallback
+public abstract class EventCallback<T>
 {
-    public void onResult(List<ContentValues> list)
+    public void onResult(T e)
     {
     }
 }

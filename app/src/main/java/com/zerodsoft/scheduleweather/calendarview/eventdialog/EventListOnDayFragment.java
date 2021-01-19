@@ -23,7 +23,6 @@ import android.widget.TextView;
 import com.zerodsoft.scheduleweather.activity.main.AppMainActivity;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendarview.adapter.EventsInfoRecyclerViewAdapter;
-import com.zerodsoft.scheduleweather.calendarview.viewmodel.EventsInfoViewModel;
 import com.zerodsoft.scheduleweather.event.EventActivity;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 

@@ -7,12 +7,15 @@ import android.content.Context;
 import androidx.lifecycle.MutableLiveData;
 
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarDto;
+import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendar.dto.EventDto;
+import com.zerodsoft.scheduleweather.calendarview.callback.EventCallback;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class CalendarRepository
@@ -63,7 +66,7 @@ public class CalendarRepository
     public void connect(String accountName) throws IOException, GeneralSecurityException
     {
         googleCalendarApi.connect(accountName);
-       // iGoogleCalendar.onAccountSelectedState(true);
+        // iGoogleCalendar.onAccountSelectedState(true);
     }
 
     public void disconnect()
@@ -193,6 +196,11 @@ public class CalendarRepository
         });
 
          */
+    }
+
+    public void requestInstances(List<ContentValues> calendarList, long startDate, long endDate, EventCallback<List<CalendarInstance>> callback)
+    {
+        calendarProvider.getInstanceList(calendarList, startDate, endDate, callback);
     }
 
     public void getEvent(int calendarId, int eventId, String accountName)

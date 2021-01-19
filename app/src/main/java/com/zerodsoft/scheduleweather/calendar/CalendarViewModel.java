@@ -8,11 +8,14 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarDto;
+import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendar.dto.EventDto;
+import com.zerodsoft.scheduleweather.calendarview.callback.EventCallback;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.util.Date;
 import java.util.List;
 
 public class CalendarViewModel extends ViewModel
@@ -113,5 +116,10 @@ public class CalendarViewModel extends ViewModel
     public List<ContentValues> getCalendars()
     {
         return repository.getCalendars();
+    }
+
+    public void requestInstances(List<ContentValues> calendarList, long startDate, long endDate, EventCallback<List<CalendarInstance>> callback)
+    {
+        repository.requestInstances(calendarList, startDate, endDate, callback);
     }
 }

@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
 import com.zerodsoft.scheduleweather.calendarview.callback.EventCallback;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
@@ -193,12 +194,15 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
                 monthCalendarView.addView(itemView);
             }
             monthCalendarView.invalidate();
-            iControlEvent.requestEvent(getAdapterPosition(), getDay(FIRST_DAY).getTime(), getDay(LAST_DAY).getTime(), new EventCallback()
+            iControlEvent.requestInstances(getAdapterPosition(), getDay(FIRST_DAY).getTime(), getDay(LAST_DAY).getTime(), new EventCallback<List<CalendarInstance>>()
             {
                 @Override
-                public void onResult(List<ContentValues> list)
+                public void onResult(List<CalendarInstance> e)
                 {
-
+                    if (!e.isEmpty())
+                    {
+                        // 인스턴스 목록 표시
+                    }
                 }
             });
         }

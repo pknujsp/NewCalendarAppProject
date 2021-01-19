@@ -125,7 +125,7 @@ public class DayFragment extends Fragment
     public void requestSchedules(int position, Date startDate, Date endDate)
     {
         // 해당 페이지에 해당하는 날짜에 대한 데이터 불러오기
-        iControlEvent.requestEvent(position, startDate, endDate, );
+        iControlEvent.requestInstances(position, startDate, endDate, );
     }
 
     public void refreshView(Date startDate)
