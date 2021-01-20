@@ -7,6 +7,7 @@ import android.graphics.Paint;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.ViewGroup;
@@ -16,6 +17,7 @@ import androidx.annotation.Nullable;
 import com.zerodsoft.scheduleweather.activity.main.AppMainActivity;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendarview.week.WeekFragment;
+import com.zerodsoft.scheduleweather.utility.AppSettings;
 import com.zerodsoft.scheduleweather.utility.DateHour;
 
 import java.util.Calendar;
@@ -33,10 +35,8 @@ public class HourEventsView extends ViewGroup
     // google event text paint
     // local event paint
     // local event text paint
-    protected final Paint GOOGLE_EVENT_PAINT;
-    protected final Paint LOCAL_EVENT_PAINT;
-    protected final Paint GOOGLE_EVENT_TEXT_PAINT;
-    protected final Paint LOCAL_EVENT_TEXT_PAINT;
+    protected final TextPaint EVENT_TEXT_PAINT;
+    protected final Paint EVENT_COLOR_PAINT;
     protected final int LINE_THICKNESS;
     protected final int SPACING_BETWEEN_HOURS;
     protected final int TABLE_TB_MARGIN = 32;
@@ -87,18 +87,13 @@ public class HourEventsView extends ViewGroup
         HOUR_PAINT.getTextBounds("0", 0, 1, rect);
         HOUR_TEXT_HEIGHT = rect.height();
 
-        GOOGLE_EVENT_PAINT = new Paint();
-        LOCAL_EVENT_PAINT = new Paint();
-        GOOGLE_EVENT_TEXT_PAINT = new Paint();
-        LOCAL_EVENT_TEXT_PAINT = new Paint();
+        EVENT_TEXT_PAINT = new TextPaint();
+        EVENT_TEXT_PAINT.setColor(Color.WHITE);
+        EVENT_COLOR_PAINT = new Paint();
 
-        GOOGLE_EVENT_TEXT_PAINT.setTextAlign(Paint.Align.LEFT);
-        LOCAL_EVENT_TEXT_PAINT.setTextAlign(Paint.Align.LEFT);
-
-        GOOGLE_EVENT_TEXT_PAINT.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 11, getResources().getDisplayMetrics()));
-        LOCAL_EVENT_TEXT_PAINT.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 11, getResources().getDisplayMetrics()));
-
-        GOOGLE_EVENT_TEXT_PAINT.getTextBounds("0", 0, 1, rect);
+        EVENT_COLOR_PAINT.setTextAlign(Paint.Align.LEFT);
+        EVENT_COLOR_PAINT.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 11, getResources().getDisplayMetrics()));
+        EVENT_COLOR_PAINT.getTextBounds("0", 0, 1, rect);
         EVENT_TEXT_HEIGHT = rect.height();
 
         SPACING_BETWEEN_HOURS = AppMainActivity.getDisplayHeight() * 2 / 24;

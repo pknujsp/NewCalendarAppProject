@@ -22,10 +22,9 @@ import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 
 
-public class WeekFragment extends Fragment implements OnEventItemClickListener
+public class WeekFragment extends Fragment
 {
     public static final String TAG = "WEEK_FRAGMENT";
     private ViewPager2 weekViewPager;
@@ -34,13 +33,15 @@ public class WeekFragment extends Fragment implements OnEventItemClickListener
 
     private IControlEvent iControlEvent;
     private IToolbar iToolbar;
+    private OnEventItemClickListener onEventItemClickListener;
     private static final int COLUMN_WIDTH = AppMainActivity.getDisplayWidth() / 8;
 
     private OnPageChangeCallback onPageChangeCallback;
 
-    public WeekFragment(IControlEvent iControlEvent, IToolbar iToolbar)
+    public WeekFragment(Fragment fragment, IToolbar iToolbar)
     {
-        this.iControlEvent = iControlEvent;
+        this.iControlEvent = (IControlEvent) fragment;
+        this.onEventItemClickListener = (OnEventItemClickListener) fragment;
         this.iToolbar = iToolbar;
     }
 
@@ -65,16 +66,15 @@ public class WeekFragment extends Fragment implements OnEventItemClickListener
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
+        super.onViewCreated(view, savedInstanceState);
 
         weekViewPager = (ViewPager2) view.findViewById(R.id.week_viewpager);
-        weekViewPagerAdapter = new WeekViewPagerAdapter(this);
+        weekViewPagerAdapter = new WeekViewPagerAdapter(iControlEvent, onEventItemClickListener, iToolbar);
         weekViewPager.setAdapter(weekViewPagerAdapter);
         weekViewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, false);
 
         onPageChangeCallback = new OnPageChangeCallback(weekViewPagerAdapter.getCalendar());
         weekViewPager.registerOnPageChangeCallback(onPageChangeCallback);
-
-        super.onViewCreated(view, savedInstanceState);
     }
 
     public void setViewPagerSwipe(boolean value)
@@ -87,14 +87,6 @@ public class WeekFragment extends Fragment implements OnEventItemClickListener
     {
         super.onStart();
     }
-
-    @Override
-    public void onClicked(Date startDate, Date endDate)
-    {
-        EventListOnDayFragment eventListOnDayFragment = new EventListOnDayFragment(startDate, endDate);
-        eventListOnDayFragment.show(getActivity().getSupportFragmentManager(), EventListOnDayFragment.TAG);
-    }
-
 
     class OnPageChangeCallback extends ViewPager2.OnPageChangeCallback
     {
@@ -132,7 +124,7 @@ public class WeekFragment extends Fragment implements OnEventItemClickListener
             copiedCalendar = (Calendar) calendar.clone();
             copiedCalendar.add(Calendar.WEEK_OF_YEAR, currentPosition - EventTransactionFragment.FIRST_VIEW_POSITION);
 
-            setMonth(copiedCalendar.getTime());
+            iToolbar.setMonth(copiedCalendar.getTime());
             // 일정 목록을 가져와서 표시함 header view, week view
             weekViewPager.setUserInputEnabled(false);
             new Thread(new Runnable()
@@ -162,30 +154,15 @@ public class WeekFragment extends Fragment implements OnEventItemClickListener
         }
     }
 
-    public void onSelectedSchedules(int viewPosition, List<ScheduleDTO> schedules)
-    {
-        weekViewPagerAdapter.setData(viewPosition, schedules);
-    }
-
-    public void setMonth(Date date)
-    {
-        iControlEvent.setToolbarMonth(date);
-    }
-
-    public void requestSchedules(int position, Date startDate, Date endDate)
-    {
-        // 해당 페이지에 해당하는 날짜에 대한 데이터 불러오기
-        iControlEvent.requestInstances(position, startDate, endDate, );
-    }
 
     public void refreshView(Date startDate)
     {
         //시작 날짜의 해당 월로 달력 변경
-        weekViewPagerAdapter = new WeekViewPagerAdapter(this);
+        weekViewPagerAdapter = new WeekViewPagerAdapter(iControlEvent, onEventItemClickListener, iToolbar);
         //시작 날짜가 화면에 표시되도록 달력 날짜를 변경
         Calendar viewCalendar = weekViewPagerAdapter.getCalendar();
         //두 날짜 사이의 월수 차이
-        int weekDifference = ClockUtil.calcDateDifference(ClockUtil.WEEK, startDate, viewCalendar);
+        int weekDifference = ClockUtil.calcDateDifference(ClockUtil.WEEK, startDate.getTime(), viewCalendar.getTimeInMillis());
         weekViewPager.setAdapter(weekViewPagerAdapter);
         weekViewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION + weekDifference, false);
 

@@ -2,10 +2,6 @@ package com.zerodsoft.scheduleweather.utility;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
@@ -37,26 +33,28 @@ public class ClockUtil
     {
     }
 
-    public static int calcDateDifference(int calendarType, Date scheduleStartDate, Calendar viewCalendar)
+    public static int calcDateDifference(int calendarType, long dt1, long dt2)
     {
         int difference = 0;
-        Calendar startDateCalendar = Calendar.getInstance();
-        startDateCalendar.setTime(scheduleStartDate);
 
         if (calendarType == MONTH)
         {
-            difference = (startDateCalendar.get(Calendar.YEAR) * 12 + startDateCalendar.get(Calendar.MONTH)) -
+            Calendar eventCalendar = Calendar.getInstance();
+            Calendar viewCalendar = Calendar.getInstance();
+            eventCalendar.setTimeInMillis(dt1);
+            viewCalendar.setTimeInMillis(dt2);
+
+            difference = (eventCalendar.get(Calendar.YEAR) * 12 + eventCalendar.get(Calendar.MONTH)) -
                     (viewCalendar.get(Calendar.YEAR) * 12 + viewCalendar.get(Calendar.MONTH));
         } else if (calendarType == WEEK)
         {
-            difference = (int) (TimeUnit.MILLISECONDS.toDays(startDateCalendar.getTimeInMillis()) -
-                    TimeUnit.MILLISECONDS.toDays(viewCalendar.getTimeInMillis())) / 7;
+            difference = (int) (TimeUnit.MILLISECONDS.toDays(dt1) -
+                    TimeUnit.MILLISECONDS.toDays(dt2)) / 7;
         } else if (calendarType == DAY)
         {
-            long start = TimeUnit.MILLISECONDS.toDays(startDateCalendar.getTimeInMillis());
-            long view = TimeUnit.MILLISECONDS.toDays(viewCalendar.getTimeInMillis());
-            Date viewDate = viewCalendar.getTime();
-            difference = (int) (start - view);
+            long event = TimeUnit.MILLISECONDS.toDays(dt1);
+            long view = TimeUnit.MILLISECONDS.toDays(dt2);
+            difference = (int) (event - view);
         }
 
         return difference;

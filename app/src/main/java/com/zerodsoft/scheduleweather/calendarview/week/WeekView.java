@@ -1,8 +1,11 @@
 package com.zerodsoft.scheduleweather.calendarview.week;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.PointF;
+import android.provider.CalendarContract;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.SparseArray;
@@ -17,8 +20,10 @@ import androidx.core.view.GestureDetectorCompat;
 import androidx.core.view.ViewCompat;
 
 import com.zerodsoft.scheduleweather.calendarview.hourside.HourEventsView;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.IEvent;
 import com.zerodsoft.scheduleweather.calendarview.month.EventData;
 import com.zerodsoft.scheduleweather.utility.AppSettings;
+import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -26,7 +31,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-public class WeekView extends HourEventsView
+public class WeekView extends HourEventsView implements IEvent
 {
     private boolean createdAddScheduleRect = false;
     private boolean changingStartTime = false;
@@ -37,6 +42,7 @@ public class WeekView extends HourEventsView
     private OnSwipeListener onSwipeListener;
 
     private Calendar[] daysOfWeek;
+    private List<ContentValues> instances;
     private SparseArray<List<ItemCell>> eventSparseArr = new SparseArray<>(7);
     private final int SPACING_BETWEEN_EVENTS = 5;
 
@@ -56,6 +62,21 @@ public class WeekView extends HourEventsView
     public void setDaysOfWeek(Calendar[] daysOfWeek)
     {
         this.daysOfWeek = daysOfWeek;
+    }
+
+    @Override
+    public void setInstances(List<ContentValues> instances)
+    {
+        // 1일 이하의 일정만 표시
+        this.instances = new ArrayList<>();
+        for (ContentValues instance : instances)
+        {
+            if (ClockUtil.calcDateDifference(ClockUtil.DAY, instance.getAsLong(CalendarContract.Instances.END), instance.getAsLong(CalendarContract.Instances.BEGIN)) == 0)
+            {
+                this.instances.add(instance);
+            }
+        }
+        setEventTable();
     }
 
     @Override
@@ -83,9 +104,9 @@ public class WeekView extends HourEventsView
                 int index = itemCell.index;
                 int columnCount = itemCell.columnCount;
 
-                calendar.setTime(itemCell.schedule.getStartDate());
+                calendar.setTimeInMillis(itemCell.event.getAsLong(CalendarContract.Instances.BEGIN));
                 PointF startPoint = getPoint(calendar, index);
-                calendar.setTime(itemCell.schedule.getEndDate());
+                calendar.setTimeInMillis(itemCell.event.getAsLong(CalendarContract.Instances.END));
                 PointF endPoint = getPoint(calendar, index);
 
                 cellWidth = (WeekFragment.getColumnWidth() - (SPACING_BETWEEN_EVENTS * (columnCount - 1))) / columnCount;
@@ -269,22 +290,24 @@ public class WeekView extends HourEventsView
         // 이벤트 테이블에 데이터를 표시할 위치 설정
         // 데이터가 없는 경우 진행하지 않음
         eventSparseArr.clear();
-        setEventTable(list);
+        setEventTable();
         requestLayout();
         invalidate();
     }
 
-    private void setEventTable(List<EventData> list)
+
+    @Override
+    public void setEventTable()
     {
         // 데이터를 리스트에 저장
-        for (EventData eventData : list)
+        for (ContentValues instance : instances)
         {
-            int index = eventData.getStartIndex();
+            int index = ClockUtil.calcDateDifference(ClockUtil.DAY, instance.getAsLong(CalendarContract.Instances.BEGIN), daysOfWeek[0].getTimeInMillis());
             if (eventSparseArr.get(index) == null)
             {
                 eventSparseArr.put(index, new ArrayList<>());
             }
-            eventSparseArr.get(index).add(new ItemCell(eventData.getSchedule(), index));
+            eventSparseArr.get(index).add(new ItemCell(instance, index));
         }
 
         // 저장된 데이터가 표시될 위치를 설정
@@ -311,7 +334,7 @@ public class WeekView extends HourEventsView
 
                         for (int j = i + 1; j < itemCells.size(); j++)
                         {
-                            if (isOverlapping(itemCells.get(i).schedule, itemCells.get(j).schedule))
+                            if (isOverlapping(itemCells.get(i).event, itemCells.get(j).event))
                             {
                                 // 시간이 겹치는 경우
                                 if (itemCells.get(i).column == ItemCell.NOT_OVERLAP)
@@ -343,11 +366,6 @@ public class WeekView extends HourEventsView
         }
         removeAllViews();
 
-        GOOGLE_EVENT_PAINT.setColor(AppSettings.getGoogleEventBackgroundColor());
-        LOCAL_EVENT_PAINT.setColor(AppSettings.getLocalEventBackgroundColor());
-        GOOGLE_EVENT_TEXT_PAINT.setColor(AppSettings.getGoogleEventTextColor());
-        LOCAL_EVENT_TEXT_PAINT.setColor(AppSettings.getLocalEventTextColor());
-
         for (int index = 0; index < 7; index++)
         {
             List<ItemCell> itemCells = eventSparseArr.get(index);
@@ -364,7 +382,7 @@ public class WeekView extends HourEventsView
                         @Override
                         public void onClick(View view)
                         {
-                            String subject = ((WeekItemView) view).itemCell.schedule.getSubject();
+                            String subject = ((WeekItemView) view).itemCell.event.getAsString(CalendarContract.Instances.TITLE);
                             Toast.makeText(context, subject, Toast.LENGTH_SHORT).show();
                         }
                     });
@@ -375,13 +393,13 @@ public class WeekView extends HourEventsView
 
     }
 
-    private boolean isOverlapping(ScheduleDTO schedule1, ScheduleDTO schedule2)
+    private boolean isOverlapping(ContentValues event1, ContentValues event2)
     {
-        long start1 = schedule1.getStartDate().getTime();
-        long end1 = schedule1.getEndDate().getTime();
+        long start1 = event1.getAsLong(CalendarContract.Instances.BEGIN);
+        long end1 = event1.getAsLong(CalendarContract.Instances.END);
 
-        long start2 = schedule2.getStartDate().getTime();
-        long end2 = schedule2.getEndDate().getTime();
+        long start2 = event2.getAsLong(CalendarContract.Instances.BEGIN);
+        long end2 = event2.getAsLong(CalendarContract.Instances.END);
 
         if ((start1 > start2 && start1 < end2) || (end1 > start2 && end1 < end2)
                 || (start1 < start2 && end1 > end2))
@@ -549,14 +567,14 @@ public class WeekView extends HourEventsView
         public int column;
         public int columnCount;
         public int index;
-        public ScheduleDTO schedule;
+        public ContentValues event;
 
-        public ItemCell(ScheduleDTO schedule, int index)
+        public ItemCell(ContentValues event, int index)
         {
             this.column = NOT_OVERLAP;
             this.columnCount = 1;
             this.index = index;
-            this.schedule = schedule;
+            this.event = event;
         }
     }
 
@@ -565,8 +583,14 @@ public class WeekView extends HourEventsView
         @Override
         public int compare(ItemCell t1, ItemCell t2)
         {
-            if ((t1.schedule.getEndDate().getTime() - t1.schedule.getStartDate().getTime()) <=
-                    (t2.schedule.getEndDate().getTime() - t2.schedule.getStartDate().getTime()))
+            long start1 = t1.event.getAsLong(CalendarContract.Instances.BEGIN);
+            long end1 = t1.event.getAsLong(CalendarContract.Instances.END);
+
+            long start2 = t2.event.getAsLong(CalendarContract.Instances.BEGIN);
+            long end2 = t2.event.getAsLong(CalendarContract.Instances.END);
+
+            if ((end1 - start1) <=
+                    (end2 - start2))
             {
                 return 1;
             } else
@@ -590,16 +614,12 @@ public class WeekView extends HourEventsView
         protected void onDraw(Canvas canvas)
         {
             super.onDraw(canvas);
+            float[] hsv = new float[3];
+            Color.colorToHSV(itemCell.event.getAsInteger(CalendarContract.Instances.EVENT_COLOR), hsv);
+            EVENT_COLOR_PAINT.setColor(Color.HSVToColor(hsv));
 
-            if (itemCell.schedule.getCategory() == ScheduleDTO.GOOGLE_CATEGORY)
-            {
-                canvas.drawRect(0, 0, getWidth(), getHeight(), GOOGLE_EVENT_PAINT);
-                canvas.drawText(itemCell.schedule.getSubject(), TEXT_MARGIN, EVENT_TEXT_HEIGHT + TEXT_MARGIN, GOOGLE_EVENT_TEXT_PAINT);
-            } else
-            {
-                canvas.drawRect(0, 0, getWidth(), getHeight(), LOCAL_EVENT_PAINT);
-                canvas.drawText(itemCell.schedule.getSubject(), TEXT_MARGIN, EVENT_TEXT_HEIGHT + TEXT_MARGIN, LOCAL_EVENT_TEXT_PAINT);
-            }
+            canvas.drawRect(0, 0, getWidth(), getHeight(), EVENT_COLOR_PAINT);
+            canvas.drawText(itemCell.event.getAsString(CalendarContract.Instances.TITLE), TEXT_MARGIN, EVENT_TEXT_HEIGHT + TEXT_MARGIN, EVENT_TEXT_PAINT);
         }
     }
 }

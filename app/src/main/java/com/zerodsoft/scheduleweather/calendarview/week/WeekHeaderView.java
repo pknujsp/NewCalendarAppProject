@@ -1,5 +1,6 @@
 package com.zerodsoft.scheduleweather.calendarview.week;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -74,6 +75,7 @@ public class WeekHeaderView extends ViewGroup
     private List<EventData> eventCellsList = new ArrayList<>();
     private OnEventItemClickListener onEventItemClickListener;
     private SparseArray<ItemCell> ITEM_LAYOUT_CELLS = new SparseArray<>(7);
+    private List<ContentValues> instances;
 
     public WeekHeaderView setOnEventItemClickListener(OnEventItemClickListener onEventItemClickListener)
     {
@@ -177,7 +179,7 @@ public class WeekHeaderView extends ViewGroup
                 public void onClick(View view)
                 {
                     int position = ((WeekHeaderColumnView) view).getPosition();
-                    onEventItemClickListener.onClicked(daysOfWeek[position].getTime(), daysOfWeek[position + 1].getTime());
+                    onEventItemClickListener.onClicked(, daysOfWeek[position].getTime(), , daysOfWeek[position + 1].getTime(), );
                 }
             });
             addView(columnView);
@@ -475,6 +477,11 @@ public class WeekHeaderView extends ViewGroup
             }
         }
         ROWS_COUNT++;
+    }
+
+    public void setInstances(List<ContentValues> instances)
+    {
+        this.instances = instances;
     }
 
     class ItemCell

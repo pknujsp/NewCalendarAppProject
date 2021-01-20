@@ -240,8 +240,8 @@ public class DayView extends HourEventsView
         removeAllViews();
 
         GOOGLE_EVENT_PAINT.setColor(AppSettings.getGoogleEventBackgroundColor());
-        LOCAL_EVENT_PAINT.setColor(AppSettings.getLocalEventBackgroundColor());
-        GOOGLE_EVENT_TEXT_PAINT.setColor(AppSettings.getGoogleEventTextColor());
+        EVENT_TEXT_PAINT.setColor(AppSettings.getLocalEventBackgroundColor());
+        EVENT_COLOR_PAINT.setColor(AppSettings.getGoogleEventTextColor());
         LOCAL_EVENT_TEXT_PAINT.setColor(AppSettings.getLocalEventTextColor());
 
         for (int i = 0; i < itemCells.size(); i++)
@@ -312,10 +312,10 @@ public class DayView extends HourEventsView
             if (itemCell.schedule.getCategory() == ScheduleDTO.GOOGLE_CATEGORY)
             {
                 canvas.drawRect(0, 0, getWidth(), getHeight(), GOOGLE_EVENT_PAINT);
-                canvas.drawText(itemCell.schedule.getSubject(), TEXT_MARGIN, EVENT_TEXT_HEIGHT + TEXT_MARGIN, GOOGLE_EVENT_TEXT_PAINT);
+                canvas.drawText(itemCell.schedule.getSubject(), TEXT_MARGIN, EVENT_TEXT_HEIGHT + TEXT_MARGIN, EVENT_COLOR_PAINT);
             } else
             {
-                canvas.drawRect(0, 0, getWidth(), getHeight(), LOCAL_EVENT_PAINT);
+                canvas.drawRect(0, 0, getWidth(), getHeight(), EVENT_TEXT_PAINT);
                 canvas.drawText(itemCell.schedule.getSubject(), TEXT_MARGIN, EVENT_TEXT_HEIGHT + TEXT_MARGIN, LOCAL_EVENT_TEXT_PAINT);
             }
         }

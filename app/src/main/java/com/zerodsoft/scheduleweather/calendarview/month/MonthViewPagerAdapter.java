@@ -3,6 +3,7 @@ package com.zerodsoft.scheduleweather.calendarview.month;
 import android.content.ContentValues;
 import android.content.Context;
 import android.graphics.Color;
+import android.provider.CalendarContract;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,6 +20,7 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.DateGetter;
+import com.zerodsoft.scheduleweather.etc.CalendarUtil;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import java.util.ArrayList;
@@ -36,17 +38,16 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
 
     private final SparseArray<MonthViewHolder> holderSparseArray = new SparseArray<>();
     private final Calendar calendar;
-    private final Context context;
+    private Context context;
     private final OnEventItemClickListener onEventItemClickListener;
     private final IControlEvent iControlEvent;
     private final IToolbar iToolbar;
 
-    public MonthViewPagerAdapter(MonthFragment monthFragment, IToolbar iToolbar)
+    public MonthViewPagerAdapter(IControlEvent iControlEvent, OnEventItemClickListener onEventItemClickListener, IToolbar iToolbar)
     {
-        this.onEventItemClickListener = (OnEventItemClickListener) monthFragment;
-        this.iControlEvent = (IControlEvent) monthFragment;
+        this.onEventItemClickListener = onEventItemClickListener;
+        this.iControlEvent = iControlEvent;
         this.iToolbar = iToolbar;
-        context = monthFragment.getContext();
         calendar = Calendar.getInstance(ClockUtil.TIME_ZONE);
 
         // 날짜를 이번 달 1일 0시 0분으로 설정
@@ -58,16 +59,23 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
         iToolbar.setMonth(calendar.getTime());
     }
 
+
     public Calendar getCalendar()
     {
         return (Calendar) calendar.clone();
     }
 
-
     @Override
     public Date getDate(int position, int dateType)
     {
         return holderSparseArray.get(position).getDay(dateType).getTime();
+    }
+
+    @Override
+    public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView)
+    {
+        super.onAttachedToRecyclerView(recyclerView);
+        context = recyclerView.getContext();
     }
 
     @NonNull
@@ -130,24 +138,6 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
             monthCalendarView = (MonthCalendarView) view.findViewById(R.id.month_calendar_view);
         }
 
-        public void setData(List<ContentValues> eventList)
-        {
-            // 데이터를 일정 길이의 내림차순으로 정렬
-            Collections.sort(eventList, comparator);
-
-            Calendar startDate = Calendar.getInstance();
-            Calendar endDate = Calendar.getInstance();
-            List<EventData> list = new ArrayList<>();
-            // 데이터를 일자별로 분류
-            for (ScheduleDTO schedule : schedulesList)
-            {
-                startDate.setTime(schedule.getStartDate());
-                endDate.setTime(schedule.getEndDate());
-                list.add(new EventData(schedule, getDateToIndex(startDate), getDateToIndex(endDate)));
-            }
-            monthCalendarView.setSchedules(list);
-        }
-
         public void clearHolder()
         {
             monthCalendarView.removeAllViews();
@@ -163,8 +153,8 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
         {
             Calendar copiedCalendar = (Calendar) calendar.clone();
             copiedCalendar.add(Calendar.MONTH, getAdapterPosition() - EventTransactionFragment.FIRST_VIEW_POSITION);
-            monthCalendarView.setCalendar(copiedCalendar);
             setDays(copiedCalendar);
+            monthCalendarView.setFirstDay(getDay(FIRST_DAY).getTimeInMillis());
 
             for (int i = 0; i < TOTAL_DAY_COUNT; i++)
             {
@@ -188,20 +178,28 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
                     @Override
                     public void onClick(View view)
                     {
-                        onEventItemClickListener.onClicked(itemView.getStartDate(), itemView.getEndDate());
+                        onEventItemClickListener.onClicked(itemView.getStartDate().getTime(), itemView.getEndDate().getTime());
                     }
                 });
                 monthCalendarView.addView(itemView);
             }
             monthCalendarView.invalidate();
-            iControlEvent.requestInstances(getAdapterPosition(), getDay(FIRST_DAY).getTime(), getDay(LAST_DAY).getTime(), new EventCallback<List<CalendarInstance>>()
+            iControlEvent.requestInstances(getAdapterPosition(), getDay(FIRST_DAY).getTime().getTime(), getDay(LAST_DAY).getTime().getTime(), new EventCallback<List<CalendarInstance>>()
             {
                 @Override
                 public void onResult(List<CalendarInstance> e)
                 {
                     if (!e.isEmpty())
                     {
+                        List<ContentValues> instances = new ArrayList<>();
                         // 인스턴스 목록 표시
+                        for (CalendarInstance calendarInstance : e)
+                        {
+                            instances.addAll(calendarInstance.getInstanceList());
+                            // 데이터를 일정 길이의 내림차순으로 정렬
+                        }
+                        Collections.sort(instances, CalendarUtil.INSTANCE_COMPARATOR);
+                        monthCalendarView.setInstances(instances);
                     }
                 }
             });
@@ -214,7 +212,6 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
             // 10/31 토요일에 종료
             // SUNDAY : 1, SATURDAY : 7  (getFirstDayOfWeek)
             // 다음 달 일수 계산법 : 42 - 이번 달 - 이전 달
-
             int previousCount = calendar.get(Calendar.DAY_OF_WEEK) - 1;
             int currentCount = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
             int nextCount = TOTAL_DAY_COUNT - currentCount - previousCount;
@@ -243,59 +240,9 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
                 nextMonthDays[i] = (Calendar) calendar.clone();
                 calendar.add(Calendar.DATE, 1);
             }
-
             endDay = (Calendar) calendar.clone();
         }
 
-        public int getDateToIndex(Calendar date)
-        {
-            int index = 0;
-
-            for (int i = 0; i < previousMonthDays.length; i++)
-            {
-                if (previousMonthDays[i].get(Calendar.YEAR) == date.get(Calendar.YEAR) && previousMonthDays[i].get(Calendar.DAY_OF_YEAR) == date.get(Calendar.DAY_OF_YEAR))
-                {
-                    index = i;
-                    return index;
-                }
-            }
-            for (int i = 0; i < currentMonthDays.length; i++)
-            {
-                if (currentMonthDays[i].get(Calendar.YEAR) == date.get(Calendar.YEAR) && currentMonthDays[i].get(Calendar.DAY_OF_YEAR) == date.get(Calendar.DAY_OF_YEAR))
-                {
-                    index = i + previousMonthDays.length;
-                    return index;
-                }
-            }
-            for (int i = 0; i < nextMonthDays.length; i++)
-            {
-                if (nextMonthDays[i].get(Calendar.YEAR) == date.get(Calendar.YEAR) && nextMonthDays[i].get(Calendar.DAY_OF_YEAR) == date.get(Calendar.DAY_OF_YEAR))
-                {
-                    index = i + previousMonthDays.length + currentMonthDays.length;
-                    return index;
-                }
-            }
-
-            // 달력에 표시된 첫 날짜 이전 인 경우
-            if (previousMonthDays.length > 0)
-            {
-                if (date.before(previousMonthDays[0]))
-                {
-                    return Integer.MIN_VALUE;
-                }
-            } else if (date.before(currentMonthDays[0]))
-            {
-                // 이전 달 날짜가 들어가지 않을 때
-                return Integer.MIN_VALUE;
-            }
-
-            // 달력에 표시된 마지막 날짜 이후 인 경우
-            if (date.compareTo(endDay) >= 0)
-            {
-                return Integer.MAX_VALUE;
-            }
-            return -1;
-        }
 
         public Calendar getDay(int position)
         {
@@ -331,21 +278,4 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
     }
 
 
-    private final Comparator<ScheduleDTO> comparator = new Comparator<ScheduleDTO>()
-    {
-        @Override
-        public int compare(ScheduleDTO t1, ScheduleDTO t2)
-        {
-            /*
-            음수 또는 0이면 객체의 자리가 그대로 유지되며, 양수인 경우에는 두 객체의 자리가 변경된다.
-             */
-            if ((t1.getEndDate().getTime() - t1.getStartDate().getTime()) < (t2.getEndDate().getTime() - t2.getStartDate().getTime()))
-            {
-                return 1;
-            } else
-            {
-                return 0;
-            }
-        }
-    };
 }

@@ -21,6 +21,7 @@ import com.zerodsoft.scheduleweather.calendarview.callback.EventCallback;
 import com.zerodsoft.scheduleweather.calendarview.day.DayFragment;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.calendarview.month.MonthFragment;
 import com.zerodsoft.scheduleweather.calendarview.week.WeekFragment;
 import com.zerodsoft.scheduleweather.event.EventActivity;
@@ -30,7 +31,7 @@ import java.util.Date;
 import java.util.List;
 
 
-public class EventTransactionFragment extends Fragment implements IControlEvent
+public class EventTransactionFragment extends Fragment implements IControlEvent, OnEventItemClickListener
 {
     // 달력 프래그먼트를 관리하는 프래그먼트
     public static final String TAG = "CalendarTransactionFragment";
@@ -123,11 +124,11 @@ public class EventTransactionFragment extends Fragment implements IControlEvent
     }
 
     @Override
-    public void requestInstances(int viewPosition, Date startDate, Date endDate, EventCallback<List<CalendarInstance>> callback)
+    public void requestInstances(int viewPosition, long start, long end, EventCallback<List<CalendarInstance>> callback)
     {
         // 선택된 캘린더 목록
         List<ContentValues> calendars = new ArrayList<>();
-        calendarViewModel.requestInstances(calendars, startDate.getTime(), endDate.getTime(), callback);
+        calendarViewModel.requestInstances(calendars, start.getTime(), end.getTime(), callback);
     }
 
     @Override
@@ -163,6 +164,18 @@ public class EventTransactionFragment extends Fragment implements IControlEvent
         {
             ((DayFragment) fragment).goToToday();
         }
+    }
+
+    @Override
+    public void onClicked(long start, long end)
+    {
+
+    }
+
+    @Override
+    public void onClicked(int calendarId, int eventId)
+    {
+
     }
 }
 

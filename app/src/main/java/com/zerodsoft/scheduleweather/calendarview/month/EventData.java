@@ -1,5 +1,7 @@
 package com.zerodsoft.scheduleweather.calendarview.month;
 
+import android.content.ContentValues;
+
 public class EventData
 {
     public static final int BEFORE_AFTER = 0;
@@ -11,24 +13,24 @@ public class EventData
     private int endIndex;
     private int dateLength;
     private int row;
-    private ScheduleDTO schedule;
+    private ContentValues event;
 
-    public EventData(ScheduleDTO schedule, int row)
+    public EventData(ContentValues event, int row)
     {
-        this.schedule = schedule;
+        this.event = event;
         this.row = row;
     }
 
-    public EventData(ScheduleDTO schedule, int startIndex, int endIndex)
+    public EventData(ContentValues event, int startIndex, int endIndex)
     {
-        this.schedule = schedule;
+        this.event = event;
         this.startIndex = startIndex;
         this.endIndex = endIndex;
     }
 
-    public EventData(ScheduleDTO schedule, int startIndex, int endIndex, int row)
+    public EventData(ContentValues event, int startIndex, int endIndex, int row)
     {
-        this.schedule = schedule;
+        this.event = event;
         this.startIndex = startIndex;
         this.endIndex = endIndex;
         this.row = row;
@@ -45,9 +47,9 @@ public class EventData
         return endIndex == startIndex;
     }
 
-    public ScheduleDTO getSchedule()
+    public ContentValues getEvent()
     {
-        return schedule;
+        return event;
     }
 
     public int getStartIndex()

@@ -1,10 +1,12 @@
 package com.zerodsoft.scheduleweather.calendarview.month;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.provider.CalendarContract;
 import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.util.SparseArray;
@@ -12,31 +14,30 @@ import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.zerodsoft.scheduleweather.calendarview.interfaces.IEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
-import com.zerodsoft.scheduleweather.utility.AppSettings;
+import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-public class MonthCalendarView extends ViewGroup
+public class MonthCalendarView extends ViewGroup implements IEvent
 {
-    private Calendar calendar;
+    private long firstDay;
     private final float HEADER_DAY_TEXT_SIZE;
     private final TextPaint HEADER_DAY_PAINT;
+    private final long ONE_DAY = 24 * 60 * 60 * 1000;
 
     private int ITEM_WIDTH;
     private int ITEM_HEIGHT;
 
-    private Paint GOOGLE_EVENT_PAINT;
-    private Paint LOCAL_EVENT_PAINT;
-    private Paint GOOGLE_EVENT_TEXT_PAINT;
-    private Paint LOCAL_EVENT_TEXT_PAINT;
+    private Paint EVENT_COLOR_PAINT;
+    private TextPaint EVENT_TEXT_PAINT;
 
     private static final int SPACING_BETWEEN_EVENT = 12;
     private static final int TEXT_MARGIN = 8;
@@ -51,7 +52,7 @@ public class MonthCalendarView extends ViewGroup
 
     private List<EventData> eventCellsList = new ArrayList<>();
 
-    private OnEventItemClickListener onEventItemClickListener;
+    private List<ContentValues> instances;
 
     private SparseArray<ItemCell> ITEM_LAYOUT_CELLS = new SparseArray<>(42);
 
@@ -73,22 +74,17 @@ public class MonthCalendarView extends ViewGroup
 
         DAY_SPACE_HEIGHT = rect.height() + 24;
 
-        GOOGLE_EVENT_PAINT = new Paint();
-        LOCAL_EVENT_PAINT = new Paint();
-
-        GOOGLE_EVENT_TEXT_PAINT = new Paint();
-        LOCAL_EVENT_TEXT_PAINT = new Paint();
-
-        GOOGLE_EVENT_TEXT_PAINT.setTextAlign(Paint.Align.LEFT);
-
-        LOCAL_EVENT_TEXT_PAINT.setTextAlign(Paint.Align.LEFT);
+        EVENT_COLOR_PAINT = new Paint();
+        EVENT_TEXT_PAINT = new TextPaint();
+        EVENT_TEXT_PAINT.setTextAlign(Paint.Align.LEFT);
+        EVENT_TEXT_PAINT.setColor(Color.WHITE);
 
         setWillNotDraw(false);
     }
 
-    public void setOnEventItemClickListener(OnEventItemClickListener onEventItemClickListener)
+    public void setFirstDay(long firstDay)
     {
-        this.onEventItemClickListener = onEventItemClickListener;
+        this.firstDay = firstDay;
     }
 
     @Override
@@ -97,11 +93,6 @@ public class MonthCalendarView extends ViewGroup
         setMeasuredDimension(widthMeasureSpec, heightMeasureSpec);
     }
 
-    public MonthCalendarView setCalendar(Calendar calendar)
-    {
-        this.calendar = calendar;
-        return this;
-    }
 
     @Override
     protected void onLayout(boolean b, int i, int i1, int i2, int i3)
@@ -148,15 +139,7 @@ public class MonthCalendarView extends ViewGroup
         if (!eventCellsList.isEmpty())
         {
             EVENT_HEIGHT = (ITEM_HEIGHT - DAY_SPACE_HEIGHT - SPACING_BETWEEN_EVENT * 4) / EVENT_COUNT;
-
-            GOOGLE_EVENT_TEXT_PAINT.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_PX, EVENT_HEIGHT - TEXT_MARGIN, getContext().getResources().getDisplayMetrics()));
-            LOCAL_EVENT_TEXT_PAINT.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_PX, EVENT_HEIGHT - TEXT_MARGIN, getContext().getResources().getDisplayMetrics()));
-
-            GOOGLE_EVENT_PAINT.setColor(AppSettings.getGoogleEventBackgroundColor());
-            LOCAL_EVENT_PAINT.setColor(AppSettings.getLocalEventBackgroundColor());
-            GOOGLE_EVENT_TEXT_PAINT.setColor(AppSettings.getGoogleEventTextColor());
-            LOCAL_EVENT_TEXT_PAINT.setColor(AppSettings.getLocalEventTextColor());
-
+            EVENT_TEXT_PAINT.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_PX, EVENT_HEIGHT - TEXT_MARGIN, getContext().getResources().getDisplayMetrics()));
             drawEvents(canvas);
         }
     }
@@ -164,6 +147,8 @@ public class MonthCalendarView extends ViewGroup
 
     private void drawEvents(Canvas canvas)
     {
+        float[] hsv = new float[3];
+
         for (EventData eventData : eventCellsList)
         {
             final int startIndex = eventData.getStartIndex();
@@ -185,33 +170,36 @@ public class MonthCalendarView extends ViewGroup
             float top = 0;
             float bottom = 0;
 
-            Date startDate = ((MonthCalendarItemView) getChildAt(startIndex)).getStartDate();
-            Date endDate = ((MonthCalendarItemView) getChildAt(endIndex)).getEndDate();
+            final long viewStart = ((MonthCalendarItemView) getChildAt(startIndex)).getStartDate().getTime();
+            final long viewEnd = ((MonthCalendarItemView) getChildAt(endIndex)).getEndDate().getTime();
 
-            ScheduleDTO schedule = eventData.getSchedule();
+            ContentValues event = eventData.getEvent();
 
-            if (!schedule.isEmpty())
+            final long eventStart = event.getAsLong(CalendarContract.Instances.BEGIN);
+            final long eventEnd = event.getAsLong(CalendarContract.Instances.END);
+
+            if (event.size() > 0)
             {
                 // 시작/종료일이 date가 아니나, 일정에 포함되는 경우
-                if (schedule.getStartDate().before(startDate) && schedule.getEndDate().after(endDate))
+                if (eventStart < viewStart && eventEnd > viewEnd)
                 {
                     leftMargin = 0;
                     rightMargin = 0;
                 }
                 // 시작일이 date인 경우, 종료일은 endDate 이후
-                else if (schedule.getEndDate().compareTo(endDate) >= 0 && schedule.getStartDate().compareTo(startDate) >= 0 && schedule.getStartDate().before(endDate))
+                else if (eventEnd >= viewEnd && eventStart >= viewStart && eventStart < viewEnd)
                 {
                     leftMargin = EVENT_LR_MARGIN;
                     rightMargin = 0;
                 }
                 // 종료일이 date인 경우, 시작일은 startDate이전
-                else if (schedule.getEndDate().compareTo(startDate) >= 0 && schedule.getEndDate().before(endDate) && schedule.getStartDate().before(startDate))
+                else if (eventEnd >= viewStart && eventEnd < viewEnd && eventStart < viewStart)
                 {
                     leftMargin = 0;
                     rightMargin = EVENT_LR_MARGIN;
                 }
                 // 시작/종료일이 date인 경우
-                else if (schedule.getEndDate().compareTo(startDate) >= 0 && schedule.getEndDate().before(endDate) && schedule.getStartDate().compareTo(startDate) >= 0 && schedule.getStartDate().before(endDate))
+                else if (eventEnd >= viewStart && eventEnd < viewEnd && eventStart >= viewStart && eventStart < viewEnd)
                 {
                     leftMargin = EVENT_LR_MARGIN;
                     rightMargin = EVENT_LR_MARGIN;
@@ -250,18 +238,12 @@ public class MonthCalendarView extends ViewGroup
                     left = startX + leftMargin;
                     right = endX + ITEM_WIDTH - rightMargin;
 
-                    if (schedule.getCategory() == ScheduleDTO.GOOGLE_CATEGORY)
-                    {
-                        canvas.drawRect(left, top, right, bottom, GOOGLE_EVENT_PAINT);
-                        canvas.drawText(schedule.getSubject(), left + TEXT_MARGIN, bottom - TEXT_MARGIN, GOOGLE_EVENT_TEXT_PAINT);
-                    } else
-                    {
-                        canvas.drawRect(left, top, right, bottom, LOCAL_EVENT_PAINT);
-                        canvas.drawText(schedule.getSubject(), left + TEXT_MARGIN, bottom - TEXT_MARGIN, LOCAL_EVENT_TEXT_PAINT);
-                    }
+                    Color.colorToHSV(eventData.getEvent().getAsInteger(CalendarContract.Instances.EVENT_COLOR), hsv);
+                    EVENT_COLOR_PAINT.setColor(Color.HSVToColor(hsv));
+                    canvas.drawRect(left, top, right, bottom, EVENT_COLOR_PAINT);
+                    canvas.drawText(event.getAsString(CalendarContract.Instances.TITLE), left + TEXT_MARGIN, bottom - TEXT_MARGIN, EVENT_TEXT_PAINT);
                 }
             }
-
         }
 
         float startX = 0f;
@@ -277,7 +259,7 @@ public class MonthCalendarView extends ViewGroup
 
         TextPaint textPaint = new TextPaint();
         textPaint.setColor(Color.WHITE);
-        textPaint.setTextSize(LOCAL_EVENT_TEXT_PAINT.getTextSize());
+        textPaint.setTextSize(EVENT_TEXT_PAINT.getTextSize());
         textPaint.setTextAlign(Paint.Align.LEFT);
 
         // more 표시
@@ -327,14 +309,18 @@ public class MonthCalendarView extends ViewGroup
         eventCellsList.clear();
     }
 
-    public void setSchedules(List<EventData> list)
+    @Override
+    public void setInstances(List<ContentValues> instances)
     {
         // 이벤트 테이블에 데이터를 표시할 위치 설정
-        setEventTable(list);
+        this.instances = instances;
+        setEventTable();
         invalidate();
     }
 
-    private void setEventTable(List<EventData> list)
+
+    @Override
+    public void setEventTable()
     {
         ITEM_LAYOUT_CELLS.clear();
         eventCellsList.clear();
@@ -343,17 +329,19 @@ public class MonthCalendarView extends ViewGroup
         end = Integer.MIN_VALUE;
 
         // 달력 뷰의 셀에 아이템을 삽입
-        for (EventData eventData : list)
+        for (ContentValues event : instances)
         {
-            int startIndex = eventData.getStartIndex();
-            int endIndex = eventData.getEndIndex();
+            // 달력 내 위치를 계산
+            int startIndex = ClockUtil.calcDateDifference(ClockUtil.DAY, event.getAsLong(CalendarContract.Instances.BEGIN), firstDay);
+            int endIndex = ClockUtil.calcDateDifference(ClockUtil.DAY, event.getAsLong(CalendarContract.Instances.END), firstDay);
 
-            if (startIndex == Integer.MIN_VALUE)
+            if (startIndex < 0)
             {
                 startIndex = 0;
             }
-            if (endIndex == Integer.MAX_VALUE)
+            if (endIndex > 41)
             {
+                // 달력에 표시할 일자의 개수가 총 42개
                 endIndex = 41;
             }
 
@@ -422,7 +410,7 @@ public class MonthCalendarView extends ViewGroup
                     {
                         ITEM_LAYOUT_CELLS.get(i).row[row] = true;
                     }
-                    eventCellsList.add(new EventData(eventData.getSchedule(), startIndex, endIndex, row));
+                    eventCellsList.add(new EventData(event, startIndex, endIndex, row));
                 }
             }
         }
