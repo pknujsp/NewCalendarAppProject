@@ -14,8 +14,10 @@ import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.zerodsoft.scheduleweather.activity.main.AppMainActivity;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
+import com.zerodsoft.scheduleweather.etc.EventViewUtil;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import java.util.ArrayList;
@@ -31,18 +33,15 @@ public class MonthCalendarView extends ViewGroup implements IEvent
     private long firstDay;
     private final float HEADER_DAY_TEXT_SIZE;
     private final TextPaint HEADER_DAY_PAINT;
-    private final long ONE_DAY = 24 * 60 * 60 * 1000;
 
     private int ITEM_WIDTH;
     private int ITEM_HEIGHT;
-
-    private Paint EVENT_COLOR_PAINT;
-    private TextPaint EVENT_TEXT_PAINT;
 
     private static final int SPACING_BETWEEN_EVENT = 12;
     private static final int TEXT_MARGIN = 8;
     public static final int EVENT_LR_MARGIN = 4;
     public static final int EVENT_COUNT = 5;
+    private float EVENT_TEXT_HEIGHT;
 
     private int start;
     private int end;
@@ -74,10 +73,6 @@ public class MonthCalendarView extends ViewGroup implements IEvent
 
         DAY_SPACE_HEIGHT = rect.height() + 24;
 
-        EVENT_COLOR_PAINT = new Paint();
-        EVENT_TEXT_PAINT = new TextPaint();
-        EVENT_TEXT_PAINT.setTextAlign(Paint.Align.LEFT);
-        EVENT_TEXT_PAINT.setColor(Color.WHITE);
 
         setWillNotDraw(false);
     }
@@ -93,13 +88,16 @@ public class MonthCalendarView extends ViewGroup implements IEvent
         setMeasuredDimension(widthMeasureSpec, heightMeasureSpec);
     }
 
-
     @Override
     protected void onLayout(boolean b, int i, int i1, int i2, int i3)
     {
         // resolveSize : 실제 설정할 크기를 계산
         ITEM_WIDTH = getWidth() / 7;
         ITEM_HEIGHT = getHeight() / 6;
+
+        EVENT_HEIGHT = (ITEM_HEIGHT - DAY_SPACE_HEIGHT - SPACING_BETWEEN_EVENT * 4) / EVENT_COUNT;
+        EVENT_TEXT_HEIGHT = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_PX, EVENT_HEIGHT - TEXT_MARGIN, getContext().getResources().getDisplayMetrics());
+
         // childview의 크기 설정
         measureChildren(ITEM_WIDTH, ITEM_HEIGHT);
 
@@ -138,8 +136,6 @@ public class MonthCalendarView extends ViewGroup implements IEvent
 
         if (!eventCellsList.isEmpty())
         {
-            EVENT_HEIGHT = (ITEM_HEIGHT - DAY_SPACE_HEIGHT - SPACING_BETWEEN_EVENT * 4) / EVENT_COUNT;
-            EVENT_TEXT_PAINT.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_PX, EVENT_HEIGHT - TEXT_MARGIN, getContext().getResources().getDisplayMetrics()));
             drawEvents(canvas);
         }
     }
@@ -147,8 +143,6 @@ public class MonthCalendarView extends ViewGroup implements IEvent
 
     private void drawEvents(Canvas canvas)
     {
-        float[] hsv = new float[3];
-
         for (EventData eventData : eventCellsList)
         {
             final int startIndex = eventData.getStartIndex();
@@ -238,10 +232,12 @@ public class MonthCalendarView extends ViewGroup implements IEvent
                     left = startX + leftMargin;
                     right = endX + ITEM_WIDTH - rightMargin;
 
-                    Color.colorToHSV(eventData.getEvent().getAsInteger(CalendarContract.Instances.EVENT_COLOR), hsv);
-                    EVENT_COLOR_PAINT.setColor(Color.HSVToColor(hsv));
-                    canvas.drawRect(left, top, right, bottom, EVENT_COLOR_PAINT);
-                    canvas.drawText(event.getAsString(CalendarContract.Instances.TITLE), left + TEXT_MARGIN, bottom - TEXT_MARGIN, EVENT_TEXT_PAINT);
+                    eventData.setEventColorPaint(EventViewUtil.getEventColorPaint(event.getAsInteger(CalendarContract.Instances.EVENT_COLOR)));
+                    eventData.setEventTextPaint(EventViewUtil.getEventTextPaint(EVENT_TEXT_HEIGHT));
+
+                    canvas.drawRect(left, top, right, bottom, eventData.getEventColorPaint());
+                    canvas.drawText(event.getAsString(CalendarContract.Instances.TITLE) != null ? event.getAsString(CalendarContract.Instances.TITLE) : "empty"
+                            , left + TEXT_MARGIN, bottom - TEXT_MARGIN, eventData.getEventTextPaint());
                 }
             }
         }
@@ -259,7 +255,7 @@ public class MonthCalendarView extends ViewGroup implements IEvent
 
         TextPaint textPaint = new TextPaint();
         textPaint.setColor(Color.WHITE);
-        textPaint.setTextSize(EVENT_TEXT_PAINT.getTextSize());
+        textPaint.setTextSize(EVENT_TEXT_HEIGHT);
         textPaint.setTextAlign(Paint.Align.LEFT);
 
         // more 표시
@@ -410,7 +406,8 @@ public class MonthCalendarView extends ViewGroup implements IEvent
                     {
                         ITEM_LAYOUT_CELLS.get(i).row[row] = true;
                     }
-                    eventCellsList.add(new EventData(event, startIndex, endIndex, row));
+                    EventData eventData = new EventData(event, startIndex, endIndex, row);
+                    eventCellsList.add(eventData);
                 }
             }
         }

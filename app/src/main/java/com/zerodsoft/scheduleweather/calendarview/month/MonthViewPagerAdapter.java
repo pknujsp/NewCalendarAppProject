@@ -3,7 +3,6 @@ package com.zerodsoft.scheduleweather.calendarview.month;
 import android.content.ContentValues;
 import android.content.Context;
 import android.graphics.Color;
-import android.provider.CalendarContract;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,7 +25,6 @@ import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
@@ -183,8 +181,8 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
                 });
                 monthCalendarView.addView(itemView);
             }
-            monthCalendarView.invalidate();
-            iControlEvent.requestInstances(getAdapterPosition(), getDay(FIRST_DAY).getTime().getTime(), getDay(LAST_DAY).getTime().getTime(), new EventCallback<List<CalendarInstance>>()
+
+            iControlEvent.getInstances(getAdapterPosition(), getDay(FIRST_DAY).getTime().getTime(), getDay(LAST_DAY).getTime().getTime(), new EventCallback<List<CalendarInstance>>()
             {
                 @Override
                 public void onResult(List<CalendarInstance> e)

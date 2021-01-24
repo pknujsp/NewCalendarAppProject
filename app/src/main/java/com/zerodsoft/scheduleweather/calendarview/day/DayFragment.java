@@ -14,6 +14,7 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import java.util.Calendar;
@@ -27,13 +28,15 @@ public class DayFragment extends Fragment
     private ViewPager2 dayViewPager;
     private DayViewPagerAdapter dayViewPagerAdapter;
     private IControlEvent iControlEvent;
+    private final OnEventItemClickListener onEventItemClickListener;
     private IToolbar iToolbar;
     private OnPageChangeCallback onPageChangeCallback;
     private int currentPosition = EventTransactionFragment.FIRST_VIEW_POSITION;
 
-    public DayFragment(IControlEvent iControlEvent, IToolbar iToolbar)
+    public DayFragment(Fragment fragment, IToolbar iToolbar)
     {
-        this.iControlEvent = iControlEvent;
+        this.iControlEvent = (IControlEvent) fragment;
+        this.onEventItemClickListener = (OnEventItemClickListener) fragment;
         this.iToolbar = iToolbar;
     }
 
@@ -55,7 +58,7 @@ public class DayFragment extends Fragment
     {
         dayViewPager = (ViewPager2) view.findViewById(R.id.day_viewpager);
 
-        dayViewPagerAdapter = new DayViewPagerAdapter(DayFragment.this);
+        dayViewPagerAdapter = new DayViewPagerAdapter(iControlEvent, onEventItemClickListener, iToolbar);
         dayViewPager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
         dayViewPager.setAdapter(dayViewPagerAdapter);
         dayViewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, false);
@@ -112,45 +115,24 @@ public class DayFragment extends Fragment
             copiedCalendar = (Calendar) calendar.clone();
             copiedCalendar.add(Calendar.DAY_OF_YEAR, currentPosition - EventTransactionFragment.FIRST_VIEW_POSITION);
 
-            setMonth(copiedCalendar.getTime());
+            iToolbar.setMonth(copiedCalendar.getTime());
             super.onPageSelected(position);
         }
-    }
-
-    public void onSelectedSchedules(int viewPosition, List<ScheduleDTO> schedules)
-    {
-        dayViewPagerAdapter.setData(viewPosition, schedules);
-    }
-
-    public void requestSchedules(int position, Date startDate, Date endDate)
-    {
-        // 해당 페이지에 해당하는 날짜에 대한 데이터 불러오기
-        iControlEvent.requestInstances(position, startDate, endDate, );
     }
 
     public void refreshView(Date startDate)
     {
         //시작 날짜의 해당 월로 달력 변경
-        dayViewPagerAdapter = new DayViewPagerAdapter(this);
+        dayViewPagerAdapter = new DayViewPagerAdapter(iControlEvent, onEventItemClickListener, iToolbar);
         //시작 날짜가 화면에 표시되도록 달력 날짜를 변경
         Calendar viewCalendar = dayViewPagerAdapter.getCALENDAR();
         //두 날짜 사이의 월수 차이
-        int dayDifference = ClockUtil.calcDateDifference(ClockUtil.DAY, startDate, viewCalendar);
+        int dayDifference = ClockUtil.calcDateDifference(ClockUtil.DAY, startDate.getTime(), viewCalendar.getTimeInMillis());
         dayViewPager.setAdapter(dayViewPagerAdapter);
         dayViewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION + dayDifference, false);
 
         onPageChangeCallback = new OnPageChangeCallback(dayViewPagerAdapter.getCALENDAR());
         dayViewPager.registerOnPageChangeCallback(onPageChangeCallback);
-    }
-
-    public void setMonth(Date date)
-    {
-        iControlEvent.setToolbarMonth(date);
-    }
-
-    public void showSchedule(int scheduleId)
-    {
-        iControlEvent.showEventOnDayDialog(scheduleId, , );
     }
 
     public void goToToday()

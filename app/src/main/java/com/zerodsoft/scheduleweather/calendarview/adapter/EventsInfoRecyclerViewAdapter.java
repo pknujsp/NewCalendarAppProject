@@ -1,5 +1,8 @@
 package com.zerodsoft.scheduleweather.calendarview.adapter;
 
+import android.content.ContentValues;
+import android.graphics.Color;
+import android.provider.CalendarContract;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +13,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendarview.eventdialog.EventListOnDayFragment;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
+import com.zerodsoft.scheduleweather.etc.EventViewUtil;
 import com.zerodsoft.scheduleweather.utility.AppSettings;
 
 import java.util.Date;
@@ -17,15 +22,15 @@ import java.util.List;
 
 public class EventsInfoRecyclerViewAdapter extends RecyclerView.Adapter<EventsInfoRecyclerViewAdapter.EventsInfoViewHolder>
 {
-    private List<ScheduleDTO> schedulesList;
-    private EventListOnDayFragment fragment;
+    private List<ContentValues> instances;
+    private OnEventItemClickListener onEventItemClickListener;
     private static final int VIEW_MARGIN = 16;
-    private Date startDate;
-    private Date endDate;
+    private final long startDate;
+    private final long endDate;
 
-    public EventsInfoRecyclerViewAdapter(EventListOnDayFragment fragment, Date startDate, Date endDate)
+    public EventsInfoRecyclerViewAdapter(EventListOnDayFragment fragment, long startDate, long endDate)
     {
-        this.fragment = fragment;
+        this.onEventItemClickListener = (OnEventItemClickListener) fragment;
         this.startDate = startDate;
         this.endDate = endDate;
     }
@@ -46,18 +51,19 @@ public class EventsInfoRecyclerViewAdapter extends RecyclerView.Adapter<EventsIn
     @Override
     public int getItemCount()
     {
-        return schedulesList == null ? 0 : schedulesList.size();
+        return instances == null ? 0 : instances.size();
     }
 
-    public void setSchedulesList(List<ScheduleDTO> schedulesList)
+    public void setInstances(List<ContentValues> instances)
     {
-        this.schedulesList = schedulesList;
+        this.instances = instances;
     }
 
     class EventsInfoViewHolder extends RecyclerView.ViewHolder
     {
         private int position;
-        private int scheduleId;
+        private int eventId;
+        private int calendarId;
         private TextView eventView;
 
         public EventsInfoViewHolder(View view)
@@ -69,7 +75,7 @@ public class EventsInfoRecyclerViewAdapter extends RecyclerView.Adapter<EventsIn
                 @Override
                 public void onClick(View view)
                 {
-                    fragment.showSchedule(scheduleId);
+                    onEventItemClickListener.onClicked(calendarId, eventId);
                 }
             });
         }
@@ -77,47 +83,26 @@ public class EventsInfoRecyclerViewAdapter extends RecyclerView.Adapter<EventsIn
         public void onBind(int position)
         {
             this.position = position;
-            this.scheduleId = schedulesList.get(position).getId();
+            this.eventId = instances.get(position).getAsInteger(CalendarContract.Instances.EVENT_ID);
+            this.calendarId = instances.get(position).getAsInteger(CalendarContract.Instances.CALENDAR_ID);
 
             RecyclerView.LayoutParams layoutParams = new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 
-            // 시작/종료일이 date가 아니나, 일정에 포함되는 경우
-            if (schedulesList.get(position).getStartDate().before(startDate) && schedulesList.get(position).getEndDate().after(endDate))
-            {
-                layoutParams.leftMargin = 0;
-                layoutParams.rightMargin = 0;
-            }
-            // 시작일이 date인 경우, 종료일은 endDate 이후
-            else if (schedulesList.get(position).getEndDate().compareTo(endDate) >= 0 && schedulesList.get(position).getStartDate().compareTo(startDate) >= 0 && schedulesList.get(position).getStartDate().before(endDate))
-            {
-                layoutParams.leftMargin = VIEW_MARGIN;
-                layoutParams.rightMargin = 0;
-            }
-            // 종료일이 date인 경우, 시작일은 startDate이전
-            else if (schedulesList.get(position).getEndDate().compareTo(startDate) >= 0 && schedulesList.get(position).getEndDate().before(endDate) && schedulesList.get(position).getStartDate().before(startDate))
-            {
-                layoutParams.leftMargin = 0;
-                layoutParams.rightMargin = VIEW_MARGIN;
-            }
-            // 시작/종료일이 date인 경우
-            else if (schedulesList.get(position).getEndDate().compareTo(startDate) >= 0 && schedulesList.get(position).getEndDate().before(endDate) && schedulesList.get(position).getStartDate().compareTo(startDate) >= 0 && schedulesList.get(position).getStartDate().before(endDate))
-            {
-                layoutParams.leftMargin = VIEW_MARGIN;
-                layoutParams.rightMargin = VIEW_MARGIN;
-            }
+            int[] margin = EventViewUtil.getViewSideMargin(instances.get(position).getAsInteger(CalendarContract.Instances.BEGIN)
+                    , instances.get(position).getAsInteger(CalendarContract.Instances.END)
+                    , startDate, endDate, VIEW_MARGIN);
+
+            layoutParams.leftMargin = margin[0];
+            layoutParams.rightMargin = margin[1];
 
             eventView.setLayoutParams(layoutParams);
 
-            if (schedulesList.get(position).getCategory() == ScheduleDTO.GOOGLE_CATEGORY)
-            {
-                eventView.setBackgroundColor(AppSettings.getGoogleEventBackgroundColor());
-                eventView.setTextColor(AppSettings.getGoogleEventTextColor());
-            } else
-            {
-                eventView.setBackgroundColor(AppSettings.getLocalEventBackgroundColor());
-                eventView.setTextColor(AppSettings.getLocalEventTextColor());
-            }
-            eventView.setText(schedulesList.get(position).getSubject());
+            float[] hsv = new float[3];
+            Color.colorToHSV(instances.get(position).getAsInteger(CalendarContract.Instances.EVENT_COLOR), hsv);
+            eventView.setBackgroundColor(Color.HSVToColor(hsv));
+            eventView.setTextColor(Color.WHITE);
+
+            eventView.setText(instances.get(position).getAsString(CalendarContract.Instances.TITLE));
         }
     }
 

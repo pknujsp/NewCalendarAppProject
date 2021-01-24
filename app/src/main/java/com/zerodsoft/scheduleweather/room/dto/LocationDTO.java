@@ -8,7 +8,7 @@ import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
 @Entity(tableName = "location_table")
-public class LocationDTO implements  Parcelable
+public class LocationDTO implements Parcelable
 {
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "id")
@@ -35,6 +35,9 @@ public class LocationDTO implements  Parcelable
     @ColumnInfo(name = "place_id")
     private String placeId;
 
+    @ColumnInfo(name = "place_name")
+    private String placeName;
+
     public LocationDTO()
     {
     }
@@ -49,6 +52,7 @@ public class LocationDTO implements  Parcelable
         longitude = in.readDouble();
         addressName = in.readString();
         placeId = in.readString();
+        placeName = in.readString();
     }
 
     public static final Creator<LocationDTO> CREATOR = new Creator<LocationDTO>()
@@ -146,6 +150,15 @@ public class LocationDTO implements  Parcelable
         this.placeId = placeId;
     }
 
+    public void setPlaceName(String placeName)
+    {
+        this.placeName = placeName;
+    }
+
+    public String getPlaceName()
+    {
+        return placeName;
+    }
 
     @Override
     public int describeContents()
@@ -164,5 +177,6 @@ public class LocationDTO implements  Parcelable
         parcel.writeDouble(longitude);
         parcel.writeString(addressName);
         parcel.writeString(placeId);
+        parcel.writeString(placeName);
     }
 }

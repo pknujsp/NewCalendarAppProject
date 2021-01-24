@@ -1,24 +1,27 @@
 package com.zerodsoft.scheduleweather.calendar.dto;
 
+import android.content.ContentValues;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class AccountDto
 {
-    private List<CalendarDto> calendars = new ArrayList<>();
+    private List<ContentValues> calendars = new ArrayList<>();
     private String accountName;
     private String accountType;
+    private String ownerAccount;
 
     public AccountDto()
     {
     }
 
-    public List<CalendarDto> getCalendars()
+    public List<ContentValues> getCalendars()
     {
         return calendars;
     }
 
-    public AccountDto setCalendars(List<CalendarDto> calendars)
+    public AccountDto setCalendars(List<ContentValues> calendars)
     {
         this.calendars = calendars;
         return this;
@@ -46,8 +49,19 @@ public class AccountDto
         return this;
     }
 
-    public void addCalendar(CalendarDto calendarDto)
+    public AccountDto setOwnerAccount(String ownerAccount)
     {
-        calendars.add(calendarDto);
+        this.ownerAccount = ownerAccount;
+        return this;
+    }
+
+    public String getOwnerAccount()
+    {
+        return ownerAccount;
+    }
+
+    public void addCalendar(ContentValues calendar)
+    {
+        calendars.add(calendar);
     }
 }

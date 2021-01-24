@@ -7,9 +7,9 @@ import java.util.List;
 public class CalendarInstance
 {
     private List<ContentValues> instanceList;
-    private int calendarId;
+    private long calendarId;
 
-    public CalendarInstance(List<ContentValues> instanceList, int calendarId)
+    public CalendarInstance(List<ContentValues> instanceList, long calendarId)
     {
         this.instanceList = instanceList;
         this.calendarId = calendarId;
@@ -25,12 +25,12 @@ public class CalendarInstance
         this.instanceList = instanceList;
     }
 
-    public int getCalendarId()
+    public long getCalendarId()
     {
         return calendarId;
     }
 
-    public void setCalendarId(int calendarId)
+    public void setCalendarId(long calendarId)
     {
         this.calendarId = calendarId;
     }

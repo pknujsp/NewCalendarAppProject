@@ -1,10 +1,12 @@
 package com.zerodsoft.scheduleweather.calendarview.day;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.provider.CalendarContract;
 import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.util.TypedValue;
@@ -13,25 +15,23 @@ import android.view.ViewGroup;
 
 import androidx.annotation.Nullable;
 
+import com.zerodsoft.scheduleweather.calendarview.interfaces.IEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.calendarview.month.EventData;
-import com.zerodsoft.scheduleweather.utility.AppSettings;
+import com.zerodsoft.scheduleweather.etc.EventViewUtil;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class DayHeaderView extends ViewGroup
+public class DayHeaderView extends ViewGroup implements IEvent
 {
     private final Paint DAY_DATE_TEXT_PAINT;
-    private final Paint GOOGLE_EVENT_PAINT;
-    private final Paint GOOGLE_EVENT_TEXT_PAINT;
-    private final Paint LOCAL_EVENT_PAINT;
-    private final Paint LOCAL_EVENT_TEXT_PAINT;
 
     private final Paint EXTRA_PAINT;
     private final Paint EXTRA_TEXT_PAINT;
+    private final float EVENT_TEXT_HEIGHT;
 
     // 구분선 paint
     protected final Paint DIVIDING_LINE_PAINT;
@@ -41,6 +41,7 @@ public class DayHeaderView extends ViewGroup
     private static final int TEXT_MARGIN = 4;
     public static final int EVENT_LR_MARGIN = 8;
     public static final int EVENT_COUNT = 6;
+
 
     private final float EVENT_HEIGHT;
     private final float DAY_DATE_SPACE_HEIGHT;
@@ -52,6 +53,7 @@ public class DayHeaderView extends ViewGroup
     private List<EventData> eventCellsList = new ArrayList<>();
     private OnEventItemClickListener onEventItemClickListener;
     private boolean[] rows = new boolean[EVENT_COUNT];
+    private List<ContentValues> instances;
 
     public DayHeaderView(Context context, @Nullable AttributeSet attrs)
     {
@@ -74,32 +76,18 @@ public class DayHeaderView extends ViewGroup
         // set background
         setBackgroundColor(Color.WHITE);
 
-        // google event rect paint
-        GOOGLE_EVENT_PAINT = new Paint();
-
-        // local event rect paint
-        LOCAL_EVENT_PAINT = new Paint();
-
-        // google event text paint
-        GOOGLE_EVENT_TEXT_PAINT = new Paint();
-        GOOGLE_EVENT_TEXT_PAINT.setTextAlign(Paint.Align.LEFT);
-
-        // local event text paint
-        LOCAL_EVENT_TEXT_PAINT = new Paint();
-        LOCAL_EVENT_TEXT_PAINT.setTextAlign(Paint.Align.LEFT);
-
-        GOOGLE_EVENT_TEXT_PAINT.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 13, getContext().getResources().getDisplayMetrics()));
-        LOCAL_EVENT_TEXT_PAINT.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 13, getContext().getResources().getDisplayMetrics()));
-
-        GOOGLE_EVENT_TEXT_PAINT.getTextBounds("1", 0, 1, rect);
+        TextPaint textPaint = new TextPaint();
+        textPaint.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 13, getContext().getResources().getDisplayMetrics()));
+        textPaint.getTextBounds("0", 0, 1, rect);
         EVENT_HEIGHT = rect.height() + TEXT_MARGIN * 2;
+        EVENT_TEXT_HEIGHT = rect.height();
 
         EXTRA_PAINT = new Paint();
         EXTRA_PAINT.setColor(Color.LTGRAY);
 
         EXTRA_TEXT_PAINT = new TextPaint();
         EXTRA_TEXT_PAINT.setColor(Color.WHITE);
-        EXTRA_TEXT_PAINT.setTextSize(LOCAL_EVENT_TEXT_PAINT.getTextSize());
+        EXTRA_TEXT_PAINT.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 13, getContext().getResources().getDisplayMetrics()));
         EXTRA_TEXT_PAINT.setTextAlign(Paint.Align.LEFT);
 
         setWillNotDraw(false);
@@ -109,6 +97,11 @@ public class DayHeaderView extends ViewGroup
     {
         this.today = today;
         this.tomorrow = tomorrow;
+    }
+
+    public void setOnEventItemClickListener(OnEventItemClickListener onEventItemClickListener)
+    {
+        this.onEventItemClickListener = onEventItemClickListener;
     }
 
     @Override
@@ -141,38 +134,21 @@ public class DayHeaderView extends ViewGroup
                 int leftMargin = 0;
                 int rightMargin = 0;
 
-                ScheduleDTO schedule = child.schedule;
+                ContentValues instance = child.eventData.getEvent();
 
-                if (schedule.isEmpty())
+                if (instance.size() == 0)
                 {
                     leftMargin = EVENT_LR_MARGIN;
                     rightMargin = EVENT_LR_MARGIN;
                 } else
                 {
-                    // 시작/종료일이 date가 아니나, 일정에 포함되는 경우
-                    if (schedule.getStartDate().before(today) && schedule.getEndDate().after(tomorrow))
-                    {
-                        leftMargin = 0;
-                        rightMargin = 0;
-                    }
-                    // 시작일이 date인 경우, 종료일은 endDate 이후
-                    else if (schedule.getEndDate().compareTo(tomorrow) >= 0 && schedule.getStartDate().compareTo(today) >= 0 && schedule.getStartDate().before(tomorrow))
-                    {
-                        leftMargin = EVENT_LR_MARGIN;
-                        rightMargin = 0;
-                    }
-                    // 종료일이 date인 경우, 시작일은 startDate이전
-                    else if (schedule.getEndDate().compareTo(today) >= 0 && schedule.getEndDate().before(tomorrow) && schedule.getStartDate().before(today))
-                    {
-                        leftMargin = 0;
-                        rightMargin = EVENT_LR_MARGIN;
-                    }
-                    // 시작/종료일이 date인 경우
-                    else if (schedule.getEndDate().compareTo(today) >= 0 && schedule.getEndDate().before(tomorrow) && schedule.getStartDate().compareTo(today) >= 0 && schedule.getStartDate().before(tomorrow))
-                    {
-                        leftMargin = EVENT_LR_MARGIN;
-                        rightMargin = EVENT_LR_MARGIN;
-                    }
+                    int[] margin = EventViewUtil.getViewSideMargin(instance.getAsLong(CalendarContract.Instances.BEGIN)
+                            , instance.getAsLong(CalendarContract.Instances.END)
+                            , today.getTime()
+                            , tomorrow.getTime(), EVENT_LR_MARGIN);
+
+                    leftMargin = margin[0];
+                    rightMargin = margin[1];
                 }
 
                 top = DAY_DATE_SPACE_HEIGHT + (EVENT_HEIGHT + SPACING_BETWEEN_EVENT) * row;
@@ -185,6 +161,15 @@ public class DayHeaderView extends ViewGroup
 
                 child.measure(width, height);
                 child.layout((int) left, (int) top, (int) right, (int) bottom);
+                child.setOnClickListener(new OnClickListener()
+                {
+                    @Override
+                    public void onClick(View view)
+                    {
+                        onEventItemClickListener.onClicked(((DayHeaderEventView) view).eventData.getEvent().getAsLong(CalendarContract.Instances.BEGIN)
+                                , ((DayHeaderEventView) view).eventData.getEvent().getAsLong(CalendarContract.Instances.END));
+                    }
+                });
             }
 
         }
@@ -207,15 +192,18 @@ public class DayHeaderView extends ViewGroup
         rowNum = 0;
     }
 
-    public void setSchedules(List<ScheduleDTO> list)
+
+    @Override
+    public void setInstances(List<ContentValues> instances)
     {
-        // 이벤트 테이블에 데이터를 표시할 위치 설정
-        setEventTable(list);
+        this.instances = instances;
+        setEventTable();
         requestLayout();
         invalidate();
     }
 
-    private void setEventTable(List<ScheduleDTO> list)
+    @Override
+    public void setEventTable()
     {
         rows = new boolean[EVENT_COUNT];
         eventCellsList.clear();
@@ -223,7 +211,7 @@ public class DayHeaderView extends ViewGroup
         int availableRow = 0;
 
         // 달력 뷰의 셀에 아이템을 삽입
-        for (ScheduleDTO schedule : list)
+        for (ContentValues instance : instances)
         {
             // 이벤트를 위치시킬 알맞은 행을 지정
             // 비어있는 행을 지정한다.
@@ -236,10 +224,10 @@ public class DayHeaderView extends ViewGroup
                 // 같은 일정은 같은 위치의 셀에 있어야 한다.
 
                 rows[availableRow] = true;
-                eventCellsList.add(new EventData(schedule, availableRow));
+                eventCellsList.add(new EventData(instance, availableRow));
             } else
             {
-                eventCellsList.add(new EventData(new ScheduleDTO(), availableRow));
+                eventCellsList.add(new EventData(new ContentValues(), availableRow));
                 break;
             }
             availableRow++;
@@ -247,26 +235,21 @@ public class DayHeaderView extends ViewGroup
 
         removeAllViews();
 
-        GOOGLE_EVENT_PAINT.setColor(AppSettings.getGoogleEventBackgroundColor());
-        LOCAL_EVENT_PAINT.setColor(AppSettings.getLocalEventBackgroundColor());
-        GOOGLE_EVENT_TEXT_PAINT.setColor(AppSettings.getGoogleEventTextColor());
-        LOCAL_EVENT_TEXT_PAINT.setColor(AppSettings.getLocalEventTextColor());
-
         for (EventData eventData : eventCellsList)
         {
-            DayHeaderEventView child = new DayHeaderEventView(getContext(), eventData.getSchedule());
+            DayHeaderEventView child = new DayHeaderEventView(getContext(), eventData);
             addView(child);
         }
     }
 
     class DayHeaderEventView extends View
     {
-        public ScheduleDTO schedule;
+        public EventData eventData;
 
-        public DayHeaderEventView(Context context, ScheduleDTO schedule)
+        public DayHeaderEventView(Context context, EventData eventData)
         {
             super(context);
-            this.schedule = schedule;
+            this.eventData = eventData;
         }
 
         @Override
@@ -274,18 +257,17 @@ public class DayHeaderView extends ViewGroup
         {
             super.onDraw(canvas);
 
-            if (schedule.getCategory() == ScheduleDTO.GOOGLE_CATEGORY)
+            if (eventData.getEvent().size() > 0)
             {
-                canvas.drawRect(0, 0, getWidth(), getHeight(), GOOGLE_EVENT_PAINT);
-                canvas.drawText(schedule.getSubject(), TEXT_MARGIN, getHeight() - TEXT_MARGIN, GOOGLE_EVENT_TEXT_PAINT);
-            } else if (schedule.getCategory() == ScheduleDTO.LOCAL_CATEGORY)
-            {
-                canvas.drawRect(0, 0, getWidth(), getHeight(), LOCAL_EVENT_PAINT);
-                canvas.drawText(schedule.getSubject(), TEXT_MARGIN, getHeight() - TEXT_MARGIN, LOCAL_EVENT_TEXT_PAINT);
+                eventData.setEventTextPaint(EventViewUtil.getEventTextPaint(EVENT_TEXT_HEIGHT));
+                eventData.setEventColorPaint(EventViewUtil.getEventColorPaint(eventData.getEvent().getAsInteger(CalendarContract.Instances.EVENT_COLOR)));
+
+                canvas.drawRect(0, 0, getWidth(), getHeight(), eventData.getEventTextPaint());
+                canvas.drawText(eventData.getEvent().getAsString(CalendarContract.Instances.TITLE), TEXT_MARGIN, getHeight() - TEXT_MARGIN, eventData.getEventColorPaint());
             } else
             {
-                canvas.drawRect(EVENT_LR_MARGIN, 0, getWidth() - EVENT_LR_MARGIN, getHeight(), LOCAL_EVENT_PAINT);
-                canvas.drawText("More", TEXT_MARGIN + EVENT_LR_MARGIN, getHeight() - TEXT_MARGIN, LOCAL_EVENT_TEXT_PAINT);
+                canvas.drawRect(EVENT_LR_MARGIN, 0, getWidth() - EVENT_LR_MARGIN, getHeight(), EXTRA_PAINT);
+                canvas.drawText("More", TEXT_MARGIN + EVENT_LR_MARGIN, getHeight() - TEXT_MARGIN, EXTRA_TEXT_PAINT);
             }
         }
     }

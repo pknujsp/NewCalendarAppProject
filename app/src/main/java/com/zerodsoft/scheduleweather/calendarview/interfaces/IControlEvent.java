@@ -7,10 +7,5 @@ import java.util.List;
 
 public interface IControlEvent
 {
-    void showEventOnDayDialog(int calendarId, int eventId, String accountName);
-
-    void requestInstances(int viewPosition, long start, long end, EventCallback<List<CalendarInstance>> callback);
-
-    void requestEvent(int calendarId, int eventId);
-
+    void getInstances(int viewPosition, long start, long end, EventCallback<List<CalendarInstance>> callback);
 }

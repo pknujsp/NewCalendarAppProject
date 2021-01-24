@@ -31,12 +31,6 @@ public class HourEventsView extends ViewGroup
     // 일정 추가 rect drawable
     protected final Drawable NEW_SCHEDULE_RECT_DRAWABLE;
     protected final Drawable ADD_DRAWABLE;
-    // google event paint
-    // google event text paint
-    // local event paint
-    // local event text paint
-    protected final TextPaint EVENT_TEXT_PAINT;
-    protected final Paint EVENT_COLOR_PAINT;
     protected final int LINE_THICKNESS;
     protected final int SPACING_BETWEEN_HOURS;
     protected final int TABLE_TB_MARGIN = 32;
@@ -87,13 +81,9 @@ public class HourEventsView extends ViewGroup
         HOUR_PAINT.getTextBounds("0", 0, 1, rect);
         HOUR_TEXT_HEIGHT = rect.height();
 
-        EVENT_TEXT_PAINT = new TextPaint();
-        EVENT_TEXT_PAINT.setColor(Color.WHITE);
-        EVENT_COLOR_PAINT = new Paint();
-
-        EVENT_COLOR_PAINT.setTextAlign(Paint.Align.LEFT);
-        EVENT_COLOR_PAINT.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 11, getResources().getDisplayMetrics()));
-        EVENT_COLOR_PAINT.getTextBounds("0", 0, 1, rect);
+        TextPaint eventTextPaint = new TextPaint();
+        eventTextPaint.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 11, getResources().getDisplayMetrics()));
+        eventTextPaint.getTextBounds("0", 0, 1, rect);
         EVENT_TEXT_HEIGHT = rect.height();
 
         SPACING_BETWEEN_HOURS = AppMainActivity.getDisplayHeight() * 2 / 24;

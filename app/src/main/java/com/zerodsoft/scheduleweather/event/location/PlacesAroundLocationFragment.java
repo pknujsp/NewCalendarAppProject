@@ -12,9 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.room.dto.AddressDTO;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
-import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
 import com.zerodsoft.scheduleweather.event.location.placefragments.LocationInfo;
 import com.zerodsoft.scheduleweather.event.location.placefragments.fragment.PlacesFragment;
 
@@ -48,14 +46,12 @@ public class PlacesAroundLocationFragment extends Fragment
         super.onViewCreated(view, savedInstanceState);
         Fragment fragment = null;
 
-        if (location instanceof PlaceDTO)
+        if (location.getPlaceId() != null)
         {
-            PlaceDTO place = (PlaceDTO) location;
-            fragment = new PlacesFragment(new LocationInfo(Double.parseDouble(place.getLatitude()), Double.parseDouble(place.getLongitude()), place.getPlaceName()));
+            fragment = new PlacesFragment(new LocationInfo(location.getLatitude(), location.getLongitude(), location.getPlaceName()));
         } else
         {
-            AddressDTO address = (AddressDTO) location;
-            fragment = new PlacesFragment(new LocationInfo(Double.parseDouble(address.getLatitude()), Double.parseDouble(address.getLongitude()), address.getAddressName()));
+            fragment = new PlacesFragment(new LocationInfo(location.getLatitude(), location.getLongitude(), location.getAddressName()));
         }
         FragmentManager fragmentManager = getChildFragmentManager();
         fragmentManager.beginTransaction().add(R.id.places_around_location_fragment_container, fragment).commit();

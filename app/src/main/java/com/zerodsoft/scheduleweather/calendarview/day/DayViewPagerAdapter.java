@@ -1,5 +1,6 @@
 package com.zerodsoft.scheduleweather.calendarview.day;
 
+import android.content.ContentValues;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,10 +10,17 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
+import com.zerodsoft.scheduleweather.calendarview.callback.EventCallback;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.DateGetter;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
+import com.zerodsoft.scheduleweather.etc.CalendarUtil;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
@@ -22,27 +30,27 @@ import java.util.List;
 
 public class DayViewPagerAdapter extends RecyclerView.Adapter<DayViewPagerAdapter.DayViewPagerHolder> implements DateGetter
 {
-    private DayFragment dayFragment;
+    private final OnEventItemClickListener onEventItemClickListener;
+    private final IControlEvent iControlEvent;
+    private final IToolbar iToolbar;
     private final SparseArray<DayViewPagerHolder> holderSparseArray = new SparseArray<>();
     private final Calendar CALENDAR;
     public static final int FIRST_DAY = -1;
     public static final int LAST_DAY = -2;
 
-    public DayViewPagerAdapter(DayFragment dayFragment)
+    public DayViewPagerAdapter(IControlEvent iControlEvent, OnEventItemClickListener onEventItemClickListener, IToolbar iToolbar)
     {
-        this.dayFragment = dayFragment;
+        this.onEventItemClickListener = onEventItemClickListener;
+        this.iControlEvent = iControlEvent;
+        this.iToolbar = iToolbar;
         CALENDAR = Calendar.getInstance(ClockUtil.TIME_ZONE);
         // 날짜를 오늘 0시0분0초로 설정
         CALENDAR.set(Calendar.HOUR_OF_DAY, 0);
         CALENDAR.set(Calendar.MINUTE, 0);
         CALENDAR.set(Calendar.SECOND, 0);
-        dayFragment.setMonth(CALENDAR.getTime());
+        iToolbar.setMonth(CALENDAR.getTime());
     }
 
-    public void setData(int position, List<ScheduleDTO> schedules)
-    {
-        holderSparseArray.get(position).setData(schedules);
-    }
 
     public Calendar getCALENDAR()
     {
@@ -121,8 +129,9 @@ public class DayViewPagerAdapter extends RecyclerView.Adapter<DayViewPagerAdapte
         {
             super(view);
             dayHeaderView = (DayHeaderView) view.findViewById(R.id.dayheaderview);
+            dayHeaderView.setOnEventItemClickListener(onEventItemClickListener);
             dayView = (DayView) view.findViewById(R.id.dayview);
-            dayView.setAdapter(DayViewPagerAdapter.this);
+            dayView.setOnEventItemClickListener(onEventItemClickListener);
         }
 
         public void onBind()
@@ -136,10 +145,28 @@ public class DayViewPagerAdapter extends RecyclerView.Adapter<DayViewPagerAdapte
 
             dayHeaderView.setInitValue(startDate, endDate);
 
-            dayHeaderView.requestLayout();
-            dayHeaderView.invalidate();
+            iControlEvent.getInstances(getAdapterPosition(), startDate.getTime(), endDate.getTime(), new EventCallback<List<CalendarInstance>>()
+            {
+                @Override
+                public void onResult(List<CalendarInstance> e)
+                {
+                    if (!e.isEmpty())
+                    {
+                        List<ContentValues> instances = new ArrayList<>();
+                        // 인스턴스 목록 표시
+                        for (CalendarInstance calendarInstance : e)
+                        {
+                            instances.addAll(calendarInstance.getInstanceList());
+                            // 데이터를 일정 길이의 내림차순으로 정렬
+                        }
+                        Collections.sort(instances, CalendarUtil.INSTANCE_COMPARATOR);
+                        dayHeaderView.setInstances(instances);
+                        dayView.setInstances(instances);
+                    }
 
-            dayFragment.requestSchedules(getAdapterPosition(), startDate, endDate);
+                }
+            });
+
         }
 
         public void clear()
@@ -148,35 +175,6 @@ public class DayViewPagerAdapter extends RecyclerView.Adapter<DayViewPagerAdapte
             dayView.clear();
         }
 
-        public void setData(List<ScheduleDTO> schedules)
-        {
-            // 데이터를 일정 길이의 내림차순으로 정렬
-            Collections.sort(schedules, comparator);
-            dayHeaderView.setSchedules(schedules);
-            dayView.setSchedules(schedules);
-        }
     }
 
-    private final Comparator<ScheduleDTO> comparator = new Comparator<ScheduleDTO>()
-    {
-        @Override
-        public int compare(ScheduleDTO t1, ScheduleDTO t2)
-        {
-            /*
-            음수 또는 0이면 객체의 자리가 그대로 유지되며, 양수인 경우에는 두 객체의 자리가 변경된다.
-             */
-            if ((t1.getEndDate().getTime() - t1.getStartDate().getTime()) < (t2.getEndDate().getTime() - t2.getStartDate().getTime()))
-            {
-                return 1;
-            } else
-            {
-                return 0;
-            }
-        }
-    };
-
-    public void showSchedule(int scheduleId)
-    {
-        dayFragment.showSchedule(scheduleId);
-    }
 }

@@ -1,8 +1,12 @@
 package com.zerodsoft.scheduleweather.calendarview.day;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.graphics.PointF;
+import android.provider.CalendarContract;
+import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.OverScroller;
@@ -10,8 +14,11 @@ import android.widget.OverScroller;
 import androidx.annotation.Nullable;
 import androidx.core.view.GestureDetectorCompat;
 
+import com.zerodsoft.scheduleweather.calendarview.interfaces.IEvent;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.calendarview.week.WeekFragment;
 import com.zerodsoft.scheduleweather.calendarview.hourside.HourEventsView;
+import com.zerodsoft.scheduleweather.etc.EventViewUtil;
 import com.zerodsoft.scheduleweather.utility.AppSettings;
 
 import java.util.ArrayList;
@@ -19,7 +26,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-public class DayView extends HourEventsView
+public class DayView extends HourEventsView implements IEvent
 {
     private boolean createdAddScheduleRect = false;
     private boolean changingStartTime = false;
@@ -31,7 +38,8 @@ public class DayView extends HourEventsView
     private List<ItemCell> itemCells = new ArrayList<>();
     private final int SPACING_BETWEEN_EVENTS = 5;
 
-    private DayViewPagerAdapter adapter;
+    private List<ContentValues> instances;
+    private OnEventItemClickListener onEventItemClickListener;
 
     public DayView(Context context, @Nullable AttributeSet attrs)
     {
@@ -40,15 +48,15 @@ public class DayView extends HourEventsView
         //  overScroller = new OverScroller(context);
     }
 
-    public void setAdapter(DayViewPagerAdapter adapter)
-    {
-        this.adapter = adapter;
-    }
-
     public void setDate(Date date)
     {
         this.date = Calendar.getInstance();
         this.date.setTime(date);
+    }
+
+    public void setOnEventItemClickListener(OnEventItemClickListener onEventItemClickListener)
+    {
+        this.onEventItemClickListener = onEventItemClickListener;
     }
 
     @Override
@@ -75,9 +83,9 @@ public class DayView extends HourEventsView
                 int column = itemCell.column;
                 int columnCount = itemCell.columnCount;
 
-                calendar.setTime(itemCell.schedule.getStartDate());
+                calendar.setTimeInMillis(itemCell.instance.getAsLong(CalendarContract.Instances.BEGIN));
                 PointF startPoint = getPoint(calendar);
-                calendar.setTime(itemCell.schedule.getEndDate());
+                calendar.setTimeInMillis(itemCell.instance.getAsLong(CalendarContract.Instances.END));
                 PointF endPoint = getPoint(calendar);
 
                 cellWidth = (getWidth() - WeekFragment.getColumnWidth() - (SPACING_BETWEEN_EVENTS * (columnCount - 1))) / columnCount;
@@ -98,6 +106,15 @@ public class DayView extends HourEventsView
 
                 childView.measure(width, height);
                 childView.layout((int) left, (int) top, (int) right, (int) bottom);
+                childView.setOnClickListener(new OnClickListener()
+                {
+                    @Override
+                    public void onClick(View view)
+                    {
+                        ContentValues instance = ((DayItemView) view).itemCell.instance;
+                        onEventItemClickListener.onClicked(instance.getAsInteger(CalendarContract.Instances.CALENDAR_ID), instance.getAsInteger(CalendarContract.Instances.EVENT_ID));
+                    }
+                });
             }
         }
     }
@@ -179,22 +196,45 @@ public class DayView extends HourEventsView
         removeAllViews();
     }
 
-    public void setSchedules(List<ScheduleDTO> list)
+
+    private boolean isOverlapping(ContentValues i1, ContentValues i2)
+    {
+        long start1 = i1.getAsLong(CalendarContract.Instances.BEGIN);
+        long end1 = i1.getAsLong(CalendarContract.Instances.END);
+
+        long start2 = i2.getAsLong(CalendarContract.Instances.BEGIN);
+        long end2 = i2.getAsLong(CalendarContract.Instances.END);
+
+        if ((start1 > start2 && start1 < end2) || (end1 > start2 && end1 < end2)
+                || (start1 < start2 && end1 > end2))
+        {
+            return true;
+        } else
+        {
+            return false;
+        }
+    }
+
+    @Override
+    public void setInstances(List<ContentValues> instances)
     {
         // 이벤트 테이블에 데이터를 표시할 위치 설정
         // 데이터가 없는 경우 진행하지 않음
+        this.instances = instances;
         itemCells.clear();
-        setEventTable(list);
+        setEventTable();
         requestLayout();
         invalidate();
     }
 
-    private void setEventTable(List<ScheduleDTO> list)
+    @Override
+    public void setEventTable()
     {
         // 저장된 데이터가 표시될 위치를 설정
-        for (ScheduleDTO scheduleDTO : list)
+        for (ContentValues instance : instances)
         {
-            itemCells.add(new ItemCell(scheduleDTO));
+            ItemCell itemCell = new ItemCell(instance);
+            itemCells.add(itemCell);
         }
 
         for (int i = 0; i < itemCells.size() - 1; i++)
@@ -209,7 +249,7 @@ public class DayView extends HourEventsView
 
             for (int j = i + 1; j < itemCells.size(); j++)
             {
-                if (isOverlapping(itemCells.get(i).schedule, itemCells.get(j).schedule))
+                if (isOverlapping(itemCells.get(i).instance, itemCells.get(j).instance))
                 {
                     // 시간이 겹치는 경우
                     if (itemCells.get(i).column == ItemCell.NOT_OVERLAP)
@@ -239,11 +279,6 @@ public class DayView extends HourEventsView
 
         removeAllViews();
 
-        GOOGLE_EVENT_PAINT.setColor(AppSettings.getGoogleEventBackgroundColor());
-        EVENT_TEXT_PAINT.setColor(AppSettings.getLocalEventBackgroundColor());
-        EVENT_COLOR_PAINT.setColor(AppSettings.getGoogleEventTextColor());
-        LOCAL_EVENT_TEXT_PAINT.setColor(AppSettings.getLocalEventTextColor());
-
         for (int i = 0; i < itemCells.size(); i++)
         {
             DayItemView child = new DayItemView(context, itemCells.get(i));
@@ -254,43 +289,26 @@ public class DayView extends HourEventsView
                 @Override
                 public void onClick(View view)
                 {
-                    adapter.showSchedule(((DayItemView) view).itemCell.schedule.getId());
+
                 }
             });
         }
     }
 
-    private boolean isOverlapping(ScheduleDTO schedule1, ScheduleDTO schedule2)
-    {
-        long start1 = schedule1.getStartDate().getTime();
-        long end1 = schedule1.getEndDate().getTime();
-
-        long start2 = schedule2.getStartDate().getTime();
-        long end2 = schedule2.getEndDate().getTime();
-
-        if ((start1 > start2 && start1 < end2) || (end1 > start2 && end1 < end2)
-                || (start1 < start2 && end1 > end2))
-        {
-            return true;
-        } else
-        {
-            return false;
-        }
-    }
-
-    class ItemCell
+    static class ItemCell
     {
         public static final int NOT_OVERLAP = -1;
         public int column;
         public int columnCount;
+        public Paint eventColorPaint;
+        public TextPaint eventTextPaint;
+        public ContentValues instance;
 
-        public ScheduleDTO schedule;
-
-        public ItemCell(ScheduleDTO schedule)
+        public ItemCell(ContentValues instance)
         {
             this.column = NOT_OVERLAP;
             this.columnCount = 1;
-            this.schedule = schedule;
+            this.instance = instance;
         }
     }
 
@@ -309,16 +327,13 @@ public class DayView extends HourEventsView
         {
             super.onDraw(canvas);
 
-            if (itemCell.schedule.getCategory() == ScheduleDTO.GOOGLE_CATEGORY)
-            {
-                canvas.drawRect(0, 0, getWidth(), getHeight(), GOOGLE_EVENT_PAINT);
-                canvas.drawText(itemCell.schedule.getSubject(), TEXT_MARGIN, EVENT_TEXT_HEIGHT + TEXT_MARGIN, EVENT_COLOR_PAINT);
-            } else
-            {
-                canvas.drawRect(0, 0, getWidth(), getHeight(), EVENT_TEXT_PAINT);
-                canvas.drawText(itemCell.schedule.getSubject(), TEXT_MARGIN, EVENT_TEXT_HEIGHT + TEXT_MARGIN, LOCAL_EVENT_TEXT_PAINT);
-            }
+            itemCell.eventColorPaint = EventViewUtil.getEventColorPaint(itemCell.instance.getAsInteger(CalendarContract.Instances.EVENT_COLOR));
+            itemCell.eventTextPaint = EventViewUtil.getEventTextPaint(EVENT_TEXT_HEIGHT);
+
+            canvas.drawRect(0, 0, getWidth(), getHeight(), itemCell.eventColorPaint);
+            canvas.drawText(itemCell.instance.getAsString(CalendarContract.Instances.TITLE), TEXT_MARGIN, EVENT_TEXT_HEIGHT + TEXT_MARGIN, itemCell.eventTextPaint);
         }
+
     }
 
 }

@@ -1,6 +1,8 @@
 package com.zerodsoft.scheduleweather.calendarview.month;
 
 import android.content.ContentValues;
+import android.graphics.Paint;
+import android.text.TextPaint;
 
 public class EventData
 {
@@ -13,6 +15,8 @@ public class EventData
     private int endIndex;
     private int dateLength;
     private int row;
+    private Paint eventColorPaint;
+    private TextPaint eventTextPaint;
     private ContentValues event;
 
     public EventData(ContentValues event, int row)
@@ -21,12 +25,6 @@ public class EventData
         this.row = row;
     }
 
-    public EventData(ContentValues event, int startIndex, int endIndex)
-    {
-        this.event = event;
-        this.startIndex = startIndex;
-        this.endIndex = endIndex;
-    }
 
     public EventData(ContentValues event, int startIndex, int endIndex, int row)
     {
@@ -36,13 +34,21 @@ public class EventData
         this.row = row;
     }
 
+    public EventData(ContentValues event, int startIndex, int endIndex, int row, int dateLength)
+    {
+        this.event = event;
+        this.startIndex = startIndex;
+        this.endIndex = endIndex;
+        this.row = row;
+        this.dateLength = dateLength;
+    }
 
     public int getDateLength()
     {
         return dateLength;
     }
 
-    public boolean isDaySchedule()
+    public boolean isAllDayEvent()
     {
         return endIndex == startIndex;
     }
@@ -89,5 +95,27 @@ public class EventData
     {
         this.endIndex = endIndex;
         return this;
+    }
+
+    public EventData setEventColorPaint(Paint eventColorPaint)
+    {
+        this.eventColorPaint = eventColorPaint;
+        return this;
+    }
+
+    public Paint getEventColorPaint()
+    {
+        return eventColorPaint;
+    }
+
+    public EventData setEventTextPaint(TextPaint eventTextPaint)
+    {
+        this.eventTextPaint = eventTextPaint;
+        return this;
+    }
+
+    public TextPaint getEventTextPaint()
+    {
+        return eventTextPaint;
     }
 }

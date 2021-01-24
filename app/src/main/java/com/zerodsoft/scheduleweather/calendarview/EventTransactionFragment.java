@@ -19,6 +19,7 @@ import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendarview.callback.EventCallback;
 import com.zerodsoft.scheduleweather.calendarview.day.DayFragment;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
@@ -41,10 +42,13 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
     private CalendarViewModel calendarViewModel;
     private Fragment fragment;
     private IToolbar iToolbar;
+    private IConnectedCalendars iConnectedCalendars;
+    private List<ContentValues> selectedCalendars;
 
     public EventTransactionFragment(Activity activity)
     {
         this.iToolbar = (IToolbar) activity;
+        this.iConnectedCalendars = (IConnectedCalendars) activity;
     }
 
     @Override
@@ -115,27 +119,14 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
         fragmentTransaction.commit();
     }
 
-    @Override
-    public void showEventOnDayDialog(int calendarId, int eventId, String accountName)
-    {
-        Intent intent = new Intent(getActivity(), EventActivity.class);
-        intent.putExtra("scheduleId", calendarId);
-        startActivity(intent);
-    }
 
     @Override
-    public void requestInstances(int viewPosition, long start, long end, EventCallback<List<CalendarInstance>> callback)
+    public void getInstances(int viewPosition, long start, long end, EventCallback<List<CalendarInstance>> callback)
     {
         // 선택된 캘린더 목록
-        List<ContentValues> calendars = new ArrayList<>();
-        calendarViewModel.requestInstances(calendars, start.getTime(), end.getTime(), callback);
+        calendarViewModel.getInstanceList(iConnectedCalendars.getConnectedCalendars(), start, end, callback);
     }
 
-    @Override
-    public void requestEvent(int calendarId, int eventId)
-    {
-
-    }
 
     public void refreshCalendar(Date startDate)
     {

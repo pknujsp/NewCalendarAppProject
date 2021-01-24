@@ -26,9 +26,7 @@ import com.zerodsoft.scheduleweather.kakaomap.viewmodel.PlacesViewModel;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponseDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
-import com.zerodsoft.scheduleweather.room.dto.AddressDTO;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
-import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -114,14 +112,13 @@ public class MapFragment extends KakaoMapFragment
 
             if (selectedLocation != null)
             {
-                if (selectedLocation instanceof AddressDTO)
+                if (selectedLocation.getAddressName() != null)
                 {
                     // 주소 검색 순서 : 좌표로 주소 변환
-                    AddressDTO address = iCatchedLocation.getAddress();
                     addressViewModel = new ViewModelProvider(this).get(AddressViewModel.class);
 
                     LocalApiPlaceParameter parameter = new LocalApiPlaceParameter();
-                    parameter.setX(address.getLongitude()).setY(address.getLatitude());
+                    parameter.setX(String.valueOf(selectedLocation.getLongitude())).setY(String.valueOf(selectedLocation.getLatitude()));
                     addressViewModel.init(parameter);
 
                     addressViewModel.getPagedListMutableLiveData().observe(getViewLifecycleOwner(), new Observer<PagedList<AddressResponseDocuments>>()
@@ -143,16 +140,16 @@ public class MapFragment extends KakaoMapFragment
                             selectPoiItem(0);
                         }
                     });
-                } else if (selectedLocation instanceof PlaceDTO)
+                } else if (selectedLocation.getPlaceId() != null)
                 {
                     // 장소 검색 순서 : 장소의 위경도 내 10M 반경에서 장소 이름 검색(여러개 나올 경우 장소ID와 일치하는 장소를 선택)
-                    PlaceDTO place = iCatchedLocation.getPlace();
                     placeViewModel = new ViewModelProvider(this).get(PlacesViewModel.class);
 
                     LocalApiPlaceParameter parameter = new LocalApiPlaceParameter();
-                    parameter.setX(place.getLongitude()).setY(place.getLatitude()).setPage(LocalApiPlaceParameter.DEFAULT_PAGE)
+                    parameter.setX(String.valueOf(selectedLocation.getLongitude())).setY(String.valueOf(selectedLocation.getLatitude()))
+                            .setPage(LocalApiPlaceParameter.DEFAULT_PAGE)
                             .setSize(LocalApiPlaceParameter.DEFAULT_SIZE).setSort(LocalApiPlaceParameter.SORT_ACCURACY)
-                            .setRadius("10").setQuery(place.getPlaceName());
+                            .setRadius("10").setQuery(selectedLocation.getPlaceName());
                     placeViewModel.init(parameter);
 
                     placeViewModel.getPagedListMutableLiveData().observe(getViewLifecycleOwner(), new Observer<PagedList<PlaceDocuments>>()
@@ -162,11 +159,10 @@ public class MapFragment extends KakaoMapFragment
                         {
                             //찾는 장소의 ID와 일치하는 장소가 있는지 확인
                             List<PlaceDocuments> placeDocumentsList = placeDocuments.snapshot();
-                            PlaceDTO place = iCatchedLocation.getPlace();
 
                             for (PlaceDocuments document : placeDocumentsList)
                             {
-                                if (place.getId() == Integer.parseInt(document.getId()))
+                                if (iCatchedLocation.getLocation().getPlaceId().equals(document.getId()))
                                 {
                                     try
                                     {

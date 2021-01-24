@@ -1,7 +1,9 @@
 package com.zerodsoft.scheduleweather.calendarview;
 
 import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Context;
+import android.provider.CalendarContract;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -106,7 +108,7 @@ public class CalendarsAdapter extends BaseExpandableListAdapter
         }
 
         MaterialCheckBox checkBox = (MaterialCheckBox) view.findViewById(R.id.side_nav_calendar_checkbox);
-        checkBox.setText(((CalendarDto) getChild(groupPosition, childPosition)).getCALENDAR_DISPLAY_NAME());
+        checkBox.setText(((ContentValues) getChild(groupPosition, childPosition)).getAsString(CalendarContract.Calendars.CALENDAR_DISPLAY_NAME));
         checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
         {
             @Override
@@ -119,9 +121,9 @@ public class CalendarsAdapter extends BaseExpandableListAdapter
                 {
                     checkBoxStates[groupPosition][childPosition] = false;
                 }
-                String value = accountList.get(groupPosition).getCalendars().get(childPosition).getACCOUNT_NAME()
-                        + accountList.get(groupPosition).getCalendars().get(childPosition).get_ID();
-                iCalendarCheckBox.onCheckedBox(value, isChecked);
+                String key = accountList.get(groupPosition).getCalendars().get(childPosition).getAsString(CalendarContract.Calendars.OWNER_ACCOUNT)
+                        + "&" + accountList.get(groupPosition).getCalendars().get(childPosition).getAsString(CalendarContract.Calendars._ID);
+                iCalendarCheckBox.onCheckedBox(key, accountList.get(groupPosition).getCalendars().get(childPosition).getAsLong(CalendarContract.Calendars._ID), isChecked);
             }
         });
         checkBoxes[groupPosition][childPosition] = checkBox;
@@ -143,7 +145,7 @@ public class CalendarsAdapter extends BaseExpandableListAdapter
         return accountList.get(groupPosition);
     }
 
-    public CalendarDto getCalendar(int groupPosition, int childPosition)
+    public ContentValues getCalendar(int groupPosition, int childPosition)
     {
         return accountList.get(groupPosition).getCalendars().get(childPosition);
     }

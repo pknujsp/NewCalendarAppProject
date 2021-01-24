@@ -97,6 +97,7 @@ public class EventActivity extends AppCompatActivity implements IEventRepeat
     private EventDefaultValue eventDefaultValue;
 
     private String[] repeaterList;
+    private List<ContentValues> calendarList;
 
 
     @Override
@@ -278,8 +279,6 @@ public class EventActivity extends AppCompatActivity implements IEventRepeat
             @Override
             public void onClick(View view)
             {
-                List<ContentValues> calendarList = viewModel.getCalendars();
-
                 MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(EventActivity.this);
                 dialogBuilder
                         .setTitle(getString(R.string.calendar))
@@ -371,8 +370,8 @@ public class EventActivity extends AppCompatActivity implements IEventRepeat
                 String accountName = intent.getStringExtra("accountName");
 
                 // 이벤트, 알림을 가져온다
-                viewModel.getEvent(calendarId, eventId, accountName);
-                viewModel.getReminders(savedEventValues.getAsLong(CalendarContract.Events._ID));
+                viewModel.getEvent(calendarId, eventId);
+                viewModel.getReminders(calendarId, eventId);
 
                 viewModel.getEventLiveData().observe(this, new Observer<DataWrapper<ContentValues>>()
                 {
@@ -431,7 +430,7 @@ public class EventActivity extends AppCompatActivity implements IEventRepeat
                     }
                 });
 
-                viewModel.getReminderLiveData().observe(this, new Observer<DataWrapper<List<ContentValues>>>()
+                viewModel.getReminderListLiveData().observe(this, new Observer<DataWrapper<List<ContentValues>>>()
                 {
                     @Override
                     public void onChanged(DataWrapper<List<ContentValues>> listDataWrapper)
@@ -448,6 +447,20 @@ public class EventActivity extends AppCompatActivity implements IEventRepeat
                         }
                     }
                 });
+
+                viewModel.getCalendarListLiveData().observe(this, new Observer<DataWrapper<List<ContentValues>>>()
+                {
+                    @Override
+                    public void onChanged(DataWrapper<List<ContentValues>> listDataWrapper)
+                    {
+                        if (listDataWrapper.getData() != null)
+                        {
+                            calendarList = listDataWrapper.getData();
+                        }
+                    }
+                });
+
+                viewModel.getCalendars();
         }
 
     }
@@ -912,7 +925,7 @@ public class EventActivity extends AppCompatActivity implements IEventRepeat
 
             }
 
-            viewModel.modifyEvent(modifiedValues);
+            viewModel.updateEvent(modifiedValues);
         }
     }
 

@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 
+import android.provider.CalendarContract;
 import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.util.SparseArray;
@@ -17,9 +18,11 @@ import android.view.ViewGroup;
 import androidx.annotation.Nullable;
 
 import com.zerodsoft.scheduleweather.activity.main.AppMainActivity;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.IEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.calendarview.month.EventData;
-import com.zerodsoft.scheduleweather.utility.AppSettings;
+import com.zerodsoft.scheduleweather.etc.EventViewUtil;
+import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.utility.DateHour;
 
 import java.util.ArrayList;
@@ -31,7 +34,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 
-public class WeekHeaderView extends ViewGroup
+public class WeekHeaderView extends ViewGroup implements IEvent
 {
     private Calendar weekFirstDay;
     private Calendar weekLastDay;
@@ -40,10 +43,6 @@ public class WeekHeaderView extends ViewGroup
     private final TextPaint DATE_TEXT_PAINT;
     private final TextPaint WEEK_OF_YEAR_TEXT_PAINT;
     private final Paint WEEK_OF_YEAR_RECT_PAINT;
-    private final Paint GOOGLE_EVENT_PAINT;
-    private final TextPaint GOOGLE_EVENT_TEXT_PAINT;
-    private final Paint LOCAL_EVENT_PAINT;
-    private final TextPaint LOCAL_EVENT_TEXT_PAINT;
 
     private final TextPaint MORE_EVENTS_TEXT_PAINT;
     private final Paint MORE_EVENTS_RECT_PAINT;
@@ -77,10 +76,9 @@ public class WeekHeaderView extends ViewGroup
     private SparseArray<ItemCell> ITEM_LAYOUT_CELLS = new SparseArray<>(7);
     private List<ContentValues> instances;
 
-    public WeekHeaderView setOnEventItemClickListener(OnEventItemClickListener onEventItemClickListener)
+    public void setOnEventItemClickListener(OnEventItemClickListener onEventItemClickListener)
     {
         this.onEventItemClickListener = onEventItemClickListener;
-        return this;
     }
 
     public WeekHeaderView(Context context, @Nullable AttributeSet attrs)
@@ -128,25 +126,6 @@ public class WeekHeaderView extends ViewGroup
         DATE_TEXT_PAINT.getTextBounds("1", 0, 1, rect);
         HEADER_TEXT_HEIGHT = rect.height();
 
-        // google event rect paint
-        GOOGLE_EVENT_PAINT = new Paint();
-
-        // local event rect paint
-        LOCAL_EVENT_PAINT = new Paint();
-
-        // google event text paint
-        GOOGLE_EVENT_TEXT_PAINT = new TextPaint();
-        GOOGLE_EVENT_TEXT_PAINT.setTextAlign(Paint.Align.LEFT);
-
-        // local event text paint
-        LOCAL_EVENT_TEXT_PAINT = new TextPaint();
-        LOCAL_EVENT_TEXT_PAINT.setTextAlign(Paint.Align.LEFT);
-
-        GOOGLE_EVENT_TEXT_PAINT.setTextSize(EVENT_TEXT_SIZE);
-        LOCAL_EVENT_TEXT_PAINT.setTextSize(EVENT_TEXT_SIZE);
-
-        GOOGLE_EVENT_TEXT_PAINT.getTextBounds("1", 0, 1, rect);
-
         EVENT_BAR_HEIGHT = rect.height() + EVENT_TEXT_MARGIN * 2;
         COLUMN_WIDTH = AppMainActivity.getDisplayWidth() / 8;
 
@@ -179,7 +158,7 @@ public class WeekHeaderView extends ViewGroup
                 public void onClick(View view)
                 {
                     int position = ((WeekHeaderColumnView) view).getPosition();
-                    onEventItemClickListener.onClicked(, daysOfWeek[position].getTime(), , daysOfWeek[position + 1].getTime(), );
+                    onEventItemClickListener.onClicked(daysOfWeek[position].getTime().getTime(), daysOfWeek[position + 1].getTime().getTime());
                 }
             });
             addView(columnView);
@@ -219,11 +198,6 @@ public class WeekHeaderView extends ViewGroup
 
         if (!eventCellsList.isEmpty())
         {
-            GOOGLE_EVENT_PAINT.setColor(AppSettings.getGoogleEventBackgroundColor());
-            LOCAL_EVENT_PAINT.setColor(AppSettings.getLocalEventBackgroundColor());
-            GOOGLE_EVENT_TEXT_PAINT.setColor(AppSettings.getGoogleEventTextColor());
-            LOCAL_EVENT_TEXT_PAINT.setColor(AppSettings.getLocalEventTextColor());
-
             drawEvents(canvas);
         }
     }
@@ -263,7 +237,7 @@ public class WeekHeaderView extends ViewGroup
 
         for (EventData eventData : eventCellsList)
         {
-            ScheduleDTO schedule = eventData.getSchedule();
+            ContentValues event = eventData.getEvent();
             int startIndex = eventData.getStartIndex();
             int endIndex = eventData.getEndIndex();
             int row = eventData.getRow();
@@ -300,15 +274,11 @@ public class WeekHeaderView extends ViewGroup
             left = startX + leftMargin;
             right = endX - rightMargin;
 
-            if (schedule.getCategory() == ScheduleDTO.GOOGLE_CATEGORY)
-            {
-                canvas.drawRect(left, top, right, bottom, GOOGLE_EVENT_PAINT);
-                canvas.drawText(schedule.getSubject(), left + EVENT_TEXT_MARGIN, bottom - EVENT_TEXT_MARGIN, GOOGLE_EVENT_TEXT_PAINT);
-            } else
-            {
-                canvas.drawRect(left, top, right, bottom, LOCAL_EVENT_PAINT);
-                canvas.drawText(schedule.getSubject(), left + EVENT_TEXT_MARGIN, bottom - EVENT_TEXT_MARGIN, LOCAL_EVENT_TEXT_PAINT);
-            }
+            eventData.setEventColorPaint(EventViewUtil.getEventColorPaint(event.getAsInteger(CalendarContract.Instances.EVENT_COLOR)));
+            eventData.setEventTextPaint(EventViewUtil.getEventTextPaint(EVENT_TEXT_SIZE));
+
+            canvas.drawRect(left, top, right, bottom, eventData.getEventColorPaint());
+            canvas.drawText(event.getAsString(CalendarContract.Instances.TITLE), left + EVENT_TEXT_MARGIN, bottom - EVENT_TEXT_MARGIN, eventData.getEventTextPaint());
         }
 
         // more 표시
@@ -356,15 +326,19 @@ public class WeekHeaderView extends ViewGroup
         ROWS_COUNT = 0;
     }
 
-    public void setSchedules(List<EventData> list)
+
+    @Override
+    public void setInstances(List<ContentValues> instances)
     {
         // 이벤트 테이블에 데이터를 표시할 위치 설정
-        setEventTable(list);
+        this.instances = instances;
+        setEventTable();
         requestLayout();
         invalidate();
     }
 
-    private void setEventTable(List<EventData> list)
+    @Override
+    public void setEventTable()
     {
         ITEM_LAYOUT_CELLS.clear();
         eventCellsList.clear();
@@ -375,10 +349,10 @@ public class WeekHeaderView extends ViewGroup
         ROWS_COUNT = 0;
 
         // 달력 뷰의 셀에 아이템을 삽입
-        for (EventData eventData : list)
+        for (ContentValues event : instances)
         {
-            int startIndex = eventData.getStartIndex();
-            int endIndex = eventData.getEndIndex();
+            int startIndex = ClockUtil.calcDateDifference(ClockUtil.DAY, event.getAsLong(CalendarContract.Instances.BEGIN), weekFirstDay.getTimeInMillis());
+            int endIndex = ClockUtil.calcDateDifference(ClockUtil.DAY, event.getAsLong(CalendarContract.Instances.END), weekFirstDay.getTimeInMillis());
             int dateLength = 0;
 
             if (startIndex == -1 && endIndex == 7)
@@ -415,7 +389,6 @@ public class WeekHeaderView extends ViewGroup
             {
                 END_INDEX = endIndex;
             }
-
             // 이벤트를 위치시킬 알맞은 행을 지정
             // startDate부터 endDate까지 공통적으로 비어있는 행을 지정한다.
             Set<Integer> rowSet = new TreeSet<>();
@@ -426,7 +399,6 @@ public class WeekHeaderView extends ViewGroup
                 {
                     ITEM_LAYOUT_CELLS.put(index, new ItemCell());
                 }
-
                 // 이벤트 개수 증가
                 ITEM_LAYOUT_CELLS.get(index).eventsCount++;
 
@@ -472,16 +444,13 @@ public class WeekHeaderView extends ViewGroup
                     {
                         ITEM_LAYOUT_CELLS.get(i).rows[row] = true;
                     }
-                    eventCellsList.add(eventData.setStartIndex(startIndex).setEndIndex(endIndex).setRow(row).setDateLength(dateLength));
+
+                    EventData eventData = new EventData(event, startIndex, endIndex, row, dateLength);
+                    eventCellsList.add(eventData);
                 }
             }
         }
         ROWS_COUNT++;
-    }
-
-    public void setInstances(List<ContentValues> instances)
-    {
-        this.instances = instances;
     }
 
     class ItemCell

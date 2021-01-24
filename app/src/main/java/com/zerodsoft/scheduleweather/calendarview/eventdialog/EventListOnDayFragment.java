@@ -1,5 +1,6 @@
 package com.zerodsoft.scheduleweather.calendarview.eventdialog;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Rect;
@@ -22,32 +23,40 @@ import android.widget.TextView;
 
 import com.zerodsoft.scheduleweather.activity.main.AppMainActivity;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
+import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendarview.adapter.EventsInfoRecyclerViewAdapter;
+import com.zerodsoft.scheduleweather.calendarview.callback.EventCallback;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
+import com.zerodsoft.scheduleweather.etc.CalendarUtil;
 import com.zerodsoft.scheduleweather.event.EventActivity;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-public class EventListOnDayFragment extends DialogFragment
+public class EventListOnDayFragment extends DialogFragment implements OnEventItemClickListener
 {
     public static final String TAG = "MonthEventsInfoFragment";
 
-    private EventsInfoViewModel viewModel;
+    private CalendarViewModel viewModel;
 
-    private Date startDate;
-    private Date endDate;
+    private final long startDate;
+    private final long endDate;
+    private final IConnectedCalendars iConnectedCalendars;
     private EventsInfoRecyclerViewAdapter adapter;
     private RecyclerView recyclerView;
 
-    public EventListOnDayFragment(Date startDate, Date endDate)
+
+    public EventListOnDayFragment(long startDate, long endDate, IConnectedCalendars iConnectedCalendars)
     {
         this.startDate = startDate;
         this.endDate = endDate;
-    }
-
-    public EventListOnDayFragment()
-    {
+        this.iConnectedCalendars = iConnectedCalendars;
     }
 
     @Override
@@ -60,17 +69,29 @@ public class EventListOnDayFragment extends DialogFragment
     public void onActivityCreated(@Nullable Bundle savedInstanceState)
     {
         super.onActivityCreated(savedInstanceState);
-        viewModel = new ViewModelProvider(this).get(EventsInfoViewModel.class);
-        viewModel.selectSchedules(startDate, endDate);
-        viewModel.getSchedulesMutableLiveData().observe(getViewLifecycleOwner(), new Observer<List<ScheduleDTO>>()
+        viewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
+        viewModel.init(getContext());
+        viewModel.getInstanceList(iConnectedCalendars.getConnectedCalendars(), startDate, endDate, new EventCallback<List<CalendarInstance>>()
         {
             @Override
-            public void onChanged(List<ScheduleDTO> schedules)
+            public void onResult(List<CalendarInstance> e)
             {
-                adapter.setSchedulesList(schedules);
-                adapter.notifyDataSetChanged();
+                if (!e.isEmpty())
+                {
+                    List<ContentValues> instances = new ArrayList<>();
+                    // 인스턴스 목록 표시
+                    for (CalendarInstance calendarInstance : e)
+                    {
+                        instances.addAll(calendarInstance.getInstanceList());
+                        // 데이터를 일정 길이의 내림차순으로 정렬
+                    }
+                    Collections.sort(instances, CalendarUtil.INSTANCE_COMPARATOR);
+                    adapter.setInstances(instances);
+                    adapter.notifyDataSetChanged();
+                }
             }
         });
+
     }
 
 
@@ -88,8 +109,9 @@ public class EventListOnDayFragment extends DialogFragment
         recyclerView = view.findViewById(R.id.events_info_events_list);
         recyclerView.addItemDecoration(new RecyclerViewItemDecoration(getContext()));
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false));
-        adapter = new EventsInfoRecyclerViewAdapter(EventListOnDayFragment.this, startDate, endDate);
+        adapter = new EventsInfoRecyclerViewAdapter(this, startDate, endDate);
         recyclerView.setAdapter(adapter);
+
         ((TextView) view.findViewById(R.id.events_info_day)).setText(ClockUtil.YYYY_년_M_월_D_일_E.format(startDate));
     }
 
@@ -118,10 +140,20 @@ public class EventListOnDayFragment extends DialogFragment
         startActivity(intent);
     }
 
-    class RecyclerViewItemDecoration extends RecyclerView.ItemDecoration
+    @Override
+    public void onClicked(long start, long end)
     {
 
+    }
 
+    @Override
+    public void onClicked(int calendarId, int eventId)
+    {
+
+    }
+
+    class RecyclerViewItemDecoration extends RecyclerView.ItemDecoration
+    {
         private final int decorationHeight;
         private Context context;
 

@@ -1,20 +1,14 @@
 package com.zerodsoft.scheduleweather.activity.map;
 
 import androidx.activity.OnBackPressedCallback;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentManager;
 
 import android.os.Bundle;
 
 import com.zerodsoft.scheduleweather.activity.editevent.activity.EventActivity;
 import com.zerodsoft.scheduleweather.kakaomap.KakaoMapActivity;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.KakaoMapFragment;
-import com.zerodsoft.scheduleweather.kakaomap.interfaces.ICatchedLocation;
 import com.zerodsoft.scheduleweather.activity.map.fragment.map.MapFragment;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.room.dto.AddressDTO;
-import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
-import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
 
 public class SelectLocationActivity extends KakaoMapActivity
 {

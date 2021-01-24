@@ -90,7 +90,7 @@ public class EventActivity extends AppCompatActivity
         viewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
         locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
 
-        viewModel.getEvent(calendarId, eventId, accountName);
+        viewModel.getEvent(calendarId, eventId);
         viewModel.getEventLiveData().observe(this, new Observer<DataWrapper<ContentValues>>()
         {
             @Override

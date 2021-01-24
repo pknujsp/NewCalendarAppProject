@@ -9,9 +9,7 @@ import android.os.Bundle;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.map.fragment.map.MapFragment;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.ICatchedLocation;
-import com.zerodsoft.scheduleweather.room.dto.AddressDTO;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
-import com.zerodsoft.scheduleweather.room.dto.PlaceDTO;
 
 public class WLocActivity extends AppCompatActivity implements ICatchedLocation
 {
@@ -41,18 +39,6 @@ public class WLocActivity extends AppCompatActivity implements ICatchedLocation
         getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
     }
 
-
-    @Override
-    public AddressDTO getAddress()
-    {
-        return null;
-    }
-
-    @Override
-    public PlaceDTO getPlace()
-    {
-        return null;
-    }
 
     @Override
     public LocationDTO getLocation()
