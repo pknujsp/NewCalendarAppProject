@@ -172,14 +172,8 @@ public class CalendarViewModel extends ViewModel
 
     public void getInstanceList(List<ContentValues> calendarList, long startDate, long endDate, EventCallback<List<CalendarInstance>> callback)
     {
-        App.executorService.execute(new Runnable()
-        {
-            @Override
-            public void run()
-            {
                 calendarProvider.getInstances(calendarList, startDate, endDate, callback);
-            }
-        });
+
     }
 
     public int addAttendees(List<ContentValues> attendeeList)
