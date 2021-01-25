@@ -85,6 +85,8 @@ public class WeekView extends HourEventsView implements IEvent
             }
         }
         setEventTable();
+        requestLayout();
+        invalidate();
     }
 
     @Override
@@ -307,6 +309,8 @@ public class WeekView extends HourEventsView implements IEvent
     public void setEventTable()
     {
         eventSparseArr.clear();
+        removeAllViews();
+
 
         // 데이터를 리스트에 저장
         for (ContentValues instance : instances)
@@ -322,86 +326,87 @@ public class WeekView extends HourEventsView implements IEvent
         }
 
         // 저장된 데이터가 표시될 위치를 설정
-        for (int index = 0; index < 7; index++)
+        if (!instances.isEmpty())
         {
-            List<ItemCell> itemCells = eventSparseArr.get(index);
-
-            if (itemCells != null)
+            for (int index = 0; index < 7; index++)
             {
-                if (itemCells.size() >= 2)
+                List<ItemCell> itemCells = eventSparseArr.get(index);
+
+                if (itemCells != null)
                 {
-                    // 일정 길이의 내림차순으로 정렬
-                    Collections.sort(itemCells, cellComparator);
-
-                    for (int i = 0; i < itemCells.size() - 1; i++)
+                    if (itemCells.size() >= 2)
                     {
-                        if (itemCells.get(i).column != ItemCell.NOT_OVERLAP)
-                        {
-                            continue;
-                        }
-                        int col = 0;
-                        int overlappingCount = 0;
-                        List<ItemCell> overlappingList = null;
+                        // 일정 길이의 내림차순으로 정렬
+                        Collections.sort(itemCells, cellComparator);
 
-                        for (int j = i + 1; j < itemCells.size(); j++)
+                        for (int i = 0; i < itemCells.size() - 1; i++)
                         {
-                            if (isOverlapping(itemCells.get(i).event, itemCells.get(j).event))
+                            if (itemCells.get(i).column != ItemCell.NOT_OVERLAP)
                             {
-                                // 시간이 겹치는 경우
-                                if (itemCells.get(i).column == ItemCell.NOT_OVERLAP)
-                                {
-                                    itemCells.get(i).column = col++;
-                                    overlappingList = new ArrayList<>();
-                                    overlappingList.add(itemCells.get(i));
-                                }
-                                itemCells.get(j).column = col++;
-                                overlappingList.add(itemCells.get(j));
-                                overlappingCount++;
+                                continue;
                             }
-                        }
+                            int col = 0;
+                            int overlappingCount = 0;
+                            List<ItemCell> overlappingList = null;
 
-                        if (overlappingCount == 0)
-                        {
-                            // 시간이 겹치지 않는 경우
-                            itemCells.get(i).column = ItemCell.NOT_OVERLAP;
-                        } else
-                        {
-                            for (ItemCell cell : overlappingList)
+                            for (int j = i + 1; j < itemCells.size(); j++)
                             {
-                                cell.columnCount = overlappingCount + 1;
+                                if (isOverlapping(itemCells.get(i).event, itemCells.get(j).event))
+                                {
+                                    // 시간이 겹치는 경우
+                                    if (itemCells.get(i).column == ItemCell.NOT_OVERLAP)
+                                    {
+                                        itemCells.get(i).column = col++;
+                                        overlappingList = new ArrayList<>();
+                                        overlappingList.add(itemCells.get(i));
+                                    }
+                                    itemCells.get(j).column = col++;
+                                    overlappingList.add(itemCells.get(j));
+                                    overlappingCount++;
+                                }
+                            }
+
+                            if (overlappingCount == 0)
+                            {
+                                // 시간이 겹치지 않는 경우
+                                itemCells.get(i).column = ItemCell.NOT_OVERLAP;
+                            } else
+                            {
+                                for (ItemCell cell : overlappingList)
+                                {
+                                    cell.columnCount = overlappingCount + 1;
+                                }
                             }
                         }
                     }
                 }
             }
-        }
-        removeAllViews();
 
-        for (int index = 0; index < 7; index++)
-        {
-            List<ItemCell> itemCells = eventSparseArr.get(index);
 
-            if (itemCells != null)
+            for (int index = 0; index < 7; index++)
             {
-                for (int i = 0; i < itemCells.size(); i++)
+                List<ItemCell> itemCells = eventSparseArr.get(index);
+
+                if (itemCells != null)
                 {
-                    WeekItemView child = new WeekItemView(context, itemCells.get(i));
-                    this.addView(child);
-                    child.setClickable(true);
-                    child.setOnClickListener(new OnClickListener()
+                    for (int i = 0; i < itemCells.size(); i++)
                     {
-                        @Override
-                        public void onClick(View view)
+                        WeekItemView child = new WeekItemView(context, itemCells.get(i));
+                        this.addView(child);
+                        child.setClickable(true);
+                        child.setOnClickListener(new OnClickListener()
                         {
-                            String subject = ((WeekItemView) view).itemCell.event.getAsString(CalendarContract.Instances.TITLE);
-                            Toast.makeText(context, subject, Toast.LENGTH_SHORT).show();
-                        }
-                    });
+                            @Override
+                            public void onClick(View view)
+                            {
+                                String subject = ((WeekItemView) view).itemCell.event.getAsString(CalendarContract.Instances.TITLE);
+                                Toast.makeText(context, subject, Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
                 }
             }
         }
-        requestLayout();
-        invalidate();
     }
 
     private boolean isOverlapping(ContentValues event1, ContentValues event2)

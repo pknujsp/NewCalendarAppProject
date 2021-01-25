@@ -2,23 +2,27 @@ package com.zerodsoft.scheduleweather.activity.main;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.BroadcastReceiver;
+import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.SyncStatusObserver;
 import android.content.pm.PackageManager;
+import android.database.ContentObserver;
 import android.graphics.Point;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.CalendarContract;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.SubMenu;
 import android.view.View;
 import android.widget.ExpandableListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import com.google.android.material.internal.NavigationSubMenu;
-import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.button.MaterialButtonToggleGroup;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.editevent.activity.EventActivity;
 import com.zerodsoft.scheduleweather.calendarview.CalendarsAdapter;
@@ -41,7 +45,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.view.menu.SubMenuBuilder;
 import androidx.core.app.ActivityCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.lifecycle.Observer;
@@ -58,16 +61,23 @@ import java.util.Set;
 public class AppMainActivity extends AppCompatActivity implements ICalendarCheckBox, IToolbar, IConnectedCalendars
 {
     private EventTransactionFragment calendarTransactionFragment;
-
+    public static final String ACTION_FINISHED_SYNC = "com.zerodsoft.ACTION_FINISHED_SYNC";
     private static int DISPLAY_WIDTH = 0;
     private static int DISPLAY_HEIGHT = 0;
     private static Map<String, ContentValues> connectedCalendarMap = new HashMap<>();
     private static List<ContentValues> connectedCalendarList = new ArrayList<>();
+    private List<AccountDto> accountList;
 
     private ActivityAppMainBinding mainBinding;
     private CalendarViewModel calendarViewModel;
     private CalendarsAdapter calendarsAdapter;
     private TextView currMonthTextView;
+    private Object contentProviderHandle;
+
+
+    public static final int TYPE_DAY = 10;
+    public static final int TYPE_WEEK = 20;
+    public static final int TYPE_MONTH = 30;
 
     public static int getDisplayHeight()
     {
@@ -85,15 +95,20 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
         super.onCreate(savedInstanceState);
         mainBinding = DataBindingUtil.setContentView(this, R.layout.activity_app_main);
 
-        init();
-        setNavigationView();
-        initCalendarViewModel();
-
         Point point = new Point();
         getWindowManager().getDefaultDisplay().getRealSize(point);
 
         DISPLAY_WIDTH = point.x;
         DISPLAY_HEIGHT = point.y;
+
+        init();
+        initCalendarViewModel();
+        setNavigationView();
+    }
+
+    private void init()
+    {
+        KakaoLocalApiCategoryUtil.loadCategories(getApplicationContext());
 
         setSupportActionBar(mainBinding.mainToolbar);
 
@@ -109,12 +124,35 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 
         calendarTransactionFragment = new EventTransactionFragment(this);
         getSupportFragmentManager().beginTransaction().add(R.id.calendar_layout, calendarTransactionFragment, EventTransactionFragment.TAG).commit();
+
+
     }
 
-    private void init()
+    private final ContentObserver contentObserver = new ContentObserver(new Handler())
     {
-        KakaoLocalApiCategoryUtil.loadCategories(getApplicationContext());
-    }
+        @Override
+        public boolean deliverSelfNotifications()
+        {
+            return super.deliverSelfNotifications();
+        }
+
+        @Override
+        public void onChange(boolean selfChange)
+        {
+            super.onChange(selfChange);
+            if (!selfChange)
+            {
+                Toast.makeText(AppMainActivity.this, "변경됨", Toast.LENGTH_SHORT).show();
+            }
+        }
+
+        @Override
+        public void onChange(boolean selfChange, Uri uri)
+        {
+            super.onChange(selfChange, uri);
+        }
+    };
+
 
     private void initCalendarViewModel()
     {
@@ -147,51 +185,46 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
                         String ownerAccount = calendar.getAsString(CalendarContract.Calendars.OWNER_ACCOUNT);
                         String accountType = calendar.getAsString(CalendarContract.Calendars.ACCOUNT_TYPE);
 
-                        if (accountMap.containsKey(ownerAccount))
+                        if (accountMap.containsKey(accountName))
                         {
-                            accountMap.get(ownerAccount).addCalendar(calendar);
+                            accountMap.get(accountName).addCalendar(calendar);
                         } else
                         {
                             AccountDto accountDto = new AccountDto();
 
                             accountDto.setAccountName(accountName).setAccountType(accountType)
                                     .setOwnerAccount(ownerAccount).addCalendar(calendar);
-                            accountMap.put(ownerAccount, accountDto);
+                            accountMap.put(accountName, accountDto);
                         }
-
                     }
-                    List<AccountDto> accountList = new ArrayList<>(accountMap.values());
+                    accountList = new ArrayList<>(accountMap.values());
 
                     // 네비게이션 내 캘린더 리스트 구성
-
                     calendarsAdapter = new CalendarsAdapter(AppMainActivity.this, accountList);
 
-                    SharedPreferences sharedPreferences = getSharedPreferences(getString(R.string.preferences_selected_caledars_key), Context.MODE_PRIVATE);
-                    Set<String> selectedCalendarSet = sharedPreferences.getStringSet(getString(R.string.preferences_selected_caledars_key), new HashSet<>());
+                    SharedPreferences sharedPreferences = getSharedPreferences(getString(R.string.preferences_selected_calendars_key), Context.MODE_PRIVATE);
+                    Set<String> selectedCalendarSet = sharedPreferences.getStringSet(getString(R.string.preferences_selected_calendars_key), new HashSet<>());
                     // 선택된 캘린더가 이미 있는지 확인
 
+                    /* 앱을 처음 실행 했을때 모두 선택
                     if (selectedCalendarSet.isEmpty())
                     {
-                        String key = null;
-
                         for (AccountDto accountDto : accountList)
                         {
                             List<ContentValues> newCalendarList = accountDto.getCalendars();
 
                             for (ContentValues calendar : newCalendarList)
                             {
-                                key = calendar.getAsString(CalendarContract.Calendars.OWNER_ACCOUNT) + "&"
-                                        + calendar.getAsString(CalendarContract.Calendars._ID);
-
-                                selectedCalendarSet.add(key);
-                                connectedCalendarMap.put(key, calendar);
+                                selectedCalendarSet.add(calendar.getAsString(CalendarContract.Calendars.ACCOUNT_NAME) + "&"
+                                        + calendar.getAsString(CalendarContract.Calendars._ID));
                             }
                         }
-                        connectedCalendarList.addAll(connectedCalendarMap.values());
                         SharedPreferences.Editor editor = sharedPreferences.edit();
-                        editor.putStringSet(getString(R.string.preferences_selected_caledars_key), selectedCalendarSet);
+                        editor.putStringSet(getString(R.string.preferences_selected_calendars_key), selectedCalendarSet);
                         editor.commit();
                     }
+
+                     */
 
                     boolean[][] checkBoxStates = new boolean[accountList.size()][];
 
@@ -211,10 +244,11 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 
                             for (ContentValues calendar : selectedCalendarList)
                             {
-                                if (key.equals(calendar.getAsString(CalendarContract.Calendars.OWNER_ACCOUNT) + "&"
+                                if (key.equals(calendar.getAsString(CalendarContract.Calendars.ACCOUNT_NAME) + "&"
                                         + calendar.getAsString(CalendarContract.Calendars._ID)))
                                 {
                                     checkBoxStates[group][child] = true;
+                                    connectedCalendarMap.put(key, calendar);
                                     connectedCalendarList.add(calendar);
                                     break;
                                 }
@@ -226,6 +260,14 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 
                     calendarsAdapter.setCheckBoxStates(checkBoxStates);
                     mainBinding.sideNavCalendarList.setAdapter(calendarsAdapter);
+                    mainBinding.sideNavCalendarList.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener()
+                    {
+                        @Override
+                        public boolean onGroupClick(ExpandableListView expandableListView, View view, int i, long l)
+                        {
+                            return false;
+                        }
+                    });
                     expandAllGroup();
                 }
             }
@@ -236,13 +278,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
             @Override
             public void onChanged(DataWrapper<ContentValues> contentValuesDataWrapper)
             {
-                if (contentValuesDataWrapper.getData() != null)
-                {
-                    ContentValues calendar = contentValuesDataWrapper.getData();
-                    connectedCalendarMap.put(calendar.getAsString(CalendarContract.Calendars.OWNER_ACCOUNT) + "&"
-                            + calendar.getAsString(CalendarContract.Calendars._ID), calendar);
-                    connectedCalendarList.add(calendar);
-                }
+
             }
         });
 
@@ -315,34 +351,26 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 
     private void setNavigationView()
     {
-        mainBinding.sideNavigation.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener()
+        mainBinding.sideNavMenu.favoriteLocation.setOnClickListener(sideNavOnClickListener);
+        mainBinding.sideNavMenu.settings.setOnClickListener(sideNavOnClickListener);
+        mainBinding.sideNavCalendarTypes.calendarTypeToggleGroup.addOnButtonCheckedListener(calendarTypeButtonCheckedListener);
+
+        SharedPreferences preferences = getSharedPreferences(getString(R.string.preferences_selected_calendar_type_key), Context.MODE_PRIVATE);
+        int type = preferences.getInt(getString(R.string.preferences_selected_calendar_type_key), 0);
+
+        switch (type)
         {
-            @SuppressLint("NonConstantResourceId")
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item)
-            {
-                switch (item.getItemId())
-                {
-                    case R.id.month_type:
-                        calendarTransactionFragment.replaceFragment(MonthFragment.TAG);
-                        break;
-                    case R.id.week_type:
-                        calendarTransactionFragment.replaceFragment(WeekFragment.TAG);
-                        break;
-                    case R.id.day_type:
-                        calendarTransactionFragment.replaceFragment(DayFragment.TAG);
-                        break;
-                    case R.id.favorite:
-                        break;
-                    case R.id.app_setting:
-
-                        break;
-                }
-                mainBinding.drawerLayout.closeDrawer(mainBinding.sideNavigation);
-                return true;
-            }
-        });
-
+            case TYPE_DAY:
+                mainBinding.sideNavCalendarTypes.calendarTypeToggleGroup.check(R.id.calendar_type_day);
+                break;
+            case TYPE_WEEK:
+                mainBinding.sideNavCalendarTypes.calendarTypeToggleGroup.check(R.id.calendar_type_week);
+                break;
+            case TYPE_MONTH:
+            case 0:
+                mainBinding.sideNavCalendarTypes.calendarTypeToggleGroup.check(R.id.calendar_type_month);
+                break;
+        }
 
         /*
         sideNavHeaderBinding.connectGoogle.setOnClickListener(new View.OnClickListener()
@@ -381,6 +409,82 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
          */
     }
 
+    /*
+    private void setExpandableListViewHeight()
+    {
+        ExpandableListView listView = mainBinding.sideNavCalendarList;
+        ExpandableListAdapter listAdapter = mainBinding.sideNavCalendarList.getExpandableListAdapter();
+        if (listAdapter == null)
+        {
+            return;
+        }
+
+        int totalHeight = 0;
+        int desiredWidth = View.MeasureSpec.makeMeasureSpec(listView.getWidth(), View.MeasureSpec.AT_MOST);
+
+        for (int group = 0; group < listAdapter.getGroupCount(); group++)
+        {
+            listAdapter.getGr
+            for (int child = 0; child < listAdapter.getChildrenCount(group); child++)
+            {
+                View childView = listAdapter.getC
+                childView.measure(desiredWidth, View.MeasureSpec.UNSPECIFIED);
+                totalHeight += childView.getMeasuredHeight();
+            }
+        }
+
+        ViewGroup.LayoutParams params = listView.getLayoutParams();
+        params.height = totalHeight + (listView.getDividerHeight() * (listAdapter.getGroupCount() - 1));
+        listView.setLayoutParams(params);
+        listView.requestLayout();
+    }
+
+     */
+
+    private final MaterialButtonToggleGroup.OnButtonCheckedListener calendarTypeButtonCheckedListener
+            = new MaterialButtonToggleGroup.OnButtonCheckedListener()
+    {
+        @Override
+        public void onButtonChecked(MaterialButtonToggleGroup group, int checkedId, boolean isChecked)
+        {
+            SharedPreferences.Editor editor = getSharedPreferences(getString(R.string.preferences_selected_calendar_type_key), MODE_PRIVATE).edit();
+
+            switch (checkedId)
+            {
+                case R.id.calendar_type_day:
+                    editor.putInt(getString(R.string.preferences_selected_calendar_type_key), TYPE_DAY);
+                    calendarTransactionFragment.replaceFragment(DayFragment.TAG);
+                    break;
+                case R.id.calendar_type_week:
+                    editor.putInt(getString(R.string.preferences_selected_calendar_type_key), TYPE_WEEK);
+                    calendarTransactionFragment.replaceFragment(WeekFragment.TAG);
+                    break;
+                case R.id.calendar_type_month:
+                    editor.putInt(getString(R.string.preferences_selected_calendar_type_key), TYPE_MONTH);
+                    calendarTransactionFragment.replaceFragment(MonthFragment.TAG);
+                    break;
+            }
+            editor.apply();
+            mainBinding.drawerLayout.closeDrawer(mainBinding.sideNavigation);
+        }
+    };
+
+    private final View.OnClickListener sideNavOnClickListener = new View.OnClickListener()
+    {
+        @Override
+        public void onClick(View view)
+        {
+            switch (view.getId())
+            {
+                case R.id.favorite:
+                    break;
+                case R.id.app_setting:
+                    break;
+            }
+            mainBinding.drawerLayout.closeDrawer(mainBinding.sideNavigation);
+        }
+    };
+
     private void expandAllGroup()
     {
         int groupSize = calendarsAdapter.getGroupCount();
@@ -418,6 +522,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
                 calendarTransactionFragment.goToToday();
                 break;
             case R.id.refresh_calendar:
+                calendarViewModel.syncCalendars(contentObserver);
                 break;
         }
     }
@@ -428,10 +533,43 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
         super.onStart();
     }
 
+    private final BroadcastReceiver syncBroadcastReceiver = new BroadcastReceiver()
+    {
+        @Override
+        public void onReceive(Context context, Intent intent)
+        {
+            Toast.makeText(AppMainActivity.this, "변경됨", Toast.LENGTH_SHORT).show();
+        }
+    };
+
     @Override
     protected void onResume()
     {
         super.onResume();
+        registerReceiver(syncBroadcastReceiver, new IntentFilter(ACTION_FINISHED_SYNC));
+        contentProviderHandle = ContentResolver.addStatusChangeListener(ContentResolver.SYNC_OBSERVER_TYPE_ACTIVE, new SyncStatusObserver()
+        {
+            @Override
+            public void onStatusChanged(int which)
+            {
+                int result = which;
+            }
+        });
+    }
+
+    @Override
+    protected void onPause()
+    {
+        super.onPause();
+        unregisterReceiver(syncBroadcastReceiver);
+    }
+
+    @Override
+    protected void onDestroy()
+    {
+        super.onDestroy();
+        getContentResolver().unregisterContentObserver(contentObserver);
+        ContentResolver.removeStatusChangeListener(contentProviderHandle);
     }
 
     @Override
@@ -446,7 +584,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
                 {
                     case EventActivity.NEW_EVENT:
                         //새로운 일정이 추가됨 -> 달력 이벤트 갱신
-                        calendarTransactionFragment.refreshCalendar((Date) data.getSerializableExtra("startDate"));
+                        calendarTransactionFragment.refreshCalendar();
                         break;
                 }
                 break;
@@ -490,48 +628,51 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 
 
     @Override
-    public void onCheckedBox(String key, long calendarId, boolean state)
+    public void onCheckedBox(String key, ContentValues calendar, boolean state)
     {
-        SharedPreferences sharedPreferences = getSharedPreferences(getString(R.string.preferences_selected_caledars_key), Context.MODE_PRIVATE);
-        Set<String> selectedCalendarSet = sharedPreferences.getStringSet(getString(R.string.preferences_selected_caledars_key), new HashSet<>());
+        SharedPreferences sharedPreferences = getSharedPreferences(getString(R.string.preferences_selected_calendars_key), Context.MODE_PRIVATE);
+        Set<String> selectedCalendarSet = sharedPreferences.getStringSet(getString(R.string.preferences_selected_calendars_key), new HashSet<>());
 
-        //set가 비워져있지는 않는지 검사
-        if (!selectedCalendarSet.isEmpty())
+        for (String v : selectedCalendarSet)
         {
-            for (String v : selectedCalendarSet)
+            if (v.equals(key))
             {
-                if (v.equals(key))
+                if (!state)
                 {
-                    if (!state)
-                    {
-                        // 같은 값을 가진 것이 이미 추가되어있는 경우 선택해제 하는 것이므로 삭제한다.
-                        connectedCalendarMap.remove(key);
-                        connectedCalendarList.clear();
-                        connectedCalendarList.addAll(connectedCalendarMap.values());
-                        selectedCalendarSet.remove(key);
+                    // 같은 값을 가진 것이 이미 추가되어있는 경우 선택해제 하는 것이므로 삭제한다.
+                    selectedCalendarSet.remove(key);
+                    connectedCalendarMap.remove(key);
 
-                        SharedPreferences.Editor editor = sharedPreferences.edit();
-                        editor.remove(getString(R.string.preferences_selected_caledars_key));
-                        editor.commit();
+                    connectedCalendarList.clear();
+                    connectedCalendarList.addAll(connectedCalendarMap.values());
 
-                        SharedPreferences.Editor editor2 = sharedPreferences.edit();
-                        editor2.putStringSet(getString(R.string.preferences_selected_caledars_key), selectedCalendarSet);
-                        editor2.commit();
-                    }
-                    return;
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.remove(getString(R.string.preferences_selected_calendars_key));
+                    editor.commit();
+
+                    SharedPreferences.Editor editor2 = sharedPreferences.edit();
+                    editor2.putStringSet(getString(R.string.preferences_selected_calendars_key), selectedCalendarSet);
+                    editor2.commit();
+
+                    calendarTransactionFragment.refreshCalendar();
                 }
+                return;
             }
         }
+
         SharedPreferences.Editor editor = sharedPreferences.edit();
         selectedCalendarSet.add(key);
-        calendarViewModel.getCalendar((int) calendarId);
+        connectedCalendarMap.put(key, calendar);
+        connectedCalendarList.add(calendar);
 
-        editor.remove(getString(R.string.preferences_selected_caledars_key));
+        editor.remove(getString(R.string.preferences_selected_calendars_key));
         editor.commit();
 
         SharedPreferences.Editor editor2 = sharedPreferences.edit();
-        editor2.putStringSet(getString(R.string.preferences_selected_caledars_key), selectedCalendarSet);
+        editor2.putStringSet(getString(R.string.preferences_selected_calendars_key), selectedCalendarSet);
         editor2.commit();
+
+        calendarTransactionFragment.refreshCalendar();
     }
 
     @Override
@@ -545,5 +686,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
     {
         return connectedCalendarList;
     }
+
+
 }
 

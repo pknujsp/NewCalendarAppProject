@@ -1,15 +1,23 @@
 package com.zerodsoft.scheduleweather.calendar;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.SyncRequest;
+import android.content.SyncStatusObserver;
+import android.database.ContentObserver;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Bundle;
+import android.os.Handler;
 import android.provider.CalendarContract;
 
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendar.interfaces.ICalendarProvider;
+import com.zerodsoft.scheduleweather.calendar.sync.SyncAdapter;
 import com.zerodsoft.scheduleweather.calendarview.callback.EventCallback;
 
 import java.util.ArrayList;
@@ -653,5 +661,62 @@ public class CalendarProvider implements ICalendarProvider
             updatedRows += contentResolver.delete(CalendarContract.Attendees.CONTENT_URI, where, selectionArgs);
         }
         return updatedRows;
+    }
+
+    public Uri asSyncAdapter(Uri uri, String accountName, String accountType)
+    {
+        return uri.buildUpon()
+                .appendQueryParameter(CalendarContract.CALLER_IS_SYNCADAPTER, "true")
+                .appendQueryParameter(CalendarContract.Calendars.ACCOUNT_NAME, accountName)
+                .appendQueryParameter(CalendarContract.Calendars.ACCOUNT_TYPE, accountType).build();
+    }
+
+    public void syncCalendars(ContentObserver contentObserver)
+    {
+        AccountManager accountManager = AccountManager.get(context);
+        Account[] accounts = accountManager.getAccountsByType("com.google");
+
+        for (Account account : accounts)
+        {
+            Uri uri = asSyncAdapter(CalendarContract.SyncState.CONTENT_URI, account.name, account.type);
+            ContentResolver contentResolver = context.getContentResolver();
+            contentResolver.registerContentObserver(uri, false, contentObserver);
+
+            Bundle extras = new Bundle();
+            extras.putBoolean(
+                    ContentResolver.SYNC_EXTRAS_MANUAL, true);
+            extras.putBoolean(
+                    ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
+
+            ContentResolver.requestSync(account, CalendarContract.AUTHORITY, extras);
+        }
+    }
+
+    public Account createSyncAccount(Context context, String authority, String accountType, String accountName)
+    {
+        // Create the account type and default account
+        Account newAccount = new Account(accountName, accountType);
+        // Get an instance of the Android account manager
+        AccountManager accountManager = (AccountManager) context.getSystemService(Context.ACCOUNT_SERVICE);
+        /*
+         * Add the account and account type, no password or user data
+         * If successful, return the Account object, otherwise report an error.
+         */
+        if (accountManager.addAccountExplicitly(newAccount, null, null))
+        {
+            /*
+             * If you don't set android:syncable="true" in
+             * in your <provider> element in the manifest,
+             * then call context.setIsSyncable(account, AUTHORITY, 1)
+             * here.
+             */
+        } else
+        {
+            /*
+             * The account exists or some other error occurred. Log this, report it,
+             * or handle it internally.
+             */
+        }
+        return null;
     }
 }

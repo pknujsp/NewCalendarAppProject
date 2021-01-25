@@ -1,5 +1,6 @@
 package com.zerodsoft.scheduleweather.calendarview.month;
 
+import android.content.ContentValues;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,17 +12,24 @@ import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
+import com.zerodsoft.scheduleweather.calendarview.callback.EventCallback;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.calendarview.eventdialog.EventListOnDayFragment;
+import com.zerodsoft.scheduleweather.etc.CalendarUtil;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
-public class MonthFragment extends Fragment
+public class MonthFragment extends Fragment implements IRefreshView
 {
     public static final String TAG = "MonthFragment";
 
@@ -65,19 +73,22 @@ public class MonthFragment extends Fragment
         viewPager.registerOnPageChangeCallback(onPageChangeCallback);
     }
 
-    public void refreshView(Date startDate)
+    @Override
+    public void refreshView()
     {
-        //시작 날짜의 해당 월로 달력 변경
-        viewPagerAdapter = new MonthViewPagerAdapter(iControlEvent, onEventItemClickListener, iToolbar);
-        //시작 날짜가 화면에 표시되도록 달력 날짜를 변경
-        Calendar viewCalendar = viewPagerAdapter.getCalendar();
-        //두 날짜 사이의 월수 차이
-        int monthDifference = ClockUtil.calcDateDifference(ClockUtil.MONTH, startDate.getTime(), viewCalendar.getTimeInMillis());
-        viewPager.setAdapter(viewPagerAdapter);
-        viewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION + monthDifference, false);
+        int currentItem = viewPager.getCurrentItem();
+        long start = viewPagerAdapter.getDate(currentItem, MonthViewPagerAdapter.FIRST_DAY).getTime();
+        long end = viewPagerAdapter.getDate(currentItem, MonthViewPagerAdapter.LAST_DAY).getTime();
 
-        onPageChangeCallback = new OnPageChangeCallback(viewPagerAdapter.getCalendar());
-        viewPager.registerOnPageChangeCallback(onPageChangeCallback);
+        iControlEvent.getInstances(currentItem, start, end, new EventCallback<List<CalendarInstance>>()
+        {
+            @Override
+            public void onResult(List<CalendarInstance> e)
+            {
+                viewPagerAdapter.refresh(currentItem, e);
+                viewPagerAdapter.notifyDataSetChanged();
+            }
+        });
     }
 
     public void goToToday()

@@ -12,19 +12,24 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.zerodsoft.scheduleweather.activity.main.AppMainActivity;
+import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
+import com.zerodsoft.scheduleweather.calendarview.callback.EventCallback;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.calendarview.eventdialog.EventListOnDayFragment;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.calendarview.month.MonthViewPagerAdapter;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 
-public class WeekFragment extends Fragment
+public class WeekFragment extends Fragment implements IRefreshView
 {
     public static final String TAG = "WEEK_FRAGMENT";
     private ViewPager2 weekViewPager;
@@ -155,18 +160,21 @@ public class WeekFragment extends Fragment
     }
 
 
-    public void refreshView(Date startDate)
+    @Override
+    public void refreshView()
     {
-        //시작 날짜의 해당 월로 달력 변경
-        weekViewPagerAdapter = new WeekViewPagerAdapter(iControlEvent, onEventItemClickListener, iToolbar);
-        //시작 날짜가 화면에 표시되도록 달력 날짜를 변경
-        Calendar viewCalendar = weekViewPagerAdapter.getCalendar();
-        //두 날짜 사이의 월수 차이
-        int weekDifference = ClockUtil.calcDateDifference(ClockUtil.WEEK, startDate.getTime(), viewCalendar.getTimeInMillis());
-        weekViewPager.setAdapter(weekViewPagerAdapter);
-        weekViewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION + weekDifference, false);
+        int currentItem = weekViewPager.getCurrentItem();
+        long start = weekViewPagerAdapter.getDate(currentItem, WeekViewPagerAdapter.FIRST_DAY).getTime();
+        long end = weekViewPagerAdapter.getDate(currentItem, WeekViewPagerAdapter.LAST_DAY).getTime();
 
-        onPageChangeCallback = new OnPageChangeCallback(weekViewPagerAdapter.getCalendar());
-        weekViewPager.registerOnPageChangeCallback(onPageChangeCallback);
+        iControlEvent.getInstances(currentItem, start, end, new EventCallback<List<CalendarInstance>>()
+        {
+            @Override
+            public void onResult(List<CalendarInstance> e)
+            {
+                weekViewPagerAdapter.refresh(currentItem, e);
+                weekViewPagerAdapter.notifyDataSetChanged();
+            }
+        });
     }
 }

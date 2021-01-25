@@ -69,6 +69,11 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
         return holderSparseArray.get(position).getDay(dateType).getTime();
     }
 
+    public void refresh(int position, List<CalendarInstance> e)
+    {
+        holderSparseArray.get(position).setResult(e);
+    }
+
     @Override
     public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView)
     {
@@ -116,10 +121,6 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
         return Integer.MAX_VALUE;
     }
 
-    public Date getMonth(int position)
-    {
-        return holderSparseArray.get(position).currentMonthDays[0].getTime();
-    }
 
     class MonthViewHolder extends RecyclerView.ViewHolder
     {
@@ -187,20 +188,22 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
                 @Override
                 public void onResult(List<CalendarInstance> e)
                 {
-                    if (!e.isEmpty())
-                    {
-                        List<ContentValues> instances = new ArrayList<>();
-                        // 인스턴스 목록 표시
-                        for (CalendarInstance calendarInstance : e)
-                        {
-                            instances.addAll(calendarInstance.getInstanceList());
-                            // 데이터를 일정 길이의 내림차순으로 정렬
-                        }
-                        Collections.sort(instances, CalendarUtil.INSTANCE_COMPARATOR);
-                        monthCalendarView.setInstances(instances);
-                    }
+                    setResult(e);
                 }
             });
+        }
+
+        public void setResult(List<CalendarInstance> e)
+        {
+            List<ContentValues> instances = new ArrayList<>();
+            // 인스턴스 목록 표시
+            for (CalendarInstance calendarInstance : e)
+            {
+                instances.addAll(calendarInstance.getInstanceList());
+                // 데이터를 일정 길이의 내림차순으로 정렬
+            }
+            Collections.sort(instances, CalendarUtil.INSTANCE_COMPARATOR);
+            monthCalendarView.setInstances(instances);
         }
 
         private void setDays(Calendar calendar)

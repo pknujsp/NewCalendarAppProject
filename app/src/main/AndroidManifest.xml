@@ -9,6 +9,9 @@
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.READ_CALENDAR" />
     <uses-permission android:name="android.permission.WRITE_CALENDAR" />
+    <uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />
+    <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS" />
+    <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS" />
 
     <application
         android:name=".activity.App"
@@ -45,6 +48,18 @@
         <meta-data
             android:name="com.kakao.sdk.AppKey"
             android:value="0dc55f983ec285210efb88d1389f7c2b" />
+
+        <service
+            android:name="com.zerodsoft.scheduleweather.calendar.sync.SyncService"
+            android:exported="true"
+            android:process=":sync">
+            <intent-filter>
+                <action android:name="android.content.SyncAdapter" />
+            </intent-filter>
+            <meta-data
+                android:name="android.content.SyncAdapter"
+                android:resource="@xml/calendar_sync_adapter" />
+        </service>
     </application>
 
 </manifest>

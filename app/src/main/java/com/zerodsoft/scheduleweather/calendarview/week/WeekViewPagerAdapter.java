@@ -112,6 +112,11 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
         return holderSparseArray.get(position).getDay(dateType).getTime();
     }
 
+    public void refresh(int position, List<CalendarInstance> e)
+    {
+        holderSparseArray.get(position).setResult(e);
+    }
+
     class WeekViewPagerHolder extends RecyclerView.ViewHolder
     {
         private WeekView weekView;
@@ -154,24 +159,26 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
                         @Override
                         public void onResult(List<CalendarInstance> e)
                         {
-                            if (!e.isEmpty())
-                            {
-                                List<ContentValues> instances = new ArrayList<>();
-                                // 인스턴스 목록 표시
-                                for (CalendarInstance calendarInstance : e)
-                                {
-                                    instances.addAll(calendarInstance.getInstanceList());
-                                    // 데이터를 일정 길이의 내림차순으로 정렬
-                                }
-                                Collections.sort(instances, CalendarUtil.INSTANCE_COMPARATOR);
-                                // weekview에는 1일 이하의 이벤트만 표시
-                                weekView.setInstances(instances);
-                                // weekheaderview에는 모든 이벤트 표시 
-                                weekHeaderView.setInstances(instances);
-                            }
+                            setResult(e);
                         }
                     });
 
+        }
+
+        public void setResult(List<CalendarInstance> e)
+        {
+            List<ContentValues> instances = new ArrayList<>();
+            // 인스턴스 목록 표시
+            for (CalendarInstance calendarInstance : e)
+            {
+                instances.addAll(calendarInstance.getInstanceList());
+                // 데이터를 일정 길이의 내림차순으로 정렬
+            }
+            Collections.sort(instances, CalendarUtil.INSTANCE_COMPARATOR);
+            // weekview에는 1일 이하의 이벤트만 표시
+            weekView.setInstances(instances);
+            // weekheaderview에는 모든 이벤트 표시
+            weekHeaderView.setInstances(instances);
         }
 
         private void setDays(Calendar calendar)

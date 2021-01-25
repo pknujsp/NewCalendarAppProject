@@ -121,9 +121,9 @@ public class CalendarsAdapter extends BaseExpandableListAdapter
                 {
                     checkBoxStates[groupPosition][childPosition] = false;
                 }
-                String key = accountList.get(groupPosition).getCalendars().get(childPosition).getAsString(CalendarContract.Calendars.OWNER_ACCOUNT)
+                String key = accountList.get(groupPosition).getCalendars().get(childPosition).getAsString(CalendarContract.Calendars.ACCOUNT_NAME)
                         + "&" + accountList.get(groupPosition).getCalendars().get(childPosition).getAsString(CalendarContract.Calendars._ID);
-                iCalendarCheckBox.onCheckedBox(key, accountList.get(groupPosition).getCalendars().get(childPosition).getAsLong(CalendarContract.Calendars._ID), isChecked);
+                iCalendarCheckBox.onCheckedBox(key, accountList.get(groupPosition).getCalendars().get(childPosition), isChecked);
             }
         });
         checkBoxes[groupPosition][childPosition] = checkBox;

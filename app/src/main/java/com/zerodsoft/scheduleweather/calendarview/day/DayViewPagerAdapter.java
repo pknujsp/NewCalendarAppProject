@@ -116,6 +116,11 @@ public class DayViewPagerAdapter extends RecyclerView.Adapter<DayViewPagerAdapte
         return date;
     }
 
+    public void refresh(int position, List<CalendarInstance> e)
+    {
+        holderSparseArray.get(position).setResult(e);
+    }
+
     class DayViewPagerHolder extends RecyclerView.ViewHolder
     {
         // 시간별 리스트 레이아웃 표시
@@ -150,23 +155,25 @@ public class DayViewPagerAdapter extends RecyclerView.Adapter<DayViewPagerAdapte
                 @Override
                 public void onResult(List<CalendarInstance> e)
                 {
-                    if (!e.isEmpty())
-                    {
-                        List<ContentValues> instances = new ArrayList<>();
-                        // 인스턴스 목록 표시
-                        for (CalendarInstance calendarInstance : e)
-                        {
-                            instances.addAll(calendarInstance.getInstanceList());
-                            // 데이터를 일정 길이의 내림차순으로 정렬
-                        }
-                        Collections.sort(instances, CalendarUtil.INSTANCE_COMPARATOR);
-                        dayHeaderView.setInstances(instances);
-                        dayView.setInstances(instances);
-                    }
-
+                    setResult(e);
                 }
             });
 
+        }
+
+        public void setResult(List<CalendarInstance> e)
+        {
+
+            List<ContentValues> instances = new ArrayList<>();
+            // 인스턴스 목록 표시
+            for (CalendarInstance calendarInstance : e)
+            {
+                instances.addAll(calendarInstance.getInstanceList());
+                // 데이터를 일정 길이의 내림차순으로 정렬
+            }
+            Collections.sort(instances, CalendarUtil.INSTANCE_COMPARATOR);
+            dayHeaderView.setInstances(instances);
+            dayView.setInstances(instances);
         }
 
         public void clear()

@@ -53,4 +53,6 @@ public interface ICalendarProvider
     public int deleteAllAttendees(int calendarId, int eventId);
 
     public int deleteAttendees(int calendarId, int eventId, int[] attendeeIds);
+
+    // sync
 }

@@ -43,7 +43,6 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
     private Fragment fragment;
     private IToolbar iToolbar;
     private IConnectedCalendars iConnectedCalendars;
-    private List<ContentValues> selectedCalendars;
 
     public EventTransactionFragment(Activity activity)
     {
@@ -72,10 +71,6 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
         calendarViewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
         calendarViewModel.init(getContext());
         // 마지막으로 사용된 달력의 종류 가져오기
-
-        // 종류에 맞게 현재 날짜와 표시할 계정의 유형을 설정
-        String calendarTag = MonthFragment.TAG;
-        replaceFragment(calendarTag);
     }
 
     @Override
@@ -128,18 +123,18 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
     }
 
 
-    public void refreshCalendar(Date startDate)
+    public void refreshCalendar()
     {
         //일정이 추가/삭제되면 영향을 받은 일정의 시작날짜에 해당하는 달력의 위치로 이동한다.
         if (fragment instanceof MonthFragment)
         {
-            ((MonthFragment) fragment).refreshView(startDate);
+            ((MonthFragment) fragment).refreshView();
         } else if (fragment instanceof WeekFragment)
         {
-            ((WeekFragment) fragment).refreshView(startDate);
+            ((WeekFragment) fragment).refreshView();
         } else if (fragment instanceof DayFragment)
         {
-            ((DayFragment) fragment).refreshView(startDate);
+            ((DayFragment) fragment).refreshView();
         }
     }
 

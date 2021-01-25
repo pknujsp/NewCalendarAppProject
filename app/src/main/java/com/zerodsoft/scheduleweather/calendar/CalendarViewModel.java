@@ -2,6 +2,7 @@ package com.zerodsoft.scheduleweather.calendar;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.ContentObserver;
 
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
@@ -172,7 +173,7 @@ public class CalendarViewModel extends ViewModel
 
     public void getInstanceList(List<ContentValues> calendarList, long startDate, long endDate, EventCallback<List<CalendarInstance>> callback)
     {
-                calendarProvider.getInstances(calendarList, startDate, endDate, callback);
+        calendarProvider.getInstances(calendarList, startDate, endDate, callback);
 
     }
 
@@ -204,5 +205,11 @@ public class CalendarViewModel extends ViewModel
     public int deleteAttendees(int calendarId, int eventId, int[] attendeeIds)
     {
         return calendarProvider.deleteAttendees(calendarId, eventId, attendeeIds);
+    }
+
+    // sync
+    public void syncCalendars(ContentObserver contentObserver)
+    {
+        calendarProvider.syncCalendars(contentObserver);
     }
 }

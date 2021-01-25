@@ -11,17 +11,21 @@ import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
+import com.zerodsoft.scheduleweather.calendarview.callback.EventCallback;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
+import com.zerodsoft.scheduleweather.calendarview.week.WeekViewPagerAdapter;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-public class DayFragment extends Fragment
+public class DayFragment extends Fragment implements IRefreshView
 {
     public static final String TAG = "DAY_FRAGMENT";
 
@@ -120,19 +124,22 @@ public class DayFragment extends Fragment
         }
     }
 
-    public void refreshView(Date startDate)
+    @Override
+    public void refreshView()
     {
-        //시작 날짜의 해당 월로 달력 변경
-        dayViewPagerAdapter = new DayViewPagerAdapter(iControlEvent, onEventItemClickListener, iToolbar);
-        //시작 날짜가 화면에 표시되도록 달력 날짜를 변경
-        Calendar viewCalendar = dayViewPagerAdapter.getCALENDAR();
-        //두 날짜 사이의 월수 차이
-        int dayDifference = ClockUtil.calcDateDifference(ClockUtil.DAY, startDate.getTime(), viewCalendar.getTimeInMillis());
-        dayViewPager.setAdapter(dayViewPagerAdapter);
-        dayViewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION + dayDifference, false);
+        int currentItem = dayViewPager.getCurrentItem();
+        long start = dayViewPagerAdapter.getDate(currentItem, DayViewPagerAdapter.FIRST_DAY).getTime();
+        long end = dayViewPagerAdapter.getDate(currentItem, DayViewPagerAdapter.LAST_DAY).getTime();
 
-        onPageChangeCallback = new OnPageChangeCallback(dayViewPagerAdapter.getCALENDAR());
-        dayViewPager.registerOnPageChangeCallback(onPageChangeCallback);
+        iControlEvent.getInstances(currentItem, start, end, new EventCallback<List<CalendarInstance>>()
+        {
+            @Override
+            public void onResult(List<CalendarInstance> e)
+            {
+                dayViewPagerAdapter.refresh(currentItem, e);
+                dayViewPagerAdapter.notifyDataSetChanged();
+            }
+        });
     }
 
     public void goToToday()

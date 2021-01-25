@@ -45,18 +45,22 @@
                 android:fillViewport="true">
 
                 <LinearLayout
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:orientation="vertical">
 
-                    <include layout="@layout/side_nav_calendar_types" />
+                    <include
+                        android:id="@+id/side_nav_calendar_types"
+                        layout="@layout/side_nav_calendar_types" />
 
-                    <ExpandableListView
+                    <com.zerodsoft.scheduleweather.activity.main.sidenav.NotScrollExpandableListView
                         android:id="@+id/side_nav_calendar_list"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content" />
 
-                    <include layout="@layout/side_nav_menu" />
+                    <include
+                        android:id="@+id/side_nav_menu"
+                        layout="@layout/side_nav_menu" />
                 </LinearLayout>
 
             </androidx.core.widget.NestedScrollView>
