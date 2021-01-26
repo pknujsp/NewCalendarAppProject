@@ -2,6 +2,7 @@ package com.zerodsoft.scheduleweather.calendar;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.app.AlarmManager;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -688,7 +689,7 @@ public class CalendarProvider implements ICalendarProvider
             extras.putBoolean(
                     ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
 
-            ContentResolver.requestSync(account, CalendarContract.AUTHORITY, extras);
+          ContentResolver.requestSync(account, CalendarContract.AUTHORITY, extras);
         }
     }
 

@@ -142,7 +142,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
             super.onChange(selfChange);
             if (!selfChange)
             {
-                Toast.makeText(AppMainActivity.this, "변경됨", Toast.LENGTH_SHORT).show();
+
             }
         }
 
@@ -538,7 +538,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
         @Override
         public void onReceive(Context context, Intent intent)
         {
-            Toast.makeText(AppMainActivity.this, "변경됨", Toast.LENGTH_SHORT).show();
+
         }
     };
 
@@ -552,7 +552,8 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
             @Override
             public void onStatusChanged(int which)
             {
-                int result = which;
+                Toast.makeText(AppMainActivity.this, "변경됨", Toast.LENGTH_SHORT).show();
+                calendarTransactionFragment.refreshCalendar();
             }
         });
     }
