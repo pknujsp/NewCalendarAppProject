@@ -57,6 +57,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class AppMainActivity extends AppCompatActivity implements ICalendarCheckBox, IToolbar, IConnectedCalendars
 {
@@ -73,7 +75,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
     private CalendarsAdapter calendarsAdapter;
     private TextView currMonthTextView;
     private Object contentProviderHandle;
-
+    private boolean isFirstChange = true;
 
     public static final int TYPE_DAY = 10;
     public static final int TYPE_WEEK = 20;
@@ -130,6 +132,9 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 
     private final ContentObserver contentObserver = new ContentObserver(new Handler())
     {
+        private Timer timer;
+        private SyncTimerTask syncTimerTask;
+
         @Override
         public boolean deliverSelfNotifications()
         {
@@ -140,19 +145,36 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
         public void onChange(boolean selfChange)
         {
             super.onChange(selfChange);
-            if (!selfChange)
+
+            if (isFirstChange)
             {
-
+                isFirstChange = false;
+                timer = new Timer();
+                syncTimerTask = new SyncTimerTask();
+                timer.schedule(syncTimerTask, 5000);
             }
-        }
 
-        @Override
-        public void onChange(boolean selfChange, Uri uri)
-        {
-            super.onChange(selfChange, uri);
         }
     };
 
+    class SyncTimerTask extends TimerTask
+    {
+        @Override
+        public void run()
+        {
+            runOnUiThread(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    isFirstChange = true;
+                    Toast.makeText(AppMainActivity.this, "변경됨", Toast.LENGTH_SHORT).show();
+                    calendarTransactionFragment.refreshCalendar();
+                }
+            });
+
+        }
+    }
 
     private void initCalendarViewModel()
     {
@@ -552,8 +574,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
             @Override
             public void onStatusChanged(int which)
             {
-                Toast.makeText(AppMainActivity.this, "변경됨", Toast.LENGTH_SHORT).show();
-                calendarTransactionFragment.refreshCalendar();
+
             }
         });
     }

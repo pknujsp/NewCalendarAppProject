@@ -689,7 +689,7 @@ public class CalendarProvider implements ICalendarProvider
             extras.putBoolean(
                     ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
 
-          ContentResolver.requestSync(account, CalendarContract.AUTHORITY, extras);
+            ContentResolver.requestSync(account, CalendarContract.AUTHORITY, extras);
         }
     }
 
