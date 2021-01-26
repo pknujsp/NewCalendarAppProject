@@ -74,7 +74,6 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
     private CalendarViewModel calendarViewModel;
     private CalendarsAdapter calendarsAdapter;
     private TextView currMonthTextView;
-    private Object contentProviderHandle;
     private boolean isFirstChange = true;
 
     public static final int TYPE_DAY = 10;
@@ -132,49 +131,19 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 
     private final ContentObserver contentObserver = new ContentObserver(new Handler())
     {
-        private Timer timer;
-        private SyncTimerTask syncTimerTask;
-
         @Override
         public boolean deliverSelfNotifications()
         {
-            return super.deliverSelfNotifications();
+            return true;
         }
 
         @Override
         public void onChange(boolean selfChange)
         {
-            super.onChange(selfChange);
-
-            if (isFirstChange)
-            {
-                isFirstChange = false;
-                timer = new Timer();
-                syncTimerTask = new SyncTimerTask();
-                timer.schedule(syncTimerTask, 5000);
-            }
-
+            Toast.makeText(AppMainActivity.this, "SYNCED", Toast.LENGTH_SHORT).show();
         }
     };
 
-    class SyncTimerTask extends TimerTask
-    {
-        @Override
-        public void run()
-        {
-            runOnUiThread(new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    isFirstChange = true;
-                    Toast.makeText(AppMainActivity.this, "변경됨", Toast.LENGTH_SHORT).show();
-                    calendarTransactionFragment.refreshCalendar();
-                }
-            });
-
-        }
-    }
 
     private void initCalendarViewModel()
     {
@@ -544,7 +513,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
                 calendarTransactionFragment.goToToday();
                 break;
             case R.id.refresh_calendar:
-                calendarViewModel.syncCalendars(contentObserver);
+                calendarViewModel.syncCalendars();
                 break;
         }
     }
@@ -555,43 +524,25 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
         super.onStart();
     }
 
-    private final BroadcastReceiver syncBroadcastReceiver = new BroadcastReceiver()
-    {
-        @Override
-        public void onReceive(Context context, Intent intent)
-        {
-
-        }
-    };
 
     @Override
     protected void onResume()
     {
         super.onResume();
-        registerReceiver(syncBroadcastReceiver, new IntentFilter(ACTION_FINISHED_SYNC));
-        contentProviderHandle = ContentResolver.addStatusChangeListener(ContentResolver.SYNC_OBSERVER_TYPE_ACTIVE, new SyncStatusObserver()
-        {
-            @Override
-            public void onStatusChanged(int which)
-            {
-
-            }
-        });
+        getContentResolver().registerContentObserver(CalendarContract.Events.CONTENT_URI, true, contentObserver);
     }
 
     @Override
     protected void onPause()
     {
         super.onPause();
-        unregisterReceiver(syncBroadcastReceiver);
+        getContentResolver().unregisterContentObserver(contentObserver);
     }
 
     @Override
     protected void onDestroy()
     {
         super.onDestroy();
-        getContentResolver().unregisterContentObserver(contentObserver);
-        ContentResolver.removeStatusChangeListener(contentProviderHandle);
     }
 
     @Override

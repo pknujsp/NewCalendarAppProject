@@ -208,8 +208,8 @@ public class CalendarViewModel extends ViewModel
     }
 
     // sync
-    public void syncCalendars(ContentObserver contentObserver)
+    public void syncCalendars()
     {
-        calendarProvider.syncCalendars(contentObserver);
+        calendarProvider.syncCalendars();
     }
 }
