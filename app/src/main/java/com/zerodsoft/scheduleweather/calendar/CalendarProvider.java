@@ -498,17 +498,20 @@ public class CalendarProvider implements ICalendarProvider
         selectionArgs[4] = startMilliSec;
         selectionArgs[5] = endMilliSec;
 
+        String selection = CalendarContract.Instances.CALENDAR_ID + "=?";
+        final String[] selectionArg = new String[1];
+
         List<CalendarInstance> calendarInstances = new ArrayList<>();
 
         for (ContentValues calendar : calendarList)
         {
-            selectionArgs[6] = String.valueOf(calendar.getAsInteger(CalendarContract.Calendars._ID));
+            selectionArg[0] = String.valueOf(calendar.getAsInteger(CalendarContract.Calendars._ID));
 
             Uri.Builder builder = CalendarContract.Instances.CONTENT_URI.buildUpon();
             ContentUris.appendId(builder, startDate);
             ContentUris.appendId(builder, endDate);
 
-            Cursor cursor = contentResolver.query(builder.build(), null, INSTANCE_QUERY, selectionArgs, null);
+            Cursor cursor = contentResolver.query(builder.build(), null, selection, selectionArg, null);
 
             List<ContentValues> instances = new ArrayList<>();
 
@@ -665,29 +668,21 @@ public class CalendarProvider implements ICalendarProvider
         return updatedRows;
     }
 
-    public Uri asSyncAdapter(Uri uri, String accountName, String accountType)
-    {
-        return uri.buildUpon()
-                .appendQueryParameter(CalendarContract.CALLER_IS_SYNCADAPTER, "true")
-                .appendQueryParameter(CalendarContract.Calendars.ACCOUNT_NAME, accountName)
-                .appendQueryParameter(CalendarContract.Calendars.ACCOUNT_TYPE, accountType).build();
-    }
-
     public void syncCalendars()
     {
-        AccountManager accountManager = AccountManager.get(context);
-        final Account[] accounts = accountManager.getAccounts();
-        final String authority = CalendarContract.Calendars.CONTENT_URI.getAuthority();
+        AccountManager accountManager = (AccountManager) context.getSystemService(Context.ACCOUNT_SERVICE);
+        final Account[] accounts = accountManager.getAccountsByType("com.google");
+        final String authority = CalendarContract.AUTHORITY;
 
         for (Account account : accounts)
         {
+
             Bundle extras = new Bundle();
             extras.putBoolean(
                     ContentResolver.SYNC_EXTRAS_MANUAL, true);
             extras.putBoolean(
                     ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
 
-            ContentResolver.setIsSyncable(account, authority,1);
             ContentResolver.requestSync(account, authority, extras);
         }
     }

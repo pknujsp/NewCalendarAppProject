@@ -1,6 +1,8 @@
 package com.zerodsoft.scheduleweather.activity.main;
 
 import android.Manifest;
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
@@ -75,7 +77,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
     private CalendarViewModel calendarViewModel;
     private CalendarsAdapter calendarsAdapter;
     private TextView currMonthTextView;
-    private boolean isFirstChange = true;
+    private Object statusHandle;
 
     public static final int TYPE_DAY = 10;
     public static final int TYPE_WEEK = 20;
@@ -141,9 +143,26 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
         @Override
         public void onChange(boolean selfChange)
         {
-            Toast.makeText(AppMainActivity.this, "SYNCED", Toast.LENGTH_SHORT).show();
-            List<SyncInfo> syncInfos = ContentResolver.getCurrentSyncs();
-            int count = syncInfos.size();
+            AccountManager accountManager = AccountManager.get(getApplicationContext());
+            Account[] accounts = accountManager.getAccountsByType("com.google");
+
+            boolean check = false;
+            for (Account account : accounts)
+            {
+                if (ContentResolver.isSyncActive(account, CalendarContract.AUTHORITY))
+                {
+                    check = true;
+                } else
+                {
+                    break;
+                }
+            }
+
+            if (check)
+            {
+                Toast.makeText(AppMainActivity.this, "SYNCED", Toast.LENGTH_SHORT).show();
+                calendarTransactionFragment.refreshCalendar();
+            }
         }
     };
 
@@ -533,6 +552,18 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
     {
         super.onResume();
         getContentResolver().registerContentObserver(CalendarContract.Events.CONTENT_URI, true, contentObserver);
+        statusHandle = ContentResolver.addStatusChangeListener(ContentResolver.SYNC_OBSERVER_TYPE_ACTIVE
+                , new SyncStatusObserver()
+                {
+                    @Override
+                    public void onStatusChanged(int mask)
+                    {
+                        if (mask == ContentResolver.SYNC_OBSERVER_TYPE_ACTIVE)
+                        {
+
+                        }
+                    }
+                });
     }
 
     @Override
@@ -540,6 +571,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
     {
         super.onPause();
         getContentResolver().unregisterContentObserver(contentObserver);
+        ContentResolver.removeStatusChangeListener(statusHandle);
     }
 
     @Override
