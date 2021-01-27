@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.SyncInfo;
 import android.content.SyncStatusObserver;
 import android.content.pm.PackageManager;
 import android.database.ContentObserver;
@@ -141,6 +142,8 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
         public void onChange(boolean selfChange)
         {
             Toast.makeText(AppMainActivity.this, "SYNCED", Toast.LENGTH_SHORT).show();
+            List<SyncInfo> syncInfos = ContentResolver.getCurrentSyncs();
+            int count = syncInfos.size();
         }
     };
 

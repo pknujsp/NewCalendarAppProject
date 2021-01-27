@@ -16,6 +16,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.provider.CalendarContract;
 
+import com.google.common.util.concurrent.ServiceManager;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendar.interfaces.ICalendarProvider;
 import com.zerodsoft.scheduleweather.calendar.sync.SyncAdapter;
@@ -678,7 +679,6 @@ public class CalendarProvider implements ICalendarProvider
         final Account[] accounts = accountManager.getAccounts();
         final String authority = CalendarContract.Calendars.CONTENT_URI.getAuthority();
 
-
         for (Account account : accounts)
         {
             Bundle extras = new Bundle();
@@ -687,6 +687,7 @@ public class CalendarProvider implements ICalendarProvider
             extras.putBoolean(
                     ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
 
+            ContentResolver.setIsSyncable(account, authority,1);
             ContentResolver.requestSync(account, authority, extras);
         }
     }
