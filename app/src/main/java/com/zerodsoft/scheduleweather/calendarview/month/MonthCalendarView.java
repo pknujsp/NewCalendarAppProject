@@ -22,6 +22,7 @@ import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -72,7 +73,6 @@ public class MonthCalendarView extends ViewGroup implements IEvent
         DAY_TEXT_PAINT.getTextBounds("31", 0, 1, rect);
 
         DAY_SPACE_HEIGHT = rect.height() + 24;
-
 
         setWillNotDraw(false);
     }
@@ -145,69 +145,51 @@ public class MonthCalendarView extends ViewGroup implements IEvent
     {
         for (EventData eventData : eventCellsList)
         {
-            final int startIndex = eventData.getStartIndex();
-            final int endIndex = eventData.getEndIndex();
-            final int row = eventData.getRow();
-
-            int leftMargin = 0;
-            int rightMargin = 0;
+            final int BEGIN_INDEX = eventData.getStartIndex();
+            final int END_INDEX = eventData.getEndIndex();
+            final int ROW = eventData.getRow();
 
             float startX = 0f;
             float startY = 0f;
             float endX = 0f;
             float endY = 0f;
 
-            int eventRowCount = endIndex / 7 - startIndex / 7 + 1;
+            int eventRowCount = END_INDEX / 7 - BEGIN_INDEX / 7 + 1;
 
             float left = 0;
             float right = 0;
             float top = 0;
             float bottom = 0;
 
-            final long viewStart = ((MonthCalendarItemView) getChildAt(startIndex)).getStartDate().getTime();
-            final long viewEnd = ((MonthCalendarItemView) getChildAt(endIndex)).getEndDate().getTime();
-
             ContentValues event = eventData.getEvent();
 
-            final long eventStart = event.getAsLong(CalendarContract.Instances.BEGIN);
-            final long eventEnd = event.getAsLong(CalendarContract.Instances.END);
+            final long INSTANCE_BEGIN = event.getAsLong(CalendarContract.Instances.BEGIN);
+            long INSTANCE_END = event.getAsLong(CalendarContract.Instances.END);
+            final long VIEW_START = ((MonthCalendarItemView) getChildAt(BEGIN_INDEX)).getStartDate().getTime();
+            final long VIEW_END = ((MonthCalendarItemView) getChildAt(END_INDEX)).getEndDate().getTime();
 
             if (event.size() > 0)
             {
-                // 시작/종료일이 date가 아니나, 일정에 포함되는 경우
-                if (eventStart < viewStart && eventEnd > viewEnd)
+                // all day인 경우 instance end를 하루전으로 변경
+                if (event.getAsBoolean(CalendarContract.Instances.ALL_DAY))
                 {
-                    leftMargin = 0;
-                    rightMargin = 0;
+                    Calendar c = Calendar.getInstance();
+                    c.setTimeInMillis(INSTANCE_END);
+                    c.add(Calendar.DAY_OF_YEAR, -1);
+
+                    INSTANCE_END = c.getTimeInMillis();
                 }
-                // 시작일이 date인 경우, 종료일은 endDate 이후
-                else if (eventEnd >= viewEnd && eventStart >= viewStart && eventStart < viewEnd)
-                {
-                    leftMargin = EVENT_LR_MARGIN;
-                    rightMargin = 0;
-                }
-                // 종료일이 date인 경우, 시작일은 startDate이전
-                else if (eventEnd >= viewStart && eventEnd < viewEnd && eventStart < viewStart)
-                {
-                    leftMargin = 0;
-                    rightMargin = EVENT_LR_MARGIN;
-                }
-                // 시작/종료일이 date인 경우
-                else if (eventEnd >= viewStart && eventEnd < viewEnd && eventStart >= viewStart && eventStart < viewEnd)
-                {
-                    leftMargin = EVENT_LR_MARGIN;
-                    rightMargin = EVENT_LR_MARGIN;
-                }
+                int[] margin = EventViewUtil.getViewSideMargin(INSTANCE_BEGIN, INSTANCE_END, VIEW_START, VIEW_END, 4);
 
                 for (int currentRowNum = 1; currentRowNum <= eventRowCount; currentRowNum++)
                 {
                     if (currentRowNum == 1)
                     {
-                        startX = startIndex % 7 == 0 ? 0 : ITEM_WIDTH * (startIndex % 7);
+                        startX = BEGIN_INDEX % 7 == 0 ? 0 : ITEM_WIDTH * (BEGIN_INDEX % 7);
 
                         if (eventRowCount == 1)
                         {
-                            endX = endIndex % 7 == 0 ? 0 : ITEM_WIDTH * (endIndex % 7);
+                            endX = END_INDEX % 7 == 0 ? 0 : ITEM_WIDTH * (END_INDEX % 7);
                         } else
                         {
                             endX = getWidth() - ITEM_WIDTH;
@@ -215,7 +197,7 @@ public class MonthCalendarView extends ViewGroup implements IEvent
                     } else if (currentRowNum == eventRowCount)
                     {
                         startX = 0;
-                        endX = endIndex % 7 == 0 ? 0 : ITEM_WIDTH * (endIndex % 7);
+                        endX = END_INDEX % 7 == 0 ? 0 : ITEM_WIDTH * (END_INDEX % 7);
                     }
 
                     if (currentRowNum != 1 && currentRowNum != eventRowCount)
@@ -224,13 +206,13 @@ public class MonthCalendarView extends ViewGroup implements IEvent
                         endX = getWidth() - ITEM_WIDTH;
                     }
 
-                    int week = startIndex / 7 + currentRowNum - 1;
+                    int week = BEGIN_INDEX / 7 + currentRowNum - 1;
                     startY = ITEM_HEIGHT * (week) + DAY_SPACE_HEIGHT;
 
-                    top = startY + ((EVENT_HEIGHT + SPACING_BETWEEN_EVENT) * row);
+                    top = startY + ((EVENT_HEIGHT + SPACING_BETWEEN_EVENT) * ROW);
                     bottom = top + EVENT_HEIGHT;
-                    left = startX + leftMargin;
-                    right = endX + ITEM_WIDTH - rightMargin;
+                    left = startX + margin[0];
+                    right = endX + ITEM_WIDTH - margin[1];
 
                     eventData.setEventColorPaint(EventViewUtil.getEventColorPaint(event.getAsInteger(CalendarContract.Instances.EVENT_COLOR)));
                     eventData.setEventTextPaint(EventViewUtil.getEventTextPaint(EVENT_TEXT_HEIGHT));
@@ -327,9 +309,24 @@ public class MonthCalendarView extends ViewGroup implements IEvent
         // 달력 뷰의 셀에 아이템을 삽입
         for (ContentValues event : instances)
         {
+            Calendar beginT = Calendar.getInstance();
+            Calendar endT = Calendar.getInstance();
+
+            beginT.setTimeInMillis(event.getAsLong(CalendarContract.Instances.BEGIN));
+            endT.setTimeInMillis(event.getAsLong(CalendarContract.Instances.END));
+
+            String beginStr = ClockUtil.DB_DATE_FORMAT.format(beginT.getTime());
+            String endStr = ClockUtil.DB_DATE_FORMAT.format(endT.getTime());
+            String firstStr = ClockUtil.DB_DATE_FORMAT.format(new Date(firstDay));
+
             // 달력 내 위치를 계산
             int startIndex = ClockUtil.calcDateDifference(ClockUtil.DAY, event.getAsLong(CalendarContract.Instances.BEGIN), firstDay);
             int endIndex = ClockUtil.calcDateDifference(ClockUtil.DAY, event.getAsLong(CalendarContract.Instances.END), firstDay);
+
+            if (event.getAsBoolean(CalendarContract.Instances.ALL_DAY))
+            {
+                endIndex--;
+            }
 
             if (startIndex < 0)
             {
