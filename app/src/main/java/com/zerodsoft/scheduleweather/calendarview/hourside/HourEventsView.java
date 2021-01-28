@@ -38,6 +38,7 @@ public class HourEventsView extends ViewGroup
     protected final int HOUR_TEXT_HEIGHT;
     protected final int TEXT_MARGIN = 4;
     protected final int EVENT_TEXT_HEIGHT;
+    protected final int EVENT_RECT_MARGIN = 4;
 
     protected Context context;
 
@@ -82,7 +83,7 @@ public class HourEventsView extends ViewGroup
         HOUR_TEXT_HEIGHT = rect.height();
 
         TextPaint eventTextPaint = new TextPaint();
-        eventTextPaint.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 11, getResources().getDisplayMetrics()));
+        eventTextPaint.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 12, getResources().getDisplayMetrics()));
         eventTextPaint.getTextBounds("0", 0, 1, rect);
         EVENT_TEXT_HEIGHT = rect.height();
 

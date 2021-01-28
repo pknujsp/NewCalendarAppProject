@@ -1,6 +1,10 @@
 package com.zerodsoft.scheduleweather.utility;
 
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
@@ -49,13 +53,14 @@ public class ClockUtil
                     (viewCalendar.get(Calendar.YEAR) * 12 + viewCalendar.get(Calendar.MONTH));
         } else if (calendarType == WEEK)
         {
-            difference = (int) (TimeUnit.MILLISECONDS.toDays(dt1) -
-                    TimeUnit.MILLISECONDS.toDays(dt2)) / 7;
+            difference = (int) (TimeUnit.MILLISECONDS.toDays(dt1) - TimeUnit.MILLISECONDS.toDays(dt2)) / 7;
         } else if (calendarType == DAY)
         {
-            difference = (int) ((dt1 - dt2) / (24 * 60 * 60 * 1000));
-        }
+            int dt1Days = (int) (dt1 / (1000 * 60 * 60 * 24));
+            int dt2Days = (int) (dt2 / (1000 * 60 * 60 * 24));
 
+            difference = (int) (dt1Days - dt2Days);
+        }
         return difference;
     }
 

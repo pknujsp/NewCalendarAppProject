@@ -39,8 +39,6 @@ public class WeekView extends HourEventsView implements IEvent
     private boolean changingStartTime = false;
     private boolean changingEndTime = false;
 
-    private OverScroller overScroller;
-    private GestureDetectorCompat gestureDetector;
     private OnSwipeListener onSwipeListener;
     private OnEventItemClickListener onEventItemClickListener;
 
@@ -53,8 +51,6 @@ public class WeekView extends HourEventsView implements IEvent
     public WeekView(Context context, @Nullable AttributeSet attrs)
     {
         super(context, attrs);
-        // gestureDetector = new GestureDetectorCompat(context, onGestureListener);
-        // overScroller = new OverScroller(context);
     }
 
     public void setOnEventItemClickListener(OnEventItemClickListener onEventItemClickListener)
@@ -311,7 +307,6 @@ public class WeekView extends HourEventsView implements IEvent
         eventSparseArr.clear();
         removeAllViews();
 
-
         // 데이터를 리스트에 저장
         for (ContentValues instance : instances)
         {
@@ -381,7 +376,6 @@ public class WeekView extends HourEventsView implements IEvent
                     }
                 }
             }
-
 
             for (int index = 0; index < 7; index++)
             {
@@ -554,7 +548,6 @@ public class WeekView extends HourEventsView implements IEvent
         @Override
         public boolean onDown(MotionEvent e)
         {
-            overScroller.forceFinished(true);
             return true;
         }
 
@@ -567,13 +560,8 @@ public class WeekView extends HourEventsView implements IEvent
         @Override
         public void onLongPress(MotionEvent e)
         {
-            /*
-            if (setStartTime(e.getX(), e.getY()))
-            {
-                createdAddScheduleRect = true;
-                invalidate();
-            }
-             */
+
+
         }
     };
 
@@ -636,8 +624,8 @@ public class WeekView extends HourEventsView implements IEvent
             itemCell.eventColorPaint = EventViewUtil.getEventColorPaint(itemCell.event.getAsInteger(CalendarContract.Instances.EVENT_COLOR));
             itemCell.eventTextPaint = EventViewUtil.getEventTextPaint(EVENT_TEXT_HEIGHT);
 
-            canvas.drawRect(0, 0, getWidth(), getHeight(), itemCell.eventColorPaint);
-            canvas.drawText(itemCell.event.getAsString(CalendarContract.Instances.TITLE), TEXT_MARGIN, EVENT_TEXT_HEIGHT + TEXT_MARGIN, itemCell.eventTextPaint);
+            canvas.drawRect(EVENT_RECT_MARGIN, 0, getWidth() - EVENT_RECT_MARGIN, getHeight(), itemCell.eventColorPaint);
+            canvas.drawText(itemCell.event.getAsString(CalendarContract.Instances.TITLE), TEXT_MARGIN + EVENT_RECT_MARGIN, EVENT_TEXT_HEIGHT + TEXT_MARGIN, itemCell.eventTextPaint);
         }
     }
 }

@@ -21,14 +21,15 @@ import com.zerodsoft.scheduleweather.calendarview.month.EventData;
 import com.zerodsoft.scheduleweather.etc.EventViewUtil;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
+import java.time.Clock;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
 public class DayHeaderView extends ViewGroup implements IEvent
 {
     private final Paint DAY_DATE_TEXT_PAINT;
-
     private final Paint EXTRA_PAINT;
     private final Paint EXTRA_TEXT_PAINT;
     private final float EVENT_TEXT_HEIGHT;
@@ -41,7 +42,6 @@ public class DayHeaderView extends ViewGroup implements IEvent
     private static final int TEXT_MARGIN = 4;
     public static final int EVENT_LR_MARGIN = 8;
     public static final int EVENT_COUNT = 6;
-
 
     private final float EVENT_HEIGHT;
     private final float DAY_DATE_SPACE_HEIGHT;
@@ -118,7 +118,7 @@ public class DayHeaderView extends ViewGroup implements IEvent
     @Override
     protected void onLayout(boolean b, int i, int i1, int i2, int i3)
     {
-        int childCount = getChildCount();
+        final int childCount = getChildCount();
 
         if (!eventCellsList.isEmpty())
         {
@@ -135,8 +135,9 @@ public class DayHeaderView extends ViewGroup implements IEvent
                 int rightMargin = 0;
 
                 ContentValues instance = child.eventData.getEvent();
+                int dayDifference = ClockUtil.calcDateDifference(ClockUtil.DAY, instance.getAsLong(CalendarContract.Instances.BEGIN), instance.getAsLong(CalendarContract.Instances.END));
 
-                if (instance.size() == 0)
+                if (dayDifference == 0)
                 {
                     leftMargin = EVENT_LR_MARGIN;
                     rightMargin = EVENT_LR_MARGIN;
@@ -180,7 +181,6 @@ public class DayHeaderView extends ViewGroup implements IEvent
     protected void onDraw(Canvas canvas)
     {
         super.onDraw(canvas);
-
         // 날짜와 요일 그리기
         canvas.drawText(ClockUtil.D_E.format(today), getWidth() / 2, DAY_DATE_SPACE_HEIGHT - DAY_DATE_TB_MARGIN, DAY_DATE_TEXT_PAINT);
     }
@@ -209,20 +209,34 @@ public class DayHeaderView extends ViewGroup implements IEvent
         eventCellsList.clear();
         rowNum = 0;
         int availableRow = 0;
+        removeAllViews();
 
         // 달력 뷰의 셀에 아이템을 삽입
         for (ContentValues instance : instances)
         {
+            if (instance.getAsBoolean(CalendarContract.Instances.ALL_DAY))
+            {
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTimeInMillis(instance.getAsLong(CalendarContract.Instances.END));
+                calendar.add(Calendar.DAY_OF_YEAR, -1);
+
+                String v = ClockUtil.DB_DATE_FORMAT.format(calendar.getTime());
+
+                int dayDifference = ClockUtil.calcDateDifference(ClockUtil.DAY, calendar.getTimeInMillis(), today.getTime());
+
+                if (dayDifference < 0)
+                {
+                    continue;
+                }
+            }
             // 이벤트를 위치시킬 알맞은 행을 지정
             // 비어있는 행을 지정한다.
             // row 추가
             rowNum++;
-
             if (availableRow < EVENT_COUNT - 1)
             {
                 // 셀에 삽입된 아이템의 위치를 알맞게 조정
                 // 같은 일정은 같은 위치의 셀에 있어야 한다.
-
                 rows[availableRow] = true;
                 eventCellsList.add(new EventData(instance, availableRow));
             } else
@@ -232,8 +246,6 @@ public class DayHeaderView extends ViewGroup implements IEvent
             }
             availableRow++;
         }
-
-        removeAllViews();
 
         for (EventData eventData : eventCellsList)
         {
@@ -262,8 +274,11 @@ public class DayHeaderView extends ViewGroup implements IEvent
                 eventData.setEventTextPaint(EventViewUtil.getEventTextPaint(EVENT_TEXT_HEIGHT));
                 eventData.setEventColorPaint(EventViewUtil.getEventColorPaint(eventData.getEvent().getAsInteger(CalendarContract.Instances.EVENT_COLOR)));
 
-                canvas.drawRect(0, 0, getWidth(), getHeight(), eventData.getEventTextPaint());
-                canvas.drawText(eventData.getEvent().getAsString(CalendarContract.Instances.TITLE), TEXT_MARGIN, getHeight() - TEXT_MARGIN, eventData.getEventColorPaint());
+                int width = DayHeaderView.this.getWidth();
+                int height = DayHeaderView.this.getHeight();
+
+                canvas.drawRect(0, 0, width, height, eventData.getEventColorPaint());
+                canvas.drawText(eventData.getEvent().getAsString(CalendarContract.Instances.TITLE), TEXT_MARGIN, getHeight() - TEXT_MARGIN, eventData.getEventTextPaint());
             } else
             {
                 canvas.drawRect(EVENT_LR_MARGIN, 0, getWidth() - EVENT_LR_MARGIN, getHeight(), EXTRA_PAINT);
