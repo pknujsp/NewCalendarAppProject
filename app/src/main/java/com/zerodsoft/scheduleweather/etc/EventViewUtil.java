@@ -36,6 +36,7 @@ public class EventViewUtil
     {
         int leftMargin = 0;
         int rightMargin = 0;
+
         // 시작/종료일이 date가 아니나, 일정에 포함되는 경우
         if (dataStart < viewStart && dataEnd > viewEnd)
         {

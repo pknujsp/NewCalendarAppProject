@@ -25,8 +25,10 @@ import com.zerodsoft.scheduleweather.etc.EventViewUtil;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.utility.DateHour;
 
+import java.time.Clock;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -351,18 +353,27 @@ public class WeekHeaderView extends ViewGroup implements IEvent
         // 달력 뷰의 셀에 아이템을 삽입
         for (ContentValues event : instances)
         {
+            String dataBegin = ClockUtil.DB_DATE_FORMAT.format(new Date(event.getAsLong(CalendarContract.Instances.BEGIN)));
+            String dataEnd = ClockUtil.DB_DATE_FORMAT.format(new Date(event.getAsLong(CalendarContract.Instances.END)));
+            String viewBegin = ClockUtil.DB_DATE_FORMAT.format(weekFirstDay.getTime());
+
             int startIndex = ClockUtil.calcDateDifference(ClockUtil.DAY, event.getAsLong(CalendarContract.Instances.BEGIN), weekFirstDay.getTimeInMillis());
             int endIndex = ClockUtil.calcDateDifference(ClockUtil.DAY, event.getAsLong(CalendarContract.Instances.END), weekFirstDay.getTimeInMillis());
             int dateLength = 0;
 
-            if (startIndex == -1 && endIndex == 7)
+            if (event.getAsBoolean(CalendarContract.Instances.ALL_DAY))
+            {
+                endIndex--;
+            }
+
+            if (startIndex < 0 && endIndex >= 7)
             {
                 dateLength = EventData.BEFORE_AFTER;
-            } else if (startIndex == -1 && endIndex <= 6)
+            } else if (startIndex < 0 && endIndex <= 6)
             {
                 // 이번 주 이전 - 이번 주 내
                 dateLength = EventData.BEFORE_THISWEEK;
-            } else if (startIndex >= 0 && endIndex == 7)
+            } else if (startIndex >= 0 && endIndex >= 7)
             {
                 // 이번 주 내 - 이번 주 이후
                 dateLength = EventData.THISWEEK_AFTER;
@@ -372,11 +383,11 @@ public class WeekHeaderView extends ViewGroup implements IEvent
                 dateLength = EventData.THISWEEK_THISWEEK;
             }
 
-            if (startIndex == -1)
+            if (startIndex < 0)
             {
                 startIndex = 0;
             }
-            if (endIndex == 7)
+            if (endIndex >= 7)
             {
                 endIndex = 6;
             }

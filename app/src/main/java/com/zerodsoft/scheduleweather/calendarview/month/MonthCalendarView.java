@@ -168,6 +168,7 @@ public class MonthCalendarView extends ViewGroup implements IEvent
             final long VIEW_START = ((MonthCalendarItemView) getChildAt(BEGIN_INDEX)).getStartDate().getTime();
             final long VIEW_END = ((MonthCalendarItemView) getChildAt(END_INDEX)).getEndDate().getTime();
 
+
             if (event.size() > 0)
             {
                 // all day인 경우 instance end를 하루전으로 변경
@@ -179,6 +180,12 @@ public class MonthCalendarView extends ViewGroup implements IEvent
 
                     INSTANCE_END = c.getTimeInMillis();
                 }
+
+                String viewBeginStr = ClockUtil.DB_DATE_FORMAT.format(((MonthCalendarItemView) getChildAt(BEGIN_INDEX)).getStartDate());
+                String viewEndStr = ClockUtil.DB_DATE_FORMAT.format(((MonthCalendarItemView) getChildAt(BEGIN_INDEX)).getEndDate());
+                String dataBeginStr = ClockUtil.DB_DATE_FORMAT.format(new Date(INSTANCE_BEGIN));
+                String dataEndStr = ClockUtil.DB_DATE_FORMAT.format(new Date(INSTANCE_END));
+
                 int[] margin = EventViewUtil.getViewSideMargin(INSTANCE_BEGIN, INSTANCE_END, VIEW_START, VIEW_END, 4);
 
                 for (int currentRowNum = 1; currentRowNum <= eventRowCount; currentRowNum++)
@@ -309,18 +316,8 @@ public class MonthCalendarView extends ViewGroup implements IEvent
         // 달력 뷰의 셀에 아이템을 삽입
         for (ContentValues event : instances)
         {
-            Calendar beginT = Calendar.getInstance();
-            Calendar endT = Calendar.getInstance();
-
-            beginT.setTimeInMillis(event.getAsLong(CalendarContract.Instances.BEGIN));
-            endT.setTimeInMillis(event.getAsLong(CalendarContract.Instances.END));
-
-            String beginStr = ClockUtil.DB_DATE_FORMAT.format(beginT.getTime());
-            String endStr = ClockUtil.DB_DATE_FORMAT.format(endT.getTime());
-            String firstStr = ClockUtil.DB_DATE_FORMAT.format(new Date(firstDay));
-
-            // 달력 내 위치를 계산
-            int startIndex = ClockUtil.calcDateDifference(ClockUtil.DAY, event.getAsLong(CalendarContract.Instances.BEGIN), firstDay);
+                  // 달력 내 위치를 계산
+            int beginIndex = ClockUtil.calcDateDifference(ClockUtil.DAY, event.getAsLong(CalendarContract.Instances.BEGIN), firstDay);
             int endIndex = ClockUtil.calcDateDifference(ClockUtil.DAY, event.getAsLong(CalendarContract.Instances.END), firstDay);
 
             if (event.getAsBoolean(CalendarContract.Instances.ALL_DAY))
@@ -328,9 +325,9 @@ public class MonthCalendarView extends ViewGroup implements IEvent
                 endIndex--;
             }
 
-            if (startIndex < 0)
+            if (beginIndex < 0)
             {
-                startIndex = 0;
+                beginIndex = 0;
             }
             if (endIndex > 41)
             {
@@ -338,9 +335,9 @@ public class MonthCalendarView extends ViewGroup implements IEvent
                 endIndex = 41;
             }
 
-            if (start > startIndex)
+            if (start > beginIndex)
             {
-                start = startIndex;
+                start = beginIndex;
             }
             if (end < endIndex)
             {
@@ -351,7 +348,7 @@ public class MonthCalendarView extends ViewGroup implements IEvent
             // startDate부터 endDate까지 공통적으로 비어있는 행을 지정한다.
             Set<Integer> rowSet = new TreeSet<>();
 
-            for (int index = startIndex; index <= endIndex; index++)
+            for (int index = beginIndex; index <= endIndex; index++)
             {
                 if (ITEM_LAYOUT_CELLS.get(index) == null)
                 {
@@ -371,7 +368,7 @@ public class MonthCalendarView extends ViewGroup implements IEvent
                     }
                 }
 
-                if (index == startIndex)
+                if (index == beginIndex)
                 {
                     rowSet.addAll(set);
                 } else
@@ -399,11 +396,11 @@ public class MonthCalendarView extends ViewGroup implements IEvent
                     // 셀에 삽입된 아이템의 위치를 알맞게 조정
                     // 같은 일정은 같은 위치의 셀에 있어야 한다.
                     // row가 MonthCalendarItemView.EVENT_COUNT - 1인 경우 빈 객체를 저장
-                    for (int i = startIndex; i <= endIndex; i++)
+                    for (int i = beginIndex; i <= endIndex; i++)
                     {
                         ITEM_LAYOUT_CELLS.get(i).row[row] = true;
                     }
-                    EventData eventData = new EventData(event, startIndex, endIndex, row);
+                    EventData eventData = new EventData(event, beginIndex, endIndex, row);
                     eventCellsList.add(eventData);
                 }
             }

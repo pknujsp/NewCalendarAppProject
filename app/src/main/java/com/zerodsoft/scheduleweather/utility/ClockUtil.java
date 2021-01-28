@@ -2,6 +2,7 @@ package com.zerodsoft.scheduleweather.utility;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
@@ -52,9 +53,7 @@ public class ClockUtil
                     TimeUnit.MILLISECONDS.toDays(dt2)) / 7;
         } else if (calendarType == DAY)
         {
-            long event = TimeUnit.MILLISECONDS.toDays(dt1);
-            long view = TimeUnit.MILLISECONDS.toDays(dt2);
-            difference = (int) (event - view);
+            difference = (int) ((dt1 - dt2) / (24 * 60 * 60 * 1000));
         }
 
         return difference;
