@@ -20,6 +20,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.CalendarContract;
+import android.util.ArraySet;
 import android.view.View;
 import android.widget.ExpandableListView;
 import android.widget.TextView;
@@ -66,7 +67,6 @@ import java.util.TimerTask;
 public class AppMainActivity extends AppCompatActivity implements ICalendarCheckBox, IToolbar, IConnectedCalendars
 {
     private EventTransactionFragment calendarTransactionFragment;
-    public static final String ACTION_FINISHED_SYNC = "com.zerodsoft.ACTION_FINISHED_SYNC";
     private static int DISPLAY_WIDTH = 0;
     private static int DISPLAY_HEIGHT = 0;
     private static Map<String, ContentValues> connectedCalendarMap = new HashMap<>();
@@ -189,6 +189,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
             {
                 if (listDataWrapper.getData() != null)
                 {
+                    // accountName을 기준으로 맵 구성
                     Map<String, AccountDto> accountMap = new HashMap<>();
                     List<ContentValues> calendarList = listDataWrapper.getData();
 
@@ -212,34 +213,14 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
                     }
                     accountList = new ArrayList<>(accountMap.values());
 
-                    // 네비게이션 내 캘린더 리스트 구성
-                    calendarsAdapter = new CalendarsAdapter(AppMainActivity.this, accountList);
 
                     SharedPreferences sharedPreferences = getSharedPreferences(getString(R.string.preferences_selected_calendars_key), Context.MODE_PRIVATE);
-                    Set<String> selectedCalendarSet = sharedPreferences.getStringSet(getString(R.string.preferences_selected_calendars_key), new HashSet<>());
-                    // 선택된 캘린더가 이미 있는지 확인
+                    Set<String> selectedCalendarSet = new ArraySet<>();
+                    Map<String, String> selectedCalendarsMap = (Map<String, String>) sharedPreferences.getAll();
 
-                    /* 앱을 처음 실행 했을때 모두 선택
-                    if (selectedCalendarSet.isEmpty())
-                    {
-                        for (AccountDto accountDto : accountList)
-                        {
-                            List<ContentValues> newCalendarList = accountDto.getCalendars();
+                    selectedCalendarSet.addAll(selectedCalendarsMap.values());
 
-                            for (ContentValues calendar : newCalendarList)
-                            {
-                                selectedCalendarSet.add(calendar.getAsString(CalendarContract.Calendars.ACCOUNT_NAME) + "&"
-                                        + calendar.getAsString(CalendarContract.Calendars._ID));
-                            }
-                        }
-                        SharedPreferences.Editor editor = sharedPreferences.edit();
-                        editor.putStringSet(getString(R.string.preferences_selected_calendars_key), selectedCalendarSet);
-                        editor.commit();
-                    }
-
-                     */
-
-                    boolean[][] checkBoxStates = new boolean[accountList.size()][];
+                    final boolean[][] checkBoxStates = new boolean[accountList.size()][];
 
                     for (int i = 0; i < accountList.size(); i++)
                     {
@@ -271,7 +252,8 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
                         }
                     }
 
-                    calendarsAdapter.setCheckBoxStates(checkBoxStates);
+                    // 네비게이션 내 캘린더 리스트 구성
+                    calendarsAdapter = new CalendarsAdapter(AppMainActivity.this, accountList, checkBoxStates);
                     mainBinding.sideNavCalendarList.setAdapter(calendarsAdapter);
                     mainBinding.sideNavCalendarList.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener()
                     {
@@ -281,7 +263,6 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
                             return false;
                         }
                     });
-                    expandAllGroup();
                 }
             }
         });
@@ -639,7 +620,10 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
     public void onCheckedBox(String key, ContentValues calendar, boolean state)
     {
         SharedPreferences sharedPreferences = getSharedPreferences(getString(R.string.preferences_selected_calendars_key), Context.MODE_PRIVATE);
-        Set<String> selectedCalendarSet = sharedPreferences.getStringSet(getString(R.string.preferences_selected_calendars_key), new HashSet<>());
+        Set<String> selectedCalendarSet = new ArraySet<>();
+        Map<String, String> selectedCalendarsMap = (Map<String, String>) sharedPreferences.getAll();
+
+        selectedCalendarSet.addAll(selectedCalendarsMap.values());
 
         for (String v : selectedCalendarSet)
         {
@@ -648,19 +632,14 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
                 if (!state)
                 {
                     // 같은 값을 가진 것이 이미 추가되어있는 경우 선택해제 하는 것이므로 삭제한다.
-                    selectedCalendarSet.remove(key);
                     connectedCalendarMap.remove(key);
 
                     connectedCalendarList.clear();
                     connectedCalendarList.addAll(connectedCalendarMap.values());
 
                     SharedPreferences.Editor editor = sharedPreferences.edit();
-                    editor.remove(getString(R.string.preferences_selected_calendars_key));
+                    editor.remove(key);
                     editor.commit();
-
-                    SharedPreferences.Editor editor2 = sharedPreferences.edit();
-                    editor2.putStringSet(getString(R.string.preferences_selected_calendars_key), selectedCalendarSet);
-                    editor2.commit();
 
                     calendarTransactionFragment.refreshCalendar();
                 }
@@ -669,16 +648,10 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
         }
 
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        selectedCalendarSet.add(key);
         connectedCalendarMap.put(key, calendar);
         connectedCalendarList.add(calendar);
-
-        editor.remove(getString(R.string.preferences_selected_calendars_key));
+        editor.putString(key, key);
         editor.commit();
-
-        SharedPreferences.Editor editor2 = sharedPreferences.edit();
-        editor2.putStringSet(getString(R.string.preferences_selected_calendars_key), selectedCalendarSet);
-        editor2.commit();
 
         calendarTransactionFragment.refreshCalendar();
     }

@@ -1,5 +1,7 @@
 package com.zerodsoft.scheduleweather.utility;
 
+import java.sql.Time;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -7,6 +9,8 @@ import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.Locale;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
@@ -42,24 +46,43 @@ public class ClockUtil
     {
         int difference = 0;
 
+        GregorianCalendar dt1GregorianCalendar = new GregorianCalendar(ClockUtil.TIME_ZONE);
+        dt1GregorianCalendar.setTimeInMillis(dt1);
+        GregorianCalendar dt2GregorianCalendar = new GregorianCalendar(ClockUtil.TIME_ZONE);
+        dt2GregorianCalendar.setTimeInMillis(dt2);
+
         if (calendarType == MONTH)
         {
-            Calendar eventCalendar = Calendar.getInstance();
-            Calendar viewCalendar = Calendar.getInstance();
-            eventCalendar.setTimeInMillis(dt1);
-            viewCalendar.setTimeInMillis(dt2);
-
-            difference = (eventCalendar.get(Calendar.YEAR) * 12 + eventCalendar.get(Calendar.MONTH)) -
-                    (viewCalendar.get(Calendar.YEAR) * 12 + viewCalendar.get(Calendar.MONTH));
+            difference = (dt1GregorianCalendar.get(Calendar.YEAR) * 12 + dt1GregorianCalendar.get(Calendar.MONTH)) -
+                    (dt2GregorianCalendar.get(Calendar.YEAR) * 12 + dt2GregorianCalendar.get(Calendar.MONTH));
         } else if (calendarType == WEEK)
         {
             difference = (int) (TimeUnit.MILLISECONDS.toDays(dt1) - TimeUnit.MILLISECONDS.toDays(dt2)) / 7;
         } else if (calendarType == DAY)
         {
-            int dt1Days = (int) (dt1 / (1000 * 60 * 60 * 24));
-            int dt2Days = (int) (dt2 / (1000 * 60 * 60 * 24));
+            // 윤년을 고려해서 계산한다
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy/M/d", Locale.KOREAN);
 
-            difference = (int) (dt1Days - dt2Days);
+            String dt1Str = dt1GregorianCalendar.get(Calendar.YEAR) + "/"
+                    + (dt1GregorianCalendar.get(Calendar.MONTH) + 1) + "/" +
+                    dt1GregorianCalendar.get(Calendar.DAY_OF_MONTH);
+
+            String dt2Str = dt2GregorianCalendar.get(Calendar.YEAR) + "/"
+                    + (dt2GregorianCalendar.get(Calendar.MONTH) + 1) + "/" +
+                    dt2GregorianCalendar.get(Calendar.DAY_OF_MONTH);
+
+            long dt1Days = 0;
+            long dt2Days = 0;
+            try
+            {
+                dt1Days = simpleDateFormat.parse(dt1Str).getTime();
+                dt2Days = simpleDateFormat.parse(dt2Str).getTime();
+            } catch (ParseException e)
+            {
+                e.printStackTrace();
+            }
+
+            difference = (int) TimeUnit.DAYS.convert(dt1Days - dt2Days, TimeUnit.MILLISECONDS);
         }
         return difference;
     }

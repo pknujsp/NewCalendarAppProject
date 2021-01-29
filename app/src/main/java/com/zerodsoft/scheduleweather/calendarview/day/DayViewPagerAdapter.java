@@ -13,6 +13,7 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
 import com.zerodsoft.scheduleweather.calendarview.callback.EventCallback;
+import com.zerodsoft.scheduleweather.calendarview.common.HeaderInstancesView;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.DateGetter;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;

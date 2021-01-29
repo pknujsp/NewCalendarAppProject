@@ -486,6 +486,12 @@ public class CalendarProvider implements ICalendarProvider
     @Override
     public void getInstances(List<ContentValues> calendarList, long startDate, long endDate, EventCallback<List<CalendarInstance>> callback)
     {
+        List<CalendarInstance> calendarInstances = new ArrayList<>();
+
+        if (calendarList.isEmpty())
+        {
+            callback.onResult(calendarInstances);
+        }
         ContentResolver contentResolver = context.getContentResolver();
         final String startMilliSec = String.valueOf(startDate);
         final String endMilliSec = String.valueOf(endDate);
@@ -501,7 +507,6 @@ public class CalendarProvider implements ICalendarProvider
         String selection = CalendarContract.Instances.CALENDAR_ID + "=?";
         final String[] selectionArg = new String[1];
 
-        List<CalendarInstance> calendarInstances = new ArrayList<>();
 
         for (ContentValues calendar : calendarList)
         {

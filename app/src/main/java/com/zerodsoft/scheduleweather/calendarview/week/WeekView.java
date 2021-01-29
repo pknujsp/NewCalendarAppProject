@@ -75,7 +75,7 @@ public class WeekView extends HourEventsView implements IEvent
         this.instances = new ArrayList<>();
         for (ContentValues instance : instances)
         {
-            if (ClockUtil.calcDateDifference(ClockUtil.DAY, instance.getAsLong(CalendarContract.Instances.END), instance.getAsLong(CalendarContract.Instances.BEGIN)) == 0)
+            if (ClockUtil.calcDateDifference(ClockUtil.DAY, instance.getAsLong(CalendarContract.Instances.BEGIN), instance.getAsLong(CalendarContract.Instances.END)) == 0)
             {
                 this.instances.add(instance);
             }

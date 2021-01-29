@@ -10,11 +10,18 @@ public class EventData
     public static final int BEFORE_THISWEEK = 1;
     public static final int THISWEEK_AFTER = 2;
     public static final int THISWEEK_THISWEEK = 3;
+    public static final int DAY = 4;
+    public static final int WEEK = 5;
+
 
     private int startIndex;
     private int endIndex;
     private int dateLength;
     private int row;
+    private int leftMargin;
+    private int rightMargin;
+    private int type = DAY;
+
     private Paint eventColorPaint;
     private TextPaint eventTextPaint;
     private ContentValues event;
@@ -41,6 +48,16 @@ public class EventData
         this.endIndex = endIndex;
         this.row = row;
         this.dateLength = dateLength;
+    }
+
+    public int getType()
+    {
+        return type;
+    }
+
+    public void setType(int type)
+    {
+        this.type = type;
     }
 
     public int getDateLength()
@@ -73,6 +90,16 @@ public class EventData
         return row;
     }
 
+    public int getLeftMargin()
+    {
+        return leftMargin;
+    }
+
+    public int getRightMargin()
+    {
+        return rightMargin;
+    }
+
     public EventData setRow(int row)
     {
         this.row = row;
@@ -95,6 +122,16 @@ public class EventData
     {
         this.endIndex = endIndex;
         return this;
+    }
+
+    public void setLeftMargin(int leftMargin)
+    {
+        this.leftMargin = leftMargin;
+    }
+
+    public void setRightMargin(int rightMargin)
+    {
+        this.rightMargin = rightMargin;
     }
 
     public EventData setEventColorPaint(Paint eventColorPaint)

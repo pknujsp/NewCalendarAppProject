@@ -36,5 +36,12 @@ public class CalendarUtil
         }
     };
 
+    public static int getColor(int color)
+    {
+        float[] hsv = new float[3];
+        Color.colorToHSV(color, hsv);
+        return Color.HSVToColor(hsv);
+    }
+
 
 }

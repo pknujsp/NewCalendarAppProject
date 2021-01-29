@@ -316,7 +316,7 @@ public class MonthCalendarView extends ViewGroup implements IEvent
         // 달력 뷰의 셀에 아이템을 삽입
         for (ContentValues event : instances)
         {
-                  // 달력 내 위치를 계산
+            // 달력 내 위치를 계산
             int beginIndex = ClockUtil.calcDateDifference(ClockUtil.DAY, event.getAsLong(CalendarContract.Instances.BEGIN), firstDay);
             int endIndex = ClockUtil.calcDateDifference(ClockUtil.DAY, event.getAsLong(CalendarContract.Instances.END), firstDay);
 

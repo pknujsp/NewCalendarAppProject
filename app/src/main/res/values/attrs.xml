@@ -5,5 +5,13 @@
         <attr name="IndicatorUnselectedDotDrawable" format="reference" />
         <attr name="IndicatorSelectedDotDrawable" format="reference" />
     </declare-styleable>
+    <declare-styleable name="header_instances_view">
+        <attr name="RowsLimit" format="integer"/>
+        <attr name="SpacingBetweenInstanceViews" format="dimension"/>
+        <attr name="TextLeftMargin" format="dimension"/>
+        <attr name="TextTopBottomMargin" format="dimension"/>
+        <attr name="TextSize" format="dimension"/>
+    </declare-styleable>
 
 </resources>
+
