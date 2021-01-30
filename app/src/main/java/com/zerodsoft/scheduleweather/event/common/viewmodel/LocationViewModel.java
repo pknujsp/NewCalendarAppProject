@@ -1,6 +1,8 @@
 package com.zerodsoft.scheduleweather.event.common.viewmodel;
 
 import android.app.Application;
+import android.os.RemoteException;
+import android.service.carrier.CarrierMessagingService;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -23,9 +25,9 @@ public class LocationViewModel extends AndroidViewModel implements ILocationDao
     }
 
     @Override
-    public void getLocation(int calendarId, long eventId)
+    public void getLocation(int calendarId, long eventId, CarrierMessagingService.ResultCallback<LocationDTO> resultCallback)
     {
-        locationRepository.getLocation(calendarId, eventId);
+        locationRepository.getLocation(calendarId, eventId,resultCallback);
     }
 
     public MutableLiveData<LocationDTO> getLocationLiveData()

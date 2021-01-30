@@ -1,6 +1,7 @@
 package com.zerodsoft.scheduleweather.event.common.repository;
 
 import android.app.Application;
+import android.service.carrier.CarrierMessagingService;
 
 import androidx.lifecycle.MutableLiveData;
 
@@ -22,7 +23,7 @@ public class LocationRepository implements ILocationDao
     }
 
     @Override
-    public void getLocation(int calendarId, long eventId)
+    public void getLocation(int calendarId, long eventId, CarrierMessagingService.ResultCallback<LocationDTO> resultCallback)
     {
         App.executorService.execute(new Runnable()
         {

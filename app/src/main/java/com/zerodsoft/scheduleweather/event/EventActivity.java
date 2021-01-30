@@ -24,6 +24,7 @@ import com.google.android.material.tabs.TabLayout;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.event.common.MLocActivity;
+import com.zerodsoft.scheduleweather.event.common.interfaces.ILocation;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.event.EventFragment;
 import com.zerodsoft.scheduleweather.event.location.PlacesAroundLocationFragment;
@@ -31,7 +32,7 @@ import com.zerodsoft.scheduleweather.event.weather.WeatherFragment;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
-public class EventActivity extends AppCompatActivity
+public class EventActivity extends AppCompatActivity implements ILocation
 {
     private ViewPager2 viewPager;
     private TabLayout tabLayout;
@@ -42,7 +43,7 @@ public class EventActivity extends AppCompatActivity
 
     private Bundle eventBundle;
     private Bundle locationBundle;
-
+    private ContentValues event;
 
     private EventFragment eventFragment;
     private WeatherFragment weatherFragment;
@@ -99,8 +100,9 @@ public class EventActivity extends AppCompatActivity
             {
                 if (contentValuesDataWrapper.getData() != null)
                 {
+                    event = contentValuesDataWrapper.getData();
                     eventBundle = new Bundle();
-                    eventBundle.putParcelable("event", contentValuesDataWrapper.getData());
+                    eventBundle.putParcelable("event", event);
                     ContentValues contentValues = contentValuesDataWrapper.getData();
 
                     // 이벤트 정보를 표시하기 전에 위치 값을 바탕으로 날씨, 주변정보등을
@@ -129,36 +131,7 @@ public class EventActivity extends AppCompatActivity
 
                         - 등록 선택 -> 등록 액티비티 실행
                          */
-                        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(EventActivity.this)
-                                .setTitle(getString(R.string.request_select_location_title))
-                                .setMessage(getString(R.string.request_select_location_description))
-                                .setNegativeButton(getString(R.string.cancel), new DialogInterface.OnClickListener()
-                                {
-                                    @Override
-                                    public void onClick(DialogInterface dialogInterface, int i)
-                                    {
-                                        setFragments();
-                                    }
-                                })
-                                .setPositiveButton(getString(R.string.check), new DialogInterface.OnClickListener()
-                                {
-                                    @Override
-                                    public void onClick(DialogInterface dialogInterface, int i)
-                                    {
-                                        Intent intent = new Intent(EventActivity.this, MLocActivity.class);
-                                        ContentValues event = eventBundle.getParcelable("event");
-
-                                        intent.putExtra("calendarId", event.getAsInteger(CalendarContract.Events.CALENDAR_ID));
-                                        intent.putExtra("eventId", event.getAsInteger(CalendarContract.Events._ID));
-                                        intent.putExtra("accountName", event.getAsString(CalendarContract.Events.ACCOUNT_NAME));
-                                        intent.putExtra("location", event.getAsString(CalendarContract.Events.EVENT_LOCATION));
-
-                                        startActivityForResult(intent, REQUEST_SELECT_LOCATION);
-                                    }
-                                });
-
-                        AlertDialog dialog = builder.create();
-                        dialog.show();
+                        showRequestLocDialog();
                     } else
                     {
                         // 등록 상태
@@ -175,22 +148,14 @@ public class EventActivity extends AppCompatActivity
     private void setFragments()
     {
         eventFragment = new EventFragment();
-      //  weatherFragment = new WeatherFragment();
-      //  placesAroundLocationFragment = new PlacesAroundLocationFragment();
+        weatherFragment = new WeatherFragment(this);
+        placesAroundLocationFragment = new PlacesAroundLocationFragment(this);
 
         eventFragment.setArguments(eventBundle);
-       // weatherFragment.setArguments(locationBundle);
-       // placesAroundLocationFragment.setArguments(locationBundle);
 
-        /*
         fragmentManager.beginTransaction().add(R.id.schedule_fragment_container, eventFragment, TAG_INFO).hide(eventFragment)
                 .add(R.id.schedule_fragment_container, weatherFragment, TAG_WEATHER).hide(placesAroundLocationFragment)
                 .add(R.id.schedule_fragment_container, placesAroundLocationFragment, TAG_LOCATION).hide(weatherFragment)
-                .commit();
-
-         */
-
-        fragmentManager.beginTransaction().add(R.id.schedule_fragment_container, eventFragment, TAG_INFO)
                 .commit();
     }
 
@@ -237,4 +202,75 @@ public class EventActivity extends AppCompatActivity
         onBackPressedCallback.remove();
     }
 
+    @Override
+    public void showRequestLocDialog()
+    {
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(EventActivity.this)
+                .setTitle(getString(R.string.request_select_location_title))
+                .setMessage(getString(R.string.request_select_location_description))
+                .setNegativeButton(getString(R.string.cancel), new DialogInterface.OnClickListener()
+                {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i)
+                    {
+                        if (fragmentManager.getFragments().isEmpty())
+                        {
+                            setFragments();
+                        }
+                        dialogInterface.cancel();
+                    }
+                })
+                .setPositiveButton(getString(R.string.check), new DialogInterface.OnClickListener()
+                {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i)
+                    {
+                        Intent intent = new Intent(EventActivity.this, MLocActivity.class);
+
+                        intent.putExtra("calendarId", event.getAsInteger(CalendarContract.Events.CALENDAR_ID));
+                        intent.putExtra("eventId", event.getAsInteger(CalendarContract.Events._ID));
+                        intent.putExtra("location", event.getAsString(CalendarContract.Events.EVENT_LOCATION));
+
+                        startActivityForResult(intent, REQUEST_SELECT_LOCATION);
+                        dialogInterface.dismiss();
+                    }
+                });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    /**
+     * 상세한 위치 정보 전달
+     *
+     * @return
+     */
+    @Override
+    public LocationDTO getLocation()
+    {
+        return null;
+
+    }
+
+    /**
+     * 이벤트에 지정되어 있는 간단한 위치값 전달
+     *
+     * @return
+     */
+    @Override
+    public boolean hasSimpleLocation()
+    {
+        return event.getAsString(CalendarContract.Events.EVENT_LOCATION) != null;
+    }
+
+    /**
+     * 날씨, 주변 정보들을 표시하기 위해 지정한 상세 위치 정보를 가지고 있는지 확인
+     *
+     * @return
+     */
+    @Override
+    public boolean hasDetailLocation()
+    {
+        return false;
+    }
 }
