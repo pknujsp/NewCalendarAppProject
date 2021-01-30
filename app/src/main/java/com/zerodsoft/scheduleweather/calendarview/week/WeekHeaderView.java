@@ -202,7 +202,7 @@ public class WeekHeaderView extends ViewGroup implements IEvent
     public void setEventTable()
     {
         clear();
-        headerInstancesView = new HeaderInstancesView(getContext(), onEventItemClickListener);
+        headerInstancesView = new HeaderInstancesView(getContext(),onEventItemClickListener);
         addView(headerInstancesView);
 
         START_INDEX = Integer.MAX_VALUE;
@@ -313,7 +313,7 @@ public class WeekHeaderView extends ViewGroup implements IEvent
                     eventData.setRightMargin(margin[1]);
                     eventCellsList.add(eventData);
 
-                    InstanceView instanceView = new InstanceView(getContext(), onEventItemClickListener);
+                    InstanceView instanceView = new InstanceView(getContext());
                     instanceView.init(eventData.getEvent());
                     headerInstancesView.addView(instanceView);
                 }
@@ -322,6 +322,8 @@ public class WeekHeaderView extends ViewGroup implements IEvent
         headerInstancesView.setEventCellsList(eventCellsList);
         ROWS_COUNT++;
     }
+
+
 
     class ItemCell
     {

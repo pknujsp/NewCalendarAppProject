@@ -168,7 +168,6 @@ public class MonthCalendarView extends ViewGroup implements IEvent
             final long VIEW_START = ((MonthCalendarItemView) getChildAt(BEGIN_INDEX)).getStartDate().getTime();
             final long VIEW_END = ((MonthCalendarItemView) getChildAt(END_INDEX)).getEndDate().getTime();
 
-
             if (event.size() > 0)
             {
                 // all day인 경우 instance end를 하루전으로 변경
@@ -180,11 +179,6 @@ public class MonthCalendarView extends ViewGroup implements IEvent
 
                     INSTANCE_END = c.getTimeInMillis();
                 }
-
-                String viewBeginStr = ClockUtil.DB_DATE_FORMAT.format(((MonthCalendarItemView) getChildAt(BEGIN_INDEX)).getStartDate());
-                String viewEndStr = ClockUtil.DB_DATE_FORMAT.format(((MonthCalendarItemView) getChildAt(BEGIN_INDEX)).getEndDate());
-                String dataBeginStr = ClockUtil.DB_DATE_FORMAT.format(new Date(INSTANCE_BEGIN));
-                String dataEndStr = ClockUtil.DB_DATE_FORMAT.format(new Date(INSTANCE_END));
 
                 int[] margin = EventViewUtil.getViewSideMargin(INSTANCE_BEGIN, INSTANCE_END, VIEW_START, VIEW_END, 4);
 

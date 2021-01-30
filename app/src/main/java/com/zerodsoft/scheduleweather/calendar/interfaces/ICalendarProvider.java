@@ -10,15 +10,15 @@ import java.util.List;
 public interface ICalendarProvider
 {
     // event - crud
-    public ContentValues getEvent(int calendarId, int eventId);
+    public ContentValues getEvent(int calendarId, long eventId);
 
     public List<ContentValues> getEvents(int calendarId);
 
     public void addEvent(ContentValues event);
 
-    public int deleteEvent(int calendarId, int eventId);
+    public int deleteEvent(int calendarId, long eventId);
 
-    public int deleteEvents(int calendarId, int[] eventIds);
+    public int deleteEvents(int calendarId, long[] eventIds);
 
     public int updateEvent(ContentValues event);
 
@@ -30,13 +30,13 @@ public interface ICalendarProvider
     public ContentValues getCalendar(int calendarId);
 
     // reminder - crud
-    public List<ContentValues> getReminders(int calendarId, int eventId);
+    public List<ContentValues> getReminders(int calendarId, long eventId);
 
     public int updateReminder(ContentValues reminder);
 
-    public int deleteReminders(int calendarId, int eventId, int[] reminderIds);
+    public int deleteReminders(int calendarId, long eventId, int[] reminderIds);
 
-    public int deleteAllReminders(int calendarId, int eventId);
+    public int deleteAllReminders(int calendarId, long eventId);
 
     public int addReminders(List<ContentValues> reminders);
 
@@ -46,13 +46,13 @@ public interface ICalendarProvider
     // attendee - crud
     public int addAttendees(List<ContentValues> attendeeList);
 
-    public List<ContentValues> getAttendees(int calendarId, int eventId);
+    public List<ContentValues> getAttendees(int calendarId, long eventId);
 
     public int updateAttendees(List<ContentValues> attendeeList);
 
-    public int deleteAllAttendees(int calendarId, int eventId);
+    public int deleteAllAttendees(int calendarId, long eventId);
 
-    public int deleteAttendees(int calendarId, int eventId, int[] attendeeIds);
+    public int deleteAttendees(int calendarId, long eventId, int[] attendeeIds);
 
     // sync
 }

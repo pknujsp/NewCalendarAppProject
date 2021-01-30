@@ -6,6 +6,7 @@ import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.provider.CalendarContract;
 import android.text.TextPaint;
 import android.view.View;
@@ -16,7 +17,6 @@ import com.zerodsoft.scheduleweather.etc.EventViewUtil;
 
 public class InstanceView extends View
 {
-    private OnEventItemClickListener onEventItemClickListener;
     private IInstanceView iInstanceView;
     private ContentValues instance;
 
@@ -29,11 +29,12 @@ public class InstanceView extends View
     //textsize
     public final int TEXT_SIZE;
 
+    private Integer TEXT_HEIGHT;
 
-    public InstanceView(Context context, OnEventItemClickListener onEventItemClickListener)
+
+    public InstanceView(Context context)
     {
         super(context);
-        this.onEventItemClickListener = onEventItemClickListener;
 
         TEXT_LEFT_MARGIN = (int) context.getResources().getDimension(R.dimen.text_left_margin);
         TEXT_TOP_BOTTOM_MARGIN = (int) context.getResources().getDimension(R.dimen.text_top_bottom_margin);
@@ -49,6 +50,11 @@ public class InstanceView extends View
         {
             instanceViewPaint = EventViewUtil.getEventColorPaint(instance.getAsInteger(CalendarContract.Instances.EVENT_COLOR));
             instanceTextPaint = EventViewUtil.getEventTextPaint(TEXT_SIZE);
+
+            Rect rect = new Rect();
+            instanceTextPaint.getTextBounds("0", 0, 1, rect);
+
+            TEXT_HEIGHT = new Integer(rect.height());
         }
     }
 
@@ -73,7 +79,7 @@ public class InstanceView extends View
         {
             canvas.drawRect(0, 0, getWidth(), getHeight(), instanceViewPaint);
             canvas.drawText(instance.getAsString(CalendarContract.Instances.TITLE) != null ? instance.getAsString(CalendarContract.Instances.TITLE) : "empty"
-                    , TEXT_LEFT_MARGIN, getHeight() / 2 + instanceTextPaint.descent(), instanceTextPaint);
+                    , TEXT_LEFT_MARGIN, getHeight() / 2f + TEXT_HEIGHT.floatValue() / 2f, instanceTextPaint);
         } else
         {
             final Paint MORE_VIEW_PAINT = new Paint();
@@ -86,7 +92,12 @@ public class InstanceView extends View
 
             canvas.drawRect(0, 0, getWidth(), getHeight(), MORE_VIEW_PAINT);
             canvas.drawText("MORE"
-                    , TEXT_LEFT_MARGIN, getHeight() / 2 + MORE_VIEW_TEXT_PAINT.descent(), MORE_VIEW_TEXT_PAINT);
+                    , TEXT_LEFT_MARGIN, getHeight() / 2f + TEXT_HEIGHT.floatValue() / 2f, MORE_VIEW_TEXT_PAINT);
         }
+    }
+
+    public ContentValues getInstance()
+    {
+        return instance;
     }
 }

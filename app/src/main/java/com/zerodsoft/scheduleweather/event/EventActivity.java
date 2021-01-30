@@ -41,6 +41,8 @@ public class EventActivity extends AppCompatActivity
     private FragmentContainerView fragmentContainerView;
 
     private Bundle eventBundle;
+    private Bundle locationBundle;
+
 
     private EventFragment eventFragment;
     private WeatherFragment weatherFragment;
@@ -80,16 +82,15 @@ public class EventActivity extends AppCompatActivity
         fragmentContainerView = (FragmentContainerView) findViewById(R.id.schedule_fragment_container);
 
         bottomNavigationView.setOnNavigationItemSelectedListener(onNavigationItemSelectedListener);
-
         fragmentManager = getSupportFragmentManager();
 
-        int eventId = getIntent().getIntExtra("eventId", 0);
-        int calendarId = getIntent().getIntExtra("calendarId", 0);
-        String accountName = getIntent().getStringExtra("accountName");
+        final long eventId = getIntent().getLongExtra("eventId", 0);
+        final int calendarId = getIntent().getIntExtra("calendarId", 0);
 
         viewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
         locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
 
+        viewModel.init(getApplicationContext());
         viewModel.getEvent(calendarId, eventId);
         viewModel.getEventLiveData().observe(this, new Observer<DataWrapper<ContentValues>>()
         {
@@ -104,9 +105,8 @@ public class EventActivity extends AppCompatActivity
 
                     // 이벤트 정보를 표시하기 전에 위치 값을 바탕으로 날씨, 주변정보등을
                     // 표시할 정확한 위치/주소가 지정되어 있는지 여부확인
-                    locationViewModel.select(contentValues.getAsInteger(CalendarContract.Events.CALENDAR_ID)
-                            , contentValues.getAsInteger(CalendarContract.Events._ID)
-                            , contentValues.getAsString(CalendarContract.Events.ACCOUNT_NAME));
+                    locationViewModel.getLocation(contentValues.getAsInteger(CalendarContract.Events.CALENDAR_ID)
+                            , contentValues.getAsLong(CalendarContract.Events._ID));
                 }
             }
         });
@@ -129,7 +129,7 @@ public class EventActivity extends AppCompatActivity
 
                         - 등록 선택 -> 등록 액티비티 실행
                          */
-                        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(getApplicationContext())
+                        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(EventActivity.this)
                                 .setTitle(getString(R.string.request_select_location_title))
                                 .setMessage(getString(R.string.request_select_location_description))
                                 .setNegativeButton(getString(R.string.cancel), new DialogInterface.OnClickListener()
@@ -137,7 +137,7 @@ public class EventActivity extends AppCompatActivity
                                     @Override
                                     public void onClick(DialogInterface dialogInterface, int i)
                                     {
-
+                                        setFragments();
                                     }
                                 })
                                 .setPositiveButton(getString(R.string.check), new DialogInterface.OnClickListener()
@@ -147,6 +147,7 @@ public class EventActivity extends AppCompatActivity
                                     {
                                         Intent intent = new Intent(EventActivity.this, MLocActivity.class);
                                         ContentValues event = eventBundle.getParcelable("event");
+
                                         intent.putExtra("calendarId", event.getAsInteger(CalendarContract.Events.CALENDAR_ID));
                                         intent.putExtra("eventId", event.getAsInteger(CalendarContract.Events._ID));
                                         intent.putExtra("accountName", event.getAsString(CalendarContract.Events.ACCOUNT_NAME));
@@ -161,27 +162,36 @@ public class EventActivity extends AppCompatActivity
                     } else
                     {
                         // 등록 상태
-                        eventFragment = new EventFragment();
-                        weatherFragment = new WeatherFragment();
-                        placesAroundLocationFragment = new PlacesAroundLocationFragment();
-
-                        Bundle locationBundle = new Bundle();
                         locationBundle.putParcelable("location", locationDTO);
-
-                        eventFragment.setArguments(eventBundle);
-                        weatherFragment.setArguments(locationBundle);
-                        placesAroundLocationFragment.setArguments(locationBundle);
-
-                        fragmentManager.beginTransaction().add(R.id.schedule_fragment_container, eventFragment, TAG_INFO).hide(eventFragment)
-                                .add(R.id.schedule_fragment_container, weatherFragment, TAG_WEATHER).hide(placesAroundLocationFragment)
-                                .add(R.id.schedule_fragment_container, placesAroundLocationFragment, TAG_LOCATION).hide(weatherFragment)
-                                .commit();
+                        setFragments();
                     }
                 }
             }
         });
 
 
+    }
+
+    private void setFragments()
+    {
+        eventFragment = new EventFragment();
+      //  weatherFragment = new WeatherFragment();
+      //  placesAroundLocationFragment = new PlacesAroundLocationFragment();
+
+        eventFragment.setArguments(eventBundle);
+       // weatherFragment.setArguments(locationBundle);
+       // placesAroundLocationFragment.setArguments(locationBundle);
+
+        /*
+        fragmentManager.beginTransaction().add(R.id.schedule_fragment_container, eventFragment, TAG_INFO).hide(eventFragment)
+                .add(R.id.schedule_fragment_container, weatherFragment, TAG_WEATHER).hide(placesAroundLocationFragment)
+                .add(R.id.schedule_fragment_container, placesAroundLocationFragment, TAG_LOCATION).hide(weatherFragment)
+                .commit();
+
+         */
+
+        fragmentManager.beginTransaction().add(R.id.schedule_fragment_container, eventFragment, TAG_INFO)
+                .commit();
     }
 
     private final BottomNavigationView.OnNavigationItemSelectedListener onNavigationItemSelectedListener = new BottomNavigationView.OnNavigationItemSelectedListener()

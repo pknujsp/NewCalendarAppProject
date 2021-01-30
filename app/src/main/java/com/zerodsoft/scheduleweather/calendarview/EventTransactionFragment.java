@@ -1,7 +1,6 @@
 package com.zerodsoft.scheduleweather.calendarview;
 
 import android.app.Activity;
-import android.content.ContentValues;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -19,6 +18,7 @@ import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendarview.callback.EventCallback;
 import com.zerodsoft.scheduleweather.calendarview.day.DayFragment;
+import com.zerodsoft.scheduleweather.calendarview.eventdialog.EventListOnDayFragment;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
@@ -27,8 +27,6 @@ import com.zerodsoft.scheduleweather.calendarview.month.MonthFragment;
 import com.zerodsoft.scheduleweather.calendarview.week.WeekFragment;
 import com.zerodsoft.scheduleweather.event.EventActivity;
 
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 
@@ -155,13 +153,26 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
     @Override
     public void onClicked(long start, long end)
     {
+        // 이벤트 리스트 프래그먼트 다이얼로그 표시
+        EventListOnDayFragment fragment = new EventListOnDayFragment(iConnectedCalendars, this);
+        Bundle bundle = new Bundle();
+        bundle.putLong("begin", start);
+        bundle.putLong("end", end);
 
+        fragment.setArguments(bundle);
+
+        fragment.show(getParentFragmentManager(), EventListOnDayFragment.TAG);
     }
 
     @Override
-    public void onClicked(int calendarId, int eventId)
+    public void onClicked(int calendarId, long eventId)
     {
+        // 이벤트 정보 액티비티로 전환
+        Intent intent = new Intent(getActivity(), EventActivity.class);
+        intent.putExtra("calendarId", calendarId);
+        intent.putExtra("eventId", eventId);
 
+        startActivity(intent);
     }
 }
 

@@ -5,11 +5,12 @@ import android.app.Application;
 import androidx.lifecycle.MutableLiveData;
 
 import com.zerodsoft.scheduleweather.activity.App;
+import com.zerodsoft.scheduleweather.event.common.interfaces.ILocationDao;
 import com.zerodsoft.scheduleweather.room.AppDb;
 import com.zerodsoft.scheduleweather.room.dao.LocationDAO;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
-public class LocationRepository
+public class LocationRepository implements ILocationDao
 {
     private MutableLiveData<LocationDTO> locationLiveData;
     private LocationDAO locationDAO;
@@ -20,14 +21,16 @@ public class LocationRepository
         locationLiveData = new MutableLiveData<>();
     }
 
-    public void select(int calendarId, int eventId, String accountName)
+    @Override
+    public void getLocation(int calendarId, long eventId)
     {
         App.executorService.execute(new Runnable()
         {
             @Override
             public void run()
             {
-                locationLiveData.postValue(locationDAO.select(calendarId, eventId, accountName));
+                LocationDTO locationDTO = locationDAO.select(calendarId, eventId);
+                locationLiveData.postValue(locationDTO == null ? new LocationDTO() : locationDTO);
             }
         });
     }

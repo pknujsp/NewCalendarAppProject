@@ -4,19 +4,15 @@ import android.Manifest;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.annotation.SuppressLint;
-import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.content.SyncInfo;
 import android.content.SyncStatusObserver;
 import android.content.pm.PackageManager;
 import android.database.ContentObserver;
 import android.graphics.Point;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.CalendarContract;
@@ -28,7 +24,7 @@ import android.widget.Toast;
 
 import com.google.android.material.button.MaterialButtonToggleGroup;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.activity.editevent.activity.EventActivity;
+import com.zerodsoft.scheduleweather.activity.editevent.activity.EditEventActivity;
 import com.zerodsoft.scheduleweather.calendarview.CalendarsAdapter;
 import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
 import com.zerodsoft.scheduleweather.calendarview.day.DayFragment;
@@ -57,12 +53,9 @@ import androidx.lifecycle.ViewModelProvider;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class AppMainActivity extends AppCompatActivity implements ICalendarCheckBox, IToolbar, IConnectedCalendars
 {
@@ -508,9 +501,9 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
             case R.id.calendar_month:
                 break;
             case R.id.add_schedule:
-                Intent intent = new Intent(AppMainActivity.this, EventActivity.class);
-                intent.putExtra("requestCode", EventActivity.NEW_EVENT);
-                startActivityForResult(intent, EventActivity.NEW_EVENT);
+                Intent intent = new Intent(AppMainActivity.this, EditEventActivity.class);
+                intent.putExtra("requestCode", EditEventActivity.NEW_EVENT);
+                startActivityForResult(intent, EditEventActivity.NEW_EVENT);
                 break;
             case R.id.go_to_today:
                 calendarTransactionFragment.goToToday();
@@ -571,7 +564,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
             case RESULT_OK:
                 switch (requestCode)
                 {
-                    case EventActivity.NEW_EVENT:
+                    case EditEventActivity.NEW_EVENT:
                         //새로운 일정이 추가됨 -> 달력 이벤트 갱신
                         calendarTransactionFragment.refreshCalendar();
                         break;

@@ -14,6 +14,7 @@ import android.widget.OverScroller;
 import androidx.annotation.Nullable;
 import androidx.core.view.GestureDetectorCompat;
 
+import com.zerodsoft.scheduleweather.calendarview.common.InstanceView;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.calendarview.week.WeekFragment;
@@ -106,15 +107,8 @@ public class DayView extends HourEventsView implements IEvent
 
                 childView.measure(width, height);
                 childView.layout((int) left, (int) top, (int) right, (int) bottom);
-                childView.setOnClickListener(new OnClickListener()
-                {
-                    @Override
-                    public void onClick(View view)
-                    {
-                        ContentValues instance = ((DayItemView) view).itemCell.instance;
-                        onEventItemClickListener.onClicked(instance.getAsInteger(CalendarContract.Instances.CALENDAR_ID), instance.getAsInteger(CalendarContract.Instances.EVENT_ID));
-                    }
-                });
+                childView.setOnClickListener(itemOnClickListener);
+                childView.setClickable(true);
             }
         }
     }
@@ -282,18 +276,21 @@ public class DayView extends HourEventsView implements IEvent
         for (int i = 0; i < itemCells.size(); i++)
         {
             DayItemView child = new DayItemView(context, itemCells.get(i));
-            this.addView(child);
-            child.setClickable(true);
-            child.setOnClickListener(new OnClickListener()
-            {
-                @Override
-                public void onClick(View view)
-                {
-
-                }
-            });
+               addView(child);
         }
     }
+
+    private final View.OnClickListener itemOnClickListener = new OnClickListener()
+    {
+        @Override
+        public void onClick(View view)
+        {
+            ContentValues instance = ((DayItemView) view).itemCell.instance;
+
+            onEventItemClickListener.onClicked(instance.getAsInteger(CalendarContract.Instances.CALENDAR_ID)
+                    , instance.getAsLong(CalendarContract.Instances.EVENT_ID));
+        }
+    };
 
     static class ItemCell
     {

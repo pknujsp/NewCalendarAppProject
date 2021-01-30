@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <TextView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/eventview"
+    android:id="@+id/event_item"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:textSize="14sp">
+    android:gravity="center_vertical"
+    android:padding="8dp"
+    android:textColor="@color/white"
+    android:textSize="15sp">
 
 </TextView>

@@ -3,7 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="300dp"
     android:layout_height="500dp"
-    android:layout_gravity="center"
     tools:context=".calendarview.eventdialog.EventListOnDayFragment">
 
     <LinearLayout
@@ -15,10 +14,9 @@
             android:id="@+id/events_info_day"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:layout_marginBottom="4dp"
+            android:padding="8dp"
             android:textAlignment="center"
-            android:textSize="16sp"
+            android:textSize="17sp"
             android:textStyle="bold" />
 
         <androidx.recyclerview.widget.RecyclerView

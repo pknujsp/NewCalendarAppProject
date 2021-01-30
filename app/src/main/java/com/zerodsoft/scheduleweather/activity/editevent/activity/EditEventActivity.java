@@ -48,7 +48,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
-public class EventActivity extends AppCompatActivity implements IEventRepeat
+public class EditEventActivity extends AppCompatActivity implements IEventRepeat
 {
     // 추가 작업 필요 : 알림, 참석자
     public static final int MODIFY_EVENT = 60;
@@ -161,7 +161,7 @@ public class EventActivity extends AppCompatActivity implements IEventRepeat
             @Override
             public void onClick(View view)
             {
-                Intent intent = new Intent(EventActivity.this, RecurrenceActivity.class);
+                Intent intent = new Intent(EditEventActivity.this, RecurrenceActivity.class);
                 // 반복 룰과 이벤트의 시작 시간 전달
                 String recurrenceRule = getValue(CalendarContract.Events.RRULE) != null ? (String) getValue(CalendarContract.Events.RRULE)
                         : "";
@@ -191,7 +191,7 @@ public class EventActivity extends AppCompatActivity implements IEventRepeat
                     checkedItem = 1;
                 }
 
-                MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(EventActivity.this);
+                MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(EditEventActivity.this);
                 dialogBuilder.setSingleChoiceItems(accessLevelItems, checkedItem, new DialogInterface.OnClickListener()
                 {
                     @Override
@@ -231,7 +231,7 @@ public class EventActivity extends AppCompatActivity implements IEventRepeat
                 int checkedItem = getValue(CalendarContract.Events.AVAILABILITY) != null ? (Integer) getValue(CalendarContract.Events.AVAILABILITY)
                         : 1;
 
-                MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(EventActivity.this);
+                MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(EditEventActivity.this);
                 dialogBuilder.setSingleChoiceItems(availabilityItems, checkedItem, new DialogInterface.OnClickListener()
                 {
                     @Override
@@ -264,7 +264,7 @@ public class EventActivity extends AppCompatActivity implements IEventRepeat
             @Override
             public void onClick(View view)
             {
-                Intent intent = new Intent(EventActivity.this, TimeZoneActivity.class);
+                Intent intent = new Intent(EditEventActivity.this, TimeZoneActivity.class);
                 Calendar calendar = Calendar.getInstance();
                 calendar.setTimeInMillis(startDateMillis);
                 calendar.set(Calendar.HOUR_OF_DAY, startTimeHour);
@@ -279,7 +279,7 @@ public class EventActivity extends AppCompatActivity implements IEventRepeat
             @Override
             public void onClick(View view)
             {
-                MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(EventActivity.this);
+                MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(EditEventActivity.this);
                 dialogBuilder
                         .setTitle(getString(R.string.calendar))
                         .setAdapter(new CalendarListAdapter(getApplicationContext(), calendarList)
@@ -304,7 +304,7 @@ public class EventActivity extends AppCompatActivity implements IEventRepeat
             @Override
             public void onClick(View view)
             {
-                Intent intent = new Intent(EventActivity.this, ReminderActivity.class);
+                Intent intent = new Intent(EditEventActivity.this, ReminderActivity.class);
                 intent.putExtra("hasAlarm", (Integer) getValue(CalendarContract.Events.HAS_ALARM));
 
                 if ((Integer) getValue(CalendarContract.Events.HAS_ALARM) == 1)
@@ -346,6 +346,7 @@ public class EventActivity extends AppCompatActivity implements IEventRepeat
 
                 putValue(CalendarContract.Events.EVENT_TIMEZONE, defaultTimeZone.getID());
                 setTimeZoneText(defaultTimeZone);
+
                 //캘린더도 기본 값 설정
                 setCalendarValue(eventDefaultValue.getDefaultCalendar());
                 setCalendarText();
@@ -366,8 +367,7 @@ public class EventActivity extends AppCompatActivity implements IEventRepeat
                 Intent intent = getIntent();
 
                 int calendarId = intent.getIntExtra("calendarId", 0);
-                int eventId = intent.getIntExtra("eventId", 0);
-                String accountName = intent.getStringExtra("accountName");
+                long eventId = intent.getLongExtra("eventId", 0);
 
                 // 이벤트, 알림을 가져온다
                 viewModel.getEvent(calendarId, eventId);
@@ -576,7 +576,7 @@ public class EventActivity extends AppCompatActivity implements IEventRepeat
             public void onClick(View view)
             {
                 //위치를 설정하는 액티비티 표시
-                Intent intent = new Intent(EventActivity.this, SelectLocationActivity.class);
+                Intent intent = new Intent(EditEventActivity.this, SelectLocationActivity.class);
 
                 String location = null;
                 if (newEventValues != null)

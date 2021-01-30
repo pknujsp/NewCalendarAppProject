@@ -88,7 +88,7 @@ public class CalendarViewModel extends ViewModel
         return attendeeListLiveData;
     }
 
-    public void getEvent(int calendarId, int eventId)
+    public void getEvent(int calendarId, long eventId)
     {
         ContentValues event = calendarProvider.getEvent(calendarId, eventId);
         DataWrapper<ContentValues> dataWrapper = new DataWrapper<>(event);
@@ -107,12 +107,12 @@ public class CalendarViewModel extends ViewModel
         calendarProvider.addEvent(event);
     }
 
-    public int deleteEvent(int calendarId, int eventId)
+    public int deleteEvent(int calendarId, long eventId)
     {
         return calendarProvider.deleteEvent(calendarId, eventId);
     }
 
-    public int deleteEvents(int calendarId, int[] eventIds)
+    public int deleteEvents(int calendarId, long[] eventIds)
     {
         return calendarProvider.deleteEvents(calendarId, eventIds);
     }
@@ -143,7 +143,7 @@ public class CalendarViewModel extends ViewModel
         calendarLiveData.setValue(dataWrapper);
     }
 
-    public void getReminders(int calendarId, int eventId)
+    public void getReminders(int calendarId, long eventId)
     {
         List<ContentValues> reminders = calendarProvider.getReminders(calendarId, eventId);
         DataWrapper<List<ContentValues>> dataWrapper = new DataWrapper<>(reminders);
@@ -156,12 +156,12 @@ public class CalendarViewModel extends ViewModel
         return calendarProvider.updateReminder(reminder);
     }
 
-    public int deleteReminders(int calendarId, int eventId, int[] reminderIds)
+    public int deleteReminders(int calendarId, long eventId, int[] reminderIds)
     {
         return calendarProvider.deleteReminders(calendarId, eventId, reminderIds);
     }
 
-    public int deleteAllReminders(int calendarId, int eventId)
+    public int deleteAllReminders(int calendarId, long eventId)
     {
         return calendarProvider.deleteAllReminders(calendarId, eventId);
     }
@@ -183,7 +183,7 @@ public class CalendarViewModel extends ViewModel
     }
 
 
-    public void getAttendees(int calendarID, int eventId)
+    public void getAttendees(int calendarID, long eventId)
     {
         List<ContentValues> attendees = calendarProvider.getAttendees(calendarID, eventId);
         DataWrapper<List<ContentValues>> dataWrapper = new DataWrapper<>(attendees);
@@ -196,13 +196,13 @@ public class CalendarViewModel extends ViewModel
     }
 
 
-    public int deleteAllAttendees(int calendarId, int eventId)
+    public int deleteAllAttendees(int calendarId, long eventId)
     {
         return calendarProvider.deleteAllAttendees(calendarId, eventId);
     }
 
 
-    public int deleteAttendees(int calendarId, int eventId, int[] attendeeIds)
+    public int deleteAttendees(int calendarId, long eventId, int[] attendeeIds)
     {
         return calendarProvider.deleteAttendees(calendarId, eventId, attendeeIds);
     }

@@ -2,24 +2,17 @@ package com.zerodsoft.scheduleweather.calendar;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
-import android.app.AlarmManager;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.SyncRequest;
-import android.content.SyncStatusObserver;
-import android.database.ContentObserver;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
 import android.provider.CalendarContract;
 
-import com.google.common.util.concurrent.ServiceManager;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendar.interfaces.ICalendarProvider;
-import com.zerodsoft.scheduleweather.calendar.sync.SyncAdapter;
 import com.zerodsoft.scheduleweather.calendarview.callback.EventCallback;
 
 import java.util.ArrayList;
@@ -129,12 +122,12 @@ public class CalendarProvider implements ICalendarProvider
      * 하나의 이벤트에 대한 구체적인 정보를 가져온다.
      */
     @Override
-    public ContentValues getEvent(int calendarId, int eventId)
+    public ContentValues getEvent(int calendarId, long eventId)
     {
         // 화면에 이벤트 정보를 표시하기 위해 기본적인 데이터만 가져온다.
         // 요청 매개변수 : ID, 캘린더 ID, 오너 계정, 조직자
         // 표시할 데이터 : 제목, 일정 기간, 반복, 위치, 알림, 설명, 소유 계정, 참석자, 바쁨/한가함, 공개 범위 참석 여부 확인 창, 색상
-        String[] selectionArgs = {Integer.toString(eventId), Integer.toString(calendarId)};
+        String[] selectionArgs = {String.valueOf(eventId), String.valueOf(calendarId)};
 
         ContentResolver contentResolver = context.getContentResolver();
         Cursor cursor = contentResolver.query(CalendarContract.Events.CONTENT_URI, null, EVENT_QUERY, selectionArgs, null);
@@ -146,9 +139,10 @@ public class CalendarProvider implements ICalendarProvider
             {
                 event.put(CalendarContract.Events.TITLE, cursor.getString(cursor.getColumnIndex(CalendarContract.Events.TITLE)));
                 event.put(CalendarContract.Events.CALENDAR_ID, cursor.getInt(cursor.getColumnIndex(CalendarContract.Events.CALENDAR_ID)));
+                event.put(CalendarContract.Events._ID, cursor.getLong(cursor.getColumnIndex(CalendarContract.Events._ID)));
                 event.put(CalendarContract.Events.DTSTART, cursor.getLong(cursor.getColumnIndex(CalendarContract.Events.DTSTART)));
                 event.put(CalendarContract.Events.DTEND, cursor.getLong(cursor.getColumnIndex(CalendarContract.Events.DTEND)));
-                event.put(CalendarContract.Events.ALL_DAY, 1 == cursor.getInt(cursor.getColumnIndex(CalendarContract.Events.ALL_DAY)));
+                event.put(CalendarContract.Events.ALL_DAY, cursor.getInt(cursor.getColumnIndex(CalendarContract.Events.ALL_DAY)));
                 event.put(CalendarContract.Events.EVENT_TIMEZONE, cursor.getString(cursor.getColumnIndex(CalendarContract.Events.EVENT_TIMEZONE)));
                 event.put(CalendarContract.Events.EVENT_END_TIMEZONE, cursor.getString(cursor.getColumnIndex(CalendarContract.Events.EVENT_END_TIMEZONE)));
                 event.put(CalendarContract.Events.RDATE, cursor.getString(cursor.getColumnIndex(CalendarContract.Events.RDATE)));
@@ -160,6 +154,7 @@ public class CalendarProvider implements ICalendarProvider
                 event.put(CalendarContract.Events.DESCRIPTION, cursor.getString(cursor.getColumnIndex(CalendarContract.Events.DESCRIPTION)));
                 event.put(CalendarContract.Events.ACCESS_LEVEL, cursor.getInt(cursor.getColumnIndex(CalendarContract.Events.ACCESS_LEVEL)));
                 event.put(CalendarContract.Events.AVAILABILITY, cursor.getInt(cursor.getColumnIndex(CalendarContract.Events.AVAILABILITY)));
+                event.put(CalendarContract.Events.HAS_ALARM, cursor.getInt(cursor.getColumnIndex(CalendarContract.Events.HAS_ALARM)));
             }
             cursor.close();
         }
@@ -190,6 +185,7 @@ public class CalendarProvider implements ICalendarProvider
                 event.put(CalendarContract.Events.EVENT_COLOR_KEY, cursor.getInt(cursor.getColumnIndex(CalendarContract.Events.EVENT_COLOR_KEY)));
                 event.put(CalendarContract.Events.ACCOUNT_NAME, cursor.getString(cursor.getColumnIndex(CalendarContract.Events.ACCOUNT_NAME)));
                 event.put(CalendarContract.Events.CALENDAR_ID, cursor.getInt(cursor.getColumnIndex(CalendarContract.Events.CALENDAR_ID)));
+                event.put(CalendarContract.Events._ID, cursor.getLong(cursor.getColumnIndex(CalendarContract.Events._ID)));
                 event.put(CalendarContract.Events.ORGANIZER, cursor.getString(cursor.getColumnIndex(CalendarContract.Events.ORGANIZER)));
                 event.put(CalendarContract.Events.EVENT_END_TIMEZONE, cursor.getString(cursor.getColumnIndex(CalendarContract.Events.EVENT_END_TIMEZONE)));
                 event.put(CalendarContract.Events.EVENT_TIMEZONE, cursor.getString(cursor.getColumnIndex(CalendarContract.Events.EVENT_TIMEZONE)));
@@ -204,6 +200,7 @@ public class CalendarProvider implements ICalendarProvider
                 event.put(CalendarContract.Events.AVAILABILITY, cursor.getInt(cursor.getColumnIndex(CalendarContract.Events.AVAILABILITY)));
                 event.put(CalendarContract.Events.ACCESS_LEVEL, cursor.getInt(cursor.getColumnIndex(CalendarContract.Events.ACCESS_LEVEL)));
                 event.put(CalendarContract.Events.HAS_ATTENDEE_DATA, cursor.getInt(cursor.getColumnIndex(CalendarContract.Events.HAS_ATTENDEE_DATA)));
+                event.put(CalendarContract.Events.HAS_ALARM, cursor.getInt(cursor.getColumnIndex(CalendarContract.Events.HAS_ALARM)));
             }
             cursor.close();
         }
@@ -223,7 +220,7 @@ public class CalendarProvider implements ICalendarProvider
      * 이벤트를 제거한다.
      **/
     @Override
-    public int deleteEvent(int calendarId, int eventId)
+    public int deleteEvent(int calendarId, long eventId)
     {
         String where = "(" + CalendarContract.Events.CALENDAR_ID + "=? AND " + CalendarContract.Events._ID + "=?)";
         String[] selectionArgs = {String.valueOf(calendarId), String.valueOf(eventId)};
@@ -237,7 +234,7 @@ public class CalendarProvider implements ICalendarProvider
      * @return 삭제된 이벤트의 개수
      */
     @Override
-    public int deleteEvents(int calendarId, int[] eventIds)
+    public int deleteEvents(int calendarId, long[] eventIds)
     {
         String where = "(" + CalendarContract.Events.CALENDAR_ID + "=? AND " + CalendarContract.Events._ID + "=?)";
         String[] selectionArgs = new String[2];
@@ -246,7 +243,7 @@ public class CalendarProvider implements ICalendarProvider
         ContentResolver contentResolver = context.getContentResolver();
         int deletedRows = 0;
 
-        for (int eventId : eventIds)
+        for (long eventId : eventIds)
         {
             selectionArgs[1] = String.valueOf(eventId);
             deletedRows += contentResolver.delete(CalendarContract.Events.CONTENT_URI, where, selectionArgs);
@@ -384,7 +381,7 @@ public class CalendarProvider implements ICalendarProvider
      * 하나의 이벤트에 대한 알림 모두를 가져온다.
      */
     @Override
-    public List<ContentValues> getReminders(int calendarId, int eventId)
+    public List<ContentValues> getReminders(int calendarId, long eventId)
     {
         ContentResolver contentResolver = context.getContentResolver();
         String[] selectionArgs = {String.valueOf(calendarId), String.valueOf(eventId)};
@@ -418,8 +415,8 @@ public class CalendarProvider implements ICalendarProvider
                 CalendarContract.Reminders.CALENDAR_ID + "=?";
 
         String[] selectionArgs = {
-                reminder.getAsInteger(CalendarContract.Reminders._ID).toString()
-                , reminder.getAsInteger(CalendarContract.Reminders.EVENT_ID).toString()
+                reminder.getAsLong(CalendarContract.Reminders._ID).toString()
+                , reminder.getAsLong(CalendarContract.Reminders.EVENT_ID).toString()
                 , reminder.getAsInteger(CalendarContract.Reminders.CALENDAR_ID).toString()};
 
         ContentResolver contentResolver = context.getContentResolver();
@@ -433,7 +430,7 @@ public class CalendarProvider implements ICalendarProvider
      * 알림을 삭제한다.
      */
     @Override
-    public int deleteReminders(int calendarId, int eventId, int[] reminderIds)
+    public int deleteReminders(int calendarId, long eventId, int[] reminderIds)
     {
         String where = "(" + CalendarContract.Reminders.CALENDAR_ID + "=? AND "
                 + CalendarContract.Reminders.EVENT_ID + "=? AND "
@@ -454,7 +451,7 @@ public class CalendarProvider implements ICalendarProvider
     }
 
     @Override
-    public int deleteAllReminders(int calendarId, int eventId)
+    public int deleteAllReminders(int calendarId, long eventId)
     {
         String where = CalendarContract.Reminders.CALENDAR_ID + "=? AND " + CalendarContract.Reminders.EVENT_ID + "=?";
         String[] selectionArgs = {String.valueOf(calendarId), String.valueOf(eventId)};
@@ -569,7 +566,7 @@ public class CalendarProvider implements ICalendarProvider
      * 하나의 이벤트에 대한 참석자 정보들을 가져온다.
      */
     @Override
-    public List<ContentValues> getAttendees(int calendarId, int eventId)
+    public List<ContentValues> getAttendees(int calendarId, long eventId)
     {
         ContentResolver contentResolver = context.getContentResolver();
         String[] selectionArgs = {String.valueOf(calendarId),
@@ -636,7 +633,7 @@ public class CalendarProvider implements ICalendarProvider
      * @return 삭제된 행의 개수 반환
      */
     @Override
-    public int deleteAllAttendees(int calendarId, int eventId)
+    public int deleteAllAttendees(int calendarId, long eventId)
     {
         ContentResolver contentResolver = context.getContentResolver();
         int updatedRows = 0;
@@ -653,7 +650,7 @@ public class CalendarProvider implements ICalendarProvider
      * @return 삭제된 행의 개수 반환
      */
     @Override
-    public int deleteAttendees(int calendarId, int eventId, int[] attendeeIds)
+    public int deleteAttendees(int calendarId, long eventId, int[] attendeeIds)
     {
         final String where = CalendarContract.Attendees.CALENDAR_ID + "=? AND " +
                 CalendarContract.Attendees.EVENT_ID + "=? AND " +

@@ -5,12 +5,12 @@ import android.app.Application;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModel;
 
+import com.zerodsoft.scheduleweather.event.common.interfaces.ILocationDao;
 import com.zerodsoft.scheduleweather.event.common.repository.LocationRepository;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
-public class LocationViewModel extends AndroidViewModel
+public class LocationViewModel extends AndroidViewModel implements ILocationDao
 {
     private MutableLiveData<LocationDTO> locationLiveData;
     private LocationRepository locationRepository;
@@ -22,9 +22,10 @@ public class LocationViewModel extends AndroidViewModel
         locationLiveData = locationRepository.getLocationLiveData();
     }
 
-    public void select(int calendarId, int eventId, String accountName)
+    @Override
+    public void getLocation(int calendarId, long eventId)
     {
-        locationRepository.select(calendarId, eventId, accountName);
+        locationRepository.getLocation(calendarId, eventId);
     }
 
     public MutableLiveData<LocationDTO> getLocationLiveData()

@@ -10,6 +10,7 @@ import android.graphics.Rect;
 import android.provider.CalendarContract;
 import android.util.AttributeSet;
 import android.util.TypedValue;
+import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.Nullable;
@@ -129,7 +130,8 @@ public class DayHeaderView extends ViewGroup implements IEvent
         int availableRow = 0;
         removeAllViews();
 
-        headerInstancesView = new HeaderInstancesView(getContext(), onEventItemClickListener);
+        headerInstancesView = new HeaderInstancesView(getContext(),onEventItemClickListener);
+        headerInstancesView.setClickable(true);
         addView(headerInstancesView);
 
         // 달력 뷰의 셀에 아이템을 삽입
@@ -206,7 +208,7 @@ public class DayHeaderView extends ViewGroup implements IEvent
 
         for (EventData eventData : eventCellsList)
         {
-            InstanceView instanceView = new InstanceView(getContext(), onEventItemClickListener);
+            InstanceView instanceView = new InstanceView(getContext());
             instanceView.init(eventData.getEvent());
             headerInstancesView.addView(instanceView);
         }

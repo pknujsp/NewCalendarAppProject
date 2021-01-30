@@ -172,14 +172,7 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
                 MonthCalendarItemView itemView = new MonthCalendarItemView(context, dayTextColor);
                 itemView.setDate(currentDate.getTime(), getDay(i + 1).getTime());
                 itemView.setClickable(true);
-                itemView.setOnClickListener(new View.OnClickListener()
-                {
-                    @Override
-                    public void onClick(View view)
-                    {
-                        onEventItemClickListener.onClicked(itemView.getStartDate().getTime(), itemView.getEndDate().getTime());
-                    }
-                });
+                itemView.setOnClickListener(onClickListener);
                 monthCalendarView.addView(itemView);
             }
 
@@ -278,5 +271,14 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
         }
     }
 
+    private final View.OnClickListener onClickListener = new View.OnClickListener()
+    {
+        @Override
+        public void onClick(View view)
+        {
+            MonthCalendarItemView itemView = ((MonthCalendarItemView) view);
+            onEventItemClickListener.onClicked(itemView.getStartDate().getTime(), itemView.getEndDate().getTime());
+        }
+    };
 
 }

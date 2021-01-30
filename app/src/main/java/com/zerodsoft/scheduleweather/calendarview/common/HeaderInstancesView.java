@@ -1,10 +1,12 @@
 package com.zerodsoft.scheduleweather.calendarview.common;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.provider.CalendarContract;
 import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.view.View;
@@ -33,14 +35,14 @@ public class HeaderInstancesView extends ViewGroup
 
     private int totalRows;
 
-    private List<EventData> eventCellsList = new ArrayList<>();
     private OnEventItemClickListener onEventItemClickListener;
+
+    private List<EventData> eventCellsList = new ArrayList<>();
 
     public HeaderInstancesView(Context context, OnEventItemClickListener onEventItemClickListener)
     {
         super(context);
         this.onEventItemClickListener = onEventItemClickListener;
-
         ROWS_LIMIT = context.getResources().getInteger(R.integer.rows_limit);
         SPACING_BETWEEN_INSTANCE_VIEWS = (int) context.getResources().getDimension(R.dimen.spacing_between_instance_views);
         TEXT_LEFT_MARGIN = (int) context.getResources().getDimension(R.dimen.text_left_margin);
@@ -85,6 +87,8 @@ public class HeaderInstancesView extends ViewGroup
 
             childView.measure(right - left, bottom - top);
             childView.layout(left, top, right, bottom);
+            childView.setClickable(true);
+            childView.setOnClickListener(itemOnClickListener);
         }
     }
 
@@ -100,5 +104,16 @@ public class HeaderInstancesView extends ViewGroup
         super.dispatchDraw(canvas);
     }
 
+    private final View.OnClickListener itemOnClickListener = new View.OnClickListener()
+    {
+        @Override
+        public void onClick(View view)
+        {
+            ContentValues instance = ((InstanceView) view).getInstance();
+
+            onEventItemClickListener.onClicked(instance.getAsInteger(CalendarContract.Instances.CALENDAR_ID)
+                    , instance.getAsLong(CalendarContract.Instances.EVENT_ID));
+        }
+    };
 
 }

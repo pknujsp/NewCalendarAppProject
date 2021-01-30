@@ -62,10 +62,10 @@
                         android:layout_height="24dp"
                         android:layout_gravity="top"
                         android:layout_marginRight="8dp"
-
                         android:src="@android:mipmap/sym_def_app_icon" />
 
                     <include
+                        android:id="@+id/event_datetime_view"
                         layout="@layout/event_datetime_view"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"

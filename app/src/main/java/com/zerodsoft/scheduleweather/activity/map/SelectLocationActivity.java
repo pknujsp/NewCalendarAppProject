@@ -4,7 +4,7 @@ import androidx.activity.OnBackPressedCallback;
 
 import android.os.Bundle;
 
-import com.zerodsoft.scheduleweather.activity.editevent.activity.EventActivity;
+import com.zerodsoft.scheduleweather.activity.editevent.activity.EditEventActivity;
 import com.zerodsoft.scheduleweather.kakaomap.KakaoMapActivity;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.KakaoMapFragment;
 import com.zerodsoft.scheduleweather.activity.map.fragment.map.MapFragment;
@@ -73,7 +73,7 @@ public class SelectLocationActivity extends KakaoMapActivity
 
 
         getIntent().putExtra("location", location);
-        setResult(EventActivity.LOCATION_SELECTED, getIntent());
+        setResult(EditEventActivity.LOCATION_SELECTED, getIntent());
     }
 
     @Override

@@ -13,18 +13,14 @@ import android.util.SparseArray;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.OverScroller;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
-import androidx.core.view.GestureDetectorCompat;
 import androidx.core.view.ViewCompat;
 
 import com.zerodsoft.scheduleweather.calendarview.hourside.HourEventsView;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.etc.EventViewUtil;
-import com.zerodsoft.scheduleweather.utility.CalendarEventUtil;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import java.util.ArrayList;
@@ -110,9 +106,9 @@ public class WeekView extends HourEventsView implements IEvent
                 int index = itemCell.index;
                 int columnCount = itemCell.columnCount;
 
-                calendar.setTimeInMillis(itemCell.event.getAsLong(CalendarContract.Instances.BEGIN));
+                calendar.setTimeInMillis(itemCell.instance.getAsLong(CalendarContract.Instances.BEGIN));
                 PointF startPoint = getPoint(calendar, index);
-                calendar.setTimeInMillis(itemCell.event.getAsLong(CalendarContract.Instances.END));
+                calendar.setTimeInMillis(itemCell.instance.getAsLong(CalendarContract.Instances.END));
                 PointF endPoint = getPoint(calendar, index);
 
                 cellWidth = (WeekFragment.getColumnWidth() - (SPACING_BETWEEN_EVENTS * (columnCount - 1))) / columnCount;
@@ -133,15 +129,8 @@ public class WeekView extends HourEventsView implements IEvent
 
                 childView.measure(width, height);
                 childView.layout((int) left, (int) top, (int) right, (int) bottom);
-                childView.setOnClickListener(new OnClickListener()
-                {
-                    @Override
-                    public void onClick(View view)
-                    {
-                        onEventItemClickListener.onClicked(((WeekItemView) childView).itemCell.event.getAsInteger(CalendarContract.Instances.CALENDAR_ID)
-                                , ((WeekItemView) childView).itemCell.event.getAsInteger(CalendarContract.Instances.EVENT_ID));
-                    }
-                });
+                childView.setClickable(true);
+                childView.setOnClickListener(itemOnClickListener);
             }
         }
     }
@@ -346,7 +335,7 @@ public class WeekView extends HourEventsView implements IEvent
 
                             for (int j = i + 1; j < itemCells.size(); j++)
                             {
-                                if (isOverlapping(itemCells.get(i).event, itemCells.get(j).event))
+                                if (isOverlapping(itemCells.get(i).instance, itemCells.get(j).instance))
                                 {
                                     // 시간이 겹치는 경우
                                     if (itemCells.get(i).column == ItemCell.NOT_OVERLAP)
@@ -387,16 +376,6 @@ public class WeekView extends HourEventsView implements IEvent
                     {
                         WeekItemView child = new WeekItemView(context, itemCells.get(i));
                         this.addView(child);
-                        child.setClickable(true);
-                        child.setOnClickListener(new OnClickListener()
-                        {
-                            @Override
-                            public void onClick(View view)
-                            {
-                                String subject = ((WeekItemView) view).itemCell.event.getAsString(CalendarContract.Instances.TITLE);
-                                Toast.makeText(context, subject, Toast.LENGTH_SHORT).show();
-                            }
-                        });
                     }
                 }
             }
@@ -571,16 +550,16 @@ public class WeekView extends HourEventsView implements IEvent
         public int column;
         public int columnCount;
         public int index;
-        public ContentValues event;
+        public ContentValues instance;
         public Paint eventColorPaint;
         public TextPaint eventTextPaint;
 
-        public ItemCell(ContentValues event, int index)
+        public ItemCell(ContentValues instance, int index)
         {
             this.column = NOT_OVERLAP;
             this.columnCount = 1;
             this.index = index;
-            this.event = event;
+            this.instance = instance;
         }
     }
 
@@ -589,11 +568,11 @@ public class WeekView extends HourEventsView implements IEvent
         @Override
         public int compare(ItemCell t1, ItemCell t2)
         {
-            long start1 = t1.event.getAsLong(CalendarContract.Instances.BEGIN);
-            long end1 = t1.event.getAsLong(CalendarContract.Instances.END);
+            long start1 = t1.instance.getAsLong(CalendarContract.Instances.BEGIN);
+            long end1 = t1.instance.getAsLong(CalendarContract.Instances.END);
 
-            long start2 = t2.event.getAsLong(CalendarContract.Instances.BEGIN);
-            long end2 = t2.event.getAsLong(CalendarContract.Instances.END);
+            long start2 = t2.instance.getAsLong(CalendarContract.Instances.BEGIN);
+            long end2 = t2.instance.getAsLong(CalendarContract.Instances.END);
 
             if ((end1 - start1) <=
                     (end2 - start2))
@@ -603,6 +582,18 @@ public class WeekView extends HourEventsView implements IEvent
             {
                 return -1;
             }
+        }
+    };
+
+    private View.OnClickListener itemOnClickListener = new OnClickListener()
+    {
+        @Override
+        public void onClick(View view)
+        {
+            ContentValues instance = ((WeekItemView) view).itemCell.instance;
+
+            onEventItemClickListener.onClicked(instance.getAsInteger(CalendarContract.Instances.CALENDAR_ID)
+                    , instance.getAsLong(CalendarContract.Instances.EVENT_ID));
         }
     };
 
@@ -621,11 +612,11 @@ public class WeekView extends HourEventsView implements IEvent
         {
             super.onDraw(canvas);
 
-            itemCell.eventColorPaint = EventViewUtil.getEventColorPaint(itemCell.event.getAsInteger(CalendarContract.Instances.EVENT_COLOR));
+            itemCell.eventColorPaint = EventViewUtil.getEventColorPaint(itemCell.instance.getAsInteger(CalendarContract.Instances.EVENT_COLOR));
             itemCell.eventTextPaint = EventViewUtil.getEventTextPaint(EVENT_TEXT_HEIGHT);
 
             canvas.drawRect(EVENT_RECT_MARGIN, 0, getWidth() - EVENT_RECT_MARGIN, getHeight(), itemCell.eventColorPaint);
-            canvas.drawText(itemCell.event.getAsString(CalendarContract.Instances.TITLE), TEXT_MARGIN + EVENT_RECT_MARGIN, EVENT_TEXT_HEIGHT + TEXT_MARGIN, itemCell.eventTextPaint);
+            canvas.drawText(itemCell.instance.getAsString(CalendarContract.Instances.TITLE), TEXT_MARGIN + EVENT_RECT_MARGIN, EVENT_TEXT_HEIGHT + TEXT_MARGIN, itemCell.eventTextPaint);
         }
     }
 }
