@@ -248,6 +248,7 @@
     <string name="request_select_location_description">날씨, 주변 정보 등을 표시하기 위해 상세한 주소 또는 장소를 선택하시겠습니까?</string>
     <string name="need_register_detail_location">날씨, 주변 정보 등을 표시하려면 상세한 주소 또는 장소를 선택하십시오.</string>
     <string name="not_selected_location_in_event">이벤트내에 위치가 지정되지 않았습니다.</string>
+    <string name="add_reminder" >알림 추가</string>
 
 
     <!-- 알림 -->

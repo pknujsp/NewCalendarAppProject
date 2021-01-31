@@ -4,9 +4,14 @@ import android.content.ContentValues;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.provider.CalendarContract;
+import android.service.carrier.CarrierMessagingService;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -19,7 +24,10 @@ import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.databinding.EventFragmentBinding;
 import com.zerodsoft.scheduleweather.etc.CalendarUtil;
 import com.zerodsoft.scheduleweather.etc.EventViewUtil;
+import com.zerodsoft.scheduleweather.event.common.interfaces.ILocation;
+import com.zerodsoft.scheduleweather.event.common.interfaces.ILocationDao;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
+import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.utility.CalendarEventUtil;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.utility.RecurrenceRule;
@@ -30,6 +38,7 @@ import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.List;
 import java.util.Locale;
 import java.util.SimpleTimeZone;
 import java.util.TimeZone;
@@ -38,7 +47,10 @@ public class EventFragment extends Fragment
 {
     private EventFragmentBinding binding;
     private ContentValues event;
+    private CalendarViewModel viewModel;
     private boolean is24HourSystem = false;
+    private Integer calendarId;
+    private Long eventId;
 
     public EventFragment()
     {
@@ -50,7 +62,8 @@ public class EventFragment extends Fragment
         super.onCreate(savedInstanceState);
 
         Bundle arguments = getArguments();
-        event = arguments.getParcelable("event");
+        calendarId = arguments.getInt("calendarId");
+        eventId = arguments.getLong("eventId");
     }
 
     @Nullable
@@ -65,13 +78,85 @@ public class EventFragment extends Fragment
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
-        init();
+        binding.remindersTable.removeAllViews();
     }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState)
     {
         super.onActivityCreated(savedInstanceState);
+        viewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
+
+        viewModel.init(getContext());
+        viewModel.getEvent(calendarId, eventId);
+
+        viewModel.getEventLiveData().observe(getViewLifecycleOwner(), new Observer<DataWrapper<ContentValues>>()
+        {
+            @Override
+            public void onChanged(DataWrapper<ContentValues> contentValuesDataWrapper)
+            {
+                if (contentValuesDataWrapper.getData() != null)
+                {
+                    event = contentValuesDataWrapper.getData();
+                    init();
+                }
+            }
+        });
+
+        viewModel.getAttendeeListLiveData().observe(getViewLifecycleOwner(), new Observer<DataWrapper<List<ContentValues>>>()
+        {
+            @Override
+            public void onChanged(DataWrapper<List<ContentValues>> listDataWrapper)
+            {
+                if (listDataWrapper.getData() != null)
+                {
+                    getActivity().runOnUiThread(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            if (listDataWrapper.getData().isEmpty())
+                            {
+                                binding.notAttendees.setVisibility(View.VISIBLE);
+                                binding.eventAttendeesView.getRoot().setVisibility(View.GONE);
+                            } else
+                            {
+
+                            }
+                        }
+                    });
+
+                }
+            }
+        });
+
+        viewModel.getReminderListLiveData().observe(getViewLifecycleOwner(), new Observer<DataWrapper<List<ContentValues>>>()
+        {
+            @Override
+            public void onChanged(DataWrapper<List<ContentValues>> listDataWrapper)
+            {
+                if (listDataWrapper.getData() != null)
+                {
+                    // 알림
+                    getActivity().runOnUiThread(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            if (listDataWrapper.getData().isEmpty())
+                            {
+                                binding.notReminder.setVisibility(View.VISIBLE);
+                                binding.remindersTable.setVisibility(View.GONE);
+                            } else
+                            {
+                                setReminderText(listDataWrapper.getData());
+                            }
+                        }
+                    });
+
+                }
+            }
+        });
     }
 
     private void init()
@@ -97,17 +182,23 @@ public class EventFragment extends Fragment
         {
             binding.eventDatetimeView.eventTimezoneLayout.setVisibility(View.GONE);
         }
+
         // 반복
         if (event.getAsString(CalendarContract.Events.RRULE) != null)
         {
             setRecurrenceText(event.getAsString(CalendarContract.Events.RRULE));
         }
 
-        // 알림
+        // 알람
         if (event.getAsBoolean(CalendarContract.Events.HAS_ALARM))
         {
-            //call reminder
+            viewModel.getReminders(calendarId, eventId);
+        } else
+        {
+            binding.notReminder.setVisibility(View.VISIBLE);
+            binding.remindersTable.setVisibility(View.GONE);
         }
+
         // 설명
         binding.eventDescription.setText(event.getAsString(CalendarContract.Events.DESCRIPTION) != null ? event.getAsString(CalendarContract.Events.DESCRIPTION)
                 : "");
@@ -116,10 +207,7 @@ public class EventFragment extends Fragment
                 : "");
 
         // 참석자
-        if (event.getAsBoolean(CalendarContract.Events.HAS_ATTENDEE_DATA))
-        {
-            //call attendees
-        }
+        viewModel.getAttendees(calendarId, eventId);
 
         // 공개 범위 표시
         setAccessLevelText();
@@ -196,36 +284,46 @@ public class EventFragment extends Fragment
         binding.eventDatetimeView.eventTimezone.setText(timeZone.getDisplayName(Locale.KOREAN));
     }
 
-    private void setReminderText(int minutes)
+    private void setReminderText(List<ContentValues> reminders)
     {
-        ReminderDto reminderDto = CalendarEventUtil.convertAlarmMinutes(minutes);
-
+        LayoutInflater layoutInflater = getLayoutInflater();
         StringBuilder stringBuilder = new StringBuilder();
-        if (reminderDto.getWeek() > 0)
-        {
-            stringBuilder.append(reminderDto.getWeek()).append(getString(R.string.week)).append(" ");
-        }
-        if (reminderDto.getDay() > 0)
-        {
-            stringBuilder.append(reminderDto.getDay()).append(getString(R.string.day)).append(" ");
-        }
-        if (reminderDto.getHour() > 0)
-        {
-            stringBuilder.append(reminderDto.getHour()).append(getString(R.string.hour)).append(" ");
-        }
-        if (reminderDto.getMinute() > 0)
-        {
-            stringBuilder.append(reminderDto.getMinute()).append(getString(R.string.minute)).append(" ");
-        }
 
-        if (reminderDto.getMinute() == 0)
+        for (ContentValues reminder : reminders)
         {
-            stringBuilder.append(getString(R.string.notification_on_time));
-        } else
-        {
-            stringBuilder.append(getString(R.string.remind_before));
+            ReminderDto reminderDto = CalendarEventUtil.convertAlarmMinutes(reminder.getAsInteger(CalendarContract.Reminders.MINUTES));
+
+            if (reminderDto.getWeek() > 0)
+            {
+                stringBuilder.append(reminderDto.getWeek()).append(getString(R.string.week)).append(" ");
+            }
+            if (reminderDto.getDay() > 0)
+            {
+                stringBuilder.append(reminderDto.getDay()).append(getString(R.string.day)).append(" ");
+            }
+            if (reminderDto.getHour() > 0)
+            {
+                stringBuilder.append(reminderDto.getHour()).append(getString(R.string.hour)).append(" ");
+            }
+            if (reminderDto.getMinute() > 0)
+            {
+                stringBuilder.append(reminderDto.getMinute()).append(getString(R.string.minute)).append(" ");
+            }
+
+            if (reminderDto.getMinute() == 0)
+            {
+                stringBuilder.append(getString(R.string.notification_on_time));
+            } else
+            {
+                stringBuilder.append(getString(R.string.remind_before));
+            }
+            View row = layoutInflater.inflate(R.layout.event_reminder_item, null);
+            row.findViewById(R.id.remove_reminder_button).setVisibility(View.GONE);
+            ((TextView) row.findViewById(R.id.reminder_value)).setText(stringBuilder.toString());
+            binding.remindersTable.addView(row, binding.remindersTable.getChildCount());
+
+            stringBuilder.delete(0, stringBuilder.length());
         }
-        binding.eventReminder.setText(stringBuilder.toString());
     }
 
     private void setRecurrenceText(String rRule)
@@ -240,5 +338,10 @@ public class EventFragment extends Fragment
         binding.eventCalendarView.calendarColor.setBackgroundColor(CalendarUtil.getColor(event.getAsInteger(CalendarContract.Events.CALENDAR_COLOR)));
         binding.eventCalendarView.calendarDisplayName.setText(event.getAsString(CalendarContract.Events.CALENDAR_DISPLAY_NAME));
         binding.eventCalendarView.calendarAccountName.setText(event.getAsString(CalendarContract.Events.ACCOUNT_NAME));
+    }
+
+    public ContentValues getEvent()
+    {
+        return event;
     }
 }

@@ -72,45 +72,73 @@ public class PlacesAroundLocationFragment extends Fragment
                 {
                     if (hasDetailLocation)
                     {
-                        binding.placesAroundLocationFragmentContainer.setVisibility(View.VISIBLE);
-                        binding.eventRegisterDetailLocation.getRoot().setVisibility(View.GONE);
+                        getActivity().runOnUiThread(new Runnable()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                binding.placesAroundLocationFragmentContainer.setVisibility(View.VISIBLE);
+                                binding.eventRegisterDetailLocation.rootLayout.setVisibility(View.GONE);
+                            }
+                        });
 
                         iLocation.getLocation(new CarrierMessagingService.ResultCallback<LocationDTO>()
                         {
                             @Override
                             public void onReceiveResult(@NonNull LocationDTO location) throws RemoteException
                             {
-                                Fragment fragment = null;
+                                if (location.getAccountName() != null)
+                                {
+                                    Fragment fragment = null;
 
-                                if (location.getPlaceId() != null)
-                                {
-                                    fragment = new PlacesFragment(new LocationInfo(location.getLatitude(), location.getLongitude(), location.getPlaceName()));
-                                } else
-                                {
-                                    fragment = new PlacesFragment(new LocationInfo(location.getLatitude(), location.getLongitude(), location.getAddressName()));
+                                    if (location.getPlaceId() != null)
+                                    {
+                                        fragment = new PlacesFragment(new LocationInfo(location.getLatitude(), location.getLongitude(), location.getPlaceName()));
+                                    } else
+                                    {
+                                        fragment = new PlacesFragment(new LocationInfo(location.getLatitude(), location.getLongitude(), location.getAddressName()));
+                                    }
+                                    FragmentManager fragmentManager = getChildFragmentManager();
+                                    fragmentManager.beginTransaction().add(R.id.places_around_location_fragment_container, fragment).commit();
                                 }
-                                FragmentManager fragmentManager = getChildFragmentManager();
-                                fragmentManager.beginTransaction().add(R.id.places_around_location_fragment_container, fragment).commit();
                             }
                         });
 
                     } else
                     {
-                        binding.placesAroundLocationFragmentContainer.setVisibility(View.GONE);
-                        binding.eventRegisterDetailLocation.getRoot().setVisibility(View.VISIBLE);
-                        binding.eventRegisterDetailLocation.locationStatusDescription.setText(getString(R.string.need_register_detail_location));
-                        // 상세 위치 정보가 설정되지 않음
+                        getActivity().runOnUiThread(new Runnable()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                binding.placesAroundLocationFragmentContainer.setVisibility(View.GONE);
+                                binding.eventRegisterDetailLocation.rootLayout.setVisibility(View.VISIBLE);
+                                binding.eventRegisterDetailLocation.locationStatusDescription.setText(getString(R.string.need_register_detail_location));
+                                // 상세 위치 정보가 설정되지 않음
+                            }
+                        });
+
                     }
                 }
             });
 
-
         } else
         {
-            binding.placesAroundLocationFragmentContainer.setVisibility(View.GONE);
-            binding.eventRegisterDetailLocation.getRoot().setVisibility(View.VISIBLE);
-            binding.eventRegisterDetailLocation.locationStatusDescription.setText(getString(R.string.not_selected_location_in_event));
-            // 이벤트에서 위치가 지정되지 않음
+            getActivity().runOnUiThread(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    binding.eventRegisterDetailLocation.registerDetailLocationButton.setVisibility(View.GONE);
+                    binding.placesAroundLocationFragmentContainer.setVisibility(View.GONE);
+                    binding.eventRegisterDetailLocation.rootLayout.setVisibility(View.VISIBLE);
+                    binding.eventRegisterDetailLocation.locationStatusDescription.setText(getString(R.string.not_selected_location_in_event));
+                    // 이벤트에서 위치가 지정되지 않음
+                }
+            });
+
         }
     }
+
+
 }

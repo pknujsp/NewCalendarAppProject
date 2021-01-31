@@ -150,7 +150,7 @@ public class CalendarProvider implements ICalendarProvider
                 event.put(CalendarContract.Events.RRULE, cursor.getString(cursor.getColumnIndex(CalendarContract.Events.RRULE)));
                 event.put(CalendarContract.Events.EXDATE, cursor.getString(cursor.getColumnIndex(CalendarContract.Events.EXDATE)));
                 event.put(CalendarContract.Events.EXRULE, cursor.getString(cursor.getColumnIndex(CalendarContract.Events.EXRULE)));
-                event.put(CalendarContract.Events.HAS_ATTENDEE_DATA, 1 == cursor.getInt(cursor.getColumnIndex(CalendarContract.Events.HAS_ATTENDEE_DATA)));
+                event.put(CalendarContract.Events.HAS_ATTENDEE_DATA, cursor.getInt(cursor.getColumnIndex(CalendarContract.Events.HAS_ATTENDEE_DATA)));
                 event.put(CalendarContract.Events.EVENT_LOCATION, cursor.getString(cursor.getColumnIndex(CalendarContract.Events.EVENT_LOCATION)));
                 event.put(CalendarContract.Events.DESCRIPTION, cursor.getString(cursor.getColumnIndex(CalendarContract.Events.DESCRIPTION)));
                 event.put(CalendarContract.Events.ACCESS_LEVEL, cursor.getInt(cursor.getColumnIndex(CalendarContract.Events.ACCESS_LEVEL)));
@@ -198,7 +198,7 @@ public class CalendarProvider implements ICalendarProvider
                 event.put(CalendarContract.Events.RRULE, cursor.getString(cursor.getColumnIndex(CalendarContract.Events.RRULE)));
                 event.put(CalendarContract.Events.EXDATE, cursor.getString(cursor.getColumnIndex(CalendarContract.Events.EXDATE)));
                 event.put(CalendarContract.Events.EXRULE, cursor.getString(cursor.getColumnIndex(CalendarContract.Events.EXRULE)));
-                event.put(CalendarContract.Events.HAS_ATTENDEE_DATA, 1 == cursor.getInt(cursor.getColumnIndex(CalendarContract.Events.HAS_ATTENDEE_DATA)));
+                event.put(CalendarContract.Events.HAS_ATTENDEE_DATA, cursor.getInt(cursor.getColumnIndex(CalendarContract.Events.HAS_ATTENDEE_DATA)));
                 event.put(CalendarContract.Events.EVENT_LOCATION, cursor.getString(cursor.getColumnIndex(CalendarContract.Events.EVENT_LOCATION)));
                 event.put(CalendarContract.Events.DESCRIPTION, cursor.getString(cursor.getColumnIndex(CalendarContract.Events.DESCRIPTION)));
                 event.put(CalendarContract.Events.ACCESS_LEVEL, cursor.getInt(cursor.getColumnIndex(CalendarContract.Events.ACCESS_LEVEL)));
@@ -391,7 +391,7 @@ public class CalendarProvider implements ICalendarProvider
     {
         ContentResolver contentResolver = context.getContentResolver();
         String[] selectionArgs = {String.valueOf(calendarId), String.valueOf(eventId)};
-        Cursor cursor = contentResolver.query(CalendarContract.Reminders.CONTENT_URI, null, REMINDER_QUERY, selectionArgs, null);
+        Cursor cursor = CalendarContract.Reminders.query(contentResolver, eventId, null);
         List<ContentValues> reminders = new ArrayList<>();
         if (cursor != null)
         {
@@ -401,7 +401,7 @@ public class CalendarProvider implements ICalendarProvider
                 reminders.add(reminder);
 
                 reminder.put(CalendarContract.Reminders._ID, cursor.getLong(cursor.getColumnIndex(CalendarContract.Reminders._ID)));
-                reminder.put(CalendarContract.Reminders.EVENT_ID, cursor.getInt(cursor.getColumnIndex(CalendarContract.Reminders.EVENT_ID)));
+                reminder.put(CalendarContract.Reminders.EVENT_ID, cursor.getLong(cursor.getColumnIndex(CalendarContract.Reminders.EVENT_ID)));
                 reminder.put(CalendarContract.Reminders.METHOD, cursor.getInt(cursor.getColumnIndex(CalendarContract.Reminders.METHOD)));
                 reminder.put(CalendarContract.Reminders.MINUTES, cursor.getInt(cursor.getColumnIndex(CalendarContract.Reminders.MINUTES)));
             }
@@ -579,8 +579,7 @@ public class CalendarProvider implements ICalendarProvider
                 String.valueOf(eventId)};
 
         List<ContentValues> attendees = new ArrayList<>();
-        Cursor cursor = contentResolver.query(CalendarContract.Attendees.CONTENT_URI, null, ATTENDEE_QUERY, selectionArgs, null);
-
+        Cursor cursor = CalendarContract.Attendees.query(contentResolver, eventId, null);
         if (cursor != null)
         {
             while (cursor.moveToNext())
@@ -589,7 +588,7 @@ public class CalendarProvider implements ICalendarProvider
                 attendees.add(attendee);
 
                 attendee.put(CalendarContract.Attendees._ID, cursor.getLong(cursor.getColumnIndex(CalendarContract.Attendees._ID)));
-                attendee.put(CalendarContract.Attendees.EVENT_ID, cursor.getInt(cursor.getColumnIndex(CalendarContract.Attendees.EVENT_ID)));
+                attendee.put(CalendarContract.Attendees.EVENT_ID, cursor.getLong(cursor.getColumnIndex(CalendarContract.Attendees.EVENT_ID)));
                 attendee.put(CalendarContract.Attendees.CALENDAR_ID, cursor.getInt(cursor.getColumnIndex(CalendarContract.Attendees.CALENDAR_ID)));
                 attendee.put(CalendarContract.Attendees.ATTENDEE_EMAIL, cursor.getString(cursor.getColumnIndex(CalendarContract.Attendees.ATTENDEE_EMAIL)));
                 attendee.put(CalendarContract.Attendees.ATTENDEE_ID_NAMESPACE, cursor.getString(cursor.getColumnIndex(CalendarContract.Attendees.ATTENDEE_ID_NAMESPACE)));

@@ -7,10 +7,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentContainerView;
 import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.viewpager2.widget.ViewPager2;
 
+import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -37,13 +39,10 @@ public class EventActivity extends AppCompatActivity implements ILocation
 {
     private ViewPager2 viewPager;
     private TabLayout tabLayout;
-    private CalendarViewModel viewModel;
+
     private LocationViewModel locationViewModel;
     private BottomNavigationView bottomNavigationView;
     private FragmentContainerView fragmentContainerView;
-
-    private Bundle eventBundle;
-    private ContentValues event;
 
     private EventFragment eventFragment;
     private WeatherFragment weatherFragment;
@@ -83,31 +82,22 @@ public class EventActivity extends AppCompatActivity implements ILocation
         fragmentContainerView = (FragmentContainerView) findViewById(R.id.schedule_fragment_container);
 
         bottomNavigationView.setOnNavigationItemSelectedListener(onNavigationItemSelectedListener);
-        fragmentManager = getSupportFragmentManager();
 
         final long eventId = getIntent().getLongExtra("eventId", 0);
         final int calendarId = getIntent().getIntExtra("calendarId", 0);
 
-        viewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
+        Bundle bundle = new Bundle();
+        bundle.putInt("calendarId", calendarId);
+        bundle.putLong("eventId", eventId);
+
+        eventFragment = new EventFragment();
+        eventFragment.setArguments(bundle);
+        currentFragment = eventFragment;
+
+        fragmentManager = getSupportFragmentManager();
+        fragmentManager.beginTransaction().add(R.id.schedule_fragment_container, eventFragment, TAG_INFO).commit();
+
         locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
-
-        viewModel.init(getApplicationContext());
-        viewModel.getEvent(calendarId, eventId);
-        viewModel.getEventLiveData().observe(this, new Observer<DataWrapper<ContentValues>>()
-        {
-            @Override
-            public void onChanged(DataWrapper<ContentValues> contentValuesDataWrapper)
-            {
-                if (contentValuesDataWrapper.getData() != null)
-                {
-                    event = contentValuesDataWrapper.getData();
-                    eventBundle = new Bundle();
-                    eventBundle.putParcelable("event", event);
-                    setFragments();
-                }
-            }
-        });
-
         locationViewModel.getLocationLiveData().observe(this, new Observer<LocationDTO>()
         {
             @Override
@@ -116,42 +106,38 @@ public class EventActivity extends AppCompatActivity implements ILocation
 
             }
         });
-
-
-    }
-
-    private void setFragments()
-    {
-        eventFragment = new EventFragment();
-        weatherFragment = new WeatherFragment(this);
-        placesAroundLocationFragment = new PlacesAroundLocationFragment(this);
-
-        eventFragment.setArguments(eventBundle);
-        currentFragment = eventFragment;
-
-        fragmentManager.beginTransaction().add(R.id.schedule_fragment_container, eventFragment, TAG_INFO).hide(eventFragment)
-                .add(R.id.schedule_fragment_container, weatherFragment, TAG_WEATHER).hide(placesAroundLocationFragment)
-                .add(R.id.schedule_fragment_container, placesAroundLocationFragment, TAG_LOCATION).hide(weatherFragment)
-                .show(eventFragment)
-                .commit();
     }
 
     private final BottomNavigationView.OnNavigationItemSelectedListener onNavigationItemSelectedListener = new BottomNavigationView.OnNavigationItemSelectedListener()
     {
+        @SuppressLint("NonConstantResourceId")
         @Override
         public boolean onNavigationItemSelected(@NonNull MenuItem item)
         {
             Fragment newFragment = null;
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
             switch (item.getItemId())
             {
                 case R.id.schedule_info:
                     newFragment = eventFragment;
                     break;
+
                 case R.id.schedule_weather:
+                    if (weatherFragment == null)
+                    {
+                        weatherFragment = new WeatherFragment(EventActivity.this);
+                        fragmentTransaction.add(R.id.schedule_fragment_container, weatherFragment, TAG_WEATHER);
+                    }
                     newFragment = weatherFragment;
                     break;
+
                 case R.id.schedule_location:
+                    if (placesAroundLocationFragment == null)
+                    {
+                        placesAroundLocationFragment = new PlacesAroundLocationFragment(EventActivity.this);
+                        fragmentTransaction.add(R.id.schedule_fragment_container, placesAroundLocationFragment, TAG_LOCATION);
+                    }
                     newFragment = placesAroundLocationFragment;
                     break;
             }
@@ -159,8 +145,11 @@ public class EventActivity extends AppCompatActivity implements ILocation
             //현재 표시된 프래그먼트와 변경할 프래그먼트가 같은 경우 변경하지 않음
             if (currentFragment != newFragment)
             {
-                fragmentManager.beginTransaction().hide(currentFragment).show(newFragment).commit();
+                fragmentTransaction.hide(currentFragment).show(newFragment).commit();
                 currentFragment = newFragment;
+            } else
+            {
+                fragmentTransaction = null;
             }
             return true;
         }
@@ -199,9 +188,10 @@ public class EventActivity extends AppCompatActivity implements ILocation
                     public void onClick(DialogInterface dialogInterface, int i)
                     {
                         Intent intent = new Intent(EventActivity.this, MLocActivity.class);
+                        ContentValues event = eventFragment.getEvent();
 
                         intent.putExtra("calendarId", event.getAsInteger(CalendarContract.Events.CALENDAR_ID));
-                        intent.putExtra("eventId", event.getAsInteger(CalendarContract.Events._ID));
+                        intent.putExtra("eventId", event.getAsLong(CalendarContract.Events._ID));
                         intent.putExtra("location", event.getAsString(CalendarContract.Events.EVENT_LOCATION));
 
                         startActivityForResult(intent, REQUEST_SELECT_LOCATION);
@@ -219,8 +209,8 @@ public class EventActivity extends AppCompatActivity implements ILocation
     @Override
     public void getLocation(CarrierMessagingService.ResultCallback<LocationDTO> resultCallback)
     {
-        locationViewModel.getLocation(event.getAsInteger(CalendarContract.Events.CALENDAR_ID),
-                event.getAsLong(CalendarContract.Events._ID), resultCallback);
+        locationViewModel.getLocation(eventFragment.getEvent().getAsInteger(CalendarContract.Events.CALENDAR_ID),
+                eventFragment.getEvent().getAsLong(CalendarContract.Events._ID), resultCallback);
     }
 
     /**
@@ -231,7 +221,7 @@ public class EventActivity extends AppCompatActivity implements ILocation
     @Override
     public boolean hasSimpleLocation()
     {
-        return event.getAsString(CalendarContract.Events.EVENT_LOCATION) != null;
+        return !eventFragment.getEvent().getAsString(CalendarContract.Events.EVENT_LOCATION).isEmpty();
     }
 
     /**
@@ -242,7 +232,7 @@ public class EventActivity extends AppCompatActivity implements ILocation
     @Override
     public void hasDetailLocation(CarrierMessagingService.ResultCallback<Boolean> resultCallback)
     {
-        locationViewModel.hasDetailLocation(event.getAsInteger(CalendarContract.Events.CALENDAR_ID),
-                event.getAsLong(CalendarContract.Events._ID), resultCallback);
+        locationViewModel.hasDetailLocation(eventFragment.getEvent().getAsInteger(CalendarContract.Events.CALENDAR_ID),
+                eventFragment.getEvent().getAsLong(CalendarContract.Events._ID), resultCallback);
     }
 }

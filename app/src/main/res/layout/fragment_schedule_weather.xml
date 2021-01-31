@@ -18,7 +18,6 @@
 
         <include
             android:id="@+id/event_register_detail_location"
-            layout="@layout/event_register_detail_location_view"
-            android:visibility="gone" />
+            layout="@layout/event_register_detail_location_view" />
     </FrameLayout>
 </layout>

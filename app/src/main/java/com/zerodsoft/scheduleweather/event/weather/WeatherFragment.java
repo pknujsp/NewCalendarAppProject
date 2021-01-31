@@ -48,7 +48,6 @@ public class WeatherFragment extends Fragment
         return binding.getRoot();
     }
 
-
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
@@ -69,7 +68,7 @@ public class WeatherFragment extends Fragment
         if (value)
         {
             RotateAnimation rotateAnimation = (RotateAnimation) AnimationUtils.loadAnimation(getContext(), R.anim.rotate);
-            // binding..startAnimation(rotateAnimation);
+            // binding.. startAnimation(rotateAnimation);
         } else
         {
             //  refreshButton.getAnimation().cancel();
@@ -87,36 +86,72 @@ public class WeatherFragment extends Fragment
                 {
                     if (hasDetailLocation)
                     {
-                        binding.weatherFragmentContainerView.setVisibility(View.VISIBLE);
-                        binding.eventRegisterDetailLocation.getRoot().setVisibility(View.GONE);
+                        getActivity().runOnUiThread(new Runnable()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                binding.weatherFragmentContainerView.setVisibility(View.VISIBLE);
+                                binding.eventRegisterDetailLocation.rootLayout.setVisibility(View.GONE);
+                            }
+                        });
 
                         iLocation.getLocation(new CarrierMessagingService.ResultCallback<LocationDTO>()
                         {
                             @Override
                             public void onReceiveResult(@NonNull LocationDTO locationDTO) throws RemoteException
                             {
-                                getParentFragmentManager().beginTransaction().add(R.id.weather_fragment_container_view,
-                                        new WeatherItemFragment(locationDTO), WeatherItemFragment.class.getName())
-                                        .commit();
+                                getActivity().runOnUiThread(new Runnable()
+                                {
+                                    @Override
+                                    public void run()
+                                    {
+                                        if (locationDTO.getAddressName() != null)
+                                        {
+                                            getParentFragmentManager().beginTransaction().add(R.id.weather_fragment_container_view,
+                                                    new WeatherItemFragment(locationDTO), WeatherItemFragment.class.getName())
+                                                    .commit();
+                                        }
+                                    }
+                                });
+
                             }
                         });
 
                     } else
                     {
-                        // 상세 위치 정보가 설정되지 않음
-                        binding.weatherFragmentContainerView.setVisibility(View.GONE);
-                        binding.eventRegisterDetailLocation.getRoot().setVisibility(View.VISIBLE);
-                        binding.eventRegisterDetailLocation.locationStatusDescription.setText(getString(R.string.need_register_detail_location));
+                        getActivity().runOnUiThread(new Runnable()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                // 상세 위치 정보가 설정되지 않음
+                                binding.weatherFragmentContainerView.setVisibility(View.GONE);
+                                binding.eventRegisterDetailLocation.rootLayout.setVisibility(View.VISIBLE);
+                                binding.eventRegisterDetailLocation.locationStatusDescription.setText(getString(R.string.need_register_detail_location));
+                            }
+                        });
+
                     }
                 }
             });
 
         } else
         {
-            // 이벤트에서 위치가 지정되지 않음
-            binding.weatherFragmentContainerView.setVisibility(View.GONE);
-            binding.eventRegisterDetailLocation.getRoot().setVisibility(View.VISIBLE);
-            binding.eventRegisterDetailLocation.locationStatusDescription.setText(getString(R.string.not_selected_location_in_event));
+            getActivity().runOnUiThread(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    // 이벤트에서 위치가 지정되지 않음
+                    binding.eventRegisterDetailLocation.registerDetailLocationButton.setVisibility(View.GONE);
+                    binding.weatherFragmentContainerView.setVisibility(View.GONE);
+                    binding.eventRegisterDetailLocation.rootLayout.setVisibility(View.VISIBLE);
+                    binding.eventRegisterDetailLocation.locationStatusDescription.setText(getString(R.string.not_selected_location_in_event));
+                }
+            });
+
         }
     }
+
 }
