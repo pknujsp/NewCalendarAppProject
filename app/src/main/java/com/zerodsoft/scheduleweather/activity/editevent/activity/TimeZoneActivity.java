@@ -75,7 +75,6 @@ public class TimeZoneActivity extends AppCompatActivity implements ITimeZone
             {
                 // 실시간 검색
                 adapter.getFilter().filter(charSequence);
-
             }
 
             @Override

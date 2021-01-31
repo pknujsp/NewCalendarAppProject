@@ -11,6 +11,8 @@ import com.zerodsoft.scheduleweather.room.AppDb;
 import com.zerodsoft.scheduleweather.room.dao.LocationDAO;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
+import lombok.SneakyThrows;
+
 public class LocationRepository implements ILocationDao
 {
     private MutableLiveData<LocationDTO> locationLiveData;
@@ -27,11 +29,28 @@ public class LocationRepository implements ILocationDao
     {
         App.executorService.execute(new Runnable()
         {
+            @SneakyThrows
             @Override
             public void run()
             {
                 LocationDTO locationDTO = locationDAO.select(calendarId, eventId);
                 locationLiveData.postValue(locationDTO == null ? new LocationDTO() : locationDTO);
+                resultCallback.onReceiveResult(locationDTO == null ? new LocationDTO() : locationDTO);
+            }
+        });
+    }
+
+    @Override
+    public void hasDetailLocation(int calendarId, long eventId, CarrierMessagingService.ResultCallback<Boolean> resultCallback)
+    {
+        App.executorService.execute(new Runnable()
+        {
+            @SneakyThrows
+            @Override
+            public void run()
+            {
+                int result = locationDAO.hasLocation(calendarId, eventId);
+                resultCallback.onReceiveResult(result == 1);
             }
         });
     }

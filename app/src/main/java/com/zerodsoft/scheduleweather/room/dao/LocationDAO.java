@@ -18,6 +18,9 @@ public interface LocationDAO
     @Query("SELECT * FROM location_table WHERE calendar_id = :calendarId AND event_id = :eventId")
     public LocationDTO select(int calendarId, long eventId);
 
+    @Query("SELECT EXISTS (SELECT * from location_table  WHERE calendar_id = :calendarId AND event_id = :eventId) AS success")
+    public int hasLocation(int calendarId, long eventId);
+
     @Update(entity = LocationDTO.class, onConflict = OnConflictStrategy.IGNORE)
     public void update(LocationDTO locationDTO);
 

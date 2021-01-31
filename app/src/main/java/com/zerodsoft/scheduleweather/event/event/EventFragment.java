@@ -1,6 +1,7 @@
 package com.zerodsoft.scheduleweather.event.event;
 
 import android.content.ContentValues;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.provider.CalendarContract;
 import android.view.LayoutInflater;
@@ -16,23 +17,28 @@ import androidx.lifecycle.ViewModelProvider;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.databinding.EventFragmentBinding;
+import com.zerodsoft.scheduleweather.etc.CalendarUtil;
+import com.zerodsoft.scheduleweather.etc.EventViewUtil;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.utility.CalendarEventUtil;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.utility.RecurrenceRule;
 import com.zerodsoft.scheduleweather.utility.model.ReminderDto;
 
+import java.sql.Time;
+import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
+import java.util.SimpleTimeZone;
 import java.util.TimeZone;
 
 public class EventFragment extends Fragment
 {
     private EventFragmentBinding binding;
     private ContentValues event;
-    private boolean is24HourSystem = true;
+    private boolean is24HourSystem = false;
 
     public EventFragment()
     {
@@ -59,6 +65,7 @@ public class EventFragment extends Fragment
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
+        init();
     }
 
     @Override
@@ -69,57 +76,57 @@ public class EventFragment extends Fragment
 
     private void init()
     {
-        // 구글 캘린더와 다른 캘린더를 구분해서 뷰 설정
-        if (event.getAsString(CalendarContract.Events.ACCOUNT_NAME).contains("@gmail.com"))
+        // 제목, 캘린더, 시간, 시간대, 반복, 알림, 설명, 위치, 공개범위, 유효성, 참석자
+        // 캘린더, 시간대, 참석자 정보는 따로 불러온다.
+        //제목
+        binding.eventTitle.setText(event.getAsString(CalendarContract.Events.TITLE) == null ? "EMPTY" :
+                event.getAsString(CalendarContract.Events.TITLE));
+        //캘린더
+        setCalendarText();
+
+        //시간 , allday구분
+        setDateTimeText(event.getAsLong(CalendarContract.Events.DTSTART), event.getAsLong(CalendarContract.Events.DTEND));
+
+        // 시간대
+        if (!event.getAsBoolean(CalendarContract.Events.ALL_DAY))
         {
-            // 제목, 캘린더, 시간, 시간대, 반복, 알림, 설명, 위치, 공개범위, 유효성, 참석자
-            // 캘린더, 시간대, 참석자 정보는 따로 불러온다.
-            //제목
-            binding.eventTitle.setText(event.getAsString(CalendarContract.Events.TITLE) == null ? "EMPTY" :
-                    event.getAsString(CalendarContract.Events.TITLE));
-            //캘린더
-
-            //시간 , allday구분
-            setDateTimeText(event.getAsLong(CalendarContract.Events.DTSTART), event.getAsLong(CalendarContract.Events.DTEND));
-
-            // 시간대
-            TimeZone timeZone = TimeZone.getTimeZone(event.getAsString(CalendarContract.Events.EVENT_TIMEZONE));
+            String timeZoneStr = event.getAsString(CalendarContract.Events.EVENT_TIMEZONE);
+            TimeZone timeZone = TimeZone.getTimeZone(timeZoneStr);
             setTimeZoneText(timeZone);
-
-            // 반복
-            if (event.getAsString(CalendarContract.Events.RRULE) != null)
-            {
-                //call reminders
-            }
-
-            // 알림
-            if (event.getAsBoolean(CalendarContract.Events.HAS_ALARM))
-            {
-                //call reminder
-            }
-            // 설명
-            binding.eventDescription.setText(event.getAsString(CalendarContract.Events.DESCRIPTION) != null ? event.getAsString(CalendarContract.Events.DESCRIPTION)
-                    : "");
-            // 위치
-            binding.eventLocation.setText(event.getAsString(CalendarContract.Events.EVENT_LOCATION) != null ? event.getAsString(CalendarContract.Events.EVENT_LOCATION)
-                    : "");
-
-            // 참석자
-            if (event.getAsBoolean(CalendarContract.Events.HAS_ATTENDEE_DATA))
-            {
-                //call attendees
-            }
-
-            // 공개 범위 표시
-            setAccessLevelText();
-
-            // 유효성 표시
-            setAvailabilityText();
-
         } else
         {
-
+            binding.eventDatetimeView.eventTimezoneLayout.setVisibility(View.GONE);
         }
+        // 반복
+        if (event.getAsString(CalendarContract.Events.RRULE) != null)
+        {
+            setRecurrenceText(event.getAsString(CalendarContract.Events.RRULE));
+        }
+
+        // 알림
+        if (event.getAsBoolean(CalendarContract.Events.HAS_ALARM))
+        {
+            //call reminder
+        }
+        // 설명
+        binding.eventDescription.setText(event.getAsString(CalendarContract.Events.DESCRIPTION) != null ? event.getAsString(CalendarContract.Events.DESCRIPTION)
+                : "");
+        // 위치
+        binding.eventLocation.setText(event.getAsString(CalendarContract.Events.EVENT_LOCATION) != null ? event.getAsString(CalendarContract.Events.EVENT_LOCATION)
+                : "");
+
+        // 참석자
+        if (event.getAsBoolean(CalendarContract.Events.HAS_ATTENDEE_DATA))
+        {
+            //call attendees
+        }
+
+        // 공개 범위 표시
+        setAccessLevelText();
+
+        // 유효성 표시
+        setAvailabilityText();
+
     }
 
     private void setAvailabilityText()
@@ -162,8 +169,8 @@ public class EventFragment extends Fragment
 
     private void setDateTimeText(long start, long end)
     {
-        String startStr = "";
-        String endStr = "";
+        String startStr = null;
+        String endStr = null;
 
         if (event.getAsBoolean(CalendarContract.Events.ALL_DAY))
         {
@@ -171,11 +178,11 @@ public class EventFragment extends Fragment
             endStr = ClockUtil.YYYY_년_M_월_D_일_E.format(new Date(end));
         } else
         {
-            startStr = ClockUtil.YYYY_년_M_월_D_일_E.format(new Date(start)) +
+            startStr = ClockUtil.YYYY_년_M_월_D_일_E.format(new Date(start)) + " " +
                     (is24HourSystem ? ClockUtil.HOURS_24.format(new Date(start))
                             : ClockUtil.HOURS_12.format(new Date(start)));
 
-            endStr = ClockUtil.YYYY_년_M_월_D_일_E.format(new Date(end)) +
+            endStr = ClockUtil.YYYY_년_M_월_D_일_E.format(new Date(end)) + " " +
                     (is24HourSystem ? ClockUtil.HOURS_24.format(new Date(end))
                             : ClockUtil.HOURS_12.format(new Date(end)));
         }
@@ -226,5 +233,12 @@ public class EventFragment extends Fragment
         RecurrenceRule recurrenceRule = new RecurrenceRule();
         recurrenceRule.separateValues(rRule);
         binding.eventRecurrence.setText(recurrenceRule.interpret(getContext()));
+    }
+
+    private void setCalendarText()
+    {
+        binding.eventCalendarView.calendarColor.setBackgroundColor(CalendarUtil.getColor(event.getAsInteger(CalendarContract.Events.CALENDAR_COLOR)));
+        binding.eventCalendarView.calendarDisplayName.setText(event.getAsString(CalendarContract.Events.CALENDAR_DISPLAY_NAME));
+        binding.eventCalendarView.calendarAccountName.setText(event.getAsString(CalendarContract.Events.ACCOUNT_NAME));
     }
 }

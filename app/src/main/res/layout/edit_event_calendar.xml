@@ -5,7 +5,7 @@
     android:orientation="horizontal">
 
     <TextView
-        style="@style/EditSchedule.Label"
+        style="@style/Event.Label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/calendar" />

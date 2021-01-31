@@ -16,6 +16,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.CalendarContract;
+import android.service.carrier.CarrierMessagingService;
 import android.view.MenuItem;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -42,7 +43,6 @@ public class EventActivity extends AppCompatActivity implements ILocation
     private FragmentContainerView fragmentContainerView;
 
     private Bundle eventBundle;
-    private Bundle locationBundle;
     private ContentValues event;
 
     private EventFragment eventFragment;
@@ -52,12 +52,12 @@ public class EventActivity extends AppCompatActivity implements ILocation
     private OnBackPressedCallback onBackPressedCallback;
 
     private FragmentManager fragmentManager;
+    private Fragment currentFragment = null;
 
     private static final String TAG_INFO = "info";
     private static final String TAG_WEATHER = "weather";
     private static final String TAG_LOCATION = "location";
     private static final int REQUEST_SELECT_LOCATION = 10;
-    private Fragment currentFragment = null;
 
     @Override
     public void onAttachedToWindow()
@@ -103,12 +103,7 @@ public class EventActivity extends AppCompatActivity implements ILocation
                     event = contentValuesDataWrapper.getData();
                     eventBundle = new Bundle();
                     eventBundle.putParcelable("event", event);
-                    ContentValues contentValues = contentValuesDataWrapper.getData();
-
-                    // 이벤트 정보를 표시하기 전에 위치 값을 바탕으로 날씨, 주변정보등을
-                    // 표시할 정확한 위치/주소가 지정되어 있는지 여부확인
-                    locationViewModel.getLocation(contentValues.getAsInteger(CalendarContract.Events.CALENDAR_ID)
-                            , contentValues.getAsLong(CalendarContract.Events._ID));
+                    setFragments();
                 }
             }
         });
@@ -118,27 +113,7 @@ public class EventActivity extends AppCompatActivity implements ILocation
             @Override
             public void onChanged(LocationDTO locationDTO)
             {
-                if (locationDTO != null)
-                {
-                    if (locationDTO.getAccountName() == null)
-                    {
-                        /*
-                         <미 등록 상태>
-                         등록 하시겠습니까 라는 다이얼로그 표시, 취소/등록 중 하나 선택
 
-                        - 취소 선택 -> 이벤트 정보만 표시, 다른 프래그먼트(날씨, 주변 정보 등)
-                         으로 이동하면 상세 위치 정보 미등록으로 텍스트 표시(수동 등록 버튼 표시 하기)
-
-                        - 등록 선택 -> 등록 액티비티 실행
-                         */
-                        showRequestLocDialog();
-                    } else
-                    {
-                        // 등록 상태
-                        locationBundle.putParcelable("location", locationDTO);
-                        setFragments();
-                    }
-                }
             }
         });
 
@@ -152,10 +127,12 @@ public class EventActivity extends AppCompatActivity implements ILocation
         placesAroundLocationFragment = new PlacesAroundLocationFragment(this);
 
         eventFragment.setArguments(eventBundle);
+        currentFragment = eventFragment;
 
         fragmentManager.beginTransaction().add(R.id.schedule_fragment_container, eventFragment, TAG_INFO).hide(eventFragment)
                 .add(R.id.schedule_fragment_container, weatherFragment, TAG_WEATHER).hide(placesAroundLocationFragment)
                 .add(R.id.schedule_fragment_container, placesAroundLocationFragment, TAG_LOCATION).hide(weatherFragment)
+                .show(eventFragment)
                 .commit();
     }
 
@@ -213,10 +190,6 @@ public class EventActivity extends AppCompatActivity implements ILocation
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i)
                     {
-                        if (fragmentManager.getFragments().isEmpty())
-                        {
-                            setFragments();
-                        }
                         dialogInterface.cancel();
                     }
                 })
@@ -242,14 +215,12 @@ public class EventActivity extends AppCompatActivity implements ILocation
 
     /**
      * 상세한 위치 정보 전달
-     *
-     * @return
      */
     @Override
-    public LocationDTO getLocation()
+    public void getLocation(CarrierMessagingService.ResultCallback<LocationDTO> resultCallback)
     {
-        return null;
-
+        locationViewModel.getLocation(event.getAsInteger(CalendarContract.Events.CALENDAR_ID),
+                event.getAsLong(CalendarContract.Events._ID), resultCallback);
     }
 
     /**
@@ -266,11 +237,12 @@ public class EventActivity extends AppCompatActivity implements ILocation
     /**
      * 날씨, 주변 정보들을 표시하기 위해 지정한 상세 위치 정보를 가지고 있는지 확인
      *
-     * @return
+     * @param resultCallback
      */
     @Override
-    public boolean hasDetailLocation()
+    public void hasDetailLocation(CarrierMessagingService.ResultCallback<Boolean> resultCallback)
     {
-        return false;
+        locationViewModel.hasDetailLocation(event.getAsInteger(CalendarContract.Events.CALENDAR_ID),
+                event.getAsLong(CalendarContract.Events._ID), resultCallback);
     }
 }

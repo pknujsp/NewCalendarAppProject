@@ -6,16 +6,16 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import android.os.RemoteException;
+import android.service.carrier.CarrierMessagingService;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
 import android.view.animation.RotateAnimation;
-import android.widget.ImageButton;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.FragmentScheduleWeatherBinding;
-import com.zerodsoft.scheduleweather.databinding.FragmentWeatherItemBinding;
 import com.zerodsoft.scheduleweather.event.common.interfaces.ILocation;
 import com.zerodsoft.scheduleweather.event.weather.weatherfragments.fragment.WeatherItemFragment;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
@@ -80,23 +80,37 @@ public class WeatherFragment extends Fragment
     {
         if (iLocation.hasSimpleLocation())
         {
-            if (iLocation.hasDetailLocation())
+            iLocation.hasDetailLocation(new CarrierMessagingService.ResultCallback<Boolean>()
             {
-                binding.weatherFragmentContainerView.setVisibility(View.VISIBLE);
-                binding.eventRegisterDetailLocation.getRoot().setVisibility(View.GONE);
+                @Override
+                public void onReceiveResult(@NonNull Boolean hasDetailLocation) throws RemoteException
+                {
+                    if (hasDetailLocation)
+                    {
+                        binding.weatherFragmentContainerView.setVisibility(View.VISIBLE);
+                        binding.eventRegisterDetailLocation.getRoot().setVisibility(View.GONE);
 
-                LocationDTO location = iLocation.getLocation();
+                        iLocation.getLocation(new CarrierMessagingService.ResultCallback<LocationDTO>()
+                        {
+                            @Override
+                            public void onReceiveResult(@NonNull LocationDTO locationDTO) throws RemoteException
+                            {
+                                getParentFragmentManager().beginTransaction().add(R.id.weather_fragment_container_view,
+                                        new WeatherItemFragment(locationDTO), WeatherItemFragment.class.getName())
+                                        .commit();
+                            }
+                        });
 
-                getParentFragmentManager().beginTransaction().add(R.id.weather_fragment_container_view,
-                        new WeatherItemFragment(location), WeatherItemFragment.class.getName())
-                        .commit();
-            } else
-            {
-                // 상세 위치 정보가 설정되지 않음
-                binding.weatherFragmentContainerView.setVisibility(View.GONE);
-                binding.eventRegisterDetailLocation.getRoot().setVisibility(View.VISIBLE);
-                binding.eventRegisterDetailLocation.locationStatusDescription.setText(getString(R.string.need_register_detail_location));
-            }
+                    } else
+                    {
+                        // 상세 위치 정보가 설정되지 않음
+                        binding.weatherFragmentContainerView.setVisibility(View.GONE);
+                        binding.eventRegisterDetailLocation.getRoot().setVisibility(View.VISIBLE);
+                        binding.eventRegisterDetailLocation.locationStatusDescription.setText(getString(R.string.need_register_detail_location));
+                    }
+                }
+            });
+
         } else
         {
             // 이벤트에서 위치가 지정되지 않음

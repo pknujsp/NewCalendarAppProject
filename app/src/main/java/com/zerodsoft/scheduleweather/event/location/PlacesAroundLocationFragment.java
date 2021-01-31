@@ -4,15 +4,14 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentContainerView;
 import androidx.fragment.app.FragmentManager;
 
+import android.os.RemoteException;
+import android.service.carrier.CarrierMessagingService;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.FragmentScheduleAroundLocationBinding;
@@ -66,31 +65,46 @@ public class PlacesAroundLocationFragment extends Fragment
     {
         if (iLocation.hasSimpleLocation())
         {
-            if (iLocation.hasDetailLocation())
+            iLocation.hasDetailLocation(new CarrierMessagingService.ResultCallback<Boolean>()
             {
-                binding.placesAroundLocationFragmentContainer.setVisibility(View.VISIBLE);
-                binding.eventRegisterDetailLocation.getRoot().setVisibility(View.GONE);
-
-                LocationDTO location = iLocation.getLocation();
-
-                Fragment fragment = null;
-
-                if (location.getPlaceId() != null)
+                @Override
+                public void onReceiveResult(@NonNull Boolean hasDetailLocation) throws RemoteException
                 {
-                    fragment = new PlacesFragment(new LocationInfo(location.getLatitude(), location.getLongitude(), location.getPlaceName()));
-                } else
-                {
-                    fragment = new PlacesFragment(new LocationInfo(location.getLatitude(), location.getLongitude(), location.getAddressName()));
+                    if (hasDetailLocation)
+                    {
+                        binding.placesAroundLocationFragmentContainer.setVisibility(View.VISIBLE);
+                        binding.eventRegisterDetailLocation.getRoot().setVisibility(View.GONE);
+
+                        iLocation.getLocation(new CarrierMessagingService.ResultCallback<LocationDTO>()
+                        {
+                            @Override
+                            public void onReceiveResult(@NonNull LocationDTO location) throws RemoteException
+                            {
+                                Fragment fragment = null;
+
+                                if (location.getPlaceId() != null)
+                                {
+                                    fragment = new PlacesFragment(new LocationInfo(location.getLatitude(), location.getLongitude(), location.getPlaceName()));
+                                } else
+                                {
+                                    fragment = new PlacesFragment(new LocationInfo(location.getLatitude(), location.getLongitude(), location.getAddressName()));
+                                }
+                                FragmentManager fragmentManager = getChildFragmentManager();
+                                fragmentManager.beginTransaction().add(R.id.places_around_location_fragment_container, fragment).commit();
+                            }
+                        });
+
+                    } else
+                    {
+                        binding.placesAroundLocationFragmentContainer.setVisibility(View.GONE);
+                        binding.eventRegisterDetailLocation.getRoot().setVisibility(View.VISIBLE);
+                        binding.eventRegisterDetailLocation.locationStatusDescription.setText(getString(R.string.need_register_detail_location));
+                        // 상세 위치 정보가 설정되지 않음
+                    }
                 }
-                FragmentManager fragmentManager = getChildFragmentManager();
-                fragmentManager.beginTransaction().add(R.id.places_around_location_fragment_container, fragment).commit();
-            } else
-            {
-                binding.placesAroundLocationFragmentContainer.setVisibility(View.GONE);
-                binding.eventRegisterDetailLocation.getRoot().setVisibility(View.VISIBLE);
-                binding.eventRegisterDetailLocation.locationStatusDescription.setText(getString(R.string.need_register_detail_location));
-                // 상세 위치 정보가 설정되지 않음
-            }
+            });
+
+
         } else
         {
             binding.placesAroundLocationFragmentContainer.setVisibility(View.GONE);
