@@ -16,7 +16,6 @@ import android.widget.RadioGroup;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.ActivityReminderBinding;
-import com.zerodsoft.scheduleweather.utility.CalendarEventUtil;
 import com.zerodsoft.scheduleweather.utility.model.ReminderDto;
 
 public class ReminderActivity extends AppCompatActivity

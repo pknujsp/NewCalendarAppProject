@@ -1,37 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/Event.ItemLayout"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal">
 
-    <View
-        android:id="@+id/calendar_color"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
-        android:layout_gravity="center_vertical"
-        android:layout_marginRight="8dp"
-        android:background="@color/gray_500" />
+    <ImageView
+        style="@style/Event.Label"
+        app:srcCompat="@drawable/calendar_black" />
 
-    <TextView
-        android:id="@+id/calendar_display_name"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_alignBottom="@id/calendar_color"
-        android:layout_toRightOf="@id/calendar_color"
-        android:gravity="center_vertical"
-        android:text="캘린더 명"
-        android:textColor="@color/black"
-        android:textSize="15sp" />
-
-
-    <TextView
-        android:id="@+id/calendar_account_name"
-        android:layout_width="wrap_content"
+    <RelativeLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/calendar_color"
-        android:gravity="center_vertical"
-        android:text="계정 명"
-        android:textColor="@color/gray_600"
-        android:textSize="14sp" />
-</RelativeLayout>
+        android:layout_gravity="center_vertical">
+
+        <View
+            android:id="@+id/calendar_color"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:layout_gravity="center_vertical"
+            android:layout_marginRight="8dp"
+            android:background="@color/gray_500" />
+
+        <TextView
+            android:id="@+id/calendar_display_name"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_alignBottom="@id/calendar_color"
+            android:layout_toRightOf="@id/calendar_color"
+            android:gravity="center_vertical"
+            android:text="캘린더 명"
+            android:textColor="@color/black"
+            android:textSize="16sp" />
+
+
+        <TextView
+            android:id="@+id/calendar_account_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/calendar_color"
+            android:layout_marginTop="4dp"
+            android:gravity="center_vertical"
+            android:text="계정 명"
+            android:textColor="@color/gray_600"
+            android:textSize="14sp" />
+    </RelativeLayout>
+</LinearLayout>

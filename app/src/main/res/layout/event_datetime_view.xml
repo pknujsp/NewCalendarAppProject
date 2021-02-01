@@ -1,81 +1,171 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/Event.ItemLayout"
     android:layout_height="wrap_content"
-    android:orientation="vertical">
+    android:orientation="horizontal">
+
+    <ImageView
+        style="@style/Event.Label"
+        app:srcCompat="@drawable/time_black" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:layout_gravity="center_vertical"
+        android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/event_startdatetime_label"
-            style="@style/Event.Label"
-            android:layout_marginLeft="0dp"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:id="@+id/all_day_switch_layout"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/startdate"
-            android:textSize="16sp" />
+            android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/event_startdatetime"
-            style="@style/Event.Value"
-            android:layout_width="0dp"
+            <TextView
+                style="@style/Event.Label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="0dp"
+                android:layout_marginTop="0dp"
+                android:layout_marginBottom="0dp"
+                android:text="@string/all_day"
+                android:textSize="16sp" />
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/time_allday_switch"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical|right"
+                android:layout_weight="1" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center_vertical|right"
-            android:text="2020" />
+            android:orientation="horizontal"
+            android:paddingTop="8dp"
+            android:paddingBottom="6dp">
+
+            <TextView
+                android:id="@+id/event_startdatetime_label"
+                style="@style/Event.Label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="0dp"
+                android:layout_marginTop="0dp"
+                android:layout_marginBottom="0dp"
+                android:text="@string/start_date"
+                android:textSize="16sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/start_date"
+                    style="@style/Event.Value"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:background="?attr/selectableItemBackground"
+                    android:gravity="right"
+                    android:hint="@string/start_date" />
+
+                <TextView
+                    android:id="@+id/event_startdatetime"
+                    style="@style/Event.Value"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="right"
+                    android:hint="@string/start_time" />
+
+            </LinearLayout>
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingTop="6dp"
+            android:paddingBottom="8dp">
+
+            <TextView
+                android:id="@+id/event_enddatetime_label"
+                style="@style/Event.Label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="0dp"
+                android:layout_marginTop="0dp"
+                android:layout_marginBottom="0dp"
+                android:text="@string/end_date"
+                android:textSize="16sp" />
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/end_date"
+                    style="@style/Event.Value"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:background="?attr/selectableItemBackground"
+                    android:gravity="right"
+                    android:hint="@string/end_date" />
+
+                <TextView
+                    android:id="@+id/event_enddatetime"
+                    style="@style/Event.Value"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="right"
+                    android:hint="@string/end_time" />
+
+            </LinearLayout>
+
+
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:id="@+id/event_timezone_layout"
+            android:layout_width="match_parent"
+            android:layout_height="46dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/event_timezone_label"
+                style="@style/Event.Label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="0dp"
+                android:layout_marginTop="0dp"
+                android:layout_marginBottom="0dp"
+                android:text="@string/timezone"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/event_timezone"
+                style="@style/Event.Value"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical|right"
+                android:text="시간대" />
+        </LinearLayout>
+
+
     </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <TextView
-            android:id="@+id/event_enddatetime_label"
-            style="@style/Event.Label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" android:layout_marginLeft="0dp"
-            android:text="@string/enddate"
-            android:textSize="16sp" />
-
-        <TextView
-            android:id="@+id/event_enddatetime"
-            style="@style/Event.Value"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center_vertical|right"
-            android:text="2020" />
-
-    </LinearLayout>
-
-
-    <LinearLayout
-        android:id="@+id/event_timezone_layout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <TextView
-            android:id="@+id/event_timezone_label"
-            style="@style/Event.Label"
-            android:layout_width="wrap_content" android:layout_marginLeft="0dp"
-            android:layout_height="wrap_content"
-            android:text="@string/timezone"
-            android:textSize="16sp" />
-
-        <TextView
-            android:id="@+id/event_timezone"
-            style="@style/Event.Value"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center_vertical|right"
-            android:text="2020" />
-    </LinearLayout>
-
-
 </LinearLayout>

@@ -14,15 +14,12 @@ import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.zerodsoft.scheduleweather.activity.main.AppMainActivity;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IEvent;
-import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
-import com.zerodsoft.scheduleweather.etc.EventViewUtil;
+import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -180,7 +177,7 @@ public class MonthCalendarView extends ViewGroup implements IEvent
                     INSTANCE_END = c.getTimeInMillis();
                 }
 
-                int[] margin = EventViewUtil.getViewSideMargin(INSTANCE_BEGIN, INSTANCE_END, VIEW_START, VIEW_END, 4);
+                int[] margin = EventUtil.getViewSideMargin(INSTANCE_BEGIN, INSTANCE_END, VIEW_START, VIEW_END, 4);
 
                 for (int currentRowNum = 1; currentRowNum <= eventRowCount; currentRowNum++)
                 {
@@ -215,8 +212,8 @@ public class MonthCalendarView extends ViewGroup implements IEvent
                     left = startX + margin[0];
                     right = endX + ITEM_WIDTH - margin[1];
 
-                    eventData.setEventColorPaint(EventViewUtil.getEventColorPaint(event.getAsInteger(CalendarContract.Instances.EVENT_COLOR)));
-                    eventData.setEventTextPaint(EventViewUtil.getEventTextPaint(EVENT_TEXT_HEIGHT));
+                    eventData.setEventColorPaint(EventUtil.getEventColorPaint(event.getAsInteger(CalendarContract.Instances.EVENT_COLOR)));
+                    eventData.setEventTextPaint(EventUtil.getEventTextPaint(EVENT_TEXT_HEIGHT));
 
                     canvas.drawRect(left, top, right, bottom, eventData.getEventColorPaint());
                     canvas.drawText(event.getAsString(CalendarContract.Instances.TITLE) != null ? event.getAsString(CalendarContract.Instances.TITLE) : "empty"

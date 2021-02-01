@@ -2,7 +2,6 @@ package com.zerodsoft.scheduleweather.calendarview.common;
 
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -12,8 +11,7 @@ import android.text.TextPaint;
 import android.view.View;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
-import com.zerodsoft.scheduleweather.etc.EventViewUtil;
+import com.zerodsoft.scheduleweather.event.util.EventUtil;
 
 public class InstanceView extends View
 {
@@ -48,8 +46,8 @@ public class InstanceView extends View
 
         if (instance.size() > 0)
         {
-            instanceViewPaint = EventViewUtil.getEventColorPaint(instance.getAsInteger(CalendarContract.Instances.EVENT_COLOR));
-            instanceTextPaint = EventViewUtil.getEventTextPaint(TEXT_SIZE);
+            instanceViewPaint = EventUtil.getEventColorPaint(instance.getAsInteger(CalendarContract.Instances.EVENT_COLOR));
+            instanceTextPaint = EventUtil.getEventTextPaint(TEXT_SIZE);
 
             Rect rect = new Rect();
             instanceTextPaint.getTextBounds("0", 0, 1, rect);

@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/event_attendees_layout"
     style="@style/Event.ItemLayout"
     android:layout_height="wrap_content"
     android:orientation="horizontal">
 
     <ImageView
         style="@style/Event.Label"
-        app:srcCompat="@drawable/attendees_black" />
+        app:srcCompat="@drawable/alarm_black" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -16,8 +16,9 @@
         android:layout_gravity="center_vertical"
         android:orientation="vertical">
 
+
         <TableLayout
-            android:id="@+id/event_attendees_table"
+            android:id="@+id/reminders_table"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
@@ -26,22 +27,22 @@
                 android:layout_height="wrap_content">
 
                 <Button
-                    android:id="@+id/show_attendees_detail"
+                    android:id="@+id/add_reminder_button"
                     style="@style/Widget.MaterialComponents.Button.TextButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/detail" />
+                    android:text="@string/add_reminder" />
 
             </TableRow>
 
         </TableLayout>
 
         <TextView
-            android:id="@+id/not_attendees"
+            android:id="@+id/not_reminder"
             style="@style/Event.Value"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:hint="@string/not_attendee" />
+            android:hint="@string/not_reminder" />
 
     </LinearLayout>
 </LinearLayout>

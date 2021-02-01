@@ -1,7 +1,6 @@
 package com.zerodsoft.scheduleweather.calendarview.adapter;
 
 import android.content.ContentValues;
-import android.graphics.Color;
 import android.provider.CalendarContract;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -13,10 +12,8 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.calendarview.eventdialog.EventListOnDayFragment;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
-import com.zerodsoft.scheduleweather.etc.CalendarUtil;
-import com.zerodsoft.scheduleweather.etc.EventViewUtil;
+import com.zerodsoft.scheduleweather.event.util.EventUtil;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -105,7 +102,7 @@ public class EventsInfoRecyclerViewAdapter extends RecyclerView.Adapter<EventsIn
                 instanceEnd = new Date(instances.get(position).getAsLong(CalendarContract.Instances.END));
             }
 
-            int[] margin = EventViewUtil.getViewSideMargin(instances.get(position).getAsLong(CalendarContract.Instances.BEGIN)
+            int[] margin = EventUtil.getViewSideMargin(instances.get(position).getAsLong(CalendarContract.Instances.BEGIN)
                     , instanceEnd.getTime()
                     , BEGIN, END, VIEW_MARGIN.intValue());
 

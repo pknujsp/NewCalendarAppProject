@@ -1,21 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="42dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/Event.ItemLayout"
     android:orientation="horizontal">
 
-    <TextView
+    <ImageView
         style="@style/Event.Label"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/availability" />
+        app:srcCompat="@drawable/accesslevel_black" />
 
     <TextView
-        android:id="@+id/availability"
+        android:id="@+id/event_access_level"
         style="@style/Event.Value"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:clickable="true"
-        android:focusable="true" />
+        android:hint="@string/accesslevel" />
 
 </LinearLayout>

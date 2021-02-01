@@ -24,8 +24,7 @@
                 android:id="@+id/schedule_root_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:paddingLeft="8dp">
+                android:orientation="vertical">
 
                 <include
                     android:id="@+id/title_layout"
@@ -33,39 +32,39 @@
 
                 <include
                     android:id="@+id/calendar_layout"
-                    layout="@layout/edit_event_calendar" />
+                    layout="@layout/event_calendar_view" />
 
                 <include
                     android:id="@+id/time_layout"
-                    layout="@layout/edit_event_time" />
+                    layout="@layout/event_datetime_view" />
 
                 <include
                     android:id="@+id/recurrence_layout"
-                    layout="@layout/edit_event_recurrence" />
+                    layout="@layout/event_recurrence_view" />
 
                 <include
                     android:id="@+id/reminder_layout"
-                    layout="@layout/edit_event_reminder" />
+                    layout="@layout/event_reminders_view" />
 
                 <include
                     android:id="@+id/description_layout"
-                    layout="@layout/edit_event_description" />
+                    layout="@layout/event_description_view" />
 
                 <include
                     android:id="@+id/location_layout"
-                    layout="@layout/edit_event_location" />
+                    layout="@layout/event_location_view" />
 
                 <include
                     android:id="@+id/attendee_layout"
-                    layout="@layout/edit_event_attendee" />
+                    layout="@layout/event_attendees_view" />
 
                 <include
                     android:id="@+id/accesslevel_layout"
-                    layout="@layout/edit_event_accesslevel" />
+                    layout="@layout/event_accesslevel_view" />
 
                 <include
                     android:id="@+id/availability_layout"
-                    layout="@layout/edit_event_availability" />
+                    layout="@layout/event_availability_view" />
             </LinearLayout>
         </ScrollView>
     </RelativeLayout>

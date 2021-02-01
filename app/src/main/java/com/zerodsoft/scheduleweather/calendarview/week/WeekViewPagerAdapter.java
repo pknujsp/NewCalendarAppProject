@@ -18,7 +18,6 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.DateGetter;
-import com.zerodsoft.scheduleweather.etc.CalendarUtil;
 
 import java.util.ArrayList;
 import java.util.Calendar;

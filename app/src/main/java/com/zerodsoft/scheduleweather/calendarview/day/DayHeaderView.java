@@ -2,7 +2,6 @@ package com.zerodsoft.scheduleweather.calendarview.day;
 
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -10,7 +9,6 @@ import android.graphics.Rect;
 import android.provider.CalendarContract;
 import android.util.AttributeSet;
 import android.util.TypedValue;
-import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.Nullable;
@@ -21,7 +19,7 @@ import com.zerodsoft.scheduleweather.calendarview.common.InstanceView;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.calendarview.month.EventData;
-import com.zerodsoft.scheduleweather.etc.EventViewUtil;
+import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import java.util.ArrayList;
@@ -182,7 +180,7 @@ public class DayHeaderView extends ViewGroup implements IEvent
                     rightMargin = 8;
                 } else
                 {
-                    int[] margin = EventViewUtil.getViewSideMargin(instance.getAsLong(CalendarContract.Instances.BEGIN)
+                    int[] margin = EventUtil.getViewSideMargin(instance.getAsLong(CalendarContract.Instances.BEGIN)
                             , instanceEnd.getTime()
                             , today.getTime()
                             , tomorrow.getTime(), 8);

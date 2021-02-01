@@ -16,4 +16,5 @@ public class App extends android.app.Application
 {
     public static ExecutorService executorService = Executors.newSingleThreadExecutor();
     public static Handler mainThreadHandler = HandlerCompat.createAsync(Looper.getMainLooper());
+    public static boolean is24HourSystem = true;
 }

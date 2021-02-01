@@ -28,7 +28,6 @@ import com.zerodsoft.scheduleweather.calendarview.adapter.EventsInfoRecyclerView
 import com.zerodsoft.scheduleweather.calendarview.callback.EventCallback;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
-import com.zerodsoft.scheduleweather.etc.CalendarUtil;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import java.util.ArrayList;

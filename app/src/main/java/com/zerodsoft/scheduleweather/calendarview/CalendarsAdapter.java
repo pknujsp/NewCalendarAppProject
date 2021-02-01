@@ -15,8 +15,6 @@ import com.google.android.material.checkbox.MaterialCheckBox;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.ICalendarCheckBox;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendar.dto.AccountDto;
-import com.zerodsoft.scheduleweather.calendar.dto.CalendarDto;
-import com.zerodsoft.scheduleweather.etc.CalendarUtil;
 
 import java.util.HashMap;
 import java.util.List;

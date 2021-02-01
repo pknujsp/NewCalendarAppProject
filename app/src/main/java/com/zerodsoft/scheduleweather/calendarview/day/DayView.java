@@ -14,13 +14,11 @@ import android.widget.OverScroller;
 import androidx.annotation.Nullable;
 import androidx.core.view.GestureDetectorCompat;
 
-import com.zerodsoft.scheduleweather.calendarview.common.InstanceView;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.calendarview.week.WeekFragment;
 import com.zerodsoft.scheduleweather.calendarview.hourside.HourEventsView;
-import com.zerodsoft.scheduleweather.etc.EventViewUtil;
-import com.zerodsoft.scheduleweather.utility.AppSettings;
+import com.zerodsoft.scheduleweather.event.util.EventUtil;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -324,8 +322,8 @@ public class DayView extends HourEventsView implements IEvent
         {
             super.onDraw(canvas);
 
-            itemCell.eventColorPaint = EventViewUtil.getEventColorPaint(itemCell.instance.getAsInteger(CalendarContract.Instances.EVENT_COLOR));
-            itemCell.eventTextPaint = EventViewUtil.getEventTextPaint(EVENT_TEXT_HEIGHT);
+            itemCell.eventColorPaint = EventUtil.getEventColorPaint(itemCell.instance.getAsInteger(CalendarContract.Instances.EVENT_COLOR));
+            itemCell.eventTextPaint = EventUtil.getEventTextPaint(EVENT_TEXT_HEIGHT);
 
             canvas.drawRect(0, 0, getWidth(), getHeight(), itemCell.eventColorPaint);
             canvas.drawText(itemCell.instance.getAsString(CalendarContract.Instances.TITLE), TEXT_MARGIN, EVENT_TEXT_HEIGHT + TEXT_MARGIN, itemCell.eventTextPaint);

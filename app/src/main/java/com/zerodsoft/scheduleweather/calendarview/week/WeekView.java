@@ -20,7 +20,7 @@ import androidx.core.view.ViewCompat;
 import com.zerodsoft.scheduleweather.calendarview.hourside.HourEventsView;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
-import com.zerodsoft.scheduleweather.etc.EventViewUtil;
+import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import java.util.ArrayList;
@@ -612,8 +612,8 @@ public class WeekView extends HourEventsView implements IEvent
         {
             super.onDraw(canvas);
 
-            itemCell.eventColorPaint = EventViewUtil.getEventColorPaint(itemCell.instance.getAsInteger(CalendarContract.Instances.EVENT_COLOR));
-            itemCell.eventTextPaint = EventViewUtil.getEventTextPaint(EVENT_TEXT_HEIGHT);
+            itemCell.eventColorPaint = EventUtil.getEventColorPaint(itemCell.instance.getAsInteger(CalendarContract.Instances.EVENT_COLOR));
+            itemCell.eventTextPaint = EventUtil.getEventTextPaint(EVENT_TEXT_HEIGHT);
 
             canvas.drawRect(EVENT_RECT_MARGIN, 0, getWidth() - EVENT_RECT_MARGIN, getHeight(), itemCell.eventColorPaint);
             canvas.drawText(itemCell.instance.getAsString(CalendarContract.Instances.TITLE), TEXT_MARGIN + EVENT_RECT_MARGIN, EVENT_TEXT_HEIGHT + TEXT_MARGIN, itemCell.eventTextPaint);

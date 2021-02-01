@@ -1,6 +1,5 @@
 package com.zerodsoft.scheduleweather.calendarview.month;
 
-import android.content.ContentValues;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,14 +18,8 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
-import com.zerodsoft.scheduleweather.calendarview.eventdialog.EventListOnDayFragment;
-import com.zerodsoft.scheduleweather.etc.CalendarUtil;
-import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
 public class MonthFragment extends Fragment implements IRefreshView

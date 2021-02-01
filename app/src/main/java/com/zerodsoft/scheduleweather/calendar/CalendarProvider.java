@@ -157,8 +157,9 @@ public class CalendarProvider implements ICalendarProvider
                 event.put(CalendarContract.Events.AVAILABILITY, cursor.getInt(cursor.getColumnIndex(CalendarContract.Events.AVAILABILITY)));
                 event.put(CalendarContract.Events.HAS_ALARM, cursor.getInt(cursor.getColumnIndex(CalendarContract.Events.HAS_ALARM)));
                 event.put(CalendarContract.Events.ACCOUNT_NAME, cursor.getString(cursor.getColumnIndex(CalendarContract.Events.ACCOUNT_NAME)));
-                event.put(CalendarContract.Events.CALENDAR_COLOR, cursor.getString(cursor.getColumnIndex(CalendarContract.Events.CALENDAR_COLOR)));
+                event.put(CalendarContract.Events.CALENDAR_COLOR, cursor.getInt(cursor.getColumnIndex(CalendarContract.Events.CALENDAR_COLOR)));
                 event.put(CalendarContract.Events.CALENDAR_DISPLAY_NAME, cursor.getString(cursor.getColumnIndex(CalendarContract.Events.CALENDAR_DISPLAY_NAME)));
+                event.put(CalendarContract.Events.EVENT_COLOR, cursor.getInt(cursor.getColumnIndex(CalendarContract.Events.EVENT_COLOR)));
             }
             cursor.close();
         }
@@ -205,8 +206,9 @@ public class CalendarProvider implements ICalendarProvider
                 event.put(CalendarContract.Events.AVAILABILITY, cursor.getInt(cursor.getColumnIndex(CalendarContract.Events.AVAILABILITY)));
                 event.put(CalendarContract.Events.HAS_ALARM, cursor.getInt(cursor.getColumnIndex(CalendarContract.Events.HAS_ALARM)));
                 event.put(CalendarContract.Events.ACCOUNT_NAME, cursor.getString(cursor.getColumnIndex(CalendarContract.Events.ACCOUNT_NAME)));
-                event.put(CalendarContract.Events.CALENDAR_COLOR, cursor.getString(cursor.getColumnIndex(CalendarContract.Events.CALENDAR_COLOR)));
+                event.put(CalendarContract.Events.CALENDAR_COLOR, cursor.getInt(cursor.getColumnIndex(CalendarContract.Events.CALENDAR_COLOR)));
                 event.put(CalendarContract.Events.CALENDAR_DISPLAY_NAME, cursor.getString(cursor.getColumnIndex(CalendarContract.Events.CALENDAR_DISPLAY_NAME)));
+                event.put(CalendarContract.Events.EVENT_COLOR, cursor.getInt(cursor.getColumnIndex(CalendarContract.Events.EVENT_COLOR)));
             }
             cursor.close();
         }

@@ -13,23 +13,20 @@ import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.util.SparseArray;
 import android.util.TypedValue;
-import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.Nullable;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.activity.main.AppMainActivity;
 import com.zerodsoft.scheduleweather.calendarview.common.HeaderInstancesView;
 import com.zerodsoft.scheduleweather.calendarview.common.InstanceView;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.calendarview.month.EventData;
-import com.zerodsoft.scheduleweather.etc.EventViewUtil;
+import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.utility.DateHour;
 
-import java.time.Clock;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -242,7 +239,7 @@ public class WeekHeaderView extends ViewGroup implements IEvent
                 continue;
             }
 
-            int[] margin = EventViewUtil.getViewSideMargin(instance.getAsLong(CalendarContract.Instances.BEGIN)
+            int[] margin = EventUtil.getViewSideMargin(instance.getAsLong(CalendarContract.Instances.BEGIN)
                     , instanceEnd.getTime()
                     , daysOfWeek[startIndex].getTimeInMillis()
                     , daysOfWeek[endIndex + 1].getTimeInMillis(), 8);
