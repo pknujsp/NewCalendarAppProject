@@ -23,7 +23,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".kakaomap.KakaoMapActivity"></activity>
+        <activity android:name=".activity.editevent.activity.AttendeesActivity"></activity>
+        <activity android:name=".kakaomap.KakaoMapActivity" />
         <activity android:name=".event.common.MLocActivity" />
         <activity android:name=".event.weather.activity.WLocActivity" />
         <activity android:name=".activity.editevent.activity.ReminderActivity" />
@@ -51,12 +52,13 @@
             android:value="0dc55f983ec285210efb88d1389f7c2b" />
 
         <service
-            android:name="com.zerodsoft.scheduleweather.calendar.sync.SyncService"
+            android:name=".calendar.sync.SyncService"
             android:exported="true"
             android:process=":sync">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
             </intent-filter>
+
             <meta-data
                 android:name="android.content.SyncAdapter"
                 android:resource="@xml/calendar_sync_adapter" />

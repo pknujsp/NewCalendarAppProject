@@ -34,6 +34,7 @@ import java.util.TimeZone;
 public class EventFragment extends Fragment
 {
     // 참석자가 있는 경우 참석 여부 표시
+    // 알림 값을 클릭하면 알림표시를 하는 시각을 보여준다
     private EventFragmentBinding binding;
     private ContentValues event;
     private CalendarViewModel viewModel;

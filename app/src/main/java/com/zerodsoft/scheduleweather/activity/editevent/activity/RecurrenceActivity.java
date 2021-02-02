@@ -6,6 +6,7 @@ import androidx.databinding.DataBindingUtil;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
+import android.provider.CalendarContract;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.MenuItem;
@@ -46,8 +47,8 @@ public class RecurrenceActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_recurrence);
 
-        String givedRecurrenceRuleStr = getIntent().getStringExtra("recurrenceRule");
-        eventStartDateTime = (Calendar) getIntent().getSerializableExtra("eventStartDateTime");
+        String givedRecurrenceRuleStr = getIntent().getStringExtra(CalendarContract.Events.RRULE);
+        eventStartDateTime = (Calendar) getIntent().getSerializableExtra(CalendarContract.Events.DTSTART);
         untilDateTime = (Calendar) eventStartDateTime.clone();
         GIVED_RULE.separateValues(givedRecurrenceRuleStr);
         init();
@@ -81,7 +82,6 @@ public class RecurrenceActivity extends AppCompatActivity
         binding.recurrenceDetailRule.notEndRadio.setOnCheckedChangeListener(detailRadioCheckedListener);
         binding.recurrenceDetailRule.recurrenceUntilRadio.setOnCheckedChangeListener(detailRadioCheckedListener);
         binding.recurrenceDetailRule.recurrenceCountRadio.setOnCheckedChangeListener(detailRadioCheckedListener);
-
 
         binding.recurrenceCustomRule.dateTypeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
         {
@@ -333,7 +333,7 @@ public class RecurrenceActivity extends AppCompatActivity
                 break;
         }
         onCompletedRecurrenceDetail();
-        getIntent().putExtra("recurrenceRule", NEW_RULE.getRule());
+        getIntent().putExtra(CalendarContract.Events.RRULE, NEW_RULE.getRule());
         setResult(RESULT_OK, getIntent());
         finish();
     }

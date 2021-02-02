@@ -45,7 +45,7 @@ public class EventDefaultValue
 
         while (cursor.moveToNext())
         {
-            if (cursor.getInt(5) == 1)
+            if (cursor.getInt(6) == 1)
             {
                 // another || google primary calendar
                 calendar.put(CalendarContract.Calendars._ID, cursor.getLong(0));

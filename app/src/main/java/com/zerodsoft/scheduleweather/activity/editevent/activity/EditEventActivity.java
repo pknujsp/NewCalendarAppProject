@@ -43,6 +43,7 @@ import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.utility.RecurrenceRule;
 import com.zerodsoft.scheduleweather.utility.model.ReminderDto;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -92,6 +93,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
 
     private EventDefaultValue eventDefaultValue;
     private List<ContentValues> calendarList;
+    private List<Integer> reminderMinuteList = new ArrayList<>();
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
@@ -107,7 +109,6 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
         switch (item.getItemId())
         {
             case R.id.save_schedule_button:
-
                 break;
             case android.R.id.home:
                 setResult(RESULT_CANCELED);
@@ -145,24 +146,17 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
         binding.timeLayout.eventTimezone.setClickable(true);
 
         binding.recurrenceLayout.eventRecurrence.setClickable(true);
-
         binding.reminderLayout.notReminder.setVisibility(View.GONE);
-
         binding.descriptionLayout.descriptionTextview.setVisibility(View.GONE);
-
         binding.locationLayout.eventLocation.setClickable(true);
-
         binding.attendeeLayout.notAttendees.setVisibility(View.GONE);
-
         binding.accesslevelLayout.eventAccessLevel.setClickable(true);
-
         binding.availabilityLayout.eventAvailability.setClickable(true);
 
         setOnClickListener();
 
         viewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
         viewModel.init(getApplicationContext());
-
         requestCode = getIntent().getIntExtra("requestCode", 0);
 
         switch (requestCode)
@@ -173,7 +167,11 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                 newEventValues = new ContentValues();
                 eventDefaultValue = new EventDefaultValue(getApplicationContext());
 
-                // 시간, 시간대 표시값 설정
+                //캘린더도 기본 값 설정
+                setCalendarValue(eventDefaultValue.getDefaultCalendar());
+                setCalendarText();
+
+                // 기기 시각으로 설정
                 Date[] defaultDateTimes = eventDefaultValue.getDefaultDateTime();
 
                 Calendar calendar = Calendar.getInstance();
@@ -192,23 +190,19 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                 setTimeText(START_DATETIME);
                 setTimeText(END_DATETIME);
 
+                // 기기 시간대로 설정
                 TimeZone defaultTimeZone = eventDefaultValue.getDefaultTimeZone();
-
                 putValue(CalendarContract.Events.EVENT_TIMEZONE, defaultTimeZone.getID());
                 setTimeZoneText(defaultTimeZone);
-
-                //캘린더도 기본 값 설정
-                setCalendarValue(eventDefaultValue.getDefaultCalendar());
-                setCalendarText();
 
                 // 알림
                 putValue(CalendarContract.Events.HAS_ALARM, 0);
 
-                // 접근 범위
+                // 접근 범위(기본)
                 putValue(CalendarContract.Events.ACCESS_LEVEL, eventDefaultValue.getDefaultAccessLevel());
                 setAccessLevelText();
 
-                // 유효성
+                // 유효성(바쁨)
                 putValue(CalendarContract.Events.AVAILABILITY, eventDefaultValue.getDefaultAvailability());
                 setAvailabilityText();
                 break;
@@ -223,6 +217,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                 // 이벤트, 알림을 가져온다
                 viewModel.getEvent(CALENDAR_ID, EVENT_ID);
                 viewModel.getReminders(CALENDAR_ID, EVENT_ID);
+                viewModel.getAttendees(CALENDAR_ID, EVENT_ID);
 
                 viewModel.getEventLiveData().observe(this, eventDtoDataWrapper ->
                 {
@@ -232,24 +227,24 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                         modifiedValues = new ContentValues();
 
                         // 제목, 캘린더, 시간, 시간대, 반복, 알림, 설명, 위치, 공개범위, 유효성, 참석자
-                        // 캘린더, 시간대, 참석자 정보는 따로 불러온다.
+                        // 알림, 참석자 정보는 따로 불러온다.
 
                         //제목
                         binding.titleLayout.title.setText(savedEventValues.getAsString(CalendarContract.Events.TITLE));
                         //캘린더
+                        setCalendarText();
+                        //시각
+                        Calendar eventCalendar = Calendar.getInstance();
+                        eventCalendar.setTimeInMillis(savedEventValues.getAsLong(CalendarContract.Instances.BEGIN));
+                        startDateMillis = eventCalendar.getTimeInMillis();
+                        startTimeHour = eventCalendar.get(Calendar.HOUR_OF_DAY);
+                        startTimeMinute = eventCalendar.get(Calendar.MINUTE);
 
-                        //시간
-                        Calendar calendar1 = Calendar.getInstance();
-                        calendar1.setTimeInMillis(savedEventValues.getAsLong(CalendarContract.Events.DTSTART));
-                        startDateMillis = calendar1.getTimeInMillis();
-                        startTimeHour = calendar1.get(Calendar.HOUR_OF_DAY);
-                        startTimeMinute = 0;
-
-                        calendar1.setTimeInMillis(savedEventValues.getAsLong(CalendarContract.Events.DTEND));
-                        endDateMillis = calendar1.getTimeInMillis();
-                        endTimeHour = calendar1.get(Calendar.HOUR_OF_DAY);
-                        endTimeMinute = 0;
-
+                        eventCalendar.setTimeInMillis(savedEventValues.getAsLong(CalendarContract.Instances.END));
+                        endDateMillis = eventCalendar.getTimeInMillis();
+                        endTimeHour = eventCalendar.get(Calendar.HOUR_OF_DAY);
+                        endTimeMinute = eventCalendar.get(Calendar.MINUTE);
+                        // allday switch
                         binding.timeLayout.timeAlldaySwitch.setChecked(savedEventValues.getAsBoolean(CalendarContract.Events.ALL_DAY));
 
                         setDateText(START_DATETIME);
@@ -257,6 +252,9 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                         setTimeText(START_DATETIME);
                         setTimeText(END_DATETIME);
                         // 시간대
+                        String timeZoneStr = savedEventValues.getAsString(CalendarContract.Events.EVENT_TIMEZONE);
+                        TimeZone timeZone = TimeZone.getTimeZone(timeZoneStr);
+                        setTimeZoneText(timeZone);
 
                         // 반복
                         if ((String) getValue(CalendarContract.Events.RRULE) != null)
@@ -274,7 +272,6 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                         binding.descriptionLayout.descriptionEdittext.setText(savedEventValues.getAsString(CalendarContract.Events.DESCRIPTION));
                         // 위치
                         binding.locationLayout.eventLocation.setText(savedEventValues.getAsString(CalendarContract.Events.EVENT_LOCATION));
-
                         // 공개 범위 표시
                         binding.accesslevelLayout.eventAccessLevel.callOnClick();
                         // 유효성 표시
@@ -332,17 +329,17 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                     }
                 });
 
-                viewModel.getCalendarListLiveData().observe(this, listDataWrapper ->
-                {
-                    if (listDataWrapper.getData() != null)
-                    {
-                        calendarList = listDataWrapper.getData();
-                    }
-                });
-
-                viewModel.getCalendars();
         }
 
+        viewModel.getCalendarListLiveData().observe(this, listDataWrapper ->
+        {
+            if (listDataWrapper.getData() != null)
+            {
+                calendarList = listDataWrapper.getData();
+            }
+        });
+
+        viewModel.getCalendars();
     }
 
     private void setOnClickListener()
@@ -362,6 +359,19 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
             }
         });
 
+        binding.timeLayout.eventTimezone.setOnClickListener(view ->
+        {
+            Intent intent = new Intent(EditEventActivity.this, TimeZoneActivity.class);
+
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTimeInMillis(startDateMillis);
+            calendar.set(Calendar.HOUR_OF_DAY, startTimeHour);
+            calendar.set(Calendar.MINUTE, 0);
+
+            intent.putExtra(CalendarContract.Events.DTSTART, calendar.getTime());
+            startActivityForResult(intent, REQUEST_TIMEZONE);
+        });
+
         binding.recurrenceLayout.eventRecurrence.setOnClickListener(view ->
         {
             Intent intent = new Intent(EditEventActivity.this, RecurrenceActivity.class);
@@ -374,8 +384,8 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
             calendar.set(Calendar.HOUR_OF_DAY, startTimeHour);
             calendar.set(Calendar.MINUTE, 0);
 
-            intent.putExtra("recurrenceRule", recurrenceRule);
-            intent.putExtra("eventStartDateTime", calendar);
+            intent.putExtra(CalendarContract.Events.RRULE, recurrenceRule);
+            intent.putExtra(CalendarContract.Events.DTSTART, calendar);
             startActivityForResult(intent, REQUEST_RECURRENCE);
         });
 
@@ -444,16 +454,6 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
             availabilityDialog.show();
         });
 
-        binding.timeLayout.eventTimezone.setOnClickListener(view ->
-        {
-            Intent intent = new Intent(EditEventActivity.this, TimeZoneActivity.class);
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTimeInMillis(startDateMillis);
-            calendar.set(Calendar.HOUR_OF_DAY, startTimeHour);
-            calendar.set(Calendar.MINUTE, 0);
-            intent.putExtra("startDate", calendar.getTime());
-            startActivityForResult(intent, REQUEST_TIMEZONE);
-        });
 
         binding.calendarLayout.eventCalendarValueView.setOnClickListener(view ->
         {
@@ -474,16 +474,15 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
         binding.reminderLayout.addReminderButton.setOnClickListener(view ->
         {
             Intent intent = new Intent(EditEventActivity.this, ReminderActivity.class);
-            intent.putExtra(CalendarContract.Events.HAS_ALARM, (Integer) getValue(CalendarContract.Events.HAS_ALARM));
-
             if ((Integer) getValue(CalendarContract.Events.HAS_ALARM) == 1)
             {
                 intent.putExtra(CalendarContract.Reminders.MINUTES, (Integer) getValue(CalendarContract.Reminders.MINUTES));
             }
-            startActivityForResult(intent, REQUEST_REMINDER);
+            intent.putExtra("requestCode", ReminderActivity.ADD_REMINDER);
+            startActivityForResult(intent, ReminderActivity.ADD_REMINDER);
         });
 
-        View.OnClickListener dateTimeOnClickListener = view ->
+        @SuppressLint("NonConstantResourceId") View.OnClickListener dateTimeOnClickListener = view ->
         {
             switch (view.getId())
             {
@@ -523,7 +522,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
             if (location != null)
             {
                 requestCode = MODIFY_LOCATION;
-                intent.putExtra("location", location);
+                intent.putExtra(CalendarContract.Events.EVENT_LOCATION, location);
             } else
             {
                 requestCode = NEW_LOCATION;
@@ -553,44 +552,164 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
     {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == REQUEST_RECURRENCE)
+        switch (requestCode)
         {
-            if (resultCode == RESULT_OK)
+            case REQUEST_RECURRENCE:
             {
-                String rrule = data.getStringExtra("recurrenceRule");
-                putValue(CalendarContract.Events.RRULE, rrule);
-                setRecurrenceText();
-            } else
-            {
-
-            }
-        } else if (requestCode == NEW_LOCATION)
-        {
-        } else if (requestCode == MODIFY_LOCATION)
-        {
-        } else if (requestCode == REQUEST_TIMEZONE)
-        {
-            TimeZone timeZone = (TimeZone) data.getSerializableExtra("timeZone");
-            putValue(CalendarContract.Events.EVENT_TIMEZONE, timeZone.getID());
-            setTimeZoneText(timeZone);
-        } else if (requestCode == REQUEST_REMINDER)
-        {
-            if (resultCode == RESULT_OK)
-            {
-                if (data.getBooleanExtra(CalendarContract.Events.HAS_ALARM, false))
+                if (resultCode == RESULT_OK)
                 {
-                    final int minutes = data.getIntExtra("newMinutes", 0);
-                    putValue(CalendarContract.Reminders.MINUTES, minutes);
-                    putValue(CalendarContract.Events.HAS_ALARM, 1);
+                    putValue(CalendarContract.Events.RRULE, data.getStringExtra(CalendarContract.Events.RRULE));
+                    setRecurrenceText();
                 } else
                 {
-                    putValue(CalendarContract.Events.HAS_ALARM, 0);
-                    removeValue(CalendarContract.Reminders.MINUTES);
+
                 }
-
-            } else
+                break;
+            }
+            case NEW_LOCATION:
+            case MODIFY_LOCATION:
+            case REQUEST_TIMEZONE:
             {
+                TimeZone timeZone = (TimeZone) data.getSerializableExtra(CalendarContract.Events.EVENT_TIMEZONE);
+                putValue(CalendarContract.Events.EVENT_TIMEZONE, timeZone.getID());
+                setTimeZoneText(timeZone);
+                break;
+            }
+            case ReminderActivity.ADD_REMINDER:
+            {
+                if (resultCode == ReminderActivity.RESULT_ADDED_REMINDER)
+                {
+                    final int minutes = data.getIntExtra(CalendarContract.Reminders.MINUTES, 0);
+                    addReminder(minutes);
+                } else if (resultCode == RESULT_CANCELED)
+                {
 
+                }
+                break;
+            }
+            case ReminderActivity.MODIFY_REMINDER:
+            {
+                int index = data.getIntExtra("minutesIndexOfList", 0);
+
+                if (resultCode == ReminderActivity.RESULT_MODIFIED_REMINDER)
+                {
+                    final int minutes = data.getIntExtra(CalendarContract.Reminders.MINUTES, 0);
+                    modifyReminder(index, minutes);
+                } else if (resultCode == ReminderActivity.RESULT_REMOVED_REMINDER)
+                {
+                    removeReminder(reminderMinuteList.get(index));
+                }
+                break;
+            }
+        }
+
+    }
+
+    private final View.OnClickListener reminderItemOnClickListener = new View.OnClickListener()
+    {
+        @Override
+        public void onClick(View view)
+        {
+            ReminderItemHolder holder = (ReminderItemHolder) view.getTag();
+            // modify
+            Intent intent = new Intent(EditEventActivity.this, ReminderActivity.class);
+            intent.putExtra(CalendarContract.Reminders.MINUTES, holder.minutes);
+            intent.putExtra("requestCode", ReminderActivity.MODIFY_REMINDER);
+            startActivityForResult(intent, ReminderActivity.MODIFY_REMINDER);
+        }
+    };
+
+    private final View.OnClickListener removeReminderOnClickListener = new View.OnClickListener()
+    {
+        @Override
+        public void onClick(View view)
+        {
+            ReminderItemHolder holder = (ReminderItemHolder) view.getTag();
+            removeReminder(holder.minutes);
+        }
+    };
+
+    static class ReminderItemHolder
+    {
+        protected final int minutes;
+        protected final String convertedMinutes;
+
+        protected ReminderItemHolder(int minutes, String convertedMinutes)
+        {
+            this.minutes = minutes;
+            this.convertedMinutes = convertedMinutes;
+        }
+    }
+
+
+    private void addReminder(int minutes)
+    {
+        reminderMinuteList.add(minutes);
+        putValue(CalendarContract.Events.HAS_ALARM, 1);
+
+        ReminderDto reminderDto = EventUtil.convertAlarmMinutes(minutes);
+        String alarmValueText = EventUtil.makeAlarmText(reminderDto, getApplicationContext());
+
+        View row = getLayoutInflater().inflate(R.layout.event_reminder_item, null);
+
+        final ReminderItemHolder holder = new ReminderItemHolder(minutes, alarmValueText);
+
+        TextView reminderValueTextView = ((TextView) row.findViewById(R.id.reminder_value));
+        ImageButton removeButton = ((ImageButton) row.findViewById(R.id.remove_reminder_button));
+
+        reminderValueTextView.setText(alarmValueText);
+
+        reminderValueTextView.setOnClickListener(reminderItemOnClickListener);
+        removeButton.setOnClickListener(removeReminderOnClickListener);
+
+        reminderValueTextView.setTag(holder);
+        removeButton.setTag(holder);
+
+        binding.reminderLayout.remindersTable.addView(row, binding.reminderLayout.remindersTable.getChildCount() - 1);
+    }
+
+
+    private void removeReminder(int minutes)
+    {
+        if (reminderMinuteList.size() == 1)
+        {
+            putValue(CalendarContract.Events.HAS_ALARM, 0);
+        }
+        reminderMinuteList.remove((Object) minutes);
+
+        int rowCount = binding.reminderLayout.remindersTable.getChildCount();
+        // 아이템 삭제
+        for (int rowIndex = 0; rowIndex < rowCount; rowIndex++)
+        {
+            ReminderItemHolder holder = (ReminderItemHolder) binding.reminderLayout.remindersTable.getChildAt(rowIndex).findViewById(R.id.reminder_value).getTag();
+            if (holder.minutes == minutes)
+            {
+                binding.reminderLayout.remindersTable.removeViewAt(rowIndex);
+                break;
+            }
+        }
+    }
+
+    private void modifyReminder(int index, int minutes)
+    {
+        final int currentMinute = reminderMinuteList.get(index);
+        reminderMinuteList.remove(index);
+        reminderMinuteList.add(index, minutes);
+
+        int rowCount = binding.reminderLayout.remindersTable.getChildCount();
+        // 아이템 수정
+        for (int rowIndex = 0; rowIndex < rowCount; rowIndex++)
+        {
+            ReminderItemHolder holder = (ReminderItemHolder) binding.reminderLayout.remindersTable.getChildAt(rowIndex).findViewById(R.id.remove_reminder_button).getTag();
+            if (holder.minutes == currentMinute)
+            {
+                View row = binding.reminderLayout.remindersTable.getChildAt(rowIndex);
+
+                ReminderDto reminderDto = EventUtil.convertAlarmMinutes(minutes);
+                String alarmValueText = EventUtil.makeAlarmText(reminderDto, getApplicationContext());
+
+                ((TextView) row.findViewById(R.id.reminder_value)).setText(alarmValueText);
+                break;
             }
         }
     }
@@ -598,74 +717,139 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
 
     private void setReminderText(List<ContentValues> reminders)
     {
-        LayoutInflater layoutInflater = getLayoutInflater();
-
         for (ContentValues reminder : reminders)
         {
-            ReminderDto reminderDto = EventUtil.convertAlarmMinutes(reminder.getAsInteger(CalendarContract.Reminders.MINUTES));
-            String alarmValueText = EventUtil.makeAlarmText(reminderDto, getApplicationContext());
+            addReminder(reminder.getAsInteger(CalendarContract.Reminders.MINUTES));
+        }
+    }
 
-            View row = layoutInflater.inflate(R.layout.event_reminder_item, null);
-            ((TextView) row.findViewById(R.id.reminder_value)).setText(alarmValueText);
+    private void addAttendee(ContentValues attendee)
+    {
+        /*
+        reminderMinuteList.add(minutes);
+        putValue(CalendarContract.Events.HAS_ALARM, 1);
 
-            binding.reminderLayout.remindersTable.addView(row, binding.reminderLayout.remindersTable.getChildCount() - 1);
+        ReminderDto reminderDto = EventUtil.convertAlarmMinutes(minutes);
+        String alarmValueText = EventUtil.makeAlarmText(reminderDto, getApplicationContext());
+
+        View row = getLayoutInflater().inflate(R.layout.event_reminder_item, null);
+
+        final ReminderItemHolder holder = new ReminderItemHolder(minutes, alarmValueText);
+
+        TextView reminderValueTextView = ((TextView) row.findViewById(R.id.reminder_value));
+        ImageButton removeButton = ((ImageButton) row.findViewById(R.id.remove_reminder_button));
+
+        reminderValueTextView.setText(alarmValueText);
+
+        reminderValueTextView.setOnClickListener(reminderItemOnClickListener);
+        removeButton.setOnClickListener(removeReminderOnClickListener);
+
+        reminderValueTextView.setTag(holder);
+        removeButton.setTag(holder);
+
+        binding.reminderLayout.remindersTable.addView(row, binding.reminderLayout.remindersTable.getChildCount() - 1);
+
+         */
+        // 이름, 메일 주소, 상태
+        // 조직자 - attendeeName, 그 외 - email
+
+        // calendar display name
+        final String attendeeName = attendee.getAsString(CalendarContract.Attendees.ATTENDEE_NAME);
+        // calendar owner account
+        final String attendeeEmail = attendee.getAsString(CalendarContract.Attendees.ATTENDEE_EMAIL);
+        final int attendeeStatus = attendee.getAsInteger(CalendarContract.Attendees.ATTENDEE_STATUS);
+        final int attendeeRelationship = attendee.getAsInteger(CalendarContract.Attendees.ATTENDEE_RELATIONSHIP);
+
+        String attendeeStatusStr = EventUtil.convertAttendeeStatus(attendeeStatus, getApplicationContext());
+        String attendeeRelationshipStr = EventUtil.convertAttendeeRelationship(attendeeRelationship, getApplicationContext());
+
+        LinearLayout row = (LinearLayout) layoutInflater.inflate(R.layout.event_attendee_item, null);
+        // add row to table
+
+        LinearLayout attendeeInfoLayout = row.findViewById(R.id.attendee_info_layout);
+        TextView attendeeEmailView = (TextView) row.findViewById(R.id.attendee_name);
+        TextView attendeeRelationshipView = (TextView) row.findViewById(R.id.attendee_relationship);
+        TextView attendeeStatusView = (TextView) row.findViewById(R.id.attendee_status);
+        ImageButton removeButton = (ImageButton) row.findViewById(R.id.remove_attendee_button);
+
+        attendeeInfoLayout.setClickable(true);
+        attendeeInfoLayout.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                // logic for communications with attendee
+
+            }
+        });
+
+        removeButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+
+            }
+        });
+
+        attendeeEmailView.setText(attendeeRelationship == CalendarContract.Attendees.RELATIONSHIP_ORGANIZER ? attendeeName : attendeeEmail);
+        attendeeRelationshipView.setText(attendeeRelationshipStr);
+        attendeeStatusView.setText(attendeeStatusStr);
+
+        binding.attendeeLayout.eventAttendeesTable.addView(row, binding.attendeeLayout.eventAttendeesTable.getChildCount() - 1);
+    }
+
+
+    private void removeAttendee(ContentValues attendee)
+    {
+        if (reminderMinuteList.size() == 1)
+        {
+            putValue(CalendarContract.Events.HAS_ALARM, 0);
+        }
+        reminderMinuteList.remove((Object) minutes);
+
+        int rowCount = binding.reminderLayout.remindersTable.getChildCount();
+        // 아이템 삭제
+        for (int rowIndex = 0; rowIndex < rowCount; rowIndex++)
+        {
+            ReminderItemHolder holder = (ReminderItemHolder) binding.reminderLayout.remindersTable.getChildAt(rowIndex).findViewById(R.id.reminder_value).getTag();
+            if (holder.minutes == minutes)
+            {
+                binding.reminderLayout.remindersTable.removeViewAt(rowIndex);
+                break;
+            }
+        }
+    }
+
+    private void modifyAttendee(int index, ContentValues attendee)
+    {
+        final int currentMinute = reminderMinuteList.get(index);
+        reminderMinuteList.remove(index);
+        reminderMinuteList.add(index, minutes);
+
+        int rowCount = binding.reminderLayout.remindersTable.getChildCount();
+        // 아이템 수정
+        for (int rowIndex = 0; rowIndex < rowCount; rowIndex++)
+        {
+            ReminderItemHolder holder = (ReminderItemHolder) binding.reminderLayout.remindersTable.getChildAt(rowIndex).findViewById(R.id.remove_reminder_button).getTag();
+            if (holder.minutes == currentMinute)
+            {
+                View row = binding.reminderLayout.remindersTable.getChildAt(rowIndex);
+
+                ReminderDto reminderDto = EventUtil.convertAlarmMinutes(minutes);
+                String alarmValueText = EventUtil.makeAlarmText(reminderDto, getApplicationContext());
+
+                ((TextView) row.findViewById(R.id.reminder_value)).setText(alarmValueText);
+                break;
+            }
         }
     }
 
     private void setAttendeesText(List<ContentValues> attendees)
     {
-        // 참석자 수, 참석 여부
-        LayoutInflater layoutInflater = getLayoutInflater();
-
         for (ContentValues attendee : attendees)
         {
-            // 이름, 메일 주소, 상태
-            // 조직자 - attendeeName, 그 외 - email
-
-            // calendar display name
-            final String attendeeName = attendee.getAsString(CalendarContract.Attendees.ATTENDEE_NAME);
-            // calendar owner account
-            final String attendeeEmail = attendee.getAsString(CalendarContract.Attendees.ATTENDEE_EMAIL);
-            final int attendeeStatus = attendee.getAsInteger(CalendarContract.Attendees.ATTENDEE_STATUS);
-            final int attendeeRelationship = attendee.getAsInteger(CalendarContract.Attendees.ATTENDEE_RELATIONSHIP);
-
-            String attendeeStatusStr = EventUtil.convertAttendeeStatus(attendeeStatus, getApplicationContext());
-            String attendeeRelationshipStr = EventUtil.convertAttendeeRelationship(attendeeRelationship, getApplicationContext());
-
-            LinearLayout row = (LinearLayout) layoutInflater.inflate(R.layout.event_attendee_item, null);
-            // add row to table
-
-            LinearLayout attendeeInfoLayout = row.findViewById(R.id.attendee_info_layout);
-            TextView attendeeEmailView = (TextView) row.findViewById(R.id.attendee_name);
-            TextView attendeeRelationshipView = (TextView) row.findViewById(R.id.attendee_relationship);
-            TextView attendeeStatusView = (TextView) row.findViewById(R.id.attendee_status);
-            ImageButton removeButton = (ImageButton) row.findViewById(R.id.remove_attendee_button);
-
-            attendeeInfoLayout.setClickable(true);
-            attendeeInfoLayout.setOnClickListener(new View.OnClickListener()
-            {
-                @Override
-                public void onClick(View view)
-                {
-                    // logic for communications with attendee
-
-                }
-            });
-
-            removeButton.setOnClickListener(new View.OnClickListener()
-            {
-                @Override
-                public void onClick(View view)
-                {
-
-                }
-            });
-
-            attendeeEmailView.setText(attendeeRelationship == CalendarContract.Attendees.RELATIONSHIP_ORGANIZER ? attendeeName : attendeeEmail);
-            attendeeRelationshipView.setText(attendeeRelationshipStr);
-            attendeeStatusView.setText(attendeeStatusStr);
-
-            binding.attendeeLayout.eventAttendeesTable.addView(row, binding.attendeeLayout.eventAttendeesTable.getChildCount() - 1);
+            addAttendee(attendee);
         }
     }
 
@@ -982,6 +1166,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
             // 텍스트가 변경될 때 마다 수행
         }
 
+        @SuppressLint("NonConstantResourceId")
         @Override
         public void afterTextChanged(Editable editable)
         {

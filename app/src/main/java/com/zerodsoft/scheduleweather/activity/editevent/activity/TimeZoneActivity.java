@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
+import android.provider.CalendarContract;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.MenuItem;
@@ -57,7 +58,7 @@ public class TimeZoneActivity extends AppCompatActivity implements ITimeZone
             timeZoneList.add(TimeZone.getTimeZone(v));
         }
 
-        Date startDate = (Date) getIntent().getSerializableExtra("startDate");
+        Date startDate = (Date) getIntent().getSerializableExtra(CalendarContract.Events.DTSTART);
 
         adapter = new TimeZoneRecyclerViewAdapter(this, timeZoneList, startDate);
         recyclerView.setAdapter(adapter);

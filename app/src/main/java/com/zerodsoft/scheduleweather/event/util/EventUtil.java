@@ -209,7 +209,7 @@ public class EventUtil
             stringBuilder.append(reminderDto.getMinute()).append(context.getString(R.string.minute)).append(" ");
         }
 
-        if (reminderDto.getMinute() == 0)
+        if (stringBuilder.length() == 0)
         {
             stringBuilder.append(context.getString(R.string.notification_on_time));
         } else

@@ -16,6 +16,7 @@ import android.widget.TextView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.event.util.EventUtil;
 
 import java.util.List;
 
@@ -64,14 +65,12 @@ public class CalendarListAdapter extends BaseAdapter
             view.setTag(viewHolder);
         }
 
-
-        float[] hsv = new float[3];
-        Color.colorToHSV(calendarList.get(i).getAsInteger(CalendarContract.Calendars.CALENDAR_COLOR), hsv);
-
         ViewHolder viewHolder = (ViewHolder) view.getTag();
-        viewHolder.color.setBackgroundColor(Color.HSVToColor(hsv));
+
+        viewHolder.color.setBackgroundColor(EventUtil.getColor(calendarList.get(i).getAsInteger(CalendarContract.Calendars.CALENDAR_COLOR)));
         viewHolder.name.setText(calendarList.get(i).getAsString(CalendarContract.Calendars.CALENDAR_DISPLAY_NAME));
         viewHolder.accountName.setText(calendarList.get(i).getAsString(CalendarContract.Calendars.ACCOUNT_NAME));
+
         return view;
     }
 

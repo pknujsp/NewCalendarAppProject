@@ -7,6 +7,7 @@ import androidx.databinding.DataBindingUtil;
 import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.CalendarContract;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.MenuItem;
@@ -22,8 +23,14 @@ import com.zerodsoft.scheduleweather.utility.model.ReminderDto;
 public class ReminderActivity extends AppCompatActivity
 {
     private ActivityReminderBinding binding;
-    private boolean hasAlarm = false;
-    private int givedMinutes = 0;
+
+    public static final int ADD_REMINDER = 1000;
+    public static final int MODIFY_REMINDER = 1100;
+
+    public static final int RESULT_ADDED_REMINDER = 1200;
+    public static final int RESULT_MODIFIED_REMINDER = 1300;
+    public static final int RESULT_REMOVED_REMINDER = 1400;
+
 
     private Handler repeatUpdateHandler = new Handler();
     private boolean cIncrement = false;
@@ -33,6 +40,10 @@ public class ReminderActivity extends AppCompatActivity
     private final int DAY = 1;
     private final int HOUR = 2;
     private final int MINUTE = 3;
+
+    private Integer requestCode;
+    private Integer givedMinutes;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -53,6 +64,7 @@ public class ReminderActivity extends AppCompatActivity
 
         binding.eventReminderRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener()
         {
+            @SuppressLint("NonConstantResourceId")
             @Override
             public void onCheckedChanged(RadioGroup radioGroup, int id)
             {
@@ -102,64 +114,81 @@ public class ReminderActivity extends AppCompatActivity
         binding.downHour.setOnTouchListener(onTouchListener);
         binding.downMinute.setOnTouchListener(onTouchListener);
 
+        // 알람 추가/수정 여부 확인
+        requestCode = getIntent().getIntExtra("requestCode", 0);
 
-        if (getIntent().getIntExtra("hasAlarm", 0) == 1)
+        switch (requestCode)
         {
-            hasAlarm = true;
-            givedMinutes = getIntent().getIntExtra("minutes", 0);
+            case ADD_REMINDER:
+            {
+                binding.eventReminderRadioGroup.check(R.id.not_remind_radio);
+            }
+            break;
+            case MODIFY_REMINDER:
+            {
+                givedMinutes = getIntent().getIntExtra(CalendarContract.Reminders.MINUTES, 0);
 
-            ReminderDto reminderDto = EventUtil.convertAlarmMinutes(givedMinutes);
-            binding.reminderWeekValue.setText(String.valueOf(reminderDto.getWeek()));
-            binding.reminderDayValue.setText(String.valueOf(reminderDto.getDay()));
-            binding.reminderHourValue.setText(String.valueOf(reminderDto.getHour()));
-            binding.reminderMinuteValue.setText(String.valueOf(reminderDto.getMinute()));
+                ReminderDto reminderDto = EventUtil.convertAlarmMinutes(givedMinutes);
 
-            binding.reminderSelector.setVisibility(View.VISIBLE);
-            binding.eventReminderRadioGroup.check(R.id.ok_remind_radio);
-        } else
-        {
-            binding.eventReminderRadioGroup.check(R.id.not_remind_radio);
+                binding.reminderWeekValue.setText(String.valueOf(reminderDto.getWeek()));
+                binding.reminderDayValue.setText(String.valueOf(reminderDto.getDay()));
+                binding.reminderHourValue.setText(String.valueOf(reminderDto.getHour()));
+                binding.reminderMinuteValue.setText(String.valueOf(reminderDto.getMinute()));
+
+                binding.reminderSelector.setVisibility(View.VISIBLE);
+                binding.eventReminderRadioGroup.check(R.id.ok_remind_radio);
+            }
+            break;
         }
     }
 
     @Override
     public void onBackPressed()
     {
-        if (binding.okRemindRadio.isChecked())
-        {
-            final int newMinutes = EventUtil.convertReminderValues(
-                    new ReminderDto(Integer.parseInt(binding.reminderWeekValue.getText().toString())
-                            , Integer.parseInt(binding.reminderDayValue.getText().toString())
-                            , Integer.parseInt(binding.reminderHourValue.getText().toString())
-                            , Integer.parseInt(binding.reminderMinuteValue.getText().toString())));
+        //정시에 알림도 있음
+        final int newMinutes = EventUtil.convertReminderValues(
+                new ReminderDto(Integer.parseInt(binding.reminderWeekValue.getText().toString())
+                        , Integer.parseInt(binding.reminderDayValue.getText().toString())
+                        , Integer.parseInt(binding.reminderHourValue.getText().toString())
+                        , Integer.parseInt(binding.reminderMinuteValue.getText().toString())));
 
-            // 정시에 알림도 있음
-            if (hasAlarm)
+        switch (requestCode)
+        {
+            case ADD_REMINDER:
             {
-                if (givedMinutes == newMinutes)
+                if (binding.okRemindRadio.isChecked())
                 {
-                    setResult(RESULT_CANCELED);
+                    //알람을 추가
+                    getIntent().putExtra(CalendarContract.Reminders.MINUTES, newMinutes);
+                    setResult(RESULT_ADDED_REMINDER, getIntent());
                 } else
                 {
-                    getIntent().putExtra("hasAlarm", true);
-                    getIntent().putExtra("newMinutes", newMinutes);
-                    setResult(RESULT_OK, getIntent());
+                    //알람을 추가하지 않음
+                    setResult(RESULT_CANCELED);
                 }
-            } else
-            {
-                getIntent().putExtra("hasAlarm", true);
-                getIntent().putExtra("newMinutes", newMinutes);
-                setResult(RESULT_OK, getIntent());
+                break;
             }
-        } else
-        {
-            if (hasAlarm)
+
+            case MODIFY_REMINDER:
             {
-                getIntent().putExtra("hasAlarm", false);
-                setResult(RESULT_OK, getIntent());
-            } else
-            {
-                setResult(RESULT_CANCELED);
+                if (binding.okRemindRadio.isChecked())
+                {
+                    if (givedMinutes == newMinutes)
+                    {
+                        //기존 알람 값과 동일하여 취소로 판단
+                        setResult(RESULT_CANCELED);
+                    } else
+                    {
+                        //알람 수정
+                        getIntent().putExtra(CalendarContract.Reminders.MINUTES, newMinutes);
+                        setResult(RESULT_MODIFIED_REMINDER, getIntent());
+                    }
+                } else
+                {
+                    //알람 삭제
+                    setResult(RESULT_REMOVED_REMINDER);
+                }
+                break;
             }
         }
 
