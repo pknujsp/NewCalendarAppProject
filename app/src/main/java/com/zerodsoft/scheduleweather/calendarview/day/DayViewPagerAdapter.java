@@ -17,6 +17,7 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.DateGetter;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
+import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import java.util.ArrayList;
@@ -169,7 +170,7 @@ public class DayViewPagerAdapter extends RecyclerView.Adapter<DayViewPagerAdapte
                 instances.addAll(calendarInstance.getInstanceList());
                 // 데이터를 일정 길이의 내림차순으로 정렬
             }
-            Collections.sort(instances, CalendarUtil.INSTANCE_COMPARATOR);
+            Collections.sort(instances, EventUtil.INSTANCE_COMPARATOR);
             dayHeaderView.setInstances(instances);
             dayView.setInstances(instances);
         }

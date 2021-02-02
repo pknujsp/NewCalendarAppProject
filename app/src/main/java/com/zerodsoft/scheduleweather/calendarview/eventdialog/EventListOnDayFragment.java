@@ -28,6 +28,7 @@ import com.zerodsoft.scheduleweather.calendarview.adapter.EventsInfoRecyclerView
 import com.zerodsoft.scheduleweather.calendarview.callback.EventCallback;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
+import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import java.util.ArrayList;
@@ -133,7 +134,7 @@ public class EventListOnDayFragment extends DialogFragment
                         instances.remove(idx);
                     }
 
-                    Collections.sort(instances, CalendarUtil.INSTANCE_COMPARATOR);
+                    Collections.sort(instances, EventUtil.INSTANCE_COMPARATOR);
                     adapter.setInstances(instances);
                     adapter.notifyDataSetChanged();
                 }

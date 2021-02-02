@@ -15,6 +15,7 @@ import com.google.android.material.checkbox.MaterialCheckBox;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.ICalendarCheckBox;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendar.dto.AccountDto;
+import com.zerodsoft.scheduleweather.event.util.EventUtil;
 
 import java.util.HashMap;
 import java.util.List;
@@ -121,7 +122,7 @@ public class CalendarsAdapter extends BaseExpandableListAdapter
         final int mChildPosition = childPosition;
 
         calendarDisplayName = ((ContentValues) getChild(mGroupPosition, mChildPosition)).getAsString(CalendarContract.Calendars.CALENDAR_DISPLAY_NAME);
-        calendarColor = CalendarUtil.getColor(((ContentValues) getChild(mGroupPosition, mChildPosition)).getAsInteger(CalendarContract.Calendars.CALENDAR_COLOR));
+        calendarColor = EventUtil.getColor(((ContentValues) getChild(mGroupPosition, mChildPosition)).getAsInteger(CalendarContract.Calendars.CALENDAR_COLOR));
 
         if (view == null)
         {

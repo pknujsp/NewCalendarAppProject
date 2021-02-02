@@ -36,6 +36,7 @@ public class EventDefaultValue
         final String[] PROJECTION = {CalendarContract.Calendars._ID, CalendarContract.Calendars.NAME,
                 CalendarContract.Calendars.ACCOUNT_NAME, CalendarContract.Calendars.CALENDAR_DISPLAY_NAME, CalendarContract.Calendars.OWNER_ACCOUNT,
                 CalendarContract.Calendars.CALENDAR_COLOR, CalendarContract.Calendars.IS_PRIMARY};
+
         ContentResolver contentResolver = context.getContentResolver();
         Cursor cursor = contentResolver.query(CalendarContract.Calendars.CONTENT_URI, PROJECTION, null, null, null);
 
@@ -47,7 +48,7 @@ public class EventDefaultValue
             if (cursor.getInt(5) == 1)
             {
                 // another || google primary calendar
-                calendar.put(CalendarContract.Calendars._ID, cursor.getString(0));
+                calendar.put(CalendarContract.Calendars._ID, cursor.getLong(0));
                 calendar.put(CalendarContract.Calendars.NAME, cursor.getString(1));
                 calendar.put(CalendarContract.Calendars.ACCOUNT_NAME, cursor.getString(2));
                 calendar.put(CalendarContract.Calendars.CALENDAR_DISPLAY_NAME, cursor.getString(3));
@@ -57,7 +58,7 @@ public class EventDefaultValue
                 break;
             } else if (cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.OWNER_ACCOUNT)).contains(GOOGLE_SECONDARY_CALENDAR))
             {
-                calendar.put(CalendarContract.Calendars._ID, cursor.getString(0));
+                calendar.put(CalendarContract.Calendars._ID, cursor.getLong(0));
                 calendar.put(CalendarContract.Calendars.NAME, cursor.getString(1));
                 calendar.put(CalendarContract.Calendars.ACCOUNT_NAME, cursor.getString(2));
                 calendar.put(CalendarContract.Calendars.CALENDAR_DISPLAY_NAME, cursor.getString(3));

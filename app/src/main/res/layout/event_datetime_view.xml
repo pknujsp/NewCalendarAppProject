@@ -77,7 +77,7 @@
                     android:hint="@string/start_date" />
 
                 <TextView
-                    android:id="@+id/event_startdatetime"
+                    android:id="@+id/start_time"
                     style="@style/Event.Value"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -126,7 +126,7 @@
                     android:hint="@string/end_date" />
 
                 <TextView
-                    android:id="@+id/event_enddatetime"
+                    android:id="@+id/end_time"
                     style="@style/Event.Value"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

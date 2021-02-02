@@ -110,7 +110,7 @@ public class EventsInfoRecyclerViewAdapter extends RecyclerView.Adapter<EventsIn
             layoutParams.rightMargin = margin[1];
 
             eventView.setLayoutParams(layoutParams);
-            eventView.setBackgroundColor(CalendarUtil.getColor(instances.get(position).getAsInteger(CalendarContract.Instances.EVENT_COLOR)));
+            eventView.setBackgroundColor(EventUtil.getColor(instances.get(position).getAsInteger(CalendarContract.Instances.EVENT_COLOR)));
             eventView.setText(instances.get(position).getAsString(CalendarContract.Instances.TITLE));
         }
     }

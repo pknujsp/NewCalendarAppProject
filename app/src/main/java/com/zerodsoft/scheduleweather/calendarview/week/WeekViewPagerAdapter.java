@@ -18,6 +18,7 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.DateGetter;
+import com.zerodsoft.scheduleweather.event.util.EventUtil;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -173,7 +174,7 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
                 instances.addAll(calendarInstance.getInstanceList());
                 // 데이터를 일정 길이의 내림차순으로 정렬
             }
-            Collections.sort(instances, CalendarUtil.INSTANCE_COMPARATOR);
+            Collections.sort(instances, EventUtil.INSTANCE_COMPARATOR);
             // weekview에는 1일 이하의 이벤트만 표시
             weekView.setInstances(instances);
             // weekheaderview에는 모든 이벤트 표시

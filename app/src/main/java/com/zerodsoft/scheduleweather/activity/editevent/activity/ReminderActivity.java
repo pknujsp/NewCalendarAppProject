@@ -16,6 +16,7 @@ import android.widget.RadioGroup;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.ActivityReminderBinding;
+import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import com.zerodsoft.scheduleweather.utility.model.ReminderDto;
 
 public class ReminderActivity extends AppCompatActivity
@@ -107,7 +108,7 @@ public class ReminderActivity extends AppCompatActivity
             hasAlarm = true;
             givedMinutes = getIntent().getIntExtra("minutes", 0);
 
-            ReminderDto reminderDto = CalendarEventUtil.convertAlarmMinutes(givedMinutes);
+            ReminderDto reminderDto = EventUtil.convertAlarmMinutes(givedMinutes);
             binding.reminderWeekValue.setText(String.valueOf(reminderDto.getWeek()));
             binding.reminderDayValue.setText(String.valueOf(reminderDto.getDay()));
             binding.reminderHourValue.setText(String.valueOf(reminderDto.getHour()));
@@ -126,7 +127,7 @@ public class ReminderActivity extends AppCompatActivity
     {
         if (binding.okRemindRadio.isChecked())
         {
-            final int newMinutes = CalendarEventUtil.convertReminderValues(
+            final int newMinutes = EventUtil.convertReminderValues(
                     new ReminderDto(Integer.parseInt(binding.reminderWeekValue.getText().toString())
                             , Integer.parseInt(binding.reminderDayValue.getText().toString())
                             , Integer.parseInt(binding.reminderHourValue.getText().toString())

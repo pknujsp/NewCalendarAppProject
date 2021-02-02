@@ -68,6 +68,9 @@ public class EventFragment extends Fragment
         super.onViewCreated(view, savedInstanceState);
         binding.eventRemindersView.remindersTable.removeAllViews();
         binding.eventAttendeesView.eventAttendeesTable.removeAllViews();
+        binding.eventDatetimeView.allDaySwitchLayout.setVisibility(View.GONE);
+        binding.eventDatetimeView.startTime.setVisibility(View.GONE);
+        binding.eventDatetimeView.endTime.setVisibility(View.GONE);
     }
 
     @Override
@@ -249,10 +252,11 @@ public class EventFragment extends Fragment
         }
 
         // 설명
-        binding.eventDescription.setText(event.getAsString(CalendarContract.Events.DESCRIPTION) != null ? event.getAsString(CalendarContract.Events.DESCRIPTION)
+        binding.eventDescriptionView.descriptionEdittext.setVisibility(View.GONE);
+        binding.eventDescriptionView.descriptionTextview.setText(event.getAsString(CalendarContract.Events.DESCRIPTION) != null ? event.getAsString(CalendarContract.Events.DESCRIPTION)
                 : "");
         // 위치
-        binding.eventLocation.setText(event.getAsString(CalendarContract.Events.EVENT_LOCATION) != null ? event.getAsString(CalendarContract.Events.EVENT_LOCATION)
+        binding.eventLocationView.eventLocation.setText(event.getAsString(CalendarContract.Events.EVENT_LOCATION) != null ? event.getAsString(CalendarContract.Events.EVENT_LOCATION)
                 : "");
 
         // 참석자
@@ -268,12 +272,12 @@ public class EventFragment extends Fragment
 
     private void setAvailabilityText()
     {
-        binding.eventAvailability.setText(EventUtil.convertAvailability(event.getAsInteger(CalendarContract.Events.AVAILABILITY), getContext()));
+        binding.eventAvailabilityView.eventAvailability.setText(EventUtil.convertAvailability(event.getAsInteger(CalendarContract.Events.AVAILABILITY), getContext()));
     }
 
     private void setAccessLevelText()
     {
-        binding.eventAvailability.setText(EventUtil.convertAccessLevel(event.getAsInteger(CalendarContract.Events.ACCESS_LEVEL), getContext()));
+        binding.eventAccessLevelView.eventAccessLevel.setText(EventUtil.convertAccessLevel(event.getAsInteger(CalendarContract.Events.ACCESS_LEVEL), getContext()));
     }
 
 
@@ -283,8 +287,8 @@ public class EventFragment extends Fragment
         String startStr = EventUtil.convertDateTime(start, allDay,  App.is24HourSystem);
         String endStr = EventUtil.convertDateTime(end, allDay,  App.is24HourSystem);
 
-        binding.eventDatetimeView.eventStartdatetime.setText(startStr);
-        binding.eventDatetimeView.eventEnddatetime.setText(endStr);
+        binding.eventDatetimeView.startDate.setText(startStr);
+        binding.eventDatetimeView.endDate.setText(endStr);
     }
 
     private void setTimeZoneText(TimeZone timeZone)
@@ -313,7 +317,7 @@ public class EventFragment extends Fragment
     {
         RecurrenceRule recurrenceRule = new RecurrenceRule();
         recurrenceRule.separateValues(rRule);
-        binding.eventRecurrence.setText(recurrenceRule.interpret(getContext()));
+        binding.eventRecurrenceView.eventRecurrence.setText(recurrenceRule.interpret(getContext()));
     }
 
     private void setCalendarText()
