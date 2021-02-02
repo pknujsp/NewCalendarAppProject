@@ -14,6 +14,7 @@ import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.provider.CalendarContract;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -296,7 +297,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                                 {
                                     if (!listDataWrapper.getData().isEmpty())
                                     {
-                                        setAttendeesText(listDataWrapper.getData());
+                                        // setAttendeesText(listDataWrapper.getData());
                                     }
                                 }
                             });
@@ -531,6 +532,24 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
             intent.putExtra("requestCode", requestCode);
             startActivityForResult(intent, requestCode);
         });
+
+        binding.attendeeLayout.showAttendeesDetail.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                ContentValues selectedCalendar = new ContentValues();
+                selectedCalendar.put(CalendarContract.Attendees.ATTENDEE_NAME, (String) getValue(CalendarContract.Events.ACCOUNT_NAME));
+
+                List<ContentValues> attendeeList = new ArrayList<>();
+                attendeeList.add(selectedCalendar);
+
+                Intent intent = new Intent(EditEventActivity.this, AttendeesActivity.class);
+                intent.putParcelableArrayListExtra("attendeeList", (ArrayList<? extends Parcelable>) attendeeList);
+                intent.putExtra("selectedCalendar", selectedCalendar);
+                startActivityForResult(intent, AttendeesActivity.SHOW_DETAILS_FOR_ATTENDEES);
+            }
+        });
     }
 
 
@@ -723,9 +742,10 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
         }
     }
 
+    /*
     private void addAttendee(ContentValues attendee)
     {
-        /*
+
         reminderMinuteList.add(minutes);
         putValue(CalendarContract.Events.HAS_ALARM, 1);
 
@@ -749,7 +769,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
 
         binding.reminderLayout.remindersTable.addView(row, binding.reminderLayout.remindersTable.getChildCount() - 1);
 
-         */
+
         // 이름, 메일 주소, 상태
         // 조직자 - attendeeName, 그 외 - email
 
@@ -763,7 +783,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
         String attendeeStatusStr = EventUtil.convertAttendeeStatus(attendeeStatus, getApplicationContext());
         String attendeeRelationshipStr = EventUtil.convertAttendeeRelationship(attendeeRelationship, getApplicationContext());
 
-        LinearLayout row = (LinearLayout) layoutInflater.inflate(R.layout.event_attendee_item, null);
+        LinearLayout row = (LinearLayout) getLayoutInflater().inflate(R.layout.event_attendee_item, null);
         // add row to table
 
         LinearLayout attendeeInfoLayout = row.findViewById(R.id.attendee_info_layout);
@@ -852,6 +872,9 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
             addAttendee(attendee);
         }
     }
+
+
+     */
 
     private void setDateText(int dateType)
     {

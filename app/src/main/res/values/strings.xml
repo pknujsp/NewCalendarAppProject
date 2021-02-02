@@ -265,6 +265,12 @@
     <string name="RELATIONSHIP_PERFORMER">수행자</string>
     <string name="RELATIONSHIP_SPEAKER">발언자</string>
 
+    <string name="attendee_authority">참석자 권한</string>
+    <string name="modify_event">일정 수정</string>
+    <string name="invites_attendee">다른 참석자 초대</string>
+    <string name="show_attendees">참석자 명단 보기</string>
+    <string name="input_invite_attendee" >초대할 참석자의 이메일을 입력하세요.</string>
+
 
     <!-- 알림 -->
 
