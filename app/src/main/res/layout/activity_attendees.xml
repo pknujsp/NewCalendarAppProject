@@ -26,18 +26,37 @@
         </com.google.android.material.appbar.AppBarLayout>
 
         <com.google.android.material.chip.ChipGroup
-            android:id="@+id/attendee_chip_group"
+            android:id="@+id/authority_chip_group"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
             <com.google.android.material.chip.Chip
-                android:id="@+id/chip_attendee_authority"
-                style="@style/Widget.MaterialComponents.Chip.Action"
+                android:id="@+id/authority_modify_event"
+                style="@style/Widget.MaterialComponents.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:clickable="true"
-                android:text="@string/attendee_authority"
+                android:text="@string/modify_event"
                 app:chipIcon="@drawable/settings_black" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/authority_attendee_invites"
+                style="@style/Widget.MaterialComponents.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:clickable="true"
+                android:text="@string/invites_attendee"
+                app:chipIcon="@drawable/settings_black" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/authority_attendee_show_attendees"
+                style="@style/Widget.MaterialComponents.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:clickable="true"
+                android:text="@string/show_attendees"
+                app:chipIcon="@drawable/settings_black" />
+
 
         </com.google.android.material.chip.ChipGroup>
 

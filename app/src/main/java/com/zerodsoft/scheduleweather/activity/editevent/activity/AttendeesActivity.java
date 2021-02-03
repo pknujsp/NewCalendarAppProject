@@ -7,6 +7,7 @@ import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.ContentValues;
 import android.os.Bundle;
@@ -41,6 +42,7 @@ public class AttendeesActivity extends AppCompatActivity
     private List<ContentValues> attendeeList = new ArrayList<>();
     private ContentValues selectedCalendar;
 
+
     private static final String EMAIL_REGRESSION = "^[a-zA-Z0-9.+-/*]+@[a-zA-Z0-9/*-+]+\\.[a-zA-Z]{1,6}$";
     public static final int SHOW_DETAILS_FOR_ATTENDEES = 2000;
 
@@ -60,9 +62,25 @@ public class AttendeesActivity extends AppCompatActivity
 
         attendeeList = getIntent().getParcelableArrayListExtra("attendeeList");
         selectedCalendar = getIntent().getParcelableExtra("selectedCalendar");
-        adapter = new AttendeeListAdapter(attendeeList, selectedCalendar);
 
+        adapter = new AttendeeListAdapter(attendeeList, selectedCalendar);
+        adapter.registerAdapterDataObserver(adapterDataObserver);
         binding.attendeeList.setAdapter(adapter);
+
+        if (attendeeList.isEmpty())
+        {
+            binding.authorityChipGroup.setVisibility(View.GONE);
+        } else
+        {
+            binding.authorityChipGroup.setVisibility(View.VISIBLE);
+        }
+    }
+
+    @Override
+    protected void onDestroy()
+    {
+        super.onDestroy();
+        adapter.unregisterAdapterDataObserver(adapterDataObserver);
     }
 
     @Override
@@ -173,4 +191,39 @@ public class AttendeesActivity extends AppCompatActivity
         finish();
     }
 
+    private final RecyclerView.AdapterDataObserver adapterDataObserver = new RecyclerView.AdapterDataObserver()
+    {
+        @Override
+        public void onChanged()
+        {
+            super.onChanged();
+
+            if (adapter.getItemCount() == 0)
+            {
+                if (binding.authorityChipGroup.getVisibility() == View.VISIBLE)
+                {
+                    binding.authorityChipGroup.setVisibility(View.GONE);
+                }
+            } else if (binding.authorityChipGroup.getVisibility() == View.GONE)
+            {
+                binding.authorityChipGroup.setVisibility(View.VISIBLE);
+            }
+        }
+
+        @Override
+        public void onItemRangeInserted(int positionStart, int itemCount)
+        {
+            super.onItemRangeInserted(positionStart, itemCount);
+
+
+        }
+
+        @Override
+        public void onItemRangeRemoved(int positionStart, int itemCount)
+        {
+            super.onItemRangeRemoved(positionStart, itemCount);
+
+
+        }
+    };
 }

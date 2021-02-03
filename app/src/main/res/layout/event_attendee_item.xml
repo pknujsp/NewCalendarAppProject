@@ -7,9 +7,8 @@
     <LinearLayout
         android:id="@+id/attendee_info_layout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_alignParentLeft="true"
-        android:layout_centerVertical="true"
         android:layout_toLeftOf="@id/remove_attendee_button"
         android:background="?attr/selectableItemBackground"
         android:orientation="vertical">
@@ -18,21 +17,23 @@
             android:id="@+id/attendee_name"
             style="@style/Event.Value"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="1"
             android:text="email" />
 
         <LinearLayout
             android:id="@+id/attendee_relationship_status_layout"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:layout_height="0dp"
+            android:layout_weight="1"
             android:orientation="horizontal">
 
             <TextView
                 android:id="@+id/attendee_relationship"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginRight="8dp"
+                android:layout_gravity="center_vertical"
+                android:layout_marginRight="12dp"
                 android:text="@string/RELATIONSHIP_ORGANIZER"
                 android:textColor="@color/gray_600"
                 android:textSize="14sp" />
@@ -41,6 +42,7 @@
                 android:id="@+id/attendee_status"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
                 android:text="@string/ATTENDEE_STATUS_ACCEPTED"
                 android:textColor="@color/gray_600"
                 android:textSize="14sp" />

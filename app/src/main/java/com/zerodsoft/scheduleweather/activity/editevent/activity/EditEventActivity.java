@@ -218,7 +218,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                 break;
 
             case MODIFY_EVENT:
-                actionBar.setTitle(R.string.modity_event);
+                actionBar.setTitle(R.string.modify_event);
                 Intent intent = getIntent();
 
                 final int CALENDAR_ID = intent.getIntExtra("calendarId", 0);
