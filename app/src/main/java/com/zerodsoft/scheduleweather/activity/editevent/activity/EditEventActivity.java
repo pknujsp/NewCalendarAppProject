@@ -9,6 +9,7 @@ import androidx.core.util.Pair;
 import androidx.databinding.DataBindingUtil;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
@@ -22,9 +23,14 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.datepicker.MaterialPickerOnPositiveButtonClickListener;
@@ -64,7 +70,6 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
 
     public static final int REQUEST_RECURRENCE = 110;
     public static final int REQUEST_TIMEZONE = 120;
-    public static final int REQUEST_REMINDER = 130;
 
     private static final int START_DATETIME = 200;
     private static final int END_DATETIME = 210;
@@ -93,8 +98,9 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
     private int endTimeMinute;
 
     private EventDefaultValue eventDefaultValue;
-    private List<ContentValues> calendarList;
+    private List<ContentValues> calendarList = new ArrayList<>();
     private List<Integer> reminderMinuteList = new ArrayList<>();
+    private List<ContentValues> attendeeList = new ArrayList<>();
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
@@ -206,6 +212,9 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                 // 유효성(바쁨)
                 putValue(CalendarContract.Events.AVAILABILITY, eventDefaultValue.getDefaultAvailability());
                 setAvailabilityText();
+
+                // 참석자 버튼 텍스트 수정
+                binding.attendeeLayout.showAttendeesDetail.setText(getString(R.string.add_attendee));
                 break;
 
             case MODIFY_EVENT:
@@ -252,6 +261,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                         setDateText(END_DATETIME);
                         setTimeText(START_DATETIME);
                         setTimeText(END_DATETIME);
+
                         // 시간대
                         String timeZoneStr = savedEventValues.getAsString(CalendarContract.Events.EVENT_TIMEZONE);
                         TimeZone timeZone = TimeZone.getTimeZone(timeZoneStr);
@@ -297,7 +307,12 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                                 {
                                     if (!listDataWrapper.getData().isEmpty())
                                     {
-                                        // setAttendeesText(listDataWrapper.getData());
+                                        attendeeList.addAll(listDataWrapper.getData());
+                                        setAttendeesText(attendeeList);
+                                    } else
+                                    {
+                                        // 참석자 버튼 텍스트 수정
+                                        binding.attendeeLayout.showAttendeesDetail.setText(getString(R.string.add_attendee));
                                     }
                                 }
                             });
@@ -533,6 +548,9 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
             startActivityForResult(intent, requestCode);
         });
 
+        /*
+        참석자 상세정보 버튼
+         */
         binding.attendeeLayout.showAttendeesDetail.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -540,9 +558,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
             {
                 ContentValues selectedCalendar = new ContentValues();
                 selectedCalendar.put(CalendarContract.Attendees.ATTENDEE_NAME, (String) getValue(CalendarContract.Events.ACCOUNT_NAME));
-
-                List<ContentValues> attendeeList = new ArrayList<>();
-                attendeeList.add(selectedCalendar);
+                selectedCalendar.put(CalendarContract.Attendees.ATTENDEE_EMAIL, (String) getValue(CalendarContract.Events.OWNER_ACCOUNT));
 
                 Intent intent = new Intent(EditEventActivity.this, AttendeesActivity.class);
                 intent.putParcelableArrayListExtra("attendeeList", (ArrayList<? extends Parcelable>) attendeeList);
@@ -585,8 +601,31 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                 }
                 break;
             }
+
             case NEW_LOCATION:
+                break;
+
             case MODIFY_LOCATION:
+                break;
+
+            case AttendeesActivity.SHOW_DETAILS_FOR_ATTENDEES:
+            {
+                List<ContentValues> resultAttendeeList = data.getParcelableArrayListExtra("attendeeList");
+
+                if (resultAttendeeList.isEmpty())
+                {
+                    // 리스트가 비어있으면 참석자 삭제 | 취소
+                    attendeeList.clear();
+                } else
+                {
+                    // 참석자 추가 | 변경
+                    attendeeList.clear();
+                    attendeeList.addAll(resultAttendeeList);
+                }
+                setAttendeesText(attendeeList);
+                break;
+            }
+
             case REQUEST_TIMEZONE:
             {
                 TimeZone timeZone = (TimeZone) data.getSerializableExtra(CalendarContract.Events.EVENT_TIMEZONE);
@@ -594,6 +633,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                 setTimeZoneText(timeZone);
                 break;
             }
+
             case ReminderActivity.ADD_REMINDER:
             {
                 if (resultCode == ReminderActivity.RESULT_ADDED_REMINDER)
@@ -606,6 +646,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                 }
                 break;
             }
+
             case ReminderActivity.MODIFY_REMINDER:
             {
                 int index = data.getIntExtra("minutesIndexOfList", 0);
@@ -619,6 +660,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                     removeReminder(reminderMinuteList.get(index));
                 }
                 break;
+
             }
         }
 
@@ -669,7 +711,10 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
         ReminderDto reminderDto = EventUtil.convertAlarmMinutes(minutes);
         String alarmValueText = EventUtil.makeAlarmText(reminderDto, getApplicationContext());
 
+        TableRow tableRow = new TableRow(getApplicationContext());
         View row = getLayoutInflater().inflate(R.layout.event_reminder_item, null);
+        tableRow.addView(row);
+        tableRow.setLayoutParams(new TableLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         final ReminderItemHolder holder = new ReminderItemHolder(minutes, alarmValueText);
 
@@ -684,7 +729,8 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
         reminderValueTextView.setTag(holder);
         removeButton.setTag(holder);
 
-        binding.reminderLayout.remindersTable.addView(row, binding.reminderLayout.remindersTable.getChildCount() - 1);
+
+        binding.reminderLayout.remindersTable.addView(tableRow, binding.reminderLayout.remindersTable.getChildCount() - 1);
     }
 
 
@@ -742,55 +788,36 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
         }
     }
 
-    /*
+    static class AttendeeItemHolder
+    {
+        protected final ContentValues attendee;
+        private View row;
+
+        public AttendeeItemHolder(ContentValues attendee, View row)
+        {
+            this.attendee = attendee;
+            this.row = row;
+        }
+    }
+
     private void addAttendee(ContentValues attendee)
     {
+        TableRow tableRow = new TableRow(getApplicationContext());
+        RelativeLayout row = (RelativeLayout) getLayoutInflater().inflate(R.layout.event_attendee_item, null);
 
-        reminderMinuteList.add(minutes);
-        putValue(CalendarContract.Events.HAS_ALARM, 1);
-
-        ReminderDto reminderDto = EventUtil.convertAlarmMinutes(minutes);
-        String alarmValueText = EventUtil.makeAlarmText(reminderDto, getApplicationContext());
-
-        View row = getLayoutInflater().inflate(R.layout.event_reminder_item, null);
-
-        final ReminderItemHolder holder = new ReminderItemHolder(minutes, alarmValueText);
-
-        TextView reminderValueTextView = ((TextView) row.findViewById(R.id.reminder_value));
-        ImageButton removeButton = ((ImageButton) row.findViewById(R.id.remove_reminder_button));
-
-        reminderValueTextView.setText(alarmValueText);
-
-        reminderValueTextView.setOnClickListener(reminderItemOnClickListener);
-        removeButton.setOnClickListener(removeReminderOnClickListener);
-
-        reminderValueTextView.setTag(holder);
-        removeButton.setTag(holder);
-
-        binding.reminderLayout.remindersTable.addView(row, binding.reminderLayout.remindersTable.getChildCount() - 1);
-
-
-        // 이름, 메일 주소, 상태
-        // 조직자 - attendeeName, 그 외 - email
-
-        // calendar display name
-        final String attendeeName = attendee.getAsString(CalendarContract.Attendees.ATTENDEE_NAME);
-        // calendar owner account
-        final String attendeeEmail = attendee.getAsString(CalendarContract.Attendees.ATTENDEE_EMAIL);
-        final int attendeeStatus = attendee.getAsInteger(CalendarContract.Attendees.ATTENDEE_STATUS);
-        final int attendeeRelationship = attendee.getAsInteger(CalendarContract.Attendees.ATTENDEE_RELATIONSHIP);
-
-        String attendeeStatusStr = EventUtil.convertAttendeeStatus(attendeeStatus, getApplicationContext());
-        String attendeeRelationshipStr = EventUtil.convertAttendeeRelationship(attendeeRelationship, getApplicationContext());
-
-        LinearLayout row = (LinearLayout) getLayoutInflater().inflate(R.layout.event_attendee_item, null);
+        tableRow.addView(row);
+        tableRow.setLayoutParams(new TableLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         // add row to table
 
         LinearLayout attendeeInfoLayout = row.findViewById(R.id.attendee_info_layout);
         TextView attendeeEmailView = (TextView) row.findViewById(R.id.attendee_name);
-        TextView attendeeRelationshipView = (TextView) row.findViewById(R.id.attendee_relationship);
-        TextView attendeeStatusView = (TextView) row.findViewById(R.id.attendee_status);
         ImageButton removeButton = (ImageButton) row.findViewById(R.id.remove_attendee_button);
+
+        ((LinearLayout) attendeeInfoLayout.findViewById(R.id.attendee_relationship_status_layout)).setVisibility(View.GONE);
+
+        final AttendeeItemHolder holder = new AttendeeItemHolder(attendee, tableRow);
+        attendeeInfoLayout.setTag(holder);
+        removeButton.setTag(holder);
 
         attendeeInfoLayout.setClickable(true);
         attendeeInfoLayout.setOnClickListener(new View.OnClickListener()
@@ -799,7 +826,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
             public void onClick(View view)
             {
                 // logic for communications with attendee
-
+                ContentValues attendee = ((AttendeeItemHolder) view.getTag()).attendee;
             }
         });
 
@@ -808,73 +835,121 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
             @Override
             public void onClick(View view)
             {
-
+                AttendeeItemHolder holder = (AttendeeItemHolder) view.getTag();
+                ContentValues attendee = holder.attendee;
+                removeAttendee(attendee, holder.row);
             }
         });
+        // 이름, 메일 주소, 상태
+        // 조직자 - attendeeName, 그 외 - email
+        // email값을 항상 존재
+        // 요약 - 캘린더명과 나
+        // 상세 - 나(이메일), 캘린더(이메일)
+        /*
+        참석자 : a(organizer), b
 
-        attendeeEmailView.setText(attendeeRelationship == CalendarContract.Attendees.RELATIONSHIP_ORGANIZER ? attendeeName : attendeeEmail);
-        attendeeRelationshipView.setText(attendeeRelationshipStr);
-        attendeeStatusView.setText(attendeeStatusStr);
+        <구글 캘린더>
+        주최자의 캘린더에서 이벤트를 볼때 : 참석자 1명, a(주최자), b
+        수정 할때 : b
 
-        binding.attendeeLayout.eventAttendeesTable.addView(row, binding.attendeeLayout.eventAttendeesTable.getChildCount() - 1);
+        참석자의 캘린더에서 이벤트를 볼때 : 참석자 1명, a(주최자), b
+        수정 할때 : a, b(나)
+         */
+        final String selectedCalendarName = (String) getValue(CalendarContract.Events.CALENDAR_DISPLAY_NAME);
+        final String selectedCalendarOwnerAccount = (String) getValue(CalendarContract.Events.OWNER_ACCOUNT);
+        String attendeeName = null;
+
+        // 참석자 목록에서 읽어온 경우
+        if (attendee.containsKey(CalendarContract.Attendees.ATTENDEE_RELATIONSHIP))
+        {
+            if (attendee.getAsInteger(CalendarContract.Attendees.ATTENDEE_RELATIONSHIP) == CalendarContract.Attendees.RELATIONSHIP_ORGANIZER)
+            {
+                attendeeName = attendee.getAsString(CalendarContract.Attendees.ATTENDEE_NAME);
+                if (attendeeName.equals(selectedCalendarName))
+                {
+                    attendeeName += "(ME)";
+                    removeButton.setVisibility(View.GONE);
+                }
+            } else
+            {
+                attendeeName = attendee.getAsString(CalendarContract.Attendees.ATTENDEE_EMAIL);
+                if (attendeeName.equals(selectedCalendarOwnerAccount))
+                {
+                    attendeeName += "(ME)";
+                    removeButton.setVisibility(View.GONE);
+                }
+            }
+        } else
+        {
+            // 추가한 경우
+            attendeeName = attendee.getAsString(CalendarContract.Attendees.ATTENDEE_EMAIL);
+            if (attendeeName.equals(selectedCalendarOwnerAccount))
+            {
+                attendeeName += "(ME)";
+                removeButton.setVisibility(View.GONE);
+            }
+        }
+        attendeeEmailView.setText(attendeeName);
+
+        binding.attendeeLayout.eventAttendeesTable.addView(tableRow, binding.attendeeLayout.eventAttendeesTable.getChildCount() - 1);
     }
 
 
-    private void removeAttendee(ContentValues attendee)
+    private void removeAttendee(ContentValues attendee, View row)
     {
-        if (reminderMinuteList.size() == 1)
-        {
-            putValue(CalendarContract.Events.HAS_ALARM, 0);
-        }
-        reminderMinuteList.remove((Object) minutes);
-
-        int rowCount = binding.reminderLayout.remindersTable.getChildCount();
+        attendeeList.remove((Object) attendee);
         // 아이템 삭제
+        binding.attendeeLayout.eventAttendeesTable.removeView(row);
+        int rowCount = binding.attendeeLayout.eventAttendeesTable.getChildCount();
+        if (rowCount == 2)
+        {
+            binding.attendeeLayout.showAttendeesDetail.setText(getString(R.string.add_attendee));
+            attendeeList.clear();
+            binding.attendeeLayout.eventAttendeesTable.removeViewAt(0);
+        }
+
+        /*
         for (int rowIndex = 0; rowIndex < rowCount; rowIndex++)
         {
-            ReminderItemHolder holder = (ReminderItemHolder) binding.reminderLayout.remindersTable.getChildAt(rowIndex).findViewById(R.id.reminder_value).getTag();
-            if (holder.minutes == minutes)
+            AttendeeItemHolder holder = (AttendeeItemHolder) binding.attendeeLayout.eventAttendeesTable.getChildAt(rowIndex)
+                    .findViewById(R.id.attendee_info_layout).getTag();
+            if (holder.attendee.getAsString(CalendarContract.Attendees.ATTENDEE_NAME)
+                    .equals(attendee.getAsString(CalendarContract.Attendees.ATTENDEE_NAME)))
             {
-                binding.reminderLayout.remindersTable.removeViewAt(rowIndex);
+                binding.attendeeLayout.eventAttendeesTable.removeViewAt(rowIndex);
                 break;
             }
         }
-    }
 
-    private void modifyAttendee(int index, ContentValues attendee)
-    {
-        final int currentMinute = reminderMinuteList.get(index);
-        reminderMinuteList.remove(index);
-        reminderMinuteList.add(index, minutes);
-
-        int rowCount = binding.reminderLayout.remindersTable.getChildCount();
-        // 아이템 수정
-        for (int rowIndex = 0; rowIndex < rowCount; rowIndex++)
-        {
-            ReminderItemHolder holder = (ReminderItemHolder) binding.reminderLayout.remindersTable.getChildAt(rowIndex).findViewById(R.id.remove_reminder_button).getTag();
-            if (holder.minutes == currentMinute)
-            {
-                View row = binding.reminderLayout.remindersTable.getChildAt(rowIndex);
-
-                ReminderDto reminderDto = EventUtil.convertAlarmMinutes(minutes);
-                String alarmValueText = EventUtil.makeAlarmText(reminderDto, getApplicationContext());
-
-                ((TextView) row.findViewById(R.id.reminder_value)).setText(alarmValueText);
-                break;
-            }
-        }
+         */
     }
 
     private void setAttendeesText(List<ContentValues> attendees)
     {
+        final int childCount = binding.attendeeLayout.eventAttendeesTable.getChildCount();
+        if (childCount >= 2)
+        {
+            // 상세 정보 버튼 제외후 모두 삭제
+            for (int row = 0; row < childCount - 1; row++)
+            {
+                binding.attendeeLayout.eventAttendeesTable.removeViewAt(row);
+            }
+        }
+
+        if (attendees.isEmpty())
+        {
+            // 참석자 버튼 텍스트 수정
+            binding.attendeeLayout.showAttendeesDetail.setText(getString(R.string.add_attendee));
+        } else
+        {
+            binding.attendeeLayout.showAttendeesDetail.setText(getString(R.string.show_attendees));
+        }
+
         for (ContentValues attendee : attendees)
         {
             addAttendee(attendee);
         }
     }
-
-
-     */
 
     private void setDateText(int dateType)
     {
@@ -988,6 +1063,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
         putValue(CalendarContract.Events.CALENDAR_DISPLAY_NAME, calendar.getAsString(CalendarContract.Calendars.CALENDAR_DISPLAY_NAME));
         putValue(CalendarContract.Events.ACCOUNT_NAME, calendar.getAsString(CalendarContract.Calendars.ACCOUNT_NAME));
         putValue(CalendarContract.Events.CALENDAR_COLOR, calendar.getAsInteger(CalendarContract.Calendars.CALENDAR_COLOR));
+        putValue(CalendarContract.Events.OWNER_ACCOUNT, calendar.getAsString(CalendarContract.Calendars.OWNER_ACCOUNT));
     }
 
     private void setCalendarText()

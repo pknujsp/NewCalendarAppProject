@@ -599,6 +599,7 @@ public class CalendarProvider implements ICalendarProvider
                 attendee.put(CalendarContract.Attendees.ATTENDEE_RELATIONSHIP, cursor.getInt(cursor.getColumnIndex(CalendarContract.Attendees.ATTENDEE_RELATIONSHIP)));
                 attendee.put(CalendarContract.Attendees.ATTENDEE_STATUS, cursor.getInt(cursor.getColumnIndex(CalendarContract.Attendees.ATTENDEE_STATUS)));
                 attendee.put(CalendarContract.Attendees.ATTENDEE_TYPE, cursor.getInt(cursor.getColumnIndex(CalendarContract.Attendees.ATTENDEE_TYPE)));
+                attendee.put(CalendarContract.Attendees.IS_ORGANIZER, cursor.getString(cursor.getColumnIndex(CalendarContract.Attendees.IS_ORGANIZER)));
             }
             cursor.close();
         }

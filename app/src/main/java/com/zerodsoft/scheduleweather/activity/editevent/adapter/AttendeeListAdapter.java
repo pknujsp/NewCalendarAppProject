@@ -1,13 +1,12 @@
 package com.zerodsoft.scheduleweather.activity.editevent.adapter;
 
 import android.content.ContentValues;
-import android.content.Context;
 import android.provider.CalendarContract;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -21,12 +20,14 @@ import java.util.List;
 public class AttendeeListAdapter extends RecyclerView.Adapter<AttendeeListAdapter.AttendeeViewHolder>
 {
     private List<ContentValues> attendeeList;
-    private ContentValues selectedCalendar;
+    final String SELECTED_CALENDAR_NAME;
+    final String SELECTED_CALENDAR_OWNER_ACCOUNT;
 
     public AttendeeListAdapter(List<ContentValues> attendeeList, ContentValues selectedCalendar)
     {
         this.attendeeList = attendeeList;
-        this.selectedCalendar = selectedCalendar;
+        SELECTED_CALENDAR_NAME = selectedCalendar.getAsString(CalendarContract.Attendees.ATTENDEE_NAME);
+        SELECTED_CALENDAR_OWNER_ACCOUNT = selectedCalendar.getAsString(CalendarContract.Attendees.ATTENDEE_EMAIL);
     }
 
     @NonNull
@@ -56,15 +57,49 @@ public class AttendeeListAdapter extends RecyclerView.Adapter<AttendeeListAdapte
         public AttendeeViewHolder(@NonNull View itemView)
         {
             super(itemView);
+            ((LinearLayout) itemView.findViewById(R.id.attendee_relationship_status_layout)).setVisibility(View.GONE);
+
             attendeeName = (TextView) itemView.findViewById(R.id.attendee_name);
             removeButton = (ImageButton) itemView.findViewById(R.id.remove_attendee_button);
         }
 
         public void onBind(int position)
         {
-            attendeeName.setText(attendeeList.get(position).getAsString(CalendarContract.Attendees.ATTENDEE_NAME).isEmpty() ?
-                    attendeeList.get(position).getAsString(CalendarContract.Attendees.ATTENDEE_EMAIL) :
-                    attendeeList.get(position).getAsString(CalendarContract.Attendees.ATTENDEE_NAME));
+            ContentValues attendee = attendeeList.get(position);
+            String attendeeNameValue = null;
+
+            // 참석자 목록에서 읽어온 경우
+            if (attendee.containsKey(CalendarContract.Attendees.ATTENDEE_RELATIONSHIP))
+            {
+                if (attendee.getAsInteger(CalendarContract.Attendees.ATTENDEE_RELATIONSHIP) == CalendarContract.Attendees.RELATIONSHIP_ORGANIZER)
+                {
+                    attendeeNameValue = attendee.getAsString(CalendarContract.Attendees.ATTENDEE_NAME);
+                    if (attendeeNameValue.equals(SELECTED_CALENDAR_NAME))
+                    {
+                        attendeeNameValue += "(ME)";
+                        removeButton.setVisibility(View.GONE);
+                    }
+                } else
+                {
+                    attendeeNameValue = attendee.getAsString(CalendarContract.Attendees.ATTENDEE_EMAIL);
+                    if (attendeeNameValue.equals(SELECTED_CALENDAR_OWNER_ACCOUNT))
+                    {
+                        attendeeNameValue += "(ME)";
+                        removeButton.setVisibility(View.GONE);
+                    }
+                }
+            } else
+            {
+                // 추가한 경우
+                attendeeNameValue = attendee.getAsString(CalendarContract.Attendees.ATTENDEE_EMAIL);
+                if (attendeeNameValue.equals(SELECTED_CALENDAR_OWNER_ACCOUNT))
+                {
+                    attendeeNameValue += "(ME)";
+                    removeButton.setVisibility(View.GONE);
+                }
+            }
+            attendeeName.setText(attendeeNameValue);
+
             attendeeName.setOnClickListener(new View.OnClickListener()
             {
                 @Override
@@ -78,7 +113,12 @@ public class AttendeeListAdapter extends RecyclerView.Adapter<AttendeeListAdapte
                 @Override
                 public void onClick(View view)
                 {
-
+                    attendeeList.remove(getAdapterPosition());
+                    if (attendeeList.size() == 1)
+                    {
+                        attendeeList.clear();
+                    }
+                    notifyDataSetChanged();
                 }
             });
         }

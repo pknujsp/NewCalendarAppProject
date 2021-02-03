@@ -269,7 +269,10 @@
     <string name="modify_event">일정 수정</string>
     <string name="invites_attendee">다른 참석자 초대</string>
     <string name="show_attendees">참석자 명단 보기</string>
-    <string name="input_invite_attendee" >초대할 참석자의 이메일을 입력하세요.</string>
+    <string name="input_invite_attendee">초대할 참석자의 이메일을 입력하세요.</string>
+    <string name="not_matches_with_email">E-MAIL주소를 입력하세요.</string>
+    <string name="duplicate_attendee">중복되는 참석자 입니다.</string>
+    <string name="add_attendee">참석자 추가</string>
 
 
     <!-- 알림 -->
