@@ -1,22 +1,70 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    tools:context=".event.EventActivity">
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/schedule_fragment_container"
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_height="match_parent"
+        tools:context=".event.EventActivity">
 
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/schedule_bottom_nav"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?android:attr/windowBackground"
-        app:menu="@menu/schedule_bottom_nav" />
-</LinearLayout>
+
+        <androidx.fragment.app.FragmentContainerView
+            android:id="@+id/schedule_fragment_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/modify_event_Fab"
+            style="@style/Widget.MaterialComponents.FloatingActionButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top"
+            android:layout_margin="16dp"
+            android:backgroundTint="@color/light_blue_600"
+            android:contentDescription="@string/modify_event"
+            android:src="@drawable/modify_black"
+            app:layout_anchor="@id/schedule_bottom_nav"
+            app:layout_anchorGravity="top|right" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/remove_event_fab"
+            style="@style/Widget.MaterialComponents.FloatingActionButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top"
+            android:layout_margin="16dp"
+            android:backgroundTint="@color/light_blue_600"
+            android:contentDescription="@string/modify_event"
+            android:src="@drawable/remove_schedule"
+
+            app:layout_anchor="@id/schedule_bottom_nav"
+            app:layout_anchorGravity="top|right" />
+
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/event_fab"
+            style="@style/Widget.MaterialComponents.FloatingActionButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top"
+            android:layout_margin="16dp"
+            android:contentDescription="@string/modify_event"
+
+            android:src="@drawable/more_icon"
+            app:layout_anchor="@id/schedule_bottom_nav"
+            app:layout_anchorGravity="top|right" />
+
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/schedule_bottom_nav"
+            style="@style/Widget.MaterialComponents.BottomNavigationView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior"
+            app:menu="@menu/schedule_bottom_nav" />
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+
+</layout>

@@ -4,6 +4,7 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentContainerView;
 import androidx.fragment.app.FragmentManager;
@@ -19,30 +20,28 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.provider.CalendarContract;
 import android.service.carrier.CarrierMessagingService;
+import android.util.TypedValue;
 import android.view.MenuItem;
+import android.view.View;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.tabs.TabLayout;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
+import com.zerodsoft.scheduleweather.databinding.ActivityScheduleInfoBinding;
 import com.zerodsoft.scheduleweather.event.common.MLocActivity;
 import com.zerodsoft.scheduleweather.event.common.interfaces.ILocation;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.event.EventFragment;
 import com.zerodsoft.scheduleweather.event.location.PlacesAroundLocationFragment;
 import com.zerodsoft.scheduleweather.event.weather.WeatherFragment;
-import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
 public class EventActivity extends AppCompatActivity implements ILocation
 {
-    private ViewPager2 viewPager;
-    private TabLayout tabLayout;
+    private ActivityScheduleInfoBinding binding;
 
     private LocationViewModel locationViewModel;
-    private BottomNavigationView bottomNavigationView;
-    private FragmentContainerView fragmentContainerView;
 
     private EventFragment eventFragment;
     private WeatherFragment weatherFragment;
@@ -77,18 +76,36 @@ public class EventActivity extends AppCompatActivity implements ILocation
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_schedule_info);
-        bottomNavigationView = (BottomNavigationView) findViewById(R.id.schedule_bottom_nav);
-        fragmentContainerView = (FragmentContainerView) findViewById(R.id.schedule_fragment_container);
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_schedule_info);
 
-        bottomNavigationView.setOnNavigationItemSelectedListener(onNavigationItemSelectedListener);
+        binding.scheduleBottomNav.setOnNavigationItemSelectedListener(onNavigationItemSelectedListener);
+        binding.eventFab.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                if (binding.eventFab.isExpanded())
+                {
+                    binding.eventFab.setExpanded(false);
+                    collapseFabs();
+                } else
+                {
+                    binding.eventFab.setExpanded(true);
+                    expandFabs();
+                }
+            }
+        });
 
         final long eventId = getIntent().getLongExtra("eventId", 0);
         final int calendarId = getIntent().getIntExtra("calendarId", 0);
+        final long begin = getIntent().getLongExtra("begin", 0);
+        final long end = getIntent().getLongExtra("end", 0);
 
         Bundle bundle = new Bundle();
         bundle.putInt("calendarId", calendarId);
         bundle.putLong("eventId", eventId);
+        bundle.putLong("begin", begin);
+        bundle.putLong("end", end);
 
         eventFragment = new EventFragment();
         eventFragment.setArguments(bundle);
@@ -106,6 +123,26 @@ public class EventActivity extends AppCompatActivity implements ILocation
 
             }
         });
+    }
+
+    private void collapseFabs()
+    {
+        binding.eventFab.setImageDrawable(getDrawable(R.drawable.more_icon));
+
+        binding.removeEventFab.animate().translationY(0);
+        binding.modifyEventFab.animate().translationY(0);
+    }
+
+    private void expandFabs()
+    {
+        binding.eventFab.setImageDrawable(getDrawable(R.drawable.close_icon));
+
+        final float y = binding.eventFab.getTranslationY();
+        final float margin = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16f, getResources().getDisplayMetrics());
+        final float fabHeight = binding.eventFab.getHeight();
+
+        binding.removeEventFab.animate().translationY(y - (fabHeight + margin));
+        binding.modifyEventFab.animate().translationY(y - (fabHeight + margin) * 2);
     }
 
     private final BottomNavigationView.OnNavigationItemSelectedListener onNavigationItemSelectedListener = new BottomNavigationView.OnNavigationItemSelectedListener()
@@ -188,7 +225,7 @@ public class EventActivity extends AppCompatActivity implements ILocation
                     public void onClick(DialogInterface dialogInterface, int i)
                     {
                         Intent intent = new Intent(EventActivity.this, MLocActivity.class);
-                        ContentValues event = eventFragment.getEvent();
+                        ContentValues event = eventFragment.getInstance();
 
                         intent.putExtra("calendarId", event.getAsInteger(CalendarContract.Events.CALENDAR_ID));
                         intent.putExtra("eventId", event.getAsLong(CalendarContract.Events._ID));
@@ -209,8 +246,8 @@ public class EventActivity extends AppCompatActivity implements ILocation
     @Override
     public void getLocation(CarrierMessagingService.ResultCallback<LocationDTO> resultCallback)
     {
-        locationViewModel.getLocation(eventFragment.getEvent().getAsInteger(CalendarContract.Events.CALENDAR_ID),
-                eventFragment.getEvent().getAsLong(CalendarContract.Events._ID), resultCallback);
+        locationViewModel.getLocation(eventFragment.getInstance().getAsInteger(CalendarContract.Events.CALENDAR_ID),
+                eventFragment.getInstance().getAsLong(CalendarContract.Events._ID), resultCallback);
     }
 
     /**
@@ -221,7 +258,7 @@ public class EventActivity extends AppCompatActivity implements ILocation
     @Override
     public boolean hasSimpleLocation()
     {
-        return !eventFragment.getEvent().getAsString(CalendarContract.Events.EVENT_LOCATION).isEmpty();
+        return !eventFragment.getInstance().getAsString(CalendarContract.Events.EVENT_LOCATION).isEmpty();
     }
 
     /**
@@ -232,7 +269,7 @@ public class EventActivity extends AppCompatActivity implements ILocation
     @Override
     public void hasDetailLocation(CarrierMessagingService.ResultCallback<Boolean> resultCallback)
     {
-        locationViewModel.hasDetailLocation(eventFragment.getEvent().getAsInteger(CalendarContract.Events.CALENDAR_ID),
-                eventFragment.getEvent().getAsLong(CalendarContract.Events._ID), resultCallback);
+        locationViewModel.hasDetailLocation(eventFragment.getInstance().getAsInteger(CalendarContract.Events.CALENDAR_ID),
+                eventFragment.getInstance().getAsLong(CalendarContract.Events._ID), resultCallback);
     }
 }

@@ -2,12 +2,10 @@ package com.zerodsoft.scheduleweather.calendar;
 
 import android.content.ContentValues;
 import android.content.Context;
-import android.database.ContentObserver;
 
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendarview.callback.EventCallback;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
@@ -22,6 +20,7 @@ public class CalendarViewModel extends ViewModel
     private MutableLiveData<DataWrapper<ContentValues>> eventLiveData;
     private MutableLiveData<DataWrapper<List<ContentValues>>> eventListLiveData;
     private MutableLiveData<DataWrapper<List<ContentValues>>> instanceListLiveData;
+    private MutableLiveData<DataWrapper<ContentValues>> instanceLiveData;
     private MutableLiveData<DataWrapper<List<ContentValues>>> reminderListLiveData;
     private MutableLiveData<DataWrapper<List<ContentValues>>> attendeeListLiveData;
     private Context context;
@@ -46,6 +45,7 @@ public class CalendarViewModel extends ViewModel
         instanceListLiveData = new MutableLiveData<>();
         reminderListLiveData = new MutableLiveData<>();
         attendeeListLiveData = new MutableLiveData<>();
+        instanceLiveData = new MutableLiveData<>();
     }
 
     public MutableLiveData<DataWrapper<ContentValues>> getCalendarLiveData()
@@ -86,6 +86,11 @@ public class CalendarViewModel extends ViewModel
     public MutableLiveData<DataWrapper<List<ContentValues>>> getAttendeeListLiveData()
     {
         return attendeeListLiveData;
+    }
+
+    public MutableLiveData<DataWrapper<ContentValues>> getInstanceLiveData()
+    {
+        return instanceLiveData;
     }
 
     public void getEvent(int calendarId, long eventId)
@@ -174,7 +179,13 @@ public class CalendarViewModel extends ViewModel
     public void getInstanceList(List<ContentValues> calendarList, long startDate, long endDate, EventCallback<List<CalendarInstance>> callback)
     {
         calendarProvider.getInstances(calendarList, startDate, endDate, callback);
+    }
 
+    public void getInstance(int calendarId, long eventId, long begin, long end)
+    {
+        ContentValues instance = calendarProvider.getInstance(calendarId, eventId, begin, end);
+        DataWrapper<ContentValues> dataWrapper = new DataWrapper<>(instance);
+        instanceLiveData.setValue(dataWrapper);
     }
 
     public int addAttendees(List<ContentValues> attendeeList)

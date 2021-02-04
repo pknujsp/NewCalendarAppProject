@@ -19,6 +19,7 @@ import android.os.Parcelable;
 import android.provider.CalendarContract;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -713,8 +714,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
 
         TableRow tableRow = new TableRow(getApplicationContext());
         View row = getLayoutInflater().inflate(R.layout.event_reminder_item, null);
-        tableRow.addView(row);
-        tableRow.setLayoutParams(new TableLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
 
         final ReminderItemHolder holder = new ReminderItemHolder(minutes, alarmValueText);
 
@@ -729,7 +729,9 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
         reminderValueTextView.setTag(holder);
         removeButton.setTag(holder);
 
-
+        tableRow.addView(row);
+        tableRow.setLayoutParams(new TableLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 36f, getResources().getDisplayMetrics())));
         binding.reminderLayout.remindersTable.addView(tableRow, binding.reminderLayout.remindersTable.getChildCount() - 1);
     }
 
@@ -805,9 +807,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
         TableRow tableRow = new TableRow(getApplicationContext());
         RelativeLayout row = (RelativeLayout) getLayoutInflater().inflate(R.layout.event_attendee_item, null);
 
-        tableRow.addView(row);
-        tableRow.setLayoutParams(new TableLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-        // add row to table
+           // add row to table
 
         LinearLayout attendeeInfoLayout = row.findViewById(R.id.attendee_info_layout);
         TextView attendeeEmailView = (TextView) row.findViewById(R.id.attendee_name);
@@ -891,6 +891,8 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
         }
         attendeeEmailView.setText(attendeeName);
 
+        tableRow.addView(row);
+        tableRow.setLayoutParams(new TableLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 48f, getResources().getDisplayMetrics())));
         binding.attendeeLayout.eventAttendeesTable.addView(tableRow, binding.attendeeLayout.eventAttendeesTable.getChildCount() - 1);
     }
 
@@ -899,13 +901,15 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
     {
         attendeeList.remove((Object) attendee);
         // 아이템 삭제
-        binding.attendeeLayout.eventAttendeesTable.removeView(row);
         int rowCount = binding.attendeeLayout.eventAttendeesTable.getChildCount();
         if (rowCount == 2)
         {
             binding.attendeeLayout.showAttendeesDetail.setText(getString(R.string.add_attendee));
             attendeeList.clear();
             binding.attendeeLayout.eventAttendeesTable.removeViewAt(0);
+        } else
+        {
+            binding.attendeeLayout.eventAttendeesTable.removeView(row);
         }
 
         /*

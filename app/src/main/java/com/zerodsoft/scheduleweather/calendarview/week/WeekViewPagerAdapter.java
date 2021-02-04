@@ -131,6 +131,7 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
             weekView = (WeekView) view.findViewById(R.id.week_view);
             weekHeaderView = (WeekHeaderView) view.findViewById(R.id.week_header);
             weekView.setOnSwipeListener(WeekViewPagerAdapter.this::onSwiped);
+            weekView.setOnEventItemClickListener(onEventItemClickListener);
             weekHeaderView.setOnEventItemClickListener(onEventItemClickListener);
         }
 

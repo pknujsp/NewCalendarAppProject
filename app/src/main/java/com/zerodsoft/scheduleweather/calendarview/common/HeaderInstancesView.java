@@ -2,13 +2,8 @@ package com.zerodsoft.scheduleweather.calendarview.common;
 
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.res.TypedArray;
 import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
 import android.provider.CalendarContract;
-import android.text.TextPaint;
-import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -112,7 +107,8 @@ public class HeaderInstancesView extends ViewGroup
             ContentValues instance = ((InstanceView) view).getInstance();
 
             onEventItemClickListener.onClicked(instance.getAsInteger(CalendarContract.Instances.CALENDAR_ID)
-                    , instance.getAsLong(CalendarContract.Instances.EVENT_ID));
+                    , instance.getAsLong(CalendarContract.Instances.EVENT_ID), instance.getAsLong(CalendarContract.Instances.BEGIN)
+                    , instance.getAsLong(CalendarContract.Instances.END));
         }
     };
 

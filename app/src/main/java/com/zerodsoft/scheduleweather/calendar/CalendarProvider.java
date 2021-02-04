@@ -61,6 +61,7 @@ public class CalendarProvider implements ICalendarProvider
     private final String EVENTS_QUERY;
     private final String EVENT_QUERY;
     private final String CALENDARS_QUERY;
+    private final String INSTANCES_QUERY;
     private final String INSTANCE_QUERY;
     private final String ATTENDEE_QUERY;
     private final String REMINDER_QUERY;
@@ -81,7 +82,7 @@ public class CalendarProvider implements ICalendarProvider
         this.context = context;
         StringBuilder stringBuilder = new StringBuilder();
 
-        INSTANCE_QUERY = stringBuilder.append("(((").append(CalendarContract.Instances.BEGIN).append(">=?")
+        INSTANCES_QUERY = stringBuilder.append("(((").append(CalendarContract.Instances.BEGIN).append(">=?")
                 .append(" AND ").append(CalendarContract.Instances.BEGIN).append("<?")
                 .append(") OR (").append(CalendarContract.Instances.END).append(">=?")
                 .append(" AND ").append(CalendarContract.Instances.END).append("<?")
@@ -89,6 +90,11 @@ public class CalendarProvider implements ICalendarProvider
                 .append(" AND ").append(CalendarContract.Instances.END).append(">?")
                 .append(")) AND ").append(CalendarContract.Instances.CALENDAR_ID).append("=?")
                 .append(")").toString();
+
+        stringBuilder.delete(0, stringBuilder.length());
+
+        INSTANCE_QUERY = stringBuilder.append(CalendarContract.Instances.EVENT_ID).append("=? AND ")
+                .append(CalendarContract.Instances.CALENDAR_ID).append("=?").toString();
 
         stringBuilder.delete(0, stringBuilder.length());
 
@@ -512,7 +518,6 @@ public class CalendarProvider implements ICalendarProvider
         String selection = CalendarContract.Instances.CALENDAR_ID + "=?";
         final String[] selectionArg = new String[1];
 
-
         for (ContentValues calendar : calendarList)
         {
             selectionArg[0] = String.valueOf(calendar.getAsInteger(CalendarContract.Calendars._ID));
@@ -551,6 +556,57 @@ public class CalendarProvider implements ICalendarProvider
         callback.onResult(calendarInstances);
     }
 
+    @Override
+    public ContentValues getInstance(int calendarId, long eventId, long begin, long end)
+    {
+        // 화면에 이벤트 정보를 표시하기 위해 기본적인 데이터만 가져온다.
+        // 요청 매개변수 : ID, 캘린더 ID, 오너 계정, 조직자
+        // 표시할 데이터 : 제목, 일정 기간, 반복, 위치, 알림, 설명, 소유 계정, 참석자, 바쁨/한가함, 공개 범위 참석 여부 확인 창, 색상
+        String[] selectionArgs = {String.valueOf(eventId), String.valueOf(calendarId)};
+
+        Uri.Builder builder = CalendarContract.Instances.CONTENT_URI.buildUpon();
+        ContentUris.appendId(builder, begin);
+        ContentUris.appendId(builder, end);
+
+        ContentResolver contentResolver = context.getContentResolver();
+        Cursor cursor = contentResolver.query(builder.build(), null, INSTANCE_QUERY, selectionArgs, null);
+        ContentValues instance = new ContentValues();
+
+        if (cursor != null)
+        {
+            while (cursor.moveToNext())
+            {
+                instance.put(CalendarContract.Instances.TITLE, cursor.getString(cursor.getColumnIndex(CalendarContract.Instances.TITLE)));
+                instance.put(CalendarContract.Instances.CALENDAR_ID, cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.CALENDAR_ID)));
+                instance.put(CalendarContract.Instances._ID, cursor.getLong(cursor.getColumnIndex(CalendarContract.Instances._ID)));
+                instance.put(CalendarContract.Instances.EVENT_ID, cursor.getLong(cursor.getColumnIndex(CalendarContract.Instances.EVENT_ID)));
+                instance.put(CalendarContract.Instances.DTSTART, cursor.getLong(cursor.getColumnIndex(CalendarContract.Instances.DTSTART)));
+                instance.put(CalendarContract.Instances.DTEND, cursor.getLong(cursor.getColumnIndex(CalendarContract.Instances.DTEND)));
+                instance.put(CalendarContract.Instances.BEGIN, cursor.getLong(cursor.getColumnIndex(CalendarContract.Instances.BEGIN)));
+                instance.put(CalendarContract.Instances.END, cursor.getLong(cursor.getColumnIndex(CalendarContract.Instances.END)));
+                instance.put(CalendarContract.Instances.ALL_DAY, cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.ALL_DAY)));
+                instance.put(CalendarContract.Instances.EVENT_TIMEZONE, cursor.getString(cursor.getColumnIndex(CalendarContract.Instances.EVENT_TIMEZONE)));
+                instance.put(CalendarContract.Instances.EVENT_END_TIMEZONE, cursor.getString(cursor.getColumnIndex(CalendarContract.Instances.EVENT_END_TIMEZONE)));
+                instance.put(CalendarContract.Instances.CALENDAR_TIME_ZONE, cursor.getString(cursor.getColumnIndex(CalendarContract.Instances.CALENDAR_TIME_ZONE)));
+                instance.put(CalendarContract.Instances.RDATE, cursor.getString(cursor.getColumnIndex(CalendarContract.Instances.RDATE)));
+                instance.put(CalendarContract.Instances.RRULE, cursor.getString(cursor.getColumnIndex(CalendarContract.Instances.RRULE)));
+                instance.put(CalendarContract.Instances.EXDATE, cursor.getString(cursor.getColumnIndex(CalendarContract.Instances.EXDATE)));
+                instance.put(CalendarContract.Instances.EXRULE, cursor.getString(cursor.getColumnIndex(CalendarContract.Instances.EXRULE)));
+                instance.put(CalendarContract.Instances.HAS_ATTENDEE_DATA, cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.HAS_ATTENDEE_DATA)));
+                instance.put(CalendarContract.Instances.EVENT_LOCATION, cursor.getString(cursor.getColumnIndex(CalendarContract.Instances.EVENT_LOCATION)));
+                instance.put(CalendarContract.Instances.DESCRIPTION, cursor.getString(cursor.getColumnIndex(CalendarContract.Instances.DESCRIPTION)));
+                instance.put(CalendarContract.Instances.ACCESS_LEVEL, cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.ACCESS_LEVEL)));
+                instance.put(CalendarContract.Instances.AVAILABILITY, cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.AVAILABILITY)));
+                instance.put(CalendarContract.Instances.HAS_ALARM, cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.HAS_ALARM)));
+                instance.put(CalendarContract.Instances.OWNER_ACCOUNT, cursor.getString(cursor.getColumnIndex(CalendarContract.Instances.OWNER_ACCOUNT)));
+                instance.put(CalendarContract.Instances.CALENDAR_COLOR, cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.CALENDAR_COLOR)));
+                instance.put(CalendarContract.Instances.CALENDAR_DISPLAY_NAME, cursor.getString(cursor.getColumnIndex(CalendarContract.Instances.CALENDAR_DISPLAY_NAME)));
+                instance.put(CalendarContract.Instances.EVENT_COLOR, cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.EVENT_COLOR)));
+            }
+            cursor.close();
+        }
+        return instance;
+    }
 
     // attendee - crud
 

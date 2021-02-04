@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.os.Parcelable;
 import android.provider.CalendarContract;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -41,7 +42,6 @@ public class AttendeesActivity extends AppCompatActivity
     private AttendeeListAdapter adapter;
     private List<ContentValues> attendeeList = new ArrayList<>();
     private ContentValues selectedCalendar;
-
 
     private static final String EMAIL_REGRESSION = "^[a-zA-Z0-9.+-/*]+@[a-zA-Z0-9/*-+]+\\.[a-zA-Z]{1,6}$";
     public static final int SHOW_DETAILS_FOR_ATTENDEES = 2000;
@@ -92,6 +92,7 @@ public class AttendeesActivity extends AppCompatActivity
         searchView = (SearchView) menu.findItem(R.id.search).getActionView();
         searchView.setMaxWidth(Integer.MAX_VALUE);
         searchView.setQueryHint(getString(R.string.input_invite_attendee));
+        searchView.setInputType(InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
         searchView.setOnSearchClickListener(new View.OnClickListener()
         {
             @Override
@@ -114,7 +115,9 @@ public class AttendeesActivity extends AppCompatActivity
                     if (query.matches(EMAIL_REGRESSION))
                     {
                         final String selectedCalendarOwnerAccount = selectedCalendar.getAsString(CalendarContract.Attendees.ATTENDEE_EMAIL);
+                        final String selectedCalendarCalendarName = selectedCalendar.getAsString(CalendarContract.Attendees.ATTENDEE_NAME);
                         // 중복 여부 확인
+                        // 리스트내에 이미 존재하는지 확인
                         for (ContentValues value : attendeeList)
                         {
                             if (value.getAsString(CalendarContract.Attendees.ATTENDEE_EMAIL).equals(query))
@@ -124,7 +127,9 @@ public class AttendeesActivity extends AppCompatActivity
                             }
                         }
 
-                        if (query.equals(selectedCalendarOwnerAccount))
+                        // 이벤트의 캘린더와 중복되는지 확인
+                        if (query.equals(selectedCalendarOwnerAccount) ||
+                                query.equals(selectedCalendarCalendarName))
                         {
                             Toast.makeText(AttendeesActivity.this, getString(R.string.duplicate_attendee), Toast.LENGTH_SHORT).show();
                             return false;
@@ -164,7 +169,8 @@ public class AttendeesActivity extends AppCompatActivity
             @Override
             public boolean onClose()
             {
-                return true;
+                searchView.setIconified(true);
+                return false;
             }
         });
 

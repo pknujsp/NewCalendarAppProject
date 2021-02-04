@@ -160,17 +160,18 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
         bundle.putLong("end", end);
 
         fragment.setArguments(bundle);
-
         fragment.show(getParentFragmentManager(), EventListOnDayFragment.TAG);
     }
 
     @Override
-    public void onClicked(int calendarId, long eventId)
+    public void onClicked(int calendarId, long eventId, long begin, long end)
     {
         // 이벤트 정보 액티비티로 전환
         Intent intent = new Intent(getActivity(), EventActivity.class);
         intent.putExtra("calendarId", calendarId);
         intent.putExtra("eventId", eventId);
+        intent.putExtra("begin", begin);
+        intent.putExtra("end", end);
 
         startActivity(intent);
     }
