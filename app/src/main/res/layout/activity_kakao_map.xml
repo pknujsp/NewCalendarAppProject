@@ -32,8 +32,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 app:layout_anchor="@id/bottom_sheet"
-                app:layout_anchorGravity="top"
-                app:layout_dodgeInsetEdges="bottom" />
+                app:layout_anchorGravity="top" />
 
             <include
                 android:id="@+id/bottom_sheet"

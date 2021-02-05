@@ -3,6 +3,7 @@ package com.zerodsoft.scheduleweather.activity.map;
 import androidx.activity.OnBackPressedCallback;
 
 import android.os.Bundle;
+import android.provider.CalendarContract;
 
 import com.zerodsoft.scheduleweather.activity.editevent.activity.EditEventActivity;
 import com.zerodsoft.scheduleweather.kakaomap.KakaoMapActivity;
@@ -13,16 +14,19 @@ import com.zerodsoft.scheduleweather.R;
 public class SelectLocationActivity extends KakaoMapActivity
 {
     private OnBackPressedCallback onBackPressedCallback;
+    private String eventLocation;
 
     public SelectLocationActivity()
     {
     }
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+
+        eventLocation = getIntent().getStringExtra(CalendarContract.Events.EVENT_LOCATION);
+        getIntent().removeExtra(CalendarContract.Events.EVENT_LOCATION);
 
         onBackPressedCallback = new OnBackPressedCallback(true)
         {
@@ -68,16 +72,17 @@ public class SelectLocationActivity extends KakaoMapActivity
         {
             location = item.getAddressDocument().getAddressName();
         }
-        
+
         //선택된 위치를 DB에 등록
-
-
-        getIntent().putExtra("location", location);
-        setResult(EditEventActivity.LOCATION_SELECTED, getIntent());
+        getIntent().putExtra(CalendarContract.Events.EVENT_LOCATION, location);
+        setResult(RESULT_OK, getIntent());
+        finish();
     }
 
     @Override
     public void onRemoveLocation()
     {
+        setResult(RESULT_OK, getIntent());
+        finish();
     }
 }

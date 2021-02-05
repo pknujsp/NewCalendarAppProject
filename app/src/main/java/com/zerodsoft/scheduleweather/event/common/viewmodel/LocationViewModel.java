@@ -35,6 +35,12 @@ public class LocationViewModel extends AndroidViewModel implements ILocationDao
         locationRepository.hasDetailLocation(calendarId, eventId, resultCallback);
     }
 
+    @Override
+    public void addLocation(LocationDTO location, CarrierMessagingService.ResultCallback<Boolean> resultCallback)
+    {
+        locationRepository.addLocation(location, resultCallback);
+    }
+
     public MutableLiveData<LocationDTO> getLocationLiveData()
     {
         return locationLiveData;

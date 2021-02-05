@@ -13,7 +13,7 @@ import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 public interface LocationDAO
 {
     @Insert(entity = LocationDTO.class)
-    public void insert(LocationDTO locationDTO);
+    public long insert(LocationDTO locationDTO);
 
     @Query("SELECT * FROM location_table WHERE calendar_id = :calendarId AND event_id = :eventId")
     public LocationDTO select(int calendarId, long eventId);

@@ -11,13 +11,7 @@
         <androidx.fragment.app.FragmentContainerView
             android:id="@+id/places_around_location_fragment_container"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:visibility="gone" />
-
-        <include
-            android:id="@+id/event_register_detail_location"
-            layout="@layout/event_register_detail_location_view"
-            android:visibility="gone" />
+            android:layout_height="match_parent" />
 
     </FrameLayout>
 </layout>

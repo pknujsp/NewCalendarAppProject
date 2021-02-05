@@ -25,6 +25,7 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.databinding.EventFragmentBinding;
+import com.zerodsoft.scheduleweather.event.common.interfaces.IFab;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.utility.RecurrenceRule;
@@ -46,10 +47,13 @@ public class EventFragment extends Fragment
     private Long begin;
     private Long end;
 
+    private IFab iFab;
+
     private AlertDialog attendeeDialog;
 
-    public EventFragment()
+    public EventFragment(IFab iFab)
     {
+        this.iFab = iFab;
     }
 
     @Override
@@ -288,9 +292,12 @@ public class EventFragment extends Fragment
         binding.eventDescriptionView.descriptionTextview.setText(instance.getAsString(CalendarContract.Instances.DESCRIPTION) != null ? instance.getAsString(CalendarContract.Instances.DESCRIPTION)
                 : "");
         // 위치
-        binding.eventLocationView.eventLocation.setText(instance.getAsString(CalendarContract.Instances.EVENT_LOCATION) != null ? instance.getAsString(CalendarContract.Instances.EVENT_LOCATION)
-                : "");
-
+        binding.eventLocationView.eventLocation.setText(instance.getAsString(CalendarContract.Instances.EVENT_LOCATION));
+        //fab설정
+        if (instance.getAsString(CalendarContract.Instances.EVENT_LOCATION).isEmpty())
+        {
+            iFab.setVisibility(IFab.TYPE_RESELECT_LOCATION, View.GONE);
+        }
         // 참석자
         viewModel.getAttendees(calendarId, eventId);
 

@@ -52,14 +52,6 @@ public class WeatherFragment extends Fragment
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
-        binding.eventRegisterDetailLocation.registerDetailLocationButton.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                iLocation.showRequestLocDialog();
-            }
-        });
         initLocation();
     }
 
@@ -77,81 +69,27 @@ public class WeatherFragment extends Fragment
 
     public void initLocation()
     {
-        if (iLocation.hasSimpleLocation())
+        iLocation.getLocation(new CarrierMessagingService.ResultCallback<LocationDTO>()
         {
-            iLocation.hasDetailLocation(new CarrierMessagingService.ResultCallback<Boolean>()
+            @Override
+            public void onReceiveResult(@NonNull LocationDTO locationDTO) throws RemoteException
             {
-                @Override
-                public void onReceiveResult(@NonNull Boolean hasDetailLocation) throws RemoteException
+                getActivity().runOnUiThread(new Runnable()
                 {
-                    if (hasDetailLocation)
+                    @Override
+                    public void run()
                     {
-                        getActivity().runOnUiThread(new Runnable()
+                        if (locationDTO.getAddressName() != null)
                         {
-                            @Override
-                            public void run()
-                            {
-                                binding.weatherFragmentContainerView.setVisibility(View.VISIBLE);
-                                binding.eventRegisterDetailLocation.rootLayout.setVisibility(View.GONE);
-                            }
-                        });
-
-                        iLocation.getLocation(new CarrierMessagingService.ResultCallback<LocationDTO>()
-                        {
-                            @Override
-                            public void onReceiveResult(@NonNull LocationDTO locationDTO) throws RemoteException
-                            {
-                                getActivity().runOnUiThread(new Runnable()
-                                {
-                                    @Override
-                                    public void run()
-                                    {
-                                        if (locationDTO.getAddressName() != null)
-                                        {
-                                            getParentFragmentManager().beginTransaction().add(R.id.weather_fragment_container_view,
-                                                    new WeatherItemFragment(locationDTO), WeatherItemFragment.class.getName())
-                                                    .commit();
-                                        }
-                                    }
-                                });
-
-                            }
-                        });
-
-                    } else
-                    {
-                        getActivity().runOnUiThread(new Runnable()
-                        {
-                            @Override
-                            public void run()
-                            {
-                                // 상세 위치 정보가 설정되지 않음
-                                binding.weatherFragmentContainerView.setVisibility(View.GONE);
-                                binding.eventRegisterDetailLocation.rootLayout.setVisibility(View.VISIBLE);
-                                binding.eventRegisterDetailLocation.locationStatusDescription.setText(getString(R.string.need_register_detail_location));
-                            }
-                        });
-
+                            getParentFragmentManager().beginTransaction().add(R.id.weather_fragment_container_view,
+                                    new WeatherItemFragment(locationDTO), WeatherItemFragment.class.getName())
+                                    .commit();
+                        }
                     }
-                }
-            });
+                });
 
-        } else
-        {
-            getActivity().runOnUiThread(new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    // 이벤트에서 위치가 지정되지 않음
-                    binding.eventRegisterDetailLocation.registerDetailLocationButton.setVisibility(View.GONE);
-                    binding.weatherFragmentContainerView.setVisibility(View.GONE);
-                    binding.eventRegisterDetailLocation.rootLayout.setVisibility(View.VISIBLE);
-                    binding.eventRegisterDetailLocation.locationStatusDescription.setText(getString(R.string.not_selected_location_in_event));
-                }
-            });
-
-        }
+            }
+        });
     }
 
 }

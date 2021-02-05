@@ -8,14 +8,33 @@
         android:layout_height="match_parent"
         tools:context=".event.EventActivity">
 
-
-        <androidx.fragment.app.FragmentContainerView
-            android:id="@+id/schedule_fragment_container"
+        <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent">
+
+            <androidx.fragment.app.FragmentContainerView
+                android:id="@+id/schedule_fragment_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+        </androidx.core.widget.NestedScrollView>
+
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/modify_event_Fab"
+            android:id="@+id/reselect_location_fab"
+            style="@style/Widget.MaterialComponents.FloatingActionButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top"
+            android:layout_margin="16dp"
+            android:backgroundTint="@color/light_blue_600"
+            android:contentDescription="@string/edit_location"
+            android:src="@drawable/edit_location_black"
+            app:layout_anchor="@id/schedule_bottom_nav"
+            app:layout_anchorGravity="top|right" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/modify_event_fab"
             style="@style/Widget.MaterialComponents.FloatingActionButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -35,9 +54,8 @@
             android:layout_gravity="top"
             android:layout_margin="16dp"
             android:backgroundTint="@color/light_blue_600"
-            android:contentDescription="@string/modify_event"
+            android:contentDescription="@string/remove_event"
             android:src="@drawable/remove_schedule"
-
             app:layout_anchor="@id/schedule_bottom_nav"
             app:layout_anchorGravity="top|right" />
 

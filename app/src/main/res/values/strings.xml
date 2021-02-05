@@ -272,6 +272,9 @@
     <string name="not_matches_with_email">E-MAIL주소를 입력하세요.</string>
     <string name="duplicate_attendee">중복되는 참석자 입니다.</string>
     <string name="add_attendee">참석자 추가</string>
+    <string name="edit_location">상세 위치 변경</string>
+    <string name="remove_event">일정 삭제</string>
+    <string name="select">선택</string>
 
 
     <!-- 알림 -->

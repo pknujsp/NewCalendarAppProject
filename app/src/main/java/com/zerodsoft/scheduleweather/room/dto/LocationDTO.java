@@ -17,11 +17,11 @@ public class LocationDTO implements Parcelable
     @ColumnInfo(name = "calendar_id")
     private int calendarId;
 
-    @ColumnInfo(name = "account_name")
-    private String accountName;
+    @ColumnInfo(name = "owner_account")
+    private String ownerAccount;
 
     @ColumnInfo(name = "event_id")
-    private int eventId;
+    private long eventId;
 
     @ColumnInfo(name = "latitude")
     private double latitude;
@@ -46,7 +46,7 @@ public class LocationDTO implements Parcelable
     {
         id = in.readInt();
         calendarId = in.readInt();
-        accountName = in.readString();
+        ownerAccount = in.readString();
         eventId = in.readInt();
         latitude = in.readDouble();
         longitude = in.readDouble();
@@ -90,22 +90,22 @@ public class LocationDTO implements Parcelable
         this.calendarId = calendarId;
     }
 
-    public String getAccountName()
+    public String getOwnerAccount()
     {
-        return accountName;
+        return ownerAccount;
     }
 
-    public void setAccountName(String accountName)
+    public void setOwnerAccount(String ownerAccount)
     {
-        this.accountName = accountName;
+        this.ownerAccount = ownerAccount;
     }
 
-    public int getEventId()
+    public long getEventId()
     {
         return eventId;
     }
 
-    public void setEventId(int eventId)
+    public void setEventId(long eventId)
     {
         this.eventId = eventId;
     }
@@ -171,8 +171,8 @@ public class LocationDTO implements Parcelable
     {
         parcel.writeInt(id);
         parcel.writeInt(calendarId);
-        parcel.writeString(accountName);
-        parcel.writeInt(eventId);
+        parcel.writeString(ownerAccount);
+        parcel.writeLong(eventId);
         parcel.writeDouble(latitude);
         parcel.writeDouble(longitude);
         parcel.writeString(addressName);

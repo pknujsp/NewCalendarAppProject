@@ -50,94 +50,32 @@ public class PlacesAroundLocationFragment extends Fragment
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
-        binding.eventRegisterDetailLocation.registerDetailLocationButton.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                iLocation.showRequestLocDialog();
-            }
-        });
         initLocation();
     }
 
     private void initLocation()
     {
-        if (iLocation.hasSimpleLocation())
+        iLocation.getLocation(new CarrierMessagingService.ResultCallback<LocationDTO>()
         {
-            iLocation.hasDetailLocation(new CarrierMessagingService.ResultCallback<Boolean>()
+            @Override
+            public void onReceiveResult(@NonNull LocationDTO location) throws RemoteException
             {
-                @Override
-                public void onReceiveResult(@NonNull Boolean hasDetailLocation) throws RemoteException
+                if (location.getOwnerAccount() != null)
                 {
-                    if (hasDetailLocation)
+                    Fragment fragment = null;
+
+                    if (location.getPlaceId() != null)
                     {
-                        getActivity().runOnUiThread(new Runnable()
-                        {
-                            @Override
-                            public void run()
-                            {
-                                binding.placesAroundLocationFragmentContainer.setVisibility(View.VISIBLE);
-                                binding.eventRegisterDetailLocation.rootLayout.setVisibility(View.GONE);
-                            }
-                        });
-
-                        iLocation.getLocation(new CarrierMessagingService.ResultCallback<LocationDTO>()
-                        {
-                            @Override
-                            public void onReceiveResult(@NonNull LocationDTO location) throws RemoteException
-                            {
-                                if (location.getAccountName() != null)
-                                {
-                                    Fragment fragment = null;
-
-                                    if (location.getPlaceId() != null)
-                                    {
-                                        fragment = new PlacesFragment(new LocationInfo(location.getLatitude(), location.getLongitude(), location.getPlaceName()));
-                                    } else
-                                    {
-                                        fragment = new PlacesFragment(new LocationInfo(location.getLatitude(), location.getLongitude(), location.getAddressName()));
-                                    }
-                                    FragmentManager fragmentManager = getChildFragmentManager();
-                                    fragmentManager.beginTransaction().add(R.id.places_around_location_fragment_container, fragment).commit();
-                                }
-                            }
-                        });
-
+                        fragment = new PlacesFragment(new LocationInfo(location.getLatitude(), location.getLongitude(), location.getPlaceName()));
                     } else
                     {
-                        getActivity().runOnUiThread(new Runnable()
-                        {
-                            @Override
-                            public void run()
-                            {
-                                binding.placesAroundLocationFragmentContainer.setVisibility(View.GONE);
-                                binding.eventRegisterDetailLocation.rootLayout.setVisibility(View.VISIBLE);
-                                binding.eventRegisterDetailLocation.locationStatusDescription.setText(getString(R.string.need_register_detail_location));
-                                // 상세 위치 정보가 설정되지 않음
-                            }
-                        });
-
+                        fragment = new PlacesFragment(new LocationInfo(location.getLatitude(), location.getLongitude(), location.getAddressName()));
                     }
+                    FragmentManager fragmentManager = getChildFragmentManager();
+                    fragmentManager.beginTransaction().add(R.id.places_around_location_fragment_container, fragment).commit();
                 }
-            });
-
-        } else
-        {
-            getActivity().runOnUiThread(new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    binding.eventRegisterDetailLocation.registerDetailLocationButton.setVisibility(View.GONE);
-                    binding.placesAroundLocationFragmentContainer.setVisibility(View.GONE);
-                    binding.eventRegisterDetailLocation.rootLayout.setVisibility(View.VISIBLE);
-                    binding.eventRegisterDetailLocation.locationStatusDescription.setText(getString(R.string.not_selected_location_in_event));
-                    // 이벤트에서 위치가 지정되지 않음
-                }
-            });
-
-        }
+            }
+        });
     }
 
 

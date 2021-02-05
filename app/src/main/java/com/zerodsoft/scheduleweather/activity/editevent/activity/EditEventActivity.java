@@ -63,14 +63,10 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
     // 추가 작업 필요 : 알림, 참석자
     public static final int MODIFY_EVENT = 60;
     public static final int NEW_EVENT = 50;
-    public static final int MODIFY_LOCATION = 70;
-    public static final int NEW_LOCATION = 20;
-    public static final int LOCATION_DELETED = 80;
-    public static final int LOCATION_SELECTED = 90;
-    public static final int LOCATION_RESELECTED = 100;
 
     public static final int REQUEST_RECURRENCE = 110;
     public static final int REQUEST_TIMEZONE = 120;
+    public static final int REQUEST_LOCATION = 130;
 
     private static final int START_DATETIME = 200;
     private static final int END_DATETIME = 210;
@@ -525,28 +521,15 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
         {
             //위치를 설정하는 액티비티 표시
             Intent intent = new Intent(EditEventActivity.this, SelectLocationActivity.class);
+            String location = "";
 
-            String location = null;
-            if (newEventValues != null)
+            if (containsKey(CalendarContract.Events.EVENT_LOCATION))
             {
-                location = newEventValues.getAsString(CalendarContract.Events.EVENT_LOCATION);
-            } else if (modifiedValues != null)
-            {
-                location = modifiedValues.getAsString(CalendarContract.Events.EVENT_LOCATION);
-            }
-            int requestCode = 0;
-
-            if (location != null)
-            {
-                requestCode = MODIFY_LOCATION;
-                intent.putExtra(CalendarContract.Events.EVENT_LOCATION, location);
-            } else
-            {
-                requestCode = NEW_LOCATION;
+                location = (String) getValue(CalendarContract.Events.EVENT_LOCATION);
             }
 
-            intent.putExtra("requestCode", requestCode);
-            startActivityForResult(intent, requestCode);
+            intent.putExtra(CalendarContract.Events.EVENT_LOCATION, location);
+            startActivityForResult(intent, REQUEST_LOCATION);
         });
 
         /*
@@ -603,12 +586,25 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                 break;
             }
 
-            case NEW_LOCATION:
-                break;
+            case REQUEST_LOCATION:
+            {
+                if (resultCode == RESULT_OK)
+                {
+                    if (data.getStringExtra(CalendarContract.Events.EVENT_LOCATION) != null)
+                    {
+                        putValue(CalendarContract.Events.EVENT_LOCATION, data.getStringExtra(CalendarContract.Events.EVENT_LOCATION));
+                    } else
+                    {
+                        removeValue(CalendarContract.Events.EVENT_LOCATION);
+                        binding.locationLayout.eventLocation.setText("");
+                    }
 
-            case MODIFY_LOCATION:
-                break;
+                } else if (resultCode == RESULT_CANCELED)
+                {
 
+                }
+                break;
+            }
             case AttendeesActivity.SHOW_DETAILS_FOR_ATTENDEES:
             {
                 List<ContentValues> resultAttendeeList = data.getParcelableArrayListExtra("attendeeList");
@@ -807,7 +803,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
         TableRow tableRow = new TableRow(getApplicationContext());
         RelativeLayout row = (RelativeLayout) getLayoutInflater().inflate(R.layout.event_attendee_item, null);
 
-           // add row to table
+        // add row to table
 
         LinearLayout attendeeInfoLayout = row.findViewById(R.id.attendee_info_layout);
         TextView attendeeEmailView = (TextView) row.findViewById(R.id.attendee_name);

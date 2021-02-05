@@ -55,6 +55,21 @@ public class LocationRepository implements ILocationDao
         });
     }
 
+    @Override
+    public void addLocation(LocationDTO location, CarrierMessagingService.ResultCallback<Boolean> resultCallback)
+    {
+        App.executorService.execute(new Runnable()
+        {
+            @SneakyThrows
+            @Override
+            public void run()
+            {
+                long result = locationDAO.insert(location);
+                resultCallback.onReceiveResult(result >-1);
+            }
+        });
+    }
+
     public MutableLiveData<LocationDTO> getLocationLiveData()
     {
         return locationLiveData;

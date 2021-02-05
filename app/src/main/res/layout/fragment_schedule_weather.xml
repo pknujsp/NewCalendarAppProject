@@ -12,12 +12,8 @@
             android:id="@+id/weather_fragment_container_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginLeft="8dp"
-            android:layout_marginRight="8dp"
-            android:visibility="gone" />
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp" />
 
-        <include
-            android:id="@+id/event_register_detail_location"
-            layout="@layout/event_register_detail_location_view" />
     </FrameLayout>
 </layout>

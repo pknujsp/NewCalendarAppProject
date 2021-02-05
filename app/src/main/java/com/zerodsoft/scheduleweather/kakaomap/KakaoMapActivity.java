@@ -34,10 +34,10 @@ import java.util.List;
 
 public class KakaoMapActivity extends AppCompatActivity implements IBottomSheet, IMapToolbar
 {
-    public ActivityKakaoMapBinding binding;
-    public BottomSheetBehavior bottomSheetBehavior;
-    public KakaoMapFragment kakaoMapFragment;
-    public SearchView searchView;
+    protected ActivityKakaoMapBinding binding;
+    protected BottomSheetBehavior bottomSheetBehavior;
+    protected KakaoMapFragment kakaoMapFragment;
+    protected SearchView searchView;
 
     public KakaoMapActivity()
     {
