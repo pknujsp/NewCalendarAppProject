@@ -1,25 +1,23 @@
-package com.zerodsoft.scheduleweather.kakaomap;
+package com.zerodsoft.scheduleweather.kakaomap.activity;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
-import androidx.core.content.res.ResourcesCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
-import android.graphics.drawable.Drawable;
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 
-import com.google.android.material.behavior.HideBottomViewOnScrollBehavior;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.activity.map.fragment.map.MapFragment;
 import com.zerodsoft.scheduleweather.activity.map.fragment.search.SearchFragment;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.SearchResultListFragment;
 import com.zerodsoft.scheduleweather.databinding.ActivityKakaoMapBinding;
@@ -29,8 +27,6 @@ import com.zerodsoft.scheduleweather.kakaomap.interfaces.IBottomSheet;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapToolbar;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponseDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
-
-import java.util.List;
 
 public class KakaoMapActivity extends AppCompatActivity implements IBottomSheet, IMapToolbar
 {
@@ -48,10 +44,31 @@ public class KakaoMapActivity extends AppCompatActivity implements IBottomSheet,
     {
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_kakao_map);
+
+        kakaoMapFragment = (KakaoMapFragment) getSupportFragmentManager().findFragmentById(R.id.kakao_map_fragment);
+        kakaoMapFragment.setiBottomSheet(this);
+        kakaoMapFragment.setiMapToolbar(this);
+
         initToolbar();
         initBottomSheet();
     }
 
+    public void onClickedSearchView()
+    {
+        setState(BottomSheetBehavior.STATE_HIDDEN);
+        setItemVisibility(View.GONE);
+        setFragmentVisibility(View.VISIBLE);
+
+        getSupportFragmentManager().beginTransaction()
+                .add(binding.bottomSheet.mapBottomSheetFragmentContainer.getId(), SearchFragment.newInstance(KakaoMapActivity.this, kakaoMapFragment, new FragmentStateCallback()
+                {
+
+                }), SearchFragment.TAG).commitNow();
+        setState(BottomSheetBehavior.STATE_EXPANDED);
+    }
+
+
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
     {
@@ -66,24 +83,10 @@ public class KakaoMapActivity extends AppCompatActivity implements IBottomSheet,
             @Override
             public void onClick(View view)
             {
-                setState(BottomSheetBehavior.STATE_HIDDEN);
-                setItemVisibility(View.GONE);
-                setFragmentVisibility(View.VISIBLE);
-
-                getSupportFragmentManager().beginTransaction()
-                        .add(binding.bottomSheet.mapBottomSheetFragmentContainer.getId(), SearchFragment.newInstance(KakaoMapActivity.this, kakaoMapFragment, new FragmentStateCallback()
-                        {
-                            @Override
-                            public void onChangedState(int state)
-                            {
-                                if (state == FragmentStateCallback.ON_REMOVED)
-                                {
-                                }
-                            }
-                        }), SearchFragment.TAG).addToBackStack(SearchFragment.TAG).commit();
-                setState(BottomSheetBehavior.STATE_EXPANDED);
+                onClickedSearchView();
             }
         });
+
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener()
         {
             @Override
@@ -91,6 +94,20 @@ public class KakaoMapActivity extends AppCompatActivity implements IBottomSheet,
             {
                 if (!query.isEmpty())
                 {
+                    // 현재 프래그먼트가 검색 결과 프래그먼트인 경우
+
+                    FragmentManager fragmentManager = getSupportFragmentManager();
+
+                    if (fragmentManager.getBackStackEntryCount() > 0)
+                    {
+                        FragmentManager.BackStackEntry backStackEntry = fragmentManager.getBackStackEntryAt(fragmentManager.getBackStackEntryCount() - 1);
+
+                        if (backStackEntry.getName().equals(SearchResultListFragment.TAG))
+                        {
+                            SearchResultListFragment.getInstance().getOnBackPressedCallback().handleOnBackPressed();
+                            searchView.setQuery(query, false);
+                        }
+                    }
                     SearchFragment.getInstance().search(query);
                     return true;
                 } else
@@ -153,18 +170,6 @@ public class KakaoMapActivity extends AppCompatActivity implements IBottomSheet,
             @Override
             public void onStateChanged(@NonNull View bottomSheet, int newState)
             {
-             /*
-                STATE_COLLAPSED: 기본적인 상태이며, 일부분의 레이아웃만 보여지고 있는 상태. 이 높이는 behavior_peekHeight속성을 통해 변경 가능
-                STATE_DRAGGING: 드래그중인 상태
-                STATE_SETTLING: 드래그후 완전히 고정된 상태
-                STATE_EXPANDED: 확장된 상태
-                STATE_HIDDEN: 기본적으로 비활성화 상태이며, app:behavior_hideable을 사용하는 경우 완전히 숨겨져 있는 상태
-             */
-                switch (newState)
-                {
-                    case BottomSheetBehavior.STATE_HIDDEN:
-                        break;
-                }
             }
 
             @Override
@@ -179,7 +184,7 @@ public class KakaoMapActivity extends AppCompatActivity implements IBottomSheet,
             @Override
             public void onClick(View view)
             {
-                int index = kakaoMapFragment.selectedPoiItemIndex != 0 ? kakaoMapFragment.selectedPoiItemIndex - 1 : kakaoMapFragment.mapView.getPOIItems().length - 1;
+                int index = kakaoMapFragment.getSelectedPoiItemIndex() != 0 ? kakaoMapFragment.getSelectedPoiItemIndex() - 1 : kakaoMapFragment.mapView.getPOIItems().length - 1;
                 kakaoMapFragment.selectPoiItem(index);
             }
         });
@@ -189,7 +194,7 @@ public class KakaoMapActivity extends AppCompatActivity implements IBottomSheet,
             @Override
             public void onClick(View view)
             {
-                int index = kakaoMapFragment.selectedPoiItemIndex == kakaoMapFragment.mapView.getPOIItems().length - 1 ? 0 : kakaoMapFragment.selectedPoiItemIndex + 1;
+                int index = kakaoMapFragment.getSelectedPoiItemIndex() == kakaoMapFragment.mapView.getPOIItems().length - 1 ? 0 : kakaoMapFragment.getSelectedPoiItemIndex() + 1;
                 kakaoMapFragment.selectPoiItem(index);
             }
         });
@@ -285,8 +290,8 @@ public class KakaoMapActivity extends AppCompatActivity implements IBottomSheet,
                 break;
 
             case IBottomSheet.SEARCH_RESULT_VIEW:
-                setState(BottomSheetBehavior.STATE_HIDDEN);
                 kakaoMapFragment.removeAllPoiItems();
+                setState(BottomSheetBehavior.STATE_HIDDEN);
                 setItemVisibility(View.VISIBLE);
                 setFragmentVisibility(View.GONE);
                 searchView.setIconified(true);
@@ -341,37 +346,4 @@ public class KakaoMapActivity extends AppCompatActivity implements IBottomSheet,
         searchView.setQuery(text, false);
     }
 
-    /*
-          bottomSheetLayout.findViewById(R.id.choice_location_button).setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                LocationDTO locationDTO = null;
-                CustomPoiItem poiItem = (CustomPoiItem) mapView.getPOIItems()[selectedPoiItemIndex];
-                if (poiItem.getAddressDocument() != null)
-                {
-                    AddressResponseDocuments document = poiItem.getAddressDocument();
-                    AddressDTO addressDTO = new AddressDTO();
-                    addressDTO.setAddressName(document.getAddressName());
-                    addressDTO.setLatitude(Double.toString(document.getY()));
-                    addressDTO.setLongitude(Double.toString(document.getX()));
-
-                    locationDTO = addressDTO;
-                } else if (poiItem.getPlaceDocument() != null)
-                {
-                    PlaceDocuments document = poiItem.getPlaceDocument();
-                    PlaceDTO placeDTO = new PlaceDTO();
-                    placeDTO.setPlaceName(document.getPlaceName());
-                    placeDTO.setId(Integer.parseInt(document.getId()));
-                    placeDTO.setLongitude(Double.toString(document.getX()));
-                    placeDTO.setLatitude(Double.toString(document.getY()));
-
-                    locationDTO = placeDTO;
-                }
-                iCatchedLocation.choiceLocation(locationDTO);
-            }
-        });
-
-     */
 }

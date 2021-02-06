@@ -20,4 +20,6 @@ public interface IMapData
     void deselectPoiItem();
 
     void backToPreviousView();
+
+    int getPoiItemSize();
 }

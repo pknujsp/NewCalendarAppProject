@@ -1,6 +1,8 @@
 package com.zerodsoft.scheduleweather.event.location.placefragments.fragment;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +19,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.event.location.activity.AroundPlacesActivity;
 import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.event.location.placefragments.LocationInfo;
@@ -27,8 +30,11 @@ import com.zerodsoft.scheduleweather.event.location.placefragments.interfaces.IP
 import com.zerodsoft.scheduleweather.event.location.placefragments.interfaces.LocationInfoGetter;
 import com.zerodsoft.scheduleweather.event.location.placefragments.model.PlaceCategory;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+
+import io.reactivex.internal.util.ListAddBiConsumer;
 
 public class PlacesFragment extends Fragment implements LocationInfoGetter, IClickedPlaceItem, IPlacesFragment, IPlaceItem
 {
@@ -120,6 +126,7 @@ public class PlacesFragment extends Fragment implements LocationInfoGetter, ICli
     @Override
     public void onClickedMore(String categoryDescription)
     {
+        /*
         PlacesMapFragment mapFragment = PlacesMapFragment.getInstance();
 
         if (mapFragment == null)
@@ -132,13 +139,19 @@ public class PlacesFragment extends Fragment implements LocationInfoGetter, ICli
             mapFragment.selectChip(categoryDescription);
             fragmentManager.beginTransaction().show(mapFragment).hide(this).addToBackStack(null).commit();
         }
+
+         */
+        Intent intent = new Intent(requireActivity(), AroundPlacesActivity.class);
+        intent.putExtra("map", (HashMap<String, List<PlaceDocuments>>) adapter.getAllItems());
+        intent.putExtra("selectedCategory", categoryDescription);
+        startActivity(intent);
     }
 
     @Override
     public void onDestroy()
     {
         super.onDestroy();
-        PlacesMapFragment.close();
+        // PlacesMapFragment.close();
     }
 
 

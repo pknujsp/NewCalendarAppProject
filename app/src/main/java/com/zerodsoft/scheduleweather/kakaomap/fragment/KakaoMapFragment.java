@@ -34,11 +34,13 @@ import androidx.fragment.app.Fragment;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.map.util.RequestLocationTimer;
+import com.zerodsoft.scheduleweather.databinding.FragmentMapBinding;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IBottomSheet;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapPoint;
 import com.zerodsoft.scheduleweather.activity.map.fragment.map.BottomSheetItemView;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapToolbar;
+import com.zerodsoft.scheduleweather.kakaomap.model.CustomPoiItem;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponseDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
 
@@ -52,6 +54,7 @@ import java.util.Timer;
 
 public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, MapView.POIItemEventListener, MapView.MapViewEventListener, MapReverseGeoCoder.ReverseGeoCodingResultListener
 {
+    protected FragmentMapBinding binding;
     public MapView mapView;
     public ConnectivityManager.NetworkCallback networkCallback;
     public ConnectivityManager connectivityManager;
@@ -59,20 +62,15 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     public MapReverseGeoCoder mapReverseGeoCoder;
     public LocationManager locationManager;
 
-    public FrameLayout mapViewContainer;
-
-    public ImageButton gpsButton;
-
-    public TextView currentAddressTextView;
     public IBottomSheet iBottomSheet;
     public IMapToolbar iMapToolbar;
 
-    public int selectedPoiItemIndex;
-    public boolean isSelectedPoiItem = false;
+    private ImageButton zoomInButton;
+    private ImageButton zoomOutButton;
+    private ImageButton gpsButton;
 
-    public static final int PLACE_ITEM = 0;
-    public static final int ADDRESS_ITEM = 1;
-
+    private int selectedPoiItemIndex;
+    private boolean isSelectedPoiItem;
 
     public KakaoMapFragment()
     {
@@ -96,8 +94,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
         public void onLocationChanged(Location location)
         {
             mapView.setMapCenterPoint(MapPoint.mapPointWithGeoCoord(location.getLatitude(), location.getLongitude()), true);
-            mapReverseGeoCoder = new MapReverseGeoCoder(appKey, mapView.getMapCenterPoint(), KakaoMapFragment.this, getActivity());
-            mapReverseGeoCoder.startFindingAddress(MapReverseGeoCoder.AddressType.FullAddress);
+            mapReverseGeoCoder.findAddressForMapPointSync(appKey, mapView.getMapCenterPoint(), MapReverseGeoCoder.AddressType.FullAddress);
             locationManager.removeUpdates(locationListener);
         }
 
@@ -137,7 +134,8 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
     {
-        return inflater.inflate(R.layout.fragment_map, container, false);
+        binding = FragmentMapBinding.inflate(getLayoutInflater());
+        return binding.getRoot();
     }
 
     @Override
@@ -146,12 +144,11 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
         super.onViewCreated(view, savedInstanceState);
         locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
 
-        mapViewContainer = (FrameLayout) view.findViewById(R.id.map_view);
-        gpsButton = (ImageButton) view.findViewById(R.id.gps_button);
-        currentAddressTextView = (TextView) view.findViewById(R.id.current_address);
+        zoomInButton = binding.mapButtonsLayout.zoomInButton;
+        zoomOutButton = binding.mapButtonsLayout.zoomOutButton;
+        gpsButton = binding.mapButtonsLayout.gpsButton;
 
-
-        ((ImageButton) view.findViewById(R.id.zoom_in_button)).setOnClickListener(new View.OnClickListener()
+        zoomInButton.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view)
@@ -160,7 +157,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
             }
         });
 
-        ((ImageButton) view.findViewById(R.id.zoom_out_button)).setOnClickListener(new View.OnClickListener()
+        zoomOutButton.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view)
@@ -168,6 +165,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
                 mapView.zoomOut(true);
             }
         });
+
         gpsButton.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -249,14 +247,14 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
             public void onAvailable(Network network)
             {
                 super.onAvailable(network);
-                Toast.makeText(getActivity(), "연결됨", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), getString(R.string.connected_network), Toast.LENGTH_SHORT).show();
             }
 
             @Override
             public void onLost(Network network)
             {
                 super.onLost(network);
-                Toast.makeText(getActivity(), "연결 끊김", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), getString(R.string.disconnected_network), Toast.LENGTH_SHORT).show();
             }
         };
         NetworkRequest.Builder builder = new NetworkRequest.Builder();
@@ -269,18 +267,22 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     public void initMapView()
     {
         mapView = new MapView(requireActivity());
-        mapViewContainer.addView(mapView);
+        binding.mapView.addView(mapView);
 
-        ApplicationInfo ai = null;
-        try
+        if (appKey == null)
         {
-            ai = getActivity().getPackageManager().getApplicationInfo(getActivity().getPackageName(), PackageManager.GET_META_DATA);
-        } catch (PackageManager.NameNotFoundException e)
-        {
-            e.printStackTrace();
+            ApplicationInfo ai = null;
+            try
+            {
+                ai = getActivity().getPackageManager().getApplicationInfo(getActivity().getPackageName(), PackageManager.GET_META_DATA);
+            } catch (PackageManager.NameNotFoundException e)
+            {
+                e.printStackTrace();
+            }
+            appKey = ai.metaData.getString("com.kakao.sdk.AppKey");
         }
-        appKey = ai.metaData.getString("com.kakao.sdk.AppKey");
         mapReverseGeoCoder = new MapReverseGeoCoder(appKey, mapView.getMapCenterPoint(), this, getActivity());
+        mapReverseGeoCoder.startFindingAddress(MapReverseGeoCoder.AddressType.FullAddress);
     }
 
     public void showRequestGpsDialog()
@@ -301,11 +303,16 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i)
                     {
-
                     }
                 })
                 .setCancelable(false)
                 .show();
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState)
+    {
+        super.onActivityCreated(savedInstanceState);
     }
 
     @Override
@@ -325,12 +332,6 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     {
         super.onDestroy();
         connectivityManager.unregisterNetworkCallback(networkCallback);
-    }
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState)
-    {
-        super.onActivityCreated(savedInstanceState);
     }
 
 
@@ -439,6 +440,12 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     }
 
     @Override
+    public int getPoiItemSize()
+    {
+        return mapView.getPOIItems().length;
+    }
+
+    @Override
     public void onMapViewInitialized(MapView mapView)
     {
 
@@ -459,7 +466,11 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     @Override
     public void onMapViewSingleTapped(MapView mapView, MapPoint mapPoint)
     {
-        backToPreviousView();
+        if (isSelectedPoiItem)
+        {
+            deselectPoiItem();
+            iBottomSheet.setState(BottomSheetBehavior.STATE_HIDDEN);
+        }
     }
 
     @Override
@@ -468,6 +479,9 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
 
     }
 
+    /*
+    롱 클릭한 부분의 위치 정보를 표시
+     */
     @Override
     public void onMapViewLongPressed(MapView mapView, MapPoint mapPoint)
     {
@@ -491,31 +505,35 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     {
         if (checkNetwork())
         {
-            mapReverseGeoCoder = new MapReverseGeoCoder(appKey, mapPoint, this, getActivity());
-            mapReverseGeoCoder.startFindingAddress(MapReverseGeoCoder.AddressType.ShortAddress);
+            // mapReverseGeoCoder = new MapReverseGeoCoder(appKey, mapPoint, this, getActivity());
+            binding.mapButtonsLayout.currentAddress.setText(mapReverseGeoCoder.findAddressForMapPointSync(appKey, mapPoint, MapReverseGeoCoder.AddressType.FullAddress));
+            // mapReverseGeoCoder.startFindingAddress(MapReverseGeoCoder.AddressType.ShortAddress);
         }
     }
 
     @Override
     public void onPOIItemSelected(MapView mapView, MapPOIItem mapPOIItem)
     {
-        // poiitem을 선택하였을 경우에 수행됨
-        mapView.setMapCenterPoint(mapPOIItem.getMapPoint(), true);
-
-        if (((CustomPoiItem) mapPOIItem).getAddressDocument() != null)
-        {
-            iBottomSheet.setAddress(((CustomPoiItem) mapPOIItem).getAddressDocument());
-            iBottomSheet.setVisibility(IBottomSheet.ADDRESS, View.VISIBLE);
-            iBottomSheet.setVisibility(IBottomSheet.PLACE, View.GONE);
-        } else if (((CustomPoiItem) mapPOIItem).getPlaceDocument() != null)
-        {
-            iBottomSheet.setPlace(((CustomPoiItem) mapPOIItem).getPlaceDocument());
-            iBottomSheet.setVisibility(IBottomSheet.ADDRESS, View.GONE);
-            iBottomSheet.setVisibility(IBottomSheet.PLACE, View.VISIBLE);
-        }
         selectedPoiItemIndex = mapPOIItem.getTag();
         isSelectedPoiItem = true;
 
+        // poiitem을 선택하였을 경우에 수행됨
+        mapView.setMapCenterPoint(mapPOIItem.getMapPoint(), true);
+        CustomPoiItem poiItem = (CustomPoiItem) mapPOIItem;
+        // bottomsheet에 위치 정보 데이터를 설정한다.
+        if (poiItem.getAddressDocument() != null)
+        {
+            iBottomSheet.setAddress(poiItem.getAddressDocument());
+            iBottomSheet.setVisibility(IBottomSheet.ADDRESS, View.VISIBLE);
+            iBottomSheet.setVisibility(IBottomSheet.PLACE, View.GONE);
+        } else if (poiItem.getPlaceDocument() != null)
+        {
+            iBottomSheet.setPlace(poiItem.getPlaceDocument());
+            iBottomSheet.setVisibility(IBottomSheet.ADDRESS, View.GONE);
+            iBottomSheet.setVisibility(IBottomSheet.PLACE, View.VISIBLE);
+        }
+
+        // 시트가 열리지 않은 경우 연다.
         if (iBottomSheet.getState() != BottomSheetBehavior.STATE_EXPANDED)
         {
             iBottomSheet.setState(BottomSheetBehavior.STATE_EXPANDED);
@@ -544,7 +562,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     public void onReverseGeoCoderFoundAddress(MapReverseGeoCoder mapReverseGeoCoder, String
             address)
     {
-        currentAddressTextView.setText(address);
+        binding.mapButtonsLayout.currentAddress.setText(address);
     }
 
     @Override
@@ -552,32 +570,28 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     {
     }
 
-
-    public class CustomPoiItem extends MapPOIItem
+    public boolean isSelectedPoiItem()
     {
-        private AddressResponseDocuments addressDocument;
-        private PlaceDocuments placeDocument;
+        return isSelectedPoiItem;
+    }
 
-        private void setAddressDocument(AddressResponseDocuments document)
-        {
-            this.addressDocument = document;
-        }
+    public int getSelectedPoiItemIndex()
+    {
+        return selectedPoiItemIndex;
+    }
 
-        public void setPlaceDocument(PlaceDocuments placeDocument)
-        {
-            this.placeDocument = placeDocument;
-        }
+    public ImageButton getZoomInButton()
+    {
+        return zoomInButton;
+    }
 
+    public ImageButton getZoomOutButton()
+    {
+        return zoomOutButton;
+    }
 
-        public AddressResponseDocuments getAddressDocument()
-        {
-            return addressDocument;
-        }
-
-        public PlaceDocuments getPlaceDocument()
-        {
-            return placeDocument;
-        }
-
+    public ImageButton getGpsButton()
+    {
+        return gpsButton;
     }
 }

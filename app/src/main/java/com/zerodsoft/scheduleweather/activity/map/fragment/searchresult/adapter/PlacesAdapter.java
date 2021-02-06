@@ -11,6 +11,7 @@ import androidx.paging.PagedListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.activity.map.fragment.interfaces.OnClickedLocListItem;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IBottomSheet;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.kakaomap.callback.PlaceItemCallback;
@@ -19,8 +20,8 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceD
 public class PlacesAdapter extends PagedListAdapter<PlaceDocuments, PlacesAdapter.ItemViewHolder>
 {
     private Context context;
-    private IMapData iMapData;
-    private IBottomSheet iBottomSheet;
+    private final IMapData iMapData;
+    private final OnClickedLocListItem onClickedLocListItem;
 
     class ItemViewHolder extends RecyclerView.ViewHolder
     {
@@ -43,9 +44,7 @@ public class PlacesAdapter extends PagedListAdapter<PlaceDocuments, PlacesAdapte
                 @Override
                 public void onClick(View view)
                 {
-                    iMapData.selectPoiItem(getAdapterPosition());
-                    iBottomSheet.setItemVisibility(View.VISIBLE);
-                    iBottomSheet.setFragmentVisibility(View.GONE);
+                    onClickedLocListItem.onClickedLocItem(getAdapterPosition());
                 }
             });
         }
@@ -60,12 +59,12 @@ public class PlacesAdapter extends PagedListAdapter<PlaceDocuments, PlacesAdapte
         }
     }
 
-    public PlacesAdapter(Context context, IMapData iMapData, IBottomSheet iBottomSheet)
+    public PlacesAdapter(Context context, IMapData iMapData, OnClickedLocListItem onClickedLocListItem)
     {
         super(new PlaceItemCallback());
         this.context = context;
         this.iMapData = iMapData;
-        this.iBottomSheet = iBottomSheet;
+        this.onClickedLocListItem = onClickedLocListItem;
     }
 
     @NonNull

@@ -332,7 +332,7 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab
                         ContentValues instance = eventFragment.getInstance();
 
                         intent.putExtra("calendarId", instance.getAsInteger(CalendarContract.Instances.CALENDAR_ID));
-                        intent.putExtra("eventId", instance.getAsLong(CalendarContract.Instances._ID));
+                        intent.putExtra("eventId", instance.getAsLong(CalendarContract.Instances.EVENT_ID));
                         intent.putExtra("location", instance.getAsString(CalendarContract.Instances.EVENT_LOCATION));
                         intent.putExtra("ownerAccount", instance.getAsString(CalendarContract.Instances.OWNER_ACCOUNT));
 
@@ -351,8 +351,8 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab
     @Override
     public void getLocation(CarrierMessagingService.ResultCallback<LocationDTO> resultCallback)
     {
-        locationViewModel.getLocation(eventFragment.getInstance().getAsInteger(CalendarContract.Events.CALENDAR_ID),
-                eventFragment.getInstance().getAsLong(CalendarContract.Events._ID), resultCallback);
+        locationViewModel.getLocation(eventFragment.getInstance().getAsInteger(CalendarContract.Instances.CALENDAR_ID),
+                eventFragment.getInstance().getAsLong(CalendarContract.Instances.EVENT_ID), resultCallback);
     }
 
     /**
@@ -363,7 +363,7 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab
     @Override
     public boolean hasSimpleLocation()
     {
-        return !eventFragment.getInstance().getAsString(CalendarContract.Events.EVENT_LOCATION).isEmpty();
+        return !eventFragment.getInstance().getAsString(CalendarContract.Instances.EVENT_LOCATION).isEmpty();
     }
 
     /**
@@ -374,8 +374,8 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab
     @Override
     public void hasDetailLocation(CarrierMessagingService.ResultCallback<Boolean> resultCallback)
     {
-        locationViewModel.hasDetailLocation(eventFragment.getInstance().getAsInteger(CalendarContract.Events.CALENDAR_ID),
-                eventFragment.getInstance().getAsLong(CalendarContract.Events._ID), resultCallback);
+        locationViewModel.hasDetailLocation(eventFragment.getInstance().getAsInteger(CalendarContract.Instances.CALENDAR_ID),
+                eventFragment.getInstance().getAsLong(CalendarContract.Instances.EVENT_ID), resultCallback);
     }
 
     @Override

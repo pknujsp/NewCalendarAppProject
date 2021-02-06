@@ -38,6 +38,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.activity.map.fragment.interfaces.OnClickedLocListItem;
+import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.interfaces.IViewPager;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IBottomSheet;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapPoint;
@@ -52,7 +54,7 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceD
 
 import java.util.Timer;
 
-public class PlaceListFragment extends Fragment
+public class PlaceListFragment extends Fragment implements IViewPager
 {
     private static int currSearchMapPointCriteria = LocalApiPlaceParameter.SEARCH_CRITERIA_MAP_POINT_MAP_CENTER;
     private static int currSearchSortTypeCriteria = LocalApiPlaceParameter.SEARCH_CRITERIA_SORT_TYPE_ACCURACY;
@@ -60,7 +62,6 @@ public class PlaceListFragment extends Fragment
     private RecyclerView itemRecyclerView;
     private PlacesViewModel viewModel;
     private PlacesAdapter adapter;
-    private IMapPoint iMapPoint;
 
     private Button searchAroundMapCenterButton;
     private Button searchAroundCurrentLocationButton;
@@ -75,16 +76,18 @@ public class PlaceListFragment extends Fragment
 
     private double mapLatitude;
     private double mapLongitude;
-    private IMapData iMapData;
-    private final String SEARCH_WORD;
-    private IBottomSheet iBottomSheet;
 
-    public PlaceListFragment(IMapPoint iMapPoint, String searchWord, IMapData iMapData, IBottomSheet iBottomSheet)
+    private final IMapPoint iMapPoint;
+    private final IMapData iMapData;
+    private final OnClickedLocListItem onClickedLocListItem;
+    private final String SEARCH_WORD;
+
+    public PlaceListFragment(IMapPoint iMapPoint, String searchWord, IMapData iMapData, OnClickedLocListItem onClickedLocListItem)
     {
         this.iMapPoint = iMapPoint;
         this.SEARCH_WORD = searchWord;
         this.iMapData = iMapData;
-        this.iBottomSheet = iBottomSheet;
+        this.onClickedLocListItem = onClickedLocListItem;
     }
 
     private final LocationListener locationListener = new LocationListener()
@@ -343,7 +346,7 @@ public class PlaceListFragment extends Fragment
         LocalApiPlaceParameter parameter = LocalParameterUtil.getPlaceParameter(SEARCH_WORD, getLatitude(), getLongitude(),
                 LocalApiPlaceParameter.DEFAULT_SIZE, LocalApiPlaceParameter.DEFAULT_PAGE, currSearchSortTypeCriteria);
 
-        adapter = new PlacesAdapter(getContext(), iMapData, iBottomSheet);
+        adapter = new PlacesAdapter(getContext(), iMapData, onClickedLocListItem);
         adapter.registerAdapterDataObserver(adapterDataObserver);
         itemRecyclerView.removeAllViews();
         itemRecyclerView.setAdapter(adapter);
@@ -411,6 +414,21 @@ public class PlaceListFragment extends Fragment
         return currSearchMapPointCriteria == LocalApiPlaceParameter.SEARCH_CRITERIA_MAP_POINT_CURRENT_LOCATION ? mapLongitude : iMapPoint.getLongitude();
     }
 
+    @Override
+    public void onChangedPage()
+    {
+        int poiItemSize = iMapData.getPoiItemSize();
+
+        if (poiItemSize > 0 && adapter != null)
+        {
+            if (adapter.getItemCount() > 0)
+            {
+                iMapData.removeAllPoiItems();
+                iMapData.createPlacesPoiItems(adapter.getCurrentList().snapshot());
+            }
+        }
+    }
+
     class CustomGridLayoutManager extends LinearLayoutManager
     {
         private boolean isScrollEnabled = true;
@@ -435,24 +453,6 @@ public class PlaceListFragment extends Fragment
 
     private final RecyclerView.AdapterDataObserver adapterDataObserver = new RecyclerView.AdapterDataObserver()
     {
-        @Override
-        public void onChanged()
-        {
-            super.onChanged();
-        }
-
-        @Override
-        public void onItemRangeChanged(int positionStart, int itemCount)
-        {
-            super.onItemRangeChanged(positionStart, itemCount);
-        }
-
-        @Override
-        public void onItemRangeChanged(int positionStart, int itemCount, @Nullable Object payload)
-        {
-            super.onItemRangeChanged(positionStart, itemCount, payload);
-            Log.e(getClass().getName(), "onItemRangeChanged");
-        }
 
         @Override
         public void onItemRangeInserted(int positionStart, int itemCount)
@@ -462,18 +462,5 @@ public class PlaceListFragment extends Fragment
             iMapData.createPlacesPoiItems(adapter.getCurrentList().snapshot());
         }
 
-        @Override
-        public void onItemRangeRemoved(int positionStart, int itemCount)
-        {
-            super.onItemRangeRemoved(positionStart, itemCount);
-            Log.e(getClass().getName(), "onItemRangeRemoved");
-        }
-
-        @Override
-        public void onItemRangeMoved(int fromPosition, int toPosition, int itemCount)
-        {
-            super.onItemRangeMoved(fromPosition, toPosition, itemCount);
-            Log.e(getClass().getName(), "onItemRangeMoved");
-        }
     };
 }

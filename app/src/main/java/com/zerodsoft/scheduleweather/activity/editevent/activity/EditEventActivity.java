@@ -593,6 +593,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                     if (data.getStringExtra(CalendarContract.Events.EVENT_LOCATION) != null)
                     {
                         putValue(CalendarContract.Events.EVENT_LOCATION, data.getStringExtra(CalendarContract.Events.EVENT_LOCATION));
+                        binding.locationLayout.eventLocation.setText(data.getStringExtra(CalendarContract.Events.EVENT_LOCATION));
                     } else
                     {
                         removeValue(CalendarContract.Events.EVENT_LOCATION);

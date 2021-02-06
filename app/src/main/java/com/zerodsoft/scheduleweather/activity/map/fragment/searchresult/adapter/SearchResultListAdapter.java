@@ -15,16 +15,13 @@ import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.interfac
 import java.util.ArrayList;
 import java.util.List;
 
-public class SearchResultListAdapter extends FragmentStateAdapter implements FragmentRemover
+public class SearchResultListAdapter extends FragmentStateAdapter
 {
     private List<Fragment> fragments;
-    private IndicatorCreater indicatorCreater;
 
-    public SearchResultListAdapter(@NonNull Fragment fragment, List<Fragment> fragments, IMapPoint iMapPoint, IMapData iMapData, IBottomSheet iBottomSheet, String searchWord)
+    public SearchResultListAdapter(@NonNull Fragment fragment)
     {
         super(fragment);
-        this.indicatorCreater = (IndicatorCreater) fragment;
-        this.fragments = fragments;
     }
 
     @NonNull
@@ -40,10 +37,13 @@ public class SearchResultListAdapter extends FragmentStateAdapter implements Fra
         return fragments.size();
     }
 
-    @Override
-    public void removeFragment(Fragment fragment)
+    public void setFragments(List<Fragment> fragments)
     {
-        fragments.remove(fragment);
-        notifyDataSetChanged();
+        this.fragments = fragments;
+    }
+
+    public Fragment getFragment(int position)
+    {
+        return fragments.get(position);
     }
 }

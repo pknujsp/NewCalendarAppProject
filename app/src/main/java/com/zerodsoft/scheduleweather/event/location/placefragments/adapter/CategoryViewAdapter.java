@@ -27,6 +27,7 @@ import com.zerodsoft.scheduleweather.event.location.placefragments.model.PlaceCa
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class CategoryViewAdapter extends RecyclerView.Adapter<CategoryViewAdapter.CategoryViewHolder> implements IPlaceItem
 {
@@ -78,6 +79,17 @@ public class CategoryViewAdapter extends RecyclerView.Adapter<CategoryViewAdapte
         return viewHolderMap.get(categoryName).adapter.getCurrentList().size();
     }
 
+    public Map<String, List<PlaceDocuments>> getAllItems()
+    {
+        Map<String, List<PlaceDocuments>> map = new HashMap<>();
+        Set<String> keySet = viewHolderMap.keySet();
+
+        for (String key : keySet)
+        {
+            map.put(key, viewHolderMap.get(key).adapter.getCurrentList().snapshot());
+        }
+        return map;
+    }
 
     @Override
     public int getItemCount()

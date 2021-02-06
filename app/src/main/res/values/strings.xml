@@ -275,6 +275,10 @@
     <string name="edit_location">상세 위치 변경</string>
     <string name="remove_event">일정 삭제</string>
     <string name="select">선택</string>
+    <string name="connected_network">네트워크 연결됨</string>
+    <string name="disconnected_network">네트워크 연결되지 않음</string>
+    <string name="not_founded_search_result">검색 결과가 없습니다</string>
+    <string name="error">오류 발생</string>
 
 
     <!-- 알림 -->

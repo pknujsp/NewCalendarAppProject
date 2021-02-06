@@ -7,24 +7,31 @@ import java.util.List;
 
 public abstract class CheckerCallback<T>
 {
-    protected int responseCount = 0;
-    protected int totalRequestCount = 0;
-    protected List<T> list = new ArrayList<>();
+    protected volatile int responseCount = 0;
+    protected volatile int totalRequestCount = 0;
+    protected volatile List<T> list = new ArrayList<>();
 
     public void onResult()
     {
 
     }
 
+    public int getResponseCount()
+    {
+        return responseCount;
+    }
+
+    public int getTotalRequestCount()
+    {
+        return totalRequestCount;
+    }
+
     public void add(T e)
     {
+        this.responseCount++;
         list.add(e);
     }
 
-    public void addCount()
-    {
-        this.responseCount++;
-    }
 
     public void setTotalRequestCount(int totalRequestCount)
     {

@@ -34,8 +34,9 @@ import java.util.List;
 
 public class WeatherItemFragment extends Fragment
 {
+    public static final String TAG = "WeatherItemFragment";
     private WeatherData weatherData;
-    private LocationDTO locationDTO;
+    private final LocationDTO locationDTO;
 
     private UltraSrtNcstFragment ultraSrtNcstFragment;
     private UltraSrtFcstFragment ultraSrtFcstFragment;

@@ -7,10 +7,8 @@ import com.zerodsoft.scheduleweather.retrofit.Querys;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.KakaoLocalResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressKakaoLocalResponse;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponseDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceKakaoLocalResponse;
 
-import java.util.List;
 import java.util.Map;
 
 import retrofit2.Call;
@@ -39,9 +37,12 @@ public class SearchResultChecker
                 {
                     dataWrapper = new DataWrapper<>(response.body());
                 }
-                callback.addCount();
+
                 callback.add(dataWrapper);
-                callback.onResult();
+                if (callback.getResponseCount() == callback.getTotalRequestCount())
+                {
+                    callback.onResult();
+                }
             }
 
             @Override
@@ -49,9 +50,12 @@ public class SearchResultChecker
             {
                 Exception exception = new Exception(t);
                 DataWrapper<KakaoLocalResponse> dataWrapper = new DataWrapper<>(exception);
-                callback.addCount();
+
                 callback.add(dataWrapper);
-                callback.onResult();
+                if (callback.getResponseCount() == callback.getTotalRequestCount())
+                {
+                    callback.onResult();
+                }
             }
         });
     }
@@ -84,9 +88,12 @@ public class SearchResultChecker
                 {
                     dataWrapper = new DataWrapper<>(response.body());
                 }
-                callback.addCount();
+
                 callback.add(dataWrapper);
-                callback.onResult();
+                if (callback.getResponseCount() == callback.getTotalRequestCount())
+                {
+                    callback.onResult();
+                }
             }
 
             @Override
@@ -94,9 +101,12 @@ public class SearchResultChecker
             {
                 Exception exception = new Exception(t);
                 DataWrapper<KakaoLocalResponse> dataWrapper = new DataWrapper<>(exception);
-                callback.addCount();
+
                 callback.add(dataWrapper);
-                callback.onResult();
+                if (callback.getResponseCount() == callback.getTotalRequestCount())
+                {
+                    callback.onResult();
+                }
             }
         });
     }
@@ -105,25 +115,10 @@ public class SearchResultChecker
     public static void checkExisting(LocalApiPlaceParameter addressParameter, LocalApiPlaceParameter placeParameter
             , CheckerCallback<DataWrapper<KakaoLocalResponse>> callback)
     {
-        int totalRequestCount = 0;
+        callback.setTotalRequestCount(2);
 
-        if (addressParameter != null)
-        {
-            totalRequestCount++;
-        }
-        if (placeParameter != null)
-        {
-            totalRequestCount++;
-        }
-        callback.setTotalRequestCount(totalRequestCount);
+        checkAddress(addressParameter, callback);
+        checkPlace(placeParameter, callback);
 
-        if (addressParameter != null)
-        {
-            checkAddress(addressParameter, callback);
-        }
-        if (placeParameter != null)
-        {
-            checkPlace(placeParameter, callback);
-        }
     }
 }

@@ -79,12 +79,9 @@ public class WeatherFragment extends Fragment
                     @Override
                     public void run()
                     {
-                        if (locationDTO.getAddressName() != null)
-                        {
-                            getParentFragmentManager().beginTransaction().add(R.id.weather_fragment_container_view,
-                                    new WeatherItemFragment(locationDTO), WeatherItemFragment.class.getName())
-                                    .commit();
-                        }
+                        getParentFragmentManager().beginTransaction().add(R.id.weather_fragment_container_view,
+                                new WeatherItemFragment(locationDTO), WeatherItemFragment.TAG)
+                                .commit();
                     }
                 });
 

@@ -20,7 +20,6 @@ import android.view.ViewGroup;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.SearchResultListFragment;
 import com.zerodsoft.scheduleweather.etc.FragmentStateCallback;
-import com.zerodsoft.scheduleweather.kakaomap.KakaoMapActivity;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IBottomSheet;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapPoint;
@@ -86,7 +85,7 @@ public class SearchFragment extends Fragment implements OnSelectedMapCategory
             public void handleOnBackPressed()
             {
                 iBottomSheet.closeSearchView(IBottomSheet.SEARCH_VIEW);
-                getParentFragmentManager().popBackStack();
+                getParentFragmentManager().beginTransaction().remove(instance).commit();
             }
         };
         requireActivity().getOnBackPressedDispatcher().addCallback(SearchFragment.this, onBackPressedCallback);
@@ -121,22 +120,17 @@ public class SearchFragment extends Fragment implements OnSelectedMapCategory
 
     public void search(String searchWord)
     {
-        Bundle bundle = new Bundle();
-        bundle.putString("searchWord", searchWord);
-
         FragmentManager fragmentManager = getParentFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.add(R.id.map_bottom_sheet_fragment_container, SearchResultListFragment.newInstance(searchWord, iMapPoint, iMapData, iMapToolbar, iBottomSheet), SearchResultListFragment.TAG)
                 .hide(SearchFragment.this).addToBackStack(SearchResultListFragment.TAG).commit();
-
-        iMapToolbar.setMenuVisibility(IMapToolbar.LIST, true);
     }
 
     @Override
     public void onSelectedMapCategory(KakaoLocalApiCategory category)
     {
-        search(Integer.toString(category.getId()));
         iMapToolbar.setText(category.getDescription());
+        search(Integer.toString(category.getId()));
     }
 
 }

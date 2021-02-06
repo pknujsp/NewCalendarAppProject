@@ -6,7 +6,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        tools:context=".kakaomap.activity.KakaoMapActivity">
 
         <com.google.android.material.appbar.AppBarLayout
             android:id="@+id/appbar_layout"
@@ -22,13 +23,13 @@
 
 
         <androidx.coordinatorlayout.widget.CoordinatorLayout
+            android:id="@+id/map_coordinator_layout"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            tools:context=".kakaomap.KakaoMapActivity">
+            android:layout_height="match_parent">
 
             <fragment
                 android:id="@+id/kakao_map_fragment"
-                android:name="com.zerodsoft.scheduleweather.activity.map.fragment.map.MapFragment"
+                android:name="com.zerodsoft.scheduleweather.kakaomap.fragment.KakaoMapFragment"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 app:layout_anchor="@id/bottom_sheet"

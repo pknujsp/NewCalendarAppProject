@@ -24,7 +24,7 @@
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
         <activity android:name=".activity.editevent.activity.AttendeesActivity"></activity>
-        <activity android:name=".kakaomap.KakaoMapActivity" />
+        <activity android:name=".kakaomap.activity.KakaoMapActivity" />
         <activity android:name=".event.common.MLocActivity" />
         <activity android:name=".event.weather.activity.WLocActivity" />
         <activity android:name=".activity.editevent.activity.ReminderActivity" />

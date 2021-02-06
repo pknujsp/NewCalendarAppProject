@@ -19,6 +19,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.activity.map.fragment.interfaces.OnClickedLocListItem;
+import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.interfaces.IViewPager;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IBottomSheet;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.adapter.AddressesAdapter;
@@ -29,21 +31,28 @@ import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponseDocuments;
 
-public class AddressListFragment extends Fragment
+public class AddressListFragment extends Fragment implements IViewPager
 {
     private RecyclerView itemRecyclerView;
     private AddressViewModel viewModel;
     private AddressesAdapter adapter;
     private ProgressBar progressBar;
-    private IMapData iMapData;
-    private IBottomSheet iBottomSheet;
+
+    private final IMapData iMapData;
+    private final OnClickedLocListItem onClickedLocListItem;
     private final String SEARCH_WORD;
 
-    public AddressListFragment(String searchWord, IMapData iMapData, IBottomSheet iBottomSheet)
+    public AddressListFragment(String searchWord, IMapData iMapData, OnClickedLocListItem onClickedLocListItem)
     {
         this.SEARCH_WORD = searchWord;
         this.iMapData = iMapData;
-        this.iBottomSheet = iBottomSheet;
+        this.onClickedLocListItem = onClickedLocListItem;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
     }
 
     @Nullable
@@ -84,7 +93,7 @@ public class AddressListFragment extends Fragment
             progressBar.setVisibility(View.GONE);
         } else
         {
-            adapter = new AddressesAdapter(getContext(), iMapData, iBottomSheet);
+            adapter = new AddressesAdapter(getContext(), iMapData, onClickedLocListItem);
             adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver()
             {
                 @Override
@@ -107,6 +116,24 @@ public class AddressListFragment extends Fragment
                     progressBar.setVisibility(View.GONE);
                 }
             });
+        }
+    }
+
+    /*
+    viewpager의 페이지가 변경된 경우 호출
+     */
+    @Override
+    public void onChangedPage()
+    {
+        int poiItemSize = iMapData.getPoiItemSize();
+
+        if (poiItemSize > 0 && adapter != null)
+        {
+            if (adapter.getItemCount() > 0)
+            {
+                iMapData.removeAllPoiItems();
+                iMapData.createAddressesPoiItems(adapter.getCurrentList().snapshot());
+            }
         }
     }
 

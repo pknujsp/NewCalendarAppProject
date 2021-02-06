@@ -1,25 +1,21 @@
 package com.zerodsoft.scheduleweather.event.common;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
-import android.content.ContentValues;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.service.carrier.CarrierMessagingService;
 import android.view.Menu;
 
-import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.activity.editevent.activity.EditEventActivity;
-import com.zerodsoft.scheduleweather.activity.map.fragment.map.MapFragment;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
-import com.zerodsoft.scheduleweather.kakaomap.KakaoMapActivity;
-import com.zerodsoft.scheduleweather.kakaomap.fragment.KakaoMapFragment;
+import com.zerodsoft.scheduleweather.kakaomap.activity.KakaoMapActivity;
+import com.zerodsoft.scheduleweather.kakaomap.model.CustomPoiItem;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
-import java.util.Map;
+import net.daum.mf.map.api.MapPOIItem;
 
 public class MLocActivity extends KakaoMapActivity
 {
@@ -27,7 +23,9 @@ public class MLocActivity extends KakaoMapActivity
     private String ownerAccount;
     private Integer calendarId;
     private Long eventId;
+
     private LocationViewModel viewModel;
+    private OnBackPressedCallback onBackPressedCallback;
 
     public static final int REQUEST_SELECT_LOCATION = 3000;
     public static final int RESULT_SELECTED_LOCATION = 3100;
@@ -37,6 +35,18 @@ public class MLocActivity extends KakaoMapActivity
     {
         super.onCreate(savedInstanceState);
 
+        onBackPressedCallback = new OnBackPressedCallback(true)
+        {
+            @Override
+            public void handleOnBackPressed()
+            {
+                setResult(RESULT_CANCELED);
+                finish();
+                onBackPressedCallback.remove();
+            }
+        };
+        getOnBackPressedDispatcher().addCallback(onBackPressedCallback);
+
         viewModel = new ViewModelProvider(this).get(LocationViewModel.class);
 
         Intent intent = getIntent();
@@ -45,9 +55,6 @@ public class MLocActivity extends KakaoMapActivity
         calendarId = intent.getIntExtra("calendarId", 0);
         eventId = intent.getLongExtra("eventId", 0);
 
-        kakaoMapFragment = (MapFragment) getSupportFragmentManager().findFragmentById(R.id.kakao_map_fragment);
-        kakaoMapFragment.setiBottomSheet(this);
-        kakaoMapFragment.setiMapToolbar(this);
         // 검색 결과가 바로 나타난다.
     }
 
@@ -55,23 +62,18 @@ public class MLocActivity extends KakaoMapActivity
     protected void onStart()
     {
         super.onStart();
-        searchView.performClick();
-        searchView.setQuery(savedLocation, true);
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
     {
-        return super.onCreateOptionsMenu(menu);
+        super.onCreateOptionsMenu(menu);
+        // iconfy가 false가 되면 search listener실행
+        searchView.setIconified(false);
+        searchView.setQuery(savedLocation, true);
+        return true;
     }
 
-    @Override
-    public void onBackPressed()
-    {
-        // 미지정 - 그대로 이전 액티비티로 복귀한다.
-        setResult(RESULT_CANCELED);
-        finish();
-    }
 
     @Override
     public void onSelectLocation()
@@ -79,10 +81,10 @@ public class MLocActivity extends KakaoMapActivity
         // 지정이 완료된 경우 - DB에 등록하고 이벤트 액티비티로 넘어가서 날씨 또는 주변 정보 프래그먼트를 실행한다.
 
         // 선택된 poiitem의 리스트내 인덱스를 가져온다.
-        int poiItemIndex = kakaoMapFragment.selectedPoiItemIndex;
-        KakaoMapFragment.CustomPoiItem[] poiItems = (KakaoMapFragment.CustomPoiItem[]) kakaoMapFragment.mapView.getPOIItems();
+        int poiItemIndex = kakaoMapFragment.getSelectedPoiItemIndex();
+        MapPOIItem[] poiItems = kakaoMapFragment.mapView.getPOIItems();
         // 인덱스로 아이템을 가져온다.
-        KakaoMapFragment.CustomPoiItem item = poiItems[poiItemIndex];
+        CustomPoiItem item = (CustomPoiItem) poiItems[poiItemIndex];
 
         LocationDTO location = new LocationDTO();
         location.setCalendarId(calendarId);
