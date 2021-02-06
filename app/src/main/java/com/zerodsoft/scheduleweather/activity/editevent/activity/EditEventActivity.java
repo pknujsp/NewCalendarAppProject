@@ -60,7 +60,7 @@ import java.util.TimeZone;
 
 public class EditEventActivity extends AppCompatActivity implements IEventRepeat
 {
-    // 추가 작업 필요 : 알림, 참석자
+    // 추가 작업 필요 : 저장, 수정
     public static final int MODIFY_EVENT = 60;
     public static final int NEW_EVENT = 50;
 
@@ -85,7 +85,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
     private MaterialTimePicker timePicker;
     private MaterialDatePicker<Pair<Long, Long>> datePicker;
 
-    private int requestCode;
+    private Integer requestCode;
 
     private long startDateMillis;
     private long endDateMillis;
@@ -113,6 +113,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
         switch (item.getItemId())
         {
             case R.id.save_schedule_button:
+                // 새로 생성하는 이벤트이고, 위치가 지정되어 있으면 카카오맵에서 가져온 위치 정보를 DB에 등록한다.
                 break;
             case android.R.id.home:
                 setResult(RESULT_CANCELED);
@@ -166,6 +167,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
         switch (requestCode)
         {
             case NEW_EVENT:
+            {
                 actionBar.setTitle(R.string.new_event);
 
                 newEventValues = new ContentValues();
@@ -213,8 +215,9 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                 // 참석자 버튼 텍스트 수정
                 binding.attendeeLayout.showAttendeesDetail.setText(getString(R.string.add_attendee));
                 break;
-
+            }
             case MODIFY_EVENT:
+            {
                 actionBar.setTitle(R.string.modify_event);
                 Intent intent = getIntent();
 
@@ -238,8 +241,10 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
 
                         //제목
                         binding.titleLayout.title.setText(savedEventValues.getAsString(CalendarContract.Events.TITLE));
+
                         //캘린더
                         setCalendarText();
+
                         //시각
                         Calendar eventCalendar = Calendar.getInstance();
                         eventCalendar.setTimeInMillis(savedEventValues.getAsLong(CalendarContract.Instances.BEGIN));
@@ -284,9 +289,6 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                         binding.accesslevelLayout.eventAccessLevel.callOnClick();
                         // 유효성 표시
                         binding.availabilityLayout.eventAvailability.callOnClick();
-
-                        modifiedValues.put(CalendarContract.Events.ACCESS_LEVEL, savedEventValues.getAsInteger(CalendarContract.Events.ACCESS_LEVEL));
-                        modifiedValues.put(CalendarContract.Events.AVAILABILITY, savedEventValues.getAsInteger(CalendarContract.Events.AVAILABILITY));
                     }
                 });
 
@@ -341,7 +343,8 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                         }
                     }
                 });
-
+                break;
+            }
         }
 
         viewModel.getCalendarListLiveData().observe(this, listDataWrapper ->
@@ -614,11 +617,18 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                 {
                     // 리스트가 비어있으면 참석자 삭제 | 취소
                     attendeeList.clear();
+                    removeValue(CalendarContract.Attendees.GUESTS_CAN_MODIFY);
+                    removeValue(CalendarContract.Attendees.GUESTS_CAN_INVITE_OTHERS);
+                    removeValue(CalendarContract.Attendees.GUESTS_CAN_SEE_GUESTS);
                 } else
                 {
                     // 참석자 추가 | 변경
                     attendeeList.clear();
                     attendeeList.addAll(resultAttendeeList);
+
+                    putValue(CalendarContract.Attendees.GUESTS_CAN_MODIFY, data.getBooleanExtra(CalendarContract.Attendees.GUESTS_CAN_MODIFY, false) ? 1 : 0);
+                    putValue(CalendarContract.Attendees.GUESTS_CAN_INVITE_OTHERS, data.getBooleanExtra(CalendarContract.Attendees.GUESTS_CAN_INVITE_OTHERS, false) ? 1 : 0);
+                    putValue(CalendarContract.Attendees.GUESTS_CAN_SEE_GUESTS, data.getBooleanExtra(CalendarContract.Attendees.GUESTS_CAN_SEE_GUESTS, false) ? 1 : 0);
                 }
                 setAttendeesText(attendeeList);
                 break;
@@ -904,6 +914,10 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
             binding.attendeeLayout.showAttendeesDetail.setText(getString(R.string.add_attendee));
             attendeeList.clear();
             binding.attendeeLayout.eventAttendeesTable.removeViewAt(0);
+
+            removeValue(CalendarContract.Attendees.GUESTS_CAN_MODIFY);
+            removeValue(CalendarContract.Attendees.GUESTS_CAN_INVITE_OTHERS);
+            removeValue(CalendarContract.Attendees.GUESTS_CAN_SEE_GUESTS);
         } else
         {
             binding.attendeeLayout.eventAttendeesTable.removeView(row);

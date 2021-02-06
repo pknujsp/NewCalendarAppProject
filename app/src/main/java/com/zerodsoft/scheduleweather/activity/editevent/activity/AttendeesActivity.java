@@ -17,8 +17,10 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.CompoundButton;
 import android.widget.Toast;
 
+import com.google.android.material.chip.ChipGroup;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.editevent.adapter.AttendeeListAdapter;
 import com.zerodsoft.scheduleweather.databinding.ActivityAttendeesBinding;
@@ -65,6 +67,44 @@ public class AttendeesActivity extends AppCompatActivity
         {
             binding.authorityChipGroup.setVisibility(View.VISIBLE);
         }
+
+        binding.authorityModifyEvent.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
+        {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b)
+            {
+                if (b)
+                {
+                    binding.authorityAttendeeInvites.setChecked(true);
+                    binding.authorityAttendeeShowAttendees.setChecked(true);
+
+                    binding.authorityAttendeeInvites.setEnabled(false);
+                    binding.authorityAttendeeShowAttendees.setChecked(false);
+                } else
+                {
+                    binding.authorityAttendeeInvites.setEnabled(true);
+                    binding.authorityAttendeeShowAttendees.setChecked(true);
+                }
+            }
+        });
+
+        binding.authorityAttendeeInvites.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
+        {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b)
+            {
+
+            }
+        });
+
+        binding.authorityAttendeeShowAttendees.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
+        {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b)
+            {
+
+            }
+        });
     }
 
     @Override
@@ -183,6 +223,12 @@ public class AttendeesActivity extends AppCompatActivity
     @Override
     public void onBackPressed()
     {
+        if (!attendeeList.isEmpty())
+        {
+            getIntent().putExtra(CalendarContract.Attendees.GUESTS_CAN_MODIFY, binding.authorityModifyEvent.isChecked());
+            getIntent().putExtra(CalendarContract.Attendees.GUESTS_CAN_INVITE_OTHERS, binding.authorityAttendeeInvites.isChecked());
+            getIntent().putExtra(CalendarContract.Attendees.GUESTS_CAN_SEE_GUESTS, binding.authorityAttendeeShowAttendees.isChecked());
+        }
         getIntent().putParcelableArrayListExtra("attendeeList", (ArrayList<? extends Parcelable>) attendeeList);
         setResult(RESULT_OK, getIntent());
         finish();
