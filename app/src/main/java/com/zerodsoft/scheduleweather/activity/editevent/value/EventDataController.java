@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.provider.CalendarContract;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
@@ -162,7 +163,7 @@ public class EventDataController
         }
     }
 
-    public int getEventValueAsInt(String key)
+    public Integer getEventValueAsInt(String key)
     {
         int responseDataType = getDataStorageType(key);
 
@@ -178,7 +179,7 @@ public class EventDataController
         }
     }
 
-    public long getEventValueAsLong(String key)
+    public Long getEventValueAsLong(String key)
     {
         int responseDataType = getDataStorageType(key);
 
@@ -210,7 +211,7 @@ public class EventDataController
         }
     }
 
-    public boolean getEventValueAsBoolean(String key)
+    public Boolean getEventValueAsBoolean(String key)
     {
         int responseDataType = getDataStorageType(key);
 
@@ -367,9 +368,17 @@ public class EventDataController
 
     }
 
-    public void putReminders(List<ContentValues> reminders)
+    public void putReminders(List<Integer> minutesList)
     {
         int dataStorageType = getDataStorageType();
+
+        List<ContentValues> reminders = new ArrayList<>();
+
+        for (int minutes : minutesList)
+        {
+            ContentValues reminder = new ContentValues();
+            reminder.put(CalendarContract.Reminders.MINUTES, minutes);
+        }
 
         if (dataStorageType == NEW)
         {
@@ -388,8 +397,6 @@ public class EventDataController
 
         ContentValues reminder = new ContentValues();
         reminder.put(CalendarContract.Reminders.MINUTES, minutes);
-        reminder.put(CalendarContract.Reminders.CALENDAR_ID, getEventValueAsInt(CalendarContract.Events.CALENDAR_ID));
-        reminder.put(CalendarContract.Reminders.METHOD, getEventValueAsInt(CalendarContract.Reminders.METHO));
 
         if (dataStorageType == NEW)
         {
