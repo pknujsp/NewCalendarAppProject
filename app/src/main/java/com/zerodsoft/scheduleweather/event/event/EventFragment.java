@@ -43,7 +43,7 @@ public class EventFragment extends Fragment
     private ContentValues instance;
     private CalendarViewModel viewModel;
     private Integer calendarId;
-    private Long eventId;
+    private Long instanceId;
     private Long begin;
     private Long end;
 
@@ -63,7 +63,7 @@ public class EventFragment extends Fragment
 
         Bundle arguments = getArguments();
         calendarId = arguments.getInt("calendarId");
-        eventId = arguments.getLong("eventId");
+        instanceId = arguments.getLong("instanceId");
         begin = arguments.getLong("begin");
         end = arguments.getLong("end");
     }
@@ -94,7 +94,7 @@ public class EventFragment extends Fragment
         viewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
 
         viewModel.init(getContext());
-        viewModel.getInstance(calendarId, eventId, begin, end);
+        viewModel.getInstance(calendarId, instanceId, begin, end);
 
         viewModel.getInstanceLiveData().observe(getViewLifecycleOwner(), new Observer<DataWrapper<ContentValues>>()
         {
@@ -279,7 +279,7 @@ public class EventFragment extends Fragment
         // 알람
         if (instance.getAsBoolean(CalendarContract.Instances.HAS_ALARM))
         {
-            viewModel.getReminders(calendarId, eventId);
+            viewModel.getReminders(calendarId, instanceId);
         } else
         {
             // 알람이 없으면 알람 테이블을 숨기고, 알람 없음 텍스트를 표시한다.
@@ -299,7 +299,7 @@ public class EventFragment extends Fragment
             iFab.setVisibility(IFab.TYPE_RESELECT_LOCATION, View.GONE);
         }
         // 참석자
-        viewModel.getAttendees(calendarId, eventId);
+        viewModel.getAttendees(calendarId, instanceId);
 
         // 공개 범위 표시
         setAccessLevelText();

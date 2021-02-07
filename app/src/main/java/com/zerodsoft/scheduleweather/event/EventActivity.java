@@ -97,14 +97,14 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab
             }
         });
 
-        final long eventId = getIntent().getLongExtra("eventId", 0);
+        final long instanceId = getIntent().getLongExtra("instanceId", 0);
         final int calendarId = getIntent().getIntExtra("calendarId", 0);
         final long begin = getIntent().getLongExtra("begin", 0);
         final long end = getIntent().getLongExtra("end", 0);
 
         Bundle bundle = new Bundle();
         bundle.putInt("calendarId", calendarId);
-        bundle.putLong("eventId", eventId);
+        bundle.putLong("instanceId", instanceId);
         bundle.putLong("begin", begin);
         bundle.putLong("end", end);
 

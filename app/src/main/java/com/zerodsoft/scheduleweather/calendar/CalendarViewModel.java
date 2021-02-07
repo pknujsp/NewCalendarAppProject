@@ -181,9 +181,9 @@ public class CalendarViewModel extends ViewModel
         calendarProvider.getInstances(calendarList, startDate, endDate, callback);
     }
 
-    public void getInstance(int calendarId, long eventId, long begin, long end)
+    public void getInstance(int calendarId, long instanceId, long begin, long end)
     {
-        ContentValues instance = calendarProvider.getInstance(calendarId, eventId, begin, end);
+        ContentValues instance = calendarProvider.getInstance(calendarId, instanceId, begin, end);
         DataWrapper<ContentValues> dataWrapper = new DataWrapper<>(instance);
         instanceLiveData.setValue(dataWrapper);
     }

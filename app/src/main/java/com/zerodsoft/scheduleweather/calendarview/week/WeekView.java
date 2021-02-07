@@ -593,7 +593,7 @@ public class WeekView extends HourEventsView implements IEvent
             ContentValues instance = ((WeekItemView) view).itemCell.instance;
 
             onEventItemClickListener.onClicked(instance.getAsInteger(CalendarContract.Instances.CALENDAR_ID)
-                    , instance.getAsLong(CalendarContract.Instances.EVENT_ID), instance.getAsLong(CalendarContract.Instances.BEGIN),
+                    , instance.getAsLong(CalendarContract.Instances._ID), instance.getAsLong(CalendarContract.Instances.BEGIN),
                     instance.getAsLong(CalendarContract.Instances.END));
         }
     };

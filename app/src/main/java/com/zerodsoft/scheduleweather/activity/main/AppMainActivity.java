@@ -25,6 +25,7 @@ import android.widget.Toast;
 import com.google.android.material.button.MaterialButtonToggleGroup;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.editevent.activity.EditEventActivity;
+import com.zerodsoft.scheduleweather.activity.editevent.value.EventDataController;
 import com.zerodsoft.scheduleweather.calendarview.CalendarsAdapter;
 import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
 import com.zerodsoft.scheduleweather.calendarview.day.DayFragment;
@@ -502,8 +503,8 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
                 break;
             case R.id.add_schedule:
                 Intent intent = new Intent(AppMainActivity.this, EditEventActivity.class);
-                intent.putExtra("requestCode", EditEventActivity.NEW_EVENT);
-                startActivityForResult(intent, EditEventActivity.NEW_EVENT);
+                intent.putExtra("requestCode", EventDataController.NEW_EVENT);
+                startActivityForResult(intent, EventDataController.NEW_EVENT);
                 break;
             case R.id.go_to_today:
                 calendarTransactionFragment.goToToday();
@@ -564,7 +565,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
             case RESULT_OK:
                 switch (requestCode)
                 {
-                    case EditEventActivity.NEW_EVENT:
+                    case EventDataController.NEW_EVENT:
                         //새로운 일정이 추가됨 -> 달력 이벤트 갱신
                         calendarTransactionFragment.refreshCalendar();
                         break;

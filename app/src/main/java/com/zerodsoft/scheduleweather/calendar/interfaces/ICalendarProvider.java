@@ -43,7 +43,7 @@ public interface ICalendarProvider
     // instance - select
     public void getInstances(List<ContentValues> calendarList, long startDate, long endDate, EventCallback<List<CalendarInstance>> callback);
 
-    public ContentValues getInstance(int calendarId, long eventId, long begin, long end);
+    public ContentValues getInstance(int calendarId, long instanceId, long begin, long end);
 
     // attendee - crud
     public int addAttendees(List<ContentValues> attendeeList);

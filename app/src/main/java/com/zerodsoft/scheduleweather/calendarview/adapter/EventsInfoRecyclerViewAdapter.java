@@ -62,7 +62,7 @@ public class EventsInfoRecyclerViewAdapter extends RecyclerView.Adapter<EventsIn
     class EventsInfoViewHolder extends RecyclerView.ViewHolder
     {
         private int position;
-        private long eventId;
+        private long instanceId;
         private int calendarId;
         private long begin;
         private long end;
@@ -77,7 +77,7 @@ public class EventsInfoRecyclerViewAdapter extends RecyclerView.Adapter<EventsIn
                 @Override
                 public void onClick(View view)
                 {
-                    onEventItemClickListener.onClicked(calendarId, eventId, begin, end);
+                    onEventItemClickListener.onClicked(calendarId, instanceId, begin, end);
                 }
             });
         }
@@ -85,7 +85,7 @@ public class EventsInfoRecyclerViewAdapter extends RecyclerView.Adapter<EventsIn
         public void onBind(int position)
         {
             this.position = position;
-            this.eventId = instances.get(position).getAsLong(CalendarContract.Instances.EVENT_ID);
+            this.instanceId = instances.get(position).getAsLong(CalendarContract.Instances._ID);
             this.calendarId = instances.get(position).getAsInteger(CalendarContract.Instances.CALENDAR_ID);
             this.begin = instances.get(position).getAsLong(CalendarContract.Instances.BEGIN);
             this.end = instances.get(position).getAsLong(CalendarContract.Instances.END);

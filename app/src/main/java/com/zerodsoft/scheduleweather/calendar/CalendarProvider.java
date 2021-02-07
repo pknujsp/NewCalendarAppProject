@@ -93,7 +93,7 @@ public class CalendarProvider implements ICalendarProvider
 
         stringBuilder.delete(0, stringBuilder.length());
 
-        INSTANCE_QUERY = stringBuilder.append(CalendarContract.Instances.EVENT_ID).append("=? AND ")
+        INSTANCE_QUERY = stringBuilder.append(CalendarContract.Instances._ID).append("=? AND ")
                 .append(CalendarContract.Instances.CALENDAR_ID).append("=?").toString();
 
         stringBuilder.delete(0, stringBuilder.length());
@@ -557,12 +557,12 @@ public class CalendarProvider implements ICalendarProvider
     }
 
     @Override
-    public ContentValues getInstance(int calendarId, long eventId, long begin, long end)
+    public ContentValues getInstance(int calendarId, long instanceId, long begin, long end)
     {
         // 화면에 이벤트 정보를 표시하기 위해 기본적인 데이터만 가져온다.
         // 요청 매개변수 : ID, 캘린더 ID, 오너 계정, 조직자
         // 표시할 데이터 : 제목, 일정 기간, 반복, 위치, 알림, 설명, 소유 계정, 참석자, 바쁨/한가함, 공개 범위 참석 여부 확인 창, 색상
-        String[] selectionArgs = {String.valueOf(eventId), String.valueOf(calendarId)};
+        String[] selectionArgs = {String.valueOf(instanceId), String.valueOf(calendarId)};
 
         Uri.Builder builder = CalendarContract.Instances.CONTENT_URI.buildUpon();
         ContentUris.appendId(builder, begin);
