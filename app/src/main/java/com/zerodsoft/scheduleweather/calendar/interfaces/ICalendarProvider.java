@@ -14,7 +14,7 @@ public interface ICalendarProvider
 
     public List<ContentValues> getEvents(int calendarId);
 
-    public void addEvent(ContentValues event);
+    public long addEvent(ContentValues event);
 
     public int deleteEvent(int calendarId, long eventId);
 

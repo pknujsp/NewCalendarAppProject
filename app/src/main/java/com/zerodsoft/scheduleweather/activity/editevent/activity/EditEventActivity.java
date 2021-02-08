@@ -94,6 +94,15 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
         switch (item.getItemId())
         {
             case R.id.save_schedule_button:
+                if (requestCode == EventDataController.NEW_EVENT)
+                {
+                    // saveEvent();
+                } else if (requestCode == EventDataController.MODIFY_EVENT)
+                {
+                    // modifyEvent();
+                }
+                setResult(RESULT_CANCELED);
+                finish();
                 // 새로 생성하는 이벤트이고, 위치가 지정되어 있으면 카카오맵에서 가져온 위치 정보를 DB에 등록한다.
                 break;
             case android.R.id.home:
@@ -562,14 +571,10 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                 if (resultAttendeeList.isEmpty())
                 {
                     // 리스트가 비어있으면 참석자 삭제 | 취소
-                    dataController.getAttendees().clear();
-                    dataController.removeEventValue(CalendarContract.Events.GUESTS_CAN_MODIFY);
-                    dataController.removeEventValue(CalendarContract.Events.GUESTS_CAN_INVITE_OTHERS);
-                    dataController.removeEventValue(CalendarContract.Events.GUESTS_CAN_SEE_GUESTS);
+                    dataController.removeAttendees();
                 } else
                 {
                     // 참석자 추가 | 변경
-                    dataController.getAttendees().clear();
                     dataController.putAttendees(resultAttendeeList);
 
                     dataController.putEventValue(CalendarContract.Events.GUESTS_CAN_MODIFY, data.getBooleanExtra(CalendarContract.Events.GUESTS_CAN_MODIFY, false) ? 1 : 0);
@@ -592,8 +597,11 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
             {
                 if (resultCode == ReminderActivity.RESULT_ADDED_REMINDER)
                 {
-                    final int minutes = data.getIntExtra(CalendarContract.Reminders.MINUTES, 0);
-                    addReminder(minutes);
+                    ContentValues reminder = data.getParcelableExtra("reminder");
+                    // reminder values는 분, 메소드값을 담고 있어야 한다
+                    dataController.putReminder(reminder);
+                    addReminder(reminder.getAsInteger(CalendarContract.Reminders.MINUTES)
+                            , reminder.getAsInteger(CalendarContract.Reminders.METHOD));
                 } else if (resultCode == RESULT_CANCELED)
                 {
 
@@ -657,23 +665,21 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
     }
 
 
-    private void addReminder(int minutes)
+    private void addReminder(int minutes, int method)
     {
-        dataController.putReminder(minutes);
-
         ReminderDto reminderDto = EventUtil.convertAlarmMinutes(minutes);
         String alarmValueText = EventUtil.makeAlarmText(reminderDto, getApplicationContext());
 
         TableRow tableRow = new TableRow(getApplicationContext());
         View row = getLayoutInflater().inflate(R.layout.event_reminder_item, null);
 
-
         final ReminderItemHolder holder = new ReminderItemHolder(minutes, alarmValueText);
 
         TextView reminderValueTextView = ((TextView) row.findViewById(R.id.reminder_value));
         ImageButton removeButton = ((ImageButton) row.findViewById(R.id.remove_reminder_button));
 
-        reminderValueTextView.setText(alarmValueText);
+        String text = alarmValueText + "(" + EventUtil.getReminderMethod(getApplicationContext(), method) + ")";
+        reminderValueTextView.setText(text);
 
         reminderValueTextView.setOnClickListener(reminderItemOnClickListener);
         removeButton.setOnClickListener(removeReminderOnClickListener);
@@ -735,7 +741,8 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
 
         for (ContentValues reminder : reminders)
         {
-            addReminder(reminder.getAsInteger(CalendarContract.Reminders.MINUTES));
+            addReminder(reminder.getAsInteger(CalendarContract.Reminders.MINUTES)
+                    , reminder.getAsInteger(CalendarContract.Reminders.METHOD));
         }
     }
 
@@ -928,28 +935,77 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
 
     private void saveEvent()
     {
-        // 시간이 바뀌는 경우, 반복과 알림 데이터도 변경해야함.
-        if (requestCode == EventDataController.NEW_EVENT)
+        // 시간이 바뀌는 경우, 알림 데이터도 변경해야함.
+        // 알림 재설정
+        final int calendarId = dataController.getEventValueAsInt(CalendarContract.Events.CALENDAR_ID);
+        final long newEventId = viewModel.addEvent(dataController.getNewEventData().getEVENT());
+
+        if (dataController.getEventValueAsBoolean(CalendarContract.Events.HAS_ALARM))
         {
-            // 제목, 설명, 위치값 뷰에서 읽어오기, 데이터가 없는 경우 추가하지 않음(공백X)
-            if (!binding.titleLayout.title.getText().toString().isEmpty())
+            List<ContentValues> reminders = dataController.getReminders();
+
+            for (ContentValues reminder : reminders)
             {
-                dataController.putEventValue(CalendarContract.Events.TITLE, binding.titleLayout.title.getText().toString());
-            }
-            if (!binding.descriptionLayout.descriptionEdittext.getText().toString().isEmpty())
-            {
-                dataController.putEventValue(CalendarContract.Events.DESCRIPTION, binding.descriptionLayout.descriptionEdittext.getText().toString());
-            }
-            if (!binding.locationLayout.eventLocation.getText().toString().isEmpty())
-            {
-                dataController.putEventValue(CalendarContract.Events.EVENT_LOCATION, binding.locationLayout.eventLocation.getText().toString());
+                reminder.put(CalendarContract.Reminders.CALENDAR_ID, calendarId);
+                reminder.put(CalendarContract.Reminders.EVENT_ID, newEventId);
             }
 
-            viewModel.addEvent(dataController.getNewEventData().getEVENT());
-            //attendee, reminder도 추가
-        } else if (requestCode == EventDataController.MODIFY_EVENT)
+            viewModel.addReminders(reminders);
+        }
+
+        // 참석자 재설정
+        if (!dataController.getAttendees().isEmpty())
         {
-            viewModel.updateEvent(dataController.getModifiedEventData().getEVENT());
+            List<ContentValues> attendees = dataController.getAttendees();
+            for (ContentValues attendee : attendees)
+            {
+                attendee.put(CalendarContract.Attendees.CALENDAR_ID, calendarId);
+                attendee.put(CalendarContract.Attendees.EVENT_ID, newEventId);
+            }
+            viewModel.addAttendees(attendees);
+            //초대여부 다이얼로그 표시
+        }
+
+    }
+
+    private void modifyEvent()
+    {
+        final int calendarId = dataController.getEventValueAsInt(CalendarContract.Events.CALENDAR_ID);
+        final long eventId = dataController.getEventValueAsLong(CalendarContract.Events._ID);
+
+        if (dataController.getModifiedEventData().getEVENT().size() > 0)
+        {
+            ContentValues event = dataController.getModifiedEventData().getEVENT();
+            event.put(CalendarContract.Events.CALENDAR_ID, calendarId);
+            event.put(CalendarContract.Events._ID, eventId);
+            viewModel.updateEvent(event);
+        }
+
+        // 알람
+        if (dataController.getEventValueAsBoolean(CalendarContract.Events.HAS_ALARM))
+        {
+            // 수정된 부분만 변경
+            List<ContentValues> reminders = dataController.getReminders();
+            for (ContentValues reminder : reminders)
+            {
+                reminder.put(CalendarContract.Reminders.CALENDAR_ID, calendarId);
+                reminder.put(CalendarContract.Reminders.EVENT_ID, eventId);
+            }
+            viewModel.addReminders(reminders);
+        }
+
+        // 참석자
+        if (!dataController.getAttendees().isEmpty())
+        {
+            // 수정된 부분만 변경
+            List<ContentValues> attendees = dataController.getAttendees();
+            for (ContentValues attendee : attendees)
+            {
+                attendee.put(CalendarContract.Attendees.CALENDAR_ID, calendarId);
+                attendee.put(CalendarContract.Attendees.EVENT_ID, eventId);
+            }
+            viewModel.addAttendees(attendees);
+            //초대여부 다이얼로그 표시
         }
     }
 
@@ -1067,10 +1123,23 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
             switch (focusedViewId)
             {
                 case R.id.title:
-                    dataController.putEventValue(CalendarContract.Events.TITLE, editable.toString());
+                    if (editable.toString().isEmpty())
+                    {
+                        dataController.removeEventValue(CalendarContract.Events.TITLE);
+                    } else
+                    {
+                        dataController.putEventValue(CalendarContract.Events.TITLE, editable.toString());
+                    }
                     break;
+
                 case R.id.description_edittext:
-                    dataController.putEventValue(CalendarContract.Events.DESCRIPTION, editable.toString());
+                    if (editable.toString().isEmpty())
+                    {
+                        dataController.removeEventValue(CalendarContract.Events.DESCRIPTION);
+                    } else
+                    {
+                        dataController.putEventValue(CalendarContract.Events.DESCRIPTION, editable.toString());
+                    }
                     break;
             }
         }

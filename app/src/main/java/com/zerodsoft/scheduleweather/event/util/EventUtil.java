@@ -295,6 +295,30 @@ public class EventUtil
         return result;
     }
 
+    public static String getReminderMethod(Context context, int method)
+    {
+        String methodStr = null;
+        switch (method)
+        {
+            case CalendarContract.Reminders.METHOD_DEFAULT:
+                methodStr = context.getString(R.string.reminder_method_default);
+                break;
+            case CalendarContract.Reminders.METHOD_ALERT:
+                methodStr = context.getString(R.string.reminder_method_alert);
+                break;
+            case CalendarContract.Reminders.METHOD_EMAIL:
+                methodStr = context.getString(R.string.reminder_method_email);
+                break;
+            case CalendarContract.Reminders.METHOD_SMS:
+                methodStr = context.getString(R.string.reminder_method_sms);
+                break;
+            case CalendarContract.Reminders.METHOD_ALARM:
+                methodStr = context.getString(R.string.reminder_method_alarm);
+                break;
+        }
+        return methodStr;
+    }
+
     public static String[] getAccessLevelItems(Context context)
     {
         return new String[]{context.getString(R.string.access_default), context.getString(R.string.access_public), context.getString(R.string.access_private)};

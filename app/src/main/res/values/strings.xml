@@ -279,6 +279,11 @@
     <string name="disconnected_network">네트워크 연결되지 않음</string>
     <string name="not_founded_search_result">검색 결과가 없습니다</string>
     <string name="error">오류 발생</string>
+    <string name="reminder_method_default">기본</string>
+    <string name="reminder_method_alert">알림</string>
+    <string name="reminder_method_email">이메일</string>
+    <string name="reminder_method_sms">SMS</string>
+    <string name="reminder_method_alarm">알람ㄴ</string>
 
 
     <!-- 알림 -->

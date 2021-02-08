@@ -223,11 +223,14 @@ public class CalendarProvider implements ICalendarProvider
 
     /**
      * 이벤트를 추가한다.
+     *
+     * @return
      */
     @Override
-    public void addEvent(ContentValues event)
+    public long addEvent(ContentValues event)
     {
-        context.getContentResolver().insert(CalendarContract.Events.CONTENT_URI, event);
+        Uri uri = context.getContentResolver().insert(CalendarContract.Events.CONTENT_URI, event);
+        return Long.parseLong(uri.getLastPathSegment());
     }
 
     /**

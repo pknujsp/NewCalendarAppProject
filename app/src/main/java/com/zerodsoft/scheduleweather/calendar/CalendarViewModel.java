@@ -107,9 +107,9 @@ public class CalendarViewModel extends ViewModel
         eventListLiveData.setValue(dataWrapper);
     }
 
-    public void addEvent(ContentValues event)
+    public long addEvent(ContentValues event)
     {
-        calendarProvider.addEvent(event);
+        return calendarProvider.addEvent(event);
     }
 
     public int deleteEvent(int calendarId, long eventId)

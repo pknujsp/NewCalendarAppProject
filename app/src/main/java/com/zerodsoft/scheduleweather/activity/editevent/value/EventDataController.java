@@ -343,6 +343,9 @@ public class EventDataController
     {
         int dataStorageType = getDataStorageType();
 
+        //eventId는 이벤트 수정/등록 후 받은 id를 가지고 지정
+        //calendarId는 수정/등록 시에 지정
+
         if (dataStorageType == NEW)
         {
             newEventData.getATTENDEES().clear();
@@ -368,17 +371,11 @@ public class EventDataController
 
     }
 
-    public void putReminders(List<Integer> minutesList)
+    public void putReminders(List<ContentValues> reminders)
     {
+        //eventId는 이벤트 수정/등록 후 받은 id를 가지고 지정
+        //calendarId는 수정/등록 시에 지정
         int dataStorageType = getDataStorageType();
-
-        List<ContentValues> reminders = new ArrayList<>();
-
-        for (int minutes : minutesList)
-        {
-            ContentValues reminder = new ContentValues();
-            reminder.put(CalendarContract.Reminders.MINUTES, minutes);
-        }
 
         if (dataStorageType == NEW)
         {
@@ -389,14 +386,16 @@ public class EventDataController
             modifiedEventData.getREMINDERS().clear();
             modifiedEventData.getREMINDERS().addAll(reminders);
         }
+
+        if (getEventValueAsInt(CalendarContract.Events.HAS_ALARM) == 0)
+        {
+            putEventValue(CalendarContract.Events.HAS_ALARM, 1);
+        }
     }
 
-    public void putReminder(int minutes)
+    public void putReminder(ContentValues reminder)
     {
         int dataStorageType = getDataStorageType();
-
-        ContentValues reminder = new ContentValues();
-        reminder.put(CalendarContract.Reminders.MINUTES, minutes);
 
         if (dataStorageType == NEW)
         {
@@ -434,111 +433,106 @@ public class EventDataController
     public void removeReminder(int minutes)
     {
         int dataStorageType = getDataStorageType();
+        List<ContentValues> reminders = new ArrayList<>();
 
         if (dataStorageType == NEW)
         {
-            if (!newEventData.getREMINDERS().isEmpty())
-            {
-                List<ContentValues> reminders = newEventData.getREMINDERS();
-
-                if (reminders.size() == 1)
-                {
-                    putEventValue(CalendarContract.Events.HAS_ALARM, 0);
-                }
-
-                int index = 0;
-                for (ContentValues reminder : reminders)
-                {
-                    if (reminder.getAsInteger(CalendarContract.Reminders.MINUTES) == minutes)
-                    {
-                        break;
-                    }
-                    index++;
-                }
-
-                newEventData.getREMINDERS().remove(index);
-            }
+            reminders = newEventData.getREMINDERS();
         } else if (dataStorageType == MODIFY)
         {
-            if (!modifiedEventData.getREMINDERS().isEmpty())
-            {
-                List<ContentValues> reminders = modifiedEventData.getREMINDERS();
-                int index = 0;
-                for (ContentValues reminder : reminders)
-                {
-                    if (reminder.getAsInteger(CalendarContract.Reminders.MINUTES) == minutes)
-                    {
-                        break;
-                    }
-                    index++;
-                }
-
-                modifiedEventData.getREMINDERS().remove(index);
-            }
+            reminders = modifiedEventData.getREMINDERS();
         }
 
+        if (reminders.size() == 1)
+        {
+            reminders.clear();
+            putEventValue(CalendarContract.Events.HAS_ALARM, 0);
+        } else if (reminders.size() >= 2)
+        {
+            int index = 0;
+            for (ContentValues reminder : reminders)
+            {
+                if (reminder.getAsInteger(CalendarContract.Reminders.MINUTES) == minutes)
+                {
+                    break;
+                }
+                index++;
+            }
+
+            reminders.remove(index);
+        }
+
+    }
+
+    public void removeReminders()
+    {
+        int dataStorageType = getDataStorageType();
+        List<ContentValues> reminders = new ArrayList<>();
+
+        if (dataStorageType == NEW)
+        {
+            reminders = newEventData.getREMINDERS();
+        } else if (dataStorageType == MODIFY)
+        {
+            reminders = modifiedEventData.getREMINDERS();
+        }
+
+        reminders.clear();
+        putEventValue(CalendarContract.Events.HAS_ALARM, 0);
     }
 
     public void removeAttendee(String email)
     {
         int responseDataType = getDataStorageType();
+        List<ContentValues> attendees = new ArrayList<>();
 
         if (responseDataType == NEW)
         {
-            if (!newEventData.getATTENDEES().isEmpty())
-            {
-                List<ContentValues> attendees = newEventData.getATTENDEES();
-                // 참석자수가 2명이면 모두 삭제(조직자, 참석자로 구성된 상태에서 참석자를 제거하기 때문)
-                if (attendees.size() == 2)
-                {
-                    newEventData.getATTENDEES().clear();
-
-                    removeEventValue(CalendarContract.Events.GUESTS_CAN_MODIFY);
-                    removeEventValue(CalendarContract.Events.GUESTS_CAN_INVITE_OTHERS);
-                    removeEventValue(CalendarContract.Events.GUESTS_CAN_SEE_GUESTS);
-                } else
-                {
-                    int index = 0;
-                    for (ContentValues attendee : attendees)
-                    {
-                        if (attendee.getAsString(CalendarContract.Attendees.ATTENDEE_EMAIL).equals(email))
-                        {
-                            break;
-                        }
-                        index++;
-                    }
-
-                    newEventData.getATTENDEES().remove(index);
-                }
-
-            }
+            attendees = newEventData.getATTENDEES();
         } else if (responseDataType == MODIFY)
         {
-            if (!modifiedEventData.getATTENDEES().isEmpty())
-            {
-                List<ContentValues> attendees = modifiedEventData.getATTENDEES();
-
-                if (attendees.size() == 2)
-                {
-                    modifiedEventData.getATTENDEES().clear();
-                } else
-                {
-                    int index = 0;
-                    for (ContentValues attendee : attendees)
-                    {
-                        if (attendee.getAsString(CalendarContract.Attendees.ATTENDEE_EMAIL).equals(email))
-                        {
-                            break;
-                        }
-                        index++;
-                    }
-
-                    modifiedEventData.getATTENDEES().remove(index);
-                }
-
-            }
+            attendees = modifiedEventData.getATTENDEES();
         }
 
+        // 참석자수가 2명이면 모두 삭제(조직자, 참석자로 구성된 상태에서 참석자를 제거하기 때문)
+        if (attendees.size() == 2)
+        {
+            attendees.clear();
+            removeEventValue(CalendarContract.Events.GUESTS_CAN_MODIFY);
+            removeEventValue(CalendarContract.Events.GUESTS_CAN_INVITE_OTHERS);
+            removeEventValue(CalendarContract.Events.GUESTS_CAN_SEE_GUESTS);
+        } else if (attendees.size() >= 3)
+        {
+            int index = 0;
+            for (ContentValues attendee : attendees)
+            {
+                if (attendee.getAsString(CalendarContract.Attendees.ATTENDEE_EMAIL).equals(email))
+                {
+                    break;
+                }
+                index++;
+            }
+            attendees.remove(index);
+        }
+    }
+
+    public void removeAttendees()
+    {
+        int responseDataType = getDataStorageType();
+        List<ContentValues> attendees = new ArrayList<>();
+
+        if (responseDataType == NEW)
+        {
+            attendees = newEventData.getATTENDEES();
+        } else if (responseDataType == MODIFY)
+        {
+            attendees = modifiedEventData.getATTENDEES();
+        }
+
+        attendees.clear();
+        removeEventValue(CalendarContract.Events.GUESTS_CAN_MODIFY);
+        removeEventValue(CalendarContract.Events.GUESTS_CAN_INVITE_OTHERS);
+        removeEventValue(CalendarContract.Events.GUESTS_CAN_SEE_GUESTS);
     }
 
     public void setCalendarValue(ContentValues calendar)
