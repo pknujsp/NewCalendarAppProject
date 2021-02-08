@@ -65,7 +65,37 @@ public class LocationRepository implements ILocationDao
             public void run()
             {
                 long result = locationDAO.insert(location);
-                resultCallback.onReceiveResult(result >-1);
+                resultCallback.onReceiveResult(result > -1);
+            }
+        });
+    }
+
+    @Override
+    public void removeLocation(int calendarId, long eventId, CarrierMessagingService.ResultCallback<Boolean> resultCallback)
+    {
+        App.executorService.execute(new Runnable()
+        {
+            @SneakyThrows
+            @Override
+            public void run()
+            {
+                locationDAO.delete(calendarId, eventId);
+                resultCallback.onReceiveResult(true);
+            }
+        });
+    }
+
+    @Override
+    public void modifyLocation(LocationDTO location, CarrierMessagingService.ResultCallback<Boolean> resultCallback)
+    {
+        App.executorService.execute(new Runnable()
+        {
+            @SneakyThrows
+            @Override
+            public void run()
+            {
+                locationDAO.update(location);
+                resultCallback.onReceiveResult(true);
             }
         });
     }

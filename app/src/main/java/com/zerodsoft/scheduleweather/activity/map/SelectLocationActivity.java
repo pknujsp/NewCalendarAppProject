@@ -195,18 +195,29 @@ public class SelectLocationActivity extends KakaoMapActivity
         CustomPoiItem item = (CustomPoiItem) poiItems[poiItemIndex];
 
         String location = null;
+        LocationDTO locationDTO = new LocationDTO();
 
         // 주소인지 장소인지를 구분한다.
         if (item.getPlaceDocument() != null)
         {
             location = item.getPlaceDocument().getPlaceName();
+
+            locationDTO.setPlaceId(item.getPlaceDocument().getId());
+            locationDTO.setPlaceName(item.getPlaceDocument().getPlaceName());
+            locationDTO.setLatitude(item.getPlaceDocument().getY());
+            locationDTO.setLongitude(item.getPlaceDocument().getX());
         } else if (item.getAddressDocument() != null)
         {
             location = item.getAddressDocument().getAddressName();
+
+            locationDTO.setAddressName(item.getAddressDocument().getAddressName());
+            locationDTO.setLatitude(item.getAddressDocument().getY());
+            locationDTO.setLongitude(item.getAddressDocument().getX());
         }
 
         //선택된 위치를 DB에 등록
         getIntent().putExtra(CalendarContract.Events.EVENT_LOCATION, location);
+        getIntent().putExtra("location", locationDTO);
         setResult(RESULT_OK, getIntent());
         finish();
     }

@@ -339,7 +339,8 @@ public class EventDataController
         }
     }
 
-    public void putAttendees(List<ContentValues> attendees)
+    public void putAttendees(List<ContentValues> attendees, boolean guestsCanModify, boolean guestsCanInviteOthers,
+                             boolean guestsCanSeeGuests)
     {
         int dataStorageType = getDataStorageType();
 
@@ -355,22 +356,13 @@ public class EventDataController
             modifiedEventData.getATTENDEES().clear();
             modifiedEventData.getATTENDEES().addAll(attendees);
         }
-    }
 
-    public void putAttendee(ContentValues attendee)
-    {
-        int dataStorageType = getDataStorageType();
-
-        if (dataStorageType == NEW)
-        {
-            newEventData.getATTENDEES().add(attendee);
-        } else if (dataStorageType == MODIFY)
-        {
-            modifiedEventData.getATTENDEES().add(attendee);
-        }
+        putEventValue(CalendarContract.Events.GUESTS_CAN_MODIFY, guestsCanModify ? 1 : 0);
+        putEventValue(CalendarContract.Events.GUESTS_CAN_INVITE_OTHERS, guestsCanInviteOthers ? 1 : 0);
+        putEventValue(CalendarContract.Events.GUESTS_CAN_SEE_GUESTS, guestsCanSeeGuests ? 1 : 0);
 
     }
-
+    
     public void putReminders(List<ContentValues> reminders)
     {
         //eventId는 이벤트 수정/등록 후 받은 id를 가지고 지정
@@ -443,23 +435,47 @@ public class EventDataController
             reminders = modifiedEventData.getREMINDERS();
         }
 
-        if (reminders.size() == 1)
+        if (!reminders.isEmpty())
         {
-            reminders.clear();
-            putEventValue(CalendarContract.Events.HAS_ALARM, 0);
-        } else if (reminders.size() >= 2)
-        {
-            int index = 0;
-            for (ContentValues reminder : reminders)
+            for (int i = 0; i < reminders.size(); i++)
             {
-                if (reminder.getAsInteger(CalendarContract.Reminders.MINUTES) == minutes)
+                if (reminders.get(i).getAsInteger(CalendarContract.Reminders.MINUTES) == minutes)
                 {
+                    reminders.remove(i);
+
+                    if (reminders.isEmpty())
+                    {
+                        putEventValue(CalendarContract.Events.HAS_ALARM, 0);
+                    }
                     break;
                 }
-                index++;
             }
 
-            reminders.remove(index);
+        }
+
+    }
+
+    public void modifyReminder(ContentValues reminder, int previousMinutes)
+    {
+        int dataStorageType = getDataStorageType();
+        List<ContentValues> reminders = new ArrayList<>();
+
+        if (dataStorageType == NEW)
+        {
+            reminders = newEventData.getREMINDERS();
+        } else if (dataStorageType == MODIFY)
+        {
+            reminders = modifiedEventData.getREMINDERS();
+        }
+
+        for (int i = 0; i < reminders.size(); i++)
+        {
+            if (reminders.get(i).getAsInteger(CalendarContract.Reminders.MINUTES) == previousMinutes)
+            {
+                reminders.get(i).clear();
+                reminders.get(i).putAll(reminder);
+                break;
+            }
         }
 
     }

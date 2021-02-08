@@ -11,4 +11,8 @@ public interface ILocationDao
     public void hasDetailLocation(int calendarId, long eventId, CarrierMessagingService.ResultCallback<Boolean> resultCallback);
 
     public void addLocation(LocationDTO location, CarrierMessagingService.ResultCallback<Boolean> resultCallback);
+
+    public void removeLocation(int calendarId, long eventId, CarrierMessagingService.ResultCallback<Boolean> resultCallback);
+
+    public void modifyLocation(LocationDTO location, CarrierMessagingService.ResultCallback<Boolean> resultCallback);
 }

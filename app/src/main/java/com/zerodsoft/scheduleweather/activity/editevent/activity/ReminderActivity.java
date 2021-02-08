@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.DataBindingUtil;
 
 import android.annotation.SuppressLint;
+import android.content.ContentValues;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.CalendarContract;
@@ -42,7 +43,7 @@ public class ReminderActivity extends AppCompatActivity
     private final int MINUTE = 3;
 
     private Integer requestCode;
-    private Integer givedMinutes;
+    private Integer previousMinutes;
 
 
     @Override
@@ -126,9 +127,8 @@ public class ReminderActivity extends AppCompatActivity
             break;
             case MODIFY_REMINDER:
             {
-                givedMinutes = getIntent().getIntExtra(CalendarContract.Reminders.MINUTES, 0);
-
-                ReminderDto reminderDto = EventUtil.convertAlarmMinutes(givedMinutes);
+                previousMinutes = getIntent().getIntExtra("previousMinutes", 0);
+                ReminderDto reminderDto = EventUtil.convertAlarmMinutes(previousMinutes);
 
                 binding.reminderWeekValue.setText(String.valueOf(reminderDto.getWeek()));
                 binding.reminderDayValue.setText(String.valueOf(reminderDto.getDay()));
@@ -159,7 +159,11 @@ public class ReminderActivity extends AppCompatActivity
                 if (binding.okRemindRadio.isChecked())
                 {
                     //알람을 추가
-                    getIntent().putExtra(CalendarContract.Reminders.MINUTES, newMinutes);
+                    ContentValues reminder = new ContentValues();
+                    reminder.put(CalendarContract.Reminders.MINUTES, newMinutes);
+                    reminder.put(CalendarContract.Reminders.METHOD, "");
+
+                    getIntent().putExtra("reminder", reminder);
                     setResult(RESULT_ADDED_REMINDER, getIntent());
                 } else
                 {
@@ -173,14 +177,18 @@ public class ReminderActivity extends AppCompatActivity
             {
                 if (binding.okRemindRadio.isChecked())
                 {
-                    if (givedMinutes == newMinutes)
+                    if (previousMinutes == newMinutes)
                     {
                         //기존 알람 값과 동일하여 취소로 판단
                         setResult(RESULT_CANCELED);
                     } else
                     {
                         //알람 수정
-                        getIntent().putExtra(CalendarContract.Reminders.MINUTES, newMinutes);
+                        ContentValues reminder = new ContentValues();
+                        reminder.put(CalendarContract.Reminders.MINUTES, newMinutes);
+                        reminder.put(CalendarContract.Reminders.METHOD, "");
+
+                        getIntent().putExtra("reminder", reminder);
                         setResult(RESULT_MODIFIED_REMINDER, getIntent());
                     }
                 } else

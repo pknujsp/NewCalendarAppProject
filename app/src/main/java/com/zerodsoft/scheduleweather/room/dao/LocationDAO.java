@@ -18,7 +18,7 @@ public interface LocationDAO
     @Query("SELECT * FROM location_table WHERE calendar_id = :calendarId AND event_id = :eventId")
     public LocationDTO select(int calendarId, long eventId);
 
-    @Query("SELECT EXISTS (SELECT * from location_table  WHERE calendar_id = :calendarId AND event_id = :eventId) AS success")
+    @Query("SELECT EXISTS (SELECT count(*) from location_table  WHERE calendar_id = :calendarId AND event_id = :eventId) AS success")
     public int hasLocation(int calendarId, long eventId);
 
     @Update(entity = LocationDTO.class, onConflict = OnConflictStrategy.IGNORE)
@@ -26,4 +26,7 @@ public interface LocationDAO
 
     @Delete(entity = LocationDTO.class)
     public void delete(LocationDTO locationDTO);
+
+    @Query("DELETE FROM location_table WHERE calendar_id = :calendarId AND event_id = :eventId")
+    public void delete(int calendarId, long eventId);
 }
