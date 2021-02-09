@@ -68,29 +68,16 @@ public class AttendeeListAdapter extends RecyclerView.Adapter<AttendeeListAdapte
             ContentValues attendee = attendeeList.get(position);
             String attendeeNameValue = null;
 
-            // 참석자 목록에서 읽어온 경우
-            if (attendee.containsKey(CalendarContract.Attendees.ATTENDEE_RELATIONSHIP))
+            if (attendee.getAsInteger(CalendarContract.Attendees.ATTENDEE_RELATIONSHIP) == CalendarContract.Attendees.RELATIONSHIP_ORGANIZER)
             {
-                if (attendee.getAsInteger(CalendarContract.Attendees.ATTENDEE_RELATIONSHIP) == CalendarContract.Attendees.RELATIONSHIP_ORGANIZER)
+                attendeeNameValue = attendee.getAsString(CalendarContract.Attendees.ATTENDEE_NAME);
+                if (attendeeNameValue.equals(SELECTED_CALENDAR_NAME))
                 {
-                    attendeeNameValue = attendee.getAsString(CalendarContract.Attendees.ATTENDEE_NAME);
-                    if (attendeeNameValue.equals(SELECTED_CALENDAR_NAME))
-                    {
-                        attendeeNameValue += "(ME)";
-                        removeButton.setVisibility(View.GONE);
-                    }
-                } else
-                {
-                    attendeeNameValue = attendee.getAsString(CalendarContract.Attendees.ATTENDEE_EMAIL);
-                    if (attendeeNameValue.equals(SELECTED_CALENDAR_OWNER_ACCOUNT))
-                    {
-                        attendeeNameValue += "(ME)";
-                        removeButton.setVisibility(View.GONE);
-                    }
+                    attendeeNameValue += "(ME)";
+                    removeButton.setVisibility(View.GONE);
                 }
             } else
             {
-                // 추가한 경우
                 attendeeNameValue = attendee.getAsString(CalendarContract.Attendees.ATTENDEE_EMAIL);
                 if (attendeeNameValue.equals(SELECTED_CALENDAR_OWNER_ACCOUNT))
                 {
@@ -98,6 +85,7 @@ public class AttendeeListAdapter extends RecyclerView.Adapter<AttendeeListAdapte
                     removeButton.setVisibility(View.GONE);
                 }
             }
+
             attendeeName.setText(attendeeNameValue);
 
             attendeeName.setOnClickListener(new View.OnClickListener()

@@ -447,7 +447,7 @@ public class CalendarProvider implements ICalendarProvider
      * 알림을 삭제한다.
      */
     @Override
-    public int deleteReminders(int calendarId, long eventId, int[] reminderIds)
+    public int deleteReminders(int calendarId, long eventId, long[] reminderIds)
     {
         String where = "(" + CalendarContract.Reminders.CALENDAR_ID + "=? AND "
                 + CalendarContract.Reminders.EVENT_ID + "=? AND "
@@ -459,7 +459,7 @@ public class CalendarProvider implements ICalendarProvider
         ContentResolver contentResolver = context.getContentResolver();
         int deletedRows = 0;
 
-        for (int reminderId : reminderIds)
+        for (long reminderId : reminderIds)
         {
             selectionArgs[2] = String.valueOf(reminderId);
             deletedRows += contentResolver.delete(CalendarContract.Reminders.CONTENT_URI, where, selectionArgs);
@@ -717,7 +717,7 @@ public class CalendarProvider implements ICalendarProvider
      * @return 삭제된 행의 개수 반환
      */
     @Override
-    public int deleteAttendees(int calendarId, long eventId, int[] attendeeIds)
+    public int deleteAttendees(int calendarId, long eventId, long[] attendeeIds)
     {
         final String where = CalendarContract.Attendees.CALENDAR_ID + "=? AND " +
                 CalendarContract.Attendees.EVENT_ID + "=? AND " +
@@ -730,7 +730,7 @@ public class CalendarProvider implements ICalendarProvider
         ContentResolver contentResolver = context.getContentResolver();
         int updatedRows = 0;
 
-        for (int attendeeId : attendeeIds)
+        for (long attendeeId : attendeeIds)
         {
             selectionArgs[2] = String.valueOf(attendeeId);
             updatedRows += contentResolver.delete(CalendarContract.Attendees.CONTENT_URI, where, selectionArgs);

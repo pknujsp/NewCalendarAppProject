@@ -17,9 +17,6 @@ public class LocationDTO implements Parcelable
     @ColumnInfo(name = "calendar_id")
     private int calendarId;
 
-    @ColumnInfo(name = "owner_account")
-    private String ownerAccount;
-
     @ColumnInfo(name = "event_id")
     private long eventId;
 
@@ -46,7 +43,6 @@ public class LocationDTO implements Parcelable
     {
         id = in.readInt();
         calendarId = in.readInt();
-        ownerAccount = in.readString();
         eventId = in.readInt();
         latitude = in.readDouble();
         longitude = in.readDouble();
@@ -88,16 +84,6 @@ public class LocationDTO implements Parcelable
     public void setCalendarId(int calendarId)
     {
         this.calendarId = calendarId;
-    }
-
-    public String getOwnerAccount()
-    {
-        return ownerAccount;
-    }
-
-    public void setOwnerAccount(String ownerAccount)
-    {
-        this.ownerAccount = ownerAccount;
     }
 
     public long getEventId()
@@ -171,7 +157,6 @@ public class LocationDTO implements Parcelable
     {
         parcel.writeInt(id);
         parcel.writeInt(calendarId);
-        parcel.writeString(ownerAccount);
         parcel.writeLong(eventId);
         parcel.writeDouble(latitude);
         parcel.writeDouble(longitude);

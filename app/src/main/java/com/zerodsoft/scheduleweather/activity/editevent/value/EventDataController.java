@@ -15,6 +15,8 @@ public class EventDataController
     private EventData savedEventData;
     private EventDefaultValue eventDefaultValue;
 
+    private ContentValues selectedCalendar = new ContentValues();
+
     public static final int NEW_EVENT = 0;
     public static final int MODIFY_EVENT = 1;
 
@@ -64,6 +66,11 @@ public class EventDataController
     public EventData getModifiedEventData()
     {
         return modifiedEventData;
+    }
+
+    public ContentValues getSelectedCalendar()
+    {
+        return selectedCalendar;
     }
 
     /**
@@ -362,7 +369,7 @@ public class EventDataController
         putEventValue(CalendarContract.Events.GUESTS_CAN_SEE_GUESTS, guestsCanSeeGuests ? 1 : 0);
 
     }
-    
+
     public void putReminders(List<ContentValues> reminders)
     {
         //eventId는 이벤트 수정/등록 후 받은 id를 가지고 지정
@@ -524,11 +531,11 @@ public class EventDataController
             {
                 if (attendee.getAsString(CalendarContract.Attendees.ATTENDEE_EMAIL).equals(email))
                 {
+                    attendees.remove(index);
                     break;
                 }
                 index++;
             }
-            attendees.remove(index);
         }
     }
 
@@ -554,9 +561,8 @@ public class EventDataController
     public void setCalendarValue(ContentValues calendar)
     {
         putEventValue(CalendarContract.Events.CALENDAR_ID, calendar.getAsInteger(CalendarContract.Calendars._ID));
-        putEventValue(CalendarContract.Events.CALENDAR_DISPLAY_NAME, calendar.getAsString(CalendarContract.Calendars.CALENDAR_DISPLAY_NAME));
-        putEventValue(CalendarContract.Events.ACCOUNT_NAME, calendar.getAsString(CalendarContract.Calendars.ACCOUNT_NAME));
-        putEventValue(CalendarContract.Events.CALENDAR_COLOR, calendar.getAsInteger(CalendarContract.Calendars.CALENDAR_COLOR));
-        putEventValue(CalendarContract.Events.OWNER_ACCOUNT, calendar.getAsString(CalendarContract.Calendars.OWNER_ACCOUNT));
+
+        selectedCalendar.clear();
+        selectedCalendar.putAll(calendar);
     }
 }

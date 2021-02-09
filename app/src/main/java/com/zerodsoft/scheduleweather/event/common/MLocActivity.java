@@ -89,7 +89,6 @@ public class MLocActivity extends KakaoMapActivity
         LocationDTO location = new LocationDTO();
         location.setCalendarId(calendarId);
         location.setEventId(eventId);
-        location.setOwnerAccount(ownerAccount);
 
         // 주소인지 장소인지를 구분한다.
         if (item.getPlaceDocument() != null)

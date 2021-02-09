@@ -164,12 +164,13 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
     }
 
     @Override
-    public void onClicked(int calendarId, long instanceId, long begin, long end)
+    public void onClicked(int calendarId, long instanceId, long eventId, long begin, long end)
     {
         // 이벤트 정보 액티비티로 전환
         Intent intent = new Intent(getActivity(), EventActivity.class);
         intent.putExtra("calendarId", calendarId);
         intent.putExtra("instanceId", instanceId);
+        intent.putExtra("eventId", eventId);
         intent.putExtra("begin", begin);
         intent.putExtra("end", end);
 

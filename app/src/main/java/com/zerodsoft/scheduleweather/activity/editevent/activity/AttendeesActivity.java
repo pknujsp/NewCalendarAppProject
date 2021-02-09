@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.ContentValues;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.provider.CalendarContract;
@@ -50,11 +51,44 @@ public class AttendeesActivity extends AppCompatActivity
         actionBar.setDisplayShowTitleEnabled(false);
         actionBar.setDisplayHomeAsUpEnabled(true);
 
+        binding.authorityModifyEvent.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
+        {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked)
+            {
+                if (isChecked)
+                {
+                    binding.authorityAttendeeInvites.setChecked(true);
+                    binding.authorityAttendeeShowAttendees.setChecked(true);
+
+                    binding.authorityAttendeeInvites.setEnabled(false);
+                    binding.authorityAttendeeShowAttendees.setEnabled(false);
+                } else
+                {
+                    binding.authorityAttendeeInvites.setEnabled(true);
+                    binding.authorityAttendeeShowAttendees.setEnabled(true);
+                }
+            }
+        });
+
         binding.attendeeList.addItemDecoration(new DividerItemDecoration(getApplicationContext(), DividerItemDecoration.VERTICAL));
         binding.attendeeList.setLayoutManager(new LinearLayoutManager(getApplicationContext(), LinearLayoutManager.VERTICAL, false));
 
-        attendeeList = getIntent().getParcelableArrayListExtra("attendeeList");
-        selectedCalendar = getIntent().getParcelableExtra("selectedCalendar");
+        Intent intent = getIntent();
+        attendeeList = intent.getParcelableArrayListExtra("attendeeList");
+        selectedCalendar = intent.getParcelableExtra("selectedCalendar");
+
+        // 권한 값을 받아서 설정
+        if (!attendeeList.isEmpty())
+        {
+            boolean guestsModify = intent.getBooleanExtra(CalendarContract.Events.GUESTS_CAN_MODIFY, false);
+            boolean guestsCanInviteOthers = intent.getBooleanExtra(CalendarContract.Events.GUESTS_CAN_INVITE_OTHERS, false);
+            boolean guestsCanSeeGuests = intent.getBooleanExtra(CalendarContract.Events.GUESTS_CAN_SEE_GUESTS, false);
+
+            binding.authorityAttendeeInvites.setChecked(guestsCanInviteOthers);
+            binding.authorityAttendeeShowAttendees.setChecked(guestsCanSeeGuests);
+            binding.authorityModifyEvent.setChecked(guestsModify);
+        }
 
         adapter = new AttendeeListAdapter(attendeeList, selectedCalendar);
         adapter.registerAdapterDataObserver(adapterDataObserver);
@@ -68,43 +102,7 @@ public class AttendeesActivity extends AppCompatActivity
             binding.authorityChipGroup.setVisibility(View.VISIBLE);
         }
 
-        binding.authorityModifyEvent.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
-        {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b)
-            {
-                if (b)
-                {
-                    binding.authorityAttendeeInvites.setChecked(true);
-                    binding.authorityAttendeeShowAttendees.setChecked(true);
 
-                    binding.authorityAttendeeInvites.setEnabled(false);
-                    binding.authorityAttendeeShowAttendees.setChecked(false);
-                } else
-                {
-                    binding.authorityAttendeeInvites.setEnabled(true);
-                    binding.authorityAttendeeShowAttendees.setChecked(true);
-                }
-            }
-        });
-
-        binding.authorityAttendeeInvites.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
-        {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b)
-            {
-
-            }
-        });
-
-        binding.authorityAttendeeShowAttendees.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
-        {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b)
-            {
-
-            }
-        });
     }
 
     @Override
@@ -173,6 +171,8 @@ public class AttendeesActivity extends AppCompatActivity
                         }
                         ContentValues attendee = new ContentValues();
                         attendee.put(CalendarContract.Attendees.ATTENDEE_EMAIL, query);
+                        attendee.put(CalendarContract.Attendees.ATTENDEE_RELATIONSHIP, CalendarContract.Attendees.RELATIONSHIP_ATTENDEE);
+                        attendee.put(CalendarContract.Attendees.ATTENDEE_STATUS, CalendarContract.Attendees.ATTENDEE_STATUS_INVITED);
                         attendeeList.add(attendee);
                         adapter.notifyDataSetChanged();
 
@@ -225,9 +225,13 @@ public class AttendeesActivity extends AppCompatActivity
     {
         if (!attendeeList.isEmpty())
         {
-            getIntent().putExtra(CalendarContract.Attendees.GUESTS_CAN_MODIFY, binding.authorityModifyEvent.isChecked());
-            getIntent().putExtra(CalendarContract.Attendees.GUESTS_CAN_INVITE_OTHERS, binding.authorityAttendeeInvites.isChecked());
-            getIntent().putExtra(CalendarContract.Attendees.GUESTS_CAN_SEE_GUESTS, binding.authorityAttendeeShowAttendees.isChecked());
+            boolean a = binding.authorityModifyEvent.isChecked();
+            boolean b = binding.authorityAttendeeInvites.isChecked();
+            boolean c = binding.authorityAttendeeShowAttendees.isChecked();
+
+            getIntent().putExtra(CalendarContract.Events.GUESTS_CAN_MODIFY, binding.authorityModifyEvent.isChecked());
+            getIntent().putExtra(CalendarContract.Events.GUESTS_CAN_INVITE_OTHERS, binding.authorityAttendeeInvites.isChecked());
+            getIntent().putExtra(CalendarContract.Events.GUESTS_CAN_SEE_GUESTS, binding.authorityAttendeeShowAttendees.isChecked());
         }
         getIntent().putParcelableArrayListExtra("attendeeList", (ArrayList<? extends Parcelable>) attendeeList);
         setResult(RESULT_OK, getIntent());

@@ -28,6 +28,8 @@ import android.widget.Toast;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.activity.editevent.activity.EditEventActivity;
+import com.zerodsoft.scheduleweather.activity.editevent.value.EventDataController;
 import com.zerodsoft.scheduleweather.databinding.ActivityScheduleInfoBinding;
 import com.zerodsoft.scheduleweather.event.common.MLocActivity;
 import com.zerodsoft.scheduleweather.event.common.interfaces.IFab;
@@ -56,6 +58,9 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab
     private static final String TAG_WEATHER = "weather";
     private static final String TAG_LOCATION = "location";
     private String clickedFragmentTag;
+
+    private Integer calendarId;
+    private Long eventId;
 
     @Override
     public void onAttachedToWindow()
@@ -96,9 +101,39 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab
                 }
             }
         });
+        binding.reselectLocationFab.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+
+            }
+        });
+        binding.modifyEventFab.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                Intent intent = new Intent(EventActivity.this, EditEventActivity.class);
+                intent.putExtra("requestCode", EventDataController.MODIFY_EVENT);
+                intent.putExtra("calendarId", calendarId);
+                intent.putExtra("eventId", eventId);
+
+                startActivity(intent);
+            }
+        });
+        binding.removeEventFab.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+
+            }
+        });
 
         final long instanceId = getIntent().getLongExtra("instanceId", 0);
-        final int calendarId = getIntent().getIntExtra("calendarId", 0);
+        calendarId = getIntent().getIntExtra("calendarId", 0);
+        eventId = getIntent().getLongExtra("eventId", 0);
         final long begin = getIntent().getLongExtra("begin", 0);
         final long end = getIntent().getLongExtra("end", 0);
 

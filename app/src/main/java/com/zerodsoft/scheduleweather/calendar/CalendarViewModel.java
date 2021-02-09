@@ -161,7 +161,7 @@ public class CalendarViewModel extends ViewModel
         return calendarProvider.updateReminder(reminder);
     }
 
-    public int deleteReminders(int calendarId, long eventId, int[] reminderIds)
+    public int deleteReminders(int calendarId, long eventId, long[] reminderIds)
     {
         return calendarProvider.deleteReminders(calendarId, eventId, reminderIds);
     }
@@ -213,7 +213,7 @@ public class CalendarViewModel extends ViewModel
     }
 
 
-    public int deleteAttendees(int calendarId, long eventId, int[] attendeeIds)
+    public int deleteAttendees(int calendarId, long eventId, long[] attendeeIds)
     {
         return calendarProvider.deleteAttendees(calendarId, eventId, attendeeIds);
     }

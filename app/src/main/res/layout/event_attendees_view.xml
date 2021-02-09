@@ -21,22 +21,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:divider="?attr/dividerVertical"
-            android:showDividers="middle">
+            android:showDividers="middle" />
 
-            <TableRow
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <Button
-                    android:id="@+id/show_attendees_detail"
-                    style="@style/Widget.MaterialComponents.Button.TextButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/show_attendees" />
-
-            </TableRow>
-
-        </TableLayout>
+        <Button
+            android:id="@+id/show_attendees_detail"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/show_attendees" />
 
         <TextView
             android:id="@+id/not_attendees"

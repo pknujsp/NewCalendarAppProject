@@ -34,7 +34,7 @@ public interface ICalendarProvider
 
     public int updateReminder(ContentValues reminder);
 
-    public int deleteReminders(int calendarId, long eventId, int[] reminderIds);
+    public int deleteReminders(int calendarId, long eventId, long[] reminderIds);
 
     public int deleteAllReminders(int calendarId, long eventId);
 
@@ -54,7 +54,7 @@ public interface ICalendarProvider
 
     public int deleteAllAttendees(int calendarId, long eventId);
 
-    public int deleteAttendees(int calendarId, long eventId, int[] attendeeIds);
+    public int deleteAttendees(int calendarId, long eventId, long[] attendeeIds);
 
     // sync
 }

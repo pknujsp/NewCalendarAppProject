@@ -107,8 +107,8 @@ public class HeaderInstancesView extends ViewGroup
             ContentValues instance = ((InstanceView) view).getInstance();
 
             onEventItemClickListener.onClicked(instance.getAsInteger(CalendarContract.Instances.CALENDAR_ID)
-                    , instance.getAsLong(CalendarContract.Instances._ID), instance.getAsLong(CalendarContract.Instances.BEGIN)
-                    , instance.getAsLong(CalendarContract.Instances.END));
+                    , instance.getAsLong(CalendarContract.Instances._ID), instance.getAsLong(CalendarContract.Instances.EVENT_ID),
+                    instance.getAsLong(CalendarContract.Instances.BEGIN), instance.getAsLong(CalendarContract.Instances.END));
         }
     };
 

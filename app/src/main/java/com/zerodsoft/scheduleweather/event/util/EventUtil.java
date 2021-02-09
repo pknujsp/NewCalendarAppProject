@@ -298,6 +298,7 @@ public class EventUtil
     public static String getReminderMethod(Context context, int method)
     {
         String methodStr = null;
+
         switch (method)
         {
             case CalendarContract.Reminders.METHOD_DEFAULT:

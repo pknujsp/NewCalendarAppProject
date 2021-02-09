@@ -60,7 +60,7 @@ public class PlacesAroundLocationFragment extends Fragment
             @Override
             public void onReceiveResult(@NonNull LocationDTO location) throws RemoteException
             {
-                if (location.getOwnerAccount() != null)
+                if (location.getId() >= 0)
                 {
                     Fragment fragment = null;
 

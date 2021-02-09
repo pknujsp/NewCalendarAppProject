@@ -274,7 +274,7 @@ public class DayView extends HourEventsView implements IEvent
         for (int i = 0; i < itemCells.size(); i++)
         {
             DayItemView child = new DayItemView(context, itemCells.get(i));
-               addView(child);
+            addView(child);
         }
     }
 
@@ -286,8 +286,8 @@ public class DayView extends HourEventsView implements IEvent
             ContentValues instance = ((DayItemView) view).itemCell.instance;
 
             onEventItemClickListener.onClicked(instance.getAsInteger(CalendarContract.Instances.CALENDAR_ID)
-                    , instance.getAsLong(CalendarContract.Instances._ID), instance.getAsLong(CalendarContract.Instances.BEGIN),
-                    instance.getAsLong(CalendarContract.Instances.END));
+                    , instance.getAsLong(CalendarContract.Instances._ID), instance.getAsLong(CalendarContract.Instances.EVENT_ID),
+                    instance.getAsLong(CalendarContract.Instances.BEGIN), instance.getAsLong(CalendarContract.Instances.END));
         }
     };
 

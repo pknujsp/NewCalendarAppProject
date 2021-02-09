@@ -48,10 +48,12 @@ public class EventData
     public void setStart(long time)
     {
         this.start.setTimeInMillis(time);
+        EVENT.put(CalendarContract.Events.DTSTART, time);
     }
 
     public void setEnd(long time)
     {
         this.end.setTimeInMillis(time);
+        EVENT.put(CalendarContract.Events.DTEND, time);
     }
 }
