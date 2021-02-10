@@ -560,7 +560,12 @@ public class EventDataController
 
     public void setCalendarValue(ContentValues calendar)
     {
-        putEventValue(CalendarContract.Events.CALENDAR_ID, calendar.getAsInteger(CalendarContract.Calendars._ID));
+        int dataStorageType = getDataStorageType(CalendarContract.Events.CALENDAR_ID);
+
+        if (dataStorageType != SAVED)
+        {
+            putEventValue(CalendarContract.Events.CALENDAR_ID, calendar.getAsInteger(CalendarContract.Calendars._ID));
+        }
 
         selectedCalendar.clear();
         selectedCalendar.putAll(calendar);

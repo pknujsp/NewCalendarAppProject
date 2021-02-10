@@ -23,8 +23,6 @@ public class CalendarProvider implements ICalendarProvider
     private static CalendarProvider instance;
     public static final int REQUEST_READ_CALENDAR = 200;
     public static final int REQUEST_WRITE_CALENDAR = 300;
-    public static final String SELECTED_CALENDARS = "SELECTED_CALENDARS";
-
 
     private final Context context;
     private final String[] EVENTS_PROJECTION =
@@ -93,7 +91,7 @@ public class CalendarProvider implements ICalendarProvider
 
         stringBuilder.delete(0, stringBuilder.length());
 
-        INSTANCE_QUERY = stringBuilder.append(CalendarContract.Instances._ID).append("=? AND ")
+        INSTANCE_QUERY = stringBuilder.append("Instances._id").append("=? AND ")
                 .append(CalendarContract.Instances.CALENDAR_ID).append("=?").toString();
 
         stringBuilder.delete(0, stringBuilder.length());
@@ -102,7 +100,7 @@ public class CalendarProvider implements ICalendarProvider
 
         stringBuilder.delete(0, stringBuilder.length());
 
-        EVENTS_QUERY = stringBuilder.append("").append(CalendarContract.Events.CALENDAR_ID).append("=?").toString();
+        EVENTS_QUERY = stringBuilder.append(CalendarContract.Events.CALENDAR_ID).append("=?").toString();
 
         stringBuilder.delete(0, stringBuilder.length());
 
@@ -275,7 +273,12 @@ public class CalendarProvider implements ICalendarProvider
     public int updateEvent(ContentValues event)
     {
         ContentResolver contentResolver = context.getContentResolver();
-        return contentResolver.update(CalendarContract.Events.CONTENT_URI, event, "", new String[1]);
+        String selection = "Events._id=? AND " + CalendarContract.Events.CALENDAR_ID + "=?";
+        String[] selectionArgs = {event.getAsString(CalendarContract.Events._ID), event.getAsString(CalendarContract.Events.CALENDAR_ID)};
+        event.remove(CalendarContract.Events._ID);
+        event.remove(CalendarContract.Events.CALENDAR_ID);
+
+        return contentResolver.update(CalendarContract.Events.CONTENT_URI, event, selection, selectionArgs);
     }
 
     // calendar - select
@@ -401,9 +404,9 @@ public class CalendarProvider implements ICalendarProvider
     public List<ContentValues> getReminders(int calendarId, long eventId)
     {
         ContentResolver contentResolver = context.getContentResolver();
-        String[] selectionArgs = {String.valueOf(calendarId), String.valueOf(eventId)};
         Cursor cursor = CalendarContract.Reminders.query(contentResolver, eventId, null);
         List<ContentValues> reminders = new ArrayList<>();
+
         if (cursor != null)
         {
             while (cursor.moveToNext())
@@ -636,8 +639,6 @@ public class CalendarProvider implements ICalendarProvider
     public List<ContentValues> getAttendees(int calendarId, long eventId)
     {
         ContentResolver contentResolver = context.getContentResolver();
-        String[] selectionArgs = {String.valueOf(calendarId),
-                String.valueOf(eventId)};
 
         List<ContentValues> attendees = new ArrayList<>();
         Cursor cursor = CalendarContract.Attendees.query(contentResolver, eventId, null);
@@ -720,8 +721,7 @@ public class CalendarProvider implements ICalendarProvider
     public int deleteAttendees(int calendarId, long eventId, long[] attendeeIds)
     {
         final String where = CalendarContract.Attendees.CALENDAR_ID + "=? AND " +
-                CalendarContract.Attendees.EVENT_ID + "=? AND " +
-                CalendarContract.Attendees._ID + "=?";
+                CalendarContract.Attendees.EVENT_ID + "=? AND " + "Attendees._id=?";
 
         String[] selectionArgs = new String[3];
         selectionArgs[0] = String.valueOf(calendarId);

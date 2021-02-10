@@ -70,11 +70,12 @@ public class AttendeeListAdapter extends RecyclerView.Adapter<AttendeeListAdapte
 
             if (attendee.getAsInteger(CalendarContract.Attendees.ATTENDEE_RELATIONSHIP) == CalendarContract.Attendees.RELATIONSHIP_ORGANIZER)
             {
+                removeButton.setVisibility(View.GONE);
                 attendeeNameValue = attendee.getAsString(CalendarContract.Attendees.ATTENDEE_NAME);
+
                 if (attendeeNameValue.equals(SELECTED_CALENDAR_NAME))
                 {
                     attendeeNameValue += "(ME)";
-                    removeButton.setVisibility(View.GONE);
                 }
             } else
             {
@@ -82,7 +83,6 @@ public class AttendeeListAdapter extends RecyclerView.Adapter<AttendeeListAdapte
                 if (attendeeNameValue.equals(SELECTED_CALENDAR_OWNER_ACCOUNT))
                 {
                     attendeeNameValue += "(ME)";
-                    removeButton.setVisibility(View.GONE);
                 }
             }
 
@@ -109,6 +109,7 @@ public class AttendeeListAdapter extends RecyclerView.Adapter<AttendeeListAdapte
                     notifyDataSetChanged();
                 }
             });
+
         }
     }
 }

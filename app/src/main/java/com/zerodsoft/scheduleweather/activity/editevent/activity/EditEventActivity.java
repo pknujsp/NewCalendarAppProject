@@ -238,7 +238,6 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
 
                         //캘린더 수정 불가
                         binding.calendarLayout.getRoot().setVisibility(View.GONE);
-                        setCalendarText();
 
                         // allday switch
                         binding.timeLayout.timeAlldaySwitch.setChecked(dataController.getEventValueAsBoolean(CalendarContract.Events.ALL_DAY));
@@ -266,12 +265,15 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
 
                         // 설명
                         binding.descriptionLayout.descriptionEdittext.setText(dataController.getEventValueAsString(CalendarContract.Events.DESCRIPTION));
+
                         // 위치
                         binding.locationLayout.eventLocation.setText(dataController.getEventValueAsString(CalendarContract.Events.EVENT_LOCATION));
-                        // 공개 범위 표시
-                        binding.accesslevelLayout.eventAccessLevel.callOnClick();
-                        // 유효성 표시
-                        binding.availabilityLayout.eventAvailability.callOnClick();
+
+                        // 접근 범위
+                        setAccessLevelText();
+
+                        // 유효성
+                        setAvailabilityText();
                     }
                 });
 
@@ -897,35 +899,24 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
         final String selectedCalendarName = dataController.getEventValueAsString(CalendarContract.Events.CALENDAR_DISPLAY_NAME);
         final String selectedCalendarOwnerAccount = dataController.getEventValueAsString(CalendarContract.Events.OWNER_ACCOUNT);
         String attendeeName = null;
-
-        // 참석자 목록에서 읽어온 경우
-        if (attendee.containsKey(CalendarContract.Attendees.ATTENDEE_RELATIONSHIP))
+        
+        if (attendee.getAsInteger(CalendarContract.Attendees.ATTENDEE_RELATIONSHIP) == CalendarContract.Attendees.RELATIONSHIP_ORGANIZER)
         {
-            if (attendee.getAsInteger(CalendarContract.Attendees.ATTENDEE_RELATIONSHIP) == CalendarContract.Attendees.RELATIONSHIP_ORGANIZER)
+            // 조직자인 경우
+            removeButton.setVisibility(View.GONE);
+            attendeeName = attendee.getAsString(CalendarContract.Attendees.ATTENDEE_NAME);
+
+            if (attendeeName.equals(selectedCalendarName))
             {
-                attendeeName = attendee.getAsString(CalendarContract.Attendees.ATTENDEE_NAME);
-                if (attendeeName.equals(selectedCalendarName))
-                {
-                    attendeeName += "(ME)";
-                    removeButton.setVisibility(View.GONE);
-                }
-            } else
-            {
-                attendeeName = attendee.getAsString(CalendarContract.Attendees.ATTENDEE_EMAIL);
-                if (attendeeName.equals(selectedCalendarOwnerAccount))
-                {
-                    attendeeName += "(ME)";
-                    removeButton.setVisibility(View.GONE);
-                }
+                attendeeName += "(ME)";
             }
         } else
         {
-            // 추가한 경우
+            // 참석자인 경우
             attendeeName = attendee.getAsString(CalendarContract.Attendees.ATTENDEE_EMAIL);
             if (attendeeName.equals(selectedCalendarOwnerAccount))
             {
                 attendeeName += "(ME)";
-                removeButton.setVisibility(View.GONE);
             }
         }
         attendeeEmailView.setText(attendeeName);
@@ -1090,6 +1081,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
             event.put(CalendarContract.Events.CALENDAR_ID, CALENDAR_ID);
             event.put(CalendarContract.Events._ID, EVENT_ID);
             viewModel.updateEvent(event);
+            //java.lang.IllegalArgumentException: Selection must be specified for content://com.android.calendar/events
         }
 
         // 알람

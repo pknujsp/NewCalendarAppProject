@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
@@ -44,6 +45,7 @@ public class EventFragment extends Fragment
     private CalendarViewModel viewModel;
     private Integer calendarId;
     private Long instanceId;
+    private Long eventId;
     private Long begin;
     private Long end;
 
@@ -64,6 +66,7 @@ public class EventFragment extends Fragment
         Bundle arguments = getArguments();
         calendarId = arguments.getInt("calendarId");
         instanceId = arguments.getLong("instanceId");
+        eventId = arguments.getLong("eventId");
         begin = arguments.getLong("begin");
         end = arguments.getLong("end");
     }
@@ -80,8 +83,8 @@ public class EventFragment extends Fragment
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
-        binding.eventRemindersView.remindersTable.removeAllViews();
-        binding.eventAttendeesView.eventAttendeesTable.removeAllViews();
+        binding.eventRemindersView.addReminderButton.setVisibility(View.GONE);
+        binding.eventAttendeesView.showAttendeesDetail.setVisibility(View.GONE);
         binding.eventDatetimeView.allDaySwitchLayout.setVisibility(View.GONE);
         binding.eventDatetimeView.startTime.setVisibility(View.GONE);
         binding.eventDatetimeView.endTime.setVisibility(View.GONE);
@@ -130,6 +133,7 @@ public class EventFragment extends Fragment
                             {
                                 binding.eventAttendeesView.notAttendees.setVisibility(View.GONE);
                                 binding.eventAttendeesView.eventAttendeesTable.setVisibility(View.VISIBLE);
+
                                 setAttendeesText(listDataWrapper.getData());
                             }
                         }
@@ -189,7 +193,6 @@ public class EventFragment extends Fragment
             // add row to table
             // 이름, 메일 주소, 상태
             // 조직자 - attendeeName, 그 외 - email
-
             final String attendeeName = attendee.getAsString(CalendarContract.Attendees.ATTENDEE_EMAIL);
             final int attendeeStatus = attendee.getAsInteger(CalendarContract.Attendees.ATTENDEE_STATUS);
             final int attendeeRelationship = attendee.getAsInteger(CalendarContract.Attendees.ATTENDEE_RELATIONSHIP);
@@ -197,14 +200,13 @@ public class EventFragment extends Fragment
             final String attendeeStatusStr = EventUtil.convertAttendeeStatus(attendeeStatus, getContext());
             final String attendeeRelationshipStr = EventUtil.convertAttendeeRelationship(attendeeRelationship, getContext());
 
-            LinearLayout attendeeInfoLayout = row.findViewById(R.id.attendee_info_layout);
+            LinearLayout attendeeInfoLayout = (LinearLayout) row.findViewById(R.id.attendee_info_layout);
+
             TextView attendeeEmailView = (TextView) row.findViewById(R.id.attendee_name);
             TextView attendeeRelationshipView = (TextView) row.findViewById(R.id.attendee_relationship);
             TextView attendeeStatusView = (TextView) row.findViewById(R.id.attendee_status);
-            ImageButton removeButton = (ImageButton) row.findViewById(R.id.remove_attendee_button);
-
             // 삭제버튼 숨기기
-            removeButton.setVisibility(View.GONE);
+            row.findViewById(R.id.remove_attendee_button).setVisibility(View.GONE);
 
             attendeeInfoLayout.setClickable(true);
             attendeeInfoLayout.setOnClickListener(new View.OnClickListener()
@@ -238,9 +240,9 @@ public class EventFragment extends Fragment
             attendeeRelationshipView.setText(attendeeRelationshipStr);
             attendeeStatusView.setText(attendeeStatusStr);
 
-            tableRow.addView(row, new TableRow.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                    (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 48f, getResources().getDisplayMetrics())));
-            binding.eventAttendeesView.eventAttendeesTable.addView(tableRow);
+            tableRow.addView(row);
+            binding.eventAttendeesView.eventAttendeesTable.addView(tableRow,
+                    new TableLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         }
     }
 
@@ -279,7 +281,7 @@ public class EventFragment extends Fragment
         // 알람
         if (instance.getAsBoolean(CalendarContract.Instances.HAS_ALARM))
         {
-            viewModel.getReminders(calendarId, instanceId);
+            viewModel.getReminders(calendarId, eventId);
         } else
         {
             // 알람이 없으면 알람 테이블을 숨기고, 알람 없음 텍스트를 표시한다.
@@ -299,7 +301,7 @@ public class EventFragment extends Fragment
             iFab.setVisibility(IFab.TYPE_RESELECT_LOCATION, View.GONE);
         }
         // 참석자
-        viewModel.getAttendees(calendarId, instanceId);
+        viewModel.getAttendees(calendarId, eventId);
 
         // 공개 범위 표시
         setAccessLevelText();
@@ -351,9 +353,9 @@ public class EventFragment extends Fragment
             ((TextView) row.findViewById(R.id.reminder_value)).setText(alarmValueText);
             row.findViewById(R.id.reminder_value).setClickable(false);
 
-            tableRow.addView(row, new TableRow.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                    (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 36f, getResources().getDisplayMetrics())));
-            binding.eventRemindersView.remindersTable.addView(tableRow);
+            tableRow.addView(row);
+            binding.eventRemindersView.remindersTable.addView(tableRow, new TableLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT));
         }
     }
 

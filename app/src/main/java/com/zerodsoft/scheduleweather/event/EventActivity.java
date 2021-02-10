@@ -61,6 +61,7 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab
 
     private Integer calendarId;
     private Long eventId;
+    private Long instanceId;
 
     @Override
     public void onAttachedToWindow()
@@ -131,7 +132,7 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab
             }
         });
 
-        final long instanceId = getIntent().getLongExtra("instanceId", 0);
+        instanceId = getIntent().getLongExtra("instanceId", 0);
         calendarId = getIntent().getIntExtra("calendarId", 0);
         eventId = getIntent().getLongExtra("eventId", 0);
         final long begin = getIntent().getLongExtra("begin", 0);
@@ -140,6 +141,7 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab
         Bundle bundle = new Bundle();
         bundle.putInt("calendarId", calendarId);
         bundle.putLong("instanceId", instanceId);
+        bundle.putLong("eventId", eventId);
         bundle.putLong("begin", begin);
         bundle.putLong("end", end);
 
