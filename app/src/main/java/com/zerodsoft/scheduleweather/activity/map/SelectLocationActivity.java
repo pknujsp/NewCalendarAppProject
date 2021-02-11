@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.paging.PagedList;
 
 import android.Manifest;
+import android.content.Intent;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.provider.CalendarContract;
@@ -32,6 +33,7 @@ public class SelectLocationActivity extends KakaoMapActivity
 {
     private OnBackPressedCallback onBackPressedCallback;
     private String eventLocation;
+    public static final int RESULT_REMOVED_LOCATION = 10;
 
     public SelectLocationActivity()
     {
@@ -216,16 +218,20 @@ public class SelectLocationActivity extends KakaoMapActivity
         }
 
         //선택된 위치를 DB에 등록
-        getIntent().putExtra(CalendarContract.Events.EVENT_LOCATION, location);
-        getIntent().putExtra("location", locationDTO);
-        setResult(RESULT_OK, getIntent());
+        Bundle bundle = new Bundle();
+        bundle.putString(CalendarContract.Events.EVENT_LOCATION, location);
+        bundle.putParcelable("locationObject", locationDTO);
+
+        Intent intent = new Intent();
+        intent.putExtras(bundle);
+        setResult(RESULT_OK, intent);
         finish();
     }
 
     @Override
     public void onRemoveLocation()
     {
-        setResult(RESULT_OK, getIntent());
+        setResult(RESULT_REMOVED_LOCATION);
         finish();
     }
 }

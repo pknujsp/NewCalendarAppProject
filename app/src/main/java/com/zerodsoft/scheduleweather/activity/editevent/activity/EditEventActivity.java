@@ -599,21 +599,20 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
             {
                 if (resultCode == RESULT_OK)
                 {
-                    if (data.getStringExtra(CalendarContract.Events.EVENT_LOCATION) != null)
-                    {
-                        dataController.putEventValue(CalendarContract.Events.EVENT_LOCATION, data.getStringExtra(CalendarContract.Events.EVENT_LOCATION));
-                        locationDTO = data.getParcelableExtra("location");
-                        binding.locationLayout.eventLocation.setText(data.getStringExtra(CalendarContract.Events.EVENT_LOCATION));
-                    } else
-                    {
-                        dataController.removeEventValue(CalendarContract.Events.EVENT_LOCATION);
-                        locationDTO = null;
-                        binding.locationLayout.eventLocation.setText("");
-                    }
+                    Bundle bundle = data.getExtras();
 
+                    dataController.putEventValue(CalendarContract.Events.EVENT_LOCATION, bundle.getString(CalendarContract.Events.EVENT_LOCATION));
+                    locationDTO = bundle.getParcelable("locationObject");
+                    // parcelable로 객체를 가져오면서 내용물이 변형됨
+                    binding.locationLayout.eventLocation.setText(data.getStringExtra(CalendarContract.Events.EVENT_LOCATION));
                 } else if (resultCode == RESULT_CANCELED)
                 {
 
+                } else if (resultCode == SelectLocationActivity.RESULT_REMOVED_LOCATION)
+                {
+                    dataController.removeEventValue(CalendarContract.Events.EVENT_LOCATION);
+                    locationDTO = null;
+                    binding.locationLayout.eventLocation.setText("");
                 }
                 break;
             }
@@ -899,7 +898,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
         final String selectedCalendarName = dataController.getEventValueAsString(CalendarContract.Events.CALENDAR_DISPLAY_NAME);
         final String selectedCalendarOwnerAccount = dataController.getEventValueAsString(CalendarContract.Events.OWNER_ACCOUNT);
         String attendeeName = null;
-        
+
         if (attendee.getAsInteger(CalendarContract.Attendees.ATTENDEE_RELATIONSHIP) == CalendarContract.Attendees.RELATIONSHIP_ORGANIZER)
         {
             // 조직자인 경우
@@ -1182,7 +1181,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
             }
         }
 
-        if (dataController.getEventValueAsString(CalendarContract.Events.EVENT_LOCATION) != null)
+        if (modifiedEventData.getEVENT().getAsString(CalendarContract.Events.EVENT_LOCATION) != null)
         {
             // 위치가 추가 || 변경된 경우
             locationDTO.setCalendarId(CALENDAR_ID);
@@ -1191,7 +1190,6 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
             //상세 위치가 지정되어 있는지 확인
             locationViewModel.hasDetailLocation(CALENDAR_ID, EVENT_ID, new CarrierMessagingService.ResultCallback<Boolean>()
             {
-
                 @Override
                 public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
                 {
@@ -1225,7 +1223,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
 
         } else
         {
-            if (dataController.getSavedEventData().getEVENT().getAsString(CalendarContract.Events.EVENT_LOCATION) != null)
+            if (savedEventData.getEVENT().getAsString(CalendarContract.Events.EVENT_LOCATION) != null)
             {
                 // 현재 위치를 삭제하려고 하는 상태
                 locationViewModel.removeLocation(CALENDAR_ID, EVENT_ID, new CarrierMessagingService.ResultCallback<Boolean>()
