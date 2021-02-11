@@ -179,34 +179,38 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                 actionBar.setTitle(R.string.new_event);
 
                 //캘린더도 기본 값 설정
-                dataController.setCalendarValue(dataController.getEventDefaultValue().getDefaultCalendar());
-                setCalendarText();
+                ContentValues defaultCalendar = dataController.getEventDefaultValue().getDefaultCalendar();
+
+                dataController.setCalendarValue(defaultCalendar);
+                setCalendarText(defaultCalendar.getAsInteger(CalendarContract.Calendars.CALENDAR_COLOR),
+                        defaultCalendar.getAsString(CalendarContract.Calendars.CALENDAR_DISPLAY_NAME),
+                        defaultCalendar.getAsString(CalendarContract.Calendars.ACCOUNT_NAME));
 
                 // 기기 시각으로 설정
                 Date[] defaultDateTimes = dataController.getEventDefaultValue().getDefaultDateTime();
-                dataController.setStart(defaultDateTimes[0].getTime());
-                dataController.setEnd(defaultDateTimes[1].getTime());
+                dataController.putEventValue(CalendarContract.Events.DTSTART, defaultDateTimes[0].getTime());
+                dataController.putEventValue(CalendarContract.Events.DTEND, defaultDateTimes[1].getTime());
 
-                setDateText(START_DATETIME);
-                setDateText(END_DATETIME);
-                setTimeText(START_DATETIME);
-                setTimeText(END_DATETIME);
+                setDateText(START_DATETIME, defaultDateTimes[0].getTime());
+                setDateText(END_DATETIME, defaultDateTimes[1].getTime());
+                setTimeText(START_DATETIME, defaultDateTimes[0].getTime());
+                setTimeText(END_DATETIME, defaultDateTimes[1].getTime());
 
                 // 기기 시간대로 설정
                 TimeZone defaultTimeZone = dataController.getEventDefaultValue().getDefaultTimeZone();
                 dataController.putEventValue(CalendarContract.Events.EVENT_TIMEZONE, defaultTimeZone.getID());
-                setTimeZoneText();
+                setTimeZoneText(defaultTimeZone.getID());
 
                 // 알림
                 dataController.putEventValue(CalendarContract.Events.HAS_ALARM, 0);
 
                 // 접근 범위(기본)
                 dataController.putEventValue(CalendarContract.Events.ACCESS_LEVEL, dataController.getEventDefaultValue().getDefaultAccessLevel());
-                setAccessLevelText();
+                setAccessLevelText(dataController.getEventDefaultValue().getDefaultAccessLevel());
 
                 // 유효성(바쁨)
                 dataController.putEventValue(CalendarContract.Events.AVAILABILITY, dataController.getEventDefaultValue().getDefaultAvailability());
-                setAvailabilityText();
+                setAvailabilityText(dataController.getEventDefaultValue().getDefaultAvailability());
 
                 // 참석자 버튼 텍스트 수정
                 binding.attendeeLayout.showAttendeesDetail.setText(getString(R.string.add_attendee));
@@ -233,47 +237,52 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                         // 제목, 캘린더, 시간, 시간대, 반복, 알림, 설명, 위치, 공개범위, 유효성, 참석자
                         // 알림, 참석자 정보는 따로 불러온다.
 
+                        EventData savedEventData = dataController.getSavedEventData();
+                        ContentValues savedEvent = savedEventData.getEVENT();
+
                         //제목
-                        binding.titleLayout.title.setText(dataController.getEventValueAsString(CalendarContract.Events.TITLE));
+                        binding.titleLayout.title.setText(savedEvent.getAsString(CalendarContract.Events.TITLE));
 
                         //캘린더 수정 불가
                         binding.calendarLayout.getRoot().setVisibility(View.GONE);
 
                         // allday switch
-                        binding.timeLayout.timeAlldaySwitch.setChecked(dataController.getEventValueAsBoolean(CalendarContract.Events.ALL_DAY));
+                        binding.timeLayout.timeAlldaySwitch.setChecked(savedEvent.getAsBoolean(CalendarContract.Events.ALL_DAY));
+
+                        final long dtStart = savedEvent.getAsLong(CalendarContract.Events.DTSTART);
+                        final long dtEnd = savedEvent.getAsLong(CalendarContract.Events.DTEND);
+                        dataController.putEventValue(CalendarContract.Events.DTSTART, dtStart);
+                        dataController.putEventValue(CalendarContract.Events.DTEND, dtEnd);
 
                         //시각
-                        setDateText(START_DATETIME);
-                        setDateText(END_DATETIME);
-                        setTimeText(START_DATETIME);
-                        setTimeText(END_DATETIME);
+                        setDateText(START_DATETIME, dtStart);
+                        setDateText(END_DATETIME, dtEnd);
+                        setTimeText(START_DATETIME, dtStart);
+                        setTimeText(END_DATETIME, dtEnd);
 
                         // 시간대
-                        setTimeZoneText();
+                        setTimeZoneText(savedEvent.getAsString(CalendarContract.Events.EVENT_TIMEZONE));
 
                         // 반복
-                        if (dataController.getEventValueAsString(CalendarContract.Events.RRULE) != null)
-                        {
-                            setRecurrenceText();
-                        }
+                        setRecurrenceText(savedEvent.getAsString(CalendarContract.Events.RRULE));
 
                         // 알림
-                        if (dataController.getEventValueAsBoolean(CalendarContract.Events.HAS_ALARM))
+                        if (savedEvent.getAsBoolean(CalendarContract.Events.HAS_ALARM))
                         {
                             viewModel.getReminders(CALENDAR_ID, EVENT_ID);
                         }
 
                         // 설명
-                        binding.descriptionLayout.descriptionEdittext.setText(dataController.getEventValueAsString(CalendarContract.Events.DESCRIPTION));
+                        binding.descriptionLayout.descriptionEdittext.setText(savedEvent.getAsString(CalendarContract.Events.DESCRIPTION));
 
                         // 위치
-                        binding.locationLayout.eventLocation.setText(dataController.getEventValueAsString(CalendarContract.Events.EVENT_LOCATION));
+                        binding.locationLayout.eventLocation.setText(savedEvent.getAsString(CalendarContract.Events.EVENT_LOCATION));
 
                         // 접근 범위
-                        setAccessLevelText();
+                        setAccessLevelText(savedEvent.getAsInteger(CalendarContract.Events.ACCESS_LEVEL));
 
                         // 유효성
-                        setAvailabilityText();
+                        setAvailabilityText(savedEvent.getAsInteger(CalendarContract.Events.AVAILABILITY));
                     }
                 });
 
@@ -292,7 +301,8 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                                     if (!listDataWrapper.getData().isEmpty())
                                     {
                                         dataController.getSavedEventData().getATTENDEES().addAll(listDataWrapper.getData());
-                                        setAttendeesText();
+                                        dataController.getModifiedEventData().getATTENDEES().addAll(listDataWrapper.getData());
+                                        setAttendeesText(listDataWrapper.getData());
                                     } else
                                     {
                                         // 참석자 버튼 텍스트 수정
@@ -321,7 +331,8 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                                     if (!listDataWrapper.getData().isEmpty())
                                     {
                                         dataController.getSavedEventData().getREMINDERS().addAll(listDataWrapper.getData());
-                                        setReminderText();
+                                        dataController.getModifiedEventData().getREMINDERS().addAll(listDataWrapper.getData());
+                                        setReminderText(listDataWrapper.getData());
                                     }
                                 }
                             });
@@ -372,7 +383,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
         binding.timeLayout.eventTimezone.setOnClickListener(view ->
         {
             Intent intent = new Intent(EditEventActivity.this, TimeZoneActivity.class);
-            intent.putExtra(CalendarContract.Events.DTSTART, dataController.getStart());
+            intent.putExtra(CalendarContract.Events.DTSTART, dataController.getEventValueAsLong(CalendarContract.Events.DTSTART));
             startActivityForResult(intent, REQUEST_TIMEZONE);
         });
 
@@ -387,7 +398,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                     ? dataController.getEventValueAsString(CalendarContract.Events.RRULE) : "";
 
             intent.putExtra(CalendarContract.Events.RRULE, recurrenceRule);
-            intent.putExtra(CalendarContract.Events.DTSTART, dataController.getStart());
+            intent.putExtra(CalendarContract.Events.DTSTART, dataController.getEventValueAsLong(CalendarContract.Events.DTSTART));
             startActivityForResult(intent, REQUEST_RECURRENCE);
         });
 
@@ -423,7 +434,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                 }
 
                 dataController.putEventValue(CalendarContract.Events.ACCESS_LEVEL, accessLevel);
-                setAccessLevelText();
+                setAccessLevelText(accessLevel);
                 accessLevelDialog.dismiss();
 
             }).setTitle(getString(R.string.accesslevel));
@@ -456,7 +467,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                 }
 
                 dataController.putEventValue(CalendarContract.Events.AVAILABILITY, availability);
-                setAvailabilityText();
+                setAvailabilityText(availability);
                 availabilityDialog.dismiss();
 
             }).setTitle(getString(R.string.availability));
@@ -477,7 +488,9 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                             {
                                 ContentValues calendar = (ContentValues) calendarDialog.getListView().getAdapter().getItem(position);
                                 dataController.setCalendarValue(calendar);
-                                setCalendarText();
+                                setCalendarText(calendar.getAsInteger(CalendarContract.Calendars.CALENDAR_COLOR),
+                                        calendar.getAsString(CalendarContract.Calendars.CALENDAR_DISPLAY_NAME),
+                                        calendar.getAsString(CalendarContract.Calendars.ACCOUNT_NAME));
                             });
             calendarDialog = dialogBuilder.create();
             calendarDialog.show();
@@ -544,8 +557,8 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                 ContentValues organizer = new ContentValues();
                 ContentValues selectedCalendar = dataController.getSelectedCalendar();
 
-                organizer.put(CalendarContract.Attendees.ATTENDEE_NAME, selectedCalendar.getAsString(CalendarContract.Events.ACCOUNT_NAME));
-                organizer.put(CalendarContract.Attendees.ATTENDEE_EMAIL, selectedCalendar.getAsString(CalendarContract.Events.OWNER_ACCOUNT));
+                organizer.put(CalendarContract.Attendees.ATTENDEE_NAME, selectedCalendar.getAsString(CalendarContract.Calendars.ACCOUNT_NAME));
+                organizer.put(CalendarContract.Attendees.ATTENDEE_EMAIL, selectedCalendar.getAsString(CalendarContract.Calendars.OWNER_ACCOUNT));
                 organizer.put(CalendarContract.Attendees.ATTENDEE_RELATIONSHIP, CalendarContract.Attendees.RELATIONSHIP_ORGANIZER);
 
                 Intent intent = new Intent(EditEventActivity.this, AttendeesActivity.class);
@@ -562,12 +575,12 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
     }
 
 
-    private void setRecurrenceText()
+    private void setRecurrenceText(String rRule)
     {
-        if (dataController.getEventValueAsString(CalendarContract.Events.RRULE) != null)
+        if (rRule != null)
         {
             RecurrenceRule recurrenceRule = new RecurrenceRule();
-            recurrenceRule.separateValues(dataController.getEventValueAsString(CalendarContract.Events.RRULE));
+            recurrenceRule.separateValues(rRule);
             binding.recurrenceLayout.eventRecurrence.setText(recurrenceRule.interpret(getApplicationContext()));
         } else
         {
@@ -586,8 +599,9 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
             {
                 if (resultCode == RESULT_OK)
                 {
-                    dataController.putEventValue(CalendarContract.Events.RRULE, data.getStringExtra(CalendarContract.Events.RRULE));
-                    setRecurrenceText();
+                    String rRule = data.getStringExtra(CalendarContract.Events.RRULE);
+                    dataController.putEventValue(CalendarContract.Events.RRULE, rRule);
+                    setRecurrenceText(rRule);
                 } else
                 {
 
@@ -601,10 +615,12 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                 {
                     Bundle bundle = data.getExtras();
 
-                    dataController.putEventValue(CalendarContract.Events.EVENT_LOCATION, bundle.getString(CalendarContract.Events.EVENT_LOCATION));
-                    locationDTO = bundle.getParcelable("locationObject");
-                    // parcelable로 객체를 가져오면서 내용물이 변형됨
-                    binding.locationLayout.eventLocation.setText(data.getStringExtra(CalendarContract.Events.EVENT_LOCATION));
+                    locationDTO = (LocationDTO) bundle.getParcelable("locationObject");
+                    // parcelable object는 형변환을 해줘야 한다.
+                    String resultLocation = bundle.getString(CalendarContract.Events.EVENT_LOCATION);
+                    dataController.putEventValue(CalendarContract.Events.EVENT_LOCATION, resultLocation);
+                    binding.locationLayout.eventLocation.setText(resultLocation);
+
                 } else if (resultCode == RESULT_CANCELED)
                 {
 
@@ -613,9 +629,11 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                     dataController.removeEventValue(CalendarContract.Events.EVENT_LOCATION);
                     locationDTO = null;
                     binding.locationLayout.eventLocation.setText("");
+
                 }
                 break;
             }
+
             case AttendeesActivity.SHOW_DETAILS_FOR_ATTENDEES:
             {
                 List<ContentValues> resultAttendeeList = data.getParcelableArrayListExtra("attendeeList");
@@ -623,7 +641,10 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                 if (resultAttendeeList.isEmpty())
                 {
                     // 리스트가 비어있으면 참석자 삭제 | 취소
-                    dataController.removeAttendees();
+                    if (!dataController.getAttendees().isEmpty())
+                    {
+                        dataController.removeAttendees();
+                    }
                 } else
                 {
                     // 참석자 추가 | 변경
@@ -631,8 +652,9 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                             data.getBooleanExtra(CalendarContract.Events.GUESTS_CAN_MODIFY, false),
                             data.getBooleanExtra(CalendarContract.Events.GUESTS_CAN_INVITE_OTHERS, false)
                             , data.getBooleanExtra(CalendarContract.Events.GUESTS_CAN_SEE_GUESTS, false));
+
                 }
-                setAttendeesText();
+                setAttendeesText(dataController.getAttendees());
                 break;
             }
 
@@ -642,7 +664,8 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                 {
                     TimeZone timeZone = (TimeZone) data.getSerializableExtra(CalendarContract.Events.EVENT_TIMEZONE);
                     dataController.putEventValue(CalendarContract.Events.EVENT_TIMEZONE, timeZone.getID());
-                    setTimeZoneText();
+                    setTimeZoneText(timeZone.getID());
+
                 }
                 break;
             }
@@ -651,7 +674,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
             {
                 if (resultCode == ReminderActivity.RESULT_ADDED_REMINDER)
                 {
-                    ContentValues reminder = data.getParcelableExtra("reminder");
+                    ContentValues reminder = (ContentValues) data.getParcelableExtra("reminder");
 
                     // reminder values는 분, 메소드값을 담고 있어야 한다
                     // 수정된 minutes, method가 기존 값과 중복되는 경우 진행하지 않음
@@ -661,6 +684,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                         dataController.putReminder(reminder);
                         addReminder(reminder);
                     }
+
                 } else if (resultCode == RESULT_CANCELED)
                 {
 
@@ -684,6 +708,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                 } else if (resultCode == ReminderActivity.RESULT_REMOVED_REMINDER)
                 {
                     removeReminder(previousMinutes);
+
                 }
                 break;
 
@@ -824,10 +849,8 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
     }
 
 
-    private void setReminderText()
+    private void setReminderText(List<ContentValues> reminders)
     {
-        List<ContentValues> reminders = dataController.getReminders();
-
         for (ContentValues reminder : reminders)
         {
             addReminder(reminder);
@@ -951,10 +974,8 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
         }
     }
 
-    private void setAttendeesText()
+    private void setAttendeesText(List<ContentValues> attendees)
     {
-        List<ContentValues> attendees = dataController.getAttendees();
-
         if (binding.attendeeLayout.eventAttendeesTable.getChildCount() > 0)
         {
             binding.attendeeLayout.eventAttendeesTable.removeAllViews();
@@ -976,41 +997,39 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
 
     }
 
-    private void setDateText(int dateType)
+    private void setDateText(int dateType, long date)
     {
         if (dateType == START_DATETIME)
         {
-            binding.timeLayout.startDate.setText(EventUtil.convertDate(dataController.getStart().getTimeInMillis()));
+            binding.timeLayout.startDate.setText(EventUtil.convertDate(date));
         } else
         {
-            binding.timeLayout.endDate.setText(EventUtil.convertDate(dataController.getEnd().getTimeInMillis()));
+            binding.timeLayout.endDate.setText(EventUtil.convertDate(date));
         }
     }
 
-    private void setTimeText(int dateType)
+    private void setTimeText(int dateType, long time)
     {
         // 설정에 12시간, 24시간 단위 변경 가능
         if (dateType == START_DATETIME)
         {
-            binding.timeLayout.startTime.setText(EventUtil.convertTime(dataController.getStart().getTimeInMillis(), App.is24HourSystem));
+            binding.timeLayout.startTime.setText(EventUtil.convertTime(time, App.is24HourSystem));
         } else
         {
-            binding.timeLayout.endTime.setText(EventUtil.convertTime(dataController.getEnd().getTimeInMillis(), App.is24HourSystem));
+            binding.timeLayout.endTime.setText(EventUtil.convertTime(time, App.is24HourSystem));
         }
     }
 
-    private void setCalendarText()
+    private void setCalendarText(int calendarColor, String calendarDisplayName, String accountName)
     {
-        ContentValues selectedCalendar = dataController.getSelectedCalendar();
-
-        binding.calendarLayout.calendarColor.setBackgroundColor(EventUtil.getColor(selectedCalendar.getAsInteger(CalendarContract.Events.CALENDAR_COLOR)));
-        binding.calendarLayout.calendarDisplayName.setText(selectedCalendar.getAsString(CalendarContract.Events.CALENDAR_DISPLAY_NAME));
-        binding.calendarLayout.calendarAccountName.setText(selectedCalendar.getAsString(CalendarContract.Events.ACCOUNT_NAME));
+        binding.calendarLayout.calendarColor.setBackgroundColor(EventUtil.getColor(calendarColor));
+        binding.calendarLayout.calendarDisplayName.setText(calendarDisplayName);
+        binding.calendarLayout.calendarAccountName.setText(accountName);
     }
 
-    private void setTimeZoneText()
+    private void setTimeZoneText(String eventTimeZone)
     {
-        TimeZone timeZone = TimeZone.getTimeZone(dataController.getEventValueAsString(CalendarContract.Events.EVENT_TIMEZONE));
+        TimeZone timeZone = TimeZone.getTimeZone(eventTimeZone);
         binding.timeLayout.eventTimezone.setText(timeZone.getDisplayName(Locale.KOREAN));
     }
 
@@ -1021,19 +1040,18 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
         final int CALENDAR_ID = dataController.getEventValueAsInt(CalendarContract.Events.CALENDAR_ID);
         final long NEW_EVENT_ID = viewModel.addEvent(dataController.getNewEventData().getEVENT());
 
+        // 리마인더 저장
         if (dataController.getEventValueAsBoolean(CalendarContract.Events.HAS_ALARM))
         {
             List<ContentValues> reminders = dataController.getReminders();
-
             for (ContentValues reminder : reminders)
             {
                 reminder.put(CalendarContract.Reminders.EVENT_ID, NEW_EVENT_ID);
             }
-
             viewModel.addReminders(reminders);
         }
 
-        // 참석자 재설정
+        // 참석자 저장
         if (!dataController.getAttendees().isEmpty())
         {
             List<ContentValues> attendees = dataController.getAttendees();
@@ -1042,7 +1060,6 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                 attendee.put(CalendarContract.Attendees.EVENT_ID, NEW_EVENT_ID);
             }
             viewModel.addAttendees(attendees);
-            //초대여부 다이얼로그 표시
         }
 
         // 상세 위치 데이터 저장
@@ -1069,21 +1086,24 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
 
     private void modifyEvent()
     {
-        final int CALENDAR_ID = dataController.getEventValueAsInt(CalendarContract.Events.CALENDAR_ID);
-        final long EVENT_ID = dataController.getEventValueAsLong(CalendarContract.Events._ID);
         EventData modifiedEventData = dataController.getModifiedEventData();
         EventData savedEventData = dataController.getSavedEventData();
 
-        if (modifiedEventData.getEVENT().size() > 0)
+        final int CALENDAR_ID = savedEventData.getEVENT().getAsInteger(CalendarContract.Events.CALENDAR_ID);
+        final long EVENT_ID = savedEventData.getEVENT().getAsLong(CalendarContract.Events._ID);
+
+        ContentValues modifiedEvent = modifiedEventData.getEVENT();
+
+        if (modifiedEvent.size() > 0)
         {
-            ContentValues event = dataController.getModifiedEventData().getEVENT();
-            event.put(CalendarContract.Events.CALENDAR_ID, CALENDAR_ID);
-            event.put(CalendarContract.Events._ID, EVENT_ID);
-            viewModel.updateEvent(event);
-            //java.lang.IllegalArgumentException: Selection must be specified for content://com.android.calendar/events
+            modifiedEvent.put(CalendarContract.Events.CALENDAR_ID, CALENDAR_ID);
+            modifiedEvent.put(CalendarContract.Events._ID, EVENT_ID);
+            viewModel.updateEvent(modifiedEvent);
         }
 
-        // 알람
+
+        // 알람 갱신
+        // 알람 데이터가 수정된 경우 이벤트ID를 넣는다
         if (!modifiedEventData.getATTENDEES().isEmpty())
         {
             List<ContentValues> reminders = modifiedEventData.getREMINDERS();
@@ -1098,17 +1118,11 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
         {
             if (savedEventData.getEVENT().getAsBoolean(CalendarContract.Events.HAS_ALARM))
             {
-                if (!modifiedEventData.getATTENDEES().isEmpty())
-                {
-                    //기존 값 모두 지우고, 새로운 값 저장
-                    viewModel.deleteAllReminders(CALENDAR_ID, EVENT_ID);
-                    viewModel.addReminders(modifiedEventData.getREMINDERS());
-                }
-            } else
-            {
-                viewModel.addReminders(modifiedEventData.getREMINDERS());
+                //기존의 알람데이터가 수정된 경우
+                //기존 값 모두 지우고, 새로운 값 저장
+                viewModel.deleteAllReminders(CALENDAR_ID, EVENT_ID);
             }
-
+            viewModel.addReminders(modifiedEventData.getREMINDERS());
         } else
         {
             if (savedEventData.getEVENT().getAsBoolean(CalendarContract.Events.HAS_ALARM))
@@ -1127,22 +1141,25 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                 //참석자 리스트가 수정된 경우
                 // 수정된 부분만 변경
                 Set<ContentValues> savedAttendees = new ArraySet<>();
-                savedAttendees.addAll(dataController.getSavedEventData().getATTENDEES());
-
                 Set<ContentValues> modifiedAttendees = new ArraySet<>();
+
+                savedAttendees.addAll(dataController.getSavedEventData().getATTENDEES());
                 modifiedAttendees.addAll(dataController.getModifiedEventData().getATTENDEES());
 
                 AttendeeSet addedAttendees = new AttendeeSet();
                 AttendeeSet removedAttendees = new AttendeeSet();
 
+                // 추가된 참석자들만 남긴다.
                 addedAttendees.addAll(modifiedAttendees);
                 addedAttendees.removeAll(savedAttendees);
 
+                // 삭제된 참석자들만 남긴다.
                 removedAttendees.addAll(savedAttendees);
                 removedAttendees.removeAll(modifiedAttendees);
 
                 if (!addedAttendees.isEmpty())
                 {
+                    // 추가된 참석자들을 DB에 모두 추가한다.
                     for (ContentValues addedAttendee : addedAttendees)
                     {
                         addedAttendee.put(CalendarContract.Attendees.EVENT_ID, EVENT_ID);
@@ -1151,6 +1168,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                 }
                 if (!removedAttendees.isEmpty())
                 {
+                    // 삭제된 참석자들을 DB에서 모두 제거한다.
                     long[] ids = new long[removedAttendees.size()];
                     int i = 0;
 
@@ -1183,7 +1201,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
 
         if (modifiedEventData.getEVENT().getAsString(CalendarContract.Events.EVENT_LOCATION) != null)
         {
-            // 위치가 추가 || 변경된 경우
+            // 위치가 추가 | 변경된 경우
             locationDTO.setCalendarId(CALENDAR_ID);
             locationDTO.setEventId(EVENT_ID);
 
@@ -1207,7 +1225,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                         });
                     } else
                     {
-                        // 추가하는 경우
+                        // 상세위치를 추가하는 경우
                         locationViewModel.addLocation(locationDTO, new CarrierMessagingService.ResultCallback<Boolean>()
                         {
                             @Override
@@ -1226,15 +1244,32 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
             if (savedEventData.getEVENT().getAsString(CalendarContract.Events.EVENT_LOCATION) != null)
             {
                 // 현재 위치를 삭제하려고 하는 상태
-                locationViewModel.removeLocation(CALENDAR_ID, EVENT_ID, new CarrierMessagingService.ResultCallback<Boolean>()
+                locationViewModel.hasDetailLocation(CALENDAR_ID, EVENT_ID, new CarrierMessagingService.ResultCallback<Boolean>()
                 {
                     @Override
                     public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
                     {
-                        setResult(RESULT_OK);
-                        finish();
+                        if (aBoolean)
+                        {
+                            // 기존의 상세 위치를 제거
+                            locationViewModel.removeLocation(CALENDAR_ID, EVENT_ID, new CarrierMessagingService.ResultCallback<Boolean>()
+                            {
+                                @Override
+                                public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
+                                {
+                                    setResult(RESULT_OK);
+                                    finish();
+                                }
+                            });
+                        } else
+                        {
+                            // 상세 위치가 지정되어 있지 않음
+                            setResult(RESULT_OK);
+                            finish();
+                        }
                     }
                 });
+
             } else
             {
                 //위치를 원래 설정하지 않은 경우
@@ -1249,7 +1284,8 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
         MaterialDatePicker.Builder<Pair<Long, Long>> builder = MaterialDatePicker.Builder.dateRangePicker();
 
         datePicker = builder.setTitleText(R.string.datepicker)
-                .setSelection(new Pair<>(dataController.getStart().getTimeInMillis(), dataController.getEnd().getTimeInMillis()))
+                .setSelection(new Pair<>(dataController.getEventValueAsLong(CalendarContract.Events.DTSTART).longValue()
+                        , dataController.getEventValueAsLong(CalendarContract.Events.DTEND).longValue()))
                 .setInputMode(MaterialDatePicker.INPUT_MODE_CALENDAR)
                 .build();
         datePicker.addOnPositiveButtonClickListener(new MaterialPickerOnPositiveButtonClickListener<Pair<Long, Long>>()
@@ -1257,15 +1293,35 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
             @Override
             public void onPositiveButtonClick(Pair<Long, Long> selection)
             {
+                Calendar calendar = Calendar.getInstance();
+                int previousHour = 0;
+                int previousMinute = 0;
+
                 if (selection.first != null)
                 {
-                    dataController.setStart(selection.first);
-                    setDateText(START_DATETIME);
+                    calendar.setTimeInMillis(dataController.getEventValueAsLong(CalendarContract.Events.DTSTART));
+                    previousHour = calendar.get(Calendar.HOUR_OF_DAY);
+                    previousMinute = calendar.get(Calendar.MINUTE);
+
+                    calendar.setTimeInMillis(selection.first);
+                    calendar.set(Calendar.HOUR_OF_DAY, previousHour);
+                    calendar.set(Calendar.MINUTE, previousMinute);
+
+                    dataController.putEventValue(CalendarContract.Events.DTSTART, calendar.getTimeInMillis());
+                    setDateText(START_DATETIME, calendar.getTimeInMillis());
                 }
                 if (selection.second != null)
                 {
-                    dataController.setEnd(selection.second);
-                    setDateText(END_DATETIME);
+                    calendar.setTimeInMillis(dataController.getEventValueAsLong(CalendarContract.Events.DTEND));
+                    previousHour = calendar.get(Calendar.HOUR_OF_DAY);
+                    previousMinute = calendar.get(Calendar.MINUTE);
+
+                    calendar.setTimeInMillis(selection.second);
+                    calendar.set(Calendar.HOUR_OF_DAY, previousHour);
+                    calendar.set(Calendar.MINUTE, previousMinute);
+
+                    dataController.putEventValue(CalendarContract.Events.DTEND, calendar.getTimeInMillis());
+                    setDateText(END_DATETIME, calendar.getTimeInMillis());
                 }
 
                 datePicker.dismiss();
@@ -1281,14 +1337,14 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
 
     private void showTimePicker(int dateType)
     {
-        Calendar calendar = null;
+        Calendar calendar = Calendar.getInstance();
 
         if (dateType == START_DATETIME)
         {
-            calendar = dataController.getStart();
+            calendar.setTimeInMillis(dataController.getEventValueAsLong(CalendarContract.Events.DTSTART));
         } else if (dateType == END_DATETIME)
         {
-            calendar = dataController.getEnd();
+            calendar.setTimeInMillis(dataController.getEventValueAsLong(CalendarContract.Events.DTEND));
         }
 
         MaterialTimePicker.Builder builder = new MaterialTimePicker.Builder();
@@ -1300,18 +1356,32 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
 
         timePicker.addOnPositiveButtonClickListener(view ->
         {
-            Calendar newCalendar = (dateType == START_DATETIME) ? dataController.getStart() : dataController.getEnd();
+            Calendar newCalendar = Calendar.getInstance();
+            newCalendar.setTimeInMillis(dateType == START_DATETIME ? dataController.getEventValueAsLong(CalendarContract.Events.DTSTART)
+                    : dataController.getEventValueAsLong(CalendarContract.Events.DTEND));
             newCalendar.set(Calendar.HOUR_OF_DAY, timePicker.getHour());
             newCalendar.set(Calendar.MINUTE, timePicker.getMinute());
 
             if (dateType == START_DATETIME)
             {
-                dataController.setStart(newCalendar.getTimeInMillis());
-                setTimeText(START_DATETIME);
-            } else
+                if (newCalendar.getTimeInMillis() < dataController.getEventValueAsLong(CalendarContract.Events.DTEND))
+                {
+                    dataController.putEventValue(CalendarContract.Events.DTSTART, newCalendar.getTimeInMillis());
+                    setTimeText(dateType, newCalendar.getTimeInMillis());
+                } else
+                {
+
+                }
+            } else if (dateType == END_DATETIME)
             {
-                dataController.setEnd(newCalendar.getTimeInMillis());
-                setTimeText(END_DATETIME);
+                if (newCalendar.getTimeInMillis() > dataController.getEventValueAsLong(CalendarContract.Events.DTSTART))
+                {
+                    dataController.putEventValue(CalendarContract.Events.DTEND, newCalendar.getTimeInMillis());
+                    setTimeText(dateType, newCalendar.getTimeInMillis());
+                } else
+                {
+
+                }
             }
 
             timePicker.dismiss();
@@ -1324,14 +1394,14 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
     }
 
 
-    private void setAccessLevelText()
+    private void setAccessLevelText(int accessLevel)
     {
-        binding.accesslevelLayout.eventAccessLevel.setText(EventUtil.convertAccessLevel(dataController.getEventValueAsInt(CalendarContract.Events.ACCESS_LEVEL), getApplicationContext()));
+        binding.accesslevelLayout.eventAccessLevel.setText(EventUtil.convertAccessLevel(accessLevel, getApplicationContext()));
     }
 
-    private void setAvailabilityText()
+    private void setAvailabilityText(int availability)
     {
-        binding.availabilityLayout.eventAvailability.setText(EventUtil.convertAvailability(dataController.getEventValueAsInt(CalendarContract.Events.AVAILABILITY), getApplicationContext()));
+        binding.availabilityLayout.eventAvailability.setText(EventUtil.convertAvailability(availability, getApplicationContext()));
     }
 
     class EditTextWatcher implements TextWatcher, View.OnFocusChangeListener
@@ -1358,23 +1428,11 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
             switch (focusedViewId)
             {
                 case R.id.title:
-                    if (editable.toString().isEmpty())
-                    {
-                        dataController.removeEventValue(CalendarContract.Events.TITLE);
-                    } else
-                    {
-                        dataController.putEventValue(CalendarContract.Events.TITLE, editable.toString());
-                    }
+                    dataController.putEventValue(CalendarContract.Events.TITLE, editable.toString());
                     break;
 
                 case R.id.description_edittext:
-                    if (editable.toString().isEmpty())
-                    {
-                        dataController.removeEventValue(CalendarContract.Events.DESCRIPTION);
-                    } else
-                    {
-                        dataController.putEventValue(CalendarContract.Events.DESCRIPTION, editable.toString());
-                    }
+                    dataController.putEventValue(CalendarContract.Events.DESCRIPTION, editable.toString());
                     break;
             }
         }

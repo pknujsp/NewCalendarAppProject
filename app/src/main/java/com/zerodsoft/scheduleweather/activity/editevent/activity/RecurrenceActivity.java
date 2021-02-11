@@ -48,7 +48,9 @@ public class RecurrenceActivity extends AppCompatActivity
         binding = DataBindingUtil.setContentView(this, R.layout.activity_recurrence);
 
         String givedRecurrenceRuleStr = getIntent().getStringExtra(CalendarContract.Events.RRULE);
-        eventStartDateTime = (Calendar) getIntent().getSerializableExtra(CalendarContract.Events.DTSTART);
+        eventStartDateTime = Calendar.getInstance();
+        eventStartDateTime.setTimeInMillis(getIntent().getLongExtra(CalendarContract.Events.DTSTART,0L));
+
         untilDateTime = (Calendar) eventStartDateTime.clone();
         GIVED_RULE.separateValues(givedRecurrenceRuleStr);
         init();

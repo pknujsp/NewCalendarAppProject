@@ -37,13 +37,14 @@ public class LocationDTO implements Parcelable
 
     public LocationDTO()
     {
+
     }
 
     protected LocationDTO(Parcel in)
     {
         id = in.readInt();
         calendarId = in.readInt();
-        eventId = in.readInt();
+        eventId = in.readLong();
         latitude = in.readDouble();
         longitude = in.readDouble();
         addressName = in.readString();
@@ -66,14 +67,33 @@ public class LocationDTO implements Parcelable
         }
     };
 
-    public void setId(int id)
+    @Override
+    public int describeContents()
     {
-        this.id = id;
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i)
+    {
+        parcel.writeInt(id);
+        parcel.writeInt(calendarId);
+        parcel.writeLong(eventId);
+        parcel.writeDouble(latitude);
+        parcel.writeDouble(longitude);
+        parcel.writeString(addressName);
+        parcel.writeString(placeId);
+        parcel.writeString(placeName);
     }
 
     public int getId()
     {
         return id;
+    }
+
+    public void setId(int id)
+    {
+        this.id = id;
     }
 
     public int getCalendarId()
@@ -136,32 +156,13 @@ public class LocationDTO implements Parcelable
         this.placeId = placeId;
     }
 
-    public void setPlaceName(String placeName)
-    {
-        this.placeName = placeName;
-    }
-
     public String getPlaceName()
     {
         return placeName;
     }
 
-    @Override
-    public int describeContents()
+    public void setPlaceName(String placeName)
     {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel parcel, int i)
-    {
-        parcel.writeInt(id);
-        parcel.writeInt(calendarId);
-        parcel.writeLong(eventId);
-        parcel.writeDouble(latitude);
-        parcel.writeDouble(longitude);
-        parcel.writeString(addressName);
-        parcel.writeString(placeId);
-        parcel.writeString(placeName);
+        this.placeName = placeName;
     }
 }

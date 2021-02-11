@@ -12,9 +12,6 @@ public class EventData
     private final ContentValues EVENT = new ContentValues();
     private final List<ContentValues> REMINDERS = new ArrayList<>();
     private final List<ContentValues> ATTENDEES = new ArrayList<>();
-    private final Calendar start = Calendar.getInstance();
-    private final Calendar end = Calendar.getInstance();
-
 
     public EventData()
     {
@@ -35,25 +32,4 @@ public class EventData
         return REMINDERS;
     }
 
-    public Calendar getStart()
-    {
-        return (Calendar) start.clone();
-    }
-
-    public Calendar getEnd()
-    {
-        return (Calendar) end.clone();
-    }
-
-    public void setStart(long time)
-    {
-        this.start.setTimeInMillis(time);
-        EVENT.put(CalendarContract.Events.DTSTART, time);
-    }
-
-    public void setEnd(long time)
-    {
-        this.end.setTimeInMillis(time);
-        EVENT.put(CalendarContract.Events.DTEND, time);
-    }
 }
