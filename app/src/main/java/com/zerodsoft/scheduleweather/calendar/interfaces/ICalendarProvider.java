@@ -40,10 +40,16 @@ public interface ICalendarProvider
 
     public int addReminders(List<ContentValues> reminders);
 
-    // instance - select
+    // instance - read, update, delete
     public void getInstances(List<ContentValues> calendarList, long startDate, long endDate, EventCallback<List<CalendarInstance>> callback);
 
     public ContentValues getInstance(int calendarId, long instanceId, long begin, long end);
+
+    public long updateAllFutureInstances(ContentValues modifiedInstance, ContentValues previousInstance);
+
+    public long updateOneInstance(ContentValues modifiedInstance, ContentValues previousInstance);
+
+    public int deleteInstance(long begin, long end, long instanceId);
 
     // attendee - crud
     public int addAttendees(List<ContentValues> attendeeList);

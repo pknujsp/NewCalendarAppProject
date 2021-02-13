@@ -22,17 +22,16 @@ import android.service.carrier.CarrierMessagingService;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.ArraySet;
-import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.datepicker.MaterialPickerOnPositiveButtonClickListener;
@@ -55,12 +54,8 @@ import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.utility.RecurrenceRule;
 import com.zerodsoft.scheduleweather.utility.model.ReminderDto;
 
-import java.sql.Time;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -75,6 +70,10 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
     public static final int REQUEST_RECURRENCE = 110;
     public static final int REQUEST_TIMEZONE = 120;
     public static final int REQUEST_LOCATION = 130;
+
+    public static final int UPDATE_THIS_INSTANCE = 200;
+    public static final int UPDATE_AFTER_INSTANCE_INCLUDING_THIS_INSTANCE = 210;
+    public static final int UPDATE_EVENT = 220;
 
     private ActivityEditEventBinding binding;
     private CalendarViewModel viewModel;
@@ -111,13 +110,55 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
             case R.id.save_schedule_button:
                 if (requestCode == EventDataController.NEW_EVENT)
                 {
-                    saveEvent();
+                    saveNewEvent();
+                    setResult(RESULT_CANCELED);
+                    finish();
                 } else if (requestCode == EventDataController.MODIFY_EVENT)
                 {
-                    modifyEvent();
+
+                    /*
+                    if (dataController.getSavedEventData().getEVENT().getAsString(CalendarContract.Events.RRULE) != null)
+                    {
+                        String[] dialogMenus = {
+                                getString(R.string.save_only_current_event),
+                                getString(R.string.save_all_future_events_including_current_event),
+                                getString(R.string.save_all_events)
+                        };
+
+                        new MaterialAlertDialogBuilder(getApplicationContext()).setTitle(R.string.save_event_title)
+                                .setItems(dialogMenus, new DialogInterface.OnClickListener()
+                                {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int index)
+                                    {
+                                        switch (index)
+                                        {
+                                            case 0:
+                                                //현재 인스턴스만 변경
+                                                updateThisInstance();
+                                                break;
+                                            case 1:
+                                                //현재 인스턴스 이후의 모든 인스턴스 변경
+                                                updateAfterInstanceIncludingThisInstance();
+                                                break;
+                                            case 2:
+                                                //모든 일정이면 event를 변경
+                                                updateEvent();
+                                                break;
+                                        }
+
+                                    }
+                                }).create().show();
+                    } else
+                    {
+                        updateEvent();
+                    }
+
+                     */
+
+                    Toast.makeText(EditEventActivity.this, "이벤트 수정 기능 미완성", Toast.LENGTH_SHORT).show();
                 }
-                setResult(RESULT_CANCELED);
-                finish();
+
                 // 새로 생성하는 이벤트이고, 위치가 지정되어 있으면 카카오맵에서 가져온 위치 정보를 DB에 등록한다.
                 break;
             case android.R.id.home:
@@ -1033,7 +1074,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
         binding.timeLayout.eventTimezone.setText(timeZone.getDisplayName(Locale.KOREAN));
     }
 
-    private void saveEvent()
+    private void saveNewEvent()
     {
         // 시간이 바뀌는 경우, 알림 데이터도 변경해야함.
         // 알림 재설정
@@ -1084,51 +1125,43 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
         }
     }
 
-    private void modifyEvent()
+    private void updateThisInstance()
     {
-        EventData modifiedEventData = dataController.getModifiedEventData();
-        EventData savedEventData = dataController.getSavedEventData();
-
-        final int CALENDAR_ID = savedEventData.getEVENT().getAsInteger(CalendarContract.Events.CALENDAR_ID);
-        final long EVENT_ID = savedEventData.getEVENT().getAsLong(CalendarContract.Events._ID);
-
-        ContentValues modifiedEvent = modifiedEventData.getEVENT();
-
-        if (modifiedEvent.size() > 0)
-        {
-            modifiedEvent.put(CalendarContract.Events.CALENDAR_ID, CALENDAR_ID);
-            modifiedEvent.put(CalendarContract.Events._ID, EVENT_ID);
-            viewModel.updateEvent(modifiedEvent);
-        }
-
+        viewModel.updateOneInstance(dataController.getModifiedEventData().getEVENT(),
+                dataController.getSavedEventData().getEVENT());
+        /*
 
         // 알람 갱신
         // 알람 데이터가 수정된 경우 이벤트ID를 넣는다
-        if (!modifiedEventData.getATTENDEES().isEmpty())
+        if (!modifiedEventData.getREMINDERS().isEmpty())
         {
             List<ContentValues> reminders = modifiedEventData.getREMINDERS();
 
             for (ContentValues reminder : reminders)
             {
-                reminder.put(CalendarContract.Reminders.EVENT_ID, EVENT_ID);
+                reminder.put(CalendarContract.Reminders.EVENT_ID, action == UPDATE_AFTER_INSTANCE_INCLUDING_THIS_INSTANCE
+                        ? newEventId : ORIGINAL_EVENT_ID);
             }
         }
 
         if (modifiedEventData.getEVENT().getAsBoolean(CalendarContract.Events.HAS_ALARM))
         {
-            if (savedEventData.getEVENT().getAsBoolean(CalendarContract.Events.HAS_ALARM))
+            if (action != UPDATE_AFTER_INSTANCE_INCLUDING_THIS_INSTANCE)
             {
-                //기존의 알람데이터가 수정된 경우
-                //기존 값 모두 지우고, 새로운 값 저장
-                viewModel.deleteAllReminders(CALENDAR_ID, EVENT_ID);
+                if (savedEventData.getEVENT().getAsBoolean(CalendarContract.Events.HAS_ALARM))
+                {
+                    //기존의 알람데이터가 수정된 경우
+                    //기존 값 모두 지우고, 새로운 값 저장
+                    viewModel.deleteAllReminders(CALENDAR_ID, ORIGINAL_EVENT_ID);
+                }
+                viewModel.addReminders(modifiedEventData.getREMINDERS());
             }
-            viewModel.addReminders(modifiedEventData.getREMINDERS());
         } else
         {
             if (savedEventData.getEVENT().getAsBoolean(CalendarContract.Events.HAS_ALARM))
             {
                 //원래 알림을 가졌으나, 수정하면서 알림을 모두 삭제함
-                viewModel.deleteAllReminders(CALENDAR_ID, EVENT_ID);
+                viewModel.deleteAllReminders(CALENDAR_ID, ORIGINAL_EVENT_ID);
             }
         }
 
@@ -1162,7 +1195,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                     // 추가된 참석자들을 DB에 모두 추가한다.
                     for (ContentValues addedAttendee : addedAttendees)
                     {
-                        addedAttendee.put(CalendarContract.Attendees.EVENT_ID, EVENT_ID);
+                        addedAttendee.put(CalendarContract.Attendees.EVENT_ID, ORIGINAL_EVENT_ID);
                     }
                     viewModel.addAttendees(new ArrayList<>(addedAttendees));
                 }
@@ -1177,7 +1210,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                         ids[i] = removedAttendee.getAsLong(CalendarContract.Attendees._ID);
                         i++;
                     }
-                    viewModel.deleteAttendees(CALENDAR_ID, EVENT_ID, ids);
+                    viewModel.deleteAttendees(CALENDAR_ID, ORIGINAL_EVENT_ID, ids);
                 }
             } else
             {
@@ -1186,7 +1219,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
 
                 for (ContentValues addedAttendee : addedAttendees)
                 {
-                    addedAttendee.put(CalendarContract.Attendees.EVENT_ID, EVENT_ID);
+                    addedAttendee.put(CalendarContract.Attendees.EVENT_ID, ORIGINAL_EVENT_ID);
                 }
                 viewModel.addAttendees(new ArrayList<>(addedAttendees));
             }
@@ -1195,18 +1228,43 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
             if (!savedEventData.getATTENDEES().isEmpty())
             {
                 //참석자를 모두 제거한 경우
-                viewModel.deleteAllAttendees(CALENDAR_ID, EVENT_ID);
+                viewModel.deleteAllAttendees(CALENDAR_ID, ORIGINAL_EVENT_ID);
             }
         }
 
+         */
+    }
+
+    private void updateAfterInstanceIncludingThisInstance()
+    {
+        /*
+        final long NEW_EVENT_ID = viewModel.updateAllFutureInstances(dataController.getModifiedEventData().getEVENT(),
+                dataController.getSavedEventData().getEVENT());
+
+         */
+    }
+
+    private void updateEvent()
+    {
+        /*
+        viewModel.updateEvent(dataController.getModifiedEventData().getEVENT());
+
+         */
+    }
+
+
+    private void modifyEvent(int action)
+    {
+
+/*
         if (modifiedEventData.getEVENT().getAsString(CalendarContract.Events.EVENT_LOCATION) != null)
         {
             // 위치가 추가 | 변경된 경우
             locationDTO.setCalendarId(CALENDAR_ID);
-            locationDTO.setEventId(EVENT_ID);
+            locationDTO.setEventId(ORIGINAL_EVENT_ID);
 
             //상세 위치가 지정되어 있는지 확인
-            locationViewModel.hasDetailLocation(CALENDAR_ID, EVENT_ID, new CarrierMessagingService.ResultCallback<Boolean>()
+            locationViewModel.hasDetailLocation(CALENDAR_ID, ORIGINAL_EVENT_ID, new CarrierMessagingService.ResultCallback<Boolean>()
             {
                 @Override
                 public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
@@ -1244,7 +1302,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
             if (savedEventData.getEVENT().getAsString(CalendarContract.Events.EVENT_LOCATION) != null)
             {
                 // 현재 위치를 삭제하려고 하는 상태
-                locationViewModel.hasDetailLocation(CALENDAR_ID, EVENT_ID, new CarrierMessagingService.ResultCallback<Boolean>()
+                locationViewModel.hasDetailLocation(CALENDAR_ID, ORIGINAL_EVENT_ID, new CarrierMessagingService.ResultCallback<Boolean>()
                 {
                     @Override
                     public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
@@ -1252,7 +1310,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                         if (aBoolean)
                         {
                             // 기존의 상세 위치를 제거
-                            locationViewModel.removeLocation(CALENDAR_ID, EVENT_ID, new CarrierMessagingService.ResultCallback<Boolean>()
+                            locationViewModel.removeLocation(CALENDAR_ID, ORIGINAL_EVENT_ID, new CarrierMessagingService.ResultCallback<Boolean>()
                             {
                                 @Override
                                 public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
@@ -1277,6 +1335,8 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                 finish();
             }
         }
+
+ */
     }
 
     private void showDatePicker()

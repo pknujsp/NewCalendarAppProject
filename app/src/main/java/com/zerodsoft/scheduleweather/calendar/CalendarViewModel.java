@@ -188,6 +188,22 @@ public class CalendarViewModel extends ViewModel
         instanceLiveData.setValue(dataWrapper);
     }
 
+    public long updateAllFutureInstances(ContentValues modifiedInstance, ContentValues previousInstance)
+    {
+        return calendarProvider.updateAllFutureInstances(modifiedInstance, previousInstance);
+    }
+
+    public long updateOneInstance(ContentValues modifiedInstance, ContentValues previousInstance)
+    {
+        return calendarProvider.updateOneInstance(modifiedInstance, previousInstance);
+    }
+
+    public int deleteInstance(long begin, long end, long instanceId)
+    {
+        return calendarProvider.deleteInstance(begin, end, instanceId);
+    }
+
+
     public int addAttendees(List<ContentValues> attendeeList)
     {
         return calendarProvider.addAttendees(attendeeList);

@@ -283,7 +283,13 @@
     <string name="reminder_method_alert">알림</string>
     <string name="reminder_method_email">이메일</string>
     <string name="reminder_method_sms">SMS</string>
-    <string name="reminder_method_alarm">알람ㄴ</string>
+    <string name="reminder_method_alarm">알람</string>
+    <string name="save_event_title">일정 저장</string>
+
+    <!-- 일정 수정시 다이얼로그 -->
+    <string name="save_all_events">이번 일정만</string>
+    <string name="save_all_future_events_including_current_event">이번 일정을 포함한 이후의 모든 일정</string>
+    <string name="save_only_current_event">모든 일정</string>
 
 
     <!-- 알림 -->

@@ -14,8 +14,12 @@ import android.provider.CalendarContract;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendar.interfaces.ICalendarProvider;
 import com.zerodsoft.scheduleweather.calendarview.callback.EventCallback;
+import com.zerodsoft.scheduleweather.utility.ClockUtil;
+import com.zerodsoft.scheduleweather.utility.RecurrenceRule;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 public class CalendarProvider implements ICalendarProvider
@@ -612,6 +616,106 @@ public class CalendarProvider implements ICalendarProvider
             cursor.close();
         }
         return instance;
+    }
+
+
+    /**
+     * 이번 일정을 포함한 이후의 모든 일정을 변경
+     * 기존 이벤트 반복 규칙에 UNTIL 추가
+     *
+     * @return
+     */
+    @Override
+    public long updateAllFutureInstances(ContentValues modifiedInstance, ContentValues previousInstance)
+    {
+        ContentResolver contentResolver = context.getContentResolver();
+
+        //수정한 인스턴스의 종료일 가져오기
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(modifiedInstance.getAsLong(CalendarContract.Instances.BEGIN));
+        final Date modifiedInstanceDtEnd = calendar.getTime();
+
+        //기존 이벤트의 반복 종료일을 수정한 인스턴스의 종료일로 설정
+        String[] existingEventProjection = {CalendarContract.Events.RRULE};
+        String existingEventSelection = CalendarContract.Events.CALENDAR_ID + "=? AND" + CalendarContract.Events._ID + "=?";
+        String[] existingEventSelectionArgs = {previousInstance.getAsString(CalendarContract.Instances.CALENDAR_ID),
+                previousInstance.getAsString(CalendarContract.Instances.EVENT_ID)};
+
+        Cursor cursor = contentResolver.query(CalendarContract.Events.CONTENT_URI, existingEventProjection, existingEventSelection, existingEventSelectionArgs, null);
+        ContentValues existingEvent = new ContentValues();
+        existingEvent.put(CalendarContract.Events.CALENDAR_ID, previousInstance.getAsInteger(CalendarContract.Instances.CALENDAR_ID));
+        existingEvent.put(CalendarContract.Events._ID, previousInstance.getAsLong(CalendarContract.Instances.EVENT_ID));
+
+        while (cursor.moveToNext())
+        {
+            existingEvent.put(CalendarContract.Events.RRULE, cursor.getString(0));
+        }
+        cursor.close();
+
+        RecurrenceRule recurrenceRule = new RecurrenceRule();
+        recurrenceRule.separateValues(existingEvent.getAsString(CalendarContract.Events.RRULE));
+
+        if (recurrenceRule.containsKey(RecurrenceRule.UNTIL))
+        {
+            recurrenceRule.removeValue(RecurrenceRule.UNTIL);
+        }
+        recurrenceRule.putValue(RecurrenceRule.UNTIL, ClockUtil.yyyyMMdd.format(modifiedInstanceDtEnd));
+        existingEvent.put(CalendarContract.Events.RRULE, recurrenceRule.getRule());
+
+        //기존 이벤트 UNTIL값 수정 완료후 저장
+        contentResolver.update(CalendarContract.Events.CONTENT_URI, existingEvent, existingEventSelection, existingEventSelectionArgs);
+
+        //수정된 인스턴스를 새로운 이벤트로 저장
+        cursor = contentResolver.query(CalendarContract.Events.CONTENT_URI, existingEventProjection, existingEventSelection, existingEventSelectionArgs, null);
+        ContentValues newEvent = new ContentValues();
+
+        while (cursor.moveToNext())
+        {
+            String[] columnNames = cursor.getColumnNames();
+
+            int index = 0;
+            for (String columnName : columnNames)
+            {
+                newEvent.put(columnName, cursor.getString(index++));
+            }
+        }
+        cursor.close();
+
+        newEvent.putAll(modifiedInstance);
+        newEvent.remove(CalendarContract.Instances._ID);
+        newEvent.remove(CalendarContract.Instances.EVENT_ID);
+
+        Uri uri = contentResolver.insert(CalendarContract.Events.CONTENT_URI, newEvent);
+        return Long.parseLong(uri.getLastPathSegment());
+    }
+
+    @Override
+    public long updateOneInstance(ContentValues modifiedInstance, ContentValues previousInstance)
+    {
+        Uri.Builder builder = CalendarContract.Instances.CONTENT_URI.buildUpon();
+        ContentUris.appendId(builder, previousInstance.getAsLong(CalendarContract.Instances.BEGIN));
+        ContentUris.appendId(builder, previousInstance.getAsLong(CalendarContract.Instances.END));
+
+        ContentResolver contentResolver = context.getContentResolver();
+        String where = "Instances._id=?";
+
+        return contentResolver.update(builder.build(), modifiedInstance, where, new String[]{
+                String.valueOf(previousInstance.getAsLong(CalendarContract.Instances._ID))
+        });
+    }
+
+    @Override
+    public int deleteInstance(long begin, long end, long instanceId)
+    {
+        Uri.Builder builder = CalendarContract.Instances.CONTENT_URI.buildUpon();
+        ContentUris.appendId(builder, begin);
+        ContentUris.appendId(builder, end);
+
+        ContentResolver contentResolver = context.getContentResolver();
+        String where = "Instances._id=?";
+        int result = contentResolver.delete(builder.build(), where, new String[]{String.valueOf(instanceId)});
+
+        return result;
     }
 
     // attendee - crud
