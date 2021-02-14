@@ -39,4 +39,11 @@ public class LocalParameterUtil
         parameter.setQuery(searchWord).setSize(size).setPage(page);
         return parameter;
     }
+
+    public static LocalApiPlaceParameter getCoordToAddressParameter(double latitude, double longitude)
+    {
+        LocalApiPlaceParameter parameter = new LocalApiPlaceParameter();
+        parameter.setX(String.valueOf(longitude)).setY(String.valueOf(latitude));
+        return parameter;
+    }
 }

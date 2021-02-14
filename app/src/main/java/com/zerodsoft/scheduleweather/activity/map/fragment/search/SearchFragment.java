@@ -84,8 +84,8 @@ public class SearchFragment extends Fragment implements OnSelectedMapCategory
             @Override
             public void handleOnBackPressed()
             {
+                getParentFragmentManager().beginTransaction().remove(instance).commitNow();
                 iBottomSheet.closeSearchView(IBottomSheet.SEARCH_VIEW);
-                getParentFragmentManager().beginTransaction().remove(instance).commit();
             }
         };
         requireActivity().getOnBackPressedDispatcher().addCallback(SearchFragment.this, onBackPressedCallback);

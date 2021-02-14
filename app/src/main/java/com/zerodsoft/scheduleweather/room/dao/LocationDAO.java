@@ -18,7 +18,9 @@ public interface LocationDAO
     @Query("SELECT * FROM location_table WHERE calendar_id = :calendarId AND event_id = :eventId")
     public LocationDTO select(int calendarId, long eventId);
 
-    @Query("SELECT EXISTS (SELECT count(*) from location_table  WHERE calendar_id = :calendarId AND event_id = :eventId) AS success")
+//select EXISTS (select * from 테이블이름 where 컬럼=찾는 값) as success;
+
+    @Query("SELECT EXISTS (SELECT * FROM location_table WHERE calendar_id = :calendarId AND event_id = :eventId) AS SUCCESS")
     public int hasLocation(int calendarId, long eventId);
 
     @Update(entity = LocationDTO.class, onConflict = OnConflictStrategy.IGNORE)

@@ -42,7 +42,7 @@
         android:layout_alignParentLeft="true"
         android:background="@color/map_view_button_color"
         android:padding="2dp"
-        android:text="주소"
+        android:text="address"
         android:textColor="@color/black"
         android:textSize="13sp" />
 

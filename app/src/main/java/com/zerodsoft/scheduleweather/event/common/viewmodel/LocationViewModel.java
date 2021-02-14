@@ -9,6 +9,10 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.zerodsoft.scheduleweather.event.common.interfaces.ILocationDao;
 import com.zerodsoft.scheduleweather.event.common.repository.LocationRepository;
+import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
+import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponseDocuments;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
 public class LocationViewModel extends AndroidViewModel implements ILocationDao
@@ -51,6 +55,18 @@ public class LocationViewModel extends AndroidViewModel implements ILocationDao
     public void modifyLocation(LocationDTO location, CarrierMessagingService.ResultCallback<Boolean> resultCallback)
     {
         locationRepository.modifyLocation(location, resultCallback);
+    }
+
+    @Override
+    public void getAddressItem(LocalApiPlaceParameter parameter, CarrierMessagingService.ResultCallback<DataWrapper<AddressResponseDocuments>> callback)
+    {
+        locationRepository.getAddressItem(parameter, callback);
+    }
+
+    @Override
+    public void getPlaceItem(LocalApiPlaceParameter parameter, String placeId, CarrierMessagingService.ResultCallback<DataWrapper<PlaceDocuments>> callback)
+    {
+        locationRepository.getPlaceItem(parameter, placeId, callback);
     }
 
     public MutableLiveData<LocationDTO> getLocationLiveData()

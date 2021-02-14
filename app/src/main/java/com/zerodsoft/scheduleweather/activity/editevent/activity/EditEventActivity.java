@@ -111,8 +111,6 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                 if (requestCode == EventDataController.NEW_EVENT)
                 {
                     saveNewEvent();
-                    setResult(RESULT_CANCELED);
-                    finish();
                 } else if (requestCode == EventDataController.MODIFY_EVENT)
                 {
 

@@ -11,9 +11,9 @@ public interface IBottomSheet
     public static final int SEARCH_VIEW = 3;
     public static final int SEARCH_RESULT_VIEW = 4;
 
-    void setState(int state);
+    void setBottomSheetState(int state);
 
-    int getState();
+    int getBottomSheetState();
 
     void setVisibility(int viewType, int state);
 

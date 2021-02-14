@@ -27,13 +27,19 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <fragment
-                android:id="@+id/kakao_map_fragment"
-                android:name="com.zerodsoft.scheduleweather.kakaomap.fragment.KakaoMapFragment"
+            <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 app:layout_anchor="@id/bottom_sheet"
-                app:layout_anchorGravity="top" />
+                app:layout_anchorGravity="top">
+
+                <fragment
+                    android:id="@+id/kakao_map_fragment"
+                    android:name="com.zerodsoft.scheduleweather.kakaomap.fragment.KakaoMapFragment"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+
+            </FrameLayout>
 
             <include
                 android:id="@+id/bottom_sheet"

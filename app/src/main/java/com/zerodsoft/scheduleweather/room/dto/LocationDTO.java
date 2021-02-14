@@ -165,4 +165,9 @@ public class LocationDTO implements Parcelable
     {
         this.placeName = placeName;
     }
+
+    public boolean isEmpty()
+    {
+        return latitude == 0.0;
+    }
 }

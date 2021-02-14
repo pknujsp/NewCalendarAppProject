@@ -9,25 +9,17 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.net.ConnectivityManager;
-import android.net.Network;
-import android.net.NetworkCapabilities;
-import android.net.NetworkRequest;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
 import android.widget.ImageButton;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
@@ -38,8 +30,9 @@ import com.zerodsoft.scheduleweather.databinding.FragmentMapBinding;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IBottomSheet;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapPoint;
-import com.zerodsoft.scheduleweather.activity.map.fragment.map.BottomSheetItemView;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapToolbar;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.INetwork;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.IPermission;
 import com.zerodsoft.scheduleweather.kakaomap.model.CustomPoiItem;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponseDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
@@ -52,18 +45,20 @@ import net.daum.mf.map.api.MapView;
 import java.util.List;
 import java.util.Timer;
 
+import static androidx.core.content.ContextCompat.checkSelfPermission;
+
 public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, MapView.POIItemEventListener, MapView.MapViewEventListener, MapReverseGeoCoder.ReverseGeoCodingResultListener
 {
     protected FragmentMapBinding binding;
     public MapView mapView;
-    public ConnectivityManager.NetworkCallback networkCallback;
-    public ConnectivityManager connectivityManager;
+
     public String appKey;
     public MapReverseGeoCoder mapReverseGeoCoder;
     public LocationManager locationManager;
 
     public IBottomSheet iBottomSheet;
     public IMapToolbar iMapToolbar;
+    public INetwork iNetwork;
 
     private ImageButton zoomInButton;
     private ImageButton zoomOutButton;
@@ -71,6 +66,8 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
 
     private int selectedPoiItemIndex;
     private boolean isSelectedPoiItem;
+    private IPermission iPermission;
+
 
     public KakaoMapFragment()
     {
@@ -94,8 +91,8 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
         public void onLocationChanged(Location location)
         {
             mapView.setMapCenterPoint(MapPoint.mapPointWithGeoCoord(location.getLatitude(), location.getLongitude()), true);
-            mapReverseGeoCoder.findAddressForMapPointSync(appKey, mapView.getMapCenterPoint(), MapReverseGeoCoder.AddressType.FullAddress);
-            locationManager.removeUpdates(locationListener);
+            mapReverseGeoCoder = new MapReverseGeoCoder(appKey, mapView.getMapCenterPoint(), KakaoMapFragment.this, getActivity());
+            mapReverseGeoCoder.startFindingAddress(MapReverseGeoCoder.AddressType.ShortAddress);
         }
 
         @Override
@@ -121,7 +118,6 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     public void onCreate(@Nullable Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setNetworkCallback();
     }
 
     @Override
@@ -171,43 +167,50 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
             @Override
             public void onClick(View view)
             {
-                boolean isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-                boolean isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+                //권한 확인
 
-                int fineLocationPermission = ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION);
-                int coarseLocationPermission = ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION);
-
-                if (checkNetwork())
+                if (iPermission.grantedGpsPermissions())
                 {
-                    if (isGpsEnabled && isNetworkEnabled)
-                    {
-                        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
-                        Timer timer = new Timer();
-                        timer.schedule(new RequestLocationTimer()
-                        {
-                            @Override
-                            public void run()
-                            {
-                                timer.cancel();
-                                getActivity().runOnUiThread(new Runnable()
-                                {
-                                    @Override
-                                    public void run()
-                                    {
-                                        locationManager.removeUpdates(locationListener);
-                                        int fineLocationPermission = ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION);
-                                        int coarseLocationPermission = ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION);
-                                        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
-                                    }
-                                });
+                    boolean isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+                    boolean isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
 
-                            }
-                        }, 2000);
-                    } else if (!isGpsEnabled)
+                    checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION);
+                    checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION);
+
+                    if (iNetwork.networkAvailable())
                     {
-                        showRequestGpsDialog();
+                        if (isGpsEnabled && isNetworkEnabled)
+                        {
+                            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+                            Timer timer = new Timer();
+                            timer.schedule(new RequestLocationTimer()
+                            {
+                                @Override
+                                public void run()
+                                {
+                                    timer.cancel();
+                                    getActivity().runOnUiThread(new Runnable()
+                                    {
+                                        @Override
+                                        public void run()
+                                        {
+                                            locationManager.removeUpdates(locationListener);
+                                            checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION);
+                                            checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION);
+                                            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
+                                        }
+                                    });
+
+                                }
+                            }, 2000);
+                        } else if (!isGpsEnabled)
+                        {
+                            showRequestGpsDialog();
+                        }
                     }
+
                 }
+
             }
         });
         initMapView();
@@ -216,73 +219,11 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
         mapView.setMapViewEventListener(this);
     }
 
-    public boolean checkNetwork()
-    {
-        if (connectivityManager.getActiveNetwork() == null)
-        {
-            Toast.makeText(getActivity(), getString(R.string.map_network_not_connected), Toast.LENGTH_SHORT).show();
-            return false;
-        } else
-        {
-            NetworkCapabilities nc = connectivityManager.getNetworkCapabilities(connectivityManager.getActiveNetwork());
-
-            if (nc.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ||
-                    nc.hasTransport(NetworkCapabilities.TRANSPORT_WIFI))
-            {
-                return true;
-            } else
-            {
-                Toast.makeText(getActivity(), getString(R.string.map_network_not_connected), Toast.LENGTH_SHORT).show();
-                return false;
-            }
-        }
-    }
-
-    public void setNetworkCallback()
-    {
-        connectivityManager = (ConnectivityManager) getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
-        networkCallback = new ConnectivityManager.NetworkCallback()
-        {
-            @Override
-            public void onAvailable(Network network)
-            {
-                super.onAvailable(network);
-                Toast.makeText(getActivity(), getString(R.string.connected_network), Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onLost(Network network)
-            {
-                super.onLost(network);
-                Toast.makeText(getActivity(), getString(R.string.disconnected_network), Toast.LENGTH_SHORT).show();
-            }
-        };
-        NetworkRequest.Builder builder = new NetworkRequest.Builder();
-        builder.addTransportType(NetworkCapabilities.TRANSPORT_WIFI);
-        builder.addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR);
-        connectivityManager.registerNetworkCallback(builder.build(), networkCallback);
-    }
-
 
     public void initMapView()
     {
         mapView = new MapView(requireActivity());
         binding.mapView.addView(mapView);
-
-        if (appKey == null)
-        {
-            ApplicationInfo ai = null;
-            try
-            {
-                ai = getActivity().getPackageManager().getApplicationInfo(getActivity().getPackageName(), PackageManager.GET_META_DATA);
-            } catch (PackageManager.NameNotFoundException e)
-            {
-                e.printStackTrace();
-            }
-            appKey = ai.metaData.getString("com.kakao.sdk.AppKey");
-        }
-        mapReverseGeoCoder = new MapReverseGeoCoder(appKey, mapView.getMapCenterPoint(), this, getActivity());
-        mapReverseGeoCoder.startFindingAddress(MapReverseGeoCoder.AddressType.FullAddress);
     }
 
     public void showRequestGpsDialog()
@@ -331,7 +272,6 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     public void onDestroy()
     {
         super.onDestroy();
-        connectivityManager.unregisterNetworkCallback(networkCallback);
     }
 
 
@@ -448,7 +388,18 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     @Override
     public void onMapViewInitialized(MapView mapView)
     {
+        ApplicationInfo ai = null;
+        try
+        {
+            ai = getActivity().getPackageManager().getApplicationInfo(getActivity().getPackageName(), PackageManager.GET_META_DATA);
+        } catch (PackageManager.NameNotFoundException e)
+        {
+            e.printStackTrace();
+        }
+        appKey = ai.metaData.getString("com.kakao.sdk.AppKey");
 
+        mapReverseGeoCoder = new MapReverseGeoCoder(appKey, mapView.getMapCenterPoint(), this, requireActivity());
+        mapReverseGeoCoder.startFindingAddress(MapReverseGeoCoder.AddressType.ShortAddress);
     }
 
     @Override
@@ -469,7 +420,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
         if (isSelectedPoiItem)
         {
             deselectPoiItem();
-            iBottomSheet.setState(BottomSheetBehavior.STATE_HIDDEN);
+            iBottomSheet.setBottomSheetState(BottomSheetBehavior.STATE_HIDDEN);
         }
     }
 
@@ -503,11 +454,10 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     @Override
     public void onMapViewMoveFinished(MapView mapView, MapPoint mapPoint)
     {
-        if (checkNetwork())
+        if (iNetwork.networkAvailable())
         {
-            // mapReverseGeoCoder = new MapReverseGeoCoder(appKey, mapPoint, this, getActivity());
-            binding.mapButtonsLayout.currentAddress.setText(mapReverseGeoCoder.findAddressForMapPointSync(appKey, mapPoint, MapReverseGeoCoder.AddressType.FullAddress));
-            // mapReverseGeoCoder.startFindingAddress(MapReverseGeoCoder.AddressType.ShortAddress);
+            mapReverseGeoCoder = new MapReverseGeoCoder(appKey, mapPoint, this, getActivity());
+            mapReverseGeoCoder.startFindingAddress(MapReverseGeoCoder.AddressType.ShortAddress);
         }
     }
 
@@ -534,9 +484,9 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
         }
 
         // 시트가 열리지 않은 경우 연다.
-        if (iBottomSheet.getState() != BottomSheetBehavior.STATE_EXPANDED)
+        if (iBottomSheet.getBottomSheetState() != BottomSheetBehavior.STATE_EXPANDED)
         {
-            iBottomSheet.setState(BottomSheetBehavior.STATE_EXPANDED);
+            iBottomSheet.setBottomSheetState(BottomSheetBehavior.STATE_EXPANDED);
         }
     }
 
@@ -593,5 +543,16 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     public ImageButton getGpsButton()
     {
         return gpsButton;
+    }
+
+    public void setINetwork(INetwork iNetwork)
+    {
+        this.iNetwork = iNetwork;
+
+    }
+
+    public void setIPermission(IPermission iPermission)
+    {
+        this.iPermission = iPermission;
     }
 }

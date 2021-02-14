@@ -4,17 +4,25 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
+import androidx.core.content.ContextCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.Context;
+import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
+import android.net.NetworkRequest;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Toast;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.R;
@@ -25,15 +33,28 @@ import com.zerodsoft.scheduleweather.etc.FragmentStateCallback;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.KakaoMapFragment;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IBottomSheet;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapToolbar;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.INetwork;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.IPermission;
+import com.zerodsoft.scheduleweather.kakaomap.model.CustomPoiItem;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponseDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
+import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
-public class KakaoMapActivity extends AppCompatActivity implements IBottomSheet, IMapToolbar
+import net.daum.mf.map.api.MapPOIItem;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+public class KakaoMapActivity extends AppCompatActivity implements IBottomSheet, IMapToolbar, INetwork, IPermission
 {
     protected ActivityKakaoMapBinding binding;
     protected BottomSheetBehavior bottomSheetBehavior;
     protected KakaoMapFragment kakaoMapFragment;
     protected SearchView searchView;
+    protected ConnectivityManager.NetworkCallback networkCallback;
+    protected ConnectivityManager connectivityManager;
 
     public KakaoMapActivity()
     {
@@ -45,17 +66,28 @@ public class KakaoMapActivity extends AppCompatActivity implements IBottomSheet,
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_kakao_map);
 
+        setNetworkCallback();
+
         kakaoMapFragment = (KakaoMapFragment) getSupportFragmentManager().findFragmentById(R.id.kakao_map_fragment);
         kakaoMapFragment.setiBottomSheet(this);
         kakaoMapFragment.setiMapToolbar(this);
+        kakaoMapFragment.setINetwork(this);
+        kakaoMapFragment.setIPermission(this);
 
         initToolbar();
         initBottomSheet();
     }
 
+    @Override
+    protected void onDestroy()
+    {
+        super.onDestroy();
+        connectivityManager.unregisterNetworkCallback(networkCallback);
+    }
+
     public void onClickedSearchView()
     {
-        setState(BottomSheetBehavior.STATE_HIDDEN);
+        setBottomSheetState(BottomSheetBehavior.STATE_HIDDEN);
         setItemVisibility(View.GONE);
         setFragmentVisibility(View.VISIBLE);
 
@@ -64,7 +96,7 @@ public class KakaoMapActivity extends AppCompatActivity implements IBottomSheet,
                 {
 
                 }), SearchFragment.TAG).commitNow();
-        setState(BottomSheetBehavior.STATE_EXPANDED);
+        setBottomSheetState(BottomSheetBehavior.STATE_EXPANDED);
     }
 
 
@@ -95,7 +127,6 @@ public class KakaoMapActivity extends AppCompatActivity implements IBottomSheet,
                 if (!query.isEmpty())
                 {
                     // 현재 프래그먼트가 검색 결과 프래그먼트인 경우
-
                     FragmentManager fragmentManager = getSupportFragmentManager();
 
                     if (fragmentManager.getBackStackEntryCount() > 0)
@@ -128,24 +159,29 @@ public class KakaoMapActivity extends AppCompatActivity implements IBottomSheet,
             public boolean onClose()
             {
                 FragmentManager fragmentManager = getSupportFragmentManager();
-                final int topIndexStack = fragmentManager.getBackStackEntryCount() - 1;
-
-                if (topIndexStack >= 0)
+                Fragment showingFragment = fragmentManager.findFragmentByTag(SearchResultListFragment.TAG);
+                if (showingFragment != null)
                 {
-                    FragmentManager.BackStackEntry backStackEntry = fragmentManager.getBackStackEntryAt(topIndexStack);
-                    String name = backStackEntry.getName();
-
-                    switch (name)
+                    if (showingFragment.isVisible())
                     {
-                        case SearchFragment.TAG:
-                            searchView.setQuery("", false);
-                            break;
-                        case SearchResultListFragment.TAG:
-                            closeSearchView(IBottomSheet.SEARCH_RESULT_VIEW);
-                            break;
+                        fragmentManager.popBackStackImmediate();
+                        fragmentManager.beginTransaction().remove(SearchFragment.getInstance()).commitNow();
+                        closeSearchView(IBottomSheet.SEARCH_RESULT_VIEW);
+                    }
+                } else
+                {
+                    showingFragment = fragmentManager.findFragmentByTag(SearchFragment.TAG);
+                    if (showingFragment != null)
+                    {
+                        if (showingFragment.isVisible())
+                        {
+                            fragmentManager.beginTransaction().remove(SearchFragment.getInstance()).commitNow();
+                            closeSearchView(IBottomSheet.SEARCH_VIEW);
+                        }
                     }
                 }
-                return false;
+                searchView.onActionViewCollapsed();
+                return true;
             }
         });
 
@@ -229,13 +265,13 @@ public class KakaoMapActivity extends AppCompatActivity implements IBottomSheet,
     }
 
     @Override
-    public void setState(int state)
+    public void setBottomSheetState(int state)
     {
         bottomSheetBehavior.setState(state);
     }
 
     @Override
-    public int getState()
+    public int getBottomSheetState()
     {
         return bottomSheetBehavior.getState();
     }
@@ -282,23 +318,16 @@ public class KakaoMapActivity extends AppCompatActivity implements IBottomSheet,
         switch (viewType)
         {
             case IBottomSheet.SEARCH_VIEW:
-                setState(BottomSheetBehavior.STATE_HIDDEN);
-                searchView.setIconified(true);
-                searchView.onActionViewCollapsed();
-                setItemVisibility(View.VISIBLE);
-                setFragmentVisibility(View.GONE);
                 break;
-
             case IBottomSheet.SEARCH_RESULT_VIEW:
+                setMenuVisibility(IMapToolbar.ALL, false);
                 kakaoMapFragment.removeAllPoiItems();
-                setState(BottomSheetBehavior.STATE_HIDDEN);
-                setItemVisibility(View.VISIBLE);
-                setFragmentVisibility(View.GONE);
-                searchView.setIconified(true);
-                searchView.onActionViewCollapsed();
                 break;
         }
-
+        setBottomSheetState(BottomSheetBehavior.STATE_HIDDEN);
+        searchView.setIconified(true);
+        setItemVisibility(View.VISIBLE);
+        setFragmentVisibility(View.GONE);
     }
 
     @Override
@@ -346,4 +375,130 @@ public class KakaoMapActivity extends AppCompatActivity implements IBottomSheet,
         searchView.setQuery(text, false);
     }
 
+    public void setNetworkCallback()
+    {
+        connectivityManager = (ConnectivityManager) getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+        networkCallback = new ConnectivityManager.NetworkCallback()
+        {
+            @Override
+            public void onAvailable(Network network)
+            {
+                super.onAvailable(network);
+                Toast.makeText(KakaoMapActivity.this, getString(R.string.connected_network), Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onLost(Network network)
+            {
+                super.onLost(network);
+                Toast.makeText(KakaoMapActivity.this, getString(R.string.disconnected_network), Toast.LENGTH_SHORT).show();
+            }
+        };
+        NetworkRequest.Builder builder = new NetworkRequest.Builder();
+        builder.addTransportType(NetworkCapabilities.TRANSPORT_WIFI);
+        builder.addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR);
+        connectivityManager.registerNetworkCallback(builder.build(), networkCallback);
+    }
+
+    @Override
+    public boolean networkAvailable()
+    {
+        if (connectivityManager.getActiveNetwork() == null)
+        {
+            Toast.makeText(KakaoMapActivity.this, getString(R.string.map_network_not_connected), Toast.LENGTH_SHORT).show();
+            return false;
+        } else
+        {
+            NetworkCapabilities nc = connectivityManager.getNetworkCapabilities(connectivityManager.getActiveNetwork());
+
+            if (nc.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ||
+                    nc.hasTransport(NetworkCapabilities.TRANSPORT_WIFI))
+            {
+                return true;
+            } else
+            {
+                Toast.makeText(KakaoMapActivity.this, getString(R.string.map_network_not_connected), Toast.LENGTH_SHORT).show();
+                return false;
+            }
+        }
+    }
+
+    public LocationDTO getSelectedLocationDto(int calendarId, long eventId)
+    {
+        // 선택된 poiitem의 리스트내 인덱스를 가져온다.
+        int poiItemIndex = kakaoMapFragment.getSelectedPoiItemIndex();
+        MapPOIItem[] poiItems = kakaoMapFragment.mapView.getPOIItems();
+        // 인덱스로 아이템을 가져온다.
+        CustomPoiItem item = (CustomPoiItem) poiItems[poiItemIndex];
+
+        LocationDTO location = new LocationDTO();
+        location.setCalendarId(calendarId);
+        location.setEventId(eventId);
+
+        // 주소인지 장소인지를 구분한다.
+        if (item.getPlaceDocument() != null)
+        {
+            location.setPlaceId(item.getPlaceDocument().getId());
+            location.setPlaceName(item.getPlaceDocument().getPlaceName());
+            location.setLatitude(item.getPlaceDocument().getY());
+            location.setLongitude(item.getPlaceDocument().getX());
+        } else if (item.getAddressDocument() != null)
+        {
+            location.setAddressName(item.getAddressDocument().getAddressName());
+            location.setLatitude(item.getAddressDocument().getY());
+            location.setLongitude(item.getAddressDocument().getX());
+        }
+        return location;
+    }
+
+    @Override
+    public void requestPermissions(int requestCode, String... permissions)
+    {
+        requestPermissions(permissions, requestCode);
+    }
+
+    @Override
+    public boolean grantedGpsPermissions()
+    {
+        int fineLocation = ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION);
+        int coarseLocation = ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION);
+
+        if (fineLocation == PackageManager.PERMISSION_GRANTED && coarseLocation == PackageManager.PERMISSION_GRANTED)
+        {
+            return true;
+        } else
+        {
+            List<String> permissions = new ArrayList<>();
+            if (fineLocation != PackageManager.PERMISSION_GRANTED)
+            {
+                permissions.add(Manifest.permission.ACCESS_FINE_LOCATION);
+            }
+            if (coarseLocation != PackageManager.PERMISSION_GRANTED)
+            {
+                permissions.add(Manifest.permission.ACCESS_COARSE_LOCATION);
+            }
+
+            requestPermissions(IPermission.REQUEST_CODE_LOCATION, permissions.toArray(new String[0]));
+            return false;
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
+    {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == IPermission.REQUEST_CODE_LOCATION)
+        {
+            if (grantResults.length > 0 &&
+                    grantResults[0] == PackageManager.PERMISSION_GRANTED)
+            {
+                // 권한 허용됨
+                kakaoMapFragment.getGpsButton().callOnClick();
+            } else
+            {
+                // 권한 거부됨
+            }
+        }
+    }
 }

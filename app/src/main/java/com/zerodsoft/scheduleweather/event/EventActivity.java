@@ -9,7 +9,6 @@ import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.annotation.SuppressLint;
@@ -32,6 +31,7 @@ import com.zerodsoft.scheduleweather.activity.editevent.activity.EditEventActivi
 import com.zerodsoft.scheduleweather.activity.editevent.value.EventDataController;
 import com.zerodsoft.scheduleweather.databinding.ActivityScheduleInfoBinding;
 import com.zerodsoft.scheduleweather.event.common.MLocActivity;
+import com.zerodsoft.scheduleweather.event.common.ReselectDetailLocation;
 import com.zerodsoft.scheduleweather.event.common.interfaces.IFab;
 import com.zerodsoft.scheduleweather.event.common.interfaces.ILocation;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
@@ -57,6 +57,14 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab
     private static final String TAG_INFO = "info";
     private static final String TAG_WEATHER = "weather";
     private static final String TAG_LOCATION = "location";
+
+    public static final int REQUEST_SELECT_LOCATION = 3000;
+    public static final int REQUEST_RESELECT_LOCATION = 3100;
+
+    public static final int RESULT_SELECTED_LOCATION = 3200;
+    public static final int RESULT_RESELECTED_LOCATION = 3300;
+    public static final int RESULT_REMOVED_LOCATION = 3400;
+
     private String clickedFragmentTag;
 
     private Integer calendarId;
@@ -77,6 +85,7 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab
         };
         getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
     }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -102,14 +111,53 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab
                 }
             }
         });
-        binding.reselectLocationFab.setOnClickListener(new View.OnClickListener()
+
+        binding.selectDetailLocationFab.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view)
             {
+                hasDetailLocation(new CarrierMessagingService.ResultCallback<Boolean>()
+                {
+                    @Override
+                    public void onReceiveResult(@NonNull Boolean hasDetailLocation) throws RemoteException
+                    {
+                        runOnUiThread(new Runnable()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                if (hasDetailLocation)
+                                {
+                                    locationViewModel.getLocation(calendarId, eventId, new CarrierMessagingService.ResultCallback<LocationDTO>()
+                                    {
+                                        @Override
+                                        public void onReceiveResult(@NonNull LocationDTO locationDTO) throws RemoteException
+                                        {
+                                            if (!locationDTO.isEmpty())
+                                            {
+                                                Intent intent = new Intent(EventActivity.this, ReselectDetailLocation.class);
+                                                intent.putExtra("savedLocationDto", locationDTO);
+                                                startActivityForResult(intent, REQUEST_SELECT_LOCATION);
+                                            }
+                                        }
+                                    });
+                                } else
+                                {
+                                    clickedFragmentTag = TAG_INFO;
+                                    showRequestLocDialog();
+                                }
+                            }
+                        });
+
+
+                    }
+                });
+
 
             }
         });
+
         binding.modifyEventFab.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -117,12 +165,13 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab
             {
                 Intent intent = new Intent(EventActivity.this, EditEventActivity.class);
                 intent.putExtra("requestCode", EventDataController.MODIFY_EVENT);
-                intent.putExtra("calendarId", calendarId);
-                intent.putExtra("eventId", eventId);
+                intent.putExtra("calendarId", calendarId.intValue());
+                intent.putExtra("eventId", eventId.longValue());
 
                 startActivity(intent);
             }
         });
+
         binding.removeEventFab.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -151,15 +200,9 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab
         binding.scheduleBottomNav.setSelectedItemId(R.id.schedule_info);
 
         locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
-        locationViewModel.getLocationLiveData().observe(this, new Observer<LocationDTO>()
-        {
-            @Override
-            public void onChanged(LocationDTO locationDTO)
-            {
 
-            }
-        });
     }
+
 
     private void collapseFabs()
     {
@@ -167,8 +210,9 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab
 
         binding.removeEventFab.animate().translationY(0);
         binding.modifyEventFab.animate().translationY(0);
-        binding.reselectLocationFab.animate().translationY(0);
+        binding.selectDetailLocationFab.animate().translationY(0);
     }
+
 
     private void expandFabs()
     {
@@ -180,8 +224,9 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab
 
         binding.removeEventFab.animate().translationY(y - (fabHeight + margin));
         binding.modifyEventFab.animate().translationY(y - (fabHeight + margin) * 2);
-        binding.reselectLocationFab.animate().translationY(y - (fabHeight + margin) * 3);
+        binding.selectDetailLocationFab.animate().translationY(y - (fabHeight + margin) * 3);
     }
+
 
     private final BottomNavigationView.OnNavigationItemSelectedListener onNavigationItemSelectedListener = new BottomNavigationView.OnNavigationItemSelectedListener()
     {
@@ -195,6 +240,7 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab
             switch (item.getItemId())
             {
                 case R.id.schedule_info:
+                {
                     if (currentFragment == null)
                     {
                         currentFragment = eventFragment;
@@ -202,16 +248,7 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab
                         return true;
                     }
                     newFragment = eventFragment;
-                    if (eventFragment.getInstance().getAsString(CalendarContract.Instances.EVENT_LOCATION).isEmpty())
-                    {
-                        setVisibility(IFab.TYPE_RESELECT_LOCATION, View.GONE);
-                        setVisibility(IFab.TYPE_MAIN, View.VISIBLE);
-                        setVisibility(IFab.TYPE_REMOVE_EVENT, View.VISIBLE);
-                        setVisibility(IFab.TYPE_MODIFY_EVENT, View.VISIBLE);
-                    } else
-                    {
-                        setAllVisibility(View.VISIBLE);
-                    }
+
                     //현재 표시된 프래그먼트와 변경할 프래그먼트가 같은 경우 변경하지 않음
                     if (currentFragment != newFragment)
                     {
@@ -221,8 +258,10 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab
                     {
                         fragmentTransaction = null;
                     }
+                    clickedFragmentTag = TAG_INFO;
+                    setFabs(TAG_INFO);
                     return true;
-
+                }
                 default:
                     if (!hasSimpleLocation())
                     {
@@ -234,14 +273,14 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab
                         hasDetailLocation(new CarrierMessagingService.ResultCallback<Boolean>()
                         {
                             @Override
-                            public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
+                            public void onReceiveResult(@NonNull Boolean hasDetailLocation) throws RemoteException
                             {
                                 runOnUiThread(new Runnable()
                                 {
                                     @Override
                                     public void run()
                                     {
-                                        if (aBoolean)
+                                        if (hasDetailLocation)
                                         {
                                             binding.scheduleBottomNav.getMenu().findItem(item.getItemId()).setChecked(true);
 
@@ -256,8 +295,8 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab
                                                         weatherFragment = new WeatherFragment(EventActivity.this);
                                                         fragmentTransaction.add(R.id.schedule_fragment_container, weatherFragment, TAG_WEATHER);
                                                     }
+                                                    setFabs(TAG_WEATHER);
                                                     newFragment = weatherFragment;
-                                                    setAllVisibility(View.GONE);
                                                     break;
                                                 case R.id.schedule_location:
                                                     if (placesAroundLocationFragment == null)
@@ -265,8 +304,8 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab
                                                         placesAroundLocationFragment = new PlacesAroundLocationFragment(EventActivity.this);
                                                         fragmentTransaction.add(R.id.schedule_fragment_container, placesAroundLocationFragment, TAG_LOCATION);
                                                     }
+                                                    setFabs(TAG_LOCATION);
                                                     newFragment = placesAroundLocationFragment;
-                                                    setAllVisibility(View.GONE);
                                                     break;
                                             }
 
@@ -279,7 +318,6 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab
                                             {
                                                 fragmentTransaction = null;
                                             }
-
                                         } else
                                         {
                                             switch (item.getItemId())
@@ -299,10 +337,8 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab
                             }
                         });
                     }
-
                     return false;
             }
-
         }
     };
 
@@ -323,14 +359,19 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data)
     {
         super.onActivityResult(requestCode, resultCode, data);
+
         switch (requestCode)
         {
-            case MLocActivity.REQUEST_SELECT_LOCATION:
+            case REQUEST_SELECT_LOCATION:
             {
-                if (resultCode == MLocActivity.RESULT_SELECTED_LOCATION)
+                if (resultCode == RESULT_SELECTED_LOCATION)
                 {
+                    Toast.makeText(EventActivity.this, data.getStringExtra("selectedLocationName"), Toast.LENGTH_SHORT).show();
                     switch (clickedFragmentTag)
                     {
+                        case TAG_INFO:
+                            // binding.scheduleBottomNav.setSelectedItemId(R.id.schedule_info);
+                            break;
                         case TAG_WEATHER:
                             binding.scheduleBottomNav.setSelectedItemId(R.id.schedule_weather);
                             break;
@@ -341,6 +382,18 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab
                 } else
                 {
                     // 취소, 이벤트 정보 프래그먼트로 돌아감
+                }
+                break;
+            }
+
+            case REQUEST_RESELECT_LOCATION:
+            {
+                if (resultCode == RESULT_RESELECTED_LOCATION)
+                {
+                    Toast.makeText(EventActivity.this, data.getStringExtra("selectedLocationName"), Toast.LENGTH_SHORT).show();
+                } else if (resultCode == RESULT_REMOVED_LOCATION)
+                {
+
                 }
             }
         }
@@ -373,7 +426,7 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab
                         intent.putExtra("location", instance.getAsString(CalendarContract.Instances.EVENT_LOCATION));
                         intent.putExtra("ownerAccount", instance.getAsString(CalendarContract.Instances.OWNER_ACCOUNT));
 
-                        startActivityForResult(intent, MLocActivity.REQUEST_SELECT_LOCATION);
+                        startActivityForResult(intent, REQUEST_SELECT_LOCATION);
                         dialogInterface.dismiss();
                     }
                 });
@@ -388,9 +441,9 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab
     @Override
     public void getLocation(CarrierMessagingService.ResultCallback<LocationDTO> resultCallback)
     {
-        locationViewModel.getLocation(eventFragment.getInstance().getAsInteger(CalendarContract.Instances.CALENDAR_ID),
-                eventFragment.getInstance().getAsLong(CalendarContract.Instances.EVENT_ID), resultCallback);
+        locationViewModel.getLocation(calendarId, eventId, resultCallback);
     }
+
 
     /**
      * 이벤트에 지정되어 있는 간단한 위치값 전달
@@ -400,8 +453,9 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab
     @Override
     public boolean hasSimpleLocation()
     {
-        return !eventFragment.getInstance().getAsString(CalendarContract.Instances.EVENT_LOCATION).isEmpty();
+        return eventFragment.getInstance().containsKey(CalendarContract.Instances.EVENT_LOCATION);
     }
+
 
     /**
      * 날씨, 주변 정보들을 표시하기 위해 지정한 상세 위치 정보를 가지고 있는지 확인
@@ -411,8 +465,7 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab
     @Override
     public void hasDetailLocation(CarrierMessagingService.ResultCallback<Boolean> resultCallback)
     {
-        locationViewModel.hasDetailLocation(eventFragment.getInstance().getAsInteger(CalendarContract.Instances.CALENDAR_ID),
-                eventFragment.getInstance().getAsLong(CalendarContract.Instances.EVENT_ID), resultCallback);
+        locationViewModel.hasDetailLocation(calendarId, eventId, resultCallback);
     }
 
     @Override
@@ -421,7 +474,7 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab
         binding.eventFab.setVisibility(visibility);
         binding.removeEventFab.setVisibility(visibility);
         binding.modifyEventFab.setVisibility(visibility);
-        binding.reselectLocationFab.setVisibility(visibility);
+        binding.selectDetailLocationFab.setVisibility(visibility);
     }
 
     @Override
@@ -438,8 +491,8 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab
             case IFab.TYPE_MODIFY_EVENT:
                 binding.modifyEventFab.setVisibility(visibility);
                 break;
-            case IFab.TYPE_RESELECT_LOCATION:
-                binding.reselectLocationFab.setVisibility(visibility);
+            case IFab.TYPE_SELECT_LOCATION:
+                binding.selectDetailLocationFab.setVisibility(visibility);
                 break;
         }
     }
@@ -461,10 +514,33 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab
             case IFab.TYPE_MODIFY_EVENT:
                 visibility = binding.modifyEventFab.getVisibility();
                 break;
-            case IFab.TYPE_RESELECT_LOCATION:
-                visibility = binding.reselectLocationFab.getVisibility();
+            case IFab.TYPE_SELECT_LOCATION:
+                visibility = binding.selectDetailLocationFab.getVisibility();
                 break;
         }
         return visibility;
+    }
+
+    private void setFabs(String fragmentTag)
+    {
+        switch (fragmentTag)
+        {
+            case TAG_INFO:
+                if (eventFragment.getInstance().getAsString(CalendarContract.Instances.EVENT_LOCATION).isEmpty())
+                {
+                    setVisibility(IFab.TYPE_SELECT_LOCATION, View.GONE);
+                    setVisibility(IFab.TYPE_MAIN, View.VISIBLE);
+                    setVisibility(IFab.TYPE_REMOVE_EVENT, View.VISIBLE);
+                    setVisibility(IFab.TYPE_MODIFY_EVENT, View.VISIBLE);
+                } else
+                {
+                    setAllVisibility(View.VISIBLE);
+                }
+                break;
+
+            default:
+                setAllVisibility(View.GONE);
+                break;
+        }
     }
 }

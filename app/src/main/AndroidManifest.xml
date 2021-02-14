@@ -26,6 +26,7 @@
         <activity android:name=".activity.editevent.activity.AttendeesActivity"></activity>
         <activity android:name=".kakaomap.activity.KakaoMapActivity" />
         <activity android:name=".event.common.MLocActivity" />
+        <activity android:name=".event.common.ReselectDetailLocation" />
         <activity android:name=".activity.editevent.activity.ReminderActivity" />
         <activity android:name=".activity.editevent.activity.TimeZoneActivity" />
         <activity android:name=".activity.editevent.activity.RecurrenceActivity" />

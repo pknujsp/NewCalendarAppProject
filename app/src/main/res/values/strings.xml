@@ -292,6 +292,9 @@
     <string name="save_only_current_event">모든 일정</string>
 
 
+
+    <string name="removed_detail_location">위치 정보 삭제완료</string>
+
     <!-- 알림 -->
 
 

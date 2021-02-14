@@ -104,7 +104,7 @@ public class SearchResultListFragment extends Fragment implements IndicatorCreat
                     iMapData.removeAllPoiItems();
                     iMapToolbar.setText("");
                     iMapToolbar.setMenuVisibility(IMapToolbar.ALL, false);
-                    getParentFragmentManager().popBackStack();
+                    getParentFragmentManager().popBackStackImmediate();
                     onBackPressedCallback.remove();
                 } else
                 {
@@ -251,7 +251,7 @@ public class SearchResultListFragment extends Fragment implements IndicatorCreat
             // to map
             // 버튼 이미지, 프래그먼트 숨김/보이기 설정
             iMapData.showAllPoiItems();
-            iBottomSheet.setState(BottomSheetBehavior.STATE_HIDDEN);
+            iBottomSheet.setBottomSheetState(BottomSheetBehavior.STATE_HIDDEN);
             iBottomSheet.setItemVisibility(View.VISIBLE);
             iBottomSheet.setFragmentVisibility(View.GONE);
         } else
@@ -260,7 +260,7 @@ public class SearchResultListFragment extends Fragment implements IndicatorCreat
             iMapData.backToPreviousView();
             iBottomSheet.setItemVisibility(View.GONE);
             iBottomSheet.setFragmentVisibility(View.VISIBLE);
-            iBottomSheet.setState(BottomSheetBehavior.STATE_EXPANDED);
+            iBottomSheet.setBottomSheetState(BottomSheetBehavior.STATE_EXPANDED);
         }
 
         isVisibleList = !isVisibleList;

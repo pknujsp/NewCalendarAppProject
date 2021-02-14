@@ -89,7 +89,6 @@ public class AddressListFragment extends Fragment implements IViewPager
 
         if (KakaoLocalApiCategoryUtil.isCategory(SEARCH_WORD))
         {
-            // fragmentRemover.removeFragment(this);
             progressBar.setVisibility(View.GONE);
         } else
         {
@@ -110,8 +109,6 @@ public class AddressListFragment extends Fragment implements IViewPager
                 @Override
                 public void onChanged(PagedList<AddressResponseDocuments> addressResponseDocuments)
                 {
-                    // 검색 결과가 없으면 이 프래그먼트를 삭제한다.
-                    // fragmentRemover.removeFragment(AddressListFragment.this);
                     adapter.submitList(addressResponseDocuments);
                     progressBar.setVisibility(View.GONE);
                 }

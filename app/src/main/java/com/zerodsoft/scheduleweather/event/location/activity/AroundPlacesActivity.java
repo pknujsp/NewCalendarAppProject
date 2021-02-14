@@ -9,12 +9,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
-import androidx.activity.OnBackPressedCallback;
-
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.event.location.placefragments.interfaces.IPlaceItem;
 import com.zerodsoft.scheduleweather.kakaomap.activity.KakaoMapActivity;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponseDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
@@ -139,15 +136,15 @@ public class AroundPlacesActivity extends KakaoMapActivity
     }
 
     @Override
-    public void setState(int state)
+    public void setBottomSheetState(int state)
     {
-        super.setState(state);
+        super.setBottomSheetState(state);
     }
 
     @Override
-    public int getState()
+    public int getBottomSheetState()
     {
-        return super.getState();
+        return super.getBottomSheetState();
     }
 
     @Override
@@ -178,12 +175,6 @@ public class AroundPlacesActivity extends KakaoMapActivity
     public void setFragmentVisibility(int state)
     {
         super.setFragmentVisibility(state);
-    }
-
-    @Override
-    public void closeSearchView(int viewType)
-    {
-        super.closeSearchView(viewType);
     }
 
     @Override

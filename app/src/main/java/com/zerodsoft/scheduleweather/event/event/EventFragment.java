@@ -4,11 +4,9 @@ import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.provider.CalendarContract;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -295,10 +293,14 @@ public class EventFragment extends Fragment
                 : "");
         // 위치
         binding.eventLocationView.eventLocation.setText(instance.getAsString(CalendarContract.Instances.EVENT_LOCATION));
+
         //fab설정
-        if (instance.getAsString(CalendarContract.Instances.EVENT_LOCATION).isEmpty())
+        if (instance.containsKey(CalendarContract.Instances.EVENT_LOCATION))
         {
-            iFab.setVisibility(IFab.TYPE_RESELECT_LOCATION, View.GONE);
+            iFab.setVisibility(IFab.TYPE_SELECT_LOCATION, View.VISIBLE);
+        } else
+        {
+            iFab.setVisibility(IFab.TYPE_SELECT_LOCATION, View.GONE);
         }
         // 참석자
         viewModel.getAttendees(calendarId, eventId);
