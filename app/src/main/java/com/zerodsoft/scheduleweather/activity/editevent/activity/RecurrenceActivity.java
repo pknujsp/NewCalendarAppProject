@@ -14,7 +14,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
-import android.widget.RadioGroup;
 
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.datepicker.MaterialPickerOnPositiveButtonClickListener;
@@ -24,7 +23,6 @@ import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.utility.RecurrenceRule;
 
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.regex.PatternSyntaxException;
 
@@ -71,7 +69,7 @@ public class RecurrenceActivity extends AppCompatActivity
         binding.recurrenceCustomRule.dateTypeSpinner.setAdapter(spinnerAdapter);
 
         binding.recurrenceCustomRule.recurrenceDayView.getRoot().check(dayViewIds[eventStartDateTime.get(Calendar.DAY_OF_WEEK) - 1]);
-        binding.recurrenceDetailRule.recurrenceUntil.setText(ClockUtil.YYYY_년_M_월_D_일_E.format(eventStartDateTime.getTime()));
+        binding.recurrenceDetailRule.recurrenceUntil.setText(ClockUtil.YYYY_M_D_E.format(eventStartDateTime.getTime()));
         binding.recurrenceDetailRule.notEndRadio.setChecked(true);
 
         binding.notRecurrenceRadio.setOnCheckedChangeListener(recurrenceCheckedListener);
@@ -157,7 +155,7 @@ public class RecurrenceActivity extends AppCompatActivity
                     public void onPositiveButtonClick(Long selection)
                     {
                         untilDateTime.setTimeInMillis(selection);
-                        binding.recurrenceDetailRule.recurrenceUntil.setText(ClockUtil.YYYY_년_M_월_D_일_E.format(untilDateTime.getTime()));
+                        binding.recurrenceDetailRule.recurrenceUntil.setText(ClockUtil.YYYY_M_D_E.format(untilDateTime.getTime()));
                     }
                 });
                 picker.show(getSupportFragmentManager(), picker.toString());
@@ -213,7 +211,7 @@ public class RecurrenceActivity extends AppCompatActivity
             {
                 binding.recurrenceDetailRule.recurrenceUntilRadio.setChecked(true);
                 Calendar calendar = convertDate(GIVED_RULE.getValue(RecurrenceRule.UNTIL));
-                binding.recurrenceDetailRule.recurrenceUntil.setText(ClockUtil.YYYY_년_M_월_D_일_E.format(calendar.getTime()));
+                binding.recurrenceDetailRule.recurrenceUntil.setText(ClockUtil.YYYY_M_D_E.format(calendar.getTime()));
             }
 
             if (GIVED_RULE.containsKey(RecurrenceRule.BYDAY))

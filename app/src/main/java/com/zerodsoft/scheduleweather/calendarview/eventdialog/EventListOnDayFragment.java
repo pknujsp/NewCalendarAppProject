@@ -83,7 +83,7 @@ public class EventListOnDayFragment extends DialogFragment
         adapter = new EventsInfoRecyclerViewAdapter(onEventItemClickListener, begin, end);
         recyclerView.setAdapter(adapter);
 
-        ((TextView) view.findViewById(R.id.events_info_day)).setText(ClockUtil.YYYY_년_M_월_D_일_E.format(begin));
+        ((TextView) view.findViewById(R.id.events_info_day)).setText(ClockUtil.YYYY_M_D_E.format(begin));
     }
 
     @Override
@@ -106,34 +106,6 @@ public class EventListOnDayFragment extends DialogFragment
                         instances.addAll(calendarInstance.getInstanceList());
                         // 데이터를 일정 길이의 내림차순으로 정렬
                     }
-
-                    int index = 0;
-                    List<Integer> removeIndexList = new ArrayList<>();
-
-                    for (ContentValues instance : instances)
-                    {
-                        if (instance.getAsBoolean(CalendarContract.Instances.ALL_DAY))
-                        {
-                            if (instance.getAsLong(CalendarContract.Instances.END) >= begin)
-                            {
-                                Calendar calendar = Calendar.getInstance();
-                                calendar.setTimeInMillis(instance.getAsLong(CalendarContract.Instances.END));
-                                calendar.add(Calendar.DAY_OF_YEAR, -1);
-
-                                if (ClockUtil.calcDateDifference(ClockUtil.DAY, calendar.getTimeInMillis(), begin) < 0)
-                                {
-                                    removeIndexList.add(index);
-                                }
-                            }
-                        }
-                        index++;
-                    }
-
-                    for (int idx : removeIndexList)
-                    {
-                        instances.remove(idx);
-                    }
-
                     Collections.sort(instances, EventUtil.INSTANCE_COMPARATOR);
                     adapter.setInstances(instances);
                     adapter.notifyDataSetChanged();

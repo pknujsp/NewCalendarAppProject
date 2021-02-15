@@ -128,7 +128,7 @@ public class DayHeaderView extends ViewGroup implements IEvent
         int availableRow = 0;
         removeAllViews();
 
-        headerInstancesView = new HeaderInstancesView(getContext(),onEventItemClickListener);
+        headerInstancesView = new HeaderInstancesView(getContext(), onEventItemClickListener);
         headerInstancesView.setClickable(true);
         addView(headerInstancesView);
 
@@ -155,39 +155,13 @@ public class DayHeaderView extends ViewGroup implements IEvent
                 // 셀에 삽입된 아이템의 위치를 알맞게 조정
                 // 같은 일정은 같은 위치의 셀에 있어야 한다.
 
-                int leftMargin = 0;
-                int rightMargin = 0;
+                int[] margin = EventUtil.getViewSideMargin(instance.getAsLong(CalendarContract.Instances.BEGIN)
+                        , instance.getAsLong(CalendarContract.Instances.END)
+                        , today.getTime()
+                        , tomorrow.getTime(), 16);
 
-                Date instanceEnd = null;
-
-                if (instance.getAsBoolean(CalendarContract.Instances.ALL_DAY))
-                {
-                    Calendar calendar = Calendar.getInstance();
-                    calendar.setTimeInMillis(instance.getAsLong(CalendarContract.Instances.END));
-                    calendar.add(Calendar.DAY_OF_YEAR, -1);
-
-                    instanceEnd = calendar.getTime();
-                } else
-                {
-                    instanceEnd = new Date(instance.getAsLong(CalendarContract.Instances.END));
-                }
-
-                int dayDifference = ClockUtil.calcDateDifference(ClockUtil.DAY, instance.getAsLong(CalendarContract.Instances.BEGIN), instanceEnd.getTime());
-
-                if (dayDifference == 0)
-                {
-                    leftMargin = 8;
-                    rightMargin = 8;
-                } else
-                {
-                    int[] margin = EventUtil.getViewSideMargin(instance.getAsLong(CalendarContract.Instances.BEGIN)
-                            , instanceEnd.getTime()
-                            , today.getTime()
-                            , tomorrow.getTime(), 8);
-
-                    leftMargin = margin[0];
-                    rightMargin = margin[1];
-                }
+                int leftMargin = margin[0];
+                int rightMargin = margin[1];
 
                 EventData eventData = new EventData(instance, availableRow);
                 eventData.setLeftMargin(leftMargin);

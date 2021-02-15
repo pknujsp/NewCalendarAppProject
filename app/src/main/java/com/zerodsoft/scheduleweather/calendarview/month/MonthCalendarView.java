@@ -8,6 +8,7 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.provider.CalendarContract;
 import android.text.TextPaint;
+import android.util.ArraySet;
 import android.util.AttributeSet;
 import android.util.SparseArray;
 import android.util.TypedValue;
@@ -18,34 +19,39 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.IEvent;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashSet;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.TreeSet;
 
 public class MonthCalendarView extends ViewGroup implements IEvent
 {
-    private long firstDay;
+    private Long firstDay;
     private final float HEADER_DAY_TEXT_SIZE;
     private final TextPaint HEADER_DAY_PAINT;
 
-    private int ITEM_WIDTH;
-    private int ITEM_HEIGHT;
+    private Integer ITEM_WIDTH;
+    private Integer ITEM_HEIGHT;
 
     private static final int SPACING_BETWEEN_EVENT = 12;
     private static final int TEXT_MARGIN = 8;
     public static final int EVENT_LR_MARGIN = 4;
-    public static final int EVENT_COUNT = 5;
+    public static final int MAX_ROWS_COUNT = 5;
+    private static final int FIRST_DAY_INDEX = 0;
+    private static final int LAST_DAY_INDEX = 41;
     private float EVENT_TEXT_HEIGHT;
 
     private int start;
     private int end;
 
-    float DAY_SPACE_HEIGHT;
-    float EVENT_HEIGHT;
+    private float DAY_SPACE_HEIGHT;
+    private float EVENT_HEIGHT;
 
     private List<EventData> eventCellsList = new ArrayList<>();
 
@@ -57,7 +63,7 @@ public class MonthCalendarView extends ViewGroup implements IEvent
     {
         super(context, attrs);
 
-        HEADER_DAY_TEXT_SIZE = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 14, context.getResources().getDisplayMetrics());
+        HEADER_DAY_TEXT_SIZE = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 14f, context.getResources().getDisplayMetrics());
 
         HEADER_DAY_PAINT = new TextPaint(Paint.ANTI_ALIAS_FLAG | Paint.SUBPIXEL_TEXT_FLAG);
         HEADER_DAY_PAINT.setTextAlign(Paint.Align.CENTER);
@@ -92,7 +98,7 @@ public class MonthCalendarView extends ViewGroup implements IEvent
         ITEM_WIDTH = getWidth() / 7;
         ITEM_HEIGHT = getHeight() / 6;
 
-        EVENT_HEIGHT = (ITEM_HEIGHT - DAY_SPACE_HEIGHT - SPACING_BETWEEN_EVENT * 4) / EVENT_COUNT;
+        EVENT_HEIGHT = (ITEM_HEIGHT - DAY_SPACE_HEIGHT - SPACING_BETWEEN_EVENT * 4) / MAX_ROWS_COUNT;
         EVENT_TEXT_HEIGHT = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_PX, EVENT_HEIGHT - TEXT_MARGIN, getContext().getResources().getDisplayMetrics());
 
         // childview의 크기 설정
@@ -145,18 +151,17 @@ public class MonthCalendarView extends ViewGroup implements IEvent
             final int BEGIN_INDEX = eventData.getStartIndex();
             final int END_INDEX = eventData.getEndIndex();
             final int ROW = eventData.getRow();
-
-            float startX = 0f;
-            float startY = 0f;
-            float endX = 0f;
-            float endY = 0f;
-
-            int eventRowCount = END_INDEX / 7 - BEGIN_INDEX / 7 + 1;
+            final int EVENT_ROW_COUNT = END_INDEX / 7 - BEGIN_INDEX / 7 + 1;
 
             float left = 0;
             float right = 0;
             float top = 0;
             float bottom = 0;
+
+            float startX = 0f;
+            float startY = 0f;
+            float endX = 0f;
+            float endY = 0f;
 
             ContentValues event = eventData.getEvent();
 
@@ -179,26 +184,26 @@ public class MonthCalendarView extends ViewGroup implements IEvent
 
                 int[] margin = EventUtil.getViewSideMargin(INSTANCE_BEGIN, INSTANCE_END, VIEW_START, VIEW_END, 4);
 
-                for (int currentRowNum = 1; currentRowNum <= eventRowCount; currentRowNum++)
+                for (int currentRowNum = 1; currentRowNum <= EVENT_ROW_COUNT; currentRowNum++)
                 {
                     if (currentRowNum == 1)
                     {
                         startX = BEGIN_INDEX % 7 == 0 ? 0 : ITEM_WIDTH * (BEGIN_INDEX % 7);
 
-                        if (eventRowCount == 1)
+                        if (EVENT_ROW_COUNT == 1)
                         {
                             endX = END_INDEX % 7 == 0 ? 0 : ITEM_WIDTH * (END_INDEX % 7);
                         } else
                         {
                             endX = getWidth() - ITEM_WIDTH;
                         }
-                    } else if (currentRowNum == eventRowCount)
+                    } else if (currentRowNum == EVENT_ROW_COUNT)
                     {
                         startX = 0;
                         endX = END_INDEX % 7 == 0 ? 0 : ITEM_WIDTH * (END_INDEX % 7);
                     }
 
-                    if (currentRowNum != 1 && currentRowNum != eventRowCount)
+                    if (currentRowNum != 1 && currentRowNum != EVENT_ROW_COUNT)
                     {
                         startX = 0;
                         endX = getWidth() - ITEM_WIDTH;
@@ -247,7 +252,7 @@ public class MonthCalendarView extends ViewGroup implements IEvent
                 int displayedEventsNum = 0;
                 int lastRow = -1;
 
-                for (int row = EVENT_COUNT - 1; row >= 0; row--)
+                for (int row = MAX_ROWS_COUNT - 1; row >= 0; row--)
                 {
                     if (!ITEM_LAYOUT_CELLS.get(index).row[row])
                     {
@@ -307,23 +312,38 @@ public class MonthCalendarView extends ViewGroup implements IEvent
         // 달력 뷰의 셀에 아이템을 삽입
         for (ContentValues event : instances)
         {
-            // 달력 내 위치를 계산
-            int beginIndex = ClockUtil.calcDateDifference(ClockUtil.DAY, event.getAsLong(CalendarContract.Instances.BEGIN), firstDay);
-            int endIndex = ClockUtil.calcDateDifference(ClockUtil.DAY, event.getAsLong(CalendarContract.Instances.END), firstDay);
+            SimpleDateFormat TEST_FORMAT_UTC = new SimpleDateFormat("yyyy년 M월 d일 E a h시 m분", Locale.KOREAN);
+            TEST_FORMAT_UTC.setTimeZone(TimeZone.getTimeZone("UTC"));
+            SimpleDateFormat TEST_FORMAT_KST = new SimpleDateFormat("yyyy년 M월 d일 E a h시 m분", Locale.KOREAN);
+            TEST_FORMAT_KST.setTimeZone(ClockUtil.TIME_ZONE);
 
-            if (event.getAsBoolean(CalendarContract.Instances.ALL_DAY))
+            String beginStrUTC = TEST_FORMAT_UTC.format(new Date(event.getAsLong(CalendarContract.Instances.BEGIN)));
+            String endStrUTC = TEST_FORMAT_UTC.format(new Date(event.getAsLong(CalendarContract.Instances.END)));
+
+            String beginStrKST = TEST_FORMAT_KST.format(new Date(event.getAsLong(CalendarContract.Instances.BEGIN)));
+            String endStrKST = TEST_FORMAT_KST.format(new Date(event.getAsLong(CalendarContract.Instances.END)));
+
+            String beginStrDefault = ClockUtil.DATE_FORMAT_NOT_ALLDAY.format(new Date(event.getAsLong(CalendarContract.Instances.BEGIN)));
+            String endStrDefault = ClockUtil.DATE_FORMAT_NOT_ALLDAY.format(new Date(event.getAsLong(CalendarContract.Instances.END)));
+
+            // 달력 내 위치를 계산
+            final boolean allDay = event.getAsBoolean(CalendarContract.Instances.ALL_DAY);
+            int beginIndex = ClockUtil.calcDayDifference(event.getAsLong(CalendarContract.Instances.BEGIN), firstDay, allDay);
+            int endIndex = ClockUtil.calcDayDifference(event.getAsLong(CalendarContract.Instances.END), firstDay, allDay);
+
+            if (allDay)
             {
                 endIndex--;
             }
 
-            if (beginIndex < 0)
+            if (beginIndex < FIRST_DAY_INDEX)
             {
-                beginIndex = 0;
+                beginIndex = FIRST_DAY_INDEX;
             }
-            if (endIndex > 41)
+            if (endIndex > LAST_DAY_INDEX)
             {
                 // 달력에 표시할 일자의 개수가 총 42개
-                endIndex = 41;
+                endIndex = LAST_DAY_INDEX;
             }
 
             if (start > beginIndex)
@@ -349,9 +369,9 @@ public class MonthCalendarView extends ViewGroup implements IEvent
                 // 이벤트 개수 수정
                 ITEM_LAYOUT_CELLS.get(index).eventsNum++;
 
-                Set<Integer> set = new HashSet<>();
+                Set<Integer> set = new ArraySet<>();
 
-                for (int row = 0; row < EVENT_COUNT; row++)
+                for (int row = 0; row < MAX_ROWS_COUNT; row++)
                 {
                     if (!ITEM_LAYOUT_CELLS.get(index).row[row])
                     {
@@ -380,9 +400,9 @@ public class MonthCalendarView extends ViewGroup implements IEvent
             } else
             {
                 Iterator<Integer> iterator = rowSet.iterator();
-                int row = iterator.next();
+                final int row = iterator.next();
 
-                if (row != EVENT_COUNT - 1)
+                if (row < MAX_ROWS_COUNT - 1)
                 {
                     // 셀에 삽입된 아이템의 위치를 알맞게 조정
                     // 같은 일정은 같은 위치의 셀에 있어야 한다.
@@ -405,9 +425,8 @@ public class MonthCalendarView extends ViewGroup implements IEvent
 
         public ItemCell()
         {
-            row = new boolean[EVENT_COUNT];
+            row = new boolean[MAX_ROWS_COUNT];
         }
-
     }
 }
 

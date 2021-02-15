@@ -6,19 +6,18 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.provider.CalendarContract;
 import android.text.TextPaint;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.widget.ImageButton;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.utility.model.ReminderDto;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.List;
+import java.util.GregorianCalendar;
+import java.util.Locale;
 
 public class EventUtil
 {
@@ -61,31 +60,31 @@ public class EventUtil
         return eventTextPaint;
     }
 
-    public static int[] getViewSideMargin(long dataStart, long dataEnd, long viewStart, long viewEnd, int margin)
+    public static int[] getViewSideMargin(long instanceBegin, long instanceEnd, long viewStart, long viewEnd, int margin)
     {
         int leftMargin = 0;
         int rightMargin = 0;
 
         // 시작/종료일이 date가 아니나, 일정에 포함되는 경우
-        if (dataStart < viewStart && dataEnd > viewEnd)
+        if (instanceBegin < viewStart && instanceEnd >= viewEnd)
         {
             leftMargin = 0;
             rightMargin = 0;
         }
         // 시작일이 date인 경우, 종료일은 endDate 이후
-        else if (dataEnd >= viewEnd && dataStart >= viewStart && dataStart < viewEnd)
+        else if (instanceEnd > viewEnd && instanceBegin >= viewStart && instanceBegin < viewEnd)
         {
             leftMargin = margin;
             rightMargin = 0;
         }
         // 종료일이 date인 경우, 시작일은 startDate이전
-        else if (dataEnd >= viewStart && dataEnd < viewEnd && dataStart < viewStart)
+        else if (instanceEnd >= viewStart && instanceEnd < viewEnd && instanceBegin < viewStart)
         {
             leftMargin = 0;
             rightMargin = margin;
         }
         // 시작/종료일이 date인 경우
-        else if (dataEnd >= viewStart && dataEnd < viewEnd && dataStart >= viewStart && dataStart < viewEnd)
+        else if (instanceEnd >= viewStart && instanceEnd <= viewEnd && instanceBegin >= viewStart && instanceBegin < viewEnd)
         {
             leftMargin = margin;
             rightMargin = margin;
@@ -235,10 +234,10 @@ public class EventUtil
     {
         if (allDay)
         {
-            return ClockUtil.YYYY_년_M_월_D_일_E.format(new Date(dateTime));
+            return ClockUtil.YYYY_M_D_E.format(new Date(dateTime));
         } else
         {
-            return ClockUtil.YYYY_년_M_월_D_일_E.format(new Date(dateTime)) + " " +
+            return ClockUtil.YYYY_M_D_E.format(new Date(dateTime)) + " " +
                     (is24HourSystem ? ClockUtil.HOURS_24.format(new Date(dateTime))
                             : ClockUtil.HOURS_12.format(new Date(dateTime)));
         }
@@ -246,7 +245,7 @@ public class EventUtil
 
     public static String convertDate(long date)
     {
-        return ClockUtil.YYYY_년_M_월_D_일_E.format(new Date(date));
+        return ClockUtil.YYYY_M_D_E.format(new Date(date));
     }
 
     public static String convertTime(long time, boolean is24HourSystem)

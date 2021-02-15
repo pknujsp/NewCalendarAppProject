@@ -1076,13 +1076,17 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
     {
         // 시간이 바뀌는 경우, 알림 데이터도 변경해야함.
         // 알림 재설정
-        final int CALENDAR_ID = dataController.getEventValueAsInt(CalendarContract.Events.CALENDAR_ID);
-        final long NEW_EVENT_ID = viewModel.addEvent(dataController.getNewEventData().getEVENT());
+        EventData newEventData = dataController.getNewEventData();
+        ContentValues event = newEventData.getEVENT();
+
+        final int CALENDAR_ID = event.getAsInteger(CalendarContract.Events.CALENDAR_ID);
+        final long NEW_EVENT_ID = viewModel.addEvent(event);
 
         // 리마인더 저장
-        if (dataController.getEventValueAsBoolean(CalendarContract.Events.HAS_ALARM))
+        if (event.getAsBoolean(CalendarContract.Events.HAS_ALARM))
         {
-            List<ContentValues> reminders = dataController.getReminders();
+            List<ContentValues> reminders = newEventData.getREMINDERS();
+
             for (ContentValues reminder : reminders)
             {
                 reminder.put(CalendarContract.Reminders.EVENT_ID, NEW_EVENT_ID);
@@ -1091,9 +1095,10 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
         }
 
         // 참석자 저장
-        if (!dataController.getAttendees().isEmpty())
+        if (!newEventData.getATTENDEES().isEmpty())
         {
-            List<ContentValues> attendees = dataController.getAttendees();
+            List<ContentValues> attendees = newEventData.getATTENDEES();
+
             for (ContentValues attendee : attendees)
             {
                 attendee.put(CalendarContract.Attendees.EVENT_ID, NEW_EVENT_ID);
@@ -1102,7 +1107,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
         }
 
         // 상세 위치 데이터 저장
-        if (dataController.getEventValueAsString(CalendarContract.Events.EVENT_LOCATION) != null)
+        if (event.containsKey(CalendarContract.Events.EVENT_LOCATION))
         {
             locationDTO.setCalendarId(CALENDAR_ID);
             locationDTO.setEventId(NEW_EVENT_ID);
@@ -1110,7 +1115,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
             locationViewModel.addLocation(locationDTO, new CarrierMessagingService.ResultCallback<Boolean>()
             {
                 @Override
-                public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
+                public void onReceiveResult(@NonNull Boolean isAdded) throws RemoteException
                 {
                     setResult(RESULT_OK);
                     finish();
@@ -1486,11 +1491,22 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
             switch (focusedViewId)
             {
                 case R.id.title:
-                    dataController.putEventValue(CalendarContract.Events.TITLE, editable.toString());
+                    if (editable.length() > 0)
+                    {
+                        dataController.removeEventValue(CalendarContract.Events.TITLE);
+                    } else
+                    {
+                        dataController.putEventValue(CalendarContract.Events.TITLE, editable.toString());
+                    }
                     break;
-
                 case R.id.description_edittext:
-                    dataController.putEventValue(CalendarContract.Events.DESCRIPTION, editable.toString());
+                    if (editable.length() > 0)
+                    {
+                        dataController.removeEventValue(CalendarContract.Events.DESCRIPTION);
+                    } else
+                    {
+                        dataController.putEventValue(CalendarContract.Events.DESCRIPTION, editable.toString());
+                    }
                     break;
             }
         }

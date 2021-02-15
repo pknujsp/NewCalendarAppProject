@@ -199,7 +199,7 @@ public class WeekHeaderView extends ViewGroup implements IEvent
     public void setEventTable()
     {
         clear();
-        headerInstancesView = new HeaderInstancesView(getContext(),onEventItemClickListener);
+        headerInstancesView = new HeaderInstancesView(getContext(), onEventItemClickListener);
         addView(headerInstancesView);
 
         START_INDEX = Integer.MAX_VALUE;
@@ -208,23 +208,14 @@ public class WeekHeaderView extends ViewGroup implements IEvent
         // 달력 뷰의 셀에 아이템을 삽입
         for (ContentValues instance : instances)
         {
-            Date instanceEnd = null;
+            //일요일과의 일수차이 계산
+            int startIndex = ClockUtil.calcDayDifference(instance.getAsLong(CalendarContract.Instances.BEGIN), weekFirstDay.getTimeInMillis(), instance.getAsBoolean(CalendarContract.Instances.ALL_DAY));
+            int endIndex = ClockUtil.calcDayDifference(instance.getAsLong(CalendarContract.Instances.END), weekFirstDay.getTimeInMillis(), instance.getAsBoolean(CalendarContract.Instances.ALL_DAY));
 
             if (instance.getAsBoolean(CalendarContract.Instances.ALL_DAY))
             {
-                Calendar calendar = Calendar.getInstance();
-                calendar.setTimeInMillis(instance.getAsLong(CalendarContract.Instances.END));
-                calendar.add(Calendar.DAY_OF_YEAR, -1);
-
-                instanceEnd = calendar.getTime();
-            } else
-            {
-                instanceEnd = new Date(instance.getAsLong(CalendarContract.Instances.END));
+                endIndex--;
             }
-
-            //일요일과의 일수차이 계산
-            int startIndex = ClockUtil.calcDateDifference(ClockUtil.DAY, instance.getAsLong(CalendarContract.Instances.BEGIN), weekFirstDay.getTimeInMillis());
-            int endIndex = ClockUtil.calcDateDifference(ClockUtil.DAY, instanceEnd.getTime(), weekFirstDay.getTimeInMillis());
 
             if (startIndex < 0)
             {
@@ -240,7 +231,7 @@ public class WeekHeaderView extends ViewGroup implements IEvent
             }
 
             int[] margin = EventUtil.getViewSideMargin(instance.getAsLong(CalendarContract.Instances.BEGIN)
-                    , instanceEnd.getTime()
+                    , instance.getAsLong(CalendarContract.Instances.END)
                     , daysOfWeek[startIndex].getTimeInMillis()
                     , daysOfWeek[endIndex + 1].getTimeInMillis(), 8);
 
@@ -319,7 +310,6 @@ public class WeekHeaderView extends ViewGroup implements IEvent
         headerInstancesView.setEventCellsList(eventCellsList);
         ROWS_COUNT++;
     }
-
 
 
     class ItemCell
