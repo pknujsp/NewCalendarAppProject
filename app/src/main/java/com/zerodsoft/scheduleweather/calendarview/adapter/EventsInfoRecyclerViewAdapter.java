@@ -94,23 +94,9 @@ public class EventsInfoRecyclerViewAdapter extends RecyclerView.Adapter<EventsIn
 
             RecyclerView.LayoutParams layoutParams = new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 
-            Date instanceEnd = null;
-
-            if (instances.get(position).getAsBoolean(CalendarContract.Instances.ALL_DAY))
-            {
-                Calendar calendar = Calendar.getInstance();
-                calendar.setTimeInMillis(instances.get(position).getAsLong(CalendarContract.Instances.END));
-                calendar.add(Calendar.DAY_OF_YEAR, -1);
-
-                instanceEnd = calendar.getTime();
-            } else
-            {
-                instanceEnd = new Date(instances.get(position).getAsLong(CalendarContract.Instances.END));
-            }
-
             int[] margin = EventUtil.getViewSideMargin(instances.get(position).getAsLong(CalendarContract.Instances.BEGIN)
-                    , instanceEnd.getTime()
-                    , BEGIN, END, VIEW_MARGIN.intValue());
+                    , instances.get(position).getAsLong(CalendarContract.Instances.END)
+                    , BEGIN, END, VIEW_MARGIN.intValue(), instances.get(position).getAsBoolean(CalendarContract.Instances.ALL_DAY));
 
             layoutParams.leftMargin = margin[0];
             layoutParams.rightMargin = margin[1];

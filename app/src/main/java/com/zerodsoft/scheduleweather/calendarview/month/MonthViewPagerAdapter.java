@@ -64,9 +64,9 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
     }
 
     @Override
-    public Date getDate(int position, int dateType)
+    public Date getDate(int position, int index)
     {
-        return holderSparseArray.get(position).getDay(dateType).getTime();
+        return holderSparseArray.get(position).getDay(index).getTime();
     }
 
     public void refresh(int position, List<CalendarInstance> e)

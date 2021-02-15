@@ -71,7 +71,7 @@ public class WeekView extends HourEventsView implements IEvent
         this.instances = new ArrayList<>();
         for (ContentValues instance : instances)
         {
-            if (ClockUtil.calcDayDifference(instance.getAsLong(CalendarContract.Instances.BEGIN), instance.getAsLong(CalendarContract.Instances.END), instance.getAsBoolean(CalendarContract.Instances.ALL_DAY)) == 0)
+            if (ClockUtil.areSameDate(instance.getAsLong(CalendarContract.Instances.BEGIN), instance.getAsLong(CalendarContract.Instances.END)))
             {
                 this.instances.add(instance);
             }
@@ -299,7 +299,7 @@ public class WeekView extends HourEventsView implements IEvent
         // 데이터를 리스트에 저장
         for (ContentValues instance : instances)
         {
-            int index = ClockUtil.calcDayDifference(instance.getAsLong(CalendarContract.Instances.BEGIN), daysOfWeek[0].getTimeInMillis(), instance.getAsBoolean(CalendarContract.Instances.ALL_DAY));
+            int index = ClockUtil.calcBeginDayDifference(instance.getAsLong(CalendarContract.Instances.BEGIN), daysOfWeek[0].getTimeInMillis());
             if (eventSparseArr.get(index) == null)
             {
                 eventSparseArr.put(index, new ArrayList<>());

@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="300dp"
     android:layout_height="500dp"
-    tools:context=".calendarview.eventdialog.EventListOnDayFragment">
+    tools:context=".calendarview.instancedialog.InstanceListOnDayFragment">
 
     <LinearLayout
         android:layout_width="match_parent"

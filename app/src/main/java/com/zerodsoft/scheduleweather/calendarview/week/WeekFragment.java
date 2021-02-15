@@ -19,13 +19,9 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
-import com.zerodsoft.scheduleweather.calendarview.eventdialog.EventListOnDayFragment;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.calendarview.month.MonthViewPagerAdapter;
-import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 
@@ -78,7 +74,7 @@ public class WeekFragment extends Fragment implements IRefreshView
         weekViewPager.setAdapter(weekViewPagerAdapter);
         weekViewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, false);
 
-        onPageChangeCallback = new OnPageChangeCallback(weekViewPagerAdapter.getCalendar());
+        onPageChangeCallback = new OnPageChangeCallback(weekViewPagerAdapter.getCALENDAR());
         weekViewPager.registerOnPageChangeCallback(onPageChangeCallback);
     }
 
@@ -164,8 +160,8 @@ public class WeekFragment extends Fragment implements IRefreshView
     public void refreshView()
     {
         int currentItem = weekViewPager.getCurrentItem();
-        long start = weekViewPagerAdapter.getDate(currentItem, WeekViewPagerAdapter.FIRST_DAY).getTime();
-        long end = weekViewPagerAdapter.getDate(currentItem, WeekViewPagerAdapter.LAST_DAY).getTime();
+        long start = weekViewPagerAdapter.getDate(currentItem, 0).getTime();
+        long end = weekViewPagerAdapter.getDate(currentItem, 7).getTime();
 
         iControlEvent.getInstances(currentItem, start, end, new EventCallback<List<CalendarInstance>>()
         {

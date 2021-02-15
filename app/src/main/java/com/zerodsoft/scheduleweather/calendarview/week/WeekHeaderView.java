@@ -29,7 +29,7 @@ import com.zerodsoft.scheduleweather.utility.DateHour;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -48,7 +48,6 @@ public class WeekHeaderView extends ViewGroup implements IEvent
     private final TextPaint DATE_TEXT_PAINT;
     private final TextPaint WEEK_OF_YEAR_TEXT_PAINT;
     private final Paint WEEK_OF_YEAR_RECT_PAINT;
-
 
     private int START_INDEX;
     private int END_INDEX;
@@ -209,13 +208,8 @@ public class WeekHeaderView extends ViewGroup implements IEvent
         for (ContentValues instance : instances)
         {
             //일요일과의 일수차이 계산
-            int startIndex = ClockUtil.calcDayDifference(instance.getAsLong(CalendarContract.Instances.BEGIN), weekFirstDay.getTimeInMillis(), instance.getAsBoolean(CalendarContract.Instances.ALL_DAY));
-            int endIndex = ClockUtil.calcDayDifference(instance.getAsLong(CalendarContract.Instances.END), weekFirstDay.getTimeInMillis(), instance.getAsBoolean(CalendarContract.Instances.ALL_DAY));
-
-            if (instance.getAsBoolean(CalendarContract.Instances.ALL_DAY))
-            {
-                endIndex--;
-            }
+            int startIndex = ClockUtil.calcBeginDayDifference(instance.getAsLong(CalendarContract.Instances.BEGIN), weekFirstDay.getTimeInMillis());
+            int endIndex = ClockUtil.calcEndDayDifference(instance.getAsLong(CalendarContract.Instances.END), weekFirstDay.getTimeInMillis(), instance.getAsBoolean(CalendarContract.Instances.ALL_DAY));
 
             if (startIndex < 0)
             {
@@ -233,7 +227,7 @@ public class WeekHeaderView extends ViewGroup implements IEvent
             int[] margin = EventUtil.getViewSideMargin(instance.getAsLong(CalendarContract.Instances.BEGIN)
                     , instance.getAsLong(CalendarContract.Instances.END)
                     , daysOfWeek[startIndex].getTimeInMillis()
-                    , daysOfWeek[endIndex + 1].getTimeInMillis(), 8);
+                    , daysOfWeek[endIndex + 1].getTimeInMillis(), 8, instance.getAsBoolean(CalendarContract.Instances.ALL_DAY));
 
             if (START_INDEX > startIndex)
             {

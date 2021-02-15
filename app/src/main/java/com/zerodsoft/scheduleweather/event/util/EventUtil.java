@@ -11,13 +11,10 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.utility.model.ReminderDto;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.Locale;
 
 public class EventUtil
 {
@@ -60,31 +57,39 @@ public class EventUtil
         return eventTextPaint;
     }
 
-    public static int[] getViewSideMargin(long instanceBegin, long instanceEnd, long viewStart, long viewEnd, int margin)
+    public static int[] getViewSideMargin(long instanceBegin, long instanceEnd, long viewBegin, long viewEnd, int margin, boolean allDay)
     {
         int leftMargin = 0;
         int rightMargin = 0;
 
+        if (allDay)
+        {
+            GregorianCalendar calendar = new GregorianCalendar();
+            calendar.setTimeInMillis(instanceEnd);
+            calendar.add(Calendar.HOUR_OF_DAY, -9);
+            instanceEnd = calendar.getTimeInMillis();
+        }
+
         // 시작/종료일이 date가 아니나, 일정에 포함되는 경우
-        if (instanceBegin < viewStart && instanceEnd >= viewEnd)
+        if (instanceBegin < viewBegin && instanceEnd >= viewEnd)
         {
             leftMargin = 0;
             rightMargin = 0;
         }
         // 시작일이 date인 경우, 종료일은 endDate 이후
-        else if (instanceEnd > viewEnd && instanceBegin >= viewStart && instanceBegin < viewEnd)
+        else if (instanceEnd > viewEnd && instanceBegin >= viewBegin && instanceBegin < viewEnd)
         {
             leftMargin = margin;
             rightMargin = 0;
         }
         // 종료일이 date인 경우, 시작일은 startDate이전
-        else if (instanceEnd >= viewStart && instanceEnd < viewEnd && instanceBegin < viewStart)
+        else if (instanceEnd >= viewBegin && instanceEnd < viewEnd && instanceBegin < viewBegin)
         {
             leftMargin = 0;
             rightMargin = margin;
         }
         // 시작/종료일이 date인 경우
-        else if (instanceEnd >= viewStart && instanceEnd <= viewEnd && instanceBegin >= viewStart && instanceBegin < viewEnd)
+        else if (instanceEnd >= viewBegin && instanceEnd <= viewEnd && instanceBegin >= viewBegin && instanceBegin < viewEnd)
         {
             leftMargin = margin;
             rightMargin = margin;

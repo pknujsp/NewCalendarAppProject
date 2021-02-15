@@ -102,10 +102,10 @@ public class DayViewPagerAdapter extends RecyclerView.Adapter<DayViewPagerAdapte
     }
 
     @Override
-    public Date getDate(int position, int dateType)
+    public Date getDate(int position, int index)
     {
         Date date = null;
-        if (dateType == FIRST_DAY)
+        if (index == FIRST_DAY)
         {
             date = (Date) holderSparseArray.get(position).startDate.clone();
         } else

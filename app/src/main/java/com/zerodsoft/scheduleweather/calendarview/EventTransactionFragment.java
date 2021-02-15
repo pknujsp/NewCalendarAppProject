@@ -18,7 +18,7 @@ import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendarview.callback.EventCallback;
 import com.zerodsoft.scheduleweather.calendarview.day.DayFragment;
-import com.zerodsoft.scheduleweather.calendarview.eventdialog.EventListOnDayFragment;
+import com.zerodsoft.scheduleweather.calendarview.instancedialog.InstanceListOnDayFragment;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
@@ -154,13 +154,13 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
     public void onClicked(long start, long end)
     {
         // 이벤트 리스트 프래그먼트 다이얼로그 표시
-        EventListOnDayFragment fragment = new EventListOnDayFragment(iConnectedCalendars, this);
+        InstanceListOnDayFragment fragment = new InstanceListOnDayFragment(iConnectedCalendars, this);
         Bundle bundle = new Bundle();
         bundle.putLong("begin", start);
         bundle.putLong("end", end);
 
         fragment.setArguments(bundle);
-        fragment.show(getParentFragmentManager(), EventListOnDayFragment.TAG);
+        fragment.show(getParentFragmentManager(), InstanceListOnDayFragment.TAG);
     }
 
     @Override

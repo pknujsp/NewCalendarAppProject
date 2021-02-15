@@ -514,30 +514,20 @@ public class CalendarProvider implements ICalendarProvider
             callback.onResult(calendarInstances);
         }
         ContentResolver contentResolver = context.getContentResolver();
-        final String startMilliSec = String.valueOf(startDate);
-        final String endMilliSec = String.valueOf(endDate);
-        final String[] selectionArgs = new String[7];
-
-        selectionArgs[0] = startMilliSec;
-        selectionArgs[1] = endMilliSec;
-        selectionArgs[2] = startMilliSec;
-        selectionArgs[3] = endMilliSec;
-        selectionArgs[4] = startMilliSec;
-        selectionArgs[5] = endMilliSec;
 
         String selection = CalendarContract.Instances.CALENDAR_ID + "=?";
         final String[] selectionArg = new String[1];
+
+        Uri.Builder builder = CalendarContract.Instances.CONTENT_URI.buildUpon();
+        ContentUris.appendId(builder, startDate);
+        ContentUris.appendId(builder, endDate);
+        Uri uri = builder.build();
 
         for (ContentValues calendar : calendarList)
         {
             selectionArg[0] = String.valueOf(calendar.getAsInteger(CalendarContract.Calendars._ID));
 
-            Uri.Builder builder = CalendarContract.Instances.CONTENT_URI.buildUpon();
-            ContentUris.appendId(builder, startDate);
-            ContentUris.appendId(builder, endDate);
-
-            Cursor cursor = contentResolver.query(builder.build(), null, selection, selectionArg, null);
-
+            Cursor cursor = contentResolver.query(uri, null, selection, selectionArg, null);
             List<ContentValues> instances = new ArrayList<>();
 
             if (cursor != null)
@@ -560,7 +550,6 @@ public class CalendarProvider implements ICalendarProvider
                 }
                 cursor.close();
             }
-
             calendarInstances.add(new CalendarInstance(instances, calendar.getAsLong(CalendarContract.Calendars._ID)));
         }
         callback.onResult(calendarInstances);

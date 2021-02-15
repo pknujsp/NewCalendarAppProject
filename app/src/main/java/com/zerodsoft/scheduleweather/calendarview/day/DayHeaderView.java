@@ -158,7 +158,7 @@ public class DayHeaderView extends ViewGroup implements IEvent
                 int[] margin = EventUtil.getViewSideMargin(instance.getAsLong(CalendarContract.Instances.BEGIN)
                         , instance.getAsLong(CalendarContract.Instances.END)
                         , today.getTime()
-                        , tomorrow.getTime(), 16);
+                        , tomorrow.getTime(), 16, instance.getAsBoolean(CalendarContract.Instances.ALL_DAY));
 
                 int leftMargin = margin[0];
                 int rightMargin = margin[1];

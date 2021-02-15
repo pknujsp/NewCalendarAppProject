@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.calendarview.eventdialog;
+package com.zerodsoft.scheduleweather.calendarview.instancedialog;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.provider.CalendarContract;
+import android.util.ArraySet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,25 +33,24 @@ import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
-public class EventListOnDayFragment extends DialogFragment
+public class InstanceListOnDayFragment extends DialogFragment
 {
     public static final String TAG = "MonthEventsInfoFragment";
 
     private CalendarViewModel viewModel;
 
-    private long begin;
-    private long end;
+    private Long begin;
+    private Long end;
     private final IConnectedCalendars iConnectedCalendars;
     private final OnEventItemClickListener onEventItemClickListener;
     private EventsInfoRecyclerViewAdapter adapter;
     private RecyclerView recyclerView;
 
-
-    public EventListOnDayFragment(IConnectedCalendars iConnectedCalendars, OnEventItemClickListener onEventItemClickListener)
+    public InstanceListOnDayFragment(IConnectedCalendars iConnectedCalendars, OnEventItemClickListener onEventItemClickListener)
     {
         this.onEventItemClickListener = onEventItemClickListener;
         this.iConnectedCalendars = iConnectedCalendars;
@@ -90,6 +90,7 @@ public class EventListOnDayFragment extends DialogFragment
     public void onActivityCreated(@Nullable Bundle savedInstanceState)
     {
         super.onActivityCreated(savedInstanceState);
+
         viewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
         viewModel.init(getContext());
         viewModel.getInstanceList(iConnectedCalendars.getConnectedCalendars(), begin, end, new EventCallback<List<CalendarInstance>>()
@@ -99,6 +100,10 @@ public class EventListOnDayFragment extends DialogFragment
             {
                 if (!e.isEmpty())
                 {
+                    /* 현재 날짜가 20201010이고, 20201009에 allday 인스턴스가 있는 경우에 이 인스턴스의 end값이 20201010 0시 0분
+                    이라서 20201010의 인스턴스로 잡힌다.
+                     */
+
                     List<ContentValues> instances = new ArrayList<>();
                     // 인스턴스 목록 표시
                     for (CalendarInstance calendarInstance : e)
@@ -106,6 +111,32 @@ public class EventListOnDayFragment extends DialogFragment
                         instances.addAll(calendarInstance.getInstanceList());
                         // 데이터를 일정 길이의 내림차순으로 정렬
                     }
+
+                    List<Integer> removeIndexList = new ArrayList<>();
+                    for (int i = 0; i < instances.size(); i++)
+                    {
+                        if (instances.get(i).getAsBoolean(CalendarContract.Instances.ALL_DAY))
+                        {
+                            if (ClockUtil.areSameDate(instances.get(i).getAsLong(CalendarContract.Instances.END),
+                                    begin) || ClockUtil.areSameDate(instances.get(i).getAsLong(CalendarContract.Instances.BEGIN), end))
+                            {
+                                removeIndexList.add(i);
+                            }
+                        } else
+                        {
+                            if (ClockUtil.areSameHourMinute(instances.get(i).getAsLong(CalendarContract.Instances.END), begin)
+                                    || ClockUtil.areSameHourMinute(instances.get(i).getAsLong(CalendarContract.Instances.BEGIN), end))
+                            {
+                                removeIndexList.add(i);
+                            }
+                        }
+                    }
+
+                    for (int i = removeIndexList.size() - 1; i >= 0; i--)
+                    {
+                        instances.remove(removeIndexList.get(i).intValue());
+                    }
+
                     Collections.sort(instances, EventUtil.INSTANCE_COMPARATOR);
                     adapter.setInstances(instances);
                     adapter.notifyDataSetChanged();

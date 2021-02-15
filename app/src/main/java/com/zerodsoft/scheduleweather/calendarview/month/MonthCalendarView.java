@@ -172,17 +172,7 @@ public class MonthCalendarView extends ViewGroup implements IEvent
 
             if (event.size() > 0)
             {
-                // all day인 경우 instance end를 하루전으로 변경
-                if (event.getAsBoolean(CalendarContract.Instances.ALL_DAY))
-                {
-                    Calendar c = Calendar.getInstance();
-                    c.setTimeInMillis(INSTANCE_END);
-                    c.add(Calendar.DAY_OF_YEAR, -1);
-
-                    INSTANCE_END = c.getTimeInMillis();
-                }
-
-                int[] margin = EventUtil.getViewSideMargin(INSTANCE_BEGIN, INSTANCE_END, VIEW_START, VIEW_END, 4);
+                int[] margin = EventUtil.getViewSideMargin(INSTANCE_BEGIN, INSTANCE_END, VIEW_START, VIEW_END, 4, event.getAsBoolean(CalendarContract.Instances.ALL_DAY));
 
                 for (int currentRowNum = 1; currentRowNum <= EVENT_ROW_COUNT; currentRowNum++)
                 {
@@ -327,14 +317,8 @@ public class MonthCalendarView extends ViewGroup implements IEvent
             String endStrDefault = ClockUtil.DATE_FORMAT_NOT_ALLDAY.format(new Date(event.getAsLong(CalendarContract.Instances.END)));
 
             // 달력 내 위치를 계산
-            final boolean allDay = event.getAsBoolean(CalendarContract.Instances.ALL_DAY);
-            int beginIndex = ClockUtil.calcDayDifference(event.getAsLong(CalendarContract.Instances.BEGIN), firstDay, allDay);
-            int endIndex = ClockUtil.calcDayDifference(event.getAsLong(CalendarContract.Instances.END), firstDay, allDay);
-
-            if (allDay)
-            {
-                endIndex--;
-            }
+            int beginIndex = ClockUtil.calcBeginDayDifference(event.getAsLong(CalendarContract.Instances.BEGIN), firstDay);
+            int endIndex = ClockUtil.calcEndDayDifference(event.getAsLong(CalendarContract.Instances.END), firstDay, event.getAsBoolean(CalendarContract.Instances.ALL_DAY));
 
             if (beginIndex < FIRST_DAY_INDEX)
             {
