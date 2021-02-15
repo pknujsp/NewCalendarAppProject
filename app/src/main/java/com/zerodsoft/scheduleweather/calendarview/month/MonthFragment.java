@@ -62,7 +62,7 @@ public class MonthFragment extends Fragment implements IRefreshView
         viewPager.setAdapter(viewPagerAdapter);
         viewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, false);
 
-        onPageChangeCallback = new OnPageChangeCallback(viewPagerAdapter.getCalendar());
+        onPageChangeCallback = new OnPageChangeCallback(viewPagerAdapter.getCALENDAR());
         viewPager.registerOnPageChangeCallback(onPageChangeCallback);
     }
 

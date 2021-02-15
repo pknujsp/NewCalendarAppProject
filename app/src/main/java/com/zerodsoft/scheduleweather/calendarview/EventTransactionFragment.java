@@ -151,28 +151,28 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
     }
 
     @Override
-    public void onClicked(long start, long end)
+    public void onClicked(long viewBegin, long viewEnd)
     {
         // 이벤트 리스트 프래그먼트 다이얼로그 표시
         InstanceListOnDayFragment fragment = new InstanceListOnDayFragment(iConnectedCalendars, this);
         Bundle bundle = new Bundle();
-        bundle.putLong("begin", start);
-        bundle.putLong("end", end);
+        bundle.putLong("begin", viewBegin);
+        bundle.putLong("end", viewEnd);
 
         fragment.setArguments(bundle);
         fragment.show(getParentFragmentManager(), InstanceListOnDayFragment.TAG);
     }
 
     @Override
-    public void onClicked(int calendarId, long instanceId, long eventId, long begin, long end)
+    public void onClicked(int calendarId, long instanceId, long eventId, long viewBegin, long viewEnd)
     {
         // 이벤트 정보 액티비티로 전환
         Intent intent = new Intent(getActivity(), EventActivity.class);
         intent.putExtra("calendarId", calendarId);
         intent.putExtra("instanceId", instanceId);
         intent.putExtra("eventId", eventId);
-        intent.putExtra("begin", begin);
-        intent.putExtra("end", end);
+        intent.putExtra("begin", viewBegin);
+        intent.putExtra("end", viewEnd);
 
         startActivity(intent);
     }

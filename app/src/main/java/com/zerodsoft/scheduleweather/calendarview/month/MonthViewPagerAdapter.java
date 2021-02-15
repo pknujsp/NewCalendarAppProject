@@ -35,7 +35,7 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
     public static final int LAST_DAY = -2;
 
     private final SparseArray<MonthViewHolder> holderSparseArray = new SparseArray<>();
-    private final Calendar calendar;
+    private final Calendar CALENDAR;
     private Context context;
     private final OnEventItemClickListener onEventItemClickListener;
     private final IControlEvent iControlEvent;
@@ -46,21 +46,21 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
         this.onEventItemClickListener = onEventItemClickListener;
         this.iControlEvent = iControlEvent;
         this.iToolbar = iToolbar;
-        calendar = Calendar.getInstance(ClockUtil.TIME_ZONE);
+        CALENDAR = Calendar.getInstance(ClockUtil.TIME_ZONE);
 
         // 날짜를 이번 달 1일 0시 0분으로 설정
-        calendar.set(Calendar.DAY_OF_MONTH, 1);
-        calendar.set(Calendar.HOUR_OF_DAY, 0);
-        calendar.set(Calendar.MINUTE, 0);
-        calendar.set(Calendar.SECOND, 0);
+        CALENDAR.set(Calendar.DAY_OF_MONTH, 1);
+        CALENDAR.set(Calendar.HOUR_OF_DAY, 0);
+        CALENDAR.set(Calendar.MINUTE, 0);
+        CALENDAR.set(Calendar.SECOND, 0);
 
-        iToolbar.setMonth(calendar.getTime());
+        iToolbar.setMonth(CALENDAR.getTime());
     }
 
 
-    public Calendar getCalendar()
+    public Calendar getCALENDAR()
     {
-        return (Calendar) calendar.clone();
+        return (Calendar) CALENDAR.clone();
     }
 
     @Override
@@ -150,7 +150,7 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
 
         public void onBind()
         {
-            Calendar copiedCalendar = (Calendar) calendar.clone();
+            Calendar copiedCalendar = (Calendar) CALENDAR.clone();
             copiedCalendar.add(Calendar.MONTH, getAdapterPosition() - EventTransactionFragment.FIRST_VIEW_POSITION);
             setDays(copiedCalendar);
             monthCalendarView.setFirstDay(getDay(FIRST_DAY).getTimeInMillis());
@@ -277,6 +277,7 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
         public void onClick(View view)
         {
             MonthCalendarItemView itemView = ((MonthCalendarItemView) view);
+
             onEventItemClickListener.onClicked(itemView.getStartDate().getTime(), itemView.getEndDate().getTime());
         }
     };

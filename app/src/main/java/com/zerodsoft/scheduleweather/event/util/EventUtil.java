@@ -59,43 +59,65 @@ public class EventUtil
 
     public static int[] getViewSideMargin(long instanceBegin, long instanceEnd, long viewBegin, long viewEnd, int margin, boolean allDay)
     {
-        int leftMargin = 0;
-        int rightMargin = 0;
+        GregorianCalendar instanceBeginCalendar = new GregorianCalendar();
+        GregorianCalendar instanceEndCalendar = new GregorianCalendar();
+        GregorianCalendar viewBeginCalendar = new GregorianCalendar();
+        GregorianCalendar viewEndCalendar = new GregorianCalendar();
+
+        instanceBeginCalendar.setTimeInMillis(instanceBegin);
+        instanceEndCalendar.setTimeInMillis(instanceEnd);
+        viewBeginCalendar.setTimeInMillis(viewBegin);
+        viewEndCalendar.setTimeInMillis(viewEnd);
+
+        instanceBeginCalendar.set(Calendar.SECOND, 0);
+        instanceEndCalendar.set(Calendar.SECOND, 0);
+        viewBeginCalendar.set(Calendar.SECOND, 0);
+        viewEndCalendar.set(Calendar.SECOND, 0);
 
         if (allDay)
         {
-            GregorianCalendar calendar = new GregorianCalendar();
-            calendar.setTimeInMillis(instanceEnd);
-            calendar.add(Calendar.HOUR_OF_DAY, -9);
-            instanceEnd = calendar.getTimeInMillis();
+            instanceEndCalendar.add(Calendar.HOUR_OF_DAY, -9);
         }
+
+        String a = ClockUtil.DATE_FORMAT_NOT_ALLDAY.format(instanceBeginCalendar.getTime());
+        String b = ClockUtil.DATE_FORMAT_NOT_ALLDAY.format(instanceEndCalendar.getTime());
+        String c = ClockUtil.DATE_FORMAT_NOT_ALLDAY.format(viewBeginCalendar.getTime());
+        String d = ClockUtil.DATE_FORMAT_NOT_ALLDAY.format(viewEndCalendar.getTime());
+
+        int[] margins = new int[2];
 
         // 시작/종료일이 date가 아니나, 일정에 포함되는 경우
-        if (instanceBegin < viewBegin && instanceEnd >= viewEnd)
+        if (instanceBeginCalendar.before(viewBeginCalendar) && instanceEndCalendar.compareTo(viewEndCalendar) >= 0)
         {
-            leftMargin = 0;
-            rightMargin = 0;
+            margins[0] = 0;
+            margins[1] = 0;
         }
         // 시작일이 date인 경우, 종료일은 endDate 이후
-        else if (instanceEnd > viewEnd && instanceBegin >= viewBegin && instanceBegin < viewEnd)
+        else if (instanceBeginCalendar.compareTo(viewBeginCalendar) >= 0 &&
+                instanceBeginCalendar.before(viewEndCalendar) &&
+                instanceEndCalendar.compareTo(viewEndCalendar) >= 0)
         {
-            leftMargin = margin;
-            rightMargin = 0;
+            margins[0] = margin;
+            margins[1] = 0;
         }
         // 종료일이 date인 경우, 시작일은 startDate이전
-        else if (instanceEnd >= viewBegin && instanceEnd < viewEnd && instanceBegin < viewBegin)
+        else if (instanceEndCalendar.compareTo(viewBeginCalendar) >= 0 &&
+                instanceEndCalendar.before(viewEndCalendar) &&
+                instanceBeginCalendar.before(viewBeginCalendar))
         {
-            leftMargin = 0;
-            rightMargin = margin;
+            margins[0] = 0;
+            margins[1] = margin;
         }
         // 시작/종료일이 date인 경우
-        else if (instanceEnd >= viewBegin && instanceEnd <= viewEnd && instanceBegin >= viewBegin && instanceBegin < viewEnd)
+        else if (instanceBeginCalendar.compareTo(viewBeginCalendar) >= 0 &&
+                instanceBeginCalendar.before(viewEndCalendar) &&
+                instanceEndCalendar.compareTo(viewBeginCalendar) >= 0 &&
+                instanceEndCalendar.before(viewEndCalendar))
         {
-            leftMargin = margin;
-            rightMargin = margin;
+            margins[0] = margin;
+            margins[1] = margin;
         }
-
-        return new int[]{leftMargin, rightMargin};
+        return margins;
     }
 
     public static String convertAttendeeStatus(int status, Context context)
