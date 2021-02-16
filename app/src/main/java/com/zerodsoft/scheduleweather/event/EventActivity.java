@@ -264,6 +264,7 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab
     private void removeEvent()
     {
         // 참석자 - 알림 - 이벤트 순으로 삭제 (외래키 때문)
+        // db column error
         calendarViewModel.deleteAllAttendees(calendarId, eventId);
         calendarViewModel.deleteAllReminders(calendarId, eventId);
         calendarViewModel.deleteEvent(calendarId, eventId);
