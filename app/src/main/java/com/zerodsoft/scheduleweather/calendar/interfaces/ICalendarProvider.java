@@ -62,5 +62,6 @@ public interface ICalendarProvider
 
     public int deleteAttendees(int calendarId, long eventId, long[] attendeeIds);
 
-    // sync
+    // recurrence
+    public ContentValues getRecurrence(int calendarId, long eventId);
 }

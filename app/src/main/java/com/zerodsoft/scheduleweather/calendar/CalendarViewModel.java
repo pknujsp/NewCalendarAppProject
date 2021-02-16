@@ -239,4 +239,9 @@ public class CalendarViewModel extends ViewModel
     {
         calendarProvider.syncCalendars();
     }
+
+    public ContentValues getRecurrence(int calendarId, long eventId)
+    {
+        return calendarProvider.getRecurrence(calendarId, eventId);
+    }
 }

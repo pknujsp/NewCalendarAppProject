@@ -11,10 +11,13 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.utility.model.ReminderDto;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.concurrent.TimeUnit;
 
 public class EventUtil
 {
@@ -69,50 +72,83 @@ public class EventUtil
         viewBeginCalendar.setTimeInMillis(viewBegin);
         viewEndCalendar.setTimeInMillis(viewEnd);
 
-        instanceBeginCalendar.set(Calendar.SECOND, 0);
-        instanceEndCalendar.set(Calendar.SECOND, 0);
-        viewBeginCalendar.set(Calendar.SECOND, 0);
-        viewEndCalendar.set(Calendar.SECOND, 0);
-
         if (allDay)
         {
             instanceEndCalendar.add(Calendar.HOUR_OF_DAY, -9);
         }
 
-        String a = ClockUtil.DATE_FORMAT_NOT_ALLDAY.format(instanceBeginCalendar.getTime());
-        String b = ClockUtil.DATE_FORMAT_NOT_ALLDAY.format(instanceEndCalendar.getTime());
-        String c = ClockUtil.DATE_FORMAT_NOT_ALLDAY.format(viewBeginCalendar.getTime());
-        String d = ClockUtil.DATE_FORMAT_NOT_ALLDAY.format(viewEndCalendar.getTime());
+        final SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy/M/d H:m");
 
+        final String instanceBeginStr = instanceBeginCalendar.get(Calendar.YEAR)
+                + "/" + (instanceBeginCalendar.get(Calendar.MONTH) + 1) + "/" +
+                instanceBeginCalendar.get(Calendar.DAY_OF_MONTH) + " " +
+                instanceBeginCalendar.get(Calendar.HOUR_OF_DAY) + ":" +
+                instanceBeginCalendar.get(Calendar.MINUTE);
+
+        final String instanceEndStr = instanceEndCalendar.get(Calendar.YEAR)
+                + "/" + (instanceEndCalendar.get(Calendar.MONTH) + 1) + "/" +
+                instanceEndCalendar.get(Calendar.DAY_OF_MONTH) + " " +
+                instanceEndCalendar.get(Calendar.HOUR_OF_DAY) + ":" +
+                instanceEndCalendar.get(Calendar.MINUTE);
+
+        final String viewBeginStr = viewBeginCalendar.get(Calendar.YEAR)
+                + "/" + (viewBeginCalendar.get(Calendar.MONTH) + 1) + "/" +
+                viewBeginCalendar.get(Calendar.DAY_OF_MONTH) + " " +
+                viewBeginCalendar.get(Calendar.HOUR_OF_DAY) + ":" +
+                viewBeginCalendar.get(Calendar.MINUTE);
+
+        final String viewEndStr = viewEndCalendar.get(Calendar.YEAR)
+                + "/" + (viewEndCalendar.get(Calendar.MONTH) + 1) + "/" +
+                viewEndCalendar.get(Calendar.DAY_OF_MONTH) + " " +
+                viewEndCalendar.get(Calendar.HOUR_OF_DAY) + ":" +
+                viewEndCalendar.get(Calendar.MINUTE);
+
+        Date iBeginDate = null;
+        Date iEndDate = null;
+        Date vBeginDate = null;
+        Date vEndDate = null;
+
+        try
+        {
+            iBeginDate = dateTimeFormat.parse(instanceBeginStr);
+            iEndDate = dateTimeFormat.parse(instanceEndStr);
+            vBeginDate = dateTimeFormat.parse(viewBeginStr);
+            vEndDate = dateTimeFormat.parse(viewEndStr);
+        } catch (Exception e)
+        {
+
+        }
         int[] margins = new int[2];
 
+        int compare1 = iEndDate.compareTo(vEndDate);
+
         // 시작/종료일이 date가 아니나, 일정에 포함되는 경우
-        if (instanceBeginCalendar.before(viewBeginCalendar) && instanceEndCalendar.compareTo(viewEndCalendar) >= 0)
+        if (iBeginDate.before(vBeginDate) && iEndDate.after(vEndDate))
         {
             margins[0] = 0;
             margins[1] = 0;
         }
         // 시작일이 date인 경우, 종료일은 endDate 이후
-        else if (instanceBeginCalendar.compareTo(viewBeginCalendar) >= 0 &&
-                instanceBeginCalendar.before(viewEndCalendar) &&
-                instanceEndCalendar.compareTo(viewEndCalendar) >= 0)
+        else if (iBeginDate.compareTo(vBeginDate) >= 0 &&
+                iBeginDate.before(vEndDate) &&
+                iEndDate.after(vEndDate))
         {
             margins[0] = margin;
             margins[1] = 0;
         }
         // 종료일이 date인 경우, 시작일은 startDate이전
-        else if (instanceEndCalendar.compareTo(viewBeginCalendar) >= 0 &&
-                instanceEndCalendar.before(viewEndCalendar) &&
-                instanceBeginCalendar.before(viewBeginCalendar))
+        else if (iEndDate.compareTo(vBeginDate) >= 0 &&
+                iEndDate.compareTo(vEndDate) <= 0 &&
+                iBeginDate.before(vBeginDate))
         {
             margins[0] = 0;
             margins[1] = margin;
         }
         // 시작/종료일이 date인 경우
-        else if (instanceBeginCalendar.compareTo(viewBeginCalendar) >= 0 &&
-                instanceBeginCalendar.before(viewEndCalendar) &&
-                instanceEndCalendar.compareTo(viewBeginCalendar) >= 0 &&
-                instanceEndCalendar.before(viewEndCalendar))
+        else if (iBeginDate.compareTo(vBeginDate) >= 0 &&
+                iBeginDate.before(vEndDate) &&
+                iEndDate.compareTo(vBeginDate) >= 0 &&
+                iEndDate.compareTo(vEndDate) <= 0)
         {
             margins[0] = margin;
             margins[1] = margin;

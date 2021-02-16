@@ -23,7 +23,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".activity.editevent.activity.AttendeesActivity"></activity>
+        <activity android:name=".activity.editevent.activity.AttendeesActivity"/>
         <activity android:name=".kakaomap.activity.KakaoMapActivity" />
         <activity android:name=".event.common.MLocActivity" />
         <activity android:name=".event.common.ReselectDetailLocation" />

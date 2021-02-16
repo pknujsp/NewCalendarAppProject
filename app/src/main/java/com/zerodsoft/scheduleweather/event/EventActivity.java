@@ -29,6 +29,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.editevent.activity.EditEventActivity;
 import com.zerodsoft.scheduleweather.activity.editevent.value.EventDataController;
+import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.databinding.ActivityScheduleInfoBinding;
 import com.zerodsoft.scheduleweather.event.common.MLocActivity;
 import com.zerodsoft.scheduleweather.event.common.ReselectDetailLocation;
@@ -39,11 +40,17 @@ import com.zerodsoft.scheduleweather.event.event.EventFragment;
 import com.zerodsoft.scheduleweather.event.location.PlacesAroundLocationFragment;
 import com.zerodsoft.scheduleweather.event.weather.WeatherFragment;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
+import com.zerodsoft.scheduleweather.utility.ClockUtil;
+import com.zerodsoft.scheduleweather.utility.RecurrenceRule;
+
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 
 public class EventActivity extends AppCompatActivity implements ILocation, IFab
 {
     private ActivityScheduleInfoBinding binding;
     private LocationViewModel locationViewModel;
+    private CalendarViewModel calendarViewModel;
 
     private EventFragment eventFragment;
     private WeatherFragment weatherFragment;
@@ -178,6 +185,56 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab
             public void onClick(View view)
             {
 
+                String[] items = null;
+                //이번 일정만 삭제, 향후 모든 일정 삭제, 모든 일정 삭제
+                /*
+                반복없는 이벤트 인 경우 : 일정 삭제
+                반복있는 이벤트 인 경우 : 이번 일정만 삭제, 향후 모든 일정 삭제, 모든 일정 삭제
+                 */
+                ContentValues instance = eventFragment.getInstance();
+                if (instance.getAsString(CalendarContract.Instances.RRULE) != null)
+                {
+                    items = new String[]{getString(R.string.remove_this_instance), getString(R.string.remove_all_future_instance_including_current_instance)
+                            , getString(R.string.remove_event)};
+                } else
+                {
+                    items = new String[]{getString(R.string.remove_event)};
+                }
+                new MaterialAlertDialogBuilder(EventActivity.this).setTitle(getString(R.string.remove_event))
+                        .setItems(items, new DialogInterface.OnClickListener()
+                        {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int index)
+                            {
+                                if (eventFragment.getInstance().getAsString(CalendarContract.Instances.RRULE) != null)
+                                {
+                                    switch (index)
+                                    {
+                                        case 0:
+                                            // 이번 일정만 삭제
+                                            removeThisInstance();
+                                            break;
+                                        case 1:
+                                            // 향후 모든 일정만 삭제
+                                            removeSubsequentIncludingThis();
+                                            break;
+                                        case 2:
+                                            // 모든 일정 삭제
+                                            removeEvent();
+                                            break;
+                                    }
+                                } else
+                                {
+                                    switch (index)
+                                    {
+                                        case 0:
+                                            // 모든 일정 삭제
+                                            removeEvent();
+                                            break;
+                                    }
+                                }
+                            }
+                        }).create().show();
             }
         });
 
@@ -200,7 +257,46 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab
         binding.scheduleBottomNav.setSelectedItemId(R.id.schedule_info);
 
         locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
+        calendarViewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
+        calendarViewModel.init(getApplicationContext());
+    }
 
+    private void removeEvent()
+    {
+        // 참석자 - 알림 - 이벤트 순으로 삭제 (외래키 때문)
+        calendarViewModel.deleteAllAttendees(calendarId, eventId);
+        calendarViewModel.deleteAllReminders(calendarId, eventId);
+        calendarViewModel.deleteEvent(calendarId, eventId);
+    }
+
+    private void removeSubsequentIncludingThis()
+    {
+        // 이벤트의 반복 UNTIL을 현재 인스턴스의 시작날짜로 수정
+        ContentValues recurrenceData = calendarViewModel.getRecurrence(calendarId, eventId);
+        RecurrenceRule recurrenceRule = new RecurrenceRule();
+        recurrenceRule.separateValues(recurrenceData.getAsString(CalendarContract.Events.RRULE));
+
+        GregorianCalendar calendar = new GregorianCalendar();
+        final long thisInstanceBegin = eventFragment.getInstance().getAsLong(CalendarContract.Instances.BEGIN);
+        calendar.setTimeInMillis(thisInstanceBegin);
+        calendar.add(Calendar.DAY_OF_MONTH, -1);
+        recurrenceRule.putValue(RecurrenceRule.UNTIL, ClockUtil.yyyyMMdd.format(calendar.getTime()));
+        recurrenceRule.removeValue(RecurrenceRule.INTERVAL);
+
+        recurrenceData.put(CalendarContract.Events.RRULE, recurrenceRule.getRule());
+        calendarViewModel.updateEvent(recurrenceData);
+    }
+
+    private void removeThisInstance()
+    {
+        // event에 exdate추가
+        ContentValues recurrenceData = calendarViewModel.getRecurrence(calendarId, eventId);
+        RecurrenceRule recurrenceRule = new RecurrenceRule();
+        recurrenceRule.separateValues(recurrenceData.getAsString(CalendarContract.Events.RRULE));
+
+        ContentValues instance = eventFragment.getInstance();
+        calendarViewModel.deleteInstance(instance.getAsLong(CalendarContract.Instances.BEGIN)
+                , instance.getAsLong(CalendarContract.Instances.END), instanceId);
     }
 
 

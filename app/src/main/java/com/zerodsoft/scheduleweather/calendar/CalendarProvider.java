@@ -849,4 +849,31 @@ public class CalendarProvider implements ICalendarProvider
             ContentResolver.requestSync(account, authority, extras);
         }
     }
+
+    @Override
+    public ContentValues getRecurrence(int calendarId, long eventId)
+    {
+        ContentResolver contentResolver = context.getContentResolver();
+
+        final String[] projection = {CalendarContract.Events._ID, CalendarContract.Events.CALENDAR_ID,
+                CalendarContract.Events.RRULE, CalendarContract.Events.RDATE, CalendarContract.Events.EXDATE,
+                CalendarContract.Events.EXRULE};
+        final String[] selectionArgs = {String.valueOf(eventId), String.valueOf(calendarId)};
+
+        Cursor cursor = contentResolver.query(CalendarContract.Events.CONTENT_URI, projection, EVENT_QUERY, selectionArgs, null);
+        ContentValues result = new ContentValues();
+
+        while (cursor.moveToNext())
+        {
+            result.put(CalendarContract.Events._ID, cursor.getLong(0));
+            result.put(CalendarContract.Events.CALENDAR_ID, cursor.getInt(1));
+            result.put(CalendarContract.Events.RRULE, cursor.getString(2));
+            result.put(CalendarContract.Events.RDATE, cursor.getString(3));
+            result.put(CalendarContract.Events.EXDATE, cursor.getString(4));
+            result.put(CalendarContract.Events.EXRULE, cursor.getString(5));
+        }
+        cursor.close();
+
+        return result;
+    }
 }

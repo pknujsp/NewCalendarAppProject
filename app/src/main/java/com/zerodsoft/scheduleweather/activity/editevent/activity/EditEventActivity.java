@@ -1491,7 +1491,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
             switch (focusedViewId)
             {
                 case R.id.title:
-                    if (editable.length() > 0)
+                    if (editable.length() == 0)
                     {
                         dataController.removeEventValue(CalendarContract.Events.TITLE);
                     } else
@@ -1500,7 +1500,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                     }
                     break;
                 case R.id.description_edittext:
-                    if (editable.length() > 0)
+                    if (editable.length() == 0)
                     {
                         dataController.removeEventValue(CalendarContract.Events.DESCRIPTION);
                     } else

@@ -40,6 +40,7 @@ public class EventFragment extends Fragment
     // 알림 값을 클릭하면 알림표시를 하는 시각을 보여준다
     private EventFragmentBinding binding;
     private ContentValues instance;
+    private List<ContentValues> attendeeList;
     private CalendarViewModel viewModel;
     private Integer calendarId;
     private Long instanceId;
@@ -122,6 +123,7 @@ public class EventFragment extends Fragment
                         @Override
                         public void run()
                         {
+                            attendeeList = listDataWrapper.getData();
                             // 참석자가 없는 경우 - 테이블 숨김, 참석자 없음 텍스트 표시
                             if (listDataWrapper.getData().isEmpty())
                             {
@@ -378,5 +380,10 @@ public class EventFragment extends Fragment
     public ContentValues getInstance()
     {
         return instance;
+    }
+
+    public List<ContentValues> getAttendeeList()
+    {
+        return attendeeList;
     }
 }
