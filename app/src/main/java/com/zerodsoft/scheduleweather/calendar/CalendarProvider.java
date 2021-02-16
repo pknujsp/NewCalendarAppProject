@@ -801,7 +801,7 @@ public class CalendarProvider implements ICalendarProvider
         String where = CalendarContract.Attendees.CALENDAR_ID + "=? AND " + CalendarContract.Attendees.EVENT_ID + "=?";
         String[] selectionArgs = {String.valueOf(calendarId), String.valueOf(eventId)};
 
-        updatedRows += contentResolver.delete(CalendarContract.Attendees.CONTENT_URI, where, selectionArgs);
+        updatedRows += contentResolver.delete(CalendarContract.Instances.CONTENT_URI, where, selectionArgs);
         return updatedRows;
     }
 
@@ -826,7 +826,7 @@ public class CalendarProvider implements ICalendarProvider
         for (long attendeeId : attendeeIds)
         {
             selectionArgs[2] = String.valueOf(attendeeId);
-            updatedRows += contentResolver.delete(CalendarContract.Attendees.CONTENT_URI, where, selectionArgs);
+            updatedRows += contentResolver.delete(CalendarContract.Events.CONTENT_URI, where, selectionArgs);
         }
         return updatedRows;
     }
