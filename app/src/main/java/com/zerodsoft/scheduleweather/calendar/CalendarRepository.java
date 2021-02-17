@@ -23,7 +23,6 @@ public class CalendarRepository
     private MutableLiveData<DataWrapper<List<ContentValues>>> reminderListLiveData;
     private MutableLiveData<DataWrapper<List<ContentValues>>> attendeeListLiveData;
 
-    private GoogleCalendarApi googleCalendarApi;
     private CalendarProvider calendarProvider;
     private Context context;
 
@@ -39,23 +38,6 @@ public class CalendarRepository
         reminderListLiveData = new MutableLiveData<>();
         attendeeListLiveData = new MutableLiveData<>();
         instanceListLiveData = new MutableLiveData<>();
-    }
-
-
-    public void connectCalendarApi(String accountName) throws IOException, GeneralSecurityException
-    {
-        googleCalendarApi.connect(accountName);
-        // iGoogleCalendar.onAccountSelectedState(true);
-    }
-
-    public void disconnectCalendarApi()
-    {
-        googleCalendarApi.disconnect();
-    }
-
-    public void chooseAccount()
-    {
-        googleCalendarApi.requestAccountPicker();
     }
 
 

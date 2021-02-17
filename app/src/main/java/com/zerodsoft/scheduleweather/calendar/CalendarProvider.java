@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.provider.CalendarContract;
 
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendar.interfaces.ICalendarProvider;
@@ -128,6 +129,17 @@ public class CalendarProvider implements ICalendarProvider
         stringBuilder.delete(0, stringBuilder.length());
     }
 
+    private boolean checkPermission(String permission)
+    {
+        if (ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED)
+        {
+            return true;
+        } else
+        {
+            return false;
+        }
+    }
+
     // event - crud
 
     /**
@@ -139,9 +151,14 @@ public class CalendarProvider implements ICalendarProvider
         // 화면에 이벤트 정보를 표시하기 위해 기본적인 데이터만 가져온다.
         // 요청 매개변수 : ID, 캘린더 ID, 오너 계정, 조직자
         // 표시할 데이터 : 제목, 일정 기간, 반복, 위치, 알림, 설명, 소유 계정, 참석자, 바쁨/한가함, 공개 범위 참석 여부 확인 창, 색상
+        if (!checkPermission(Manifest.permission.READ_CALENDAR))
+        {
+        }
+
         String[] selectionArgs = {String.valueOf(eventId), String.valueOf(calendarId)};
 
         ContentResolver contentResolver = context.getContentResolver();
+
         Cursor cursor = contentResolver.query(CalendarContract.Events.CONTENT_URI, null, EVENT_QUERY, selectionArgs, null);
         ContentValues event = new ContentValues();
 
@@ -185,6 +202,10 @@ public class CalendarProvider implements ICalendarProvider
     public List<ContentValues> getEvents(int calendarId)
     {
         // 필요한 데이터 : 제목, 색상, 오너 관련, 일정 길이, 반복 관련
+        if (!checkPermission(Manifest.permission.READ_CALENDAR))
+        {
+        }
+
         String[] selectionArgs = {Integer.toString(calendarId)};
 
         ContentResolver contentResolver = context.getContentResolver();
@@ -235,6 +256,9 @@ public class CalendarProvider implements ICalendarProvider
     @Override
     public long addEvent(ContentValues event)
     {
+        if (!checkPermission(Manifest.permission.WRITE_CALENDAR))
+        {
+        }
         Uri uri = context.getContentResolver().insert(CalendarContract.Events.CONTENT_URI, event);
         return Long.parseLong(uri.getLastPathSegment());
     }
@@ -245,6 +269,9 @@ public class CalendarProvider implements ICalendarProvider
     @Override
     public int deleteEvent(int calendarId, long eventId)
     {
+        if (!checkPermission(Manifest.permission.WRITE_CALENDAR))
+        {
+        }
         String where = "(" + CalendarContract.Events.CALENDAR_ID + "=? AND " + CalendarContract.Events._ID + "=?)";
         String[] selectionArgs = {String.valueOf(calendarId), String.valueOf(eventId)};
 
@@ -259,6 +286,9 @@ public class CalendarProvider implements ICalendarProvider
     @Override
     public int deleteEvents(int calendarId, long[] eventIds)
     {
+        if (!checkPermission(Manifest.permission.WRITE_CALENDAR))
+        {
+        }
         String where = "(" + CalendarContract.Events.CALENDAR_ID + "=? AND " + CalendarContract.Events._ID + "=?)";
         String[] selectionArgs = new String[2];
         selectionArgs[0] = String.valueOf(calendarId);
@@ -280,6 +310,9 @@ public class CalendarProvider implements ICalendarProvider
     @Override
     public int updateEvent(ContentValues event)
     {
+        if (!checkPermission(Manifest.permission.WRITE_CALENDAR))
+        {
+        }
         ContentResolver contentResolver = context.getContentResolver();
         String selection = "Events._id=? AND " + CalendarContract.Events.CALENDAR_ID + "=?";
         String[] selectionArgs = {event.getAsString(CalendarContract.Events._ID), event.getAsString(CalendarContract.Events.CALENDAR_ID)};
@@ -297,6 +330,10 @@ public class CalendarProvider implements ICalendarProvider
     @Override
     public List<ContentValues> getAllCalendars()
     {
+        if (!checkPermission(Manifest.permission.READ_CALENDAR))
+        {
+        }
+
         ContentResolver contentResolver = context.getContentResolver();
         Cursor cursor = contentResolver.query(CalendarContract.Calendars.CONTENT_URI, CALENDAR_PROJECTION, null, null, null);
         List<ContentValues> calendarList = new ArrayList<>();
@@ -328,6 +365,9 @@ public class CalendarProvider implements ICalendarProvider
     @Override
     public List<ContentValues> getCalendars()
     {
+        if (!checkPermission(Manifest.permission.READ_CALENDAR))
+        {
+        }
         final String[] PROJECTION = {CalendarContract.Calendars._ID, CalendarContract.Calendars.NAME,
                 CalendarContract.Calendars.ACCOUNT_NAME, CalendarContract.Calendars.CALENDAR_DISPLAY_NAME, CalendarContract.Calendars.OWNER_ACCOUNT,
                 CalendarContract.Calendars.CALENDAR_COLOR, CalendarContract.Calendars.IS_PRIMARY};
@@ -380,6 +420,9 @@ public class CalendarProvider implements ICalendarProvider
     @Override
     public ContentValues getCalendar(int calendarId)
     {
+        if (!checkPermission(Manifest.permission.READ_CALENDAR))
+        {
+        }
         ContentResolver contentResolver = context.getContentResolver();
         String[] selectionArgs = {String.valueOf(calendarId)};
         Cursor cursor = contentResolver.query(CalendarContract.Calendars.CONTENT_URI, null, CALENDARS_QUERY, selectionArgs, null);
@@ -411,6 +454,9 @@ public class CalendarProvider implements ICalendarProvider
     @Override
     public List<ContentValues> getReminders(int calendarId, long eventId)
     {
+        if (!checkPermission(Manifest.permission.READ_CALENDAR))
+        {
+        }
         ContentResolver contentResolver = context.getContentResolver();
         Cursor cursor = CalendarContract.Reminders.query(contentResolver, eventId, null);
         List<ContentValues> reminders = new ArrayList<>();
@@ -438,6 +484,9 @@ public class CalendarProvider implements ICalendarProvider
     @Override
     public int updateReminder(ContentValues reminder)
     {
+        if (!checkPermission(Manifest.permission.WRITE_CALENDAR))
+        {
+        }
         final String where = CalendarContract.Reminders._ID + "=? AND " +
                 CalendarContract.Reminders.EVENT_ID + "=? AND " +
                 CalendarContract.Reminders.CALENDAR_ID + "=?";
@@ -460,6 +509,9 @@ public class CalendarProvider implements ICalendarProvider
     @Override
     public int deleteReminders(int calendarId, long eventId, long[] reminderIds)
     {
+        if (!checkPermission(Manifest.permission.WRITE_CALENDAR))
+        {
+        }
         String where = "(" + CalendarContract.Reminders.CALENDAR_ID + "=? AND "
                 + CalendarContract.Reminders.EVENT_ID + "=? AND "
                 + CalendarContract.Reminders._ID + "=?)";
@@ -481,6 +533,9 @@ public class CalendarProvider implements ICalendarProvider
     @Override
     public int deleteAllReminders(int calendarId, long eventId)
     {
+        if (!checkPermission(Manifest.permission.WRITE_CALENDAR))
+        {
+        }
         String where = CalendarContract.Reminders.CALENDAR_ID + "=? AND " + CalendarContract.Reminders.EVENT_ID + "=?";
         String[] selectionArgs = {String.valueOf(calendarId), String.valueOf(eventId)};
         return context.getContentResolver().delete(CalendarContract.Reminders.CONTENT_URI, where, selectionArgs);
@@ -492,6 +547,9 @@ public class CalendarProvider implements ICalendarProvider
     @Override
     public int addReminders(List<ContentValues> reminders)
     {
+        if (!checkPermission(Manifest.permission.WRITE_CALENDAR))
+        {
+        }
         ContentResolver contentResolver = context.getContentResolver();
         int addedRows = 0;
 
@@ -511,6 +569,9 @@ public class CalendarProvider implements ICalendarProvider
     @Override
     public void getInstances(List<ContentValues> calendarList, long startDate, long endDate, EventCallback<List<CalendarInstance>> callback)
     {
+        if (!checkPermission(Manifest.permission.READ_CALENDAR))
+        {
+        }
         List<CalendarInstance> calendarInstances = new ArrayList<>();
 
         if (calendarList.isEmpty())
@@ -562,6 +623,9 @@ public class CalendarProvider implements ICalendarProvider
     @Override
     public ContentValues getInstance(int calendarId, long instanceId, long begin, long end)
     {
+        if (!checkPermission(Manifest.permission.READ_CALENDAR))
+        {
+        }
         // 화면에 이벤트 정보를 표시하기 위해 기본적인 데이터만 가져온다.
         // 요청 매개변수 : ID, 캘린더 ID, 오너 계정, 조직자
         // 표시할 데이터 : 제목, 일정 기간, 반복, 위치, 알림, 설명, 소유 계정, 참석자, 바쁨/한가함, 공개 범위 참석 여부 확인 창, 색상
@@ -621,6 +685,9 @@ public class CalendarProvider implements ICalendarProvider
     @Override
     public long updateAllFutureInstances(ContentValues modifiedInstance, ContentValues previousInstance)
     {
+        if (!checkPermission(Manifest.permission.WRITE_CALENDAR))
+        {
+        }
         ContentResolver contentResolver = context.getContentResolver();
 
         //수정한 인스턴스의 종료일 가져오기
@@ -685,6 +752,9 @@ public class CalendarProvider implements ICalendarProvider
     @Override
     public long updateOneInstance(ContentValues modifiedInstance, ContentValues previousInstance)
     {
+        if (!checkPermission(Manifest.permission.WRITE_CALENDAR))
+        {
+        }
         Uri.Builder builder = CalendarContract.Instances.CONTENT_URI.buildUpon();
         ContentUris.appendId(builder, previousInstance.getAsLong(CalendarContract.Instances.BEGIN));
         ContentUris.appendId(builder, previousInstance.getAsLong(CalendarContract.Instances.END));
@@ -700,6 +770,9 @@ public class CalendarProvider implements ICalendarProvider
     @Override
     public int deleteInstance(long begin, long end, long instanceId)
     {
+        if (!checkPermission(Manifest.permission.WRITE_CALENDAR))
+        {
+        }
         Uri.Builder builder = CalendarContract.Instances.CONTENT_URI.buildUpon();
         ContentUris.appendId(builder, begin);
         ContentUris.appendId(builder, end);
@@ -719,6 +792,9 @@ public class CalendarProvider implements ICalendarProvider
     @Override
     public int addAttendees(List<ContentValues> attendeeList)
     {
+        if (!checkPermission(Manifest.permission.WRITE_CALENDAR))
+        {
+        }
         ContentResolver contentResolver = context.getContentResolver();
         int addedRows = 0;
         for (ContentValues attendee : attendeeList)
@@ -735,6 +811,9 @@ public class CalendarProvider implements ICalendarProvider
     @Override
     public List<ContentValues> getAttendees(int calendarId, long eventId)
     {
+        if (!checkPermission(Manifest.permission.READ_CALENDAR))
+        {
+        }
         ContentResolver contentResolver = context.getContentResolver();
 
         List<ContentValues> attendees = new ArrayList<>();
@@ -771,6 +850,9 @@ public class CalendarProvider implements ICalendarProvider
     @Override
     public int updateAttendees(List<ContentValues> attendeeList)
     {
+        if (!checkPermission(Manifest.permission.WRITE_CALENDAR))
+        {
+        }
         ContentResolver contentResolver = context.getContentResolver();
         int updatedRows = 0;
         final int eventId = attendeeList.get(0).getAsInteger(CalendarContract.Attendees.EVENT_ID);
@@ -800,6 +882,9 @@ public class CalendarProvider implements ICalendarProvider
     @Override
     public int deleteAllAttendees(int calendarId, long eventId)
     {
+        if (!checkPermission(Manifest.permission.WRITE_CALENDAR))
+        {
+        }
         ContentResolver contentResolver = context.getContentResolver();
         int updatedRows = 0;
         String where = CalendarContract.Attendees.CALENDAR_ID + "=? AND " + CalendarContract.Attendees.EVENT_ID + "=?";
@@ -817,6 +902,9 @@ public class CalendarProvider implements ICalendarProvider
     @Override
     public int deleteAttendees(int calendarId, long eventId, long[] attendeeIds)
     {
+        if (!checkPermission(Manifest.permission.WRITE_CALENDAR))
+        {
+        }
         final String where = CalendarContract.Attendees.CALENDAR_ID + "=? AND " +
                 CalendarContract.Attendees.EVENT_ID + "=? AND " + "Attendees._id=?";
 
@@ -857,6 +945,9 @@ public class CalendarProvider implements ICalendarProvider
     @Override
     public ContentValues getRecurrence(int calendarId, long eventId)
     {
+        if (!checkPermission(Manifest.permission.READ_CALENDAR))
+        {
+        }
         ContentResolver contentResolver = context.getContentResolver();
 
         final String[] projection = {CalendarContract.Events._ID, CalendarContract.Events.CALENDAR_ID,
