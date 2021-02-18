@@ -11,10 +11,12 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.provider.CalendarContract;
@@ -31,6 +33,8 @@ import com.zerodsoft.scheduleweather.activity.editevent.activity.EditEventActivi
 import com.zerodsoft.scheduleweather.activity.editevent.value.EventDataController;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.databinding.ActivityScheduleInfoBinding;
+import com.zerodsoft.scheduleweather.etc.AppPermission;
+import com.zerodsoft.scheduleweather.etc.IPermission;
 import com.zerodsoft.scheduleweather.event.common.MLocActivity;
 import com.zerodsoft.scheduleweather.event.common.ReselectDetailLocation;
 import com.zerodsoft.scheduleweather.event.common.interfaces.IFab;
@@ -46,7 +50,7 @@ import com.zerodsoft.scheduleweather.utility.RecurrenceRule;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
-public class EventActivity extends AppCompatActivity implements ILocation, IFab
+public class EventActivity extends AppCompatActivity implements ILocation, IFab, IPermission
 {
     private ActivityScheduleInfoBinding binding;
     private LocationViewModel locationViewModel;
@@ -60,6 +64,7 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab
 
     private FragmentManager fragmentManager;
     private Fragment currentFragment;
+    private AppPermission appPermission;
 
     private static final String TAG_INFO = "info";
     private static final String TAG_WEATHER = "weather";
@@ -71,6 +76,11 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab
     public static final int RESULT_SELECTED_LOCATION = 3200;
     public static final int RESULT_RESELECTED_LOCATION = 3300;
     public static final int RESULT_REMOVED_LOCATION = 3400;
+
+    public static final int REQUEST_DELETE_EVENT = 5000;
+    public static final int REQUEST_EXCEPT_THIS_INSTANCE = 5100;
+    public static final int REQUEST_SUBSEQUENT_INCLUDING_THIS = 5200;
+
 
     private String clickedFragmentTag;
 
@@ -100,6 +110,7 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_schedule_info);
         fragmentManager = getSupportFragmentManager();
+        appPermission = new AppPermission(this);
 
         binding.scheduleBottomNav.setOnNavigationItemSelectedListener(onNavigationItemSelectedListener);
         binding.eventFab.setOnClickListener(new View.OnClickListener()
@@ -212,15 +223,16 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab
                                     {
                                         case 0:
                                             // 이번 일정만 삭제
-                                            removeThisInstance();
+                                            // 완성
+                                            exceptThisInstance();
                                             break;
                                         case 1:
                                             // 향후 모든 일정만 삭제
-                                            removeSubsequentIncludingThis();
+                                            deleteSubsequentIncludingThis();
                                             break;
                                         case 2:
                                             // 모든 일정 삭제
-                                            removeEvent();
+                                            deleteEvent();
                                             break;
                                     }
                                 } else
@@ -229,7 +241,7 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab
                                     {
                                         case 0:
                                             // 모든 일정 삭제
-                                            removeEvent();
+                                            deleteEvent();
                                             break;
                                     }
                                 }
@@ -261,19 +273,23 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab
         calendarViewModel.init(getApplicationContext());
     }
 
-    private void removeEvent()
+    private void deleteEvent()
     {
         // 참석자 - 알림 - 이벤트 순으로 삭제 (외래키 때문)
         // db column error
-        // fix error (0206)
-        calendarViewModel.deleteAllAttendees(calendarId, eventId);
-        calendarViewModel.deleteAllReminders(calendarId, eventId);
-        calendarViewModel.deleteEvent(calendarId, eventId);
+        if (grantedPermissions(REQUEST_DELETE_EVENT, Manifest.permission.WRITE_CALENDAR))
+        {
+            calendarViewModel.deleteEvent(calendarId, eventId);
+        }
     }
 
-    private void removeSubsequentIncludingThis()
+    private void deleteSubsequentIncludingThis()
     {
         // 이벤트의 반복 UNTIL을 현재 인스턴스의 시작날짜로 수정
+        if (!grantedPermissions(REQUEST_SUBSEQUENT_INCLUDING_THIS, Manifest.permission.WRITE_CALENDAR))
+        {
+            return;
+        }
         ContentValues recurrenceData = calendarViewModel.getRecurrence(calendarId, eventId);
         RecurrenceRule recurrenceRule = new RecurrenceRule();
         recurrenceRule.separateValues(recurrenceData.getAsString(CalendarContract.Events.RRULE));
@@ -289,16 +305,14 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab
         calendarViewModel.updateEvent(recurrenceData);
     }
 
-    private void removeThisInstance()
+    private void exceptThisInstance()
     {
-        // event에 exdate추가
-        ContentValues recurrenceData = calendarViewModel.getRecurrence(calendarId, eventId);
-        RecurrenceRule recurrenceRule = new RecurrenceRule();
-        recurrenceRule.separateValues(recurrenceData.getAsString(CalendarContract.Events.RRULE));
-
+        if (!grantedPermissions(REQUEST_EXCEPT_THIS_INSTANCE, Manifest.permission.WRITE_CALENDAR))
+        {
+            return;
+        }
         ContentValues instance = eventFragment.getInstance();
-        calendarViewModel.deleteInstance(instance.getAsLong(CalendarContract.Instances.BEGIN)
-                , instance.getAsLong(CalendarContract.Instances.END), instanceId);
+        calendarViewModel.deleteInstance(instance.getAsLong(CalendarContract.Instances.BEGIN), eventId);
     }
 
 
@@ -640,5 +654,45 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab
                 setAllVisibility(View.GONE);
                 break;
         }
+    }
+
+    @Override
+    public void requestPermissions(int requestCode, String... permissions)
+    {
+        appPermission.requestPermissions(requestCode, permissions);
+    }
+
+    @Override
+    public boolean grantedPermissions(int requestCode, String... permissions)
+    {
+        return appPermission.grantedPermissions(requestCode, permissions);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
+    {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (grantResults.length > 0 &&
+                grantResults[0] == PackageManager.PERMISSION_GRANTED)
+        {
+            // 권한 허용됨
+            switch (requestCode)
+            {
+                case REQUEST_DELETE_EVENT:
+                    deleteEvent();
+                    break;
+                case REQUEST_EXCEPT_THIS_INSTANCE:
+                    exceptThisInstance();
+                    break;
+                case REQUEST_SUBSEQUENT_INCLUDING_THIS:
+                    deleteSubsequentIncludingThis();
+                    break;
+            }
+        } else
+        {
+            // 권한 거부됨
+        }
+
     }
 }

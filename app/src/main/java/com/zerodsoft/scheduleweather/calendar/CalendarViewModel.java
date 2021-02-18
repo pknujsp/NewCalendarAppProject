@@ -198,9 +198,9 @@ public class CalendarViewModel extends ViewModel
         return calendarProvider.updateOneInstance(modifiedInstance, previousInstance);
     }
 
-    public int deleteInstance(long begin, long end, long instanceId)
+    public int deleteInstance(long begin, long eventId)
     {
-        return calendarProvider.deleteInstance(begin, end, instanceId);
+        return calendarProvider.deleteInstance(begin, eventId);
     }
 
 

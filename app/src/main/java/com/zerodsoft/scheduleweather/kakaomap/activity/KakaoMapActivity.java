@@ -4,12 +4,10 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
-import androidx.core.content.ContextCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -29,12 +27,13 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.map.fragment.search.SearchFragment;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.SearchResultListFragment;
 import com.zerodsoft.scheduleweather.databinding.ActivityKakaoMapBinding;
+import com.zerodsoft.scheduleweather.etc.AppPermission;
 import com.zerodsoft.scheduleweather.etc.FragmentStateCallback;
+import com.zerodsoft.scheduleweather.etc.IPermission;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.KakaoMapFragment;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IBottomSheet;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapToolbar;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.INetwork;
-import com.zerodsoft.scheduleweather.kakaomap.interfaces.IPermission;
 import com.zerodsoft.scheduleweather.kakaomap.model.CustomPoiItem;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponseDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
@@ -42,19 +41,17 @@ import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
 import net.daum.mf.map.api.MapPOIItem;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
 public class KakaoMapActivity extends AppCompatActivity implements IBottomSheet, IMapToolbar, INetwork, IPermission
 {
+    public static final int REQUEST_CODE_LOCATION = 10000;
+
     protected ActivityKakaoMapBinding binding;
     protected BottomSheetBehavior bottomSheetBehavior;
     protected KakaoMapFragment kakaoMapFragment;
     protected SearchView searchView;
     protected ConnectivityManager.NetworkCallback networkCallback;
     protected ConnectivityManager connectivityManager;
+    protected AppPermission appPermission;
 
     public KakaoMapActivity()
     {
@@ -66,13 +63,13 @@ public class KakaoMapActivity extends AppCompatActivity implements IBottomSheet,
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_kakao_map);
 
+        appPermission = new AppPermission(this);
         setNetworkCallback();
 
         kakaoMapFragment = (KakaoMapFragment) getSupportFragmentManager().findFragmentById(R.id.kakao_map_fragment);
         kakaoMapFragment.setiBottomSheet(this);
         kakaoMapFragment.setiMapToolbar(this);
         kakaoMapFragment.setINetwork(this);
-        kakaoMapFragment.setIPermission(this);
 
         initToolbar();
         initBottomSheet();
@@ -451,44 +448,13 @@ public class KakaoMapActivity extends AppCompatActivity implements IBottomSheet,
         return location;
     }
 
-    @Override
-    public void requestPermissions(int requestCode, String... permissions)
-    {
-        requestPermissions(permissions, requestCode);
-    }
-
-    @Override
-    public boolean grantedGpsPermissions()
-    {
-        int fineLocation = ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION);
-        int coarseLocation = ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION);
-
-        if (fineLocation == PackageManager.PERMISSION_GRANTED && coarseLocation == PackageManager.PERMISSION_GRANTED)
-        {
-            return true;
-        } else
-        {
-            List<String> permissions = new ArrayList<>();
-            if (fineLocation != PackageManager.PERMISSION_GRANTED)
-            {
-                permissions.add(Manifest.permission.ACCESS_FINE_LOCATION);
-            }
-            if (coarseLocation != PackageManager.PERMISSION_GRANTED)
-            {
-                permissions.add(Manifest.permission.ACCESS_COARSE_LOCATION);
-            }
-
-            requestPermissions(IPermission.REQUEST_CODE_LOCATION, permissions.toArray(new String[0]));
-            return false;
-        }
-    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
     {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
-        if (requestCode == IPermission.REQUEST_CODE_LOCATION)
+        if (requestCode == REQUEST_CODE_LOCATION)
         {
             if (grantResults.length > 0 &&
                     grantResults[0] == PackageManager.PERMISSION_GRANTED)
@@ -500,5 +466,17 @@ public class KakaoMapActivity extends AppCompatActivity implements IBottomSheet,
                 // 권한 거부됨
             }
         }
+    }
+
+    @Override
+    public void requestPermissions(int requestCode, String... permissions)
+    {
+        appPermission.requestPermissions(requestCode, permissions);
+    }
+
+    @Override
+    public boolean grantedPermissions(int requestCode, String... permissions)
+    {
+        return appPermission.grantedPermissions(requestCode, permissions);
     }
 }

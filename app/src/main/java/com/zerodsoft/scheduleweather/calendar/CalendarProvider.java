@@ -13,7 +13,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.CalendarContract;
 
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
@@ -272,10 +271,9 @@ public class CalendarProvider implements ICalendarProvider
         if (!checkPermission(Manifest.permission.WRITE_CALENDAR))
         {
         }
-        String where = "(" + CalendarContract.Events.CALENDAR_ID + "=? AND " + CalendarContract.Events._ID + "=?)";
-        String[] selectionArgs = {String.valueOf(calendarId), String.valueOf(eventId)};
 
-        return context.getContentResolver().delete(CalendarContract.Events.CONTENT_URI, where, selectionArgs);
+        Uri uri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, eventId);
+        return context.getContentResolver().delete(uri, null, null);
     }
 
     /**
@@ -289,17 +287,16 @@ public class CalendarProvider implements ICalendarProvider
         if (!checkPermission(Manifest.permission.WRITE_CALENDAR))
         {
         }
-        String where = "(" + CalendarContract.Events.CALENDAR_ID + "=? AND " + CalendarContract.Events._ID + "=?)";
-        String[] selectionArgs = new String[2];
-        selectionArgs[0] = String.valueOf(calendarId);
+        Uri uri = CalendarContract.Events.CONTENT_URI;
 
         ContentResolver contentResolver = context.getContentResolver();
         int deletedRows = 0;
 
         for (long eventId : eventIds)
         {
-            selectionArgs[1] = String.valueOf(eventId);
-            deletedRows += contentResolver.delete(CalendarContract.Events.CONTENT_URI, where, selectionArgs);
+            ContentUris.withAppendedId(uri, eventId);
+            deletedRows += contentResolver.delete(uri, null, null);
+            ContentUris.removeId(uri);
         }
         return deletedRows;
     }
@@ -767,21 +764,28 @@ public class CalendarProvider implements ICalendarProvider
         });
     }
 
+    /**
+     * Find the instance you want to delete. (using Instances.query())
+     * Create the exception URI with the event ID appended.
+     * Create ContentValues. Put your instance's BEGIN value as ...Events.ORIGINAL_INSTANCE_TIME. Put STATUS_CANCELED as ...Events.STATUS
+     * Now only insert(yourURI, yourValues) and that's it!
+     **/
     @Override
-    public int deleteInstance(long begin, long end, long instanceId)
+    public int deleteInstance(long begin, long eventId)
     {
         if (!checkPermission(Manifest.permission.WRITE_CALENDAR))
         {
         }
-        Uri.Builder builder = CalendarContract.Instances.CONTENT_URI.buildUpon();
-        ContentUris.appendId(builder, begin);
-        ContentUris.appendId(builder, end);
 
+        ContentValues exceptionEvent = new ContentValues();
+        exceptionEvent.put(CalendarContract.Events.ORIGINAL_INSTANCE_TIME, begin);
+        exceptionEvent.put(CalendarContract.Events.STATUS, CalendarContract.Events.STATUS_CANCELED);
+
+        Uri exceptionUri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_EXCEPTION_URI, eventId);
         ContentResolver contentResolver = context.getContentResolver();
-        String where = "Instances._id=?";
-        int result = contentResolver.delete(builder.build(), where, new String[]{String.valueOf(instanceId)});
+        Uri result = contentResolver.insert(exceptionUri, exceptionEvent);
 
-        return result;
+        return Integer.parseInt(result.getLastPathSegment());
     }
 
     // attendee - crud
@@ -885,11 +889,11 @@ public class CalendarProvider implements ICalendarProvider
         if (!checkPermission(Manifest.permission.WRITE_CALENDAR))
         {
         }
+
         ContentResolver contentResolver = context.getContentResolver();
         int updatedRows = 0;
         String where = CalendarContract.Attendees.CALENDAR_ID + "=? AND " + CalendarContract.Attendees.EVENT_ID + "=?";
         String[] selectionArgs = {String.valueOf(calendarId), String.valueOf(eventId)};
-
         updatedRows += contentResolver.delete(CalendarContract.Instances.CONTENT_URI, where, selectionArgs);
         return updatedRows;
     }

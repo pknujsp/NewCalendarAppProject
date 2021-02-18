@@ -1,10 +1,14 @@
 package com.zerodsoft.scheduleweather.activity.editevent.value;
 
+import android.Manifest;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.provider.CalendarContract;
+
+import androidx.core.content.ContextCompat;
 
 import com.zerodsoft.scheduleweather.R;
 
@@ -26,6 +30,17 @@ public class EventDefaultValue
         calendar.set(Calendar.SECOND, 0);
     }
 
+    private boolean checkPermission(String permission)
+    {
+        if (ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED)
+        {
+            return true;
+        } else
+        {
+            return false;
+        }
+    }
+
     public String getDefaultTitle()
     {
         return context.getString(R.string.default_event_title);
@@ -33,6 +48,10 @@ public class EventDefaultValue
 
     public ContentValues getDefaultCalendar()
     {
+        if (!checkPermission(Manifest.permission.READ_CALENDAR))
+        {
+
+        }
         final String[] PROJECTION = {CalendarContract.Calendars._ID, CalendarContract.Calendars.NAME,
                 CalendarContract.Calendars.ACCOUNT_NAME, CalendarContract.Calendars.CALENDAR_DISPLAY_NAME, CalendarContract.Calendars.OWNER_ACCOUNT,
                 CalendarContract.Calendars.CALENDAR_COLOR, CalendarContract.Calendars.IS_PRIMARY};

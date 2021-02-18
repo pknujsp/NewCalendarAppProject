@@ -49,7 +49,7 @@ public interface ICalendarProvider
 
     public long updateOneInstance(ContentValues modifiedInstance, ContentValues previousInstance);
 
-    public int deleteInstance(long begin, long end, long instanceId);
+    public int deleteInstance(long begin, long eventId);
 
     // attendee - crud
     public int addAttendees(List<ContentValues> attendeeList);

@@ -27,12 +27,13 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.map.util.RequestLocationTimer;
 import com.zerodsoft.scheduleweather.databinding.FragmentMapBinding;
+import com.zerodsoft.scheduleweather.etc.IPermission;
+import com.zerodsoft.scheduleweather.kakaomap.activity.KakaoMapActivity;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IBottomSheet;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapPoint;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapToolbar;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.INetwork;
-import com.zerodsoft.scheduleweather.kakaomap.interfaces.IPermission;
 import com.zerodsoft.scheduleweather.kakaomap.model.CustomPoiItem;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponseDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
@@ -67,7 +68,6 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     private int selectedPoiItemIndex;
     private boolean isSelectedPoiItem;
     private IPermission iPermission;
-
 
     public KakaoMapFragment()
     {
@@ -169,7 +169,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
             {
                 //권한 확인
 
-                if (iPermission.grantedGpsPermissions())
+                if (iPermission.grantedPermissions(KakaoMapActivity.REQUEST_CODE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))
                 {
                     boolean isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
                     boolean isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
