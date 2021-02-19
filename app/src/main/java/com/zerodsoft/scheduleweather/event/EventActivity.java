@@ -31,6 +31,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.editevent.activity.EditEventActivity;
 import com.zerodsoft.scheduleweather.activity.editevent.value.EventDataController;
+import com.zerodsoft.scheduleweather.activity.main.AppMainActivity;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.databinding.ActivityScheduleInfoBinding;
 import com.zerodsoft.scheduleweather.etc.AppPermission;
@@ -52,6 +53,8 @@ import java.util.GregorianCalendar;
 
 public class EventActivity extends AppCompatActivity implements ILocation, IFab, IPermission
 {
+
+
     private ActivityScheduleInfoBinding binding;
     private LocationViewModel locationViewModel;
     private CalendarViewModel calendarViewModel;
@@ -181,12 +184,16 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab,
             @Override
             public void onClick(View view)
             {
+                /*
                 Intent intent = new Intent(EventActivity.this, EditEventActivity.class);
                 intent.putExtra("requestCode", EventDataController.MODIFY_EVENT);
                 intent.putExtra("calendarId", calendarId.intValue());
                 intent.putExtra("eventId", eventId.longValue());
 
                 startActivity(intent);
+
+                 */
+                Toast.makeText(EventActivity.this, "작성 중", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -228,7 +235,8 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab,
                                             break;
                                         case 1:
                                             // 향후 모든 일정만 삭제
-                                            deleteSubsequentIncludingThis();
+                                            // deleteSubsequentIncludingThis();
+                                            Toast.makeText(EventActivity.this, "작성 중", Toast.LENGTH_SHORT).show();
                                             break;
                                         case 2:
                                             // 모든 일정 삭제
@@ -280,6 +288,9 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab,
         if (grantedPermissions(REQUEST_DELETE_EVENT, Manifest.permission.WRITE_CALENDAR))
         {
             calendarViewModel.deleteEvent(calendarId, eventId);
+            // 삭제 완료 후 캘린더 화면으로 나가고, 새로고침한다.
+            setResult(AppMainActivity.DELETED_EVENT);
+            finish();
         }
     }
 
@@ -307,12 +318,14 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab,
 
     private void exceptThisInstance()
     {
-        if (!grantedPermissions(REQUEST_EXCEPT_THIS_INSTANCE, Manifest.permission.WRITE_CALENDAR))
+        if (grantedPermissions(REQUEST_EXCEPT_THIS_INSTANCE, Manifest.permission.WRITE_CALENDAR))
         {
-            return;
+            ContentValues instance = eventFragment.getInstance();
+            calendarViewModel.deleteInstance(instance.getAsLong(CalendarContract.Instances.BEGIN), eventId);
+
+            setResult(AppMainActivity.EXCEPTED_INSTANCE);
+            finish();
         }
-        ContentValues instance = eventFragment.getInstance();
-        calendarViewModel.deleteInstance(instance.getAsLong(CalendarContract.Instances.BEGIN), eventId);
     }
 
 

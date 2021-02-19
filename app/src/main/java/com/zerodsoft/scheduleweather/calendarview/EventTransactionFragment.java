@@ -22,6 +22,7 @@ import com.zerodsoft.scheduleweather.calendarview.instancedialog.InstanceListOnD
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.IstartActivity;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.calendarview.month.MonthFragment;
 import com.zerodsoft.scheduleweather.calendarview.week.WeekFragment;
@@ -39,13 +40,15 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
     private int viewPosition;
     private CalendarViewModel calendarViewModel;
     private Fragment fragment;
-    private IToolbar iToolbar;
-    private IConnectedCalendars iConnectedCalendars;
+    private final IToolbar iToolbar;
+    private final IConnectedCalendars iConnectedCalendars;
+    private final IstartActivity istartActivity;
 
     public EventTransactionFragment(Activity activity)
     {
         this.iToolbar = (IToolbar) activity;
         this.iConnectedCalendars = (IConnectedCalendars) activity;
+        this.istartActivity = (IstartActivity) activity;
     }
 
     @Override
@@ -174,7 +177,7 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
         intent.putExtra("begin", viewBegin);
         intent.putExtra("end", viewEnd);
 
-        startActivity(intent);
+        istartActivity.startActivityResult(intent, 0);
     }
 }
 

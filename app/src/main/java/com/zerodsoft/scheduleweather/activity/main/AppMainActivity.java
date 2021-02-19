@@ -31,6 +31,7 @@ import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
 import com.zerodsoft.scheduleweather.calendarview.day.DayFragment;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.ICalendarCheckBox;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.IstartActivity;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
 import com.zerodsoft.scheduleweather.calendarview.month.MonthFragment;
 import com.zerodsoft.scheduleweather.calendarview.week.WeekFragment;
@@ -42,11 +43,17 @@ import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContract;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.ActivityOptionsCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
@@ -58,7 +65,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class AppMainActivity extends AppCompatActivity implements ICalendarCheckBox, IToolbar, IConnectedCalendars
+public class AppMainActivity extends AppCompatActivity implements ICalendarCheckBox, IToolbar, IConnectedCalendars, IstartActivity
 {
     private EventTransactionFragment calendarTransactionFragment;
     private static int DISPLAY_WIDTH = 0;
@@ -76,6 +83,8 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
     public static final int TYPE_DAY = 10;
     public static final int TYPE_WEEK = 20;
     public static final int TYPE_MONTH = 30;
+    public static final int DELETED_EVENT = 10000;
+    public static final int EXCEPTED_INSTANCE = 10001;
 
     public static int getDisplayHeight()
     {
@@ -122,8 +131,6 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 
         calendarTransactionFragment = new EventTransactionFragment(this);
         getSupportFragmentManager().beginTransaction().add(R.id.calendar_layout, calendarTransactionFragment, EventTransactionFragment.TAG).commit();
-
-
     }
 
     private final ContentObserver contentObserver = new ContentObserver(new Handler())
@@ -646,7 +653,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
         connectedCalendarList.add(calendar);
         editor.putString(key, key);
         editor.commit();
-
+        
         calendarTransactionFragment.refreshCalendar();
     }
 
@@ -662,6 +669,27 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
         return connectedCalendarList;
     }
 
+    private final ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            new ActivityResultCallback<ActivityResult>()
+            {
+                @Override
+                public void onActivityResult(ActivityResult result)
+                {
+                    final int resultCode = result.getResultCode();
 
+                    if (resultCode == DELETED_EVENT || resultCode == EXCEPTED_INSTANCE)
+                    {
+                        calendarTransactionFragment.refreshCalendar();
+                    }
+                }
+            }
+    );
+
+    @Override
+    public void startActivityResult(Intent intent, int requestCode)
+    {
+        activityResultLauncher.launch(intent);
+    }
 }
 
