@@ -33,34 +33,31 @@ public class WeatherData
     private final String areaName;
     //데이터 처음 불러올때의 시각
     private final Calendar downloadedDate;
-
     private final WeatherAreaCodeDTO weatherAreaCode;
-    private final int index;
 
     //초단기실황 최종 데이터
-    private DataWrapper<UltraSrtNcstData> ultraSrtNcstFinalData;
+    private UltraSrtNcstData ultraSrtNcstFinalData;
     //초단기예보 최종 데이터
-    private DataWrapper<List<UltraSrtFcstData>> ultraSrtFcstFinalData;
+    private List<UltraSrtFcstData> ultraSrtFcstFinalData;
     //동네예보 최종 데이터
-    private DataWrapper<List<VilageFcstData>> vilageFcstFinalData;
+    private List<VilageFcstData> vilageFcstFinalData;
     //중기예보(중기육상예보+중기기온예보) 최종 데이터
-    private DataWrapper<List<MidFcstData>> midFcstFinalData;
+    private List<MidFcstData> midFcstFinalData;
 
     //초단기실황 응답 데이터
-    private DataWrapper<UltraSrtNcstItems> ultraSrtNcstItemsDataWrapper;
+    private UltraSrtNcstItems ultraSrtNcstItems;
     //초단기예보 응답 데이터
-    private DataWrapper<UltraSrtFcstItems> ultraSrtFcstItemsDataWrapper;
+    private UltraSrtFcstItems ultraSrtFcstItems;
     //동네예보 응답 데이터
-    private DataWrapper<VilageFcstItems> vilageFcstItemsDataWrapper;
+    private VilageFcstItems vilageFcstItems;
     //중기육상예보 응답 데이터
-    private DataWrapper<MidLandFcstItems> midLandFcstItemsDataWrapper;
+    private MidLandFcstItems midLandFcstItems;
     //중기기온예보 응답 데이터
-    private DataWrapper<MidTaItems> midTaItemsDataWrapper;
+    private MidTaItems midTaItems;
 
 
-    public WeatherData(int index, Calendar downloadedDate, WeatherAreaCodeDTO weatherAreaCode)
+    public WeatherData(Calendar downloadedDate, WeatherAreaCodeDTO weatherAreaCode)
     {
-        this.index = index;
         this.areaName = weatherAreaCode.getPhase1() + " " + weatherAreaCode.getPhase2() + " " + weatherAreaCode.getPhase3();
         this.downloadedDate = (Calendar) downloadedDate.clone();
         this.weatherAreaCode = weatherAreaCode;
@@ -76,64 +73,58 @@ public class WeatherData
         return (Calendar) downloadedDate.clone();
     }
 
-    public int getIndex()
-    {
-        return index;
-    }
-
-
     public String getAreaName()
     {
         return areaName;
     }
 
 
-    public WeatherData setUltraSrtNcstItemsDataWrapper(DataWrapper<UltraSrtNcstItems> ultraSrtNcstItemsDataWrapper)
+    public WeatherData setUltraSrtNcstItems(UltraSrtNcstItems ultraSrtNcstItems)
     {
-        this.ultraSrtNcstItemsDataWrapper = ultraSrtNcstItemsDataWrapper;
+        this.ultraSrtNcstItems = ultraSrtNcstItems;
         return this;
     }
 
-    public WeatherData setUltraSrtFcstItemsDataWrapper(DataWrapper<UltraSrtFcstItems> ultraSrtFcstItemsDataWrapper)
+    public WeatherData setUltraSrtFcstItems(UltraSrtFcstItems ultraSrtFcstItems)
     {
-        this.ultraSrtFcstItemsDataWrapper = ultraSrtFcstItemsDataWrapper;
+        this.ultraSrtFcstItems = ultraSrtFcstItems;
         return this;
     }
 
-    public WeatherData setVilageFcstItemsDataWrapper(DataWrapper<VilageFcstItems> vilageFcstItemsDataWrapper)
+    public WeatherData setVilageFcstItems(VilageFcstItems vilageFcstItems)
     {
-        this.vilageFcstItemsDataWrapper = vilageFcstItemsDataWrapper;
+        this.vilageFcstItems = vilageFcstItems;
         return this;
     }
 
-    public WeatherData setMidLandFcstItemsDataWrapper(DataWrapper<MidLandFcstItems> midLandFcstItemsDataWrapper)
+    public WeatherData setMidLandFcstItems(MidLandFcstItems midLandFcstItems)
     {
-        this.midLandFcstItemsDataWrapper = midLandFcstItemsDataWrapper;
+        this.midLandFcstItems = midLandFcstItems;
         return this;
     }
 
-    public WeatherData setMidTaItemsDataWrapper(DataWrapper<MidTaItems> midTaItemsDataWrapper)
+    public WeatherData setMidTaItems(MidTaItems midTaItems)
     {
-        this.midTaItemsDataWrapper = midTaItemsDataWrapper;
+        this.midTaItems = midTaItems;
         return this;
     }
 
-    public DataWrapper<UltraSrtNcstData> getUltraSrtNcstFinalData()
+    public UltraSrtNcstData getUltraSrtNcstFinalData()
     {
         return ultraSrtNcstFinalData;
     }
 
-    public DataWrapper<List<UltraSrtFcstData>> getUltraSrtFcstFinalData()
+    public List<UltraSrtFcstData> getUltraSrtFcstFinalData()
     {
         return ultraSrtFcstFinalData;
     }
 
-    public DataWrapper<List<VilageFcstData>> getVilageFcstFinalData()
+    public List<VilageFcstData> getVilageFcstFinalData()
     {
         return vilageFcstFinalData;
     }
 
-    public DataWrapper<List<MidFcstData>> getMidFcstFinalData()
+    public List<MidFcstData> getMidFcstFinalData()
     {
         return midFcstFinalData;
     }
@@ -151,16 +142,12 @@ public class WeatherData
      */
     public WeatherData setUltraSrtNcstData()
     {
-        if (ultraSrtNcstItemsDataWrapper.getException() == null)
-        {
-            List<UltraSrtNcstItem> items = ultraSrtNcstItemsDataWrapper.getData().getItem();
-            UltraSrtNcstData ultraSrtNcstData = new UltraSrtNcstData(items);
 
-            ultraSrtNcstFinalData = new DataWrapper<UltraSrtNcstData>(ultraSrtNcstData);
-        } else
-        {
-            ultraSrtNcstFinalData = new DataWrapper<UltraSrtNcstData>(ultraSrtNcstItemsDataWrapper.getException());
-        }
+        List<UltraSrtNcstItem> items = ultraSrtNcstItems.getItem();
+        UltraSrtNcstData ultraSrtNcstData = new UltraSrtNcstData(items);
+
+        ultraSrtNcstFinalData = ultraSrtNcstData;
+
         return this;
     }
 
@@ -169,59 +156,53 @@ public class WeatherData
     */
     public WeatherData setMidFcstDataList()
     {
-        if (midLandFcstItemsDataWrapper.getException() == null && midTaItemsDataWrapper.getException() == null)
-        {
-            //중기예보 데이터 생성 3~10일후
-            Calendar copiedCalendar = (Calendar) downloadedDate.clone();
 
-            MidLandFcstItem midLandFcstData = midLandFcstItemsDataWrapper.getData().getItem().get(0);
-            MidTaItem midTaFcstData = midTaItemsDataWrapper.getData().getItem().get(0);
-            List<MidFcstData> midFcstDataList = new ArrayList<>();
+        //중기예보 데이터 생성 3~10일후
+        Calendar copiedCalendar = (Calendar) downloadedDate.clone();
 
-            //3일 후로 이동
-            copiedCalendar.add(Calendar.DAY_OF_YEAR, 3);
+        MidLandFcstItem midLandFcstData = midLandFcstItems.getItem().get(0);
+        MidTaItem midTaFcstData = midTaItems.getItem().get(0);
+        List<MidFcstData> midFcstDataList = new ArrayList<>();
 
-            midFcstDataList.add(new MidFcstData(ClockUtil.MdE_FORMAT.format(copiedCalendar.getTime()), midLandFcstData.getWf3Am(), midLandFcstData.getWf3Pm()
-                    , midLandFcstData.getRnSt3Am(), midLandFcstData.getRnSt3Pm(), midTaFcstData.getTaMin3(), midTaFcstData.getTaMax3()));
+        //3일 후로 이동
+        copiedCalendar.add(Calendar.DAY_OF_YEAR, 3);
 
-            copiedCalendar.add(Calendar.DAY_OF_YEAR, 1);
+        midFcstDataList.add(new MidFcstData(ClockUtil.MdE_FORMAT.format(copiedCalendar.getTime()), midLandFcstData.getWf3Am(), midLandFcstData.getWf3Pm()
+                , midLandFcstData.getRnSt3Am(), midLandFcstData.getRnSt3Pm(), midTaFcstData.getTaMin3(), midTaFcstData.getTaMax3()));
 
-            midFcstDataList.add(new MidFcstData(ClockUtil.MdE_FORMAT.format(copiedCalendar.getTime()), midLandFcstData.getWf4Am(), midLandFcstData.getWf4Pm()
-                    , midLandFcstData.getRnSt4Am(), midLandFcstData.getRnSt4Pm(), midTaFcstData.getTaMin4(), midTaFcstData.getTaMax4()));
+        copiedCalendar.add(Calendar.DAY_OF_YEAR, 1);
 
-            copiedCalendar.add(Calendar.DAY_OF_YEAR, 1);
+        midFcstDataList.add(new MidFcstData(ClockUtil.MdE_FORMAT.format(copiedCalendar.getTime()), midLandFcstData.getWf4Am(), midLandFcstData.getWf4Pm()
+                , midLandFcstData.getRnSt4Am(), midLandFcstData.getRnSt4Pm(), midTaFcstData.getTaMin4(), midTaFcstData.getTaMax4()));
 
-            midFcstDataList.add(new MidFcstData(ClockUtil.MdE_FORMAT.format(copiedCalendar.getTime()), midLandFcstData.getWf5Am(), midLandFcstData.getWf5Pm()
-                    , midLandFcstData.getRnSt5Am(), midLandFcstData.getRnSt5Pm(), midTaFcstData.getTaMin5(), midTaFcstData.getTaMax5()));
+        copiedCalendar.add(Calendar.DAY_OF_YEAR, 1);
 
-            copiedCalendar.add(Calendar.DAY_OF_YEAR, 1);
+        midFcstDataList.add(new MidFcstData(ClockUtil.MdE_FORMAT.format(copiedCalendar.getTime()), midLandFcstData.getWf5Am(), midLandFcstData.getWf5Pm()
+                , midLandFcstData.getRnSt5Am(), midLandFcstData.getRnSt5Pm(), midTaFcstData.getTaMin5(), midTaFcstData.getTaMax5()));
 
-            midFcstDataList.add(new MidFcstData(ClockUtil.MdE_FORMAT.format(copiedCalendar.getTime()), midLandFcstData.getWf6Am(), midLandFcstData.getWf6Pm()
-                    , midLandFcstData.getRnSt6Am(), midLandFcstData.getRnSt6Pm(), midTaFcstData.getTaMin6(), midTaFcstData.getTaMax6()));
+        copiedCalendar.add(Calendar.DAY_OF_YEAR, 1);
 
-            copiedCalendar.add(Calendar.DAY_OF_YEAR, 1);
+        midFcstDataList.add(new MidFcstData(ClockUtil.MdE_FORMAT.format(copiedCalendar.getTime()), midLandFcstData.getWf6Am(), midLandFcstData.getWf6Pm()
+                , midLandFcstData.getRnSt6Am(), midLandFcstData.getRnSt6Pm(), midTaFcstData.getTaMin6(), midTaFcstData.getTaMax6()));
 
-            midFcstDataList.add(new MidFcstData(ClockUtil.MdE_FORMAT.format(copiedCalendar.getTime()), midLandFcstData.getWf7Am(), midLandFcstData.getWf7Pm()
-                    , midLandFcstData.getRnSt7Am(), midLandFcstData.getRnSt7Pm(), midTaFcstData.getTaMin7(), midTaFcstData.getTaMax7()));
+        copiedCalendar.add(Calendar.DAY_OF_YEAR, 1);
 
-            copiedCalendar.add(Calendar.DAY_OF_YEAR, 1);
+        midFcstDataList.add(new MidFcstData(ClockUtil.MdE_FORMAT.format(copiedCalendar.getTime()), midLandFcstData.getWf7Am(), midLandFcstData.getWf7Pm()
+                , midLandFcstData.getRnSt7Am(), midLandFcstData.getRnSt7Pm(), midTaFcstData.getTaMin7(), midTaFcstData.getTaMax7()));
 
-            midFcstDataList.add(new MidFcstData(ClockUtil.MdE_FORMAT.format(copiedCalendar.getTime()), midLandFcstData.getWf8(), midLandFcstData.getRnSt8(), midTaFcstData.getTaMin8(), midTaFcstData.getTaMax8()));
+        copiedCalendar.add(Calendar.DAY_OF_YEAR, 1);
 
-            copiedCalendar.add(Calendar.DAY_OF_YEAR, 1);
+        midFcstDataList.add(new MidFcstData(ClockUtil.MdE_FORMAT.format(copiedCalendar.getTime()), midLandFcstData.getWf8(), midLandFcstData.getRnSt8(), midTaFcstData.getTaMin8(), midTaFcstData.getTaMax8()));
 
-            midFcstDataList.add(new MidFcstData(ClockUtil.MdE_FORMAT.format(copiedCalendar.getTime()), midLandFcstData.getWf9(), midLandFcstData.getRnSt9(), midTaFcstData.getTaMin9(), midTaFcstData.getTaMax9()));
+        copiedCalendar.add(Calendar.DAY_OF_YEAR, 1);
 
-            copiedCalendar.add(Calendar.DAY_OF_YEAR, 1);
+        midFcstDataList.add(new MidFcstData(ClockUtil.MdE_FORMAT.format(copiedCalendar.getTime()), midLandFcstData.getWf9(), midLandFcstData.getRnSt9(), midTaFcstData.getTaMin9(), midTaFcstData.getTaMax9()));
 
-            midFcstDataList.add(new MidFcstData(ClockUtil.MdE_FORMAT.format(copiedCalendar.getTime()), midLandFcstData.getWf10(), midLandFcstData.getRnSt10(), midTaFcstData.getTaMin10(), midTaFcstData.getTaMax10()));
+        copiedCalendar.add(Calendar.DAY_OF_YEAR, 1);
 
-            midFcstFinalData = new DataWrapper<>(midFcstDataList);
-        } else
-        {
-            midFcstFinalData = new DataWrapper<>(midLandFcstItemsDataWrapper.getException() != null ? midLandFcstItemsDataWrapper.getException() :
-                    midTaItemsDataWrapper.getException());
-        }
+        midFcstDataList.add(new MidFcstData(ClockUtil.MdE_FORMAT.format(copiedCalendar.getTime()), midLandFcstData.getWf10(), midLandFcstData.getRnSt10(), midTaFcstData.getTaMin10(), midTaFcstData.getTaMax10()));
+
+        midFcstFinalData = midFcstDataList;
         return this;
     }
 
@@ -230,52 +211,46 @@ public class WeatherData
     */
     public WeatherData setUltraSrtFcstDataList()
     {
-        if (ultraSrtFcstItemsDataWrapper.getException() == null)
+        String dateTime = null;
+        Map<String, List<UltraSrtFcstItem>> map = new HashMap<>();
+
+        List<UltraSrtFcstItem> items = ultraSrtFcstItems.getItem();
+
+        //데이터를 날짜별로 분류해서 map에 저장
+        for (UltraSrtFcstItem item : items)
         {
-            String dateTime = null;
-            Map<String, List<UltraSrtFcstItem>> map = new HashMap<>();
-
-            List<UltraSrtFcstItem> items = ultraSrtFcstItemsDataWrapper.getData().getItem();
-
-            //데이터를 날짜별로 분류해서 map에 저장
-            for (UltraSrtFcstItem item : items)
+            dateTime = item.getFcstDate() + item.getFcstTime();
+            if (map.get(dateTime) == null)
             {
-                dateTime = item.getFcstDate() + item.getFcstTime();
-                if (map.get(dateTime) == null)
-                {
-                    map.put(dateTime, new ArrayList<>());
-                }
-                map.get(dateTime).add(item);
+                map.put(dateTime, new ArrayList<>());
             }
-
-            //카테고리와 값으로 되어있는 데이터를 날짜별로 조합하여 초단기예보 객체를 생성
-            Set set = map.keySet();
-            Iterator iterator = set.iterator();
-
-            List<UltraSrtFcstData> ultraShortFcstDataList = new ArrayList<>();
-
-            while (iterator.hasNext())
-            {
-                ultraShortFcstDataList.add(new UltraSrtFcstData(map.get(iterator.next())));
-            }
-
-            //초단기예보 데이터 리스트를 날짜 오름차순으로 정렬
-            Collections.sort(ultraShortFcstDataList, (t1, t2) ->
-            {
-                if (t1.getDateTime().after(t2.getDateTime()))
-                {
-                    return 1;
-                } else
-                {
-                    return -1;
-                }
-            });
-
-            ultraSrtFcstFinalData = new DataWrapper<>(ultraShortFcstDataList);
-        } else
-        {
-            ultraSrtFcstFinalData = new DataWrapper<>(ultraSrtFcstItemsDataWrapper.getException());
+            map.get(dateTime).add(item);
         }
+
+        //카테고리와 값으로 되어있는 데이터를 날짜별로 조합하여 초단기예보 객체를 생성
+        Set set = map.keySet();
+        Iterator iterator = set.iterator();
+
+        List<UltraSrtFcstData> ultraShortFcstDataList = new ArrayList<>();
+
+        while (iterator.hasNext())
+        {
+            ultraShortFcstDataList.add(new UltraSrtFcstData(map.get(iterator.next())));
+        }
+
+        //초단기예보 데이터 리스트를 날짜 오름차순으로 정렬
+        Collections.sort(ultraShortFcstDataList, (t1, t2) ->
+        {
+            if (t1.getDateTime().after(t2.getDateTime()))
+            {
+                return 1;
+            } else
+            {
+                return -1;
+            }
+        });
+
+        ultraSrtFcstFinalData = ultraShortFcstDataList;
         return this;
     }
 
@@ -284,52 +259,48 @@ public class WeatherData
      */
     public WeatherData setVilageFcstDataList()
     {
-        if (vilageFcstItemsDataWrapper.getException() == null)
+
+        String dateTime = null;
+        Map<String, List<VilageFcstItem>> map = new HashMap<>();
+
+        List<VilageFcstItem> items = vilageFcstItems.getItem();
+
+        //데이터를 날짜별로 분류해서 map에 저장
+        for (VilageFcstItem item : items)
         {
-            String dateTime = null;
-            Map<String, List<VilageFcstItem>> map = new HashMap<>();
-
-            List<VilageFcstItem> items = vilageFcstItemsDataWrapper.getData().getItem();
-
-            //데이터를 날짜별로 분류해서 map에 저장
-            for (VilageFcstItem item : items)
+            dateTime = item.getFcstDate() + item.getFcstTime();
+            if (map.get(dateTime) == null)
             {
-                dateTime = item.getFcstDate() + item.getFcstTime();
-                if (map.get(dateTime) == null)
-                {
-                    map.put(dateTime, new ArrayList<>());
-                }
-                map.get(dateTime).add(item);
+                map.put(dateTime, new ArrayList<>());
             }
-
-            //카테고리와 값으로 되어있는 데이터를 날짜별로 조합하여 초단기예보 객체를 생성
-            Set set = map.keySet();
-            Iterator iterator = set.iterator();
-
-            List<VilageFcstData> vilageFcstDataList = new ArrayList<>();
-
-            while (iterator.hasNext())
-            {
-                vilageFcstDataList.add(new VilageFcstData(map.get(iterator.next())));
-            }
-
-            //동네예보 데이터 리스트를 날짜 오름차순으로 정렬
-            Collections.sort(vilageFcstDataList, (t1, t2) ->
-            {
-                if (t1.getDateTime().after(t2.getDateTime()))
-                {
-                    return 1;
-                } else
-                {
-                    return -1;
-                }
-            });
-
-            vilageFcstFinalData = new DataWrapper<>(vilageFcstDataList);
-        } else
-        {
-            vilageFcstFinalData = new DataWrapper<>(vilageFcstItemsDataWrapper.getException());
+            map.get(dateTime).add(item);
         }
+
+        //카테고리와 값으로 되어있는 데이터를 날짜별로 조합하여 초단기예보 객체를 생성
+        Set set = map.keySet();
+        Iterator iterator = set.iterator();
+
+        List<VilageFcstData> vilageFcstDataList = new ArrayList<>();
+
+        while (iterator.hasNext())
+        {
+            vilageFcstDataList.add(new VilageFcstData(map.get(iterator.next())));
+        }
+
+        //동네예보 데이터 리스트를 날짜 오름차순으로 정렬
+        Collections.sort(vilageFcstDataList, (t1, t2) ->
+        {
+            if (t1.getDateTime().after(t2.getDateTime()))
+            {
+                return 1;
+            } else
+            {
+                return -1;
+            }
+        });
+
+        vilageFcstFinalData = vilageFcstDataList;
+
         return this;
     }
 

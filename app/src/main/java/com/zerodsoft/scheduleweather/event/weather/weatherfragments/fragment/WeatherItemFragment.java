@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -15,6 +16,7 @@ import androidx.lifecycle.ViewModelProvider;
 import com.luckycatlabs.sunrisesunset.SunriseSunsetCalculator;
 import com.luckycatlabs.sunrisesunset.dto.Location;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.event.weather.weatherfragments.repository.WeatherDownloader;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.MidFcstParameter;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.VilageFcstParameter;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
@@ -44,12 +46,18 @@ public class WeatherItemFragment extends Fragment
     private MidFcstFragment midFcstFragment;
 
     private WeatherViewModel viewModel;
-
     private List<SunSetRiseData> sunSetRiseList = new ArrayList<>();
 
     public WeatherItemFragment(LocationDTO locationDTO)
     {
         this.locationDTO = locationDTO;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+
     }
 
     @Nullable
@@ -64,22 +72,17 @@ public class WeatherItemFragment extends Fragment
     {
         super.onViewCreated(view, savedInstanceState);
         FragmentManager fragmentManager = getChildFragmentManager();
+
         ultraSrtNcstFragment = (UltraSrtNcstFragment) fragmentManager.findFragmentById(R.id.ultra_srt_ncst_fragment);
         ultraSrtFcstFragment = (UltraSrtFcstFragment) fragmentManager.findFragmentById(R.id.ultra_srt_fcst_fragment);
         vilageFcstFragment = (VilageFcstFragment) fragmentManager.findFragmentById(R.id.vilage_fcst_fragment);
         midFcstFragment = (MidFcstFragment) fragmentManager.findFragmentById(R.id.mid_fcst_fragment);
-    }
 
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState)
-    {
-        super.onActivityCreated(savedInstanceState);
         VilageFcstParameter vilageFcstParameter = new VilageFcstParameter();
         MidFcstParameter midLandFcstParameter = new MidFcstParameter();
         MidFcstParameter midTaParameter = new MidFcstParameter();
 
-        LonLat lonLat = LonLatConverter.convertGrid(locationDTO.getLongitude(), locationDTO.getLatitude());
-        lonLat.setLongitude(locationDTO.getLongitude()).setLatitude(locationDTO.getLatitude());
+        final LonLat lonLat = LonLatConverter.convertGrid(locationDTO.getLongitude(), locationDTO.getLatitude());
 
         viewModel = new ViewModelProvider(this).get(WeatherViewModel.class);
         viewModel.init(getContext(), lonLat);
@@ -109,7 +112,6 @@ public class WeatherItemFragment extends Fragment
                             index = i;
                         }
                     }
-
                     // regId설정하는 코드 작성
                     WeatherAreaCodeDTO weatherAreaCode = weatherAreaCodes.get(index);
 
@@ -117,19 +119,26 @@ public class WeatherItemFragment extends Fragment
                     midLandFcstParameter.setNumOfRows("10").setPageNo("1").setRegId(weatherAreaCode.getMidLandFcstCode());
                     midTaParameter.setNumOfRows("10").setPageNo("1").setRegId(weatherAreaCode.getMidTaCode());
 
-                    viewModel.getAllWeathersData(vilageFcstParameter, midLandFcstParameter, midTaParameter, weatherAreaCode);
-                }
-            }
-        });
+                    // viewModel.getAllWeathersData(vilageFcstParameter, midLandFcstParameter, midTaParameter, weatherAreaCode);
 
-        viewModel.getWeatherDataLiveData().observe(getViewLifecycleOwner(), new Observer<List<WeatherData>>()
-        {
-            @Override
-            public void onChanged(List<WeatherData> weatherDataList)
-            {
-                if (weatherDataList != null)
-                {
-                    setWeatherData(weatherDataList.get(0));
+                    WeatherDownloader weatherDownloader = new WeatherDownloader(getContext())
+                    {
+                        @Override
+                        public void onSuccessful(WeatherData weatherData)
+                        {
+                            super.onSuccessful(weatherData);
+                            setWeatherData(weatherData);
+                        }
+
+                        @Override
+                        public void onFailure(Exception exception)
+                        {
+                            super.onFailure(exception);
+                            Toast.makeText(getActivity(), "날씨 데이터를 가져오기 실패", Toast.LENGTH_SHORT).show();
+                        }
+                    };
+
+                    weatherDownloader.getWeatherData(vilageFcstParameter, midLandFcstParameter, midTaParameter, weatherAreaCode);
                 }
             }
         });

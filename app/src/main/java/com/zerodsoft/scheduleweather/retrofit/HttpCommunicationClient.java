@@ -41,7 +41,7 @@ public class HttpCommunicationClient
 
     static
     {
-        client = new OkHttpClient.Builder().connectTimeout(15, TimeUnit.SECONDS).build();
+        client = new OkHttpClient.Builder().connectTimeout(10, TimeUnit.SECONDS).build();
         gson = new GsonBuilder().setLenient().create();
     }
 

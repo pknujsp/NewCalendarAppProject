@@ -5,10 +5,11 @@ import android.os.Parcelable;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.WeatherItems;
 
 import java.util.List;
 
-public class MidLandFcstItems implements Parcelable
+public class MidLandFcstItems extends WeatherItems implements Parcelable
 {
     @Expose
     @SerializedName("item")

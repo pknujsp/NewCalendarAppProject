@@ -82,6 +82,9 @@ public class LonLatConverter
         lonLat.setLatitude_seconds(LAT_SECONDS);
         lonLat.setLongitude_seconds(LON_SECONDS);
 
+        lonLat.setLatitude(latitude);
+        lonLat.setLongitude(longitude);
+
         return lonLat;
     }
 }
