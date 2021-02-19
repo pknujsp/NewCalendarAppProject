@@ -72,7 +72,7 @@ public class UltraSrtFcstFragment extends Fragment
         final int DP22 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 22f, getResources().getDisplayMetrics());
         final int DP34 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 34f, getResources().getDisplayMetrics());
 
-        List<UltraSrtFcstData> dataList = weatherData.getUltraSrtFcstFinalData().getData();
+        List<UltraSrtFcstData> dataList = weatherData.getUltraSrtFcstFinalData();
         final int DATA_SIZE = dataList.size();
         final int VIEW_WIDTH = DATA_SIZE * ITEM_WIDTH;
 

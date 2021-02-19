@@ -21,7 +21,6 @@ import com.zerodsoft.scheduleweather.utility.WeatherDataConverter;
 
 public class UltraSrtNcstFragment extends Fragment
 {
-
     private UltraSrtNcstData ultraSrtNcstData;
     private SunSetRiseData sunSetRiseData;
     private WeatherData weatherData;
@@ -62,7 +61,7 @@ public class UltraSrtNcstFragment extends Fragment
         //기온
         temp.setText(ultraSrtNcstData.getTemperature());
         //하늘상태
-        sky.setText(WeatherDataConverter.getSky(ultraSrtNcstData.getPrecipitationForm(), weatherData.getUltraSrtFcstFinalData().getData().get(0).getSky()));
+        sky.setText(WeatherDataConverter.getSky(ultraSrtNcstData.getPrecipitationForm(), weatherData.getUltraSrtFcstFinalData().get(0).getSky()));
         //습도
         humidity.setText(ultraSrtNcstData.getHumidity());
         //바람
@@ -74,13 +73,13 @@ public class UltraSrtNcstFragment extends Fragment
     {
         //SKY IMG설정
         boolean day = sunSetRiseData.getDate().after(sunSetRiseData.getSunset()) ? false : sunSetRiseData.getDate().before(sunSetRiseData.getSunrise()) ? false : true;
-        skyDrawable = getContext().getDrawable(WeatherDataConverter.getSkyDrawableId(weatherData.getUltraSrtFcstFinalData().getData().get(0).getSky(), ultraSrtNcstData.getPrecipitationForm(), day));
+        skyDrawable = getContext().getDrawable(WeatherDataConverter.getSkyDrawableId(weatherData.getUltraSrtFcstFinalData().get(0).getSky(), ultraSrtNcstData.getPrecipitationForm(), day));
     }
 
     public void setWeatherData(WeatherData weatherData, SunSetRiseData sunSetRiseData)
     {
         this.weatherData = weatherData;
-        this.ultraSrtNcstData = weatherData.getUltraSrtNcstFinalData().getData();
+        this.ultraSrtNcstData = weatherData.getUltraSrtNcstFinalData();
         this.sunSetRiseData = sunSetRiseData;
         init();
         setValue();

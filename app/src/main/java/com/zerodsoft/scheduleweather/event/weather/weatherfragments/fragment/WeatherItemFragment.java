@@ -134,7 +134,7 @@ public class WeatherItemFragment extends Fragment
                         public void onFailure(Exception exception)
                         {
                             super.onFailure(exception);
-                            Toast.makeText(getActivity(), "날씨 데이터를 가져오기 실패", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getActivity(), "날씨 데이터 다운로드 실패", Toast.LENGTH_SHORT).show();
                         }
                     };
 

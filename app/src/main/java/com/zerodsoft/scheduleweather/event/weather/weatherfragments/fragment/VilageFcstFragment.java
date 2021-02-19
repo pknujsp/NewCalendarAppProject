@@ -78,7 +78,7 @@ public class VilageFcstFragment extends Fragment
         final int DP34 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 34f, getResources().getDisplayMetrics());
         final int DP80 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 80f, getResources().getDisplayMetrics());
 
-        List<VilageFcstData> dataList = weatherData.getVilageFcstFinalData().getData();
+        List<VilageFcstData> dataList = weatherData.getVilageFcstFinalData();
         final int DATA_SIZE = dataList.size();
         final int VIEW_WIDTH = DATA_SIZE * ITEM_WIDTH;
 

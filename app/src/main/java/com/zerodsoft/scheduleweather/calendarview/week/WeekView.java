@@ -17,6 +17,7 @@ import android.view.View;
 import androidx.annotation.Nullable;
 import androidx.core.view.ViewCompat;
 
+import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendarview.hourside.HourEventsView;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
@@ -35,7 +36,6 @@ public class WeekView extends HourEventsView implements IEvent
     private boolean changingStartTime = false;
     private boolean changingEndTime = false;
 
-    private OnSwipeListener onSwipeListener;
     private OnEventItemClickListener onEventItemClickListener;
 
     private Calendar[] daysOfWeek;
@@ -52,11 +52,6 @@ public class WeekView extends HourEventsView implements IEvent
     public void setOnEventItemClickListener(OnEventItemClickListener onEventItemClickListener)
     {
         this.onEventItemClickListener = onEventItemClickListener;
-    }
-
-    public void setOnSwipeListener(OnSwipeListener onSwipeListener)
-    {
-        this.onSwipeListener = onSwipeListener;
     }
 
     public void setDaysOfWeek(Calendar[] daysOfWeek)
@@ -173,122 +168,11 @@ public class WeekView extends HourEventsView implements IEvent
         return point;
     }
 
-
-    /*
-    private PointF getTimePoint(TIME_CATEGORY timeCategory)
-    {
-        Calendar time = null;
-
-        if (timeCategory == TIME_CATEGORY.START)
-        {
-            time = (Calendar) startTime.clone();
-        } else
-        {
-            time = (Calendar) endTime.clone();
-        }
-
-        PointF point = new PointF(0f, 0f);
-
-        // x
-        for (int i = 0; i <= 6; i++)
-        {
-            if (isSameDay(time, coordinateInfos[i].getDate()))
-            {
-                point.x = coordinateInfos[i].getStartX();
-                break;
-            } else if (time.get(Calendar.HOUR_OF_DAY) == 0 && timeCategory == TIME_CATEGORY.END)
-            {
-                // endTime이 다음 날 오전12시 이후인 경우
-                Calendar t = (Calendar) endTime.clone();
-                t.add(Calendar.DATE, -1);
-                if (t.get(Calendar.DATE) == coordinateInfos[i].getDate().get(Calendar.DATE))
-                {
-                    point.x = coordinateInfos[i].getStartX();
-                    break;
-                }
-            }
-        }
-
-        // y
-        float startHour = currentTouchedPoint.y + SPACING_BETWEEN_HOURS * time.get(Calendar.HOUR_OF_DAY);
-        float endHour = currentTouchedPoint.y + SPACING_BETWEEN_HOURS * (time.get(Calendar.HOUR_OF_DAY) + 1);
-
-        if (time.get(Calendar.HOUR_OF_DAY) == 0 && timeCategory == TIME_CATEGORY.END)
-        {
-            startHour = currentTouchedPoint.y + SPACING_BETWEEN_HOURS * 24;
-            // 다음 날 오전1시
-            endHour = currentTouchedPoint.y + SPACING_BETWEEN_HOURS * 25;
-        }
-        float minute15Height = (endHour - startHour) / 4f;
-
-        for (int j = 0; j <= 3; j++)
-        {
-            if (time.get(Calendar.MINUTE) == j * 15)
-            {
-                point.y = startHour + minute15Height * j;
-                break;
-            }
-        }
-        return point;
-    }
-
-
-
-
-    private boolean setStartTime(float x, float y)
-    {
-        if (coordinateInfos == null)
-        {
-            coordinateInfos = coordinateInfoInterface.getArray();
-        }
-
-        for (int i = 0; i <= 6; i++)
-        {
-            if (x >= coordinateInfos[i].getStartX() && x < coordinateInfos[i].getEndX())
-            {
-                startTime = (Calendar) coordinateInfos[i].getDate().clone();
-                break;
-            }
-        }
-
-        float startHour, endHour;
-
-        for (int i = 0; i <= 23; i++)
-        {
-            startHour = currentTouchedPoint.y + SPACING_BETWEEN_HOURS * i;
-            endHour = currentTouchedPoint.y + SPACING_BETWEEN_HOURS * (i + 1);
-
-            if (y >= startHour && y < endHour)
-            {
-                float minute15Height = (endHour - startHour) / 4f;
-                y = y - startHour;
-
-                for (int j = 0; j <= 3; j++)
-                {
-                    if (y >= minute15Height * j && y <= minute15Height * (j + 1))
-                    {
-                        int year = startTime.get(Calendar.YEAR), month = startTime.get(Calendar.MONTH), date = startTime.get(Calendar.DAY_OF_MONTH);
-                        startTime.set(year, month, date, i, j * 15);
-                        endTime = (Calendar) startTime.clone();
-                        endTime.add(Calendar.HOUR_OF_DAY, 1);
-
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-
-    }
-
-     */
-
     public void clear()
     {
         eventSparseArr.clear();
         removeAllViews();
     }
-
 
     @Override
     public void setEventTable()
@@ -503,7 +387,6 @@ public class WeekView extends HourEventsView implements IEvent
             } else if (currentScrollDirection == SCROLL_DIRECTION.NONE)
             {
                 currentScrollDirection = SCROLL_DIRECTION.VERTICAL;
-                onSwipeListener.onSwiped(true);
             }
 
             ViewCompat.postInvalidateOnAnimation(WeekView.this);
@@ -617,7 +500,8 @@ public class WeekView extends HourEventsView implements IEvent
             itemCell.eventTextPaint = EventUtil.getEventTextPaint(EVENT_TEXT_HEIGHT);
 
             canvas.drawRect(EVENT_RECT_MARGIN, 0, getWidth() - EVENT_RECT_MARGIN, getHeight(), itemCell.eventColorPaint);
-            canvas.drawText(itemCell.instance.getAsString(CalendarContract.Instances.TITLE), TEXT_MARGIN + EVENT_RECT_MARGIN, EVENT_TEXT_HEIGHT + TEXT_MARGIN, itemCell.eventTextPaint);
+            canvas.drawText(itemCell.instance.getAsString(CalendarContract.Instances.TITLE) == null ?
+                    context.getString(R.string.empty_title) : itemCell.instance.getAsString(CalendarContract.Instances.TITLE), TEXT_MARGIN + EVENT_RECT_MARGIN, EVENT_TEXT_HEIGHT + TEXT_MARGIN, itemCell.eventTextPaint);
         }
     }
 }

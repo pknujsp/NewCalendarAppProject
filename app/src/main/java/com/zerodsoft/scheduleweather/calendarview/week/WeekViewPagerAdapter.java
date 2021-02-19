@@ -28,7 +28,7 @@ import java.util.Date;
 import java.util.List;
 
 
-public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdapter.WeekViewPagerHolder> implements OnSwipeListener, DateGetter
+public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdapter.WeekViewPagerHolder> implements DateGetter
 {
     private SparseArray<WeekViewPagerHolder> holderSparseArray = new SparseArray<>();
     final private Calendar CALENDAR;
@@ -93,13 +93,6 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
         return Integer.MAX_VALUE;
     }
 
-
-    @Override
-    public void onSwiped(boolean value)
-    {
-
-    }
-
     @Override
     public Date getDate(int position, int index)
     {
@@ -125,7 +118,6 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
 
             weekView = (WeekView) view.findViewById(R.id.week_view);
             weekHeaderView = (WeekHeaderView) view.findViewById(R.id.week_header);
-            weekView.setOnSwipeListener(WeekViewPagerAdapter.this::onSwiped);
             weekView.setOnEventItemClickListener(onEventItemClickListener);
             weekHeaderView.setOnEventItemClickListener(onEventItemClickListener);
         }
@@ -190,9 +182,4 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
     }
 
 
-}
-
-interface OnSwipeListener
-{
-    void onSwiped(boolean value);
 }

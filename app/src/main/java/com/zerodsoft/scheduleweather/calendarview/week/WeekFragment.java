@@ -78,11 +78,6 @@ public class WeekFragment extends Fragment implements IRefreshView
         weekViewPager.registerOnPageChangeCallback(onPageChangeCallback);
     }
 
-    public void setViewPagerSwipe(boolean value)
-    {
-        weekViewPager.setUserInputEnabled(!value);
-    }
-
     @Override
     public void onStart()
     {
@@ -127,23 +122,6 @@ public class WeekFragment extends Fragment implements IRefreshView
 
             iToolbar.setMonth(copiedCalendar.getTime());
             // 일정 목록을 가져와서 표시함 header view, week view
-            weekViewPager.setUserInputEnabled(false);
-            new Thread(new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    try
-                    {
-                        Thread.sleep(400);
-                        weekViewPager.setUserInputEnabled(true);
-                    } catch (InterruptedException e)
-                    {
-                        e.printStackTrace();
-                    }
-
-                }
-            }).start();
         }
     }
 

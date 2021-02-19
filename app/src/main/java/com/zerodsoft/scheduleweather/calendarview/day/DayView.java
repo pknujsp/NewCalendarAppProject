@@ -14,6 +14,7 @@ import android.widget.OverScroller;
 import androidx.annotation.Nullable;
 import androidx.core.view.GestureDetectorCompat;
 
+import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.calendarview.week.WeekFragment;
@@ -43,8 +44,6 @@ public class DayView extends HourEventsView implements IEvent
     public DayView(Context context, @Nullable AttributeSet attrs)
     {
         super(context, attrs);
-        //  gestureDetector = new GestureDetectorCompat(context, onGestureListener);
-        //  overScroller = new OverScroller(context);
     }
 
     public void setDate(Date date)
@@ -327,7 +326,9 @@ public class DayView extends HourEventsView implements IEvent
             itemCell.eventTextPaint = EventUtil.getEventTextPaint(EVENT_TEXT_HEIGHT);
 
             canvas.drawRect(0, 0, getWidth(), getHeight(), itemCell.eventColorPaint);
-            canvas.drawText(itemCell.instance.getAsString(CalendarContract.Instances.TITLE), TEXT_MARGIN, EVENT_TEXT_HEIGHT + TEXT_MARGIN, itemCell.eventTextPaint);
+            canvas.drawText(itemCell.instance.getAsString(CalendarContract.Instances.TITLE) == null ?
+                            context.getString(R.string.empty_title) : itemCell.instance.getAsString(CalendarContract.Instances.TITLE)
+                    , TEXT_MARGIN, EVENT_TEXT_HEIGHT + TEXT_MARGIN, itemCell.eventTextPaint);
         }
 
     }

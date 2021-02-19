@@ -76,7 +76,7 @@ public class MidFcstFragment extends Fragment
         final int CHANCE_OF_SHOWER_HEIGHT = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 30f, getResources().getDisplayMetrics());
         final int TEMP_HEIGHT = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 90f, getResources().getDisplayMetrics());
 
-        List<MidFcstData> dataList = weatherData.getMidFcstFinalData().getData();
+        List<MidFcstData> dataList = weatherData.getMidFcstFinalData();
         final int DATA_SIZE = dataList.size();
         final int VIEW_WIDTH = DATA_SIZE * COLUMN_WIDTH;
         Context context = getContext();

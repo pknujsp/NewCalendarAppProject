@@ -1,6 +1,7 @@
 package com.zerodsoft.scheduleweather.calendarview.adapter;
 
 import android.content.ContentValues;
+import android.content.Context;
 import android.provider.CalendarContract;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -23,6 +24,7 @@ public class EventsInfoRecyclerViewAdapter extends RecyclerView.Adapter<EventsIn
 {
     private List<ContentValues> instances;
     private OnEventItemClickListener onEventItemClickListener;
+    private Context context;
     private Float VIEW_MARGIN;
     private final long BEGIN;
     private final long END;
@@ -38,6 +40,7 @@ public class EventsInfoRecyclerViewAdapter extends RecyclerView.Adapter<EventsIn
     @Override
     public EventsInfoViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType)
     {
+        this.context = parent.getContext();
         this.VIEW_MARGIN = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 12f, parent.getContext().getResources().getDisplayMetrics());
         return new EventsInfoViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.events_info_list_item, parent, false));
     }
@@ -103,7 +106,8 @@ public class EventsInfoRecyclerViewAdapter extends RecyclerView.Adapter<EventsIn
 
             eventView.setLayoutParams(layoutParams);
             eventView.setBackgroundColor(EventUtil.getColor(instances.get(position).getAsInteger(CalendarContract.Instances.EVENT_COLOR)));
-            eventView.setText(instances.get(position).getAsString(CalendarContract.Instances.TITLE));
+            eventView.setText(instances.get(position).getAsString(CalendarContract.Instances.TITLE) == null ?
+                    context.getString(R.string.empty_title) : instances.get(position).getAsString(CalendarContract.Instances.TITLE));
         }
     }
 

@@ -20,7 +20,6 @@ public class WeatherViewModel extends ViewModel
     private WeatherRepository weatherRepository;
 
     private LiveData<List<WeatherAreaCodeDTO>> areaCodeLiveData;
-    private MutableLiveData<List<WeatherData>> weatherDataLiveData;
 
     public void init(Context context, LonLat lonLat)
     {
@@ -40,14 +39,4 @@ public class WeatherViewModel extends ViewModel
         return this;
     }
 
-    public void getAllWeathersData(VilageFcstParameter vilageFcstParameter, MidFcstParameter midLandFcstParameter, MidFcstParameter midTaFcstParameter, WeatherAreaCodeDTO weatherAreaCode)
-    {
-        weatherRepository.getAllWeathersData(vilageFcstParameter, midLandFcstParameter, midTaFcstParameter, weatherAreaCode);
-    }
-
-    public MutableLiveData<List<WeatherData>> getWeatherDataLiveData()
-    {
-        weatherDataLiveData = weatherRepository.getWeatherDataLiveData();
-        return weatherDataLiveData;
-    }
 }

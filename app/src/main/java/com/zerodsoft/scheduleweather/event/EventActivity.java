@@ -53,8 +53,6 @@ import java.util.GregorianCalendar;
 
 public class EventActivity extends AppCompatActivity implements ILocation, IFab, IPermission
 {
-
-
     private ActivityScheduleInfoBinding binding;
     private LocationViewModel locationViewModel;
     private CalendarViewModel calendarViewModel;
@@ -578,7 +576,13 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab,
     @Override
     public boolean hasSimpleLocation()
     {
-        return eventFragment.getInstance().containsKey(CalendarContract.Instances.EVENT_LOCATION);
+        boolean result = false;
+
+        if (eventFragment.getInstance().getAsString(CalendarContract.Instances.EVENT_LOCATION) != null)
+        {
+            result = !eventFragment.getInstance().getAsString(CalendarContract.Instances.EVENT_LOCATION).isEmpty();
+        }
+        return result;
     }
 
 

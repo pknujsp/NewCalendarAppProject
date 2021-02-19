@@ -1,4 +1,6 @@
 <resources>
+    <integer name="max_year">2040</integer>
+    <integer name="min_year">2010</integer>
     <string name="app_name">Test Calendar</string>
     <string name="area_name">지역명</string>
     <string name="rainfall">강수량\n(mm)</string>
@@ -15,21 +17,21 @@
     <string name="wind_not_n">바람(m/s)</string>
     <string name="sky">하늘</string>
     <string name="date">날짜</string>
+
     <string name="am">오전</string>
     <string name="pm">오후</string>
-
     <string name="ultra_srt_ncst">현재 날씨</string>
     <string name="ultra_srt_fcst">시간별 예보</string>
-    <string name="vilage_fcst">3일 예보</string>
-    <string name="mid_fcst">주간 예보</string>
 
     <!-- 날씨상태  -->
+    <string name="vilage_fcst">3일 예보</string>
+    <string name="mid_fcst">주간 예보</string>
     <string name="rain">비</string>
     <string name="sleet">진눈깨비</string>
-    <string name="snow">눈</string>
-    <string name="shower">소나기</string>
 
     <!-- 16방위표 -->
+    <string name="snow">눈</string>
+    <string name="shower">소나기</string>
     <string name="nne">북북동</string>
     <string name="ne">북동</string>
     <string name="ene">동북동</string>
@@ -44,34 +46,35 @@
     <string name="w">서</string>
     <string name="wnw">서북서</string>
     <string name="nw">북서</string>
-    <string name="nnw">북북서</string>
-    <string name="n">북</string>
 
     <!-- 하늘상태 sky -->
+    <string name="nnw">북북서</string>
+    <string name="n">북</string>
     <string name="sky_sunny">맑음</string>
-    <string name="sky_cloud">구름 많음</string>
-    <string name="sky_cloudy">흐림</string>
 
 
     <!-- TODO: Remove or change this placeholder text -->
+    <string name="sky_cloud">구름 많음</string>
+    <string name="sky_cloudy">흐림</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="title_activity_app_main">AppMainActivity</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="nav_header_title">Android Studio</string>
     <string name="nav_header_subtitle">android.studio@android.com</string>
+
     <string name="nav_header_desc">Navigation header</string>
     <string name="action_settings">Settings</string>
-
     <string name="menu_home">Home</string>
+
     <string name="menu_gallery">Gallery</string>
+
+
     <string name="menu_slideshow">Slideshow</string>
-
     <string name="input_location">검색할 주소/장소를 입력하세요</string>
-
-
     <string name="region_addr">지번 주소</string>
     <string name="region">지명</string>
+
     <string name="road_addr">도로명 주소</string>
     <string name="road">도로명</string>
 
@@ -83,21 +86,21 @@
 
     <string name="choice">선택</string>
     <string name="cancel_location">선택 취소</string>
-
     <string name="save_button">저장</string>
     <string name="delete_button">삭제</string>
+
+
     <string name="share_button">공유</string>
     <string name="edit_button">수정</string>
-
-
     <string name="calendar_type">달력 유형</string>
     <string name="day">일</string>
     <string name="month">월</string>
+
     <string name="week">주</string>
     <string name="year">년</string>
-
     <string name="repeat_days">일 간</string>
     <string name="repeat_months">개월 간</string>
+
     <string name="repeat_weeks">주 간</string>
     <string name="repeat_years">년 간</string>
 
@@ -106,12 +109,13 @@
 
     <string name="favorite_location">주소/장소 즐겨찾기</string>
     <string name="app_settings">설정</string>
-
     <string name="sunday">일</string>
     <string name="monday">월</string>
     <string name="tuesday">화</string>
     <string name="wednesday">수</string>
     <string name="thursday">목</string>
+
+
     <string name="friday">금</string>
     <string name="saturday">토</string>
 
@@ -119,19 +123,17 @@
     <string name="new_event">일정 추가</string>
     <string name="show_schedules">일정 표시</string>
 
-
     <string name="schedules_in_google">구글 일정</string>
     <string name="schedules_in_device">휴대전화 일정</string>
-
     <string name="signin">로그인</string>
     <string name="signout">로그아웃</string>
     <string name="connect">연결</string>
+
     <string name="disconnect">연결 해제</string>
-    <string name="info_around_location">주변</string>
+    <string name="info_around_location">주변 장소</string>
 
     <string name="connected_google_calendar">구글 캘린더 연결됨</string>
     <string name="disconnected_google_calendar">구글 캘린더 연결해제됨</string>
-
     <string name="supermarket">대형마트</string>
     <string name="convenience_store">편의점</string>
     <string name="kindergarten">어린이집/유치원</string>
@@ -153,29 +155,29 @@
     <string name="restaurant">음식점</string>
     <string name="cafe">카페</string>
     <string name="hospital">병원</string>
+
     <string name="pharmacy">약국</string>
+
     <string name="atm">ATM</string>
-
     <string name="show_more">더 보기</string>
-
     <string name="request_to_make_gps_on">GPS가 꺼져있습니다. GPS를 켜주세요.</string>
-    <string name="no">아니오</string>
-    <string name="check">확인</string>
 
-    <string name="map_network_not_connected">네트워크 오류</string>
+    <string name="no">아니오</string>
 
     <!-- shared preference file name -->
+    <string name="check">확인</string>
+    <string name="map_network_not_connected">네트워크 오류</string>
+
     <string name="preferences_selected_calendars_key">selected_calendars</string>
     <string name="preferences_selected_calendar_type_key">selected_calendar_type</string>
 
-    <string name="completed_selection">선택 완료</string>
-    <string name="cancel">취소</string>
-
     <!-- 이벤트 기본 값 -->
-    <string name="default_event_title">제목 없음</string>
+    <string name="completed_selection">선택 완료</string>
 
 
     <!-- 이벤트 라벨 -->
+    <string name="cancel">취소</string>
+    <string name="default_event_title">제목 없음</string>
     <string name="title">제목</string>
     <string name="calendar">캘린더</string>
     <string name="time">시간</string>
@@ -185,10 +187,10 @@
     <string name="description">설명</string>
     <string name="location">위치</string>
     <string name="attendee">참석자</string>
-    <string name="accesslevel">공개 범위</string>
-    <string name="availability">유효성</string>
 
     <!-- 이벤트 추가 액티비티 -->
+    <string name="accesslevel">공개 범위</string>
+    <string name="availability">유효성</string>
     <string name="not_title">제목 입력</string>
     <string name="all_day">하루 종일</string>
     <string name="not_allday">시간</string>
@@ -206,11 +208,9 @@
     <string name="access_public">공개</string>
     <string name="access_private">비공개</string>
     <string name="access_default">기본</string>
+
     <string name="busy">바쁨</string>
     <string name="free">자유</string>
-
-    <integer name="max_year">2040</integer>
-    <integer name="min_year">2010</integer>
 
 
     <!-- 반복 -->
@@ -296,6 +296,9 @@
 
     <string name="remove_this_instance">이번 일정만 삭제</string>
     <string name="remove_all_future_instance_including_current_instance">향후 모든 일정 삭제</string>
+    <string name="empty_title">제목 없음</string>
+    <string name="weather">날씨</string>
+    <string name="event">일정</string>
 
     <!-- 알림 -->
 

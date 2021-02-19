@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
@@ -178,6 +179,9 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
         intent.putExtra("end", viewEnd);
 
         istartActivity.startActivityResult(intent, 0);
+
+        DialogFragment fragment = (DialogFragment) getParentFragmentManager().findFragmentByTag(InstanceListOnDayFragment.TAG);
+        fragment.dismiss();
     }
 }
 
