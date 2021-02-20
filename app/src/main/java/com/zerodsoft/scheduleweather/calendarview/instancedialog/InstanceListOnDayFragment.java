@@ -13,7 +13,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.provider.CalendarContract;
-import android.util.ArraySet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,7 +24,7 @@ import com.zerodsoft.scheduleweather.activity.main.AppMainActivity;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
-import com.zerodsoft.scheduleweather.calendarview.adapter.EventsInfoRecyclerViewAdapter;
+import com.zerodsoft.scheduleweather.calendarview.instancedialog.adapter.EventsInfoRecyclerViewAdapter;
 import com.zerodsoft.scheduleweather.calendarview.callback.EventCallback;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
@@ -35,7 +34,6 @@ import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 public class InstanceListOnDayFragment extends DialogFragment
 {

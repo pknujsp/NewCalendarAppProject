@@ -326,9 +326,23 @@ public class DayView extends HourEventsView implements IEvent
             itemCell.eventTextPaint = EventUtil.getEventTextPaint(EVENT_TEXT_HEIGHT);
 
             canvas.drawRect(0, 0, getWidth(), getHeight(), itemCell.eventColorPaint);
-            canvas.drawText(itemCell.instance.getAsString(CalendarContract.Instances.TITLE) == null ?
-                            context.getString(R.string.empty_title) : itemCell.instance.getAsString(CalendarContract.Instances.TITLE)
-                    , TEXT_MARGIN, EVENT_TEXT_HEIGHT + TEXT_MARGIN, itemCell.eventTextPaint);
+
+            final float titleX = TEXT_MARGIN;
+            final float titleY = EVENT_TEXT_HEIGHT + TEXT_MARGIN;
+
+            if (itemCell.instance.getAsString(CalendarContract.Instances.TITLE) != null)
+            {
+                if (!itemCell.instance.getAsString(CalendarContract.Instances.TITLE).isEmpty())
+                {
+                    canvas.drawText(itemCell.instance.getAsString(CalendarContract.Instances.TITLE), titleX, titleY, itemCell.eventTextPaint);
+                } else
+                {
+                    canvas.drawText(getContext().getString(R.string.empty_title), titleX, titleY, itemCell.eventTextPaint);
+                }
+            } else
+            {
+                canvas.drawText(getContext().getString(R.string.empty_title), titleX, titleY, itemCell.eventTextPaint);
+            }
         }
 
     }

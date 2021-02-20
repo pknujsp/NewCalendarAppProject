@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.calendarview.adapter;
+package com.zerodsoft.scheduleweather.calendarview.instancedialog.adapter;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -16,8 +16,6 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
 
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 public class EventsInfoRecyclerViewAdapter extends RecyclerView.Adapter<EventsInfoRecyclerViewAdapter.EventsInfoViewHolder>
@@ -106,8 +104,20 @@ public class EventsInfoRecyclerViewAdapter extends RecyclerView.Adapter<EventsIn
 
             eventView.setLayoutParams(layoutParams);
             eventView.setBackgroundColor(EventUtil.getColor(instances.get(position).getAsInteger(CalendarContract.Instances.EVENT_COLOR)));
-            eventView.setText(instances.get(position).getAsString(CalendarContract.Instances.TITLE) == null ?
-                    context.getString(R.string.empty_title) : instances.get(position).getAsString(CalendarContract.Instances.TITLE));
+
+            if (instances.get(position).getAsString(CalendarContract.Instances.TITLE) != null)
+            {
+                if (instances.get(position).getAsString(CalendarContract.Instances.TITLE).isEmpty())
+                {
+                    eventView.setText(context.getString(R.string.empty_title));
+                } else
+                {
+                    eventView.setText(instances.get(position).getAsString(CalendarContract.Instances.TITLE));
+                }
+            } else
+            {
+                eventView.setText(context.getString(R.string.empty_title));
+            }
         }
     }
 

@@ -15,6 +15,7 @@ import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IEvent;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
@@ -211,8 +212,26 @@ public class MonthCalendarView extends ViewGroup implements IEvent
                     eventData.setEventTextPaint(EventUtil.getEventTextPaint(EVENT_TEXT_HEIGHT));
 
                     canvas.drawRect(left, top, right, bottom, eventData.getEventColorPaint());
-                    canvas.drawText(event.getAsString(CalendarContract.Instances.TITLE) != null ? event.getAsString(CalendarContract.Instances.TITLE) : "empty"
-                            , left + TEXT_MARGIN, bottom - TEXT_MARGIN, eventData.getEventTextPaint());
+
+                    final float titleX = left + TEXT_MARGIN;
+                    final float titleY = bottom - TEXT_MARGIN;
+
+                    if (event.getAsString(CalendarContract.Instances.TITLE) != null)
+                    {
+                        if (event.getAsString(CalendarContract.Instances.TITLE).isEmpty())
+                        {
+                            canvas.drawText(getContext().getString(R.string.empty_title)
+                                    , titleX, titleY, eventData.getEventTextPaint());
+                        } else
+                        {
+                            canvas.drawText(event.getAsString(CalendarContract.Instances.TITLE)
+                                    , titleX, titleY, eventData.getEventTextPaint());
+                        }
+                    } else
+                    {
+                        canvas.drawText(getContext().getString(R.string.empty_title)
+                                , titleX, titleY, eventData.getEventTextPaint());
+                    }
                 }
             }
         }

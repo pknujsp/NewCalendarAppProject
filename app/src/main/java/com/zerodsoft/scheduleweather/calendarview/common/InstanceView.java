@@ -76,8 +76,23 @@ public class InstanceView extends View
         if (instance.size() > 0)
         {
             canvas.drawRect(0, 0, getWidth(), getHeight(), instanceViewPaint);
-            canvas.drawText(instance.getAsString(CalendarContract.Instances.TITLE) != null ? instance.getAsString(CalendarContract.Instances.TITLE) : "empty"
-                    , TEXT_LEFT_MARGIN, getHeight() / 2f + TEXT_HEIGHT.floatValue() / 2f, instanceTextPaint);
+
+            final float titleX = TEXT_LEFT_MARGIN;
+            final float titleY = getHeight() / 2f + TEXT_HEIGHT.floatValue() / 2f;
+
+            if (instance.getAsString(CalendarContract.Instances.TITLE) != null)
+            {
+                if (!instance.getAsString(CalendarContract.Instances.TITLE).isEmpty())
+                {
+                    canvas.drawText(instance.getAsString(CalendarContract.Instances.TITLE), titleX, titleY, instanceTextPaint);
+                } else
+                {
+                    canvas.drawText(getContext().getString(R.string.empty_title), titleX, titleY, instanceTextPaint);
+                }
+            } else
+            {
+                canvas.drawText(getContext().getString(R.string.empty_title), titleX, titleY, instanceTextPaint);
+            }
         } else
         {
             final Paint MORE_VIEW_PAINT = new Paint();

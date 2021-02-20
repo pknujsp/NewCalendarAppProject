@@ -19,6 +19,7 @@ import android.provider.CalendarContract;
 import android.util.ArraySet;
 import android.view.View;
 import android.widget.ExpandableListView;
+import android.widget.QuickContactBadge;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -86,6 +87,18 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
     public static final int DELETED_EVENT = 10000;
     public static final int EXCEPTED_INSTANCE = 10001;
 
+    private final View.OnClickListener currMonthOnClickListener = new View.OnClickListener()
+    {
+        /*
+        캘린더의 타입에 따라 다른 정보를 보여준다.
+         */
+        @Override
+        public void onClick(View view)
+        {
+
+        }
+    };
+
     public static int getDisplayHeight()
     {
         return DISPLAY_HEIGHT;
@@ -128,6 +141,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
         View customToolbar = getLayoutInflater().inflate(R.layout.app_main_toolbar, null);
         actionBar.setCustomView(customToolbar);
         currMonthTextView = (TextView) customToolbar.findViewById(R.id.calendar_month);
+        currMonthTextView.setOnClickListener(currMonthOnClickListener);
 
         calendarTransactionFragment = new EventTransactionFragment(this);
         getSupportFragmentManager().beginTransaction().add(R.id.calendar_layout, calendarTransactionFragment, EventTransactionFragment.TAG).commit();
@@ -653,7 +667,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
         connectedCalendarList.add(calendar);
         editor.putString(key, key);
         editor.commit();
-        
+
         calendarTransactionFragment.refreshCalendar();
     }
 

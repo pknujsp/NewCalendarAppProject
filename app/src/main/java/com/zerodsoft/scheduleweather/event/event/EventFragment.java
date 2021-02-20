@@ -30,6 +30,7 @@ import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.utility.RecurrenceRule;
 import com.zerodsoft.scheduleweather.utility.model.ReminderDto;
 
+import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -38,6 +39,9 @@ public class EventFragment extends Fragment
 {
     // 참석자가 있는 경우 참석 여부 표시
     // 알림 값을 클릭하면 알림표시를 하는 시각을 보여준다
+    /*
+    공휴일인 경우 : 제목, 날짜, 이벤트 색상, 캘린더 정보만 출력
+     */
     private EventFragmentBinding binding;
     private ContentValues instance;
     private List<ContentValues> attendeeList;
@@ -87,12 +91,7 @@ public class EventFragment extends Fragment
         binding.eventDatetimeView.allDaySwitchLayout.setVisibility(View.GONE);
         binding.eventDatetimeView.startTime.setVisibility(View.GONE);
         binding.eventDatetimeView.endTime.setVisibility(View.GONE);
-    }
 
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState)
-    {
-        super.onActivityCreated(savedInstanceState);
         viewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
 
         viewModel.init(getContext());
@@ -129,6 +128,7 @@ public class EventFragment extends Fragment
                             {
                                 binding.eventAttendeesView.notAttendees.setVisibility(View.VISIBLE);
                                 binding.eventAttendeesView.eventAttendeesTable.setVisibility(View.GONE);
+                                binding.eventAttendeesView.getRoot().setVisibility(View.GONE);
                             } else
                             {
                                 binding.eventAttendeesView.notAttendees.setVisibility(View.GONE);
@@ -161,6 +161,7 @@ public class EventFragment extends Fragment
                             {
                                 binding.eventRemindersView.notReminder.setVisibility(View.VISIBLE);
                                 binding.eventRemindersView.remindersTable.setVisibility(View.GONE);
+                                binding.eventRemindersView.getRoot().setVisibility(View.GONE);
                             } else
                             {
                                 binding.eventRemindersView.notReminder.setVisibility(View.GONE);
@@ -252,8 +253,19 @@ public class EventFragment extends Fragment
         // 제목, 캘린더, 시간, 시간대, 반복, 알림, 설명, 위치, 공개범위, 유효성, 참석자
         // 캘린더, 시간대, 참석자 정보는 따로 불러온다.
         //제목
-        binding.eventTitle.setText(instance.getAsString(CalendarContract.Instances.TITLE) == null ? "EMPTY" :
-                instance.getAsString(CalendarContract.Instances.TITLE));
+        if (instance.getAsString(CalendarContract.Instances.TITLE) != null)
+        {
+            if (!instance.getAsString(CalendarContract.Instances.TITLE).isEmpty())
+            {
+                binding.eventTitle.setText(instance.getAsString(CalendarContract.Instances.TITLE));
+            } else
+            {
+                binding.eventTitle.setText(getString(R.string.empty_title));
+            }
+        } else
+        {
+            binding.eventTitle.setText(getString(R.string.empty_title));
+        }
         //캘린더
         setCalendarText();
 
@@ -276,6 +288,9 @@ public class EventFragment extends Fragment
         if (instance.getAsString(CalendarContract.Instances.RRULE) != null)
         {
             setRecurrenceText(instance.getAsString(CalendarContract.Instances.RRULE));
+        } else
+        {
+            binding.eventRecurrenceView.getRoot().setVisibility(View.GONE);
         }
 
         // 알람
@@ -287,14 +302,39 @@ public class EventFragment extends Fragment
             // 알람이 없으면 알람 테이블을 숨기고, 알람 없음 텍스트를 표시한다.
             binding.eventRemindersView.notReminder.setVisibility(View.VISIBLE);
             binding.eventRemindersView.remindersTable.setVisibility(View.GONE);
+            binding.eventRemindersView.getRoot().setVisibility(View.GONE);
         }
 
         // 설명
         binding.eventDescriptionView.descriptionEdittext.setVisibility(View.GONE);
-        binding.eventDescriptionView.descriptionTextview.setText(instance.getAsString(CalendarContract.Instances.DESCRIPTION) != null ? instance.getAsString(CalendarContract.Instances.DESCRIPTION)
-                : "");
+        if (instance.getAsString(CalendarContract.Instances.DESCRIPTION) != null)
+        {
+            if (!instance.getAsString(CalendarContract.Instances.DESCRIPTION).isEmpty())
+            {
+                binding.eventDescriptionView.descriptionTextview.setText(instance.getAsString(CalendarContract.Instances.DESCRIPTION));
+            } else
+            {
+                binding.eventDescriptionView.getRoot().setVisibility(View.GONE);
+            }
+        } else
+        {
+            binding.eventDescriptionView.getRoot().setVisibility(View.GONE);
+        }
+
         // 위치
-        binding.eventLocationView.eventLocation.setText(instance.getAsString(CalendarContract.Instances.EVENT_LOCATION));
+        if (instance.getAsString(CalendarContract.Instances.EVENT_LOCATION) != null)
+        {
+            if (!instance.getAsString(CalendarContract.Instances.EVENT_LOCATION).isEmpty())
+            {
+                binding.eventLocationView.eventLocation.setText(instance.getAsString(CalendarContract.Instances.EVENT_LOCATION));
+            } else
+            {
+                binding.eventLocationView.getRoot().setVisibility(View.GONE);
+            }
+        } else
+        {
+            binding.eventLocationView.getRoot().setVisibility(View.GONE);
+        }
 
         //fab설정
         if (instance.containsKey(CalendarContract.Instances.EVENT_LOCATION))
@@ -308,10 +348,22 @@ public class EventFragment extends Fragment
         viewModel.getAttendees(calendarId, eventId);
 
         // 공개 범위 표시
-        setAccessLevelText();
+        if (instance.getAsInteger(CalendarContract.Instances.ACCESS_LEVEL) != null)
+        {
+            setAccessLevelText();
+        } else
+        {
+            binding.eventAccessLevelView.getRoot().setVisibility(View.GONE);
+        }
 
         // 유효성 표시
-        setAvailabilityText();
+        if (instance.getAsInteger(CalendarContract.Instances.AVAILABILITY) != null)
+        {
+            setAvailabilityText();
+        } else
+        {
+            binding.eventAvailabilityView.getRoot().setVisibility(View.GONE);
+        }
     }
 
     private void setAvailabilityText()
@@ -325,13 +377,25 @@ public class EventFragment extends Fragment
     }
 
 
-    private void setDateTimeText(long start, long end)
+    private void setDateTimeText(long begin, long end)
     {
-        boolean allDay = instance.getAsBoolean(CalendarContract.Instances.ALL_DAY);
-        String startStr = EventUtil.convertDateTime(start, allDay, App.is24HourSystem);
+        final boolean allDay = instance.getAsBoolean(CalendarContract.Instances.ALL_DAY);
+        if (allDay)
+        {
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTimeInMillis(begin);
+            calendar.add(Calendar.HOUR_OF_DAY, -9);
+            begin = calendar.getTimeInMillis();
+
+            calendar.setTimeInMillis(end);
+            calendar.add(Calendar.HOUR_OF_DAY, -9);
+            calendar.add(Calendar.DAY_OF_MONTH, -1);
+            end = calendar.getTimeInMillis();
+        }
+        String beginStr = EventUtil.convertDateTime(begin, allDay, App.is24HourSystem);
         String endStr = EventUtil.convertDateTime(end, allDay, App.is24HourSystem);
 
-        binding.eventDatetimeView.startDate.setText(startStr);
+        binding.eventDatetimeView.startDate.setText(beginStr);
         binding.eventDatetimeView.endDate.setText(endStr);
     }
 
