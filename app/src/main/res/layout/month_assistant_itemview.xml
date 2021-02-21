@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="12dp">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
     <LinearLayout
         android:id="@+id/month_header_days"
@@ -21,7 +20,7 @@
             android:layout_weight="1"
             android:gravity="center"
             android:text="@string/sunday"
-            android:textSize="13sp" />
+            android:textSize="12sp" />
 
         <TextView
             android:id="@+id/textView3"
@@ -30,7 +29,7 @@
             android:layout_weight="1"
             android:gravity="center"
             android:text="@string/monday"
-            android:textSize="13sp" />
+            android:textSize="12sp" />
 
         <TextView
             android:id="@+id/textView4"
@@ -39,7 +38,7 @@
             android:layout_weight="1"
             android:gravity="center"
             android:text="@string/tuesday"
-            android:textSize="13sp" />
+            android:textSize="12sp" />
 
         <TextView
             android:id="@+id/textView6"
@@ -48,7 +47,7 @@
             android:layout_weight="1"
             android:gravity="center"
             android:text="@string/wednesday"
-            android:textSize="13sp" />
+            android:textSize="12sp" />
 
         <TextView
             android:id="@+id/textView8"
@@ -57,7 +56,7 @@
             android:layout_weight="1"
             android:gravity="center"
             android:text="@string/thursday"
-            android:textSize="13sp" />
+            android:textSize="12sp" />
 
         <TextView
             android:id="@+id/textView24"
@@ -66,7 +65,7 @@
             android:layout_weight="1"
             android:gravity="center"
             android:text="@string/friday"
-            android:textSize="13sp" />
+            android:textSize="12sp" />
 
         <TextView
             android:id="@+id/textView25"
@@ -75,11 +74,11 @@
             android:layout_weight="1"
             android:gravity="center"
             android:text="@string/saturday"
-            android:textSize="13sp" />
+            android:textSize="12sp" />
     </LinearLayout>
 
     <com.zerodsoft.scheduleweather.calendarview.assistantcalendar.monthassistant.MonthAssistantCalendarView
         android:id="@+id/month_assistant_calendar_view"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="match_parent" />
 </LinearLayout>

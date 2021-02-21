@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.text.TextPaint;
+import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,12 +33,10 @@ public class MonthAssistantCalendarView extends ViewGroup
     protected static float DATE_TEXT_PADDING_TB;
     protected static float COUNT_PADDING_TB;
 
-    private final List<String> DAY_LIST;
-    private List<ContentValues> instances;
-
-    public MonthAssistantCalendarView(Context context)
+    public MonthAssistantCalendarView(Context context, AttributeSet attrs)
     {
-        super(context);
+        super(context, attrs);
+
         Rect rect = new Rect();
 
         TEXT_SIZE = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 12f, getContext().getResources().getDisplayMetrics());
@@ -58,13 +57,17 @@ public class MonthAssistantCalendarView extends ViewGroup
         INSTANCE_COUNT_TEXTPAINT.setTextAlign(Paint.Align.CENTER);
         INSTANCE_COUNT_TEXTPAINT.setColor(Color.BLUE);
 
-        DAY_LIST = Arrays.asList(context.getResources().getStringArray(R.array.day_list));
-
         DATE_TEXT_PADDING_TB = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 2f, getResources().getDisplayMetrics());
         COUNT_PADDING_TB = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 3f, getResources().getDisplayMetrics());
 
         setBackgroundColor(Color.WHITE);
         setWillNotDraw(false);
+    }
+
+    public MonthAssistantCalendarView(Context context)
+    {
+        super(context);
+
     }
 
 

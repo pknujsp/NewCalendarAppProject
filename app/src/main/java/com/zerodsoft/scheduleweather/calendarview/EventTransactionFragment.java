@@ -29,6 +29,7 @@ import com.zerodsoft.scheduleweather.calendarview.month.MonthFragment;
 import com.zerodsoft.scheduleweather.calendarview.week.WeekFragment;
 import com.zerodsoft.scheduleweather.event.EventActivity;
 
+import java.util.Date;
 import java.util.List;
 
 
@@ -64,20 +65,14 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
         return inflater.inflate(R.layout.fragment_calendar, container, false);
     }
 
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState)
-    {
-        super.onActivityCreated(savedInstanceState);
-
-        calendarViewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
-        calendarViewModel.init(getContext());
-        // 마지막으로 사용된 달력의 종류 가져오기
-    }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
+        calendarViewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
+        calendarViewModel.init(getContext());
+        // 마지막으로 사용된 달력의 종류 가져오기
     }
 
     @Override
@@ -152,6 +147,7 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
             ((DayFragment) fragment).goToToday();
         }
     }
+
 
     @Override
     public void onClicked(long viewBegin, long viewEnd)

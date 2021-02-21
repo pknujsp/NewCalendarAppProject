@@ -52,18 +52,23 @@ public class MonthAssistantCalendarListAdapter extends RecyclerView.Adapter<Mont
         CALENDAR.set(Calendar.SECOND, 0);
     }
 
+    public Date getAsOfDate()
+    {
+        return CALENDAR.getTime();
+    }
+
     @Override
     public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView)
     {
         super.onAttachedToRecyclerView(recyclerView);
-        context = recyclerView.getContext();
     }
 
     @NonNull
     @Override
     public MonthAssistantViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType)
     {
-        return new MonthAssistantViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.month_assistant_itemview, parent));
+        context = parent.getContext();
+        return new MonthAssistantViewHolder(LayoutInflater.from(context).inflate(R.layout.month_assistant_itemview, parent, false));
     }
 
     @Override
@@ -199,6 +204,7 @@ public class MonthAssistantCalendarListAdapter extends RecyclerView.Adapter<Mont
                 childView.setCount(countMap.get(index));
             }
 
+            monthCalendarView.requestLayout();
             monthCalendarView.invalidate();
         }
 

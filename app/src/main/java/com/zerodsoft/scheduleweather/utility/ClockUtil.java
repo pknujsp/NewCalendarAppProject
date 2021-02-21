@@ -218,4 +218,16 @@ public class ClockUtil
         }
         return result;
     }
+
+    public static int calcMonthDifference(Date date, Date asOfDate)
+    {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        int dateMonth = calendar.get(Calendar.YEAR) * 12 + calendar.get(Calendar.MONTH) + 1;
+
+        calendar.setTime(asOfDate);
+        int asOfDateMonth = calendar.get(Calendar.YEAR) * 12 + calendar.get(Calendar.MONTH) + 1;
+
+        return dateMonth - asOfDateMonth;
+    }
 }

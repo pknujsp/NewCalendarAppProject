@@ -29,6 +29,8 @@ import com.zerodsoft.scheduleweather.activity.editevent.activity.EditEventActivi
 import com.zerodsoft.scheduleweather.activity.editevent.value.EventDataController;
 import com.zerodsoft.scheduleweather.calendarview.CalendarsAdapter;
 import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
+import com.zerodsoft.scheduleweather.calendarview.assistantcalendar.monthassistant.MonthAssistantCalendarFragment;
+import com.zerodsoft.scheduleweather.calendarview.assistantcalendar.monthlistassistant.MonthListAssistantCalendarFragment;
 import com.zerodsoft.scheduleweather.calendarview.day.DayFragment;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.ICalendarCheckBox;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
@@ -56,6 +58,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.ActivityOptionsCompat;
 import androidx.databinding.DataBindingUtil;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -87,6 +91,10 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
     public static final int DELETED_EVENT = 10000;
     public static final int EXCEPTED_INSTANCE = 10001;
 
+    private MonthAssistantCalendarFragment monthAssistantCalendarFragment;
+    private MonthListAssistantCalendarFragment monthListAssistantCalendarFragment;
+    private Date currentCalendarDate;
+
     private final View.OnClickListener currMonthOnClickListener = new View.OnClickListener()
     {
         /*
@@ -95,7 +103,26 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
         @Override
         public void onClick(View view)
         {
+            FragmentManager fragmentManager = getSupportFragmentManager();
 
+            if (fragmentManager.findFragmentByTag(MonthAssistantCalendarFragment.TAG) != null)
+            {
+                monthAssistantCalendarFragment.setCurrentMonth(currentCalendarDate);
+            } else
+            {
+                monthListAssistantCalendarFragment.setCurrentMonth(currentCalendarDate);
+            }
+
+            /*
+            if (mainBinding.assistantCalendarContainer.getVisibility() == View.VISIBLE)
+            {
+                mainBinding.assistantCalendarContainer.setVisibility(View.GONE);
+            } else
+            {
+                mainBinding.assistantCalendarContainer.setVisibility(View.VISIBLE);
+            }
+
+             */
         }
     };
 
@@ -145,6 +172,10 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 
         calendarTransactionFragment = new EventTransactionFragment(this);
         getSupportFragmentManager().beginTransaction().add(R.id.calendar_layout, calendarTransactionFragment, EventTransactionFragment.TAG).commit();
+
+        //보조 캘린더 프래그먼트 생성
+        monthAssistantCalendarFragment = new MonthAssistantCalendarFragment(AppMainActivity.this);
+        monthListAssistantCalendarFragment = new MonthListAssistantCalendarFragment(AppMainActivity.this);
     }
 
     private final ContentObserver contentObserver = new ContentObserver(new Handler())
@@ -228,7 +259,6 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
                     }
                     accountList = new ArrayList<>(accountMap.values());
 
-
                     SharedPreferences sharedPreferences = getSharedPreferences(getString(R.string.preferences_selected_calendars_key), Context.MODE_PRIVATE);
                     Set<String> selectedCalendarSet = new ArraySet<>();
                     Map<String, String> selectedCalendarsMap = (Map<String, String>) sharedPreferences.getAll();
@@ -290,6 +320,8 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 
             }
         });
+
+
 
         /*
         calendarViewModel.getCalendarListLiveData().observe(this, new Observer<DataWrapper<List<CalendarListEntry>>>()
@@ -453,24 +485,29 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
     private final MaterialButtonToggleGroup.OnButtonCheckedListener calendarTypeButtonCheckedListener
             = new MaterialButtonToggleGroup.OnButtonCheckedListener()
     {
+        @SuppressLint("NonConstantResourceId")
         @Override
         public void onButtonChecked(MaterialButtonToggleGroup group, int checkedId, boolean isChecked)
         {
             SharedPreferences.Editor editor = getSharedPreferences(getString(R.string.preferences_selected_calendar_type_key), MODE_PRIVATE).edit();
+            FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
 
             switch (checkedId)
             {
                 case R.id.calendar_type_day:
                     editor.putInt(getString(R.string.preferences_selected_calendar_type_key), TYPE_DAY);
                     calendarTransactionFragment.replaceFragment(DayFragment.TAG);
+                    fragmentTransaction.replace(R.id.assistant_calendar_container, monthListAssistantCalendarFragment, MonthListAssistantCalendarFragment.TAG).commit();
                     break;
                 case R.id.calendar_type_week:
                     editor.putInt(getString(R.string.preferences_selected_calendar_type_key), TYPE_WEEK);
                     calendarTransactionFragment.replaceFragment(WeekFragment.TAG);
+                    fragmentTransaction.replace(R.id.assistant_calendar_container, monthAssistantCalendarFragment, MonthAssistantCalendarFragment.TAG).commit();
                     break;
                 case R.id.calendar_type_month:
                     editor.putInt(getString(R.string.preferences_selected_calendar_type_key), TYPE_MONTH);
                     calendarTransactionFragment.replaceFragment(MonthFragment.TAG);
+                    fragmentTransaction.replace(R.id.assistant_calendar_container, monthAssistantCalendarFragment, MonthAssistantCalendarFragment.TAG).commit();
                     break;
             }
             editor.apply();
@@ -521,10 +558,6 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
                 mainBinding.drawerLayout.openDrawer(mainBinding.sideNavigation);
                 break;
             case R.id.calendar_month:
-                if (mainBinding.calendar.getVisibility() != View.VISIBLE)
-                {
-                    mainBinding.calendar.setVisibility(View.VISIBLE);
-                }
                 break;
             case R.id.add_schedule:
                 Intent intent = new Intent(AppMainActivity.this, EditEventActivity.class);
@@ -678,6 +711,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
     @Override
     public void setMonth(Date dateTime)
     {
+        this.currentCalendarDate = (Date) dateTime.clone();
         currMonthTextView.setText(ClockUtil.YEAR_MONTH_FORMAT.format(dateTime));
     }
 
