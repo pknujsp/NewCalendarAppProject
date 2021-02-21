@@ -78,6 +78,7 @@ public class MonthCalendarView extends ViewGroup implements IEvent
 
         DAY_SPACE_HEIGHT = rect.height() + 24;
 
+        setBackgroundColor(Color.WHITE);
         setWillNotDraw(false);
     }
 
@@ -136,8 +137,6 @@ public class MonthCalendarView extends ViewGroup implements IEvent
     protected void onDraw(Canvas canvas)
     {
         super.onDraw(canvas);
-        canvas.drawColor(Color.WHITE);
-
         if (!eventCellsList.isEmpty())
         {
             drawEvents(canvas);

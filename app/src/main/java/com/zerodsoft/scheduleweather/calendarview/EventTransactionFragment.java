@@ -38,7 +38,6 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
     public static final String TAG = "CalendarTransactionFragment";
     public static final int FIRST_VIEW_POSITION = Integer.MAX_VALUE / 2;
 
-    private int viewPosition;
     private CalendarViewModel calendarViewModel;
     private Fragment fragment;
     private final IToolbar iToolbar;

@@ -521,6 +521,10 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
                 mainBinding.drawerLayout.openDrawer(mainBinding.sideNavigation);
                 break;
             case R.id.calendar_month:
+                if (mainBinding.calendar.getVisibility() != View.VISIBLE)
+                {
+                    mainBinding.calendar.setVisibility(View.VISIBLE);
+                }
                 break;
             case R.id.add_schedule:
                 Intent intent = new Intent(AppMainActivity.this, EditEventActivity.class);

@@ -6,6 +6,7 @@ import android.util.Log;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -152,5 +153,69 @@ public class ClockUtil
             difference--;
         }
         return difference;
+    }
+
+    public static int calcDayDifference(Date date1, Date asOfDate)
+    {
+        GregorianCalendar date1Calendar = new GregorianCalendar();
+        date1Calendar.setTime(date1);
+
+        GregorianCalendar date2Calendar = new GregorianCalendar();
+        date2Calendar.setTime(asOfDate);
+
+        yyyyMd.setTimeZone(TIME_ZONE);
+
+        String date1Str = date1Calendar.get(Calendar.YEAR) + "/"
+                + (date1Calendar.get(Calendar.MONTH) + 1) + "/" +
+                date1Calendar.get(Calendar.DAY_OF_MONTH);
+
+        String date2Str = date2Calendar.get(Calendar.YEAR) + "/"
+                + (date2Calendar.get(Calendar.MONTH) + 1) + "/" +
+                date2Calendar.get(Calendar.DAY_OF_MONTH);
+
+        long date1Days = 0;
+        long asOfDays = 0;
+
+        try
+        {
+            date1Days = yyyyMd.parse(date1Str).getTime();
+            asOfDays = yyyyMd.parse(date2Str).getTime();
+        } catch (ParseException e)
+        {
+            e.printStackTrace();
+        }
+
+        return (int) TimeUnit.DAYS.convert(date1Days - asOfDays, TimeUnit.MILLISECONDS);
+    }
+
+    public static Date instanceDateTimeToDate(long dateTime)
+    {
+        return instanceDateTimeToDate(dateTime, false);
+    }
+
+    public static Date instanceDateTimeToDate(long dateTime, boolean allDay)
+    {
+        GregorianCalendar calendar = new GregorianCalendar();
+        calendar.setTimeInMillis(dateTime);
+        if (allDay)
+        {
+            calendar.add(Calendar.HOUR_OF_DAY, -10);
+        }
+        yyyyMd.setTimeZone(TIME_ZONE);
+
+        String dateStr = calendar.get(Calendar.YEAR) + "/"
+                + (calendar.get(Calendar.MONTH) + 1) + "/" +
+                calendar.get(Calendar.DAY_OF_MONTH);
+
+        Date result = null;
+
+        try
+        {
+            result = yyyyMd.parse(dateStr);
+        } catch (ParseException e)
+        {
+            e.printStackTrace();
+        }
+        return result;
     }
 }

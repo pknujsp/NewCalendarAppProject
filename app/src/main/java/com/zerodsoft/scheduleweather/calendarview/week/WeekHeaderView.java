@@ -18,6 +18,7 @@ import android.view.ViewGroup;
 import androidx.annotation.Nullable;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.calendarview.assistantcalendar.monthassistant.MonthAssistantCalendarView;
 import com.zerodsoft.scheduleweather.calendarview.common.HeaderInstancesView;
 import com.zerodsoft.scheduleweather.calendarview.common.InstanceView;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IEvent;
