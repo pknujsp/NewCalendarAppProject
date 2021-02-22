@@ -23,6 +23,7 @@ import android.widget.QuickContactBadge;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.material.appbar.CollapsingToolbarLayout;
 import com.google.android.material.button.MaterialButtonToggleGroup;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.editevent.activity.EditEventActivity;
@@ -32,6 +33,7 @@ import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
 import com.zerodsoft.scheduleweather.calendarview.assistantcalendar.monthassistant.MonthAssistantCalendarFragment;
 import com.zerodsoft.scheduleweather.calendarview.assistantcalendar.monthlistassistant.MonthListAssistantCalendarFragment;
 import com.zerodsoft.scheduleweather.calendarview.day.DayFragment;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.CalendarDateOnClickListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.ICalendarCheckBox;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IstartActivity;
@@ -70,7 +72,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class AppMainActivity extends AppCompatActivity implements ICalendarCheckBox, IToolbar, IConnectedCalendars, IstartActivity
+public class AppMainActivity extends AppCompatActivity implements ICalendarCheckBox, IToolbar, IConnectedCalendars, IstartActivity, CalendarDateOnClickListener
 {
     private EventTransactionFragment calendarTransactionFragment;
     private static int DISPLAY_WIDTH = 0;
@@ -113,16 +115,13 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
                 monthListAssistantCalendarFragment.setCurrentMonth(currentCalendarDate);
             }
 
-            /*
-            if (mainBinding.assistantCalendarContainer.getVisibility() == View.VISIBLE)
-            {
-                mainBinding.assistantCalendarContainer.setVisibility(View.GONE);
-            } else
+            if (mainBinding.assistantCalendarContainer.getVisibility() != View.VISIBLE)
             {
                 mainBinding.assistantCalendarContainer.setVisibility(View.VISIBLE);
+            } else
+            {
+                mainBinding.assistantCalendarContainer.setVisibility(View.GONE);
             }
-
-             */
         }
     };
 
@@ -141,6 +140,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
     {
         super.onCreate(savedInstanceState);
         mainBinding = DataBindingUtil.setContentView(this, R.layout.activity_app_main);
+        mainBinding.assistantCalendarContainer.setVisibility(View.GONE);
 
         Point point = new Point();
         getWindowManager().getDefaultDisplay().getRealSize(point);
@@ -497,19 +497,22 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
                 case R.id.calendar_type_day:
                     editor.putInt(getString(R.string.preferences_selected_calendar_type_key), TYPE_DAY);
                     calendarTransactionFragment.replaceFragment(DayFragment.TAG);
-                    fragmentTransaction.replace(R.id.assistant_calendar_container, monthListAssistantCalendarFragment, MonthListAssistantCalendarFragment.TAG).commit();
+                    // fragmentTransaction.replace(R.id.assistant_calendar_container, monthListAssistantCalendarFragment, MonthListAssistantCalendarFragment.TAG).commit();
                     break;
                 case R.id.calendar_type_week:
                     editor.putInt(getString(R.string.preferences_selected_calendar_type_key), TYPE_WEEK);
                     calendarTransactionFragment.replaceFragment(WeekFragment.TAG);
                     fragmentTransaction.replace(R.id.assistant_calendar_container, monthAssistantCalendarFragment, MonthAssistantCalendarFragment.TAG).commit();
+                    monthAssistantCalendarFragment.refresh();
                     break;
                 case R.id.calendar_type_month:
                     editor.putInt(getString(R.string.preferences_selected_calendar_type_key), TYPE_MONTH);
                     calendarTransactionFragment.replaceFragment(MonthFragment.TAG);
                     fragmentTransaction.replace(R.id.assistant_calendar_container, monthAssistantCalendarFragment, MonthAssistantCalendarFragment.TAG).commit();
+                    monthAssistantCalendarFragment.refresh();
                     break;
             }
+
             editor.apply();
             mainBinding.drawerLayout.closeDrawer(mainBinding.sideNavigation);
         }
@@ -711,7 +714,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
     @Override
     public void setMonth(Date dateTime)
     {
-        this.currentCalendarDate = (Date) dateTime.clone();
+        currentCalendarDate = (Date) dateTime.clone();
         currMonthTextView.setText(ClockUtil.YEAR_MONTH_FORMAT.format(dateTime));
     }
 
@@ -742,6 +745,12 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
     public void startActivityResult(Intent intent, int requestCode)
     {
         activityResultLauncher.launch(intent);
+    }
+
+    @Override
+    public void onClickedDate(Date date)
+    {
+        Toast.makeText(this, ClockUtil.YYYY_M_D_E.format(date), Toast.LENGTH_SHORT).show();
     }
 }
 

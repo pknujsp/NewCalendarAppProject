@@ -32,6 +32,7 @@ public class MonthAssistantCalendarView extends ViewGroup
     protected static float COUNT_TEXT_VIEW_HEIGHT;
     protected static float DATE_TEXT_PADDING_TB;
     protected static float COUNT_PADDING_TB;
+    protected static Integer ITEM_HEIGHT;
 
     public MonthAssistantCalendarView(Context context, AttributeSet attrs)
     {
@@ -57,8 +58,8 @@ public class MonthAssistantCalendarView extends ViewGroup
         INSTANCE_COUNT_TEXTPAINT.setTextAlign(Paint.Align.CENTER);
         INSTANCE_COUNT_TEXTPAINT.setColor(Color.BLUE);
 
-        DATE_TEXT_PADDING_TB = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 2f, getResources().getDisplayMetrics());
-        COUNT_PADDING_TB = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 3f, getResources().getDisplayMetrics());
+        DATE_TEXT_PADDING_TB = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 3f, getResources().getDisplayMetrics());
+        COUNT_PADDING_TB = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4f, getResources().getDisplayMetrics());
 
         setBackgroundColor(Color.WHITE);
         setWillNotDraw(false);
@@ -67,16 +68,21 @@ public class MonthAssistantCalendarView extends ViewGroup
     public MonthAssistantCalendarView(Context context)
     {
         super(context);
-
     }
 
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
+    {
+        ITEM_HEIGHT = (int) (DATE_TEXT_PADDING_TB * 2 + DATE_TEXT_VIEW_HEIGHT + COUNT_PADDING_TB * 2 + COUNT_TEXT_VIEW_HEIGHT);
+        setMeasuredDimension(widthMeasureSpec, ITEM_HEIGHT * 6);
+    }
 
     @Override
     protected void onLayout(boolean b, int i, int i1, int i2, int i3)
     {
         // resolveSize : 실제 설정할 크기를 계산
         final int ITEM_WIDTH = getWidth() / 7;
-        final int ITEM_HEIGHT = (int) (DATE_TEXT_PADDING_TB * 2 + DATE_TEXT_VIEW_HEIGHT + COUNT_PADDING_TB * 2 + COUNT_TEXT_VIEW_HEIGHT);
+
 
         // childview의 크기 설정
         measureChildren(ITEM_WIDTH, ITEM_HEIGHT);
@@ -107,12 +113,6 @@ public class MonthAssistantCalendarView extends ViewGroup
         }
     }
 
-
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
-    {
-        setMeasuredDimension(widthMeasureSpec, heightMeasureSpec);
-    }
 
     @Override
     protected void onDraw(Canvas canvas)

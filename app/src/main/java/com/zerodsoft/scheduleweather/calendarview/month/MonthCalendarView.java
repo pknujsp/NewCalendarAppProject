@@ -44,8 +44,8 @@ public class MonthCalendarView extends ViewGroup implements IEvent
     private static final int TEXT_MARGIN = 8;
     public static final int EVENT_LR_MARGIN = 4;
     public static final int MAX_ROWS_COUNT = 5;
-    private static final int FIRST_DAY_INDEX = 0;
-    private static final int LAST_DAY_INDEX = 41;
+    public static final int FIRST_DAY_INDEX = 0;
+    public static final int LAST_DAY_INDEX = 41;
     private float EVENT_TEXT_HEIGHT;
 
     private int start;

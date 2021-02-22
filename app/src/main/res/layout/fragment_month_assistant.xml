@@ -21,20 +21,20 @@
                 android:layout_weight="1"
                 android:text="2020.11"
                 android:textColor="@color/gray_600"
-                android:textSize="17sp" />
+                android:textSize="15sp" />
 
             <ImageButton
                 android:id="@+id/current_month_button"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
                 android:layout_gravity="center_vertical"
                 android:background="?attr/selectableItemBackground"
                 android:src="@drawable/today_icon" />
 
             <ImageButton
                 android:id="@+id/previous_month_button"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
                 android:layout_gravity="center_vertical"
                 android:layout_marginLeft="24dp"
                 android:background="?attr/selectableItemBackground"
@@ -42,8 +42,8 @@
 
             <ImageButton
                 android:id="@+id/next_month_button"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
                 android:layout_gravity="center_vertical"
                 android:layout_marginLeft="18dp"
                 android:background="?attr/selectableItemBackground"
@@ -54,7 +54,7 @@
         <androidx.viewpager2.widget.ViewPager2
             android:id="@+id/month_assistant_calendar_viewpager"
             android:layout_width="match_parent"
-            android:layout_height="250dp"
+            android:layout_height="wrap_content"
             android:orientation="horizontal" />
 
     </LinearLayout>

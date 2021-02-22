@@ -2,12 +2,10 @@ package com.zerodsoft.scheduleweather.calendarview.assistantcalendar.monthassist
 
 import android.content.ContentValues;
 import android.content.Context;
-import android.graphics.Color;
 import android.provider.CalendarContract;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -16,18 +14,14 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
 import com.zerodsoft.scheduleweather.calendarview.callback.EventCallback;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.CalendarDateOnClickListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
-import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
-import com.zerodsoft.scheduleweather.calendarview.month.MonthCalendarItemView;
 import com.zerodsoft.scheduleweather.calendarview.month.MonthCalendarView;
 import com.zerodsoft.scheduleweather.calendarview.month.MonthViewPagerAdapter;
-import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
-import java.time.Month;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -37,12 +31,14 @@ import java.util.Set;
 public class MonthAssistantCalendarListAdapter extends RecyclerView.Adapter<MonthAssistantCalendarListAdapter.MonthAssistantViewHolder>
 {
     private final IControlEvent iControlEvent;
+    private final CalendarDateOnClickListener calendarDateOnClickListener;
     private final Calendar CALENDAR;
     private Context context;
 
-    public MonthAssistantCalendarListAdapter(IControlEvent iControlEvent)
+    public MonthAssistantCalendarListAdapter(IControlEvent iControlEvent, CalendarDateOnClickListener calendarDateOnClickListener)
     {
         this.iControlEvent = iControlEvent;
+        this.calendarDateOnClickListener = calendarDateOnClickListener;
         CALENDAR = Calendar.getInstance(ClockUtil.TIME_ZONE);
 
         // 날짜를 이번 달 1일 0시 0분으로 설정
@@ -151,12 +147,19 @@ public class MonthAssistantCalendarListAdapter extends RecyclerView.Adapter<Mont
                 MonthAssistantCalendarView.MonthAssistantItemView itemView =
                         new MonthAssistantCalendarView.MonthAssistantItemView(context, thisMonthDate, currentDate.getTime(), getDay(i + 1).getTime());
                 itemView.setClickable(true);
-                itemView.setOnClickListener(onClickListener);
+                itemView.setOnClickListener(new View.OnClickListener()
+                {
+                    @Override
+                    public void onClick(View view)
+                    {
+                        calendarDateOnClickListener.onClickedDate(currentDate.getTime());
+                    }
+                });
                 monthCalendarView.addView(itemView);
             }
 
             iControlEvent.getInstances(getAdapterPosition(), getDay(MonthViewPagerAdapter.FIRST_DAY).getTime().getTime(),
-                    getDay(MonthViewPagerAdapter.FIRST_DAY).getTime().getTime(), new EventCallback<List<CalendarInstance>>()
+                    getDay(MonthViewPagerAdapter.LAST_DAY).getTime().getTime(), new EventCallback<List<CalendarInstance>>()
                     {
                         @Override
                         public void onResult(List<CalendarInstance> e)
@@ -164,6 +167,7 @@ public class MonthAssistantCalendarListAdapter extends RecyclerView.Adapter<Mont
                             setResult(e);
                         }
                     });
+
         }
 
         public void setResult(List<CalendarInstance> e)
@@ -185,6 +189,16 @@ public class MonthAssistantCalendarListAdapter extends RecyclerView.Adapter<Mont
                 Date endDate = ClockUtil.instanceDateTimeToDate(instance.getAsLong(CalendarContract.Instances.END), instance.getAsBoolean(CalendarContract.Instances.ALL_DAY));
                 int beginIndex = ClockUtil.calcDayDifference(beginDate, asOfDate);
                 int endIndex = ClockUtil.calcDayDifference(endDate, asOfDate);
+
+                if (beginIndex < MonthCalendarView.FIRST_DAY_INDEX)
+                {
+                    beginIndex = MonthCalendarView.FIRST_DAY_INDEX;
+                }
+                if (endIndex > MonthCalendarView.LAST_DAY_INDEX)
+                {
+                    // 달력에 표시할 일자의 개수가 총 42개
+                    endIndex = MonthCalendarView.LAST_DAY_INDEX;
+                }
 
                 for (int index = beginIndex; index <= endIndex; index++)
                 {
@@ -279,13 +293,4 @@ public class MonthAssistantCalendarListAdapter extends RecyclerView.Adapter<Mont
             }
         }
     }
-
-    private final View.OnClickListener onClickListener = new View.OnClickListener()
-    {
-        @Override
-        public void onClick(View view)
-        {
-            MonthAssistantCalendarView.MonthAssistantItemView itemView = (MonthAssistantCalendarView.MonthAssistantItemView) view;
-        }
-    };
 }

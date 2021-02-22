@@ -174,7 +174,12 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
         intent.putExtra("end", viewEnd);
 
         istartActivity.startActivityResult(intent, 0);
+    }
 
+    @Override
+    public void onClickedOnDialog(int calendarId, long instanceId, long eventId, long viewBegin, long viewEnd)
+    {
+        onClicked(calendarId, instanceId, eventId, viewBegin, viewEnd);
         DialogFragment fragment = (DialogFragment) getParentFragmentManager().findFragmentByTag(InstanceListOnDayFragment.TAG);
         fragment.dismiss();
     }

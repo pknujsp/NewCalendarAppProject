@@ -79,7 +79,7 @@ public class EventsInfoRecyclerViewAdapter extends RecyclerView.Adapter<EventsIn
                 @Override
                 public void onClick(View view)
                 {
-                    onEventItemClickListener.onClicked(calendarId, instanceId, eventId, begin, end);
+                    onEventItemClickListener.onClickedOnDialog(calendarId, instanceId, eventId, begin, end);
                 }
             });
         }
