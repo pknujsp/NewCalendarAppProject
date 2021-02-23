@@ -23,13 +23,17 @@
                 android:textColor="@color/gray_600"
                 android:textSize="15sp" />
 
-            <ImageButton
+            <TextView
                 android:id="@+id/current_month_button"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:background="?attr/selectableItemBackground"
-                android:src="@drawable/today_icon" />
+                android:gravity="center_vertical"
+                android:paddingLeft="16dp"
+                android:paddingRight="16dp"
+                android:text="@string/today"
+                android:textColor="@color/black" />
 
             <ImageButton
                 android:id="@+id/previous_month_button"

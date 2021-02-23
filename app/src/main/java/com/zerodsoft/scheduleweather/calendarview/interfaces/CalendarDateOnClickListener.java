@@ -5,4 +5,5 @@ import java.util.Date;
 public interface CalendarDateOnClickListener
 {
     void onClickedDate(Date date);
+    void onClickedMonth(Date date);
 }

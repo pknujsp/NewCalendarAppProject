@@ -7,5 +7,5 @@ import java.util.List;
 
 public interface IControlEvent
 {
-    void getInstances(int viewPosition, long start, long end, EventCallback<List<CalendarInstance>> callback);
+    void getInstances(int viewPosition, long begin, long end, EventCallback<List<CalendarInstance>> callback);
 }

@@ -85,14 +85,21 @@ public class DayFragment extends Fragment implements IRefreshView
         super.onStop();
     }
 
+    public void goToDay(Date date)
+    {
+        int dayDifference = ClockUtil.calcDayDifference(date, onPageChangeCallback.copiedCalendar.getTime());
+        dayViewPager.setCurrentItem(dayViewPager.getCurrentItem() + dayDifference, true);
+    }
+
     class OnPageChangeCallback extends ViewPager2.OnPageChangeCallback
     {
-        private Calendar calendar;
+        private final Calendar calendar;
         private Calendar copiedCalendar;
 
         public OnPageChangeCallback(Calendar calendar)
         {
             this.calendar = calendar;
+            this.copiedCalendar = (Calendar) calendar.clone();
         }
 
         @Override

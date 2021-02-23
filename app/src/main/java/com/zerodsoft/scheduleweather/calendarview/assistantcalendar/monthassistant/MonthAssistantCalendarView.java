@@ -1,6 +1,5 @@
 package com.zerodsoft.scheduleweather.calendarview.assistantcalendar.monthassistant;
 
-import android.content.ContentValues;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -12,12 +11,9 @@ import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
-import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
 
 public class MonthAssistantCalendarView extends ViewGroup
 {
@@ -27,11 +23,12 @@ public class MonthAssistantCalendarView extends ViewGroup
     protected static final TextPaint THIS_MONTH_DATE_TEXTPAINT = new TextPaint(Paint.ANTI_ALIAS_FLAG);
     protected static final TextPaint NOT_THIS_MONTH_DATE_TEXTPAINT = new TextPaint(Paint.ANTI_ALIAS_FLAG);
     protected static final TextPaint INSTANCE_COUNT_TEXTPAINT = new TextPaint(Paint.ANTI_ALIAS_FLAG);
+    protected static final Paint TODAY_PAINT = new Paint();
     protected static float TEXT_SIZE;
     protected static float DATE_TEXT_VIEW_HEIGHT;
     protected static float COUNT_TEXT_VIEW_HEIGHT;
-    protected static float DATE_TEXT_PADDING_TB;
-    protected static float COUNT_PADDING_TB;
+    protected static float SPACING_BETWEEN_DATE_COUNT;
+    protected static float MARGIN;
     protected static Integer ITEM_HEIGHT;
 
     public MonthAssistantCalendarView(Context context, AttributeSet attrs)
@@ -41,6 +38,9 @@ public class MonthAssistantCalendarView extends ViewGroup
         Rect rect = new Rect();
 
         TEXT_SIZE = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 12f, getContext().getResources().getDisplayMetrics());
+        TODAY_PAINT.setStrokeWidth(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1f, getContext().getResources().getDisplayMetrics()));
+        TODAY_PAINT.setStyle(Paint.Style.STROKE);
+        TODAY_PAINT.setColor(Color.BLUE);
 
         THIS_MONTH_DATE_TEXTPAINT.setTextSize(TEXT_SIZE);
         THIS_MONTH_DATE_TEXTPAINT.setTextAlign(Paint.Align.CENTER);
@@ -58,8 +58,8 @@ public class MonthAssistantCalendarView extends ViewGroup
         INSTANCE_COUNT_TEXTPAINT.setTextAlign(Paint.Align.CENTER);
         INSTANCE_COUNT_TEXTPAINT.setColor(Color.BLUE);
 
-        DATE_TEXT_PADDING_TB = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 3f, getResources().getDisplayMetrics());
-        COUNT_PADDING_TB = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4f, getResources().getDisplayMetrics());
+        SPACING_BETWEEN_DATE_COUNT = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4f, getResources().getDisplayMetrics());
+        MARGIN = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 6f, getResources().getDisplayMetrics());
 
         setBackgroundColor(Color.WHITE);
         setWillNotDraw(false);
@@ -73,7 +73,7 @@ public class MonthAssistantCalendarView extends ViewGroup
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
     {
-        ITEM_HEIGHT = (int) (DATE_TEXT_PADDING_TB * 2 + DATE_TEXT_VIEW_HEIGHT + COUNT_PADDING_TB * 2 + COUNT_TEXT_VIEW_HEIGHT);
+        ITEM_HEIGHT = (int) (MARGIN * 2 + SPACING_BETWEEN_DATE_COUNT + DATE_TEXT_VIEW_HEIGHT + COUNT_TEXT_VIEW_HEIGHT);
         setMeasuredDimension(widthMeasureSpec, ITEM_HEIGHT * 6);
     }
 
@@ -82,7 +82,6 @@ public class MonthAssistantCalendarView extends ViewGroup
     {
         // resolveSize : 실제 설정할 크기를 계산
         final int ITEM_WIDTH = getWidth() / 7;
-
 
         // childview의 크기 설정
         measureChildren(ITEM_WIDTH, ITEM_HEIGHT);
@@ -105,6 +104,7 @@ public class MonthAssistantCalendarView extends ViewGroup
                 left = ITEM_WIDTH * (index % 7);
                 right = ITEM_WIDTH * ((index % 7) + 1);
             }
+
             top = ITEM_HEIGHT * (index / 7);
             bottom = ITEM_HEIGHT * ((index / 7) + 1);
 
@@ -132,6 +132,7 @@ public class MonthAssistantCalendarView extends ViewGroup
         private final Date endDate;
         private final boolean thisMonthDate;
         private int count;
+        private boolean isToday;
 
         public MonthAssistantItemView(Context context, boolean thisMonthDate, Date beginDate, Date endDate)
         {
@@ -146,6 +147,11 @@ public class MonthAssistantCalendarView extends ViewGroup
             this.count = count;
         }
 
+        public void setToday(boolean today)
+        {
+            isToday = today;
+        }
+
         @Override
         protected void onLayout(boolean changed, int left, int top, int right, int bottom)
         {
@@ -156,20 +162,24 @@ public class MonthAssistantCalendarView extends ViewGroup
         protected void onDraw(Canvas canvas)
         {
             super.onDraw(canvas);
-            final float countSpaceTop = DATE_TEXT_VIEW_HEIGHT + DATE_TEXT_PADDING_TB * 2;
             final int cellWidth = getWidth();
             final int cellHeight = getHeight();
 
             //날짜
-            canvas.drawText(ClockUtil.D.format(beginDate), (float) cellWidth / 2f, countSpaceTop / 2f + DATE_TEXT_VIEW_HEIGHT / 2f, thisMonthDate ? THIS_MONTH_DATE_TEXTPAINT
+            canvas.drawText(ClockUtil.D.format(beginDate), (float) cellWidth / 2f, MARGIN + DATE_TEXT_VIEW_HEIGHT, thisMonthDate ? THIS_MONTH_DATE_TEXTPAINT
                     : NOT_THIS_MONTH_DATE_TEXTPAINT);
 
             //이벤트 개수
             if (count > 0)
             {
                 canvas.drawText(Integer.toString(count),
-                        (float) cellWidth / 2f, countSpaceTop + (cellHeight - countSpaceTop) / 2f + COUNT_TEXT_VIEW_HEIGHT / 2f, INSTANCE_COUNT_TEXTPAINT);
+                        (float) cellWidth / 2f, cellHeight - MARGIN, INSTANCE_COUNT_TEXTPAINT);
             }
+            if (isToday)
+            {
+                canvas.drawRect(0, 0, cellWidth, cellHeight, TODAY_PAINT);
+            }
+
         }
     }
 }

@@ -40,7 +40,7 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
     public static final int FIRST_VIEW_POSITION = Integer.MAX_VALUE / 2;
 
     private CalendarViewModel calendarViewModel;
-    private Fragment fragment;
+    private Fragment currentFragment;
     private final IToolbar iToolbar;
     private final IConnectedCalendars iConnectedCalendars;
     private final IstartActivity istartActivity;
@@ -95,16 +95,16 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
         switch (fragmentTag)
         {
             case MonthFragment.TAG:
-                fragment = new MonthFragment(this, iToolbar);
-                fragmentTransaction.replace(R.id.calendar_container_layout, (MonthFragment) fragment, MonthFragment.TAG);
+                currentFragment = new MonthFragment(this, iToolbar);
+                fragmentTransaction.replace(R.id.calendar_container_layout, (MonthFragment) currentFragment, MonthFragment.TAG);
                 break;
             case WeekFragment.TAG:
-                fragment = new WeekFragment(this, iToolbar);
-                fragmentTransaction.replace(R.id.calendar_container_layout, (WeekFragment) fragment, WeekFragment.TAG);
+                currentFragment = new WeekFragment(this, iToolbar);
+                fragmentTransaction.replace(R.id.calendar_container_layout, (WeekFragment) currentFragment, WeekFragment.TAG);
                 break;
             case DayFragment.TAG:
-                fragment = new DayFragment(this, iToolbar);
-                fragmentTransaction.replace(R.id.calendar_container_layout, (DayFragment) fragment, DayFragment.TAG);
+                currentFragment = new DayFragment(this, iToolbar);
+                fragmentTransaction.replace(R.id.calendar_container_layout, (DayFragment) currentFragment, DayFragment.TAG);
                 break;
         }
         fragmentTransaction.commit();
@@ -112,39 +112,39 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 
 
     @Override
-    public void getInstances(int viewPosition, long start, long end, EventCallback<List<CalendarInstance>> callback)
+    public void getInstances(int viewPosition, long begin, long end, EventCallback<List<CalendarInstance>> callback)
     {
         // 선택된 캘린더 목록
-        calendarViewModel.getInstanceList(iConnectedCalendars.getConnectedCalendars(), start, end, callback);
+        calendarViewModel.getInstanceList(iConnectedCalendars.getConnectedCalendars(), begin, end, callback);
     }
 
 
     public void refreshCalendar()
     {
         //일정이 추가/삭제되면 영향을 받은 일정의 시작날짜에 해당하는 달력의 위치로 이동한다.
-        if (fragment instanceof MonthFragment)
+        if (currentFragment instanceof MonthFragment)
         {
-            ((MonthFragment) fragment).refreshView();
-        } else if (fragment instanceof WeekFragment)
+            ((MonthFragment) currentFragment).refreshView();
+        } else if (currentFragment instanceof WeekFragment)
         {
-            ((WeekFragment) fragment).refreshView();
-        } else if (fragment instanceof DayFragment)
+            ((WeekFragment) currentFragment).refreshView();
+        } else if (currentFragment instanceof DayFragment)
         {
-            ((DayFragment) fragment).refreshView();
+            ((DayFragment) currentFragment).refreshView();
         }
     }
 
     public void goToToday()
     {
-        if (fragment instanceof MonthFragment)
+        if (currentFragment instanceof MonthFragment)
         {
-            ((MonthFragment) fragment).goToToday();
-        } else if (fragment instanceof WeekFragment)
+            ((MonthFragment) currentFragment).goToToday();
+        } else if (currentFragment instanceof WeekFragment)
         {
-            ((WeekFragment) fragment).goToToday();
-        } else if (fragment instanceof DayFragment)
+            ((WeekFragment) currentFragment).goToToday();
+        } else if (currentFragment instanceof DayFragment)
         {
-            ((DayFragment) fragment).goToToday();
+            ((DayFragment) currentFragment).goToToday();
         }
     }
 
@@ -182,6 +182,21 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
         onClicked(calendarId, instanceId, eventId, viewBegin, viewEnd);
         DialogFragment fragment = (DialogFragment) getParentFragmentManager().findFragmentByTag(InstanceListOnDayFragment.TAG);
         fragment.dismiss();
+    }
+
+    public void changeDate(Date date)
+    {
+        if (currentFragment instanceof MonthFragment)
+        {
+            ((MonthFragment) currentFragment).refreshView();
+        } else if (currentFragment instanceof WeekFragment)
+        {
+            ((WeekFragment) currentFragment).goToWeek(date);
+            //선택된 날짜에 해당 하는 주로 이동 (parameter : 2020년 2주차 -> 2020년 2주차로 이동)
+        } else if (currentFragment instanceof DayFragment)
+        {
+            ((DayFragment) currentFragment).goToDay(date);
+        }
     }
 }
 

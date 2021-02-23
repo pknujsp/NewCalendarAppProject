@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal">
+
+    <TextView
+        android:id="@+id/year"
+        style="@style/TextAppearance.AppCompat.Headline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:padding="8dp"
+        android:text="2020" />
+
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:stretchColumns="*">
+
+        <TableRow
+            android:id="@+id/month_table_row1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical">
+
+            <include layout="@layout/monthlist_assistant_item" />
+
+            <include layout="@layout/monthlist_assistant_item" />
+
+            <include layout="@layout/monthlist_assistant_item" />
+
+            <include layout="@layout/monthlist_assistant_item" />
+
+            <include layout="@layout/monthlist_assistant_item" />
+
+            <include layout="@layout/monthlist_assistant_item" />
+
+        </TableRow>
+
+        <TableRow
+            android:id="@+id/month_table_row2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical">
+
+            <include layout="@layout/monthlist_assistant_item" />
+
+            <include layout="@layout/monthlist_assistant_item" />
+
+            <include layout="@layout/monthlist_assistant_item" />
+
+            <include layout="@layout/monthlist_assistant_item" />
+
+            <include layout="@layout/monthlist_assistant_item" />
+
+            <include layout="@layout/monthlist_assistant_item" />
+        </TableRow>
+
+    </TableLayout>
+
+</LinearLayout>

@@ -19,19 +19,17 @@ import com.zerodsoft.scheduleweather.calendarview.callback.EventCallback;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.CalendarDateOnClickListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
-import com.zerodsoft.scheduleweather.calendarview.month.MonthViewPagerAdapter;
 import com.zerodsoft.scheduleweather.databinding.FragmentMonthAssistantBinding;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 public class MonthAssistantCalendarFragment extends Fragment implements IControlEvent
 {
     public static final String TAG = "MonthAssistantCalendarFragment";
+
     private FragmentMonthAssistantBinding binding;
     private MonthAssistantCalendarListAdapter adapter;
     private final IConnectedCalendars iConnectedCalendars;
@@ -59,7 +57,7 @@ public class MonthAssistantCalendarFragment extends Fragment implements IControl
 
         calendarViewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
         calendarViewModel.init(getContext());
-        adapter = new MonthAssistantCalendarListAdapter(this,calendarDateOnClickListener);
+        adapter = new MonthAssistantCalendarListAdapter(this, calendarDateOnClickListener);
 
         binding.monthAssistantCalendarViewpager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
         binding.monthAssistantCalendarViewpager.setAdapter(adapter);
@@ -72,7 +70,8 @@ public class MonthAssistantCalendarFragment extends Fragment implements IControl
             @Override
             public void onClick(View view)
             {
-
+                //오늘 날짜로 이동
+                binding.monthAssistantCalendarViewpager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, true);
             }
         });
 
@@ -96,9 +95,9 @@ public class MonthAssistantCalendarFragment extends Fragment implements IControl
     }
 
     @Override
-    public void getInstances(int viewPosition, long start, long end, EventCallback<List<CalendarInstance>> callback)
+    public void getInstances(int viewPosition, long begin, long end, EventCallback<List<CalendarInstance>> callback)
     {
-        calendarViewModel.getInstanceList(iConnectedCalendars.getConnectedCalendars(), start, end, callback);
+        calendarViewModel.getInstanceList(iConnectedCalendars.getConnectedCalendars(), begin, end, callback);
     }
 
     /**
@@ -108,7 +107,10 @@ public class MonthAssistantCalendarFragment extends Fragment implements IControl
     {
         // 개월 수 차이 계산
         int monthDifference = ClockUtil.calcMonthDifference(date, adapter.getAsOfDate());
-        binding.monthAssistantCalendarViewpager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION + monthDifference, false);
+        if (monthDifference != 0)
+        {
+            binding.monthAssistantCalendarViewpager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION + monthDifference, false);
+        }
     }
 
     public void refresh()

@@ -2,6 +2,7 @@ package com.zerodsoft.scheduleweather.calendarview.month;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.text.TextPaint;
@@ -15,9 +16,11 @@ import java.util.Date;
 public class MonthCalendarItemView extends View
 {
     private final TextPaint DAY_TEXT_PAINT;
+    private static final Paint TODAY_PAINT = new Paint();
 
     private float x;
     private float y;
+    private boolean isToday;
 
     private Date startDate;
     private Date endDate;
@@ -31,15 +34,20 @@ public class MonthCalendarItemView extends View
         DAY_TEXT_PAINT.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 12, context.getResources().getDisplayMetrics()));
         DAY_TEXT_PAINT.setColor(dayTextColor);
 
+        TODAY_PAINT.setStrokeWidth(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1f, getContext().getResources().getDisplayMetrics()));
+        TODAY_PAINT.setStyle(Paint.Style.STROKE);
+        TODAY_PAINT.setColor(Color.BLUE);
+
         TypedValue backgroundValue = new TypedValue();
         context.getTheme().resolveAttribute(android.R.attr.selectableItemBackground, backgroundValue, true);
         setBackgroundResource(backgroundValue.resourceId);
     }
 
-    public MonthCalendarItemView setDate(Date startDate, Date endDate)
+    public MonthCalendarItemView setDate(Date startDate, Date endDate, boolean isToday)
     {
         this.startDate = startDate;
         this.endDate = endDate;
+        this.isToday = isToday;
         return this;
     }
 
@@ -59,6 +67,11 @@ public class MonthCalendarItemView extends View
     {
         super.onDraw(canvas);
         canvas.drawText(ClockUtil.D.format(startDate), x, y, DAY_TEXT_PAINT);
+
+        if (isToday)
+        {
+            canvas.drawRect(0, 0, getWidth(), getHeight(), TODAY_PAINT);
+        }
     }
 
     public Date getStartDate()

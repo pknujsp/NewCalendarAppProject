@@ -20,9 +20,12 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 
 public class WeekFragment extends Fragment implements IRefreshView
@@ -86,12 +89,13 @@ public class WeekFragment extends Fragment implements IRefreshView
 
     class OnPageChangeCallback extends ViewPager2.OnPageChangeCallback
     {
-        private final Calendar calendar;
-        private Calendar copiedCalendar;
+        final Calendar calendar;
+        Calendar copiedCalendar;
 
         public OnPageChangeCallback(Calendar calendar)
         {
             this.calendar = calendar;
+            this.copiedCalendar = (Calendar) calendar.clone();
         }
 
 
@@ -131,6 +135,12 @@ public class WeekFragment extends Fragment implements IRefreshView
         {
             weekViewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, true);
         }
+    }
+
+    public void goToWeek(Date date)
+    {
+        int weekDifference = ClockUtil.calcWeekDifference(date, onPageChangeCallback.copiedCalendar.getTime());
+        weekViewPager.setCurrentItem(weekViewPager.getCurrentItem() + weekDifference, true);
     }
 
 

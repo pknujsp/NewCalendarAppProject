@@ -140,7 +140,6 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
     {
         super.onCreate(savedInstanceState);
         mainBinding = DataBindingUtil.setContentView(this, R.layout.activity_app_main);
-        mainBinding.assistantCalendarContainer.setVisibility(View.GONE);
 
         Point point = new Point();
         getWindowManager().getDefaultDisplay().getRealSize(point);
@@ -155,6 +154,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 
     private void init()
     {
+        mainBinding.assistantCalendarContainer.setVisibility(View.GONE);
         KakaoLocalApiCategoryUtil.loadCategories(getApplicationContext());
 
         setSupportActionBar(mainBinding.mainToolbar);
@@ -497,7 +497,8 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
                 case R.id.calendar_type_day:
                     editor.putInt(getString(R.string.preferences_selected_calendar_type_key), TYPE_DAY);
                     calendarTransactionFragment.replaceFragment(DayFragment.TAG);
-                    // fragmentTransaction.replace(R.id.assistant_calendar_container, monthListAssistantCalendarFragment, MonthListAssistantCalendarFragment.TAG).commit();
+                    fragmentTransaction.replace(R.id.assistant_calendar_container, monthAssistantCalendarFragment, MonthAssistantCalendarFragment.TAG).commit();
+                    monthAssistantCalendarFragment.refresh();
                     break;
                 case R.id.calendar_type_week:
                     editor.putInt(getString(R.string.preferences_selected_calendar_type_key), TYPE_WEEK);
@@ -508,8 +509,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
                 case R.id.calendar_type_month:
                     editor.putInt(getString(R.string.preferences_selected_calendar_type_key), TYPE_MONTH);
                     calendarTransactionFragment.replaceFragment(MonthFragment.TAG);
-                    fragmentTransaction.replace(R.id.assistant_calendar_container, monthAssistantCalendarFragment, MonthAssistantCalendarFragment.TAG).commit();
-                    monthAssistantCalendarFragment.refresh();
+                    fragmentTransaction.replace(R.id.assistant_calendar_container, monthListAssistantCalendarFragment, MonthListAssistantCalendarFragment.TAG).commit();
                     break;
             }
 
@@ -751,6 +751,13 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
     public void onClickedDate(Date date)
     {
         Toast.makeText(this, ClockUtil.YYYY_M_D_E.format(date), Toast.LENGTH_SHORT).show();
+        calendarTransactionFragment.changeDate(date);
+    }
+
+    @Override
+    public void onClickedMonth(Date date)
+    {
+
     }
 }
 

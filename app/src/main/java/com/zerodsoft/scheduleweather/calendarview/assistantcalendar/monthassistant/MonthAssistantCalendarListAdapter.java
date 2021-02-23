@@ -33,6 +33,7 @@ public class MonthAssistantCalendarListAdapter extends RecyclerView.Adapter<Mont
     private final IControlEvent iControlEvent;
     private final CalendarDateOnClickListener calendarDateOnClickListener;
     private final Calendar CALENDAR;
+    private final Date TODAY;
     private Context context;
 
     public MonthAssistantCalendarListAdapter(IControlEvent iControlEvent, CalendarDateOnClickListener calendarDateOnClickListener)
@@ -40,6 +41,7 @@ public class MonthAssistantCalendarListAdapter extends RecyclerView.Adapter<Mont
         this.iControlEvent = iControlEvent;
         this.calendarDateOnClickListener = calendarDateOnClickListener;
         CALENDAR = Calendar.getInstance(ClockUtil.TIME_ZONE);
+        TODAY = CALENDAR.getTime();
 
         // 날짜를 이번 달 1일 0시 0분으로 설정
         CALENDAR.set(Calendar.DAY_OF_MONTH, 1);
@@ -147,6 +149,7 @@ public class MonthAssistantCalendarListAdapter extends RecyclerView.Adapter<Mont
                 MonthAssistantCalendarView.MonthAssistantItemView itemView =
                         new MonthAssistantCalendarView.MonthAssistantItemView(context, thisMonthDate, currentDate.getTime(), getDay(i + 1).getTime());
                 itemView.setClickable(true);
+                itemView.setToday(ClockUtil.areSameDate(currentDate.getTime().getTime(), TODAY.getTime()));
                 itemView.setOnClickListener(new View.OnClickListener()
                 {
                     @Override

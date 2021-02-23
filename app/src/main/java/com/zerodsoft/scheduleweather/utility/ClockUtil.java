@@ -230,4 +230,72 @@ public class ClockUtil
 
         return dateMonth - asOfDateMonth;
     }
+
+    public static int calcWeekDifference(Date date, Date asOfDate)
+    {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        Calendar asOfDateCalendar = Calendar.getInstance();
+        asOfDateCalendar.setTime(asOfDate);
+
+        int difference = 0;
+        final int dateYear = calendar.get(Calendar.YEAR);
+        final int asOfDateYear = asOfDateCalendar.get(Calendar.YEAR);
+        final int dateWeek = calendar.get(Calendar.WEEK_OF_YEAR);
+        final int asOfDateWeek = asOfDateCalendar.get(Calendar.WEEK_OF_YEAR);
+
+        if (dateYear == asOfDateYear)
+        {
+            // 2020, 2020
+            difference = dateWeek - asOfDateWeek;
+        } else if (dateYear < asOfDateYear)
+        {
+            // 2020, 2021
+            if (asOfDateWeek == 1 && dateWeek == 52 && asOfDateYear - dateYear == 1)
+            {
+                return difference;
+            } else
+            {
+                int[] weeks = new int[asOfDateYear - dateYear];
+                Calendar copiedCalendar = (Calendar) calendar.clone();
+
+                for (int i = 0; i < weeks.length; i++)
+                {
+                    weeks[i] = copiedCalendar.getActualMaximum(Calendar.WEEK_OF_YEAR);
+                    copiedCalendar.add(Calendar.YEAR, 1);
+                }
+                difference = -asOfDateWeek + dateWeek;
+
+                for (int week : weeks)
+                {
+                    difference -= week;
+                }
+            }
+        } else if (dateYear > asOfDateYear)
+        {
+            // 2020, 2019
+            if (asOfDateWeek == 52 && dateWeek == 1 && dateYear - asOfDateYear == 1)
+            {
+                return difference;
+            } else
+            {
+                int[] weeks = new int[dateYear - asOfDateYear];
+                Calendar copiedCalendar = (Calendar) asOfDateCalendar.clone();
+
+                for (int i = 0; i < weeks.length; i++)
+                {
+                    weeks[i] = copiedCalendar.getActualMaximum(Calendar.WEEK_OF_YEAR);
+                    copiedCalendar.add(Calendar.YEAR, 1);
+                }
+                difference = dateWeek - asOfDateWeek;
+
+                for (int week : weeks)
+                {
+                    difference += week;
+                }
+            }
+        }
+
+        return difference;
+    }
 }

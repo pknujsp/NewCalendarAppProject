@@ -299,6 +299,7 @@
     <string name="empty_title">제목 없음</string>
     <string name="weather">날씨</string>
     <string name="event">일정</string>
+    <string name="today">오늘</string>
 
     <!-- 알림 -->
 

@@ -36,6 +36,7 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
 
     private final SparseArray<MonthViewHolder> holderSparseArray = new SparseArray<>();
     private final Calendar CALENDAR;
+    private final Date TODAY;
     private Context context;
     private final OnEventItemClickListener onEventItemClickListener;
     private final IControlEvent iControlEvent;
@@ -47,6 +48,7 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
         this.iControlEvent = iControlEvent;
         this.iToolbar = iToolbar;
         CALENDAR = Calendar.getInstance(ClockUtil.TIME_ZONE);
+        this.TODAY = CALENDAR.getTime();
 
         // 날짜를 이번 달 1일 0시 0분으로 설정
         CALENDAR.set(Calendar.DAY_OF_MONTH, 1);
@@ -170,7 +172,7 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
 
                 // 날짜 설정
                 MonthCalendarItemView itemView = new MonthCalendarItemView(context, dayTextColor);
-                itemView.setDate(currentDate.getTime(), getDay(i + 1).getTime());
+                itemView.setDate(currentDate.getTime(), getDay(i + 1).getTime(), ClockUtil.areSameDate(currentDate.getTime().getTime(), TODAY.getTime()));
                 itemView.setClickable(true);
                 itemView.setOnClickListener(onClickListener);
                 monthCalendarView.addView(itemView);
