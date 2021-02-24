@@ -422,7 +422,7 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab,
                                                 case R.id.schedule_location:
                                                     if (placesFragment == null)
                                                     {
-                                                        placesFragment = new placesFragment(EventActivity.this);
+                                                        placesFragment = new PlacesFragment(EventActivity.this);
                                                         fragmentTransaction.add(R.id.schedule_fragment_container, placesFragment, TAG_LOCATION);
                                                     }
                                                     setFabs(TAG_LOCATION);

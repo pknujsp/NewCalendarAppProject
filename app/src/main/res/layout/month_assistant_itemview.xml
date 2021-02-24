@@ -77,7 +77,7 @@
             android:textSize="12sp" />
     </LinearLayout>
 
-    <com.zerodsoft.scheduleweather.calendarview.assistantcalendar.monthassistant.MonthAssistantCalendarView
+    <com.zerodsoft.scheduleweather.calendarview.assistantcalendar.assistantcalendar.MonthAssistantCalendarView
         android:id="@+id/month_assistant_calendar_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />

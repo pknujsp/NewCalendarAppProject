@@ -27,7 +27,6 @@ import com.zerodsoft.scheduleweather.activity.map.fragment.interfaces.OnSelected
 import com.zerodsoft.scheduleweather.activity.map.fragment.search.adapter.PlaceCategoriesAdapter;
 import com.zerodsoft.scheduleweather.databinding.FragmentSearchBinding;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapToolbar;
-import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategory;
 
 public class SearchFragment extends Fragment implements OnSelectedMapCategory
 {

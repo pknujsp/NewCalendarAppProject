@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.calendarview.assistantcalendar.monthassistant;
+package com.zerodsoft.scheduleweather.calendarview.assistantcalendar.assistantcalendar;
 
 import android.content.ContentValues;
 import android.content.Context;

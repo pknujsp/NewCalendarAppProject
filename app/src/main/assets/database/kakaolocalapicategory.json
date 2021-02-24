@@ -3,92 +3,92 @@
     {
       "id": 0,
       "description": "대형마트",
-      "name": "MT1"
+      "code": "MT1"
     },
     {
       "id": 1,
       "description": "편의점",
-      "name": "CS2"
+      "code": "CS2"
     },
     {
       "id": 2,
       "description": "어린이집/유치원",
-      "name": "PS3"
+      "code": "PS3"
     },
     {
       "id": 3,
       "description": "학교",
-      "name": "SC4"
+      "code": "SC4"
     },
     {
       "id": 4,
       "description": "학원",
-      "name": "AC5"
+      "code": "AC5"
     },
     {
       "id": 5,
       "description": "주차장",
-      "name": "PK6"
+      "code": "PK6"
     },
     {
       "id": 6,
       "description": "주유소/충전소",
-      "name": "OL7"
+      "code": "OL7"
     },
     {
       "id": 7,
       "description": "지하철역",
-      "name": "SW8"
+      "code": "SW8"
     },
     {
       "id": 8,
       "description": "은행",
-      "name": "BK9"
+      "code": "BK9"
     },
     {
       "id": 9,
       "description": "문화시설",
-      "name": "CT1"
+      "code": "CT1"
     },
     {
       "id": 10,
       "description": "중개업소",
-      "name": "AG2"
+      "code": "AG2"
     },
     {
       "id": 11,
       "description": "공공기관",
-      "name": "PO3"
+      "code": "PO3"
     },
     {
       "id": 12,
       "description": "관광명소",
-      "name": "AT4"
+      "code": "AT4"
     },
     {
       "id": 13,
       "description": "숙박",
-      "name": "AD5"
+      "code": "AD5"
     },
     {
       "id": 14,
       "description": "음식점",
-      "name": "FD6"
+      "code": "FD6"
     },
     {
       "id": 15,
       "description": "카페",
-      "name": "CE7"
+      "code": "CE7"
     },
     {
       "id": 16,
       "description": "병원",
-      "name": "HP8"
+      "code": "HP8"
     },
     {
       "id": 17,
       "description": "약국",
-      "name": "PM9"
+      "code": "PM9"
     }
   ]
 }

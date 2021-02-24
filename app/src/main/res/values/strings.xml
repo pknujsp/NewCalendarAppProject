@@ -130,7 +130,7 @@
     <string name="connect">연결</string>
 
     <string name="disconnect">연결 해제</string>
-    <string name="info_around_location">주변 장소</string>
+    <string name="info_around_location">주변</string>
 
     <string name="connected_google_calendar">구글 캘린더 연결됨</string>
     <string name="disconnected_google_calendar">구글 캘린더 연결해제됨</string>

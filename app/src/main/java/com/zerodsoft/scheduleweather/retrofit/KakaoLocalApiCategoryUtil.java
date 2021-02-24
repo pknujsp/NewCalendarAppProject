@@ -3,7 +3,6 @@ package com.zerodsoft.scheduleweather.retrofit;
 import android.content.Context;
 
 import com.google.gson.Gson;
-import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -12,7 +11,7 @@ import java.util.List;
 
 public class KakaoLocalApiCategoryUtil
 {
-    private static List<KakaoLocalApiCategory> categoryList = null;
+    private static List<PlaceCategory> categoryList = null;
 
     private KakaoLocalApiCategoryUtil()
     {
@@ -58,17 +57,17 @@ public class KakaoLocalApiCategoryUtil
         return isCategory;
     }
 
-    public static List<KakaoLocalApiCategory> getList()
+    public static List<PlaceCategory> getList()
     {
         return categoryList;
     }
 
     public static String getName(int id) throws IndexOutOfBoundsException
     {
-        return categoryList.get(id).getName();
+        return categoryList.get(id).getCode();
     }
 
-    public static KakaoLocalApiCategory getCategoryInfo(int position)
+    public static PlaceCategory getCategoryInfo(int position)
     {
         return categoryList.get(position);
     }
@@ -80,6 +79,6 @@ public class KakaoLocalApiCategoryUtil
 
     class CategoryJsonItem
     {
-        List<KakaoLocalApiCategory> categories;
+        List<PlaceCategory> categories;
     }
 }

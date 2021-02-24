@@ -1,65 +1,58 @@
 package com.zerodsoft.scheduleweather.event.location.placefragments.fragment;
 
-import android.content.Intent;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.os.RemoteException;
 import android.service.carrier.CarrierMessagingService;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.ViewModelStoreOwner;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.event.location.activity.AroundPlacesActivity;
+import com.zerodsoft.scheduleweather.activity.placecategory.OnItemMoveListener;
+import com.zerodsoft.scheduleweather.databinding.PlaceCategoriesFragmentBinding;
+import com.zerodsoft.scheduleweather.event.common.interfaces.ILocation;
 import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
-import com.zerodsoft.scheduleweather.event.location.placefragments.LocationInfo;
 import com.zerodsoft.scheduleweather.event.location.placefragments.adapter.CategoryViewAdapter;
 import com.zerodsoft.scheduleweather.event.location.placefragments.interfaces.IClickedPlaceItem;
 import com.zerodsoft.scheduleweather.event.location.placefragments.interfaces.IPlaceItem;
 import com.zerodsoft.scheduleweather.event.location.placefragments.interfaces.IPlacesFragment;
-import com.zerodsoft.scheduleweather.event.location.placefragments.interfaces.LocationInfoGetter;
-import com.zerodsoft.scheduleweather.event.location.placefragments.model.PlaceCategory;
+import com.zerodsoft.scheduleweather.retrofit.PlaceCategory;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
-import io.reactivex.internal.util.ListAddBiConsumer;
-
-public class PlacesFragment extends Fragment implements LocationInfoGetter, IClickedPlaceItem, IPlacesFragment, IPlaceItem
+public class PlacesFragment extends Fragment implements IClickedPlaceItem, IPlacesFragment, IPlaceItem
 {
     // 이벤트의 위치 값으로 정확한 위치를 지정하기 위해 위치 지정 액티비티 생성(카카오맵 검색 값 기반)
-    private final LocationInfo LocationInfo;
-    private RecyclerView categoryRecyclerView;
+    private final ILocation iLocation;
+    private PlaceCategoriesFragmentBinding binding;
     private CategoryViewAdapter adapter;
-    private FragmentManager fragmentManager;
     private List<PlaceCategory> categories;
 
-    public PlacesFragment(LocationInfo LocationInfo)
+    public PlacesFragment(ILocation iLocation)
     {
-        this.LocationInfo = LocationInfo;
+        this.iLocation = iLocation;
     }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
     {
-        return inflater.inflate(R.layout.place_categories_fragment, container, false);
+        binding = PlaceCategoriesFragmentBinding.inflate(inflater);
+        return binding.getRoot();
     }
-
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState)
@@ -71,25 +64,9 @@ public class PlacesFragment extends Fragment implements LocationInfoGetter, ICli
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
-        // 위치 이름 표시
-        ((TextView) view.findViewById(R.id.location_name)).setText(LocationInfo.getLocationName() + " " + getString(R.string.info_around_location));
+        binding.mapCategoryViewContainer.setLayoutManager(new LinearLayoutManager(view.getContext(), LinearLayoutManager.VERTICAL, false));
 
-        fragmentManager = getParentFragmentManager();
         initLocation();
-
-        categoryRecyclerView = (RecyclerView) view.findViewById(R.id.map_category_view_container);
-        categoryRecyclerView.setLayoutManager(new LinearLayoutManager(view.getContext(), LinearLayoutManager.VERTICAL, false));
-
-        // 편의점, 주차장, ATM을 보여주기로 했다고 가정
-        List<String> selectedCategories = new LinkedList<>();
-        selectedCategories.add("1");
-        selectedCategories.add("5");
-        selectedCategories.add(getString(R.string.atm));
-
-        categories = convertCategoryName(selectedCategories);
-
-        adapter = new CategoryViewAdapter(LocationInfo.copy(), categories, this);
-        categoryRecyclerView.setAdapter(adapter);
     }
 
     private void initLocation()
@@ -101,27 +78,24 @@ public class PlacesFragment extends Fragment implements LocationInfoGetter, ICli
             {
                 if (location.getId() >= 0)
                 {
-                    Fragment fragment = null;
+                    // 편의점, 주차장, ATM을 보여주기로 했다고 가정
+                    binding.locationName.setText((location.getPlaceName() == null ? location.getAddressName() : location.getPlaceName()) + getString(R.string.info_around_location));
 
-                    if (location.getPlaceId() != null)
-                    {
-                        fragment = new PlacesFragment(new LocationInfo(location.getLatitude(), location.getLongitude(), location.getPlaceName()));
-                    } else
-                    {
-                        fragment = new PlacesFragment(new LocationInfo(location.getLatitude(), location.getLongitude(), location.getAddressName()));
-                    }
-                    FragmentManager fragmentManager = getChildFragmentManager();
-                    fragmentManager.beginTransaction().add(R.id.places_around_location_fragment_container, fragment).commit();
+                    List<String> selectedCategories = new LinkedList<>();
+                    selectedCategories.add("1");
+                    selectedCategories.add("5");
+                    selectedCategories.add(getString(R.string.atm));
+
+                    categories = convertCategoryName(selectedCategories);
+                    adapter = new CategoryViewAdapter(location, categories, PlacesFragment.this);
+
+                    binding.mapCategoryViewContainer.setAdapter(adapter);
+
                 }
             }
         });
     }
 
-    @Override
-    public LocationInfo getLocationInfo()
-    {
-        return LocationInfo.copy();
-    }
 
     private List<PlaceCategory> convertCategoryName(List<String> categories)
     {
@@ -165,11 +139,12 @@ public class PlacesFragment extends Fragment implements LocationInfoGetter, ICli
             fragmentManager.beginTransaction().show(mapFragment).hide(this).addToBackStack(null).commit();
         }
 
-         */
         Intent intent = new Intent(requireActivity(), AroundPlacesActivity.class);
         intent.putExtra("map", (HashMap<String, List<PlaceDocuments>>) adapter.getAllItems());
         intent.putExtra("selectedCategory", categoryDescription);
         startActivity(intent);
+
+         */
     }
 
     @Override
@@ -205,7 +180,7 @@ public class PlacesFragment extends Fragment implements LocationInfoGetter, ICli
 
         for (PlaceCategory category : categories)
         {
-            names.add(category.getCategoryName());
+            names.add(category.getDescription());
         }
         return names;
     }
