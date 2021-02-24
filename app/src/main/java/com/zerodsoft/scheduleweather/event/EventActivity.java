@@ -29,8 +29,6 @@ import android.widget.Toast;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.activity.editevent.activity.EditEventActivity;
-import com.zerodsoft.scheduleweather.activity.editevent.value.EventDataController;
 import com.zerodsoft.scheduleweather.activity.main.AppMainActivity;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.databinding.ActivityScheduleInfoBinding;
@@ -42,7 +40,7 @@ import com.zerodsoft.scheduleweather.event.common.interfaces.IFab;
 import com.zerodsoft.scheduleweather.event.common.interfaces.ILocation;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.event.EventFragment;
-import com.zerodsoft.scheduleweather.event.location.PlacesAroundLocationFragment;
+import com.zerodsoft.scheduleweather.event.location.placefragments.fragment.PlacesFragment;
 import com.zerodsoft.scheduleweather.event.weather.WeatherFragment;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
@@ -59,7 +57,7 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab,
 
     private EventFragment eventFragment;
     private WeatherFragment weatherFragment;
-    private PlacesAroundLocationFragment placesAroundLocationFragment;
+    private PlacesFragment placesFragment;
 
     private OnBackPressedCallback onBackPressedCallback;
 
@@ -422,13 +420,13 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab,
                                                     newFragment = weatherFragment;
                                                     break;
                                                 case R.id.schedule_location:
-                                                    if (placesAroundLocationFragment == null)
+                                                    if (placesFragment == null)
                                                     {
-                                                        placesAroundLocationFragment = new PlacesAroundLocationFragment(EventActivity.this);
-                                                        fragmentTransaction.add(R.id.schedule_fragment_container, placesAroundLocationFragment, TAG_LOCATION);
+                                                        placesFragment = new placesFragment(EventActivity.this);
+                                                        fragmentTransaction.add(R.id.schedule_fragment_container, placesFragment, TAG_LOCATION);
                                                     }
                                                     setFabs(TAG_LOCATION);
-                                                    newFragment = placesAroundLocationFragment;
+                                                    newFragment = placesFragment;
                                                     break;
                                             }
 

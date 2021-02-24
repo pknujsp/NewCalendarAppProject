@@ -3,6 +3,8 @@ package com.zerodsoft.scheduleweather.event.location.placefragments.fragment;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.os.RemoteException;
+import android.service.carrier.CarrierMessagingService;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,6 +31,7 @@ import com.zerodsoft.scheduleweather.event.location.placefragments.interfaces.IP
 import com.zerodsoft.scheduleweather.event.location.placefragments.interfaces.IPlacesFragment;
 import com.zerodsoft.scheduleweather.event.location.placefragments.interfaces.LocationInfoGetter;
 import com.zerodsoft.scheduleweather.event.location.placefragments.model.PlaceCategory;
+import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -38,6 +41,7 @@ import io.reactivex.internal.util.ListAddBiConsumer;
 
 public class PlacesFragment extends Fragment implements LocationInfoGetter, IClickedPlaceItem, IPlacesFragment, IPlaceItem
 {
+    // 이벤트의 위치 값으로 정확한 위치를 지정하기 위해 위치 지정 액티비티 생성(카카오맵 검색 값 기반)
     private final LocationInfo LocationInfo;
     private RecyclerView categoryRecyclerView;
     private CategoryViewAdapter adapter;
@@ -71,15 +75,11 @@ public class PlacesFragment extends Fragment implements LocationInfoGetter, ICli
         ((TextView) view.findViewById(R.id.location_name)).setText(LocationInfo.getLocationName() + " " + getString(R.string.info_around_location));
 
         fragmentManager = getParentFragmentManager();
+        initLocation();
 
         categoryRecyclerView = (RecyclerView) view.findViewById(R.id.map_category_view_container);
         categoryRecyclerView.setLayoutManager(new LinearLayoutManager(view.getContext(), LinearLayoutManager.VERTICAL, false));
-    }
 
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState)
-    {
-        super.onActivityCreated(savedInstanceState);
         // 편의점, 주차장, ATM을 보여주기로 했다고 가정
         List<String> selectedCategories = new LinkedList<>();
         selectedCategories.add("1");
@@ -90,6 +90,31 @@ public class PlacesFragment extends Fragment implements LocationInfoGetter, ICli
 
         adapter = new CategoryViewAdapter(LocationInfo.copy(), categories, this);
         categoryRecyclerView.setAdapter(adapter);
+    }
+
+    private void initLocation()
+    {
+        iLocation.getLocation(new CarrierMessagingService.ResultCallback<LocationDTO>()
+        {
+            @Override
+            public void onReceiveResult(@NonNull LocationDTO location) throws RemoteException
+            {
+                if (location.getId() >= 0)
+                {
+                    Fragment fragment = null;
+
+                    if (location.getPlaceId() != null)
+                    {
+                        fragment = new PlacesFragment(new LocationInfo(location.getLatitude(), location.getLongitude(), location.getPlaceName()));
+                    } else
+                    {
+                        fragment = new PlacesFragment(new LocationInfo(location.getLatitude(), location.getLongitude(), location.getAddressName()));
+                    }
+                    FragmentManager fragmentManager = getChildFragmentManager();
+                    fragmentManager.beginTransaction().add(R.id.places_around_location_fragment_container, fragment).commit();
+                }
+            }
+        });
     }
 
     @Override
