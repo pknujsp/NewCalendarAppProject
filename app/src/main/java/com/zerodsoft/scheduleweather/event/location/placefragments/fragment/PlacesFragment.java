@@ -1,5 +1,7 @@
 package com.zerodsoft.scheduleweather.event.location.placefragments.fragment;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.service.carrier.CarrierMessagingService;
@@ -16,6 +18,9 @@ import androidx.lifecycle.ViewModelStoreOwner;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.activity.placecategory.activity.CategorySettingsActivity;
+import com.zerodsoft.scheduleweather.activity.placecategory.activity.PlaceCategoryActivity;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.IstartActivity;
 import com.zerodsoft.scheduleweather.databinding.PlaceCategoriesFragmentBinding;
 import com.zerodsoft.scheduleweather.event.common.interfaces.ILocation;
 import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
@@ -34,13 +39,15 @@ public class PlacesFragment extends Fragment implements IClickedPlaceItem, IPlac
 {
     // 이벤트의 위치 값으로 정확한 위치를 지정하기 위해 위치 지정 액티비티 생성(카카오맵 검색 값 기반)
     private final ILocation iLocation;
+    private final IstartActivity istartActivity;
     private PlaceCategoriesFragmentBinding binding;
     private CategoryViewAdapter adapter;
     private List<PlaceCategory> categories;
 
-    public PlacesFragment(ILocation iLocation)
+    public PlacesFragment(Activity activity)
     {
-        this.iLocation = iLocation;
+        this.iLocation = (ILocation) activity;
+        this.istartActivity = (IstartActivity) activity;
     }
 
     @Nullable
@@ -88,6 +95,15 @@ public class PlacesFragment extends Fragment implements IClickedPlaceItem, IPlac
 
                     binding.mapCategoryViewContainer.setAdapter(adapter);
 
+                    binding.categorySettingsFab.setOnClickListener(new View.OnClickListener()
+                    {
+                        @Override
+                        public void onClick(View view)
+                        {
+                            Intent intent = new Intent(getActivity(), PlaceCategoryActivity.class);
+                            istartActivity.startActivityResult(intent, 0);
+                        }
+                    });
                 }
             }
         });

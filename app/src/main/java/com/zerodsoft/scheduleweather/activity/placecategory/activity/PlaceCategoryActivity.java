@@ -1,5 +1,9 @@
 package com.zerodsoft.scheduleweather.activity.placecategory.activity;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
@@ -10,9 +14,13 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.view.Menu;
 import android.view.MenuItem;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.placecategory.interfaces.OnItemMoveListener;
 import com.zerodsoft.scheduleweather.activity.placecategory.adapter.PlaceCategoryAdapter;
@@ -22,7 +30,10 @@ import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
 import com.zerodsoft.scheduleweather.retrofit.PlaceCategory;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class PlaceCategoryActivity extends AppCompatActivity implements PlaceCategoryAdapter.OnStartDragListener
 {
@@ -82,34 +93,64 @@ public class PlaceCategoryActivity extends AppCompatActivity implements PlaceCat
         binding.placeCategoryList.setLayoutManager(new LinearLayoutManager(getApplicationContext(), LinearLayoutManager.VERTICAL, false));
 
         viewModel = new ViewModelProvider(this).get(PlaceCategoryViewModel.class);
-        viewModel.getPlaceCategoryListLiveData().observe(this, new Observer<List<PlaceCategory>>()
+
+
+        SharedPreferences defaultCategory = getSharedPreferences("default_category", MODE_PRIVATE);
+        SharedPreferences customCategory = getSharedPreferences("custom_category", MODE_PRIVATE);
+
+        final Set<String> selectedDefaultSet = new HashSet<>();
+        final Set<String> selectedCustomSet = new HashSet<>();
+
+        defaultCategory.getStringSet("selected_categories", selectedDefaultSet);
+        customCategory.getStringSet("selected_categories", selectedCustomSet);
+
+        final List<PlaceCategory> placeCategoryList = new ArrayList<>();
+        Collections.copy(placeCategoryList, KakaoLocalApiCategoryUtil.getList());
+
+        List<Integer> removeIndex = new ArrayList<>();
+
+        //기본 카테고리 체크여부 설정
+        for (int i = placeCategoryList.size() - 1; i >= 0; i--)
         {
-            @Override
-            public void onChanged(List<PlaceCategory> placeCategories)
+            String code = placeCategoryList.get(i).getCode();
+            for (String selectedCode : selectedDefaultSet)
             {
-                //기본 카테고리
-                List<PlaceCategory> categoryList = new ArrayList<>(KakaoLocalApiCategoryUtil.getList());
-
-                if (!placeCategories.isEmpty())
+                if (selectedCode.equals(code))
                 {
-                    //커스텀 카테고리가 지정되어 있는 경우
-                    categoryList.addAll(placeCategories);
+                    removeIndex.add(i);
+                    break;
                 }
-                adapter = new PlaceCategoryAdapter(categoryList, PlaceCategoryActivity.this);
-
-                ItemTouchHelperCallback itemTouchHelperCallback = new ItemTouchHelperCallback(adapter);
-                itemTouchHelper = new ItemTouchHelper(itemTouchHelperCallback);
-                itemTouchHelper.attachToRecyclerView(binding.placeCategoryList);
-
-                binding.placeCategoryList.setAdapter(adapter);
             }
-        });
+        }
+
+        if (!removeIndex.isEmpty())
+        {
+            for (int i = removeIndex.size() - 1; i >= 0; i--)
+            {
+                placeCategoryList.remove(removeIndex.get(i).intValue());
+            }
+        }
+
+        adapter = new PlaceCategoryAdapter(placeCategoryList, PlaceCategoryActivity.this);
+
+        ItemTouchHelperCallback itemTouchHelperCallback = new ItemTouchHelperCallback(adapter);
+        itemTouchHelper = new ItemTouchHelper(itemTouchHelperCallback);
+        itemTouchHelper.attachToRecyclerView(binding.placeCategoryList);
+
+        binding.placeCategoryList.setAdapter(adapter);
     }
 
     @Override
     public void onBackPressed()
     {
         finish();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        getMenuInflater().inflate(R.menu.place_category_menu, menu);
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
@@ -120,8 +161,26 @@ public class PlaceCategoryActivity extends AppCompatActivity implements PlaceCat
             case android.R.id.home:
                 onBackPressed();
                 break;
+            case R.id.category_settings:
+            {
+                Intent intent = new Intent(this, CategorySettingsActivity.class);
+                activityResultLauncher.launch(intent);
+            }
         }
         return super.onOptionsItemSelected(item);
     }
+
+    private final ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            new ActivityResultCallback<ActivityResult>()
+            {
+                @Override
+                public void onActivityResult(ActivityResult result)
+                {
+                    final int resultCode = result.getResultCode();
+
+                }
+            }
+    );
 
 }

@@ -24,7 +24,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".activity.placecategory.activity.PlaceCategoryActivity"></activity>
+        <activity android:name=".activity.placecategory.activity.CategorySettingsActivity"></activity>
+        <activity android:name=".activity.placecategory.activity.PlaceCategoryActivity" />
         <activity android:name=".activity.editevent.activity.AttendeesActivity" />
         <activity android:name=".kakaomap.activity.KakaoMapActivity" />
         <activity android:name=".event.common.MLocActivity" />
