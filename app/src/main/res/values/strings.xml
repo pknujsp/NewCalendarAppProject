@@ -300,6 +300,8 @@
     <string name="weather">날씨</string>
     <string name="event">일정</string>
     <string name="today">오늘</string>
+    <string name="custom_category">커스텀</string>
+    <string name="default_category">기본</string>
 
     <!-- 알림 -->
 

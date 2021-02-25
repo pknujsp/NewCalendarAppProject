@@ -27,6 +27,7 @@ import com.zerodsoft.scheduleweather.activity.map.fragment.interfaces.OnSelected
 import com.zerodsoft.scheduleweather.activity.map.fragment.search.adapter.PlaceCategoriesAdapter;
 import com.zerodsoft.scheduleweather.databinding.FragmentSearchBinding;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapToolbar;
+import com.zerodsoft.scheduleweather.retrofit.PlaceCategory;
 
 public class SearchFragment extends Fragment implements OnSelectedMapCategory
 {
@@ -126,10 +127,10 @@ public class SearchFragment extends Fragment implements OnSelectedMapCategory
     }
 
     @Override
-    public void onSelectedMapCategory(KakaoLocalApiCategory category)
+    public void onSelectedMapCategory(PlaceCategory category)
     {
         iMapToolbar.setText(category.getDescription());
-        search(Integer.toString(category.getId()));
+        search(category.getCode());
     }
 
 }

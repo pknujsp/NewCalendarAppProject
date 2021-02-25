@@ -13,17 +13,17 @@ import java.util.List;
 public interface PlaceCategoryDAO
 {
     @Insert(entity = PlaceCategory.class)
-    public long insert(PlaceCategory placeCategory);
+    void insert(PlaceCategory placeCategory);
 
     @Query("DELETE FROM place_category_table WHERE id = :id")
-    public void delete(int id);
+    void delete(int id);
 
     @Query("DELETE FROM place_category_table")
-    public void deleteAll();
+    void deleteAll();
 
     @Query("UPDATE place_category_table SET description =:description WHERE id =:id")
-    public void update(int id, String description);
+    void update(int id, String description);
 
     @Query("SELECT * FROM place_category_table")
-    public LiveData<List<PlaceCategory>> select();
+    LiveData<List<PlaceCategory>> select();
 }

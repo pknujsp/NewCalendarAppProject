@@ -100,14 +100,17 @@ public class PlacesFragment extends Fragment implements IClickedPlaceItem, IPlac
         int index = 0;
         for (String name : categories)
         {
+            PlaceCategory placeCategory = new PlaceCategory();
+
             if (KakaoLocalApiCategoryUtil.isCategory(name))
             {
-                convertedCategories.add(new PlaceCategory(index, KakaoLocalApiCategoryUtil.getDescription(Integer.parseInt(name)),
-                        KakaoLocalApiCategoryUtil.getName(Integer.parseInt(name))));
+                placeCategory.setDescription(KakaoLocalApiCategoryUtil.getDescription(Integer.parseInt(name)));
+                placeCategory.setCode(KakaoLocalApiCategoryUtil.getName(Integer.parseInt(name)));
             } else
             {
-                convertedCategories.add(new PlaceCategory(index, name));
+                placeCategory.setDescription(name);
             }
+            convertedCategories.add(placeCategory);
             index++;
         }
         return convertedCategories;

@@ -11,12 +11,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.map.fragment.interfaces.OnSelectedMapCategory;
 import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
+import com.zerodsoft.scheduleweather.retrofit.PlaceCategory;
 
 import java.util.List;
 
 public class PlaceCategoriesAdapter extends RecyclerView.Adapter<PlaceCategoriesAdapter.PlaceCategoryViewHolder>
 {
-    private List<KakaoLocalApiCategory> categoryList;
+    private List<PlaceCategory> categoryList;
     private OnSelectedMapCategory onSelectedMapCategory;
 
     public PlaceCategoriesAdapter(OnSelectedMapCategory onSelectedMapCategory)
@@ -47,7 +48,7 @@ public class PlaceCategoriesAdapter extends RecyclerView.Adapter<PlaceCategories
     class PlaceCategoryViewHolder extends RecyclerView.ViewHolder
     {
         private TextView categoryDescriptionTextView;
-        private KakaoLocalApiCategory categoryInfo;
+        private PlaceCategory categoryInfo;
 
         PlaceCategoryViewHolder(View view)
         {
@@ -63,13 +64,13 @@ public class PlaceCategoriesAdapter extends RecyclerView.Adapter<PlaceCategories
             });
         }
 
-        public void onBind(KakaoLocalApiCategory categoryInfo)
+        public void onBind(PlaceCategory categoryInfo)
         {
             this.categoryInfo = categoryInfo;
             categoryDescriptionTextView.setText(categoryInfo.getDescription());
         }
 
-        public KakaoLocalApiCategory getCategoryInfo()
+        public PlaceCategory getCategoryInfo()
         {
             return categoryInfo;
         }

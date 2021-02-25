@@ -45,10 +45,13 @@ public class KakaoLocalApiCategoryUtil
         boolean isCategory = false;
         try
         {
-            int id = Integer.parseInt(word);
-            if (id >= 0 && id < categoryList.size())
+            for (PlaceCategory category : categoryList)
             {
-                isCategory = true;
+                if (category.getCode().equals(word))
+                {
+                    isCategory = true;
+                    break;
+                }
             }
         } catch (NumberFormatException e)
         {

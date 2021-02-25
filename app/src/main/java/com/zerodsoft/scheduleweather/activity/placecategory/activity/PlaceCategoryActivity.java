@@ -1,6 +1,7 @@
 package com.zerodsoft.scheduleweather.activity.placecategory.activity;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.DataBindingUtil;
 import androidx.lifecycle.Observer;
@@ -10,6 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
+import android.view.MenuItem;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.placecategory.interfaces.OnItemMoveListener;
@@ -72,6 +74,11 @@ public class PlaceCategoryActivity extends AppCompatActivity implements PlaceCat
     {
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_place_category);
+
+        setSupportActionBar(binding.toolbar);
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setDisplayHomeAsUpEnabled(true);
+
         binding.placeCategoryList.setLayoutManager(new LinearLayoutManager(getApplicationContext(), LinearLayoutManager.VERTICAL, false));
 
         viewModel = new ViewModelProvider(this).get(PlaceCategoryViewModel.class);
@@ -99,11 +106,22 @@ public class PlaceCategoryActivity extends AppCompatActivity implements PlaceCat
         });
     }
 
-    /*
-    카테고리 데이터를 가져온다, DB에서도 가져옴
-     */
-    private void init()
+    @Override
+    public void onBackPressed()
     {
-
+        finish();
     }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item)
+    {
+        switch (item.getItemId())
+        {
+            case android.R.id.home:
+                onBackPressed();
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
 }

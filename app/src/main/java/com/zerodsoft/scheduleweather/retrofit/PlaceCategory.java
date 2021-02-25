@@ -21,26 +21,8 @@ public class PlaceCategory
     @Ignore
     private boolean isDefault;
 
-    public PlaceCategory(String description, String code)
+    public PlaceCategory()
     {
-        this.description = description;
-        this.code = code;
-    }
-
-    public PlaceCategory(String description, boolean isDefault)
-    {
-        this.description = description;
-        this.isDefault = isDefault;
-    }
-
-    public void setDefault(boolean aDefault)
-    {
-        isDefault = aDefault;
-    }
-
-    public boolean isDefault()
-    {
-        return isDefault;
     }
 
     public int getId()
@@ -48,13 +30,38 @@ public class PlaceCategory
         return id;
     }
 
+    public void setId(int id)
+    {
+        this.id = id;
+    }
+
     public String getDescription()
     {
         return description;
     }
 
+    public void setDescription(String description)
+    {
+        this.description = description;
+    }
+
     public String getCode()
     {
         return code;
+    }
+
+    public void setCode(String code)
+    {
+        this.code = code;
+    }
+
+    public boolean isDefault()
+    {
+        return isDefault;
+    }
+
+    public void setDefault(boolean aDefault)
+    {
+        isDefault = aDefault;
     }
 }

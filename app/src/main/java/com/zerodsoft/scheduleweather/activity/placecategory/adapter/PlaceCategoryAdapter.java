@@ -76,7 +76,9 @@ public class PlaceCategoryAdapter extends RecyclerView.Adapter<PlaceCategoryAdap
         public void onBind()
         {
             checkBox.setText(placeCategoryList.get(getAdapterPosition()).getDescription());
-            categoryType.setText(기본, 커스텀);
+            categoryType.setText(placeCategoryList.get(getAdapterPosition()).isDefault() ?
+                    itemView.getContext().getString(R.string.default_category) : itemView.getContext().getString(R.string.custom_category));
+
             dragHandle.setOnTouchListener(new View.OnTouchListener()
             {
                 @Override
