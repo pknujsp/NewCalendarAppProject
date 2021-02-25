@@ -9,7 +9,7 @@
         android:orientation="vertical"
         android:paddingLeft="8dp"
         android:paddingRight="8dp"
-        tools:context=".activity.placecategory.PlaceCategoryActivity">
+        tools:context=".activity.placecategory.activity.PlaceCategoryActivity">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/place_category_list"

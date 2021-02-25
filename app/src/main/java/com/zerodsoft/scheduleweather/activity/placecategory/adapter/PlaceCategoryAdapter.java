@@ -1,20 +1,19 @@
-package com.zerodsoft.scheduleweather.activity.placecategory;
+package com.zerodsoft.scheduleweather.activity.placecategory.adapter;
 
 import android.annotation.SuppressLint;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
-import android.widget.CheckBox;
 import android.widget.ImageButton;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.core.view.MotionEventCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.checkbox.MaterialCheckBox;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.activity.placecategory.interfaces.OnItemMoveListener;
 import com.zerodsoft.scheduleweather.retrofit.PlaceCategory;
 
 import java.util.Collections;
@@ -37,19 +36,20 @@ public class PlaceCategoryAdapter extends RecyclerView.Adapter<PlaceCategoryAdap
     {
         Collections.swap(placeCategoryList, fromPosition, toPosition);
         notifyItemMoved(fromPosition, toPosition);
+        return true;
     }
 
     @NonNull
     @Override
     public CategoryViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType)
     {
-        return null;
+        return new CategoryViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.place_category_row_item, parent, false));
     }
 
     @Override
     public void onBindViewHolder(@NonNull CategoryViewHolder holder, int position)
     {
-
+        holder.onBind();
     }
 
     @Override
@@ -58,15 +58,17 @@ public class PlaceCategoryAdapter extends RecyclerView.Adapter<PlaceCategoryAdap
         return 0;
     }
 
-    class CategoryViewHolder extends RecyclerView.ViewHolder
+    public class CategoryViewHolder extends RecyclerView.ViewHolder
     {
         private MaterialCheckBox checkBox;
+        private TextView categoryType;
         private ImageButton dragHandle;
 
         public CategoryViewHolder(@NonNull View itemView)
         {
             super(itemView);
             checkBox = (MaterialCheckBox) itemView.findViewById(R.id.place_category_checkbox);
+            categoryType = (TextView) itemView.findViewById(R.id.category_type);
             dragHandle = (ImageButton) itemView.findViewById(R.id.category_drag_handle);
         }
 
@@ -74,6 +76,7 @@ public class PlaceCategoryAdapter extends RecyclerView.Adapter<PlaceCategoryAdap
         public void onBind()
         {
             checkBox.setText(placeCategoryList.get(getAdapterPosition()).getDescription());
+            categoryType.setText(기본, 커스텀);
             dragHandle.setOnTouchListener(new View.OnTouchListener()
             {
                 @Override

@@ -1,92 +1,74 @@
 {
   "categories": [
     {
-      "id": 0,
       "description": "대형마트",
       "code": "MT1"
     },
     {
-      "id": 1,
       "description": "편의점",
       "code": "CS2"
     },
     {
-      "id": 2,
       "description": "어린이집/유치원",
       "code": "PS3"
     },
     {
-      "id": 3,
       "description": "학교",
       "code": "SC4"
     },
     {
-      "id": 4,
       "description": "학원",
       "code": "AC5"
     },
     {
-      "id": 5,
       "description": "주차장",
       "code": "PK6"
     },
     {
-      "id": 6,
       "description": "주유소/충전소",
       "code": "OL7"
     },
     {
-      "id": 7,
       "description": "지하철역",
       "code": "SW8"
     },
     {
-      "id": 8,
       "description": "은행",
       "code": "BK9"
     },
     {
-      "id": 9,
       "description": "문화시설",
       "code": "CT1"
     },
     {
-      "id": 10,
       "description": "중개업소",
       "code": "AG2"
     },
     {
-      "id": 11,
       "description": "공공기관",
       "code": "PO3"
     },
     {
-      "id": 12,
       "description": "관광명소",
       "code": "AT4"
     },
     {
-      "id": 13,
       "description": "숙박",
       "code": "AD5"
     },
     {
-      "id": 14,
       "description": "음식점",
       "code": "FD6"
     },
     {
-      "id": 15,
       "description": "카페",
       "code": "CE7"
     },
     {
-      "id": 16,
       "description": "병원",
       "code": "HP8"
     },
     {
-      "id": 17,
       "description": "약국",
       "code": "PM9"
     }

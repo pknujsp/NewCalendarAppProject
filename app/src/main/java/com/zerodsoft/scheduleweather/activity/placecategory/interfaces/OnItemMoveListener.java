@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.activity.placecategory;
+package com.zerodsoft.scheduleweather.activity.placecategory.interfaces;
 
 public interface OnItemMoveListener
 {

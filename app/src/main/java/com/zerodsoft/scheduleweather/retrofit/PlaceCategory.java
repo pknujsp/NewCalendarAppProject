@@ -1,22 +1,36 @@
 package com.zerodsoft.scheduleweather.retrofit;
 
+import androidx.room.ColumnInfo;
+import androidx.room.Entity;
+import androidx.room.Ignore;
+import androidx.room.PrimaryKey;
+
+@Entity(tableName = "place_category_table")
 public class PlaceCategory
 {
-    private final int id;
-    private final String description;
-    private final String code;
+    @ColumnInfo(name = "id")
+    @PrimaryKey(autoGenerate = true)
+    private int id;
+
+    @ColumnInfo(name = "description")
+    private String description;
+
+    @Ignore
+    private String code;
+
+    @Ignore
     private boolean isDefault;
 
-    public PlaceCategory(int id, String description, String code)
+    public PlaceCategory(String description, String code)
     {
-        this.id = id;
         this.description = description;
         this.code = code;
     }
 
-    public PlaceCategory(int id, String description)
+    public PlaceCategory(String description, boolean isDefault)
     {
-        this(id, description, null);
+        this.description = description;
+        this.isDefault = isDefault;
     }
 
     public void setDefault(boolean aDefault)

@@ -1,8 +1,10 @@
-package com.zerodsoft.scheduleweather.activity.placecategory;
+package com.zerodsoft.scheduleweather.activity.placecategory.activity;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.DataBindingUtil;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -10,13 +12,22 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.os.Bundle;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.activity.placecategory.interfaces.OnItemMoveListener;
+import com.zerodsoft.scheduleweather.activity.placecategory.adapter.PlaceCategoryAdapter;
+import com.zerodsoft.scheduleweather.activity.placecategory.viewmodel.PlaceCategoryViewModel;
 import com.zerodsoft.scheduleweather.databinding.ActivityPlaceCategoryBinding;
+import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
+import com.zerodsoft.scheduleweather.retrofit.PlaceCategory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class PlaceCategoryActivity extends AppCompatActivity implements PlaceCategoryAdapter.OnStartDragListener
 {
     private ItemTouchHelper itemTouchHelper;
     private PlaceCategoryAdapter adapter;
     private ActivityPlaceCategoryBinding binding;
+    private PlaceCategoryViewModel viewModel;
 
     @Override
     public void onStartDrag(PlaceCategoryAdapter.CategoryViewHolder viewHolder)
@@ -63,13 +74,29 @@ public class PlaceCategoryActivity extends AppCompatActivity implements PlaceCat
         binding = DataBindingUtil.setContentView(this, R.layout.activity_place_category);
         binding.placeCategoryList.setLayoutManager(new LinearLayoutManager(getApplicationContext(), LinearLayoutManager.VERTICAL, false));
 
-        adapter = new PlaceCategoryAdapter(null, this);
+        viewModel = new ViewModelProvider(this).get(PlaceCategoryViewModel.class);
+        viewModel.getPlaceCategoryListLiveData().observe(this, new Observer<List<PlaceCategory>>()
+        {
+            @Override
+            public void onChanged(List<PlaceCategory> placeCategories)
+            {
+                //기본 카테고리
+                List<PlaceCategory> categoryList = new ArrayList<>(KakaoLocalApiCategoryUtil.getList());
 
-        ItemTouchHelperCallback itemTouchHelperCallback = new ItemTouchHelperCallback(adapter);
-        itemTouchHelper = new ItemTouchHelper(itemTouchHelperCallback);
-        itemTouchHelper.attachToRecyclerView(binding.placeCategoryList);
+                if (!placeCategories.isEmpty())
+                {
+                    //커스텀 카테고리가 지정되어 있는 경우
+                    categoryList.addAll(placeCategories);
+                }
+                adapter = new PlaceCategoryAdapter(categoryList, PlaceCategoryActivity.this);
 
-        binding.placeCategoryList.setAdapter(adapter);
+                ItemTouchHelperCallback itemTouchHelperCallback = new ItemTouchHelperCallback(adapter);
+                itemTouchHelper = new ItemTouchHelper(itemTouchHelperCallback);
+                itemTouchHelper.attachToRecyclerView(binding.placeCategoryList);
+
+                binding.placeCategoryList.setAdapter(adapter);
+            }
+        });
     }
 
     /*
