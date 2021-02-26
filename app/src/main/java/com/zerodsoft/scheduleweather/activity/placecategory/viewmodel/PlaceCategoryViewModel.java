@@ -1,17 +1,16 @@
 package com.zerodsoft.scheduleweather.activity.placecategory.viewmodel;
 
 import android.app.Application;
+import android.service.carrier.CarrierMessagingService;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
-import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.zerodsoft.scheduleweather.activity.placecategory.interfaces.IPlaceCategory;
 import com.zerodsoft.scheduleweather.activity.placecategory.model.PlaceCategoryData;
 import com.zerodsoft.scheduleweather.activity.placecategory.repository.PlaceCategoryRepository;
 import com.zerodsoft.scheduleweather.room.dto.CustomPlaceCategoryDTO;
-import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 import com.zerodsoft.scheduleweather.room.dto.SelectedPlaceCategoryDTO;
 
 import java.util.List;
@@ -57,15 +56,15 @@ public class PlaceCategoryViewModel extends AndroidViewModel implements IPlaceCa
     }
 
     @Override
-    public void updateCustom(int id, String code)
+    public void updateCustom(String previousCode, String code)
     {
-        repository.updateCustom(id, code);
+        repository.updateCustom(previousCode, code);
     }
 
     @Override
-    public void deleteCustom(int id)
+    public void deleteCustom(String code)
     {
-        repository.deleteCustom(id);
+        repository.deleteCustom(code);
     }
 
     @Override
@@ -102,5 +101,11 @@ public class PlaceCategoryViewModel extends AndroidViewModel implements IPlaceCa
     public void getSettingsData()
     {
         repository.getSettingsData();
+    }
+
+    @Override
+    public void containsCode(String code, CarrierMessagingService.ResultCallback<Boolean> callback)
+    {
+        repository.containsCode(code, callback);
     }
 }

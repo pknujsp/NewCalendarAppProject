@@ -130,6 +130,10 @@ public class CategoryExpandableListAdapter extends BaseExpandableListAdapter
             {
                 childViewHolder.editButton = (ImageButton) view.findViewById(R.id.category_edit_button);
                 childViewHolder.editButton.setVisibility(View.VISIBLE);
+
+                final EditButtonHolder editButtonHolder = new EditButtonHolder();
+                editButtonHolder.placeCategoryDTO = categoryList.get(groupPosition).get(childPosition);
+                childViewHolder.editButton.setTag(editButtonHolder);
             }
 
             view.setTag(childViewHolder);
@@ -173,15 +177,26 @@ public class CategoryExpandableListAdapter extends BaseExpandableListAdapter
         return true;
     }
 
-    public final class GroupViewHolder
+    public final static class GroupViewHolder
     {
         MaterialCheckBox categoryTypeCheckBox;
     }
 
-    public final class ChildViewHolder
+    public final static class ChildViewHolder
     {
         MaterialCheckBox checkBox;
         ImageButton editButton;
+    }
+
+
+    public final static class EditButtonHolder
+    {
+        PlaceCategoryDTO placeCategoryDTO;
+
+        public PlaceCategoryDTO getPlaceCategoryDTO()
+        {
+            return placeCategoryDTO;
+        }
     }
 
     private final View.OnClickListener customEditOnClickListener = new View.OnClickListener()

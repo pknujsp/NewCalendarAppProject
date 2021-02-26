@@ -1,27 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:padding="8dp">
 
-    <com.google.android.material.checkbox.MaterialCheckBox
-        android:id="@+id/place_category_checkbox"
-        android:layout_width="match_parent"
+    <TextView
+        android:id="@+id/category_description"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
-        android:layout_centerVertical="true"
-        android:layout_toLeftOf="@id/category_type"
-        android:text="test" />
+        android:layout_toLeftOf="@id/category_drag_handle"
+        android:text="description"
+        android:textColor="@color/black"
+        android:textSize="14sp" />
 
     <TextView
         android:id="@+id/category_type"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerVertical="true"
-        android:layout_marginRight="8dp"
+        android:layout_below="@id/category_description"
+        android:layout_alignParentLeft="true"
         android:layout_toLeftOf="@id/category_drag_handle"
-        android:gravity="right"
-        android:text="default"
-        android:textSize="13sp" />
+        android:text="type"
+        android:textSize="12sp" />
 
     <ImageButton
         android:id="@+id/category_drag_handle"
@@ -29,6 +30,7 @@
         android:layout_height="24dp"
         android:layout_alignParentRight="true"
         android:layout_centerVertical="true"
+        android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
         android:background="?attr/selectableItemBackground"
         android:src="@drawable/drag_handle_foreground" />

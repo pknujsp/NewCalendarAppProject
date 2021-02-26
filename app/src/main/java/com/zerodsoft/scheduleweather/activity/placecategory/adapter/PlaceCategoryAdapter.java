@@ -60,14 +60,14 @@ public class PlaceCategoryAdapter extends RecyclerView.Adapter<PlaceCategoryAdap
 
     public class CategoryViewHolder extends RecyclerView.ViewHolder
     {
-        private MaterialCheckBox checkBox;
+        private TextView categoryDescription;
         private TextView categoryType;
         private ImageButton dragHandle;
 
         public CategoryViewHolder(@NonNull View itemView)
         {
             super(itemView);
-            checkBox = (MaterialCheckBox) itemView.findViewById(R.id.place_category_checkbox);
+            categoryDescription = (TextView) itemView.findViewById(R.id.category_description);
             categoryType = (TextView) itemView.findViewById(R.id.category_type);
             dragHandle = (ImageButton) itemView.findViewById(R.id.category_drag_handle);
         }
@@ -75,7 +75,7 @@ public class PlaceCategoryAdapter extends RecyclerView.Adapter<PlaceCategoryAdap
         @SuppressLint("ClickableViewAccessibility")
         public void onBind()
         {
-            checkBox.setText(placeCategoryDTOList.get(getAdapterPosition()).getDescription());
+            categoryDescription.setText(placeCategoryDTOList.get(getAdapterPosition()).getDescription());
             categoryType.setText(!placeCategoryDTOList.get(getAdapterPosition()).isCustom() ?
                     itemView.getContext().getString(R.string.default_category) : itemView.getContext().getString(R.string.custom_category));
 
@@ -98,4 +98,6 @@ public class PlaceCategoryAdapter extends RecyclerView.Adapter<PlaceCategoryAdap
     {
         void onStartDrag(CategoryViewHolder viewHolder);
     }
+
+
 }

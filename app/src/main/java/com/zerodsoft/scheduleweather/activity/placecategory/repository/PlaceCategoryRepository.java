@@ -1,8 +1,8 @@
 package com.zerodsoft.scheduleweather.activity.placecategory.repository;
 
 import android.content.Context;
+import android.service.carrier.CarrierMessagingService;
 
-import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.zerodsoft.scheduleweather.activity.App;
@@ -18,6 +18,8 @@ import com.zerodsoft.scheduleweather.room.dto.SelectedPlaceCategoryDTO;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import lombok.SneakyThrows;
 
 public class PlaceCategoryRepository implements IPlaceCategory
 {
@@ -51,7 +53,14 @@ public class PlaceCategoryRepository implements IPlaceCategory
     @Override
     public void insertCustom(String code)
     {
-        customPlaceCategoryDAO.insert(code);
+        App.executorService.execute(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                customPlaceCategoryDAO.insert(code);
+            }
+        });
     }
 
     @Override
@@ -70,39 +79,82 @@ public class PlaceCategoryRepository implements IPlaceCategory
     }
 
     @Override
-    public void updateCustom(int id, String code)
+    public void updateCustom(String previousCode, String code)
     {
-        customPlaceCategoryDAO.update(id, code);
+        App.executorService.execute(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                customPlaceCategoryDAO.update(previousCode, code);
+            }
+        });
     }
 
     @Override
-    public void deleteCustom(int id)
+    public void deleteCustom(String code)
     {
-        customPlaceCategoryDAO.delete(id);
+        App.executorService.execute(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                customPlaceCategoryDAO.delete(code);
+            }
+        });
     }
 
     @Override
     public void deleteAllCustom()
     {
-        customPlaceCategoryDAO.deleteAll();
+        App.executorService.execute(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                customPlaceCategoryDAO.deleteAll();
+            }
+        });
+
     }
 
     @Override
     public void insertSelected(String code)
     {
-        selectedPlaceCategoryDAO.insert(code);
+        App.executorService.execute(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                selectedPlaceCategoryDAO.insert(code);
+            }
+        });
     }
 
     @Override
     public void deleteSelected(String code)
     {
-        selectedPlaceCategoryDAO.delete(code);
+        App.executorService.execute(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                selectedPlaceCategoryDAO.delete(code);
+            }
+        });
     }
 
     @Override
     public void deleteAllSelected()
     {
-        selectedPlaceCategoryDAO.deleteAll();
+        App.executorService.execute(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                selectedPlaceCategoryDAO.deleteAll();
+            }
+        });
     }
 
     @Override
@@ -145,6 +197,7 @@ public class PlaceCategoryRepository implements IPlaceCategory
                 {
                     PlaceCategoryDTO placeCategoryDTO = new PlaceCategoryDTO();
                     placeCategoryDTO.setCode(customPlaceCategory.getCode());
+                    placeCategoryDTO.setDescription(customPlaceCategory.getCode());
                     placeCategoryDTO.setCustom(true);
                     customAllCategories.add(placeCategoryDTO);
                 }
@@ -158,5 +211,39 @@ public class PlaceCategoryRepository implements IPlaceCategory
             }
         });
 
+    }
+
+    @Override
+    public void containsCode(String code, CarrierMessagingService.ResultCallback<Boolean> callback)
+    {
+        App.executorService.execute(new Runnable()
+        {
+            @SneakyThrows
+            @Override
+            public void run()
+            {
+                boolean containsCodeCustom = customPlaceCategoryDAO.containsCode(code) == 1;
+
+                if (containsCodeCustom)
+                {
+                    callback.onReceiveResult(true);
+                } else
+                {
+                    boolean containsCodeDefault = false;
+                    List<PlaceCategoryDTO> defaultAllPlaceCategories = KakaoLocalApiCategoryUtil.getList();
+
+                    for (PlaceCategoryDTO placeCategory : defaultAllPlaceCategories)
+                    {
+                        if (placeCategory.getDescription().equals(code))
+                        {
+                            containsCodeDefault = true;
+                            break;
+                        }
+                    }
+
+                    callback.onReceiveResult(containsCodeDefault);
+                }
+            }
+        });
     }
 }

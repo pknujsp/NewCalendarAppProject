@@ -17,12 +17,15 @@ public interface CustomPlaceCategoryDAO
     @Query("SELECT * FROM custom_category_table")
     List<CustomPlaceCategoryDTO> select();
 
-    @Query("UPDATE custom_category_table SET code = :code WHERE id = :id")
-    void update(int id, String code);
+    @Query("UPDATE custom_category_table SET code = :code WHERE code = :previousCode")
+    void update(String previousCode, String code);
 
-    @Query("DELETE FROM custom_category_table WHERE id=:id")
-    void delete(int id);
+    @Query("DELETE FROM custom_category_table WHERE code=:code")
+    void delete(String code);
 
     @Query("DELETE FROM custom_category_table")
     void deleteAll();
+
+    @Query("SELECT EXISTS (SELECT * FROM custom_category_table WHERE code =:code) AS SUCCESS")
+    int containsCode(String code);
 }

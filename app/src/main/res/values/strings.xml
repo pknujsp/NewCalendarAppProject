@@ -303,6 +303,10 @@
     <string name="custom_category">커스텀</string>
     <string name="default_category">기본</string>
     <string name="place_category">장소 카테고리</string>
+    <string name="add_custom_category">커스텀 카테고리 추가</string>
+    <string name="add_custom_category_message">추가할 카테고리의 이름을 입력하세요</string>
+    <string name="add">추가</string>
+    <string name="existing_place_category">이미 존재하는 카테고리 입니다</string>
 
     <!-- 알림 -->
 

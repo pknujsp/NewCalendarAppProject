@@ -92,7 +92,6 @@ public class PlaceCategoryActivity extends AppCompatActivity implements PlaceCat
 
         viewModel = new ViewModelProvider(this).get(PlaceCategoryViewModel.class);
 
-
         SharedPreferences defaultCategory = getSharedPreferences("default_category", MODE_PRIVATE);
         SharedPreferences customCategory = getSharedPreferences("custom_category", MODE_PRIVATE);
 

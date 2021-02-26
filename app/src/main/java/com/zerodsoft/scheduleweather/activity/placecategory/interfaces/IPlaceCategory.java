@@ -1,5 +1,7 @@
 package com.zerodsoft.scheduleweather.activity.placecategory.interfaces;
 
+import android.service.carrier.CarrierMessagingService;
+
 public interface IPlaceCategory
 {
     //custom
@@ -7,11 +9,13 @@ public interface IPlaceCategory
 
     void selectCustom();
 
-    void updateCustom(int id, String code);
+    void updateCustom(String previousCode, String code);
 
-    void deleteCustom(int id);
+    void deleteCustom(String code);
 
     void deleteAllCustom();
+
+    void containsCode(String code, CarrierMessagingService.ResultCallback<Boolean> callback);
 
     //selected
     void insertSelected(String code);
