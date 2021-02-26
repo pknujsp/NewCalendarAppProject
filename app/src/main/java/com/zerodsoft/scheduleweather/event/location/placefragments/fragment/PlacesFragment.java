@@ -18,7 +18,6 @@ import androidx.lifecycle.ViewModelStoreOwner;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.activity.placecategory.activity.CategorySettingsActivity;
 import com.zerodsoft.scheduleweather.activity.placecategory.activity.PlaceCategoryActivity;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IstartActivity;
 import com.zerodsoft.scheduleweather.databinding.PlaceCategoriesFragmentBinding;
@@ -29,7 +28,7 @@ import com.zerodsoft.scheduleweather.event.location.placefragments.adapter.Categ
 import com.zerodsoft.scheduleweather.event.location.placefragments.interfaces.IClickedPlaceItem;
 import com.zerodsoft.scheduleweather.event.location.placefragments.interfaces.IPlaceItem;
 import com.zerodsoft.scheduleweather.event.location.placefragments.interfaces.IPlacesFragment;
-import com.zerodsoft.scheduleweather.retrofit.PlaceCategory;
+import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
 import java.util.LinkedList;
@@ -42,7 +41,7 @@ public class PlacesFragment extends Fragment implements IClickedPlaceItem, IPlac
     private final IstartActivity istartActivity;
     private PlaceCategoriesFragmentBinding binding;
     private CategoryViewAdapter adapter;
-    private List<PlaceCategory> categories;
+    private List<PlaceCategoryDTO> categories;
 
     public PlacesFragment(Activity activity)
     {
@@ -110,23 +109,23 @@ public class PlacesFragment extends Fragment implements IClickedPlaceItem, IPlac
     }
 
 
-    private List<PlaceCategory> convertCategoryName(List<String> categories)
+    private List<PlaceCategoryDTO> convertCategoryName(List<String> categories)
     {
-        List<PlaceCategory> convertedCategories = new LinkedList<>();
+        List<PlaceCategoryDTO> convertedCategories = new LinkedList<>();
         int index = 0;
         for (String name : categories)
         {
-            PlaceCategory placeCategory = new PlaceCategory();
+            PlaceCategoryDTO placeCategoryDTO = new PlaceCategoryDTO();
 
             if (KakaoLocalApiCategoryUtil.isCategory(name))
             {
-                placeCategory.setDescription(KakaoLocalApiCategoryUtil.getDescription(Integer.parseInt(name)));
-                placeCategory.setCode(KakaoLocalApiCategoryUtil.getName(Integer.parseInt(name)));
+                placeCategoryDTO.setDescription(KakaoLocalApiCategoryUtil.getDescription(Integer.parseInt(name)));
+                placeCategoryDTO.setCode(KakaoLocalApiCategoryUtil.getName(Integer.parseInt(name)));
             } else
             {
-                placeCategory.setDescription(name);
+                placeCategoryDTO.setDescription(name);
             }
-            convertedCategories.add(placeCategory);
+            convertedCategories.add(placeCategoryDTO);
             index++;
         }
         return convertedCategories;
@@ -159,7 +158,6 @@ public class PlacesFragment extends Fragment implements IClickedPlaceItem, IPlac
         intent.putExtra("map", (HashMap<String, List<PlaceDocuments>>) adapter.getAllItems());
         intent.putExtra("selectedCategory", categoryDescription);
         startActivity(intent);
-
          */
     }
 
@@ -194,7 +192,7 @@ public class PlacesFragment extends Fragment implements IClickedPlaceItem, IPlac
     {
         List<String> names = new LinkedList<>();
 
-        for (PlaceCategory category : categories)
+        for (PlaceCategoryDTO category : categories)
         {
             names.add(category.getDescription());
         }

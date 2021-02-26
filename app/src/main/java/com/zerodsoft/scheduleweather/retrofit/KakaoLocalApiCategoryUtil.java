@@ -3,6 +3,7 @@ package com.zerodsoft.scheduleweather.retrofit;
 import android.content.Context;
 
 import com.google.gson.Gson;
+import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -11,7 +12,7 @@ import java.util.List;
 
 public class KakaoLocalApiCategoryUtil
 {
-    private static List<PlaceCategory> categoryList = null;
+    private static List<PlaceCategoryDTO> categoryList = null;
 
     private KakaoLocalApiCategoryUtil()
     {
@@ -45,7 +46,7 @@ public class KakaoLocalApiCategoryUtil
         boolean isCategory = false;
         try
         {
-            for (PlaceCategory category : categoryList)
+            for (PlaceCategoryDTO category : categoryList)
             {
                 if (category.getCode().equals(word))
                 {
@@ -60,7 +61,7 @@ public class KakaoLocalApiCategoryUtil
         return isCategory;
     }
 
-    public static List<PlaceCategory> getList()
+    public static List<PlaceCategoryDTO> getList()
     {
         return categoryList;
     }
@@ -70,7 +71,7 @@ public class KakaoLocalApiCategoryUtil
         return categoryList.get(id).getCode();
     }
 
-    public static PlaceCategory getCategoryInfo(int position)
+    public static PlaceCategoryDTO getCategoryInfo(int position)
     {
         return categoryList.get(position);
     }
@@ -82,6 +83,6 @@ public class KakaoLocalApiCategoryUtil
 
     class CategoryJsonItem
     {
-        List<PlaceCategory> categories;
+        List<PlaceCategoryDTO> categories;
     }
 }

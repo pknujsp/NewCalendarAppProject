@@ -1,43 +1,54 @@
 package com.zerodsoft.scheduleweather.activity.placecategory.adapter;
 
+import android.app.Activity;
 import android.content.Context;
+import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.CompoundButton;
+import android.widget.ImageButton;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.appcompat.widget.PopupMenu;
 
 import com.google.android.material.checkbox.MaterialCheckBox;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.retrofit.PlaceCategory;
+import com.zerodsoft.scheduleweather.activity.placecategory.activity.CategorySettingsActivity;
+import com.zerodsoft.scheduleweather.activity.placecategory.interfaces.IPlaceCategory;
+import com.zerodsoft.scheduleweather.activity.placecategory.interfaces.PlaceCategoryEditPopup;
+import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class CategoryExpandableListAdapter extends BaseExpandableListAdapter
 {
-    private final List<List<PlaceCategory>> categoryList;
+    private final List<List<PlaceCategoryDTO>> categoryList;
+    private final boolean[][] savedCheckedStates;
+    private final PlaceCategoryEditPopup placeCategoryEditPopup;
+    private final IPlaceCategory iPlaceCategory;
+
     private String categoryDescription;
     private GroupViewHolder groupViewHolder;
     private ChildViewHolder childViewHolder;
     private Context context;
     private LayoutInflater layoutInflater;
-    private boolean[][] savedCheckedStates;
-    private boolean[][] newCheckedStates;
 
-
-    public CategoryExpandableListAdapter(Context context, List<PlaceCategory> defaultCategoryList, List<PlaceCategory> customCategoryList, boolean[][] savedCheckedStates)
+    public CategoryExpandableListAdapter(Activity activity, IPlaceCategory iPlaceCategory, List<PlaceCategoryDTO> defaultCategoryList, List<PlaceCategoryDTO> customCategoryList, boolean[][] savedCheckedStates)
     {
-        this.context = context;
+        this.context = activity.getApplicationContext();
+        this.placeCategoryEditPopup = (PlaceCategoryEditPopup) activity;
+        this.iPlaceCategory = iPlaceCategory;
         this.layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-
         categoryList = new ArrayList<>();
 
         categoryList.add(defaultCategoryList);
         categoryList.add(customCategoryList);
 
         this.savedCheckedStates = savedCheckedStates;
-        this.newCheckedStates = savedCheckedStates;
     }
 
     @Override
@@ -98,7 +109,7 @@ public class CategoryExpandableListAdapter extends BaseExpandableListAdapter
             groupViewHolder = (GroupViewHolder) view.getTag();
         }
 
-        groupViewHolder.categoryTypeCheckBox.setText(i == 0 ? context.getString(R.string.default_category) : context.getString(R.string.custom_category));
+        groupViewHolder.categoryTypeCheckBox.setText(i == CategorySettingsActivity.CUSTOM_CATEGORY_INDEX ? context.getString(R.string.default_category) : context.getString(R.string.custom_category));
         return view;
     }
 
@@ -114,6 +125,12 @@ public class CategoryExpandableListAdapter extends BaseExpandableListAdapter
             MaterialCheckBox checkBox = (MaterialCheckBox) view.findViewById(R.id.side_nav_calendar_checkbox);
             childViewHolder = new ChildViewHolder();
             childViewHolder.checkBox = checkBox;
+
+            if (groupPosition == CategorySettingsActivity.CUSTOM_CATEGORY_INDEX)
+            {
+                childViewHolder.editButton = (ImageButton) view.findViewById(R.id.category_edit_button);
+                childViewHolder.editButton.setVisibility(View.VISIBLE);
+            }
 
             view.setTag(childViewHolder);
         } else
@@ -131,9 +148,21 @@ public class CategoryExpandableListAdapter extends BaseExpandableListAdapter
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked)
             {
-                newCheckedStates[groupPosition][childPosition] = isChecked;
+                // 실시간으로 변경 값을 적용한다
+                if (isChecked)
+                {
+                    iPlaceCategory.insertSelected(categoryList.get(groupPosition).get(childPosition).getCode());
+                } else
+                {
+                    iPlaceCategory.deleteSelected(categoryList.get(groupPosition).get(childPosition).getCode());
+                }
             }
         });
+
+        if (groupPosition == CategorySettingsActivity.CUSTOM_CATEGORY_INDEX)
+        {
+            childViewHolder.editButton.setOnClickListener(customEditOnClickListener);
+        }
 
         return view;
     }
@@ -152,5 +181,15 @@ public class CategoryExpandableListAdapter extends BaseExpandableListAdapter
     public final class ChildViewHolder
     {
         MaterialCheckBox checkBox;
+        ImageButton editButton;
     }
+
+    private final View.OnClickListener customEditOnClickListener = new View.OnClickListener()
+    {
+        @Override
+        public void onClick(View v)
+        {
+            placeCategoryEditPopup.showPopup(v);
+        }
+    };
 }

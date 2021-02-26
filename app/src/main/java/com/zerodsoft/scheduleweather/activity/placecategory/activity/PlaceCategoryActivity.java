@@ -8,7 +8,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.DataBindingUtil;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -20,14 +19,13 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.placecategory.interfaces.OnItemMoveListener;
 import com.zerodsoft.scheduleweather.activity.placecategory.adapter.PlaceCategoryAdapter;
 import com.zerodsoft.scheduleweather.activity.placecategory.viewmodel.PlaceCategoryViewModel;
 import com.zerodsoft.scheduleweather.databinding.ActivityPlaceCategoryBinding;
 import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
-import com.zerodsoft.scheduleweather.retrofit.PlaceCategory;
+import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -104,15 +102,15 @@ public class PlaceCategoryActivity extends AppCompatActivity implements PlaceCat
         defaultCategory.getStringSet("selected_categories", selectedDefaultSet);
         customCategory.getStringSet("selected_categories", selectedCustomSet);
 
-        final List<PlaceCategory> placeCategoryList = new ArrayList<>();
-        Collections.copy(placeCategoryList, KakaoLocalApiCategoryUtil.getList());
+        final List<PlaceCategoryDTO> placeCategoryDTOList = new ArrayList<>();
+        Collections.copy(placeCategoryDTOList, KakaoLocalApiCategoryUtil.getList());
 
         List<Integer> removeIndex = new ArrayList<>();
 
         //기본 카테고리 체크여부 설정
-        for (int i = placeCategoryList.size() - 1; i >= 0; i--)
+        for (int i = placeCategoryDTOList.size() - 1; i >= 0; i--)
         {
-            String code = placeCategoryList.get(i).getCode();
+            String code = placeCategoryDTOList.get(i).getCode();
             for (String selectedCode : selectedDefaultSet)
             {
                 if (selectedCode.equals(code))
@@ -127,11 +125,11 @@ public class PlaceCategoryActivity extends AppCompatActivity implements PlaceCat
         {
             for (int i = removeIndex.size() - 1; i >= 0; i--)
             {
-                placeCategoryList.remove(removeIndex.get(i).intValue());
+                placeCategoryDTOList.remove(removeIndex.get(i).intValue());
             }
         }
 
-        adapter = new PlaceCategoryAdapter(placeCategoryList, PlaceCategoryActivity.this);
+        adapter = new PlaceCategoryAdapter(placeCategoryDTOList, PlaceCategoryActivity.this);
 
         ItemTouchHelperCallback itemTouchHelperCallback = new ItemTouchHelperCallback(adapter);
         itemTouchHelper = new ItemTouchHelper(itemTouchHelperCallback);

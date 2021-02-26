@@ -21,7 +21,7 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceD
 import com.zerodsoft.scheduleweather.event.location.placefragments.fragment.PlacesFragment;
 import com.zerodsoft.scheduleweather.event.location.placefragments.interfaces.IClickedPlaceItem;
 import com.zerodsoft.scheduleweather.event.location.placefragments.interfaces.IPlaceItem;
-import com.zerodsoft.scheduleweather.retrofit.PlaceCategory;
+import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
 import java.util.HashMap;
@@ -33,12 +33,12 @@ public class CategoryViewAdapter extends RecyclerView.Adapter<CategoryViewAdapte
 {
     private final LocationDTO locationDTO;
     private Context context;
-    private List<PlaceCategory> categories;
+    private List<PlaceCategoryDTO> categories;
     private final IClickedPlaceItem iClickedPlaceItem;
     private PlacesFragment fragment;
     private Map<String, CategoryViewHolder> viewHolderMap;
 
-    public CategoryViewAdapter(LocationDTO locationDTO, List<PlaceCategory> categories, PlacesFragment fragment)
+    public CategoryViewAdapter(LocationDTO locationDTO, List<PlaceCategoryDTO> categories, PlacesFragment fragment)
     {
         this.locationDTO = locationDTO;
         this.categories = categories;
@@ -123,15 +123,15 @@ public class CategoryViewAdapter extends RecyclerView.Adapter<CategoryViewAdapte
                     .setY(Double.toString(locationDTO.getLatitude()));
 
 
-            PlaceCategory placeCategory = categories.get(getAdapterPosition());
-            if (placeCategory.getCode() == null)
+            PlaceCategoryDTO placeCategoryDTO = categories.get(getAdapterPosition());
+            if (placeCategoryDTO.getCode() == null)
             {
-                placeParameter.setQuery(placeCategory.getDescription());
+                placeParameter.setQuery(placeCategoryDTO.getDescription());
             } else
             {
-                placeParameter.setCategoryGroupCode(placeCategory.getCode());
+                placeParameter.setCategoryGroupCode(placeCategoryDTO.getCode());
             }
-            categoryDescription = placeCategory.getDescription();
+            categoryDescription = placeCategoryDTO.getDescription();
 
             adapter = new PlaceItemsAdapters(iClickedPlaceItem);
             itemRecyclerView.setAdapter(adapter);
