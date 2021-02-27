@@ -2,6 +2,7 @@ package com.zerodsoft.scheduleweather.activity.placecategory.activity;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.databinding.DataBindingUtil;
@@ -51,6 +52,7 @@ public class CategorySettingsActivity extends AppCompatActivity implements Place
     private PlaceCategoryViewModel viewModel;
     private List<PlaceCategoryDTO> customCategories;
     private List<PlaceCategoryDTO> defaultCategories;
+    private AlertDialog dialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -61,6 +63,61 @@ public class CategorySettingsActivity extends AppCompatActivity implements Place
         setSupportActionBar(binding.toolbar);
         ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
+        actionBar.setTitle(R.string.category_detail_settings);
+
+        FrameLayout container = new FrameLayout(getApplicationContext());
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        params.leftMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16f, getResources().getDisplayMetrics());
+        params.rightMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16f, getResources().getDisplayMetrics());
+
+        EditText editText = new EditText(getApplicationContext());
+        editText.setLayoutParams(params);
+        container.addView(editText);
+
+        dialog = new MaterialAlertDialogBuilder(this).setTitle(R.string.add_custom_category)
+                .setMessage(R.string.add_custom_category_message)
+                .setView(container)
+                .setCancelable(false)
+                .setPositiveButton(R.string.add, new DialogInterface.OnClickListener()
+                {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i)
+                    {
+                        String result = editText.getText().toString();
+
+                        //중복 검사
+                        viewModel.containsCode(result, new CarrierMessagingService.ResultCallback<Boolean>()
+                        {
+                            @Override
+                            public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
+                            {
+                                runOnUiThread(new Runnable()
+                                {
+                                    @Override
+                                    public void run()
+                                    {
+                                        if (aBoolean)
+                                        {
+                                            Toast.makeText(CategorySettingsActivity.this, getString(R.string.existing_place_category), Toast.LENGTH_SHORT).show();
+                                        } else
+                                        {
+                                            viewModel.insertCustom(result);
+                                            dialogInterface.dismiss();
+                                        }
+                                    }
+                                });
+                            }
+                        });
+
+                    }
+                }).setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener()
+                {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i)
+                    {
+                        dialogInterface.cancel();
+                    }
+                }).create();
 
         binding.addCategoryButton.setOnClickListener(new View.OnClickListener()
         {
@@ -68,60 +125,7 @@ public class CategorySettingsActivity extends AppCompatActivity implements Place
             public void onClick(View v)
             {
                 // 커스텀 카테고리 추가 다이얼로그 표시
-                FrameLayout container = new FrameLayout(getApplicationContext());
-                FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                params.leftMargin = getResources().getDimensionPixelSize((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16f, getResources().getDisplayMetrics()));
-                params.rightMargin = getResources().getDimensionPixelSize((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16f, getResources().getDisplayMetrics()));
-
-                EditText editText = new EditText(getApplicationContext());
-                editText.setLayoutParams(params);
-                container.addView(editText);
-
-                new MaterialAlertDialogBuilder(getApplicationContext()).setTitle(R.string.add_custom_category)
-                        .setMessage(R.string.add_custom_category_message)
-                        .setView(container)
-                        .setCancelable(false)
-                        .setPositiveButton(R.string.add, new DialogInterface.OnClickListener()
-                        {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i)
-                            {
-                                String result = editText.getText().toString();
-
-                                //중복 검사
-                                viewModel.containsCode(result, new CarrierMessagingService.ResultCallback<Boolean>()
-                                {
-                                    @Override
-                                    public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
-                                    {
-                                        runOnUiThread(new Runnable()
-                                        {
-                                            @Override
-                                            public void run()
-                                            {
-                                                if (aBoolean)
-                                                {
-                                                    Toast.makeText(CategorySettingsActivity.this, getString(R.string.existing_place_category), Toast.LENGTH_SHORT).show();
-                                                } else
-                                                {
-                                                    viewModel.insertCustom(result);
-                                                    dialogInterface.dismiss();
-                                                }
-                                            }
-                                        });
-                                    }
-                                });
-
-                            }
-                        }).setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener()
-                {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i)
-                    {
-                        dialogInterface.cancel();
-                    }
-                }).create().show();
-
+                dialog.show();
             }
         });
 
@@ -177,7 +181,7 @@ public class CategorySettingsActivity extends AppCompatActivity implements Place
                 }
             }
         });
-        viewModel.selectCustom();
+        viewModel.getSettingsData();
     }
 
     @Override

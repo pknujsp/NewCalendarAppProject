@@ -307,6 +307,8 @@
     <string name="add_custom_category_message">추가할 카테고리의 이름을 입력하세요</string>
     <string name="add">추가</string>
     <string name="existing_place_category">이미 존재하는 카테고리 입니다</string>
+    <string name="category_settings">카테고리 설정</string>
+    <string name="category_detail_settings">카테고리 세부 설정</string>
 
     <!-- 알림 -->
 

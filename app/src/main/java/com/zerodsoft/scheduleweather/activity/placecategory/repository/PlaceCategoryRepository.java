@@ -189,7 +189,7 @@ public class PlaceCategoryRepository implements IPlaceCategory
                 selectedPlaceCategoryListLiveData.postValue(selectedCategorylist);
 
                 //기본, 커스텀 카테고리 리스트 설정
-                List<PlaceCategoryDTO> defaultAllPlaceCategories = KakaoLocalApiCategoryUtil.getList();
+                List<PlaceCategoryDTO> defaultAllPlaceCategories = KakaoLocalApiCategoryUtil.getDefaultPlaceCategoryList();
                 List<PlaceCategoryDTO> customAllCategories = new ArrayList<>();
 
                 //커스텀 카테고리를 전체 카테고리로 포함시킨다
@@ -230,7 +230,7 @@ public class PlaceCategoryRepository implements IPlaceCategory
                 } else
                 {
                     boolean containsCodeDefault = false;
-                    List<PlaceCategoryDTO> defaultAllPlaceCategories = KakaoLocalApiCategoryUtil.getList();
+                    List<PlaceCategoryDTO> defaultAllPlaceCategories = KakaoLocalApiCategoryUtil.getDefaultPlaceCategoryList();
 
                     for (PlaceCategoryDTO placeCategory : defaultAllPlaceCategories)
                     {

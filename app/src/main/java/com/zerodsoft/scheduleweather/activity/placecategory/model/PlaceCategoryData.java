@@ -9,7 +9,7 @@ import java.util.List;
 
 public class PlaceCategoryData
 {
-    private List<PlaceCategoryDTO> defaultPlaceCategories = KakaoLocalApiCategoryUtil.getList();
+    private List<PlaceCategoryDTO> defaultPlaceCategories = KakaoLocalApiCategoryUtil.getDefaultPlaceCategoryList();
     private List<PlaceCategoryDTO> customCategories = new ArrayList<>();
     private List<SelectedPlaceCategoryDTO> selectedPlaceCategories =new ArrayList<>();
 

@@ -10,6 +10,12 @@ public class PlaceCategoryDTO
     {
     }
 
+    public PlaceCategoryDTO(String description, String code)
+    {
+        this.description = description;
+        this.code = code;
+    }
+
     public String getDescription()
     {
         return description;

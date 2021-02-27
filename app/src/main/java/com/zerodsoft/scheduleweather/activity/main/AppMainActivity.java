@@ -149,7 +149,6 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
         KakaoLocalApiCategoryUtil.loadCategories(getApplicationContext());
 
         setSupportActionBar(mainBinding.mainToolbar);
-
         ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayShowCustomEnabled(true);
         actionBar.setDisplayHomeAsUpEnabled(false);

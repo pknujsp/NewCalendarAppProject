@@ -91,6 +91,7 @@ public class PlaceCategoryAdapter extends RecyclerView.Adapter<PlaceCategoryAdap
                     return false;
                 }
             });
+
         }
     }
 

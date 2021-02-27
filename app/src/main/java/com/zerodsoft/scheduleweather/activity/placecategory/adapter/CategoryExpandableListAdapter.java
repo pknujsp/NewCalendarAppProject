@@ -2,19 +2,15 @@ package com.zerodsoft.scheduleweather.activity.placecategory.adapter;
 
 import android.app.Activity;
 import android.content.Context;
-import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
+import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ImageButton;
+import android.widget.TextView;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.appcompat.widget.PopupMenu;
-
-import com.google.android.material.checkbox.MaterialCheckBox;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.placecategory.activity.CategorySettingsActivity;
 import com.zerodsoft.scheduleweather.activity.placecategory.interfaces.IPlaceCategory;
@@ -78,13 +74,13 @@ public class CategoryExpandableListAdapter extends BaseExpandableListAdapter
     @Override
     public long getGroupId(int i)
     {
-        return 0;
+        return i;
     }
 
     @Override
     public long getChildId(int groupPosition, int childPosition)
     {
-        return 0;
+        return childPosition;
     }
 
     @Override
@@ -98,10 +94,10 @@ public class CategoryExpandableListAdapter extends BaseExpandableListAdapter
     {
         if (view == null)
         {
-            view = layoutInflater.inflate(R.layout.place_category_setting_row_item, null);
+            view = layoutInflater.inflate(R.layout.place_category_settings_parent_item, null);
 
             groupViewHolder = new GroupViewHolder();
-            groupViewHolder.categoryTypeCheckBox = (MaterialCheckBox) view.findViewById(R.id.place_category_checkbox);
+            groupViewHolder.categoryTypeTextView = (TextView) view.findViewById(R.id.place_category_type);
 
             view.setTag(groupViewHolder);
         } else
@@ -109,7 +105,7 @@ public class CategoryExpandableListAdapter extends BaseExpandableListAdapter
             groupViewHolder = (GroupViewHolder) view.getTag();
         }
 
-        groupViewHolder.categoryTypeCheckBox.setText(i == CategorySettingsActivity.CUSTOM_CATEGORY_INDEX ? context.getString(R.string.default_category) : context.getString(R.string.custom_category));
+        groupViewHolder.categoryTypeTextView.setText(i == CategorySettingsActivity.CUSTOM_CATEGORY_INDEX ? context.getString(R.string.custom_category) : context.getString(R.string.default_category));
         return view;
     }
 
@@ -120,11 +116,10 @@ public class CategoryExpandableListAdapter extends BaseExpandableListAdapter
 
         if (view == null)
         {
-            view = layoutInflater.inflate(R.layout.place_category_setting_row_item, null);
+            view = layoutInflater.inflate(R.layout.place_category_settings_child_item, null);
 
-            MaterialCheckBox checkBox = (MaterialCheckBox) view.findViewById(R.id.side_nav_calendar_checkbox);
             childViewHolder = new ChildViewHolder();
-            childViewHolder.checkBox = checkBox;
+            childViewHolder.checkBox = (CheckBox) view.findViewById(R.id.place_category_checkbox);
 
             if (groupPosition == CategorySettingsActivity.CUSTOM_CATEGORY_INDEX)
             {
@@ -179,15 +174,14 @@ public class CategoryExpandableListAdapter extends BaseExpandableListAdapter
 
     public final static class GroupViewHolder
     {
-        MaterialCheckBox categoryTypeCheckBox;
+        TextView categoryTypeTextView;
     }
 
     public final static class ChildViewHolder
     {
-        MaterialCheckBox checkBox;
+        CheckBox checkBox;
         ImageButton editButton;
     }
-
 
     public final static class EditButtonHolder
     {

@@ -26,6 +26,9 @@ public class PlaceCategoryViewModel extends AndroidViewModel implements IPlaceCa
     {
         super(application);
         repository = new PlaceCategoryRepository(application.getApplicationContext());
+        selectedPlaceCategoryListLiveData = repository.getSelectedPlaceCategoryListLiveData();
+        customPlaceCategoryListLiveData = repository.getCustomPlaceCategoryListLiveData();
+        placeCategoryDataLiveData = repository.getPlaceCategoryDataLiveData();
     }
 
     public MutableLiveData<List<SelectedPlaceCategoryDTO>> getSelectedPlaceCategoryListLiveData()

@@ -22,7 +22,7 @@ public class PlaceCategoriesAdapter extends RecyclerView.Adapter<PlaceCategories
 
     public PlaceCategoriesAdapter(OnSelectedMapCategory onSelectedMapCategory)
     {
-        categoryList = KakaoLocalApiCategoryUtil.getList();
+        categoryList = KakaoLocalApiCategoryUtil.getDefaultPlaceCategoryList();
         this.onSelectedMapCategory = onSelectedMapCategory;
     }
 

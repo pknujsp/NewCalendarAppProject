@@ -5,7 +5,6 @@
     android:orientation="horizontal"
     android:padding="12dp">
 
-
     <ImageView
         android:id="@+id/side_nav_account_image"
         android:layout_width="24dp"
