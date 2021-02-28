@@ -24,4 +24,10 @@ public interface SelectedPlaceCategoryDAO
 
     @Query("SELECT * FROM selected_place_category_table")
     List<SelectedPlaceCategoryDTO> select();
+
+    @Query("SELECT * FROM selected_place_category_table WHERE code =:code")
+    SelectedPlaceCategoryDTO select(String code);
+
+    @Query("UPDATE selected_place_category_table SET code =:newCode WHERE code =:currentCode")
+    void update(String currentCode, String newCode);
 }

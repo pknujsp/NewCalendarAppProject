@@ -56,13 +56,9 @@ public class KakaoLocalApiCategoryUtil
         boolean isCategory = false;
         try
         {
-            for (PlaceCategoryDTO category : categoryList)
+            if (defaultPlaceCategoryMap.containsKey(word) || defaultPlaceCategoryMap.containsValue(word))
             {
-                if (category.getCode().equals(word))
-                {
-                    isCategory = true;
-                    break;
-                }
+                isCategory = true;
             }
         } catch (NumberFormatException e)
         {
@@ -81,9 +77,24 @@ public class KakaoLocalApiCategoryUtil
         return defaultPlaceCategoryMap;
     }
 
-    public static String getName(int id) throws IndexOutOfBoundsException
+    public static String getCode(String word) throws IndexOutOfBoundsException
     {
-        return categoryList.get(id).getCode();
+        String code = null;
+
+        if (defaultPlaceCategoryMap.containsKey(word))
+        {
+            code = word;
+        } else
+        {
+            for (PlaceCategoryDTO placeCategory : categoryList)
+            {
+                if (placeCategory.getDescription().equals(word))
+                {
+                    code = placeCategory.getCode();
+                }
+            }
+        }
+        return code;
     }
 
 

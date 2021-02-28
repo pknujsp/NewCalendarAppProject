@@ -11,7 +11,6 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.checkbox.MaterialCheckBox;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.placecategory.interfaces.OnItemMoveListener;
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
@@ -21,20 +20,19 @@ import java.util.List;
 
 public class PlaceCategoryAdapter extends RecyclerView.Adapter<PlaceCategoryAdapter.CategoryViewHolder> implements OnItemMoveListener
 {
-    private List<PlaceCategoryDTO> placeCategoryDTOList;
+    private List<PlaceCategoryDTO> placeCategoryList;
     private final OnStartDragListener onStartDragListener;
 
-    public PlaceCategoryAdapter(List<PlaceCategoryDTO> placeCategoryDTOList, OnStartDragListener onStartDragListener)
+    public PlaceCategoryAdapter(List<PlaceCategoryDTO> placeCategoryList, OnStartDragListener onStartDragListener)
     {
-        this.placeCategoryDTOList = placeCategoryDTOList;
+        this.placeCategoryList = placeCategoryList;
         this.onStartDragListener = onStartDragListener;
     }
-
 
     @Override
     public boolean onItemMove(int fromPosition, int toPosition)
     {
-        Collections.swap(placeCategoryDTOList, fromPosition, toPosition);
+        Collections.swap(placeCategoryList, fromPosition, toPosition);
         notifyItemMoved(fromPosition, toPosition);
         return true;
     }
@@ -55,7 +53,7 @@ public class PlaceCategoryAdapter extends RecyclerView.Adapter<PlaceCategoryAdap
     @Override
     public int getItemCount()
     {
-        return 0;
+        return placeCategoryList.size();
     }
 
     public class CategoryViewHolder extends RecyclerView.ViewHolder
@@ -75,8 +73,8 @@ public class PlaceCategoryAdapter extends RecyclerView.Adapter<PlaceCategoryAdap
         @SuppressLint("ClickableViewAccessibility")
         public void onBind()
         {
-            categoryDescription.setText(placeCategoryDTOList.get(getAdapterPosition()).getDescription());
-            categoryType.setText(!placeCategoryDTOList.get(getAdapterPosition()).isCustom() ?
+            categoryDescription.setText(placeCategoryList.get(getAdapterPosition()).getDescription());
+            categoryType.setText(!placeCategoryList.get(getAdapterPosition()).isCustom() ?
                     itemView.getContext().getString(R.string.default_category) : itemView.getContext().getString(R.string.custom_category));
 
             dragHandle.setOnTouchListener(new View.OnTouchListener()

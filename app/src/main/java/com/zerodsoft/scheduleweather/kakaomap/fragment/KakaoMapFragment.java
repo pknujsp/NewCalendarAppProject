@@ -251,12 +251,6 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     }
 
     @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState)
-    {
-        super.onActivityCreated(savedInstanceState);
-    }
-
-    @Override
     public void onStart()
     {
         super.onStart();

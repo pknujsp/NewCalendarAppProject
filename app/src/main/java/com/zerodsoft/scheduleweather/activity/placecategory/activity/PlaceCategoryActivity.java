@@ -8,7 +8,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.DataBindingUtil;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -17,6 +16,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.RemoteException;
+import android.service.carrier.CarrierMessagingService;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -25,23 +26,24 @@ import com.zerodsoft.scheduleweather.activity.placecategory.interfaces.OnItemMov
 import com.zerodsoft.scheduleweather.activity.placecategory.adapter.PlaceCategoryAdapter;
 import com.zerodsoft.scheduleweather.activity.placecategory.viewmodel.PlaceCategoryViewModel;
 import com.zerodsoft.scheduleweather.databinding.ActivityPlaceCategoryBinding;
+import com.zerodsoft.scheduleweather.event.EventActivity;
 import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 import com.zerodsoft.scheduleweather.room.dto.SelectedPlaceCategoryDTO;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class PlaceCategoryActivity extends AppCompatActivity implements PlaceCategoryAdapter.OnStartDragListener
 {
     private ItemTouchHelper itemTouchHelper;
+    private ItemTouchHelperCallback itemTouchHelperCallback;
     private PlaceCategoryAdapter adapter;
     private ActivityPlaceCategoryBinding binding;
     private PlaceCategoryViewModel viewModel;
+    private List<PlaceCategoryDTO> placeCategories;
+    private boolean isEdited = false;
 
     public static final int RESULT_MODIFIED_CATEGORY = 10;
 
@@ -73,6 +75,7 @@ public class PlaceCategoryActivity extends AppCompatActivity implements PlaceCat
         {
             // 움직이면 어떻게 할것인지 구현
             onItemMoveListener.onItemMove(viewHolder.getAdapterPosition(), target.getAdapterPosition());
+            isEdited = true;
             return true;
         }
 
@@ -97,55 +100,39 @@ public class PlaceCategoryActivity extends AppCompatActivity implements PlaceCat
         binding.placeCategoryList.setLayoutManager(new LinearLayoutManager(getApplicationContext(), LinearLayoutManager.VERTICAL, false));
 
         viewModel = new ViewModelProvider(this).get(PlaceCategoryViewModel.class);
-        viewModel.selectSelected();
-        viewModel.getSelectedPlaceCategoryListLiveData().observe(this, new Observer<List<SelectedPlaceCategoryDTO>>()
-        {
-            @Override
-            public void onChanged(List<SelectedPlaceCategoryDTO> result)
-            {
-                // 기본화면 생성
-                if (!result.isEmpty())
-                {
-                    Map<String, String> defaultPlaceCategoryMap = KakaoLocalApiCategoryUtil.getDefaultPlaceCategoryMap();
-                    List<PlaceCategoryDTO> placeCategories = new ArrayList<>();
-
-                    for (SelectedPlaceCategoryDTO selectedPlaceCategory : result)
-                    {
-                        PlaceCategoryDTO placeCategory = new PlaceCategoryDTO();
-                        viewModel.selectSelected();
-                        //기본 카테고리 인 경우
-                        if (defaultPlaceCategoryMap.containsKey(selectedPlaceCategory.getCode()))
-                        {
-                            placeCategory.setCode(selectedPlaceCategory.getCode());
-                            placeCategory.setDescription(defaultPlaceCategoryMap.get(selectedPlaceCategory.getCode()));
-                        } else
-                        {
-                            //커스텀인 경우
-                            placeCategory.setCode(selectedPlaceCategory.getCode());
-                            placeCategory.setDescription(selectedPlaceCategory.getCode());
-                            placeCategory.setCustom(true);
-                        }
-                        placeCategories.add(placeCategory);
-                    }
-
-                    adapter = new PlaceCategoryAdapter(placeCategories, PlaceCategoryActivity.this);
-
-                    ItemTouchHelperCallback itemTouchHelperCallback = new ItemTouchHelperCallback(adapter);
-                    itemTouchHelper = new ItemTouchHelper(itemTouchHelperCallback);
-                    itemTouchHelper.attachToRecyclerView(binding.placeCategoryList);
-
-                    binding.placeCategoryList.setAdapter(adapter);
-                }
-            }
-        });
-
+        viewModel.selectSelected(resultCallback);
     }
 
     @Override
     public void onBackPressed()
     {
-        // 변경값 저장
-        finish();
+        // 변경된 순서 저장
+        if (isEdited)
+        {
+            viewModel.deleteAllSelected(new CarrierMessagingService.ResultCallback<Boolean>()
+            {
+                @Override
+                public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
+                {
+                    if (aBoolean)
+                    {
+                        viewModel.insertAllSelected(placeCategories, new CarrierMessagingService.ResultCallback<List<SelectedPlaceCategoryDTO>>()
+                        {
+                            @Override
+                            public void onReceiveResult(@NonNull List<SelectedPlaceCategoryDTO> selectedPlaceCategoryDTOS) throws RemoteException
+                            {
+                                setResult(EventActivity.RESULT_EDITED_PLACE_CATEGORY);
+                                finish();
+                            }
+                        });
+                    }
+                }
+            });
+        } else
+        {
+            setResult(RESULT_CANCELED);
+            finish();
+        }
     }
 
     @Override
@@ -183,7 +170,8 @@ public class PlaceCategoryActivity extends AppCompatActivity implements PlaceCat
                     switch (result.getResultCode())
                     {
                         case RESULT_MODIFIED_CATEGORY:
-                            viewModel.selectSelected();
+                            viewModel.selectSelected(resultCallback);
+                            isEdited = true;
                             break;
                         case RESULT_CANCELED:
                             break;
@@ -191,5 +179,50 @@ public class PlaceCategoryActivity extends AppCompatActivity implements PlaceCat
                 }
             }
     );
+
+    private final CarrierMessagingService.ResultCallback<List<SelectedPlaceCategoryDTO>> resultCallback = new CarrierMessagingService.ResultCallback<List<SelectedPlaceCategoryDTO>>()
+    {
+        @Override
+        public void onReceiveResult(@NonNull List<SelectedPlaceCategoryDTO> result) throws RemoteException
+        {
+            Map<String, String> defaultPlaceCategoryMap = KakaoLocalApiCategoryUtil.getDefaultPlaceCategoryMap();
+            placeCategories = new ArrayList<>();
+
+            for (SelectedPlaceCategoryDTO selectedPlaceCategory : result)
+            {
+                PlaceCategoryDTO placeCategory = new PlaceCategoryDTO();
+
+                //기본 카테고리 인 경우
+                if (defaultPlaceCategoryMap.containsKey(selectedPlaceCategory.getCode()))
+                {
+                    placeCategory.setCode(selectedPlaceCategory.getCode());
+                    placeCategory.setDescription(defaultPlaceCategoryMap.get(selectedPlaceCategory.getCode()));
+                } else
+                {
+                    //커스텀인 경우
+                    placeCategory.setCode(selectedPlaceCategory.getCode());
+                    placeCategory.setDescription(selectedPlaceCategory.getCode());
+                    placeCategory.setCustom(true);
+                }
+                placeCategories.add(placeCategory);
+            }
+
+            runOnUiThread(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    adapter = new PlaceCategoryAdapter(placeCategories, PlaceCategoryActivity.this);
+
+                    itemTouchHelperCallback = new ItemTouchHelperCallback(adapter);
+                    itemTouchHelper = new ItemTouchHelper(itemTouchHelperCallback);
+                    itemTouchHelper.attachToRecyclerView(binding.placeCategoryList);
+
+                    binding.placeCategoryList.setAdapter(adapter);
+                }
+            });
+
+        }
+    };
 
 }

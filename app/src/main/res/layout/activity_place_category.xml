@@ -16,7 +16,7 @@
 
             <com.google.android.material.appbar.MaterialToolbar
                 android:id="@+id/toolbar"
-                style="@style/Widget.MaterialComponents.Toolbar"
+                style="@style/Widget.MaterialComponents.Toolbar.Surface"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
@@ -26,9 +26,7 @@
             android:id="@+id/place_category_list"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:paddingLeft="8dp"
-            android:paddingRight="8dp" />
+            android:orientation="vertical" />
 
     </LinearLayout>
 </layout>

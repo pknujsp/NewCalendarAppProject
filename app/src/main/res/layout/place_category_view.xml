@@ -3,38 +3,34 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="@dimen/info_around_location_item_margin"
-    android:layout_marginBottom="@dimen/info_around_location_item_margin"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:paddingTop="@dimen/info_around_location_item_margin"
+    android:paddingBottom="@dimen/info_around_location_item_margin">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="@dimen/info_around_location_margin"
-        android:layout_marginTop="16dp"
-        android:layout_marginRight="@dimen/info_around_location_margin"
-        android:layout_marginBottom="16dp"
         android:orientation="horizontal">
 
         <TextView
             android:id="@+id/map_category_name"
             android:layout_width="0dp"
-            android:layout_height="36dp"
+            android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:layout_weight="1"
             android:gravity="center_vertical"
+            android:text="편의점"
             android:textColor="@android:color/black"
-            android:textSize="20sp" />
+            android:textSize="18sp" />
 
         <Button
             android:id="@+id/map_category_more"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
             android:layout_width="wrap_content"
-            android:layout_height="36dp"
+            android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
-            android:background="?attr/selectableItemBackground"
-            android:minWidth="64dp"
-            android:text="@string/show_more"
-            android:textColor="@color/colorPrimary" />
+            android:text="@string/show_more" />
+
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
@@ -42,8 +38,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:nestedScrollingEnabled="false"
-        android:orientation="horizontal"
-        android:paddingTop="4dp"
-        android:paddingBottom="4dp" />
+        android:orientation="horizontal" />
 
 </LinearLayout>

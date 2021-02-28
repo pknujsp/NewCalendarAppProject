@@ -86,6 +86,8 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab,
     public static final int REQUEST_EXCEPT_THIS_INSTANCE = 5100;
     public static final int REQUEST_SUBSEQUENT_INCLUDING_THIS = 5200;
 
+    public static final int RESULT_EDITED_PLACE_CATEGORY = 6000;
+
 
     private String clickedFragmentTag;
 
@@ -725,7 +727,10 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab,
                 public void onActivityResult(ActivityResult result)
                 {
                     final int resultCode = result.getResultCode();
-
+                    if (resultCode == RESULT_EDITED_PLACE_CATEGORY || resultCode == RESULT_RESELECTED_LOCATION || resultCode == RESULT_SELECTED_LOCATION)
+                    {
+                        placesFragment.refresh();
+                    }
                 }
             }
     );

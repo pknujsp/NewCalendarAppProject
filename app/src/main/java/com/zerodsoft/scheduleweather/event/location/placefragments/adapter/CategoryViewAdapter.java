@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.etc.RecyclerViewItemDecoration;
+import com.zerodsoft.scheduleweather.kakaomap.util.LocalParameterUtil;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.kakaomap.viewmodel.PlacesViewModel;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
@@ -27,7 +28,6 @@ import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class CategoryViewAdapter extends RecyclerView.Adapter<CategoryViewAdapter.CategoryViewHolder> implements IPlaceItem
 {
@@ -35,23 +35,21 @@ public class CategoryViewAdapter extends RecyclerView.Adapter<CategoryViewAdapte
     private Context context;
     private List<PlaceCategoryDTO> categories;
     private final IClickedPlaceItem iClickedPlaceItem;
-    private PlacesFragment fragment;
-    private Map<String, CategoryViewHolder> viewHolderMap;
+    private Map<PlaceCategoryDTO, CategoryViewHolder> viewHolderMap;
 
     public CategoryViewAdapter(LocationDTO locationDTO, List<PlaceCategoryDTO> categories, PlacesFragment fragment)
     {
         this.locationDTO = locationDTO;
         this.categories = categories;
         this.iClickedPlaceItem = (IClickedPlaceItem) fragment;
-        this.fragment = fragment;
         this.viewHolderMap = new HashMap<>();
+        context = fragment.getContext();
     }
 
     @NonNull
     @Override
     public CategoryViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType)
     {
-        context = parent.getContext();
         return new CategoryViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.place_category_view, parent, false));
     }
 
@@ -62,29 +60,23 @@ public class CategoryViewAdapter extends RecyclerView.Adapter<CategoryViewAdapte
     }
 
     @Override
-    public List<PlaceDocuments> getPlaceItems(String categoryName)
+    public List<PlaceDocuments> getPlaceItems(PlaceCategoryDTO placeCategory)
     {
-        return viewHolderMap.get(categoryName).adapter.getCurrentList().snapshot();
+        return viewHolderMap.get(placeCategory).adapter.getCurrentList().snapshot();
     }
+
 
     @Override
-    public List<String> getCategoryNames()
+    public int getPlaceItemsSize(PlaceCategoryDTO placeCategory)
     {
-        return null;
+        return viewHolderMap.get(placeCategory).adapter.getCurrentList().size();
     }
 
-    @Override
-    public int getPlaceItemsSize(String categoryName)
+    public Map<PlaceCategoryDTO, List<PlaceDocuments>> getAllItems()
     {
-        return viewHolderMap.get(categoryName).adapter.getCurrentList().size();
-    }
+        Map<PlaceCategoryDTO, List<PlaceDocuments>> map = new HashMap<>();
 
-    public Map<String, List<PlaceDocuments>> getAllItems()
-    {
-        Map<String, List<PlaceDocuments>> map = new HashMap<>();
-        Set<String> keySet = viewHolderMap.keySet();
-
-        for (String key : keySet)
+        for (PlaceCategoryDTO placeCategoryDTO : categories)
         {
             map.put(key, viewHolderMap.get(key).adapter.getCurrentList().snapshot());
         }
@@ -116,21 +108,12 @@ public class CategoryViewAdapter extends RecyclerView.Adapter<CategoryViewAdapte
 
         public void onBind()
         {
-            LocalApiPlaceParameter placeParameter = new LocalApiPlaceParameter();
-            placeParameter.setPage(LocalApiPlaceParameter.DEFAULT_PAGE).setRadius(LocalApiPlaceParameter.DEFAULT_RADIUS)
-                    .setSize(LocalApiPlaceParameter.DEFAULT_SIZE).setSort(LocalApiPlaceParameter.SORT_ACCURACY)
-                    .setX(Double.toString(locationDTO.getLongitude()))
-                    .setY(Double.toString(locationDTO.getLatitude()));
-
-
             PlaceCategoryDTO placeCategoryDTO = categories.get(getAdapterPosition());
-            if (placeCategoryDTO.getCode() == null)
-            {
-                placeParameter.setQuery(placeCategoryDTO.getDescription());
-            } else
-            {
-                placeParameter.setCategoryGroupCode(placeCategoryDTO.getCode());
-            }
+
+            LocalApiPlaceParameter placeParameter = LocalParameterUtil.getPlaceParameter(placeCategoryDTO.getCode(), locationDTO.getLatitude(),
+                    locationDTO.getLongitude(), LocalApiPlaceParameter.DEFAULT_SIZE, LocalApiPlaceParameter.DEFAULT_PAGE,
+                    LocalApiPlaceParameter.SEARCH_CRITERIA_SORT_TYPE_ACCURACY);
+
             categoryDescription = placeCategoryDTO.getDescription();
 
             adapter = new PlaceItemsAdapters(iClickedPlaceItem);

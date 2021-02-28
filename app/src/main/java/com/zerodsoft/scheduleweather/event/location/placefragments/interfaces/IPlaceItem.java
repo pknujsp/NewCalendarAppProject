@@ -1,14 +1,13 @@
 package com.zerodsoft.scheduleweather.event.location.placefragments.interfaces;
 
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
+import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 
 import java.util.List;
 
 public interface IPlaceItem
 {
-    List<PlaceDocuments> getPlaceItems(String categoryName);
+    List<PlaceDocuments> getPlaceItems(PlaceCategoryDTO placeCategory);
 
-    List<String> getCategoryNames();
-
-    int getPlaceItemsSize(String categoryName);
+    int getPlaceItemsSize(PlaceCategoryDTO placeCategory);
 }

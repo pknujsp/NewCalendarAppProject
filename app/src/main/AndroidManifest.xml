@@ -25,8 +25,7 @@
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
         <activity
-            android:name=".activity.placecategory.activity.CategorySettingsActivity"
-            android:theme="@style/AppTheme" />
+            android:name=".activity.placecategory.activity.CategorySettingsActivity" />
         <activity android:name=".activity.placecategory.activity.PlaceCategoryActivity" />
         <activity android:name=".activity.editevent.activity.AttendeesActivity" />
         <activity android:name=".kakaomap.activity.KakaoMapActivity" />

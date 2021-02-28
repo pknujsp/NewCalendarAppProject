@@ -11,6 +11,7 @@ import com.zerodsoft.scheduleweather.activity.placecategory.interfaces.IPlaceCat
 import com.zerodsoft.scheduleweather.activity.placecategory.model.PlaceCategoryData;
 import com.zerodsoft.scheduleweather.activity.placecategory.repository.PlaceCategoryRepository;
 import com.zerodsoft.scheduleweather.room.dto.CustomPlaceCategoryDTO;
+import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 import com.zerodsoft.scheduleweather.room.dto.SelectedPlaceCategoryDTO;
 
 import java.util.List;
@@ -18,97 +19,94 @@ import java.util.List;
 public class PlaceCategoryViewModel extends AndroidViewModel implements IPlaceCategory
 {
     private PlaceCategoryRepository repository;
-    private MutableLiveData<List<SelectedPlaceCategoryDTO>> selectedPlaceCategoryListLiveData = new MutableLiveData<>();
-    private MutableLiveData<List<CustomPlaceCategoryDTO>> customPlaceCategoryListLiveData = new MutableLiveData<>();
-    private MutableLiveData<PlaceCategoryData> placeCategoryDataLiveData = new MutableLiveData<>();
 
     public PlaceCategoryViewModel(@NonNull Application application)
     {
         super(application);
         repository = new PlaceCategoryRepository(application.getApplicationContext());
-        selectedPlaceCategoryListLiveData = repository.getSelectedPlaceCategoryListLiveData();
-        customPlaceCategoryListLiveData = repository.getCustomPlaceCategoryListLiveData();
-        placeCategoryDataLiveData = repository.getPlaceCategoryDataLiveData();
-    }
-
-    public MutableLiveData<List<SelectedPlaceCategoryDTO>> getSelectedPlaceCategoryListLiveData()
-    {
-        return selectedPlaceCategoryListLiveData;
-    }
-
-    public MutableLiveData<List<CustomPlaceCategoryDTO>> getCustomPlaceCategoryListLiveData()
-    {
-        return customPlaceCategoryListLiveData;
-    }
-
-    public MutableLiveData<PlaceCategoryData> getPlaceCategoryDataLiveData()
-    {
-        return placeCategoryDataLiveData;
     }
 
     @Override
-    public void insertCustom(String code)
+    public void insertCustom(String code, CarrierMessagingService.ResultCallback<CustomPlaceCategoryDTO> callback)
     {
-        repository.insertCustom(code);
+        repository.insertCustom(code, callback);
     }
 
     @Override
-    public void selectCustom()
+    public void selectCustom(CarrierMessagingService.ResultCallback<List<CustomPlaceCategoryDTO>> callback)
     {
-        repository.selectCustom();
+        repository.selectCustom(callback);
     }
 
     @Override
-    public void updateCustom(String previousCode, String code)
+    public void updateCustom(String currentCode, String code, CarrierMessagingService.ResultCallback<CustomPlaceCategoryDTO> callback)
     {
-        repository.updateCustom(previousCode, code);
+        repository.updateCustom(currentCode, code, callback);
     }
 
     @Override
-    public void deleteCustom(String code)
+    public void deleteCustom(String code, CarrierMessagingService.ResultCallback<Boolean> callback)
     {
-        repository.deleteCustom(code);
+        repository.deleteCustom(code, callback);
     }
 
     @Override
-    public void deleteAllCustom()
+    public void deleteAllCustom(CarrierMessagingService.ResultCallback<Boolean> callback)
     {
-        repository.deleteAllCustom();
+        repository.deleteAllCustom(callback);
     }
 
     @Override
-    public void insertSelected(String code)
+    public void insertSelected(String code, CarrierMessagingService.ResultCallback<SelectedPlaceCategoryDTO> callback)
     {
-        repository.insertSelected(code);
+        repository.insertSelected(code, callback);
     }
 
     @Override
-    public void deleteSelected(String code)
+    public void deleteSelected(String code, CarrierMessagingService.ResultCallback<Boolean> callback)
     {
-        repository.deleteSelected(code);
+        repository.deleteSelected(code, callback);
     }
 
     @Override
-    public void deleteAllSelected()
+    public void deleteAllSelected(CarrierMessagingService.ResultCallback<Boolean> callback)
     {
-        repository.deleteAllSelected();
+        repository.deleteAllSelected(callback);
     }
 
     @Override
-    public void selectSelected()
+    public void selectSelected(CarrierMessagingService.ResultCallback<List<SelectedPlaceCategoryDTO>> callback)
     {
-        repository.selectSelected();
+        repository.selectSelected(callback);
     }
 
     @Override
-    public void getSettingsData()
+    public void getSettingsData(CarrierMessagingService.ResultCallback<PlaceCategoryData> callback)
     {
-        repository.getSettingsData();
+        repository.getSettingsData(callback);
     }
 
     @Override
     public void containsCode(String code, CarrierMessagingService.ResultCallback<Boolean> callback)
     {
         repository.containsCode(code, callback);
+    }
+
+    @Override
+    public void updateSelected(String currentCode, String code, CarrierMessagingService.ResultCallback<SelectedPlaceCategoryDTO> callback)
+    {
+        repository.updateSelected(currentCode, code, callback);
+    }
+
+    @Override
+    public void selectConvertedSelected(CarrierMessagingService.ResultCallback<List<PlaceCategoryDTO>> callback)
+    {
+        repository.selectConvertedSelected(callback);
+    }
+
+    @Override
+    public void insertAllSelected(List<PlaceCategoryDTO> list, CarrierMessagingService.ResultCallback<List<SelectedPlaceCategoryDTO>> callback)
+    {
+        repository.insertAllSelected(list, callback);
     }
 }

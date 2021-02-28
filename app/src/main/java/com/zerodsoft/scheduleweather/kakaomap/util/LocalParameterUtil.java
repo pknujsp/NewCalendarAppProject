@@ -24,7 +24,7 @@ public class LocalParameterUtil
 
         if (KakaoLocalApiCategoryUtil.isCategory(searchWord))
         {
-            parameter.setCategoryGroupCode(KakaoLocalApiCategoryUtil.getName(Integer.parseInt(searchWord)));
+            parameter.setCategoryGroupCode(KakaoLocalApiCategoryUtil.getCode(searchWord));
         } else
         {
             parameter.setQuery(searchWord);

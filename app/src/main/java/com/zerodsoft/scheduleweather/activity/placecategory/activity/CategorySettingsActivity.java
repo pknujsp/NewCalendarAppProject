@@ -9,8 +9,8 @@ import androidx.databinding.DataBindingUtil;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
+import android.annotation.SuppressLint;
 import android.content.DialogInterface;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.service.carrier.CarrierMessagingService;
@@ -21,8 +21,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.FrameLayout;
-import android.widget.Spinner;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -32,15 +30,11 @@ import com.zerodsoft.scheduleweather.activity.placecategory.interfaces.PlaceCate
 import com.zerodsoft.scheduleweather.activity.placecategory.model.PlaceCategoryData;
 import com.zerodsoft.scheduleweather.activity.placecategory.viewmodel.PlaceCategoryViewModel;
 import com.zerodsoft.scheduleweather.databinding.ActivityCategorySettingsBinding;
-import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
 import com.zerodsoft.scheduleweather.room.dto.CustomPlaceCategoryDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 import com.zerodsoft.scheduleweather.room.dto.SelectedPlaceCategoryDTO;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class CategorySettingsActivity extends AppCompatActivity implements PlaceCategoryEditPopup
 {
@@ -101,8 +95,31 @@ public class CategorySettingsActivity extends AppCompatActivity implements Place
                                             Toast.makeText(CategorySettingsActivity.this, getString(R.string.existing_place_category), Toast.LENGTH_SHORT).show();
                                         } else
                                         {
-                                            viewModel.insertCustom(result);
-                                            dialogInterface.dismiss();
+                                            viewModel.insertCustom(result, new CarrierMessagingService.ResultCallback<CustomPlaceCategoryDTO>()
+                                            {
+                                                @Override
+                                                public void onReceiveResult(@NonNull CustomPlaceCategoryDTO customPlaceCategoryDTO) throws RemoteException
+                                                {
+                                                    runOnUiThread(new Runnable()
+                                                    {
+                                                        @Override
+                                                        public void run()
+                                                        {
+                                                            //리스트 갱신
+                                                            PlaceCategoryDTO placeCategoryDTO = new PlaceCategoryDTO();
+                                                            placeCategoryDTO.setCustom(true);
+                                                            placeCategoryDTO.setCode(customPlaceCategoryDTO.getCode());
+                                                            placeCategoryDTO.setDescription(customPlaceCategoryDTO.getCode());
+
+                                                            customCategories.add(placeCategoryDTO);
+                                                            adapter.getCheckedStatesMap().get(CUSTOM_CATEGORY_INDEX).add(false);
+                                                            adapter.notifyDataSetChanged();
+                                                            dialogInterface.dismiss();
+                                                        }
+                                                    });
+
+                                                }
+                                            });
                                         }
                                     }
                                 });
@@ -130,63 +147,62 @@ public class CategorySettingsActivity extends AppCompatActivity implements Place
         });
 
         viewModel = new ViewModelProvider(this).get(PlaceCategoryViewModel.class);
-        viewModel.getPlaceCategoryDataLiveData().observe(this, new Observer<PlaceCategoryData>()
+        viewModel.getSettingsData(new CarrierMessagingService.ResultCallback<PlaceCategoryData>()
         {
             @Override
-            public void onChanged(PlaceCategoryData resultData)
+            public void onReceiveResult(@NonNull PlaceCategoryData resultData) throws RemoteException
             {
-                if (resultData != null)
+                customCategories = resultData.getCustomCategories();
+                defaultCategories = resultData.getDefaultPlaceCategories();
+                List<SelectedPlaceCategoryDTO> selectedCategories = resultData.getSelectedPlaceCategories();
+
+                boolean[][] checkedStates = new boolean[2][];
+                checkedStates[DEFAULT_CATEGORY_INDEX] = new boolean[defaultCategories.size()];
+                checkedStates[CUSTOM_CATEGORY_INDEX] = new boolean[customCategories.size()];
+
+                int index = 0;
+
+                //기본 카테고리 체크여부 설정
+                for (PlaceCategoryDTO defaultPlaceCategoryDTO : defaultCategories)
                 {
-                    customCategories = resultData.getCustomCategories();
-                    defaultCategories = resultData.getDefaultPlaceCategories();
-                    List<SelectedPlaceCategoryDTO> selectedCategories = resultData.getSelectedPlaceCategories();
-
-                    boolean[][] checkedStates = new boolean[2][];
-                    checkedStates[DEFAULT_CATEGORY_INDEX] = new boolean[defaultCategories.size()];
-                    checkedStates[CUSTOM_CATEGORY_INDEX] = new boolean[customCategories.size()];
-
-                    int index = 0;
-
-                    //기본 카테고리 체크여부 설정
-                    for (PlaceCategoryDTO defaultPlaceCategoryDTO : defaultCategories)
+                    for (SelectedPlaceCategoryDTO selectedPlaceCategory : selectedCategories)
                     {
-                        for (SelectedPlaceCategoryDTO selectedPlaceCategory : selectedCategories)
+                        if (selectedPlaceCategory.getCode().equals(defaultPlaceCategoryDTO.getCode()))
                         {
-                            if (selectedPlaceCategory.getCode().equals(defaultPlaceCategoryDTO.getCode()))
-                            {
-                                checkedStates[DEFAULT_CATEGORY_INDEX][index] = true;
-                                break;
-                            }
+                            checkedStates[DEFAULT_CATEGORY_INDEX][index] = true;
+                            break;
                         }
-                        index++;
                     }
-                    index = 0;
-
-                    //커스텀 카테고리 체크여부 설정
-                    for (PlaceCategoryDTO customPlaceCategory : customCategories)
-                    {
-                        for (SelectedPlaceCategoryDTO selectedPlaceCategory : selectedCategories)
-                        {
-                            if (selectedPlaceCategory.getCode().equals(customPlaceCategory.getCode()))
-                            {
-                                checkedStates[CUSTOM_CATEGORY_INDEX][index] = true;
-                                break;
-                            }
-                        }
-                        index++;
-                    }
-
-                    adapter = new CategoryExpandableListAdapter(CategorySettingsActivity.this, viewModel, defaultCategories, customCategories, checkedStates);
-                    binding.categoryExpandableList.setAdapter(adapter);
+                    index++;
                 }
+                index = 0;
+
+                //커스텀 카테고리 체크여부 설정
+                for (PlaceCategoryDTO customPlaceCategory : customCategories)
+                {
+                    for (SelectedPlaceCategoryDTO selectedPlaceCategory : selectedCategories)
+                    {
+                        if (selectedPlaceCategory.getCode().equals(customPlaceCategory.getCode()))
+                        {
+                            checkedStates[CUSTOM_CATEGORY_INDEX][index] = true;
+                            break;
+                        }
+                    }
+                    index++;
+                }
+
+                adapter = new CategoryExpandableListAdapter(CategorySettingsActivity.this, viewModel, defaultCategories, customCategories, checkedStates);
+                binding.categoryExpandableList.setAdapter(adapter);
+                binding.categoryExpandableList.expandGroup(0);
+                binding.categoryExpandableList.expandGroup(1);
             }
         });
-        viewModel.getSettingsData();
     }
 
     @Override
     public void onBackPressed()
     {
+        setResult(PlaceCategoryActivity.RESULT_MODIFIED_CATEGORY);
         finish();
     }
 
@@ -195,20 +211,50 @@ public class CategorySettingsActivity extends AppCompatActivity implements Place
     {
         CategoryExpandableListAdapter.EditButtonHolder editButtonHolder = (CategoryExpandableListAdapter.EditButtonHolder) view.getTag();
 
-        PopupMenu popupMenu = new PopupMenu(getApplicationContext(), view, Gravity.BOTTOM);
-        popupMenu.getMenuInflater().inflate(R.menu.place_category_edit_menu, popupMenu.getMenu());
+        PopupMenu popupMenu = new PopupMenu(this, view, Gravity.BOTTOM);
+        getMenuInflater().inflate(R.menu.place_category_edit_menu, popupMenu.getMenu());
+
+        final String code = editButtonHolder.getPlaceCategoryDTO().getCode();
+
         popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener()
         {
+            @SuppressLint("NonConstantResourceId")
             @Override
             public boolean onMenuItemClick(MenuItem item)
             {
                 switch (item.getItemId())
                 {
                     case R.id.delete_place_category:
-                        viewModel.deleteCustom(editButtonHolder.getPlaceCategoryDTO().getCode());
+                        viewModel.deleteCustom(code, new CarrierMessagingService.ResultCallback<Boolean>()
+                        {
+                            @Override
+                            public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
+                            {
+                                runOnUiThread(new Runnable()
+                                {
+                                    @Override
+                                    public void run()
+                                    {
+                                        if (aBoolean)
+                                        {
+                                            for (int index = 0; index < customCategories.size(); index++)
+                                            {
+                                                if (customCategories.get(index).getCode().equals(code))
+                                                {
+                                                    adapter.getCheckedStatesMap().get(CUSTOM_CATEGORY_INDEX).remove(index);
+                                                    customCategories.remove(index);
+                                                    break;
+                                                }
+                                            }
+                                            adapter.notifyDataSetChanged();
+                                        }
+                                    }
+                                });
+                            }
+                        });
                         break;
                     case R.id.edit_place_category:
-                        showEditDialog(editButtonHolder.getPlaceCategoryDTO().getCode());
+                        showUpdateDialog(code);
                         break;
                 }
                 popupMenu.dismiss();
@@ -227,33 +273,28 @@ public class CategorySettingsActivity extends AppCompatActivity implements Place
         popupMenu.show();
     }
 
-    private void showEditDialog(String code)
+    private void showUpdateDialog(String code)
     {
-        // 커스텀 카테고리 추가 다이얼로그 표시
+        // 커스텀 카테고리 수정 다이얼로그 표시
         FrameLayout container = new FrameLayout(getApplicationContext());
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        params.leftMargin = getResources().getDimensionPixelSize((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16f, getResources().getDisplayMetrics()));
-        params.rightMargin = getResources().getDimensionPixelSize((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16f, getResources().getDisplayMetrics()));
-
-        TextView currentCodeTextView = new TextView(getApplicationContext());
-        currentCodeTextView.setLayoutParams(params);
-        container.addView(currentCodeTextView);
-        currentCodeTextView.setText(code);
+        params.leftMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16f, getResources().getDisplayMetrics());
+        params.rightMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16f, getResources().getDisplayMetrics());
 
         EditText newCodeEditText = new EditText(getApplicationContext());
         newCodeEditText.setLayoutParams(params);
+        newCodeEditText.setText(code);
         container.addView(newCodeEditText);
 
-        new MaterialAlertDialogBuilder(getApplicationContext()).setTitle(R.string.add_custom_category)
-                .setMessage(R.string.add_custom_category_message)
+        new MaterialAlertDialogBuilder(this).setTitle(R.string.update_custom_category)
+                .setMessage(R.string.update_custom_category_message)
                 .setView(container)
                 .setCancelable(false)
-                .setPositiveButton(R.string.add, new DialogInterface.OnClickListener()
+                .setPositiveButton(R.string.update, new DialogInterface.OnClickListener()
                 {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i)
                     {
-                        String currentCode = currentCodeTextView.getText().toString();
                         String newCode = newCodeEditText.getText().toString();
 
                         //중복 검사
@@ -262,14 +303,51 @@ public class CategorySettingsActivity extends AppCompatActivity implements Place
                             @Override
                             public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
                             {
-                                if (aBoolean)
+                                runOnUiThread(new Runnable()
                                 {
-                                    Toast.makeText(CategorySettingsActivity.this, getString(R.string.existing_place_category), Toast.LENGTH_SHORT).show();
-                                } else
-                                {
-                                    viewModel.updateCustom(currentCode, newCode);
-                                    dialogInterface.dismiss();
-                                }
+                                    @Override
+                                    public void run()
+                                    {
+                                        if (aBoolean)
+                                        {
+                                            Toast.makeText(CategorySettingsActivity.this, getString(R.string.existing_place_category), Toast.LENGTH_SHORT).show();
+                                        } else
+                                        {
+                                            viewModel.updateCustom(code, newCode, new CarrierMessagingService.ResultCallback<CustomPlaceCategoryDTO>()
+                                            {
+                                                @Override
+                                                public void onReceiveResult(@NonNull CustomPlaceCategoryDTO customPlaceCategoryDTO) throws RemoteException
+                                                {
+                                                    runOnUiThread(new Runnable()
+                                                    {
+                                                        @Override
+                                                        public void run()
+                                                        {
+                                                            PlaceCategoryDTO placeCategoryDTO = new PlaceCategoryDTO();
+                                                            placeCategoryDTO.setCustom(true);
+                                                            placeCategoryDTO.setCode(customPlaceCategoryDTO.getCode());
+                                                            placeCategoryDTO.setDescription(customPlaceCategoryDTO.getCode());
+
+                                                            for (int index = 0; index < customCategories.size(); index++)
+                                                            {
+                                                                if (customCategories.get(index).getCode().equals(code))
+                                                                {
+                                                                    customCategories.remove(index);
+                                                                    customCategories.add(index, placeCategoryDTO);
+                                                                    break;
+                                                                }
+                                                            }
+                                                            adapter.notifyDataSetChanged();
+                                                            dialogInterface.dismiss();
+                                                        }
+                                                    });
+
+                                                }
+                                            });
+                                        }
+                                    }
+                                });
+
                             }
                         });
                     }

@@ -75,13 +75,6 @@ public class AddressListFragment extends Fragment implements IViewPager
         itemRecyclerView.setLayoutManager(new LinearLayoutManager(view.getContext(), RecyclerView.VERTICAL, false));
         itemRecyclerView.addItemDecoration(new DividerItemDecoration(view.getContext(), DividerItemDecoration.VERTICAL));
         viewModel = new ViewModelProvider(this).get(AddressViewModel.class);
-    }
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState)
-    {
-        super.onActivityCreated(savedInstanceState);
-
         progressBar.setVisibility(View.VISIBLE);
 
         LocalApiPlaceParameter parameter = LocalParameterUtil.getAddressParameter(SEARCH_WORD, LocalApiPlaceParameter.DEFAULT_SIZE
@@ -114,6 +107,7 @@ public class AddressListFragment extends Fragment implements IViewPager
                 }
             });
         }
+
     }
 
     /*
