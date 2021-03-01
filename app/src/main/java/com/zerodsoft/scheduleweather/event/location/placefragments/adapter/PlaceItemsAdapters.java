@@ -13,10 +13,12 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.kakaomap.callback.PlaceItemCallback;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.event.location.placefragments.interfaces.IClickedPlaceItem;
+import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 
 public class PlaceItemsAdapters extends PagedListAdapter<PlaceDocuments, PlaceItemsAdapters.ItemViewHolder>
 {
-    private IClickedPlaceItem iClickedPlaceItem;
+    private final IClickedPlaceItem iClickedPlaceItem;
+    private final PlaceCategoryDTO placeCategoryDTO;
 
     class ItemViewHolder extends RecyclerView.ViewHolder
     {
@@ -31,7 +33,7 @@ public class PlaceItemsAdapters extends PagedListAdapter<PlaceDocuments, PlaceIt
                 @Override
                 public void onClick(View view)
                 {
-                    iClickedPlaceItem.onClickedItem(getItem(getAdapterPosition()));
+                    iClickedPlaceItem.onClickedItem(getAdapterPosition(), placeCategoryDTO, getCurrentList().snapshot());
                 }
             });
         }
@@ -42,10 +44,11 @@ public class PlaceItemsAdapters extends PagedListAdapter<PlaceDocuments, PlaceIt
         }
     }
 
-    public PlaceItemsAdapters(IClickedPlaceItem iClickedPlaceItem)
+    public PlaceItemsAdapters(IClickedPlaceItem iClickedPlaceItem, PlaceCategoryDTO placeCategoryDTO)
     {
         super(new PlaceItemCallback());
         this.iClickedPlaceItem = iClickedPlaceItem;
+        this.placeCategoryDTO = placeCategoryDTO;
     }
 
     @NonNull

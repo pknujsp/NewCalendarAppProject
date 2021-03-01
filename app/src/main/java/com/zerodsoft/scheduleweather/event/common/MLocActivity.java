@@ -14,6 +14,7 @@ import android.view.View;
 import com.zerodsoft.scheduleweather.event.EventActivity;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.kakaomap.activity.KakaoMapActivity;
+import com.zerodsoft.scheduleweather.kakaomap.callback.ToolbarMenuCallback;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
 public class MLocActivity extends KakaoMapActivity
@@ -25,13 +26,24 @@ public class MLocActivity extends KakaoMapActivity
 
     private LocationViewModel viewModel;
     private OnBackPressedCallback onBackPressedCallback;
+    private final ToolbarMenuCallback toolbarMenuCallback = new ToolbarMenuCallback()
+    {
+        @Override
+        public void onCreateOptionsMenu()
+        {
+            // iconfy가 false가 되면 search listener실행
+            kakaoMapFragment.searchView.setIconified(false);
+            kakaoMapFragment.searchView.setQuery(savedLocation, true);
+        }
+    };
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        binding.bottomSheet.mapBottomSheetToolbar.removeLocationButton.setVisibility(View.GONE);
+        kakaoMapFragment.binding.bottomSheet.mapBottomSheetToolbar.removeLocationButton.setVisibility(View.GONE);
+        kakaoMapFragment.setToolbarMenuCallback(toolbarMenuCallback);
 
         onBackPressedCallback = new OnBackPressedCallback(true)
         {
@@ -63,21 +75,17 @@ public class MLocActivity extends KakaoMapActivity
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu)
+    protected void onResume()
     {
-        super.onCreateOptionsMenu(menu);
-        // iconfy가 false가 되면 search listener실행
-        searchView.setIconified(false);
-        searchView.setQuery(savedLocation, true);
-        return true;
+        super.onResume();
+
     }
 
-
     @Override
-    public void onSelectLocation()
+    public void onSelectedLocation()
     {
         // 지정이 완료된 경우 - DB에 등록하고 이벤트 액티비티로 넘어가서 날씨 또는 주변 정보 프래그먼트를 실행한다.
-        LocationDTO location = getSelectedLocationDto(calendarId, eventId);
+        LocationDTO location = kakaoMapFragment.getSelectedLocationDto(calendarId, eventId);
 
         //선택된 위치를 DB에 등록
         viewModel.addLocation(location, new CarrierMessagingService.ResultCallback<Boolean>()
@@ -98,12 +106,10 @@ public class MLocActivity extends KakaoMapActivity
             }
         });
 
-
     }
 
     @Override
-    public void onRemoveLocation()
+    public void onRemovedLocation()
     {
-        super.onRemoveLocation();
     }
 }

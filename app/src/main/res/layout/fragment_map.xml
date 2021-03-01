@@ -3,24 +3,51 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <FrameLayout
-        android:id="@+id/map_root_layout"
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <FrameLayout
-            android:id="@+id/map_view"
+        <com.google.android.material.appbar.AppBarLayout
+            android:id="@+id/appbar_layout"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:visibility="visible">
 
-        <include
-            android:id="@+id/map_buttons_layout"
-            layout="@layout/map_buttons_view"
+            <include
+                android:id="@+id/map_search_toolbar"
+                layout="@layout/map_search_toolbar" />
+
+        </com.google.android.material.appbar.AppBarLayout>
+
+        <androidx.coordinatorlayout.widget.CoordinatorLayout
+            android:id="@+id/map_root_layout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginLeft="36dp"
-            android:layout_marginRight="36dp" />
+            android:layout_below="@id/appbar_layout"
+            android:layout_alignParentBottom="true">
 
-    </FrameLayout>
+            <FrameLayout
+                android:id="@+id/map_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+            <include
+                android:id="@+id/map_buttons_layout"
+                layout="@layout/map_buttons_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:layout_marginLeft="36dp"
+                android:layout_marginRight="36dp"
+                android:layout_marginBottom="48dp" />
+
+            <include
+                android:id="@+id/bottom_sheet"
+                layout="@layout/map_bottom_sheet_view" />
+
+        </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+    </RelativeLayout>
 
 </layout>

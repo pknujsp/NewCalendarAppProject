@@ -5,47 +5,16 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:orientation="vertical"
         tools:context=".kakaomap.activity.KakaoMapActivity">
 
-        <com.google.android.material.appbar.AppBarLayout
-            android:id="@+id/appbar_layout"
+        <fragment
+            android:id="@+id/map_fragment"
+            android:name="com.zerodsoft.scheduleweather.kakaomap.fragment.KakaoMapFragment"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:visibility="visible">
+            android:layout_height="match_parent" />
 
-            <include
-                android:id="@+id/map_search_toolbar"
-                layout="@layout/map_search_toolbar" />
-
-        </com.google.android.material.appbar.AppBarLayout>
-
-
-        <androidx.coordinatorlayout.widget.CoordinatorLayout
-            android:id="@+id/map_coordinator_layout"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <FrameLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                app:layout_anchor="@id/bottom_sheet"
-                app:layout_anchorGravity="top">
-
-                <fragment
-                    android:id="@+id/kakao_map_fragment"
-                    android:name="com.zerodsoft.scheduleweather.kakaomap.fragment.KakaoMapFragment"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
-
-            </FrameLayout>
-
-            <include
-                android:id="@+id/bottom_sheet"
-                layout="@layout/map_bottom_sheet_view" />
-
-        </androidx.coordinatorlayout.widget.CoordinatorLayout>
     </LinearLayout>
 
 </layout>

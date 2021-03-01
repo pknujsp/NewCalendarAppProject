@@ -70,7 +70,7 @@ public class SelectLocationActivity extends KakaoMapActivity
     }
 
     @Override
-    public void onSelectLocation()
+    public void onSelectedLocation()
     {
         // 선택된 poiitem의 리스트내 인덱스를 가져온다.
         int poiItemIndex = kakaoMapFragment.getSelectedPoiItemIndex();
@@ -111,9 +111,10 @@ public class SelectLocationActivity extends KakaoMapActivity
     }
 
     @Override
-    public void onRemoveLocation()
+    public void onRemovedLocation()
     {
         setResult(RESULT_REMOVED_LOCATION);
         finish();
     }
+
 }

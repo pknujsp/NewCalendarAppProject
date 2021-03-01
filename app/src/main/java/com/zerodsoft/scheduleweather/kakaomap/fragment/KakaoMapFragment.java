@@ -1,6 +1,8 @@
 package com.zerodsoft.scheduleweather.kakaomap.fragment;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -9,26 +11,45 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
+import android.net.NetworkRequest;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.activity.map.fragment.search.SearchFragment;
+import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.SearchResultListFragment;
 import com.zerodsoft.scheduleweather.activity.map.util.RequestLocationTimer;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
 import com.zerodsoft.scheduleweather.databinding.FragmentMapBinding;
+import com.zerodsoft.scheduleweather.etc.AppPermission;
+import com.zerodsoft.scheduleweather.etc.FragmentStateCallback;
 import com.zerodsoft.scheduleweather.etc.IPermission;
 import com.zerodsoft.scheduleweather.kakaomap.activity.KakaoMapActivity;
+import com.zerodsoft.scheduleweather.kakaomap.callback.ToolbarMenuCallback;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.BottomSheetButtonOnClickListener;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IBottomSheet;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapPoint;
@@ -37,6 +58,7 @@ import com.zerodsoft.scheduleweather.kakaomap.interfaces.INetwork;
 import com.zerodsoft.scheduleweather.kakaomap.model.CustomPoiItem;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponseDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
+import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
 import net.daum.mf.map.api.MapPOIItem;
 import net.daum.mf.map.api.MapPoint;
@@ -48,41 +70,47 @@ import java.util.Timer;
 
 import static androidx.core.content.ContextCompat.checkSelfPermission;
 
-public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, MapView.POIItemEventListener, MapView.MapViewEventListener, MapReverseGeoCoder.ReverseGeoCodingResultListener
+public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, MapView.POIItemEventListener, MapView.MapViewEventListener, MapReverseGeoCoder.ReverseGeoCodingResultListener,
+        IBottomSheet, INetwork, IMapToolbar, IPermission
 {
-    protected FragmentMapBinding binding;
+    public static final int REQUEST_CODE_LOCATION = 10000;
+
+    public BottomSheetButtonOnClickListener bottomSheetButtonOnClickListener;
+    public FragmentMapBinding binding;
     public MapView mapView;
 
-    public String appKey;
+    private String appKey;
     public MapReverseGeoCoder mapReverseGeoCoder;
     public LocationManager locationManager;
 
-    public IBottomSheet iBottomSheet;
-    public IMapToolbar iMapToolbar;
-    public INetwork iNetwork;
+    public ImageButton zoomInButton;
+    public ImageButton zoomOutButton;
+    public ImageButton gpsButton;
 
-    private ImageButton zoomInButton;
-    private ImageButton zoomOutButton;
-    private ImageButton gpsButton;
+    public int selectedPoiItemIndex;
+    public boolean isSelectedPoiItem;
 
-    private int selectedPoiItemIndex;
-    private boolean isSelectedPoiItem;
-    private IPermission iPermission;
+    public SearchView searchView;
+    public ConnectivityManager.NetworkCallback networkCallback;
+    public ConnectivityManager connectivityManager;
+    public AppPermission appPermission;
+
+    public BottomSheetBehavior bottomSheetBehavior;
+    public ToolbarMenuCallback toolbarMenuCallback;
 
     public KakaoMapFragment()
     {
 
     }
 
-    public void setiBottomSheet(IBottomSheet iBottomSheet)
+    public void setToolbarMenuCallback(ToolbarMenuCallback toolbarMenuCallback)
     {
-        this.iBottomSheet = iBottomSheet;
+        this.toolbarMenuCallback = toolbarMenuCallback;
     }
 
-    public KakaoMapFragment setiMapToolbar(IMapToolbar iMapToolbar)
+    public void setBottomSheetButtonOnClickListener(BottomSheetButtonOnClickListener bottomSheetButtonOnClickListener)
     {
-        this.iMapToolbar = iMapToolbar;
-        return this;
+        this.bottomSheetButtonOnClickListener = bottomSheetButtonOnClickListener;
     }
 
     public final LocationListener locationListener = new LocationListener()
@@ -90,9 +118,12 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
         @Override
         public void onLocationChanged(Location location)
         {
-            mapView.setMapCenterPoint(MapPoint.mapPointWithGeoCoord(location.getLatitude(), location.getLongitude()), true);
-            mapReverseGeoCoder = new MapReverseGeoCoder(appKey, mapView.getMapCenterPoint(), KakaoMapFragment.this, getActivity());
-            mapReverseGeoCoder.startFindingAddress(MapReverseGeoCoder.AddressType.ShortAddress);
+            if (getActivity() != null)
+            {
+                mapView.setMapCenterPoint(MapPoint.mapPointWithGeoCoord(location.getLatitude(), location.getLongitude()), true);
+                mapReverseGeoCoder = new MapReverseGeoCoder(appKey, mapView.getMapCenterPoint(), KakaoMapFragment.this, getActivity());
+                mapReverseGeoCoder.startFindingAddress(MapReverseGeoCoder.AddressType.ShortAddress);
+            }
         }
 
         @Override
@@ -118,6 +149,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     public void onCreate(@Nullable Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
     }
 
     @Override
@@ -130,7 +162,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
     {
-        binding = FragmentMapBinding.inflate(getLayoutInflater());
+        binding = FragmentMapBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 
@@ -138,6 +170,12 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
+        appPermission = new AppPermission(getActivity());
+
+        setNetworkCallback();
+        initToolbar();
+        initBottomSheet();
+
         locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
 
         zoomInButton = binding.mapButtonsLayout.zoomInButton;
@@ -169,7 +207,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
             {
                 //권한 확인
 
-                if (iPermission.grantedPermissions(KakaoMapActivity.REQUEST_CODE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))
+                if (grantedPermissions(REQUEST_CODE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))
                 {
                     boolean isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
                     boolean isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
@@ -177,7 +215,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
                     checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION);
                     checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION);
 
-                    if (iNetwork.networkAvailable())
+                    if (networkAvailable())
                     {
                         if (isGpsEnabled && isNetworkEnabled)
                         {
@@ -213,17 +251,182 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
 
             }
         });
-        initMapView();
 
+        mapView = new MapView(getActivity());
         mapView.setPOIItemEventListener(this);
         mapView.setMapViewEventListener(this);
+
+        binding.mapView.addView(mapView);
     }
 
-
-    public void initMapView()
+    @Override
+    public void setBottomSheetState(int state)
     {
-        mapView = new MapView(requireActivity());
-        binding.mapView.addView(mapView);
+        bottomSheetBehavior.setState(state);
+    }
+
+    @Override
+    public int getBottomSheetState()
+    {
+        return bottomSheetBehavior.getState();
+    }
+
+    @Override
+    public void setVisibility(int viewType, int state)
+    {
+        if (viewType == IBottomSheet.ADDRESS)
+        {
+            binding.bottomSheet.addressView.getRoot().setVisibility(state);
+        } else if (viewType == IBottomSheet.PLACE)
+        {
+            binding.bottomSheet.placeView.getRoot().setVisibility(state);
+        }
+    }
+
+    @Override
+    public void setAddress(AddressResponseDocuments documents)
+    {
+        binding.bottomSheet.addressView.getRoot().setAddress(documents);
+    }
+
+    @Override
+    public void setPlace(PlaceDocuments documents)
+    {
+        binding.bottomSheet.placeView.getRoot().setPlace(documents);
+    }
+
+    @Override
+    public void setItemVisibility(int state)
+    {
+        binding.bottomSheet.bottomSheetItemLayout.setVisibility(state);
+    }
+
+    @Override
+    public void setFragmentVisibility(int state)
+    {
+        binding.bottomSheet.mapBottomSheetFragmentContainer.setVisibility(state);
+    }
+
+    @Override
+    public void closeSearchView(int viewType)
+    {
+        switch (viewType)
+        {
+            case IBottomSheet.SEARCH_VIEW:
+                break;
+            case IBottomSheet.SEARCH_RESULT_VIEW:
+                setMenuVisibility(IMapToolbar.ALL, false);
+                removeAllPoiItems();
+                break;
+        }
+        setBottomSheetState(BottomSheetBehavior.STATE_HIDDEN);
+        searchView.setIconified(true);
+        setItemVisibility(View.VISIBLE);
+        setFragmentVisibility(View.GONE);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        switch (item.getItemId())
+        {
+            case R.id.map:
+            case R.id.list:
+                SearchResultListFragment.getInstance().changeFragment();
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void changeOpenCloseMenuVisibility(boolean isSearching)
+    {
+
+    }
+
+    @Override
+    public void setMenuVisibility(int type, boolean state)
+    {
+        switch (type)
+        {
+            case IMapToolbar.MAP:
+                binding.mapSearchToolbar.getRoot().getMenu().findItem(R.id.list).setVisible(!state);
+                binding.mapSearchToolbar.getRoot().getMenu().findItem(R.id.map).setVisible(state);
+                break;
+            case IMapToolbar.LIST:
+                binding.mapSearchToolbar.getRoot().getMenu().findItem(R.id.list).setVisible(state);
+                binding.mapSearchToolbar.getRoot().getMenu().findItem(R.id.map).setVisible(!state);
+                break;
+            case IMapToolbar.ALL:
+                binding.mapSearchToolbar.getRoot().getMenu().findItem(R.id.list).setVisible(state);
+                binding.mapSearchToolbar.getRoot().getMenu().findItem(R.id.map).setVisible(state);
+                break;
+        }
+    }
+
+    @Override
+    public void setText(String text)
+    {
+        searchView.setQuery(text, false);
+    }
+
+    private void initBottomSheet()
+    {
+        bottomSheetBehavior = BottomSheetBehavior.from(binding.bottomSheet.getRoot());
+        bottomSheetBehavior.setDraggable(false);
+        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+
+        bottomSheetBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback()
+        {
+            @Override
+            public void onStateChanged(@NonNull View bottomSheet, int newState)
+            {
+            }
+
+            @Override
+            public void onSlide(@NonNull View bottomSheet, float slideOffset)
+            {
+
+            }
+        });
+
+        binding.bottomSheet.mapBottomSheetToolbar.leftLocationButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                int index = getSelectedPoiItemIndex() != 0 ? getSelectedPoiItemIndex() - 1 : mapView.getPOIItems().length - 1;
+                selectPoiItem(index);
+            }
+        });
+
+        binding.bottomSheet.mapBottomSheetToolbar.rightLocationButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                int index = getSelectedPoiItemIndex() == mapView.getPOIItems().length - 1 ? 0 : getSelectedPoiItemIndex() + 1;
+                selectPoiItem(index);
+            }
+        });
+
+        binding.bottomSheet.mapBottomSheetToolbar.selectLocationButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                bottomSheetButtonOnClickListener.onSelectedLocation();
+            }
+        });
+
+        binding.bottomSheet.mapBottomSheetToolbar.removeLocationButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                bottomSheetButtonOnClickListener.onRemovedLocation();
+            }
+        });
     }
 
     public void showRequestGpsDialog()
@@ -266,6 +469,167 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     public void onDestroy()
     {
         super.onDestroy();
+        connectivityManager.unregisterNetworkCallback(networkCallback);
+    }
+
+    public void setNetworkCallback()
+    {
+        connectivityManager = (ConnectivityManager) getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+        networkCallback = new ConnectivityManager.NetworkCallback()
+        {
+            @Override
+            public void onAvailable(Network network)
+            {
+                super.onAvailable(network);
+                Toast.makeText(getActivity(), getString(R.string.connected_network), Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onLost(Network network)
+            {
+                super.onLost(network);
+                Toast.makeText(getActivity(), getString(R.string.disconnected_network), Toast.LENGTH_SHORT).show();
+            }
+        };
+        NetworkRequest.Builder builder = new NetworkRequest.Builder();
+        builder.addTransportType(NetworkCapabilities.TRANSPORT_WIFI);
+        builder.addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR);
+        connectivityManager.registerNetworkCallback(builder.build(), networkCallback);
+    }
+
+    @Override
+    public boolean networkAvailable()
+    {
+        if (connectivityManager.getActiveNetwork() == null)
+        {
+            Toast.makeText(getActivity(), getString(R.string.map_network_not_connected), Toast.LENGTH_SHORT).show();
+            return false;
+        } else
+        {
+            NetworkCapabilities nc = connectivityManager.getNetworkCapabilities(connectivityManager.getActiveNetwork());
+
+            if (nc.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ||
+                    nc.hasTransport(NetworkCapabilities.TRANSPORT_WIFI))
+            {
+                return true;
+            } else
+            {
+                Toast.makeText(getActivity(), getString(R.string.map_network_not_connected), Toast.LENGTH_SHORT).show();
+                return false;
+            }
+        }
+    }
+
+    public void onClickedSearchView()
+    {
+        setBottomSheetState(BottomSheetBehavior.STATE_HIDDEN);
+        setItemVisibility(View.GONE);
+        setFragmentVisibility(View.VISIBLE);
+
+        getParentFragmentManager().beginTransaction()
+                .add(binding.bottomSheet.mapBottomSheetFragmentContainer.getId(), SearchFragment.newInstance(this, new FragmentStateCallback()
+                {
+
+                }), SearchFragment.TAG).commitNow();
+        setBottomSheetState(BottomSheetBehavior.STATE_EXPANDED);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater)
+    {
+        super.onCreateOptionsMenu(menu, menuInflater);
+        menuInflater.inflate(R.menu.default_map_toolbar, menu);
+
+        searchView = (SearchView) menu.findItem(R.id.search).getActionView();
+        searchView.setMaxWidth(Integer.MAX_VALUE);
+        searchView.setQueryHint(getString(R.string.input_location));
+        searchView.setOnSearchClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                onClickedSearchView();
+            }
+        });
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener()
+        {
+            @Override
+            public boolean onQueryTextSubmit(String query)
+            {
+                if (!query.isEmpty())
+                {
+                    // 현재 프래그먼트가 검색 결과 프래그먼트인 경우
+                    FragmentManager fragmentManager = getParentFragmentManager();
+
+                    if (fragmentManager.getBackStackEntryCount() > 0)
+                    {
+                        FragmentManager.BackStackEntry backStackEntry = fragmentManager.getBackStackEntryAt(fragmentManager.getBackStackEntryCount() - 1);
+
+                        if (backStackEntry.getName().equals(SearchResultListFragment.TAG))
+                        {
+                            SearchResultListFragment.getInstance().getOnBackPressedCallback().handleOnBackPressed();
+                            searchView.setQuery(query, false);
+                        }
+                    }
+                    SearchFragment.getInstance().search(query);
+                    return true;
+                } else
+                {
+                    return false;
+                }
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText)
+            {
+                return false;
+            }
+        });
+        searchView.setOnCloseListener(new SearchView.OnCloseListener()
+        {
+            @Override
+            public boolean onClose()
+            {
+                FragmentManager fragmentManager = getParentFragmentManager();
+                Fragment showingFragment = fragmentManager.findFragmentByTag(SearchResultListFragment.TAG);
+                if (showingFragment != null)
+                {
+                    if (showingFragment.isVisible())
+                    {
+                        fragmentManager.popBackStackImmediate();
+                        fragmentManager.beginTransaction().remove(SearchFragment.getInstance()).commitNow();
+                        closeSearchView(IBottomSheet.SEARCH_RESULT_VIEW);
+                    }
+                } else
+                {
+                    showingFragment = fragmentManager.findFragmentByTag(SearchFragment.TAG);
+                    if (showingFragment != null)
+                    {
+                        if (showingFragment.isVisible())
+                        {
+                            fragmentManager.beginTransaction().remove(SearchFragment.getInstance()).commitNow();
+                            closeSearchView(IBottomSheet.SEARCH_VIEW);
+                        }
+                    }
+                }
+                searchView.onActionViewCollapsed();
+                return true;
+            }
+        });
+
+        if (toolbarMenuCallback != null)
+        {
+            toolbarMenuCallback.onCreateOptionsMenu();
+        }
+
+    }
+
+    private void initToolbar()
+    {
+        ((AppCompatActivity) getActivity()).setSupportActionBar(binding.mapSearchToolbar.getRoot());
+        ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
+        actionBar.setDisplayShowTitleEnabled(false);
     }
 
 
@@ -414,7 +778,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
         if (isSelectedPoiItem)
         {
             deselectPoiItem();
-            iBottomSheet.setBottomSheetState(BottomSheetBehavior.STATE_HIDDEN);
+            setBottomSheetState(BottomSheetBehavior.STATE_HIDDEN);
         }
     }
 
@@ -448,11 +812,74 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     @Override
     public void onMapViewMoveFinished(MapView mapView, MapPoint mapPoint)
     {
-        if (iNetwork.networkAvailable())
+        if (networkAvailable())
         {
-            mapReverseGeoCoder = new MapReverseGeoCoder(appKey, mapPoint, this, getActivity());
-            mapReverseGeoCoder.startFindingAddress(MapReverseGeoCoder.AddressType.ShortAddress);
+            if (getActivity() != null)
+            {
+                mapReverseGeoCoder = new MapReverseGeoCoder(appKey, mapPoint, this, getActivity());
+                mapReverseGeoCoder.startFindingAddress(MapReverseGeoCoder.AddressType.ShortAddress);
+            }
         }
+    }
+
+    public LocationDTO getSelectedLocationDto(int calendarId, long eventId)
+    {
+        // 선택된 poiitem의 리스트내 인덱스를 가져온다.
+        int poiItemIndex = getSelectedPoiItemIndex();
+        MapPOIItem[] poiItems = mapView.getPOIItems();
+        // 인덱스로 아이템을 가져온다.
+        CustomPoiItem item = (CustomPoiItem) poiItems[poiItemIndex];
+
+        LocationDTO location = new LocationDTO();
+        location.setCalendarId(calendarId);
+        location.setEventId(eventId);
+
+        // 주소인지 장소인지를 구분한다.
+        if (item.getPlaceDocument() != null)
+        {
+            location.setPlaceId(item.getPlaceDocument().getId());
+            location.setPlaceName(item.getPlaceDocument().getPlaceName());
+            location.setLatitude(item.getPlaceDocument().getY());
+            location.setLongitude(item.getPlaceDocument().getX());
+        } else if (item.getAddressDocument() != null)
+        {
+            location.setAddressName(item.getAddressDocument().getAddressName());
+            location.setLatitude(item.getAddressDocument().getY());
+            location.setLongitude(item.getAddressDocument().getX());
+        }
+        return location;
+    }
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
+    {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == REQUEST_CODE_LOCATION)
+        {
+            if (grantResults.length > 0 &&
+                    grantResults[0] == PackageManager.PERMISSION_GRANTED)
+            {
+                // 권한 허용됨
+                gpsButton.callOnClick();
+            } else
+            {
+                // 권한 거부됨
+            }
+        }
+    }
+
+    @Override
+    public void requestPermissions(int requestCode, String... permissions)
+    {
+        appPermission.requestPermissions(requestCode, permissions);
+    }
+
+    @Override
+    public boolean grantedPermissions(int requestCode, String... permissions)
+    {
+        return appPermission.grantedPermissions(requestCode, permissions);
     }
 
     @Override
@@ -467,20 +894,20 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
         // bottomsheet에 위치 정보 데이터를 설정한다.
         if (poiItem.getAddressDocument() != null)
         {
-            iBottomSheet.setAddress(poiItem.getAddressDocument());
-            iBottomSheet.setVisibility(IBottomSheet.ADDRESS, View.VISIBLE);
-            iBottomSheet.setVisibility(IBottomSheet.PLACE, View.GONE);
+            setAddress(poiItem.getAddressDocument());
+            setVisibility(IBottomSheet.ADDRESS, View.VISIBLE);
+            setVisibility(IBottomSheet.PLACE, View.GONE);
         } else if (poiItem.getPlaceDocument() != null)
         {
-            iBottomSheet.setPlace(poiItem.getPlaceDocument());
-            iBottomSheet.setVisibility(IBottomSheet.ADDRESS, View.GONE);
-            iBottomSheet.setVisibility(IBottomSheet.PLACE, View.VISIBLE);
+            setPlace(poiItem.getPlaceDocument());
+            setVisibility(IBottomSheet.ADDRESS, View.GONE);
+            setVisibility(IBottomSheet.PLACE, View.VISIBLE);
         }
 
         // 시트가 열리지 않은 경우 연다.
-        if (iBottomSheet.getBottomSheetState() != BottomSheetBehavior.STATE_EXPANDED)
+        if (getBottomSheetState() != BottomSheetBehavior.STATE_EXPANDED)
         {
-            iBottomSheet.setBottomSheetState(BottomSheetBehavior.STATE_EXPANDED);
+            setBottomSheetState(BottomSheetBehavior.STATE_EXPANDED);
         }
     }
 
@@ -514,39 +941,8 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     {
     }
 
-    public boolean isSelectedPoiItem()
-    {
-        return isSelectedPoiItem;
-    }
-
     public int getSelectedPoiItemIndex()
     {
         return selectedPoiItemIndex;
-    }
-
-    public ImageButton getZoomInButton()
-    {
-        return zoomInButton;
-    }
-
-    public ImageButton getZoomOutButton()
-    {
-        return zoomOutButton;
-    }
-
-    public ImageButton getGpsButton()
-    {
-        return gpsButton;
-    }
-
-    public void setINetwork(INetwork iNetwork)
-    {
-        this.iNetwork = iNetwork;
-
-    }
-
-    public void setIPermission(IPermission iPermission)
-    {
-        this.iPermission = iPermission;
     }
 }

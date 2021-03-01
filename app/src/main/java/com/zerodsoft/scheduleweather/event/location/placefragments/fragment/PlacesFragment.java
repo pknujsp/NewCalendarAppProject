@@ -1,15 +1,20 @@
 package com.zerodsoft.scheduleweather.event.location.placefragments.fragment;
 
-import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.service.carrier.CarrierMessagingService;
+import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
+import android.widget.FrameLayout;
+import android.widget.TextView;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -24,7 +29,7 @@ import com.zerodsoft.scheduleweather.activity.placecategory.viewmodel.PlaceCateg
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IstartActivity;
 import com.zerodsoft.scheduleweather.databinding.PlaceCategoriesFragmentBinding;
 import com.zerodsoft.scheduleweather.event.common.interfaces.ILocation;
-import com.zerodsoft.scheduleweather.event.location.activity.MoreActivity;
+import com.zerodsoft.scheduleweather.event.location.placefragments.interfaces.IFragment;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.event.location.placefragments.adapter.CategoryViewAdapter;
 import com.zerodsoft.scheduleweather.event.location.placefragments.interfaces.IClickedPlaceItem;
@@ -33,25 +38,34 @@ import com.zerodsoft.scheduleweather.event.location.placefragments.interfaces.IP
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 
-public class PlacesFragment extends Fragment implements IClickedPlaceItem, IPlacesFragment, IPlaceItem
+public class PlacesFragment extends Fragment implements IPlacesFragment, IPlaceItem
 {
+    public static final String TAG = "PlacesFragment";
     // 이벤트의 위치 값으로 정확한 위치를 지정하기 위해 위치 지정 액티비티 생성(카카오맵 검색 값 기반)
     // 맵 프래그먼트와 카테고리 별 데이타 목록 프래그먼트로 분리
     private final ILocation iLocation;
     private final IstartActivity istartActivity;
+    private final IFragment iFragment;
+    private IClickedPlaceItem iClickedPlaceItem;
+
     private PlaceCategoriesFragmentBinding binding;
     private CategoryViewAdapter adapter;
     private List<PlaceCategoryDTO> placeCategoryList;
     private PlaceCategoryViewModel placeCategoryViewModel;
+    private OnBackPressedCallback onBackPressedCallback;
 
-    public PlacesFragment(Activity activity)
+    public PlacesFragment(ILocation iLocation, IstartActivity istartActivity, IFragment iFragment)
     {
-        this.iLocation = (ILocation) activity;
-        this.istartActivity = (IstartActivity) activity;
+        this.iLocation = iLocation;
+        this.istartActivity = istartActivity;
+        this.iFragment = iFragment;
+    }
+
+    public void setiClickedPlaceItem(IClickedPlaceItem iClickedPlaceItem)
+    {
+        this.iClickedPlaceItem = iClickedPlaceItem;
     }
 
     @Nullable
@@ -60,6 +74,21 @@ public class PlacesFragment extends Fragment implements IClickedPlaceItem, IPlac
     {
         binding = PlaceCategoriesFragmentBinding.inflate(inflater);
         return binding.getRoot();
+    }
+
+    @Override
+    public void onAttach(@NonNull Context context)
+    {
+        super.onAttach(context);
+        onBackPressedCallback = new OnBackPressedCallback(true)
+        {
+            @Override
+            public void handleOnBackPressed()
+            {
+                requireActivity().finish();
+            }
+        };
+        requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
     }
 
     @Override
@@ -74,8 +103,25 @@ public class PlacesFragment extends Fragment implements IClickedPlaceItem, IPlac
         super.onViewCreated(view, savedInstanceState);
         binding.mapCategoryViewContainer.setLayoutManager(new LinearLayoutManager(view.getContext(), LinearLayoutManager.VERTICAL, false));
         placeCategoryViewModel = new ViewModelProvider(this).get(PlaceCategoryViewModel.class);
+        binding.categorySettingsFab.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                Intent intent = new Intent(getActivity(), PlaceCategoryActivity.class);
+                istartActivity.startActivityResult(intent, 0);
+            }
+        });
 
         initLocation();
+    }
+
+
+    @Override
+    public void onDetach()
+    {
+        super.onDetach();
+        onBackPressedCallback.remove();
     }
 
     private void initLocation()
@@ -98,21 +144,28 @@ public class PlacesFragment extends Fragment implements IClickedPlaceItem, IPlac
                                 @Override
                                 public void run()
                                 {
-                                    // 편의점, 주차장, ATM을 보여주기로 했다고 가정
-                                    binding.locationName.setText((location.getPlaceName() == null ? location.getAddressName() : location.getPlaceName()) + getString(R.string.info_around_location));
-
-                                    adapter = new CategoryViewAdapter(location, result, PlacesFragment.this);
-                                    binding.mapCategoryViewContainer.setAdapter(adapter);
-
-                                    binding.categorySettingsFab.setOnClickListener(new View.OnClickListener()
+                                    if (!placeCategoryList.isEmpty())
                                     {
-                                        @Override
-                                        public void onClick(View view)
-                                        {
-                                            Intent intent = new Intent(getActivity(), PlaceCategoryActivity.class);
-                                            istartActivity.startActivityResult(intent, 0);
-                                        }
-                                    });
+                                        // 편의점, 주차장, ATM을 보여주기로 했다고 가정
+                                        binding.locationName.setText((location.getPlaceName() == null ? location.getAddressName() : location.getPlaceName()) + getString(R.string.info_around_location));
+
+                                        adapter = new CategoryViewAdapter(location, result, iClickedPlaceItem, PlacesFragment.this);
+                                        binding.mapCategoryViewContainer.setAdapter(adapter);
+                                    } else
+                                    {
+                                        TextView textView = new TextView(getContext());
+                                        textView.setText(R.string.not_selected_place_category);
+                                        textView.setTextColor(Color.BLACK);
+                                        textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f);
+
+                                        FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                                        layoutParams.gravity = Gravity.CENTER;
+                                        textView.setLayoutParams(layoutParams);
+
+                                        binding.placeCategoriesLayout.addView(textView);
+                                        //카테고리 추가 액티비티 실행
+                                        binding.categorySettingsFab.performClick();
+                                    }
                                 }
                             });
 
@@ -123,28 +176,12 @@ public class PlacesFragment extends Fragment implements IClickedPlaceItem, IPlac
         });
     }
 
-
-    @Override
-    public void onClickedItem(PlaceDocuments document)
-    {
-        Toast.makeText(getActivity(), document.getPlaceName(), Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    public void onClickedMore(String categoryDescription)
-    {
-        Intent intent = new Intent(requireActivity(), MoreActivity.class);
-        intent.putExtra("map", (HashMap<String, List<PlaceDocuments>>) adapter.getAllItems());
-        intent.putExtra("selectedCategoryDescription", categoryDescription);
-        startActivity(intent);
-    }
-
     @Override
     public void onDestroy()
     {
         super.onDestroy();
+        onBackPressedCallback.remove();
     }
-
 
     @Override
     public LifecycleOwner getLifeCycleOwner()
@@ -159,22 +196,17 @@ public class PlacesFragment extends Fragment implements IClickedPlaceItem, IPlac
     }
 
     @Override
+    public Fragment getFragment()
+    {
+        return this;
+    }
+
+    @Override
     public List<PlaceDocuments> getPlaceItems(PlaceCategoryDTO placeCategory)
     {
         return adapter.getPlaceItems(placeCategory);
     }
 
-    @Override
-    public List<String> getCategoryNames()
-    {
-        List<String> names = new LinkedList<>();
-
-        for (PlaceCategoryDTO category : placeCategoryList)
-        {
-            names.add(category.getDescription());
-        }
-        return names;
-    }
 
     @Override
     public int getPlaceItemsSize(PlaceCategoryDTO placeCategory)

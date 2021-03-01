@@ -312,6 +312,7 @@
     <string name="update_custom_category">카테고리 수정</string>
     <string name="update_custom_category_message">카테고리의 이름을 입력하세요</string>
     <string name="update">변경</string>
+    <string name="not_selected_place_category">표시할 장소 카테고리가 지정되어있지 않습니다</string>
 
     <!-- 알림 -->
 

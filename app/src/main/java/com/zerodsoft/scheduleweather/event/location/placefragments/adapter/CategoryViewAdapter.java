@@ -9,17 +9,20 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.paging.PagedList;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.etc.RecyclerViewItemDecoration;
+import com.zerodsoft.scheduleweather.event.location.placefragments.interfaces.IPlacesFragment;
 import com.zerodsoft.scheduleweather.kakaomap.util.LocalParameterUtil;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.kakaomap.viewmodel.PlacesViewModel;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
-import com.zerodsoft.scheduleweather.event.location.placefragments.fragment.PlacesFragment;
 import com.zerodsoft.scheduleweather.event.location.placefragments.interfaces.IClickedPlaceItem;
 import com.zerodsoft.scheduleweather.event.location.placefragments.interfaces.IPlaceItem;
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
@@ -35,21 +38,23 @@ public class CategoryViewAdapter extends RecyclerView.Adapter<CategoryViewAdapte
     private Context context;
     private List<PlaceCategoryDTO> categories;
     private final IClickedPlaceItem iClickedPlaceItem;
+    private final IPlacesFragment iPlacesFragment;
     private Map<PlaceCategoryDTO, CategoryViewHolder> viewHolderMap;
 
-    public CategoryViewAdapter(LocationDTO locationDTO, List<PlaceCategoryDTO> categories, PlacesFragment fragment)
+    public CategoryViewAdapter(LocationDTO locationDTO, List<PlaceCategoryDTO> categories, IClickedPlaceItem iClickedPlaceItem, IPlacesFragment iPlacesFragment)
     {
         this.locationDTO = locationDTO;
         this.categories = categories;
-        this.iClickedPlaceItem = (IClickedPlaceItem) fragment;
+        this.iClickedPlaceItem = iClickedPlaceItem;
         this.viewHolderMap = new HashMap<>();
-        context = fragment.getContext();
+        this.iPlacesFragment = iPlacesFragment;
     }
 
     @NonNull
     @Override
     public CategoryViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType)
     {
+        context = parent.getContext();
         return new CategoryViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.place_category_view, parent, false));
     }
 
@@ -72,17 +77,6 @@ public class CategoryViewAdapter extends RecyclerView.Adapter<CategoryViewAdapte
         return viewHolderMap.get(placeCategory).adapter.getCurrentList().size();
     }
 
-    public Map<PlaceCategoryDTO, List<PlaceDocuments>> getAllItems()
-    {
-        Map<PlaceCategoryDTO, List<PlaceDocuments>> map = new HashMap<>();
-
-        for (PlaceCategoryDTO placeCategoryDTO : categories)
-        {
-            map.put(key, viewHolderMap.get(key).adapter.getCurrentList().snapshot());
-        }
-        return map;
-    }
-
     @Override
     public int getItemCount()
     {
@@ -96,14 +90,16 @@ public class CategoryViewAdapter extends RecyclerView.Adapter<CategoryViewAdapte
         private PlacesViewModel viewModel;
         private PlaceItemsAdapters adapter;
         private String categoryDescription;
+        private CircularProgressIndicator progressIndicator;
 
         public CategoryViewHolder(View view)
         {
             super(view);
+            progressIndicator = (CircularProgressIndicator) view.findViewById(R.id.progress_indicator);
             itemRecyclerView = (RecyclerView) view.findViewById(R.id.map_category_itemsview);
             itemRecyclerView.setLayoutManager(new LinearLayoutManager(view.getContext(), RecyclerView.HORIZONTAL, false));
             itemRecyclerView.addItemDecoration(new RecyclerViewItemDecoration((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, context.getResources().getDisplayMetrics())));
-            viewModel = new ViewModelProvider(fragment).get(PlacesViewModel.class);
+            viewModel = new ViewModelProvider(iPlacesFragment.getFragment()).get(PlacesViewModel.class);
         }
 
         public void onBind()
@@ -116,24 +112,32 @@ public class CategoryViewAdapter extends RecyclerView.Adapter<CategoryViewAdapte
 
             categoryDescription = placeCategoryDTO.getDescription();
 
-            adapter = new PlaceItemsAdapters(iClickedPlaceItem);
+            adapter = new PlaceItemsAdapters(iClickedPlaceItem, placeCategoryDTO);
             itemRecyclerView.setAdapter(adapter);
 
             viewModel.init(placeParameter);
-            viewModel.getPagedListMutableLiveData().observe(fragment.getLifeCycleOwner(), adapter::submitList);
+            viewModel.getPagedListMutableLiveData().observe(iPlacesFragment.getFragment(), new Observer<PagedList<PlaceDocuments>>()
+            {
+                @Override
+                public void onChanged(PagedList<PlaceDocuments> placeDocuments)
+                {
+                    progressIndicator.setVisibility(View.GONE);
+                    adapter.submitList(placeDocuments);
+                }
+            });
+
 
             ((TextView) itemView.findViewById(R.id.map_category_name)).setText(categoryDescription);
-
             ((Button) itemView.findViewById(R.id.map_category_more)).setOnClickListener(new View.OnClickListener()
             {
                 @Override
                 public void onClick(View view)
                 {
-                    iClickedPlaceItem.onClickedMore(categoryDescription);
+                    iClickedPlaceItem.onClickedMore(placeCategoryDTO, adapter.getCurrentList().snapshot());
                 }
             });
 
-            viewHolderMap.put(categoryDescription, this);
+            viewHolderMap.put(placeCategoryDTO, this);
         }
 
     }

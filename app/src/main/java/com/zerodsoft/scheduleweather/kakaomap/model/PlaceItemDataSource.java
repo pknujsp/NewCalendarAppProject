@@ -31,7 +31,6 @@ public class PlaceItemDataSource extends PositionalDataSource<PlaceDocuments>
     }
 
 
-
     @Override
     public void loadInitial(@NonNull LoadInitialParams params, @NonNull LoadInitialCallback<PlaceDocuments> callback)
     {

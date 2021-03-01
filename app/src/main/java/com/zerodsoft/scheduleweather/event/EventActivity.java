@@ -47,6 +47,7 @@ import com.zerodsoft.scheduleweather.event.common.interfaces.ILocation;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.event.EventFragment;
 import com.zerodsoft.scheduleweather.event.location.placefragments.fragment.PlacesFragment;
+import com.zerodsoft.scheduleweather.event.location.placefragments.fragment.PlacesTransactionFragment;
 import com.zerodsoft.scheduleweather.event.weather.WeatherFragment;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
@@ -63,7 +64,7 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab,
 
     private EventFragment eventFragment;
     private WeatherFragment weatherFragment;
-    private PlacesFragment placesFragment;
+    private PlacesTransactionFragment placesTransactionFragment;
 
     private OnBackPressedCallback onBackPressedCallback;
 
@@ -85,7 +86,6 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab,
     public static final int REQUEST_DELETE_EVENT = 5000;
     public static final int REQUEST_EXCEPT_THIS_INSTANCE = 5100;
     public static final int REQUEST_SUBSEQUENT_INCLUDING_THIS = 5200;
-
     public static final int RESULT_EDITED_PLACE_CATEGORY = 6000;
 
 
@@ -427,14 +427,15 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab,
                                                     setFabs(TAG_WEATHER);
                                                     newFragment = weatherFragment;
                                                     break;
+
                                                 case R.id.schedule_location:
-                                                    if (placesFragment == null)
+                                                    if (placesTransactionFragment == null)
                                                     {
-                                                        placesFragment = new PlacesFragment(EventActivity.this);
-                                                        fragmentTransaction.add(R.id.schedule_fragment_container, placesFragment, TAG_LOCATION);
+                                                        placesTransactionFragment = new PlacesTransactionFragment(EventActivity.this);
+                                                        fragmentTransaction.add(R.id.schedule_fragment_container, placesTransactionFragment, TAG_LOCATION);
                                                     }
                                                     setFabs(TAG_LOCATION);
-                                                    newFragment = placesFragment;
+                                                    newFragment = placesTransactionFragment;
                                                     break;
                                             }
 
@@ -729,7 +730,7 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab,
                     final int resultCode = result.getResultCode();
                     if (resultCode == RESULT_EDITED_PLACE_CATEGORY || resultCode == RESULT_RESELECTED_LOCATION || resultCode == RESULT_SELECTED_LOCATION)
                     {
-                        placesFragment.refresh();
+                        placesTransactionFragment.refresh();
                     }
                 }
             }

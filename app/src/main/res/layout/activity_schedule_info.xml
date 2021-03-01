@@ -3,86 +3,77 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <androidx.coordinatorlayout.widget.CoordinatorLayout
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:context=".event.EventActivity">
+        android:layout_height="match_parent">
 
-        <androidx.core.widget.NestedScrollView
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:layout_above="@id/schedule_bottom_nav"
+            android:layout_alignParentTop="true"
+            tools:context=".event.EventActivity">
 
             <androidx.fragment.app.FragmentContainerView
                 android:id="@+id/schedule_fragment_container"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="match_parent" />
 
-        </androidx.core.widget.NestedScrollView>
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/select_detail_location_fab"
+                style="@style/Widget.MaterialComponents.FloatingActionButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|right"
+                android:layout_margin="16dp"
+                android:backgroundTint="@color/light_blue_600"
+                android:contentDescription="@string/edit_location"
+                android:src="@drawable/edit_location_black" />
 
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/modify_event_fab"
+                style="@style/Widget.MaterialComponents.FloatingActionButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|right"
+                android:layout_margin="16dp"
+                android:backgroundTint="@color/light_blue_600"
+                android:contentDescription="@string/modify_event"
+                android:src="@drawable/modify_black" />
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/select_detail_location_fab"
-            style="@style/Widget.MaterialComponents.FloatingActionButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="top"
-            android:layout_margin="16dp"
-            android:backgroundTint="@color/light_blue_600"
-            android:contentDescription="@string/edit_location"
-            android:src="@drawable/edit_location_black"
-            app:layout_anchor="@id/schedule_bottom_nav"
-            app:layout_anchorGravity="top|right" />
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/modify_event_fab"
-            style="@style/Widget.MaterialComponents.FloatingActionButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="top"
-            android:layout_margin="16dp"
-            android:backgroundTint="@color/light_blue_600"
-            android:contentDescription="@string/modify_event"
-            android:src="@drawable/modify_black"
-            app:layout_anchor="@id/schedule_bottom_nav"
-            app:layout_anchorGravity="top|right" />
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/remove_event_fab"
-            style="@style/Widget.MaterialComponents.FloatingActionButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="top"
-            android:layout_margin="16dp"
-            android:backgroundTint="@color/light_blue_600"
-            android:contentDescription="@string/remove_event"
-            android:src="@drawable/remove_schedule"
-            app:layout_anchor="@id/schedule_bottom_nav"
-            app:layout_anchorGravity="top|right" />
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/remove_event_fab"
+                style="@style/Widget.MaterialComponents.FloatingActionButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|right"
+                android:layout_margin="16dp"
+                android:backgroundTint="@color/light_blue_600"
+                android:contentDescription="@string/remove_event"
+                android:src="@drawable/remove_schedule" />
 
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/event_fab"
-            style="@style/Widget.MaterialComponents.FloatingActionButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="top"
-            android:layout_margin="16dp"
-            android:contentDescription="@string/modify_event"
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/event_fab"
+                style="@style/Widget.MaterialComponents.FloatingActionButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|right"
+                android:layout_margin="16dp"
+                android:contentDescription="@string/modify_event"
+                android:src="@drawable/more_icon" />
 
-            android:src="@drawable/more_icon"
-            app:layout_anchor="@id/schedule_bottom_nav"
-            app:layout_anchorGravity="top|right" />
+        </FrameLayout>
 
         <com.google.android.material.bottomnavigation.BottomNavigationView
             android:id="@+id/schedule_bottom_nav"
             style="@style/Widget.MaterialComponents.BottomNavigationView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior"
+            android:layout_alignParentBottom="true"
             app:menu="@menu/schedule_bottom_nav" />
 
-    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+    </RelativeLayout>
 
 
 </layout>

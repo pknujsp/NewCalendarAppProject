@@ -10,13 +10,17 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SyncStatusObserver;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.Signature;
 import android.database.ContentObserver;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.CalendarContract;
 import android.util.ArraySet;
+import android.util.Base64;
+import android.util.Log;
 import android.view.View;
 import android.widget.ExpandableListView;
 import android.widget.TextView;
@@ -60,6 +64,7 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -141,7 +146,28 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
         init();
         initCalendarViewModel();
         setNavigationView();
+
+        //getAppKeyHash();
     }
+
+    private void getAppKeyHash()
+    {
+        try
+        {
+            PackageInfo info = getPackageManager().getPackageInfo(getPackageName(), PackageManager.GET_SIGNATURES);
+            for (Signature signature : info.signatures)
+            {
+                MessageDigest md;
+                md = MessageDigest.getInstance("SHA");
+                md.update(signature.toByteArray());
+                String something = new String(Base64.encode(md.digest(), 0));
+                Log.e("yyg", "key: " + something);
+            }
+        } catch (Exception e)
+        {
+        }
+    }
+
 
     private void init()
     {

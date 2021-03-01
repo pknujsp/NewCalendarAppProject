@@ -44,12 +44,12 @@ public class SearchFragment extends Fragment implements OnSelectedMapCategory
     private FragmentManager fragmentManager;
     private FragmentStateCallback fragmentStateCallback;
 
-    public SearchFragment(Activity activity, Fragment fragment, FragmentStateCallback fragmentStateCallback)
+    public SearchFragment(Fragment fragment, FragmentStateCallback fragmentStateCallback)
     {
         this.iMapPoint = (IMapPoint) fragment;
         this.iMapData = (IMapData) fragment;
-        this.iMapToolbar = (IMapToolbar) activity;
-        this.iBottomSheet = (IBottomSheet) activity;
+        this.iMapToolbar = (IMapToolbar) fragment;
+        this.iBottomSheet = (IBottomSheet) fragment;
         this.fragmentStateCallback = fragmentStateCallback;
     }
 
@@ -58,9 +58,9 @@ public class SearchFragment extends Fragment implements OnSelectedMapCategory
         return instance;
     }
 
-    public static SearchFragment newInstance(Activity activity, Fragment fragment, FragmentStateCallback fragmentStateCallback)
+    public static SearchFragment newInstance(Fragment fragment, FragmentStateCallback fragmentStateCallback)
     {
-        instance = new SearchFragment(activity, fragment, fragmentStateCallback);
+        instance = new SearchFragment(fragment, fragmentStateCallback);
         return instance;
     }
 
@@ -122,8 +122,8 @@ public class SearchFragment extends Fragment implements OnSelectedMapCategory
     {
         FragmentManager fragmentManager = getParentFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.add(R.id.map_bottom_sheet_fragment_container, SearchResultListFragment.newInstance(searchWord, iMapPoint, iMapData, iMapToolbar, iBottomSheet), SearchResultListFragment.TAG)
-                .hide(SearchFragment.this).addToBackStack(SearchResultListFragment.TAG).commit();
+        fragmentTransaction.add(R.id.map_bottom_sheet_fragment_container, SearchResultListFragment.newInstance(searchWord, iMapPoint, iMapData, iMapToolbar, iBottomSheet)
+                , SearchResultListFragment.TAG).hide(SearchFragment.this).addToBackStack(SearchResultListFragment.TAG).commit();
     }
 
     @Override

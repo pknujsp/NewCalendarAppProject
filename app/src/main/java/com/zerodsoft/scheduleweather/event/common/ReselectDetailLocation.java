@@ -36,7 +36,7 @@ public class ReselectDetailLocation extends KakaoMapActivity
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        binding.bottomSheet.mapBottomSheetToolbar.selectLocationButton.setVisibility(View.GONE);
+        kakaoMapFragment.binding.bottomSheet.mapBottomSheetToolbar.selectLocationButton.setVisibility(View.GONE);
 
         onBackPressedCallback = new OnBackPressedCallback(true)
         {
@@ -59,7 +59,7 @@ public class ReselectDetailLocation extends KakaoMapActivity
     private void showLocationItem()
     {
         // 위치가 이미 선택되어 있는 경우 해당 위치 정보를 표시함 (삭제 버튼 추가)
-        if (networkAvailable())
+        if (kakaoMapFragment.networkAvailable())
         {
             if (savedLocationDto.getAddressName() != null)
             {
@@ -125,10 +125,10 @@ public class ReselectDetailLocation extends KakaoMapActivity
 
 
     @Override
-    public void onSelectLocation()
+    public void onSelectedLocation()
     {
         // 지정이 완료된 경우 - DB에 등록하고 이벤트 액티비티로 넘어가서 날씨 또는 주변 정보 프래그먼트를 실행한다.
-        LocationDTO location = getSelectedLocationDto(savedLocationDto.getCalendarId(), savedLocationDto.getEventId());
+        LocationDTO location = kakaoMapFragment.getSelectedLocationDto(savedLocationDto.getCalendarId(), savedLocationDto.getEventId());
 
         //선택된 위치를 DB에 등록
         viewModel.addLocation(location, new CarrierMessagingService.ResultCallback<Boolean>()
@@ -153,7 +153,7 @@ public class ReselectDetailLocation extends KakaoMapActivity
     }
 
     @Override
-    public void onRemoveLocation()
+    public void onRemovedLocation()
     {
         viewModel.removeLocation(savedLocationDto.getCalendarId(), savedLocationDto.getEventId(), new CarrierMessagingService.ResultCallback<Boolean>()
         {
@@ -170,10 +170,10 @@ public class ReselectDetailLocation extends KakaoMapActivity
                         @Override
                         public void run()
                         {
-                            setBottomSheetState(BottomSheetBehavior.STATE_HIDDEN);
+                            kakaoMapFragment.setBottomSheetState(BottomSheetBehavior.STATE_HIDDEN);
                             Toast.makeText(ReselectDetailLocation.this, getString(R.string.removed_detail_location), Toast.LENGTH_SHORT).show();
-                            binding.bottomSheet.mapBottomSheetToolbar.selectLocationButton.setVisibility(View.VISIBLE);
-                            binding.bottomSheet.mapBottomSheetToolbar.removeLocationButton.setVisibility(View.GONE);
+                            kakaoMapFragment.binding.bottomSheet.mapBottomSheetToolbar.selectLocationButton.setVisibility(View.VISIBLE);
+                            kakaoMapFragment.binding.bottomSheet.mapBottomSheetToolbar.removeLocationButton.setVisibility(View.GONE);
                         }
                     });
                 } else
