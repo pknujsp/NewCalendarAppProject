@@ -21,14 +21,16 @@ import java.util.List;
 public class EventsInfoRecyclerViewAdapter extends RecyclerView.Adapter<EventsInfoRecyclerViewAdapter.EventsInfoViewHolder>
 {
     private List<ContentValues> instances;
-    private OnEventItemClickListener onEventItemClickListener;
+    private final OnEventItemClickListener onEventItemClickListener;
+    private final InstanceOnLongClickedListener instanceOnLongClickedListener;
     private Context context;
     private Float VIEW_MARGIN;
     private final long BEGIN;
     private final long END;
 
-    public EventsInfoRecyclerViewAdapter(OnEventItemClickListener onEventItemClickListener, long BEGIN, long END)
+    public EventsInfoRecyclerViewAdapter(InstanceOnLongClickedListener instanceOnLongClickedListener, OnEventItemClickListener onEventItemClickListener, long BEGIN, long END)
     {
+        this.instanceOnLongClickedListener = instanceOnLongClickedListener;
         this.onEventItemClickListener = onEventItemClickListener;
         this.BEGIN = BEGIN;
         this.END = END;
@@ -39,7 +41,7 @@ public class EventsInfoRecyclerViewAdapter extends RecyclerView.Adapter<EventsIn
     public EventsInfoViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType)
     {
         this.context = parent.getContext();
-        this.VIEW_MARGIN = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 12f, parent.getContext().getResources().getDisplayMetrics());
+        this.VIEW_MARGIN = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 12f, context.getResources().getDisplayMetrics());
         return new EventsInfoViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.events_info_list_item, parent, false));
     }
 
@@ -62,7 +64,6 @@ public class EventsInfoRecyclerViewAdapter extends RecyclerView.Adapter<EventsIn
 
     class EventsInfoViewHolder extends RecyclerView.ViewHolder
     {
-        private int position;
         private long instanceId;
         private int calendarId;
         private long begin;
@@ -82,16 +83,28 @@ public class EventsInfoRecyclerViewAdapter extends RecyclerView.Adapter<EventsIn
                     onEventItemClickListener.onClickedOnDialog(calendarId, instanceId, eventId, begin, end);
                 }
             });
+            eventView.setOnLongClickListener(new View.OnLongClickListener()
+            {
+                @Override
+                public boolean onLongClick(View view)
+                {
+                    //popupMenu
+                    instanceOnLongClickedListener.showPopup(view);
+                    return true;
+                }
+            });
         }
 
         public void onBind(int position)
         {
-            this.position = position;
             this.instanceId = instances.get(position).getAsLong(CalendarContract.Instances._ID);
             this.calendarId = instances.get(position).getAsInteger(CalendarContract.Instances.CALENDAR_ID);
             this.begin = instances.get(position).getAsLong(CalendarContract.Instances.BEGIN);
             this.end = instances.get(position).getAsLong(CalendarContract.Instances.END);
             this.eventId = instances.get(position).getAsLong(CalendarContract.Instances.EVENT_ID);
+
+            final InstanceTagHolder holder = new InstanceTagHolder(instances.get(position));
+            itemView.setTag(holder);
 
             RecyclerView.LayoutParams layoutParams = new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 
@@ -119,6 +132,21 @@ public class EventsInfoRecyclerViewAdapter extends RecyclerView.Adapter<EventsIn
                 eventView.setText(context.getString(R.string.empty_title));
             }
         }
+    }
+
+    public static class InstanceTagHolder
+    {
+        public ContentValues instance;
+
+        public InstanceTagHolder(ContentValues instance)
+        {
+            this.instance = instance;
+        }
+    }
+
+    public interface InstanceOnLongClickedListener
+    {
+        void showPopup(View view);
     }
 
 }

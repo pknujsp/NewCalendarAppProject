@@ -2,6 +2,7 @@ package com.zerodsoft.scheduleweather.calendarview.month;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -15,71 +16,76 @@ import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.calendarview.common.InstanceBarView;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IEvent;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
-import java.util.TimeZone;
 import java.util.TreeSet;
 
 public class MonthCalendarView extends ViewGroup implements IEvent
 {
     private Long firstDay;
-    private final float HEADER_DAY_TEXT_SIZE;
-    private final TextPaint HEADER_DAY_PAINT;
 
     private Integer ITEM_WIDTH;
     private Integer ITEM_HEIGHT;
 
-    private static final int SPACING_BETWEEN_EVENT = 12;
-    private static final int TEXT_MARGIN = 8;
-    public static final int EVENT_LR_MARGIN = 4;
+    private static Integer DAY_PADDING;
+    private static Integer DAY_TEXTSIZE;
+    private static Paint TODAY_PAINT = new Paint();
+
+    private final int SPACING_BETWEEN_INSTANCE;
+    private static Integer DAY_SPACE_HEIGHT;
+    private float INSTANCE_BAR_HEIGHT;
+    private final int INSTANCE_BAR_LR_MARGIN;
+
     public static final int MAX_ROWS_COUNT = 5;
     public static final int FIRST_DAY_INDEX = 0;
     public static final int LAST_DAY_INDEX = 41;
-    private float EVENT_TEXT_HEIGHT;
 
     private int start;
     private int end;
 
-    private float DAY_SPACE_HEIGHT;
-    private float EVENT_HEIGHT;
-
-    private List<EventData> eventCellsList = new ArrayList<>();
-
+    private List<InstanceBar> instanceBarList = new ArrayList<>();
     private List<ContentValues> instances;
-
+    private List<MonthCalendarItemView> monthCalendarItemViewList;
     private SparseArray<ItemCell> ITEM_LAYOUT_CELLS = new SparseArray<>(42);
 
     public MonthCalendarView(Context context, AttributeSet attrs)
     {
         super(context, attrs);
 
-        HEADER_DAY_TEXT_SIZE = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 14f, context.getResources().getDisplayMetrics());
+        SPACING_BETWEEN_INSTANCE = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 3f, getContext().getResources().getDisplayMetrics());
+        INSTANCE_BAR_LR_MARGIN = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 3f, getContext().getResources().getDisplayMetrics());
 
-        HEADER_DAY_PAINT = new TextPaint(Paint.ANTI_ALIAS_FLAG | Paint.SUBPIXEL_TEXT_FLAG);
-        HEADER_DAY_PAINT.setTextAlign(Paint.Align.CENTER);
-        HEADER_DAY_PAINT.setTextSize(HEADER_DAY_TEXT_SIZE);
-        HEADER_DAY_PAINT.setColor(Color.BLACK);
+        DAY_PADDING = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 2f, getContext().getResources().getDisplayMetrics());
+        DAY_TEXTSIZE = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 12f, getContext().getResources().getDisplayMetrics());
 
         Rect rect = new Rect();
-        Paint DAY_TEXT_PAINT = new TextPaint();
-        DAY_TEXT_PAINT.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 12, getContext().getResources().getDisplayMetrics()));
-        DAY_TEXT_PAINT.getTextBounds("31", 0, 1, rect);
 
-        DAY_SPACE_HEIGHT = rect.height() + 24;
+        TextPaint dayTextPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
+        dayTextPaint.setTextAlign(Paint.Align.CENTER);
+        dayTextPaint.setTextSize(DAY_TEXTSIZE);
+        dayTextPaint.getTextBounds("0", 0, 1, rect);
+
+        DAY_SPACE_HEIGHT = rect.height() + DAY_PADDING * 2;
+
+        TODAY_PAINT.setStrokeWidth(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1f, getContext().getResources().getDisplayMetrics()));
+        TODAY_PAINT.setStyle(Paint.Style.STROKE);
+        TODAY_PAINT.setColor(Color.BLUE);
 
         setBackgroundColor(Color.WHITE);
         setWillNotDraw(false);
+    }
+
+    public void setMonthCalendarItemViewList(List<MonthCalendarItemView> monthCalendarItemViewList)
+    {
+        this.monthCalendarItemViewList = monthCalendarItemViewList;
     }
 
     public void setFirstDay(long firstDay)
@@ -96,23 +102,19 @@ public class MonthCalendarView extends ViewGroup implements IEvent
     @Override
     protected void onLayout(boolean b, int i, int i1, int i2, int i3)
     {
-        // resolveSize : 실제 설정할 크기를 계산
         ITEM_WIDTH = getWidth() / 7;
         ITEM_HEIGHT = getHeight() / 6;
 
-        EVENT_HEIGHT = (ITEM_HEIGHT - DAY_SPACE_HEIGHT - SPACING_BETWEEN_EVENT * 4) / MAX_ROWS_COUNT;
-        EVENT_TEXT_HEIGHT = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_PX, EVENT_HEIGHT - TEXT_MARGIN, getContext().getResources().getDisplayMetrics());
+        float height = (float) ((ITEM_HEIGHT - DAY_SPACE_HEIGHT) - SPACING_BETWEEN_INSTANCE * (MAX_ROWS_COUNT - 1)) / MAX_ROWS_COUNT;
+        INSTANCE_BAR_HEIGHT = height;
 
-        // childview의 크기 설정
-        measureChildren(ITEM_WIDTH, ITEM_HEIGHT);
-
-        int childCount = getChildCount();
         int left = 0;
         int right = 0;
         int top = 0;
         int bottom = 0;
 
-        for (int index = 0; index < childCount; index++)
+        //monthcalendarviewitem 크기,위치 설정
+        for (int index = 0; index < monthCalendarItemViewList.size(); index++)
         {
             if (index % 7 == 0)
             {
@@ -127,7 +129,31 @@ public class MonthCalendarView extends ViewGroup implements IEvent
             top = ITEM_HEIGHT * (index / 7);
             bottom = ITEM_HEIGHT * ((index / 7) + 1);
 
-            View childView = getChildAt(index);
+            View childView = monthCalendarItemViewList.get(index);
+            childView.measure(ITEM_WIDTH, ITEM_HEIGHT);
+            childView.layout(left, top, right, bottom);
+        }
+        //instancebarview 크기,위치 설정
+        for (int index = 0; index < instanceBarList.size(); index++)
+        {
+            final int BEGIN_INDEX = instanceBarList.get(index).beginIndex;
+            final int END_INDEX = instanceBarList.get(index).endIndex;
+            final int ROW = instanceBarList.get(index).row;
+            final int WEEK = instanceBarList.get(index).week;
+            final int LEFT_MARGIN = instanceBarList.get(index).leftMargin;
+            final int RIGHT_MARGIN = instanceBarList.get(index).rightMargin;
+
+            float startX = (BEGIN_INDEX % 7) * ITEM_WIDTH;
+            float startY = ITEM_HEIGHT * WEEK + DAY_SPACE_HEIGHT;
+            float endX = (END_INDEX % 7 + 1) * ITEM_WIDTH;
+
+            left = (int) (startX + LEFT_MARGIN);
+            right = (int) (endX - RIGHT_MARGIN);
+            top = (int) (startY + (INSTANCE_BAR_HEIGHT + SPACING_BETWEEN_INSTANCE) * ROW);
+            bottom = (int) (top + INSTANCE_BAR_HEIGHT);
+
+            View childView = instanceBarList.get(index).instanceBarView;
+            childView.measure((int) (right - left), (int) INSTANCE_BAR_HEIGHT);
             childView.layout(left, top, right, bottom);
         }
     }
@@ -137,165 +163,13 @@ public class MonthCalendarView extends ViewGroup implements IEvent
     protected void onDraw(Canvas canvas)
     {
         super.onDraw(canvas);
-        if (!eventCellsList.isEmpty())
-        {
-            drawEvents(canvas);
-        }
     }
 
-
-    private void drawEvents(Canvas canvas)
-    {
-        for (EventData eventData : eventCellsList)
-        {
-            final int BEGIN_INDEX = eventData.getStartIndex();
-            final int END_INDEX = eventData.getEndIndex();
-            final int ROW = eventData.getRow();
-            final int EVENT_ROW_COUNT = END_INDEX / 7 - BEGIN_INDEX / 7 + 1;
-
-            float left = 0;
-            float right = 0;
-            float top = 0;
-            float bottom = 0;
-
-            float startX = 0f;
-            float startY = 0f;
-            float endX = 0f;
-            float endY = 0f;
-
-            ContentValues event = eventData.getEvent();
-
-            final long INSTANCE_BEGIN = event.getAsLong(CalendarContract.Instances.BEGIN);
-            long INSTANCE_END = event.getAsLong(CalendarContract.Instances.END);
-            final long VIEW_START = ((MonthCalendarItemView) getChildAt(BEGIN_INDEX)).getStartDate().getTime();
-            final long VIEW_END = ((MonthCalendarItemView) getChildAt(END_INDEX)).getEndDate().getTime();
-
-            if (event.size() > 0)
-            {
-                int[] margin = EventUtil.getViewSideMargin(INSTANCE_BEGIN, INSTANCE_END, VIEW_START, VIEW_END, 4, event.getAsBoolean(CalendarContract.Instances.ALL_DAY));
-
-                for (int currentRowNum = 1; currentRowNum <= EVENT_ROW_COUNT; currentRowNum++)
-                {
-                    if (currentRowNum == 1)
-                    {
-                        startX = BEGIN_INDEX % 7 == 0 ? 0 : ITEM_WIDTH * (BEGIN_INDEX % 7);
-
-                        if (EVENT_ROW_COUNT == 1)
-                        {
-                            endX = END_INDEX % 7 == 0 ? 0 : ITEM_WIDTH * (END_INDEX % 7);
-                        } else
-                        {
-                            endX = getWidth() - ITEM_WIDTH;
-                        }
-                    } else if (currentRowNum == EVENT_ROW_COUNT)
-                    {
-                        startX = 0;
-                        endX = END_INDEX % 7 == 0 ? 0 : ITEM_WIDTH * (END_INDEX % 7);
-                    }
-
-                    if (currentRowNum != 1 && currentRowNum != EVENT_ROW_COUNT)
-                    {
-                        startX = 0;
-                        endX = getWidth() - ITEM_WIDTH;
-                    }
-
-                    int week = BEGIN_INDEX / 7 + currentRowNum - 1;
-                    startY = ITEM_HEIGHT * (week) + DAY_SPACE_HEIGHT;
-
-                    top = startY + ((EVENT_HEIGHT + SPACING_BETWEEN_EVENT) * ROW);
-                    bottom = top + EVENT_HEIGHT;
-                    left = startX + margin[0];
-                    right = endX + ITEM_WIDTH - margin[1];
-
-                    eventData.setEventColorPaint(EventUtil.getEventColorPaint(event.getAsInteger(CalendarContract.Instances.EVENT_COLOR)));
-                    eventData.setEventTextPaint(EventUtil.getEventTextPaint(EVENT_TEXT_HEIGHT));
-
-                    canvas.drawRect(left, top, right, bottom, eventData.getEventColorPaint());
-
-                    final float titleX = left + TEXT_MARGIN;
-                    final float titleY = bottom - TEXT_MARGIN;
-
-                    if (event.getAsString(CalendarContract.Instances.TITLE) != null)
-                    {
-                        if (event.getAsString(CalendarContract.Instances.TITLE).isEmpty())
-                        {
-                            canvas.drawText(getContext().getString(R.string.empty_title)
-                                    , titleX, titleY, eventData.getEventTextPaint());
-                        } else
-                        {
-                            canvas.drawText(event.getAsString(CalendarContract.Instances.TITLE)
-                                    , titleX, titleY, eventData.getEventTextPaint());
-                        }
-                    } else
-                    {
-                        canvas.drawText(getContext().getString(R.string.empty_title)
-                                , titleX, titleY, eventData.getEventTextPaint());
-                    }
-                }
-            }
-        }
-
-        float startX = 0f;
-        float startY = 0f;
-
-        float top = 0f;
-        float bottom = 0f;
-        float left = 0f;
-        float right = 0f;
-
-        Paint extraPaint = new Paint();
-        extraPaint.setColor(Color.LTGRAY);
-
-        TextPaint textPaint = new TextPaint();
-        textPaint.setColor(Color.WHITE);
-        textPaint.setTextSize(EVENT_TEXT_HEIGHT);
-        textPaint.setTextAlign(Paint.Align.LEFT);
-
-        // more 표시
-        for (int index = start; index <= end; index++)
-        {
-            if (ITEM_LAYOUT_CELLS.get(index) != null)
-            {
-                int eventsNum = ITEM_LAYOUT_CELLS.get(index).eventsNum;
-                int displayedEventsNum = 0;
-                int lastRow = -1;
-
-                for (int row = MAX_ROWS_COUNT - 1; row >= 0; row--)
-                {
-                    if (!ITEM_LAYOUT_CELLS.get(index).row[row])
-                    {
-                        if (lastRow == -1)
-                        {
-                            lastRow = row;
-                        }
-                    } else
-                    {
-                        displayedEventsNum++;
-                    }
-                }
-
-                // 날짜의 이벤트 개수 > 뷰에 표시된 이벤트의 개수 인 경우 마지막 행에 More를 표시
-                if (eventsNum > displayedEventsNum)
-                {
-                    startX = index % 7 == 0 ? 0 : ITEM_WIDTH * (index % 7);
-                    startY = ITEM_HEIGHT * (index / 7) + DAY_SPACE_HEIGHT;
-
-                    top = startY + ((EVENT_HEIGHT + SPACING_BETWEEN_EVENT) * lastRow);
-                    bottom = top + EVENT_HEIGHT;
-                    left = startX + EVENT_LR_MARGIN;
-                    right = startX + ITEM_WIDTH - EVENT_LR_MARGIN;
-
-                    canvas.drawRect(left, top, right, bottom, extraPaint);
-                    canvas.drawText("More", startX + EVENT_LR_MARGIN + TEXT_MARGIN, bottom - TEXT_MARGIN, textPaint);
-                }
-            }
-        }
-    }
 
     public void clear()
     {
         ITEM_LAYOUT_CELLS.clear();
-        eventCellsList.clear();
+        instanceBarList.clear();
     }
 
     @Override
@@ -304,6 +178,7 @@ public class MonthCalendarView extends ViewGroup implements IEvent
         // 이벤트 테이블에 데이터를 표시할 위치 설정
         this.instances = instances;
         setEventTable();
+        requestLayout();
         invalidate();
     }
 
@@ -312,31 +187,23 @@ public class MonthCalendarView extends ViewGroup implements IEvent
     public void setEventTable()
     {
         ITEM_LAYOUT_CELLS.clear();
-        eventCellsList.clear();
+        instanceBarList.clear();
+        removeAllViews();
+
+        for (MonthCalendarItemView monthCalendarItemView : monthCalendarItemViewList)
+        {
+            addView(monthCalendarItemView);
+        }
 
         start = Integer.MAX_VALUE;
         end = Integer.MIN_VALUE;
 
         // 달력 뷰의 셀에 아이템을 삽입
-        for (ContentValues event : instances)
+        for (ContentValues instance : instances)
         {
-            SimpleDateFormat TEST_FORMAT_UTC = new SimpleDateFormat("yyyy년 M월 d일 E a h시 m분", Locale.KOREAN);
-            TEST_FORMAT_UTC.setTimeZone(TimeZone.getTimeZone("UTC"));
-            SimpleDateFormat TEST_FORMAT_KST = new SimpleDateFormat("yyyy년 M월 d일 E a h시 m분", Locale.KOREAN);
-            TEST_FORMAT_KST.setTimeZone(ClockUtil.TIME_ZONE);
-
-            String beginStrUTC = TEST_FORMAT_UTC.format(new Date(event.getAsLong(CalendarContract.Instances.BEGIN)));
-            String endStrUTC = TEST_FORMAT_UTC.format(new Date(event.getAsLong(CalendarContract.Instances.END)));
-
-            String beginStrKST = TEST_FORMAT_KST.format(new Date(event.getAsLong(CalendarContract.Instances.BEGIN)));
-            String endStrKST = TEST_FORMAT_KST.format(new Date(event.getAsLong(CalendarContract.Instances.END)));
-
-            String beginStrDefault = ClockUtil.DATE_FORMAT_NOT_ALLDAY.format(new Date(event.getAsLong(CalendarContract.Instances.BEGIN)));
-            String endStrDefault = ClockUtil.DATE_FORMAT_NOT_ALLDAY.format(new Date(event.getAsLong(CalendarContract.Instances.END)));
-
             // 달력 내 위치를 계산
-            int beginIndex = ClockUtil.calcBeginDayDifference(event.getAsLong(CalendarContract.Instances.BEGIN), firstDay);
-            int endIndex = ClockUtil.calcEndDayDifference(event.getAsLong(CalendarContract.Instances.END), firstDay, event.getAsBoolean(CalendarContract.Instances.ALL_DAY));
+            int beginIndex = ClockUtil.calcBeginDayDifference(instance.getAsLong(CalendarContract.Instances.BEGIN), firstDay);
+            int endIndex = ClockUtil.calcEndDayDifference(instance.getAsLong(CalendarContract.Instances.END), firstDay, instance.getAsBoolean(CalendarContract.Instances.ALL_DAY));
 
             if (beginIndex < FIRST_DAY_INDEX)
             {
@@ -352,6 +219,7 @@ public class MonthCalendarView extends ViewGroup implements IEvent
             {
                 start = beginIndex;
             }
+
             if (end < endIndex)
             {
                 end = endIndex;
@@ -395,11 +263,7 @@ public class MonthCalendarView extends ViewGroup implements IEvent
                 }
             }
 
-            if (rowSet.isEmpty())
-            {
-                // 가능한 행이 없는 경우
-                // 미 표시
-            } else
+            if (!rowSet.isEmpty())
             {
                 Iterator<Integer> iterator = rowSet.iterator();
                 final int row = iterator.next();
@@ -413,12 +277,37 @@ public class MonthCalendarView extends ViewGroup implements IEvent
                     {
                         ITEM_LAYOUT_CELLS.get(i).row[row] = true;
                     }
-                    EventData eventData = new EventData(event, beginIndex, endIndex, row);
-                    eventCellsList.add(eventData);
+
+                    final int firstWeek = beginIndex / 7;
+                    final int endWeek = endIndex / 7;
+
+                    long instanceBegin = instance.getAsLong(CalendarContract.Instances.BEGIN);
+                    long instanceEnd = instance.getAsLong(CalendarContract.Instances.END);
+                    long viewBegin = ((MonthCalendarItemView) getChildAt(beginIndex)).getStartDate().getTime();
+                    long viewEnd = ((MonthCalendarItemView) getChildAt(endIndex)).getEndDate().getTime();
+
+                    int[] margin = EventUtil.getViewSideMargin(instanceBegin, instanceEnd, viewBegin, viewEnd, INSTANCE_BAR_LR_MARGIN, instance.getAsBoolean(CalendarContract.Instances.ALL_DAY));
+
+                    for (int week = firstWeek; week <= endWeek; week++)
+                    {
+                        int newBeginIndex = (week == firstWeek) ? beginIndex : 7 * week;
+                        int newEndIndex = (week == endWeek) ? endIndex : 7 * (week + 1) - 1;
+
+                        int leftMargin = (week == firstWeek) ? margin[0] : 0;
+                        int rightMargin = (week == endWeek) ? margin[1] : 0;
+
+                        InstanceBarView instanceBarView = new InstanceBarView(getContext(), instance);
+                        addView(instanceBarView);
+
+                        InstanceBar instanceBar = new InstanceBar(instanceBarView, newBeginIndex, newEndIndex, row, leftMargin, rightMargin, week);
+                        instanceBarList.add(instanceBar);
+                    }
                 }
+
             }
         }
     }
+
 
     class ItemCell
     {
@@ -428,6 +317,91 @@ public class MonthCalendarView extends ViewGroup implements IEvent
         public ItemCell()
         {
             row = new boolean[MAX_ROWS_COUNT];
+        }
+    }
+
+    static class InstanceBar
+    {
+        InstanceBarView instanceBarView;
+        int beginIndex;
+        int endIndex;
+        int row;
+        int leftMargin;
+        int rightMargin;
+        int week;
+
+        public InstanceBar(InstanceBarView instanceBarView, int beginIndex, int endIndex, int row, int leftMargin,
+                           int rightMargin, int week)
+        {
+            this.instanceBarView = instanceBarView;
+            this.beginIndex = beginIndex;
+            this.endIndex = endIndex;
+            this.row = row;
+            this.leftMargin = leftMargin;
+            this.rightMargin = rightMargin;
+            this.week = week;
+        }
+    }
+
+    public static class MonthCalendarItemView extends View
+    {
+        private float x;
+        private final float y;
+        private boolean isToday;
+        private final TextPaint DAY_TEXT_PAINT;
+
+        private Date startDate;
+        private Date endDate;
+
+        public MonthCalendarItemView(Context context, int dayTextColor)
+        {
+            super(context);
+            DAY_TEXT_PAINT = new TextPaint(Paint.ANTI_ALIAS_FLAG);
+            DAY_TEXT_PAINT.setTextAlign(Paint.Align.CENTER);
+            DAY_TEXT_PAINT.setTextSize(DAY_TEXTSIZE);
+            DAY_TEXT_PAINT.setColor(dayTextColor);
+            y = DAY_SPACE_HEIGHT / 2f + (DAY_SPACE_HEIGHT - (2 * DAY_PADDING)) / 2f;
+
+            TypedValue backgroundValue = new TypedValue();
+            context.getTheme().resolveAttribute(android.R.attr.selectableItemBackground, backgroundValue, true);
+            setBackgroundResource(backgroundValue.resourceId);
+        }
+
+        public MonthCalendarItemView setDate(Date startDate, Date endDate, boolean isToday)
+        {
+            this.startDate = startDate;
+            this.endDate = endDate;
+            this.isToday = isToday;
+            return this;
+        }
+
+        @Override
+        protected void onLayout(boolean changed, int left, int top, int right, int bottom)
+        {
+            super.onLayout(changed, left, top, right, bottom);
+            x = (float) getWidth() / 2f;
+        }
+
+        @Override
+        protected void onDraw(Canvas canvas)
+        {
+            super.onDraw(canvas);
+            canvas.drawText(ClockUtil.D.format(startDate), x, y, DAY_TEXT_PAINT);
+
+            if (isToday)
+            {
+                canvas.drawRect(0, 0, getWidth(), getHeight(), TODAY_PAINT);
+            }
+        }
+
+        public Date getStartDate()
+        {
+            return startDate;
+        }
+
+        public Date getEndDate()
+        {
+            return endDate;
         }
     }
 }

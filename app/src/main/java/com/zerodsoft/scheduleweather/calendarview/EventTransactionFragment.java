@@ -22,6 +22,7 @@ import com.zerodsoft.scheduleweather.calendarview.day.DayFragment;
 import com.zerodsoft.scheduleweather.calendarview.instancedialog.InstanceListOnDayFragment;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IstartActivity;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
@@ -33,7 +34,7 @@ import java.util.Date;
 import java.util.List;
 
 
-public class EventTransactionFragment extends Fragment implements IControlEvent, OnEventItemClickListener
+public class EventTransactionFragment extends Fragment implements IControlEvent, OnEventItemClickListener,IRefreshView
 {
     // 달력 프래그먼트를 관리하는 프래그먼트
     public static final String TAG = "CalendarTransactionFragment";
@@ -118,22 +119,6 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
         calendarViewModel.getInstanceList(iConnectedCalendars.getConnectedCalendars(), begin, end, callback);
     }
 
-
-    public void refreshCalendar()
-    {
-        //일정이 추가/삭제되면 영향을 받은 일정의 시작날짜에 해당하는 달력의 위치로 이동한다.
-        if (currentFragment instanceof MonthFragment)
-        {
-            ((MonthFragment) currentFragment).refreshView();
-        } else if (currentFragment instanceof WeekFragment)
-        {
-            ((WeekFragment) currentFragment).refreshView();
-        } else if (currentFragment instanceof DayFragment)
-        {
-            ((DayFragment) currentFragment).refreshView();
-        }
-    }
-
     public void goToToday()
     {
         if (currentFragment instanceof MonthFragment)
@@ -196,6 +181,22 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
         } else if (currentFragment instanceof DayFragment)
         {
             ((DayFragment) currentFragment).goToDay(date);
+        }
+    }
+
+    @Override
+    public void refreshView()
+    {
+        //일정이 추가/삭제되면 영향을 받은 일정의 시작날짜에 해당하는 달력의 위치로 이동한다.
+        if (currentFragment instanceof MonthFragment)
+        {
+            ((MonthFragment) currentFragment).refreshView();
+        } else if (currentFragment instanceof WeekFragment)
+        {
+            ((WeekFragment) currentFragment).refreshView();
+        } else if (currentFragment instanceof DayFragment)
+        {
+            ((DayFragment) currentFragment).refreshView();
         }
     }
 }

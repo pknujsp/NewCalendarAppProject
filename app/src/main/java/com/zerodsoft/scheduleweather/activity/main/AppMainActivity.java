@@ -222,7 +222,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
             if (check)
             {
                 Toast.makeText(AppMainActivity.this, "SYNCED", Toast.LENGTH_SHORT).show();
-                calendarTransactionFragment.refreshCalendar();
+                calendarTransactionFragment.refreshView();
             }
         }
     };
@@ -651,7 +651,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
                 {
                     case RESULT_OK:
                         //새로운 일정이 추가됨 -> 달력 이벤트 갱신
-                        calendarTransactionFragment.refreshCalendar();
+                        calendarTransactionFragment.refreshView();
                         break;
                 }
             }
@@ -718,7 +718,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
                     editor.remove(key);
                     editor.commit();
 
-                    calendarTransactionFragment.refreshCalendar();
+                    calendarTransactionFragment.refreshView();
                 }
                 return;
             }
@@ -730,7 +730,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
         editor.putString(key, key);
         editor.commit();
 
-        calendarTransactionFragment.refreshCalendar();
+        calendarTransactionFragment.refreshView();
     }
 
     @Override
@@ -757,7 +757,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 
                     if (resultCode == DELETED_EVENT || resultCode == EXCEPTED_INSTANCE)
                     {
-                        calendarTransactionFragment.refreshCalendar();
+                        calendarTransactionFragment.refreshView();
                     }
                 }
             }

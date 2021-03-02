@@ -13,7 +13,6 @@ public class EventData
     public static final int DAY = 4;
     public static final int WEEK = 5;
 
-
     private int startIndex;
     private int endIndex;
     private int dateLength;

@@ -156,6 +156,7 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
             copiedCalendar.add(Calendar.MONTH, getAdapterPosition() - EventTransactionFragment.FIRST_VIEW_POSITION);
             setDays(copiedCalendar);
             monthCalendarView.setFirstDay(getDay(FIRST_DAY).getTimeInMillis());
+            List<MonthCalendarView.MonthCalendarItemView> monthCalendarItemViewList = new ArrayList<>();
 
             for (int i = 0; i < TOTAL_DAY_COUNT; i++)
             {
@@ -171,12 +172,15 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
                 }
 
                 // 날짜 설정
-                MonthCalendarItemView itemView = new MonthCalendarItemView(context, dayTextColor);
+                MonthCalendarView.MonthCalendarItemView itemView = new MonthCalendarView.MonthCalendarItemView(context, dayTextColor);
                 itemView.setDate(currentDate.getTime(), getDay(i + 1).getTime(), ClockUtil.areSameDate(currentDate.getTime().getTime(), TODAY.getTime()));
                 itemView.setClickable(true);
                 itemView.setOnClickListener(onClickListener);
                 monthCalendarView.addView(itemView);
+
+                monthCalendarItemViewList.add(itemView);
             }
+            monthCalendarView.setMonthCalendarItemViewList(monthCalendarItemViewList);
 
             iControlEvent.getInstances(getAdapterPosition(), getDay(FIRST_DAY).getTime().getTime(), getDay(LAST_DAY).getTime().getTime(), new EventCallback<List<CalendarInstance>>()
             {
@@ -278,7 +282,7 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
         @Override
         public void onClick(View view)
         {
-            MonthCalendarItemView itemView = ((MonthCalendarItemView) view);
+            MonthCalendarView.MonthCalendarItemView itemView = ((MonthCalendarView.MonthCalendarItemView) view);
 
             onEventItemClickListener.onClicked(itemView.getStartDate().getTime(), itemView.getEndDate().getTime());
         }

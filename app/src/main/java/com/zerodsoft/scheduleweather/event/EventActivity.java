@@ -206,7 +206,6 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab,
             @Override
             public void onClick(View view)
             {
-
                 String[] items = null;
                 //이번 일정만 삭제, 향후 모든 일정 삭제, 모든 일정 삭제
                 /*

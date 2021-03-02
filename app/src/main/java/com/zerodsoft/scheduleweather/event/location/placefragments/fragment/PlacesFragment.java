@@ -146,6 +146,8 @@ public class PlacesFragment extends Fragment implements IPlacesFragment, IPlaceI
                                 {
                                     if (!placeCategoryList.isEmpty())
                                     {
+                                        binding.notSelectedCategory.setVisibility(View.GONE);
+
                                         // 편의점, 주차장, ATM을 보여주기로 했다고 가정
                                         binding.locationName.setText((location.getPlaceName() == null ? location.getAddressName() : location.getPlaceName()) + getString(R.string.info_around_location));
 
@@ -153,16 +155,7 @@ public class PlacesFragment extends Fragment implements IPlacesFragment, IPlaceI
                                         binding.mapCategoryViewContainer.setAdapter(adapter);
                                     } else
                                     {
-                                        TextView textView = new TextView(getContext());
-                                        textView.setText(R.string.not_selected_place_category);
-                                        textView.setTextColor(Color.BLACK);
-                                        textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f);
-
-                                        FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                                        layoutParams.gravity = Gravity.CENTER;
-                                        textView.setLayoutParams(layoutParams);
-
-                                        binding.placeCategoriesLayout.addView(textView);
+                                        binding.notSelectedCategory.setVisibility(View.VISIBLE);
                                         //카테고리 추가 액티비티 실행
                                         binding.categorySettingsFab.performClick();
                                     }
