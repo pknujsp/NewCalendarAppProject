@@ -30,6 +30,7 @@ import com.google.android.material.button.MaterialButtonToggleGroup;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.editevent.activity.EditEventActivity;
 import com.zerodsoft.scheduleweather.activity.editevent.value.EventDataController;
+import com.zerodsoft.scheduleweather.activity.preferences.SettingsActivity;
 import com.zerodsoft.scheduleweather.calendarview.CalendarsAdapter;
 import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
 import com.zerodsoft.scheduleweather.calendarview.assistantcalendar.assistantcalendar.MonthAssistantCalendarFragment;
@@ -548,8 +549,11 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
         {
             switch (view.getId())
             {
-                case R.id.favorite:
-                case R.id.app_setting:
+                case R.id.favorite_location:
+                    break;
+                case R.id.settings:
+                    Intent intent = new Intent(AppMainActivity.this, SettingsActivity.class);
+                    activityResultLauncher.launch(intent);
                     break;
             }
             mainBinding.drawerLayout.closeDrawer(mainBinding.sideNavigation);

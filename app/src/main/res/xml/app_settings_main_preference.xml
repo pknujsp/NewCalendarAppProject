@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory android:title="@string/calendar_settings">
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="@string/preference_key_use_default_timezone"
+            android:title="@string/using_default_timezone" />
+
+        <Preference
+            android:key="@string/preference_key_custom_timezone"
+            android:title="@string/select_timezone" />
+
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="@string/preference_key_show_week_of_year"
+            android:title="@string/show_week_of_year" />
+
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="@string/preference_key_show_canceled_instances"
+            android:title="@string/show_canceled_instance" />
+
+        <Preference
+            android:key="@string/preference_key_timerange"
+            android:summary="@string/summary_setting_default_daterange"
+            android:title="@string/default_daterange" />
+
+        <Preference
+            android:key="@string/preference_key_calendar_color"
+            android:summary="@string/summary_setting_color_of_calendar"
+            android:title="@string/setting_color_of_calendar" />
+
+        <com.zerodsoft.scheduleweather.activity.preferences.CustomListPreference
+            android:key="@string/preference_key_holiday_color"
+            android:summary="@string/summary_color_of_holiday"
+            android:title="@string/setting_color_of_holiday"
+            android:widgetLayout="@layout/custom_preference_layout" />
+
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="@string/preference_key_use_24_hour_system"
+            android:title="@string/setting_hour_system" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/weather_settings">
+
+
+    </PreferenceCategory>
+
+
+    <PreferenceCategory android:title="@string/places_settings">
+        <ListPreference
+            android:key="@string/preference_key_searching_radius"
+            android:summary="@string/summary_setting_search_places_distance"
+            android:title="@string/setting_search_places_distance"
+            android:widgetLayout="@layout/custom_preference_layout" />
+
+        <Preference
+            android:key="@string/preference_key_places_category"
+            android:summary="@string/summary_setting_place_category"
+            android:title="@string/setting_place_category" />
+    </PreferenceCategory>
+</PreferenceScreen>
