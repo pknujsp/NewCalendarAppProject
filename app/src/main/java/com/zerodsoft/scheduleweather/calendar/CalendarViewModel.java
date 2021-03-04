@@ -2,7 +2,6 @@ package com.zerodsoft.scheduleweather.calendar;
 
 import android.content.ContentValues;
 import android.content.Context;
-import android.telephony.IccOpenLogicalChannelResponse;
 
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
@@ -252,8 +251,13 @@ public class CalendarViewModel extends ViewModel
         return calendarProvider.getCalendarColor(accountName, accountType);
     }
 
-    public int updateCalendarColor(String accountName, String accountType, int color, int colorKey)
+    public int updateCalendarColor(int calendarId, int color, int colorKey)
     {
-        return calendarProvider.updateCalendarColor(accountName, accountType, color, colorKey);
+        return calendarProvider.updateCalendarColor(calendarId, color, colorKey);
+    }
+
+    public List<ContentValues> getCalendarColors(String accountName, String accountType)
+    {
+        return calendarProvider.getCalendarColors(accountName, accountType);
     }
 }

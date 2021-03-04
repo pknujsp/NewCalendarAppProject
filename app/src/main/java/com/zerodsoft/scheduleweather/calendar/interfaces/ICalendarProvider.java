@@ -68,5 +68,7 @@ public interface ICalendarProvider
     // calendar color
     public int getCalendarColor(String accountName, String accountType);
 
-    public int updateCalendarColor(String accountName, String accountType, int color, int colorKey);
+    public List<ContentValues> getCalendarColors(String accountName, String accountType);
+
+    public int updateCalendarColor(int calendarId, int color, int colorKey);
 }

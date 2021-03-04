@@ -368,4 +368,5 @@
     <string name="preference_key_use_24_hour_system">preference_key_use_24_hour_system</string>
     <string name="preference_key_searching_radius">preference_key_searching_radius</string>
     <string name="preference_key_places_category">preference_key_places_category</string>
+    <string name="selection_color">색상 선택</string>
 </resources>
