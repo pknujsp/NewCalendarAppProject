@@ -64,4 +64,9 @@ public interface ICalendarProvider
 
     // recurrence
     public ContentValues getRecurrence(int calendarId, long eventId);
+
+    // calendar color
+    public int getCalendarColor(String accountName, String accountType);
+
+    public int updateCalendarColor(String accountName, String accountType, int color, int colorKey);
 }

@@ -976,4 +976,16 @@ public class CalendarProvider implements ICalendarProvider
 
         return result;
     }
+
+    @Override
+    public int getCalendarColor(String accountName, String accountType)
+    {
+        return 0;
+    }
+
+    @Override
+    public int updateCalendarColor(String accountName, String accountType, int color, int colorKey)
+    {
+        return 0;
+    }
 }

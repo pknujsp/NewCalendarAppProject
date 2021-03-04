@@ -26,15 +26,10 @@
             android:title="@string/default_daterange" />
 
         <Preference
+            android:fragment="com.zerodsoft.scheduleweather.activity.preferences.fragments.CalendarColorFragment"
             android:key="@string/preference_key_calendar_color"
             android:summary="@string/summary_setting_color_of_calendar"
             android:title="@string/setting_color_of_calendar" />
-
-        <com.zerodsoft.scheduleweather.activity.preferences.CustomListPreference
-            android:key="@string/preference_key_holiday_color"
-            android:summary="@string/summary_color_of_holiday"
-            android:title="@string/setting_color_of_holiday"
-            android:widgetLayout="@layout/custom_preference_layout" />
 
         <SwitchPreference
             android:defaultValue="true"

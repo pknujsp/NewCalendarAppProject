@@ -1,35 +1,44 @@
 package com.zerodsoft.scheduleweather.activity.preferences.fragments;
 
+import android.Manifest;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.provider.CalendarContract;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
+import androidx.preference.PreferenceScreen;
 import androidx.preference.SwitchPreference;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.editevent.activity.TimeZoneActivity;
 import com.zerodsoft.scheduleweather.activity.placecategory.activity.PlaceCategoryActivity;
-import com.zerodsoft.scheduleweather.activity.preferences.CustomListPreference;
 import com.zerodsoft.scheduleweather.activity.preferences.interfaces.PreferenceListener;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
 public class SettingsFragment extends PreferenceFragmentCompat implements PreferenceListener
 {
-    private SharedPreferences sharedPreferences;
+    private SharedPreferences preferences;
 
     private SwitchPreference useDefaultTimeZoneSwitchPreference;
     private Preference customTimezonePreference;
@@ -37,7 +46,6 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
     private SwitchPreference showCanceledInstanceSwitchPreference;
     private Preference timeRangePreference;
     private Preference calendarColorListPreference;
-    private CustomListPreference holidayColorListPreference;
     private SwitchPreference hourSystemSwitchPreference;
 
     private ListPreference searchingRadiusListPreference;
@@ -54,8 +62,8 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
     {
         super.onCreate(savedInstanceState);
 
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
-        sharedPreferences.registerOnSharedPreferenceChangeListener(listener);
+        preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+        preferences.registerOnSharedPreferenceChangeListener(listener);
 
         useDefaultTimeZoneSwitchPreference = findPreference(getString(R.string.preference_key_use_default_timezone));
         customTimezonePreference = findPreference(getString(R.string.preference_key_custom_timezone));
@@ -63,13 +71,10 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
         showCanceledInstanceSwitchPreference = findPreference(getString(R.string.preference_key_show_canceled_instances));
         timeRangePreference = findPreference(getString(R.string.preference_key_timerange));
         calendarColorListPreference = findPreference(getString(R.string.preference_key_calendar_color));
-        holidayColorListPreference = findPreference(getString(R.string.preference_key_holiday_color));
         hourSystemSwitchPreference = findPreference(getString(R.string.preference_key_use_24_hour_system));
 
         searchingRadiusListPreference = findPreference(getString(R.string.preference_key_searching_radius));
         placesCategoryPreference = findPreference(getString(R.string.preference_key_places_category));
-
-        holidayColorListPreference.setPreferenceListener(this::onCreatedPreferenceView);
 
         useDefaultTimeZoneSwitchPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener()
         {
@@ -128,7 +133,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
     private void initValue()
     {
         //기기 기본 시간대 사용 여부
-        boolean usingDeviceTimeZone = sharedPreferences.getBoolean(getString(R.string.preference_key_use_default_timezone), false);
+        boolean usingDeviceTimeZone = preferences.getBoolean(getString(R.string.preference_key_use_default_timezone), false);
         if (usingDeviceTimeZone)
         {
             useDefaultTimeZoneSwitchPreference.setChecked(true);
@@ -137,12 +142,12 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
             useDefaultTimeZoneSwitchPreference.setChecked(false);
         }
         // 사용하지 않더라도 커스텀 시간대는 설정해놓는다.
-        String customTimeZoneId = sharedPreferences.getString(getString(R.string.preference_key_custom_timezone), "");
+        String customTimeZoneId = preferences.getString(getString(R.string.preference_key_custom_timezone), "");
         TimeZone timeZone = TimeZone.getTimeZone(customTimeZoneId);
         customTimezonePreference.setSummary(timeZone.getDisplayName(Locale.KOREAN));
 
         //주차 표시
-        boolean showingWeekOfYear = sharedPreferences.getBoolean(getString(R.string.preference_key_show_week_of_year), false);
+        boolean showingWeekOfYear = preferences.getBoolean(getString(R.string.preference_key_show_week_of_year), false);
         if (showingWeekOfYear)
         {
             weekOfYearSwitchPreference.setChecked(true);
@@ -152,7 +157,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
         }
 
         //거절한 일정 표시
-        boolean showingCanceledInstance = sharedPreferences.getBoolean(getString(R.string.preference_key_show_canceled_instances), false);
+        boolean showingCanceledInstance = preferences.getBoolean(getString(R.string.preference_key_show_canceled_instances), false);
         if (showingCanceledInstance)
         {
             showCanceledInstanceSwitchPreference.setChecked(true);
@@ -163,14 +168,9 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
 
         //캘린더 색상, 기본 시간 범위
 
-        //공휴일 색상
-        int holidayColor = sharedPreferences.getInt(getString(R.string.preference_key_holiday_color), 0);
-        holidayColor = EventUtil.getColor(holidayColor);
-        //색상을 오른쪽에 표시
-
         //24시간제 사용
         //거절한 일정 표시
-        boolean using24HourSystem = sharedPreferences.getBoolean(getString(R.string.preference_key_use_24_hour_system), false);
+        boolean using24HourSystem = preferences.getBoolean(getString(R.string.preference_key_use_24_hour_system), false);
         if (using24HourSystem)
         {
             hourSystemSwitchPreference.setChecked(true);
@@ -182,13 +182,12 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
         }
 
         //검색 반지름 범위
-        int searchingRadius = sharedPreferences.getInt(getString(R.string.preference_key_searching_radius), 0);
+        int searchingRadius = preferences.getInt(getString(R.string.preference_key_searching_radius), 0);
         //오른쪽에 반지름 표시
     }
 
     @Override
     public void onCreatedPreferenceView()
     {
-        holidayColorListPreference.getCustomView().setBackgroundColor(Color.BLUE);
     }
 }
