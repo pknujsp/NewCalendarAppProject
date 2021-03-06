@@ -392,8 +392,8 @@ public class EventFragment extends Fragment
             calendar.add(Calendar.DAY_OF_MONTH, -1);
             end = calendar.getTimeInMillis();
         }
-        String beginStr = EventUtil.convertDateTime(begin, allDay, App.is24HourSystem);
-        String endStr = EventUtil.convertDateTime(end, allDay, App.is24HourSystem);
+        String beginStr = EventUtil.convertDateTime(begin, allDay, App.isPreference_key_using_24_hour_system());
+        String endStr = EventUtil.convertDateTime(end, allDay, App.isPreference_key_using_24_hour_system());
 
         binding.eventDatetimeView.startDate.setText(beginStr);
         binding.eventDatetimeView.endDate.setText(endStr);

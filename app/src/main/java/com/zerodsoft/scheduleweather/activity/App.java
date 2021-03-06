@@ -1,12 +1,9 @@
 package com.zerodsoft.scheduleweather.activity;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.graphics.Point;
 import android.os.Handler;
 import android.os.Looper;
-import android.view.WindowManager;
 
 import androidx.core.os.HandlerCompat;
 import androidx.preference.PreferenceManager;
@@ -26,9 +23,8 @@ public class App extends android.app.Application
     private static TimeZone preference_key_custom_timezone = null;
     private static boolean preference_key_show_canceled_instances = true;
     private static boolean preference_key_show_week_of_year = true;
-    private static String preference_key_settings_hour_system = "";
+    private static boolean preference_key_using_24_hour_system = true;
     private static String preference_key_radius_range = "";
-    public static boolean is24HourSystem = true;
 
     public static void setAppSettings(Context context)
     {
@@ -55,9 +51,8 @@ public class App extends android.app.Application
             editor.putBoolean(context.getString(R.string.preference_key_show_week_of_year), preference_key_show_week_of_year);
 
             //12/24시간제 설정
-            preference_key_settings_hour_system = "12";
-            is24HourSystem = false;
-            editor.putString(context.getString(R.string.preference_key_settings_hour_system), preference_key_settings_hour_system);
+            preference_key_using_24_hour_system = true;
+            editor.putBoolean(context.getString(R.string.preference_key_using_24_hour_system), preference_key_using_24_hour_system);
 
             //기본 장소 검색 범위(반지름)길이 설정
             preference_key_radius_range = "1000";
@@ -70,8 +65,7 @@ public class App extends android.app.Application
             preference_key_custom_timezone = TimeZone.getTimeZone(preferences.getString(context.getString(R.string.preference_key_custom_timezone), ""));
             preference_key_show_canceled_instances = preferences.getBoolean(context.getString(R.string.preference_key_show_canceled_instances), false);
             preference_key_show_week_of_year = preferences.getBoolean(context.getString(R.string.preference_key_show_week_of_year), false);
-            preference_key_settings_hour_system = preferences.getString(context.getString(R.string.preference_key_settings_hour_system), "");
-            is24HourSystem = preference_key_settings_hour_system.equals("12") ? false : true;
+            preference_key_using_24_hour_system = preferences.getBoolean(context.getString(R.string.preference_key_using_24_hour_system), false);
             preference_key_radius_range = preferences.getString(context.getString(R.string.preference_key_radius_range), "");
         }
     }
@@ -96,9 +90,9 @@ public class App extends android.app.Application
         return preference_key_show_week_of_year;
     }
 
-    public static String getPreference_key_settings_hour_system()
+    public static boolean isPreference_key_using_24_hour_system()
     {
-        return preference_key_settings_hour_system;
+        return preference_key_using_24_hour_system;
     }
 
     public static String getPreference_key_radius_range()
@@ -126,10 +120,9 @@ public class App extends android.app.Application
         App.preference_key_show_week_of_year = preference_key_show_week_of_year;
     }
 
-    public static void setPreference_key_settings_hour_system(String preference_key_settings_hour_system)
+    public static void setPreference_key_settings_hour_system(boolean value)
     {
-        App.preference_key_settings_hour_system = preference_key_settings_hour_system;
-        is24HourSystem = !preference_key_settings_hour_system.equals("12");
+        App.preference_key_using_24_hour_system = value;
     }
 
     public static void setPreference_key_radius_range(String preference_key_radius_range)

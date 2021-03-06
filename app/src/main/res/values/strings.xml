@@ -314,44 +314,46 @@
     <string name="not_selected_place_category">표시할 장소 카테고리가 지정되어있지 않습니다</string>
 
     <!-- 기본 시간대 사용 설정 관련 -->
-    <string name="preference_key_using_timezone_of_device">preference_key_using_timezone_of_device</string>
+    <string name="preference_key_using_timezone_of_device" translatable="false">preference_key_using_timezone_of_device</string>
     <string name="preference_title_using_timezone_of_device">기기 기본 시간대 사용</string>
     <string name="preference_summary_using_timezone_of_device">기기에 설정된 시간대를 기본으로 사용합니다</string>
 
     <!-- 수동 시간대 사용 설정 관련 -->
-    <string name="preference_key_custom_timezone">preference_key_custom_timezone</string>
+    <string name="preference_key_custom_timezone" translatable="false">preference_key_custom_timezone</string>
     <string name="preference_title_custom_timezone">시간대 설정</string>
     <string name="preference_summary_custom_timezone">수동으로 시간대를 설정합니다</string>
 
     <!-- 몇주 차 표시 설정 관련 -->
-    <string name="preference_key_show_week_of_year">preference_key_show_week_of_year</string>
+    <string name="preference_key_show_week_of_year" translatable="false">preference_key_show_week_of_year</string>
     <string name="preference_title_show_week_of_year">몇번째 주 인지 표시</string>
     <string name="preference_summary_show_week_of_year">표시되는 날짜가 몇번 째 주인지 표시합니다</string>
 
     <!-- 거절한 일정 표시 설정 관련 -->
-    <string name="preference_key_show_canceled_instances">preference_key_show_canceled_instances</string>
+    <string name="preference_key_show_canceled_instances" translatable="false">preference_key_show_canceled_instances</string>
     <string name="preference_title_show_canceled_instances">거절한 일정 표시</string>
     <string name="preference_summary_show_canceled_instances">거절한 일정도 표시합니다</string>
 
     <!-- 캘린더 기본 색상 설정 관련 -->
-    <string name="preference_key_calendar_color">preference_key_calendar_color</string>
+    <string name="preference_key_calendar_color" translatable="false">preference_key_calendar_color</string>
     <string name="preference_title_calendar_color">캘린더 색상</string>
     <string name="preference_summary_calendar_color">캘린더의 색상을 변경합니다</string>
     <string name="preference_dialog_title_calendar_color">캘린더 색상 선택</string>
 
     <!-- 24/12 시간제 설정 관련 -->
-    <string name="preference_key_settings_hour_system">preference_key_settings_hour_system</string>
-    <string name="preference_title_settings_hour_system">기본 시간제 설정</string>
-    <string name="preference_summary_settings_hour_system">12시간제 또는 24시간제 선택</string>
+    <string name="preference_key_using_24_hour_system" translatable="false">preference_key_using_24_hour_system</string>
+    <string name="preference_title_using_24_hour_system">기본 시간제 설정</string>
+    <string name="preference_summary_using_24_hour_system">12시간제 또는 24시간제 선택</string>
+    <string name="hour_system_24">24시간제 사용</string>
+    <string name="hour_system_12">12시간제 사용</string>
 
     <!-- 장소 검색 기본 범위(거리, 반지름) 설정 관련 -->
-    <string name="preference_key_radius_range">preference_key_radius_range</string>
+    <string name="preference_key_radius_range" translatable="false">preference_key_radius_range</string>
     <string name="preference_title_radius_range">장소 검색 거리범위 선택</string>
     <string name="preference_summary_radius_range">위치 중심으로 부터 장소를 검색할 범위(반지름)을 설정합니다</string>
     <string name="preference_dialog_message_radius_range">0 ~ 20KM 범위로 입력가능 합니다\nMeter단위로 입력하세요</string>
 
     <!-- 장소 카테고리 사용 설정 관련 -->
-    <string name="preference_key_places_category">preference_key_places_category</string>
+    <string name="preference_key_places_category" translatable="false">preference_key_places_category</string>
     <string name="preference_title_places_category">표시할 장소 카테고리 설정</string>
     <string name="preference_summary_places_category">지정된 장소 주변의 표시할 카테고리를 설정합니다</string>
 

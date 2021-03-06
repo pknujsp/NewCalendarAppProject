@@ -1051,10 +1051,10 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
         // 설정에 12시간, 24시간 단위 변경 가능
         if (dateType == START_DATETIME)
         {
-            binding.timeLayout.startTime.setText(EventUtil.convertTime(time, App.is24HourSystem));
+            binding.timeLayout.startTime.setText(EventUtil.convertTime(time, App.isPreference_key_using_24_hour_system()));
         } else
         {
-            binding.timeLayout.endTime.setText(EventUtil.convertTime(time, App.is24HourSystem));
+            binding.timeLayout.endTime.setText(EventUtil.convertTime(time, App.isPreference_key_using_24_hour_system()));
         }
     }
 
@@ -1411,7 +1411,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
 
         MaterialTimePicker.Builder builder = new MaterialTimePicker.Builder();
         timePicker = builder.setTitleText((dateType == START_DATETIME ? getString(R.string.start) : getString(R.string.end)) + getString(R.string.timepicker))
-                .setTimeFormat(App.is24HourSystem ? TimeFormat.CLOCK_24H : TimeFormat.CLOCK_12H)
+                .setTimeFormat(App.isPreference_key_using_24_hour_system() ? TimeFormat.CLOCK_24H : TimeFormat.CLOCK_12H)
                 .setHour(calendar.get(Calendar.HOUR_OF_DAY))
                 .setMinute(calendar.get(Calendar.MINUTE))
                 .setInputMode(MaterialTimePicker.INPUT_MODE_CLOCK).build();

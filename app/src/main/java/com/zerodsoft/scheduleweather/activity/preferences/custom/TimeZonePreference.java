@@ -22,10 +22,9 @@ public class TimeZonePreference extends Preference
     private TextView timezoneTextView;
     private TimeZone timeZone;
 
-    public TimeZonePreference(Context context, TimeZone timeZone)
+    public TimeZonePreference(Context context)
     {
         super(context);
-        this.timeZone = timeZone;
     }
 
     @Override
@@ -34,25 +33,37 @@ public class TimeZonePreference extends Preference
         super.onBindViewHolder(holder);
         if (timezoneTextView == null)
         {
-            LinearLayout viewGroup = (LinearLayout) holder.findViewById(R.id.layout_widget_root);
             timezoneTextView = new TextView(getContext());
             timezoneTextView.setText(timeZone.getDisplayName(Locale.KOREAN));
             timezoneTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
             timezoneTextView.setTextColor(Color.BLACK);
 
-            int width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 40f, getContext().getResources().getDisplayMetrics());
             int height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32f, getContext().getResources().getDisplayMetrics());
             LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, height);
             layoutParams.gravity = Gravity.RIGHT;
+            timezoneTextView.setLayoutParams(layoutParams);
 
-            viewGroup.addView(timezoneTextView, layoutParams);
+            LinearLayout viewGroup = (LinearLayout) holder.findViewById(R.id.layout_widget_root);
+            viewGroup.addView(timezoneTextView);
+        } else
+        {
+            LinearLayout viewGroup = (LinearLayout) holder.findViewById(R.id.layout_widget_root);
+            if (viewGroup.getChildCount() == 0)
+            {
+                ViewGroup parent = (ViewGroup) timezoneTextView.getParent();
+                parent.removeView(timezoneTextView);
+                viewGroup.addView(timezoneTextView);
+            }
         }
     }
 
     public void setTimeZone(TimeZone timeZone)
     {
         this.timeZone = timeZone;
-        timezoneTextView.setText(timeZone.getDisplayName());
+        if (timezoneTextView != null)
+        {
+            timezoneTextView.setText(timeZone.getDisplayName());
+        }
     }
 
     public TimeZone getTimeZone()

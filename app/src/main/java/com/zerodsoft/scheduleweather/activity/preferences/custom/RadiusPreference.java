@@ -20,7 +20,6 @@ import com.zerodsoft.scheduleweather.event.util.EventUtil;
 public class RadiusPreference extends EditTextPreference
 {
     private TextView radiusTextView;
-    private String value;
 
     public RadiusPreference(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes)
     {
@@ -37,10 +36,9 @@ public class RadiusPreference extends EditTextPreference
         super(context, attrs);
     }
 
-    public RadiusPreference(Context context, String value)
+    public RadiusPreference(Context context)
     {
         super(context);
-        this.value = value;
     }
 
     @Override
@@ -52,21 +50,33 @@ public class RadiusPreference extends EditTextPreference
             radiusTextView = new TextView(getContext());
             radiusTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
             radiusTextView.setTextColor(Color.BLACK);
-            radiusTextView.setText(value);
+            radiusTextView.setText(getText() + "M");
 
-            int width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 40f, getContext().getResources().getDisplayMetrics());
             int height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32f, getContext().getResources().getDisplayMetrics());
             LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, height);
             layoutParams.gravity = Gravity.RIGHT;
 
+            radiusTextView.setLayoutParams(layoutParams);
+
             ViewGroup layoutWidget = (ViewGroup) holder.findViewById(R.id.layout_widget_root);
-            layoutWidget.addView(radiusTextView, layoutParams);
+            layoutWidget.addView(radiusTextView);
+        } else
+        {
+            ViewGroup layoutWidget = (ViewGroup) holder.findViewById(R.id.layout_widget_root);
+            if (layoutWidget.getChildCount() == 0)
+            {
+                ViewGroup parentViewGroup = (ViewGroup) radiusTextView.getParent();
+                parentViewGroup.removeView(radiusTextView);
+                layoutWidget.addView(radiusTextView);
+            }
         }
     }
 
-    public void setValue(String value)
+    public void setValue()
     {
-        this.value = value;
-        radiusTextView.setText(value);
+        if (radiusTextView != null)
+        {
+            radiusTextView.setText(getText() + "M");
+        }
     }
 }

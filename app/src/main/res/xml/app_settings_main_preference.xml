@@ -22,6 +22,12 @@
             android:summary="@string/preference_summary_show_canceled_instances"
             android:title="@string/preference_title_show_canceled_instances" />
 
+        <SwitchPreference
+            android:key="@string/preference_key_using_24_hour_system"
+            android:summaryOff="@string/hour_system_12"
+            android:summaryOn="@string/hour_system_24"
+            android:title="@string/preference_title_using_24_hour_system" />
+
         <Preference
             android:fragment="com.zerodsoft.scheduleweather.activity.preferences.fragments.CalendarColorFragment"
             android:key="@string/preference_key_calendar_color"
