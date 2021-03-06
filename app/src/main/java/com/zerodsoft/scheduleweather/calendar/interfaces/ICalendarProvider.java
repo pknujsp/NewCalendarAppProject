@@ -1,7 +1,11 @@
 package com.zerodsoft.scheduleweather.calendar.interfaces;
 
 import android.content.ContentValues;
+import android.os.RemoteException;
+import android.provider.CalendarContract;
+import android.service.carrier.CarrierMessagingService;
 
+import com.zerodsoft.scheduleweather.calendar.dto.AccountDto;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendarview.callback.EventCallback;
 
@@ -9,6 +13,9 @@ import java.util.List;
 
 public interface ICalendarProvider
 {
+    // account
+    public void getGoogleAccounts(CarrierMessagingService.ResultCallback<List<AccountDto>> resultCallback) throws RemoteException;
+
     // event - crud
     public ContentValues getEvent(int calendarId, long eventId);
 

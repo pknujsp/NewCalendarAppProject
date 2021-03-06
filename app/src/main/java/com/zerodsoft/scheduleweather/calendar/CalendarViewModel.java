@@ -2,10 +2,13 @@ package com.zerodsoft.scheduleweather.calendar;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.os.RemoteException;
+import android.service.carrier.CarrierMessagingService;
 
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import com.zerodsoft.scheduleweather.calendar.dto.AccountDto;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendarview.callback.EventCallback;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
@@ -91,6 +94,11 @@ public class CalendarViewModel extends ViewModel
     public MutableLiveData<DataWrapper<ContentValues>> getInstanceLiveData()
     {
         return instanceLiveData;
+    }
+
+    public void getGoogleAccounts(CarrierMessagingService.ResultCallback<List<AccountDto>> resultCallback) throws RemoteException
+    {
+        calendarProvider.getGoogleAccounts(resultCallback);
     }
 
     public void getEvent(int calendarId, long eventId)

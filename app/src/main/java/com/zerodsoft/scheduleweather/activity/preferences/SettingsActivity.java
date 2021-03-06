@@ -26,7 +26,7 @@ public class SettingsActivity extends AppCompatActivity implements PreferenceFra
         {
             getSupportFragmentManager()
                     .beginTransaction()
-                    .add(R.id.settings, new SettingsFragment())
+                    .add(R.id.settings_fragment_container, new SettingsFragment())
                     .commit();
         }
         setSupportActionBar(findViewById(R.id.toolbar));
@@ -37,17 +37,13 @@ public class SettingsActivity extends AppCompatActivity implements PreferenceFra
     @Override
     public boolean onPreferenceStartFragment(PreferenceFragmentCompat caller, Preference pref)
     {
-        if (pref.getTitle().toString().equals(getString(R.string.settings_color_of_calendar)))
+        if (pref.getTitle().toString().equals(getString(R.string.preference_title_calendar_color)))
         {
-            getSupportActionBar().setTitle(getString(R.string.settings_color_of_calendar));
-        } else if (pref.getTitle().toString().equals(getString(R.string.settings_default_timerange)))
+            getSupportActionBar().setTitle(getString(R.string.preference_title_calendar_color));
+        } else if (pref.getTitle().toString().equals(getString(R.string.preference_title_custom_timezone)))
         {
-            getSupportActionBar().setTitle(getString(R.string.settings_default_timerange));
-        } else if (pref.getTitle().toString().equals(getString(R.string.preference_key_searching_radius)))
-        {
-            getSupportActionBar().setTitle(getString(R.string.preference_key_searching_radius));
+            getSupportActionBar().setTitle(getString(R.string.preference_title_custom_timezone));
         }
-
 
         return false;
     }
@@ -69,4 +65,6 @@ public class SettingsActivity extends AppCompatActivity implements PreferenceFra
     {
         super.onActivityResult(requestCode, resultCode, data);
     }
+
+
 }

@@ -4,43 +4,41 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.preference.EditTextPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceCategory;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 import androidx.preference.SwitchPreference;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.activity.editevent.activity.TimeZoneActivity;
+import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.activity.placecategory.activity.PlaceCategoryActivity;
+import com.zerodsoft.scheduleweather.activity.preferences.SettingsActivity;
+import com.zerodsoft.scheduleweather.activity.preferences.custom.HourSystemPreference;
 import com.zerodsoft.scheduleweather.activity.preferences.custom.RadiusPreference;
+import com.zerodsoft.scheduleweather.activity.preferences.custom.TimeZonePreference;
+import com.zerodsoft.scheduleweather.activity.preferences.interfaces.IPreferenceFragment;
 import com.zerodsoft.scheduleweather.activity.preferences.interfaces.PreferenceListener;
 
-import java.util.Locale;
 import java.util.TimeZone;
 
-public class SettingsFragment extends PreferenceFragmentCompat implements PreferenceListener
+public class SettingsFragment extends PreferenceFragmentCompat implements PreferenceListener, IPreferenceFragment
 {
     private SharedPreferences preferences;
     private OnBackPressedCallback onBackPressedCallback;
 
     private SwitchPreference useDefaultTimeZoneSwitchPreference;
-    private Preference customTimezonePreference;
+    private TimeZonePreference customTimeZonePreference;
     private SwitchPreference weekOfYearSwitchPreference;
     private SwitchPreference showCanceledInstanceSwitchPreference;
-    private Preference timeRangePreference;
     private Preference calendarColorListPreference;
-    private SwitchPreference hourSystemSwitchPreference;
+    private HourSystemPreference hourSystemSwitchPreference;
 
     private RadiusPreference searchingRadiusPreference;
     private Preference placesCategoryPreference;
@@ -49,6 +47,35 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey)
     {
         setPreferencesFromResource(R.xml.app_settings_main_preference, rootKey);
+
+        preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+        preferences.registerOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener);
+
+        useDefaultTimeZoneSwitchPreference = findPreference(getString(R.string.preference_key_using_timezone_of_device));
+        weekOfYearSwitchPreference = findPreference(getString(R.string.preference_key_show_week_of_year));
+        showCanceledInstanceSwitchPreference = findPreference(getString(R.string.preference_key_show_canceled_instances));
+        calendarColorListPreference = findPreference(getString(R.string.preference_key_calendar_color));
+        placesCategoryPreference = findPreference(getString(R.string.preference_key_places_category));
+
+        initValue();
+
+        useDefaultTimeZoneSwitchPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener()
+        {
+            @Override
+            public boolean onPreferenceClick(Preference preference)
+            {
+                if (useDefaultTimeZoneSwitchPreference.isChecked())
+                {
+                    customTimeZonePreference.setEnabled(false);
+                } else
+                {
+                    customTimeZonePreference.setEnabled(true);
+                }
+                return true;
+            }
+        });
+
+        placesCategoryPreference.setIntent(new Intent(getActivity(), PlaceCategoryActivity.class));
     }
 
     @Override
@@ -67,141 +94,89 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
         requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
     }
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState)
-    {
-        super.onCreate(savedInstanceState);
-
-        preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
-        preferences.registerOnSharedPreferenceChangeListener(listener);
-
-        useDefaultTimeZoneSwitchPreference = findPreference(getString(R.string.preference_key_use_default_timezone));
-        customTimezonePreference = findPreference(getString(R.string.preference_key_custom_timezone));
-        weekOfYearSwitchPreference = findPreference(getString(R.string.preference_key_show_week_of_year));
-        showCanceledInstanceSwitchPreference = findPreference(getString(R.string.preference_key_show_canceled_instances));
-        timeRangePreference = findPreference(getString(R.string.preference_key_timerange));
-        calendarColorListPreference = findPreference(getString(R.string.preference_key_calendar_color));
-        hourSystemSwitchPreference = findPreference(getString(R.string.preference_key_use_24_hour_system));
-
-        placesCategoryPreference = findPreference(getString(R.string.preference_key_places_category));
-
-        useDefaultTimeZoneSwitchPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener()
-        {
-            @Override
-            public boolean onPreferenceClick(Preference preference)
-            {
-                if (useDefaultTimeZoneSwitchPreference.isChecked())
-                {
-                    customTimezonePreference.setEnabled(false);
-                } else
-                {
-                    customTimezonePreference.setEnabled(true);
-                }
-                return true;
-            }
-        });
-
-        hourSystemSwitchPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener()
-        {
-            @Override
-            public boolean onPreferenceChange(Preference preference, Object newValue)
-            {
-                if ((Boolean) newValue)
-                {
-                    hourSystemSwitchPreference.setSummary(getString(R.string.hour_24_system));
-                } else
-                {
-                    hourSystemSwitchPreference.setSummary(getString(R.string.hour_12_system));
-                }
-                return true;
-            }
-        });
-
-        customTimezonePreference.setIntent(new Intent(getActivity(), TimeZoneActivity.class));
-        placesCategoryPreference.setIntent(new Intent(getActivity(), PlaceCategoryActivity.class));
-
-        initValue();
-
-    }
-
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
-    {
-        super.onViewCreated(view, savedInstanceState);
-    }
-
-    @Override
-    public void onStart()
-    {
-        super.onStart();
-    }
-
-    @Override
-    public void onResume()
-    {
-        super.onResume();
-    }
-
-    @Override
-    public RecyclerView onCreateRecyclerView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState)
-    {
-        return super.onCreateRecyclerView(inflater, parent, savedInstanceState);
-    }
-
-    private final SharedPreferences.OnSharedPreferenceChangeListener listener = new SharedPreferences.OnSharedPreferenceChangeListener()
+    private final SharedPreferences.OnSharedPreferenceChangeListener onSharedPreferenceChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener()
     {
         @Override
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key)
         {
-            //값 변경시 호출됨
-            //시간대
+            //값 변경완료시 호출됨
+
+            // 기기 기본 시간 사용
             if (key.equals(useDefaultTimeZoneSwitchPreference.getKey()))
             {
-
+                App.setPreference_key_using_timezone_of_device(useDefaultTimeZoneSwitchPreference.isChecked());
             }
 
-            //주차
-            if (key.equals(weekOfYearSwitchPreference.getKey()))
+            // 커스텀 시간대
+            else if (key.equals(customTimeZonePreference.getKey()))
             {
-
+                App.setPreference_key_custom_timezone(customTimeZonePreference.getTimeZone());
             }
 
-            //거절한 일정
-            if (key.equals(showCanceledInstanceSwitchPreference.getKey()))
+            // 주차 표시
+            else if (key.equals(weekOfYearSwitchPreference.getKey()))
             {
+                App.setPreference_key_show_week_of_year(weekOfYearSwitchPreference.isChecked());
             }
 
-            //24시간제
-            if (key.equals(hourSystemSwitchPreference.getKey()))
+            // 거절한 일정 표시
+            else if (key.equals(showCanceledInstanceSwitchPreference.getKey()))
             {
+                App.setPreference_key_show_canceled_instances(showCanceledInstanceSwitchPreference.isChecked());
+            }
+
+            // 시간제
+            else if (key.equals(hourSystemSwitchPreference.getKey()))
+            {
+                App.setPreference_key_settings_hour_system(hourSystemSwitchPreference.getValue());
             }
 
             //검색 반지름 범위
             if (key.equals(searchingRadiusPreference.getKey()))
             {
-                searchingRadiusPreference.setValue(sharedPreferences.getString(key, ""));
+                App.setPreference_key_radius_range(searchingRadiusPreference.getText());
             }
         }
     };
 
     private void initValue()
     {
+        // 사용하지 않더라도 커스텀 시간대는 설정해놓는다.
+        String customTimeZoneId = preferences.getString(getString(R.string.preference_key_custom_timezone), "");
+
+        TimeZone timeZone = TimeZone.getTimeZone(customTimeZoneId);
+        customTimeZonePreference = new TimeZonePreference(getContext(), timeZone);
+        customTimeZonePreference.setKey(getString(R.string.preference_key_custom_timezone));
+        customTimeZonePreference.setSummary(R.string.preference_summary_custom_timezone);
+        customTimeZonePreference.setTitle(R.string.preference_title_custom_timezone);
+        customTimeZonePreference.setWidgetLayoutResource(R.layout.custom_preference_layout);
+
+        customTimeZonePreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener()
+        {
+            @Override
+            public boolean onPreferenceClick(Preference preference)
+            {
+                getParentFragmentManager().beginTransaction().replace(R.id.settings_fragment_container, new SettingsTimeZoneFragment(SettingsFragment.this))
+                        .addToBackStack(null).commit();
+                ((SettingsActivity) getActivity()).getSupportActionBar().setTitle(getString(R.string.preference_title_custom_timezone));
+                return true;
+            }
+        });
+
+        ((PreferenceCategory) getPreferenceManager().findPreference(getString(R.string.preference_calendar_category_title)))
+                .addPreference(customTimeZonePreference);
+
         //기기 기본 시간대 사용 여부
-        boolean usingDeviceTimeZone = preferences.getBoolean(getString(R.string.preference_key_use_default_timezone), false);
+        boolean usingDeviceTimeZone = preferences.getBoolean(getString(R.string.preference_key_using_timezone_of_device), false);
         if (usingDeviceTimeZone)
         {
             useDefaultTimeZoneSwitchPreference.setChecked(true);
-            customTimezonePreference.setEnabled(false);
+            customTimeZonePreference.setEnabled(false);
         } else
         {
             useDefaultTimeZoneSwitchPreference.setChecked(false);
-            customTimezonePreference.setEnabled(true);
+            customTimeZonePreference.setEnabled(true);
         }
-
-        // 사용하지 않더라도 커스텀 시간대는 설정해놓는다.
-        String customTimeZoneId = preferences.getString(getString(R.string.preference_key_custom_timezone), "");
-        TimeZone timeZone = TimeZone.getTimeZone(customTimeZoneId);
-        customTimezonePreference.setSummary(timeZone.getDisplayName(Locale.KOREAN));
 
         //주차 표시
         boolean showingWeekOfYear = preferences.getBoolean(getString(R.string.preference_key_show_week_of_year), false);
@@ -223,33 +198,66 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
             showCanceledInstanceSwitchPreference.setChecked(false);
         }
 
-        //캘린더 색상, 기본 시간 범위
-
         //24시간제 사용
-        //거절한 일정 표시
-        boolean using24HourSystem = preferences.getBoolean(getString(R.string.preference_key_use_24_hour_system), false);
-        if (using24HourSystem)
+        String selectedHourSystem = preferences.getString(getString(R.string.preference_key_settings_hour_system), "");
+
+        String[] hourSystemEntryValues = getContext().getResources().getStringArray(R.array.hour_system_entryvalues);
+        String[] hourSystemEntries = getContext().getResources().getStringArray(R.array.hour_system_entries);
+        int i = 0;
+        for (; i < hourSystemEntryValues.length; i++)
         {
-            hourSystemSwitchPreference.setChecked(true);
-            hourSystemSwitchPreference.setSummary(getString(R.string.hour_24_system));
-        } else
-        {
-            hourSystemSwitchPreference.setChecked(false);
-            hourSystemSwitchPreference.setSummary(getString(R.string.hour_12_system));
+            if (selectedHourSystem.equals(hourSystemEntryValues[i]))
+            {
+                selectedHourSystem = hourSystemEntries[i];
+                break;
+            }
         }
 
+        hourSystemSwitchPreference = new HourSystemPreference(getContext(), selectedHourSystem);
+        hourSystemSwitchPreference.setKey(getString(R.string.preference_key_settings_hour_system));
+        hourSystemSwitchPreference.setSummary(R.string.preference_summary_settings_hour_system);
+        hourSystemSwitchPreference.setTitle(R.string.preference_title_settings_hour_system);
+        hourSystemSwitchPreference.setWidgetLayoutResource(R.layout.custom_preference_layout);
+        hourSystemSwitchPreference.setEntries(R.array.hour_system_entries);
+        hourSystemSwitchPreference.setEntryValues(R.array.hour_system_entryvalues);
+        hourSystemSwitchPreference.setValueIndex(i);
+
+        ((PreferenceCategory) getPreferenceManager().findPreference(getString(R.string.preference_calendar_category_title)))
+                .addPreference(hourSystemSwitchPreference);
+
+        hourSystemSwitchPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener()
+        {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newValue)
+            {
+                String value = (String) newValue;
+                CharSequence[] entryValues = hourSystemSwitchPreference.getEntryValues();
+                CharSequence[] entries = hourSystemSwitchPreference.getEntries();
+
+                for (int i = 0; i < entryValues.length; i++)
+                {
+                    if (value.equals(entryValues[i].toString()))
+                    {
+                        hourSystemSwitchPreference.setSelectedHourSystem(entries[i].toString());
+                        break;
+                    }
+                }
+                return true;
+            }
+        });
+
         //검색 반지름 범위
-        String searchingRadius = preferences.getString(getString(R.string.preference_key_searching_radius), "100");
+        String searchingRadius = preferences.getString(getString(R.string.preference_key_radius_range), "");
         //오른쪽에 반지름 표시
-        searchingRadiusPreference = new RadiusPreference(getContext(), searchingRadius);
-        searchingRadiusPreference.setKey(getString(R.string.preference_key_searching_radius));
-        searchingRadiusPreference.setSummary(R.string.summary_setting_search_places_distance);
-        searchingRadiusPreference.setTitle(R.string.settings_searching_radius_custom);
+        searchingRadiusPreference = new RadiusPreference(getContext(), searchingRadius + "M");
+        searchingRadiusPreference.setKey(getString(R.string.preference_key_radius_range));
+        searchingRadiusPreference.setSummary(R.string.preference_summary_radius_range);
+        searchingRadiusPreference.setTitle(R.string.preference_title_radius_range);
         searchingRadiusPreference.setWidgetLayoutResource(R.layout.custom_preference_layout);
         searchingRadiusPreference.setDefaultValue(searchingRadius);
-        searchingRadiusPreference.setDialogMessage(R.string.radius_dialog_message);
+        searchingRadiusPreference.setDialogMessage(R.string.preference_dialog_message_radius_range);
 
-        ((PreferenceCategory) getPreferenceManager().findPreference(getString(R.string.preference_key_places_settings_category)))
+        ((PreferenceCategory) getPreferenceManager().findPreference(getString(R.string.preference_place_category_title)))
                 .addPreference(searchingRadiusPreference);
 
         searchingRadiusPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener()
@@ -261,6 +269,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
 
                 if (radius >= 0 && radius <= 20000)
                 {
+                    searchingRadiusPreference.setValue((String) newValue + "M");
                     return true;
                 } else
                 {
@@ -272,7 +281,45 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
     }
 
     @Override
+    public void onCreate(@Nullable Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
+    {
+        super.onViewCreated(view, savedInstanceState);
+    }
+
+    @Override
+    public void onStart()
+    {
+        super.onStart();
+    }
+
+    @Override
     public void onCreatedPreferenceView()
     {
+    }
+
+
+    @Override
+    public void onFinished(Object result)
+    {
+        if (result instanceof TimeZone)
+        {
+            //수동 시간대 설정이 완료된 경우
+            TimeZone currentTimeZone = customTimeZonePreference.getTimeZone();
+            TimeZone newTimeZone = (TimeZone) result;
+
+            if (currentTimeZone.getID().equals(newTimeZone.getID()))
+            {
+                Toast.makeText(getActivity(), "이미 선택된 시간대 입니다", Toast.LENGTH_SHORT).show();
+            } else
+            {
+                customTimeZonePreference.setTimeZone(newTimeZone);
+            }
+        }
     }
 }

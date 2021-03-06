@@ -1,56 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-    <PreferenceCategory android:title="@string/calendar_settings">
+    <PreferenceCategory
+        android:key="@string/preference_calendar_category_title"
+        android:title="@string/preference_calendar_category_title">
+
         <SwitchPreference
             android:defaultValue="true"
-            android:key="@string/preference_key_use_default_timezone"
-            android:title="@string/using_default_timezone" />
-
-        <Preference
-            android:fragment="com.zerodsoft.scheduleweather.activity.editevent.fragments.TimeZoneFragment"
-            android:key="@string/preference_key_custom_timezone"
-            android:title="@string/select_timezone" />
+            android:key="@string/preference_key_using_timezone_of_device"
+            android:summary="@string/preference_summary_using_timezone_of_device"
+            android:title="@string/preference_title_using_timezone_of_device" />
 
         <SwitchPreference
             android:defaultValue="true"
             android:key="@string/preference_key_show_week_of_year"
-            android:title="@string/show_week_of_year" />
+            android:summary="@string/preference_summary_show_week_of_year"
+            android:title="@string/preference_title_show_week_of_year" />
 
         <SwitchPreference
             android:defaultValue="true"
             android:key="@string/preference_key_show_canceled_instances"
-            android:title="@string/show_canceled_instance" />
-
-        <Preference
-            android:key="@string/preference_key_timerange"
-            android:summary="@string/summary_setting_default_daterange"
-            android:title="@string/settings_default_timerange" />
+            android:summary="@string/preference_summary_show_canceled_instances"
+            android:title="@string/preference_title_show_canceled_instances" />
 
         <Preference
             android:fragment="com.zerodsoft.scheduleweather.activity.preferences.fragments.CalendarColorFragment"
             android:key="@string/preference_key_calendar_color"
-            android:summary="@string/summary_setting_color_of_calendar"
-            android:title="@string/settings_color_of_calendar" />
+            android:summary="@string/preference_summary_calendar_color"
+            android:title="@string/preference_title_calendar_color" />
 
-        <SwitchPreference
-            android:defaultValue="true"
-            android:key="@string/preference_key_use_24_hour_system"
-            android:title="@string/setting_hour_system" />
+
     </PreferenceCategory>
 
-    <PreferenceCategory android:title="@string/weather_settings">
+    <PreferenceCategory
+        android:key="@string/preference_weather_category_title"
+        android:title="@string/preference_weather_category_title">
 
 
     </PreferenceCategory>
 
 
     <PreferenceCategory
-        android:key="@string/preference_key_places_settings_category"
-        android:title="@string/places_settings">
+        android:key="@string/preference_place_category_title"
+        android:title="@string/preference_place_category_title">
 
         <Preference
             android:key="@string/preference_key_places_category"
-            android:summary="@string/summary_setting_place_category"
-            android:title="@string/setting_place_category" />
+            android:summary="@string/preference_summary_places_category"
+            android:title="@string/preference_title_places_category" />
+
     </PreferenceCategory>
+
 </PreferenceScreen>

@@ -704,7 +704,6 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                     TimeZone timeZone = (TimeZone) data.getSerializableExtra(CalendarContract.Events.EVENT_TIMEZONE);
                     dataController.putEventValue(CalendarContract.Events.EVENT_TIMEZONE, timeZone.getID());
                     setTimeZoneText(timeZone.getID());
-
                 }
                 break;
             }

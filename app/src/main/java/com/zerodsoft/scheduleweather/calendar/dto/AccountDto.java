@@ -1,6 +1,7 @@
 package com.zerodsoft.scheduleweather.calendar.dto;
 
 import android.content.ContentValues;
+import android.provider.CalendarContract;
 
 import java.util.ArrayList;
 import java.util.List;

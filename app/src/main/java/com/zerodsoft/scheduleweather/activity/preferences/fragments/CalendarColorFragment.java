@@ -170,7 +170,7 @@ public class CalendarColorFragment extends PreferenceFragmentCompat implements P
 
                                             MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(getContext());
                                             builder.setView(gridView);
-                                            builder.setTitle(R.string.selection_color);
+                                            builder.setTitle(R.string.preference_dialog_title_calendar_color);
                                             dialog = builder.create();
                                             dialog.show();
 

@@ -28,6 +28,7 @@ import android.widget.Toast;
 
 import com.google.android.material.button.MaterialButtonToggleGroup;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.activity.editevent.activity.EditEventActivity;
 import com.zerodsoft.scheduleweather.activity.editevent.value.EventDataController;
 import com.zerodsoft.scheduleweather.activity.preferences.SettingsActivity;
@@ -172,6 +173,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 
     private void init()
     {
+        App.setAppSettings(getApplicationContext());
         mainBinding.assistantCalendarContainer.setVisibility(View.GONE);
         KakaoLocalApiCategoryUtil.loadCategories(getApplicationContext());
 

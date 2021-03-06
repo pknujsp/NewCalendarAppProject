@@ -27,11 +27,16 @@ import java.util.TimeZone;
 
 public class TimeZoneFragment extends Fragment
 {
-    private TimeZoneRecyclerViewAdapter adapter;
-    private RecyclerView recyclerView;
-    private EditText searchEditText;
-    private ITimeZone iTimeZone;
-    private Long startTime;
+    public TimeZoneRecyclerViewAdapter adapter;
+    public RecyclerView recyclerView;
+    public EditText searchEditText;
+    public ITimeZone iTimeZone;
+    public Long startTime;
+
+    public TimeZoneFragment()
+    {
+
+    }
 
     public void setiTimeZone(ITimeZone iTimeZone)
     {
@@ -42,14 +47,14 @@ public class TimeZoneFragment extends Fragment
     public void onCreate(@Nullable Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        startTime = getArguments().getLong("startTime");
+        startTime = System.currentTimeMillis();
     }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
     {
-        return super.onCreateView(inflater, container, savedInstanceState);
+        return inflater.inflate(R.layout.timezone_fragment, container, false);
     }
 
     @Override

@@ -50,13 +50,13 @@ public class RadiusPreference extends EditTextPreference
         if (radiusTextView == null)
         {
             radiusTextView = new TextView(getContext());
-            radiusTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f);
+            radiusTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
             radiusTextView.setTextColor(Color.BLACK);
             radiusTextView.setText(value);
 
-            int width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 50f, getContext().getResources().getDisplayMetrics());
+            int width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 40f, getContext().getResources().getDisplayMetrics());
             int height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32f, getContext().getResources().getDisplayMetrics());
-            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(width, height);
+            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, height);
             layoutParams.gravity = Gravity.RIGHT;
 
             ViewGroup layoutWidget = (ViewGroup) holder.findViewById(R.id.layout_widget_root);

@@ -3,27 +3,15 @@ package com.zerodsoft.scheduleweather.activity.editevent.activity;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
 import android.provider.CalendarContract;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.MenuItem;
-import android.widget.EditText;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.activity.editevent.adapter.TimeZoneRecyclerViewAdapter;
 import com.zerodsoft.scheduleweather.activity.editevent.fragments.TimeZoneFragment;
 import com.zerodsoft.scheduleweather.activity.editevent.interfaces.ITimeZone;
 
-import java.sql.Time;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
 import java.util.TimeZone;
 
 public class TimeZoneActivity extends AppCompatActivity implements ITimeZone
@@ -43,17 +31,19 @@ public class TimeZoneActivity extends AppCompatActivity implements ITimeZone
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setHomeButtonEnabled(true);
 
-        timeZoneFragment = (TimeZoneFragment) getSupportFragmentManager().findFragmentById(R.id.timezone_fragment);
+        timeZoneFragment = new TimeZoneFragment();
         timeZoneFragment.setiTimeZone(this);
         Bundle bundle = new Bundle();
         bundle.putLong("startTime", getIntent().getLongExtra("startTime", 0L));
         timeZoneFragment.setArguments(bundle);
+
+        getSupportFragmentManager().beginTransaction().add(R.id.timezone_fragment_container, timeZoneFragment).commit();
     }
 
     @Override
     public void onSelectedTimeZone(TimeZone timeZone)
     {
-        getIntent().putExtra("timeZone", timeZone);
+        getIntent().putExtra(CalendarContract.Events.EVENT_TIMEZONE, timeZone);
         setResult(RESULT_OK, getIntent());
         finish();
     }

@@ -11,10 +11,13 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.RemoteException;
 import android.provider.CalendarContract;
+import android.service.carrier.CarrierMessagingService;
 
 import androidx.core.content.ContextCompat;
 
+import com.zerodsoft.scheduleweather.calendar.dto.AccountDto;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendar.interfaces.ICalendarProvider;
 import com.zerodsoft.scheduleweather.calendarview.callback.EventCallback;
@@ -24,7 +27,9 @@ import com.zerodsoft.scheduleweather.utility.RecurrenceRule;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class CalendarProvider implements ICalendarProvider
 {
@@ -138,6 +143,63 @@ public class CalendarProvider implements ICalendarProvider
             return false;
         }
     }
+
+    // account
+
+    @Override
+    public void getGoogleAccounts(CarrierMessagingService.ResultCallback<List<AccountDto>> resultCallback) throws RemoteException
+    {
+        if (!checkPermission(Manifest.permission.READ_CALENDAR))
+        {
+        }
+        final String[] PROJECTION = {
+                CalendarContract.Calendars.ACCOUNT_NAME, CalendarContract.Calendars.OWNER_ACCOUNT, CalendarContract.Calendars.ACCOUNT_TYPE,
+                CalendarContract.Calendars.IS_PRIMARY};
+        ContentResolver contentResolver = context.getContentResolver();
+        Cursor cursor = contentResolver.query(CalendarContract.Calendars.CONTENT_URI, PROJECTION, null, null, null);
+
+        final String GOOGLE_SECONDARY_CALENDAR = "@group.calendar.google.com";
+        List<AccountDto> accountList = new ArrayList<>();
+        Set<String> ownerAccountSet = new HashSet<>();
+
+        if (cursor != null)
+        {
+            while (cursor.moveToNext())
+            {
+                if (cursor.getInt(3) == 1)
+                {
+                    // another || google primary calendar
+                    if (!ownerAccountSet.contains(cursor.getString(1)))
+                    {
+                        ownerAccountSet.add(cursor.getString(1));
+                        AccountDto accountDto = new AccountDto();
+
+                        accountDto.setAccountName(cursor.getString(0));
+                        accountDto.setOwnerAccount(cursor.getString(1));
+                        accountDto.setAccountType(cursor.getString(2));
+
+                        accountList.add(accountDto);
+                    }
+                } else if (cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.OWNER_ACCOUNT)).contains(GOOGLE_SECONDARY_CALENDAR))
+                {
+                    if (!ownerAccountSet.contains(cursor.getString(1)))
+                    {
+                        ownerAccountSet.add(cursor.getString(1));
+                        AccountDto accountDto = new AccountDto();
+
+                        accountDto.setAccountName(cursor.getString(0));
+                        accountDto.setOwnerAccount(cursor.getString(1));
+                        accountDto.setAccountType(cursor.getString(2));
+
+                        accountList.add(accountDto);
+                    }
+                }
+            }
+            cursor.close();
+        }
+        resultCallback.onReceiveResult(accountList);
+    }
+
 
     // event - crud
 
