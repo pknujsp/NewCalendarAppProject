@@ -16,6 +16,7 @@ import android.widget.EditText;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.editevent.adapter.TimeZoneRecyclerViewAdapter;
+import com.zerodsoft.scheduleweather.activity.editevent.fragments.TimeZoneFragment;
 import com.zerodsoft.scheduleweather.activity.editevent.interfaces.ITimeZone;
 
 import java.sql.Time;
@@ -27,9 +28,7 @@ import java.util.TimeZone;
 
 public class TimeZoneActivity extends AppCompatActivity implements ITimeZone
 {
-    private TimeZoneRecyclerViewAdapter adapter;
-    private RecyclerView recyclerView;
-    private EditText searchEditText;
+    private TimeZoneFragment timeZoneFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -44,46 +43,11 @@ public class TimeZoneActivity extends AppCompatActivity implements ITimeZone
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setHomeButtonEnabled(true);
 
-        recyclerView = (RecyclerView) findViewById(R.id.timezone_list);
-        searchEditText = (EditText) findViewById(R.id.search_timezone);
-
-        recyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext(), LinearLayoutManager.VERTICAL, false));
-        recyclerView.addItemDecoration(new DividerItemDecoration(getApplicationContext(), DividerItemDecoration.VERTICAL));
-
-        final String[] timeZones = TimeZone.getAvailableIDs();
-        final List<TimeZone> timeZoneList = new ArrayList<>();
-
-        for (String v : timeZones)
-        {
-            timeZoneList.add(TimeZone.getTimeZone(v));
-        }
-
-        Date startDate = new Date(getIntent().getLongExtra(CalendarContract.Events.DTSTART, 0L));
-
-        adapter = new TimeZoneRecyclerViewAdapter(this, timeZoneList, startDate);
-        recyclerView.setAdapter(adapter);
-
-        searchEditText.addTextChangedListener(new TextWatcher()
-        {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2)
-            {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2)
-            {
-                // 실시간 검색
-                adapter.getFilter().filter(charSequence);
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable)
-            {
-
-            }
-        });
+        timeZoneFragment = (TimeZoneFragment) getSupportFragmentManager().findFragmentById(R.id.timezone_fragment);
+        timeZoneFragment.setiTimeZone(this);
+        Bundle bundle = new Bundle();
+        bundle.putLong("startTime", getIntent().getLongExtra("startTime", 0L));
+        timeZoneFragment.setArguments(bundle);
     }
 
     @Override

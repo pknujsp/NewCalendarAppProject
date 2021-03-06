@@ -1,44 +1,38 @@
 package com.zerodsoft.scheduleweather.activity.preferences.fragments;
 
-import android.Manifest;
-import android.content.ContentResolver;
-import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.provider.CalendarContract;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.app.ActivityCompat;
-import androidx.preference.ListPreference;
+import androidx.preference.EditTextPreference;
 import androidx.preference.Preference;
+import androidx.preference.PreferenceCategory;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
-import androidx.preference.PreferenceScreen;
 import androidx.preference.SwitchPreference;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.editevent.activity.TimeZoneActivity;
 import com.zerodsoft.scheduleweather.activity.placecategory.activity.PlaceCategoryActivity;
+import com.zerodsoft.scheduleweather.activity.preferences.custom.RadiusPreference;
 import com.zerodsoft.scheduleweather.activity.preferences.interfaces.PreferenceListener;
-import com.zerodsoft.scheduleweather.event.util.EventUtil;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
 public class SettingsFragment extends PreferenceFragmentCompat implements PreferenceListener
 {
     private SharedPreferences preferences;
+    private OnBackPressedCallback onBackPressedCallback;
 
     private SwitchPreference useDefaultTimeZoneSwitchPreference;
     private Preference customTimezonePreference;
@@ -48,13 +42,29 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
     private Preference calendarColorListPreference;
     private SwitchPreference hourSystemSwitchPreference;
 
-    private ListPreference searchingRadiusListPreference;
+    private RadiusPreference searchingRadiusPreference;
     private Preference placesCategoryPreference;
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey)
     {
         setPreferencesFromResource(R.xml.app_settings_main_preference, rootKey);
+    }
+
+    @Override
+    public void onAttach(@NonNull Context context)
+    {
+        super.onAttach(context);
+        onBackPressedCallback = new OnBackPressedCallback(true)
+        {
+            @Override
+            public void handleOnBackPressed()
+            {
+                getActivity().finish();
+                onBackPressedCallback.remove();
+            }
+        };
+        requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
     }
 
     @Override
@@ -73,7 +83,6 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
         calendarColorListPreference = findPreference(getString(R.string.preference_key_calendar_color));
         hourSystemSwitchPreference = findPreference(getString(R.string.preference_key_use_24_hour_system));
 
-        searchingRadiusListPreference = findPreference(getString(R.string.preference_key_searching_radius));
         placesCategoryPreference = findPreference(getString(R.string.preference_key_places_category));
 
         useDefaultTimeZoneSwitchPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener()
@@ -92,8 +101,26 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
             }
         });
 
+        hourSystemSwitchPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener()
+        {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newValue)
+            {
+                if ((Boolean) newValue)
+                {
+                    hourSystemSwitchPreference.setSummary(getString(R.string.hour_24_system));
+                } else
+                {
+                    hourSystemSwitchPreference.setSummary(getString(R.string.hour_12_system));
+                }
+                return true;
+            }
+        });
+
         customTimezonePreference.setIntent(new Intent(getActivity(), TimeZoneActivity.class));
         placesCategoryPreference.setIntent(new Intent(getActivity(), PlaceCategoryActivity.class));
+
+        initValue();
 
     }
 
@@ -124,9 +151,36 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
     private final SharedPreferences.OnSharedPreferenceChangeListener listener = new SharedPreferences.OnSharedPreferenceChangeListener()
     {
         @Override
-        public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s)
+        public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key)
         {
+            //값 변경시 호출됨
+            //시간대
+            if (key.equals(useDefaultTimeZoneSwitchPreference.getKey()))
+            {
 
+            }
+
+            //주차
+            if (key.equals(weekOfYearSwitchPreference.getKey()))
+            {
+
+            }
+
+            //거절한 일정
+            if (key.equals(showCanceledInstanceSwitchPreference.getKey()))
+            {
+            }
+
+            //24시간제
+            if (key.equals(hourSystemSwitchPreference.getKey()))
+            {
+            }
+
+            //검색 반지름 범위
+            if (key.equals(searchingRadiusPreference.getKey()))
+            {
+                searchingRadiusPreference.setValue(sharedPreferences.getString(key, ""));
+            }
         }
     };
 
@@ -137,10 +191,13 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
         if (usingDeviceTimeZone)
         {
             useDefaultTimeZoneSwitchPreference.setChecked(true);
+            customTimezonePreference.setEnabled(false);
         } else
         {
             useDefaultTimeZoneSwitchPreference.setChecked(false);
+            customTimezonePreference.setEnabled(true);
         }
+
         // 사용하지 않더라도 커스텀 시간대는 설정해놓는다.
         String customTimeZoneId = preferences.getString(getString(R.string.preference_key_custom_timezone), "");
         TimeZone timeZone = TimeZone.getTimeZone(customTimeZoneId);
@@ -182,8 +239,36 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
         }
 
         //검색 반지름 범위
-        int searchingRadius = preferences.getInt(getString(R.string.preference_key_searching_radius), 0);
+        String searchingRadius = preferences.getString(getString(R.string.preference_key_searching_radius), "100");
         //오른쪽에 반지름 표시
+        searchingRadiusPreference = new RadiusPreference(getContext(), searchingRadius);
+        searchingRadiusPreference.setKey(getString(R.string.preference_key_searching_radius));
+        searchingRadiusPreference.setSummary(R.string.summary_setting_search_places_distance);
+        searchingRadiusPreference.setTitle(R.string.settings_searching_radius_custom);
+        searchingRadiusPreference.setWidgetLayoutResource(R.layout.custom_preference_layout);
+        searchingRadiusPreference.setDefaultValue(searchingRadius);
+        searchingRadiusPreference.setDialogMessage(R.string.radius_dialog_message);
+
+        ((PreferenceCategory) getPreferenceManager().findPreference(getString(R.string.preference_key_places_settings_category)))
+                .addPreference(searchingRadiusPreference);
+
+        searchingRadiusPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener()
+        {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newValue)
+            {
+                int radius = Integer.parseInt((String) newValue);
+
+                if (radius >= 0 && radius <= 20000)
+                {
+                    return true;
+                } else
+                {
+                    Toast.makeText(getActivity(), "0~20000사이로 입력하세요", Toast.LENGTH_SHORT).show();
+                    return false;
+                }
+            }
+        });
     }
 
     @Override

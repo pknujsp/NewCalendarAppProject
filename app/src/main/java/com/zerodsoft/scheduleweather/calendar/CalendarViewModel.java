@@ -251,7 +251,7 @@ public class CalendarViewModel extends ViewModel
         return calendarProvider.getCalendarColor(accountName, accountType);
     }
 
-    public int updateCalendarColor(int calendarId, int color, int colorKey)
+    public int updateCalendarColor(int calendarId, int color, String colorKey)
     {
         return calendarProvider.updateCalendarColor(calendarId, color, colorKey);
     }
@@ -259,5 +259,10 @@ public class CalendarViewModel extends ViewModel
     public List<ContentValues> getCalendarColors(String accountName, String accountType)
     {
         return calendarProvider.getCalendarColors(accountName, accountType);
+    }
+
+    public ContentValues getCalendarColor(int calendarId)
+    {
+        return calendarProvider.getCalendarColor(calendarId);
     }
 }

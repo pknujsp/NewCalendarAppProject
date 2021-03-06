@@ -422,7 +422,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
         binding.timeLayout.eventTimezone.setOnClickListener(view ->
         {
             Intent intent = new Intent(EditEventActivity.this, TimeZoneActivity.class);
-            intent.putExtra(CalendarContract.Events.DTSTART, dataController.getEventValueAsLong(CalendarContract.Events.DTSTART));
+            intent.putExtra("startTime", dataController.getEventValueAsLong(CalendarContract.Events.DTSTART));
             startActivityForResult(intent, REQUEST_TIMEZONE);
         });
 

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <SwitchPreference
+        android:defaultValue="false"
+        android:key="@string/preference_key_selected_custom_radius"
+        android:title="@string/settings_using_custom_radius" />
+
+
+</PreferenceScreen>

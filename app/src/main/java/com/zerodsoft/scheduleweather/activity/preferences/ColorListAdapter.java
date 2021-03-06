@@ -3,8 +3,10 @@ package com.zerodsoft.scheduleweather.activity.preferences;
 import android.content.ContentValues;
 import android.content.Context;
 import android.provider.CalendarContract;
+import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -22,14 +24,18 @@ import java.util.List;
 public class ColorListAdapter extends BaseAdapter
 {
     private List<ContentValues> colorList;
-    private final int currentColor;
+    private ContentValues currentColor;
     private Context context;
+    private LayoutInflater layoutInflater;
+    private final int VIEW_SIZE;
 
-    public ColorListAdapter(int currentColor, List<ContentValues> colorList, Context context)
+    public ColorListAdapter(ContentValues currentColor, List<ContentValues> colorList, Context context)
     {
         this.currentColor = currentColor;
         this.colorList = colorList;
         this.context = context;
+        this.layoutInflater = LayoutInflater.from(context);
+        this.VIEW_SIZE = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 40f, context.getResources().getDisplayMetrics());
     }
 
     @Override
@@ -53,28 +59,39 @@ public class ColorListAdapter extends BaseAdapter
     @Override
     public View getView(int index, View view, ViewGroup viewGroup)
     {
+        ColorViewHolder viewHolder = null;
+
         if (view == null)
         {
-            view = new FrameLayout(context);
-            int size = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32f, context.getResources().getDisplayMetrics());
-            ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(size, size);
-            view.setLayoutParams(layoutParams);
+            view = layoutInflater.inflate(R.layout.color_griditem, null);
+
+            view.setLayoutParams(new GridView.LayoutParams(VIEW_SIZE, VIEW_SIZE));
+
+            viewHolder = new ColorViewHolder();
+            viewHolder.colorView = (FrameLayout) view.findViewById(R.id.color_view);
+            viewHolder.checkImage = (ImageView) view.findViewById(R.id.color_check_image);
+
+            view.setTag(viewHolder);
+        } else
+        {
+            viewHolder = (ColorViewHolder) view.getTag();
         }
 
-        view.setBackgroundColor(EventUtil.getColor(colorList.get(index).getAsInteger(CalendarContract.Colors.COLOR)));
-        if (currentColor == colorList.get(index).getAsInteger(CalendarContract.Colors.COLOR_KEY))
+        viewHolder.colorView.setBackgroundColor(EventUtil.getColor(colorList.get(index).getAsInteger(CalendarContract.Colors.COLOR)));
+        if (currentColor.getAsString(CalendarContract.Calendars.CALENDAR_COLOR_KEY) != null)
         {
-            //현재 색상
-            ImageView checkImageView = new ImageView(context);
-            checkImageView.setImageDrawable(context.getDrawable(R.drawable.check_icon));
-
-            int size = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 12f, context.getResources().getDisplayMetrics());
-            FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(size, size);
-            layoutParams.gravity = Gravity.CENTER;
-            checkImageView.setLayoutParams(layoutParams);
-
-            ((FrameLayout) view).addView(checkImageView);
+            if (currentColor.getAsString(CalendarContract.Calendars.CALENDAR_COLOR_KEY).equals(colorList.get(index).getAsString(CalendarContract.Colors.COLOR_KEY)))
+            {
+                //현재 색상
+                viewHolder.checkImage.setVisibility(View.VISIBLE);
+            }
         }
         return view;
+    }
+
+    static class ColorViewHolder
+    {
+        FrameLayout colorView;
+        ImageView checkImage;
     }
 }

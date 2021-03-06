@@ -1,18 +1,23 @@
 package com.zerodsoft.scheduleweather.activity.preferences.fragments;
 
-import android.app.AlertDialog;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.provider.CalendarContract;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.FrameLayout;
 import android.widget.GridView;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.core.app.SharedElementCallback;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.preference.ListPreference;
@@ -25,9 +30,11 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.preferences.ColorListAdapter;
 import com.zerodsoft.scheduleweather.activity.preferences.ColorValue;
+import com.zerodsoft.scheduleweather.activity.preferences.SettingsActivity;
 import com.zerodsoft.scheduleweather.activity.preferences.custom.ColorPreference;
 import com.zerodsoft.scheduleweather.activity.preferences.interfaces.PreferenceListener;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
+import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 
 import java.util.ArrayList;
@@ -38,7 +45,9 @@ import java.util.Set;
 
 public class CalendarColorFragment extends PreferenceFragmentCompat implements PreferenceListener
 {
+    private OnBackPressedCallback onBackPressedCallback;
     private CalendarViewModel calendarViewModel;
+    private AlertDialog dialog;
     private final ColorPreferenceInterface colorPreferenceInterface = new ColorPreferenceInterface()
     {
         @Override
@@ -52,6 +61,23 @@ public class CalendarColorFragment extends PreferenceFragmentCompat implements P
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey)
     {
         setPreferencesFromResource(R.xml.app_settings_calendar_color_preference, rootKey);
+    }
+
+    @Override
+    public void onAttach(@NonNull Context context)
+    {
+        super.onAttach(context);
+        onBackPressedCallback = new OnBackPressedCallback(true)
+        {
+            @Override
+            public void handleOnBackPressed()
+            {
+                getParentFragmentManager().popBackStack();
+                ((SettingsActivity) getActivity()).getSupportActionBar().setTitle(R.string.app_settings);
+                onBackPressedCallback.remove();
+            }
+        };
+        requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
     }
 
     @Override
@@ -113,31 +139,42 @@ public class CalendarColorFragment extends PreferenceFragmentCompat implements P
 
                                     preference.setTitle(calendar.getAsString(CalendarContract.Calendars.CALENDAR_DISPLAY_NAME));
                                     preference.setWidgetLayoutResource(R.layout.custom_preference_layout);
-
                                     preference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener()
                                     {
                                         @Override
                                         public boolean onPreferenceClick(Preference preference)
                                         {
+                                            ContentValues currentColor = calendarViewModel.getCalendarColor(calendar.getAsInteger(CalendarContract.Calendars._ID));
                                             List<ContentValues> colors = calendarViewModel.getCalendarColors(calendar.getAsString(CalendarContract.Calendars.ACCOUNT_NAME),
                                                     calendar.getAsString(CalendarContract.Calendars.ACCOUNT_TYPE));
 
-                                            GridView gridView = (GridView) LayoutInflater.from(getContext()).inflate(R.layout.color_dialog_view, null);
-                                            gridView.setAdapter(new ColorListAdapter(calendar.getAsInteger(CalendarContract.Calendars.CALENDAR_COLOR), colors, getContext()));
+                                            //-----------------------------------------------------------------------------------------
 
-                                            new MaterialAlertDialogBuilder(getContext())
-                                                    .setTitle(R.string.selection_color)
-                                                    .setView(gridView)
-                                                    .setAdapter(gridView.getAdapter(), new DialogInterface.OnClickListener()
-                                                    {
-                                                        @Override
-                                                        public void onClick(DialogInterface dialogInterface, int index)
-                                                        {
-                                                            Toast.makeText(getActivity(), String.valueOf(colors.get(index).getAsInteger(CalendarContract.Colors.COLOR)), Toast.LENGTH_SHORT)
-                                                                    .show();
-                                                        }
-                                                    }).create().show();
+                                            GridView gridView = new GridView(getContext());
+                                            gridView.setAdapter(new ColorListAdapter(currentColor, colors, getContext()));
+                                            gridView.setNumColumns(5);
+                                            gridView.setGravity(Gravity.CENTER);
+                                            gridView.setOnItemClickListener(new AdapterView.OnItemClickListener()
+                                            {
+                                                @Override
+                                                public void onItemClick(AdapterView<?> parent, View view, int position, long id)
+                                                {
+                                                    dialog.dismiss();
+                                                    int color = colors.get(position).getAsInteger(CalendarContract.Colors.COLOR);
+                                                    String colorKey = colors.get(position).getAsString(CalendarContract.Colors.COLOR_KEY);
 
+                                                    ((ColorPreference) preference).setColor(EventUtil.getColor(color));
+                                                    calendarViewModel.updateCalendarColor(calendar.getAsInteger(CalendarContract.Calendars._ID), color, colorKey);
+                                                }
+                                            });
+
+                                            MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(getContext());
+                                            builder.setView(gridView);
+                                            builder.setTitle(R.string.selection_color);
+                                            dialog = builder.create();
+                                            dialog.show();
+
+                                            //-----------------------------------------------------------------------------------------
                                             return true;
                                         }
                                     });

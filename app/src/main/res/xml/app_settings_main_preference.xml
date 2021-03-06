@@ -7,6 +7,7 @@
             android:title="@string/using_default_timezone" />
 
         <Preference
+            android:fragment="com.zerodsoft.scheduleweather.activity.editevent.fragments.TimeZoneFragment"
             android:key="@string/preference_key_custom_timezone"
             android:title="@string/select_timezone" />
 
@@ -23,13 +24,13 @@
         <Preference
             android:key="@string/preference_key_timerange"
             android:summary="@string/summary_setting_default_daterange"
-            android:title="@string/default_daterange" />
+            android:title="@string/settings_default_timerange" />
 
         <Preference
             android:fragment="com.zerodsoft.scheduleweather.activity.preferences.fragments.CalendarColorFragment"
             android:key="@string/preference_key_calendar_color"
             android:summary="@string/summary_setting_color_of_calendar"
-            android:title="@string/setting_color_of_calendar" />
+            android:title="@string/settings_color_of_calendar" />
 
         <SwitchPreference
             android:defaultValue="true"
@@ -43,12 +44,9 @@
     </PreferenceCategory>
 
 
-    <PreferenceCategory android:title="@string/places_settings">
-        <ListPreference
-            android:key="@string/preference_key_searching_radius"
-            android:summary="@string/summary_setting_search_places_distance"
-            android:title="@string/setting_search_places_distance"
-            android:widgetLayout="@layout/custom_preference_layout" />
+    <PreferenceCategory
+        android:key="@string/preference_key_places_settings_category"
+        android:title="@string/places_settings">
 
         <Preference
             android:key="@string/preference_key_places_category"

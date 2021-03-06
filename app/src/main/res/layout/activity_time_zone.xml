@@ -4,7 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-
     android:orientation="vertical"
     tools:context=".activity.editevent.activity.TimeZoneActivity">
 
@@ -14,32 +13,17 @@
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/timezone_toolbar"
-            style="@style/Widget.MaterialComponents.Toolbar.Primary"
+            style="@style/Widget.MaterialComponents.Toolbar.Surface"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             app:title="@string/timezone" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <LinearLayout
+    <fragment
+        android:id="@+id/timezone_fragment"
+        android:name="com.zerodsoft.scheduleweather.activity.editevent.fragments.TimeZoneFragment"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="4dp">
-
-        <EditText
-            android:id="@+id/search_timezone"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/input_timezone" />
-
-    </LinearLayout>
-
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/timezone_list"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:listitem="@layout/timezone_itemview" />
+        android:layout_height="match_parent" />
 
 </LinearLayout>

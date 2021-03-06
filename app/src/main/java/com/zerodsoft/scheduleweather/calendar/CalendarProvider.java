@@ -13,7 +13,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.CalendarContract;
 
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
@@ -368,7 +367,7 @@ public class CalendarProvider implements ICalendarProvider
         }
         final String[] PROJECTION = {CalendarContract.Calendars._ID, CalendarContract.Calendars.NAME,
                 CalendarContract.Calendars.ACCOUNT_NAME, CalendarContract.Calendars.CALENDAR_DISPLAY_NAME, CalendarContract.Calendars.OWNER_ACCOUNT,
-                CalendarContract.Calendars.CALENDAR_COLOR, CalendarContract.Calendars.IS_PRIMARY, CalendarContract.Calendars.ACCOUNT_TYPE};
+                CalendarContract.Calendars.CALENDAR_COLOR, CalendarContract.Calendars.IS_PRIMARY, CalendarContract.Calendars.ACCOUNT_TYPE, CalendarContract.Calendars.CALENDAR_COLOR_KEY};
         ContentResolver contentResolver = context.getContentResolver();
         Cursor cursor = contentResolver.query(CalendarContract.Calendars.CONTENT_URI, PROJECTION, null, null, null);
 
@@ -376,6 +375,7 @@ public class CalendarProvider implements ICalendarProvider
         List<ContentValues> calendarList = new ArrayList<>();
 
         if (cursor != null)
+
         {
             while (cursor.moveToNext())
             {
@@ -391,6 +391,7 @@ public class CalendarProvider implements ICalendarProvider
                     calendar.put(CalendarContract.Calendars.OWNER_ACCOUNT, cursor.getString(4));
                     calendar.put(CalendarContract.Calendars.CALENDAR_COLOR, cursor.getInt(5));
                     calendar.put(CalendarContract.Calendars.ACCOUNT_TYPE, cursor.getString(7));
+                    calendar.put(CalendarContract.Calendars.CALENDAR_COLOR_KEY, cursor.getString(8));
 
                     calendarList.add(calendar);
                 } else if (cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.OWNER_ACCOUNT)).contains(GOOGLE_SECONDARY_CALENDAR))
@@ -404,6 +405,7 @@ public class CalendarProvider implements ICalendarProvider
                     calendar.put(CalendarContract.Calendars.OWNER_ACCOUNT, cursor.getString(4));
                     calendar.put(CalendarContract.Calendars.CALENDAR_COLOR, cursor.getInt(5));
                     calendar.put(CalendarContract.Calendars.ACCOUNT_TYPE, cursor.getString(7));
+                    calendar.put(CalendarContract.Calendars.CALENDAR_COLOR_KEY, cursor.getString(8));
 
                     calendarList.add(calendar);
                     break;
@@ -1005,7 +1007,7 @@ public class CalendarProvider implements ICalendarProvider
         {
             ContentValues color = new ContentValues();
             color.put(CalendarContract.Colors.COLOR, cursor.getInt(0));
-            color.put(CalendarContract.Colors.COLOR_KEY, cursor.getInt(1));
+            color.put(CalendarContract.Colors.COLOR_KEY, cursor.getString(1));
 
             colors.add(color);
         }
@@ -1014,10 +1016,11 @@ public class CalendarProvider implements ICalendarProvider
     }
 
     @Override
-    public int updateCalendarColor(int calendarId, int color, int colorKey)
+    public int updateCalendarColor(int calendarId, int color, String colorKey)
     {
         ContentValues calendar = new ContentValues();
         calendar.put(CalendarContract.Calendars.CALENDAR_COLOR, color);
+        calendar.put(CalendarContract.Calendars.CALENDAR_COLOR_KEY, colorKey);
 
         String where = CalendarContract.Calendars._ID + "=?";
         String[] selectionArgs = {String.valueOf(calendarId)};
@@ -1026,5 +1029,28 @@ public class CalendarProvider implements ICalendarProvider
         {
         }
         return context.getContentResolver().update(CalendarContract.Calendars.CONTENT_URI, calendar, where, selectionArgs);
+    }
+
+    @Override
+    public ContentValues getCalendarColor(int calendarId)
+    {
+        String[] projection = {CalendarContract.Calendars.CALENDAR_COLOR, CalendarContract.Calendars.CALENDAR_COLOR_KEY};
+        String selection = CalendarContract.Calendars._ID + "=?";
+        String[] selectionArgs = {String.valueOf(calendarId)};
+
+        if (!checkPermission(Manifest.permission.READ_CALENDAR))
+        {
+
+        }
+        Cursor cursor = context.getContentResolver().query(CalendarContract.Calendars.CONTENT_URI, projection, selection, selectionArgs, null);
+        ContentValues color = new ContentValues();
+
+        while (cursor.moveToNext())
+        {
+            color.put(CalendarContract.Calendars.CALENDAR_COLOR, cursor.getInt(0));
+            color.put(CalendarContract.Calendars.CALENDAR_COLOR_KEY, cursor.getString(1));
+        }
+        cursor.close();
+        return color;
     }
 }

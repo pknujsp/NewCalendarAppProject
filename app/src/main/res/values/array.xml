@@ -64,4 +64,17 @@
         <item>PM9</item>
     </string-array>
 
+    <string-array name="searching_radius_entries">
+        <item name="100">100M</item>
+        <item name="500">500M</item>
+        <item name="1000">1KM</item>
+        <item name="2000">2KM</item>
+    </string-array>
+
+    <string-array name="searching_radius_entryvalues">
+        <item name="100">100</item>
+        <item name="500">500</item>
+        <item name="1000">1000</item>
+        <item name="2000">2000</item>
+    </string-array>
 </resources>
