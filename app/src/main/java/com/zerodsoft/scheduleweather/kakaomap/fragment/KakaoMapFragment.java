@@ -24,6 +24,9 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
@@ -60,6 +63,8 @@ import net.daum.mf.map.api.MapReverseGeoCoder;
 import net.daum.mf.map.api.MapView;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.Timer;
 
 import static androidx.core.content.ContextCompat.checkSelfPermission;
@@ -198,46 +203,42 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
             public void onClick(View view)
             {
                 //권한 확인
-                if (AppPermission.grantedPermissions(getContext(), Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))
+                boolean isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+                boolean isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+
+                checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION);
+                checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION);
+
+                if (networkAvailable())
                 {
-                    boolean isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-                    boolean isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-
-                    checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION);
-                    checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION);
-
-                    if (networkAvailable())
+                    if (isGpsEnabled && isNetworkEnabled)
                     {
-                        if (isGpsEnabled && isNetworkEnabled)
+                        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+                        Timer timer = new Timer();
+                        timer.schedule(new RequestLocationTimer()
                         {
-                            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
-                            Timer timer = new Timer();
-                            timer.schedule(new RequestLocationTimer()
+                            @Override
+                            public void run()
                             {
-                                @Override
-                                public void run()
+                                timer.cancel();
+                                getActivity().runOnUiThread(new Runnable()
                                 {
-                                    timer.cancel();
-                                    getActivity().runOnUiThread(new Runnable()
+                                    @Override
+                                    public void run()
                                     {
-                                        @Override
-                                        public void run()
-                                        {
-                                            locationManager.removeUpdates(locationListener);
-                                            checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION);
-                                            checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION);
-                                            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
-                                        }
-                                    });
+                                        locationManager.removeUpdates(locationListener);
+                                        checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION);
+                                        checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION);
+                                        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
+                                    }
+                                });
 
-                                }
-                            }, 2000);
-                        } else if (!isGpsEnabled)
-                        {
-                            showRequestGpsDialog();
-                        }
+                            }
+                        }, 2000);
+                    } else if (!isGpsEnabled)
+                    {
+                        showRequestGpsDialog();
                     }
-
                 }
 
             }
@@ -248,7 +249,31 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
         mapView.setMapViewEventListener(this);
 
         binding.mapView.addView(mapView);
+
+        if (!AppPermission.grantedPermissions(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION))
+        {
+            permissionResultLauncher.launch(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION});
+        }
     }
+
+    final ActivityResultLauncher<String[]> permissionResultLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(),
+            new ActivityResultCallback<Map<String, Boolean>>()
+            {
+                @Override
+                public void onActivityResult(Map<String, Boolean> result)
+                {
+                    Set<String> keySet = result.keySet();
+                    for (String key : keySet)
+                    {
+                        if (!result.get(key))
+                        {
+                            Toast.makeText(getActivity(), getString(R.string.message_needs_location_permission), Toast.LENGTH_SHORT).show();
+                            binding.mapButtonsLayout.gpsButton.setVisibility(View.GONE);
+                            break;
+                        }
+                    }
+                }
+            });
 
     @Override
     public void setBottomSheetState(int state)

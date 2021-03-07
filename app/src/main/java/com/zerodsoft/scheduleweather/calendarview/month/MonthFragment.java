@@ -77,7 +77,6 @@ public class MonthFragment extends Fragment implements IRefreshView
         long start = viewPagerAdapter.getDate(currentItem, MonthViewPagerAdapter.FIRST_DAY).getTime();
         long end = viewPagerAdapter.getDate(currentItem, MonthViewPagerAdapter.LAST_DAY).getTime();
 
-        ;
         viewPagerAdapter.refresh(currentItem, iControlEvent.getInstances(currentItem, start, end));
         viewPagerAdapter.notifyDataSetChanged();
     }

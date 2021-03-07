@@ -127,44 +127,36 @@ public class CalendarColorFragment extends PreferenceFragmentCompat implements P
                     @Override
                     public boolean onPreferenceClick(Preference preference)
                     {
-                        if (AppPermission.grantedPermissions(getContext(), Manifest.permission.READ_CALENDAR))
+                        ContentValues currentColor = calendarViewModel.getCalendarColor(calendar.getAsInteger(CalendarContract.Calendars._ID));
+                        List<ContentValues> colors = calendarViewModel.getCalendarColors(calendar.getAsString(CalendarContract.Calendars.ACCOUNT_NAME),
+                                calendar.getAsString(CalendarContract.Calendars.ACCOUNT_TYPE));
+
+
+                        GridView gridView = new GridView(getContext());
+                        gridView.setAdapter(new ColorListAdapter(currentColor, colors, getContext()));
+                        gridView.setNumColumns(5);
+                        gridView.setGravity(Gravity.CENTER);
+                        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener()
                         {
-                            ContentValues currentColor = calendarViewModel.getCalendarColor(calendar.getAsInteger(CalendarContract.Calendars._ID));
-                            List<ContentValues> colors = calendarViewModel.getCalendarColors(calendar.getAsString(CalendarContract.Calendars.ACCOUNT_NAME),
-                                    calendar.getAsString(CalendarContract.Calendars.ACCOUNT_TYPE));
-
-
-                            GridView gridView = new GridView(getContext());
-                            gridView.setAdapter(new ColorListAdapter(currentColor, colors, getContext()));
-                            gridView.setNumColumns(5);
-                            gridView.setGravity(Gravity.CENTER);
-                            gridView.setOnItemClickListener(new AdapterView.OnItemClickListener()
+                            @Override
+                            public void onItemClick(AdapterView<?> parent, View view, int position, long id)
                             {
-                                @Override
-                                public void onItemClick(AdapterView<?> parent, View view, int position, long id)
-                                {
-                                    dialog.dismiss();
-                                    int color = colors.get(position).getAsInteger(CalendarContract.Colors.COLOR);
-                                    String colorKey = colors.get(position).getAsString(CalendarContract.Colors.COLOR_KEY);
+                                dialog.dismiss();
+                                int color = colors.get(position).getAsInteger(CalendarContract.Colors.COLOR);
+                                String colorKey = colors.get(position).getAsString(CalendarContract.Colors.COLOR_KEY);
 
-                                    ((ColorPreference) preference).setColor(EventUtil.getColor(color));
-                                    calendarViewModel.updateCalendarColor(calendar.getAsInteger(CalendarContract.Calendars._ID), color, colorKey);
-                                }
-                            });
+                                ((ColorPreference) preference).setColor(EventUtil.getColor(color));
+                                calendarViewModel.updateCalendarColor(calendar.getAsInteger(CalendarContract.Calendars._ID), color, colorKey);
+                            }
+                        });
 
-                            MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(getContext());
-                            builder.setView(gridView);
-                            builder.setTitle(R.string.preference_dialog_title_calendar_color);
-                            dialog = builder.create();
-                            dialog.show();
+                        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(getContext());
+                        builder.setView(gridView);
+                        builder.setTitle(R.string.preference_dialog_title_calendar_color);
+                        dialog = builder.create();
+                        dialog.show();
 
-                            return true;
-                        } else
-                        {
-                            clickedPreference = preference;
-                            permissionResultLauncher.launch(Manifest.permission.READ_CALENDAR);
-                            return false;
-                        }
+                        return true;
                     }
                 });
                 preferenceCategory.addPreference(preference);
@@ -177,13 +169,7 @@ public class CalendarColorFragment extends PreferenceFragmentCompat implements P
     {
         super.onViewCreated(view, savedInstanceState);
         calendarViewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
-        if (AppPermission.grantedPermissions(getContext(), Manifest.permission.READ_CALENDAR))
-        {
-            init();
-        } else
-        {
-            initPermissionResultLauncher.launch(Manifest.permission.READ_CALENDAR);
-        }
+        init();
     }
 
     private final ActivityResultLauncher<String> initPermissionResultLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(),

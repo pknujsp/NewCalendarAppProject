@@ -21,7 +21,6 @@ public class CalendarViewModel extends AndroidViewModel implements ICalendarProv
         this.calendarProvider = CalendarProvider.newInstance(application.getApplicationContext());
     }
 
-
     @Override
     public List<AccountDto> getGoogleAccounts()
     {

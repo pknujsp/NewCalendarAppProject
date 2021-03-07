@@ -58,7 +58,6 @@ public class MonthAssistantCalendarFragment extends Fragment implements IControl
         super.onViewCreated(view, savedInstanceState);
         calendarViewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
 
-
         binding.currentMonthButton.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -86,19 +85,14 @@ public class MonthAssistantCalendarFragment extends Fragment implements IControl
                 binding.monthAssistantCalendarViewpager.setCurrentItem(binding.monthAssistantCalendarViewpager.getCurrentItem() + 1, true);
             }
         });
+
+        setDataToView();
     }
 
     @Override
     public void onStart()
     {
         super.onStart();
-        if (AppPermission.grantedPermissions(getContext(), Manifest.permission.READ_CALENDAR))
-        {
-
-        } else
-        {
-
-        }
     }
 
     private void setDataToView()

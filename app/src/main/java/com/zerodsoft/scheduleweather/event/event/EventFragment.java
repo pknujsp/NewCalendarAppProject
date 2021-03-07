@@ -1,10 +1,15 @@
 package com.zerodsoft.scheduleweather.event.event;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.ContentValues;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.provider.CalendarContract;
+import android.service.carrier.CarrierMessagingService;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +17,7 @@ import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -22,14 +28,25 @@ import androidx.lifecycle.ViewModelProvider;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
+import com.zerodsoft.scheduleweather.activity.main.AppMainActivity;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.IstartActivity;
 import com.zerodsoft.scheduleweather.databinding.EventFragmentBinding;
+import com.zerodsoft.scheduleweather.etc.AppPermission;
+import com.zerodsoft.scheduleweather.event.EventActivity;
+import com.zerodsoft.scheduleweather.event.common.MLocActivity;
+import com.zerodsoft.scheduleweather.event.common.ReselectDetailLocation;
 import com.zerodsoft.scheduleweather.event.common.interfaces.IFab;
+import com.zerodsoft.scheduleweather.event.common.interfaces.ILocation;
+import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
+import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
+import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.utility.RecurrenceRule;
 import com.zerodsoft.scheduleweather.utility.model.ReminderDto;
 
 import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -53,13 +70,16 @@ public class EventFragment extends Fragment
     private Long begin;
     private Long end;
 
-    private IFab iFab;
-
     private AlertDialog attendeeDialog;
+    private final ILocation iLocation;
+    private final IstartActivity istartActivity;
 
-    public EventFragment(IFab iFab)
+    private LocationViewModel locationViewModel;
+
+    public EventFragment(Activity activity)
     {
-        this.iFab = iFab;
+        this.iLocation = (ILocation) activity;
+        this.istartActivity = (IstartActivity) activity;
     }
 
     @Override
@@ -88,11 +108,154 @@ public class EventFragment extends Fragment
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
+
+        locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
+
         binding.eventRemindersView.addReminderButton.setVisibility(View.GONE);
         binding.eventAttendeesView.showAttendeesDetail.setVisibility(View.GONE);
         binding.eventDatetimeView.allDaySwitchLayout.setVisibility(View.GONE);
         binding.eventDatetimeView.startTime.setVisibility(View.GONE);
         binding.eventDatetimeView.endTime.setVisibility(View.GONE);
+
+        binding.eventFab.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                if (binding.eventFab.isExpanded())
+                {
+                    binding.eventFab.setExpanded(false);
+                    collapseFabs();
+                } else
+                {
+                    binding.eventFab.setExpanded(true);
+                    expandFabs();
+                }
+            }
+        });
+
+        binding.selectDetailLocationFab.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                iLocation.hasDetailLocation(new CarrierMessagingService.ResultCallback<Boolean>()
+                {
+                    @Override
+                    public void onReceiveResult(@NonNull Boolean hasDetailLocation) throws RemoteException
+                    {
+                        getActivity().runOnUiThread(new Runnable()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                if (hasDetailLocation)
+                                {
+                                    locationViewModel.getLocation(calendarId, eventId, new CarrierMessagingService.ResultCallback<LocationDTO>()
+                                    {
+                                        @Override
+                                        public void onReceiveResult(@NonNull LocationDTO locationDTO) throws RemoteException
+                                        {
+                                            if (!locationDTO.isEmpty())
+                                            {
+                                                Intent intent = new Intent(getActivity(), ReselectDetailLocation.class);
+                                                intent.putExtra("savedLocationDto", locationDTO);
+                                                istartActivity.startActivityResult(intent, EventActivity.REQUEST_SELECT_LOCATION);
+                                            }
+                                        }
+                                    });
+                                } else
+                                {
+                                    iLocation.showRequestLocDialog();
+                                }
+                            }
+                        });
+
+
+                    }
+                });
+
+
+            }
+        });
+
+        binding.modifyEventFab.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                /*
+                Intent intent = new Intent(EventActivity.this, EditEventActivity.class);
+                intent.putExtra("requestCode", EventDataController.MODIFY_EVENT);
+                intent.putExtra("calendarId", calendarId.intValue());
+                intent.putExtra("eventId", eventId.longValue());
+
+                startActivity(intent);
+
+                 */
+                Toast.makeText(getActivity(), "작성 중", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        binding.removeEventFab.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                String[] items = null;
+                //이번 일정만 삭제, 향후 모든 일정 삭제, 모든 일정 삭제
+                /*
+                반복없는 이벤트 인 경우 : 일정 삭제
+                반복있는 이벤트 인 경우 : 이번 일정만 삭제, 향후 모든 일정 삭제, 모든 일정 삭제
+                 */
+                if (instance.getAsString(CalendarContract.Instances.RRULE) != null)
+                {
+                    items = new String[]{getString(R.string.remove_this_instance), getString(R.string.remove_all_future_instance_including_current_instance)
+                            , getString(R.string.remove_event)};
+                } else
+                {
+                    items = new String[]{getString(R.string.remove_event)};
+                }
+                new MaterialAlertDialogBuilder(getActivity()).setTitle(getString(R.string.remove_event))
+                        .setItems(items, new DialogInterface.OnClickListener()
+                        {
+                            @SneakyThrows
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int index)
+                            {
+                                if (instance.getAsString(CalendarContract.Instances.RRULE) != null)
+                                {
+                                    switch (index)
+                                    {
+                                        case 0:
+                                            // 이번 일정만 삭제
+                                            // 완성
+                                            exceptThisInstance();
+                                            break;
+                                        case 1:
+                                            // 향후 모든 일정만 삭제
+                                            // deleteSubsequentIncludingThis();
+                                            Toast.makeText(getActivity(), "작성 중", Toast.LENGTH_SHORT).show();
+                                            break;
+                                        case 2:
+                                            // 모든 일정 삭제
+                                            deleteEvent();
+                                            break;
+                                    }
+                                } else
+                                {
+                                    switch (index)
+                                    {
+                                        case 0:
+                                            // 모든 일정 삭제
+                                            deleteEvent();
+                                            break;
+                                    }
+                                }
+                            }
+                        }).create().show();
+            }
+        });
 
         viewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
 
@@ -100,10 +263,64 @@ public class EventFragment extends Fragment
         init();
     }
 
-    @Override
-    public void onStart()
+    private void deleteEvent()
     {
-        super.onStart();
+        // 참석자 - 알림 - 이벤트 순으로 삭제 (외래키 때문)
+        // db column error
+        viewModel.deleteEvent(calendarId, eventId);
+        // 삭제 완료 후 캘린더 화면으로 나가고, 새로고침한다.
+        getActivity().setResult(AppMainActivity.DELETED_EVENT);
+        getActivity().finish();
+    }
+
+    private void deleteSubsequentIncludingThis()
+    {
+        // 이벤트의 반복 UNTIL을 현재 인스턴스의 시작날짜로 수정
+        ContentValues recurrenceData = viewModel.getRecurrence(calendarId, eventId);
+        RecurrenceRule recurrenceRule = new RecurrenceRule();
+        recurrenceRule.separateValues(recurrenceData.getAsString(CalendarContract.Events.RRULE));
+
+        GregorianCalendar calendar = new GregorianCalendar();
+        final long thisInstanceBegin = instance.getAsLong(CalendarContract.Instances.BEGIN);
+        calendar.setTimeInMillis(thisInstanceBegin);
+        calendar.add(Calendar.DAY_OF_MONTH, -1);
+        recurrenceRule.putValue(RecurrenceRule.UNTIL, ClockUtil.yyyyMMdd.format(calendar.getTime()));
+        recurrenceRule.removeValue(RecurrenceRule.INTERVAL);
+
+        recurrenceData.put(CalendarContract.Events.RRULE, recurrenceRule.getRule());
+        viewModel.updateEvent(recurrenceData);
+    }
+
+    private void exceptThisInstance()
+    {
+        viewModel.deleteInstance(instance.getAsLong(CalendarContract.Instances.BEGIN), eventId);
+
+        getActivity().setResult(AppMainActivity.EXCEPTED_INSTANCE);
+        getActivity().finish();
+    }
+
+
+    private void collapseFabs()
+    {
+        binding.eventFab.setImageDrawable(getContext().getDrawable(R.drawable.more_icon));
+
+        binding.removeEventFab.animate().translationY(0);
+        binding.modifyEventFab.animate().translationY(0);
+        binding.selectDetailLocationFab.animate().translationY(0);
+    }
+
+
+    private void expandFabs()
+    {
+        binding.eventFab.setImageDrawable(getContext().getDrawable(R.drawable.close_icon));
+
+        final float y = binding.eventFab.getTranslationY();
+        final float margin = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16f, getResources().getDisplayMetrics());
+        final float fabHeight = binding.eventFab.getHeight();
+
+        binding.removeEventFab.animate().translationY(y - (fabHeight + margin));
+        binding.modifyEventFab.animate().translationY(y - (fabHeight + margin) * 2);
+        binding.selectDetailLocationFab.animate().translationY(y - (fabHeight + margin) * 3);
     }
 
     private void setAttendeesText(List<ContentValues> attendees)
@@ -266,13 +483,12 @@ public class EventFragment extends Fragment
         //fab설정
         if (instance.containsKey(CalendarContract.Instances.EVENT_LOCATION))
         {
-            iFab.setVisibility(IFab.TYPE_SELECT_LOCATION, View.VISIBLE);
+            binding.selectDetailLocationFab.setVisibility(View.VISIBLE);
         } else
         {
-            iFab.setVisibility(IFab.TYPE_SELECT_LOCATION, View.GONE);
+            binding.selectDetailLocationFab.setVisibility(View.GONE);
         }
         // 참석자
-
 
         attendeeList = viewModel.getAttendees(calendarId, eventId);
         // 참석자가 없는 경우 - 테이블 숨김, 참석자 없음 텍스트 표시
@@ -392,4 +608,5 @@ public class EventFragment extends Fragment
     {
         return attendeeList;
     }
+
 }

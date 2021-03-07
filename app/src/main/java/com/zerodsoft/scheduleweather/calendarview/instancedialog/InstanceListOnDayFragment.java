@@ -225,32 +225,20 @@ public class InstanceListOnDayFragment extends DialogFragment implements EventsI
 
     private void exceptThisInstance(ContentValues instance)
     {
-        if (AppPermission.grantedPermissions(getContext(), Manifest.permission.WRITE_CALENDAR))
-        {
             viewModel.deleteInstance(instance.getAsLong(CalendarContract.Instances.BEGIN),
                     instance.getAsLong(CalendarContract.Instances.EVENT_ID));
             setData(viewModel.getInstances(iConnectedCalendars.getConnectedCalendars(), begin, end));
             iRefreshView.refreshView();
-        } else
-        {
-            exceptPermissionResultLauncher.launch(Manifest.permission.WRITE_CALENDAR);
-        }
     }
 
     private void deleteEvent(ContentValues instance)
     {
         // 참석자 - 알림 - 이벤트 순으로 삭제 (외래키 때문)
         // db column error
-        if (AppPermission.grantedPermissions(getContext(), Manifest.permission.WRITE_CALENDAR))
-        {
-            viewModel.deleteEvent(instance.getAsInteger(CalendarContract.Instances.CALENDAR_ID), instance.getAsLong(CalendarContract.Instances.EVENT_ID));
-            // 삭제 완료 후 캘린더 화면으로 나가고, 새로고침한다.
-            setData(viewModel.getInstances(iConnectedCalendars.getConnectedCalendars(), begin, end));
-            iRefreshView.refreshView();
-        } else
-        {
-            deletePermissionResultLauncher.launch(Manifest.permission.WRITE_CALENDAR);
-        }
+        viewModel.deleteEvent(instance.getAsInteger(CalendarContract.Instances.CALENDAR_ID), instance.getAsLong(CalendarContract.Instances.EVENT_ID));
+        // 삭제 완료 후 캘린더 화면으로 나가고, 새로고침한다.
+        setData(viewModel.getInstances(iConnectedCalendars.getConnectedCalendars(), begin, end));
+        iRefreshView.refreshView();
     }
 
     private void setData(List<CalendarInstance> calendarInstances)

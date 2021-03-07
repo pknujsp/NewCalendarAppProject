@@ -147,10 +147,16 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
         DISPLAY_WIDTH = point.x;
         DISPLAY_HEIGHT = point.y;
 
-        init();
-        initCalendarViewModel();
-        setNavigationView();
-
+        if (AppPermission.grantedPermissions(getApplicationContext(), Manifest.permission.READ_CALENDAR, Manifest.permission.WRITE_CALENDAR))
+        {
+            //권한 확인
+            init();
+            List<ContentValues> calendars = calendarViewModel.getAllCalendars();
+            initSideCalendars(calendars);
+        } else
+        {
+            permissionsResultLauncher.launch(new String[]{Manifest.permission.READ_CALENDAR, Manifest.permission.WRITE_CALENDAR});
+        }
         //getAppKeyHash();
     }
 
@@ -196,6 +202,31 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 
         //보조 캘린더 프래그먼트 생성
         monthAssistantCalendarFragment = new MonthAssistantCalendarFragment(this);
+
+        calendarViewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
+
+        mainBinding.sideNavMenu.favoriteLocation.setOnClickListener(sideNavOnClickListener);
+        mainBinding.sideNavMenu.settings.setOnClickListener(sideNavOnClickListener);
+        mainBinding.sideNavCalendarTypes.calendarTypeDay.setOnClickListener(calendarTypeOnClickListener);
+        mainBinding.sideNavCalendarTypes.calendarTypeWeek.setOnClickListener(calendarTypeOnClickListener);
+        mainBinding.sideNavCalendarTypes.calendarTypeMonth.setOnClickListener(calendarTypeOnClickListener);
+
+        SharedPreferences preferences = getSharedPreferences(getString(R.string.preferences_selected_calendar_type_key), Context.MODE_PRIVATE);
+        int type = preferences.getInt(getString(R.string.preferences_selected_calendar_type_key), TYPE_MONTH);
+
+        switch (type)
+        {
+            case TYPE_DAY:
+                mainBinding.sideNavCalendarTypes.calendarTypeDay.performClick();
+                break;
+            case TYPE_WEEK:
+                mainBinding.sideNavCalendarTypes.calendarTypeWeek.performClick();
+                break;
+            case TYPE_MONTH:
+            case 0:
+                mainBinding.sideNavCalendarTypes.calendarTypeMonth.performClick();
+                break;
+        }
     }
 
     private final ContentObserver contentObserver = new ContentObserver(new Handler())
@@ -309,50 +340,6 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
         });
     }
 
-
-    private void initCalendarViewModel()
-    {
-        calendarViewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
-
-        //권한 확인
-        if (AppPermission.grantedPermissions(getApplicationContext(), Manifest.permission.READ_CALENDAR))
-        {
-            List<ContentValues> calendars = calendarViewModel.getAllCalendars();
-            initSideCalendars(calendars);
-        } else
-        {
-            permissionsResultLauncher.launch(new String[]{Manifest.permission.READ_CALENDAR});
-        }
-    }
-
-
-    private void setNavigationView()
-    {
-        mainBinding.sideNavMenu.favoriteLocation.setOnClickListener(sideNavOnClickListener);
-        mainBinding.sideNavMenu.settings.setOnClickListener(sideNavOnClickListener);
-        mainBinding.sideNavCalendarTypes.calendarTypeDay.setOnClickListener(calendarTypeOnClickListener);
-        mainBinding.sideNavCalendarTypes.calendarTypeWeek.setOnClickListener(calendarTypeOnClickListener);
-        mainBinding.sideNavCalendarTypes.calendarTypeMonth.setOnClickListener(calendarTypeOnClickListener);
-
-        SharedPreferences preferences = getSharedPreferences(getString(R.string.preferences_selected_calendar_type_key), Context.MODE_PRIVATE);
-        int type = preferences.getInt(getString(R.string.preferences_selected_calendar_type_key), 0);
-
-        switch (type)
-        {
-            case TYPE_DAY:
-                mainBinding.sideNavCalendarTypes.calendarTypeDay.performClick();
-                break;
-            case TYPE_WEEK:
-                mainBinding.sideNavCalendarTypes.calendarTypeWeek.performClick();
-                break;
-            case TYPE_MONTH:
-            case 0:
-                mainBinding.sideNavCalendarTypes.calendarTypeMonth.performClick();
-                break;
-        }
-
-    }
-
     private final View.OnClickListener calendarTypeOnClickListener = new View.OnClickListener()
     {
         @Override
@@ -360,7 +347,6 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
         {
             SharedPreferences.Editor editor = getSharedPreferences(getString(R.string.preferences_selected_calendar_type_key), MODE_PRIVATE).edit();
             FragmentManager fragmentManager = getSupportFragmentManager();
-
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
             switch (view.getId())
@@ -433,24 +419,6 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
         }
     };
 
-    private void expandAllGroup()
-    {
-        int groupSize = calendarsAdapter.getGroupCount();
-        for (int i = 0; i < groupSize; i++)
-        {
-            mainBinding.sideNavCalendarList.expandGroup(i);
-        }
-    }
-
-    private void collapseAllGroup()
-    {
-        int groupSize = calendarsAdapter.getGroupCount();
-        for (int i = 0; i < groupSize; i++)
-        {
-            mainBinding.sideNavCalendarList.collapseGroup(i);
-        }
-    }
-
     @SuppressLint("NonConstantResourceId")
     public void onClickToolbar(View view)
     {
@@ -487,6 +455,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
     protected void onResume()
     {
         super.onResume();
+        /*
         getContentResolver().registerContentObserver(CalendarContract.Events.CONTENT_URI, true, contentObserver);
         statusHandle = ContentResolver.addStatusChangeListener(ContentResolver.SYNC_OBSERVER_TYPE_ACTIVE
                 , new SyncStatusObserver()
@@ -500,14 +469,19 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
                         }
                     }
                 });
+
+         */
     }
 
     @Override
     protected void onPause()
     {
         super.onPause();
+        /*
         getContentResolver().unregisterContentObserver(contentObserver);
         ContentResolver.removeStatusChangeListener(statusHandle);
+
+         */
     }
 
     @Override
@@ -559,10 +533,16 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
                     if (result.get(Manifest.permission.READ_CALENDAR))
                     {
                         // 권한 허용됨
-                        initSideCalendars(calendarViewModel.getAllCalendars());
+                        init();
+                        List<ContentValues> calendars = calendarViewModel.getAllCalendars();
+                        initSideCalendars(calendars);
                     } else
                     {
                         // 권한 거부됨
+                        Toast.makeText(getApplicationContext(), getString(R.string.message_needs_calendar_permission), Toast.LENGTH_SHORT).show();
+                        moveTaskToBack(true); // 태스크를 백그라운드로 이동
+                        finishAndRemoveTask(); // 액티비티 종료 + 태스크 리스트에서 지우기
+                        android.os.Process.killProcess(android.os.Process.myPid()); // 앱 프로세스 종료
                     }
                 }
             });
