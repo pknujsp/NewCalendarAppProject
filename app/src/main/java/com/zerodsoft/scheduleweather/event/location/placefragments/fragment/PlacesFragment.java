@@ -24,6 +24,7 @@ import androidx.lifecycle.ViewModelStoreOwner;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.activity.placecategory.activity.PlaceCategoryActivity;
 import com.zerodsoft.scheduleweather.activity.placecategory.viewmodel.PlaceCategoryViewModel;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IstartActivity;
@@ -101,6 +102,7 @@ public class PlacesFragment extends Fragment implements IPlacesFragment, IPlaceI
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
+        binding.searchingRadiusRange.setText(App.getPreference_key_radius_range() + "M");
         binding.mapCategoryViewContainer.setLayoutManager(new LinearLayoutManager(view.getContext(), LinearLayoutManager.VERTICAL, false));
         placeCategoryViewModel = new ViewModelProvider(this).get(PlaceCategoryViewModel.class);
         binding.categorySettingsFab.setOnClickListener(new View.OnClickListener()

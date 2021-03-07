@@ -6,12 +6,6 @@
 
         <SwitchPreference
             android:defaultValue="true"
-            android:key="@string/preference_key_using_timezone_of_device"
-            android:summary="@string/preference_summary_using_timezone_of_device"
-            android:title="@string/preference_title_using_timezone_of_device" />
-
-        <SwitchPreference
-            android:defaultValue="true"
             android:key="@string/preference_key_show_week_of_year"
             android:summary="@string/preference_summary_show_week_of_year"
             android:title="@string/preference_title_show_week_of_year" />
@@ -34,6 +28,11 @@
             android:summary="@string/preference_summary_calendar_color"
             android:title="@string/preference_title_calendar_color" />
 
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="@string/preference_key_using_timezone_of_device"
+            android:summary="@string/preference_summary_using_timezone_of_device"
+            android:title="@string/preference_title_using_timezone_of_device" />
 
     </PreferenceCategory>
 

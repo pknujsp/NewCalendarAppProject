@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.etc.RecyclerViewItemDecoration;
 import com.zerodsoft.scheduleweather.event.location.placefragments.interfaces.IPlacesFragment;
 import com.zerodsoft.scheduleweather.kakaomap.util.LocalParameterUtil;
@@ -110,6 +111,7 @@ public class CategoryViewAdapter extends RecyclerView.Adapter<CategoryViewAdapte
                     locationDTO.getLongitude(), LocalApiPlaceParameter.DEFAULT_SIZE, LocalApiPlaceParameter.DEFAULT_PAGE,
                     LocalApiPlaceParameter.SEARCH_CRITERIA_SORT_TYPE_ACCURACY);
 
+            placeParameter.setRadius(App.getPreference_key_radius_range());
             categoryDescription = placeCategoryDTO.getDescription();
 
             adapter = new PlaceItemsAdapters(iClickedPlaceItem, placeCategoryDTO);

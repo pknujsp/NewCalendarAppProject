@@ -11,6 +11,7 @@ import android.provider.CalendarContract;
 import androidx.core.content.ContextCompat;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.activity.App;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -107,7 +108,13 @@ public class EventDefaultValue
 
     public TimeZone getDefaultTimeZone()
     {
-        return TimeZone.getDefault();
+        if (App.isPreference_key_using_timezone_of_device())
+        {
+            return TimeZone.getDefault();
+        } else
+        {
+            return App.getPreference_key_custom_timezone();
+        }
     }
 
     public int getDefaultAccessLevel()

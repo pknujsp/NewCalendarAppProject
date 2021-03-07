@@ -10,7 +10,7 @@
         style="@style/TextAppearance.MaterialComponents.Headline6"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
+        android:padding="16dp"
         android:text="@string/calendar_type" />
 
     <com.google.android.material.button.MaterialButtonToggleGroup
@@ -26,7 +26,7 @@
             style="?attr/materialButtonOutlinedStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:drawableLeft="@drawable/search_icon"
+            android:drawableLeft="@drawable/day_icon"
             android:text="@string/day" />
 
         <Button
@@ -34,7 +34,7 @@
             style="?attr/materialButtonOutlinedStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:drawableLeft="@drawable/search_icon"
+            android:drawableLeft="@drawable/week_icon"
             android:text="@string/week" />
 
         <Button
@@ -42,7 +42,7 @@
             style="?attr/materialButtonOutlinedStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:drawableLeft="@drawable/search_icon"
+            android:drawableLeft="@drawable/month_icon"
             android:text="@string/month" />
 
     </com.google.android.material.button.MaterialButtonToggleGroup>

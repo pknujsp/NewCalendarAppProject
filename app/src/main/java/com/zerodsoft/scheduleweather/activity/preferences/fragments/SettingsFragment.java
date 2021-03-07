@@ -171,7 +171,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
         searchingRadiusPreference.setSummary(R.string.preference_summary_radius_range);
         searchingRadiusPreference.setTitle(R.string.preference_title_radius_range);
         searchingRadiusPreference.setWidgetLayoutResource(R.layout.custom_preference_layout);
-        searchingRadiusPreference.setDialogMessage(R.string.preference_dialog_message_radius_range);
+        searchingRadiusPreference.setDialogTitle(R.string.preference_dialog_message_radius_range);
 
         ((PreferenceCategory) getPreferenceManager().findPreference(getString(R.string.preference_place_category_title)))
                 .addPreference(searchingRadiusPreference);
@@ -181,7 +181,15 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue)
             {
-                int radius = Integer.parseInt((String) newValue);
+                int radius = 0;
+                try
+                {
+                    radius = Integer.parseInt((String) newValue);
+                } catch (NumberFormatException e)
+                {
+                    Toast.makeText(getActivity(), "0~20000사이의 숫자를 입력해주세요", Toast.LENGTH_SHORT).show();
+                    return false;
+                }
 
                 if (radius >= 0 && radius <= 20000)
                 {

@@ -3,6 +3,7 @@ package com.zerodsoft.scheduleweather.calendarview;
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.provider.CalendarContract;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -139,6 +140,7 @@ public class CalendarsAdapter extends BaseExpandableListAdapter
         }
 
         childViewHolder.checkBox.setText(calendarDisplayName);
+        childViewHolder.checkBox.setButtonTintList(ColorStateList.valueOf(EventUtil.getColor(calendarColor)));
 
         childViewHolder.checkBox.setOnCheckedChangeListener(null);
         if (mChildCheckStates.containsKey(mGroupPosition))

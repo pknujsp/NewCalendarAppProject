@@ -18,7 +18,6 @@ public class LocalApiPlaceParameter implements Parcelable, Cloneable
     private String sort;
     private String rect;
 
-    public static final String DEFAULT_RADIUS = "5000";
     public static final String DEFAULT_PAGE = "1";
     public static final String DEFAULT_SIZE = "15";
     public static final String SORT_ACCURACY = "accuracy";

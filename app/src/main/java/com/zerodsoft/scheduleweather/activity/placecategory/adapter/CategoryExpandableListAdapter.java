@@ -2,6 +2,7 @@ package com.zerodsoft.scheduleweather.activity.placecategory.adapter;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.os.RemoteException;
 import android.service.carrier.CarrierMessagingService;
 import android.view.LayoutInflater;
@@ -18,6 +19,7 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.placecategory.activity.CategorySettingsActivity;
 import com.zerodsoft.scheduleweather.activity.placecategory.interfaces.IPlaceCategory;
 import com.zerodsoft.scheduleweather.activity.placecategory.interfaces.PlaceCategoryEditPopup;
+import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 import com.zerodsoft.scheduleweather.room.dto.SelectedPlaceCategoryDTO;
 
