@@ -1,11 +1,12 @@
 package com.zerodsoft.scheduleweather.calendarview.interfaces;
 
+import android.os.RemoteException;
+
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
-import com.zerodsoft.scheduleweather.calendarview.callback.EventCallback;
 
 import java.util.List;
 
 public interface IControlEvent
 {
-    void getInstances(int viewPosition, long begin, long end, EventCallback<List<CalendarInstance>> callback);
+    List<CalendarInstance> getInstances(int viewPosition, long begin, long end);
 }

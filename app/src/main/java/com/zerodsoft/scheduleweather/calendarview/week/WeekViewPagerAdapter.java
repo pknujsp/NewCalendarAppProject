@@ -1,7 +1,6 @@
 package com.zerodsoft.scheduleweather.calendarview.week;
 
 import android.content.ContentValues;
-import android.provider.CalendarContract;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,7 +11,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
-import com.zerodsoft.scheduleweather.calendarview.callback.EventCallback;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
@@ -140,15 +138,8 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
             weekHeaderView.setInitValue(currentWeekDays);
             weekView.setDaysOfWeek(currentWeekDays);
 
-            iControlEvent.getInstances(position, currentWeekDays[0].getTimeInMillis(), currentWeekDays[7].getTimeInMillis(),
-                    new EventCallback<List<CalendarInstance>>()
-                    {
-                        @Override
-                        public void onResult(List<CalendarInstance> e)
-                        {
-                            setResult(e);
-                        }
-                    });
+            setResult(iControlEvent.getInstances(position, currentWeekDays[0].getTimeInMillis()
+                    , currentWeekDays[7].getTimeInMillis()));
         }
 
         public void setResult(List<CalendarInstance> e)

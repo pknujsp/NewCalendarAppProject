@@ -14,7 +14,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
-import com.zerodsoft.scheduleweather.calendarview.callback.EventCallback;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
@@ -182,14 +181,7 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
             }
             monthCalendarView.setMonthCalendarItemViewList(monthCalendarItemViewList);
 
-            iControlEvent.getInstances(getAdapterPosition(), getDay(FIRST_DAY).getTime().getTime(), getDay(LAST_DAY).getTime().getTime(), new EventCallback<List<CalendarInstance>>()
-            {
-                @Override
-                public void onResult(List<CalendarInstance> e)
-                {
-                    setResult(e);
-                }
-            });
+            setResult(iControlEvent.getInstances(getAdapterPosition(), getDay(FIRST_DAY).getTime().getTime(), getDay(LAST_DAY).getTime().getTime()));
         }
 
         public void setResult(List<CalendarInstance> e)

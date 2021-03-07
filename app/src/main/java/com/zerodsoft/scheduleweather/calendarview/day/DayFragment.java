@@ -1,6 +1,7 @@
 package com.zerodsoft.scheduleweather.calendarview.day;
 
 import android.os.Bundle;
+import android.os.RemoteException;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,12 +14,10 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
-import com.zerodsoft.scheduleweather.calendarview.callback.EventCallback;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
-import com.zerodsoft.scheduleweather.calendarview.week.WeekViewPagerAdapter;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import java.util.Calendar;
@@ -62,7 +61,7 @@ public class DayFragment extends Fragment implements IRefreshView
     {
         dayViewPager = (ViewPager2) view.findViewById(R.id.day_viewpager);
 
-        dayViewPagerAdapter = new DayViewPagerAdapter(iControlEvent, onEventItemClickListener, iToolbar);
+        dayViewPagerAdapter = new DayViewPagerAdapter(getActivity(), iControlEvent, onEventItemClickListener, iToolbar);
         dayViewPager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
         dayViewPager.setAdapter(dayViewPagerAdapter);
         dayViewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, false);
@@ -138,15 +137,10 @@ public class DayFragment extends Fragment implements IRefreshView
         long start = dayViewPagerAdapter.getDate(currentItem, DayViewPagerAdapter.FIRST_DAY).getTime();
         long end = dayViewPagerAdapter.getDate(currentItem, DayViewPagerAdapter.LAST_DAY).getTime();
 
-        iControlEvent.getInstances(currentItem, start, end, new EventCallback<List<CalendarInstance>>()
-        {
-            @Override
-            public void onResult(List<CalendarInstance> e)
-            {
-                dayViewPagerAdapter.refresh(currentItem, e);
-                dayViewPagerAdapter.notifyDataSetChanged();
-            }
-        });
+        List<CalendarInstance> calendarInstances = iControlEvent.getInstances(currentItem, start, end);
+
+        dayViewPagerAdapter.refresh(currentItem, calendarInstances);
+        dayViewPagerAdapter.notifyDataSetChanged();
     }
 
     public void goToToday()

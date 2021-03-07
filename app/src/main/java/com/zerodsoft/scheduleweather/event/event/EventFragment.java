@@ -3,6 +3,7 @@ package com.zerodsoft.scheduleweather.event.event;
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.os.RemoteException;
 import android.provider.CalendarContract;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,7 +17,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -26,7 +26,6 @@ import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.databinding.EventFragmentBinding;
 import com.zerodsoft.scheduleweather.event.common.interfaces.IFab;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
-import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.utility.RecurrenceRule;
 import com.zerodsoft.scheduleweather.utility.model.ReminderDto;
 
@@ -34,6 +33,8 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
+
+import lombok.SneakyThrows;
 
 public class EventFragment extends Fragment
 {
@@ -82,6 +83,7 @@ public class EventFragment extends Fragment
         return binding.getRoot();
     }
 
+    @SneakyThrows
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
@@ -94,86 +96,8 @@ public class EventFragment extends Fragment
 
         viewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
 
-        viewModel.init(getContext());
-        viewModel.getInstance(calendarId, instanceId, begin, end);
-
-        viewModel.getInstanceLiveData().observe(getViewLifecycleOwner(), new Observer<DataWrapper<ContentValues>>()
-        {
-            @Override
-            public void onChanged(DataWrapper<ContentValues> contentValuesDataWrapper)
-            {
-                if (contentValuesDataWrapper.getData() != null)
-                {
-                    instance = contentValuesDataWrapper.getData();
-                    init();
-                }
-            }
-        });
-
-        viewModel.getAttendeeListLiveData().observe(getViewLifecycleOwner(), new Observer<DataWrapper<List<ContentValues>>>()
-        {
-            @Override
-            public void onChanged(DataWrapper<List<ContentValues>> listDataWrapper)
-            {
-                if (listDataWrapper.getData() != null)
-                {
-                    getActivity().runOnUiThread(new Runnable()
-                    {
-                        @Override
-                        public void run()
-                        {
-                            attendeeList = listDataWrapper.getData();
-                            // 참석자가 없는 경우 - 테이블 숨김, 참석자 없음 텍스트 표시
-                            if (listDataWrapper.getData().isEmpty())
-                            {
-                                binding.eventAttendeesView.notAttendees.setVisibility(View.VISIBLE);
-                                binding.eventAttendeesView.eventAttendeesTable.setVisibility(View.GONE);
-                                binding.eventAttendeesView.getRoot().setVisibility(View.GONE);
-                            } else
-                            {
-                                binding.eventAttendeesView.notAttendees.setVisibility(View.GONE);
-                                binding.eventAttendeesView.eventAttendeesTable.setVisibility(View.VISIBLE);
-
-                                setAttendeesText(listDataWrapper.getData());
-                            }
-                        }
-                    });
-
-                }
-            }
-        });
-
-        viewModel.getReminderListLiveData().observe(getViewLifecycleOwner(), new Observer<DataWrapper<List<ContentValues>>>()
-        {
-            @Override
-            public void onChanged(DataWrapper<List<ContentValues>> listDataWrapper)
-            {
-                if (listDataWrapper.getData() != null)
-                {
-                    // 알림
-                    getActivity().runOnUiThread(new Runnable()
-                    {
-                        @Override
-                        public void run()
-                        {
-                            // 알람이 없는 경우 - 알람 테이블 숨김, 알람 없음 텍스트 표시
-                            if (listDataWrapper.getData().isEmpty())
-                            {
-                                binding.eventRemindersView.notReminder.setVisibility(View.VISIBLE);
-                                binding.eventRemindersView.remindersTable.setVisibility(View.GONE);
-                                binding.eventRemindersView.getRoot().setVisibility(View.GONE);
-                            } else
-                            {
-                                binding.eventRemindersView.notReminder.setVisibility(View.GONE);
-                                binding.eventRemindersView.remindersTable.setVisibility(View.VISIBLE);
-                                setReminderText(listDataWrapper.getData());
-                            }
-                        }
-                    });
-
-                }
-            }
-        });
+        instance = viewModel.getInstance(calendarId, instanceId, begin, end);
+        init();
     }
 
     @Override
@@ -296,7 +220,10 @@ public class EventFragment extends Fragment
         // 알람
         if (instance.getAsBoolean(CalendarContract.Instances.HAS_ALARM))
         {
-            viewModel.getReminders(calendarId, eventId);
+            List<ContentValues> reminderList = viewModel.getReminders(calendarId, eventId);
+            setReminderText(reminderList);
+            binding.eventRemindersView.notReminder.setVisibility(View.GONE);
+            binding.eventRemindersView.remindersTable.setVisibility(View.VISIBLE);
         } else
         {
             // 알람이 없으면 알람 테이블을 숨기고, 알람 없음 텍스트를 표시한다.
@@ -345,7 +272,22 @@ public class EventFragment extends Fragment
             iFab.setVisibility(IFab.TYPE_SELECT_LOCATION, View.GONE);
         }
         // 참석자
-        viewModel.getAttendees(calendarId, eventId);
+
+
+        attendeeList = viewModel.getAttendees(calendarId, eventId);
+        // 참석자가 없는 경우 - 테이블 숨김, 참석자 없음 텍스트 표시
+        if (attendeeList.isEmpty())
+        {
+            binding.eventAttendeesView.notAttendees.setVisibility(View.VISIBLE);
+            binding.eventAttendeesView.eventAttendeesTable.setVisibility(View.GONE);
+            binding.eventAttendeesView.getRoot().setVisibility(View.GONE);
+        } else
+        {
+            binding.eventAttendeesView.notAttendees.setVisibility(View.GONE);
+            binding.eventAttendeesView.eventAttendeesTable.setVisibility(View.VISIBLE);
+
+            setAttendeesText(attendeeList);
+        }
 
         // 공개 범위 표시
         if (instance.getAsInteger(CalendarContract.Instances.ACCESS_LEVEL) != null)

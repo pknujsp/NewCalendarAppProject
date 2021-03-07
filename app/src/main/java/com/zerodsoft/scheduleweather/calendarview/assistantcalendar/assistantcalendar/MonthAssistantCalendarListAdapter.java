@@ -1,7 +1,9 @@
 package com.zerodsoft.scheduleweather.calendarview.assistantcalendar.assistantcalendar;
 
+import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
+import android.os.RemoteException;
 import android.provider.CalendarContract;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,7 +15,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
-import com.zerodsoft.scheduleweather.calendarview.callback.EventCallback;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.CalendarDateOnClickListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.month.MonthCalendarView;
@@ -28,6 +29,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import lombok.SneakyThrows;
+
 public class MonthAssistantCalendarListAdapter extends RecyclerView.Adapter<MonthAssistantCalendarListAdapter.MonthAssistantViewHolder>
 {
     private final IControlEvent iControlEvent;
@@ -35,9 +38,11 @@ public class MonthAssistantCalendarListAdapter extends RecyclerView.Adapter<Mont
     private final Calendar CALENDAR;
     private final Date TODAY;
     private Context context;
+    private Activity activity;
 
-    public MonthAssistantCalendarListAdapter(IControlEvent iControlEvent, CalendarDateOnClickListener calendarDateOnClickListener)
+    public MonthAssistantCalendarListAdapter(Activity activity, IControlEvent iControlEvent, CalendarDateOnClickListener calendarDateOnClickListener)
     {
+        this.activity = activity;
         this.iControlEvent = iControlEvent;
         this.calendarDateOnClickListener = calendarDateOnClickListener;
         CALENDAR = Calendar.getInstance(ClockUtil.TIME_ZONE);
@@ -69,6 +74,7 @@ public class MonthAssistantCalendarListAdapter extends RecyclerView.Adapter<Mont
         return new MonthAssistantViewHolder(LayoutInflater.from(context).inflate(R.layout.month_assistant_itemview, parent, false));
     }
 
+    @SneakyThrows
     @Override
     public void onBindViewHolder(@NonNull MonthAssistantViewHolder holder, int position)
     {
@@ -161,16 +167,8 @@ public class MonthAssistantCalendarListAdapter extends RecyclerView.Adapter<Mont
                 monthCalendarView.addView(itemView);
             }
 
-            iControlEvent.getInstances(getAdapterPosition(), getDay(MonthViewPagerAdapter.FIRST_DAY).getTime().getTime(),
-                    getDay(MonthViewPagerAdapter.LAST_DAY).getTime().getTime(), new EventCallback<List<CalendarInstance>>()
-                    {
-                        @Override
-                        public void onResult(List<CalendarInstance> e)
-                        {
-                            setResult(e);
-                        }
-                    });
-
+            setResult(iControlEvent.getInstances(getAdapterPosition(), getDay(MonthViewPagerAdapter.FIRST_DAY).getTime().getTime(),
+                    getDay(MonthViewPagerAdapter.LAST_DAY).getTime().getTime()));
         }
 
         public void setResult(List<CalendarInstance> e)

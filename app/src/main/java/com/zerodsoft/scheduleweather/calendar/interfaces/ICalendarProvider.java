@@ -1,20 +1,16 @@
 package com.zerodsoft.scheduleweather.calendar.interfaces;
 
 import android.content.ContentValues;
-import android.os.RemoteException;
-import android.provider.CalendarContract;
-import android.service.carrier.CarrierMessagingService;
 
 import com.zerodsoft.scheduleweather.calendar.dto.AccountDto;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
-import com.zerodsoft.scheduleweather.calendarview.callback.EventCallback;
 
 import java.util.List;
 
 public interface ICalendarProvider
 {
     // account
-    public void getGoogleAccounts(CarrierMessagingService.ResultCallback<List<AccountDto>> resultCallback) throws RemoteException;
+    public List<AccountDto> getGoogleAccounts();
 
     // event - crud
     public ContentValues getEvent(int calendarId, long eventId);
@@ -48,13 +44,13 @@ public interface ICalendarProvider
     public int addReminders(List<ContentValues> reminders);
 
     // instance - read, update, delete
-    public void getInstances(List<ContentValues> calendarList, long startDate, long endDate, EventCallback<List<CalendarInstance>> callback);
+    public List<CalendarInstance> getInstances(List<ContentValues> calendarList, long startDate, long endDate);
 
     public ContentValues getInstance(int calendarId, long instanceId, long begin, long end);
 
     public long updateAllFutureInstances(ContentValues modifiedInstance, ContentValues previousInstance);
 
-    public long updateOneInstance(ContentValues modifiedInstance, ContentValues previousInstance);
+    public int updateOneInstance(ContentValues modifiedInstance, ContentValues previousInstance);
 
     public int deleteInstance(long begin, long eventId);
 

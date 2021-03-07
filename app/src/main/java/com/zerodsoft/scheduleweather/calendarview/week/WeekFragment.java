@@ -12,9 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.zerodsoft.scheduleweather.activity.main.AppMainActivity;
-import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
-import com.zerodsoft.scheduleweather.calendarview.callback.EventCallback;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
@@ -24,8 +22,6 @@ import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 
 public class WeekFragment extends Fragment implements IRefreshView
@@ -151,14 +147,7 @@ public class WeekFragment extends Fragment implements IRefreshView
         long start = weekViewPagerAdapter.getDate(currentItem, 0).getTime();
         long end = weekViewPagerAdapter.getDate(currentItem, 7).getTime();
 
-        iControlEvent.getInstances(currentItem, start, end, new EventCallback<List<CalendarInstance>>()
-        {
-            @Override
-            public void onResult(List<CalendarInstance> e)
-            {
-                weekViewPagerAdapter.refresh(currentItem, e);
-                weekViewPagerAdapter.notifyDataSetChanged();
-            }
-        });
+        weekViewPagerAdapter.refresh(currentItem, iControlEvent.getInstances(currentItem, start, end));
+        weekViewPagerAdapter.notifyDataSetChanged();
     }
 }

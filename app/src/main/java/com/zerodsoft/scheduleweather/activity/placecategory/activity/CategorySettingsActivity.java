@@ -83,7 +83,7 @@ public class CategorySettingsActivity extends AppCompatActivity implements Place
                         viewModel.containsCode(result, new CarrierMessagingService.ResultCallback<Boolean>()
                         {
                             @Override
-                            public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
+                            public void onReceiveResult(@NonNull Boolean aBoolean)
                             {
                                 runOnUiThread(new Runnable()
                                 {
@@ -98,7 +98,7 @@ public class CategorySettingsActivity extends AppCompatActivity implements Place
                                             viewModel.insertCustom(result, new CarrierMessagingService.ResultCallback<CustomPlaceCategoryDTO>()
                                             {
                                                 @Override
-                                                public void onReceiveResult(@NonNull CustomPlaceCategoryDTO customPlaceCategoryDTO) throws RemoteException
+                                                public void onReceiveResult(@NonNull CustomPlaceCategoryDTO customPlaceCategoryDTO)
                                                 {
                                                     runOnUiThread(new Runnable()
                                                     {

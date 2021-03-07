@@ -1,8 +1,6 @@
 package com.zerodsoft.scheduleweather.kakaomap.fragment;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -32,8 +30,6 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
@@ -42,12 +38,10 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.map.fragment.search.SearchFragment;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.SearchResultListFragment;
 import com.zerodsoft.scheduleweather.activity.map.util.RequestLocationTimer;
-import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
 import com.zerodsoft.scheduleweather.databinding.FragmentMapBinding;
 import com.zerodsoft.scheduleweather.etc.AppPermission;
 import com.zerodsoft.scheduleweather.etc.FragmentStateCallback;
 import com.zerodsoft.scheduleweather.etc.IPermission;
-import com.zerodsoft.scheduleweather.kakaomap.activity.KakaoMapActivity;
 import com.zerodsoft.scheduleweather.kakaomap.callback.ToolbarMenuCallback;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.BottomSheetButtonOnClickListener;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IBottomSheet;
@@ -71,7 +65,7 @@ import java.util.Timer;
 import static androidx.core.content.ContextCompat.checkSelfPermission;
 
 public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, MapView.POIItemEventListener, MapView.MapViewEventListener, MapReverseGeoCoder.ReverseGeoCodingResultListener,
-        IBottomSheet, INetwork, IMapToolbar, IPermission
+        IBottomSheet, INetwork, IMapToolbar
 {
     public static final int REQUEST_CODE_LOCATION = 10000;
 
@@ -93,7 +87,6 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     public SearchView searchView;
     public ConnectivityManager.NetworkCallback networkCallback;
     public ConnectivityManager connectivityManager;
-    public AppPermission appPermission;
 
     public BottomSheetBehavior bottomSheetBehavior;
     public ToolbarMenuCallback toolbarMenuCallback;
@@ -170,7 +163,6 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
-        appPermission = new AppPermission(getActivity());
 
         setNetworkCallback();
         initToolbar();
@@ -206,8 +198,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
             public void onClick(View view)
             {
                 //권한 확인
-
-                if (grantedPermissions(REQUEST_CODE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))
+                if (AppPermission.grantedPermissions(getContext(), Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))
                 {
                     boolean isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
                     boolean isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
@@ -868,18 +859,6 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
                 // 권한 거부됨
             }
         }
-    }
-
-    @Override
-    public void requestPermissions(int requestCode, String... permissions)
-    {
-        appPermission.requestPermissions(requestCode, permissions);
-    }
-
-    @Override
-    public boolean grantedPermissions(int requestCode, String... permissions)
-    {
-        return appPermission.grantedPermissions(requestCode, permissions);
     }
 
     @Override

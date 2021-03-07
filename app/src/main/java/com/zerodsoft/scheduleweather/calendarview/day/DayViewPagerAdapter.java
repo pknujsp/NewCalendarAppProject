@@ -1,6 +1,8 @@
 package com.zerodsoft.scheduleweather.calendarview.day;
 
+import android.app.Activity;
 import android.content.ContentValues;
+import android.os.RemoteException;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,7 +14,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
-import com.zerodsoft.scheduleweather.calendarview.callback.EventCallback;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.DateGetter;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
@@ -26,6 +27,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import lombok.SneakyThrows;
+
 
 public class DayViewPagerAdapter extends RecyclerView.Adapter<DayViewPagerAdapter.DayViewPagerHolder> implements DateGetter
 {
@@ -34,11 +37,13 @@ public class DayViewPagerAdapter extends RecyclerView.Adapter<DayViewPagerAdapte
     private final IToolbar iToolbar;
     private final SparseArray<DayViewPagerHolder> holderSparseArray = new SparseArray<>();
     private final Calendar CALENDAR;
+    private Activity activity;
     public static final int FIRST_DAY = -1;
     public static final int LAST_DAY = -2;
 
-    public DayViewPagerAdapter(IControlEvent iControlEvent, OnEventItemClickListener onEventItemClickListener, IToolbar iToolbar)
+    public DayViewPagerAdapter(Activity activity, IControlEvent iControlEvent, OnEventItemClickListener onEventItemClickListener, IToolbar iToolbar)
     {
+        this.activity = activity;
         this.onEventItemClickListener = onEventItemClickListener;
         this.iControlEvent = iControlEvent;
         this.iToolbar = iToolbar;
@@ -63,6 +68,7 @@ public class DayViewPagerAdapter extends RecyclerView.Adapter<DayViewPagerAdapte
         return new DayViewPagerHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.dayview_viewpager_item, parent, false));
     }
 
+    @SneakyThrows
     @Override
     public void onBindViewHolder(@NonNull DayViewPagerHolder holder, int position)
     {
@@ -149,15 +155,7 @@ public class DayViewPagerAdapter extends RecyclerView.Adapter<DayViewPagerAdapte
 
             dayHeaderView.setInitValue(startDate, endDate);
 
-            iControlEvent.getInstances(getAdapterPosition(), startDate.getTime(), endDate.getTime(), new EventCallback<List<CalendarInstance>>()
-            {
-                @Override
-                public void onResult(List<CalendarInstance> e)
-                {
-                    setResult(e);
-                }
-            });
-
+            setResult(iControlEvent.getInstances(getAdapterPosition(), startDate.getTime(), endDate.getTime()));
         }
 
         public void setResult(List<CalendarInstance> e)

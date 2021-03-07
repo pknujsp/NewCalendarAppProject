@@ -9,7 +9,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityOptionsCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -39,14 +38,12 @@ import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IstartActivity;
 import com.zerodsoft.scheduleweather.databinding.ActivityScheduleInfoBinding;
 import com.zerodsoft.scheduleweather.etc.AppPermission;
-import com.zerodsoft.scheduleweather.etc.IPermission;
 import com.zerodsoft.scheduleweather.event.common.MLocActivity;
 import com.zerodsoft.scheduleweather.event.common.ReselectDetailLocation;
 import com.zerodsoft.scheduleweather.event.common.interfaces.IFab;
 import com.zerodsoft.scheduleweather.event.common.interfaces.ILocation;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.event.EventFragment;
-import com.zerodsoft.scheduleweather.event.location.placefragments.fragment.PlacesFragment;
 import com.zerodsoft.scheduleweather.event.location.placefragments.fragment.PlacesTransactionFragment;
 import com.zerodsoft.scheduleweather.event.weather.WeatherFragment;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
@@ -56,7 +53,9 @@ import com.zerodsoft.scheduleweather.utility.RecurrenceRule;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
-public class EventActivity extends AppCompatActivity implements ILocation, IFab, IPermission, IstartActivity
+import lombok.SneakyThrows;
+
+public class EventActivity extends AppCompatActivity implements ILocation, IFab, IstartActivity
 {
     private ActivityScheduleInfoBinding binding;
     private LocationViewModel locationViewModel;
@@ -70,7 +69,6 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab,
 
     private FragmentManager fragmentManager;
     private Fragment currentFragment;
-    private AppPermission appPermission;
 
     private static final String TAG_INFO = "info";
     private static final String TAG_WEATHER = "weather";
@@ -117,7 +115,6 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab,
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_schedule_info);
         fragmentManager = getSupportFragmentManager();
-        appPermission = new AppPermission(this);
 
         binding.scheduleBottomNav.setOnNavigationItemSelectedListener(onNavigationItemSelectedListener);
         binding.eventFab.setOnClickListener(new View.OnClickListener()
@@ -224,6 +221,7 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab,
                 new MaterialAlertDialogBuilder(EventActivity.this).setTitle(getString(R.string.remove_event))
                         .setItems(items, new DialogInterface.OnClickListener()
                         {
+                            @SneakyThrows
                             @Override
                             public void onClick(DialogInterface dialogInterface, int index)
                             {
@@ -281,53 +279,67 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab,
 
         locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
         calendarViewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
-        calendarViewModel.init(getApplicationContext());
+    }
+
+    @Override
+    protected void onStart()
+    {
+        super.onStart();
     }
 
     private void deleteEvent()
     {
         // 참석자 - 알림 - 이벤트 순으로 삭제 (외래키 때문)
         // db column error
-        if (grantedPermissions(REQUEST_DELETE_EVENT, Manifest.permission.WRITE_CALENDAR))
+        if (AppPermission.grantedPermissions(getApplicationContext(), Manifest.permission.WRITE_CALENDAR))
         {
             calendarViewModel.deleteEvent(calendarId, eventId);
             // 삭제 완료 후 캘린더 화면으로 나가고, 새로고침한다.
             setResult(AppMainActivity.DELETED_EVENT);
             finish();
+        } else
+        {
+            deletePermissionResultLauncher.launch(Manifest.permission.WRITE_CALENDAR);
         }
     }
 
     private void deleteSubsequentIncludingThis()
     {
         // 이벤트의 반복 UNTIL을 현재 인스턴스의 시작날짜로 수정
-        if (!grantedPermissions(REQUEST_SUBSEQUENT_INCLUDING_THIS, Manifest.permission.WRITE_CALENDAR))
+        if (AppPermission.grantedPermissions(getApplicationContext(), Manifest.permission.WRITE_CALENDAR))
         {
-            return;
+            ContentValues recurrenceData = calendarViewModel.getRecurrence(calendarId, eventId);
+            RecurrenceRule recurrenceRule = new RecurrenceRule();
+            recurrenceRule.separateValues(recurrenceData.getAsString(CalendarContract.Events.RRULE));
+
+            GregorianCalendar calendar = new GregorianCalendar();
+            final long thisInstanceBegin = eventFragment.getInstance().getAsLong(CalendarContract.Instances.BEGIN);
+            calendar.setTimeInMillis(thisInstanceBegin);
+            calendar.add(Calendar.DAY_OF_MONTH, -1);
+            recurrenceRule.putValue(RecurrenceRule.UNTIL, ClockUtil.yyyyMMdd.format(calendar.getTime()));
+            recurrenceRule.removeValue(RecurrenceRule.INTERVAL);
+
+            recurrenceData.put(CalendarContract.Events.RRULE, recurrenceRule.getRule());
+            calendarViewModel.updateEvent(recurrenceData);
+        } else
+        {
+            deleteSubsequentPermissionResultLauncher.launch(Manifest.permission.WRITE_CALENDAR);
         }
-        ContentValues recurrenceData = calendarViewModel.getRecurrence(calendarId, eventId);
-        RecurrenceRule recurrenceRule = new RecurrenceRule();
-        recurrenceRule.separateValues(recurrenceData.getAsString(CalendarContract.Events.RRULE));
 
-        GregorianCalendar calendar = new GregorianCalendar();
-        final long thisInstanceBegin = eventFragment.getInstance().getAsLong(CalendarContract.Instances.BEGIN);
-        calendar.setTimeInMillis(thisInstanceBegin);
-        calendar.add(Calendar.DAY_OF_MONTH, -1);
-        recurrenceRule.putValue(RecurrenceRule.UNTIL, ClockUtil.yyyyMMdd.format(calendar.getTime()));
-        recurrenceRule.removeValue(RecurrenceRule.INTERVAL);
-
-        recurrenceData.put(CalendarContract.Events.RRULE, recurrenceRule.getRule());
-        calendarViewModel.updateEvent(recurrenceData);
     }
 
     private void exceptThisInstance()
     {
-        if (grantedPermissions(REQUEST_EXCEPT_THIS_INSTANCE, Manifest.permission.WRITE_CALENDAR))
+        if (AppPermission.grantedPermissions(getApplicationContext(), Manifest.permission.WRITE_CALENDAR))
         {
             ContentValues instance = eventFragment.getInstance();
             calendarViewModel.deleteInstance(instance.getAsLong(CalendarContract.Instances.BEGIN), eventId);
 
             setResult(AppMainActivity.EXCEPTED_INSTANCE);
             finish();
+        } else
+        {
+            exceptPermissionResultLauncher.launch(Manifest.permission.WRITE_CALENDAR);
         }
     }
 
@@ -679,18 +691,7 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab,
         }
     }
 
-    @Override
-    public void requestPermissions(int requestCode, String... permissions)
-    {
-        appPermission.requestPermissions(requestCode, permissions);
-    }
-
-    @Override
-    public boolean grantedPermissions(int requestCode, String... permissions)
-    {
-        return appPermission.grantedPermissions(requestCode, permissions);
-    }
-
+    @SneakyThrows
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
     {
@@ -734,6 +735,46 @@ public class EventActivity extends AppCompatActivity implements ILocation, IFab,
                 }
             }
     );
+
+    private final ActivityResultLauncher<String> permissionResultLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(),
+            new ActivityResultCallback<Boolean>()
+            {
+                @Override
+                public void onActivityResult(Boolean result)
+                {
+
+                }
+            });
+
+    private final ActivityResultLauncher<String> exceptPermissionResultLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(),
+            new ActivityResultCallback<Boolean>()
+            {
+                @Override
+                public void onActivityResult(Boolean result)
+                {
+                    exceptThisInstance();
+                }
+            });
+
+    private final ActivityResultLauncher<String> deletePermissionResultLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(),
+            new ActivityResultCallback<Boolean>()
+            {
+                @Override
+                public void onActivityResult(Boolean result)
+                {
+                    deleteEvent();
+                }
+            });
+
+    private final ActivityResultLauncher<String> deleteSubsequentPermissionResultLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(),
+            new ActivityResultCallback<Boolean>()
+            {
+                @Override
+                public void onActivityResult(Boolean result)
+                {
+                    deleteSubsequentIncludingThis();
+                }
+            });
 
     @Override
     public void startActivityResult(Intent intent, int requestCode)

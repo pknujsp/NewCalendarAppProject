@@ -1,6 +1,8 @@
 package com.zerodsoft.scheduleweather.activity.editevent.activity;
 
-import androidx.annotation.NonNull;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
@@ -8,17 +10,15 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.util.Pair;
 import androidx.databinding.DataBindingUtil;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.os.RemoteException;
 import android.provider.CalendarContract;
-import android.service.carrier.CarrierMessagingService;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.ArraySet;
@@ -47,9 +47,9 @@ import com.zerodsoft.scheduleweather.activity.map.SelectLocationActivity;
 import com.zerodsoft.scheduleweather.databinding.ActivityEditEventBinding;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
+import com.zerodsoft.scheduleweather.etc.AppPermission;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
-import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.utility.RecurrenceRule;
 import com.zerodsoft.scheduleweather.utility.model.ReminderDto;
@@ -63,6 +63,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.TimeZone;
+
+import lombok.SneakyThrows;
 
 public class EditEventActivity extends AppCompatActivity implements IEventRepeat
 {
@@ -101,6 +103,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
         return true;
     }
 
+    @SneakyThrows
     @SuppressLint("NonConstantResourceId")
     @Override
     public boolean onOptionsItemSelected(MenuItem item)
@@ -167,49 +170,27 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
         return true;
     }
 
+    @SneakyThrows
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_edit_event);
         init();
+        if (AppPermission.grantedPermissions(getApplicationContext(), Manifest.permission.READ_CALENDAR))
+        {
+            initEventData();
+        } else
+        {
+            permissionResultLauncher.launch(Manifest.permission.READ_CALENDAR);
+        }
     }
 
-    private void init()
+    private void initEventData()
     {
-        Toolbar toolbar = binding.eventToolbar;
-        setSupportActionBar(toolbar);
-        ActionBar actionBar = getSupportActionBar();
-        actionBar.setDisplayHomeAsUpEnabled(true);
-
-        EditTextWatcher editTextWatcher = new EditTextWatcher();
-        binding.titleLayout.title.addTextChangedListener(editTextWatcher);
-        binding.titleLayout.title.setOnFocusChangeListener(editTextWatcher);
-        binding.descriptionLayout.descriptionEdittext.addTextChangedListener(editTextWatcher);
-        binding.descriptionLayout.descriptionEdittext.setOnFocusChangeListener(editTextWatcher);
-
-        binding.timeLayout.startDate.setClickable(true);
-        binding.timeLayout.startTime.setClickable(true);
-        binding.timeLayout.endDate.setClickable(true);
-        binding.timeLayout.endTime.setClickable(true);
-        binding.timeLayout.eventTimezone.setClickable(true);
-
-        binding.recurrenceLayout.eventRecurrence.setClickable(true);
-        binding.reminderLayout.notReminder.setVisibility(View.GONE);
-        binding.descriptionLayout.descriptionTextview.setVisibility(View.GONE);
-        binding.locationLayout.eventLocation.setClickable(true);
-        binding.attendeeLayout.notAttendees.setVisibility(View.GONE);
-        binding.accesslevelLayout.eventAccessLevel.setClickable(true);
-        binding.availabilityLayout.eventAvailability.setClickable(true);
-
-        setOnClickListener();
-
-        locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
-        viewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
-        viewModel.init(getApplicationContext());
-        requestCode = getIntent().getIntExtra("requestCode", 0);
-
+        calendarList = viewModel.getCalendars();
         dataController = new EventDataController(getApplicationContext(), requestCode);
+        ActionBar actionBar = getSupportActionBar();
 
         switch (requestCode)
         {
@@ -258,140 +239,126 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
 
             case EventDataController.MODIFY_EVENT:
             {
-                actionBar.setTitle(R.string.modify_event);
-
-                Intent intent = getIntent();
-                final int CALENDAR_ID = intent.getIntExtra("calendarId", 0);
-                final long EVENT_ID = intent.getLongExtra("eventId", 0);
-
-                // 이벤트, 알림을 가져온다
-                viewModel.getEvent(CALENDAR_ID, EVENT_ID);
-                viewModel.getAttendees(CALENDAR_ID, EVENT_ID);
-
-                viewModel.getEventLiveData().observe(this, eventDtoDataWrapper ->
+                if (AppPermission.grantedPermissions(getApplicationContext(), Manifest.permission.READ_CALENDAR))
                 {
-                    if (eventDtoDataWrapper.getData() != null)
+                    actionBar.setTitle(R.string.modify_event);
+
+                    Intent intent = getIntent();
+                    final int CALENDAR_ID = intent.getIntExtra("calendarId", 0);
+                    final long EVENT_ID = intent.getLongExtra("eventId", 0);
+
+                    // 이벤트, 알림을 가져온다
+
+                    ContentValues event = viewModel.getEvent(CALENDAR_ID, EVENT_ID);
+                    List<ContentValues> attendeeList = viewModel.getAttendees(CALENDAR_ID, EVENT_ID);
+                    // 이벤트, 알림을 가져온다
+
+                    dataController.getSavedEventData().getEVENT().putAll(event);
+                    // 제목, 캘린더, 시간, 시간대, 반복, 알림, 설명, 위치, 공개범위, 유효성, 참석자
+                    // 알림, 참석자 정보는 따로 불러온다.
+
+                    EventData savedEventData = dataController.getSavedEventData();
+                    ContentValues savedEvent = savedEventData.getEVENT();
+
+                    //제목
+                    binding.titleLayout.title.setText(savedEvent.getAsString(CalendarContract.Events.TITLE));
+
+                    //캘린더 수정 불가
+                    binding.calendarLayout.getRoot().setVisibility(View.GONE);
+
+                    // allday switch
+                    binding.timeLayout.timeAlldaySwitch.setChecked(savedEvent.getAsBoolean(CalendarContract.Events.ALL_DAY));
+
+                    final long dtStart = savedEvent.getAsLong(CalendarContract.Events.DTSTART);
+                    final long dtEnd = savedEvent.getAsLong(CalendarContract.Events.DTEND);
+                    dataController.putEventValue(CalendarContract.Events.DTSTART, dtStart);
+                    dataController.putEventValue(CalendarContract.Events.DTEND, dtEnd);
+
+                    //시각
+                    setDateText(START_DATETIME, dtStart);
+                    setDateText(END_DATETIME, dtEnd);
+                    setTimeText(START_DATETIME, dtStart);
+                    setTimeText(END_DATETIME, dtEnd);
+
+                    // 시간대
+                    setTimeZoneText(savedEvent.getAsString(CalendarContract.Events.EVENT_TIMEZONE));
+
+                    // 반복
+                    setRecurrenceText(savedEvent.getAsString(CalendarContract.Events.RRULE));
+
+                    // 알림
+                    if (savedEvent.getAsBoolean(CalendarContract.Events.HAS_ALARM))
                     {
-                        dataController.getSavedEventData().getEVENT().putAll(eventDtoDataWrapper.getData());
-                        // 제목, 캘린더, 시간, 시간대, 반복, 알림, 설명, 위치, 공개범위, 유효성, 참석자
-                        // 알림, 참석자 정보는 따로 불러온다.
-
-                        EventData savedEventData = dataController.getSavedEventData();
-                        ContentValues savedEvent = savedEventData.getEVENT();
-
-                        //제목
-                        binding.titleLayout.title.setText(savedEvent.getAsString(CalendarContract.Events.TITLE));
-
-                        //캘린더 수정 불가
-                        binding.calendarLayout.getRoot().setVisibility(View.GONE);
-
-                        // allday switch
-                        binding.timeLayout.timeAlldaySwitch.setChecked(savedEvent.getAsBoolean(CalendarContract.Events.ALL_DAY));
-
-                        final long dtStart = savedEvent.getAsLong(CalendarContract.Events.DTSTART);
-                        final long dtEnd = savedEvent.getAsLong(CalendarContract.Events.DTEND);
-                        dataController.putEventValue(CalendarContract.Events.DTSTART, dtStart);
-                        dataController.putEventValue(CalendarContract.Events.DTEND, dtEnd);
-
-                        //시각
-                        setDateText(START_DATETIME, dtStart);
-                        setDateText(END_DATETIME, dtEnd);
-                        setTimeText(START_DATETIME, dtStart);
-                        setTimeText(END_DATETIME, dtEnd);
-
-                        // 시간대
-                        setTimeZoneText(savedEvent.getAsString(CalendarContract.Events.EVENT_TIMEZONE));
-
-                        // 반복
-                        setRecurrenceText(savedEvent.getAsString(CalendarContract.Events.RRULE));
-
-                        // 알림
-                        if (savedEvent.getAsBoolean(CalendarContract.Events.HAS_ALARM))
-                        {
-                            viewModel.getReminders(CALENDAR_ID, EVENT_ID);
-                        }
-
-                        // 설명
-                        binding.descriptionLayout.descriptionEdittext.setText(savedEvent.getAsString(CalendarContract.Events.DESCRIPTION));
-
-                        // 위치
-                        binding.locationLayout.eventLocation.setText(savedEvent.getAsString(CalendarContract.Events.EVENT_LOCATION));
-
-                        // 접근 범위
-                        setAccessLevelText(savedEvent.getAsInteger(CalendarContract.Events.ACCESS_LEVEL));
-
-                        // 유효성
-                        setAvailabilityText(savedEvent.getAsInteger(CalendarContract.Events.AVAILABILITY));
+                        List<ContentValues> reminderList = viewModel.getReminders(CALENDAR_ID, EVENT_ID);
+                        dataController.getSavedEventData().getREMINDERS().addAll(reminderList);
+                        dataController.getModifiedEventData().getREMINDERS().addAll(reminderList);
+                        setReminderText(reminderList);
                     }
-                });
 
-                viewModel.getAttendeeListLiveData().observe(this, new Observer<DataWrapper<List<ContentValues>>>()
+                    // 설명
+                    binding.descriptionLayout.descriptionEdittext.setText(savedEvent.getAsString(CalendarContract.Events.DESCRIPTION));
+
+                    // 위치
+                    binding.locationLayout.eventLocation.setText(savedEvent.getAsString(CalendarContract.Events.EVENT_LOCATION));
+
+                    // 접근 범위
+                    setAccessLevelText(savedEvent.getAsInteger(CalendarContract.Events.ACCESS_LEVEL));
+
+                    // 유효성
+                    setAvailabilityText(savedEvent.getAsInteger(CalendarContract.Events.AVAILABILITY));
+
+
+                    if (!attendeeList.isEmpty())
+                    {
+                        dataController.getSavedEventData().getATTENDEES().addAll(attendeeList);
+                        dataController.getModifiedEventData().getATTENDEES().addAll(attendeeList);
+                        setAttendeesText(attendeeList);
+                    } else
+                    {
+                        // 참석자 버튼 텍스트 수정
+                        binding.attendeeLayout.showAttendeesDetail.setText(getString(R.string.add_attendee));
+                    }
+                } else
                 {
-                    @Override
-                    public void onChanged(DataWrapper<List<ContentValues>> listDataWrapper)
-                    {
-                        if (listDataWrapper.getData() != null)
-                        {
-                            runOnUiThread(new Runnable()
-                            {
-                                @Override
-                                public void run()
-                                {
-                                    if (!listDataWrapper.getData().isEmpty())
-                                    {
-                                        dataController.getSavedEventData().getATTENDEES().addAll(listDataWrapper.getData());
-                                        dataController.getModifiedEventData().getATTENDEES().addAll(listDataWrapper.getData());
-                                        setAttendeesText(listDataWrapper.getData());
-                                    } else
-                                    {
-                                        // 참석자 버튼 텍스트 수정
-                                        binding.attendeeLayout.showAttendeesDetail.setText(getString(R.string.add_attendee));
-                                    }
-                                }
-                            });
-
-                        }
-                    }
-                });
-
-                viewModel.getReminderListLiveData().observe(this, new Observer<DataWrapper<List<ContentValues>>>()
-                {
-                    @Override
-                    public void onChanged(DataWrapper<List<ContentValues>> listDataWrapper)
-                    {
-                        if (listDataWrapper.getData() != null)
-                        {
-                            // 알림
-                            runOnUiThread(new Runnable()
-                            {
-                                @Override
-                                public void run()
-                                {
-                                    if (!listDataWrapper.getData().isEmpty())
-                                    {
-                                        dataController.getSavedEventData().getREMINDERS().addAll(listDataWrapper.getData());
-                                        dataController.getModifiedEventData().getREMINDERS().addAll(listDataWrapper.getData());
-                                        setReminderText(listDataWrapper.getData());
-                                    }
-                                }
-                            });
-
-                        }
-                    }
-                });
+                    permissionResultLauncher.launch(Manifest.permission.READ_CALENDAR);
+                }
                 break;
             }
         }
+    }
 
-        viewModel.getCalendarListLiveData().observe(this, listDataWrapper ->
-        {
-            if (listDataWrapper.getData() != null)
-            {
-                calendarList = listDataWrapper.getData();
-            }
-        });
+    private void init()
+    {
+        Toolbar toolbar = binding.eventToolbar;
+        setSupportActionBar(toolbar);
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setDisplayHomeAsUpEnabled(true);
 
-        viewModel.getCalendars();
+        EditTextWatcher editTextWatcher = new EditTextWatcher();
+        binding.titleLayout.title.addTextChangedListener(editTextWatcher);
+        binding.titleLayout.title.setOnFocusChangeListener(editTextWatcher);
+        binding.descriptionLayout.descriptionEdittext.addTextChangedListener(editTextWatcher);
+        binding.descriptionLayout.descriptionEdittext.setOnFocusChangeListener(editTextWatcher);
+
+        binding.timeLayout.startDate.setClickable(true);
+        binding.timeLayout.startTime.setClickable(true);
+        binding.timeLayout.endDate.setClickable(true);
+        binding.timeLayout.endTime.setClickable(true);
+        binding.timeLayout.eventTimezone.setClickable(true);
+
+        binding.recurrenceLayout.eventRecurrence.setClickable(true);
+        binding.reminderLayout.notReminder.setVisibility(View.GONE);
+        binding.descriptionLayout.descriptionTextview.setVisibility(View.GONE);
+        binding.locationLayout.eventLocation.setClickable(true);
+        binding.attendeeLayout.notAttendees.setVisibility(View.GONE);
+        binding.accesslevelLayout.eventAccessLevel.setClickable(true);
+        binding.availabilityLayout.eventAvailability.setClickable(true);
+
+        setOnClickListener();
+
+        locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
+        viewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
+        requestCode = getIntent().getIntExtra("requestCode", 0);
     }
 
     private void setOnClickListener()
@@ -412,7 +379,6 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                 binding.timeLayout.endTime.setVisibility(View.VISIBLE);
                 binding.timeLayout.eventTimezoneLayout.setVisibility(View.VISIBLE);
             }
-
             dataController.putEventValue(CalendarContract.Events.ALL_DAY, isChecked ? 1 : 0);
         });
 
@@ -1071,59 +1037,30 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
         binding.timeLayout.eventTimezone.setText(timeZone.getDisplayName(Locale.KOREAN));
     }
 
+    private final ActivityResultLauncher<String> savePermissionResultLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(),
+            new ActivityResultCallback<Boolean>()
+            {
+                @Override
+                public void onActivityResult(Boolean result)
+                {
+                    if (result)
+                    {
+                        saveNewEvent();
+                    }
+                }
+            });
+
     private void saveNewEvent()
     {
         // 시간이 바뀌는 경우, 알림 데이터도 변경해야함.
         // 알림 재설정
-        EventData newEventData = dataController.getNewEventData();
-        ContentValues event = newEventData.getEVENT();
-
-        final int CALENDAR_ID = event.getAsInteger(CalendarContract.Events.CALENDAR_ID);
-        final long NEW_EVENT_ID = viewModel.addEvent(event);
-
-        // 리마인더 저장
-        if (event.getAsBoolean(CalendarContract.Events.HAS_ALARM))
+        if (AppPermission.grantedPermissions(getApplicationContext(), Manifest.permission.WRITE_CALENDAR))
         {
-            List<ContentValues> reminders = newEventData.getREMINDERS();
+            EventData newEventData = dataController.getNewEventData();
+            ContentValues event = newEventData.getEVENT();
 
-            for (ContentValues reminder : reminders)
-            {
-                reminder.put(CalendarContract.Reminders.EVENT_ID, NEW_EVENT_ID);
-            }
-            viewModel.addReminders(reminders);
-        }
-
-        // 참석자 저장
-        if (!newEventData.getATTENDEES().isEmpty())
-        {
-            List<ContentValues> attendees = newEventData.getATTENDEES();
-
-            for (ContentValues attendee : attendees)
-            {
-                attendee.put(CalendarContract.Attendees.EVENT_ID, NEW_EVENT_ID);
-            }
-            viewModel.addAttendees(attendees);
-        }
-
-        // 상세 위치 데이터 저장
-        if (event.containsKey(CalendarContract.Events.EVENT_LOCATION))
-        {
-            locationDTO.setCalendarId(CALENDAR_ID);
-            locationDTO.setEventId(NEW_EVENT_ID);
-
-            locationViewModel.addLocation(locationDTO, new CarrierMessagingService.ResultCallback<Boolean>()
-            {
-                @Override
-                public void onReceiveResult(@NonNull Boolean isAdded) throws RemoteException
-                {
-                    setResult(RESULT_OK);
-                    finish();
-                }
-            });
-        } else
-        {
-            setResult(RESULT_OK);
-            finish();
+            final int CALENDAR_ID = event.getAsInteger(CalendarContract.Events.CALENDAR_ID);
+            viewModel.addEvent(event);
         }
     }
 
@@ -1269,7 +1206,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
             locationViewModel.hasDetailLocation(CALENDAR_ID, ORIGINAL_EVENT_ID, new CarrierMessagingService.ResultCallback<Boolean>()
             {
                 @Override
-                public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
+                public void onReceiveResult(@NonNull Boolean aBoolean)
                 {
                     if (aBoolean)
                     {
@@ -1277,7 +1214,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                         locationViewModel.modifyLocation(locationDTO, new CarrierMessagingService.ResultCallback<Boolean>()
                         {
                             @Override
-                            public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
+                            public void onReceiveResult(@NonNull Boolean aBoolean)
                             {
                                 setResult(RESULT_OK);
                                 finish();
@@ -1289,7 +1226,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                         locationViewModel.addLocation(locationDTO, new CarrierMessagingService.ResultCallback<Boolean>()
                         {
                             @Override
-                            public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
+                            public void onReceiveResult(@NonNull Boolean aBoolean)
                             {
                                 setResult(RESULT_OK);
                                 finish();
@@ -1307,7 +1244,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                 locationViewModel.hasDetailLocation(CALENDAR_ID, ORIGINAL_EVENT_ID, new CarrierMessagingService.ResultCallback<Boolean>()
                 {
                     @Override
-                    public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
+                    public void onReceiveResult(@NonNull Boolean aBoolean)
                     {
                         if (aBoolean)
                         {
@@ -1315,7 +1252,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                             locationViewModel.removeLocation(CALENDAR_ID, ORIGINAL_EVENT_ID, new CarrierMessagingService.ResultCallback<Boolean>()
                             {
                                 @Override
-                                public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
+                                public void onReceiveResult(@NonNull Boolean aBoolean)
                                 {
                                     setResult(RESULT_OK);
                                     finish();
@@ -1465,6 +1402,23 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
     {
         binding.availabilityLayout.eventAvailability.setText(EventUtil.convertAvailability(availability, getApplicationContext()));
     }
+
+    private final ActivityResultLauncher<String> permissionResultLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(),
+            new ActivityResultCallback<Boolean>()
+            {
+                @Override
+                public void onActivityResult(Boolean result)
+                {
+                    if (result)
+                    {
+                        initEventData();
+                    } else
+                    {
+                        Toast.makeText(EditEventActivity.this, getString(R.string.message_needs_calendar_permission), Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                }
+            });
 
     class EditTextWatcher implements TextWatcher, View.OnFocusChangeListener
     {

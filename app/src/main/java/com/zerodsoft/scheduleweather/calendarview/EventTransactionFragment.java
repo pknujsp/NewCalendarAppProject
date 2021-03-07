@@ -3,6 +3,7 @@ package com.zerodsoft.scheduleweather.calendarview;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.RemoteException;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,7 +18,6 @@ import androidx.lifecycle.ViewModelProvider;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
-import com.zerodsoft.scheduleweather.calendarview.callback.EventCallback;
 import com.zerodsoft.scheduleweather.calendarview.day.DayFragment;
 import com.zerodsoft.scheduleweather.calendarview.instancedialog.InstanceListOnDayFragment;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
@@ -34,7 +34,7 @@ import java.util.Date;
 import java.util.List;
 
 
-public class EventTransactionFragment extends Fragment implements IControlEvent, OnEventItemClickListener,IRefreshView
+public class EventTransactionFragment extends Fragment implements IControlEvent, OnEventItemClickListener, IRefreshView
 {
     // 달력 프래그먼트를 관리하는 프래그먼트
     public static final String TAG = "CalendarTransactionFragment";
@@ -72,7 +72,6 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
     {
         super.onViewCreated(view, savedInstanceState);
         calendarViewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
-        calendarViewModel.init(getContext());
         // 마지막으로 사용된 달력의 종류 가져오기
     }
 
@@ -87,7 +86,6 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
     {
         super.onStart();
     }
-
 
     public void replaceFragment(String fragmentTag)
     {
@@ -111,12 +109,11 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
         fragmentTransaction.commit();
     }
 
-
     @Override
-    public void getInstances(int viewPosition, long begin, long end, EventCallback<List<CalendarInstance>> callback)
+    public List<CalendarInstance> getInstances(int viewPosition, long begin, long end)
     {
         // 선택된 캘린더 목록
-        calendarViewModel.getInstanceList(iConnectedCalendars.getConnectedCalendars(), begin, end, callback);
+        return calendarViewModel.getInstances(iConnectedCalendars.getConnectedCalendars(), begin, end);
     }
 
     public void goToToday()

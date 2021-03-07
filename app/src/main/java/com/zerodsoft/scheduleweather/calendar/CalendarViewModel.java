@@ -1,276 +1,204 @@
 package com.zerodsoft.scheduleweather.calendar;
 
+import android.app.Application;
 import android.content.ContentValues;
-import android.content.Context;
-import android.os.RemoteException;
-import android.service.carrier.CarrierMessagingService;
 
-import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModel;
+import androidx.lifecycle.AndroidViewModel;
 
 import com.zerodsoft.scheduleweather.calendar.dto.AccountDto;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
-import com.zerodsoft.scheduleweather.calendarview.callback.EventCallback;
-import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
+import com.zerodsoft.scheduleweather.calendar.interfaces.ICalendarProvider;
 
 import java.util.List;
 
-public class CalendarViewModel extends ViewModel
+public class CalendarViewModel extends AndroidViewModel implements ICalendarProvider
 {
-    private MutableLiveData<DataWrapper<ContentValues>> calendarLiveData;
-    private MutableLiveData<DataWrapper<List<ContentValues>>> calendarListLiveData;
-    private MutableLiveData<DataWrapper<List<ContentValues>>> allCalendarListLiveData;
-    private MutableLiveData<DataWrapper<ContentValues>> eventLiveData;
-    private MutableLiveData<DataWrapper<List<ContentValues>>> eventListLiveData;
-    private MutableLiveData<DataWrapper<List<ContentValues>>> instanceListLiveData;
-    private MutableLiveData<DataWrapper<ContentValues>> instanceLiveData;
-    private MutableLiveData<DataWrapper<List<ContentValues>>> reminderListLiveData;
-    private MutableLiveData<DataWrapper<List<ContentValues>>> attendeeListLiveData;
-    private Context context;
-
     private CalendarProvider calendarProvider;
 
-    public CalendarViewModel()
+    public CalendarViewModel(Application application)
     {
-
+        super(application);
+        this.calendarProvider = CalendarProvider.newInstance(application.getApplicationContext());
     }
 
-    public void init(Context context)
-    {
-        this.context = context;
-        this.calendarProvider = CalendarProvider.newInstance(context);
 
-        calendarLiveData = new MutableLiveData<>();
-        calendarListLiveData = new MutableLiveData<>();
-        allCalendarListLiveData = new MutableLiveData<>();
-        eventLiveData = new MutableLiveData<>();
-        eventListLiveData = new MutableLiveData<>();
-        instanceListLiveData = new MutableLiveData<>();
-        reminderListLiveData = new MutableLiveData<>();
-        attendeeListLiveData = new MutableLiveData<>();
-        instanceLiveData = new MutableLiveData<>();
+    @Override
+    public List<AccountDto> getGoogleAccounts()
+    {
+        return calendarProvider.getGoogleAccounts();
     }
 
-    public MutableLiveData<DataWrapper<ContentValues>> getCalendarLiveData()
+    @Override
+    public ContentValues getEvent(int calendarId, long eventId)
     {
-        return calendarLiveData;
+        return calendarProvider.getEvent(calendarId, eventId);
     }
 
-    public MutableLiveData<DataWrapper<List<ContentValues>>> getCalendarListLiveData()
+    @Override
+    public List<ContentValues> getEvents(int calendarId)
     {
-        return calendarListLiveData;
+        return calendarProvider.getEvents(calendarId);
     }
 
-    public MutableLiveData<DataWrapper<List<ContentValues>>> getAllCalendarListLiveData()
-    {
-        return allCalendarListLiveData;
-    }
-
-    public MutableLiveData<DataWrapper<ContentValues>> getEventLiveData()
-    {
-        return eventLiveData;
-    }
-
-    public MutableLiveData<DataWrapper<List<ContentValues>>> getEventListLiveData()
-    {
-        return eventListLiveData;
-    }
-
-    public MutableLiveData<DataWrapper<List<ContentValues>>> getInstanceListLiveData()
-    {
-        return instanceListLiveData;
-    }
-
-    public MutableLiveData<DataWrapper<List<ContentValues>>> getReminderListLiveData()
-    {
-        return reminderListLiveData;
-    }
-
-    public MutableLiveData<DataWrapper<List<ContentValues>>> getAttendeeListLiveData()
-    {
-        return attendeeListLiveData;
-    }
-
-    public MutableLiveData<DataWrapper<ContentValues>> getInstanceLiveData()
-    {
-        return instanceLiveData;
-    }
-
-    public void getGoogleAccounts(CarrierMessagingService.ResultCallback<List<AccountDto>> resultCallback) throws RemoteException
-    {
-        calendarProvider.getGoogleAccounts(resultCallback);
-    }
-
-    public void getEvent(int calendarId, long eventId)
-    {
-        ContentValues event = calendarProvider.getEvent(calendarId, eventId);
-        DataWrapper<ContentValues> dataWrapper = new DataWrapper<>(event);
-        eventLiveData.setValue(dataWrapper);
-    }
-
-    public void getEvents(int calendarId)
-    {
-        List<ContentValues> events = calendarProvider.getEvents(calendarId);
-        DataWrapper<List<ContentValues>> dataWrapper = new DataWrapper<>(events);
-        eventListLiveData.setValue(dataWrapper);
-    }
-
+    @Override
     public long addEvent(ContentValues event)
     {
         return calendarProvider.addEvent(event);
     }
 
+    @Override
     public int deleteEvent(int calendarId, long eventId)
     {
         return calendarProvider.deleteEvent(calendarId, eventId);
     }
 
+    @Override
     public int deleteEvents(int calendarId, long[] eventIds)
     {
         return calendarProvider.deleteEvents(calendarId, eventIds);
     }
 
+    @Override
     public int updateEvent(ContentValues event)
     {
         return calendarProvider.updateEvent(event);
     }
 
-    public void getAllCalendars()
+    @Override
+    public List<ContentValues> getAllCalendars()
     {
-        List<ContentValues> calendars = calendarProvider.getAllCalendars();
-        DataWrapper<List<ContentValues>> dataWrapper = new DataWrapper<>(calendars);
-        allCalendarListLiveData.setValue(dataWrapper);
+        return calendarProvider.getAllCalendars();
     }
 
-    public void getCalendars()
+    @Override
+    public List<ContentValues> getCalendars()
     {
-        List<ContentValues> calendars = calendarProvider.getCalendars();
-        DataWrapper<List<ContentValues>> dataWrapper = new DataWrapper<>(calendars);
-        calendarListLiveData.setValue(dataWrapper);
+        return calendarProvider.getCalendars();
     }
 
-    public void getCalendar(int calendarId)
+    @Override
+    public ContentValues getCalendar(int calendarId)
     {
-        ContentValues calendar = calendarProvider.getCalendar(calendarId);
-        DataWrapper<ContentValues> dataWrapper = new DataWrapper<>(calendar);
-        calendarLiveData.setValue(dataWrapper);
+        return calendarProvider.getCalendar(calendarId);
     }
 
-    public void getReminders(int calendarId, long eventId)
+    @Override
+    public List<ContentValues> getReminders(int calendarId, long eventId)
     {
-        List<ContentValues> reminders = calendarProvider.getReminders(calendarId, eventId);
-        DataWrapper<List<ContentValues>> dataWrapper = new DataWrapper<>(reminders);
-        reminderListLiveData.setValue(dataWrapper);
+        return calendarProvider.getReminders(calendarId, eventId);
     }
 
-
+    @Override
     public int updateReminder(ContentValues reminder)
     {
         return calendarProvider.updateReminder(reminder);
     }
 
+    @Override
     public int deleteReminders(int calendarId, long eventId, long[] reminderIds)
     {
         return calendarProvider.deleteReminders(calendarId, eventId, reminderIds);
     }
 
+    @Override
     public int deleteAllReminders(int calendarId, long eventId)
     {
         return calendarProvider.deleteAllReminders(calendarId, eventId);
     }
 
+    @Override
     public int addReminders(List<ContentValues> reminders)
     {
         return calendarProvider.addReminders(reminders);
     }
 
-    public void getInstanceList(List<ContentValues> calendarList, long startDate, long endDate, EventCallback<List<CalendarInstance>> callback)
+    @Override
+    public List<CalendarInstance> getInstances(List<ContentValues> calendarList, long startDate, long endDate)
     {
-        calendarProvider.getInstances(calendarList, startDate, endDate, callback);
+        return calendarProvider.getInstances(calendarList, startDate, endDate);
     }
 
-    public void getInstance(int calendarId, long instanceId, long begin, long end)
+    @Override
+    public ContentValues getInstance(int calendarId, long instanceId, long begin, long end)
     {
-        ContentValues instance = calendarProvider.getInstance(calendarId, instanceId, begin, end);
-        DataWrapper<ContentValues> dataWrapper = new DataWrapper<>(instance);
-        instanceLiveData.setValue(dataWrapper);
+        return calendarProvider.getInstance(calendarId, instanceId, begin, end);
     }
 
+    @Override
     public long updateAllFutureInstances(ContentValues modifiedInstance, ContentValues previousInstance)
     {
         return calendarProvider.updateAllFutureInstances(modifiedInstance, previousInstance);
     }
 
-    public long updateOneInstance(ContentValues modifiedInstance, ContentValues previousInstance)
+    @Override
+    public int updateOneInstance(ContentValues modifiedInstance, ContentValues previousInstance)
     {
         return calendarProvider.updateOneInstance(modifiedInstance, previousInstance);
     }
 
+    @Override
     public int deleteInstance(long begin, long eventId)
     {
         return calendarProvider.deleteInstance(begin, eventId);
     }
 
-
+    @Override
     public int addAttendees(List<ContentValues> attendeeList)
     {
         return calendarProvider.addAttendees(attendeeList);
     }
 
-
-    public void getAttendees(int calendarID, long eventId)
+    @Override
+    public List<ContentValues> getAttendees(int calendarId, long eventId)
     {
-        List<ContentValues> attendees = calendarProvider.getAttendees(calendarID, eventId);
-        DataWrapper<List<ContentValues>> dataWrapper = new DataWrapper<>(attendees);
-        attendeeListLiveData.setValue(dataWrapper);
+        return calendarProvider.getAttendees(calendarId, eventId);
     }
 
+    @Override
     public int updateAttendees(List<ContentValues> attendeeList)
     {
         return calendarProvider.updateAttendees(attendeeList);
     }
 
-
+    @Override
     public int deleteAllAttendees(int calendarId, long eventId)
     {
         return calendarProvider.deleteAllAttendees(calendarId, eventId);
     }
 
-
+    @Override
     public int deleteAttendees(int calendarId, long eventId, long[] attendeeIds)
     {
         return calendarProvider.deleteAttendees(calendarId, eventId, attendeeIds);
     }
 
-    // sync
-    public void syncCalendars()
-    {
-        calendarProvider.syncCalendars();
-    }
-
+    @Override
     public ContentValues getRecurrence(int calendarId, long eventId)
     {
         return calendarProvider.getRecurrence(calendarId, eventId);
     }
 
-    //color
+    @Override
     public int getCalendarColor(String accountName, String accountType)
     {
         return calendarProvider.getCalendarColor(accountName, accountType);
     }
 
-    public int updateCalendarColor(int calendarId, int color, String colorKey)
+    @Override
+    public ContentValues getCalendarColor(int calendarId)
     {
-        return calendarProvider.updateCalendarColor(calendarId, color, colorKey);
+        return calendarProvider.getCalendarColor(calendarId);
     }
 
+    @Override
     public List<ContentValues> getCalendarColors(String accountName, String accountType)
     {
         return calendarProvider.getCalendarColors(accountName, accountType);
     }
 
-    public ContentValues getCalendarColor(int calendarId)
+    @Override
+    public int updateCalendarColor(int calendarId, int color, String colorKey)
     {
-        return calendarProvider.getCalendarColor(calendarId);
+        return calendarProvider.updateCalendarColor(calendarId, color, colorKey);
     }
 }

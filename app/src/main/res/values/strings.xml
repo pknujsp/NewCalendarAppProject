@@ -363,4 +363,8 @@
     <string name="preference_weather_category_title">주변 장소</string>
 
 
+    <!-- 권한 거부된 경우 표시할 메시지 -->
+    <string name="message_needs_calendar_permission">캘린더 권한 필수</string>
+
+
 </resources>

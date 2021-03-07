@@ -68,4 +68,9 @@ public class ColorPreference extends Preference
     {
         colorView.setBackgroundColor(EventUtil.getColor(color));
     }
+
+    public ContentValues getCalendar()
+    {
+        return calendar;
+    }
 }

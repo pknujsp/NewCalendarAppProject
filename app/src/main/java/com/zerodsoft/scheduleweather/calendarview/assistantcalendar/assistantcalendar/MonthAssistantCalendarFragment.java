@@ -1,7 +1,9 @@
 package com.zerodsoft.scheduleweather.calendarview.assistantcalendar.assistantcalendar;
 
+import android.Manifest;
 import android.app.Activity;
 import android.os.Bundle;
+import android.os.RemoteException;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,11 +17,11 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
-import com.zerodsoft.scheduleweather.calendarview.callback.EventCallback;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.CalendarDateOnClickListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.databinding.FragmentMonthAssistantBinding;
+import com.zerodsoft.scheduleweather.etc.AppPermission;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import java.util.Calendar;
@@ -54,16 +56,8 @@ public class MonthAssistantCalendarFragment extends Fragment implements IControl
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
-
         calendarViewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
-        calendarViewModel.init(getContext());
-        adapter = new MonthAssistantCalendarListAdapter(this, calendarDateOnClickListener);
 
-        binding.monthAssistantCalendarViewpager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
-        binding.monthAssistantCalendarViewpager.setAdapter(adapter);
-        binding.monthAssistantCalendarViewpager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, false);
-        binding.monthAssistantCalendarViewpager.registerOnPageChangeCallback(onPageChangeCallback);
-        binding.currentMonth.setText(ClockUtil.YEAR_MONTH_FORMAT.format(adapter.getAsOfDate()));
 
         binding.currentMonthButton.setOnClickListener(new View.OnClickListener()
         {
@@ -95,9 +89,33 @@ public class MonthAssistantCalendarFragment extends Fragment implements IControl
     }
 
     @Override
-    public void getInstances(int viewPosition, long begin, long end, EventCallback<List<CalendarInstance>> callback)
+    public void onStart()
     {
-        calendarViewModel.getInstanceList(iConnectedCalendars.getConnectedCalendars(), begin, end, callback);
+        super.onStart();
+        if (AppPermission.grantedPermissions(getContext(), Manifest.permission.READ_CALENDAR))
+        {
+
+        } else
+        {
+
+        }
+    }
+
+    private void setDataToView()
+    {
+        adapter = new MonthAssistantCalendarListAdapter(getActivity(), this, calendarDateOnClickListener);
+
+        binding.monthAssistantCalendarViewpager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
+        binding.monthAssistantCalendarViewpager.setAdapter(adapter);
+        binding.monthAssistantCalendarViewpager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, false);
+        binding.monthAssistantCalendarViewpager.registerOnPageChangeCallback(onPageChangeCallback);
+        binding.currentMonth.setText(ClockUtil.YEAR_MONTH_FORMAT.format(adapter.getAsOfDate()));
+    }
+
+    @Override
+    public List<CalendarInstance> getInstances(int viewPosition, long begin, long end)
+    {
+        return calendarViewModel.getInstances(iConnectedCalendars.getConnectedCalendars(), begin, end);
     }
 
     /**

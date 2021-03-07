@@ -1,6 +1,7 @@
 package com.zerodsoft.scheduleweather.calendarview.month;
 
 import android.os.Bundle;
+import android.os.RemoteException;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,16 +12,13 @@ import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
-import com.zerodsoft.scheduleweather.calendarview.callback.EventCallback;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 
 import java.util.Calendar;
-import java.util.List;
 
 public class MonthFragment extends Fragment implements IRefreshView
 {
@@ -67,21 +65,21 @@ public class MonthFragment extends Fragment implements IRefreshView
     }
 
     @Override
+    public void onStart()
+    {
+        super.onStart();
+    }
+
+    @Override
     public void refreshView()
     {
         int currentItem = viewPager.getCurrentItem();
         long start = viewPagerAdapter.getDate(currentItem, MonthViewPagerAdapter.FIRST_DAY).getTime();
         long end = viewPagerAdapter.getDate(currentItem, MonthViewPagerAdapter.LAST_DAY).getTime();
 
-        iControlEvent.getInstances(currentItem, start, end, new EventCallback<List<CalendarInstance>>()
-        {
-            @Override
-            public void onResult(List<CalendarInstance> e)
-            {
-                viewPagerAdapter.refresh(currentItem, e);
-                viewPagerAdapter.notifyDataSetChanged();
-            }
-        });
+        ;
+        viewPagerAdapter.refresh(currentItem, iControlEvent.getInstances(currentItem, start, end));
+        viewPagerAdapter.notifyDataSetChanged();
     }
 
     public void goToToday()

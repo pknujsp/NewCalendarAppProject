@@ -17,7 +17,9 @@ import android.database.ContentObserver;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.RemoteException;
 import android.provider.CalendarContract;
+import android.service.carrier.CarrierMessagingService;
 import android.util.ArraySet;
 import android.util.Base64;
 import android.util.Log;
@@ -26,7 +28,6 @@ import android.widget.ExpandableListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.material.button.MaterialButtonToggleGroup;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.activity.editevent.activity.EditEventActivity;
@@ -44,10 +45,9 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
 import com.zerodsoft.scheduleweather.calendarview.month.MonthFragment;
 import com.zerodsoft.scheduleweather.calendarview.week.WeekFragment;
 import com.zerodsoft.scheduleweather.databinding.ActivityAppMainBinding;
-import com.zerodsoft.scheduleweather.calendar.CalendarProvider;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendar.dto.AccountDto;
-import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
+import com.zerodsoft.scheduleweather.etc.AppPermission;
 import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
@@ -59,11 +59,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import java.security.MessageDigest;
@@ -73,6 +71,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import lombok.SneakyThrows;
 
 public class AppMainActivity extends AppCompatActivity implements ICalendarCheckBox, IToolbar, IConnectedCalendars, IstartActivity, CalendarDateOnClickListener
 {
@@ -88,6 +88,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
     private CalendarsAdapter calendarsAdapter;
     private TextView currMonthTextView;
     private Object statusHandle;
+    private AppPermission appPermission;
 
     public static final int TYPE_DAY = 10;
     public static final int TYPE_WEEK = 20;
@@ -133,6 +134,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
         return DISPLAY_WIDTH;
     }
 
+    @SneakyThrows
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -193,7 +195,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
         getSupportFragmentManager().beginTransaction().add(R.id.calendar_layout, calendarTransactionFragment, EventTransactionFragment.TAG).commit();
 
         //보조 캘린더 프래그먼트 생성
-        monthAssistantCalendarFragment = new MonthAssistantCalendarFragment(AppMainActivity.this);
+        monthAssistantCalendarFragment = new MonthAssistantCalendarFragment(this);
     }
 
     private final ContentObserver contentObserver = new ContentObserver(new Handler())
@@ -204,6 +206,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
             return true;
         }
 
+        @SneakyThrows
         @Override
         public void onChange(boolean selfChange)
         {
@@ -230,189 +233,106 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
         }
     };
 
+    private void initSideCalendars(List<ContentValues> calendarList)
+    {
+        // accountName을 기준으로 맵 구성
+        Map<String, AccountDto> accountMap = new HashMap<>();
+
+        for (ContentValues calendar : calendarList)
+        {
+            String accountName = calendar.getAsString(CalendarContract.Calendars.ACCOUNT_NAME);
+            String ownerAccount = calendar.getAsString(CalendarContract.Calendars.OWNER_ACCOUNT);
+            String accountType = calendar.getAsString(CalendarContract.Calendars.ACCOUNT_TYPE);
+
+            if (accountMap.containsKey(accountName))
+            {
+                accountMap.get(accountName).addCalendar(calendar);
+            } else
+            {
+                AccountDto accountDto = new AccountDto();
+
+                accountDto.setAccountName(accountName).setAccountType(accountType)
+                        .setOwnerAccount(ownerAccount).addCalendar(calendar);
+                accountMap.put(accountName, accountDto);
+            }
+        }
+        accountList = new ArrayList<>(accountMap.values());
+
+        SharedPreferences sharedPreferences = getSharedPreferences(getString(R.string.preferences_selected_calendars_key), Context.MODE_PRIVATE);
+        Set<String> selectedCalendarSet = new ArraySet<>();
+        Map<String, String> selectedCalendarsMap = (Map<String, String>) sharedPreferences.getAll();
+
+        selectedCalendarSet.addAll(selectedCalendarsMap.values());
+
+        final boolean[][] checkBoxStates = new boolean[accountList.size()][];
+
+        for (int i = 0; i < accountList.size(); i++)
+        {
+            checkBoxStates[i] = new boolean[accountList.get(i).getCalendars().size()];
+        }
+
+        for (String key : selectedCalendarSet)
+        {
+            int group = 0;
+
+            for (AccountDto accountDto : accountList)
+            {
+                List<ContentValues> selectedCalendarList = accountDto.getCalendars();
+                int child = 0;
+
+                for (ContentValues calendar : selectedCalendarList)
+                {
+                    if (key.equals(calendar.getAsString(CalendarContract.Calendars.ACCOUNT_NAME) + "&"
+                            + calendar.getAsString(CalendarContract.Calendars._ID)))
+                    {
+                        checkBoxStates[group][child] = true;
+                        connectedCalendarMap.put(key, calendar);
+                        connectedCalendarList.add(calendar);
+                        break;
+                    }
+                    child++;
+                }
+                group++;
+            }
+        }
+
+        // 네비게이션 내 캘린더 리스트 구성
+        calendarsAdapter = new CalendarsAdapter(AppMainActivity.this, accountList, checkBoxStates);
+        mainBinding.sideNavCalendarList.setAdapter(calendarsAdapter);
+        mainBinding.sideNavCalendarList.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener()
+        {
+            @Override
+            public boolean onGroupClick(ExpandableListView expandableListView, View view, int i, long l)
+            {
+                return false;
+            }
+        });
+    }
+
 
     private void initCalendarViewModel()
     {
         calendarViewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
-        calendarViewModel.init(getApplicationContext());
 
         //권한 확인
-        int permissionState = ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.READ_CALENDAR);
-        if (permissionState == PackageManager.PERMISSION_GRANTED)
+        if (AppPermission.grantedPermissions(getApplicationContext(), Manifest.permission.READ_CALENDAR))
         {
-            calendarViewModel.getAllCalendars();
+            List<ContentValues> calendars = calendarViewModel.getAllCalendars();
+            initSideCalendars(calendars);
         } else
         {
-            requestPermissions(new String[]{Manifest.permission.READ_CALENDAR}, CalendarProvider.REQUEST_READ_CALENDAR);
-        }
-
-        calendarViewModel.getAllCalendarListLiveData().observe(this, new Observer<DataWrapper<List<ContentValues>>>()
-        {
-            @Override
-            public void onChanged(DataWrapper<List<ContentValues>> listDataWrapper)
-            {
-                if (listDataWrapper.getData() != null)
-                {
-                    // accountName을 기준으로 맵 구성
-                    Map<String, AccountDto> accountMap = new HashMap<>();
-                    List<ContentValues> calendarList = listDataWrapper.getData();
-
-                    for (ContentValues calendar : calendarList)
-                    {
-                        String accountName = calendar.getAsString(CalendarContract.Calendars.ACCOUNT_NAME);
-                        String ownerAccount = calendar.getAsString(CalendarContract.Calendars.OWNER_ACCOUNT);
-                        String accountType = calendar.getAsString(CalendarContract.Calendars.ACCOUNT_TYPE);
-
-                        if (accountMap.containsKey(accountName))
-                        {
-                            accountMap.get(accountName).addCalendar(calendar);
-                        } else
-                        {
-                            AccountDto accountDto = new AccountDto();
-
-                            accountDto.setAccountName(accountName).setAccountType(accountType)
-                                    .setOwnerAccount(ownerAccount).addCalendar(calendar);
-                            accountMap.put(accountName, accountDto);
-                        }
-                    }
-                    accountList = new ArrayList<>(accountMap.values());
-
-                    SharedPreferences sharedPreferences = getSharedPreferences(getString(R.string.preferences_selected_calendars_key), Context.MODE_PRIVATE);
-                    Set<String> selectedCalendarSet = new ArraySet<>();
-                    Map<String, String> selectedCalendarsMap = (Map<String, String>) sharedPreferences.getAll();
-
-                    selectedCalendarSet.addAll(selectedCalendarsMap.values());
-
-                    final boolean[][] checkBoxStates = new boolean[accountList.size()][];
-
-                    for (int i = 0; i < accountList.size(); i++)
-                    {
-                        checkBoxStates[i] = new boolean[accountList.get(i).getCalendars().size()];
-                    }
-
-                    for (String key : selectedCalendarSet)
-                    {
-                        int group = 0;
-
-                        for (AccountDto accountDto : accountList)
-                        {
-                            List<ContentValues> selectedCalendarList = accountDto.getCalendars();
-                            int child = 0;
-
-                            for (ContentValues calendar : selectedCalendarList)
-                            {
-                                if (key.equals(calendar.getAsString(CalendarContract.Calendars.ACCOUNT_NAME) + "&"
-                                        + calendar.getAsString(CalendarContract.Calendars._ID)))
-                                {
-                                    checkBoxStates[group][child] = true;
-                                    connectedCalendarMap.put(key, calendar);
-                                    connectedCalendarList.add(calendar);
-                                    break;
-                                }
-                                child++;
-                            }
-                            group++;
-                        }
-                    }
-
-                    // 네비게이션 내 캘린더 리스트 구성
-                    calendarsAdapter = new CalendarsAdapter(AppMainActivity.this, accountList, checkBoxStates);
-                    mainBinding.sideNavCalendarList.setAdapter(calendarsAdapter);
-                    mainBinding.sideNavCalendarList.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener()
-                    {
-                        @Override
-                        public boolean onGroupClick(ExpandableListView expandableListView, View view, int i, long l)
-                        {
-                            return false;
-                        }
-                    });
-                }
-            }
-        });
-
-        calendarViewModel.getCalendarLiveData().observe(this, new Observer<DataWrapper<ContentValues>>()
-        {
-            @Override
-            public void onChanged(DataWrapper<ContentValues> contentValuesDataWrapper)
-            {
-
-            }
-        });
-
-
-
-        /*
-        calendarViewModel.getCalendarListLiveData().observe(this, new Observer<DataWrapper<List<CalendarListEntry>>>()
-        {
-            @Override
-            public void onChanged(DataWrapper<List<CalendarListEntry>> listDataWrapper)
-            {
-                if (listDataWrapper.getData() != null)
-                {
-                    List<CalendarListEntry> calendarList = listDataWrapper.getData();
-                    calendarViewModel.getEvents(null);
-
-                    final int DP_32 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32f, getResources().getDisplayMetrics());
-                    sideNavHeaderBinding.googleCalendarList.removeAllViews();
-
-                    for (CalendarListEntry calendarListEntry : calendarList)
-                    {
-                        MaterialCheckBox calendarCheckBox = new MaterialCheckBox(AppMainActivity.this);
-                        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, DP_32);
-                        calendarCheckBox.setLayoutParams(layoutParams);
-                        calendarCheckBox.setText(calendarListEntry.getSummary());
-                        sideNavHeaderBinding.googleCalendarList.addView(calendarCheckBox);
-                    }
-                } else if (listDataWrapper.getException() != null)
-                {
-                    Exception exception = listDataWrapper.getException();
-
-                    if (exception instanceof UserRecoverableAuthIOException)
-                    {
-                        startActivityForResult(((UserRecoverableAuthIOException) listDataWrapper.getException()).getIntent(), GoogleCalendarApi.REQUEST_AUTHORIZATION);
-                    }
-                }
-            }
-        });
-
-
-         */
-    }
-
-    /*
-    private void checkSavedGoogleAccount()
-    {
-        String accountName = getPreferences(Context.MODE_PRIVATE).getString(GoogleCalendarApi.GOOGLE_ACCOUNT_NAME, "");
-        if (!accountName.isEmpty())
-        {
-            // 저장된 계정이 있는 경우
-            int permission = ContextCompat.checkSelfPermission(this, Manifest.permission.GET_ACCOUNTS);
-            if (permission == PackageManager.PERMISSION_GRANTED)
-            {
-                try
-                {
-                    calendarViewModel.connect(accountName);
-                } catch (IOException | GeneralSecurityException e)
-                {
-                    e.printStackTrace();
-                }
-            } else if (permission == PackageManager.PERMISSION_DENIED)
-            {
-                // 권한 요청 화면 표시
-                requestPermissions(new String[]{Manifest.permission.GET_ACCOUNTS}, GoogleCalendarApi.REQUEST_PERMISSION_GET_ACCOUNTS_AUTO);
-            }
-        } else
-        {
-
+            permissionsResultLauncher.launch(new String[]{Manifest.permission.READ_CALENDAR});
         }
     }
-     */
+
 
     private void setNavigationView()
     {
         mainBinding.sideNavMenu.favoriteLocation.setOnClickListener(sideNavOnClickListener);
         mainBinding.sideNavMenu.settings.setOnClickListener(sideNavOnClickListener);
-        mainBinding.sideNavCalendarTypes.calendarTypeToggleGroup.addOnButtonCheckedListener(calendarTypeButtonCheckedListener);
+        mainBinding.sideNavCalendarTypes.calendarTypeDay.setOnClickListener(calendarTypeOnClickListener);
+        mainBinding.sideNavCalendarTypes.calendarTypeWeek.setOnClickListener(calendarTypeOnClickListener);
+        mainBinding.sideNavCalendarTypes.calendarTypeMonth.setOnClickListener(calendarTypeOnClickListener);
 
         SharedPreferences preferences = getSharedPreferences(getString(R.string.preferences_selected_calendar_type_key), Context.MODE_PRIVATE);
         int type = preferences.getInt(getString(R.string.preferences_selected_calendar_type_key), 0);
@@ -420,126 +340,77 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
         switch (type)
         {
             case TYPE_DAY:
-                mainBinding.sideNavCalendarTypes.calendarTypeToggleGroup.check(R.id.calendar_type_day);
+                mainBinding.sideNavCalendarTypes.calendarTypeDay.performClick();
                 break;
             case TYPE_WEEK:
-                mainBinding.sideNavCalendarTypes.calendarTypeToggleGroup.check(R.id.calendar_type_week);
+                mainBinding.sideNavCalendarTypes.calendarTypeWeek.performClick();
                 break;
             case TYPE_MONTH:
             case 0:
-                mainBinding.sideNavCalendarTypes.calendarTypeToggleGroup.check(R.id.calendar_type_month);
+                mainBinding.sideNavCalendarTypes.calendarTypeMonth.performClick();
                 break;
         }
 
-        /*
-        sideNavHeaderBinding.connectGoogle.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                int permission = ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.GET_ACCOUNTS);
-                if (permission == PackageManager.PERMISSION_GRANTED)
-                {
-                    calendarViewModel.requestAccountPicker();
-                } else if (permission == PackageManager.PERMISSION_DENIED)
-                {
-                    // 권한 요청 화면 표시
-                    requestPermissions(new String[]{Manifest.permission.GET_ACCOUNTS}, GoogleCalendarApi.REQUEST_PERMISSION_GET_ACCOUNTS_SELF);
-                }
-            }
-        });
-        sideNavHeaderBinding.disconnectGoogle.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                SharedPreferences settings = getPreferences(Context.MODE_PRIVATE);
-                SharedPreferences.Editor editor = settings.edit();
-                editor.putString(GoogleCalendarApi.GOOGLE_ACCOUNT_NAME, "");
-                editor.apply();
-
-                calendarViewModel.disconnect();
-                calendarViewModel = null;
-                initCalendarViewModel();
-                Toast.makeText(AppMainActivity.this, getString(R.string.disconnected_google_calendar), Toast.LENGTH_SHORT).show();
-            }
-        });
-
-         */
     }
 
-    /*
-    private void setExpandableListViewHeight()
+    private final View.OnClickListener calendarTypeOnClickListener = new View.OnClickListener()
     {
-        ExpandableListView listView = mainBinding.sideNavCalendarList;
-        ExpandableListAdapter listAdapter = mainBinding.sideNavCalendarList.getExpandableListAdapter();
-        if (listAdapter == null)
-        {
-            return;
-        }
-
-        int totalHeight = 0;
-        int desiredWidth = View.MeasureSpec.makeMeasureSpec(listView.getWidth(), View.MeasureSpec.AT_MOST);
-
-        for (int group = 0; group < listAdapter.getGroupCount(); group++)
-        {
-            listAdapter.getGr
-            for (int child = 0; child < listAdapter.getChildrenCount(group); child++)
-            {
-                View childView = listAdapter.getC
-                childView.measure(desiredWidth, View.MeasureSpec.UNSPECIFIED);
-                totalHeight += childView.getMeasuredHeight();
-            }
-        }
-
-        ViewGroup.LayoutParams params = listView.getLayoutParams();
-        params.height = totalHeight + (listView.getDividerHeight() * (listAdapter.getGroupCount() - 1));
-        listView.setLayoutParams(params);
-        listView.requestLayout();
-    }
-
-     */
-
-    private final MaterialButtonToggleGroup.OnButtonCheckedListener calendarTypeButtonCheckedListener
-            = new MaterialButtonToggleGroup.OnButtonCheckedListener()
-    {
-        @SuppressLint("NonConstantResourceId")
         @Override
-        public void onButtonChecked(MaterialButtonToggleGroup group, int checkedId, boolean isChecked)
+        public void onClick(View view)
         {
             SharedPreferences.Editor editor = getSharedPreferences(getString(R.string.preferences_selected_calendar_type_key), MODE_PRIVATE).edit();
             FragmentManager fragmentManager = getSupportFragmentManager();
+
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
-            switch (checkedId)
+            switch (view.getId())
             {
                 case R.id.calendar_type_day:
-                    editor.putInt(getString(R.string.preferences_selected_calendar_type_key), TYPE_DAY);
-                    calendarTransactionFragment.replaceFragment(DayFragment.TAG);
-                    fragmentTransaction.replace(R.id.assistant_calendar_container, monthAssistantCalendarFragment, MonthAssistantCalendarFragment.TAG).commit();
-                    monthAssistantCalendarFragment.refresh();
+                    if (fragmentManager.findFragmentByTag(DayFragment.TAG) == null)
+                    {
+                        mainBinding.sideNavCalendarTypes.dayRadio.setVisibility(View.VISIBLE);
+                        mainBinding.sideNavCalendarTypes.weekRadio.setVisibility(View.GONE);
+                        mainBinding.sideNavCalendarTypes.monthRadio.setVisibility(View.GONE);
+
+                        editor.putInt(getString(R.string.preferences_selected_calendar_type_key), TYPE_DAY).apply();
+                        calendarTransactionFragment.replaceFragment(DayFragment.TAG);
+                        fragmentTransaction.replace(R.id.assistant_calendar_container, monthAssistantCalendarFragment, MonthAssistantCalendarFragment.TAG).commit();
+                        monthAssistantCalendarFragment.refresh();
+                    }
                     break;
                 case R.id.calendar_type_week:
-                    editor.putInt(getString(R.string.preferences_selected_calendar_type_key), TYPE_WEEK);
-                    calendarTransactionFragment.replaceFragment(WeekFragment.TAG);
-                    fragmentTransaction.replace(R.id.assistant_calendar_container, monthAssistantCalendarFragment, MonthAssistantCalendarFragment.TAG).commit();
-                    monthAssistantCalendarFragment.refresh();
+                    if (fragmentManager.findFragmentByTag(WeekFragment.TAG) == null)
+                    {
+                        mainBinding.sideNavCalendarTypes.dayRadio.setVisibility(View.GONE);
+                        mainBinding.sideNavCalendarTypes.weekRadio.setVisibility(View.VISIBLE);
+                        mainBinding.sideNavCalendarTypes.monthRadio.setVisibility(View.GONE);
+
+                        editor.putInt(getString(R.string.preferences_selected_calendar_type_key), TYPE_WEEK).apply();
+                        calendarTransactionFragment.replaceFragment(WeekFragment.TAG);
+                        fragmentTransaction.replace(R.id.assistant_calendar_container, monthAssistantCalendarFragment, MonthAssistantCalendarFragment.TAG).commit();
+                        monthAssistantCalendarFragment.refresh();
+                    }
                     break;
                 case R.id.calendar_type_month:
-                    editor.putInt(getString(R.string.preferences_selected_calendar_type_key), TYPE_MONTH);
-                    calendarTransactionFragment.replaceFragment(MonthFragment.TAG);
-                    if (mainBinding.assistantCalendarContainer.getVisibility() == View.VISIBLE)
+                    if (fragmentManager.findFragmentByTag(MonthFragment.TAG) == null)
                     {
-                        mainBinding.assistantCalendarContainer.setVisibility(View.GONE);
-                    }
-                    if (fragmentManager.findFragmentByTag(MonthAssistantCalendarFragment.TAG) != null)
-                    {
-                        fragmentTransaction.remove(monthAssistantCalendarFragment).commit();
+                        mainBinding.sideNavCalendarTypes.dayRadio.setVisibility(View.GONE);
+                        mainBinding.sideNavCalendarTypes.weekRadio.setVisibility(View.GONE);
+                        mainBinding.sideNavCalendarTypes.monthRadio.setVisibility(View.VISIBLE);
+
+                        editor.putInt(getString(R.string.preferences_selected_calendar_type_key), TYPE_MONTH).apply();
+                        calendarTransactionFragment.replaceFragment(MonthFragment.TAG);
+                        if (mainBinding.assistantCalendarContainer.getVisibility() == View.VISIBLE)
+                        {
+                            mainBinding.assistantCalendarContainer.setVisibility(View.GONE);
+                        }
+                        if (fragmentManager.findFragmentByTag(MonthAssistantCalendarFragment.TAG) != null)
+                        {
+                            fragmentTransaction.remove(monthAssistantCalendarFragment).commit();
+                        }
                     }
                     break;
             }
-
-            editor.apply();
             mainBinding.drawerLayout.closeDrawer(mainBinding.sideNavigation);
         }
     };
@@ -599,7 +470,8 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
                 calendarTransactionFragment.goToToday();
                 break;
             case R.id.refresh_calendar:
-                calendarViewModel.syncCalendars();
+                Toast.makeText(AppMainActivity.this, "working", Toast.LENGTH_SHORT).show();
+                // calendarViewModel.syncCalendars();
                 break;
         }
     }
@@ -644,6 +516,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
         super.onDestroy();
     }
 
+    @SneakyThrows
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data)
     {
@@ -665,38 +538,34 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
         }
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                           @NonNull int[] grantResults)
-    {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    private final ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>()
+            {
+                @Override
+                public void onActivityResult(ActivityResult result)
+                {
 
-        switch (requestCode)
-        {
-            case CalendarProvider.REQUEST_READ_CALENDAR:
-                if (grantResults.length > 0 &&
-                        grantResults[0] == PackageManager.PERMISSION_GRANTED)
-                {
-                    // 권한 허용됨
-                    calendarViewModel.getAllCalendars();
-                } else
-                {
-                    // 권한 거부됨
                 }
-                break;
+            }
+    );
 
-            case CalendarProvider.REQUEST_WRITE_CALENDAR:
-                if (grantResults.length > 0 &&
-                        grantResults[0] == PackageManager.PERMISSION_GRANTED)
+    private final ActivityResultLauncher<String[]> permissionsResultLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(),
+            new ActivityResultCallback<Map<String, Boolean>>()
+            {
+                @SneakyThrows
+                @Override
+                public void onActivityResult(Map<String, Boolean> result)
                 {
-                    // 권한 허용됨
-                } else
-                {
-                    // 권한 거부됨
+                    if (result.get(Manifest.permission.READ_CALENDAR))
+                    {
+                        // 권한 허용됨
+                        initSideCalendars(calendarViewModel.getAllCalendars());
+                    } else
+                    {
+                        // 권한 거부됨
+                    }
                 }
-                break;
-        }
-    }
+            });
 
 
     @Override
@@ -752,22 +621,6 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
         return connectedCalendarList;
     }
 
-    private final ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            new ActivityResultCallback<ActivityResult>()
-            {
-                @Override
-                public void onActivityResult(ActivityResult result)
-                {
-                    final int resultCode = result.getResultCode();
-
-                    if (resultCode == DELETED_EVENT || resultCode == EXCEPTED_INSTANCE)
-                    {
-                        calendarTransactionFragment.refreshView();
-                    }
-                }
-            }
-    );
 
     @Override
     public void startActivityResult(Intent intent, int requestCode)
