@@ -18,6 +18,7 @@ import android.view.ViewGroup;
 import androidx.annotation.Nullable;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.calendarview.common.HeaderInstancesView;
 import com.zerodsoft.scheduleweather.calendarview.common.InstanceView;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IEvent;
@@ -42,6 +43,7 @@ public class WeekHeaderView extends ViewGroup implements IEvent
     private Calendar weekLastDay;
 
     private final int ROWS_LIMIT;
+    private Integer COLUMN_WIDTH;
 
     private final TextPaint DAY_TEXT_PAINT;
     private final TextPaint DATE_TEXT_PAINT;
@@ -126,6 +128,7 @@ public class WeekHeaderView extends ViewGroup implements IEvent
             getChildAt(0).measure(getWidth() - getWidth() / 8, (int) (getHeight() - DATE_DAY_SPACE_HEIGHT));
             getChildAt(0).layout(getWidth() / 8, (int) DATE_DAY_SPACE_HEIGHT, getWidth(), getHeight());
         }
+        COLUMN_WIDTH = getWidth() / 8;
     }
 
     @Override
@@ -137,21 +140,22 @@ public class WeekHeaderView extends ViewGroup implements IEvent
 
     private void drawHeaderView(Canvas canvas)
     {
-        final int COLUMN_WIDTH = getWidth() / 8;
         // 몇 번째 주인지 표시
+        if (App.isPreference_key_show_week_of_year())
+        {
+            RectF weekOfYearRect = new RectF();
+            weekOfYearRect.left = COLUMN_WIDTH * (1f / 4f);
+            weekOfYearRect.right = COLUMN_WIDTH * (3f / 4f);
+            weekOfYearRect.top = (DATE_DAY_SPACE_HEIGHT - TEXT_SIZE) / 2;
+            weekOfYearRect.bottom = weekOfYearRect.top + TEXT_SIZE;
 
-        RectF weekOfYearRect = new RectF();
-        weekOfYearRect.left = COLUMN_WIDTH * (1f / 4f);
-        weekOfYearRect.right = COLUMN_WIDTH * (3f / 4f);
-        weekOfYearRect.top = (DATE_DAY_SPACE_HEIGHT - TEXT_SIZE) / 2;
-        weekOfYearRect.bottom = weekOfYearRect.top + TEXT_SIZE;
+            Rect rect = new Rect();
+            WEEK_OF_YEAR_TEXT_PAINT.getTextBounds("0", 0, 1, rect);
 
-        Rect rect = new Rect();
-        WEEK_OF_YEAR_TEXT_PAINT.getTextBounds("0", 0, 1, rect);
-
-        canvas.drawRoundRect(weekOfYearRect, 10, 10, WEEK_OF_YEAR_RECT_PAINT);
-        canvas.drawText(Integer.toString(weekFirstDay.get(Calendar.WEEK_OF_YEAR)),
-                weekOfYearRect.centerX(), weekOfYearRect.centerY() + rect.height() / 2f, WEEK_OF_YEAR_TEXT_PAINT);
+            canvas.drawRoundRect(weekOfYearRect, 10, 10, WEEK_OF_YEAR_RECT_PAINT);
+            canvas.drawText(Integer.toString(weekFirstDay.get(Calendar.WEEK_OF_YEAR)),
+                    weekOfYearRect.centerX(), weekOfYearRect.centerY() + rect.height() / 2f, WEEK_OF_YEAR_TEXT_PAINT);
+        }
 
         final float dayY = SPACING_BETWEEN_TEXT + TEXT_SIZE - DAY_TEXT_PAINT.descent();
         final float dateY = dayY + DAY_TEXT_PAINT.descent() + SPACING_BETWEEN_TEXT + TEXT_SIZE - DATE_TEXT_PAINT.descent();

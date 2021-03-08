@@ -15,6 +15,7 @@ import android.provider.CalendarContract;
 
 import androidx.core.content.ContextCompat;
 
+import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.calendar.dto.AccountDto;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendar.interfaces.ICalendarProvider;
@@ -700,7 +701,18 @@ public class CalendarProvider implements ICalendarProvider
             ContentResolver contentResolver = context.getContentResolver();
 
             String selection = CalendarContract.Instances.CALENDAR_ID + "=?";
-            final String[] selectionArg = new String[1];
+            String[] selectionArg = null;
+
+            if (!App.isPreference_key_show_canceled_instances())
+            {
+                selection += " AND " + CalendarContract.Instances.STATUS + "!=?";
+                selectionArg = new String[2];
+                selectionArg[1] = String.valueOf(CalendarContract.Instances.STATUS_CANCELED);
+            } else
+            {
+                selectionArg = new String[1];
+            }
+
 
             Uri.Builder builder = CalendarContract.Instances.CONTENT_URI.buildUpon();
             ContentUris.appendId(builder, startDate);

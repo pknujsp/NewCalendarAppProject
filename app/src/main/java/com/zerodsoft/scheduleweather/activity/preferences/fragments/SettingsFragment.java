@@ -60,6 +60,11 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
         initPreference();
         initValue();
 
+        useDefaultTimeZoneSwitchPreference.setOnPreferenceChangeListener(preferenceChangeListener);
+        weekOfYearSwitchPreference.setOnPreferenceChangeListener(preferenceChangeListener);
+        showCanceledInstanceSwitchPreference.setOnPreferenceChangeListener(preferenceChangeListener);
+        hourSystemSwitchPreference.setOnPreferenceChangeListener(preferenceChangeListener);
+
         useDefaultTimeZoneSwitchPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener()
         {
             @Override
@@ -102,40 +107,8 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
         {
             //값 변경완료시 호출됨
 
-            // 기기 기본 시간 사용
-            if (key.equals(useDefaultTimeZoneSwitchPreference.getKey()))
-            {
-                App.setPreference_key_using_timezone_of_device(useDefaultTimeZoneSwitchPreference.isChecked());
-            }
-
-            // 커스텀 시간대
-            else if (key.equals(customTimeZonePreference.getKey()))
-            {
-                App.setPreference_key_custom_timezone(customTimeZonePreference.getTimeZone());
-            }
-
-            // 주차 표시
-            else if (key.equals(weekOfYearSwitchPreference.getKey()))
-            {
-                App.setPreference_key_show_week_of_year(weekOfYearSwitchPreference.isChecked());
-            }
-
-            // 거절한 일정 표시
-            else if (key.equals(showCanceledInstanceSwitchPreference.getKey()))
-            {
-                App.setPreference_key_show_canceled_instances(showCanceledInstanceSwitchPreference.isChecked());
-            }
-
-            // 시간제
-            else if (key.equals(hourSystemSwitchPreference.getKey()))
-            {
-                App.setPreference_key_settings_hour_system(hourSystemSwitchPreference.isChecked());
-            }
-
-            //검색 반지름 범위
             if (key.equals(searchingRadiusPreference.getKey()))
             {
-                App.setPreference_key_radius_range(searchingRadiusPreference.getText());
                 searchingRadiusPreference.setValue();
             }
         }
@@ -193,6 +166,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
 
                 if (radius >= 0 && radius <= 20000)
                 {
+                    App.setPreference_key_radius_range((String) newValue);
                     return true;
                 } else
                 {
@@ -202,6 +176,73 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
             }
         });
     }
+
+    private final Preference.OnPreferenceChangeListener preferenceChangeListener = new Preference.OnPreferenceChangeListener()
+    {
+        @Override
+        public boolean onPreferenceChange(Preference preference, Object newValue)
+        {
+            //주차
+            if (preference.getKey().equals(weekOfYearSwitchPreference.getKey()))
+            {
+                boolean value = (Boolean) newValue;
+                if (value != weekOfYearSwitchPreference.isChecked())
+                {
+                    App.setPreference_key_show_week_of_year(value);
+                    return true;
+                } else
+                {
+                    return false;
+                }
+            }
+
+            // 기기 기본 시간 사용
+            else if (preference.getKey().equals(useDefaultTimeZoneSwitchPreference.getKey()))
+            {
+                boolean value = (Boolean) newValue;
+
+                if (value != useDefaultTimeZoneSwitchPreference.isChecked())
+                {
+                    App.setPreference_key_using_timezone_of_device(value);
+                    return true;
+                } else
+                {
+                    return false;
+                }
+            }
+
+            // 거절한 일정 표시
+            else if (preference.getKey().equals(showCanceledInstanceSwitchPreference.getKey()))
+            {
+                boolean value = (Boolean) newValue;
+
+                if (value != showCanceledInstanceSwitchPreference.isChecked())
+                {
+                    App.setPreference_key_show_canceled_instances(value);
+                    return true;
+                } else
+                {
+                    return false;
+                }
+            }
+
+            // 시간제
+            else if (preference.getKey().equals(hourSystemSwitchPreference.getKey()))
+            {
+                boolean value = (Boolean) newValue;
+
+                if (value != hourSystemSwitchPreference.isChecked())
+                {
+                    App.setPreference_key_settings_hour_system(value);
+                    return true;
+                } else
+                {
+                    return false;
+                }
+            }
+            return false;
+        }
+    };
 
     private void initValue()
     {
