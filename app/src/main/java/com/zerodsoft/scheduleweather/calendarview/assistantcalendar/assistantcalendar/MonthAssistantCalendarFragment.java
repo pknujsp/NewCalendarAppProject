@@ -18,6 +18,7 @@ import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.CalendarDateOnClickListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.databinding.FragmentMonthAssistantBinding;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
@@ -26,7 +27,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-public class MonthAssistantCalendarFragment extends Fragment implements IControlEvent
+public class MonthAssistantCalendarFragment extends Fragment implements IControlEvent, IRefreshView
 {
     public static final String TAG = "MonthAssistantCalendarFragment";
 
@@ -62,7 +63,7 @@ public class MonthAssistantCalendarFragment extends Fragment implements IControl
             public void onClick(View view)
             {
                 //오늘 날짜로 이동
-                binding.monthAssistantCalendarViewpager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, true);
+                goToToday();
             }
         });
 
@@ -95,7 +96,7 @@ public class MonthAssistantCalendarFragment extends Fragment implements IControl
 
     private void setDataToView()
     {
-        adapter = new MonthAssistantCalendarListAdapter(getActivity(), this, calendarDateOnClickListener);
+        adapter = new MonthAssistantCalendarListAdapter(getActivity(), this, calendarDateOnClickListener,iConnectedCalendars);
 
         binding.monthAssistantCalendarViewpager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
         binding.monthAssistantCalendarViewpager.setAdapter(adapter);
@@ -103,7 +104,7 @@ public class MonthAssistantCalendarFragment extends Fragment implements IControl
         binding.monthAssistantCalendarViewpager.registerOnPageChangeCallback(onPageChangeCallback);
         binding.currentMonth.setText(ClockUtil.YEAR_MONTH_FORMAT.format(adapter.getAsOfDate()));
     }
-    
+
     /**
      * 현재 년월 텍스트를 클릭하면 보조 캘린더의 날짜를 현재 month로 설정하고 표시
      **/
@@ -121,7 +122,7 @@ public class MonthAssistantCalendarFragment extends Fragment implements IControl
     {
         if (adapter != null)
         {
-            adapter.notifyDataSetChanged();
+            refreshView();
         }
     }
 
@@ -144,5 +145,22 @@ public class MonthAssistantCalendarFragment extends Fragment implements IControl
     public Map<Integer, CalendarInstance> getInstances(long begin, long end)
     {
         return calendarViewModel.getInstances(begin, end);
+    }
+
+    @Override
+    public void refreshView()
+    {
+        int currentItem = binding.monthAssistantCalendarViewpager.getCurrentItem();
+        adapter.refresh(currentItem);
+        adapter.notifyDataSetChanged();
+    }
+
+    public void goToToday()
+    {
+        if (binding.monthAssistantCalendarViewpager.getCurrentItem() != EventTransactionFragment.FIRST_VIEW_POSITION)
+        {
+            binding.monthAssistantCalendarViewpager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, true);
+            refreshView();
+        }
     }
 }

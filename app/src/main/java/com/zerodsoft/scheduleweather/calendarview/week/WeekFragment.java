@@ -32,9 +32,9 @@ public class WeekFragment extends Fragment implements IRefreshView
     private WeekViewPagerAdapter weekViewPagerAdapter;
     private int currentPosition = EventTransactionFragment.FIRST_VIEW_POSITION;
 
-    private IControlEvent iControlEvent;
-    private IToolbar iToolbar;
-    private OnEventItemClickListener onEventItemClickListener;
+    private final IControlEvent iControlEvent;
+    private final IToolbar iToolbar;
+    private final OnEventItemClickListener onEventItemClickListener;
     private final IConnectedCalendars iConnectedCalendars;
     private static final int COLUMN_WIDTH = AppMainActivity.getDisplayWidth() / 8;
 
@@ -133,6 +133,7 @@ public class WeekFragment extends Fragment implements IRefreshView
         if (currentPosition != EventTransactionFragment.FIRST_VIEW_POSITION)
         {
             weekViewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, true);
+            refreshView();
         }
     }
 

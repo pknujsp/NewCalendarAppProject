@@ -47,13 +47,11 @@ public class WeekView extends HourEventsView implements CalendarViewInitializer
     private boolean changingEndTime = false;
 
     private OnEventItemClickListener onEventItemClickListener;
-    private Map<Integer, CalendarInstance> calendarInstanceMap;
 
     private Date[] daysOfWeek;
     private List<ContentValues> instances;
     private SparseArray<List<ItemCell>> eventSparseArr = new SparseArray<>(7);
     private final int SPACING_BETWEEN_EVENTS = 5;
-    private IControlEvent iControlEvent;
 
     public WeekView(Context context, @Nullable AttributeSet attrs)
     {
@@ -158,7 +156,6 @@ public class WeekView extends HourEventsView implements CalendarViewInitializer
     public void init(Calendar copiedCalendar, OnEventItemClickListener onEventItemClickListener, IControlEvent iControlEvent, IConnectedCalendars iConnectedCalendars)
     {
         this.onEventItemClickListener = onEventItemClickListener;
-        this.iControlEvent = iControlEvent;
     }
 
     public void setDaysOfWeek(Date[] daysOfWeek)

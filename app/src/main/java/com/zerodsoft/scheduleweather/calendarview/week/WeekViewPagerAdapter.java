@@ -107,15 +107,13 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
 
     class WeekViewPagerHolder extends RecyclerView.ViewHolder
     {
-        private final WeekCalendarView weekCalendarView;
+        private WeekCalendarView weekCalendarView;
 
         public WeekViewPagerHolder(View view)
         {
             super(view);
-
             WeekView weekView = (WeekView) view.findViewById(R.id.week_view);
             WeekHeaderView weekHeaderView = (WeekHeaderView) view.findViewById(R.id.week_header);
-
             weekCalendarView = new WeekCalendarView(weekHeaderView, weekView);
         }
 

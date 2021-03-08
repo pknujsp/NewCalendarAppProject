@@ -1,21 +1,38 @@
 package com.zerodsoft.scheduleweather.calendarview.assistantcalendar.assistantcalendar;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.provider.CalendarContract;
 import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.zerodsoft.scheduleweather.activity.App;
+import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.CalendarDateOnClickListener;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.CalendarViewInitializer;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
+import com.zerodsoft.scheduleweather.calendarview.month.MonthCalendarView;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-public class MonthAssistantCalendarView extends ViewGroup
+public class MonthAssistantCalendarView extends ViewGroup implements CalendarViewInitializer
 {
     /*
     요일, 날짜, 이벤트 개수
@@ -30,6 +47,14 @@ public class MonthAssistantCalendarView extends ViewGroup
     protected static float SPACING_BETWEEN_DATE_COUNT;
     protected static float MARGIN;
     protected static Integer ITEM_HEIGHT;
+    private Date viewFirstDateTime;
+    private Date viewLastDateTime;
+
+    private Map<Integer, CalendarInstance> calendarInstanceMap;
+
+    private IConnectedCalendars iConnectedCalendars;
+    private CalendarDateOnClickListener calendarDateOnClickListener;
+    private IControlEvent iControlEvent;
 
     public MonthAssistantCalendarView(Context context, AttributeSet attrs)
     {
@@ -124,6 +149,153 @@ public class MonthAssistantCalendarView extends ViewGroup
     protected void dispatchDraw(Canvas canvas)
     {
         super.dispatchDraw(canvas);
+    }
+
+    public void init(Calendar calendar, CalendarDateOnClickListener calendarDateOnClickListener, IControlEvent iControlEvent, IConnectedCalendars iConnectedCalendars)
+    {
+        this.iConnectedCalendars = iConnectedCalendars;
+        this.calendarDateOnClickListener = calendarDateOnClickListener;
+        this.iControlEvent = iControlEvent;
+
+        final int previousMonthDaysCount = calendar.get(Calendar.DAY_OF_WEEK) - 1;
+        final int thisMonthDaysCount = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+        final int nextMonthDaysCount = MonthCalendarView.TOTAL_DAY_COUNT - thisMonthDaysCount - previousMonthDaysCount;
+
+        final int thisMonthFirstIndex = previousMonthDaysCount;
+        final int thisMonthLastIndex = MonthCalendarView.TOTAL_DAY_COUNT - nextMonthDaysCount - 1;
+
+        // 이전 달 일수 만큼 이동 ex) 20201001에서 20200927로 이동
+        calendar.add(Calendar.DATE, -previousMonthDaysCount);
+
+        Calendar calendar2 = (Calendar) calendar.clone();
+        calendar2.add(Calendar.DATE, 1);
+        removeAllViews();
+
+        viewFirstDateTime = calendar.getTime();
+
+        for (int index = 0; index < MonthCalendarView.TOTAL_DAY_COUNT; index++)
+        {
+            boolean thisMonthDate = (index <= thisMonthLastIndex) && (index >= thisMonthFirstIndex);
+
+            MonthAssistantItemView itemView = new MonthAssistantItemView(getContext(),
+                    thisMonthDate, calendar.getTime(), calendar2.getTime());
+
+            itemView.setClickable(true);
+            itemView.setOnClickListener(new View.OnClickListener()
+            {
+                @Override
+                public void onClick(View view)
+                {
+                    calendarDateOnClickListener.onClickedDate(calendar.getTime());
+                }
+            });
+            addView(itemView);
+
+            calendar.add(Calendar.DATE, 1);
+            calendar2.add(Calendar.DATE, 1);
+        }
+
+        viewLastDateTime = calendar.getTime();
+
+        setInstances(iControlEvent.getInstances(viewFirstDateTime.getTime(), viewLastDateTime.getTime()));
+        setEventTable();
+    }
+
+    @Override
+    public void init(Calendar copiedCalendar, OnEventItemClickListener onEventItemClickListener, IControlEvent iControlEvent, IConnectedCalendars iConnectedCalendars)
+    {
+
+    }
+
+    @Override
+    public void setInstances(Map<Integer, CalendarInstance> resultMap)
+    {
+        calendarInstanceMap = resultMap;
+    }
+
+    @Override
+    public void setEventTable()
+    {
+        if (getChildCount() > MonthCalendarView.TOTAL_DAY_COUNT)
+        {
+            removeViews(42, getChildCount() - 42);
+        }
+
+        //선택되지 않은 캘린더는 제외
+        List<ContentValues> connectedCalendars = iConnectedCalendars.getConnectedCalendars();
+        Set<Integer> connectedCalendarIdSet = new HashSet<>();
+
+        for (ContentValues calendar : connectedCalendars)
+        {
+            connectedCalendarIdSet.add(calendar.getAsInteger(CalendarContract.Calendars._ID));
+        }
+
+        List<ContentValues> instances = new ArrayList<>();
+        for (Integer calendarIdKey : connectedCalendarIdSet)
+        {
+            if (calendarInstanceMap.containsKey(calendarIdKey))
+            {
+                instances.addAll(calendarInstanceMap.get(calendarIdKey).getInstanceList());
+            }
+        }
+
+        Map<Integer, Integer> countMap = new HashMap<>();
+        boolean showCanceledInstance = App.isPreference_key_show_canceled_instances();
+
+        // 인스턴스를 날짜 별로 분류
+        for (ContentValues instance : instances)
+        {
+            if (!showCanceledInstance)
+            {
+                if (instance.getAsInteger(CalendarContract.Instances.STATUS) ==
+                        CalendarContract.Instances.STATUS_CANCELED)
+                {
+                    // 취소(초대 거부)된 인스턴스인 경우..
+                    continue;
+                }
+            }
+
+            Date beginDate = ClockUtil.instanceDateTimeToDate(instance.getAsLong(CalendarContract.Instances.BEGIN));
+            Date endDate = ClockUtil.instanceDateTimeToDate(instance.getAsLong(CalendarContract.Instances.END), instance.getAsBoolean(CalendarContract.Instances.ALL_DAY));
+            int beginIndex = ClockUtil.calcDayDifference(beginDate, viewFirstDateTime);
+            int endIndex = ClockUtil.calcDayDifference(endDate, viewFirstDateTime);
+
+            if (beginIndex < MonthCalendarView.FIRST_DAY_INDEX)
+            {
+                beginIndex = MonthCalendarView.FIRST_DAY_INDEX;
+            }
+            if (endIndex > MonthCalendarView.LAST_DAY_INDEX)
+            {
+                // 달력에 표시할 일자의 개수가 총 42개
+                endIndex = MonthCalendarView.LAST_DAY_INDEX;
+            }
+
+            for (int index = beginIndex; index <= endIndex; index++)
+            {
+                if (!countMap.containsKey(index))
+                {
+                    countMap.put(index, 0);
+                }
+                countMap.put(index, countMap.get(index) + 1);
+            }
+        }
+
+        Set<Integer> mapKeySet = countMap.keySet();
+        for (int index : mapKeySet)
+        {
+            MonthAssistantItemView childView =
+                    (MonthAssistantItemView) getChildAt(index);
+            childView.setCount(countMap.get(index));
+        }
+
+        requestLayout();
+        invalidate();
+    }
+
+    public void refresh()
+    {
+        setInstances(iControlEvent.getInstances(viewFirstDateTime.getTime(), viewLastDateTime.getTime()));
+        setEventTable();
     }
 
     public static class MonthAssistantItemView extends View

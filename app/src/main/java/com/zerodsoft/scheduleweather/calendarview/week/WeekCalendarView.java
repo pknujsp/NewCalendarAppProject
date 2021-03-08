@@ -54,6 +54,7 @@ public class WeekCalendarView implements CalendarViewInitializer
     {
         this.iConnectedCalendars = iConnectedCalendars;
         this.iControlEvent = iControlEvent;
+
         weekView.init(null, onEventItemClickListener, iControlEvent, null);
         weekHeaderView.init(null, onEventItemClickListener, iControlEvent, null);
 
@@ -67,6 +68,7 @@ public class WeekCalendarView implements CalendarViewInitializer
         weekHeaderView.setDaysOfWeek(daysOfWeek);
 
         setInstances(iControlEvent.getInstances(daysOfWeek[0].getTime(), daysOfWeek[7].getTime()));
+        setEventTable();
     }
 
     @Override
@@ -96,8 +98,6 @@ public class WeekCalendarView implements CalendarViewInitializer
 
         weekView.setInstances(instances);
         weekHeaderView.setInstances(instances);
-
-        setEventTable();
     }
 
     @Override
@@ -110,6 +110,7 @@ public class WeekCalendarView implements CalendarViewInitializer
     public void refresh()
     {
         setInstances(iControlEvent.getInstances(daysOfWeek[0].getTime(), daysOfWeek[7].getTime()));
+        setEventTable();
     }
 
 }

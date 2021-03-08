@@ -223,10 +223,20 @@ public class WeekHeaderView extends ViewGroup implements CalendarViewInitializer
 
         START_INDEX = Integer.MAX_VALUE;
         END_INDEX = Integer.MIN_VALUE;
+        boolean showCanceledInstance = App.isPreference_key_show_canceled_instances();
 
         // 달력 뷰의 셀에 아이템을 삽입
         for (ContentValues instance : instances)
         {
+            if (!showCanceledInstance)
+            {
+                if (instance.getAsInteger(CalendarContract.Instances.STATUS) ==
+                        CalendarContract.Instances.STATUS_CANCELED)
+                {
+                    // 취소(초대 거부)된 인스턴스인 경우..
+                    continue;
+                }
+            }
             //일요일과의 일수차이 계산
             int startIndex = ClockUtil.calcBeginDayDifference(instance.getAsLong(CalendarContract.Instances.BEGIN), weekFirstDay.getTimeInMillis());
             int endIndex = ClockUtil.calcEndDayDifference(instance.getAsLong(CalendarContract.Instances.END), weekFirstDay.getTimeInMillis(), instance.getAsBoolean(CalendarContract.Instances.ALL_DAY));
