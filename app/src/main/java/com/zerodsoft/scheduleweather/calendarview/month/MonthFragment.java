@@ -13,6 +13,7 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
@@ -27,6 +28,7 @@ public class MonthFragment extends Fragment implements IRefreshView
     private final IControlEvent iControlEvent;
     private final IToolbar iToolbar;
     private final OnEventItemClickListener onEventItemClickListener;
+    private final IConnectedCalendars iConnectedCalendars;
 
     private ViewPager2 viewPager;
     private MonthViewPagerAdapter viewPagerAdapter;
@@ -34,11 +36,12 @@ public class MonthFragment extends Fragment implements IRefreshView
 
     private int currentPosition = EventTransactionFragment.FIRST_VIEW_POSITION;
 
-    public MonthFragment(Fragment fragment, IToolbar iToolbar)
+    public MonthFragment(Fragment fragment, IToolbar iToolbar, IConnectedCalendars iConnectedCalendars)
     {
         this.iControlEvent = (IControlEvent) fragment;
         this.onEventItemClickListener = (OnEventItemClickListener) fragment;
         this.iToolbar = iToolbar;
+        this.iConnectedCalendars = iConnectedCalendars;
     }
 
     @Nullable
@@ -55,7 +58,7 @@ public class MonthFragment extends Fragment implements IRefreshView
 
         viewPager = (ViewPager2) view.findViewById(R.id.month_viewpager);
 
-        viewPagerAdapter = new MonthViewPagerAdapter(iControlEvent, onEventItemClickListener, iToolbar);
+        viewPagerAdapter = new MonthViewPagerAdapter(iControlEvent, onEventItemClickListener, iToolbar, iConnectedCalendars);
         viewPager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
         viewPager.setAdapter(viewPagerAdapter);
         viewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, false);
@@ -64,20 +67,20 @@ public class MonthFragment extends Fragment implements IRefreshView
         viewPager.registerOnPageChangeCallback(onPageChangeCallback);
     }
 
+
     @Override
     public void onStart()
     {
         super.onStart();
+        // 인스턴스 그리기
     }
+
 
     @Override
     public void refreshView()
     {
         int currentItem = viewPager.getCurrentItem();
-        long start = viewPagerAdapter.getDate(currentItem, MonthViewPagerAdapter.FIRST_DAY).getTime();
-        long end = viewPagerAdapter.getDate(currentItem, MonthViewPagerAdapter.LAST_DAY).getTime();
-
-        viewPagerAdapter.refresh(currentItem, iControlEvent.getInstances(currentItem, start, end));
+        viewPagerAdapter.refresh(currentItem);
         viewPagerAdapter.notifyDataSetChanged();
     }
 
@@ -86,6 +89,7 @@ public class MonthFragment extends Fragment implements IRefreshView
         if (currentPosition != EventTransactionFragment.FIRST_VIEW_POSITION)
         {
             viewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, true);
+            refreshView();
         }
     }
 

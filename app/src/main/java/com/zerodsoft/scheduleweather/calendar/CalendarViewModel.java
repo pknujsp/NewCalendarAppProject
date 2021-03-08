@@ -10,6 +10,7 @@ import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendar.interfaces.ICalendarProvider;
 
 import java.util.List;
+import java.util.Map;
 
 public class CalendarViewModel extends AndroidViewModel implements ICalendarProvider
 {
@@ -112,9 +113,9 @@ public class CalendarViewModel extends AndroidViewModel implements ICalendarProv
     }
 
     @Override
-    public List<CalendarInstance> getInstances(List<ContentValues> calendarList, long startDate, long endDate)
+    public Map<Integer, CalendarInstance> getInstances(long begin, long end)
     {
-        return calendarProvider.getInstances(calendarList, startDate, endDate);
+        return calendarProvider.getInstances(begin, end);
     }
 
     @Override

@@ -3,6 +3,7 @@ package com.zerodsoft.scheduleweather.calendarview.week;
 import android.content.ContentValues;
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PointF;
 import android.provider.CalendarContract;
@@ -18,7 +19,12 @@ import androidx.annotation.Nullable;
 import androidx.core.view.ViewCompat;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.activity.App;
+import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendarview.hourside.HourEventsView;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.CalendarViewInitializer;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
@@ -28,53 +34,32 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-public class WeekView extends HourEventsView implements IEvent
+public class WeekView extends HourEventsView implements CalendarViewInitializer
 {
     private boolean createdAddScheduleRect = false;
     private boolean changingStartTime = false;
     private boolean changingEndTime = false;
 
     private OnEventItemClickListener onEventItemClickListener;
+    private Map<Integer, CalendarInstance> calendarInstanceMap;
 
-    private Calendar[] daysOfWeek;
+    private Date[] daysOfWeek;
     private List<ContentValues> instances;
     private SparseArray<List<ItemCell>> eventSparseArr = new SparseArray<>(7);
     private final int SPACING_BETWEEN_EVENTS = 5;
-
+    private IControlEvent iControlEvent;
 
     public WeekView(Context context, @Nullable AttributeSet attrs)
     {
         super(context, attrs);
     }
 
-    public void setOnEventItemClickListener(OnEventItemClickListener onEventItemClickListener)
-    {
-        this.onEventItemClickListener = onEventItemClickListener;
-    }
-
-    public void setDaysOfWeek(Calendar[] daysOfWeek)
-    {
-        this.daysOfWeek = daysOfWeek;
-    }
-
-    @Override
-    public void setInstances(List<ContentValues> instances)
-    {
-        // 1일 이하의 일정만 표시
-        this.instances = new ArrayList<>();
-        for (ContentValues instance : instances)
-        {
-            if (ClockUtil.areSameDate(instance.getAsLong(CalendarContract.Instances.BEGIN), instance.getAsLong(CalendarContract.Instances.END)))
-            {
-                this.instances.add(instance);
-            }
-        }
-        setEventTable();
-        requestLayout();
-        invalidate();
-    }
 
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b)
@@ -168,10 +153,35 @@ public class WeekView extends HourEventsView implements IEvent
         return point;
     }
 
-    public void clear()
+
+    @Override
+    public void init(Calendar copiedCalendar, OnEventItemClickListener onEventItemClickListener, IControlEvent iControlEvent, IConnectedCalendars iConnectedCalendars)
     {
-        eventSparseArr.clear();
-        removeAllViews();
+        this.onEventItemClickListener = onEventItemClickListener;
+        this.iControlEvent = iControlEvent;
+    }
+
+    public void setDaysOfWeek(Date[] daysOfWeek)
+    {
+        this.daysOfWeek = daysOfWeek;
+    }
+
+    @Override
+    public void setInstances(Map<Integer, CalendarInstance> resultMap)
+    {
+    }
+
+    public void setInstances(List<ContentValues> instances)
+    {
+        // 1일 이하의 일정만 표시
+        this.instances = new ArrayList<>();
+        for (ContentValues instance : instances)
+        {
+            if (ClockUtil.areSameDate(instance.getAsLong(CalendarContract.Instances.BEGIN), instance.getAsLong(CalendarContract.Instances.END)))
+            {
+                this.instances.add(instance);
+            }
+        }
     }
 
     @Override
@@ -180,10 +190,22 @@ public class WeekView extends HourEventsView implements IEvent
         eventSparseArr.clear();
         removeAllViews();
 
+        boolean showCanceledInstance = App.isPreference_key_show_canceled_instances();
+
         // 데이터를 리스트에 저장
         for (ContentValues instance : instances)
         {
-            int index = ClockUtil.calcBeginDayDifference(instance.getAsLong(CalendarContract.Instances.BEGIN), daysOfWeek[0].getTimeInMillis());
+            if (!showCanceledInstance)
+            {
+                if (instance.getAsInteger(CalendarContract.Instances.STATUS) ==
+                        CalendarContract.Instances.STATUS_CANCELED)
+                {
+                    // 취소(초대 거부)된 인스턴스인 경우..
+                    continue;
+                }
+            }
+
+            int index = ClockUtil.calcBeginDayDifference(instance.getAsLong(CalendarContract.Instances.BEGIN), daysOfWeek[0].getTime());
             if (eventSparseArr.get(index) == null)
             {
                 eventSparseArr.put(index, new ArrayList<>());
@@ -264,6 +286,9 @@ public class WeekView extends HourEventsView implements IEvent
                 }
             }
         }
+
+        requestLayout();
+        invalidate();
     }
 
     private boolean isOverlapping(ContentValues event1, ContentValues event2)

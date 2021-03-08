@@ -15,7 +15,6 @@ import android.provider.CalendarContract;
 
 import androidx.core.content.ContextCompat;
 
-import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.calendar.dto.AccountDto;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendar.interfaces.ICalendarProvider;
@@ -24,9 +23,12 @@ import com.zerodsoft.scheduleweather.utility.RecurrenceRule;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class CalendarProvider implements ICalendarProvider
@@ -688,60 +690,48 @@ public class CalendarProvider implements ICalendarProvider
      * @return
      */
     @Override
-    public List<CalendarInstance> getInstances(List<ContentValues> calendarList, long startDate, long endDate)
+    public Map<Integer, CalendarInstance> getInstances(long begin, long end)
     {
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED)
         {
-            List<CalendarInstance> calendarInstances = new ArrayList<>();
-
-            if (calendarList.isEmpty())
-            {
-                return calendarInstances;
-            }
-            ContentResolver contentResolver = context.getContentResolver();
-
-            String selection = CalendarContract.Instances.CALENDAR_ID + "=?";
-            String[] selectionArg = new String[1];
-
             Uri.Builder builder = CalendarContract.Instances.CONTENT_URI.buildUpon();
-            ContentUris.appendId(builder, startDate);
-            ContentUris.appendId(builder, endDate);
+            ContentUris.appendId(builder, begin);
+            ContentUris.appendId(builder, end);
             Uri uri = builder.build();
 
-            for (ContentValues calendar : calendarList)
+            ContentResolver contentResolver = context.getContentResolver();
+            Cursor cursor = contentResolver.query(uri, null, null, null, null);
+            Map<Integer, CalendarInstance> calendarInstanceMap = new HashMap<>();
+            int calendarId = 0;
+
+            while (cursor.moveToNext())
             {
-                selectionArg[0] = String.valueOf(calendar.getAsInteger(CalendarContract.Calendars._ID));
+                ContentValues instance = new ContentValues();
 
-                Cursor cursor = contentResolver.query(uri, null, selection, selectionArg, null);
-                List<ContentValues> instances = new ArrayList<>();
+                instance.put(CalendarContract.Instances.EVENT_COLOR, cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.EVENT_COLOR)));
+                instance.put(CalendarContract.Instances._ID, cursor.getLong(cursor.getColumnIndex(CalendarContract.Instances._ID)));
+                instance.put(CalendarContract.Instances.BEGIN, cursor.getLong(cursor.getColumnIndex(CalendarContract.Instances.BEGIN)));
+                instance.put(CalendarContract.Instances.END, cursor.getLong(cursor.getColumnIndex(CalendarContract.Instances.END)));
+                instance.put(CalendarContract.Instances.DTSTART, cursor.getLong(cursor.getColumnIndex(CalendarContract.Instances.DTSTART)));
+                instance.put(CalendarContract.Instances.DTEND, cursor.getLong(cursor.getColumnIndex(CalendarContract.Instances.DTEND)));
+                instance.put(CalendarContract.Instances.TITLE, cursor.getString(cursor.getColumnIndex(CalendarContract.Instances.TITLE)));
+                instance.put(CalendarContract.Instances.EVENT_ID, cursor.getLong(cursor.getColumnIndex(CalendarContract.Instances.EVENT_ID)));
+                instance.put(CalendarContract.Instances.CALENDAR_ID, cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.CALENDAR_ID)));
+                instance.put(CalendarContract.Instances.ALL_DAY, cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.ALL_DAY)));
+                instance.put(CalendarContract.Instances.STATUS, cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.STATUS)));
 
-                if (cursor != null)
+                calendarId = cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.CALENDAR_ID));
+                if (!calendarInstanceMap.containsKey(calendarId))
                 {
-                    while (cursor.moveToNext())
-                    {
-                        ContentValues instance = new ContentValues();
-                        instances.add(instance);
-
-                        instance.put(CalendarContract.Instances.EVENT_COLOR, cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.EVENT_COLOR)));
-                        instance.put(CalendarContract.Instances._ID, cursor.getLong(cursor.getColumnIndex(CalendarContract.Instances._ID)));
-                        instance.put(CalendarContract.Instances.BEGIN, cursor.getLong(cursor.getColumnIndex(CalendarContract.Instances.BEGIN)));
-                        instance.put(CalendarContract.Instances.END, cursor.getLong(cursor.getColumnIndex(CalendarContract.Instances.END)));
-                        instance.put(CalendarContract.Instances.DTSTART, cursor.getLong(cursor.getColumnIndex(CalendarContract.Instances.DTSTART)));
-                        instance.put(CalendarContract.Instances.DTEND, cursor.getLong(cursor.getColumnIndex(CalendarContract.Instances.DTEND)));
-                        instance.put(CalendarContract.Instances.TITLE, cursor.getString(cursor.getColumnIndex(CalendarContract.Instances.TITLE)));
-                        instance.put(CalendarContract.Instances.EVENT_ID, cursor.getLong(cursor.getColumnIndex(CalendarContract.Instances.EVENT_ID)));
-                        instance.put(CalendarContract.Instances.CALENDAR_ID, cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.CALENDAR_ID)));
-                        instance.put(CalendarContract.Instances.ALL_DAY, cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.ALL_DAY)));
-                        instance.put(CalendarContract.Instances.STATUS, cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.STATUS)));
-                    }
-                    cursor.close();
+                    calendarInstanceMap.put(calendarId, new CalendarInstance(new ArrayList<>(), calendarId));
                 }
-                calendarInstances.add(new CalendarInstance(instances, calendar.getAsLong(CalendarContract.Calendars._ID)));
+                calendarInstanceMap.get(calendarId).getInstanceList().add(instance);
             }
-            return calendarInstances;
+            cursor.close();
+            return calendarInstanceMap;
         } else
         {
-            return new ArrayList<>();
+            return new HashMap<>();
         }
     }
 

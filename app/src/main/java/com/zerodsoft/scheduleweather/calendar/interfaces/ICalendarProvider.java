@@ -6,6 +6,7 @@ import com.zerodsoft.scheduleweather.calendar.dto.AccountDto;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 
 import java.util.List;
+import java.util.Map;
 
 public interface ICalendarProvider
 {
@@ -44,7 +45,7 @@ public interface ICalendarProvider
     public int addReminders(List<ContentValues> reminders);
 
     // instance - read, update, delete
-    public List<CalendarInstance> getInstances(List<ContentValues> calendarList, long startDate, long endDate);
+    public Map<Integer, CalendarInstance> getInstances(long begin, long end);
 
     public ContentValues getInstance(int calendarId, long instanceId, long begin, long end);
 

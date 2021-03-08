@@ -139,7 +139,7 @@ public class MonthAssistantCalendarListAdapter extends RecyclerView.Adapter<Mont
             setDays(copiedCalendar);
             boolean thisMonthDate = false;
 
-            for (int i = 0; i < MonthViewPagerAdapter.TOTAL_DAY_COUNT; i++)
+            for (int i = 0; i < MonthCalendarView.TOTAL_DAY_COUNT; i++)
             {
                 Calendar currentDate = getDay(i);
 
@@ -167,12 +167,13 @@ public class MonthAssistantCalendarListAdapter extends RecyclerView.Adapter<Mont
                 monthCalendarView.addView(itemView);
             }
 
-            setResult(iControlEvent.getInstances(getAdapterPosition(), getDay(MonthViewPagerAdapter.FIRST_DAY).getTime().getTime(),
-                    getDay(MonthViewPagerAdapter.LAST_DAY).getTime().getTime()));
+            setResult(iControlEvent.getInstances(getDay(0).getTime().getTime(),
+                    getDay(-1).getTime().getTime()));
         }
 
-        public void setResult(List<CalendarInstance> e)
+        public void setResult(Map<Integer, CalendarInstance> e)
         {
+            /*
             List<ContentValues> instances = new ArrayList<>();
             // 인스턴스 목록 표시
             for (CalendarInstance calendarInstance : e)
@@ -180,7 +181,7 @@ public class MonthAssistantCalendarListAdapter extends RecyclerView.Adapter<Mont
                 instances.addAll(calendarInstance.getInstanceList());
             }
 
-            final Date asOfDate = getDay(MonthViewPagerAdapter.FIRST_DAY).getTime();
+            final Date asOfDate = getDay(0).getTime();
             Map<Integer, Integer> countMap = new HashMap<>();
 
             // 인스턴스를 날짜 별로 분류
@@ -221,6 +222,8 @@ public class MonthAssistantCalendarListAdapter extends RecyclerView.Adapter<Mont
 
             monthCalendarView.requestLayout();
             monthCalendarView.invalidate();
+
+             */
         }
 
         private void setDays(Calendar calendar)
@@ -232,7 +235,7 @@ public class MonthAssistantCalendarListAdapter extends RecyclerView.Adapter<Mont
             // 다음 달 일수 계산법 : 42 - 이번 달 - 이전 달
             int previousCount = calendar.get(Calendar.DAY_OF_WEEK) - 1;
             int currentCount = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
-            int nextCount = MonthViewPagerAdapter.TOTAL_DAY_COUNT - currentCount - previousCount;
+            int nextCount = MonthCalendarView.TOTAL_DAY_COUNT - currentCount - previousCount;
 
             previousMonthDays = new Calendar[previousCount];
             currentMonthDays = new Calendar[currentCount];
@@ -264,7 +267,7 @@ public class MonthAssistantCalendarListAdapter extends RecyclerView.Adapter<Mont
 
         public Calendar getDay(int position)
         {
-            if (position == MonthViewPagerAdapter.FIRST_DAY)
+            if (position == 0)
             {
                 if (previousMonthDays.length > 0)
                 {
@@ -273,7 +276,7 @@ public class MonthAssistantCalendarListAdapter extends RecyclerView.Adapter<Mont
                 {
                     return currentMonthDays[0];
                 }
-            } else if (position == MonthViewPagerAdapter.LAST_DAY)
+            } else if (position == -1)
             {
                 return endDay;
             } else if (position < previousMonthDays.length)
@@ -282,10 +285,10 @@ public class MonthAssistantCalendarListAdapter extends RecyclerView.Adapter<Mont
             } else if (position < currentMonthDays.length + previousMonthDays.length)
             {
                 return currentMonthDays[position - previousMonthDays.length];
-            } else if (position < MonthViewPagerAdapter.TOTAL_DAY_COUNT)
+            } else if (position < MonthCalendarView.TOTAL_DAY_COUNT)
             {
                 return nextMonthDays[position - currentMonthDays.length - previousMonthDays.length];
-            } else if (position == MonthViewPagerAdapter.TOTAL_DAY_COUNT)
+            } else if (position == MonthCalendarView.TOTAL_DAY_COUNT)
             {
                 return endDay;
             } else

@@ -1,9 +1,7 @@
 package com.zerodsoft.scheduleweather.calendarview.assistantcalendar.assistantcalendar;
 
-import android.Manifest;
 import android.app.Activity;
 import android.os.Bundle;
-import android.os.RemoteException;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,12 +19,12 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.CalendarDateOnClick
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.databinding.FragmentMonthAssistantBinding;
-import com.zerodsoft.scheduleweather.etc.AppPermission;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 public class MonthAssistantCalendarFragment extends Fragment implements IControlEvent
 {
@@ -105,13 +103,7 @@ public class MonthAssistantCalendarFragment extends Fragment implements IControl
         binding.monthAssistantCalendarViewpager.registerOnPageChangeCallback(onPageChangeCallback);
         binding.currentMonth.setText(ClockUtil.YEAR_MONTH_FORMAT.format(adapter.getAsOfDate()));
     }
-
-    @Override
-    public List<CalendarInstance> getInstances(int viewPosition, long begin, long end)
-    {
-        return calendarViewModel.getInstances(iConnectedCalendars.getConnectedCalendars(), begin, end);
-    }
-
+    
     /**
      * 현재 년월 텍스트를 클릭하면 보조 캘린더의 날짜를 현재 month로 설정하고 표시
      **/
@@ -147,4 +139,10 @@ public class MonthAssistantCalendarFragment extends Fragment implements IControl
             binding.currentMonth.setText(ClockUtil.YEAR_MONTH_FORMAT.format(calendar.getTime()));
         }
     };
+
+    @Override
+    public Map<Integer, CalendarInstance> getInstances(long begin, long end)
+    {
+        return calendarViewModel.getInstances(begin, end);
+    }
 }

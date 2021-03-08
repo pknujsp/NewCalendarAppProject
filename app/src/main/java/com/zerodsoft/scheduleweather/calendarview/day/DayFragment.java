@@ -14,12 +14,14 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -36,7 +38,7 @@ public class DayFragment extends Fragment implements IRefreshView
     private OnPageChangeCallback onPageChangeCallback;
     private int currentPosition = EventTransactionFragment.FIRST_VIEW_POSITION;
 
-    public DayFragment(Fragment fragment, IToolbar iToolbar)
+    public DayFragment(Fragment fragment, IToolbar iToolbar, IConnectedCalendars iConnectedCalendars)
     {
         this.iControlEvent = (IControlEvent) fragment;
         this.onEventItemClickListener = (OnEventItemClickListener) fragment;
@@ -137,7 +139,8 @@ public class DayFragment extends Fragment implements IRefreshView
         long start = dayViewPagerAdapter.getDate(currentItem, DayViewPagerAdapter.FIRST_DAY).getTime();
         long end = dayViewPagerAdapter.getDate(currentItem, DayViewPagerAdapter.LAST_DAY).getTime();
 
-        List<CalendarInstance> calendarInstances = iControlEvent.getInstances(currentItem, start, end);
+        List<CalendarInstance> calendarInstances = new ArrayList<>();
+        // iControlEvent.getInstances(currentItem, start, end);
 
         dayViewPagerAdapter.refresh(currentItem, calendarInstances);
         dayViewPagerAdapter.notifyDataSetChanged();

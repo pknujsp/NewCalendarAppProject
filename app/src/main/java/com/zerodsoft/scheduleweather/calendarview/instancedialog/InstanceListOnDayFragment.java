@@ -1,6 +1,5 @@
 package com.zerodsoft.scheduleweather.calendarview.instancedialog;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
@@ -19,9 +18,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.os.RemoteException;
 import android.provider.CalendarContract;
-import android.service.carrier.CarrierMessagingService;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -42,8 +39,6 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.databinding.FragmentMonthEventsInfoBinding;
-import com.zerodsoft.scheduleweather.etc.AppPermission;
-import com.zerodsoft.scheduleweather.etc.RecyclerViewItemDecoration;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
@@ -106,7 +101,7 @@ public class InstanceListOnDayFragment extends DialogFragment implements EventsI
         binding.eventsInfoDay.setText(ClockUtil.YYYY_M_D_E.format(begin));
 
         viewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
-        setData(viewModel.getInstances(iConnectedCalendars.getConnectedCalendars(), begin, end));
+        // setData(viewModel.getInstances(begin, end));
     }
 
 
@@ -225,10 +220,10 @@ public class InstanceListOnDayFragment extends DialogFragment implements EventsI
 
     private void exceptThisInstance(ContentValues instance)
     {
-            viewModel.deleteInstance(instance.getAsLong(CalendarContract.Instances.BEGIN),
-                    instance.getAsLong(CalendarContract.Instances.EVENT_ID));
-            setData(viewModel.getInstances(iConnectedCalendars.getConnectedCalendars(), begin, end));
-            iRefreshView.refreshView();
+        viewModel.deleteInstance(instance.getAsLong(CalendarContract.Instances.BEGIN),
+                instance.getAsLong(CalendarContract.Instances.EVENT_ID));
+        //setData(viewModel.getInstances(begin, end));
+        iRefreshView.refreshView();
     }
 
     private void deleteEvent(ContentValues instance)
@@ -237,7 +232,7 @@ public class InstanceListOnDayFragment extends DialogFragment implements EventsI
         // db column error
         viewModel.deleteEvent(instance.getAsInteger(CalendarContract.Instances.CALENDAR_ID), instance.getAsLong(CalendarContract.Instances.EVENT_ID));
         // 삭제 완료 후 캘린더 화면으로 나가고, 새로고침한다.
-        setData(viewModel.getInstances(iConnectedCalendars.getConnectedCalendars(), begin, end));
+        //  setData(viewModel.getInstances(begin, end));
         iRefreshView.refreshView();
     }
 

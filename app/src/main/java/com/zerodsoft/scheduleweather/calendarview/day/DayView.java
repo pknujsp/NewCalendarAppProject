@@ -15,6 +15,10 @@ import androidx.annotation.Nullable;
 import androidx.core.view.GestureDetectorCompat;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.CalendarViewInitializer;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.calendarview.week.WeekFragment;
@@ -25,8 +29,9 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
-public class DayView extends HourEventsView implements IEvent
+public class DayView extends HourEventsView implements CalendarViewInitializer
 {
     private boolean createdAddScheduleRect = false;
     private boolean changingStartTime = false;
@@ -206,7 +211,6 @@ public class DayView extends HourEventsView implements IEvent
         }
     }
 
-    @Override
     public void setInstances(List<ContentValues> instances)
     {
         // 이벤트 테이블에 데이터를 표시할 위치 설정
@@ -216,6 +220,18 @@ public class DayView extends HourEventsView implements IEvent
         setEventTable();
         requestLayout();
         invalidate();
+    }
+
+    @Override
+    public void init(Calendar copiedCalendar, OnEventItemClickListener onEventItemClickListener, IControlEvent iControlEvent, IConnectedCalendars iConnectedCalendars)
+    {
+
+    }
+
+    @Override
+    public void setInstances(Map<Integer, CalendarInstance> resultMap)
+    {
+
     }
 
     @Override

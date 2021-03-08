@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 
 import com.zerodsoft.scheduleweather.activity.main.AppMainActivity;
 import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
@@ -34,15 +35,17 @@ public class WeekFragment extends Fragment implements IRefreshView
     private IControlEvent iControlEvent;
     private IToolbar iToolbar;
     private OnEventItemClickListener onEventItemClickListener;
+    private final IConnectedCalendars iConnectedCalendars;
     private static final int COLUMN_WIDTH = AppMainActivity.getDisplayWidth() / 8;
 
     private OnPageChangeCallback onPageChangeCallback;
 
-    public WeekFragment(Fragment fragment, IToolbar iToolbar)
+    public WeekFragment(Fragment fragment, IToolbar iToolbar, IConnectedCalendars iConnectedCalendars)
     {
         this.iControlEvent = (IControlEvent) fragment;
         this.onEventItemClickListener = (OnEventItemClickListener) fragment;
         this.iToolbar = iToolbar;
+        this.iConnectedCalendars = iConnectedCalendars;
     }
 
     public static int getColumnWidth()
@@ -69,7 +72,7 @@ public class WeekFragment extends Fragment implements IRefreshView
         super.onViewCreated(view, savedInstanceState);
 
         weekViewPager = (ViewPager2) view.findViewById(R.id.week_viewpager);
-        weekViewPagerAdapter = new WeekViewPagerAdapter(iControlEvent, onEventItemClickListener, iToolbar);
+        weekViewPagerAdapter = new WeekViewPagerAdapter(iControlEvent, onEventItemClickListener, iToolbar, iConnectedCalendars);
         weekViewPager.setAdapter(weekViewPagerAdapter);
         weekViewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, false);
 
@@ -144,10 +147,7 @@ public class WeekFragment extends Fragment implements IRefreshView
     public void refreshView()
     {
         int currentItem = weekViewPager.getCurrentItem();
-        long start = weekViewPagerAdapter.getDate(currentItem, 0).getTime();
-        long end = weekViewPagerAdapter.getDate(currentItem, 7).getTime();
-
-        weekViewPagerAdapter.refresh(currentItem, iControlEvent.getInstances(currentItem, start, end));
+        weekViewPagerAdapter.refresh(currentItem);
         weekViewPagerAdapter.notifyDataSetChanged();
     }
 }

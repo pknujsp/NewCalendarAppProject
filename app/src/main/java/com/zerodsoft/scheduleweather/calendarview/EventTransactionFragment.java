@@ -32,6 +32,7 @@ import com.zerodsoft.scheduleweather.event.EventActivity;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 
 public class EventTransactionFragment extends Fragment implements IControlEvent, OnEventItemClickListener, IRefreshView
@@ -94,15 +95,15 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
         switch (fragmentTag)
         {
             case MonthFragment.TAG:
-                currentFragment = new MonthFragment(this, iToolbar);
+                currentFragment = new MonthFragment(this, iToolbar, iConnectedCalendars);
                 fragmentTransaction.replace(R.id.calendar_container_layout, (MonthFragment) currentFragment, MonthFragment.TAG);
                 break;
             case WeekFragment.TAG:
-                currentFragment = new WeekFragment(this, iToolbar);
+                currentFragment = new WeekFragment(this, iToolbar, iConnectedCalendars);
                 fragmentTransaction.replace(R.id.calendar_container_layout, (WeekFragment) currentFragment, WeekFragment.TAG);
                 break;
             case DayFragment.TAG:
-                currentFragment = new DayFragment(this, iToolbar);
+                currentFragment = new DayFragment(this, iToolbar, iConnectedCalendars);
                 fragmentTransaction.replace(R.id.calendar_container_layout, (DayFragment) currentFragment, DayFragment.TAG);
                 break;
         }
@@ -110,10 +111,10 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
     }
 
     @Override
-    public List<CalendarInstance> getInstances(int viewPosition, long begin, long end)
+    public Map<Integer, CalendarInstance> getInstances(long begin, long end)
     {
         // 선택된 캘린더 목록
-        return calendarViewModel.getInstances(iConnectedCalendars.getConnectedCalendars(), begin, end);
+        return calendarViewModel.getInstances(begin, end);
     }
 
     public void goToToday()

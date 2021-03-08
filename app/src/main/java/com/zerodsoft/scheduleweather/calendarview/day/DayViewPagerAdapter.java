@@ -155,7 +155,7 @@ public class DayViewPagerAdapter extends RecyclerView.Adapter<DayViewPagerAdapte
 
             dayHeaderView.setInitValue(startDate, endDate);
 
-            setResult(iControlEvent.getInstances(getAdapterPosition(), startDate.getTime(), endDate.getTime()));
+            // setResult(iControlEvent.getInstances(getAdapterPosition(), startDate.getTime(), endDate.getTime()));
         }
 
         public void setResult(List<CalendarInstance> e)

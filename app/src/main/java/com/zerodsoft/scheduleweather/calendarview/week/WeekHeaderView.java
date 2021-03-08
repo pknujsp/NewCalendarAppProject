@@ -19,8 +19,12 @@ import androidx.annotation.Nullable;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
+import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendarview.common.HeaderInstancesView;
 import com.zerodsoft.scheduleweather.calendarview.common.InstanceView;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.CalendarViewInitializer;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.calendarview.month.EventData;
@@ -30,14 +34,16 @@ import com.zerodsoft.scheduleweather.utility.DateHour;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
 
-public class WeekHeaderView extends ViewGroup implements IEvent
+public class WeekHeaderView extends ViewGroup implements CalendarViewInitializer
 {
     private Calendar weekFirstDay;
     private Calendar weekLastDay;
@@ -57,12 +63,13 @@ public class WeekHeaderView extends ViewGroup implements IEvent
     private final int TEXT_SIZE;
     private final int SPACING_BETWEEN_TEXT;
 
-    private Calendar[] daysOfWeek;
+    private Date[] daysOfWeek;
 
     private HeaderInstancesView headerInstancesView;
 
     private List<EventData> eventCellsList = new ArrayList<>();
     private OnEventItemClickListener onEventItemClickListener;
+    private IControlEvent iControlEvent;
     private SparseArray<ItemCell> ITEM_LAYOUT_CELLS = new SparseArray<>(7);
     private List<ContentValues> instances;
 
@@ -164,43 +171,53 @@ public class WeekHeaderView extends ViewGroup implements IEvent
         for (int i = 0; i < 7; i++)
         {
             canvas.drawText(DateHour.getDayString(i), COLUMN_WIDTH + COLUMN_WIDTH / 2 + COLUMN_WIDTH * i, dayY, DAY_TEXT_PAINT);
-            canvas.drawText(DateHour.getDate(daysOfWeek[i].getTime()), COLUMN_WIDTH + COLUMN_WIDTH / 2 + COLUMN_WIDTH * i, dateY, DATE_TEXT_PAINT);
+            canvas.drawText(DateHour.getDate(daysOfWeek[i]), COLUMN_WIDTH + COLUMN_WIDTH / 2 + COLUMN_WIDTH * i, dateY, DATE_TEXT_PAINT);
         }
     }
 
 
-    public void setInitValue(Calendar[] daysOfWeek)
+    public void setDaysOfWeek(Date[] daysOfWeek)
     {
         // 뷰 설정
         // 이번 주의 날짜 배열 생성
         this.daysOfWeek = daysOfWeek;
         // 주 첫번째 요일(일요일)과 마지막 요일(토요일) 설정
-        weekFirstDay = (Calendar) daysOfWeek[0].clone();
-        weekLastDay = (Calendar) daysOfWeek[6].clone();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(daysOfWeek[0]);
+        weekFirstDay = (Calendar) calendar.clone();
+
+        calendar.setTime(daysOfWeek[6]);
+        weekLastDay = (Calendar) calendar.clone();
     }
 
-    public void clear()
+
+    @Override
+    public void init(Calendar copiedCalendar, OnEventItemClickListener onEventItemClickListener, IControlEvent iControlEvent, IConnectedCalendars iConnectedCalendars)
     {
-        ITEM_LAYOUT_CELLS.clear();
-        eventCellsList.clear();
-        ROWS_COUNT = 0;
-        removeAllViews();
+        this.onEventItemClickListener = onEventItemClickListener;
+        this.iControlEvent = iControlEvent;
     }
 
     @Override
+    public void setInstances(Map<Integer, CalendarInstance> resultMap)
+    {
+
+    }
+
     public void setInstances(List<ContentValues> instances)
     {
         // 이벤트 테이블에 데이터를 표시할 위치 설정
         this.instances = instances;
-        setEventTable();
-        requestLayout();
-        invalidate();
     }
 
     @Override
     public void setEventTable()
     {
-        clear();
+        ITEM_LAYOUT_CELLS.clear();
+        eventCellsList.clear();
+        ROWS_COUNT = 0;
+        removeAllViews();
+
         headerInstancesView = new HeaderInstancesView(getContext(), onEventItemClickListener);
         addView(headerInstancesView);
 
@@ -229,8 +246,8 @@ public class WeekHeaderView extends ViewGroup implements IEvent
 
             int[] margin = EventUtil.getViewSideMargin(instance.getAsLong(CalendarContract.Instances.BEGIN)
                     , instance.getAsLong(CalendarContract.Instances.END)
-                    , daysOfWeek[startIndex].getTimeInMillis()
-                    , daysOfWeek[endIndex + 1].getTimeInMillis(), 8, instance.getAsBoolean(CalendarContract.Instances.ALL_DAY));
+                    , daysOfWeek[startIndex].getTime()
+                    , daysOfWeek[endIndex + 1].getTime(), 8, instance.getAsBoolean(CalendarContract.Instances.ALL_DAY));
 
             if (START_INDEX > startIndex)
             {
@@ -306,6 +323,9 @@ public class WeekHeaderView extends ViewGroup implements IEvent
         }
         headerInstancesView.setEventCellsList(eventCellsList);
         ROWS_COUNT++;
+
+        requestLayout();
+        invalidate();
     }
 
 

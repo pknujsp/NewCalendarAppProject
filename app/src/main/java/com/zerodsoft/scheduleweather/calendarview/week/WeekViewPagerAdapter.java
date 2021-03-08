@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
@@ -24,21 +25,24 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 
 public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdapter.WeekViewPagerHolder> implements DateGetter
 {
     private SparseArray<WeekViewPagerHolder> holderSparseArray = new SparseArray<>();
-    final private Calendar CALENDAR;
-    private IToolbar iToolbar;
-    private IControlEvent iControlEvent;
-    private OnEventItemClickListener onEventItemClickListener;
+    private final Calendar CALENDAR;
+    private final IToolbar iToolbar;
+    private final IControlEvent iControlEvent;
+    private final OnEventItemClickListener onEventItemClickListener;
+    private final IConnectedCalendars iConnectedCalendars;
 
-    public WeekViewPagerAdapter(IControlEvent iControlEvent, OnEventItemClickListener onEventItemClickListener, IToolbar iToolbar)
+    public WeekViewPagerAdapter(IControlEvent iControlEvent, OnEventItemClickListener onEventItemClickListener, IToolbar iToolbar, IConnectedCalendars iConnectedCalendars)
     {
         this.iControlEvent = iControlEvent;
         this.iToolbar = iToolbar;
         this.onEventItemClickListener = onEventItemClickListener;
+        this.iConnectedCalendars = iConnectedCalendars;
         CALENDAR = Calendar.getInstance(ClockUtil.TIME_ZONE);
 
         // 날짜를 이번 주 일요일 0시 0분으로 설정
@@ -73,7 +77,7 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
     @Override
     public void onBindViewHolder(@NonNull WeekViewPagerHolder holder, int position)
     {
-        holder.onBind(holder.getAdapterPosition());
+        holder.onBind();
         holderSparseArray.put(holder.getAdapterPosition(), holder);
     }
 
@@ -81,7 +85,6 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
     public void onViewRecycled(@NonNull WeekViewPagerHolder holder)
     {
         holderSparseArray.remove(holder.getOldPosition());
-        holder.clear();
         super.onViewRecycled(holder);
     }
 
@@ -94,83 +97,36 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
     @Override
     public Date getDate(int position, int index)
     {
-        return holderSparseArray.get(position).currentWeekDays[index].getTime();
+        return holderSparseArray.get(position).weekCalendarView.getDaysOfWeek()[index];
     }
 
-    public void refresh(int position, List<CalendarInstance> e)
+    public void refresh(int position)
     {
-        holderSparseArray.get(position).setResult(e);
+        holderSparseArray.get(position).weekCalendarView.refresh();
     }
 
     class WeekViewPagerHolder extends RecyclerView.ViewHolder
     {
-        private WeekView weekView;
-        private WeekHeaderView weekHeaderView;
-
-        private int position;
-        private Calendar[] currentWeekDays;
+        private final WeekCalendarView weekCalendarView;
 
         public WeekViewPagerHolder(View view)
         {
             super(view);
 
-            weekView = (WeekView) view.findViewById(R.id.week_view);
-            weekHeaderView = (WeekHeaderView) view.findViewById(R.id.week_header);
-            weekView.setOnEventItemClickListener(onEventItemClickListener);
-            weekHeaderView.setOnEventItemClickListener(onEventItemClickListener);
+            WeekView weekView = (WeekView) view.findViewById(R.id.week_view);
+            WeekHeaderView weekHeaderView = (WeekHeaderView) view.findViewById(R.id.week_header);
+
+            weekCalendarView = new WeekCalendarView(weekHeaderView, weekView);
         }
 
-        public void clear()
+        public void onBind()
         {
-            weekHeaderView.clear();
-            weekView.clear();
-            currentWeekDays = null;
-        }
-
-        public void onBind(int position)
-        {
-            this.position = position;
 
             Calendar copiedCalendar = (Calendar) CALENDAR.clone();
-            copiedCalendar.add(Calendar.WEEK_OF_YEAR, position - EventTransactionFragment.FIRST_VIEW_POSITION);
-            setDays(copiedCalendar);
-
-            weekHeaderView.setInitValue(currentWeekDays);
-            weekView.setDaysOfWeek(currentWeekDays);
-
-            setResult(iControlEvent.getInstances(position, currentWeekDays[0].getTimeInMillis()
-                    , currentWeekDays[7].getTimeInMillis()));
-        }
-
-        public void setResult(List<CalendarInstance> e)
-        {
-            List<ContentValues> instances = new ArrayList<>();
-            // 인스턴스 목록 표시
-            for (CalendarInstance calendarInstance : e)
-            {
-                instances.addAll(calendarInstance.getInstanceList());
-                // 데이터를 일정 길이의 내림차순으로 정렬
-            }
-            Collections.sort(instances, EventUtil.INSTANCE_COMPARATOR);
-            // weekview에는 1일 이하의 이벤트만 표시
-            weekView.setInstances(instances);
-            // weekheaderview에는 모든 이벤트 표시
-            weekHeaderView.setInstances(instances);
-        }
-
-        private void setDays(Calendar calendar)
-        {
-            // 일요일 부터 토요일까지
-            currentWeekDays = new Calendar[8];
-
-            for (int i = 0; i < 8; i++)
-            {
-                currentWeekDays[i] = (Calendar) calendar.clone();
-                calendar.add(Calendar.DAY_OF_YEAR, 1);
-            }
+            copiedCalendar.add(Calendar.WEEK_OF_YEAR, getAdapterPosition() - EventTransactionFragment.FIRST_VIEW_POSITION);
+            weekCalendarView.init(copiedCalendar, onEventItemClickListener, iControlEvent, iConnectedCalendars);
         }
 
     }
-
 
 }

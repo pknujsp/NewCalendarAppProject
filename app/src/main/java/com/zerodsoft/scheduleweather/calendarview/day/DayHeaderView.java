@@ -14,8 +14,12 @@ import android.view.ViewGroup;
 import androidx.annotation.Nullable;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendarview.common.HeaderInstancesView;
 import com.zerodsoft.scheduleweather.calendarview.common.InstanceView;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.CalendarViewInitializer;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.calendarview.month.EventData;
@@ -26,8 +30,9 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
-public class DayHeaderView extends ViewGroup implements IEvent
+public class DayHeaderView extends ViewGroup implements CalendarViewInitializer
 {
     private final Paint DAY_DATE_TEXT_PAINT;
     private final float DAY_DATE_SPACE_HEIGHT;
@@ -110,14 +115,21 @@ public class DayHeaderView extends ViewGroup implements IEvent
         eventCellsList.clear();
     }
 
-
-    @Override
     public void setInstances(List<ContentValues> instances)
     {
         this.instances = instances;
-        setEventTable();
-        requestLayout();
-        invalidate();
+    }
+
+    @Override
+    public void init(Calendar copiedCalendar, OnEventItemClickListener onEventItemClickListener, IControlEvent iControlEvent, IConnectedCalendars iConnectedCalendars)
+    {
+
+    }
+
+    @Override
+    public void setInstances(Map<Integer, CalendarInstance> resultMap)
+    {
+
     }
 
     @Override
