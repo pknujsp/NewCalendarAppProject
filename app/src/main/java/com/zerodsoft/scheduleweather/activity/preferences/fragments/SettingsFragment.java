@@ -107,6 +107,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
         {
             //값 변경완료시 호출됨
 
+            // 범위
             if (key.equals(searchingRadiusPreference.getKey()))
             {
                 searchingRadiusPreference.setValue();

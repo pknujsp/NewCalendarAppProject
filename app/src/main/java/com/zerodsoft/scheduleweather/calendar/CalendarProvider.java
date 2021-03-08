@@ -701,18 +701,7 @@ public class CalendarProvider implements ICalendarProvider
             ContentResolver contentResolver = context.getContentResolver();
 
             String selection = CalendarContract.Instances.CALENDAR_ID + "=?";
-            String[] selectionArg = null;
-
-            if (!App.isPreference_key_show_canceled_instances())
-            {
-                selection += " AND " + CalendarContract.Instances.STATUS + "!=?";
-                selectionArg = new String[2];
-                selectionArg[1] = String.valueOf(CalendarContract.Instances.STATUS_CANCELED);
-            } else
-            {
-                selectionArg = new String[1];
-            }
-
+            String[] selectionArg = new String[1];
 
             Uri.Builder builder = CalendarContract.Instances.CONTENT_URI.buildUpon();
             ContentUris.appendId(builder, startDate);
@@ -743,6 +732,7 @@ public class CalendarProvider implements ICalendarProvider
                         instance.put(CalendarContract.Instances.EVENT_ID, cursor.getLong(cursor.getColumnIndex(CalendarContract.Instances.EVENT_ID)));
                         instance.put(CalendarContract.Instances.CALENDAR_ID, cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.CALENDAR_ID)));
                         instance.put(CalendarContract.Instances.ALL_DAY, cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.ALL_DAY)));
+                        instance.put(CalendarContract.Instances.STATUS, cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.STATUS)));
                     }
                     cursor.close();
                 }

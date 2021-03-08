@@ -16,6 +16,7 @@ import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.calendarview.common.InstanceBarView;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IEvent;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
@@ -30,6 +31,9 @@ import java.util.TreeSet;
 
 public class MonthCalendarView extends ViewGroup implements IEvent
 {
+    /*인스턴스 데이터를 모두 가져온 상태에서 설정 값에 따라
+    뷰를 다시 그린다
+     */
     private Long firstDay;
 
     private Integer ITEM_WIDTH;
@@ -198,9 +202,20 @@ public class MonthCalendarView extends ViewGroup implements IEvent
         start = Integer.MAX_VALUE;
         end = Integer.MIN_VALUE;
 
+        boolean showCanceledInstance = App.isPreference_key_show_canceled_instances();
+
         // 달력 뷰의 셀에 아이템을 삽입
         for (ContentValues instance : instances)
         {
+            if (!showCanceledInstance)
+            {
+                if (instance.getAsInteger(CalendarContract.Instances.STATUS) ==
+                        CalendarContract.Instances.STATUS_CANCELED)
+                {
+                    // 취소(초대 거부)된 인스턴스인 경우..
+                    continue;
+                }
+            }
             // 달력 내 위치를 계산
             int beginIndex = ClockUtil.calcBeginDayDifference(instance.getAsLong(CalendarContract.Instances.BEGIN), firstDay);
             int endIndex = ClockUtil.calcEndDayDifference(instance.getAsLong(CalendarContract.Instances.END), firstDay, instance.getAsBoolean(CalendarContract.Instances.ALL_DAY));
