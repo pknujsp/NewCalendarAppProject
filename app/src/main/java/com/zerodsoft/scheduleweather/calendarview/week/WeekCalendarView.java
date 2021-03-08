@@ -52,6 +52,8 @@ public class WeekCalendarView implements CalendarViewInitializer
     @Override
     public void init(Calendar copiedCalendar, OnEventItemClickListener onEventItemClickListener, IControlEvent iControlEvent, IConnectedCalendars iConnectedCalendars)
     {
+        this.iConnectedCalendars = iConnectedCalendars;
+        this.iControlEvent = iControlEvent;
         weekView.init(null, onEventItemClickListener, iControlEvent, null);
         weekHeaderView.init(null, onEventItemClickListener, iControlEvent, null);
 
@@ -83,7 +85,10 @@ public class WeekCalendarView implements CalendarViewInitializer
         List<ContentValues> instances = new ArrayList<>();
         for (Integer calendarIdKey : connectedCalendarIdSet)
         {
-            instances.addAll(resultMap.get(calendarIdKey).getInstanceList());
+            if (resultMap.containsKey(calendarIdKey))
+            {
+                instances.addAll(resultMap.get(calendarIdKey).getInstanceList());
+            }
         }
 
         // 데이터를 일정 길이의 내림차순으로 정렬

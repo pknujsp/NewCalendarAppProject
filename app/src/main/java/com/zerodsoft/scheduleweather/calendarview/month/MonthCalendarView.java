@@ -71,7 +71,6 @@ public class MonthCalendarView extends ViewGroup implements CalendarViewInitiali
 
     private Map<Integer, CalendarInstance> calendarInstanceMap;
     private List<InstanceBar> instanceBarList = new ArrayList<>();
-    private List<ContentValues> instances;
     private List<MonthCalendarItemView> monthCalendarItemViewList;
     private SparseArray<ItemCell> ITEM_LAYOUT_CELLS = new SparseArray<>(42);
 
@@ -186,7 +185,11 @@ public class MonthCalendarView extends ViewGroup implements CalendarViewInitiali
     {
         ITEM_LAYOUT_CELLS.clear();
         instanceBarList.clear();
-        removeViews(42, getChildCount() - 42);
+
+        if (getChildCount() > TOTAL_DAY_COUNT)
+        {
+            removeViews(42, getChildCount() - 42);
+        }
 
         //선택되지 않은 캘린더는 제외
         List<ContentValues> connectedCalendars = iConnectedCalendars.getConnectedCalendars();
@@ -200,12 +203,14 @@ public class MonthCalendarView extends ViewGroup implements CalendarViewInitiali
         List<ContentValues> instances = new ArrayList<>();
         for (Integer calendarIdKey : connectedCalendarIdSet)
         {
-            instances.addAll(calendarInstanceMap.get(calendarIdKey).getInstanceList());
+            if (calendarInstanceMap.containsKey(calendarIdKey))
+            {
+                instances.addAll(calendarInstanceMap.get(calendarIdKey).getInstanceList());
+            }
         }
 
         // 데이터를 일정 길이의 내림차순으로 정렬
         instances.sort(EventUtil.INSTANCE_COMPARATOR);
-        this.instances = instances;
 
         start = Integer.MAX_VALUE;
         end = Integer.MIN_VALUE;
@@ -329,12 +334,6 @@ public class MonthCalendarView extends ViewGroup implements CalendarViewInitiali
 
             }
         }
-
-        // today rect설정
-        int difference = ClockUtil.calcBeginDayDifference(System.currentTimeMillis(), viewFirstDateTime.getTime());
-        MonthCalendarItemView itemView = (MonthCalendarItemView) getChildAt(difference);
-        itemView.setToday(true);
-
         requestLayout();
         invalidate();
     }
@@ -355,7 +354,6 @@ public class MonthCalendarView extends ViewGroup implements CalendarViewInitiali
     {
         // 선택되지 않은 캘린더는 제외한다.
         calendarInstanceMap = resultMap;
-        setEventTable();
     }
 
     @Override
@@ -384,10 +382,11 @@ public class MonthCalendarView extends ViewGroup implements CalendarViewInitiali
         viewFirstDateTime = calendar.getTime();
         Calendar calendar2 = (Calendar) calendar.clone();
         calendar2.add(Calendar.DATE, 1);
+        removeAllViews();
 
         for (int index = 0; index < TOTAL_DAY_COUNT; index++)
         {
-            int dateTextColor = (index < thisMonthFirstIndex) && (index > thisMonthLastIndex) ? Color.BLACK : Color.GRAY;
+            int dateTextColor = (index <= thisMonthLastIndex) && (index >= thisMonthFirstIndex) ? Color.BLACK : Color.GRAY;
 
             MonthCalendarItemView itemView = new MonthCalendarItemView(getContext(), dateTextColor);
             itemView.setDate(calendar.getTime(), calendar2.getTime());
@@ -404,11 +403,13 @@ public class MonthCalendarView extends ViewGroup implements CalendarViewInitiali
         viewLastDateTime = calendar.getTime();
         setMonthCalendarItemViewList(monthCalendarItemViewList);
         setInstances(iControlEvent.getInstances(viewFirstDateTime.getTime(), viewLastDateTime.getTime()));
+        setEventTable();
     }
 
     public void refresh()
     {
         setInstances(iControlEvent.getInstances(viewFirstDateTime.getTime(), viewLastDateTime.getTime()));
+        setEventTable();
     }
 
     static class ItemCell
@@ -473,11 +474,6 @@ public class MonthCalendarView extends ViewGroup implements CalendarViewInitiali
             this.startDate = startDate;
             this.endDate = endDate;
             return this;
-        }
-
-        public void setToday(boolean today)
-        {
-            isToday = today;
         }
 
         @Override

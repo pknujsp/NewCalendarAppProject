@@ -107,7 +107,7 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
 
     final class MonthViewHolder extends RecyclerView.ViewHolder
     {
-        private final MonthCalendarView monthCalendarView;
+        private MonthCalendarView monthCalendarView;
 
         public MonthViewHolder(View view)
         {
