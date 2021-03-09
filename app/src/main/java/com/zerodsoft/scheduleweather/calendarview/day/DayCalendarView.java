@@ -8,6 +8,7 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.CalendarViewInitial
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
 
 import java.util.ArrayList;
@@ -45,14 +46,15 @@ public class DayCalendarView implements CalendarViewInitializer
         return viewEndDate;
     }
 
+
     @Override
-    public void init(Calendar copiedCalendar, OnEventItemClickListener onEventItemClickListener, IControlEvent iControlEvent, IConnectedCalendars iConnectedCalendars)
+    public void init(Calendar copiedCalendar, OnEventItemLongClickListener onEventItemLongClickListener, OnEventItemClickListener onEventItemClickListener, IControlEvent iControlEvent, IConnectedCalendars iConnectedCalendars)
     {
         this.iConnectedCalendars = iConnectedCalendars;
         this.iControlEvent = iControlEvent;
 
-        dayHeaderView.init(null, onEventItemClickListener, null, null);
-        dayView.init(null, onEventItemClickListener, null, null);
+        dayHeaderView.init(null, null, onEventItemClickListener, null, null);
+        dayView.init(null, onEventItemLongClickListener, onEventItemClickListener, null, null);
 
         viewStartDate = copiedCalendar.getTime();
         copiedCalendar.add(Calendar.DATE, 1);
@@ -92,6 +94,12 @@ public class DayCalendarView implements CalendarViewInitializer
 
         dayHeaderView.setInstances(instances);
         dayView.setInstances(instances);
+    }
+
+    @Override
+    public void setInstances(List<ContentValues> instances)
+    {
+
     }
 
     @Override

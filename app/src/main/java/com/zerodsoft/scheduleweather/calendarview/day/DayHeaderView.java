@@ -23,6 +23,7 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
 import com.zerodsoft.scheduleweather.calendarview.month.EventData;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
@@ -46,6 +47,8 @@ public class DayHeaderView extends ViewGroup implements CalendarViewInitializer
 
     private List<EventData> eventCellsList = new ArrayList<>();
     private OnEventItemClickListener onEventItemClickListener;
+    private OnEventItemLongClickListener onEventItemLongClickListener;
+
     private List<ContentValues> instances;
     private HeaderInstancesView headerInstancesView;
 
@@ -68,11 +71,6 @@ public class DayHeaderView extends ViewGroup implements CalendarViewInitializer
         setBackgroundColor(Color.WHITE);
 
         setWillNotDraw(false);
-    }
-
-    public void setOnEventItemClickListener(OnEventItemClickListener onEventItemClickListener)
-    {
-        this.onEventItemClickListener = onEventItemClickListener;
     }
 
     @Override
@@ -112,9 +110,10 @@ public class DayHeaderView extends ViewGroup implements CalendarViewInitializer
     }
 
     @Override
-    public void init(Calendar copiedCalendar, OnEventItemClickListener onEventItemClickListener, IControlEvent iControlEvent, IConnectedCalendars iConnectedCalendars)
+    public void init(Calendar copiedCalendar, OnEventItemLongClickListener onEventItemLongClickListener, OnEventItemClickListener onEventItemClickListener, IControlEvent iControlEvent, IConnectedCalendars iConnectedCalendars)
     {
         this.onEventItemClickListener = onEventItemClickListener;
+        this.onEventItemLongClickListener = onEventItemLongClickListener;
     }
 
     @Override

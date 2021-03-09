@@ -16,6 +16,7 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.DateGetter;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import java.util.Calendar;
@@ -31,10 +32,12 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
     private final IControlEvent iControlEvent;
     private final IToolbar iToolbar;
     private final IConnectedCalendars iConnectedCalendars;
+    private final OnEventItemLongClickListener onEventItemLongClickListener;
 
-    public MonthViewPagerAdapter(IControlEvent iControlEvent, OnEventItemClickListener onEventItemClickListener, IToolbar iToolbar, IConnectedCalendars iConnectedCalendars)
+    public MonthViewPagerAdapter(IControlEvent iControlEvent, OnEventItemLongClickListener onEventItemLongClickListener, OnEventItemClickListener onEventItemClickListener, IToolbar iToolbar, IConnectedCalendars iConnectedCalendars)
     {
         this.onEventItemClickListener = onEventItemClickListener;
+        this.onEventItemLongClickListener = onEventItemLongClickListener;
         this.iControlEvent = iControlEvent;
         this.iToolbar = iToolbar;
         this.iConnectedCalendars = iConnectedCalendars;
@@ -120,7 +123,7 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
             Calendar copiedCalendar = (Calendar) CALENDAR.clone();
             copiedCalendar.add(Calendar.MONTH, getAdapterPosition() - EventTransactionFragment.FIRST_VIEW_POSITION);
 
-            monthCalendarView.init(copiedCalendar, onEventItemClickListener, iControlEvent, iConnectedCalendars);
+            monthCalendarView.init(copiedCalendar, onEventItemLongClickListener, onEventItemClickListener, iControlEvent, iConnectedCalendars);
         }
     }
 }

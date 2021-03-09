@@ -8,4 +8,3 @@ public interface OnEventItemClickListener
 
     void onClickedOnDialog(int calendarId, long instanceId, long eventId, long viewBegin, long viewEnd);
 }
-

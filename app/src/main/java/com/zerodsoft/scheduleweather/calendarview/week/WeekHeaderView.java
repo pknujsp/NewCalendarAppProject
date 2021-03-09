@@ -27,6 +27,7 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
 import com.zerodsoft.scheduleweather.calendarview.month.EventData;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
@@ -69,14 +70,9 @@ public class WeekHeaderView extends ViewGroup implements CalendarViewInitializer
 
     private List<EventData> eventCellsList = new ArrayList<>();
     private OnEventItemClickListener onEventItemClickListener;
-    private IControlEvent iControlEvent;
+    private OnEventItemLongClickListener onEventItemLongClickListener;
     private SparseArray<ItemCell> ITEM_LAYOUT_CELLS = new SparseArray<>(7);
     private List<ContentValues> instances;
-
-    public void setOnEventItemClickListener(OnEventItemClickListener onEventItemClickListener)
-    {
-        this.onEventItemClickListener = onEventItemClickListener;
-    }
 
     public WeekHeaderView(Context context, @Nullable AttributeSet attrs)
     {
@@ -190,12 +186,11 @@ public class WeekHeaderView extends ViewGroup implements CalendarViewInitializer
         weekLastDay = (Calendar) calendar.clone();
     }
 
-
     @Override
-    public void init(Calendar copiedCalendar, OnEventItemClickListener onEventItemClickListener, IControlEvent iControlEvent, IConnectedCalendars iConnectedCalendars)
+    public void init(Calendar copiedCalendar, OnEventItemLongClickListener onEventItemLongClickListener, OnEventItemClickListener onEventItemClickListener, IControlEvent iControlEvent, IConnectedCalendars iConnectedCalendars)
     {
         this.onEventItemClickListener = onEventItemClickListener;
-        this.iControlEvent = iControlEvent;
+        this.onEventItemLongClickListener = onEventItemLongClickListener;
     }
 
     @Override
@@ -204,6 +199,7 @@ public class WeekHeaderView extends ViewGroup implements CalendarViewInitializer
 
     }
 
+    @Override
     public void setInstances(List<ContentValues> instances)
     {
         // 이벤트 테이블에 데이터를 표시할 위치 설정

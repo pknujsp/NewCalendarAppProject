@@ -12,6 +12,7 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.GestureDetector;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -27,6 +28,7 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
@@ -47,6 +49,7 @@ public class WeekView extends HourEventsView implements CalendarViewInitializer
     private boolean changingEndTime = false;
 
     private OnEventItemClickListener onEventItemClickListener;
+    private OnEventItemLongClickListener onEventItemLongClickListener;
 
     private Date[] daysOfWeek;
     private List<ContentValues> instances;
@@ -107,8 +110,6 @@ public class WeekView extends HourEventsView implements CalendarViewInitializer
 
                 childView.measure(width, height);
                 childView.layout((int) left, (int) top, (int) right, (int) bottom);
-                childView.setClickable(true);
-                childView.setOnClickListener(itemOnClickListener);
             }
         }
     }
@@ -152,15 +153,16 @@ public class WeekView extends HourEventsView implements CalendarViewInitializer
     }
 
 
-    @Override
-    public void init(Calendar copiedCalendar, OnEventItemClickListener onEventItemClickListener, IControlEvent iControlEvent, IConnectedCalendars iConnectedCalendars)
-    {
-        this.onEventItemClickListener = onEventItemClickListener;
-    }
-
     public void setDaysOfWeek(Date[] daysOfWeek)
     {
         this.daysOfWeek = daysOfWeek;
+    }
+
+    @Override
+    public void init(Calendar copiedCalendar, OnEventItemLongClickListener onEventItemLongClickListener, OnEventItemClickListener onEventItemClickListener, IControlEvent iControlEvent, IConnectedCalendars iConnectedCalendars)
+    {
+        this.onEventItemClickListener = onEventItemClickListener;
+        this.onEventItemLongClickListener = onEventItemLongClickListener;
     }
 
     @Override
@@ -168,6 +170,7 @@ public class WeekView extends HourEventsView implements CalendarViewInitializer
     {
     }
 
+    @Override
     public void setInstances(List<ContentValues> instances)
     {
         // 1일 이하의 일정만 표시
@@ -278,6 +281,10 @@ public class WeekView extends HourEventsView implements CalendarViewInitializer
                     for (int i = 0; i < itemCells.size(); i++)
                     {
                         WeekItemView child = new WeekItemView(context, itemCells.get(i));
+                        child.setClickable(true);
+                        child.setLongClickable(true);
+                        child.setOnClickListener(itemOnClickListener);
+                        child.setOnLongClickListener(onLongClickListener);
                         this.addView(child);
                     }
                 }
@@ -506,6 +513,17 @@ public class WeekView extends HourEventsView implements CalendarViewInitializer
             onEventItemClickListener.onClicked(instance.getAsInteger(CalendarContract.Instances.CALENDAR_ID)
                     , instance.getAsLong(CalendarContract.Instances._ID), instance.getAsLong(CalendarContract.Instances.EVENT_ID),
                     instance.getAsLong(CalendarContract.Instances.BEGIN), instance.getAsLong(CalendarContract.Instances.END));
+        }
+    };
+
+    private final View.OnLongClickListener onLongClickListener = new OnLongClickListener()
+    {
+        @Override
+        public boolean onLongClick(View view)
+        {
+            ContentValues instance = ((WeekItemView) view).itemCell.instance;
+            onEventItemLongClickListener.createInstancePopupMenu(instance, view, Gravity.CENTER);
+            return true;
         }
     };
 

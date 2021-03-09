@@ -1,9 +1,9 @@
 package com.zerodsoft.scheduleweather.calendarview;
 
 import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.RemoteException;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +17,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
+import com.zerodsoft.scheduleweather.calendar.CommonPopupMenu;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendarview.day.DayFragment;
 import com.zerodsoft.scheduleweather.calendarview.instancedialog.InstanceListOnDayFragment;
@@ -26,16 +27,16 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IstartActivity;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
 import com.zerodsoft.scheduleweather.calendarview.month.MonthFragment;
 import com.zerodsoft.scheduleweather.calendarview.week.WeekFragment;
 import com.zerodsoft.scheduleweather.event.EventActivity;
 
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 
 
-public class EventTransactionFragment extends Fragment implements IControlEvent, OnEventItemClickListener, IRefreshView
+public class EventTransactionFragment extends Fragment implements IControlEvent, OnEventItemClickListener, IRefreshView, OnEventItemLongClickListener
 {
     // 달력 프래그먼트를 관리하는 프래그먼트
     public static final String TAG = "CalendarTransactionFragment";
@@ -46,12 +47,36 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
     private final IToolbar iToolbar;
     private final IConnectedCalendars iConnectedCalendars;
     private final IstartActivity istartActivity;
+    private final IRefreshView monthAssistantViewRefresher;
 
-    public EventTransactionFragment(Activity activity)
+    private final CommonPopupMenu commonPopupMenu = new CommonPopupMenu()
+    {
+
+        @Override
+        public void onExceptedInstance(boolean isSuccessful)
+        {
+            if (isSuccessful)
+            {
+                refreshView();
+            }
+        }
+
+        @Override
+        public void onDeletedInstance(boolean isSuccessful)
+        {
+            if (isSuccessful)
+            {
+                refreshView();
+            }
+        }
+    };
+
+    public EventTransactionFragment(Activity activity, IRefreshView monthAssistantViewRefresher)
     {
         this.iToolbar = (IToolbar) activity;
         this.iConnectedCalendars = (IConnectedCalendars) activity;
         this.istartActivity = (IstartActivity) activity;
+        this.monthAssistantViewRefresher = monthAssistantViewRefresher;
     }
 
     @Override
@@ -193,6 +218,13 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
         {
             ((DayFragment) currentFragment).refreshView();
         }
+        monthAssistantViewRefresher.refreshView();
+    }
+
+    @Override
+    public void createInstancePopupMenu(ContentValues instance, View anchorView, int gravity)
+    {
+        commonPopupMenu.createInstancePopupMenu(instance, getActivity(), anchorView, gravity);
     }
 }
 

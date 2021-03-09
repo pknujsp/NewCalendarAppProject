@@ -19,7 +19,13 @@ public class CalendarViewModel extends AndroidViewModel implements ICalendarProv
     public CalendarViewModel(Application application)
     {
         super(application);
-        this.calendarProvider = CalendarProvider.newInstance(application.getApplicationContext());
+        if (CalendarProvider.getInstance() == null)
+        {
+            this.calendarProvider = CalendarProvider.newInstance(application.getApplicationContext());
+        } else
+        {
+            this.calendarProvider = CalendarProvider.getInstance();
+        }
     }
 
     @Override

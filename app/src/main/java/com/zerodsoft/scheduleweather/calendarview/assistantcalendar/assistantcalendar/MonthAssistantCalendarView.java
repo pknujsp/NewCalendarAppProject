@@ -20,6 +20,7 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.CalendarViewInitial
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
 import com.zerodsoft.scheduleweather.calendarview.month.MonthCalendarView;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
@@ -205,9 +206,10 @@ public class MonthAssistantCalendarView extends ViewGroup implements CalendarVie
         setInstances(iControlEvent.getInstances(viewFirstDateTime.getTime(), viewLastDateTime.getTime()));
         setEventTable();
     }
+    
 
     @Override
-    public void init(Calendar copiedCalendar, OnEventItemClickListener onEventItemClickListener, IControlEvent iControlEvent, IConnectedCalendars iConnectedCalendars)
+    public void init(Calendar copiedCalendar, OnEventItemLongClickListener onEventItemLongClickListener, OnEventItemClickListener onEventItemClickListener, IControlEvent iControlEvent, IConnectedCalendars iConnectedCalendars)
     {
 
     }
@@ -216,6 +218,12 @@ public class MonthAssistantCalendarView extends ViewGroup implements CalendarVie
     public void setInstances(Map<Integer, CalendarInstance> resultMap)
     {
         calendarInstanceMap = resultMap;
+    }
+
+    @Override
+    public void setInstances(List<ContentValues> instances)
+    {
+
     }
 
     @Override

@@ -1,7 +1,6 @@
 package com.zerodsoft.scheduleweather.calendarview.month;
 
 import android.os.Bundle;
-import android.os.RemoteException;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +17,7 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
 
 import java.util.Calendar;
 
@@ -29,6 +29,7 @@ public class MonthFragment extends Fragment implements IRefreshView
     private final IToolbar iToolbar;
     private final OnEventItemClickListener onEventItemClickListener;
     private final IConnectedCalendars iConnectedCalendars;
+    private final OnEventItemLongClickListener onEventItemLongClickListener;
 
     private ViewPager2 viewPager;
     private MonthViewPagerAdapter viewPagerAdapter;
@@ -38,6 +39,7 @@ public class MonthFragment extends Fragment implements IRefreshView
 
     public MonthFragment(Fragment fragment, IToolbar iToolbar, IConnectedCalendars iConnectedCalendars)
     {
+        this.onEventItemLongClickListener = (OnEventItemLongClickListener) fragment;
         this.iControlEvent = (IControlEvent) fragment;
         this.onEventItemClickListener = (OnEventItemClickListener) fragment;
         this.iToolbar = iToolbar;
@@ -58,7 +60,7 @@ public class MonthFragment extends Fragment implements IRefreshView
 
         viewPager = (ViewPager2) view.findViewById(R.id.month_viewpager);
 
-        viewPagerAdapter = new MonthViewPagerAdapter(iControlEvent, onEventItemClickListener, iToolbar, iConnectedCalendars);
+        viewPagerAdapter = new MonthViewPagerAdapter(iControlEvent, onEventItemLongClickListener, onEventItemClickListener, iToolbar, iConnectedCalendars);
         viewPager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
         viewPager.setAdapter(viewPagerAdapter);
         viewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, false);

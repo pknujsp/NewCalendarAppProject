@@ -40,12 +40,9 @@ public class MonthAssistantCalendarListAdapter extends RecyclerView.Adapter<Mont
     private final CalendarDateOnClickListener calendarDateOnClickListener;
     private final Calendar CALENDAR;
     private final IConnectedCalendars iConnectedCalendars;
-    private Context context;
-    private Activity activity;
 
-    public MonthAssistantCalendarListAdapter(Activity activity, IControlEvent iControlEvent, CalendarDateOnClickListener calendarDateOnClickListener, IConnectedCalendars iConnectedCalendars)
+    public MonthAssistantCalendarListAdapter(IControlEvent iControlEvent, CalendarDateOnClickListener calendarDateOnClickListener, IConnectedCalendars iConnectedCalendars)
     {
-        this.activity = activity;
         this.iControlEvent = iControlEvent;
         this.calendarDateOnClickListener = calendarDateOnClickListener;
         this.iConnectedCalendars = iConnectedCalendars;
@@ -63,6 +60,11 @@ public class MonthAssistantCalendarListAdapter extends RecyclerView.Adapter<Mont
         return CALENDAR.getTime();
     }
 
+    public boolean holderEmpty()
+    {
+        return holderSparseArray.size() == 0;
+    }
+
     public void refresh(int position)
     {
         holderSparseArray.get(position).monthCalendarView.refresh();
@@ -78,28 +80,14 @@ public class MonthAssistantCalendarListAdapter extends RecyclerView.Adapter<Mont
     @Override
     public MonthAssistantViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType)
     {
-        context = parent.getContext();
-        return new MonthAssistantViewHolder(LayoutInflater.from(context).inflate(R.layout.month_assistant_itemview, parent, false));
+        return new MonthAssistantViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.month_assistant_itemview, parent, false));
     }
 
-    @SneakyThrows
     @Override
     public void onBindViewHolder(@NonNull MonthAssistantViewHolder holder, int position)
     {
         holder.onBind();
         holderSparseArray.put(holder.getAdapterPosition(), holder);
-    }
-
-    @Override
-    public void onViewAttachedToWindow(@NonNull MonthAssistantViewHolder holder)
-    {
-        super.onViewAttachedToWindow(holder);
-    }
-
-    @Override
-    public void onViewDetachedFromWindow(@NonNull MonthAssistantViewHolder holder)
-    {
-        super.onViewDetachedFromWindow(holder);
     }
 
     @Override

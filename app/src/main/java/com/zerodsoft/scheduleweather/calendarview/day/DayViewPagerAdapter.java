@@ -1,8 +1,5 @@
 package com.zerodsoft.scheduleweather.calendarview.day;
 
-import android.app.Activity;
-import android.content.ContentValues;
-import android.os.RemoteException;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,21 +9,17 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.DateGetter;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
-import com.zerodsoft.scheduleweather.event.util.EventUtil;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Date;
-import java.util.List;
 
 import lombok.SneakyThrows;
 
@@ -34,21 +27,24 @@ import lombok.SneakyThrows;
 public class DayViewPagerAdapter extends RecyclerView.Adapter<DayViewPagerAdapter.DayViewPagerHolder> implements DateGetter
 {
     private final OnEventItemClickListener onEventItemClickListener;
+    private final OnEventItemLongClickListener onEventItemLongClickListener;
     private final IControlEvent iControlEvent;
     private final IToolbar iToolbar;
     private final IConnectedCalendars iConnectedCalendars;
+
     private SparseArray<DayViewPagerHolder> holderSparseArray = new SparseArray<>();
     private final Calendar CALENDAR;
 
     public static final int FIRST_DAY = -1;
     public static final int LAST_DAY = -2;
 
-    public DayViewPagerAdapter(IControlEvent iControlEvent, OnEventItemClickListener onEventItemClickListener, IToolbar iToolbar, IConnectedCalendars iConnectedCalendars)
+    public DayViewPagerAdapter(IControlEvent iControlEvent, OnEventItemLongClickListener onEventItemLongClickListener, OnEventItemClickListener onEventItemClickListener, IToolbar iToolbar, IConnectedCalendars iConnectedCalendars)
     {
         this.onEventItemClickListener = onEventItemClickListener;
         this.iControlEvent = iControlEvent;
         this.iToolbar = iToolbar;
         this.iConnectedCalendars = iConnectedCalendars;
+        this.onEventItemLongClickListener = onEventItemLongClickListener;
 
         CALENDAR = Calendar.getInstance(ClockUtil.TIME_ZONE);
         // 날짜를 오늘 0시0분0초로 설정
@@ -137,7 +133,7 @@ public class DayViewPagerAdapter extends RecyclerView.Adapter<DayViewPagerAdapte
         {
             Calendar copiedCalendar = (Calendar) CALENDAR.clone();
             copiedCalendar.add(Calendar.DAY_OF_YEAR, getAdapterPosition() - EventTransactionFragment.FIRST_VIEW_POSITION);
-            dayCalendarView.init(copiedCalendar, onEventItemClickListener, iControlEvent, iConnectedCalendars);
+            dayCalendarView.init(copiedCalendar, onEventItemLongClickListener, onEventItemClickListener, iControlEvent, iConnectedCalendars);
         }
 
     }

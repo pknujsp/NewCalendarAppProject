@@ -17,6 +17,7 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.DateGetter;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
@@ -36,9 +37,11 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
     private final IControlEvent iControlEvent;
     private final OnEventItemClickListener onEventItemClickListener;
     private final IConnectedCalendars iConnectedCalendars;
+    private final OnEventItemLongClickListener onEventItemLongClickListener;
 
-    public WeekViewPagerAdapter(IControlEvent iControlEvent, OnEventItemClickListener onEventItemClickListener, IToolbar iToolbar, IConnectedCalendars iConnectedCalendars)
+    public WeekViewPagerAdapter(IControlEvent iControlEvent, OnEventItemLongClickListener onEventItemLongClickListener, OnEventItemClickListener onEventItemClickListener, IToolbar iToolbar, IConnectedCalendars iConnectedCalendars)
     {
+        this.onEventItemLongClickListener = onEventItemLongClickListener;
         this.iControlEvent = iControlEvent;
         this.iToolbar = iToolbar;
         this.onEventItemClickListener = onEventItemClickListener;
@@ -122,7 +125,7 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
 
             Calendar copiedCalendar = (Calendar) CALENDAR.clone();
             copiedCalendar.add(Calendar.WEEK_OF_YEAR, getAdapterPosition() - EventTransactionFragment.FIRST_VIEW_POSITION);
-            weekCalendarView.init(copiedCalendar, onEventItemClickListener, iControlEvent, iConnectedCalendars);
+            weekCalendarView.init(copiedCalendar, onEventItemLongClickListener, onEventItemClickListener, iControlEvent, iConnectedCalendars);
         }
 
     }

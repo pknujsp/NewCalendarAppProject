@@ -1,19 +1,26 @@
 package com.zerodsoft.scheduleweather.calendarview.day;
 
+import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.PointF;
 import android.provider.CalendarContract;
 import android.text.TextPaint;
 import android.util.AttributeSet;
+import android.view.Gravity;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.OverScroller;
+import android.widget.PopupMenu;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.core.view.GestureDetectorCompat;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
@@ -22,6 +29,7 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
 import com.zerodsoft.scheduleweather.calendarview.week.WeekFragment;
 import com.zerodsoft.scheduleweather.calendarview.hourside.HourEventsView;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
@@ -31,6 +39,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+
+import lombok.SneakyThrows;
 
 public class DayView extends HourEventsView implements CalendarViewInitializer
 {
@@ -47,6 +57,7 @@ public class DayView extends HourEventsView implements CalendarViewInitializer
 
     private List<ContentValues> instances;
     private OnEventItemClickListener onEventItemClickListener;
+    private OnEventItemLongClickListener onEventItemLongClickListener;
 
     public DayView(Context context, @Nullable AttributeSet attrs)
     {
@@ -100,8 +111,6 @@ public class DayView extends HourEventsView implements CalendarViewInitializer
 
                 childView.measure(width, height);
                 childView.layout((int) left, (int) top, (int) right, (int) bottom);
-                childView.setOnClickListener(itemOnClickListener);
-                childView.setClickable(true);
             }
         }
     }
@@ -134,7 +143,6 @@ public class DayView extends HourEventsView implements CalendarViewInitializer
             rectStartPoint = getTimePoint(TIME_CATEGORY.START);
             rectEndPoint = getTimePoint(TIME_CATEGORY.END);
 
-            // NEW_SCHEDULE_RECT_DRAWABLE.setBounds(HOUR_TEXT_BOX_RECT.width(), (int) rectStartPoint.y, VIEW_WIDTH, (int) rectEndPoint.y);
             NEW_SCHEDULE_RECT_DRAWABLE.draw(canvas);
         }
     }
@@ -206,10 +214,12 @@ public class DayView extends HourEventsView implements CalendarViewInitializer
         invalidate();
     }
 
+
     @Override
-    public void init(Calendar copiedCalendar, OnEventItemClickListener onEventItemClickListener, IControlEvent iControlEvent, IConnectedCalendars iConnectedCalendars)
+    public void init(Calendar copiedCalendar, OnEventItemLongClickListener onEventItemLongClickListener, OnEventItemClickListener onEventItemClickListener, IControlEvent iControlEvent, IConnectedCalendars iConnectedCalendars)
     {
         this.onEventItemClickListener = onEventItemClickListener;
+        this.onEventItemLongClickListener = onEventItemLongClickListener;
     }
 
     @Override
@@ -287,8 +297,14 @@ public class DayView extends HourEventsView implements CalendarViewInitializer
 
         for (int i = 0; i < itemCells.size(); i++)
         {
-            DayItemView child = new DayItemView(context, itemCells.get(i));
-            addView(child);
+            DayItemView childView = new DayItemView(context, itemCells.get(i));
+
+            childView.setOnClickListener(itemOnClickListener);
+            childView.setOnLongClickListener(itemOnLongClickListener);
+            childView.setLongClickable(true);
+            childView.setClickable(true);
+
+            addView(childView);
         }
 
         requestLayout();
@@ -300,6 +316,17 @@ public class DayView extends HourEventsView implements CalendarViewInitializer
     {
 
     }
+
+    private final View.OnLongClickListener itemOnLongClickListener = new OnLongClickListener()
+    {
+        @Override
+        public boolean onLongClick(View view)
+        {
+            ContentValues instance = ((DayItemView) view).itemCell.instance;
+            onEventItemLongClickListener.createInstancePopupMenu(instance, view, Gravity.CENTER);
+            return true;
+        }
+    };
 
     private final View.OnClickListener itemOnClickListener = new OnClickListener()
     {

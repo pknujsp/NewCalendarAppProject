@@ -8,6 +8,7 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.CalendarViewInitial
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
 
 import java.util.ArrayList;
@@ -49,14 +50,15 @@ public class WeekCalendarView implements CalendarViewInitializer
         return daysOfWeek;
     }
 
+
     @Override
-    public void init(Calendar copiedCalendar, OnEventItemClickListener onEventItemClickListener, IControlEvent iControlEvent, IConnectedCalendars iConnectedCalendars)
+    public void init(Calendar copiedCalendar, OnEventItemLongClickListener onEventItemLongClickListener, OnEventItemClickListener onEventItemClickListener, IControlEvent iControlEvent, IConnectedCalendars iConnectedCalendars)
     {
         this.iConnectedCalendars = iConnectedCalendars;
         this.iControlEvent = iControlEvent;
 
-        weekView.init(null, onEventItemClickListener, iControlEvent, null);
-        weekHeaderView.init(null, onEventItemClickListener, iControlEvent, null);
+        weekView.init(null, onEventItemLongClickListener, onEventItemClickListener, iControlEvent, null);
+        weekHeaderView.init(null, onEventItemLongClickListener, onEventItemClickListener, iControlEvent, null);
 
         for (int i = 0; i < 8; i++)
         {
@@ -98,6 +100,12 @@ public class WeekCalendarView implements CalendarViewInitializer
 
         weekView.setInstances(instances);
         weekHeaderView.setInstances(instances);
+    }
+
+    @Override
+    public void setInstances(List<ContentValues> instances)
+    {
+
     }
 
     @Override

@@ -20,7 +20,7 @@
 
                 <TextView
                     android:id="@+id/events_info_day"
-                    style="@style/TextAppearance.MaterialComponents.Headline5"
+                    style="@style/TextAppearance.MaterialComponents.Headline6"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
@@ -30,8 +30,8 @@
 
                 <ImageButton
                     android:id="@+id/edit_instance_button"
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
                     android:layout_gravity="center"
                     android:background="?attr/selectableItemBackground"
                     android:src="@drawable/edit_schedule" />

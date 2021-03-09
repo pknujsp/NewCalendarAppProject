@@ -19,6 +19,7 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import java.util.Calendar;
@@ -35,7 +36,9 @@ public class WeekFragment extends Fragment implements IRefreshView
     private final IControlEvent iControlEvent;
     private final IToolbar iToolbar;
     private final OnEventItemClickListener onEventItemClickListener;
+    private final OnEventItemLongClickListener onEventItemLongClickListener;
     private final IConnectedCalendars iConnectedCalendars;
+
     private static final int COLUMN_WIDTH = AppMainActivity.getDisplayWidth() / 8;
 
     private OnPageChangeCallback onPageChangeCallback;
@@ -44,6 +47,7 @@ public class WeekFragment extends Fragment implements IRefreshView
     {
         this.iControlEvent = (IControlEvent) fragment;
         this.onEventItemClickListener = (OnEventItemClickListener) fragment;
+        this.onEventItemLongClickListener = (OnEventItemLongClickListener) fragment;
         this.iToolbar = iToolbar;
         this.iConnectedCalendars = iConnectedCalendars;
     }
@@ -72,7 +76,7 @@ public class WeekFragment extends Fragment implements IRefreshView
         super.onViewCreated(view, savedInstanceState);
 
         weekViewPager = (ViewPager2) view.findViewById(R.id.week_viewpager);
-        weekViewPagerAdapter = new WeekViewPagerAdapter(iControlEvent, onEventItemClickListener, iToolbar, iConnectedCalendars);
+        weekViewPagerAdapter = new WeekViewPagerAdapter(iControlEvent, onEventItemLongClickListener, onEventItemClickListener, iToolbar, iConnectedCalendars);
         weekViewPager.setAdapter(weekViewPagerAdapter);
         weekViewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, false);
 

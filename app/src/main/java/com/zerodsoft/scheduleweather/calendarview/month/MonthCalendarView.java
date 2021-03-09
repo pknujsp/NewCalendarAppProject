@@ -23,6 +23,7 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
@@ -46,6 +47,7 @@ public class MonthCalendarView extends ViewGroup implements CalendarViewInitiali
     private OnEventItemClickListener onEventItemClickListener;
     private IControlEvent iControlEvent;
     private IConnectedCalendars iConnectedCalendars;
+    private OnEventItemLongClickListener onEventItemLongClickListener;
 
     private Date viewFirstDateTime;
     private Date viewLastDateTime;
@@ -350,16 +352,10 @@ public class MonthCalendarView extends ViewGroup implements CalendarViewInitiali
     };
 
     @Override
-    public void setInstances(Map<Integer, CalendarInstance> resultMap)
-    {
-        // 선택되지 않은 캘린더는 제외한다.
-        calendarInstanceMap = resultMap;
-    }
-
-    @Override
-    public void init(Calendar calendar, OnEventItemClickListener onEventItemClickListener, IControlEvent iControlEvent, IConnectedCalendars iConnectedCalendars)
+    public void init(Calendar calendar, OnEventItemLongClickListener onEventItemLongClickListener, OnEventItemClickListener onEventItemClickListener, IControlEvent iControlEvent, IConnectedCalendars iConnectedCalendars)
     {
         this.onEventItemClickListener = onEventItemClickListener;
+        this.onEventItemLongClickListener = onEventItemLongClickListener;
         this.iControlEvent = iControlEvent;
         this.iConnectedCalendars = iConnectedCalendars;
 
@@ -404,6 +400,19 @@ public class MonthCalendarView extends ViewGroup implements CalendarViewInitiali
         setMonthCalendarItemViewList(monthCalendarItemViewList);
         setInstances(iControlEvent.getInstances(viewFirstDateTime.getTime(), viewLastDateTime.getTime()));
         setEventTable();
+    }
+
+    @Override
+    public void setInstances(Map<Integer, CalendarInstance> resultMap)
+    {
+        // 선택되지 않은 캘린더는 제외한다.
+        calendarInstanceMap = resultMap;
+    }
+
+    @Override
+    public void setInstances(List<ContentValues> instances)
+    {
+
     }
 
     @Override

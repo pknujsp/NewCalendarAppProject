@@ -37,7 +37,7 @@ public class CalendarProvider implements ICalendarProvider
     public static final int REQUEST_READ_CALENDAR = 200;
     public static final int REQUEST_WRITE_CALENDAR = 300;
 
-    private final Context context;
+    private static Context context;
     private final String[] EVENTS_PROJECTION =
             {
                     CalendarContract.Events.TITLE,

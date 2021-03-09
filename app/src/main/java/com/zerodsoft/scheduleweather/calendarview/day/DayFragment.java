@@ -1,7 +1,6 @@
 package com.zerodsoft.scheduleweather.calendarview.day;
 
 import android.os.Bundle;
-import android.os.RemoteException;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,19 +11,17 @@ import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 
 public class DayFragment extends Fragment implements IRefreshView
 {
@@ -34,6 +31,7 @@ public class DayFragment extends Fragment implements IRefreshView
     private final OnEventItemClickListener onEventItemClickListener;
     private final IToolbar iToolbar;
     private final IConnectedCalendars iConnectedCalendars;
+    private final OnEventItemLongClickListener onEventItemLongClickListener;
 
     private ViewPager2 dayViewPager;
     private DayViewPagerAdapter dayViewPagerAdapter;
@@ -41,10 +39,12 @@ public class DayFragment extends Fragment implements IRefreshView
     private OnPageChangeCallback onPageChangeCallback;
     private int currentPosition = EventTransactionFragment.FIRST_VIEW_POSITION;
 
+
     public DayFragment(Fragment fragment, IToolbar iToolbar, IConnectedCalendars iConnectedCalendars)
     {
         this.iControlEvent = (IControlEvent) fragment;
         this.onEventItemClickListener = (OnEventItemClickListener) fragment;
+        this.onEventItemLongClickListener = (OnEventItemLongClickListener) fragment;
         this.iToolbar = iToolbar;
         this.iConnectedCalendars = iConnectedCalendars;
     }
@@ -67,7 +67,7 @@ public class DayFragment extends Fragment implements IRefreshView
     {
         dayViewPager = (ViewPager2) view.findViewById(R.id.day_viewpager);
 
-        dayViewPagerAdapter = new DayViewPagerAdapter(iControlEvent, onEventItemClickListener, iToolbar, iConnectedCalendars);
+        dayViewPagerAdapter = new DayViewPagerAdapter(iControlEvent, onEventItemLongClickListener, onEventItemClickListener, iToolbar, iConnectedCalendars);
         dayViewPager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
         dayViewPager.setAdapter(dayViewPagerAdapter);
         dayViewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, false);

@@ -58,6 +58,14 @@ public class MonthAssistantCalendarFragment extends Fragment implements IControl
         super.onViewCreated(view, savedInstanceState);
         calendarViewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
 
+        binding.monthAssistantCalendarViewpager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
+        adapter = new MonthAssistantCalendarListAdapter(this, calendarDateOnClickListener, iConnectedCalendars);
+        binding.monthAssistantCalendarViewpager.setAdapter(adapter);
+        binding.monthAssistantCalendarViewpager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, false);
+        binding.monthAssistantCalendarViewpager.registerOnPageChangeCallback(onPageChangeCallback);
+
+        binding.currentMonth.setText(ClockUtil.YEAR_MONTH_FORMAT.format(adapter.getAsOfDate()));
+
         binding.currentMonthButton.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -86,7 +94,6 @@ public class MonthAssistantCalendarFragment extends Fragment implements IControl
             }
         });
 
-        setDataToView();
     }
 
     @Override
@@ -95,17 +102,6 @@ public class MonthAssistantCalendarFragment extends Fragment implements IControl
         super.onStart();
     }
 
-    private void setDataToView()
-    {
-        adapter = new MonthAssistantCalendarListAdapter(getActivity(), this, calendarDateOnClickListener, iConnectedCalendars);
-
-        binding.monthAssistantCalendarViewpager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
-        binding.monthAssistantCalendarViewpager.setAdapter(adapter);
-        binding.monthAssistantCalendarViewpager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, false);
-        binding.monthAssistantCalendarViewpager.registerOnPageChangeCallback(onPageChangeCallback);
-
-        binding.currentMonth.setText(ClockUtil.YEAR_MONTH_FORMAT.format(adapter.getAsOfDate()));
-    }
 
     /**
      * 현재 년월 텍스트를 클릭하면 보조 캘린더의 날짜를 현재 month로 설정하고 표시
@@ -122,7 +118,7 @@ public class MonthAssistantCalendarFragment extends Fragment implements IControl
 
     public void refresh()
     {
-        if (adapter != null)
+        if (!adapter.holderEmpty())
         {
             refreshView();
         }
