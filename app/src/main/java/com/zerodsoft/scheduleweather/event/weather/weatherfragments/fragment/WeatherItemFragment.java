@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -16,6 +17,7 @@ import androidx.lifecycle.ViewModelProvider;
 import com.luckycatlabs.sunrisesunset.SunriseSunsetCalculator;
 import com.luckycatlabs.sunrisesunset.dto.Location;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.databinding.FragmentWeatherItemBinding;
 import com.zerodsoft.scheduleweather.event.weather.weatherfragments.repository.WeatherDownloader;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.MidFcstParameter;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.VilageFcstParameter;
@@ -37,6 +39,7 @@ import java.util.List;
 public class WeatherItemFragment extends Fragment
 {
     public static final String TAG = "WeatherItemFragment";
+    private FragmentWeatherItemBinding binding;
     private WeatherData weatherData;
     private final LocationDTO locationDTO;
 
@@ -47,6 +50,13 @@ public class WeatherItemFragment extends Fragment
 
     private WeatherViewModel viewModel;
     private List<SunSetRiseData> sunSetRiseList = new ArrayList<>();
+    private WeatherAreaCodeDTO weatherAreaCode;
+
+    private VilageFcstParameter vilageFcstParameter = new VilageFcstParameter();
+    private MidFcstParameter midLandFcstParameter = new MidFcstParameter();
+    private MidFcstParameter midTaParameter = new MidFcstParameter();
+
+    private WeatherDownloader weatherDownloader;
 
     public WeatherItemFragment(LocationDTO locationDTO)
     {
@@ -64,7 +74,8 @@ public class WeatherItemFragment extends Fragment
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
     {
-        return inflater.inflate(R.layout.fragment_weather_item, container, false);
+        binding = FragmentWeatherItemBinding.inflate(inflater);
+        return binding.getRoot();
     }
 
     @Override
@@ -73,14 +84,19 @@ public class WeatherItemFragment extends Fragment
         super.onViewCreated(view, savedInstanceState);
         FragmentManager fragmentManager = getChildFragmentManager();
 
+        binding.refreshWeatherFab.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                refreshWeatherData();
+            }
+        });
+
         ultraSrtNcstFragment = (UltraSrtNcstFragment) fragmentManager.findFragmentById(R.id.ultra_srt_ncst_fragment);
         ultraSrtFcstFragment = (UltraSrtFcstFragment) fragmentManager.findFragmentById(R.id.ultra_srt_fcst_fragment);
         vilageFcstFragment = (VilageFcstFragment) fragmentManager.findFragmentById(R.id.vilage_fcst_fragment);
         midFcstFragment = (MidFcstFragment) fragmentManager.findFragmentById(R.id.mid_fcst_fragment);
-
-        VilageFcstParameter vilageFcstParameter = new VilageFcstParameter();
-        MidFcstParameter midLandFcstParameter = new MidFcstParameter();
-        MidFcstParameter midTaParameter = new MidFcstParameter();
 
         final LonLat lonLat = LonLatConverter.convertGrid(locationDTO.getLongitude(), locationDTO.getLatitude());
 
@@ -113,7 +129,7 @@ public class WeatherItemFragment extends Fragment
                         }
                     }
                     // regId설정하는 코드 작성
-                    WeatherAreaCodeDTO weatherAreaCode = weatherAreaCodes.get(index);
+                    weatherAreaCode = weatherAreaCodes.get(index);
 
                     vilageFcstParameter.setNx(weatherAreaCode.getX()).setNy(weatherAreaCode.getY()).setNumOfRows("10").setPageNo("1");
                     midLandFcstParameter.setNumOfRows("10").setPageNo("1").setRegId(weatherAreaCode.getMidLandFcstCode());
@@ -121,7 +137,7 @@ public class WeatherItemFragment extends Fragment
 
                     // viewModel.getAllWeathersData(vilageFcstParameter, midLandFcstParameter, midTaParameter, weatherAreaCode);
 
-                    WeatherDownloader weatherDownloader = new WeatherDownloader(getContext())
+                    weatherDownloader = new WeatherDownloader(getContext())
                     {
                         @Override
                         public void onSuccessful(WeatherData weatherData)
@@ -138,10 +154,15 @@ public class WeatherItemFragment extends Fragment
                         }
                     };
 
-                    weatherDownloader.getWeatherData(vilageFcstParameter, midLandFcstParameter, midTaParameter, weatherAreaCode);
+                    refreshWeatherData();
                 }
             }
         });
+    }
+
+    private void refreshWeatherData()
+    {
+        weatherDownloader.getWeatherData(vilageFcstParameter, midLandFcstParameter, midTaParameter, weatherAreaCode);
     }
 
     @Override
@@ -190,6 +211,7 @@ public class WeatherItemFragment extends Fragment
     public void setWeatherData(WeatherData weatherData)
     {
         this.weatherData = weatherData;
+        binding.addressName.setText(weatherData.getAreaName());
         init();
         ultraSrtNcstFragment.setWeatherData(weatherData, sunSetRiseList.get(0));
         ultraSrtFcstFragment.setWeatherData(weatherData, sunSetRiseList);

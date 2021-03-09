@@ -116,14 +116,6 @@ public class MonthAssistantCalendarFragment extends Fragment implements IControl
         }
     }
 
-    public void refresh()
-    {
-        if (!adapter.holderEmpty())
-        {
-            refreshView();
-        }
-    }
-
     private final ViewPager2.OnPageChangeCallback onPageChangeCallback = new ViewPager2.OnPageChangeCallback()
     {
         private Calendar calendar = Calendar.getInstance();
@@ -148,9 +140,12 @@ public class MonthAssistantCalendarFragment extends Fragment implements IControl
     @Override
     public void refreshView()
     {
-        int currentItem = binding.monthAssistantCalendarViewpager.getCurrentItem();
-        adapter.refresh(currentItem);
-        adapter.notifyDataSetChanged();
+        if (!adapter.holderEmpty())
+        {
+            int currentItem = binding.monthAssistantCalendarViewpager.getCurrentItem();
+            adapter.refresh(currentItem);
+            adapter.notifyDataSetChanged();
+        }
     }
 
     public void goToToday()

@@ -355,12 +355,12 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
                 case R.id.calendar_type_day:
                     editor.putInt(getString(R.string.preferences_selected_calendar_type_key), TYPE_DAY).apply();
                     changeCalendar(DayFragment.TAG);
-                    monthAssistantCalendarFragment.refresh();
+                    monthAssistantCalendarFragment.refreshView();
                     break;
                 case R.id.calendar_type_week:
                     editor.putInt(getString(R.string.preferences_selected_calendar_type_key), TYPE_WEEK).apply();
                     changeCalendar(WeekFragment.TAG);
-                    monthAssistantCalendarFragment.refresh();
+                    monthAssistantCalendarFragment.refreshView();
                     break;
                 case R.id.calendar_type_month:
                     editor.putInt(getString(R.string.preferences_selected_calendar_type_key), TYPE_MONTH).apply();
@@ -564,6 +564,8 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
     public void onCheckedBox(String key, ContentValues calendar, boolean state)
     {
         SharedPreferences sharedPreferences = getSharedPreferences(getString(R.string.preferences_selected_calendars_key), Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+
         Set<String> selectedCalendarSet = new ArraySet<>();
         Map<String, String> selectedCalendarsMap = (Map<String, String>) sharedPreferences.getAll();
 
@@ -581,7 +583,6 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
                     connectedCalendarList.clear();
                     connectedCalendarList.addAll(connectedCalendarMap.values());
 
-                    SharedPreferences.Editor editor = sharedPreferences.edit();
                     editor.remove(key);
                     editor.commit();
 
@@ -591,7 +592,6 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
             }
         }
 
-        SharedPreferences.Editor editor = sharedPreferences.edit();
         connectedCalendarMap.put(key, calendar);
         connectedCalendarList.add(calendar);
         editor.putString(key, key);

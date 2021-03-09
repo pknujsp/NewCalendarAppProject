@@ -25,7 +25,6 @@ public class UltraSrtNcstFragment extends Fragment
     private SunSetRiseData sunSetRiseData;
     private WeatherData weatherData;
 
-    private TextView areaName;
     private TextView temp;
     private TextView sky;
     private TextView humidity;
@@ -44,7 +43,6 @@ public class UltraSrtNcstFragment extends Fragment
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
-        areaName = (TextView) view.findViewById(R.id.ultra_srt_ncst_areaname);
         temp = (TextView) view.findViewById(R.id.ultra_srt_ncst_temp);
         sky = (TextView) view.findViewById(R.id.ultra_srt_ncst_sky);
         humidity = (TextView) view.findViewById(R.id.ultra_srt_ncst_humidity);
@@ -54,8 +52,6 @@ public class UltraSrtNcstFragment extends Fragment
 
     private void setValue()
     {
-        //지역명
-        areaName.setText(weatherData.getAreaName());
         //하늘 이미지
         skyImage.setImageDrawable(skyDrawable);
         //기온
