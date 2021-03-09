@@ -15,6 +15,7 @@ import androidx.annotation.Nullable;
 import androidx.core.view.GestureDetectorCompat;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.CalendarViewInitializer;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
@@ -39,7 +40,8 @@ public class DayView extends HourEventsView implements CalendarViewInitializer
 
     private OverScroller overScroller;
     private GestureDetectorCompat gestureDetector;
-    private Calendar date;
+    private Date viewStartDate;
+    private Date viewEndDate;
     private List<ItemCell> itemCells = new ArrayList<>();
     private final int SPACING_BETWEEN_EVENTS = 5;
 
@@ -49,17 +51,6 @@ public class DayView extends HourEventsView implements CalendarViewInitializer
     public DayView(Context context, @Nullable AttributeSet attrs)
     {
         super(context, attrs);
-    }
-
-    public void setDate(Date date)
-    {
-        this.date = Calendar.getInstance();
-        this.date.setTime(date);
-    }
-
-    public void setOnEventItemClickListener(OnEventItemClickListener onEventItemClickListener)
-    {
-        this.onEventItemClickListener = onEventItemClickListener;
     }
 
     @Override
@@ -186,13 +177,6 @@ public class DayView extends HourEventsView implements CalendarViewInitializer
         return point;
     }
 
-    public void clear()
-    {
-        itemCells.clear();
-        removeAllViews();
-    }
-
-
     private boolean isOverlapping(ContentValues i1, ContentValues i2)
     {
         long start1 = i1.getAsLong(CalendarContract.Instances.BEGIN);
@@ -225,7 +209,7 @@ public class DayView extends HourEventsView implements CalendarViewInitializer
     @Override
     public void init(Calendar copiedCalendar, OnEventItemClickListener onEventItemClickListener, IControlEvent iControlEvent, IConnectedCalendars iConnectedCalendars)
     {
-
+        this.onEventItemClickListener = onEventItemClickListener;
     }
 
     @Override
@@ -237,9 +221,24 @@ public class DayView extends HourEventsView implements CalendarViewInitializer
     @Override
     public void setEventTable()
     {
+        removeAllViews();
+        itemCells.clear();
+
+        boolean showCanceledInstance = App.isPreference_key_show_canceled_instances();
+
         // 저장된 데이터가 표시될 위치를 설정
         for (ContentValues instance : instances)
         {
+            if (!showCanceledInstance)
+            {
+                if (instance.getAsInteger(CalendarContract.Instances.STATUS) ==
+                        CalendarContract.Instances.STATUS_CANCELED)
+                {
+                    // 취소(초대 거부)된 인스턴스인 경우..
+                    continue;
+                }
+            }
+
             ItemCell itemCell = new ItemCell(instance);
             itemCells.add(itemCell);
         }
@@ -291,6 +290,15 @@ public class DayView extends HourEventsView implements CalendarViewInitializer
             DayItemView child = new DayItemView(context, itemCells.get(i));
             addView(child);
         }
+
+        requestLayout();
+        invalidate();
+    }
+
+    @Override
+    public void refresh()
+    {
+
     }
 
     private final View.OnClickListener itemOnClickListener = new OnClickListener()
@@ -305,6 +313,12 @@ public class DayView extends HourEventsView implements CalendarViewInitializer
                     instance.getAsLong(CalendarContract.Instances.BEGIN), instance.getAsLong(CalendarContract.Instances.END));
         }
     };
+
+    public void setDates(Date viewStartDate, Date viewEndDate)
+    {
+        this.viewStartDate = viewStartDate;
+        this.viewEndDate = viewEndDate;
+    }
 
     static class ItemCell
     {

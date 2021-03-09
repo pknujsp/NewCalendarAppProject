@@ -338,6 +338,12 @@ public class WeekHeaderView extends ViewGroup implements CalendarViewInitializer
         invalidate();
     }
 
+    @Override
+    public void refresh()
+    {
+
+    }
+
 
     class ItemCell
     {

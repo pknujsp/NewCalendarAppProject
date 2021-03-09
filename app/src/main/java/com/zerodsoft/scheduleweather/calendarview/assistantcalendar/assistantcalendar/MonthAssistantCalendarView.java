@@ -151,11 +151,24 @@ public class MonthAssistantCalendarView extends ViewGroup implements CalendarVie
         super.dispatchDraw(canvas);
     }
 
+    private final View.OnClickListener dateItemOnClickListener = new View.OnClickListener()
+    {
+        @Override
+        public void onClick(View view)
+        {
+            MonthAssistantItemView itemView = ((MonthAssistantItemView) view);
+            calendarDateOnClickListener.onClickedDate(itemView.beginDate);
+        }
+    };
+
+
     public void init(Calendar calendar, CalendarDateOnClickListener calendarDateOnClickListener, IControlEvent iControlEvent, IConnectedCalendars iConnectedCalendars)
     {
         this.iConnectedCalendars = iConnectedCalendars;
         this.calendarDateOnClickListener = calendarDateOnClickListener;
         this.iControlEvent = iControlEvent;
+
+        removeAllViews();
 
         final int previousMonthDaysCount = calendar.get(Calendar.DAY_OF_WEEK) - 1;
         final int thisMonthDaysCount = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
@@ -169,7 +182,6 @@ public class MonthAssistantCalendarView extends ViewGroup implements CalendarVie
 
         Calendar calendar2 = (Calendar) calendar.clone();
         calendar2.add(Calendar.DATE, 1);
-        removeAllViews();
 
         viewFirstDateTime = calendar.getTime();
 
@@ -181,14 +193,7 @@ public class MonthAssistantCalendarView extends ViewGroup implements CalendarVie
                     thisMonthDate, calendar.getTime(), calendar2.getTime());
 
             itemView.setClickable(true);
-            itemView.setOnClickListener(new View.OnClickListener()
-            {
-                @Override
-                public void onClick(View view)
-                {
-                    calendarDateOnClickListener.onClickedDate(calendar.getTime());
-                }
-            });
+            itemView.setOnClickListener(dateItemOnClickListener);
             addView(itemView);
 
             calendar.add(Calendar.DATE, 1);
@@ -312,6 +317,10 @@ public class MonthAssistantCalendarView extends ViewGroup implements CalendarVie
             this.thisMonthDate = thisMonthDate;
             this.beginDate = beginDate;
             this.endDate = endDate;
+
+            TypedValue outValue = new TypedValue();
+            context.getTheme().resolveAttribute(android.R.attr.selectableItemBackground, outValue, true);
+            setBackgroundResource(outValue.resourceId);
         }
 
         public void setCount(int count)

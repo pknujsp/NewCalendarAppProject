@@ -30,11 +30,12 @@ import java.util.Map;
 public class MonthAssistantCalendarFragment extends Fragment implements IControlEvent, IRefreshView
 {
     public static final String TAG = "MonthAssistantCalendarFragment";
+    private final IConnectedCalendars iConnectedCalendars;
+    private final CalendarDateOnClickListener calendarDateOnClickListener;
 
     private FragmentMonthAssistantBinding binding;
     private MonthAssistantCalendarListAdapter adapter;
-    private final IConnectedCalendars iConnectedCalendars;
-    private final CalendarDateOnClickListener calendarDateOnClickListener;
+
     private CalendarViewModel calendarViewModel;
 
     public MonthAssistantCalendarFragment(Activity activity)
@@ -96,12 +97,13 @@ public class MonthAssistantCalendarFragment extends Fragment implements IControl
 
     private void setDataToView()
     {
-        adapter = new MonthAssistantCalendarListAdapter(getActivity(), this, calendarDateOnClickListener,iConnectedCalendars);
+        adapter = new MonthAssistantCalendarListAdapter(getActivity(), this, calendarDateOnClickListener, iConnectedCalendars);
 
         binding.monthAssistantCalendarViewpager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
         binding.monthAssistantCalendarViewpager.setAdapter(adapter);
         binding.monthAssistantCalendarViewpager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, false);
         binding.monthAssistantCalendarViewpager.registerOnPageChangeCallback(onPageChangeCallback);
+
         binding.currentMonth.setText(ClockUtil.YEAR_MONTH_FORMAT.format(adapter.getAsOfDate()));
     }
 

@@ -15,6 +15,7 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.DateGetter;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
@@ -35,26 +36,28 @@ public class DayViewPagerAdapter extends RecyclerView.Adapter<DayViewPagerAdapte
     private final OnEventItemClickListener onEventItemClickListener;
     private final IControlEvent iControlEvent;
     private final IToolbar iToolbar;
-    private final SparseArray<DayViewPagerHolder> holderSparseArray = new SparseArray<>();
+    private final IConnectedCalendars iConnectedCalendars;
+    private SparseArray<DayViewPagerHolder> holderSparseArray = new SparseArray<>();
     private final Calendar CALENDAR;
-    private Activity activity;
+
     public static final int FIRST_DAY = -1;
     public static final int LAST_DAY = -2;
 
-    public DayViewPagerAdapter(Activity activity, IControlEvent iControlEvent, OnEventItemClickListener onEventItemClickListener, IToolbar iToolbar)
+    public DayViewPagerAdapter(IControlEvent iControlEvent, OnEventItemClickListener onEventItemClickListener, IToolbar iToolbar, IConnectedCalendars iConnectedCalendars)
     {
-        this.activity = activity;
         this.onEventItemClickListener = onEventItemClickListener;
         this.iControlEvent = iControlEvent;
         this.iToolbar = iToolbar;
+        this.iConnectedCalendars = iConnectedCalendars;
+
         CALENDAR = Calendar.getInstance(ClockUtil.TIME_ZONE);
         // 날짜를 오늘 0시0분0초로 설정
         CALENDAR.set(Calendar.HOUR_OF_DAY, 0);
         CALENDAR.set(Calendar.MINUTE, 0);
         CALENDAR.set(Calendar.SECOND, 0);
+
         iToolbar.setMonth(CALENDAR.getTime());
     }
-
 
     public Calendar getCALENDAR()
     {
@@ -92,7 +95,6 @@ public class DayViewPagerAdapter extends RecyclerView.Adapter<DayViewPagerAdapte
     public void onViewRecycled(@NonNull DayViewPagerHolder holder)
     {
         holderSparseArray.remove(holder.getOldPosition());
-        holder.clear();
         super.onViewRecycled(holder);
     }
 
@@ -102,81 +104,40 @@ public class DayViewPagerAdapter extends RecyclerView.Adapter<DayViewPagerAdapte
         return Integer.MAX_VALUE;
     }
 
-    public Date getDay(int position)
-    {
-        return holderSparseArray.get(position).startDate;
-    }
-
     @Override
     public Date getDate(int position, int index)
     {
-        Date date = null;
         if (index == FIRST_DAY)
         {
-            date = (Date) holderSparseArray.get(position).startDate.clone();
+            return holderSparseArray.get(position).dayCalendarView.getViewStartDate();
         } else
         {
-            date = (Date) holderSparseArray.get(position).endDate.clone();
+            return holderSparseArray.get(position).dayCalendarView.getViewEndDate();
         }
-        return date;
     }
 
-    public void refresh(int position, List<CalendarInstance> e)
+    public void refresh(int position)
     {
-        holderSparseArray.get(position).setResult(e);
+        holderSparseArray.get(position).dayCalendarView.refresh();
     }
 
     class DayViewPagerHolder extends RecyclerView.ViewHolder
     {
-        // 시간별 리스트 레이아웃 표시
-        DayHeaderView dayHeaderView;
-        DayView dayView;
-
-        Date startDate = new Date();
-        Date endDate = new Date();
+        private DayCalendarView dayCalendarView;
 
         public DayViewPagerHolder(View view)
         {
             super(view);
-            dayHeaderView = (DayHeaderView) view.findViewById(R.id.dayheaderview);
-            dayHeaderView.setOnEventItemClickListener(onEventItemClickListener);
-            dayView = (DayView) view.findViewById(R.id.dayview);
-            dayView.setOnEventItemClickListener(onEventItemClickListener);
+            DayHeaderView dayHeaderView = (DayHeaderView) view.findViewById(R.id.dayheaderview);
+            DayView dayView = (DayView) view.findViewById(R.id.dayview);
+            dayCalendarView = new DayCalendarView(dayHeaderView, dayView);
         }
 
         public void onBind()
         {
             Calendar copiedCalendar = (Calendar) CALENDAR.clone();
             copiedCalendar.add(Calendar.DAY_OF_YEAR, getAdapterPosition() - EventTransactionFragment.FIRST_VIEW_POSITION);
-
-            startDate = copiedCalendar.getTime();
-            copiedCalendar.add(Calendar.DAY_OF_YEAR, 1);
-            endDate = copiedCalendar.getTime();
-
-            dayHeaderView.setInitValue(startDate, endDate);
-
-            // setResult(iControlEvent.getInstances(getAdapterPosition(), startDate.getTime(), endDate.getTime()));
-        }
-
-        public void setResult(List<CalendarInstance> e)
-        {
-
-            List<ContentValues> instances = new ArrayList<>();
-            // 인스턴스 목록 표시
-            for (CalendarInstance calendarInstance : e)
-            {
-                instances.addAll(calendarInstance.getInstanceList());
-                // 데이터를 일정 길이의 내림차순으로 정렬
-            }
-            Collections.sort(instances, EventUtil.INSTANCE_COMPARATOR);
-            dayHeaderView.setInstances(instances);
-            dayView.setInstances(instances);
-        }
-
-        public void clear()
-        {
-            dayHeaderView.clear();
-            dayView.clear();
+            dayCalendarView.init(copiedCalendar, onEventItemClickListener, iControlEvent, iConnectedCalendars);
         }
 
     }

@@ -169,10 +169,7 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 
     public void changeDate(Date date)
     {
-        if (currentFragment instanceof MonthFragment)
-        {
-            ((MonthFragment) currentFragment).refreshView();
-        } else if (currentFragment instanceof WeekFragment)
+        if (currentFragment instanceof WeekFragment)
         {
             ((WeekFragment) currentFragment).goToWeek(date);
             //선택된 날짜에 해당 하는 주로 이동 (parameter : 2020년 2주차 -> 2020년 2주차로 이동)

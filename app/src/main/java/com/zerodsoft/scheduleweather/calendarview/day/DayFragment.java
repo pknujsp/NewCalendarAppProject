@@ -30,11 +30,14 @@ public class DayFragment extends Fragment implements IRefreshView
 {
     public static final String TAG = "DAY_FRAGMENT";
 
+    private final IControlEvent iControlEvent;
+    private final OnEventItemClickListener onEventItemClickListener;
+    private final IToolbar iToolbar;
+    private final IConnectedCalendars iConnectedCalendars;
+
     private ViewPager2 dayViewPager;
     private DayViewPagerAdapter dayViewPagerAdapter;
-    private IControlEvent iControlEvent;
-    private final OnEventItemClickListener onEventItemClickListener;
-    private IToolbar iToolbar;
+
     private OnPageChangeCallback onPageChangeCallback;
     private int currentPosition = EventTransactionFragment.FIRST_VIEW_POSITION;
 
@@ -43,6 +46,7 @@ public class DayFragment extends Fragment implements IRefreshView
         this.iControlEvent = (IControlEvent) fragment;
         this.onEventItemClickListener = (OnEventItemClickListener) fragment;
         this.iToolbar = iToolbar;
+        this.iConnectedCalendars = iConnectedCalendars;
     }
 
     @Override
@@ -63,7 +67,7 @@ public class DayFragment extends Fragment implements IRefreshView
     {
         dayViewPager = (ViewPager2) view.findViewById(R.id.day_viewpager);
 
-        dayViewPagerAdapter = new DayViewPagerAdapter(getActivity(), iControlEvent, onEventItemClickListener, iToolbar);
+        dayViewPagerAdapter = new DayViewPagerAdapter(iControlEvent, onEventItemClickListener, iToolbar, iConnectedCalendars);
         dayViewPager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
         dayViewPager.setAdapter(dayViewPagerAdapter);
         dayViewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, false);
@@ -136,13 +140,7 @@ public class DayFragment extends Fragment implements IRefreshView
     public void refreshView()
     {
         int currentItem = dayViewPager.getCurrentItem();
-        long start = dayViewPagerAdapter.getDate(currentItem, DayViewPagerAdapter.FIRST_DAY).getTime();
-        long end = dayViewPagerAdapter.getDate(currentItem, DayViewPagerAdapter.LAST_DAY).getTime();
-
-        List<CalendarInstance> calendarInstances = new ArrayList<>();
-        // iControlEvent.getInstances(currentItem, start, end);
-
-        dayViewPagerAdapter.refresh(currentItem, calendarInstances);
+        dayViewPagerAdapter.refresh(currentItem);
         dayViewPagerAdapter.notifyDataSetChanged();
     }
 
@@ -151,6 +149,7 @@ public class DayFragment extends Fragment implements IRefreshView
         if (currentPosition != EventTransactionFragment.FIRST_VIEW_POSITION)
         {
             dayViewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, true);
+            refreshView();
         }
     }
 }

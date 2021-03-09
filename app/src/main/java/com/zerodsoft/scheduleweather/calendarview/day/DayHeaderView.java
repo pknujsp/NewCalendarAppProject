@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import androidx.annotation.Nullable;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendarview.common.HeaderInstancesView;
 import com.zerodsoft.scheduleweather.calendarview.common.InstanceView;
@@ -37,10 +38,11 @@ public class DayHeaderView extends ViewGroup implements CalendarViewInitializer
     private final Paint DAY_DATE_TEXT_PAINT;
     private final float DAY_DATE_SPACE_HEIGHT;
 
-    private Date today;
-    private Date tomorrow;
     private int ROWS_LIMIT;
     private int rowNum;
+
+    private Date viewStartDate;
+    private Date viewEndDate;
 
     private List<EventData> eventCellsList = new ArrayList<>();
     private OnEventItemClickListener onEventItemClickListener;
@@ -66,12 +68,6 @@ public class DayHeaderView extends ViewGroup implements CalendarViewInitializer
         setBackgroundColor(Color.WHITE);
 
         setWillNotDraw(false);
-    }
-
-    public void setInitValue(Date today, Date tomorrow)
-    {
-        this.today = today;
-        this.tomorrow = tomorrow;
     }
 
     public void setOnEventItemClickListener(OnEventItemClickListener onEventItemClickListener)
@@ -106,14 +102,9 @@ public class DayHeaderView extends ViewGroup implements CalendarViewInitializer
     {
         super.onDraw(canvas);
         // 날짜와 요일 그리기
-        canvas.drawText(ClockUtil.D_E.format(today), getWidth() / 2, DAY_DATE_SPACE_HEIGHT - 5, DAY_DATE_TEXT_PAINT);
+        canvas.drawText(ClockUtil.D_E.format(viewStartDate), getWidth() / 2, DAY_DATE_SPACE_HEIGHT - 5, DAY_DATE_TEXT_PAINT);
     }
 
-
-    public void clear()
-    {
-        eventCellsList.clear();
-    }
 
     public void setInstances(List<ContentValues> instances)
     {
@@ -123,7 +114,7 @@ public class DayHeaderView extends ViewGroup implements CalendarViewInitializer
     @Override
     public void init(Calendar copiedCalendar, OnEventItemClickListener onEventItemClickListener, IControlEvent iControlEvent, IConnectedCalendars iConnectedCalendars)
     {
-
+        this.onEventItemClickListener = onEventItemClickListener;
     }
 
     @Override
@@ -135,25 +126,38 @@ public class DayHeaderView extends ViewGroup implements CalendarViewInitializer
     @Override
     public void setEventTable()
     {
+        removeAllViews();
         eventCellsList.clear();
+
         rowNum = 0;
         int availableRow = 0;
-        removeAllViews();
 
         headerInstancesView = new HeaderInstancesView(getContext(), onEventItemClickListener);
         headerInstancesView.setClickable(true);
         addView(headerInstancesView);
 
+        boolean showCanceledInstance = App.isPreference_key_show_canceled_instances();
+
         // 달력 뷰의 셀에 아이템을 삽입
         for (ContentValues instance : instances)
         {
+            if (!showCanceledInstance)
+            {
+                if (instance.getAsInteger(CalendarContract.Instances.STATUS) ==
+                        CalendarContract.Instances.STATUS_CANCELED)
+                {
+                    // 취소(초대 거부)된 인스턴스인 경우..
+                    continue;
+                }
+            }
+
             if (instance.getAsBoolean(CalendarContract.Instances.ALL_DAY))
             {
                 Calendar calendar = Calendar.getInstance();
                 calendar.setTimeInMillis(instance.getAsLong(CalendarContract.Instances.END));
                 calendar.add(Calendar.DAY_OF_YEAR, -1);
 
-                if (today.after(calendar.getTime()))
+                if (viewStartDate.after(calendar.getTime()))
                 {
                     continue;
                 }
@@ -169,8 +173,8 @@ public class DayHeaderView extends ViewGroup implements CalendarViewInitializer
 
                 int[] margin = EventUtil.getViewSideMargin(instance.getAsLong(CalendarContract.Instances.BEGIN)
                         , instance.getAsLong(CalendarContract.Instances.END)
-                        , today.getTime()
-                        , tomorrow.getTime(), 16, instance.getAsBoolean(CalendarContract.Instances.ALL_DAY));
+                        , viewStartDate.getTime()
+                        , viewEndDate.getTime(), 16, instance.getAsBoolean(CalendarContract.Instances.ALL_DAY));
 
                 int leftMargin = margin[0];
                 int rightMargin = margin[1];
@@ -196,8 +200,22 @@ public class DayHeaderView extends ViewGroup implements CalendarViewInitializer
             instanceView.init(eventData.getEvent());
             headerInstancesView.addView(instanceView);
         }
+
+        requestLayout();
+        invalidate();
     }
 
+    @Override
+    public void refresh()
+    {
+
+    }
+
+    public void setDates(Date viewStartDate, Date viewEndDate)
+    {
+        this.viewStartDate = viewStartDate;
+        this.viewEndDate = viewEndDate;
+    }
 }
 
 

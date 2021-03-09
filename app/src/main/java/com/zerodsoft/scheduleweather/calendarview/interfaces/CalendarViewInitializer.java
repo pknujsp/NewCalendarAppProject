@@ -12,5 +12,7 @@ public interface CalendarViewInitializer
     void setInstances(Map<Integer, CalendarInstance> resultMap);
 
     void setEventTable();
+
+    void refresh();
 }
 

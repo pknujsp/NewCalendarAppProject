@@ -288,6 +288,12 @@ public class WeekView extends HourEventsView implements CalendarViewInitializer
         invalidate();
     }
 
+    @Override
+    public void refresh()
+    {
+
+    }
+
     private boolean isOverlapping(ContentValues event1, ContentValues event2)
     {
         long start1 = event1.getAsLong(CalendarContract.Instances.BEGIN);

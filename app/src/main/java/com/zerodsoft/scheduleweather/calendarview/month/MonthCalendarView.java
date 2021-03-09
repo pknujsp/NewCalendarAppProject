@@ -406,6 +406,7 @@ public class MonthCalendarView extends ViewGroup implements CalendarViewInitiali
         setEventTable();
     }
 
+    @Override
     public void refresh()
     {
         setInstances(iControlEvent.getInstances(viewFirstDateTime.getTime(), viewLastDateTime.getTime()));
