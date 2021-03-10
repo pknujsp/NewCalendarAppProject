@@ -44,92 +44,29 @@ public abstract class WeatherDownloader
     public static final String MID_LAND_FCST = "MID_LAND_FCST";
     public static final String MID_TA_FCST = "MID_TA_FCST";
 
-    private static final int TOTAL_REQUEST = 5;
-    private int currentResponseCount = 0;
-    private WeatherData weatherData;
 
-    public WeatherDownloader(Context context)
+    public WeatherDownloader()
     {
         downloadedCalendar = Calendar.getInstance(ClockUtil.TIME_ZONE);
     }
 
-
-    public void onSuccessful(DataWrapper<WeatherItems> result)
-    {
-        if (result.getData() instanceof UltraSrtNcstItems)
-        {
-            weatherData.setUltraSrtNcstItems((UltraSrtNcstItems) result.getData());
-        } else if (result.getData() instanceof UltraSrtFcstItems)
-        {
-            weatherData.setUltraSrtFcstItems((UltraSrtFcstItems) result.getData());
-
-        } else if (result.getData() instanceof VilageFcstItems)
-        {
-            weatherData.setVilageFcstItems((VilageFcstItems) result.getData());
-
-        } else if (result.getData() instanceof MidLandFcstItems)
-        {
-            weatherData.setMidLandFcstItems((MidLandFcstItems) result.getData());
-
-        } else if (result.getData() instanceof MidTaItems)
-        {
-            weatherData.setMidTaItems((MidTaItems) result.getData());
-        }
-
-        if (++currentResponseCount == TOTAL_REQUEST)
-        {
-            weatherData.setFinalData();
-            onSuccessful(weatherData);
-            currentResponseCount = 0;
-        }
-    }
-
-    public void onSuccessful(WeatherData weatherData)
-    {
-
-    }
-
-    public void onFailure(Exception exception)
-    {
-
-    }
-
+    public abstract void onResponse(DataWrapper<? extends WeatherItems> result);
 
     public void getWeatherData(VilageFcstParameter vilageFcstParameter, MidFcstParameter midLandFcstParameter, MidFcstParameter midTaFcstParameter, WeatherAreaCodeDTO weatherAreaCode)
     {
         //시간 업데이트
-        currentResponseCount = 0;
         downloadedCalendar.setTimeInMillis(System.currentTimeMillis());
-        weatherData = new WeatherData(downloadedCalendar, weatherAreaCode);
 
+        //초단기 실황
         Call call1 = getUltraSrtNcstData(vilageFcstParameter.deepCopy());
+        //초단기 예보
         Call call2 = getUltraSrtFcstData(vilageFcstParameter.deepCopy());
+        //동네예보
         Call call3 = getVilageFcstData(vilageFcstParameter.deepCopy());
+        //중기 예보 육상, 기온
         Call call4 = getMidLandFcstData(midLandFcstParameter.deepCopy());
         Call call5 = getMidTaData(midTaFcstParameter.deepCopy());
-
-        List<Call> calls = Arrays.asList(call1, call2, call3, call4, call5);
-
-        // 10초 타이머 동작
-        TimerTask timerTask = new TimerTask()
-        {
-            @Override
-            public void run()
-            {
-                for (Call call : calls)
-                {
-                    if (call.isExecuted())
-                    {
-                        // 작업 취소
-                        call.cancel();
-                        onFailure(null);
-                        break;
-                    }
-                }
-            }
-        };
     }
-
 
     /**
      * 초단기 실황
@@ -155,19 +92,19 @@ public abstract class WeatherDownloader
             @Override
             protected void handleResponse(UltraSrtNcstRoot data)
             {
-                onSuccessful(new DataWrapper<WeatherItems>(data.getResponse().getBody().getItems()));
+                WeatherDownloader.this.onResponse(new DataWrapper<UltraSrtNcstItems>(data.getResponse().getBody().getItems()));
             }
 
             @Override
             protected void handleError(Response<UltraSrtNcstRoot> response)
             {
-                WeatherDownloader.this.onFailure(null);
+                WeatherDownloader.this.onResponse(new DataWrapper<UltraSrtNcstItems>(new Exception(response.message())));
             }
 
             @Override
             protected void handleFailure(Exception e)
             {
-                WeatherDownloader.this.onFailure(e);
+                WeatherDownloader.this.onResponse(new DataWrapper<UltraSrtNcstItems>(e));
             }
         });
 
@@ -199,19 +136,19 @@ public abstract class WeatherDownloader
             @Override
             protected void handleResponse(UltraSrtFcstRoot data)
             {
-                onSuccessful(new DataWrapper<WeatherItems>(data.getResponse().getBody().getItems()));
+                WeatherDownloader.this.onResponse(new DataWrapper<UltraSrtFcstItems>(data.getResponse().getBody().getItems()));
             }
 
             @Override
             protected void handleError(Response<UltraSrtFcstRoot> response)
             {
-                WeatherDownloader.this.onFailure(null);
+                WeatherDownloader.this.onResponse(new DataWrapper<UltraSrtFcstItems>(new Exception(response.message())));
             }
 
             @Override
             protected void handleFailure(Exception e)
             {
-                WeatherDownloader.this.onFailure(e);
+                WeatherDownloader.this.onResponse(new DataWrapper<UltraSrtFcstItems>(e));
             }
         });
         return call;
@@ -261,19 +198,20 @@ public abstract class WeatherDownloader
             @Override
             protected void handleResponse(VilageFcstRoot data)
             {
-                onSuccessful(new DataWrapper<WeatherItems>(data.getResponse().getBody().getItems()));
+                WeatherDownloader.this.onResponse(new DataWrapper<VilageFcstItems>(data.getResponse().getBody().getItems()));
             }
 
             @Override
             protected void handleError(Response<VilageFcstRoot> response)
             {
-                WeatherDownloader.this.onFailure(null);
+                WeatherDownloader.this.onResponse(new DataWrapper<VilageFcstItems>(new Exception(response.message())));
             }
 
             @Override
             protected void handleFailure(Exception e)
             {
-                WeatherDownloader.this.onFailure(e);
+                WeatherDownloader.this.onResponse(new DataWrapper<UltraSrtFcstItems>(e));
+
             }
         });
         return call;
@@ -311,19 +249,19 @@ public abstract class WeatherDownloader
             @Override
             protected void handleResponse(MidLandFcstRoot data)
             {
-                onSuccessful(new DataWrapper<WeatherItems>(data.getResponse().getBody().getItems()));
+                WeatherDownloader.this.onResponse(new DataWrapper<MidLandFcstItems>(data.getResponse().getBody().getItems()));
             }
 
             @Override
             protected void handleError(Response<MidLandFcstRoot> response)
             {
-                WeatherDownloader.this.onFailure(null);
+                WeatherDownloader.this.onResponse(new DataWrapper<MidLandFcstItems>(new Exception(response.message())));
             }
 
             @Override
             protected void handleFailure(Exception e)
             {
-                WeatherDownloader.this.onFailure(e);
+                WeatherDownloader.this.onResponse(new DataWrapper<MidLandFcstItems>(e));
             }
         });
         return call;
@@ -361,19 +299,19 @@ public abstract class WeatherDownloader
             @Override
             protected void handleResponse(MidTaRoot data)
             {
-                onSuccessful(new DataWrapper<WeatherItems>(data.getResponse().getBody().getItems()));
+                WeatherDownloader.this.onResponse(new DataWrapper<MidTaItems>(data.getResponse().getBody().getItems()));
             }
 
             @Override
             protected void handleError(Response<MidTaRoot> response)
             {
-                WeatherDownloader.this.onFailure(null);
+                WeatherDownloader.this.onResponse(new DataWrapper<MidTaItems>(new Exception(response.message())));
             }
 
             @Override
             protected void handleFailure(Exception e)
             {
-                WeatherDownloader.this.onFailure(e);
+                WeatherDownloader.this.onResponse(new DataWrapper<MidTaItems>(e));
             }
         });
         return call;

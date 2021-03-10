@@ -21,8 +21,15 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.FragmentWeatherItemBinding;
 import com.zerodsoft.scheduleweather.event.common.interfaces.ILocation;
 import com.zerodsoft.scheduleweather.event.weather.repository.WeatherDownloader;
+import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.MidFcstParameter;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.VilageFcstParameter;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.WeatherItems;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.midlandfcstresponse.MidLandFcstItems;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.midtaresponse.MidTaItems;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.ultrasrtfcstresponse.UltraSrtFcstItems;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.ultrasrtncstresponse.UltraSrtNcstItems;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.vilagefcstresponse.VilageFcstItems;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
 import com.zerodsoft.scheduleweather.event.weather.SunSetRiseData;
@@ -41,6 +48,7 @@ import java.util.List;
 public class WeatherItemFragment extends Fragment
 {
     public static final String TAG = "WeatherItemFragment";
+
     private FragmentWeatherItemBinding binding;
     private WeatherData weatherData;
     private LocationDTO locationDTO;
@@ -59,7 +67,35 @@ public class WeatherItemFragment extends Fragment
     private MidFcstParameter midLandFcstParameter = new MidFcstParameter();
     private MidFcstParameter midTaParameter = new MidFcstParameter();
 
-    private WeatherDownloader weatherDownloader;
+    private final WeatherDownloader weatherDownloader = new WeatherDownloader()
+    {
+
+        @Override
+        public void onResponse(DataWrapper<? extends WeatherItems> result)
+        {
+            if (result.getException() == null)
+            {
+                //데이터 호출 성공한 경우
+                if (result.getData() instanceof UltraSrtNcstItems)
+                {
+                    //데이터를 가공하고, 화면에 표시한다
+                } else if (result.getData() instanceof UltraSrtFcstItems)
+                {
+                } else if (result.getData() instanceof VilageFcstItems)
+                {
+                } else if (result.getData() instanceof MidLandFcstItems)
+                {
+                    //land와 ta둘다 성공해야 화면에 표시가능
+                } else if (result.getData() instanceof MidTaItems)
+                {
+
+                }
+            } else
+            {
+                Toast.makeText(getActivity(), result.getException().getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        }
+    };
 
     public WeatherItemFragment(ILocation iLocation)
     {
@@ -145,36 +181,6 @@ public class WeatherItemFragment extends Fragment
                             midTaParameter.setNumOfRows("10").setPageNo("1").setRegId(weatherAreaCode.getMidTaCode());
 
                             // viewModel.getAllWeathersData(vilageFcstParameter, midLandFcstParameter, midTaParameter, weatherAreaCode);
-
-                            weatherDownloader = new WeatherDownloader(getContext())
-                            {
-                                @Override
-                                public void onSuccessful(WeatherData weatherData)
-                                {
-                                    getActivity().runOnUiThread(new Runnable()
-                                    {
-                                        @Override
-                                        public void run()
-                                        {
-                                            setWeatherData(weatherData);
-                                        }
-                                    });
-                                }
-
-                                @Override
-                                public void onFailure(Exception exception)
-                                {
-                                    getActivity().runOnUiThread(new Runnable()
-                                    {
-                                        @Override
-                                        public void run()
-                                        {
-                                            Toast.makeText(getActivity(), "날씨 데이터 다운로드 실패", Toast.LENGTH_SHORT).show();
-                                        }
-                                    });
-                                }
-                            };
-
                             refreshWeatherData();
                         }
                     }

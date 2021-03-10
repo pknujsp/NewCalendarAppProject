@@ -155,7 +155,6 @@ public class WeatherData
     */
     public WeatherData setMidFcstDataList()
     {
-
         //중기예보 데이터 생성 3~10일후
         Calendar copiedCalendar = (Calendar) downloadedDate.clone();
 
