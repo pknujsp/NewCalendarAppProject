@@ -1,12 +1,8 @@
-package com.zerodsoft.scheduleweather.event.weather.weatherfragments.repository;
+package com.zerodsoft.scheduleweather.event.weather.repository;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 
-import com.zerodsoft.scheduleweather.event.weather.weatherfragments.resultdata.WeatherData;
+import com.zerodsoft.scheduleweather.event.weather.resultdata.WeatherData;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.retrofit.HttpCommunicationClient;
 import com.zerodsoft.scheduleweather.retrofit.Querys;

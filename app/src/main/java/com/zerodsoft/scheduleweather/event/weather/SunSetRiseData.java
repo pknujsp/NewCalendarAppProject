@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.event.weather.weatherfragments;
+package com.zerodsoft.scheduleweather.event.weather;
 
 import java.util.Date;
 

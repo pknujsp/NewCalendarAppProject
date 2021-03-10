@@ -37,7 +37,7 @@ import com.zerodsoft.scheduleweather.event.common.interfaces.ILocation;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.event.EventFragment;
 import com.zerodsoft.scheduleweather.event.places.fragment.PlacesTransactionFragment;
-import com.zerodsoft.scheduleweather.event.weather.WeatherFragment;
+import com.zerodsoft.scheduleweather.event.weather.fragment.WeatherItemFragment;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
 public class EventActivity extends AppCompatActivity implements ILocation, IstartActivity
@@ -47,7 +47,7 @@ public class EventActivity extends AppCompatActivity implements ILocation, Istar
     private CalendarViewModel calendarViewModel;
 
     private EventFragment eventFragment;
-    private WeatherFragment weatherFragment;
+    private WeatherItemFragment weatherFragment;
     private PlacesTransactionFragment placesTransactionFragment;
 
     private OnBackPressedCallback onBackPressedCallback;
@@ -196,7 +196,7 @@ public class EventActivity extends AppCompatActivity implements ILocation, Istar
                                                 case R.id.schedule_weather:
                                                     if (weatherFragment == null)
                                                     {
-                                                        weatherFragment = new WeatherFragment(EventActivity.this);
+                                                        weatherFragment = new WeatherItemFragment(EventActivity.this);
                                                         fragmentTransaction.add(R.id.schedule_fragment_container, weatherFragment, TAG_WEATHER);
                                                     }
                                                     newFragment = weatherFragment;

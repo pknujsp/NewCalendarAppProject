@@ -38,7 +38,7 @@
 
                 <fragment
                     android:id="@+id/ultra_srt_ncst_fragment"
-                    android:name="com.zerodsoft.scheduleweather.event.weather.weatherfragments.fragment.UltraSrtNcstFragment"
+                    android:name="com.zerodsoft.scheduleweather.event.weather.fragment.UltraSrtNcstFragment"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="16dp" />
@@ -54,7 +54,7 @@
 
                 <fragment
                     android:id="@+id/ultra_srt_fcst_fragment"
-                    android:name="com.zerodsoft.scheduleweather.event.weather.weatherfragments.fragment.UltraSrtFcstFragment"
+                    android:name="com.zerodsoft.scheduleweather.event.weather.fragment.UltraSrtFcstFragment"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="16dp" />
@@ -70,7 +70,7 @@
 
                 <fragment
                     android:id="@+id/vilage_fcst_fragment"
-                    android:name="com.zerodsoft.scheduleweather.event.weather.weatherfragments.fragment.VilageFcstFragment"
+                    android:name="com.zerodsoft.scheduleweather.event.weather.fragment.VilageFcstFragment"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="16dp" />
@@ -86,10 +86,17 @@
 
                 <fragment
                     android:id="@+id/mid_fcst_fragment"
-                    android:name="com.zerodsoft.scheduleweather.event.weather.weatherfragments.fragment.MidFcstFragment"
+                    android:name="com.zerodsoft.scheduleweather.event.weather.fragment.MidFcstFragment"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
 
+                <TextView
+                    android:id="@+id/weather_updated_datetime"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="2020.01.01"
+                    android:textSize="13sp" />
             </LinearLayout>
 
         </androidx.core.widget.NestedScrollView>

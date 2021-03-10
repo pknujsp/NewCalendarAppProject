@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.event.weather.weatherfragments.fragment;
+package com.zerodsoft.scheduleweather.event.weather.fragment;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -24,8 +24,8 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.event.weather.weatherfragments.resultdata.WeatherData;
-import com.zerodsoft.scheduleweather.event.weather.weatherfragments.resultdata.responseresult.MidFcstData;
+import com.zerodsoft.scheduleweather.event.weather.resultdata.WeatherData;
+import com.zerodsoft.scheduleweather.event.weather.resultdata.responseresult.MidFcstData;
 import com.zerodsoft.scheduleweather.utility.WeatherDataConverter;
 
 import java.util.LinkedList;

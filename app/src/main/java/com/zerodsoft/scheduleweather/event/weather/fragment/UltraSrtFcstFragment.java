@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.event.weather.weatherfragments.fragment;
+package com.zerodsoft.scheduleweather.event.weather.fragment;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -20,9 +20,9 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.event.weather.weatherfragments.SunSetRiseData;
-import com.zerodsoft.scheduleweather.event.weather.weatherfragments.resultdata.WeatherData;
-import com.zerodsoft.scheduleweather.event.weather.weatherfragments.resultdata.responseresult.UltraSrtFcstData;
+import com.zerodsoft.scheduleweather.event.weather.SunSetRiseData;
+import com.zerodsoft.scheduleweather.event.weather.resultdata.WeatherData;
+import com.zerodsoft.scheduleweather.event.weather.resultdata.responseresult.UltraSrtFcstData;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.utility.WeatherDataConverter;
 

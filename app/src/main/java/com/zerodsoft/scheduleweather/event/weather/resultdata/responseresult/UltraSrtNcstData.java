@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.event.weather.weatherfragments.resultdata.responseresult;
+package com.zerodsoft.scheduleweather.event.weather.resultdata.responseresult;
 
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.ultrasrtncstresponse.UltraSrtNcstItem;
 import com.zerodsoft.scheduleweather.utility.WeatherDataConverter;

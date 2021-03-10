@@ -1,6 +1,5 @@
-package com.zerodsoft.scheduleweather.event.weather.weatherfragments.resultdata;
+package com.zerodsoft.scheduleweather.event.weather.resultdata;
 
-import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.midlandfcstresponse.MidLandFcstItem;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.midlandfcstresponse.MidLandFcstItems;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.midtaresponse.MidTaItem;
@@ -12,10 +11,10 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.ultrasrtncstresponse
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.vilagefcstresponse.VilageFcstItem;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.vilagefcstresponse.VilageFcstItems;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
-import com.zerodsoft.scheduleweather.event.weather.weatherfragments.resultdata.responseresult.MidFcstData;
-import com.zerodsoft.scheduleweather.event.weather.weatherfragments.resultdata.responseresult.UltraSrtFcstData;
-import com.zerodsoft.scheduleweather.event.weather.weatherfragments.resultdata.responseresult.UltraSrtNcstData;
-import com.zerodsoft.scheduleweather.event.weather.weatherfragments.resultdata.responseresult.VilageFcstData;
+import com.zerodsoft.scheduleweather.event.weather.resultdata.responseresult.MidFcstData;
+import com.zerodsoft.scheduleweather.event.weather.resultdata.responseresult.UltraSrtFcstData;
+import com.zerodsoft.scheduleweather.event.weather.resultdata.responseresult.UltraSrtNcstData;
+import com.zerodsoft.scheduleweather.event.weather.resultdata.responseresult.VilageFcstData;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import java.util.ArrayList;

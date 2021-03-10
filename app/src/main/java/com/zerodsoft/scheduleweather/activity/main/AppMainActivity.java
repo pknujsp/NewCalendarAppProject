@@ -50,6 +50,7 @@ import com.zerodsoft.scheduleweather.calendar.dto.AccountDto;
 import com.zerodsoft.scheduleweather.etc.AppPermission;
 import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
+import com.zerodsoft.scheduleweather.utility.WeatherDataConverter;
 
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
@@ -182,6 +183,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 
     private void init()
     {
+        WeatherDataConverter.context = getApplicationContext();
         App.setAppSettings(getApplicationContext());
         mainBinding.assistantCalendarContainer.setVisibility(View.GONE);
         KakaoLocalApiCategoryUtil.loadCategories(getApplicationContext());

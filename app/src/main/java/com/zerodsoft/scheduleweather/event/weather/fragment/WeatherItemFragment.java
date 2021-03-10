@@ -1,6 +1,8 @@
-package com.zerodsoft.scheduleweather.event.weather.weatherfragments.fragment;
+package com.zerodsoft.scheduleweather.event.weather.fragment;
 
 import android.os.Bundle;
+import android.os.RemoteException;
+import android.service.carrier.CarrierMessagingService;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,17 +19,19 @@ import com.luckycatlabs.sunrisesunset.SunriseSunsetCalculator;
 import com.luckycatlabs.sunrisesunset.dto.Location;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.FragmentWeatherItemBinding;
-import com.zerodsoft.scheduleweather.event.weather.weatherfragments.repository.WeatherDownloader;
+import com.zerodsoft.scheduleweather.event.common.interfaces.ILocation;
+import com.zerodsoft.scheduleweather.event.weather.repository.WeatherDownloader;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.MidFcstParameter;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.VilageFcstParameter;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
-import com.zerodsoft.scheduleweather.event.weather.weatherfragments.SunSetRiseData;
-import com.zerodsoft.scheduleweather.event.weather.weatherfragments.resultdata.WeatherData;
-import com.zerodsoft.scheduleweather.event.weather.weatherfragments.viewmodel.WeatherViewModel;
+import com.zerodsoft.scheduleweather.event.weather.SunSetRiseData;
+import com.zerodsoft.scheduleweather.event.weather.resultdata.WeatherData;
+import com.zerodsoft.scheduleweather.event.weather.viewmodel.WeatherViewModel;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.utility.LonLat;
 import com.zerodsoft.scheduleweather.utility.LonLatConverter;
+import com.zerodsoft.scheduleweather.utility.WeatherDataConverter;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -39,7 +43,8 @@ public class WeatherItemFragment extends Fragment
     public static final String TAG = "WeatherItemFragment";
     private FragmentWeatherItemBinding binding;
     private WeatherData weatherData;
-    private final LocationDTO locationDTO;
+    private LocationDTO locationDTO;
+    private ILocation iLocation;
 
     private UltraSrtNcstFragment ultraSrtNcstFragment;
     private UltraSrtFcstFragment ultraSrtFcstFragment;
@@ -56,16 +61,15 @@ public class WeatherItemFragment extends Fragment
 
     private WeatherDownloader weatherDownloader;
 
-    public WeatherItemFragment(LocationDTO locationDTO)
+    public WeatherItemFragment(ILocation iLocation)
     {
-        this.locationDTO = locationDTO;
+        this.iLocation = iLocation;
     }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-
     }
 
     @Nullable
@@ -80,8 +84,6 @@ public class WeatherItemFragment extends Fragment
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
-        FragmentManager fragmentManager = getChildFragmentManager();
-
         binding.refreshWeatherFab.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -91,71 +93,96 @@ public class WeatherItemFragment extends Fragment
             }
         });
 
+        FragmentManager fragmentManager = getChildFragmentManager();
+
         ultraSrtNcstFragment = (UltraSrtNcstFragment) fragmentManager.findFragmentById(R.id.ultra_srt_ncst_fragment);
         ultraSrtFcstFragment = (UltraSrtFcstFragment) fragmentManager.findFragmentById(R.id.ultra_srt_fcst_fragment);
         vilageFcstFragment = (VilageFcstFragment) fragmentManager.findFragmentById(R.id.vilage_fcst_fragment);
         midFcstFragment = (MidFcstFragment) fragmentManager.findFragmentById(R.id.mid_fcst_fragment);
 
-        final LonLat lonLat = LonLatConverter.convertGrid(locationDTO.getLongitude(), locationDTO.getLatitude());
-
         viewModel = new ViewModelProvider(this).get(WeatherViewModel.class);
-        viewModel.init(getContext(), lonLat);
-        viewModel.getAreaCodeLiveData().observe(getViewLifecycleOwner(), new Observer<List<WeatherAreaCodeDTO>>()
+
+        iLocation.getLocation(new CarrierMessagingService.ResultCallback<LocationDTO>()
         {
             @Override
-            public void onChanged(List<WeatherAreaCodeDTO> weatherAreaCodes)
+            public void onReceiveResult(@NonNull LocationDTO locationDTO) throws RemoteException
             {
-                if (weatherAreaCodes != null)
+                WeatherItemFragment.this.locationDTO = locationDTO;
+                final LonLat lonLat = LonLatConverter.convertGrid(locationDTO.getLongitude(), locationDTO.getLatitude());
+                viewModel.init(getContext(), lonLat);
+
+                viewModel.getAreaCodeLiveData().observe(getViewLifecycleOwner(), new Observer<List<WeatherAreaCodeDTO>>()
                 {
-                    List<LocationPoint> locationPoints = new LinkedList<>();
-                    for (WeatherAreaCodeDTO weatherAreaCodeDTO : weatherAreaCodes)
+                    @Override
+                    public void onChanged(List<WeatherAreaCodeDTO> weatherAreaCodes)
                     {
-                        locationPoints.add(new LocationPoint(Double.parseDouble(weatherAreaCodeDTO.getLatitudeSecondsDivide100()), Double.parseDouble(weatherAreaCodeDTO.getLongitudeSecondsDivide100())));
-                    }
-
-                    int index = 0;
-                    double minDistance = Double.MAX_VALUE;
-                    double distance = 0;
-                    // 점 사이의 거리 계산
-                    for (int i = 0; i < locationPoints.size(); i++)
-                    {
-                        distance = Math.sqrt(Math.pow(locationDTO.getLongitude() - locationPoints.get(i).longitude, 2) + Math.pow(locationDTO.getLatitude() - locationPoints.get(i).latitude, 2));
-                        if (distance < minDistance)
+                        if (weatherAreaCodes != null)
                         {
-                            minDistance = distance;
-                            index = i;
+                            List<LocationPoint> locationPoints = new LinkedList<>();
+                            for (WeatherAreaCodeDTO weatherAreaCodeDTO : weatherAreaCodes)
+                            {
+                                locationPoints.add(new LocationPoint(Double.parseDouble(weatherAreaCodeDTO.getLatitudeSecondsDivide100()), Double.parseDouble(weatherAreaCodeDTO.getLongitudeSecondsDivide100())));
+                            }
+
+                            int index = 0;
+                            double minDistance = Double.MAX_VALUE;
+                            double distance = 0;
+                            // 점 사이의 거리 계산
+                            for (int i = 0; i < locationPoints.size(); i++)
+                            {
+                                distance = Math.sqrt(Math.pow(locationDTO.getLongitude() - locationPoints.get(i).longitude, 2) + Math.pow(locationDTO.getLatitude() - locationPoints.get(i).latitude, 2));
+                                if (distance < minDistance)
+                                {
+                                    minDistance = distance;
+                                    index = i;
+                                }
+                            }
+                            // regId설정하는 코드 작성
+                            weatherAreaCode = weatherAreaCodes.get(index);
+
+                            vilageFcstParameter.setNx(weatherAreaCode.getX()).setNy(weatherAreaCode.getY()).setNumOfRows("10").setPageNo("1");
+                            midLandFcstParameter.setNumOfRows("10").setPageNo("1").setRegId(weatherAreaCode.getMidLandFcstCode());
+                            midTaParameter.setNumOfRows("10").setPageNo("1").setRegId(weatherAreaCode.getMidTaCode());
+
+                            // viewModel.getAllWeathersData(vilageFcstParameter, midLandFcstParameter, midTaParameter, weatherAreaCode);
+
+                            weatherDownloader = new WeatherDownloader(getContext())
+                            {
+                                @Override
+                                public void onSuccessful(WeatherData weatherData)
+                                {
+                                    getActivity().runOnUiThread(new Runnable()
+                                    {
+                                        @Override
+                                        public void run()
+                                        {
+                                            setWeatherData(weatherData);
+                                        }
+                                    });
+                                }
+
+                                @Override
+                                public void onFailure(Exception exception)
+                                {
+                                    getActivity().runOnUiThread(new Runnable()
+                                    {
+                                        @Override
+                                        public void run()
+                                        {
+                                            Toast.makeText(getActivity(), "날씨 데이터 다운로드 실패", Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+                                }
+                            };
+
+                            refreshWeatherData();
                         }
                     }
-                    // regId설정하는 코드 작성
-                    weatherAreaCode = weatherAreaCodes.get(index);
-
-                    vilageFcstParameter.setNx(weatherAreaCode.getX()).setNy(weatherAreaCode.getY()).setNumOfRows("10").setPageNo("1");
-                    midLandFcstParameter.setNumOfRows("10").setPageNo("1").setRegId(weatherAreaCode.getMidLandFcstCode());
-                    midTaParameter.setNumOfRows("10").setPageNo("1").setRegId(weatherAreaCode.getMidTaCode());
-
-                    // viewModel.getAllWeathersData(vilageFcstParameter, midLandFcstParameter, midTaParameter, weatherAreaCode);
-
-                    weatherDownloader = new WeatherDownloader(getContext())
-                    {
-                        @Override
-                        public void onSuccessful(WeatherData weatherData)
-                        {
-                            super.onSuccessful(weatherData);
-                            setWeatherData(weatherData);
-                        }
-
-                        @Override
-                        public void onFailure(Exception exception)
-                        {
-                            super.onFailure(exception);
-                            Toast.makeText(getActivity(), "날씨 데이터 다운로드 실패", Toast.LENGTH_SHORT).show();
-                        }
-                    };
-
-                    refreshWeatherData();
-                }
+                });
             }
         });
+
+
     }
 
     private void refreshWeatherData()
@@ -209,7 +236,11 @@ public class WeatherItemFragment extends Fragment
     public void setWeatherData(WeatherData weatherData)
     {
         this.weatherData = weatherData;
+
         binding.addressName.setText(weatherData.getAreaName());
+        String updatedDateTime = ClockUtil.DB_DATE_FORMAT.format(weatherData.getDownloadedDate().getTime());
+        binding.weatherUpdatedDatetime.setText("Updated : " + updatedDateTime);
+
         init();
         ultraSrtNcstFragment.setWeatherData(weatherData, sunSetRiseList.get(0));
         ultraSrtFcstFragment.setWeatherData(weatherData, sunSetRiseList);
@@ -217,7 +248,7 @@ public class WeatherItemFragment extends Fragment
         midFcstFragment.setWeatherData(weatherData);
     }
 
-    class LocationPoint
+    static class LocationPoint
     {
         private double latitude;
         private double longitude;
