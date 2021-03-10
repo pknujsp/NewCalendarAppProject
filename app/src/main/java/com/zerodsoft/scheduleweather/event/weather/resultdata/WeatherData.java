@@ -1,5 +1,6 @@
 package com.zerodsoft.scheduleweather.event.weather.resultdata;
 
+import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.midlandfcstresponse.MidLandFcstItem;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.midlandfcstresponse.MidLandFcstItems;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.midtaresponse.MidTaItem;
@@ -55,11 +56,11 @@ public class WeatherData
     private MidTaItems midTaItems;
 
 
-    public WeatherData(Calendar downloadedDate, WeatherAreaCodeDTO weatherAreaCode)
+    public WeatherData(WeatherAreaCodeDTO weatherAreaCode)
     {
-        this.areaName = weatherAreaCode.getPhase1() + " " + weatherAreaCode.getPhase2() + " " + weatherAreaCode.getPhase3();
-        this.downloadedDate = (Calendar) downloadedDate.clone();
         this.weatherAreaCode = weatherAreaCode;
+        this.areaName = weatherAreaCode.getPhase1() + " " + weatherAreaCode.getPhase2() + " " + weatherAreaCode.getPhase3();
+        this.downloadedDate = Calendar.getInstance();
     }
 
     public WeatherAreaCodeDTO getWeatherAreaCode()
@@ -128,25 +129,40 @@ public class WeatherData
         return midFcstFinalData;
     }
 
-    public void setFinalData()
+    public UltraSrtNcstItems getUltraSrtNcstItems()
     {
-        setUltraSrtNcstData();
-        setUltraSrtFcstDataList();
-        setVilageFcstDataList();
-        setMidFcstDataList();
+        return ultraSrtNcstItems;
+    }
+
+    public UltraSrtFcstItems getUltraSrtFcstItems()
+    {
+        return ultraSrtFcstItems;
+    }
+
+    public VilageFcstItems getVilageFcstItems()
+    {
+        return vilageFcstItems;
+    }
+
+    public MidLandFcstItems getMidLandFcstItems()
+    {
+        return midLandFcstItems;
+    }
+
+    public MidTaItems getMidTaItems()
+    {
+        return midTaItems;
     }
 
     /*
-    초단기실황 최종 데이터 생성
-     */
+        초단기실황 최종 데이터 생성
+         */
     public WeatherData setUltraSrtNcstData()
     {
-
         List<UltraSrtNcstItem> items = ultraSrtNcstItems.getItem();
         UltraSrtNcstData ultraSrtNcstData = new UltraSrtNcstData(items);
 
         ultraSrtNcstFinalData = ultraSrtNcstData;
-
         return this;
     }
 

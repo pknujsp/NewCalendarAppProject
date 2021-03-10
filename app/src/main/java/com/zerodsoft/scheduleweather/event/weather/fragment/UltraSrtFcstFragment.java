@@ -23,6 +23,7 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.event.weather.SunSetRiseData;
 import com.zerodsoft.scheduleweather.event.weather.resultdata.WeatherData;
 import com.zerodsoft.scheduleweather.event.weather.resultdata.responseresult.UltraSrtFcstData;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.ultrasrtfcstresponse.UltraSrtFcstItems;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.utility.WeatherDataConverter;
 
@@ -32,8 +33,8 @@ import java.util.List;
 
 public class UltraSrtFcstFragment extends Fragment
 {
-    private WeatherData weatherData;
     private List<SunSetRiseData> sunSetRiseDataList;
+    private List<UltraSrtFcstData> dataList;
     private TableLayout table;
     private LinearLayout headerCol;
 
@@ -57,26 +58,34 @@ public class UltraSrtFcstFragment extends Fragment
         headerCol = (LinearLayout) view.findViewById(R.id.ultra_srt_fcst_header_col);
     }
 
-    public void setWeatherData(WeatherData weatherData, List<SunSetRiseData> sunSetRiseDataList)
+    public void setWeatherData(List<UltraSrtFcstData> dataList, List<SunSetRiseData> sunSetRiseDataList)
     {
-        this.weatherData = weatherData;
+        this.dataList = dataList;
         this.sunSetRiseDataList = sunSetRiseDataList;
         setTable();
     }
 
+    public void clearViews()
+    {
+        headerCol.removeAllViews();
+        table.removeAllViews();
+    }
+
     private void setTable()
     {
-        Context context = getContext();
         final int ITEM_WIDTH = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 45f, getResources().getDisplayMetrics());
         final int MARGIN = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4f, getResources().getDisplayMetrics());
         final int DP22 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 22f, getResources().getDisplayMetrics());
         final int DP34 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 34f, getResources().getDisplayMetrics());
 
-        List<UltraSrtFcstData> dataList = weatherData.getUltraSrtFcstFinalData();
         final int DATA_SIZE = dataList.size();
         final int VIEW_WIDTH = DATA_SIZE * ITEM_WIDTH;
 
+        clearViews();
+
         //시각, 하늘, 기온, 강수량, 강수확률, 바람, 습도 순으로 행 등록
+        Context context = getContext();
+
         TableRow clockRow = new TableRow(context);
         TableRow skyRow = new TableRow(context);
         TableRow tempRow = new TableRow(context);

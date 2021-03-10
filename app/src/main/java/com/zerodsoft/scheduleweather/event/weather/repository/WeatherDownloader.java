@@ -52,7 +52,7 @@ public abstract class WeatherDownloader
 
     public abstract void onResponse(DataWrapper<? extends WeatherItems> result);
 
-    public void getWeatherData(VilageFcstParameter vilageFcstParameter, MidFcstParameter midLandFcstParameter, MidFcstParameter midTaFcstParameter, WeatherAreaCodeDTO weatherAreaCode)
+    public void getWeatherData(VilageFcstParameter vilageFcstParameter, MidFcstParameter midLandFcstParameter, MidFcstParameter midTaFcstParameter)
     {
         //시간 업데이트
         downloadedCalendar.setTimeInMillis(System.currentTimeMillis());

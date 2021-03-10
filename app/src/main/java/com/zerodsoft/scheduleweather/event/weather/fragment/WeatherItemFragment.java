@@ -79,20 +79,62 @@ public class WeatherItemFragment extends Fragment
                 if (result.getData() instanceof UltraSrtNcstItems)
                 {
                     //데이터를 가공하고, 화면에 표시한다
+                    weatherData.setUltraSrtNcstItems((UltraSrtNcstItems) result.getData());
+                    weatherData.setUltraSrtNcstData();
+                    ultraSrtNcstFragment.setWeatherData(weatherData.getUltraSrtNcstFinalData());
+
                 } else if (result.getData() instanceof UltraSrtFcstItems)
                 {
+                    weatherData.setUltraSrtFcstItems((UltraSrtFcstItems) result.getData());
+                    weatherData.setUltraSrtFcstDataList();
+                    ultraSrtFcstFragment.setWeatherData(weatherData.getUltraSrtFcstFinalData(), sunSetRiseList);
+
                 } else if (result.getData() instanceof VilageFcstItems)
                 {
+                    weatherData.setVilageFcstItems((VilageFcstItems) result.getData());
+                    weatherData.setVilageFcstDataList();
+                    vilageFcstFragment.setWeatherData(weatherData.getVilageFcstFinalData(), sunSetRiseList);
+
                 } else if (result.getData() instanceof MidLandFcstItems)
                 {
                     //land와 ta둘다 성공해야 화면에 표시가능
+                    weatherData.setMidLandFcstItems((MidLandFcstItems) result.getData());
+                    if (weatherData.getMidLandFcstItems() != null && weatherData.getMidTaItems() != null)
+                    {
+                        weatherData.setMidFcstDataList();
+                        midFcstFragment.setWeatherData(weatherData.getMidFcstFinalData());
+                    }
+
                 } else if (result.getData() instanceof MidTaItems)
                 {
-
+                    weatherData.setMidTaItems((MidTaItems) result.getData());
+                    if (weatherData.getMidLandFcstItems() != null && weatherData.getMidTaItems() != null)
+                    {
+                        weatherData.setMidFcstDataList();
+                        midFcstFragment.setWeatherData(weatherData.getMidFcstFinalData());
+                    }
                 }
             } else
             {
+                if (result.getData() instanceof UltraSrtNcstItems)
+                {
+                    ultraSrtNcstFragment.clearViews();
+                } else if (result.getData() instanceof UltraSrtFcstItems)
+                {
+                    ultraSrtFcstFragment.clearViews();
+                } else if (result.getData() instanceof VilageFcstItems)
+                {
+                    vilageFcstFragment.clearViews();
+                } else if (result.getData() instanceof MidLandFcstItems)
+                {
+                    midFcstFragment.clearViews();
+                } else if (result.getData() instanceof MidTaItems)
+                {
+                    midFcstFragment.clearViews();
+                }
+
                 Toast.makeText(getActivity(), result.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                //해당 데이터 오류 표시
             }
         }
     };
@@ -143,48 +185,56 @@ public class WeatherItemFragment extends Fragment
             @Override
             public void onReceiveResult(@NonNull LocationDTO locationDTO) throws RemoteException
             {
-                WeatherItemFragment.this.locationDTO = locationDTO;
-                final LonLat lonLat = LonLatConverter.convertGrid(locationDTO.getLongitude(), locationDTO.getLatitude());
-                viewModel.init(getContext(), lonLat);
-
-                viewModel.getAreaCodeLiveData().observe(getViewLifecycleOwner(), new Observer<List<WeatherAreaCodeDTO>>()
+                getActivity().runOnUiThread(new Runnable()
                 {
                     @Override
-                    public void onChanged(List<WeatherAreaCodeDTO> weatherAreaCodes)
+                    public void run()
                     {
-                        if (weatherAreaCodes != null)
-                        {
-                            List<LocationPoint> locationPoints = new LinkedList<>();
-                            for (WeatherAreaCodeDTO weatherAreaCodeDTO : weatherAreaCodes)
-                            {
-                                locationPoints.add(new LocationPoint(Double.parseDouble(weatherAreaCodeDTO.getLatitudeSecondsDivide100()), Double.parseDouble(weatherAreaCodeDTO.getLongitudeSecondsDivide100())));
-                            }
+                        WeatherItemFragment.this.locationDTO = locationDTO;
+                        final LonLat lonLat = LonLatConverter.convertGrid(locationDTO.getLongitude(), locationDTO.getLatitude());
+                        viewModel.init(getContext(), lonLat);
 
-                            int index = 0;
-                            double minDistance = Double.MAX_VALUE;
-                            double distance = 0;
-                            // 점 사이의 거리 계산
-                            for (int i = 0; i < locationPoints.size(); i++)
+                        viewModel.getAreaCodeLiveData().observe(getViewLifecycleOwner(), new Observer<List<WeatherAreaCodeDTO>>()
+                        {
+                            @Override
+                            public void onChanged(List<WeatherAreaCodeDTO> weatherAreaCodes)
                             {
-                                distance = Math.sqrt(Math.pow(locationDTO.getLongitude() - locationPoints.get(i).longitude, 2) + Math.pow(locationDTO.getLatitude() - locationPoints.get(i).latitude, 2));
-                                if (distance < minDistance)
+                                if (weatherAreaCodes != null)
                                 {
-                                    minDistance = distance;
-                                    index = i;
+                                    List<LocationPoint> locationPoints = new LinkedList<>();
+                                    for (WeatherAreaCodeDTO weatherAreaCodeDTO : weatherAreaCodes)
+                                    {
+                                        locationPoints.add(new LocationPoint(Double.parseDouble(weatherAreaCodeDTO.getLatitudeSecondsDivide100()), Double.parseDouble(weatherAreaCodeDTO.getLongitudeSecondsDivide100())));
+                                    }
+
+                                    int index = 0;
+                                    double minDistance = Double.MAX_VALUE;
+                                    double distance = 0;
+                                    // 점 사이의 거리 계산
+                                    for (int i = 0; i < locationPoints.size(); i++)
+                                    {
+                                        distance = Math.sqrt(Math.pow(locationDTO.getLongitude() - locationPoints.get(i).longitude, 2) + Math.pow(locationDTO.getLatitude() - locationPoints.get(i).latitude, 2));
+                                        if (distance < minDistance)
+                                        {
+                                            minDistance = distance;
+                                            index = i;
+                                        }
+                                    }
+                                    // regId설정하는 코드 작성
+                                    weatherAreaCode = weatherAreaCodes.get(index);
+
+                                    vilageFcstParameter.setNx(weatherAreaCode.getX()).setNy(weatherAreaCode.getY()).setNumOfRows("10").setPageNo("1");
+                                    midLandFcstParameter.setNumOfRows("10").setPageNo("1").setRegId(weatherAreaCode.getMidLandFcstCode());
+                                    midTaParameter.setNumOfRows("10").setPageNo("1").setRegId(weatherAreaCode.getMidTaCode());
+
+                                    // viewModel.getAllWeathersData(vilageFcstParameter, midLandFcstParameter, midTaParameter, weatherAreaCode);
+                                    refreshWeatherData();
                                 }
                             }
-                            // regId설정하는 코드 작성
-                            weatherAreaCode = weatherAreaCodes.get(index);
-
-                            vilageFcstParameter.setNx(weatherAreaCode.getX()).setNy(weatherAreaCode.getY()).setNumOfRows("10").setPageNo("1");
-                            midLandFcstParameter.setNumOfRows("10").setPageNo("1").setRegId(weatherAreaCode.getMidLandFcstCode());
-                            midTaParameter.setNumOfRows("10").setPageNo("1").setRegId(weatherAreaCode.getMidTaCode());
-
-                            // viewModel.getAllWeathersData(vilageFcstParameter, midLandFcstParameter, midTaParameter, weatherAreaCode);
-                            refreshWeatherData();
-                        }
+                        });
                     }
                 });
+
             }
         });
 
@@ -193,7 +243,13 @@ public class WeatherItemFragment extends Fragment
 
     private void refreshWeatherData()
     {
-        weatherDownloader.getWeatherData(vilageFcstParameter, midLandFcstParameter, midTaParameter, weatherAreaCode);
+        weatherData = new WeatherData(weatherAreaCode);
+        binding.addressName.setText(weatherData.getAreaName());
+        String updatedDateTime = ClockUtil.DB_DATE_FORMAT.format(weatherData.getDownloadedDate().getTime());
+        binding.weatherUpdatedDatetime.setText("Updated : " + updatedDateTime);
+        init();
+
+        weatherDownloader.getWeatherData(vilageFcstParameter, midLandFcstParameter, midTaParameter);
     }
 
     @Override
@@ -237,21 +293,6 @@ public class WeatherItemFragment extends Fragment
             sunSet = sunriseSunsetCalculator.getOfficialSunsetCalendarForDate(date);
             sunSetRiseList.add(new SunSetRiseData(date.getTime(), sunRise.getTime(), sunSet.getTime()));
         }
-    }
-
-    public void setWeatherData(WeatherData weatherData)
-    {
-        this.weatherData = weatherData;
-
-        binding.addressName.setText(weatherData.getAreaName());
-        String updatedDateTime = ClockUtil.DB_DATE_FORMAT.format(weatherData.getDownloadedDate().getTime());
-        binding.weatherUpdatedDatetime.setText("Updated : " + updatedDateTime);
-
-        init();
-        ultraSrtNcstFragment.setWeatherData(weatherData, sunSetRiseList.get(0));
-        ultraSrtFcstFragment.setWeatherData(weatherData, sunSetRiseList);
-        vilageFcstFragment.setWeatherData(weatherData, sunSetRiseList);
-        midFcstFragment.setWeatherData(weatherData);
     }
 
     static class LocationPoint

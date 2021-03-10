@@ -38,8 +38,8 @@ import java.util.List;
 
 public class VilageFcstFragment extends Fragment
 {
-    private WeatherData weatherData;
     private List<SunSetRiseData> sunSetRiseDataList;
+    private List<VilageFcstData> dataList;
     private TableLayout table;
     private LinearLayout headerCol;
 
@@ -62,25 +62,33 @@ public class VilageFcstFragment extends Fragment
         headerCol = (LinearLayout) view.findViewById(R.id.vilage_fcst_header_col);
     }
 
-    public void setWeatherData(WeatherData weatherData, List<SunSetRiseData> sunSetRiseDataList)
+    public void setWeatherData(List<VilageFcstData> dataList, List<SunSetRiseData> sunSetRiseDataList)
     {
-        this.weatherData = weatherData;
+        this.dataList = dataList;
         this.sunSetRiseDataList = sunSetRiseDataList;
         setTable();
     }
 
+    public void clearViews()
+    {
+        headerCol.removeAllViews();
+        table.removeAllViews();
+    }
+
     private void setTable()
     {
-        Context context = getContext();
         final int ITEM_WIDTH = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 50f, getResources().getDisplayMetrics());
         final int MARGIN = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, getResources().getDisplayMetrics());
         final int DP22 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 22f, getResources().getDisplayMetrics());
         final int DP34 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 34f, getResources().getDisplayMetrics());
         final int DP80 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 80f, getResources().getDisplayMetrics());
 
-        List<VilageFcstData> dataList = weatherData.getVilageFcstFinalData();
+      clearViews();
+
         final int DATA_SIZE = dataList.size();
         final int VIEW_WIDTH = DATA_SIZE * ITEM_WIDTH;
+
+        Context context = getContext();
 
         //시각, 하늘, 기온, 강수량, 강수확률, 바람, 습도 순으로 행 등록
         TableRow clockRow = new TableRow(context);

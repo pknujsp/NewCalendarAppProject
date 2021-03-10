@@ -24,7 +24,6 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.event.weather.resultdata.WeatherData;
 import com.zerodsoft.scheduleweather.event.weather.resultdata.responseresult.MidFcstData;
 import com.zerodsoft.scheduleweather.utility.WeatherDataConverter;
 
@@ -33,9 +32,9 @@ import java.util.List;
 
 public class MidFcstFragment extends Fragment
 {
+    private List<MidFcstData> dataList;
     private TableLayout table;
     private LinearLayout headerCol;
-    private WeatherData weatherData;
 
     public MidFcstFragment()
     {
@@ -57,10 +56,16 @@ public class MidFcstFragment extends Fragment
         headerCol = (LinearLayout) view.findViewById(R.id.mid_fcst_header_col);
     }
 
-    public void setWeatherData(WeatherData weatherData)
+    public void setWeatherData(List<MidFcstData> dataList)
     {
-        this.weatherData = weatherData;
+        this.dataList = dataList;
         setTable();
+    }
+
+    public void clearViews()
+    {
+        headerCol.removeAllViews();
+        table.removeAllViews();
     }
 
     private void setTable()
@@ -76,9 +81,11 @@ public class MidFcstFragment extends Fragment
         final int CHANCE_OF_SHOWER_HEIGHT = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 30f, getResources().getDisplayMetrics());
         final int TEMP_HEIGHT = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 90f, getResources().getDisplayMetrics());
 
-        List<MidFcstData> dataList = weatherData.getMidFcstFinalData();
         final int DATA_SIZE = dataList.size();
         final int VIEW_WIDTH = DATA_SIZE * COLUMN_WIDTH;
+
+        clearViews();
+
         Context context = getContext();
 
         TableRow dateRow = new TableRow(context);

@@ -6,6 +6,7 @@
     <string name="rainfall">강수량\n(mm)</string>
     <string name="humidity">습도\n(%)</string>
     <string name="humidity_not_n">습도(%)</string>
+    <string name="rain_1_hour">1시간 강수량(mm)</string>
     <string name="precipitation_form">강수형태</string>
     <string name="chance_of_shower">강수확률\n(%)</string>
     <string name="wind_direction">풍향</string>

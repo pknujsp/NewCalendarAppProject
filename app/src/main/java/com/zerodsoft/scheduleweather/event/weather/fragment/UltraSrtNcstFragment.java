@@ -14,23 +14,29 @@ import androidx.fragment.app.Fragment;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.event.weather.SunSetRiseData;
-import com.zerodsoft.scheduleweather.event.weather.resultdata.WeatherData;
 import com.zerodsoft.scheduleweather.event.weather.resultdata.responseresult.UltraSrtNcstData;
 import com.zerodsoft.scheduleweather.utility.WeatherDataConverter;
 
 
 public class UltraSrtNcstFragment extends Fragment
 {
+    /*
+    기온
+    1시간 강수량
+    동서바람성분(미 표시)
+    남북바람성분(미 표시)
+    습도
+    강수형태
+    풍향
+    풍속
+     */
     private UltraSrtNcstData ultraSrtNcstData;
-    private SunSetRiseData sunSetRiseData;
-    private WeatherData weatherData;
 
     private TextView temp;
-    private TextView sky;
+    private TextView pty;
     private TextView humidity;
     private TextView wind;
-    private ImageView skyImage;
-    private Drawable skyDrawable;
+    private TextView rn1;
 
     @Nullable
     @Override
@@ -43,41 +49,47 @@ public class UltraSrtNcstFragment extends Fragment
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
+
         temp = (TextView) view.findViewById(R.id.ultra_srt_ncst_temp);
-        sky = (TextView) view.findViewById(R.id.ultra_srt_ncst_sky);
+        pty = (TextView) view.findViewById(R.id.ultra_srt_ncst_pty);
         humidity = (TextView) view.findViewById(R.id.ultra_srt_ncst_humidity);
         wind = (TextView) view.findViewById(R.id.ultra_srt_ncst_wind);
-        skyImage = (ImageView) view.findViewById(R.id.ultra_srt_ncst_skyimage);
+        rn1 = (TextView) view.findViewById(R.id.ultra_srt_ncst_rn1);
     }
 
     private void setValue()
     {
-        //하늘 이미지
-        skyImage.setImageDrawable(skyDrawable);
         //기온
         temp.setText(ultraSrtNcstData.getTemperature());
-        //하늘상태
-        sky.setText(WeatherDataConverter.getSky(ultraSrtNcstData.getPrecipitationForm(), weatherData.getUltraSrtFcstFinalData().get(0).getSky()));
+        //강수형태
+        pty.setText(WeatherDataConverter.convertPrecipitationForm(ultraSrtNcstData.getPrecipitationForm()));
         //습도
         humidity.setText(ultraSrtNcstData.getHumidity());
         //바람
         wind.setText(ultraSrtNcstData.getWindSpeed() + "m/s, " + ultraSrtNcstData.getWindDirection() + "\n" +
                 WeatherDataConverter.getWindSpeedDescription(ultraSrtNcstData.getWindSpeed()));
+        //시간 강수량
+        rn1.setText(ultraSrtNcstData.getPrecipitation1Hour());
     }
 
-    private void init()
-    {
-        //SKY IMG설정
-        boolean day = sunSetRiseData.getDate().after(sunSetRiseData.getSunset()) ? false : sunSetRiseData.getDate().before(sunSetRiseData.getSunrise()) ? false : true;
-        skyDrawable = getContext().getDrawable(WeatherDataConverter.getSkyDrawableId(weatherData.getUltraSrtFcstFinalData().get(0).getSky(), ultraSrtNcstData.getPrecipitationForm(), day));
-    }
 
-    public void setWeatherData(WeatherData weatherData, SunSetRiseData sunSetRiseData)
+    public void setWeatherData(UltraSrtNcstData ultraSrtNcstData)
     {
-        this.weatherData = weatherData;
-        this.ultraSrtNcstData = weatherData.getUltraSrtNcstFinalData();
-        this.sunSetRiseData = sunSetRiseData;
-        init();
+        this.ultraSrtNcstData = ultraSrtNcstData;
         setValue();
+    }
+
+    public void clearViews()
+    {
+        //기온
+        temp.setText("");
+        //강수형태
+        pty.setText("");
+        //습도
+        humidity.setText("");
+        //바람
+        wind.setText("");
+        //시간 강수량
+        rn1.setText("");
     }
 }

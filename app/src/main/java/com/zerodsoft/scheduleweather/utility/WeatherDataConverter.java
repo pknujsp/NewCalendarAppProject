@@ -250,36 +250,4 @@ SKY와 PTY는 별개의 데이터
             return "약한 바람";
         }
     }
-
-    public static String getSky(String precipitationForm, String sky)
-    {
-        String value = null;
-
-        if (sky.equals(SUNNY))
-        {
-            value = context.getString(R.string.sky_sunny);
-        } else if (sky.equals(CLOUD))
-        {
-            value = context.getString(R.string.sky_cloud);
-        } else if (sky.equals(CLOUDY))
-        {
-            value = context.getString(R.string.sky_cloudy);
-        }
-
-        if (precipitationForm.equals(RAIN))
-        {
-            value = context.getString(R.string.rain);
-        } else if (precipitationForm.equals(SLEET))
-        {
-            value = context.getString(R.string.sleet);
-        } else if (precipitationForm.equals(SNOW))
-        {
-            value = context.getString(R.string.snow);
-        } else if (precipitationForm.equals(SHOWER))
-        {
-            value = context.getString(R.string.shower);
-        }
-
-        return value;
-    }
 }
