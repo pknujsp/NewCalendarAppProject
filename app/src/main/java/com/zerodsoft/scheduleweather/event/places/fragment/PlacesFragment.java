@@ -1,18 +1,13 @@
-package com.zerodsoft.scheduleweather.event.location.placefragments.fragment;
+package com.zerodsoft.scheduleweather.event.places.fragment;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.service.carrier.CarrierMessagingService;
-import android.util.TypedValue;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
-import android.widget.TextView;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
@@ -30,12 +25,12 @@ import com.zerodsoft.scheduleweather.activity.placecategory.viewmodel.PlaceCateg
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IstartActivity;
 import com.zerodsoft.scheduleweather.databinding.PlaceCategoriesFragmentBinding;
 import com.zerodsoft.scheduleweather.event.common.interfaces.ILocation;
-import com.zerodsoft.scheduleweather.event.location.placefragments.interfaces.IFragment;
+import com.zerodsoft.scheduleweather.event.places.interfaces.IFragment;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
-import com.zerodsoft.scheduleweather.event.location.placefragments.adapter.CategoryViewAdapter;
-import com.zerodsoft.scheduleweather.event.location.placefragments.interfaces.IClickedPlaceItem;
-import com.zerodsoft.scheduleweather.event.location.placefragments.interfaces.IPlaceItem;
-import com.zerodsoft.scheduleweather.event.location.placefragments.interfaces.IPlacesFragment;
+import com.zerodsoft.scheduleweather.event.places.adapter.CategoryViewAdapter;
+import com.zerodsoft.scheduleweather.event.places.interfaces.IClickedPlaceItem;
+import com.zerodsoft.scheduleweather.event.places.interfaces.IPlaceItem;
+import com.zerodsoft.scheduleweather.event.places.interfaces.IPlacesFragment;
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 

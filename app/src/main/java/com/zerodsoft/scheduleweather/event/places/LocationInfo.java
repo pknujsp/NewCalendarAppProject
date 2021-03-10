@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.event.location.placefragments;
+package com.zerodsoft.scheduleweather.event.places;
 
 public class LocationInfo
 {

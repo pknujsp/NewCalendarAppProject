@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.event.location.placefragments.adapter;
+package com.zerodsoft.scheduleweather.event.places.adapter;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.kakaomap.callback.PlaceItemCallback;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
-import com.zerodsoft.scheduleweather.event.location.placefragments.interfaces.IClickedPlaceItem;
+import com.zerodsoft.scheduleweather.event.places.interfaces.IClickedPlaceItem;
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 
 public class PlaceItemsAdapters extends PagedListAdapter<PlaceDocuments, PlaceItemsAdapters.ItemViewHolder>

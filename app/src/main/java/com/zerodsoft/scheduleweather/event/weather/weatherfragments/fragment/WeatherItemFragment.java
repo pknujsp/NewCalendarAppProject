@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -23,7 +22,6 @@ import com.zerodsoft.scheduleweather.retrofit.paremeters.MidFcstParameter;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.VilageFcstParameter;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
-import com.zerodsoft.scheduleweather.event.location.placefragments.LocationInfo;
 import com.zerodsoft.scheduleweather.event.weather.weatherfragments.SunSetRiseData;
 import com.zerodsoft.scheduleweather.event.weather.weatherfragments.resultdata.WeatherData;
 import com.zerodsoft.scheduleweather.event.weather.weatherfragments.viewmodel.WeatherViewModel;

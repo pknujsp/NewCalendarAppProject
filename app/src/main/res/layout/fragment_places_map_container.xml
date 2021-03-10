@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".event.location.placefragments.fragment.PlacesMapContainerFragment">
+    tools:context=".event.places.fragment.PlacesMapContainerFragment">
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/places_map_fragment_container"

@@ -1,14 +1,10 @@
-package com.zerodsoft.scheduleweather.event.location.placefragments.fragment;
+package com.zerodsoft.scheduleweather.event.places.fragment;
 
 import android.app.Activity;
-import android.content.Context;
-import android.net.ConnectivityManager;
 import android.os.Bundle;
 
-import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -16,16 +12,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.google.android.material.bottomsheet.BottomSheetBehavior;
-import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IstartActivity;
 import com.zerodsoft.scheduleweather.databinding.FragmentPlacesTransactionBinding;
-import com.zerodsoft.scheduleweather.etc.AppPermission;
 import com.zerodsoft.scheduleweather.event.common.interfaces.ILocation;
-import com.zerodsoft.scheduleweather.event.location.placefragments.interfaces.IFragment;
-import com.zerodsoft.scheduleweather.kakaomap.fragment.KakaoMapFragment;
-
-import io.reactivex.internal.util.AppendOnlyLinkedArrayList;
+import com.zerodsoft.scheduleweather.event.places.interfaces.IFragment;
 
 public class PlacesTransactionFragment extends Fragment implements IFragment
 {

@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.event.location.placefragments.interfaces;
+package com.zerodsoft.scheduleweather.event.places.interfaces;
 
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;

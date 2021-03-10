@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.event.location.placefragments.adapter;
+package com.zerodsoft.scheduleweather.event.places.adapter;
 
 import android.content.Context;
 import android.util.TypedValue;
@@ -19,13 +19,13 @@ import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.etc.RecyclerViewItemDecoration;
-import com.zerodsoft.scheduleweather.event.location.placefragments.interfaces.IPlacesFragment;
+import com.zerodsoft.scheduleweather.event.places.interfaces.IPlacesFragment;
 import com.zerodsoft.scheduleweather.kakaomap.util.LocalParameterUtil;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.kakaomap.viewmodel.PlacesViewModel;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
-import com.zerodsoft.scheduleweather.event.location.placefragments.interfaces.IClickedPlaceItem;
-import com.zerodsoft.scheduleweather.event.location.placefragments.interfaces.IPlaceItem;
+import com.zerodsoft.scheduleweather.event.places.interfaces.IClickedPlaceItem;
+import com.zerodsoft.scheduleweather.event.places.interfaces.IPlaceItem;
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 

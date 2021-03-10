@@ -1,6 +1,5 @@
-package com.zerodsoft.scheduleweather.event.location.placefragments.fragment;
+package com.zerodsoft.scheduleweather.event.places.fragment;
 
-import android.content.Context;
 import android.os.Bundle;
 
 import androidx.activity.OnBackPressedCallback;
@@ -18,8 +17,8 @@ import android.widget.Button;
 
 import com.google.android.material.button.MaterialButton;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.event.location.placefragments.interfaces.IClickedPlaceItem;
-import com.zerodsoft.scheduleweather.event.location.placefragments.interfaces.IFragment;
+import com.zerodsoft.scheduleweather.event.places.interfaces.IClickedPlaceItem;
+import com.zerodsoft.scheduleweather.event.places.interfaces.IFragment;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.KakaoMapFragment;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
