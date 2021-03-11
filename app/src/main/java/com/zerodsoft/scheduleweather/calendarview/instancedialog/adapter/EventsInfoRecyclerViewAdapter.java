@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.provider.CalendarContract;
 import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
 
 import java.util.List;
@@ -22,15 +24,15 @@ public class EventsInfoRecyclerViewAdapter extends RecyclerView.Adapter<EventsIn
 {
     private List<ContentValues> instances;
     private final OnEventItemClickListener onEventItemClickListener;
-    private final InstanceOnLongClickedListener instanceOnLongClickedListener;
+    private final OnEventItemLongClickListener onEventItemLongClickListener;
     private Context context;
     private Float VIEW_MARGIN;
     private final long BEGIN;
     private final long END;
 
-    public EventsInfoRecyclerViewAdapter(InstanceOnLongClickedListener instanceOnLongClickedListener, OnEventItemClickListener onEventItemClickListener, long BEGIN, long END)
+    public EventsInfoRecyclerViewAdapter(OnEventItemLongClickListener onEventItemLongClickListener, OnEventItemClickListener onEventItemClickListener, long BEGIN, long END)
     {
-        this.instanceOnLongClickedListener = instanceOnLongClickedListener;
+        this.onEventItemLongClickListener = onEventItemLongClickListener;
         this.onEventItemClickListener = onEventItemClickListener;
         this.BEGIN = BEGIN;
         this.END = END;
@@ -89,7 +91,8 @@ public class EventsInfoRecyclerViewAdapter extends RecyclerView.Adapter<EventsIn
                 public boolean onLongClick(View view)
                 {
                     //popupMenu
-                    instanceOnLongClickedListener.showPopup(view);
+                    ContentValues instance = ((InstanceTagHolder) view.getTag()).instance;
+                    onEventItemLongClickListener.createInstancePopupMenu(instance, view, Gravity.CENTER);
                     return true;
                 }
             });

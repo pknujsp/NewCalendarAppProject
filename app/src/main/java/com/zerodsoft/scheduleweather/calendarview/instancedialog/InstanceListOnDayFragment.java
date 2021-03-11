@@ -11,6 +11,7 @@ import android.os.Bundle;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.DimenRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
@@ -18,6 +19,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewpager2.widget.ViewPager2;
 
 import android.provider.CalendarContract;
 import android.view.Gravity;
@@ -36,10 +38,16 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendar.CommonPopupMenu;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
+import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
 import com.zerodsoft.scheduleweather.calendarview.instancedialog.adapter.EventsInfoRecyclerViewAdapter;
+import com.zerodsoft.scheduleweather.calendarview.instancedialog.adapter.InstancesOfDayAdapter;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
+import com.zerodsoft.scheduleweather.calendarview.week.WeekViewPagerAdapter;
 import com.zerodsoft.scheduleweather.databinding.FragmentMonthEventsInfoBinding;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
@@ -52,8 +60,9 @@ import java.util.Map;
 import java.util.Set;
 
 import lombok.SneakyThrows;
+import lombok.val;
 
-public class InstanceListOnDayFragment extends DialogFragment implements EventsInfoRecyclerViewAdapter.InstanceOnLongClickedListener, IRefreshView
+public class InstanceListOnDayFragment extends DialogFragment implements OnEventItemLongClickListener, IRefreshView, IControlEvent
 {
     public static final String TAG = "MonthEventsInfoFragment";
 
@@ -63,12 +72,10 @@ public class InstanceListOnDayFragment extends DialogFragment implements EventsI
 
     private CalendarViewModel viewModel;
     private FragmentMonthEventsInfoBinding binding;
+    private InstancesOfDayAdapter adapter;
 
     private Long begin;
     private Long end;
-    private ContentValues instance;
-
-    private EventsInfoRecyclerViewAdapter adapter;
 
     private final CommonPopupMenu commonPopupMenu = new CommonPopupMenu()
     {
@@ -124,16 +131,67 @@ public class InstanceListOnDayFragment extends DialogFragment implements EventsI
     {
         super.onViewCreated(view, savedInstanceState);
 
-        binding.eventsInfoDay.setText(ClockUtil.YYYY_M_D_E.format(begin));
-
-        binding.eventsInfoEventsList.addItemDecoration(new RecyclerViewItemDecoration(getContext()));
-        binding.eventsInfoEventsList.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false));
-        adapter = new EventsInfoRecyclerViewAdapter(this, onEventItemClickListener, begin, end);
-        binding.eventsInfoEventsList.setAdapter(adapter);
-
         viewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
-        setData(viewModel.getInstances(begin, end));
+
+        adapter = new InstancesOfDayAdapter(begin, end, onEventItemClickListener, this, iConnectedCalendars, this);
+        binding.instancesDialogViewpager.setAdapter(adapter);
+        binding.instancesDialogViewpager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, false);
+
+        /*
+        // MyRecyclerViewAdapter is an standard RecyclerView.Adapter :)
+viewPager2.adapter = MyRecyclerViewAdapter()
+
+// You need to retain one page on each side so that the next and previous items are visible
+viewPager2.offscreenPageLimit = 1
+
+// Add a PageTransformer that translates the next and previous items horizontally
+// towards the center of the screen, which makes them visible
+val nextItemVisiblePx = resources.getDimension(R.dimen.viewpager_next_item_visible)
+val currentItemHorizontalMarginPx = resources.getDimension(R.dimen.viewpager_current_item_horizontal_margin)
+val pageTranslationX = nextItemVisiblePx + currentItemHorizontalMarginPx
+val pageTransformer = ViewPager2.PageTransformer { page: View, position: Float ->
+    page.translationX = -pageTranslationX * position
+    // Next line scales the item's height. You can remove it if you don't want this effect
+    page.scaleY = 1 - (0.25f * abs(position))
+    // If you want a fading effect uncomment the next line:
+    // page.alpha = 0.25f + (1 - abs(position))
+}
+viewPager2.setPageTransformer(pageTransformer)
+
+// The ItemDecoration gives the current (centered) item horizontal margin so that
+// it doesn't occupy the whole screen width. Without it the items overlap
+val itemDecoration = HorizontalMarginItemDecoration(
+    context,
+    R.dimen.viewpager_current_item_horizontal_margin
+)
+viewPager2.addItemDecoration(itemDecoration)
+         */
     }
+
+
+    /*
+
+    class HorizontalMarginItemDecoration(context: Context, @DimenRes horizontalMarginInDp: Int) :
+        RecyclerView.ItemDecoration() {
+
+    private val horizontalMarginInPx: Int =
+            context.resources.getDimension(horizontalMarginInDp).toInt()
+
+    override fun getItemOffsets(
+            outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State
+    ) {
+        outRect.right = horizontalMarginInPx
+        outRect.left = horizontalMarginInPx
+    }
+
+}
+
+
+<dimen name="viewpager_next_item_visible">26dp</dimen>
+<dimen name="viewpager_current_item_horizontal_margin">42dp</dimen>
+
+
+     */
 
 
     @Override
@@ -143,119 +201,29 @@ public class InstanceListOnDayFragment extends DialogFragment implements EventsI
 
         Window window = getDialog().getWindow();
         WindowManager.LayoutParams layoutParams = window.getAttributes();
-        layoutParams.width = (int) (AppMainActivity.getDisplayWidth() * 0.9);
-        layoutParams.height = (int) (AppMainActivity.getDisplayHeight() * 0.7);
+        layoutParams.width = (int) (AppMainActivity.getDisplayWidth() * 0.8);
+        layoutParams.height = (int) (AppMainActivity.getDisplayHeight() * 0.6);
         window.setAttributes(layoutParams);
     }
 
     @Override
-    public void onStop()
+    public void refreshView()
     {
-        super.onStop();
-    }
-
-    @Override
-    public void showPopup(View view)
-    {
-        EventsInfoRecyclerViewAdapter.InstanceTagHolder holder = (EventsInfoRecyclerViewAdapter.InstanceTagHolder) view.getTag();
-        instance = holder.instance;
-        commonPopupMenu.createInstancePopupMenu(instance, getActivity(), view, Gravity.CENTER);
-    }
-
-    private void setData(Map<Integer, CalendarInstance> resultMap)
-    {
-         /* 현재 날짜가 20201010이고, 20201009에 allday 인스턴스가 있는 경우에 이 인스턴스의 end값이 20201010 0시 0분
-              이라서 20201010의 인스턴스로 잡힌다.
-             */
-
-        //선택되지 않은 캘린더는 제외
-        List<ContentValues> connectedCalendars = iConnectedCalendars.getConnectedCalendars();
-        Set<Integer> connectedCalendarIdSet = new HashSet<>();
-
-        for (ContentValues calendar : connectedCalendars)
-        {
-            connectedCalendarIdSet.add(calendar.getAsInteger(CalendarContract.Calendars._ID));
-        }
-
-        List<ContentValues> instances = new ArrayList<>();
-
-        for (Integer calendarIdKey : connectedCalendarIdSet)
-        {
-            if (resultMap.containsKey(calendarIdKey))
-            {
-                instances.addAll(resultMap.get(calendarIdKey).getInstanceList());
-            }
-        }
-
-        // 데이터를 일정 길이의 내림차순으로 정렬
-        List<Integer> removeIndexList = new ArrayList<>();
-
-        for (int i = 0; i < instances.size(); i++)
-        {
-            if (instances.get(i).getAsBoolean(CalendarContract.Instances.ALL_DAY))
-            {
-                if (ClockUtil.areSameDate(instances.get(i).getAsLong(CalendarContract.Instances.END),
-                        begin) || ClockUtil.areSameDate(instances.get(i).getAsLong(CalendarContract.Instances.BEGIN), end))
-                {
-                    removeIndexList.add(i);
-                }
-            } else
-            {
-                if (ClockUtil.areSameHourMinute(instances.get(i).getAsLong(CalendarContract.Instances.END), begin)
-                        || ClockUtil.areSameHourMinute(instances.get(i).getAsLong(CalendarContract.Instances.BEGIN), end))
-                {
-                    removeIndexList.add(i);
-                }
-            }
-        }
-
-        for (int i = removeIndexList.size() - 1; i >= 0; i--)
-        {
-            instances.remove(removeIndexList.get(i).intValue());
-        }
-
-        Collections.sort(instances, EventUtil.INSTANCE_COMPARATOR);
-        adapter.setInstances(instances);
+        int currentItem = binding.instancesDialogViewpager.getCurrentItem();
+        adapter.refresh(currentItem);
         adapter.notifyDataSetChanged();
     }
 
-
     @Override
-    public void refreshView()
+    public Map<Integer, CalendarInstance> getInstances(long begin, long end)
     {
-        setData(viewModel.getInstances(begin, end));
+        return viewModel.getInstances(begin, end);
     }
 
-    static class RecyclerViewItemDecoration extends RecyclerView.ItemDecoration
+    @Override
+    public void createInstancePopupMenu(ContentValues instance, View anchorView, int gravity)
     {
-        private final int decorationHeight;
-        private Context context;
-
-        public RecyclerViewItemDecoration(Context context)
-        {
-            this.context = context;
-            decorationHeight = context.getResources().getDimensionPixelSize(R.dimen.event_info_listview_spacing);
-        }
-
-        @Override
-        public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state)
-        {
-            super.getItemOffsets(outRect, view, parent, state);
-
-            if (parent != null && view != null)
-            {
-                int itemPosition = parent.getChildAdapterPosition(view);
-                int totalCount = parent.getAdapter().getItemCount();
-
-                if (itemPosition >= 0 && itemPosition < totalCount - 1)
-                {
-                    outRect.bottom = decorationHeight;
-                }
-
-            }
-
-        }
-
+        commonPopupMenu.createInstancePopupMenu(instance, getActivity(), anchorView, Gravity.CENTER);
     }
 }
 
