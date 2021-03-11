@@ -161,12 +161,14 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
     public void onClicked(long viewBegin, long viewEnd)
     {
         // 이벤트 리스트 프래그먼트 다이얼로그 표시
-        InstanceListOnDayFragment fragment = new InstanceListOnDayFragment(iConnectedCalendars, this);
         Bundle bundle = new Bundle();
         bundle.putLong("begin", viewBegin);
         bundle.putLong("end", viewEnd);
 
+        InstanceListOnDayFragment fragment = new InstanceListOnDayFragment(iConnectedCalendars, this);
         fragment.setArguments(bundle);
+
+        //현재 표시중인 프래그먼트를 숨기고, 인스턴스 프래그먼트를 표시
         fragment.show(getParentFragmentManager(), InstanceListOnDayFragment.TAG);
     }
 

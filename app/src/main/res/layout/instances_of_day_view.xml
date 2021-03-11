@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_height="match_parent">
 
         <LinearLayout
+            android:id="@+id/header_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
             android:orientation="horizontal"
             android:padding="16dp">
 
@@ -36,6 +37,8 @@
             android:id="@+id/events_info_events_list"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_below="@id/header_layout"
+            android:layout_alignParentBottom="true"
             android:orientation="vertical" />
-    </LinearLayout>
+    </RelativeLayout>
 </layout>

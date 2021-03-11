@@ -2,6 +2,7 @@ package com.zerodsoft.scheduleweather.calendarview.instancedialog;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -22,6 +23,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.provider.CalendarContract;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -117,6 +119,13 @@ public class InstanceListOnDayFragment extends DialogFragment implements OnEvent
         end = bundle.getLong("end");
     }
 
+    @NonNull
+    @Override
+    public Dialog onCreateDialog(@Nullable Bundle savedInstanceState)
+    {
+        return new Dialog(getContext(), R.style.DialogTransparent);
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState)
@@ -132,14 +141,31 @@ public class InstanceListOnDayFragment extends DialogFragment implements OnEvent
         super.onViewCreated(view, savedInstanceState);
 
         viewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
+        binding.instancesDialogViewpager.setOffscreenPageLimit(1);
+
+        final int nextItemVisiblePx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 26f, getContext().getResources().getDisplayMetrics());
+        final int currentItemHorizontalMarginPx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 42f, getContext().getResources().getDisplayMetrics());
+        final int pageTranslationX = nextItemVisiblePx + currentItemHorizontalMarginPx;
+
+        ViewPager2.PageTransformer pageTransformer = new ViewPager2.PageTransformer()
+        {
+            @Override
+            public void transformPage(@NonNull View page, float position)
+            {
+                page.setTranslationX(-pageTranslationX * position);
+                page.setScaleY(1 - (0.25f * Math.abs(position)));
+            }
+        };
+
+        binding.instancesDialogViewpager.setPageTransformer(pageTransformer);
+        HorizontalMarginItemDecoration horizontalMarginItemDecoration = new HorizontalMarginItemDecoration(getContext());
+        binding.instancesDialogViewpager.addItemDecoration(horizontalMarginItemDecoration);
 
         adapter = new InstancesOfDayAdapter(begin, end, onEventItemClickListener, this, iConnectedCalendars, this);
         binding.instancesDialogViewpager.setAdapter(adapter);
         binding.instancesDialogViewpager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, false);
-
         /*
         // MyRecyclerViewAdapter is an standard RecyclerView.Adapter :)
-viewPager2.adapter = MyRecyclerViewAdapter()
 
 // You need to retain one page on each side so that the next and previous items are visible
 viewPager2.offscreenPageLimit = 1
@@ -149,6 +175,7 @@ viewPager2.offscreenPageLimit = 1
 val nextItemVisiblePx = resources.getDimension(R.dimen.viewpager_next_item_visible)
 val currentItemHorizontalMarginPx = resources.getDimension(R.dimen.viewpager_current_item_horizontal_margin)
 val pageTranslationX = nextItemVisiblePx + currentItemHorizontalMarginPx
+
 val pageTransformer = ViewPager2.PageTransformer { page: View, position: Float ->
     page.translationX = -pageTranslationX * position
     // Next line scales the item's height. You can remove it if you don't want this effect
@@ -168,6 +195,23 @@ viewPager2.addItemDecoration(itemDecoration)
          */
     }
 
+    static class HorizontalMarginItemDecoration extends RecyclerView.ItemDecoration
+    {
+        private int horizontalMarginInPx;
+
+        public HorizontalMarginItemDecoration(Context context)
+        {
+            horizontalMarginInPx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 42f, context.getResources().getDisplayMetrics());
+        }
+
+        @Override
+        public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent, @NonNull RecyclerView.State state)
+        {
+            super.getItemOffsets(outRect, view, parent, state);
+            outRect.left = horizontalMarginInPx;
+            outRect.right = horizontalMarginInPx;
+        }
+    }
 
     /*
 
@@ -198,12 +242,16 @@ viewPager2.addItemDecoration(itemDecoration)
     public void onResume()
     {
         super.onResume();
-
+/*
         Window window = getDialog().getWindow();
         WindowManager.LayoutParams layoutParams = window.getAttributes();
         layoutParams.width = (int) (AppMainActivity.getDisplayWidth() * 0.8);
         layoutParams.height = (int) (AppMainActivity.getDisplayHeight() * 0.6);
         window.setAttributes(layoutParams);
+ */
+
+        Window window = getDialog().getWindow();
+        window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 350f, getContext().getResources().getDisplayMetrics()));
     }
 
     @Override
