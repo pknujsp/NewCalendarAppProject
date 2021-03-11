@@ -532,7 +532,8 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
                 @Override
                 public void onActivityResult(ActivityResult result)
                 {
-
+                    //설정 화면에서 나온경우 -> 캘린더 리프레시
+                    calendarTransactionFragment.refreshView();
                 }
             }
     );
