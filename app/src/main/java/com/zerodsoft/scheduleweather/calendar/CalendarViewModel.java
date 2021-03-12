@@ -207,4 +207,9 @@ public class CalendarViewModel extends AndroidViewModel implements ICalendarProv
     {
         return calendarProvider.updateCalendarColor(calendarId, color, colorKey);
     }
+    
+    public void syncCalendars()
+    {
+        calendarProvider.syncCalendars();
+    }
 }

@@ -34,6 +34,7 @@ public class BottomSheetItemView extends RelativeLayout
         TextView placeName = (TextView) view.findViewById(R.id.bottom_sheet_place_name);
         TextView category = (TextView) view.findViewById(R.id.bottom_sheet_place_category);
         TextView address = (TextView) view.findViewById(R.id.bottom_sheet_place_address_name);
+
         placeName.setText(document.getPlaceName());
         category.setText(document.getCategoryGroupName());
         address.setText(document.getAddressName());

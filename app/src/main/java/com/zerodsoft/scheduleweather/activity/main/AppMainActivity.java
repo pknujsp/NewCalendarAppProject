@@ -264,7 +264,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
             if (check)
             {
                 Toast.makeText(AppMainActivity.this, "SYNCED", Toast.LENGTH_SHORT).show();
-                calendarTransactionFragment.refreshView();
+                // calendarTransactionFragment.refreshView();
             }
         }
     };
@@ -442,8 +442,6 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
             case R.id.open_navigation_drawer:
                 mainBinding.drawerLayout.openDrawer(mainBinding.sideNavigation);
                 break;
-            case R.id.calendar_month:
-                break;
             case R.id.add_schedule:
                 Intent intent = new Intent(AppMainActivity.this, EditEventActivity.class);
                 intent.putExtra("requestCode", EventDataController.NEW_EVENT);
@@ -454,7 +452,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
                 break;
             case R.id.refresh_calendar:
                 Toast.makeText(AppMainActivity.this, "working", Toast.LENGTH_SHORT).show();
-                // calendarViewModel.syncCalendars();
+                calendarViewModel.syncCalendars();
                 break;
         }
     }
@@ -470,32 +468,14 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
     protected void onResume()
     {
         super.onResume();
-        /*
         getContentResolver().registerContentObserver(CalendarContract.Events.CONTENT_URI, true, contentObserver);
-        statusHandle = ContentResolver.addStatusChangeListener(ContentResolver.SYNC_OBSERVER_TYPE_ACTIVE
-                , new SyncStatusObserver()
-                {
-                    @Override
-                    public void onStatusChanged(int mask)
-                    {
-                        if (mask == ContentResolver.SYNC_OBSERVER_TYPE_ACTIVE)
-                        {
-
-                        }
-                    }
-                });
-
-         */
     }
 
     @Override
     protected void onPause()
     {
         super.onPause();
-        /*
         getContentResolver().unregisterContentObserver(contentObserver);
-        ContentResolver.removeStatusChangeListener(statusHandle);
-         */
     }
 
     @Override

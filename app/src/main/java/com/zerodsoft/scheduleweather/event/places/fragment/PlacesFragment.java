@@ -5,27 +5,41 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.service.carrier.CarrierMessagingService;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.TableRow;
+import android.widget.TextView;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelStoreOwner;
+import androidx.paging.PagedList;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.activity.placecategory.activity.PlaceCategoryActivity;
 import com.zerodsoft.scheduleweather.activity.placecategory.viewmodel.PlaceCategoryViewModel;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IstartActivity;
 import com.zerodsoft.scheduleweather.databinding.PlaceCategoriesFragmentBinding;
+import com.zerodsoft.scheduleweather.etc.RecyclerViewItemDecoration;
 import com.zerodsoft.scheduleweather.event.common.interfaces.ILocation;
+import com.zerodsoft.scheduleweather.event.places.adapter.PlaceItemsAdapters;
 import com.zerodsoft.scheduleweather.event.places.interfaces.IFragment;
+import com.zerodsoft.scheduleweather.kakaomap.util.LocalParameterUtil;
+import com.zerodsoft.scheduleweather.kakaomap.viewmodel.PlacesViewModel;
+import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.event.places.adapter.CategoryViewAdapter;
 import com.zerodsoft.scheduleweather.event.places.interfaces.IClickedPlaceItem;
@@ -46,11 +60,16 @@ public class PlacesFragment extends Fragment implements IPlacesFragment, IPlaceI
     private final IFragment iFragment;
     private IClickedPlaceItem iClickedPlaceItem;
 
+    private LocationDTO locationDTO;
     private PlaceCategoriesFragmentBinding binding;
     private CategoryViewAdapter adapter;
     private List<PlaceCategoryDTO> placeCategoryList;
     private PlaceCategoryViewModel placeCategoryViewModel;
     private OnBackPressedCallback onBackPressedCallback;
+    private DefaultMapFragment defaultMapFragment;
+
+    private List<PlaceCategoryDTO> categories;
+    private DefaultMapDialogFragment mapDialogFragment;
 
     public PlacesFragment(ILocation iLocation, IstartActivity istartActivity, IFragment iFragment)
     {
@@ -97,9 +116,8 @@ public class PlacesFragment extends Fragment implements IPlacesFragment, IPlaceI
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
-        binding.searchingRadiusRange.setText(App.getPreference_key_radius_range() + "M");
-        binding.mapCategoryViewContainer.setLayoutManager(new LinearLayoutManager(view.getContext(), LinearLayoutManager.VERTICAL, false));
         placeCategoryViewModel = new ViewModelProvider(this).get(PlaceCategoryViewModel.class);
+
         binding.categorySettingsFab.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -110,16 +128,22 @@ public class PlacesFragment extends Fragment implements IPlacesFragment, IPlaceI
             }
         });
 
+        binding.fullscreenMapButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                if(DefaultMapDialogFragment.getInstance() == null)
+                {
+                    mapDialogFragment = DefaultMapDialogFragment.newInstance(locationDTO);
+                }
+                mapDialogFragment.show(getParentFragmentManager(),DefaultMapDialogFragment.TAG);
+            }
+        });
+
         initLocation();
     }
 
-
-    @Override
-    public void onDetach()
-    {
-        super.onDetach();
-        onBackPressedCallback.remove();
-    }
 
     private void initLocation()
     {
@@ -143,13 +167,21 @@ public class PlacesFragment extends Fragment implements IPlacesFragment, IPlaceI
                                 {
                                     if (!placeCategoryList.isEmpty())
                                     {
+                                        locationDTO = location;
                                         binding.notSelectedCategory.setVisibility(View.GONE);
 
                                         // 편의점, 주차장, ATM을 보여주기로 했다고 가정
                                         binding.locationName.setText((location.getPlaceName() == null ? location.getAddressName() : location.getPlaceName()) + getString(R.string.info_around_location));
+                                        FragmentTransaction fragmentTransaction = getParentFragmentManager().beginTransaction();
 
-                                        adapter = new CategoryViewAdapter(location, result, iClickedPlaceItem, PlacesFragment.this);
-                                        binding.mapCategoryViewContainer.setAdapter(adapter);
+                                        defaultMapFragment = new DefaultMapFragment(location);
+                                        fragmentTransaction.add(binding.mapContainer.getId(), defaultMapFragment, DefaultMapFragment.TAG).commit();
+
+                                        categories = placeCategoryList;
+                                        makeTable();
+
+                                        //  adapter = new CategoryViewAdapter(location, result, iClickedPlaceItem, PlacesFragment.this);
+                                        //  binding.mapCategoryViewContainer.setAdapter(adapter);
                                     } else
                                     {
                                         binding.notSelectedCategory.setVisibility(View.VISIBLE);
@@ -166,12 +198,72 @@ public class PlacesFragment extends Fragment implements IPlacesFragment, IPlaceI
         });
     }
 
+    private void makeTable()
+    {
+        LayoutInflater layoutInflater = getLayoutInflater();
+
+        for (PlaceCategoryDTO placeCategory : categories)
+        {
+            TableRow tableRow = new TableRow(getContext());
+            View categoryView = layoutInflater.inflate(R.layout.place_category_view, null, false);
+            tableRow.addView(categoryView);
+            binding.mapCategoriesTable.addView(tableRow);
+
+            RecyclerView itemRecyclerView = (RecyclerView) categoryView.findViewById(R.id.map_category_itemsview);
+            itemRecyclerView.setLayoutManager(new LinearLayoutManager(categoryView.getContext(), RecyclerView.HORIZONTAL, false));
+            itemRecyclerView.addItemDecoration(new RecyclerViewItemDecoration((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, getContext().getResources().getDisplayMetrics())));
+            CircularProgressIndicator progressIndicator = (CircularProgressIndicator) categoryView.findViewById(R.id.progress_indicator);
+
+            LocalApiPlaceParameter placeParameter = LocalParameterUtil.getPlaceParameter(placeCategory.getCode(), locationDTO.getLatitude(),
+                    locationDTO.getLongitude(), LocalApiPlaceParameter.DEFAULT_SIZE, LocalApiPlaceParameter.DEFAULT_PAGE,
+                    LocalApiPlaceParameter.SEARCH_CRITERIA_SORT_TYPE_ACCURACY);
+
+            placeParameter.setRadius(App.getPreference_key_radius_range());
+            String categoryDescription = placeCategory.getDescription();
+
+            PlaceItemsAdapters adapter = new PlaceItemsAdapters(iClickedPlaceItem, placeCategory);
+            itemRecyclerView.setAdapter(adapter);
+
+            PlacesViewModel viewModel = new ViewModelProvider(getFragment()).get(PlacesViewModel.class);
+            viewModel.init(placeParameter);
+            viewModel.getPagedListMutableLiveData().observe(getFragment(), new Observer<PagedList<PlaceDocuments>>()
+            {
+                @Override
+                public void onChanged(PagedList<PlaceDocuments> placeDocuments)
+                {
+                    progressIndicator.setVisibility(View.GONE);
+                    adapter.submitList(placeDocuments);
+                }
+            });
+
+
+            ((TextView) categoryView.findViewById(R.id.map_category_name)).setText(categoryDescription);
+            ((Button) categoryView.findViewById(R.id.map_category_more)).setOnClickListener(new View.OnClickListener()
+            {
+                @Override
+                public void onClick(View view)
+                {
+                    iClickedPlaceItem.onClickedMore(placeCategory, adapter.getCurrentList().snapshot());
+                }
+            });
+
+        }
+    }
+
     @Override
     public void onDestroy()
     {
         super.onDestroy();
+    }
+
+
+    @Override
+    public void onDetach()
+    {
+        super.onDetach();
         onBackPressedCallback.remove();
     }
+
 
     @Override
     public LifecycleOwner getLifeCycleOwner()
@@ -196,7 +288,6 @@ public class PlacesFragment extends Fragment implements IPlacesFragment, IPlaceI
     {
         return adapter.getPlaceItems(placeCategory);
     }
-
 
     @Override
     public int getPlaceItemsSize(PlaceCategoryDTO placeCategory)

@@ -1086,7 +1086,6 @@ public class CalendarProvider implements ICalendarProvider
 
         for (Account account : accounts)
         {
-
             Bundle extras = new Bundle();
             extras.putBoolean(
                     ContentResolver.SYNC_EXTRAS_MANUAL, true);
