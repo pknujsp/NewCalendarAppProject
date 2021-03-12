@@ -369,4 +369,7 @@
     <string name="message_needs_location_permission">위치 권한 거부됨\nGPS사용이 제한됩니다</string>
 
 
+    <!-- 인스턴스 다이얼로그 메뉴 -->
+    <string name="go_to_today">오늘 날짜로 이동</string>
+    <string name="go_to_first_selected_day">첫 선택 날짜로 이동</string>
 </resources>

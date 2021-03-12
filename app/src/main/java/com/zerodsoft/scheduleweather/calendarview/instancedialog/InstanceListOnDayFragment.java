@@ -1,7 +1,6 @@
 package com.zerodsoft.scheduleweather.calendarview.instancedialog;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.Dialog;
 import android.content.ContentValues;
 import android.content.Context;
@@ -9,16 +8,11 @@ import android.content.DialogInterface;
 import android.graphics.Rect;
 import android.os.Bundle;
 
-import androidx.activity.result.ActivityResultCallback;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.DimenRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
@@ -30,42 +24,34 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.view.WindowManager;
 import android.widget.PopupMenu;
 import android.widget.Toast;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.zerodsoft.scheduleweather.activity.main.AppMainActivity;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.calendar.CalendarInstanceUtil;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendar.CommonPopupMenu;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
-import com.zerodsoft.scheduleweather.calendarview.instancedialog.adapter.EventsInfoRecyclerViewAdapter;
 import com.zerodsoft.scheduleweather.calendarview.instancedialog.adapter.InstancesOfDayAdapter;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
-import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
-import com.zerodsoft.scheduleweather.calendarview.week.WeekViewPagerAdapter;
 import com.zerodsoft.scheduleweather.databinding.FragmentMonthEventsInfoBinding;
-import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
+import java.util.Date;
 import java.util.Map;
-import java.util.Set;
 
 import lombok.SneakyThrows;
-import lombok.val;
 
-public class InstanceListOnDayFragment extends DialogFragment implements OnEventItemLongClickListener, IRefreshView, IControlEvent
+public class InstanceListOnDayFragment extends DialogFragment implements OnEventItemLongClickListener, IRefreshView, IControlEvent, InstancesOfDayView.InstanceDialogMenuListener
 {
+
+
     public static final String TAG = "MonthEventsInfoFragment";
 
     private final IConnectedCalendars iConnectedCalendars;
@@ -141,7 +127,7 @@ public class InstanceListOnDayFragment extends DialogFragment implements OnEvent
         super.onViewCreated(view, savedInstanceState);
 
         viewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
-        binding.instancesDialogViewpager.setOffscreenPageLimit(1);
+        binding.instancesDialogViewpager.setOffscreenPageLimit(3);
 
         final int nextItemVisiblePx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 26f, getContext().getResources().getDisplayMetrics());
         final int currentItemHorizontalMarginPx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 42f, getContext().getResources().getDisplayMetrics());
@@ -161,7 +147,7 @@ public class InstanceListOnDayFragment extends DialogFragment implements OnEvent
         HorizontalMarginItemDecoration horizontalMarginItemDecoration = new HorizontalMarginItemDecoration(getContext());
         binding.instancesDialogViewpager.addItemDecoration(horizontalMarginItemDecoration);
 
-        adapter = new InstancesOfDayAdapter(begin, end, onEventItemClickListener, this, iConnectedCalendars, this);
+        adapter = new InstancesOfDayAdapter(begin, end, onEventItemClickListener, iConnectedCalendars, this);
         binding.instancesDialogViewpager.setAdapter(adapter);
         binding.instancesDialogViewpager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, false);
         /*
@@ -193,6 +179,12 @@ val itemDecoration = HorizontalMarginItemDecoration(
 )
 viewPager2.addItemDecoration(itemDecoration)
          */
+    }
+
+    @Override
+    public void createInstancePopupMenu(ContentValues instance, View anchorView, int gravity)
+    {
+        commonPopupMenu.createInstancePopupMenu(instance, getActivity(), anchorView, Gravity.CENTER);
     }
 
     static class HorizontalMarginItemDecoration extends RecyclerView.ItemDecoration
@@ -242,16 +234,9 @@ viewPager2.addItemDecoration(itemDecoration)
     public void onResume()
     {
         super.onResume();
-/*
-        Window window = getDialog().getWindow();
-        WindowManager.LayoutParams layoutParams = window.getAttributes();
-        layoutParams.width = (int) (AppMainActivity.getDisplayWidth() * 0.8);
-        layoutParams.height = (int) (AppMainActivity.getDisplayHeight() * 0.6);
-        window.setAttributes(layoutParams);
- */
 
         Window window = getDialog().getWindow();
-        window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 350f, getContext().getResources().getDisplayMetrics()));
+        window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 400f, getContext().getResources().getDisplayMetrics()));
     }
 
     @Override
@@ -269,9 +254,56 @@ viewPager2.addItemDecoration(itemDecoration)
     }
 
     @Override
-    public void createInstancePopupMenu(ContentValues instance, View anchorView, int gravity)
+    public void showPopupMenu(ContentValues instance, View anchorView, int gravity)
     {
-        commonPopupMenu.createInstancePopupMenu(instance, getActivity(), anchorView, Gravity.CENTER);
+        PopupMenu popupMenu = new PopupMenu(getContext(), anchorView, gravity);
+
+        popupMenu.getMenuInflater().inflate(R.menu.instance_dialog_menu, popupMenu.getMenu());
+        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener()
+        {
+            @SuppressLint("NonConstantResourceId")
+            @Override
+            public boolean onMenuItemClick(MenuItem menuItem)
+            {
+                switch (menuItem.getItemId())
+                {
+                    case R.id.go_to_today_menu:
+                        goToToday();
+                        break;
+                    case R.id.go_to_first_selected_day_menu:
+                        goToFirstSelectedDay();
+                        break;
+                }
+                return true;
+            }
+        });
+
+        popupMenu.show();
     }
+
+    private void goToFirstSelectedDay()
+    {
+        if (binding.instancesDialogViewpager.getCurrentItem() != EventTransactionFragment.FIRST_VIEW_POSITION)
+        {
+            binding.instancesDialogViewpager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, true);
+            refreshView();
+        }
+    }
+
+    public void goToToday()
+    {
+        Date today = new Date(System.currentTimeMillis());
+        Date firstSelectedDay = new Date(begin);
+
+        int dayDifference = ClockUtil.calcDayDifference(today, firstSelectedDay);
+        binding.instancesDialogViewpager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION + dayDifference
+                , true);
+        if (adapter.containsPosition(EventTransactionFragment.FIRST_VIEW_POSITION + dayDifference))
+        {
+            refreshView();
+        }
+    }
+
+
 }
 

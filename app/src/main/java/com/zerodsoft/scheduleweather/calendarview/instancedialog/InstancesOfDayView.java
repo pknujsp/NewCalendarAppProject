@@ -3,23 +3,16 @@ package com.zerodsoft.scheduleweather.calendarview.instancedialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.graphics.Rect;
-import android.os.Bundle;
 import android.provider.CalendarContract;
-import android.view.LayoutInflater;
+import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendarview.instancedialog.adapter.EventsInfoRecyclerViewAdapter;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.CalendarViewInitializer;
@@ -27,7 +20,6 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
-import com.zerodsoft.scheduleweather.etc.RecyclerViewItemDecoration;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
@@ -51,6 +43,7 @@ public class InstancesOfDayView implements CalendarViewInitializer
     private OnEventItemLongClickListener onEventItemLongClickListener;
     private IConnectedCalendars iConnectedCalendars;
     private IControlEvent iControlEvent;
+    private InstanceDialogMenuListener instanceDialogMenuListener;
 
     private Long begin;
     private Long end;
@@ -59,17 +52,34 @@ public class InstancesOfDayView implements CalendarViewInitializer
     {
         context = view.getContext();
         dayTextView = (TextView) view.findViewById(R.id.events_info_day);
-        moreButton = (ImageButton) view.findViewById(R.id.edit_instance_button);
+        moreButton = (ImageButton) view.findViewById(R.id.more_button);
         recyclerView = (RecyclerView) view.findViewById(R.id.events_info_events_list);
+
+        moreButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                instanceDialogMenuListener.showPopupMenu(null, view, Gravity.CENTER);
+            }
+        });
+
     }
 
     @Override
     public void init(Calendar copiedCalendar, OnEventItemLongClickListener onEventItemLongClickListener, OnEventItemClickListener onEventItemClickListener, IControlEvent iControlEvent, IConnectedCalendars iConnectedCalendars)
     {
+
+    }
+
+    public void init(Calendar copiedCalendar, OnEventItemLongClickListener onEventItemLongClickListener, OnEventItemClickListener onEventItemClickListener
+            , IControlEvent iControlEvent, IConnectedCalendars iConnectedCalendars, InstanceDialogMenuListener instanceDialogMenuListener)
+    {
         this.onEventItemClickListener = onEventItemClickListener;
         this.onEventItemLongClickListener = onEventItemLongClickListener;
         this.iConnectedCalendars = iConnectedCalendars;
         this.iControlEvent = iControlEvent;
+        this.instanceDialogMenuListener = instanceDialogMenuListener;
 
         begin = copiedCalendar.getTimeInMillis();
         copiedCalendar.add(Calendar.DATE, 1);
@@ -107,8 +117,7 @@ public class InstancesOfDayView implements CalendarViewInitializer
     {
          /* 현재 날짜가 20201010이고, 20201009에 allday 인스턴스가 있는 경우에 이 인스턴스의 end값이 20201010 0시 0분
               이라서 20201010의 인스턴스로 잡힌다.
-             */
-
+         */
         //선택되지 않은 캘린더는 제외
         List<ContentValues> connectedCalendars = iConnectedCalendars.getConnectedCalendars();
         Set<Integer> connectedCalendarIdSet = new HashSet<>();
@@ -196,5 +205,10 @@ public class InstancesOfDayView implements CalendarViewInitializer
 
         }
 
+    }
+
+    public interface InstanceDialogMenuListener
+    {
+        void showPopupMenu(ContentValues instance, View anchorView, int gravity);
     }
 }

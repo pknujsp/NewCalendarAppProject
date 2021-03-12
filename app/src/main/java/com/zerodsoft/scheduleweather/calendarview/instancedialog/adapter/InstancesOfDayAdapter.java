@@ -4,9 +4,9 @@ import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
@@ -26,11 +26,12 @@ public class InstancesOfDayAdapter extends RecyclerView.Adapter<InstancesOfDayAd
     private final OnEventItemLongClickListener onEventItemLongClickListener;
     private final IConnectedCalendars iConnectedCalendars;
     private final IControlEvent iControlEvent;
+    private final InstancesOfDayView.InstanceDialogMenuListener instanceDialogMenuListener;
     private final Calendar beginCalendar;
     private final Calendar endCalendar;
 
-    public InstancesOfDayAdapter(long begin, long end, OnEventItemClickListener onEventItemClickListener, OnEventItemLongClickListener onEventItemLongClickListener
-            , IConnectedCalendars iConnectedCalendars, IControlEvent iControlEvent)
+    public InstancesOfDayAdapter(long begin, long end, OnEventItemClickListener onEventItemClickListener
+            , IConnectedCalendars iConnectedCalendars, Fragment fragment)
     {
         this.beginCalendar = Calendar.getInstance();
         this.endCalendar = Calendar.getInstance();
@@ -38,9 +39,10 @@ public class InstancesOfDayAdapter extends RecyclerView.Adapter<InstancesOfDayAd
         this.endCalendar.setTimeInMillis(end);
 
         this.onEventItemClickListener = onEventItemClickListener;
-        this.onEventItemLongClickListener = onEventItemLongClickListener;
         this.iConnectedCalendars = iConnectedCalendars;
-        this.iControlEvent = iControlEvent;
+        this.onEventItemLongClickListener = (OnEventItemLongClickListener) fragment;
+        this.iControlEvent = (IControlEvent) fragment;
+        this.instanceDialogMenuListener = (InstancesOfDayView.InstanceDialogMenuListener) fragment;
     }
 
     @NonNull
@@ -62,6 +64,11 @@ public class InstancesOfDayAdapter extends RecyclerView.Adapter<InstancesOfDayAd
     {
         viewHolderSparseArray.remove(holder.getOldPosition());
         super.onViewRecycled(holder);
+    }
+
+    public boolean containsPosition(int position)
+    {
+        return viewHolderSparseArray.get(position) != null;
     }
 
     @Override
@@ -89,7 +96,8 @@ public class InstancesOfDayAdapter extends RecyclerView.Adapter<InstancesOfDayAd
         {
             Calendar copiedCalendar = (Calendar) beginCalendar.clone();
             copiedCalendar.add(Calendar.DATE, getAdapterPosition() - EventTransactionFragment.FIRST_VIEW_POSITION);
-            instancesOfDayView.init(copiedCalendar, onEventItemLongClickListener, onEventItemClickListener, iControlEvent, iConnectedCalendars);
+            instancesOfDayView.init(copiedCalendar, onEventItemLongClickListener, onEventItemClickListener, iControlEvent, iConnectedCalendars,
+                    instanceDialogMenuListener);
         }
     }
 }
