@@ -1,12 +1,12 @@
-package com.zerodsoft.scheduleweather.kakaomap.model;
+package com.zerodsoft.scheduleweather.kakaomap.model.datasourcefactory;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.MutableLiveData;
 import androidx.paging.DataSource;
 
+import com.zerodsoft.scheduleweather.kakaomap.model.datasource.AddressItemDataSource;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponseDocuments;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
 
 public class AddressItemDataSourceFactory extends DataSource.Factory<Integer, AddressResponseDocuments>
 {

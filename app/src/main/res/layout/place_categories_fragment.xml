@@ -9,7 +9,6 @@
         <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:nestedScrollingEnabled="false"
             android:scrollbarStyle="outsideOverlay"
             android:scrollbars="vertical">
 
@@ -30,46 +29,40 @@
                         android:layout_height="wrap_content"
                         android:layout_alignParentTop="true"
                         android:background="#99FFFFFF"
-                        android:orientation="horizontal"
-                        android:paddingLeft="6dp"
-                        android:paddingTop="6dp"
-                        android:paddingRight="6dp">
+                        android:orientation="vertical"
+                        android:padding="8dp">
 
                         <TextView
                             android:id="@+id/location_name"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center_vertical"
+                            android:ellipsize="marquee"
+                            android:singleLine="true"
                             android:text="위치"
+                            android:textColor="@color/black"
                             android:textSize="16sp" />
+
+                        <TextView
+                            android:id="@+id/place_address_name"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:ellipsize="marquee"
+                            android:singleLine="true"
+                            android:text="주소"
+                            android:textColor="@color/gray_500"
+                            android:textSize="14sp" />
 
                     </LinearLayout>
 
-
-                    <ImageButton
-                        android:id="@+id/fullscreen_map_button"
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:layout_alignTop="@id/map_container"
-                        android:layout_alignRight="@id/map_container"
-                        android:layout_gravity="center_vertical"
-                        android:layout_margin="16dp"
-                        android:background="?attr/selectableItemBackground"
-                        android:src="@drawable/fullscreen_icon" />
-
-
-                    <androidx.fragment.app.FragmentContainerView
-                        android:id="@+id/map_container"
-                        android:layout_width="match_parent"
-                        android:layout_height="150dp"
-                        android:layout_below="@id/location_info_layout" />
 
                 </RelativeLayout>
 
                 <TableLayout
                     android:id="@+id/map_categories_table"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="match_parent" />
 
             </LinearLayout>
 

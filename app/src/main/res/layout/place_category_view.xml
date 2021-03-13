@@ -3,43 +3,43 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:paddingTop="@dimen/info_around_location_item_margin"
-    android:paddingBottom="@dimen/info_around_location_item_margin">
+    android:orientation="vertical">
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:layout_marginLeft="24dp"
+        android:layout_marginRight="24dp">
 
         <TextView
             android:id="@+id/map_category_name"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_weight="1"
-            android:gravity="center_vertical"
-            android:text="편의점"
-            android:textColor="@android:color/black"
-            android:textSize="17sp" />
-
-        <Button
-            android:id="@+id/map_category_more"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
             android:layout_gravity="center_vertical"
-            android:text="@string/show_more" />
+            android:text="편의점"
+            android:textColor="@android:color/black"
+            android:textSize="16sp" />
 
         <com.google.android.material.progressindicator.CircularProgressIndicator
             android:id="@+id/progress_indicator"
             style="@style/Widget.MaterialComponents.CircularProgressIndicator"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
+            android:layout_centerVertical="true"
+            android:layout_toLeftOf="@id/map_category_more"
             android:indeterminate="true" />
 
-    </LinearLayout>
+        <Button
+            android:id="@+id/map_category_more"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:text="@string/show_more" />
+
+    </RelativeLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/map_category_itemsview"
@@ -47,5 +47,6 @@
         android:layout_height="wrap_content"
         android:nestedScrollingEnabled="false"
         android:orientation="horizontal" />
+    
 
 </LinearLayout>

@@ -119,6 +119,5 @@ public class SearchResultChecker
 
         checkAddress(addressParameter, callback);
         checkPlace(placeParameter, callback);
-
     }
 }

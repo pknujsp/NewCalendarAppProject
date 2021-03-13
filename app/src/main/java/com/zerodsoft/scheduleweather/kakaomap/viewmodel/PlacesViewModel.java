@@ -1,18 +1,15 @@
 package com.zerodsoft.scheduleweather.kakaomap.viewmodel;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
-import androidx.paging.DataSource;
 import androidx.paging.LivePagedListBuilder;
 import androidx.paging.PagedList;
 
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
-import com.zerodsoft.scheduleweather.kakaomap.model.PlaceItemDataSource;
-import com.zerodsoft.scheduleweather.kakaomap.model.PlaceItemDataSourceFactory;
+import com.zerodsoft.scheduleweather.kakaomap.model.datasource.PlaceItemDataSource;
+import com.zerodsoft.scheduleweather.kakaomap.model.datasourcefactory.PlaceItemDataSourceFactory;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;

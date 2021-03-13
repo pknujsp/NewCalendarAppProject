@@ -32,7 +32,6 @@ public abstract class CheckerCallback<T>
         list.add(e);
     }
 
-
     public void setTotalRequestCount(int totalRequestCount)
     {
         this.totalRequestCount = totalRequestCount;

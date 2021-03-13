@@ -6,8 +6,8 @@ import androidx.lifecycle.ViewModel;
 import androidx.paging.LivePagedListBuilder;
 import androidx.paging.PagedList;
 
-import com.zerodsoft.scheduleweather.kakaomap.model.AddressItemDataSource;
-import com.zerodsoft.scheduleweather.kakaomap.model.AddressItemDataSourceFactory;
+import com.zerodsoft.scheduleweather.kakaomap.model.datasource.AddressItemDataSource;
+import com.zerodsoft.scheduleweather.kakaomap.model.datasourcefactory.AddressItemDataSourceFactory;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponseDocuments;
 

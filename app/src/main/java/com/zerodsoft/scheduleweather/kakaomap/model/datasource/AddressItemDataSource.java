@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.kakaomap.model;
+package com.zerodsoft.scheduleweather.kakaomap.model.datasource;
 
 import androidx.annotation.NonNull;
 import androidx.paging.PositionalDataSource;

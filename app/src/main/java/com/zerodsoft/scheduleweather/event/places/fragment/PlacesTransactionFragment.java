@@ -53,14 +53,19 @@ public class PlacesTransactionFragment extends Fragment implements IFragment
         super.onViewCreated(view, savedInstanceState);
 
         placesFragment = new PlacesFragment(iLocation, istartActivity, this);
-        morePlacesFragment = new MorePlacesFragment(this);
+        //  morePlacesFragment = new MorePlacesFragment(this);
         placesFragment.setiClickedPlaceItem(morePlacesFragment);
 
         FragmentTransaction fragmentTransaction = getParentFragmentManager().beginTransaction();
         fragmentTransaction.add(binding.fragmentContainerView.getId(), placesFragment, PlacesFragment.TAG)
+                .commit();
+        /*
+        fragmentTransaction.add(binding.fragmentContainerView.getId(), placesFragment, PlacesFragment.TAG)
                 .add(binding.fragmentContainerView.getId(), morePlacesFragment, MorePlacesFragment.TAG).show(placesFragment)
                 .hide(morePlacesFragment)
                 .commit();
+
+         */
     }
 
     public void refresh()
