@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
@@ -28,9 +29,11 @@ import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.placecategory.viewmodel.PlaceCategoryViewModel;
+import com.zerodsoft.scheduleweather.event.places.interfaces.IClickedPlaceItem;
 import com.zerodsoft.scheduleweather.event.places.interfaces.IFragment;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.KakaoMapFragment;
 import com.zerodsoft.scheduleweather.kakaomap.model.CustomPoiItem;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 
@@ -41,13 +44,12 @@ import net.daum.mf.map.api.MapView;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DefaultMapFragment extends KakaoMapFragment
+public class DefaultMapFragment extends KakaoMapFragment implements IClickedPlaceItem
 {
     public static final String TAG = "DefaultMapFragment";
+
     private static DefaultMapFragment instance;
     private final LocationDTO selectedLocation;
-    private final FullScreenButtonListener fullScreenButtonListener;
-    private ImageButton fullscreenButton;
     private PlaceCategoryViewModel categoryViewModel;
     private List<PlaceCategoryDTO> placeCategoryList = new ArrayList<>();
 
@@ -88,7 +90,7 @@ public class DefaultMapFragment extends KakaoMapFragment
         return instance;
     }
 
-    public void close()
+    public static void close()
     {
         instance = null;
     }
@@ -96,7 +98,6 @@ public class DefaultMapFragment extends KakaoMapFragment
     public DefaultMapFragment(Fragment fragment, LocationDTO locationDTO)
     {
         super();
-        this.fullScreenButtonListener = (FullScreenButtonListener) fragment;
         this.selectedLocation = locationDTO;
     }
 
@@ -124,14 +125,20 @@ public class DefaultMapFragment extends KakaoMapFragment
     {
         super.onViewCreated(view, savedInstanceState);
 
-        categoryChipGroup = new ChipGroup(getContext(), null, R.style.Widget_MaterialComponents_ChipGroup);
-        categoryChipGroup.setSingleSelection(true);
-        categoryChipGroup.setId(R.id.chip_group);
-
+        HorizontalScrollView chipScrollView = new HorizontalScrollView(getContext());
+        chipScrollView.setHorizontalScrollBarEnabled(false);
         CoordinatorLayout.LayoutParams chipLayoutParams = new CoordinatorLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         chipLayoutParams.gravity = Gravity.LEFT | Gravity.TOP;
-        categoryChipGroup.setLayoutParams(chipLayoutParams);
-        binding.mapRootLayout.addView(categoryChipGroup);
+        chipScrollView.setLayoutParams(chipLayoutParams);
+        binding.mapRootLayout.addView(chipScrollView);
+
+        categoryChipGroup = new ChipGroup(getContext(), null, R.style.Widget_MaterialComponents_ChipGroup);
+        categoryChipGroup.setSingleSelection(true);
+        categoryChipGroup.setSingleLine(true);
+        categoryChipGroup.setId(R.id.chip_group);
+        categoryChipGroup.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+        chipScrollView.addView(categoryChipGroup);
 
         categoryViewModel = new ViewModelProvider(this).get(PlaceCategoryViewModel.class);
         categoryViewModel.selectConvertedSelected(new CarrierMessagingService.ResultCallback<List<PlaceCategoryDTO>>()
@@ -154,7 +161,7 @@ public class DefaultMapFragment extends KakaoMapFragment
                                 chip.setChecked(false);
                                 chip.setText(placeCategory.getDescription());
                                 chip.setOnCheckedChangeListener(chipOnCheckedChangeListener);
-                                chip.setVisibility(View.GONE);
+                                chip.setVisibility(View.VISIBLE);
 
                                 final ChipViewHolder chipViewHolder = new ChipViewHolder(placeCategory);
                                 chip.setTag(chipViewHolder);
@@ -171,45 +178,8 @@ public class DefaultMapFragment extends KakaoMapFragment
             }
         });
 
-        fullscreenButton = new ImageButton(getContext());
-        fullscreenButton.setImageDrawable(getContext().getDrawable(R.drawable.fullscreen_icon));
-
-        TypedValue backgroundValue = new TypedValue();
-        getContext().getTheme().resolveAttribute(android.R.attr.selectableItemBackground, backgroundValue, true);
-        fullscreenButton.setBackgroundResource(backgroundValue.resourceId);
-
-        int size = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, getContext().getResources().getDisplayMetrics());
-        CoordinatorLayout.LayoutParams fullscreenButtonLayoutParams = new CoordinatorLayout.LayoutParams(size, size);
-        fullscreenButtonLayoutParams.gravity = Gravity.RIGHT | Gravity.TOP;
-        int margin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16f, getContext().getResources().getDisplayMetrics());
-
-        fullscreenButtonLayoutParams.rightMargin = margin;
-        fullscreenButtonLayoutParams.topMargin = margin;
-
-        fullscreenButton.setLayoutParams(fullscreenButtonLayoutParams);
-        binding.mapRootLayout.addView(fullscreenButton);
-
-        fullscreenButton.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                fullScreenButtonListener.onClicked();
-            }
-        });
-
-        setVisibleViews(View.GONE);
     }
 
-    public void setVisibleViews(int visibility)
-    {
-        binding.appbarLayout.setVisibility(visibility);
-        binding.mapButtonsLayout.getRoot().setVisibility(visibility);
-        binding.bottomSheet.mapBottomSheetToolbar.removeLocationButton.setVisibility(visibility);
-        binding.bottomSheet.mapBottomSheetToolbar.selectLocationButton.setVisibility(visibility);
-        fullscreenButton.setVisibility(visibility == View.VISIBLE ? View.GONE : View.VISIBLE);
-        categoryChipGroup.setVisibility(visibility == View.VISIBLE ? View.GONE : View.VISIBLE);
-    }
 
     @Override
     public void onMapViewInitialized(MapView mapView)
@@ -223,7 +193,31 @@ public class DefaultMapFragment extends KakaoMapFragment
         poiItem.setTag(0);
         poiItem.setMarkerType(MapPOIItem.MarkerType.BluePin); // 기본으로 제공하는 BluePin 마커 모양.
         poiItem.setSelectedMarkerType(MapPOIItem.MarkerType.RedPin); // 마커를 클릭했을때, 기본으로 제공하는 RedPin 마커 모양.
+
+        mapView.addPOIItem(poiItem);
         mapView.setMapCenterPointAndZoomLevel(mapPoint, 4, false);
+    }
+
+    @Override
+    public void onClickedItem(int index, PlaceCategoryDTO placeCategory, List<PlaceDocuments> placeDocumentsList)
+    {
+        // iFragment.replaceFragment(MorePlacesFragment.TAG);
+        requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
+
+        //  categoryButton.setText(placeCategory.getDescription());
+        createPlacesPoiItems(placeDocumentsList);
+        selectPoiItem(index);
+    }
+
+    @Override
+    public void onClickedMore(PlaceCategoryDTO placeCategory, List<PlaceDocuments> placeDocumentsList)
+    {
+        //  iFragment.replaceFragment(MorePlacesFragment.TAG);
+        requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
+
+        //   categoryButton.setText(placeCategory.getDescription());
+        createPlacesPoiItems(placeDocumentsList);
+        mapView.fitMapViewAreaToShowAllPOIItems();
     }
 
 

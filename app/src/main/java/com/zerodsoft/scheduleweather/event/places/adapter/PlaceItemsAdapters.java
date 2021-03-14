@@ -1,5 +1,6 @@
 package com.zerodsoft.scheduleweather.event.places.adapter;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,11 +26,18 @@ public class PlaceItemsAdapters extends PagedListAdapter<PlaceDocuments, PlaceIt
     class ItemViewHolder extends RecyclerView.ViewHolder
     {
         private TextView placeNameTextView;
+        private TextView placeAddressTextView;
+        private TextView placeCategoryTextView;
+        private TextView placeDistanceTextView;
 
         public ItemViewHolder(View view)
         {
             super(view);
             placeNameTextView = (TextView) view.findViewById(R.id.place_item_name);
+            placeAddressTextView = (TextView) view.findViewById(R.id.place_item_address);
+            placeCategoryTextView = (TextView) view.findViewById(R.id.place_item_category);
+            placeDistanceTextView = (TextView) view.findViewById(R.id.place_item_distance);
+
             view.getRootView().setOnClickListener(new View.OnClickListener()
             {
                 @Override
@@ -43,6 +51,9 @@ public class PlaceItemsAdapters extends PagedListAdapter<PlaceDocuments, PlaceIt
         public void bind(PlaceDocuments item)
         {
             placeNameTextView.setText(item.getPlaceName());
+            placeAddressTextView.setText(item.getAddressName());
+            placeCategoryTextView.setText(item.getCategoryName());
+            placeDistanceTextView.setText(item.getDistance() + "m");
         }
     }
 
@@ -72,5 +83,5 @@ public class PlaceItemsAdapters extends PagedListAdapter<PlaceDocuments, PlaceIt
         super.submitList(pagedList);
     }
 
-    
+
 }

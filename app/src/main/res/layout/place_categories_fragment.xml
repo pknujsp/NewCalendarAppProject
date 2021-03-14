@@ -12,60 +12,53 @@
             android:scrollbarStyle="outsideOverlay"
             android:scrollbars="vertical">
 
-            <LinearLayout
+            <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical">
+                android:layout_height="match_parent">
 
-                <RelativeLayout
-                    android:id="@+id/map_layout"
+                <LinearLayout
+                    android:id="@+id/location_info_layout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:background="#99FFFFFF"
+                    android:orientation="vertical"
                     android:padding="24dp">
 
-                    <LinearLayout
-                        android:id="@+id/location_info_layout"
+                    <TextView
+                        android:id="@+id/location_name"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_alignParentTop="true"
-                        android:background="#99FFFFFF"
-                        android:orientation="vertical"
-                        android:padding="8dp">
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginBottom="4dp"
+                        android:ellipsize="marquee"
+                        android:singleLine="true"
+                        android:text="위치"
+                        android:textColor="@color/black"
+                        android:textSize="16sp" />
 
-                        <TextView
-                            android:id="@+id/location_name"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center_vertical"
-                            android:ellipsize="marquee"
-                            android:singleLine="true"
-                            android:text="위치"
-                            android:textColor="@color/black"
-                            android:textSize="16sp" />
+                    <TextView
+                        android:id="@+id/place_address_name"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="4dp"
+                        android:ellipsize="marquee"
+                        android:singleLine="true"
+                        android:text="주소"
+                        android:textColor="@color/gray_500"
+                        android:textSize="14sp" />
 
-                        <TextView
-                            android:id="@+id/place_address_name"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:ellipsize="marquee"
-                            android:singleLine="true"
-                            android:text="주소"
-                            android:textColor="@color/gray_500"
-                            android:textSize="14sp" />
-
-                    </LinearLayout>
+                </LinearLayout>
 
 
-                </RelativeLayout>
-
-                <TableLayout
-                    android:id="@+id/map_categories_table"
+                <LinearLayout
+                    android:id="@+id/category_viewlist"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/location_info_layout"
+                    android:orientation="vertical" />
 
-            </LinearLayout>
-
+            </RelativeLayout>
 
         </androidx.core.widget.NestedScrollView>
 

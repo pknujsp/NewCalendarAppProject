@@ -24,7 +24,6 @@ public class PlacesTransactionFragment extends Fragment implements IFragment
 
     private FragmentPlacesTransactionBinding binding;
     private PlacesFragment placesFragment;
-    private MorePlacesFragment morePlacesFragment;
 
 
     public PlacesTransactionFragment(Activity activity)
@@ -53,19 +52,10 @@ public class PlacesTransactionFragment extends Fragment implements IFragment
         super.onViewCreated(view, savedInstanceState);
 
         placesFragment = new PlacesFragment(iLocation, istartActivity, this);
-        //  morePlacesFragment = new MorePlacesFragment(this);
-        placesFragment.setiClickedPlaceItem(morePlacesFragment);
 
         FragmentTransaction fragmentTransaction = getParentFragmentManager().beginTransaction();
         fragmentTransaction.add(binding.fragmentContainerView.getId(), placesFragment, PlacesFragment.TAG)
                 .commit();
-        /*
-        fragmentTransaction.add(binding.fragmentContainerView.getId(), placesFragment, PlacesFragment.TAG)
-                .add(binding.fragmentContainerView.getId(), morePlacesFragment, MorePlacesFragment.TAG).show(placesFragment)
-                .hide(morePlacesFragment)
-                .commit();
-
-         */
     }
 
     public void refresh()
@@ -77,16 +67,6 @@ public class PlacesTransactionFragment extends Fragment implements IFragment
     @Override
     public void replaceFragment(String fragmentTag)
     {
-        FragmentTransaction fragmentTransaction = getParentFragmentManager().beginTransaction();
 
-        switch (fragmentTag)
-        {
-            case PlacesFragment.TAG:
-                fragmentTransaction.show(placesFragment).hide(morePlacesFragment).commit();
-                break;
-            case MorePlacesFragment.TAG:
-                fragmentTransaction.hide(placesFragment).show(morePlacesFragment).addToBackStack(null).commit();
-                break;
-        }
     }
 }

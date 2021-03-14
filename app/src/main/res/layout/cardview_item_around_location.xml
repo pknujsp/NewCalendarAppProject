@@ -2,34 +2,67 @@
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/item_cardview"
-    android:layout_width="@dimen/map_item_cardview_width"
-    android:layout_height="wrap_content"
+    style="@style/Widget.MaterialComponents.CardView"
+    android:layout_width="@dimen/place_item_cardview_width"
+    android:layout_height="@dimen/place_item_cardview_height"
+    android:layout_margin="7dp"
     android:clickable="true"
-    android:focusable="true"
     android:foreground="?attr/selectableItemBackground"
-    android:minHeight="@dimen/map_item_cardview_height"
     app:cardBackgroundColor="@color/white"
     app:cardCornerRadius="@dimen/place_item_cardview_corner_radius"
-    app:cardPreventCornerOverlap="true">
+    app:cardElevation="6dp">
 
-    <LinearLayout
+    <RelativeLayout
         android:id="@+id/map_place_item_rows"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/cardview_background"
-        android:orientation="vertical"
-        android:padding="4dp">
+        android:padding="8dp">
 
         <TextView
             android:id="@+id/place_item_name"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
+            android:layout_alignParentTop="true"
+            android:layout_marginBottom="4dp"
             android:ellipsize="marquee"
-            android:focusable="true"
             android:singleLine="true"
-            android:textColor="#232F34"
-            android:textSize="13dp" />
+            android:text="XX편의점"
+            android:textColor="@color/black"
+            android:textSize="14sp" />
 
-    </LinearLayout>
+        <TextView
+            android:id="@+id/place_item_address"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/place_item_name"
+            android:layout_marginBottom="8dp"
+            android:ellipsize="marquee"
+            android:singleLine="true"
+            android:text="XX도 XX시 XX동 111-1"
+            android:textColor="@color/gray_600"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/place_item_category"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/place_item_address"
+            android:ellipsize="marquee"
+            android:singleLine="true"
+            android:text="편의점"
+            android:textColor="@color/black"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/place_item_distance"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:gravity="right"
+            android:text="100M"
+            android:textColor="@color/gray_600"
+            android:textSize="11sp" />
+
+    </RelativeLayout>
+
 </androidx.cardview.widget.CardView>

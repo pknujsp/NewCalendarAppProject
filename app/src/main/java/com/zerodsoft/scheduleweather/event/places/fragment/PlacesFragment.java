@@ -13,8 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.FrameLayout;
-import android.widget.RelativeLayout;
-import android.widget.TableRow;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,7 +30,6 @@ import androidx.paging.PagedList;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.activity.placecategory.activity.PlaceCategoryActivity;
@@ -50,14 +48,13 @@ import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.coordtoaddressresponse.CoordToAddress;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.event.places.interfaces.IClickedPlaceItem;
-import com.zerodsoft.scheduleweather.event.places.interfaces.IPlaceItem;
 import com.zerodsoft.scheduleweather.event.places.interfaces.IPlacesFragment;
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
 import java.util.List;
 
-public class PlacesFragment extends Fragment implements IPlacesFragment, DialogInterface.OnDismissListener, DefaultMapFragment.FullScreenButtonListener
+public class PlacesFragment extends Fragment implements IPlacesFragment, DialogInterface.OnDismissListener, DefaultMapFragment.FullScreenButtonListener, IClickedPlaceItem
 {
     public static final String TAG = "PlacesFragment";
     // 이벤트의 위치 값으로 정확한 위치를 지정하기 위해 위치 지정 액티비티 생성(카카오맵 검색 값 기반)
@@ -72,7 +69,6 @@ public class PlacesFragment extends Fragment implements IPlacesFragment, DialogI
     private List<PlaceCategoryDTO> placeCategoryList;
     private PlaceCategoryViewModel placeCategoryViewModel;
     private OnBackPressedCallback onBackPressedCallback;
-    private DefaultMapFragment defaultMapFragment;
 
     private CoordToAddress coordToAddressResult;
     private List<PlaceCategoryDTO> categories;
@@ -127,12 +123,23 @@ public class PlacesFragment extends Fragment implements IPlacesFragment, DialogI
         customFragmentContainerView = new CustomFragmentContainerView(getContext());
         customFragmentContainerView.setId(R.id.map_fragment_container_view);
 
-        int height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 150f, getResources().getDisplayMetrics());
-        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, height);
-        layoutParams.addRule(RelativeLayout.BELOW, binding.locationInfoLayout.getId());
+        int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 2f, getResources().getDisplayMetrics());
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (int) getResources().getDimension(R.dimen.place_item_cardview_height));
         customFragmentContainerView.setLayoutParams(layoutParams);
+        customFragmentContainerView.setBackground(getResources().getDrawable(R.drawable.sky_background, null));
+        customFragmentContainerView.setPadding(padding, padding, padding, padding);
+        customFragmentContainerView.setClickable(true);
 
-        binding.mapLayout.addView(customFragmentContainerView);
+        customFragmentContainerView.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                showMap();
+            }
+        });
+
+        binding.locationInfoLayout.addView(customFragmentContainerView);
 
         placeCategoryViewModel = new ViewModelProvider(this).get(PlaceCategoryViewModel.class);
         binding.categorySettingsFab.setOnClickListener(new View.OnClickListener()
@@ -219,11 +226,10 @@ public class PlacesFragment extends Fragment implements IPlacesFragment, DialogI
                                     }
                                     FragmentTransaction fragmentTransaction = getChildFragmentManager().beginTransaction();
 
-                                    defaultMapFragment = DefaultMapFragment.newInstance(PlacesFragment.this, selectedLocationDto);
-                                    fragmentTransaction.add(customFragmentContainerView.getId(), defaultMapFragment, DefaultMapFragment.TAG).commit();
+                                    fragmentTransaction.add(customFragmentContainerView.getId(), new SelectedLocationMapFragment(selectedLocationDto), SelectedLocationMapFragment.TAG).commit();
 
                                     categories = placeCategoryList;
-                                    makeTable();
+                                    makeCategoryListView();
                                 }
                             });
 
@@ -234,53 +240,52 @@ public class PlacesFragment extends Fragment implements IPlacesFragment, DialogI
         });
     }
 
-    private void makeTable()
+    private void makeCategoryListView()
     {
+        binding.categoryViewlist.removeAllViews();
         LayoutInflater layoutInflater = getLayoutInflater();
 
         for (PlaceCategoryDTO placeCategory : categories)
         {
-            TableRow tableRow = new TableRow(getContext());
-            View categoryView = layoutInflater.inflate(R.layout.place_category_view, tableRow, false);
-            tableRow.addView(categoryView);
-            binding.mapCategoriesTable.addView(tableRow);
+            LinearLayout categoryView = (LinearLayout) layoutInflater.inflate(R.layout.place_category_view, null);
 
             RecyclerView itemRecyclerView = (RecyclerView) categoryView.findViewById(R.id.map_category_itemsview);
-            itemRecyclerView.setLayoutManager(new LinearLayoutManager(categoryView.getContext(), RecyclerView.HORIZONTAL, false));
-            itemRecyclerView.addItemDecoration(new RecyclerViewItemDecoration((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, getContext().getResources().getDisplayMetrics())));
-            CircularProgressIndicator progressIndicator = (CircularProgressIndicator) categoryView.findViewById(R.id.progress_indicator);
+            itemRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.HORIZONTAL, false));
+            itemRecyclerView.addItemDecoration(new RecyclerViewItemDecoration((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, getResources().getDisplayMetrics())));
 
             LocalApiPlaceParameter placeParameter = LocalParameterUtil.getPlaceParameter(placeCategory.getCode(), selectedLocationDto.getLatitude(),
                     selectedLocationDto.getLongitude(), LocalApiPlaceParameter.DEFAULT_SIZE, LocalApiPlaceParameter.DEFAULT_PAGE,
                     LocalApiPlaceParameter.SEARCH_CRITERIA_SORT_TYPE_ACCURACY);
 
             placeParameter.setRadius(App.getPreference_key_radius_range());
-            String categoryDescription = placeCategory.getDescription();
 
-            PlaceItemsAdapters adapter = new PlaceItemsAdapters(iClickedPlaceItem, placeCategory);
+            ((TextView) categoryView.findViewById(R.id.map_category_name)).setText(placeCategory.getDescription());
+
+            PlaceItemsAdapters adapter = new PlaceItemsAdapters(PlacesFragment.this, placeCategory);
             itemRecyclerView.setAdapter(adapter);
 
-            PlacesViewModel viewModel = new ViewModelProvider(getFragment()).get(PlacesViewModel.class);
+            PlacesViewModel viewModel = new ViewModelProvider(getActivity()).get(PlacesViewModel.class);
             viewModel.init(placeParameter);
-            viewModel.getPagedListMutableLiveData().observe(getFragment(), new Observer<PagedList<PlaceDocuments>>()
+            viewModel.getPagedListMutableLiveData().observe(getActivity(), new Observer<PagedList<PlaceDocuments>>()
             {
                 @Override
                 public void onChanged(PagedList<PlaceDocuments> placeDocuments)
                 {
-                    progressIndicator.setVisibility(View.GONE);
                     adapter.submitList(placeDocuments);
                 }
             });
 
-            ((TextView) categoryView.findViewById(R.id.map_category_name)).setText(categoryDescription);
+
             ((Button) categoryView.findViewById(R.id.map_category_more)).setOnClickListener(new View.OnClickListener()
             {
                 @Override
                 public void onClick(View view)
                 {
-                    iClickedPlaceItem.onClickedMore(placeCategory, adapter.getCurrentList().snapshot());
+                    onClickedMore(placeCategory, adapter.getCurrentList().snapshot());
                 }
             });
+
+            binding.categoryViewlist.addView(categoryView);
         }
     }
 
@@ -325,20 +330,57 @@ public class PlacesFragment extends Fragment implements IPlacesFragment, DialogI
     @Override
     public void onClicked()
     {
-        //  getChildFragmentManager().beginTransaction().remove(DefaultMapFragment.getInstance()).commit();
+        showMap();
+    }
+
+    private void showMap()
+    {
+        Fragment fragment = getChildFragmentManager().findFragmentByTag(SelectedLocationMapFragment.TAG);
+        getChildFragmentManager().beginTransaction().remove(fragment).commitNow();
+
         if (DefaultMapDialogFragment.getInstance() == null)
         {
             DefaultMapDialogFragment.newInstance();
         }
+        DefaultMapFragment.newInstance(PlacesFragment.this, selectedLocationDto);
         DefaultMapDialogFragment.getInstance().show(getChildFragmentManager(), DefaultMapDialogFragment.TAG);
     }
-
 
     @Override
     public void onDismiss(DialogInterface dialogInterface)
     {
-        defaultMapFragment.setVisibleViews(View.GONE);
-        // getChildFragmentManager().beginTransaction().add(customFragmentContainerView.getId(), DefaultMapFragment.getInstance(), DefaultMapFragment.TAG).commit();
+        DefaultMapFragment.close();
+        getChildFragmentManager().beginTransaction().add(customFragmentContainerView.getId(), new SelectedLocationMapFragment(selectedLocationDto), SelectedLocationMapFragment.TAG).commitNow();
+    }
+
+    @Override
+    public void onClickedItem(int index, PlaceCategoryDTO placeCategory, List<PlaceDocuments> placeDocumentsList)
+    {
+/*
+       // iFragment.replaceFragment(MorePlacesFragment.TAG);
+        requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
+
+        // categoryButton.setText(placeCategory.getDescription());
+        createPlacesPoiItems(placeDocumentsList);
+        selectPoiItem(index);
+ */
+        showMap();
+        //맵에서 해당 아이템 카테고리를 선택하고, 선택된 아이템을 보여준다
+    }
+
+    @Override
+    public void onClickedMore(PlaceCategoryDTO placeCategory, List<PlaceDocuments> placeDocumentsList)
+    {
+/*
+        // iFragment.replaceFragment(MorePlacesFragment.TAG);
+        requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
+
+        //  categoryButton.setText(placeCategory.getDescription());
+        createPlacesPoiItems(placeDocumentsList);
+        mapView.fitMapViewAreaToShowAllPOIItems();
+ */
+        showMap();
+        //해당 카테고리의 모든 아이템을 보여준다
     }
 
     static final class CustomFragmentContainerView extends FrameLayout

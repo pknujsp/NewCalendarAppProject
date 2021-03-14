@@ -61,15 +61,13 @@ public class DefaultMapDialogFragment extends DialogFragment
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
-        defaultMapFragment = DefaultMapFragment.getInstance();
-        getChildFragmentManager().beginTransaction().add(R.id.map_fragment_container, defaultMapFragment, DefaultMapFragment.TAG).commit();
+        getChildFragmentManager().beginTransaction().add(R.id.map_fragment_container, DefaultMapFragment.getInstance(), DefaultMapFragment.TAG).commit();
     }
 
     @Override
     public void onStart()
     {
         super.onStart();
-        defaultMapFragment.setVisibleViews(View.VISIBLE);
     }
 
     @Override
