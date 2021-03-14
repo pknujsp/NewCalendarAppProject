@@ -6,6 +6,8 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.paging.PagedList;
 import androidx.paging.PagedListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -64,4 +66,11 @@ public class PlaceItemsAdapters extends PagedListAdapter<PlaceDocuments, PlaceIt
         holder.bind(getItem(position));
     }
 
+    @Override
+    public void submitList(@Nullable PagedList<PlaceDocuments> pagedList)
+    {
+        super.submitList(pagedList);
+    }
+
+    
 }

@@ -39,10 +39,10 @@ public class PlacesViewModel extends ViewModel
                 .setPageSize(15)
                 .setPrefetchDistance(4)
                 .build();
+
         pagedListLiveData = new LivePagedListBuilder<Integer, PlaceDocuments>(dataSourceFactory, config)
                 .setFetchExecutor(executor)
                 .build();
-
     }
 
     public LiveData<PagedList<PlaceDocuments>> getPagedListMutableLiveData()

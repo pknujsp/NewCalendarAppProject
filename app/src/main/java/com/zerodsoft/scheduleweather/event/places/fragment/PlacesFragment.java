@@ -49,7 +49,6 @@ import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.coordtoaddressresponse.CoordToAddress;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
-import com.zerodsoft.scheduleweather.event.places.adapter.CategoryViewAdapter;
 import com.zerodsoft.scheduleweather.event.places.interfaces.IClickedPlaceItem;
 import com.zerodsoft.scheduleweather.event.places.interfaces.IPlaceItem;
 import com.zerodsoft.scheduleweather.event.places.interfaces.IPlacesFragment;
@@ -58,7 +57,7 @@ import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
 import java.util.List;
 
-public class PlacesFragment extends Fragment implements IPlacesFragment, IPlaceItem, DialogInterface.OnDismissListener, DefaultMapFragment.FullScreenButtonListener
+public class PlacesFragment extends Fragment implements IPlacesFragment, DialogInterface.OnDismissListener, DefaultMapFragment.FullScreenButtonListener
 {
     public static final String TAG = "PlacesFragment";
     // 이벤트의 위치 값으로 정확한 위치를 지정하기 위해 위치 지정 액티비티 생성(카카오맵 검색 값 기반)
@@ -70,7 +69,6 @@ public class PlacesFragment extends Fragment implements IPlacesFragment, IPlaceI
 
     private LocationDTO selectedLocationDto;
     private PlaceCategoriesFragmentBinding binding;
-    private CategoryViewAdapter adapter;
     private List<PlaceCategoryDTO> placeCategoryList;
     private PlaceCategoryViewModel placeCategoryViewModel;
     private OnBackPressedCallback onBackPressedCallback;
@@ -128,6 +126,7 @@ public class PlacesFragment extends Fragment implements IPlacesFragment, IPlaceI
 
         customFragmentContainerView = new CustomFragmentContainerView(getContext());
         customFragmentContainerView.setId(R.id.map_fragment_container_view);
+
         int height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 150f, getResources().getDisplayMetrics());
         RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, height);
         layoutParams.addRule(RelativeLayout.BELOW, binding.locationInfoLayout.getId());
@@ -136,7 +135,6 @@ public class PlacesFragment extends Fragment implements IPlacesFragment, IPlaceI
         binding.mapLayout.addView(customFragmentContainerView);
 
         placeCategoryViewModel = new ViewModelProvider(this).get(PlaceCategoryViewModel.class);
-
         binding.categorySettingsFab.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -149,7 +147,6 @@ public class PlacesFragment extends Fragment implements IPlacesFragment, IPlaceI
 
         initLocation();
     }
-
 
     private void initLocation()
     {
@@ -284,7 +281,6 @@ public class PlacesFragment extends Fragment implements IPlacesFragment, IPlaceI
                     iClickedPlaceItem.onClickedMore(placeCategory, adapter.getCurrentList().snapshot());
                 }
             });
-
         }
     }
 
@@ -321,18 +317,6 @@ public class PlacesFragment extends Fragment implements IPlacesFragment, IPlaceI
         return this;
     }
 
-    @Override
-    public List<PlaceDocuments> getPlaceItems(PlaceCategoryDTO placeCategory)
-    {
-        return adapter.getPlaceItems(placeCategory);
-    }
-
-    @Override
-    public int getPlaceItemsSize(PlaceCategoryDTO placeCategory)
-    {
-        return adapter.getPlaceItemsSize(placeCategory);
-    }
-
     public void refresh()
     {
         initLocation();
@@ -342,7 +326,6 @@ public class PlacesFragment extends Fragment implements IPlacesFragment, IPlaceI
     public void onClicked()
     {
         //  getChildFragmentManager().beginTransaction().remove(DefaultMapFragment.getInstance()).commit();
-
         if (DefaultMapDialogFragment.getInstance() == null)
         {
             DefaultMapDialogFragment.newInstance();
