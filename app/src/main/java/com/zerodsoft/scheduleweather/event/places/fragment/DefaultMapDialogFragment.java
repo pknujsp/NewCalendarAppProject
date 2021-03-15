@@ -23,25 +23,10 @@ import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 public class DefaultMapDialogFragment extends DialogFragment
 {
     public static final String TAG = "DefaultMapDialogFragment";
-    private static DefaultMapDialogFragment instance;
-    private DefaultMapFragment defaultMapFragment;
-
 
     public DefaultMapDialogFragment()
     {
     }
-
-    public static DefaultMapDialogFragment newInstance()
-    {
-        instance = new DefaultMapDialogFragment();
-        return instance;
-    }
-
-    public static DefaultMapDialogFragment getInstance()
-    {
-        return instance;
-    }
-
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState)
@@ -87,7 +72,6 @@ public class DefaultMapDialogFragment extends DialogFragment
     @Override
     public void onDismiss(final DialogInterface dialog)
     {
-        getDialog().hide();
         Fragment parentFragment = getParentFragment();
         if (parentFragment instanceof DialogInterface.OnDismissListener)
         {

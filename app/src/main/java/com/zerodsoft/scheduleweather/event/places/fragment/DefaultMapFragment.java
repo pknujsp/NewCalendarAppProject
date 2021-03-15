@@ -23,12 +23,14 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.paging.PagedList;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.placecategory.viewmodel.PlaceCategoryViewModel;
+import com.zerodsoft.scheduleweather.event.places.adapter.PlaceItemInMapViewAdapter;
 import com.zerodsoft.scheduleweather.event.places.interfaces.IClickedPlaceItem;
 import com.zerodsoft.scheduleweather.event.places.interfaces.IFragment;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.KakaoMapFragment;
@@ -42,7 +44,9 @@ import net.daum.mf.map.api.MapPoint;
 import net.daum.mf.map.api.MapView;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class DefaultMapFragment extends KakaoMapFragment implements IClickedPlaceItem
 {
@@ -50,8 +54,12 @@ public class DefaultMapFragment extends KakaoMapFragment implements IClickedPlac
 
     private static DefaultMapFragment instance;
     private final LocationDTO selectedLocation;
-    private PlaceCategoryViewModel categoryViewModel;
-    private List<PlaceCategoryDTO> placeCategoryList = new ArrayList<>();
+
+    private List<PlacesFragment.PlaceViewModelData> placeViewModelDataList;
+    private List<PlaceCategoryDTO> placeCategoryList;
+    private Map<PlaceCategoryDTO, PlaceItemInMapViewAdapter> adapterMap = new HashMap<>();
+    private Map<PlaceCategoryDTO, Chip> chipMap = new HashMap<>();
+    private PlaceCategoryDTO selectedPlaceCategory;
 
     private ChipGroup categoryChipGroup;
 
@@ -65,23 +73,9 @@ public class DefaultMapFragment extends KakaoMapFragment implements IClickedPlac
         }
     };
 
-    private final CompoundButton.OnCheckedChangeListener chipOnCheckedChangeListener = new CompoundButton.OnCheckedChangeListener()
+    public static DefaultMapFragment newInstance(Fragment fragment, List<PlaceCategoryDTO> placeCategoryList, LocationDTO locationDTO)
     {
-        @Override
-        public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked)
-        {
-            ChipViewHolder chipViewHolder = (ChipViewHolder) compoundButton.getTag();
-            PlaceCategoryDTO placeCategory = chipViewHolder.placeCategory;
-
-            //선택된 카테고리의 poiitem들을 표시
-            Toast.makeText(getActivity(), placeCategory.getDescription(), Toast.LENGTH_SHORT).show();
-        }
-    };
-
-    public static DefaultMapFragment newInstance(Fragment fragment,
-                                                 LocationDTO locationDTO)
-    {
-        instance = new DefaultMapFragment(fragment, locationDTO);
+        instance = new DefaultMapFragment(fragment, placeCategoryList, locationDTO);
         return instance;
     }
 
@@ -95,9 +89,10 @@ public class DefaultMapFragment extends KakaoMapFragment implements IClickedPlac
         instance = null;
     }
 
-    public DefaultMapFragment(Fragment fragment, LocationDTO locationDTO)
+    public DefaultMapFragment(Fragment fragment, List<PlaceCategoryDTO> placeCategoryList, LocationDTO locationDTO)
     {
         super();
+        this.placeCategoryList = placeCategoryList;
         this.selectedLocation = locationDTO;
     }
 
@@ -140,46 +135,53 @@ public class DefaultMapFragment extends KakaoMapFragment implements IClickedPlac
 
         chipScrollView.addView(categoryChipGroup);
 
-        categoryViewModel = new ViewModelProvider(this).get(PlaceCategoryViewModel.class);
-        categoryViewModel.selectConvertedSelected(new CarrierMessagingService.ResultCallback<List<PlaceCategoryDTO>>()
+        //카테고리를 chip으로 표시
+        int index = 0;
+        for (PlaceCategoryDTO placeCategory : placeCategoryList)
         {
-            @Override
-            public void onReceiveResult(@NonNull List<PlaceCategoryDTO> result) throws RemoteException
+            PlaceItemInMapViewAdapter adapter = new PlaceItemInMapViewAdapter(placeCategory);
+            adapter.submitList(placeViewModelDataList.get(index).getAdapter().getCurrentList());
+
+
+            Chip chip = new Chip(getContext(), null, R.style.Widget_MaterialComponents_Chip_Choice);
+            chip.setChecked(false);
+            chip.setText(placeCategory.getDescription());
+            chip.setClickable(true);
+            chip.setVisibility(View.VISIBLE);
+            chip.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
             {
-                placeCategoryList = result;
-                getActivity().runOnUiThread(new Runnable()
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
                 {
-                    @Override
-                    public void run()
-                    {
-                        if (!placeCategoryList.isEmpty())
-                        {
-                            //카테고리를 chip으로 표시
-                            for (PlaceCategoryDTO placeCategory : placeCategoryList)
-                            {
-                                Chip chip = new Chip(getContext(), null, R.style.Widget_MaterialComponents_Chip_Choice);
-                                chip.setChecked(false);
-                                chip.setText(placeCategory.getDescription());
-                                chip.setOnCheckedChangeListener(chipOnCheckedChangeListener);
-                                chip.setVisibility(View.VISIBLE);
+                    ChipViewHolder chipViewHolder = (ChipViewHolder) buttonView.getTag();
+                    PlaceCategoryDTO placeCategory = chipViewHolder.placeCategory;
 
-                                final ChipViewHolder chipViewHolder = new ChipViewHolder(placeCategory);
-                                chip.setTag(chipViewHolder);
+                    //선택된 카테고리의 poiitem들을 표시
+                    List<PlaceDocuments> placeDocuments = adapterMap.get(placeCategory).getCurrentList().snapshot();
+                    removeAllPoiItems();
+                    createPlacesPoiItems(placeDocuments);
+                    mapView.fitMapViewAreaToShowAllPOIItems();
+                }
+            });
 
-                                categoryChipGroup.addView(chip, new ChipGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-                            }
-                        } else
-                        {
+            final ChipViewHolder chipViewHolder = new ChipViewHolder(placeCategory, adapter, index++);
+            chip.setTag(chipViewHolder);
 
-                        }
-                    }
-                });
+            adapterMap.put(placeCategory, adapter);
+            chipMap.put(placeCategory, chip);
 
-            }
-        });
+            categoryChipGroup.addView(chip, new ChipGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        }
+
+        Chip chip = chipMap.get(selectedPlaceCategory);
+        chip.setChecked(true);
 
     }
 
+    public void setSelectedPlaceCategory(PlaceCategoryDTO selectedPlaceCategory)
+    {
+        this.selectedPlaceCategory = selectedPlaceCategory;
+    }
 
     @Override
     public void onMapViewInitialized(MapView mapView)
@@ -198,12 +200,16 @@ public class DefaultMapFragment extends KakaoMapFragment implements IClickedPlac
         mapView.setMapCenterPointAndZoomLevel(mapPoint, 4, false);
     }
 
+    public void setViewModel(List<PlacesFragment.PlaceViewModelData> placeViewModelDataList)
+    {
+        this.placeViewModelDataList = placeViewModelDataList;
+    }
+
     @Override
     public void onClickedItem(int index, PlaceCategoryDTO placeCategory, List<PlaceDocuments> placeDocumentsList)
     {
         // iFragment.replaceFragment(MorePlacesFragment.TAG);
         requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
-
         //  categoryButton.setText(placeCategory.getDescription());
         createPlacesPoiItems(placeDocumentsList);
         selectPoiItem(index);
@@ -214,25 +220,27 @@ public class DefaultMapFragment extends KakaoMapFragment implements IClickedPlac
     {
         //  iFragment.replaceFragment(MorePlacesFragment.TAG);
         requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
-
         //   categoryButton.setText(placeCategory.getDescription());
         createPlacesPoiItems(placeDocumentsList);
         mapView.fitMapViewAreaToShowAllPOIItems();
     }
 
-
-    public interface FullScreenButtonListener
+    public void updatePlaceItems(PlaceCategoryDTO placeCategory, PagedList<PlaceDocuments> pagedList)
     {
-        void onClicked();
+        adapterMap.get(placeCategory).submitList(pagedList);
     }
 
     static final class ChipViewHolder
     {
         PlaceCategoryDTO placeCategory;
+        PlaceItemInMapViewAdapter adapter;
+        int index;
 
-        public ChipViewHolder(PlaceCategoryDTO placeCategory)
+        public ChipViewHolder(PlaceCategoryDTO placeCategory, PlaceItemInMapViewAdapter adapter, int index)
         {
             this.placeCategory = placeCategory;
+            this.adapter = adapter;
+            this.index = index;
         }
     }
 

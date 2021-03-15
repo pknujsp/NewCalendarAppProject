@@ -54,9 +54,10 @@ import com.zerodsoft.scheduleweather.event.places.interfaces.IPlacesFragment;
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class PlacesFragment extends Fragment implements IPlacesFragment, DialogInterface.OnDismissListener, DefaultMapFragment.FullScreenButtonListener, IClickedPlaceItem
+public class PlacesFragment extends Fragment implements IPlacesFragment, DialogInterface.OnDismissListener, IClickedPlaceItem
 {
     public static final String TAG = "PlacesFragment";
     // 이벤트의 위치 값으로 정확한 위치를 지정하기 위해 위치 지정 액티비티 생성(카카오맵 검색 값 기반)
@@ -75,6 +76,8 @@ public class PlacesFragment extends Fragment implements IPlacesFragment, DialogI
     private CoordToAddress coordToAddressResult;
     private List<PlaceCategoryDTO> categories;
     private CustomFragmentContainerView customFragmentContainerView;
+
+    private List<PlaceViewModelData> placeViewModelDataList = new ArrayList<>();
 
     public PlacesFragment(ILocation iLocation, IstartActivity istartActivity, IFragment iFragment)
     {
@@ -305,10 +308,19 @@ public class PlacesFragment extends Fragment implements IPlacesFragment, DialogI
                 @Override
                 public void onChanged(PagedList<PlaceDocuments> placeDocuments)
                 {
+                    //카테고리 뷰 어댑터에 데이터 삽입
                     adapter.submitList(placeDocuments);
+                    //맵 뷰의 어댑터에 데이터 삽입
+                    if (DefaultMapFragment.getInstance() != null)
+                    {
+                        DefaultMapFragment.getInstance().updatePlaceItems(placeCategory, placeDocuments);
+                    }
                 }
             });
 
+
+            PlaceViewModelData placeViewModelData = new PlaceViewModelData(viewModel, placeCategory, adapter);
+            placeViewModelDataList.add(placeViewModelData);
 
             ((Button) categoryView.findViewById(R.id.map_category_more)).setOnClickListener(new View.OnClickListener()
             {
@@ -361,29 +373,27 @@ public class PlacesFragment extends Fragment implements IPlacesFragment, DialogI
         initLocation();
     }
 
-    @Override
-    public void onClicked()
-    {
-        showMap();
-    }
-
     private void showMap()
     {
+        //지정된 위치를 표시하는 mapview삭제
         Fragment fragment = getChildFragmentManager().findFragmentByTag(SelectedLocationMapFragment.TAG);
         getChildFragmentManager().beginTransaction().remove(fragment).commitNow();
 
-        if (DefaultMapDialogFragment.getInstance() == null)
-        {
-            DefaultMapDialogFragment.newInstance();
-        }
-        DefaultMapFragment.newInstance(PlacesFragment.this, selectedLocationDto);
-        DefaultMapDialogFragment.getInstance().show(getChildFragmentManager(), DefaultMapDialogFragment.TAG);
+        //다이얼로그 생성
+        DefaultMapFragment.close();
+        DefaultMapFragment.newInstance(PlacesFragment.this, placeCategoryList, selectedLocationDto);
+        DefaultMapFragment.getInstance().setViewModel(placeViewModelDataList);
+
+        DefaultMapDialogFragment dialogFragment = new DefaultMapDialogFragment();
+        dialogFragment.show(getChildFragmentManager(), DefaultMapDialogFragment.TAG);
     }
 
     @Override
     public void onDismiss(DialogInterface dialogInterface)
     {
+        //다이얼로그에서 나올 때, 다이얼로그의 맵을 삭제하고 지정된 위치를 표시하는 맵뷰를 재 생성한다
         DefaultMapFragment.close();
+
         getChildFragmentManager().beginTransaction().add(customFragmentContainerView.getId(), new SelectedLocationMapFragment(selectedLocationDto), SelectedLocationMapFragment.TAG).commitNow();
     }
 
@@ -414,6 +424,7 @@ public class PlacesFragment extends Fragment implements IPlacesFragment, DialogI
         mapView.fitMapViewAreaToShowAllPOIItems();
  */
         showMap();
+        DefaultMapFragment.getInstance().setSelectedPlaceCategory(placeCategory);
         //해당 카테고리의 모든 아이템을 보여준다
     }
 
@@ -429,6 +440,36 @@ public class PlacesFragment extends Fragment implements IPlacesFragment, DialogI
         {
             getParent().requestDisallowInterceptTouchEvent(true);
             return super.dispatchTouchEvent(ev);
+        }
+    }
+
+    public static class PlaceViewModelData
+    {
+        private PlacesViewModel placesViewModel;
+        private PlaceCategoryDTO placeCategory;
+        private PlaceItemsAdapters adapter;
+
+        public PlaceViewModelData(PlacesViewModel placesViewModel, PlaceCategoryDTO placeCategory,
+                                  PlaceItemsAdapters adapter)
+        {
+            this.placesViewModel = placesViewModel;
+            this.placeCategory = placeCategory;
+            this.adapter = adapter;
+        }
+
+        public PlaceItemsAdapters getAdapter()
+        {
+            return adapter;
+        }
+
+        public PlaceCategoryDTO getPlaceCategory()
+        {
+            return placeCategory;
+        }
+
+        public PlacesViewModel getPlacesViewModel()
+        {
+            return placesViewModel;
         }
     }
 }
