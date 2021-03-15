@@ -1,20 +1,14 @@
 package com.zerodsoft.scheduleweather.event.places.fragment;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.service.carrier.CarrierMessagingService;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -24,10 +18,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.lifecycle.ViewModelStoreOwner;
 import androidx.paging.PagedList;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -37,10 +29,11 @@ import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.activity.placecategory.activity.PlaceCategoryActivity;
 import com.zerodsoft.scheduleweather.activity.placecategory.viewmodel.PlaceCategoryViewModel;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IstartActivity;
-import com.zerodsoft.scheduleweather.databinding.PlaceCategoriesFragmentBinding;
+import com.zerodsoft.scheduleweather.databinding.PlacelistFragmentBinding;
 import com.zerodsoft.scheduleweather.etc.RecyclerViewItemDecoration;
 import com.zerodsoft.scheduleweather.event.common.interfaces.ILocation;
 import com.zerodsoft.scheduleweather.event.places.adapter.PlaceItemsAdapters;
+import com.zerodsoft.scheduleweather.event.places.interfaces.IClickedPlaceItem;
 import com.zerodsoft.scheduleweather.event.places.interfaces.IFragment;
 import com.zerodsoft.scheduleweather.kakaomap.model.CoordToAddressUtil;
 import com.zerodsoft.scheduleweather.kakaomap.util.LocalParameterUtil;
@@ -49,69 +42,32 @@ import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.coordtoaddressresponse.CoordToAddress;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
-import com.zerodsoft.scheduleweather.event.places.interfaces.IClickedPlaceItem;
-import com.zerodsoft.scheduleweather.event.places.interfaces.IPlacesFragment;
-import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
+import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class PlacesFragment extends Fragment implements IPlacesFragment, DialogInterface.OnDismissListener, IClickedPlaceItem
+public class PlaceListFragment extends Fragment
 {
-    public static final String TAG = "PlacesFragment";
-    // 이벤트의 위치 값으로 정확한 위치를 지정하기 위해 위치 지정 액티비티 생성(카카오맵 검색 값 기반)
-    // 맵 프래그먼트와 카테고리 별 데이타 목록 프래그먼트로 분리
-    private final ILocation iLocation;
-    private final IstartActivity istartActivity;
-    private final IFragment iFragment;
-    private IClickedPlaceItem iClickedPlaceItem;
+    /*
+    public static final String TAG = "PlaceListFragment";
 
+    private PlacelistFragmentBinding binding;
     private LocationDTO selectedLocationDto;
-    private PlaceCategoriesFragmentBinding binding;
     private List<PlaceCategoryDTO> placeCategoryList;
-    private PlaceCategoryViewModel placeCategoryViewModel;
-    private OnBackPressedCallback onBackPressedCallback;
 
     private CoordToAddress coordToAddressResult;
     private List<PlaceCategoryDTO> categories;
-    private CustomFragmentContainerView customFragmentContainerView;
 
-    private List<PlaceViewModelData> placeViewModelDataList = new ArrayList<>();
+    private final IstartActivity istartActivity;
+    private IClickedPlaceItem iClickedPlaceItem;
 
-    public PlacesFragment(ILocation iLocation, IstartActivity istartActivity, IFragment iFragment)
+    public PlaceListFragment(IstartActivity istartActivity, IClickedPlaceItem iClickedPlaceItem)
     {
-        this.iLocation = iLocation;
+        super();
         this.istartActivity = istartActivity;
-        this.iFragment = iFragment;
-    }
-
-    public void setiClickedPlaceItem(IClickedPlaceItem iClickedPlaceItem)
-    {
         this.iClickedPlaceItem = iClickedPlaceItem;
-    }
-
-    @Nullable
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
-    {
-        binding = PlaceCategoriesFragmentBinding.inflate(inflater);
-        return binding.getRoot();
-    }
-
-    @Override
-    public void onAttach(@NonNull Context context)
-    {
-        super.onAttach(context);
-        onBackPressedCallback = new OnBackPressedCallback(true)
-        {
-            @Override
-            public void handleOnBackPressed()
-            {
-                requireActivity().finish();
-            }
-        };
-        requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
     }
 
     @Override
@@ -120,24 +76,19 @@ public class PlacesFragment extends Fragment implements IPlacesFragment, DialogI
         super.onCreate(savedInstanceState);
     }
 
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
+    {
+        binding = PlacelistFragmentBinding.inflate(inflater);
+        return binding.getRoot();
+    }
+
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
 
-        customFragmentContainerView = new CustomFragmentContainerView(getContext());
-        customFragmentContainerView.setId(R.id.map_fragment_container_view);
-
-        int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 2f, getResources().getDisplayMetrics());
-        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (int) getResources().getDimension(R.dimen.place_item_cardview_height));
-        customFragmentContainerView.setLayoutParams(layoutParams);
-        customFragmentContainerView.setBackground(getResources().getDrawable(R.drawable.sky_background, null));
-        customFragmentContainerView.setPadding(padding, padding, padding, padding);
-        customFragmentContainerView.setClickable(true);
-
-        binding.locationInfoLayout.addView(customFragmentContainerView);
-
-        placeCategoryViewModel = new ViewModelProvider(this).get(PlaceCategoryViewModel.class);
         binding.categorySettingsFab.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -157,42 +108,17 @@ public class PlacesFragment extends Fragment implements IPlacesFragment, DialogI
                 {
                     // 아래로 스크롤
                     binding.categorySettingsFab.hide();
-                    binding.mapButton.animate()
-                            .translationY(binding.mapButton.getHeight())
-                            .alpha(1.0f).setListener(animatorListenerAdapter);
-
                 } else if (scrollY < 0)
                 {
                     // 위로 스크롤
                     binding.categorySettingsFab.show();
-                    binding.mapButton.setVisibility(View.VISIBLE);
-                    view.setAlpha(0.0f);
                 }
 
             }
         });
 
-        binding.mapButton.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View v)
-            {
-                showMap();
-            }
-        });
-
         initLocation();
     }
-
-    private final AnimatorListenerAdapter animatorListenerAdapter = new AnimatorListenerAdapter()
-    {
-        @Override
-        public void onAnimationEnd(Animator animation)
-        {
-            super.onAnimationEnd(animation);
-            binding.mapButton.setVisibility(View.VISIBLE);
-        }
-    };
 
     private void initLocation()
     {
@@ -261,9 +187,6 @@ public class PlacesFragment extends Fragment implements IPlacesFragment, DialogI
                                             }
                                         });
                                     }
-                                    FragmentTransaction fragmentTransaction = getChildFragmentManager().beginTransaction();
-
-                                    fragmentTransaction.add(customFragmentContainerView.getId(), new SelectedLocationMapFragment(selectedLocationDto), SelectedLocationMapFragment.TAG).commit();
 
                                     categories = placeCategoryList;
                                     makeCategoryListView();
@@ -298,7 +221,7 @@ public class PlacesFragment extends Fragment implements IPlacesFragment, DialogI
 
             ((TextView) categoryView.findViewById(R.id.map_category_name)).setText(placeCategory.getDescription());
 
-            PlaceItemsAdapters adapter = new PlaceItemsAdapters(PlacesFragment.this, placeCategory);
+            PlaceItemsAdapters adapter = new PlaceItemsAdapters(iClickedPlaceItem, placeCategory);
             itemRecyclerView.setAdapter(adapter);
 
             PlacesViewModel viewModel = new ViewModelProvider(getActivity()).get(PlacesViewModel.class);
@@ -311,23 +234,16 @@ public class PlacesFragment extends Fragment implements IPlacesFragment, DialogI
                     //카테고리 뷰 어댑터에 데이터 삽입
                     adapter.submitList(placeDocuments);
                     //맵 뷰의 어댑터에 데이터 삽입
-                    if (DefaultMapFragment.getInstance() != null)
-                    {
-                        DefaultMapFragment.getInstance().updatePlaceItems(placeCategory, placeDocuments);
-                    }
+
                 }
             });
-
-
-            PlaceViewModelData placeViewModelData = new PlaceViewModelData(viewModel, placeCategory, adapter);
-            placeViewModelDataList.add(placeViewModelData);
 
             ((Button) categoryView.findViewById(R.id.map_category_more)).setOnClickListener(new View.OnClickListener()
             {
                 @Override
                 public void onClick(View view)
                 {
-                    onClickedMore(placeCategory, adapter.getCurrentList().snapshot());
+                    iClickedPlaceItem.onClickedMore(placeCategory, adapter.getCurrentList().snapshot());
                 }
             });
 
@@ -335,141 +251,10 @@ public class PlacesFragment extends Fragment implements IPlacesFragment, DialogI
         }
     }
 
-    @Override
-    public void onDestroy()
-    {
-        super.onDestroy();
-    }
-
-
-    @Override
-    public void onDetach()
-    {
-        super.onDetach();
-        onBackPressedCallback.remove();
-    }
-
-
-    @Override
-    public LifecycleOwner getLifeCycleOwner()
-    {
-        return PlacesFragment.this;
-    }
-
-    @Override
-    public ViewModelStoreOwner getViewModelStoreOwner()
-    {
-        return PlacesFragment.this;
-    }
-
-    @Override
-    public Fragment getFragment()
-    {
-        return this;
-    }
-
     public void refresh()
     {
         initLocation();
     }
 
-    private void showMap()
-    {
-        //지정된 위치를 표시하는 mapview삭제
-        Fragment fragment = getChildFragmentManager().findFragmentByTag(SelectedLocationMapFragment.TAG);
-        getChildFragmentManager().beginTransaction().remove(fragment).commitNow();
-
-        //다이얼로그 생성
-        DefaultMapFragment.close();
-        DefaultMapFragment.newInstance(PlacesFragment.this, placeCategoryList, selectedLocationDto);
-        DefaultMapFragment.getInstance().setViewModel(placeViewModelDataList);
-
-        DefaultMapDialogFragment dialogFragment = new DefaultMapDialogFragment();
-        dialogFragment.show(getChildFragmentManager(), DefaultMapDialogFragment.TAG);
-    }
-
-    @Override
-    public void onDismiss(DialogInterface dialogInterface)
-    {
-        //다이얼로그에서 나올 때, 다이얼로그의 맵을 삭제하고 지정된 위치를 표시하는 맵뷰를 재 생성한다
-        DefaultMapFragment.close();
-
-        getChildFragmentManager().beginTransaction().add(customFragmentContainerView.getId(), new SelectedLocationMapFragment(selectedLocationDto), SelectedLocationMapFragment.TAG).commitNow();
-    }
-
-    @Override
-    public void onClickedItem(int index, PlaceCategoryDTO placeCategory, List<PlaceDocuments> placeDocumentsList)
-    {
-/*
-       // iFragment.replaceFragment(MorePlacesFragment.TAG);
-        requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
-
-        // categoryButton.setText(placeCategory.getDescription());
-        createPlacesPoiItems(placeDocumentsList);
-        selectPoiItem(index);
- */
-        showMap();
-        //맵에서 해당 아이템 카테고리를 선택하고, 선택된 아이템을 보여준다
-    }
-
-    @Override
-    public void onClickedMore(PlaceCategoryDTO placeCategory, List<PlaceDocuments> placeDocumentsList)
-    {
-/*
-        // iFragment.replaceFragment(MorePlacesFragment.TAG);
-        requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
-
-        //  categoryButton.setText(placeCategory.getDescription());
-        createPlacesPoiItems(placeDocumentsList);
-        mapView.fitMapViewAreaToShowAllPOIItems();
- */
-        showMap();
-        DefaultMapFragment.getInstance().setSelectedPlaceCategory(placeCategory);
-        //해당 카테고리의 모든 아이템을 보여준다
-    }
-
-    static final class CustomFragmentContainerView extends FrameLayout
-    {
-        public CustomFragmentContainerView(@NonNull Context context)
-        {
-            super(context);
-        }
-
-        @Override
-        public boolean dispatchTouchEvent(MotionEvent ev)
-        {
-            getParent().requestDisallowInterceptTouchEvent(true);
-            return super.dispatchTouchEvent(ev);
-        }
-    }
-
-    public static class PlaceViewModelData
-    {
-        private PlacesViewModel placesViewModel;
-        private PlaceCategoryDTO placeCategory;
-        private PlaceItemsAdapters adapter;
-
-        public PlaceViewModelData(PlacesViewModel placesViewModel, PlaceCategoryDTO placeCategory,
-                                  PlaceItemsAdapters adapter)
-        {
-            this.placesViewModel = placesViewModel;
-            this.placeCategory = placeCategory;
-            this.adapter = adapter;
-        }
-
-        public PlaceItemsAdapters getAdapter()
-        {
-            return adapter;
-        }
-
-        public PlaceCategoryDTO getPlaceCategory()
-        {
-            return placeCategory;
-        }
-
-        public PlacesViewModel getPlacesViewModel()
-        {
-            return placesViewModel;
-        }
-    }
+     */
 }

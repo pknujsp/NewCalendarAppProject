@@ -375,4 +375,7 @@
 
 
     <string name="map">지도</string>
+
+    <string name="open_list">목록 열기</string>
+    <string name="close_list">목록 닫기</string>
 </resources>

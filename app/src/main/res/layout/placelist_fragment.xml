@@ -1,21 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <androidx.coordinatorlayout.widget.CoordinatorLayout
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="500dp"
+        android:orientation="vertical">
 
         <androidx.core.widget.NestedScrollView
             android:id="@+id/scrollview"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:scrollbarStyle="outsideOverlay"
+            android:scrollbarStyle="outsideInset"
             android:scrollbars="vertical">
 
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
+
 
                 <LinearLayout
                     android:id="@+id/location_info_layout"
@@ -32,7 +33,7 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
                         android:layout_marginBottom="4dp"
-                        android:ellipsize="marquee"
+                        android:ellipsize="end"
                         android:singleLine="true"
                         android:text="위치"
                         android:textColor="@color/black"
@@ -42,8 +43,7 @@
                         android:id="@+id/place_address_name"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="4dp"
-                        android:ellipsize="marquee"
+                        android:ellipsize="end"
                         android:singleLine="true"
                         android:text="주소"
                         android:textColor="@color/gray_500"
@@ -51,26 +51,16 @@
 
                 </LinearLayout>
 
-
                 <LinearLayout
                     android:id="@+id/category_viewlist"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:layout_below="@id/location_info_layout"
                     android:orientation="vertical" />
 
             </RelativeLayout>
 
         </androidx.core.widget.NestedScrollView>
-
-        <Button
-            android:id="@+id/map_button"
-            style="@style/Widget.MaterialComponents.Button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal|bottom"
-            android:layout_marginBottom="16dp"
-            android:text="@string/map" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/category_settings_fab"
@@ -81,5 +71,5 @@
             android:layout_marginBottom="16dp"
             android:src="@drawable/settings_black" />
 
-    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+    </FrameLayout>
 </layout>
