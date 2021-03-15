@@ -220,7 +220,7 @@ public class DefaultMapFragment extends KakaoMapFragment implements IClickedPlac
     {
         //  iFragment.replaceFragment(MorePlacesFragment.TAG);
         requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
-        //   categoryButton.setText(placeCategory.getDescription());
+        //  categoryButton.setText(placeCategory.getDescription());
         createPlacesPoiItems(placeDocumentsList);
         mapView.fitMapViewAreaToShowAllPOIItems();
     }
