@@ -87,7 +87,7 @@ public class DefaultMapDialogFragment extends DialogFragment
     @Override
     public void onDismiss(final DialogInterface dialog)
     {
-        super.onDismiss(dialog);
+        getDialog().hide();
         Fragment parentFragment = getParentFragment();
         if (parentFragment instanceof DialogInterface.OnDismissListener)
         {

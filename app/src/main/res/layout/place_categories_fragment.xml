@@ -2,11 +2,12 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <FrameLayout
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
         <androidx.core.widget.NestedScrollView
+            android:id="@+id/scrollview"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:scrollbarStyle="outsideOverlay"
@@ -62,16 +63,14 @@
 
         </androidx.core.widget.NestedScrollView>
 
-        <TextView
-            android:id="@+id/not_selected_category"
-            android:layout_width="match_parent"
+        <Button
+            android:id="@+id/map_button"
+            style="@style/Widget.MaterialComponents.Button"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:gravity="center"
-            android:text="@string/not_selected_place_category"
-            android:textColor="@color/black"
-            android:textSize="18sp"
-            android:visibility="gone" />
+            android:layout_gravity="center_horizontal|bottom"
+            android:layout_marginBottom="16dp"
+            android:text="@string/map" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/category_settings_fab"
@@ -82,5 +81,5 @@
             android:layout_marginBottom="16dp"
             android:src="@drawable/settings_black" />
 
-    </FrameLayout>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>

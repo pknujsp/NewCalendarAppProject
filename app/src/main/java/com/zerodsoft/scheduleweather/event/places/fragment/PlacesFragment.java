@@ -1,5 +1,7 @@
 package com.zerodsoft.scheduleweather.event.places.fragment;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -130,15 +132,6 @@ public class PlacesFragment extends Fragment implements IPlacesFragment, DialogI
         customFragmentContainerView.setPadding(padding, padding, padding, padding);
         customFragmentContainerView.setClickable(true);
 
-        customFragmentContainerView.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                showMap();
-            }
-        });
-
         binding.locationInfoLayout.addView(customFragmentContainerView);
 
         placeCategoryViewModel = new ViewModelProvider(this).get(PlaceCategoryViewModel.class);
@@ -152,8 +145,51 @@ public class PlacesFragment extends Fragment implements IPlacesFragment, DialogI
             }
         });
 
+        binding.scrollview.setOnScrollChangeListener(new View.OnScrollChangeListener()
+        {
+            @Override
+            public void onScrollChange(View v, int scrollX, int scrollY, int oldScrollX, int oldScrollY)
+            {
+                if (scrollY > 0)
+                {
+                    // 아래로 스크롤
+                    binding.categorySettingsFab.hide();
+                    binding.mapButton.animate()
+                            .translationY(binding.mapButton.getHeight())
+                            .alpha(1.0f).setListener(animatorListenerAdapter);
+
+                } else if (scrollY < 0)
+                {
+                    // 위로 스크롤
+                    binding.categorySettingsFab.show();
+                    binding.mapButton.setVisibility(View.VISIBLE);
+                    view.setAlpha(0.0f);
+                }
+
+            }
+        });
+
+        binding.mapButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                showMap();
+            }
+        });
+
         initLocation();
     }
+
+    private final AnimatorListenerAdapter animatorListenerAdapter = new AnimatorListenerAdapter()
+    {
+        @Override
+        public void onAnimationEnd(Animator animation)
+        {
+            super.onAnimationEnd(animation);
+            binding.mapButton.setVisibility(View.VISIBLE);
+        }
+    };
 
     private void initLocation()
     {
@@ -179,8 +215,6 @@ public class PlacesFragment extends Fragment implements IPlacesFragment, DialogI
                                 {
                                     if (!placeCategoryList.isEmpty())
                                     {
-                                        binding.notSelectedCategory.setVisibility(View.GONE);
-
                                         LocalApiPlaceParameter localApiPlaceParameter = new LocalApiPlaceParameter();
                                         localApiPlaceParameter.setX(String.valueOf(location.getLongitude()));
                                         localApiPlaceParameter.setY(String.valueOf(location.getLatitude()));
