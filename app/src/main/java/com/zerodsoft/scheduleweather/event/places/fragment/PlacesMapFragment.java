@@ -4,17 +4,13 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.os.Bundle;
-import android.os.RemoteException;
-import android.service.carrier.CarrierMessagingService;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CompoundButton;
-import android.widget.FrameLayout;
 import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 
@@ -23,23 +19,23 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.activity.placecategory.viewmodel.PlaceCategoryViewModel;
-import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
-import com.zerodsoft.scheduleweather.calendarview.instancedialog.adapter.InstancesOfDayAdapter;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IstartActivity;
-import com.zerodsoft.scheduleweather.event.common.interfaces.ILocation;
 import com.zerodsoft.scheduleweather.event.places.adapter.PlaceItemInMapViewAdapter;
-import com.zerodsoft.scheduleweather.event.places.interfaces.IClickedPlaceItem;
+import com.zerodsoft.scheduleweather.event.places.bottomsheet.PlaceBottomSheetBehaviour;
+import com.zerodsoft.scheduleweather.event.places.interfaces.BottomSheet;
+import com.zerodsoft.scheduleweather.event.places.interfaces.FragmentController;
+import com.zerodsoft.scheduleweather.event.places.interfaces.OnClickedPlacesListListener;
+import com.zerodsoft.scheduleweather.event.places.interfaces.PlaceCategory;
+import com.zerodsoft.scheduleweather.event.places.interfaces.PlaceItemsGetter;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.KakaoMapFragment;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.coordtoaddressresponse.CoordToAddress;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
@@ -52,22 +48,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class PlacesMapFragment extends KakaoMapFragment implements IClickedPlaceItem
+public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlacesListListener
 {
     public static final String TAG = "PlacesMapFragment";
 
-    private final ILocation iLocation;
-    private final IstartActivity istartActivity;
-    private final PlaceListBottomSheetInterface placeListBottomSheetInterface;
-
-    private PlaceCategoryViewModel placeCategoryViewModel;
+    private IstartActivity istartActivity;
+    private final BottomSheet bottomSheetInterface;
+    private final PlaceCategory placeCategory;
+    private final FragmentController fragmentController;
+    private PlaceItemsGetter placeItemsGetter;
 
     private List<PlaceCategoryDTO> placeCategoryList;
     private LocationDTO selectedLocationDto;
+    private CoordToAddress coordToAddressResult;
 
     private ChipGroup categoryChipGroup;
     private Map<PlaceCategoryDTO, Chip> chipMap = new HashMap<>();
-    private RecyclerView placeListView;
 
     private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
     {
@@ -79,15 +75,31 @@ public class PlacesMapFragment extends KakaoMapFragment implements IClickedPlace
         }
     };
 
-    public PlacesMapFragment(Fragment fragment, ILocation iLocation, IstartActivity istartActivity)
+    public PlacesMapFragment(Fragment fragment)
     {
         super();
-        this.placeListBottomSheetInterface = (PlaceListBottomSheetInterface) fragment;
-        this.iLocation = iLocation;
+        this.placeCategory = (PlaceCategory) fragment;
+        this.bottomSheetInterface = (BottomSheet) fragment;
+        this.fragmentController = (FragmentController) fragment;
+    }
+
+    public void setIstartActivity(IstartActivity istartActivity)
+    {
         this.istartActivity = istartActivity;
     }
 
+    public void setSelectedLocationDto(LocationDTO selectedLocationDto)
+    {
+        this.selectedLocationDto = selectedLocationDto;
+    }
+
+    public void setPlaceItemsGetter(PlaceItemsGetter placeItemsGetter)
+    {
+        this.placeItemsGetter = placeItemsGetter;
+    }
+
     @Override
+
     public void onAttach(@NonNull Context context)
     {
         super.onAttach(context);
@@ -112,8 +124,6 @@ public class PlacesMapFragment extends KakaoMapFragment implements IClickedPlace
     {
         super.onViewCreated(view, savedInstanceState);
 
-        placeCategoryViewModel = new ViewModelProvider(this).get(PlaceCategoryViewModel.class);
-
         Button typeButton = new MaterialButton(getContext());
         typeButton.setText(R.string.open_list);
         typeButton.setTextColor(Color.WHITE);
@@ -123,6 +133,7 @@ public class PlacesMapFragment extends KakaoMapFragment implements IClickedPlace
             public void onClick(View view)
             {
                 //목록 열고(리스트), 닫기(맵)
+                fragmentController.replaceFragment(PlaceListFragment.TAG);
             }
         });
 
@@ -137,7 +148,6 @@ public class PlacesMapFragment extends KakaoMapFragment implements IClickedPlace
         LinearLayout.LayoutParams buttonLayoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         buttonLayoutParams.gravity = Gravity.CENTER_VERTICAL;
         buttonLayoutParams.leftMargin = margin;
-        buttonLayoutParams.rightMargin = margin;
         typeButton.setLayoutParams(buttonLayoutParams);
         linearLayout.addView(typeButton);
 
@@ -157,74 +167,52 @@ public class PlacesMapFragment extends KakaoMapFragment implements IClickedPlace
 
         chipScrollView.addView(categoryChipGroup);
 
-        initLocation();
-
+        setChips();
     }
 
-    private void initLocation()
+    private void setChips()
     {
-        iLocation.getLocation(new CarrierMessagingService.ResultCallback<LocationDTO>()
+        placeCategoryList = placeCategory.getPlaceCategoryList();
+        //카테고리를 chip으로 표시
+        int index = 0;
+        for (PlaceCategoryDTO placeCategory : placeCategoryList)
         {
-            @Override
-            public void onReceiveResult(@NonNull LocationDTO location) throws RemoteException
-            {
-                if (location.getId() >= 0)
-                {
-                    selectedLocationDto = location;
+            Chip chip = new Chip(getContext(), null, R.style.Widget_MaterialComponents_Chip_Filter);
+            chip.setChecked(false);
+            chip.setText(placeCategory.getDescription());
+            chip.setClickable(true);
+            chip.setCheckable(true);
+            chip.setVisibility(View.VISIBLE);
+            chip.setOnCheckedChangeListener(onCheckedChangeListener);
+            final ChipViewHolder chipViewHolder = new ChipViewHolder(placeCategory, index++);
+            chip.setTag(chipViewHolder);
 
-                    placeCategoryViewModel.selectConvertedSelected(new CarrierMessagingService.ResultCallback<List<PlaceCategoryDTO>>()
-                    {
-                        @Override
-                        public void onReceiveResult(@NonNull List<PlaceCategoryDTO> result) throws RemoteException
-                        {
-                            placeCategoryList = result;
-
-                            getActivity().runOnUiThread(new Runnable()
-                            {
-                                @Override
-                                public void run()
-                                {
-                                    //카테고리를 chip으로 표시
-                                    int index = 0;
-                                    for (PlaceCategoryDTO placeCategory : placeCategoryList)
-                                    {
-                                        PlaceItemInMapViewAdapter adapter = new PlaceItemInMapViewAdapter(placeCategory);
-
-                                        Chip chip = new Chip(getContext(), null, R.style.Widget_MaterialComponents_Chip_Choice);
-                                        chip.setChecked(false);
-                                        chip.setText(placeCategory.getDescription());
-                                        chip.setClickable(true);
-                                        chip.setVisibility(View.VISIBLE);
-                                        chip.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
-                                        {
-                                            @Override
-                                            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
-                                            {
-                                                if (isChecked)
-                                                {
-                                                    placeListView.setAdapter(adapter);
-                                                    createPlacesPoiItems(adapter.getCurrentList().snapshot());
-                                                    mapView.fitMapViewAreaToShowAllPOIItems();
-                                                } else
-                                                {
-                                                }
-                                            }
-                                        });
-
-                                        final ChipViewHolder chipViewHolder = new ChipViewHolder(placeCategory, adapter, index++);
-                                        chip.setTag(chipViewHolder);
-
-                                        chipMap.put(placeCategory, chip);
-                                        categoryChipGroup.addView(chip, new ChipGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-                                    }
-                                }
-                            });
-                        }
-                    });
-                }
-            }
-        });
+            chipMap.put(placeCategory, chip);
+            categoryChipGroup.addView(chip, new ChipGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        }
     }
+
+    private final CompoundButton.OnCheckedChangeListener onCheckedChangeListener = new CompoundButton.OnCheckedChangeListener()
+    {
+        @Override
+        public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked)
+        {
+            if (isChecked)
+            {
+                PlaceCategoryDTO placeCategory = ((ChipViewHolder) compoundButton.getTag()).placeCategory;
+                List<PlaceDocuments> placeDocumentsList = placeItemsGetter.getPlaceItems(placeCategory);
+                bottomSheetInterface.setPlacesItems(placeDocumentsList);
+                createPlacesPoiItems(placeDocumentsList);
+
+                mapView.fitMapViewAreaToShowAllPOIItems();
+            } else
+            {
+                bottomSheetInterface.setBottomSheetState(BottomSheetBehavior.STATE_HIDDEN);
+                removeAllPoiItems();
+            }
+        }
+    };
+
 
     static class HorizontalMarginItemDecoration extends RecyclerView.ItemDecoration
     {
@@ -249,65 +237,67 @@ public class PlacesMapFragment extends KakaoMapFragment implements IClickedPlace
     public void onMapViewInitialized(MapView mapView)
     {
         super.onMapViewInitialized(mapView);
-
-        MapPoint mapPoint = MapPoint.mapPointWithGeoCoord(selectedLocationDto.getLatitude(), selectedLocationDto.getLongitude());
-        MapPOIItem poiItem = new MapPOIItem();
-        poiItem.setItemName(selectedLocationDto.getPlaceName() != null ? selectedLocationDto.getPlaceName() : selectedLocationDto.getAddressName());
-        poiItem.setMapPoint(mapPoint);
-        poiItem.setTag(0);
-        poiItem.setMarkerType(MapPOIItem.MarkerType.BluePin); // 기본으로 제공하는 BluePin 마커 모양.
-        poiItem.setSelectedMarkerType(MapPOIItem.MarkerType.RedPin); // 마커를 클릭했을때, 기본으로 제공하는 RedPin 마커 모양.
-
-        mapView.addPOIItem(poiItem);
-        // mapView.setMapCenterPointAndZoomLevel(mapPoint, 4, false);
+        MapPoint selectedLocationMapPoint = MapPoint.mapPointWithGeoCoord(selectedLocationDto.getLatitude(), selectedLocationDto.getLongitude());
+        mapView.setMapCenterPointAndZoomLevel(selectedLocationMapPoint, 4, false);
     }
 
 
     @Override
-    public void onClickedItem(int index, PlaceCategoryDTO placeCategory, List<PlaceDocuments> placeDocumentsList)
+    public void onClickedItem(PlaceCategoryDTO placeCategory, int index)
     {
-        // iFragment.replaceFragment(MorePlacesFragment.TAG);
+        /*
+        fragmentController.replaceFragment(PlacesMapFragment.TAG);
         requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
         //  categoryButton.setText(placeCategory.getDescription());
         createPlacesPoiItems(placeDocumentsList);
         selectPoiItem(index);
+
+         */
     }
 
     @Override
-    public void onClickedMore(PlaceCategoryDTO placeCategory, List<PlaceDocuments> placeDocumentsList)
+    public void onClickedMore(PlaceCategoryDTO placeCategory)
     {
-        //  iFragment.replaceFragment(MorePlacesFragment.TAG);
+        fragmentController.replaceFragment(PlacesMapFragment.TAG);
         requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
-        //  categoryButton.setText(placeCategory.getDescription());
-        createPlacesPoiItems(placeDocumentsList);
-        mapView.fitMapViewAreaToShowAllPOIItems();
+        chipMap.get(placeCategory).setChecked(true);
     }
 
     @Override
     public void onPOIItemSelected(MapView mapView, MapPOIItem mapPOIItem)
     {
         // super.onPOIItemSelected(mapView, mapPOIItem);
-        placeListBottomSheetInterface.setBottomSheetState(BottomSheetBehavior.STATE_EXPANDED);
+        selectedPoiItemIndex = mapPOIItem.getTag();
+        isSelectedPoiItem = true;
+
+        // poiitem을 선택하였을 경우에 수행됨
+        mapView.setMapCenterPoint(mapPOIItem.getMapPoint(), true);
+        bottomSheetInterface.setBottomSheetState(BottomSheetBehavior.STATE_EXPANDED);
+        bottomSheetInterface.onClickedItem(selectedPoiItemIndex);
+    }
+
+
+    @Override
+    public void onMapViewSingleTapped(MapView mapView, MapPoint mapPoint)
+    {
+        if (isSelectedPoiItem)
+        {
+            deselectPoiItem();
+            bottomSheetInterface.setBottomSheetState(PlaceBottomSheetBehaviour.STATE_COLLAPSED);
+        }
     }
 
     static final class ChipViewHolder
     {
         PlaceCategoryDTO placeCategory;
-        PlaceItemInMapViewAdapter adapter;
         int index;
 
-        public ChipViewHolder(PlaceCategoryDTO placeCategory, PlaceItemInMapViewAdapter adapter, int index)
+        public ChipViewHolder(PlaceCategoryDTO placeCategory, int index)
         {
             this.placeCategory = placeCategory;
-            this.adapter = adapter;
             this.index = index;
         }
     }
 
-
-    public interface PlaceListBottomSheetInterface
-    {
-        void setBottomSheetState(int state);
-    }
 
 }

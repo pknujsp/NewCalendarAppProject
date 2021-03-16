@@ -12,6 +12,11 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
+        <androidx.fragment.app.FragmentContainerView
+            android:id="@+id/places_list_fragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
         <include
             android:id="@+id/place_list_bottom_sheet_view"
             layout="@layout/place_list_bottom_sheet_view" />

@@ -5,9 +5,7 @@ import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 
 import java.util.List;
 
-public interface IClickedPlaceItem
+public interface PlaceItemsGetter
 {
-    void onClickedItem(int index, PlaceCategoryDTO placeCategory, List<PlaceDocuments> placeDocumentsList);
-
-    void onClickedMore(PlaceCategoryDTO placeCategory, List<PlaceDocuments> placeDocumentsList);
+    List<PlaceDocuments> getPlaceItems(PlaceCategoryDTO placeCategoryDTO);
 }

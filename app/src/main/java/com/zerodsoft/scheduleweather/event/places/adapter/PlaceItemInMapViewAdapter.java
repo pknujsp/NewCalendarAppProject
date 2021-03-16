@@ -13,18 +13,20 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.event.places.interfaces.OnClickedPlacesListListener;
 import com.zerodsoft.scheduleweather.kakaomap.callback.PlaceItemCallback;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 
-public class PlaceItemInMapViewAdapter extends PagedListAdapter<PlaceDocuments, PlaceItemInMapViewAdapter.PlaceItemInMapViewHolder>
-{
-    private final PlaceCategoryDTO placeCategoryDTO;
+import java.util.List;
 
-    public PlaceItemInMapViewAdapter(PlaceCategoryDTO placeCategoryDTO)
+public class PlaceItemInMapViewAdapter extends RecyclerView.Adapter<PlaceItemInMapViewAdapter.PlaceItemInMapViewHolder>
+{
+    private List<PlaceDocuments> placeDocumentsList;
+
+    public PlaceItemInMapViewAdapter(List<PlaceDocuments> placeDocumentsList)
     {
-        super(new PlaceItemCallback());
-        this.placeCategoryDTO = placeCategoryDTO;
+        this.placeDocumentsList = placeDocumentsList;
     }
 
     @NonNull
@@ -42,27 +44,13 @@ public class PlaceItemInMapViewAdapter extends PagedListAdapter<PlaceDocuments, 
     @Override
     public void onBindViewHolder(@NonNull PlaceItemInMapViewHolder holder, int position)
     {
-        holder.bind(getItem(position));
+        holder.bind(placeDocumentsList.get(position));
     }
 
     @Override
     public int getItemCount()
     {
-        return Integer.MAX_VALUE;
-    }
-
-    @Override
-    public void submitList(@Nullable PagedList<PlaceDocuments> pagedList)
-    {
-        super.submitList(pagedList);
-    }
-
-    @Nullable
-    @Override
-    protected PlaceDocuments getItem(int position)
-    {
-        int positionInList = position % getCurrentList().size();
-        return super.getItem(positionInList);
+        return placeDocumentsList.size();
     }
 
     class PlaceItemInMapViewHolder extends RecyclerView.ViewHolder
@@ -85,7 +73,7 @@ public class PlaceItemInMapViewAdapter extends PagedListAdapter<PlaceDocuments, 
                 @Override
                 public void onClick(View view)
                 {
-                    // iClickedPlaceItem.onClickedItem(getAdapterPosition(), placeCategoryDTO, getCurrentList().snapshot());
+
                 }
             });
         }

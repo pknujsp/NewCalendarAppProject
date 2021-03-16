@@ -15,16 +15,14 @@ import android.view.ViewGroup;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IstartActivity;
 import com.zerodsoft.scheduleweather.databinding.FragmentPlacesTransactionBinding;
 import com.zerodsoft.scheduleweather.event.common.interfaces.ILocation;
-import com.zerodsoft.scheduleweather.event.places.interfaces.IFragment;
 
-public class PlacesTransactionFragment extends Fragment implements IFragment
+public class PlacesTransactionFragment extends Fragment
 {
     private final ILocation iLocation;
     private final IstartActivity istartActivity;
 
     private FragmentPlacesTransactionBinding binding;
     private TestMapFragment testMapFragment;
-
 
     public PlacesTransactionFragment(Activity activity)
     {
@@ -59,13 +57,6 @@ public class PlacesTransactionFragment extends Fragment implements IFragment
     }
 
     public void refresh()
-    {
-        //placefragment 카테고리 재 검색
-        //  placesFragment.refresh();
-    }
-
-    @Override
-    public void replaceFragment(String fragmentTag)
     {
 
     }

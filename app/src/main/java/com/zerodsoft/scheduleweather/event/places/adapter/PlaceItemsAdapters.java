@@ -1,6 +1,5 @@
 package com.zerodsoft.scheduleweather.event.places.adapter;
 
-import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,12 +14,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.kakaomap.callback.PlaceItemCallback;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
-import com.zerodsoft.scheduleweather.event.places.interfaces.IClickedPlaceItem;
+import com.zerodsoft.scheduleweather.event.places.interfaces.OnClickedPlacesListListener;
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 
 public class PlaceItemsAdapters extends PagedListAdapter<PlaceDocuments, PlaceItemsAdapters.ItemViewHolder>
 {
-    private final IClickedPlaceItem iClickedPlaceItem;
+    private final OnClickedPlacesListListener onClickedPlacesListListener;
     private final PlaceCategoryDTO placeCategoryDTO;
 
     class ItemViewHolder extends RecyclerView.ViewHolder
@@ -43,7 +42,7 @@ public class PlaceItemsAdapters extends PagedListAdapter<PlaceDocuments, PlaceIt
                 @Override
                 public void onClick(View view)
                 {
-                    iClickedPlaceItem.onClickedItem(getAdapterPosition(), placeCategoryDTO, getCurrentList().snapshot());
+                    onClickedPlacesListListener.onClickedItem(placeCategoryDTO, getAdapterPosition());
                 }
             });
         }
@@ -57,10 +56,10 @@ public class PlaceItemsAdapters extends PagedListAdapter<PlaceDocuments, PlaceIt
         }
     }
 
-    public PlaceItemsAdapters(IClickedPlaceItem iClickedPlaceItem, PlaceCategoryDTO placeCategoryDTO)
+    public PlaceItemsAdapters(OnClickedPlacesListListener onClickedPlacesListListener, PlaceCategoryDTO placeCategoryDTO)
     {
         super(new PlaceItemCallback());
-        this.iClickedPlaceItem = iClickedPlaceItem;
+        this.onClickedPlacesListListener = onClickedPlacesListListener;
         this.placeCategoryDTO = placeCategoryDTO;
     }
 

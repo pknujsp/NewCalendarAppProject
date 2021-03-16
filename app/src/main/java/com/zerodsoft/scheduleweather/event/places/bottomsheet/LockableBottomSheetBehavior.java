@@ -42,6 +42,12 @@ public class LockableBottomSheetBehavior<V extends View> extends BottomSheetBeha
     }
 
     @Override
+    public void setDraggable(boolean draggable)
+    {
+        super.setDraggable(draggable);
+    }
+
+    @Override
     public boolean onTouchEvent(CoordinatorLayout parent, V child, MotionEvent event)
     {
         boolean handled = false;
