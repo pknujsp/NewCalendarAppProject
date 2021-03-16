@@ -23,7 +23,7 @@ public class PlacesTransactionFragment extends Fragment implements IFragment
     private final IstartActivity istartActivity;
 
     private FragmentPlacesTransactionBinding binding;
-    private PlacesMapFragment placesFragment;
+    private TestMapFragment testMapFragment;
 
 
     public PlacesTransactionFragment(Activity activity)
@@ -51,10 +51,10 @@ public class PlacesTransactionFragment extends Fragment implements IFragment
     {
         super.onViewCreated(view, savedInstanceState);
 
-        placesFragment = new PlacesMapFragment(iLocation, istartActivity);
+        testMapFragment = new TestMapFragment(iLocation, istartActivity);
 
         FragmentTransaction fragmentTransaction = getParentFragmentManager().beginTransaction();
-        fragmentTransaction.add(binding.fragmentContainerView.getId(), placesFragment, PlacesMapFragment.TAG)
+        fragmentTransaction.add(binding.fragmentContainerView.getId(), testMapFragment, PlacesMapFragment.TAG)
                 .commit();
     }
 

@@ -22,6 +22,7 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
@@ -57,6 +58,7 @@ public class PlacesMapFragment extends KakaoMapFragment implements IClickedPlace
 
     private final ILocation iLocation;
     private final IstartActivity istartActivity;
+    private final PlaceListBottomSheetInterface placeListBottomSheetInterface;
 
     private PlaceCategoryViewModel placeCategoryViewModel;
 
@@ -65,7 +67,6 @@ public class PlacesMapFragment extends KakaoMapFragment implements IClickedPlace
 
     private ChipGroup categoryChipGroup;
     private Map<PlaceCategoryDTO, Chip> chipMap = new HashMap<>();
-    private FrameLayout placeListBottomSheet;
     private RecyclerView placeListView;
 
     private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
@@ -78,9 +79,10 @@ public class PlacesMapFragment extends KakaoMapFragment implements IClickedPlace
         }
     };
 
-    public PlacesMapFragment(ILocation iLocation, IstartActivity istartActivity)
+    public PlacesMapFragment(Fragment fragment, ILocation iLocation, IstartActivity istartActivity)
     {
         super();
+        this.placeListBottomSheetInterface = (PlaceListBottomSheetInterface) fragment;
         this.iLocation = iLocation;
         this.istartActivity = istartActivity;
     }
@@ -155,17 +157,8 @@ public class PlacesMapFragment extends KakaoMapFragment implements IClickedPlace
 
         chipScrollView.addView(categoryChipGroup);
 
-        placeListBottomSheet = (FrameLayout) getLayoutInflater().inflate(R.layout.place_list_bottom_sheet_view, null);
-        CoordinatorLayout.LayoutParams listViewLayoutParams = new CoordinatorLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        listViewLayoutParams.gravity = Gravity.BOTTOM;
-
-        placeListView = (RecyclerView) placeListBottomSheet.findViewById(R.id.place_item_recycler_view);
-        binding.mapRootLayout.addView(placeListBottomSheet, listViewLayoutParams);
-
-        HorizontalMarginItemDecoration horizontalMarginItemDecoration = new HorizontalMarginItemDecoration(getContext());
-        placeListView.addItemDecoration(horizontalMarginItemDecoration);
-
         initLocation();
+
     }
 
     private void initLocation()
@@ -211,11 +204,9 @@ public class PlacesMapFragment extends KakaoMapFragment implements IClickedPlace
                                                 {
                                                     placeListView.setAdapter(adapter);
                                                     createPlacesPoiItems(adapter.getCurrentList().snapshot());
-                                                    placeListBottomSheet.setVisibility(View.VISIBLE);
                                                     mapView.fitMapViewAreaToShowAllPOIItems();
                                                 } else
                                                 {
-                                                    placeListBottomSheet.setVisibility(View.GONE);
                                                 }
                                             }
                                         });
@@ -268,7 +259,7 @@ public class PlacesMapFragment extends KakaoMapFragment implements IClickedPlace
         poiItem.setSelectedMarkerType(MapPOIItem.MarkerType.RedPin); // 마커를 클릭했을때, 기본으로 제공하는 RedPin 마커 모양.
 
         mapView.addPOIItem(poiItem);
-        mapView.setMapCenterPointAndZoomLevel(mapPoint, 4, false);
+        // mapView.setMapCenterPointAndZoomLevel(mapPoint, 4, false);
     }
 
 
@@ -292,6 +283,13 @@ public class PlacesMapFragment extends KakaoMapFragment implements IClickedPlace
         mapView.fitMapViewAreaToShowAllPOIItems();
     }
 
+    @Override
+    public void onPOIItemSelected(MapView mapView, MapPOIItem mapPOIItem)
+    {
+        // super.onPOIItemSelected(mapView, mapPOIItem);
+        placeListBottomSheetInterface.setBottomSheetState(BottomSheetBehavior.STATE_EXPANDED);
+    }
+
     static final class ChipViewHolder
     {
         PlaceCategoryDTO placeCategory;
@@ -307,19 +305,9 @@ public class PlacesMapFragment extends KakaoMapFragment implements IClickedPlace
     }
 
 
-    static final class CustomBottomSheet extends FrameLayout
+    public interface PlaceListBottomSheetInterface
     {
-        public CustomBottomSheet(@NonNull Context context)
-        {
-            super(context);
-        }
-
-        @Override
-        public boolean dispatchTouchEvent(MotionEvent ev)
-        {
-            getParent().requestDisallowInterceptTouchEvent(true);
-            return super.dispatchTouchEvent(ev);
-        }
+        void setBottomSheetState(int state);
     }
 
 }

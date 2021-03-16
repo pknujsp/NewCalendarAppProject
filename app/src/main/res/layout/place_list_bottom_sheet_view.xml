@@ -3,8 +3,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:background="@color/light_blue_400">
+    android:layout_height="300dp"
+    android:background="@color/light_blue_400"
+    app:behavior_hideable="true"
+    app:layoutManager="android.support.v7.widget.LinearLayoutManager"
+    app:layout_behavior="com.zerodsoft.scheduleweather.event.places.bottomsheet.LockableBottomSheetBehavior">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/place_item_recycler_view"

@@ -276,6 +276,12 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
             });
 
     @Override
+    public void onResume()
+    {
+        super.onResume();
+    }
+
+    @Override
     public void setBottomSheetState(int state)
     {
         bottomSheetBehavior.setState(state);

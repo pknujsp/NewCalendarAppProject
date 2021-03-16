@@ -159,7 +159,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
         {
             permissionsResultLauncher.launch(new String[]{Manifest.permission.READ_CALENDAR, Manifest.permission.WRITE_CALENDAR});
         }
-        //getAppKeyHash();
+        // getAppKeyHash();
     }
 
     private void getAppKeyHash()
