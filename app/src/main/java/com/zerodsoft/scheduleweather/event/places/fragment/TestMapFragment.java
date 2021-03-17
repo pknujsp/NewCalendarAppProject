@@ -10,14 +10,12 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager.widget.ViewPager;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.os.RemoteException;
 import android.service.carrier.CarrierMessagingService;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -92,7 +90,7 @@ public class TestMapFragment extends Fragment implements BottomSheet, PlaceCateg
         initLocation();
 
         //set bottomsheet
-        FrameLayout customBottomSheet = (FrameLayout) view.findViewById(R.id.place_list_bottom_sheet_view);
+        FrameLayout customBottomSheet = (FrameLayout) view.findViewById(R.id.placeslist_bottom_sheet);
         bottomSheetViewPager = (ViewPager2) customBottomSheet.findViewById(R.id.place_items_viewpager);
         bottomSheetViewPager.setOffscreenPageLimit(2);
 

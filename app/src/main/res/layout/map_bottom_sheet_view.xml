@@ -3,42 +3,16 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     android:background="@color/white"
     app:behavior_hideable="true"
-    app:layout_behavior="@string/bottom_sheet_behavior"
-    tools:showIn="@layout/activity_kakao_map">
-
-    <LinearLayout
-        android:id="@+id/bottom_sheet_item_layout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:orientation="vertical"
-        android:visibility="visible">
-
-        <include
-            android:id="@+id/place_view"
-            layout="@layout/map_bottom_sheet_place"
-            android:visibility="gone" />
-
-        <include
-            android:id="@+id/address_view"
-            layout="@layout/map_bottom_sheet_address"
-            android:visibility="gone" />
-
-        <include
-            android:id="@+id/map_bottom_sheet_toolbar"
-            layout="@layout/map_bottom_sheet_toolbar" />
-
-    </LinearLayout>
+    app:layout_behavior="@string/bottom_sheet_behavior">
 
     <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/map_bottom_sheet_fragment_container"
+        android:id="@+id/search_bottom_sheet_fragment_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/bottom_sheet_item_layout"
-        android:layout_alignParentBottom="true"
-        android:visibility="gone" />
+        android:layout_alignParentTop="true"
+        android:layout_alignParentBottom="true" />
 
 </RelativeLayout>

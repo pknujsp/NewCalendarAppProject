@@ -1,6 +1,5 @@
 package com.zerodsoft.scheduleweather.activity.map.fragment.search;
 
-import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 
@@ -20,7 +19,7 @@ import android.view.ViewGroup;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.SearchResultListFragment;
 import com.zerodsoft.scheduleweather.etc.FragmentStateCallback;
-import com.zerodsoft.scheduleweather.kakaomap.interfaces.IBottomSheet;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.MapBottomSheetController;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapPoint;
 import com.zerodsoft.scheduleweather.activity.map.fragment.interfaces.OnSelectedMapCategory;
@@ -39,7 +38,7 @@ public class SearchFragment extends Fragment implements OnSelectedMapCategory
     private IMapPoint iMapPoint;
     private IMapData iMapData;
     private IMapToolbar iMapToolbar;
-    private IBottomSheet iBottomSheet;
+    private MapBottomSheetController mapBottomSheetController;
     private OnBackPressedCallback onBackPressedCallback;
     private FragmentManager fragmentManager;
     private FragmentStateCallback fragmentStateCallback;
@@ -49,7 +48,7 @@ public class SearchFragment extends Fragment implements OnSelectedMapCategory
         this.iMapPoint = (IMapPoint) fragment;
         this.iMapData = (IMapData) fragment;
         this.iMapToolbar = (IMapToolbar) fragment;
-        this.iBottomSheet = (IBottomSheet) fragment;
+        this.mapBottomSheetController = (MapBottomSheetController) fragment;
         this.fragmentStateCallback = fragmentStateCallback;
     }
 
@@ -85,7 +84,7 @@ public class SearchFragment extends Fragment implements OnSelectedMapCategory
             public void handleOnBackPressed()
             {
                 getParentFragmentManager().beginTransaction().remove(instance).commitNow();
-                iBottomSheet.closeSearchView(IBottomSheet.SEARCH_VIEW);
+                mapBottomSheetController.closeSearchView(MapBottomSheetController.SEARCH_VIEW);
             }
         };
         requireActivity().getOnBackPressedDispatcher().addCallback(SearchFragment.this, onBackPressedCallback);
@@ -122,7 +121,7 @@ public class SearchFragment extends Fragment implements OnSelectedMapCategory
     {
         FragmentManager fragmentManager = getParentFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.add(R.id.map_bottom_sheet_fragment_container, SearchResultListFragment.newInstance(searchWord, iMapPoint, iMapData, iMapToolbar, iBottomSheet)
+        fragmentTransaction.add(R.id.search_bottom_sheet_fragment_container, SearchResultListFragment.newInstance(searchWord, iMapPoint, iMapData, iMapToolbar, mapBottomSheetController)
                 , SearchResultListFragment.TAG).hide(SearchFragment.this).addToBackStack(SearchResultListFragment.TAG).commit();
     }
 

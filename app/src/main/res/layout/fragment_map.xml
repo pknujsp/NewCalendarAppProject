@@ -30,21 +30,27 @@
             <FrameLayout
                 android:id="@+id/map_view"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" />
+                android:layout_height="match_parent">
+
+                <include
+                    android:id="@+id/map_buttons_layout"
+                    layout="@layout/map_buttons_view"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom"
+                    android:layout_marginLeft="36dp"
+                    android:layout_marginRight="36dp"
+                    android:layout_marginBottom="48dp" />
+
+            </FrameLayout>
 
             <include
-                android:id="@+id/map_buttons_layout"
-                layout="@layout/map_buttons_view"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom"
-                android:layout_marginLeft="36dp"
-                android:layout_marginRight="36dp"
-                android:layout_marginBottom="48dp" />
-
-            <include
-                android:id="@+id/bottom_sheet"
+                android:id="@+id/search_bottom_sheet"
                 layout="@layout/map_bottom_sheet_view" />
+
+            <include
+                android:id="@+id/placeslist_bottom_sheet"
+                layout="@layout/place_list_bottom_sheet_view" />
 
         </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

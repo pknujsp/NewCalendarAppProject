@@ -19,7 +19,7 @@ import android.widget.TextView;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.activity.map.fragment.interfaces.OnClickedLocListItem;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.interfaces.ResultFragmentChanger;
-import com.zerodsoft.scheduleweather.kakaomap.interfaces.IBottomSheet;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.MapBottomSheetController;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapPoint;
 import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.adapter.SearchResultListAdapter;
@@ -56,7 +56,7 @@ public class SearchResultListFragment extends Fragment implements IndicatorCreat
     private IMapPoint iMapPoint;
     private IMapData iMapData;
     private IMapToolbar iMapToolbar;
-    private IBottomSheet iBottomSheet;
+    private MapBottomSheetController mapBottomSheetController;
 
     private ProgressBar progressBar;
     private TextView errorTextView;
@@ -68,13 +68,13 @@ public class SearchResultListFragment extends Fragment implements IndicatorCreat
         viewPagerIndicator.createDot(0, fragmentSize);
     }
 
-    public SearchResultListFragment(String searchWord, IMapPoint iMapPoint, IMapData iMapData, IMapToolbar iMapToolbar, IBottomSheet iBottomSheet)
+    public SearchResultListFragment(String searchWord, IMapPoint iMapPoint, IMapData iMapData, IMapToolbar iMapToolbar, MapBottomSheetController mapBottomSheetController)
     {
         this.SEARCH_WORD = searchWord;
         this.iMapPoint = iMapPoint;
         this.iMapData = iMapData;
         this.iMapToolbar = iMapToolbar;
-        this.iBottomSheet = iBottomSheet;
+        this.mapBottomSheetController = mapBottomSheetController;
     }
 
     public static SearchResultListFragment getInstance()
@@ -82,9 +82,9 @@ public class SearchResultListFragment extends Fragment implements IndicatorCreat
         return instance;
     }
 
-    public static SearchResultListFragment newInstance(String searchWord, IMapPoint iMapPoint, IMapData iMapData, IMapToolbar iMapToolbar, IBottomSheet iBottomSheet)
+    public static SearchResultListFragment newInstance(String searchWord, IMapPoint iMapPoint, IMapData iMapData, IMapToolbar iMapToolbar, MapBottomSheetController mapBottomSheetController)
     {
-        instance = new SearchResultListFragment(searchWord, iMapPoint, iMapData, iMapToolbar, iBottomSheet);
+        instance = new SearchResultListFragment(searchWord, iMapPoint, iMapData, iMapToolbar, mapBottomSheetController);
         return instance;
     }
 
@@ -251,16 +251,16 @@ public class SearchResultListFragment extends Fragment implements IndicatorCreat
             // to map
             // 버튼 이미지, 프래그먼트 숨김/보이기 설정
             iMapData.showAllPoiItems();
-            iBottomSheet.setBottomSheetState(BottomSheetBehavior.STATE_HIDDEN);
-            iBottomSheet.setItemVisibility(View.VISIBLE);
-            iBottomSheet.setFragmentVisibility(View.GONE);
+            mapBottomSheetController.setBottomSheetState(BottomSheetBehavior.STATE_HIDDEN);
+            mapBottomSheetController.setItemVisibility(View.VISIBLE);
+            mapBottomSheetController.setFragmentVisibility(View.GONE);
         } else
         {
             // to list
             iMapData.backToPreviousView();
-            iBottomSheet.setItemVisibility(View.GONE);
-            iBottomSheet.setFragmentVisibility(View.VISIBLE);
-            iBottomSheet.setBottomSheetState(BottomSheetBehavior.STATE_EXPANDED);
+            mapBottomSheetController.setItemVisibility(View.GONE);
+            mapBottomSheetController.setFragmentVisibility(View.VISIBLE);
+            mapBottomSheetController.setBottomSheetState(BottomSheetBehavior.STATE_EXPANDED);
         }
 
         isVisibleList = !isVisibleList;
@@ -273,8 +273,8 @@ public class SearchResultListFragment extends Fragment implements IndicatorCreat
 
         iMapToolbar.setMenuVisibility(IMapToolbar.MAP, true);
         iMapData.selectPoiItem(index);
-        iBottomSheet.setItemVisibility(View.VISIBLE);
-        iBottomSheet.setFragmentVisibility(View.GONE);
+        mapBottomSheetController.setItemVisibility(View.VISIBLE);
+        mapBottomSheetController.setFragmentVisibility(View.GONE);
     }
 
     class OnPageCallback extends ViewPager2.OnPageChangeCallback

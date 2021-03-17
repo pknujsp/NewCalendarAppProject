@@ -12,10 +12,8 @@ import androidx.paging.PagedList;
 import androidx.paging.PagedListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.map.fragment.interfaces.OnClickedLocListItem;
-import com.zerodsoft.scheduleweather.kakaomap.interfaces.IBottomSheet;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.kakaomap.callback.AddressItemCallback;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponseDocuments;

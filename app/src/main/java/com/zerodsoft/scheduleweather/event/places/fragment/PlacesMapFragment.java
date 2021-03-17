@@ -12,7 +12,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.HorizontalScrollView;
-import android.widget.LinearLayout;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
@@ -27,7 +26,6 @@ import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IstartActivity;
-import com.zerodsoft.scheduleweather.event.places.adapter.PlaceItemInMapViewAdapter;
 import com.zerodsoft.scheduleweather.event.places.bottomsheet.PlaceBottomSheetBehaviour;
 import com.zerodsoft.scheduleweather.event.places.interfaces.BottomSheet;
 import com.zerodsoft.scheduleweather.event.places.interfaces.FragmentController;
@@ -35,8 +33,7 @@ import com.zerodsoft.scheduleweather.event.places.interfaces.OnClickedPlacesList
 import com.zerodsoft.scheduleweather.event.places.interfaces.PlaceCategory;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PlaceItemsGetter;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.KakaoMapFragment;
-import com.zerodsoft.scheduleweather.kakaomap.interfaces.IBottomSheet;
-import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapToolbar;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.MapBottomSheetController;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.coordtoaddressresponse.CoordToAddress;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
@@ -204,7 +201,7 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
         super.closeSearchView(viewType);
         switch (viewType)
         {
-            case IBottomSheet.SEARCH_VIEW:
+            case MapBottomSheetController.SEARCH_VIEW:
                 listButton.setVisibility(View.VISIBLE);
                 categoryChipGroup.setVisibility(View.VISIBLE);
                 bottomSheetInterface.setBottomSheetState(lastBottomSheetState);
