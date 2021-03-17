@@ -35,6 +35,8 @@ import com.zerodsoft.scheduleweather.event.places.interfaces.OnClickedPlacesList
 import com.zerodsoft.scheduleweather.event.places.interfaces.PlaceCategory;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PlaceItemsGetter;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.KakaoMapFragment;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.IBottomSheet;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapToolbar;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.coordtoaddressresponse.CoordToAddress;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
@@ -185,6 +187,32 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
         return lastBottomSheetState;
     }
 
+    @Override
+    public void onClickedSearchView()
+    {
+        super.onClickedSearchView();
+        //리스트 버튼과 chips, bottomsheet를 숨긴다
+        listButton.setVisibility(View.GONE);
+        categoryChipGroup.setVisibility(View.GONE);
+        lastBottomSheetState = bottomSheetInterface.getBottomSheetState();
+        bottomSheetInterface.setBottomSheetState(BottomSheetBehavior.STATE_HIDDEN);
+    }
+
+    @Override
+    public void closeSearchView(int viewType)
+    {
+        super.closeSearchView(viewType);
+        switch (viewType)
+        {
+            case IBottomSheet.SEARCH_VIEW:
+                listButton.setVisibility(View.VISIBLE);
+                categoryChipGroup.setVisibility(View.VISIBLE);
+                bottomSheetInterface.setBottomSheetState(lastBottomSheetState);
+                break;
+        }
+    }
+
+
     private void setChips()
     {
         placeCategoryList = placeCategory.getPlaceCategoryList();
@@ -226,8 +254,12 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
                 createPlacesPoiItems(placeDocumentsList);
 
                 mapView.fitMapViewAreaToShowAllPOIItems();
+            } else if (categoryChipGroup.getCheckedChipIds().isEmpty() && mapView.getPOIItems().length > 0)
+            {
+                removeAllPoiItems();
             }
             bottomSheetInterface.setBottomSheetState(BottomSheetBehavior.STATE_HIDDEN);
+
         }
     };
 

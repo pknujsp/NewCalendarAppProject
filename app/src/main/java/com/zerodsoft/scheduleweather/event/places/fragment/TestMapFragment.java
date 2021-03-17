@@ -349,7 +349,8 @@ public class TestMapFragment extends Fragment implements BottomSheet, PlaceCateg
 
         if (tag.equals(PlaceListFragment.TAG))
         {
-            fragmentTransaction.hide(placesMapFragment).show(placeListFragment).addToBackStack(PlaceListFragment.TAG).commit();
+            fragmentTransaction.hide(placesMapFragment).show(placeListFragment).commit();
+            placeListFragment.setOnBackPressedCallback();
         } else if (tag.equals(PlacesMapFragment.TAG))
         {
             fragmentTransaction.hide(placeListFragment).show(placesMapFragment).commit();

@@ -244,6 +244,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
             }
         });
 
+        MapView.setMapTilePersistentCacheEnabled(true);
         mapView = new MapView(getActivity());
         mapView.setPOIItemEventListener(this);
         mapView.setMapViewEventListener(this);

@@ -13,6 +13,7 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
@@ -56,6 +57,16 @@ public class PlaceListFragment extends Fragment implements PlaceItemsGetter
     private LocationDTO selectedLocationDto;
     private CoordToAddress coordToAddressResult;
     private Button mapButton;
+
+    private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
+    {
+        @Override
+        public void handleOnBackPressed()
+        {
+            fragmentController.replaceFragment(PlacesMapFragment.TAG);
+            onBackPressedCallback.remove();
+        }
+    };
 
     private Map<PlaceCategoryDTO, PlaceItemsAdapters> adaptersMap;
 
@@ -159,6 +170,11 @@ public class PlaceListFragment extends Fragment implements PlaceItemsGetter
         }
 
         makeCategoryListView();
+    }
+
+    public void setOnBackPressedCallback()
+    {
+        requireActivity().getOnBackPressedDispatcher().addCallback(onBackPressedCallback);
     }
 
     public void makeCategoryListView()
