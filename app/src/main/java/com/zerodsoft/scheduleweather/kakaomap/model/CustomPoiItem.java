@@ -1,5 +1,6 @@
 package com.zerodsoft.scheduleweather.kakaomap.model;
 
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.KakaoLocalDocument;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponseDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
 
@@ -7,30 +8,19 @@ import net.daum.mf.map.api.MapPOIItem;
 
 public class CustomPoiItem extends MapPOIItem
 {
-    private AddressResponseDocuments addressDocument;
-    private PlaceDocuments placeDocument;
+    private KakaoLocalDocument kakaoLocalDocument;
 
     public CustomPoiItem()
     {
     }
 
-    public AddressResponseDocuments getAddressDocument()
+    public void setKakaoLocalDocument(KakaoLocalDocument kakaoLocalDocument)
     {
-        return addressDocument;
+        this.kakaoLocalDocument = kakaoLocalDocument;
     }
 
-    public void setAddressDocument(AddressResponseDocuments addressDocument)
+    public KakaoLocalDocument getKakaoLocalDocument()
     {
-        this.addressDocument = addressDocument;
-    }
-
-    public PlaceDocuments getPlaceDocument()
-    {
-        return placeDocument;
-    }
-
-    public void setPlaceDocument(PlaceDocuments placeDocument)
-    {
-        this.placeDocument = placeDocument;
+        return kakaoLocalDocument;
     }
 }

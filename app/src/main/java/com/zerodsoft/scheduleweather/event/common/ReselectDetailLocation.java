@@ -36,7 +36,6 @@ public class ReselectDetailLocation extends KakaoMapActivity
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        kakaoMapFragment.binding.bottomSheet.mapBottomSheetToolbar.selectLocationButton.setVisibility(View.GONE);
 
         onBackPressedCallback = new OnBackPressedCallback(true)
         {
@@ -170,10 +169,8 @@ public class ReselectDetailLocation extends KakaoMapActivity
                         @Override
                         public void run()
                         {
-                            kakaoMapFragment.setBottomSheetState(BottomSheetBehavior.STATE_HIDDEN);
+                            kakaoMapFragment.getPlaceListBottomSheetBehavior().setState(BottomSheetBehavior.STATE_HIDDEN);
                             Toast.makeText(ReselectDetailLocation.this, getString(R.string.removed_detail_location), Toast.LENGTH_SHORT).show();
-                            kakaoMapFragment.binding.bottomSheet.mapBottomSheetToolbar.selectLocationButton.setVisibility(View.VISIBLE);
-                            kakaoMapFragment.binding.bottomSheet.mapBottomSheetToolbar.removeLocationButton.setVisibility(View.GONE);
                         }
                     });
                 } else

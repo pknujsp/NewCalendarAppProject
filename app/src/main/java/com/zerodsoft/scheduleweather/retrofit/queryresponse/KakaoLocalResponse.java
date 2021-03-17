@@ -1,7 +1,5 @@
 package com.zerodsoft.scheduleweather.retrofit.queryresponse;
 
-import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.PlaceListFragment;
-import com.zerodsoft.scheduleweather.activity.map.fragment.searchresult.SearchResultListFragment;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressKakaoLocalResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceKakaoLocalResponse;
 

@@ -42,7 +42,6 @@ public class MLocActivity extends KakaoMapActivity
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        kakaoMapFragment.binding.bottomSheet.mapBottomSheetToolbar.removeLocationButton.setVisibility(View.GONE);
         kakaoMapFragment.setToolbarMenuCallback(toolbarMenuCallback);
 
         onBackPressedCallback = new OnBackPressedCallback(true)

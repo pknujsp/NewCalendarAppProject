@@ -26,14 +26,14 @@ import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IstartActivity;
-import com.zerodsoft.scheduleweather.event.places.bottomsheet.PlaceBottomSheetBehaviour;
+import com.zerodsoft.scheduleweather.kakaomap.bottomsheet.PlacesListBottomSheetBehavior;
 import com.zerodsoft.scheduleweather.event.places.interfaces.BottomSheet;
 import com.zerodsoft.scheduleweather.event.places.interfaces.FragmentController;
 import com.zerodsoft.scheduleweather.event.places.interfaces.OnClickedPlacesListListener;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PlaceCategory;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PlaceItemsGetter;
-import com.zerodsoft.scheduleweather.kakaomap.fragment.KakaoMapFragment;
-import com.zerodsoft.scheduleweather.kakaomap.interfaces.MapBottomSheetController;
+import com.zerodsoft.scheduleweather.kakaomap.fragment.main.KakaoMapFragment;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.SearchBottomSheetController;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.coordtoaddressresponse.CoordToAddress;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
@@ -201,7 +201,7 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
         super.closeSearchView(viewType);
         switch (viewType)
         {
-            case MapBottomSheetController.SEARCH_VIEW:
+            case SearchBottomSheetController.SEARCH_VIEW:
                 listButton.setVisibility(View.VISIBLE);
                 categoryChipGroup.setVisibility(View.VISIBLE);
                 bottomSheetInterface.setBottomSheetState(lastBottomSheetState);
@@ -340,7 +340,7 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
         {
             deselectPoiItem();
             isFirstItemSelected = false;
-            bottomSheetInterface.setBottomSheetState(PlaceBottomSheetBehaviour.STATE_HIDDEN);
+            bottomSheetInterface.setBottomSheetState(PlacesListBottomSheetBehavior.STATE_HIDDEN);
         }
     }
 

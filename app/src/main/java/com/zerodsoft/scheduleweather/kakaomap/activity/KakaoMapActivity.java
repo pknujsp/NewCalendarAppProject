@@ -7,10 +7,10 @@ import android.os.Bundle;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.ActivityKakaoMapBinding;
-import com.zerodsoft.scheduleweather.kakaomap.fragment.KakaoMapFragment;
-import com.zerodsoft.scheduleweather.kakaomap.interfaces.BottomSheetButtonOnClickListener;
+import com.zerodsoft.scheduleweather.kakaomap.fragment.main.KakaoMapFragment;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.PlacesItemBottomSheetButtonOnClickListener;
 
-public class KakaoMapActivity extends AppCompatActivity implements BottomSheetButtonOnClickListener
+public class KakaoMapActivity extends AppCompatActivity implements PlacesItemBottomSheetButtonOnClickListener
 {
     protected ActivityKakaoMapBinding binding;
     protected KakaoMapFragment kakaoMapFragment;
@@ -26,7 +26,7 @@ public class KakaoMapActivity extends AppCompatActivity implements BottomSheetBu
         binding = DataBindingUtil.setContentView(this, R.layout.activity_kakao_map);
 
         kakaoMapFragment = (KakaoMapFragment) getSupportFragmentManager().findFragmentById(R.id.map_fragment);
-        kakaoMapFragment.setBottomSheetButtonOnClickListener(this);
+        kakaoMapFragment.setPlacesItemBottomSheetButtonOnClickListener(this);
     }
 
     @Override

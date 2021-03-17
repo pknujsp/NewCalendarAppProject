@@ -30,7 +30,7 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.IstartActivity;
 import com.zerodsoft.scheduleweather.databinding.FragmentTestMapBinding;
 import com.zerodsoft.scheduleweather.event.common.interfaces.ILocation;
 import com.zerodsoft.scheduleweather.event.places.adapter.PlaceItemInMapViewAdapter;
-import com.zerodsoft.scheduleweather.event.places.bottomsheet.PlaceBottomSheetBehaviour;
+import com.zerodsoft.scheduleweather.kakaomap.bottomsheet.PlacesListBottomSheetBehavior;
 import com.zerodsoft.scheduleweather.event.places.interfaces.BottomSheet;
 import com.zerodsoft.scheduleweather.event.places.interfaces.FragmentController;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PlaceCategory;
@@ -50,7 +50,7 @@ public class TestMapFragment extends Fragment implements BottomSheet, PlaceCateg
     private FragmentTestMapBinding binding;
     private PlacesMapFragment placesMapFragment;
     private PlaceListFragment placeListFragment;
-    private PlaceBottomSheetBehaviour placeListBottomSheetBehavior;
+    private PlacesListBottomSheetBehavior placeListBottomSheetBehavior;
 
     private final ILocation iLocation;
     private final IstartActivity istartActivity;
@@ -167,24 +167,24 @@ public class TestMapFragment extends Fragment implements BottomSheet, PlaceCateg
             }
         });
 
-        placeListBottomSheetBehavior = PlaceBottomSheetBehaviour.from(customBottomSheet);
+        placeListBottomSheetBehavior = PlacesListBottomSheetBehavior.from(customBottomSheet);
         placeListBottomSheetBehavior.setPeekHeight(0);
         placeListBottomSheetBehavior.setDraggable(false);
-        placeListBottomSheetBehavior.setState(PlaceBottomSheetBehaviour.STATE_COLLAPSED);
+        placeListBottomSheetBehavior.setState(PlacesListBottomSheetBehavior.STATE_COLLAPSED);
 
         placeListBottomSheetBehavior.setAnchorOffset(0.5f);
-        placeListBottomSheetBehavior.setAnchorSheetCallback(new PlaceBottomSheetBehaviour.AnchorSheetCallback()
+        placeListBottomSheetBehavior.setAnchorSheetCallback(new PlacesListBottomSheetBehavior.AnchorSheetCallback()
         {
             @Override
             public void onStateChanged(@NonNull View bottomSheet, int newState)
             {
                 if (newState == BottomSheetBehavior.STATE_COLLAPSED)
                 {
-                } else if (newState == PlaceBottomSheetBehaviour.STATE_EXPANDED)
+                } else if (newState == PlacesListBottomSheetBehavior.STATE_EXPANDED)
                 {
-                } else if (newState == PlaceBottomSheetBehaviour.STATE_DRAGGING)
+                } else if (newState == PlacesListBottomSheetBehavior.STATE_DRAGGING)
                 {
-                } else if (newState == PlaceBottomSheetBehaviour.STATE_HALF_EXPANDED)
+                } else if (newState == PlacesListBottomSheetBehavior.STATE_HALF_EXPANDED)
                 {
                 }
             }
@@ -198,15 +198,15 @@ public class TestMapFragment extends Fragment implements BottomSheet, PlaceCateg
 
                 switch (placeListBottomSheetBehavior.getState())
                 {
-                    case PlaceBottomSheetBehaviour.STATE_DRAGGING:
+                    case PlacesListBottomSheetBehavior.STATE_DRAGGING:
                         setMapPaddingBottom(off);
                         break;
-                    case PlaceBottomSheetBehaviour.STATE_SETTLING:
+                    case PlacesListBottomSheetBehavior.STATE_SETTLING:
                         setMapPaddingBottom(off);
                         break;
-                    case PlaceBottomSheetBehaviour.STATE_HIDDEN:
+                    case PlacesListBottomSheetBehavior.STATE_HIDDEN:
                         break;
-                    case PlaceBottomSheetBehaviour.STATE_EXPANDED:
+                    case PlacesListBottomSheetBehavior.STATE_EXPANDED:
                         break;
                     case BottomSheetBehavior.STATE_COLLAPSED:
                         break;
@@ -322,8 +322,8 @@ public class TestMapFragment extends Fragment implements BottomSheet, PlaceCateg
     @Override
     public void setPlacesItems(List<PlaceDocuments> placeDocumentsList)
     {
-        PlaceItemInMapViewAdapter adapter = new PlaceItemInMapViewAdapter(placeDocumentsList);
-        bottomSheetViewPager.setAdapter(adapter);
+      //  PlaceItemInMapViewAdapter adapter = new PlaceItemInMapViewAdapter(placeDocumentsList);
+     //   bottomSheetViewPager.setAdapter(adapter);
     }
 
     @Override

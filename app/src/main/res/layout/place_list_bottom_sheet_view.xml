@@ -7,7 +7,7 @@
     android:background="@color/transparent"
     app:behavior_hideable="true"
     app:layoutManager="android.support.v7.widget.LinearLayoutManager"
-    app:layout_behavior="com.zerodsoft.scheduleweather.event.places.bottomsheet.PlaceBottomSheetBehaviour">
+    app:layout_behavior="com.zerodsoft.scheduleweather.kakaomap.bottomsheet.PlacesListBottomSheetBehavior">
 
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/place_items_viewpager"

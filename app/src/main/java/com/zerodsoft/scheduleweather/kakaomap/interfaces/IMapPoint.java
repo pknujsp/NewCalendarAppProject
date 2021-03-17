@@ -5,4 +5,6 @@ public interface IMapPoint
     double getLatitude();
 
     double getLongitude();
+
+    void setMapVisibility(int visibility);
 }

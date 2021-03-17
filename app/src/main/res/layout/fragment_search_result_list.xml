@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white"
-    tools:context=".activity.map.fragment.searchresult.SearchResultListFragment">
+    tools:context=".kakaomap.fragment.searchresult.SearchResultListFragment">
 
     <TextView
         android:id="@+id/error_text"
