@@ -64,6 +64,7 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
 
     private ChipGroup categoryChipGroup;
     private Map<PlaceCategoryDTO, Chip> chipMap = new HashMap<>();
+    private Button listButton;
 
     private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
     {
@@ -123,11 +124,18 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
+        //----------list button
+        listButton = new MaterialButton(getContext());
+        listButton.setText(R.string.open_list);
+        listButton.setTextColor(Color.WHITE);
+        listButton.setBackgroundColor(Color.GREEN);
 
-        Button typeButton = new MaterialButton(getContext());
-        typeButton.setText(R.string.open_list);
-        typeButton.setTextColor(Color.WHITE);
-        typeButton.setOnClickListener(new View.OnClickListener()
+        CoordinatorLayout.LayoutParams buttonLayoutParams = new CoordinatorLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        buttonLayoutParams.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
+        listButton.setLayoutParams(buttonLayoutParams);
+        binding.mapRootLayout.addView(listButton);
+
+        listButton.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view)
@@ -136,28 +144,15 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
                 fragmentController.replaceFragment(PlaceListFragment.TAG);
             }
         });
+        //---------------------
 
-        CoordinatorLayout.LayoutParams layoutParams = new CoordinatorLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        layoutParams.gravity = Gravity.LEFT | Gravity.TOP;
-        LinearLayout linearLayout = new LinearLayout(getContext());
-        linearLayout.setLayoutParams(layoutParams);
-        binding.mapRootLayout.addView(linearLayout);
-
-        int margin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, getResources().getDisplayMetrics());
-
-        LinearLayout.LayoutParams buttonLayoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        buttonLayoutParams.gravity = Gravity.CENTER_VERTICAL;
-        buttonLayoutParams.leftMargin = margin;
-        typeButton.setLayoutParams(buttonLayoutParams);
-        linearLayout.addView(typeButton);
-
+        //-----------chip group
         HorizontalScrollView chipScrollView = new HorizontalScrollView(getContext());
         chipScrollView.setHorizontalScrollBarEnabled(false);
-        LinearLayout.LayoutParams chipLayoutParams = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT);
-        chipLayoutParams.weight = 1;
-        chipLayoutParams.gravity = Gravity.CENTER_VERTICAL;
+        CoordinatorLayout.LayoutParams chipLayoutParams = new CoordinatorLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        chipLayoutParams.gravity = Gravity.TOP;
         chipScrollView.setLayoutParams(chipLayoutParams);
-        linearLayout.addView(chipScrollView);
+        binding.mapRootLayout.addView(chipScrollView);
 
         categoryChipGroup = new ChipGroup(getContext(), null, R.style.Widget_MaterialComponents_ChipGroup);
         categoryChipGroup.setSingleSelection(true);
@@ -241,18 +236,23 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
         mapView.setMapCenterPointAndZoomLevel(selectedLocationMapPoint, 4, false);
     }
 
+    public void onBottomSheetPageSelected(int index)
+    {
+        selectedPoiItemIndex = index;
+        isSelectedPoiItem = true;
+
+        mapView.selectPOIItem(mapView.getPOIItems()[index], true);
+        mapView.setMapCenterPoint(mapView.getPOIItems()[index].getMapPoint(), true);
+    }
+
 
     @Override
     public void onClickedItem(PlaceCategoryDTO placeCategory, int index)
     {
-        /*
         fragmentController.replaceFragment(PlacesMapFragment.TAG);
         requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
-        //  categoryButton.setText(placeCategory.getDescription());
-        createPlacesPoiItems(placeDocumentsList);
-        selectPoiItem(index);
-
-         */
+        chipMap.get(placeCategory).setChecked(true);
+        bottomSheetInterface.onClickedItem(index);
     }
 
     @Override

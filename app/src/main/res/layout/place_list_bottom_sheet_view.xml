@@ -9,8 +9,8 @@
     app:layoutManager="android.support.v7.widget.LinearLayoutManager"
     app:layout_behavior="com.zerodsoft.scheduleweather.event.places.bottomsheet.PlaceBottomSheetBehaviour">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/place_item_recycler_view"
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/place_items_viewpager"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"

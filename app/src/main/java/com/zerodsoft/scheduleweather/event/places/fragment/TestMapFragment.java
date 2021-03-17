@@ -1,5 +1,7 @@
 package com.zerodsoft.scheduleweather.event.places.fragment;
 
+import android.content.Context;
+import android.graphics.Rect;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -8,9 +10,10 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.paging.PagedList;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewpager.widget.ViewPager;
+import androidx.viewpager2.widget.ViewPager2;
 
 import android.os.RemoteException;
 import android.service.carrier.CarrierMessagingService;
@@ -18,29 +21,21 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.FrameLayout;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.activity.placecategory.viewmodel.PlaceCategoryViewModel;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IstartActivity;
 import com.zerodsoft.scheduleweather.databinding.FragmentTestMapBinding;
-import com.zerodsoft.scheduleweather.etc.RecyclerViewItemDecoration;
 import com.zerodsoft.scheduleweather.event.common.interfaces.ILocation;
 import com.zerodsoft.scheduleweather.event.places.adapter.PlaceItemInMapViewAdapter;
-import com.zerodsoft.scheduleweather.event.places.adapter.PlaceItemsAdapters;
 import com.zerodsoft.scheduleweather.event.places.bottomsheet.PlaceBottomSheetBehaviour;
 import com.zerodsoft.scheduleweather.event.places.interfaces.BottomSheet;
 import com.zerodsoft.scheduleweather.event.places.interfaces.FragmentController;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PlaceCategory;
 import com.zerodsoft.scheduleweather.kakaomap.model.CoordToAddressUtil;
-import com.zerodsoft.scheduleweather.kakaomap.util.LocalParameterUtil;
-import com.zerodsoft.scheduleweather.kakaomap.viewmodel.PlacesViewModel;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.coordtoaddressresponse.CoordToAddress;
@@ -64,9 +59,8 @@ public class TestMapFragment extends Fragment implements BottomSheet, PlaceCateg
     private LocationDTO selectedLocationDto;
     private List<PlaceCategoryDTO> placeCategoryList;
     private PlaceCategoryViewModel placeCategoryViewModel;
-    private RecyclerView bottomSheetRecyclerView;
-    private PlaceItemInMapViewAdapter adapter;
 
+    private ViewPager2 bottomSheetViewPager;
 
     public TestMapFragment(ILocation iLocation, IstartActivity istartActivity)
     {
@@ -99,36 +93,85 @@ public class TestMapFragment extends Fragment implements BottomSheet, PlaceCateg
 
         //set bottomsheet
         FrameLayout customBottomSheet = (FrameLayout) view.findViewById(R.id.place_list_bottom_sheet_view);
-        bottomSheetRecyclerView = (RecyclerView) customBottomSheet.findViewById(R.id.place_item_recycler_view);
-        bottomSheetRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.HORIZONTAL, false));
+        bottomSheetViewPager = (ViewPager2) customBottomSheet.findViewById(R.id.place_items_viewpager);
 
-        PlacesMapFragment.HorizontalMarginItemDecoration horizontalMarginItemDecoration = new PlacesMapFragment.HorizontalMarginItemDecoration(getContext());
-        bottomSheetRecyclerView.addItemDecoration(horizontalMarginItemDecoration);
+        bottomSheetViewPager.setOffscreenPageLimit(4);
 
-        bottomSheetRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener()
+        final int nextItemVisiblePx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, getContext().getResources().getDisplayMetrics());
+        final int currentItemHorizontalMarginPx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 12f, getContext().getResources().getDisplayMetrics());
+        final int pageTranslationX = nextItemVisiblePx + currentItemHorizontalMarginPx;
+
+        ViewPager2.PageTransformer pageTransformer = new ViewPager2.PageTransformer()
         {
             @Override
-            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState)
+            public void transformPage(@NonNull View page, float position)
             {
-                super.onScrollStateChanged(recyclerView, newState);
+                page.setTranslationX(-pageTranslationX * position);
+                page.setScaleY(1 - (0.25f * Math.abs(position)));
+            }
+        };
+
+        bottomSheetViewPager.setPageTransformer(pageTransformer);
+
+        HorizontalMarginItemDecoration horizontalMarginItemDecoration = new HorizontalMarginItemDecoration(getContext());
+        bottomSheetViewPager.addItemDecoration(horizontalMarginItemDecoration);
+
+        bottomSheetViewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback()
+        {
+            private int mCurrentPosition;
+            private int mScrollState;
+
+            @Override
+            public void onPageScrollStateChanged(final int state)
+            {
+                handleScrollState(state);
+                mScrollState = state;
+            }
+
+            private void handleScrollState(final int state)
+            {
+                if (state == ViewPager.SCROLL_STATE_IDLE && mScrollState == ViewPager.SCROLL_STATE_DRAGGING)
+                {
+                    setNextItemIfNeeded();
+                }
+            }
+
+            private void setNextItemIfNeeded()
+            {
+                if (!isScrollStateSettling())
+                {
+                    handleSetNextItem();
+                }
+            }
+
+            private boolean isScrollStateSettling()
+            {
+                return mScrollState == ViewPager.SCROLL_STATE_SETTLING;
+            }
+
+            private void handleSetNextItem()
+            {
+                final int lastPosition = bottomSheetViewPager.getAdapter().getItemCount() - 1;
+                if (mCurrentPosition == 0)
+                {
+                    bottomSheetViewPager.setCurrentItem(lastPosition, true);
+                } else if (mCurrentPosition == lastPosition)
+                {
+                    bottomSheetViewPager.setCurrentItem(0, true);
+                }
             }
 
             @Override
-            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy)
+            public void onPageScrolled(final int position, final float positionOffset, final int positionOffsetPixels)
             {
-                super.onScrolled(recyclerView, dx, dy);
-                if (!bottomSheetRecyclerView.canScrollHorizontally(dx))
-                {
-                    if (dx > 0)
-                    {
-                        //right
-                        bottomSheetRecyclerView.scrollToPosition(0);
-                    } else if (dx < 0)
-                    {
-                        //left
-                        bottomSheetRecyclerView.scrollToPosition(adapter.getItemCount() - 1);
-                    }
-                }
+            }
+
+            @Override
+            public void onPageSelected(int position)
+            {
+                super.onPageSelected(position);
+                mCurrentPosition = position;
+                placesMapFragment.onBottomSheetPageSelected(mCurrentPosition);
             }
         });
 
@@ -282,13 +325,13 @@ public class TestMapFragment extends Fragment implements BottomSheet, PlaceCateg
     public void setPlacesItems(List<PlaceDocuments> placeDocumentsList)
     {
         PlaceItemInMapViewAdapter adapter = new PlaceItemInMapViewAdapter(placeDocumentsList);
-        bottomSheetRecyclerView.setAdapter(adapter);
+        bottomSheetViewPager.setAdapter(adapter);
     }
 
     @Override
     public void onClickedItem(int index)
     {
-        bottomSheetRecyclerView.scrollToPosition(index);
+        bottomSheetViewPager.setCurrentItem(index, true);
     }
 
 
@@ -309,6 +352,25 @@ public class TestMapFragment extends Fragment implements BottomSheet, PlaceCateg
         } else if (tag.equals(PlacesMapFragment.TAG))
         {
             fragmentTransaction.hide(placeListFragment).show(placesMapFragment).commit();
+        }
+    }
+
+
+    static class HorizontalMarginItemDecoration extends RecyclerView.ItemDecoration
+    {
+        private int horizontalMarginInPx;
+
+        public HorizontalMarginItemDecoration(Context context)
+        {
+            horizontalMarginInPx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 12f, context.getResources().getDisplayMetrics());
+        }
+
+        @Override
+        public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent, @NonNull RecyclerView.State state)
+        {
+            super.getItemOffsets(outRect, view, parent, state);
+            outRect.left = horizontalMarginInPx;
+            outRect.right = horizontalMarginInPx;
         }
     }
 }
