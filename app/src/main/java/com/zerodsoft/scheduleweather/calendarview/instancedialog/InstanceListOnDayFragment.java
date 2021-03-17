@@ -127,7 +127,7 @@ public class InstanceListOnDayFragment extends DialogFragment implements OnEvent
         super.onViewCreated(view, savedInstanceState);
 
         viewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
-        binding.instancesDialogViewpager.setOffscreenPageLimit(3);
+        binding.instancesDialogViewpager.setOffscreenPageLimit(1);
 
         final int nextItemVisiblePx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 26f, getContext().getResources().getDisplayMetrics());
         final int currentItemHorizontalMarginPx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 42f, getContext().getResources().getDisplayMetrics());
@@ -150,35 +150,7 @@ public class InstanceListOnDayFragment extends DialogFragment implements OnEvent
         adapter = new InstancesOfDayAdapter(begin, end, onEventItemClickListener, iConnectedCalendars, this);
         binding.instancesDialogViewpager.setAdapter(adapter);
         binding.instancesDialogViewpager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, false);
-        /*
-        // MyRecyclerViewAdapter is an standard RecyclerView.Adapter :)
 
-// You need to retain one page on each side so that the next and previous items are visible
-viewPager2.offscreenPageLimit = 1
-
-// Add a PageTransformer that translates the next and previous items horizontally
-// towards the center of the screen, which makes them visible
-val nextItemVisiblePx = resources.getDimension(R.dimen.viewpager_next_item_visible)
-val currentItemHorizontalMarginPx = resources.getDimension(R.dimen.viewpager_current_item_horizontal_margin)
-val pageTranslationX = nextItemVisiblePx + currentItemHorizontalMarginPx
-
-val pageTransformer = ViewPager2.PageTransformer { page: View, position: Float ->
-    page.translationX = -pageTranslationX * position
-    // Next line scales the item's height. You can remove it if you don't want this effect
-    page.scaleY = 1 - (0.25f * abs(position))
-    // If you want a fading effect uncomment the next line:
-    // page.alpha = 0.25f + (1 - abs(position))
-}
-viewPager2.setPageTransformer(pageTransformer)
-
-// The ItemDecoration gives the current (centered) item horizontal margin so that
-// it doesn't occupy the whole screen width. Without it the items overlap
-val itemDecoration = HorizontalMarginItemDecoration(
-    context,
-    R.dimen.viewpager_current_item_horizontal_margin
-)
-viewPager2.addItemDecoration(itemDecoration)
-         */
     }
 
     @Override
@@ -204,30 +176,6 @@ viewPager2.addItemDecoration(itemDecoration)
             outRect.right = horizontalMarginInPx;
         }
     }
-
-    /*
-
-    class HorizontalMarginItemDecoration(context: Context, @DimenRes horizontalMarginInDp: Int) :
-        RecyclerView.ItemDecoration() {
-
-    private val horizontalMarginInPx: Int =
-            context.resources.getDimension(horizontalMarginInDp).toInt()
-
-    override fun getItemOffsets(
-            outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State
-    ) {
-        outRect.right = horizontalMarginInPx
-        outRect.left = horizontalMarginInPx
-    }
-
-}
-
-
-<dimen name="viewpager_next_item_visible">26dp</dimen>
-<dimen name="viewpager_current_item_horizontal_margin">42dp</dimen>
-
-
-     */
 
 
     @Override

@@ -66,6 +66,10 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
     private Map<PlaceCategoryDTO, Chip> chipMap = new HashMap<>();
     private Button listButton;
 
+    private int lastBottomSheetState;
+    private boolean isFirstItemSelected = false;
+
+
     private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
     {
         @Override
@@ -97,6 +101,11 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
     public void setPlaceItemsGetter(PlaceItemsGetter placeItemsGetter)
     {
         this.placeItemsGetter = placeItemsGetter;
+    }
+
+    public void setFirstItemSelected(boolean firstItemSelected)
+    {
+        isFirstItemSelected = firstItemSelected;
     }
 
     @Override
@@ -142,6 +151,12 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
             {
                 //목록 열고(리스트), 닫기(맵)
                 fragmentController.replaceFragment(PlaceListFragment.TAG);
+                lastBottomSheetState = bottomSheetInterface.getBottomSheetState();
+
+                if (lastBottomSheetState == BottomSheetBehavior.STATE_EXPANDED)
+                {
+                    bottomSheetInterface.setBottomSheetState(BottomSheetBehavior.STATE_HIDDEN);
+                }
             }
         });
         //---------------------
@@ -163,6 +178,11 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
         chipScrollView.addView(categoryChipGroup);
 
         setChips();
+    }
+
+    public int getLastBottomSheetState()
+    {
+        return lastBottomSheetState;
     }
 
     private void setChips()
@@ -194,17 +214,20 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
         {
             if (isChecked)
             {
+                if (isSelectedPoiItem)
+                {
+                    deselectPoiItem();
+                    isFirstItemSelected = false;
+                }
+
                 PlaceCategoryDTO placeCategory = ((ChipViewHolder) compoundButton.getTag()).placeCategory;
                 List<PlaceDocuments> placeDocumentsList = placeItemsGetter.getPlaceItems(placeCategory);
                 bottomSheetInterface.setPlacesItems(placeDocumentsList);
                 createPlacesPoiItems(placeDocumentsList);
 
                 mapView.fitMapViewAreaToShowAllPOIItems();
-            } else
-            {
-                bottomSheetInterface.setBottomSheetState(BottomSheetBehavior.STATE_HIDDEN);
-                removeAllPoiItems();
             }
+            bottomSheetInterface.setBottomSheetState(BottomSheetBehavior.STATE_HIDDEN);
         }
     };
 
@@ -238,11 +261,14 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
 
     public void onBottomSheetPageSelected(int index)
     {
-        selectedPoiItemIndex = index;
-        isSelectedPoiItem = true;
+        if (isFirstItemSelected)
+        {
+            selectedPoiItemIndex = index;
+            isSelectedPoiItem = true;
 
-        mapView.selectPOIItem(mapView.getPOIItems()[index], true);
-        mapView.setMapCenterPoint(mapView.getPOIItems()[index].getMapPoint(), true);
+            mapView.selectPOIItem(mapView.getPOIItems()[index], true);
+            mapView.setMapCenterPoint(mapView.getPOIItems()[index].getMapPoint(), true);
+        }
     }
 
 
@@ -253,6 +279,7 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
         requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
         chipMap.get(placeCategory).setChecked(true);
         bottomSheetInterface.onClickedItem(index);
+        bottomSheetInterface.setBottomSheetState(BottomSheetBehavior.STATE_EXPANDED);
     }
 
     @Override
@@ -283,7 +310,8 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
         if (isSelectedPoiItem)
         {
             deselectPoiItem();
-            bottomSheetInterface.setBottomSheetState(PlaceBottomSheetBehaviour.STATE_COLLAPSED);
+            isFirstItemSelected = false;
+            bottomSheetInterface.setBottomSheetState(PlaceBottomSheetBehaviour.STATE_HIDDEN);
         }
     }
 

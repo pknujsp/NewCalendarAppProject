@@ -8,6 +8,8 @@ public interface BottomSheet
 {
     void setBottomSheetState(int state);
 
+    int getBottomSheetState();
+
     void setPlacesItems(List<PlaceDocuments> placeDocumentsList);
 
     void onClickedItem(int index);

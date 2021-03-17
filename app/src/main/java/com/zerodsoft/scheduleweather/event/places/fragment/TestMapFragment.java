@@ -17,6 +17,7 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import android.os.RemoteException;
 import android.service.carrier.CarrierMessagingService;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -68,7 +69,6 @@ public class TestMapFragment extends Fragment implements BottomSheet, PlaceCateg
         this.istartActivity = istartActivity;
     }
 
-
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
@@ -94,28 +94,22 @@ public class TestMapFragment extends Fragment implements BottomSheet, PlaceCateg
         //set bottomsheet
         FrameLayout customBottomSheet = (FrameLayout) view.findViewById(R.id.place_list_bottom_sheet_view);
         bottomSheetViewPager = (ViewPager2) customBottomSheet.findViewById(R.id.place_items_viewpager);
-
-        bottomSheetViewPager.setOffscreenPageLimit(4);
-
-        final int nextItemVisiblePx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, getContext().getResources().getDisplayMetrics());
-        final int currentItemHorizontalMarginPx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 12f, getContext().getResources().getDisplayMetrics());
-        final int pageTranslationX = nextItemVisiblePx + currentItemHorizontalMarginPx;
+        bottomSheetViewPager.setOffscreenPageLimit(2);
 
         ViewPager2.PageTransformer pageTransformer = new ViewPager2.PageTransformer()
         {
             @Override
             public void transformPage(@NonNull View page, float position)
             {
-                page.setTranslationX(-pageTranslationX * position);
-                page.setScaleY(1 - (0.25f * Math.abs(position)));
+
             }
         };
 
         bottomSheetViewPager.setPageTransformer(pageTransformer);
-
+        /*
         HorizontalMarginItemDecoration horizontalMarginItemDecoration = new HorizontalMarginItemDecoration(getContext());
         bottomSheetViewPager.addItemDecoration(horizontalMarginItemDecoration);
-
+         */
         bottomSheetViewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback()
         {
             private int mCurrentPosition;
@@ -322,6 +316,12 @@ public class TestMapFragment extends Fragment implements BottomSheet, PlaceCateg
     }
 
     @Override
+    public int getBottomSheetState()
+    {
+        return placeListBottomSheetBehavior.getState();
+    }
+
+    @Override
     public void setPlacesItems(List<PlaceDocuments> placeDocumentsList)
     {
         PlaceItemInMapViewAdapter adapter = new PlaceItemInMapViewAdapter(placeDocumentsList);
@@ -331,7 +331,8 @@ public class TestMapFragment extends Fragment implements BottomSheet, PlaceCateg
     @Override
     public void onClickedItem(int index)
     {
-        bottomSheetViewPager.setCurrentItem(index, true);
+        placesMapFragment.setFirstItemSelected(true);
+        bottomSheetViewPager.setCurrentItem(index, false);
     }
 
 
@@ -352,6 +353,10 @@ public class TestMapFragment extends Fragment implements BottomSheet, PlaceCateg
         } else if (tag.equals(PlacesMapFragment.TAG))
         {
             fragmentTransaction.hide(placeListFragment).show(placesMapFragment).commit();
+            if (placesMapFragment.getLastBottomSheetState() == BottomSheetBehavior.STATE_EXPANDED)
+            {
+                placeListBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+            }
         }
     }
 

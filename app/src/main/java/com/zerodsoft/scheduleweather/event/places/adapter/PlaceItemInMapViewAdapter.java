@@ -36,6 +36,7 @@ public class PlaceItemInMapViewAdapter extends RecyclerView.Adapter<PlaceItemInM
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.cardview_item_around_location, parent, false);
         ViewGroup.LayoutParams layoutParams = view.getLayoutParams();
         layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
+        layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT;
         view.setLayoutParams(layoutParams);
 
         return new PlaceItemInMapViewHolder(view);

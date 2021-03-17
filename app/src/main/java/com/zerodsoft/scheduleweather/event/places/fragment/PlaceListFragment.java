@@ -2,6 +2,7 @@ package com.zerodsoft.scheduleweather.event.places.fragment;
 
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -123,14 +124,15 @@ public class PlaceListFragment extends Fragment implements PlaceItemsGetter
             @Override
             public void onScrollChange(View v, int scrollX, int scrollY, int oldScrollX, int oldScrollY)
             {
-                if (scrollY > 0)
+                Log.e(TAG, "scrollY : " + scrollY + " , oldScrollY : " + oldScrollY);
+                if (scrollY - oldScrollY > 0)
                 {
                     // 아래로 스크롤
                     if (mapButton.getVisibility() == View.VISIBLE)
                     {
                         mapButton.setVisibility(View.GONE);
                     }
-                } else if (scrollY < 0)
+                } else if (scrollY - oldScrollY < 0)
                 {
                     // 위로 스크롤
                     if (mapButton.getVisibility() != View.VISIBLE)
