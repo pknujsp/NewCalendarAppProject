@@ -103,6 +103,8 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+        placeBottomSheetSelectBtnVisibility = View.GONE;
+        placeBottomSheetUnSelectBtnVisibility = View.GONE;
     }
 
     @Nullable
@@ -227,6 +229,7 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
             } else if (categoryChipGroup.getCheckedChipIds().isEmpty() && mapView.getPOIItems().length > 0)
             {
                 removeAllPoiItems();
+                isSelectedPoiItem = false;
             }
             setPlacesListBottomSheetState(BottomSheetBehavior.STATE_HIDDEN);
         }

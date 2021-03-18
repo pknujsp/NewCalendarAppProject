@@ -32,18 +32,18 @@ public class ReselectDetailLocation extends KakaoMapActivity
 
     private LocationViewModel viewModel;
     private OnBackPressedCallback onBackPressedCallback;
+    private boolean isRemovedLocation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-
         onBackPressedCallback = new OnBackPressedCallback(true)
         {
             @Override
             public void handleOnBackPressed()
             {
-                setResult(RESULT_CANCELED);
+                setResult(isRemovedLocation ? EventActivity.RESULT_REMOVED_LOCATION : RESULT_CANCELED);
                 finish();
                 onBackPressedCallback.remove();
             }
@@ -63,6 +63,9 @@ public class ReselectDetailLocation extends KakaoMapActivity
         {
             if (savedLocationDto.getAddressName() != null)
             {
+                kakaoMapFragment.setPlaceBottomSheetSelectBtnVisibility(View.GONE);
+                kakaoMapFragment.setPlaceBottomSheetUnSelectBtnVisibility(View.VISIBLE);
+
                 // 주소 검색 순서 : 좌표로 주소 변환
                 LocalApiPlaceParameter parameter = LocalParameterUtil.getCoordToAddressParameter(savedLocationDto.getLatitude(), savedLocationDto.getLongitude());
                 viewModel.getAddressItem(parameter, new CarrierMessagingService.ResultCallback<DataWrapper<AddressResponseDocuments>>()
@@ -85,6 +88,9 @@ public class ReselectDetailLocation extends KakaoMapActivity
 
             } else
             {
+                kakaoMapFragment.setPlaceBottomSheetSelectBtnVisibility(View.GONE);
+                kakaoMapFragment.setPlaceBottomSheetUnSelectBtnVisibility(View.VISIBLE);
+
                 // 장소 검색 순서 : 장소의 위경도 내 10M 반경에서 장소 이름 검색(여러개 나올 경우 장소ID와 일치하는 장소를 선택)
                 LocalApiPlaceParameter parameter = LocalParameterUtil.getPlaceParameter(savedLocationDto.getPlaceName(),
                         savedLocationDto.getLatitude(), savedLocationDto.getLongitude(), LocalApiPlaceParameter.DEFAULT_SIZE,
@@ -99,8 +105,9 @@ public class ReselectDetailLocation extends KakaoMapActivity
                         if (result.getException() == null)
                         {
                             PlaceDocuments document = result.getData();
+                            kakaoMapFragment.setPlacesListAdapter(new PlaceItemInMapViewAdapter());
                             kakaoMapFragment.createPlacesPoiItems(Collections.singletonList(document));
-                            kakaoMapFragment.selectPoiItem(0);
+                            kakaoMapFragment.onPOIItemSelectedByList(0);
                         } else
                         {
                             // exception(error)
@@ -139,6 +146,7 @@ public class ReselectDetailLocation extends KakaoMapActivity
             {
                 if (isAdded)
                 {
+
                     getIntent().putExtra("selectedLocationName", (location.getAddressName() == null ? location.getPlaceName() : location.getAddressName()) + " 지정완료");
                     setResult(EventActivity.RESULT_RESELECTED_LOCATION, getIntent());
                     finish();
@@ -171,6 +179,9 @@ public class ReselectDetailLocation extends KakaoMapActivity
                         @Override
                         public void run()
                         {
+                            isRemovedLocation = true;
+                            kakaoMapFragment.setPlaceBottomSheetSelectBtnVisibility(View.VISIBLE);
+                            kakaoMapFragment.setPlaceBottomSheetUnSelectBtnVisibility(View.GONE);
                             kakaoMapFragment.getPlaceListBottomSheetBehavior().setState(BottomSheetBehavior.STATE_HIDDEN);
                             Toast.makeText(ReselectDetailLocation.this, getString(R.string.removed_detail_location), Toast.LENGTH_SHORT).show();
                         }

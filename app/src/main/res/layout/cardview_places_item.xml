@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/place_item_cardview_in_bottomsheet"
+    style="@style/Widget.MaterialComponents.CardView"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_margin="7dp"
+    android:clickable="true"
+    android:foreground="?attr/selectableItemBackground"
+    app:cardBackgroundColor="@color/white"
+    app:cardCornerRadius="@dimen/place_item_cardview_corner_radius"
+    app:cardElevation="6dp">
+
+    <RelativeLayout
+        android:id="@+id/map_place_item_rows"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="8dp">
+
+        <TextView
+            android:id="@+id/place_item_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_marginBottom="4dp"
+            android:ellipsize="marquee"
+            android:singleLine="true"
+            android:text="XX편의점"
+            android:textColor="@color/black"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/place_item_address"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/place_item_name"
+            android:layout_marginBottom="8dp"
+            android:ellipsize="marquee"
+            android:singleLine="true"
+            android:text="XX도 XX시 XX동 111-1"
+            android:textColor="@color/gray_600"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/place_item_category"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/place_item_address"
+            android:ellipsize="marquee"
+            android:singleLine="true"
+            android:text="편의점"
+            android:textColor="@color/black"
+            android:textSize="12sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@id/place_item_distance"
+            android:layout_alignParentLeft="true"
+            android:layout_toLeftOf="@id/place_item_distance">
+
+            <ImageButton
+                android:id="@+id/add_to_favorite_placeitem_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginRight="16dp"
+                android:background="?attr/selectableItemBackground"
+                android:src="@drawable/favorite_disabled_icon" />
+
+            <Button
+                android:id="@+id/select_this_place_button"
+                style="@style/Widget.MaterialComponents.Button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="16dp"
+                android:gravity="center"
+                android:text="@string/select" />
+
+            <Button
+                android:id="@+id/unselect_this_place_button"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/cancel_location" />
+
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/place_item_distance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"
+            android:gravity="right"
+            android:text="100M"
+            android:textColor="@color/gray_600"
+            android:textSize="11sp" />
+
+    </RelativeLayout>
+
+</androidx.cardview.widget.CardView>

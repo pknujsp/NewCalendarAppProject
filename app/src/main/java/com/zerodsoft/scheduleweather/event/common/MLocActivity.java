@@ -65,6 +65,8 @@ public class MLocActivity extends KakaoMapActivity
         eventId = intent.getLongExtra("eventId", 0);
 
         // 검색 결과가 바로 나타난다.
+        kakaoMapFragment.setPlaceBottomSheetSelectBtnVisibility(View.VISIBLE);
+        kakaoMapFragment.setPlaceBottomSheetUnSelectBtnVisibility(View.GONE);
     }
 
     @Override

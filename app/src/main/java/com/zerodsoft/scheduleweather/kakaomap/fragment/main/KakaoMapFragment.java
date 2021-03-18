@@ -113,6 +113,9 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     public ViewPager2 bottomSheetViewPager;
     public PlaceItemInMapViewAdapter adapter;
 
+    public int placeBottomSheetSelectBtnVisibility;
+    public int placeBottomSheetUnSelectBtnVisibility;
+
     public KakaoMapFragment()
     {
 
@@ -302,24 +305,6 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
 
 
     @Override
-    public void closeSearchView(int viewType)
-    {
-        switch (viewType)
-        {
-            case SearchBottomSheetController.SEARCH_VIEW:
-                binding.mapContainer.setVisibility(View.VISIBLE);
-                break;
-            case SearchBottomSheetController.SEARCH_RESULT_VIEW:
-                binding.mapContainer.setVisibility(View.VISIBLE);
-                setMenuVisibility(IMapToolbar.ALL, false);
-                removeAllPoiItems();
-                break;
-        }
-        searchView.setIconified(true);
-        setSearchBottomSheetState(BottomSheetBehavior.STATE_HIDDEN);
-    }
-
-    @Override
     public boolean onOptionsItemSelected(MenuItem item)
     {
         switch (item.getItemId())
@@ -445,16 +430,20 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
             public void onPageSelected(int position)
             {
                 super.onPageSelected(position);
+
                 mCurrentPosition = position;
-                onPOIItemSelectedByBottomSheet(mCurrentPosition);
+                if (isSelectedPoiItem)
+                {
+                    onPOIItemSelectedByBottomSheet(mCurrentPosition);
+                }
             }
+
         });
 
         placeListBottomSheetBehavior = PlacesListBottomSheetBehavior.from(placesListBottomSheet);
         placeListBottomSheetBehavior.setPeekHeight(0);
         placeListBottomSheetBehavior.setDraggable(false);
         placeListBottomSheetBehavior.setState(PlacesListBottomSheetBehavior.STATE_HIDDEN);
-
         placeListBottomSheetBehavior.setAnchorOffset(0.5f);
         placeListBottomSheetBehavior.setAnchorSheetCallback(new PlacesListBottomSheetBehavior.AnchorSheetCallback()
         {
@@ -492,6 +481,16 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
                 }
             }
         });
+    }
+
+    public void setPlaceBottomSheetSelectBtnVisibility(int placeBottomSheetSelectBtnVisibility)
+    {
+        this.placeBottomSheetSelectBtnVisibility = placeBottomSheetSelectBtnVisibility;
+    }
+
+    public void setPlaceBottomSheetUnSelectBtnVisibility(int placeBottomSheetUnSelectBtnVisibility)
+    {
+        this.placeBottomSheetUnSelectBtnVisibility = placeBottomSheetUnSelectBtnVisibility;
     }
 
     private void setMapPaddingBottom(Float offset)
@@ -608,6 +607,25 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     }
 
     @Override
+    public void closeSearchView(int viewType)
+    {
+        switch (viewType)
+        {
+            case SearchBottomSheetController.SEARCH_VIEW:
+                binding.mapContainer.setVisibility(View.VISIBLE);
+                break;
+            case SearchBottomSheetController.SEARCH_RESULT_VIEW:
+                binding.mapContainer.setVisibility(View.VISIBLE);
+                setMenuVisibility(IMapToolbar.ALL, false);
+                removeAllPoiItems();
+                break;
+        }
+        searchView.setIconified(true);
+        setSearchBottomSheetState(BottomSheetBehavior.STATE_HIDDEN);
+        setPlacesListBottomSheetState(BottomSheetBehavior.STATE_HIDDEN);
+    }
+
+    @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater)
     {
         super.onCreateOptionsMenu(menu, menuInflater);
@@ -633,7 +651,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
                 if (!query.isEmpty())
                 {
                     // 현재 프래그먼트가 검색 결과 프래그먼트인 경우
-                    FragmentManager fragmentManager = getParentFragmentManager();
+                    FragmentManager fragmentManager = getChildFragmentManager();
 
                     if (fragmentManager.getBackStackEntryCount() > 0)
                     {
@@ -665,7 +683,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
             @Override
             public boolean onClose()
             {
-                FragmentManager fragmentManager = getParentFragmentManager();
+                FragmentManager fragmentManager = getChildFragmentManager();
                 Fragment showingFragment = fragmentManager.findFragmentByTag(SearchResultListFragment.TAG);
                 if (showingFragment != null)
                 {
@@ -833,6 +851,9 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     {
         this.adapter = adapter;
         bottomSheetViewPager.setAdapter(adapter);
+        adapter.setPlacesItemBottomSheetButtonOnClickListener(placesItemBottomSheetButtonOnClickListener);
+        adapter.setVisibleSelectBtn(placeBottomSheetSelectBtnVisibility);
+        adapter.setVisibleUnSelectBtn(placeBottomSheetUnSelectBtnVisibility);
     }
 
     @Override
@@ -870,10 +891,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
         if (isSelectedPoiItem)
         {
             deselectPoiItem();
-            if (placeListBottomSheetBehavior.getState() != BottomSheetBehavior.STATE_HIDDEN)
-            {
-                placeListBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
-            }
+            placeListBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
         }
     }
 

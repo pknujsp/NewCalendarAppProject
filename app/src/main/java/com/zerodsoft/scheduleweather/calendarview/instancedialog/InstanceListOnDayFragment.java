@@ -14,6 +14,7 @@ import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewpager2.widget.MarginPageTransformer;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.provider.CalendarContract;
@@ -47,11 +48,10 @@ import java.util.Date;
 import java.util.Map;
 
 import lombok.SneakyThrows;
+import lombok.val;
 
 public class InstanceListOnDayFragment extends DialogFragment implements OnEventItemLongClickListener, IRefreshView, IControlEvent, InstancesOfDayView.InstanceDialogMenuListener
 {
-
-
     public static final String TAG = "MonthEventsInfoFragment";
 
     private final IConnectedCalendars iConnectedCalendars;
@@ -127,26 +127,40 @@ public class InstanceListOnDayFragment extends DialogFragment implements OnEvent
         super.onViewCreated(view, savedInstanceState);
 
         viewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
-        binding.instancesDialogViewpager.setOffscreenPageLimit(1);
+        binding.instancesDialogViewpager.setOffscreenPageLimit(2);
 
-        final int nextItemVisiblePx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 26f, getContext().getResources().getDisplayMetrics());
-        final int currentItemHorizontalMarginPx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 42f, getContext().getResources().getDisplayMetrics());
-        final int pageTranslationX = nextItemVisiblePx + currentItemHorizontalMarginPx;
+        /*
+        // increase this offset to show more of left/right
+        final int offsetPx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 30f, getResources().getDisplayMetrics());
+        binding.instancesDialogViewpager.setPadding(offsetPx, 0, offsetPx, 0);
 
-        ViewPager2.PageTransformer pageTransformer = new ViewPager2.PageTransformer()
+        // increase this offset to increase distance between 2 items
+        final int pageMarginPx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10f, getResources().getDisplayMetrics());
+        final ViewPager2.PageTransformer marginTransformer = new MarginPageTransformer(pageMarginPx);
+
+         */
+
+        float pageMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10f, getResources().getDisplayMetrics());
+        float pageOffset = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 20f, getResources().getDisplayMetrics());
+
+        binding.instancesDialogViewpager.setPageTransformer((page, position) ->
         {
-            @Override
-            public void transformPage(@NonNull View page, float position)
+            float myOffset = position * -(2 * pageOffset + pageMargin);
+            if (position < -1)
             {
-                page.setTranslationX(-pageTranslationX * position);
-                page.setScaleY(1 - (0.25f * Math.abs(position)));
+                page.setTranslationX(-myOffset);
+            } else if (position <= 1)
+            {
+                float scaleFactor = Math.max(0.7f, 1 - Math.abs(position - 0.14285715f));
+                page.setTranslationX(myOffset);
+                page.setScaleY(scaleFactor);
+                page.setAlpha(scaleFactor);
+            } else
+            {
+                page.setAlpha(0);
+                page.setTranslationX(myOffset);
             }
-        };
-
-        binding.instancesDialogViewpager.setPageTransformer(pageTransformer);
-        HorizontalMarginItemDecoration horizontalMarginItemDecoration = new HorizontalMarginItemDecoration(getContext());
-        binding.instancesDialogViewpager.addItemDecoration(horizontalMarginItemDecoration);
-
+        });
         adapter = new InstancesOfDayAdapter(begin, end, onEventItemClickListener, iConnectedCalendars, this);
         binding.instancesDialogViewpager.setAdapter(adapter);
         binding.instancesDialogViewpager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, false);

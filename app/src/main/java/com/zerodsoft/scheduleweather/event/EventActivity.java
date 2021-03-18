@@ -270,11 +270,9 @@ public class EventActivity extends AppCompatActivity implements ILocation, Istar
                 if (resultCode == RESULT_SELECTED_LOCATION)
                 {
                     Toast.makeText(EventActivity.this, data.getStringExtra("selectedLocationName"), Toast.LENGTH_SHORT).show();
+
                     switch (clickedFragmentTag)
                     {
-                        case TAG_INFO:
-                            // binding.scheduleBottomNav.setSelectedItemId(R.id.schedule_info);
-                            break;
                         case TAG_WEATHER:
                             binding.scheduleBottomNav.setSelectedItemId(R.id.schedule_weather);
                             break;
@@ -287,17 +285,6 @@ public class EventActivity extends AppCompatActivity implements ILocation, Istar
                     // 취소, 이벤트 정보 프래그먼트로 돌아감
                 }
                 break;
-            }
-
-            case REQUEST_RESELECT_LOCATION:
-            {
-                if (resultCode == RESULT_RESELECTED_LOCATION)
-                {
-                    Toast.makeText(EventActivity.this, data.getStringExtra("selectedLocationName"), Toast.LENGTH_SHORT).show();
-                } else if (resultCode == RESULT_REMOVED_LOCATION)
-                {
-
-                }
             }
         }
     }
@@ -377,7 +364,7 @@ public class EventActivity extends AppCompatActivity implements ILocation, Istar
         locationViewModel.hasDetailLocation(calendarId, eventId, resultCallback);
     }
 
-    private final ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(
+    private final ActivityResultLauncher<Intent> editLocationActivityResultLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             new ActivityResultCallback<ActivityResult>()
             {
@@ -385,9 +372,9 @@ public class EventActivity extends AppCompatActivity implements ILocation, Istar
                 public void onActivityResult(ActivityResult result)
                 {
                     final int resultCode = result.getResultCode();
-                    if (resultCode == RESULT_EDITED_PLACE_CATEGORY || resultCode == RESULT_RESELECTED_LOCATION || resultCode == RESULT_SELECTED_LOCATION)
+                    if (resultCode == RESULT_RESELECTED_LOCATION || resultCode == RESULT_REMOVED_LOCATION)
                     {
-                        placesTransactionFragment.refresh();
+
                     }
                 }
             }
@@ -396,6 +383,22 @@ public class EventActivity extends AppCompatActivity implements ILocation, Istar
     @Override
     public void startActivityResult(Intent intent, int requestCode)
     {
-        activityResultLauncher.launch(intent);
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        if (placesTransactionFragment != null)
+        {
+            fragmentTransaction.remove(placesTransactionFragment);
+            placesTransactionFragment = null;
+        }
+        if (weatherFragment != null)
+        {
+            fragmentTransaction.remove(weatherFragment);
+            weatherFragment = null;
+        }
+
+        if (!fragmentTransaction.isEmpty())
+        {
+            fragmentTransaction.commit();
+        }
+        editLocationActivityResultLauncher.launch(intent);
     }
 }

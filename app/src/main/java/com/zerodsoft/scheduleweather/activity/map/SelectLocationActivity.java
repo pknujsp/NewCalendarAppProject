@@ -5,6 +5,7 @@ import androidx.activity.OnBackPressedCallback;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.CalendarContract;
+import android.view.View;
 
 import com.zerodsoft.scheduleweather.kakaomap.activity.KakaoMapActivity;
 
@@ -44,6 +45,8 @@ public class SelectLocationActivity extends KakaoMapActivity
                 finish();
             }
         };
+        kakaoMapFragment.setPlaceBottomSheetSelectBtnVisibility(View.VISIBLE);
+        kakaoMapFragment.setPlaceBottomSheetUnSelectBtnVisibility(View.GONE);
         getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
     }
 
