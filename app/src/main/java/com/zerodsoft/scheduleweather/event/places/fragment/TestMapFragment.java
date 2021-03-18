@@ -45,12 +45,11 @@ import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 import java.util.List;
 
 
-public class TestMapFragment extends Fragment implements BottomSheet, PlaceCategory, FragmentController
+public class TestMapFragment extends Fragment implements PlaceCategory, FragmentController
 {
     private FragmentTestMapBinding binding;
     private PlacesMapFragment placesMapFragment;
     private PlaceListFragment placeListFragment;
-    private PlacesListBottomSheetBehavior placeListBottomSheetBehavior;
 
     private final ILocation iLocation;
     private final IstartActivity istartActivity;
@@ -58,8 +57,6 @@ public class TestMapFragment extends Fragment implements BottomSheet, PlaceCateg
     private LocationDTO selectedLocationDto;
     private List<PlaceCategoryDTO> placeCategoryList;
     private PlaceCategoryViewModel placeCategoryViewModel;
-
-    private ViewPager2 bottomSheetViewPager;
 
     public TestMapFragment(ILocation iLocation, IstartActivity istartActivity)
     {
@@ -86,133 +83,7 @@ public class TestMapFragment extends Fragment implements BottomSheet, PlaceCateg
     {
         super.onViewCreated(view, savedInstanceState);
         placeCategoryViewModel = new ViewModelProvider(this).get(PlaceCategoryViewModel.class);
-
         initLocation();
-
-        //set bottomsheet
-        FrameLayout customBottomSheet = (FrameLayout) view.findViewById(R.id.placeslist_bottom_sheet);
-        bottomSheetViewPager = (ViewPager2) customBottomSheet.findViewById(R.id.place_items_viewpager);
-        bottomSheetViewPager.setOffscreenPageLimit(2);
-
-        ViewPager2.PageTransformer pageTransformer = new ViewPager2.PageTransformer()
-        {
-            @Override
-            public void transformPage(@NonNull View page, float position)
-            {
-
-            }
-        };
-
-        bottomSheetViewPager.setPageTransformer(pageTransformer);
-        /*
-        HorizontalMarginItemDecoration horizontalMarginItemDecoration = new HorizontalMarginItemDecoration(getContext());
-        bottomSheetViewPager.addItemDecoration(horizontalMarginItemDecoration);
-         */
-        bottomSheetViewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback()
-        {
-            private int mCurrentPosition;
-            private int mScrollState;
-
-            @Override
-            public void onPageScrollStateChanged(final int state)
-            {
-                handleScrollState(state);
-                mScrollState = state;
-            }
-
-            private void handleScrollState(final int state)
-            {
-                if (state == ViewPager.SCROLL_STATE_IDLE && mScrollState == ViewPager.SCROLL_STATE_DRAGGING)
-                {
-                    setNextItemIfNeeded();
-                }
-            }
-
-            private void setNextItemIfNeeded()
-            {
-                if (!isScrollStateSettling())
-                {
-                    handleSetNextItem();
-                }
-            }
-
-            private boolean isScrollStateSettling()
-            {
-                return mScrollState == ViewPager.SCROLL_STATE_SETTLING;
-            }
-
-            private void handleSetNextItem()
-            {
-                final int lastPosition = bottomSheetViewPager.getAdapter().getItemCount() - 1;
-                if (mCurrentPosition == 0)
-                {
-                    bottomSheetViewPager.setCurrentItem(lastPosition, true);
-                } else if (mCurrentPosition == lastPosition)
-                {
-                    bottomSheetViewPager.setCurrentItem(0, true);
-                }
-            }
-
-            @Override
-            public void onPageScrolled(final int position, final float positionOffset, final int positionOffsetPixels)
-            {
-            }
-
-            @Override
-            public void onPageSelected(int position)
-            {
-                super.onPageSelected(position);
-                mCurrentPosition = position;
-                placesMapFragment.onBottomSheetPageSelected(mCurrentPosition);
-            }
-        });
-
-        placeListBottomSheetBehavior = PlacesListBottomSheetBehavior.from(customBottomSheet);
-        placeListBottomSheetBehavior.setPeekHeight(0);
-        placeListBottomSheetBehavior.setDraggable(false);
-        placeListBottomSheetBehavior.setState(PlacesListBottomSheetBehavior.STATE_COLLAPSED);
-
-        placeListBottomSheetBehavior.setAnchorOffset(0.5f);
-        placeListBottomSheetBehavior.setAnchorSheetCallback(new PlacesListBottomSheetBehavior.AnchorSheetCallback()
-        {
-            @Override
-            public void onStateChanged(@NonNull View bottomSheet, int newState)
-            {
-                if (newState == BottomSheetBehavior.STATE_COLLAPSED)
-                {
-                } else if (newState == PlacesListBottomSheetBehavior.STATE_EXPANDED)
-                {
-                } else if (newState == PlacesListBottomSheetBehavior.STATE_DRAGGING)
-                {
-                } else if (newState == PlacesListBottomSheetBehavior.STATE_HALF_EXPANDED)
-                {
-                }
-            }
-
-            @Override
-            public void onSlide(@NonNull View bottomSheet, float slideOffset)
-            {
-
-                float h = bottomSheet.getHeight();
-                float off = h * slideOffset;
-
-                switch (placeListBottomSheetBehavior.getState())
-                {
-                    case PlacesListBottomSheetBehavior.STATE_DRAGGING:
-                        setMapPaddingBottom(off);
-                        break;
-                    case PlacesListBottomSheetBehavior.STATE_SETTLING:
-                        setMapPaddingBottom(off);
-                        break;
-                    case PlacesListBottomSheetBehavior.STATE_HIDDEN:
-                        break;
-                    case PlacesListBottomSheetBehavior.STATE_EXPANDED:
-                        break;
-                    case BottomSheetBehavior.STATE_COLLAPSED:
-                        break;
-                }
-            }
-        });
     }
 
     private void initLocation()
@@ -293,46 +164,11 @@ public class TestMapFragment extends Fragment implements BottomSheet, PlaceCateg
         });
     }
 
-
-    private void setMapPaddingBottom(Float offset)
-    {
-        //From 0.0 (min) - 1.0 (max) // bsExpanded - bsCollapsed;
-        Float maxMapPaddingBottom = 1.0f;
-        binding.placesMapFragmentContainer.setPadding(0, 0, 0, Math.round(offset * maxMapPaddingBottom));
-    }
-
     @Override
     public void onStart()
     {
         super.onStart();
     }
-
-    @Override
-    public void setBottomSheetState(int state)
-    {
-        placeListBottomSheetBehavior.setState(state);
-    }
-
-    @Override
-    public int getBottomSheetState()
-    {
-        return placeListBottomSheetBehavior.getState();
-    }
-
-    @Override
-    public void setPlacesItems(List<PlaceDocuments> placeDocumentsList)
-    {
-      //  PlaceItemInMapViewAdapter adapter = new PlaceItemInMapViewAdapter(placeDocumentsList);
-     //   bottomSheetViewPager.setAdapter(adapter);
-    }
-
-    @Override
-    public void onClickedItem(int index)
-    {
-        placesMapFragment.setFirstItemSelected(true);
-        bottomSheetViewPager.setCurrentItem(index, false);
-    }
-
 
     @Override
     public List<PlaceCategoryDTO> getPlaceCategoryList()
@@ -352,29 +188,7 @@ public class TestMapFragment extends Fragment implements BottomSheet, PlaceCateg
         } else if (tag.equals(PlacesMapFragment.TAG))
         {
             fragmentTransaction.hide(placeListFragment).show(placesMapFragment).commit();
-            if (placesMapFragment.getLastBottomSheetState() == BottomSheetBehavior.STATE_EXPANDED)
-            {
-                placeListBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-            }
         }
     }
 
-
-    static class HorizontalMarginItemDecoration extends RecyclerView.ItemDecoration
-    {
-        private int horizontalMarginInPx;
-
-        public HorizontalMarginItemDecoration(Context context)
-        {
-            horizontalMarginInPx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 12f, context.getResources().getDisplayMetrics());
-        }
-
-        @Override
-        public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent, @NonNull RecyclerView.State state)
-        {
-            super.getItemOffsets(outRect, view, parent, state);
-            outRect.left = horizontalMarginInPx;
-            outRect.right = horizontalMarginInPx;
-        }
-    }
 }

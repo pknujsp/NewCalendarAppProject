@@ -26,6 +26,7 @@ import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IstartActivity;
+import com.zerodsoft.scheduleweather.event.places.adapter.PlaceItemInMapViewAdapter;
 import com.zerodsoft.scheduleweather.kakaomap.bottomsheet.PlacesListBottomSheetBehavior;
 import com.zerodsoft.scheduleweather.event.places.interfaces.BottomSheet;
 import com.zerodsoft.scheduleweather.event.places.interfaces.FragmentController;
@@ -52,7 +53,6 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
     public static final String TAG = "PlacesMapFragment";
 
     private IstartActivity istartActivity;
-    private final BottomSheet bottomSheetInterface;
     private final PlaceCategory placeCategory;
     private final FragmentController fragmentController;
     private PlaceItemsGetter placeItemsGetter;
@@ -64,10 +64,6 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
     private ChipGroup categoryChipGroup;
     private Map<PlaceCategoryDTO, Chip> chipMap = new HashMap<>();
     private Button listButton;
-
-    private int lastBottomSheetState;
-    private boolean isFirstItemSelected = false;
-
 
     private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
     {
@@ -83,7 +79,6 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
     {
         super();
         this.placeCategory = (PlaceCategory) fragment;
-        this.bottomSheetInterface = (BottomSheet) fragment;
         this.fragmentController = (FragmentController) fragment;
     }
 
@@ -100,11 +95,6 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
     public void setPlaceItemsGetter(PlaceItemsGetter placeItemsGetter)
     {
         this.placeItemsGetter = placeItemsGetter;
-    }
-
-    public void setFirstItemSelected(boolean firstItemSelected)
-    {
-        isFirstItemSelected = firstItemSelected;
     }
 
     @Override
@@ -132,7 +122,7 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
-        //----------list button
+
         listButton = new MaterialButton(getContext());
         listButton.setText(R.string.open_list);
         listButton.setTextColor(Color.WHITE);
@@ -148,17 +138,10 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
             @Override
             public void onClick(View view)
             {
-                //목록 열고(리스트), 닫기(맵)
+                //리스트 열고, placeslistbottomsheet닫고, poiitem이 선택된 경우 선택해제
                 fragmentController.replaceFragment(PlaceListFragment.TAG);
-                lastBottomSheetState = bottomSheetInterface.getBottomSheetState();
-
-                if (lastBottomSheetState == BottomSheetBehavior.STATE_EXPANDED)
-                {
-                    bottomSheetInterface.setBottomSheetState(BottomSheetBehavior.STATE_HIDDEN);
-                }
             }
         });
-        //---------------------
 
         //-----------chip group
         HorizontalScrollView chipScrollView = new HorizontalScrollView(getContext());
@@ -175,13 +158,7 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
         categoryChipGroup.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         chipScrollView.addView(categoryChipGroup);
-
         setChips();
-    }
-
-    public int getLastBottomSheetState()
-    {
-        return lastBottomSheetState;
     }
 
     @Override
@@ -191,8 +168,6 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
         //리스트 버튼과 chips, bottomsheet를 숨긴다
         listButton.setVisibility(View.GONE);
         categoryChipGroup.setVisibility(View.GONE);
-        lastBottomSheetState = bottomSheetInterface.getBottomSheetState();
-        bottomSheetInterface.setBottomSheetState(BottomSheetBehavior.STATE_HIDDEN);
     }
 
     @Override
@@ -204,7 +179,6 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
             case SearchBottomSheetController.SEARCH_VIEW:
                 listButton.setVisibility(View.VISIBLE);
                 categoryChipGroup.setVisibility(View.VISIBLE);
-                bottomSheetInterface.setBottomSheetState(lastBottomSheetState);
                 break;
         }
     }
@@ -237,48 +211,34 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
         @Override
         public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked)
         {
+            /*
+           - chip이 이미 선택되어 있는 경우
+           같은 chip인 경우 : 선택해제, poiitem모두 삭제하고 bottomsheet를 숨긴다
+           다른 chip인 경우 : 새로운 chip이 선택되고 난 뒤에 기존 chip이 선택해제 된다
+           poiitem이 선택된 경우 해제하고, poiitem을 새로 생성한 뒤 poiitem전체가 보이도록 설정
+             */
             if (isChecked)
             {
                 if (isSelectedPoiItem)
                 {
                     deselectPoiItem();
-                    isFirstItemSelected = false;
                 }
+
+                setPlacesListAdapter(new PlaceItemInMapViewAdapter());
 
                 PlaceCategoryDTO placeCategory = ((ChipViewHolder) compoundButton.getTag()).placeCategory;
                 List<PlaceDocuments> placeDocumentsList = placeItemsGetter.getPlaceItems(placeCategory);
-                bottomSheetInterface.setPlacesItems(placeDocumentsList);
-                createPlacesPoiItems(placeDocumentsList);
 
+                createPlacesPoiItems(placeDocumentsList);
                 mapView.fitMapViewAreaToShowAllPOIItems();
             } else if (categoryChipGroup.getCheckedChipIds().isEmpty() && mapView.getPOIItems().length > 0)
             {
                 removeAllPoiItems();
             }
-            bottomSheetInterface.setBottomSheetState(BottomSheetBehavior.STATE_HIDDEN);
 
+            setPlacesListBottomSheetState(BottomSheetBehavior.STATE_HIDDEN);
         }
     };
-
-
-    static class HorizontalMarginItemDecoration extends RecyclerView.ItemDecoration
-    {
-        private int horizontalMarginInPx;
-
-        public HorizontalMarginItemDecoration(Context context)
-        {
-            horizontalMarginInPx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 42f, context.getResources().getDisplayMetrics());
-        }
-
-        @Override
-        public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent, @NonNull RecyclerView.State state)
-        {
-            super.getItemOffsets(outRect, view, parent, state);
-            outRect.left = horizontalMarginInPx;
-            outRect.right = horizontalMarginInPx;
-        }
-    }
-
 
     @Override
     public void onMapViewInitialized(MapView mapView)
@@ -288,18 +248,6 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
         mapView.setMapCenterPointAndZoomLevel(selectedLocationMapPoint, 4, false);
     }
 
-    public void onBottomSheetPageSelected(int index)
-    {
-        if (isFirstItemSelected)
-        {
-            selectedPoiItemIndex = index;
-            isSelectedPoiItem = true;
-
-            mapView.selectPOIItem(mapView.getPOIItems()[index], true);
-            mapView.setMapCenterPoint(mapView.getPOIItems()[index].getMapPoint(), true);
-        }
-    }
-
 
     @Override
     public void onClickedItem(PlaceCategoryDTO placeCategory, int index)
@@ -307,8 +255,7 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
         fragmentController.replaceFragment(PlacesMapFragment.TAG);
         requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
         chipMap.get(placeCategory).setChecked(true);
-        bottomSheetInterface.onClickedItem(index);
-        bottomSheetInterface.setBottomSheetState(BottomSheetBehavior.STATE_EXPANDED);
+        selectPoiItem(index);
     }
 
     @Override
@@ -319,30 +266,6 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
         chipMap.get(placeCategory).setChecked(true);
     }
 
-    @Override
-    public void onPOIItemSelected(MapView mapView, MapPOIItem mapPOIItem)
-    {
-        // super.onPOIItemSelected(mapView, mapPOIItem);
-        selectedPoiItemIndex = mapPOIItem.getTag();
-        isSelectedPoiItem = true;
-
-        // poiitem을 선택하였을 경우에 수행됨
-        mapView.setMapCenterPoint(mapPOIItem.getMapPoint(), true);
-        bottomSheetInterface.setBottomSheetState(BottomSheetBehavior.STATE_EXPANDED);
-        bottomSheetInterface.onClickedItem(selectedPoiItemIndex);
-    }
-
-
-    @Override
-    public void onMapViewSingleTapped(MapView mapView, MapPoint mapPoint)
-    {
-        if (isSelectedPoiItem)
-        {
-            deselectPoiItem();
-            isFirstItemSelected = false;
-            bottomSheetInterface.setBottomSheetState(PlacesListBottomSheetBehavior.STATE_HIDDEN);
-        }
-    }
 
     static final class ChipViewHolder
     {

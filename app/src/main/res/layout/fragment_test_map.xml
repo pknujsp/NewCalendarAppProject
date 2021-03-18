@@ -21,10 +21,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
 
-            <include
-                android:id="@+id/placeslist_bottom_sheet"
-                layout="@layout/place_list_bottom_sheet_view" />
-
         </androidx.coordinatorlayout.widget.CoordinatorLayout>
     </RelativeLayout>
 </layout>

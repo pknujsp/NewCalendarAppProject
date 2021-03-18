@@ -26,6 +26,4 @@
 
 -장소 검색 목록 두 개 연동
 
-
-
-<맵 프래그먼트에서 placeslist bottomsheet사용하는 경우>
+<맵 프래그먼트의 placeslist bottomsheet오류>

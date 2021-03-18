@@ -443,6 +443,10 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
             @Override
             public void onPageSelected(int position)
             {
+                /*
+                호출되는 경우 :
+
+                 */
                 super.onPageSelected(position);
                 mCurrentPosition = position;
 
@@ -981,12 +985,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
         mapView.setMapCenterPoint(mapPOIItem.getMapPoint(), true);
         bottomSheetViewPager.setCurrentItem(selectedPoiItemIndex, false);
 
-        // 시트가 열리지 않은 경우 연다.
-        if (placeListBottomSheetBehavior.getState() != BottomSheetBehavior.STATE_EXPANDED)
-        {
-            placeListBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-        }
-
+        placeListBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
     }
 
 
