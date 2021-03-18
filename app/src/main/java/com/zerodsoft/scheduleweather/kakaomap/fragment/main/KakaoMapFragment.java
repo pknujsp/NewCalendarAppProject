@@ -100,17 +100,19 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
 
     public int selectedPoiItemIndex;
     public boolean isSelectedPoiItem;
+    public boolean isTouchedPoiItem;
+    public boolean isScrolledPoiItemsList;
 
     public SearchView searchView;
     public ConnectivityManager.NetworkCallback networkCallback;
     public ConnectivityManager connectivityManager;
 
-    private FrameLayout placesListBottomSheet;
-    private PlacesListBottomSheetBehavior placeListBottomSheetBehavior;
-    private BottomSheetBehavior searchBottomSheetBehavior;
+    public FrameLayout placesListBottomSheet;
+    public PlacesListBottomSheetBehavior placeListBottomSheetBehavior;
+    public BottomSheetBehavior searchBottomSheetBehavior;
     public ToolbarMenuCallback toolbarMenuCallback;
-    private ViewPager2 bottomSheetViewPager;
-    private PlaceItemInMapViewAdapter adapter;
+    public ViewPager2 bottomSheetViewPager;
+    public PlaceItemInMapViewAdapter adapter;
 
     public KakaoMapFragment()
     {
@@ -443,14 +445,11 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
             @Override
             public void onPageSelected(int position)
             {
-                /*
-                호출되는 경우 :
-
-                 */
                 super.onPageSelected(position);
                 mCurrentPosition = position;
 
-                if (isSelectedPoiItem)
+                //뷰를 스크롤 했을 때에만 호출
+                if (!isTouchedPoiItem)
                 {
                     selectPoiItem(mCurrentPosition);
                 }
@@ -983,8 +982,6 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
 
         // poiitem을 선택하였을 경우에 수행됨
         mapView.setMapCenterPoint(mapPOIItem.getMapPoint(), true);
-        bottomSheetViewPager.setCurrentItem(selectedPoiItemIndex, false);
-
         placeListBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
     }
 

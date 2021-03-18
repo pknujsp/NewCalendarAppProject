@@ -255,7 +255,7 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
         fragmentController.replaceFragment(PlacesMapFragment.TAG);
         requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
         chipMap.get(placeCategory).setChecked(true);
-        selectPoiItem(index);
+        bottomSheetViewPager.setCurrentItem(selectedPoiItemIndex, false);
     }
 
     @Override
