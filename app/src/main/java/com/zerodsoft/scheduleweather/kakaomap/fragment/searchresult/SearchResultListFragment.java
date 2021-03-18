@@ -17,6 +17,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.zerodsoft.scheduleweather.event.places.interfaces.PoiItemOnClickListener;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.OnClickedLocListItem;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.searchresult.interfaces.ResultFragmentChanger;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.PlacesListBottomSheetController;
@@ -59,6 +60,7 @@ public class SearchResultListFragment extends Fragment implements IndicatorCreat
     private IMapToolbar iMapToolbar;
     private SearchBottomSheetController searchBottomSheetController;
     private PlacesListBottomSheetController placesListBottomSheetController;
+    private PoiItemOnClickListener poiItemOnClickListener;
 
     private ProgressBar progressBar;
     private TextView errorTextView;
@@ -71,7 +73,8 @@ public class SearchResultListFragment extends Fragment implements IndicatorCreat
     }
 
     public SearchResultListFragment(String searchWord, IMapPoint iMapPoint, IMapData iMapData, IMapToolbar iMapToolbar
-            , SearchBottomSheetController searchBottomSheetController, PlacesListBottomSheetController placesListBottomSheetController)
+            , SearchBottomSheetController searchBottomSheetController, PlacesListBottomSheetController placesListBottomSheetController,
+                                    PoiItemOnClickListener poiItemOnClickListener)
     {
         this.SEARCH_WORD = searchWord;
         this.iMapPoint = iMapPoint;
@@ -79,6 +82,7 @@ public class SearchResultListFragment extends Fragment implements IndicatorCreat
         this.iMapToolbar = iMapToolbar;
         this.searchBottomSheetController = searchBottomSheetController;
         this.placesListBottomSheetController = placesListBottomSheetController;
+        this.poiItemOnClickListener = poiItemOnClickListener;
     }
 
     public static SearchResultListFragment getInstance()
@@ -87,10 +91,13 @@ public class SearchResultListFragment extends Fragment implements IndicatorCreat
     }
 
     public static SearchResultListFragment newInstance(String searchWord, IMapPoint iMapPoint, IMapData iMapData
-            , IMapToolbar iMapToolbar, SearchBottomSheetController searchBottomSheetController, PlacesListBottomSheetController placesListBottomSheetController)
+            , IMapToolbar iMapToolbar, SearchBottomSheetController searchBottomSheetController
+            , PlacesListBottomSheetController placesListBottomSheetController
+            , PoiItemOnClickListener poiItemOnClickListener)
     {
         instance = new SearchResultListFragment(searchWord, iMapPoint, iMapData
-                , iMapToolbar, searchBottomSheetController, placesListBottomSheetController);
+                , iMapToolbar, searchBottomSheetController, placesListBottomSheetController, poiItemOnClickListener
+        );
         return instance;
     }
 
@@ -279,8 +286,8 @@ public class SearchResultListFragment extends Fragment implements IndicatorCreat
         isVisibleList = false;
 
         iMapToolbar.setMenuVisibility(IMapToolbar.MAP, true);
-        iMapData.selectPoiItem(index);
         iMapPoint.setMapVisibility(View.VISIBLE);
+        poiItemOnClickListener.onPOIItemSelectedByList(index);
 
         searchBottomSheetController.setSearchBottomSheetState(BottomSheetBehavior.STATE_HIDDEN);
     }

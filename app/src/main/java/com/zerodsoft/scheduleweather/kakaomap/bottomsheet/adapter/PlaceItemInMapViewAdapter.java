@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.event.places.adapter;
+package com.zerodsoft.scheduleweather.kakaomap.bottomsheet.adapter;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -6,19 +6,12 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.paging.PagedList;
-import androidx.paging.PagedListAdapter;
-import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.event.places.interfaces.OnClickedPlacesListListener;
-import com.zerodsoft.scheduleweather.kakaomap.callback.PlaceItemCallback;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.KakaoLocalDocument;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponseDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
-import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 
 import java.util.ArrayList;
 import java.util.List;

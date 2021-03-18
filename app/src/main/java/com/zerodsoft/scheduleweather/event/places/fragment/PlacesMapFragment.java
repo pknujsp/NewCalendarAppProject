@@ -2,9 +2,7 @@ package com.zerodsoft.scheduleweather.event.places.fragment;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.graphics.Rect;
 import android.os.Bundle;
-import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,7 +16,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.button.MaterialButton;
@@ -26,9 +23,7 @@ import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IstartActivity;
-import com.zerodsoft.scheduleweather.event.places.adapter.PlaceItemInMapViewAdapter;
-import com.zerodsoft.scheduleweather.kakaomap.bottomsheet.PlacesListBottomSheetBehavior;
-import com.zerodsoft.scheduleweather.event.places.interfaces.BottomSheet;
+import com.zerodsoft.scheduleweather.kakaomap.bottomsheet.adapter.PlaceItemInMapViewAdapter;
 import com.zerodsoft.scheduleweather.event.places.interfaces.FragmentController;
 import com.zerodsoft.scheduleweather.event.places.interfaces.OnClickedPlacesListListener;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PlaceCategory;
@@ -40,7 +35,6 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceD
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 
-import net.daum.mf.map.api.MapPOIItem;
 import net.daum.mf.map.api.MapPoint;
 import net.daum.mf.map.api.MapView;
 
@@ -223,7 +217,6 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
                 {
                     deselectPoiItem();
                 }
-
                 setPlacesListAdapter(new PlaceItemInMapViewAdapter());
 
                 PlaceCategoryDTO placeCategory = ((ChipViewHolder) compoundButton.getTag()).placeCategory;
@@ -235,7 +228,6 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
             {
                 removeAllPoiItems();
             }
-
             setPlacesListBottomSheetState(BottomSheetBehavior.STATE_HIDDEN);
         }
     };
@@ -248,18 +240,19 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
         mapView.setMapCenterPointAndZoomLevel(selectedLocationMapPoint, 4, false);
     }
 
-
     @Override
-    public void onClickedItem(PlaceCategoryDTO placeCategory, int index)
+    public void onClickedItemInList(PlaceCategoryDTO placeCategory, int index)
     {
         fragmentController.replaceFragment(PlacesMapFragment.TAG);
         requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
+        //create poi items
         chipMap.get(placeCategory).setChecked(true);
-        bottomSheetViewPager.setCurrentItem(selectedPoiItemIndex, false);
+        //select poi item
+        onPOIItemSelectedByList(index);
     }
 
     @Override
-    public void onClickedMore(PlaceCategoryDTO placeCategory)
+    public void onClickedMoreInList(PlaceCategoryDTO placeCategory)
     {
         fragmentController.replaceFragment(PlacesMapFragment.TAG);
         requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);

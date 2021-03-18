@@ -17,6 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.event.places.interfaces.PoiItemOnClickListener;
 import com.zerodsoft.scheduleweather.event.places.interfaces.SearchViewController;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.searchresult.SearchResultListFragment;
 import com.zerodsoft.scheduleweather.etc.FragmentStateCallback;
@@ -45,6 +46,7 @@ public class SearchFragment extends Fragment implements OnSelectedMapCategory
     private final SearchBottomSheetController searchBottomSheetController;
     private final FragmentStateCallback fragmentStateCallback;
     private final PlacesListBottomSheetController placesListBottomSheetController;
+    private final PoiItemOnClickListener poiItemOnClickListener;
 
     private OnBackPressedCallback onBackPressedCallback;
     private FragmentManager fragmentManager;
@@ -57,6 +59,7 @@ public class SearchFragment extends Fragment implements OnSelectedMapCategory
         this.searchViewController = (SearchViewController) fragment;
         this.searchBottomSheetController = (SearchBottomSheetController) fragment;
         this.placesListBottomSheetController = (PlacesListBottomSheetController) fragment;
+        this.poiItemOnClickListener = (PoiItemOnClickListener) fragment;
         this.fragmentStateCallback = fragmentStateCallback;
     }
 
@@ -129,7 +132,9 @@ public class SearchFragment extends Fragment implements OnSelectedMapCategory
     {
         FragmentManager fragmentManager = getParentFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.add(R.id.search_bottom_sheet_fragment_container, SearchResultListFragment.newInstance(searchWord, iMapPoint, iMapData, iMapToolbar, searchBottomSheetController, placesListBottomSheetController)
+        fragmentTransaction.add(R.id.search_bottom_sheet_fragment_container
+                , SearchResultListFragment.newInstance(searchWord, iMapPoint, iMapData, iMapToolbar
+                        , searchBottomSheetController, placesListBottomSheetController, poiItemOnClickListener)
                 , SearchResultListFragment.TAG).hide(SearchFragment.this).addToBackStack(SearchResultListFragment.TAG).commit();
     }
 

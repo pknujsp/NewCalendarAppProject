@@ -42,7 +42,7 @@ public class PlaceItemsAdapters extends PagedListAdapter<PlaceDocuments, PlaceIt
                 @Override
                 public void onClick(View view)
                 {
-                    onClickedPlacesListListener.onClickedItem(placeCategoryDTO, getAdapterPosition());
+                    onClickedPlacesListListener.onClickedItemInList(placeCategoryDTO, getAdapterPosition());
                 }
             });
         }

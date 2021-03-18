@@ -44,7 +44,8 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.event.places.adapter.PlaceItemInMapViewAdapter;
+import com.zerodsoft.scheduleweather.kakaomap.bottomsheet.adapter.PlaceItemInMapViewAdapter;
+import com.zerodsoft.scheduleweather.event.places.interfaces.PoiItemOnClickListener;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.search.SearchFragment;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.searchresult.SearchResultListFragment;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.PlacesListBottomSheetController;
@@ -82,7 +83,7 @@ import static androidx.core.content.ContextCompat.checkSelfPermission;
 
 public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, MapView.POIItemEventListener, MapView.MapViewEventListener, MapReverseGeoCoder.ReverseGeoCodingResultListener,
         INetwork, IMapToolbar, OnClickedPlacesListListener, SearchViewController, SearchBottomSheetController, PlacesItemBottomSheetButtonOnClickListener,
-        PlacesListBottomSheetController
+        PlacesListBottomSheetController, PoiItemOnClickListener
 {
     public static final int REQUEST_CODE_LOCATION = 10000;
 
@@ -100,8 +101,6 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
 
     public int selectedPoiItemIndex;
     public boolean isSelectedPoiItem;
-    public boolean isTouchedPoiItem;
-    public boolean isScrolledPoiItemsList;
 
     public SearchView searchView;
     public ConnectivityManager.NetworkCallback networkCallback;
@@ -447,12 +446,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
             {
                 super.onPageSelected(position);
                 mCurrentPosition = position;
-
-                //뷰를 스크롤 했을 때에만 호출
-                if (!isTouchedPoiItem)
-                {
-                    selectPoiItem(mCurrentPosition);
-                }
+                onPOIItemSelectedByBottomSheet(mCurrentPosition);
             }
         });
 
@@ -796,8 +790,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     @Override
     public void selectPoiItem(int index)
     {
-        mapView.selectPOIItem(mapView.getPOIItems()[index], true);
-        onPOIItemSelected(mapView, mapView.getPOIItems()[index]);
+        onPOIItemSelectedByList(index);
     }
 
 
@@ -977,14 +970,53 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     @Override
     public void onPOIItemSelected(MapView mapView, MapPOIItem mapPOIItem)
     {
+        onPOIItemSelectedByTouch(mapView, mapPOIItem);
+    }
+
+    @Override
+    public void onPOIItemSelectedByTouch(MapView mapView, MapPOIItem mapPOIItem)
+    {
+        //poiitem을 직접 선택한 경우 호출
         selectedPoiItemIndex = mapPOIItem.getTag();
         isSelectedPoiItem = true;
 
-        // poiitem을 선택하였을 경우에 수행됨
         mapView.setMapCenterPoint(mapPOIItem.getMapPoint(), true);
+        //open bottomsheet and show selected item data
         placeListBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+        bottomSheetViewPager.setCurrentItem(selectedPoiItemIndex, false);
     }
 
+    @Override
+    public void onPOIItemSelectedByList(int index)
+    {
+        //bottomsheet가 아닌 list에서 아이템을 선택한 경우 호출
+        //adapter -> poiitem생성 -> select poiitem -> bottomsheet열고 정보 표시
+        MapPOIItem mapPOIItem = mapView.getPOIItems()[index];
+        mapView.selectPOIItem(mapPOIItem, true);
+
+        selectedPoiItemIndex = mapPOIItem.getTag();
+        isSelectedPoiItem = true;
+
+        mapView.setMapCenterPoint(mapPOIItem.getMapPoint(), true);
+        //open bottomsheet and show selected item data
+        placeListBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+        bottomSheetViewPager.setCurrentItem(selectedPoiItemIndex, false);
+    }
+
+    @Override
+    public void onPOIItemSelectedByBottomSheet(int index)
+    {
+        //bottomsheet에서 스크롤 하는 경우 호출
+        MapPOIItem mapPOIItem = mapView.getPOIItems()[index];
+        mapView.selectPOIItem(mapPOIItem, true);
+
+        selectedPoiItemIndex = mapPOIItem.getTag();
+        isSelectedPoiItem = true;
+
+        mapView.setMapCenterPoint(mapPOIItem.getMapPoint(), true);
+        //open bottomsheet and show selected item data
+        placeListBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+    }
 
     @Override
     public void onCalloutBalloonOfPOIItemTouched(MapView mapView, MapPOIItem mapPOIItem)
@@ -1022,13 +1054,13 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     }
 
     @Override
-    public void onClickedItem(PlaceCategoryDTO placeCategory, int index)
+    public void onClickedItemInList(PlaceCategoryDTO placeCategory, int index)
     {
 
     }
 
     @Override
-    public void onClickedMore(PlaceCategoryDTO placeCategory)
+    public void onClickedMoreInList(PlaceCategoryDTO placeCategory)
     {
 
     }

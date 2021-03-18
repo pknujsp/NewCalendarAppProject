@@ -16,6 +16,7 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.event.EventActivity;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.kakaomap.activity.KakaoMapActivity;
+import com.zerodsoft.scheduleweather.kakaomap.bottomsheet.adapter.PlaceItemInMapViewAdapter;
 import com.zerodsoft.scheduleweather.kakaomap.util.LocalParameterUtil;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
@@ -72,8 +73,9 @@ public class ReselectDetailLocation extends KakaoMapActivity
                         if (result.getException() == null)
                         {
                             AddressResponseDocuments address = result.getData();
+                            kakaoMapFragment.setPlacesListAdapter(new PlaceItemInMapViewAdapter());
                             kakaoMapFragment.createAddressesPoiItems(Collections.singletonList(address));
-                            kakaoMapFragment.selectPoiItem(0);
+                            kakaoMapFragment.onPOIItemSelectedByList(0);
                         } else
                         {
                             // exception(error)

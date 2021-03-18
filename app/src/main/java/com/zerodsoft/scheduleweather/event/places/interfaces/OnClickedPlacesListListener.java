@@ -4,7 +4,7 @@ import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 
 public interface OnClickedPlacesListListener
 {
-    void onClickedItem(PlaceCategoryDTO placeCategory, int index);
+    void onClickedItemInList(PlaceCategoryDTO placeCategory, int index);
 
-    void onClickedMore(PlaceCategoryDTO placeCategory);
+    void onClickedMoreInList(PlaceCategoryDTO placeCategory);
 }
