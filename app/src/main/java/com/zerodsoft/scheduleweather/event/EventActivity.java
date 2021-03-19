@@ -35,7 +35,7 @@ import com.zerodsoft.scheduleweather.databinding.ActivityScheduleInfoBinding;
 import com.zerodsoft.scheduleweather.event.common.MLocActivity;
 import com.zerodsoft.scheduleweather.event.common.interfaces.ILocation;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
-import com.zerodsoft.scheduleweather.event.event.EventFragment;
+import com.zerodsoft.scheduleweather.event.event.activity.fragment.EventFragment;
 import com.zerodsoft.scheduleweather.event.places.fragment.PlacesTransactionFragment;
 import com.zerodsoft.scheduleweather.event.weather.fragment.WeatherItemFragment;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;

@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.event.event;
+package com.zerodsoft.scheduleweather.event.event.activity.fragment;
 
 import android.Manifest;
 import android.app.Activity;
