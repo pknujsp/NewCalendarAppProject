@@ -30,7 +30,7 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickLis
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
 import com.zerodsoft.scheduleweather.calendarview.month.MonthFragment;
 import com.zerodsoft.scheduleweather.calendarview.week.WeekFragment;
-import com.zerodsoft.scheduleweather.event.EventActivity;
+import com.zerodsoft.scheduleweather.event.main.InstanceMainActivity;
 
 import java.util.Date;
 import java.util.Map;
@@ -176,7 +176,7 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
     public void onClicked(int calendarId, long instanceId, long eventId, long viewBegin, long viewEnd)
     {
         // 이벤트 정보 액티비티로 전환
-        Intent intent = new Intent(getActivity(), EventActivity.class);
+        Intent intent = new Intent(getActivity(), InstanceMainActivity.class);
         intent.putExtra("calendarId", calendarId);
         intent.putExtra("instanceId", instanceId);
         intent.putExtra("eventId", eventId);

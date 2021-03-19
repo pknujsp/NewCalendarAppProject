@@ -1,6 +1,5 @@
 package com.zerodsoft.scheduleweather.event.event.activity.fragment;
 
-import android.Manifest;
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.DialogInterface;
@@ -19,6 +18,10 @@ import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -28,25 +31,16 @@ import androidx.lifecycle.ViewModelProvider;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
-import com.zerodsoft.scheduleweather.activity.main.AppMainActivity;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
-import com.zerodsoft.scheduleweather.calendarview.interfaces.IstartActivity;
 import com.zerodsoft.scheduleweather.databinding.EventFragmentBinding;
-import com.zerodsoft.scheduleweather.etc.AppPermission;
-import com.zerodsoft.scheduleweather.event.EventActivity;
-import com.zerodsoft.scheduleweather.event.common.MLocActivity;
-import com.zerodsoft.scheduleweather.event.common.ReselectDetailLocation;
-import com.zerodsoft.scheduleweather.event.common.interfaces.IFab;
-import com.zerodsoft.scheduleweather.event.common.interfaces.ILocation;
+import com.zerodsoft.scheduleweather.event.main.InstanceMainActivity;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
-import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.utility.RecurrenceRule;
 import com.zerodsoft.scheduleweather.utility.model.ReminderDto;
 
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -55,6 +49,7 @@ import lombok.SneakyThrows;
 
 public class EventFragment extends Fragment
 {
+    public static final String TAG = "EventFragment";
     // 참석자가 있는 경우 참석 여부 표시
     // 알림 값을 클릭하면 알림표시를 하는 시각을 보여준다
     /*
@@ -71,15 +66,11 @@ public class EventFragment extends Fragment
     private Long end;
 
     private AlertDialog attendeeDialog;
-    private final ILocation iLocation;
-    private final IstartActivity istartActivity;
 
     private LocationViewModel locationViewModel;
 
     public EventFragment(Activity activity)
     {
-        this.iLocation = (ILocation) activity;
-        this.istartActivity = (IstartActivity) activity;
     }
 
     @Override
@@ -139,7 +130,7 @@ public class EventFragment extends Fragment
             @Override
             public void onClick(View view)
             {
-                iLocation.hasDetailLocation(new CarrierMessagingService.ResultCallback<Boolean>()
+                locationViewModel.hasDetailLocation(calendarId, eventId, new CarrierMessagingService.ResultCallback<Boolean>()
                 {
                     @Override
                     public void onReceiveResult(@NonNull Boolean hasDetailLocation) throws RemoteException
@@ -158,20 +149,17 @@ public class EventFragment extends Fragment
                                         {
                                             if (!locationDTO.isEmpty())
                                             {
-                                                Intent intent = new Intent(getActivity(), ReselectDetailLocation.class);
-                                                intent.putExtra("savedLocationDto", locationDTO);
-                                                istartActivity.startActivityResult(intent, EventActivity.REQUEST_SELECT_LOCATION);
+                                                InstanceMainActivity.startEditLocationActivity(getActivity(), editLocationActivityResultLauncher,
+                                                        locationDTO);
                                             }
                                         }
                                     });
                                 } else
                                 {
-                                    iLocation.showRequestLocDialog();
+                                    InstanceMainActivity.showSetLocationDialog(getActivity(), setLocationActivityResultLauncher, instance);
                                 }
                             }
                         });
-
-
                     }
                 });
 
@@ -184,15 +172,13 @@ public class EventFragment extends Fragment
             @Override
             public void onClick(View view)
             {
-                /*
+          /*
                 Intent intent = new Intent(EventActivity.this, EditEventActivity.class);
                 intent.putExtra("requestCode", EventDataController.MODIFY_EVENT);
                 intent.putExtra("calendarId", calendarId.intValue());
                 intent.putExtra("eventId", eventId.longValue());
-
-                startActivity(intent);
-
-                 */
+                activityResultLauncher.launch(intent);
+          */
                 Toast.makeText(getActivity(), "작성 중", Toast.LENGTH_SHORT).show();
             }
         });
@@ -234,8 +220,7 @@ public class EventFragment extends Fragment
                                             break;
                                         case 1:
                                             // 향후 모든 일정만 삭제
-                                            // deleteSubsequentIncludingThis();
-                                            Toast.makeText(getActivity(), "작성 중", Toast.LENGTH_SHORT).show();
+                                            deleteSubsequentIncludingThis();
                                             break;
                                         case 2:
                                             // 모든 일정 삭제
@@ -263,18 +248,20 @@ public class EventFragment extends Fragment
         init();
     }
 
+
     private void deleteEvent()
     {
         // 참석자 - 알림 - 이벤트 순으로 삭제 (외래키 때문)
         // db column error
         viewModel.deleteEvent(calendarId, eventId);
         // 삭제 완료 후 캘린더 화면으로 나가고, 새로고침한다.
-        getActivity().setResult(AppMainActivity.DELETED_EVENT);
+        getActivity().setResult(InstanceMainActivity.RESULT_REMOVED_EVENT);
         getActivity().finish();
     }
 
     private void deleteSubsequentIncludingThis()
     {
+        /*
         // 이벤트의 반복 UNTIL을 현재 인스턴스의 시작날짜로 수정
         ContentValues recurrenceData = viewModel.getRecurrence(calendarId, eventId);
         RecurrenceRule recurrenceRule = new RecurrenceRule();
@@ -289,13 +276,16 @@ public class EventFragment extends Fragment
 
         recurrenceData.put(CalendarContract.Events.RRULE, recurrenceRule.getRule());
         viewModel.updateEvent(recurrenceData);
+
+         */
+        Toast.makeText(getActivity(), "작성 중", Toast.LENGTH_SHORT).show();
     }
 
     private void exceptThisInstance()
     {
         viewModel.deleteInstance(instance.getAsLong(CalendarContract.Instances.BEGIN), eventId);
 
-        getActivity().setResult(AppMainActivity.EXCEPTED_INSTANCE);
+        getActivity().setResult(InstanceMainActivity.RESULT_EXCEPTED_INSTANCE);
         getActivity().finish();
     }
 
@@ -474,20 +464,14 @@ public class EventFragment extends Fragment
             } else
             {
                 binding.eventLocationView.getRoot().setVisibility(View.GONE);
+                binding.selectDetailLocationFab.setVisibility(View.GONE);
             }
         } else
         {
             binding.eventLocationView.getRoot().setVisibility(View.GONE);
-        }
-
-        //fab설정
-        if (instance.containsKey(CalendarContract.Instances.EVENT_LOCATION))
-        {
-            binding.selectDetailLocationFab.setVisibility(View.VISIBLE);
-        } else
-        {
             binding.selectDetailLocationFab.setVisibility(View.GONE);
         }
+
         // 참석자
 
         attendeeList = viewModel.getAttendees(calendarId, eventId);
@@ -608,5 +592,31 @@ public class EventFragment extends Fragment
     {
         return attendeeList;
     }
+
+    private final ActivityResultLauncher<Intent> setLocationActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
+            new ActivityResultCallback<ActivityResult>()
+            {
+                @Override
+                public void onActivityResult(ActivityResult result)
+                {
+                    if (result.getResultCode() == InstanceMainActivity.RESULT_SELECTED_LOCATION)
+                    {
+                        Toast.makeText(getActivity(), result.getData().getStringExtra("selectedLocationName"), Toast.LENGTH_SHORT).show();
+                    } else
+                    {
+                        // 취소, 이벤트 정보 프래그먼트로 돌아감
+                    }
+                }
+            });
+
+    private final ActivityResultLauncher<Intent> editLocationActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
+            new ActivityResultCallback<ActivityResult>()
+            {
+                @Override
+                public void onActivityResult(ActivityResult result)
+                {
+
+                }
+            });
 
 }

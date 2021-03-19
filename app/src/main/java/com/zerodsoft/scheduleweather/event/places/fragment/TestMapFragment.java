@@ -1,5 +1,6 @@
 package com.zerodsoft.scheduleweather.event.places.fragment;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -20,6 +21,7 @@ import com.zerodsoft.scheduleweather.activity.placecategory.viewmodel.PlaceCateg
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IstartActivity;
 import com.zerodsoft.scheduleweather.databinding.FragmentTestMapBinding;
 import com.zerodsoft.scheduleweather.event.common.interfaces.ILocation;
+import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.places.interfaces.FragmentController;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PlaceCategory;
 import com.zerodsoft.scheduleweather.kakaomap.model.CoordToAddressUtil;
@@ -34,27 +36,37 @@ import java.util.List;
 
 public class TestMapFragment extends Fragment implements PlaceCategory, FragmentController
 {
+    public static final String TAG = "TestMapFragment";
     private FragmentTestMapBinding binding;
     private PlacesMapFragment placesMapFragment;
     private PlaceListFragment placeListFragment;
 
-    private final ILocation iLocation;
-    private final IstartActivity istartActivity;
     private CoordToAddress coordToAddressResult;
     private LocationDTO selectedLocationDto;
     private List<PlaceCategoryDTO> placeCategoryList;
     private PlaceCategoryViewModel placeCategoryViewModel;
 
-    public TestMapFragment(ILocation iLocation, IstartActivity istartActivity)
+    private LocationViewModel locationViewModel;
+
+    private Integer calendarId;
+    private Long eventId;
+    private Long instanceId;
+    private Long begin;
+
+    public TestMapFragment()
     {
-        this.iLocation = iLocation;
-        this.istartActivity = istartActivity;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+
+        Bundle bundle = getArguments();
+        calendarId = bundle.getInt("calendarId");
+        eventId = bundle.getLong("eventId");
+        instanceId = bundle.getLong("instanceId");
+        begin = bundle.getLong("begin");
     }
 
     @Override
@@ -69,13 +81,14 @@ public class TestMapFragment extends Fragment implements PlaceCategory, Fragment
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
+        locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
         placeCategoryViewModel = new ViewModelProvider(this).get(PlaceCategoryViewModel.class);
         initLocation();
     }
 
     private void initLocation()
     {
-        iLocation.getLocation(new CarrierMessagingService.ResultCallback<LocationDTO>()
+        locationViewModel.getLocation(calendarId, eventId, new CarrierMessagingService.ResultCallback<LocationDTO>()
         {
             @Override
             public void onReceiveResult(@NonNull LocationDTO location) throws RemoteException
@@ -119,7 +132,6 @@ public class TestMapFragment extends Fragment implements PlaceCategory, Fragment
                                                     }
 
                                                     placesMapFragment = new PlacesMapFragment(TestMapFragment.this);
-                                                    placesMapFragment.setIstartActivity(istartActivity);
                                                     placesMapFragment.setSelectedLocationDto(selectedLocationDto);
 
                                                     placeListFragment = new PlaceListFragment(TestMapFragment.this);

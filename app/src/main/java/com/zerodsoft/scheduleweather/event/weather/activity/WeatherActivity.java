@@ -1,13 +1,14 @@
 package com.zerodsoft.scheduleweather.event.weather.activity;
 
 import android.os.Bundle;
-import android.support.wearable.activity.WearableActivity;
-import android.widget.TextView;
 
-public class WeatherActivity extends WearableActivity
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.event.weather.fragment.WeatherItemFragment;
+
+public class WeatherActivity extends AppCompatActivity
 {
-
-    private TextView mTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -15,9 +16,8 @@ public class WeatherActivity extends WearableActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_weather);
 
-        mTextView = (TextView) findViewById(R.id.text);
-
-        // Enables Always-on
-        setAmbientEnabled();
+        WeatherItemFragment weatherFragment = new WeatherItemFragment();
+        weatherFragment.setArguments(getIntent().getExtras());
+        getSupportFragmentManager().beginTransaction().add(R.id.weather_fragment_container, weatherFragment, WeatherItemFragment.TAG).commit();
     }
 }

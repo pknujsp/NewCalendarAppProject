@@ -19,7 +19,7 @@ import com.luckycatlabs.sunrisesunset.SunriseSunsetCalculator;
 import com.luckycatlabs.sunrisesunset.dto.Location;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.FragmentWeatherItemBinding;
-import com.zerodsoft.scheduleweather.event.common.interfaces.ILocation;
+import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.weather.repository.WeatherDownloader;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.MidFcstParameter;
@@ -38,7 +38,6 @@ import com.zerodsoft.scheduleweather.event.weather.viewmodel.WeatherViewModel;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.utility.LonLat;
 import com.zerodsoft.scheduleweather.utility.LonLatConverter;
-import com.zerodsoft.scheduleweather.utility.WeatherDataConverter;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -52,20 +51,25 @@ public class WeatherItemFragment extends Fragment
     private FragmentWeatherItemBinding binding;
     private WeatherData weatherData;
     private LocationDTO locationDTO;
-    private ILocation iLocation;
 
     private UltraSrtNcstFragment ultraSrtNcstFragment;
     private UltraSrtFcstFragment ultraSrtFcstFragment;
     private VilageFcstFragment vilageFcstFragment;
     private MidFcstFragment midFcstFragment;
 
-    private WeatherViewModel viewModel;
+    private WeatherViewModel weatherViewModel;
+    private LocationViewModel locationViewModel;
     private List<SunSetRiseData> sunSetRiseList = new ArrayList<>();
     private WeatherAreaCodeDTO weatherAreaCode;
 
     private VilageFcstParameter vilageFcstParameter = new VilageFcstParameter();
     private MidFcstParameter midLandFcstParameter = new MidFcstParameter();
     private MidFcstParameter midTaParameter = new MidFcstParameter();
+
+    private Integer calendarId;
+    private Long eventId;
+    private Long instanceId;
+    private Long begin;
 
     private final WeatherDownloader weatherDownloader = new WeatherDownloader()
     {
@@ -139,15 +143,20 @@ public class WeatherItemFragment extends Fragment
         }
     };
 
-    public WeatherItemFragment(ILocation iLocation)
+    public WeatherItemFragment()
     {
-        this.iLocation = iLocation;
     }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+
+        Bundle bundle = getArguments();
+        calendarId = bundle.getInt("calendarId");
+        eventId = bundle.getLong("eventId");
+        instanceId = bundle.getLong("instanceId");
+        begin = bundle.getLong("begin");
     }
 
     @Nullable
@@ -178,9 +187,10 @@ public class WeatherItemFragment extends Fragment
         vilageFcstFragment = (VilageFcstFragment) fragmentManager.findFragmentById(R.id.vilage_fcst_fragment);
         midFcstFragment = (MidFcstFragment) fragmentManager.findFragmentById(R.id.mid_fcst_fragment);
 
-        viewModel = new ViewModelProvider(this).get(WeatherViewModel.class);
+        weatherViewModel = new ViewModelProvider(this).get(WeatherViewModel.class);
+        locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
 
-        iLocation.getLocation(new CarrierMessagingService.ResultCallback<LocationDTO>()
+        locationViewModel.getLocation(calendarId, eventId, new CarrierMessagingService.ResultCallback<LocationDTO>()
         {
             @Override
             public void onReceiveResult(@NonNull LocationDTO locationDTO) throws RemoteException
@@ -192,9 +202,9 @@ public class WeatherItemFragment extends Fragment
                     {
                         WeatherItemFragment.this.locationDTO = locationDTO;
                         final LonLat lonLat = LonLatConverter.convertGrid(locationDTO.getLongitude(), locationDTO.getLatitude());
-                        viewModel.init(getContext(), lonLat);
+                        weatherViewModel.init(getContext(), lonLat);
 
-                        viewModel.getAreaCodeLiveData().observe(getViewLifecycleOwner(), new Observer<List<WeatherAreaCodeDTO>>()
+                        weatherViewModel.getAreaCodeLiveData().observe(getViewLifecycleOwner(), new Observer<List<WeatherAreaCodeDTO>>()
                         {
                             @Override
                             public void onChanged(List<WeatherAreaCodeDTO> weatherAreaCodes)

@@ -8,11 +8,10 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.service.carrier.CarrierMessagingService;
-import android.view.Menu;
 import android.view.View;
 
-import com.zerodsoft.scheduleweather.event.EventActivity;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
+import com.zerodsoft.scheduleweather.event.main.InstanceMainActivity;
 import com.zerodsoft.scheduleweather.kakaomap.activity.KakaoMapActivity;
 import com.zerodsoft.scheduleweather.kakaomap.callback.ToolbarMenuCallback;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
@@ -97,7 +96,7 @@ public class MLocActivity extends KakaoMapActivity
                 if (aBoolean)
                 {
                     getIntent().putExtra("selectedLocationName", (location.getAddressName() == null ? location.getPlaceName() : location.getAddressName()) + " 지정완료");
-                    setResult(EventActivity.RESULT_SELECTED_LOCATION, getIntent());
+                    setResult(InstanceMainActivity.RESULT_SELECTED_LOCATION, getIntent());
                     finish();
                     onBackPressedCallback.remove();
                 } else

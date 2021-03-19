@@ -4,10 +4,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".event.event.activity.InstanceActivity">
+    tools:context=".event.places.activity.PlacesActivity">
 
     <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/instance_fragment_container"
+        android:id="@+id/places_fragment_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 

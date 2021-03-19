@@ -13,8 +13,8 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.event.EventActivity;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
+import com.zerodsoft.scheduleweather.event.main.InstanceMainActivity;
 import com.zerodsoft.scheduleweather.kakaomap.activity.KakaoMapActivity;
 import com.zerodsoft.scheduleweather.kakaomap.bottomsheet.adapter.PlaceItemInMapViewAdapter;
 import com.zerodsoft.scheduleweather.kakaomap.util.LocalParameterUtil;
@@ -43,7 +43,7 @@ public class ReselectDetailLocation extends KakaoMapActivity
             @Override
             public void handleOnBackPressed()
             {
-                setResult(isRemovedLocation ? EventActivity.RESULT_REMOVED_LOCATION : RESULT_CANCELED);
+                setResult(isRemovedLocation ? InstanceMainActivity.RESULT_REMOVED_LOCATION : RESULT_CANCELED);
                 finish();
                 onBackPressedCallback.remove();
             }
@@ -148,7 +148,7 @@ public class ReselectDetailLocation extends KakaoMapActivity
                 {
 
                     getIntent().putExtra("selectedLocationName", (location.getAddressName() == null ? location.getPlaceName() : location.getAddressName()) + " 지정완료");
-                    setResult(EventActivity.RESULT_RESELECTED_LOCATION, getIntent());
+                    setResult(InstanceMainActivity.RESULT_RESELECTED_LOCATION, getIntent());
                     finish();
                     onBackPressedCallback.remove();
                 } else

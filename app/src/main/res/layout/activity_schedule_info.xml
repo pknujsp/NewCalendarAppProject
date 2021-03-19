@@ -12,7 +12,7 @@
             android:layout_height="match_parent"
             android:layout_above="@id/schedule_bottom_nav"
             android:layout_alignParentTop="true"
-            tools:context=".event.EventActivity">
+            tools:context=".event.main.EventActivity">
 
             <androidx.fragment.app.FragmentContainerView
                 android:id="@+id/schedule_fragment_container"

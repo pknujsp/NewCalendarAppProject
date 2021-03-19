@@ -9,7 +9,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.SyncStatusObserver;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
@@ -17,9 +16,7 @@ import android.database.ContentObserver;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.RemoteException;
 import android.provider.CalendarContract;
-import android.service.carrier.CarrierMessagingService;
 import android.util.ArraySet;
 import android.util.Base64;
 import android.util.Log;
@@ -48,6 +45,7 @@ import com.zerodsoft.scheduleweather.databinding.ActivityAppMainBinding;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendar.dto.AccountDto;
 import com.zerodsoft.scheduleweather.etc.AppPermission;
+import com.zerodsoft.scheduleweather.event.main.InstanceMainActivity;
 import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.utility.WeatherDataConverter;
@@ -56,17 +54,14 @@ import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 
 import java.security.MessageDigest;
-import java.time.Month;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -468,7 +463,10 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
     protected void onResume()
     {
         super.onResume();
-        getContentResolver().registerContentObserver(CalendarContract.Events.CONTENT_URI, true, contentObserver);
+        if (AppPermission.grantedPermissions(getApplicationContext(), Manifest.permission.READ_CALENDAR, Manifest.permission.WRITE_CALENDAR))
+        {
+            getContentResolver().registerContentObserver(CalendarContract.Events.CONTENT_URI, true, contentObserver);
+        }
     }
 
     @Override
@@ -512,8 +510,14 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
                 @Override
                 public void onActivityResult(ActivityResult result)
                 {
-                    //설정 화면에서 나온경우 -> 캘린더 리프레시
+                    switch (result.getResultCode())
+                    {
+                        case InstanceMainActivity.RESULT_REMOVED_EVENT:
+                        case InstanceMainActivity.RESULT_EXCEPTED_INSTANCE:
+                            break;
+                    }
                     calendarTransactionFragment.refreshView();
+
                 }
             }
     );

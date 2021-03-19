@@ -26,7 +26,7 @@ import com.zerodsoft.scheduleweather.activity.placecategory.interfaces.OnItemMov
 import com.zerodsoft.scheduleweather.activity.placecategory.adapter.PlaceCategoryAdapter;
 import com.zerodsoft.scheduleweather.activity.placecategory.viewmodel.PlaceCategoryViewModel;
 import com.zerodsoft.scheduleweather.databinding.ActivityPlaceCategoryBinding;
-import com.zerodsoft.scheduleweather.event.EventActivity;
+import com.zerodsoft.scheduleweather.event.main.InstanceMainActivity;
 import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 import com.zerodsoft.scheduleweather.room.dto.SelectedPlaceCategoryDTO;
@@ -121,7 +121,7 @@ public class PlaceCategoryActivity extends AppCompatActivity implements PlaceCat
                             @Override
                             public void onReceiveResult(@NonNull List<SelectedPlaceCategoryDTO> selectedPlaceCategoryDTOS) throws RemoteException
                             {
-                                setResult(EventActivity.RESULT_EDITED_PLACE_CATEGORY);
+                                setResult(InstanceMainActivity.RESULT_EDITED_PLACE_CATEGORY);
                                 finish();
                             }
                         });
