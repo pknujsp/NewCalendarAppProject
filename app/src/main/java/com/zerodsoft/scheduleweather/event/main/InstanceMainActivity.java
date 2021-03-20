@@ -54,6 +54,7 @@ public class InstanceMainActivity extends AppCompatActivity
 
     public static final int RESULT_REMOVED_EVENT = 3000;
     public static final int RESULT_EXCEPTED_INSTANCE = 3100;
+    public static final int RESULT_UPDATED_INSTANCE = 3200;
 
     public static final int RESULT_EDITED_PLACE_CATEGORY = 4000;
 
@@ -64,8 +65,8 @@ public class InstanceMainActivity extends AppCompatActivity
     private Long instanceId;
     private Integer calendarId;
     private Long eventId;
-    private Long begin;
-    private Long end;
+    private Long originalBegin;
+    private Long originalEnd;
 
     private ContentValues instance;
 
@@ -83,8 +84,8 @@ public class InstanceMainActivity extends AppCompatActivity
         instanceId = getIntent().getLongExtra("instanceId", 0);
         calendarId = getIntent().getIntExtra("calendarId", 0);
         eventId = getIntent().getLongExtra("eventId", 0);
-        begin = getIntent().getLongExtra("begin", 0);
-        end = getIntent().getLongExtra("end", 0);
+        originalBegin = getIntent().getLongExtra("begin", 0);
+        originalEnd = getIntent().getLongExtra("end", 0);
 
         calendarViewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
         locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
@@ -95,7 +96,7 @@ public class InstanceMainActivity extends AppCompatActivity
 
     private void setSimpleInstanceData()
     {
-        instance = calendarViewModel.getInstance(calendarId, instanceId, begin, end);
+        instance = calendarViewModel.getInstance(calendarId, instanceId, originalBegin, originalEnd);
 
         //title
         if (instance.getAsString(CalendarContract.Instances.TITLE) != null)
@@ -118,25 +119,35 @@ public class InstanceMainActivity extends AppCompatActivity
             if (!instance.getAsString(CalendarContract.Instances.DESCRIPTION).isEmpty())
             {
                 binding.instanceDescriptionTextview.setText(instance.getAsString(CalendarContract.Instances.DESCRIPTION));
+                binding.instanceDescriptionTextview.setVisibility(View.VISIBLE);
+            } else
+            {
+                binding.instanceDescriptionTextview.setVisibility(View.GONE);
             }
+        } else
+        {
+            binding.instanceDescriptionTextview.setVisibility(View.GONE);
         }
 
         //begin, end
         final boolean allDay = instance.getAsBoolean(CalendarContract.Instances.ALL_DAY);
+        long allDayBegin = 0L;
+        long allDayEnd = 0L;
+
         if (allDay)
         {
             Calendar calendar = Calendar.getInstance();
-            calendar.setTimeInMillis(begin);
+            calendar.setTimeInMillis(originalBegin);
             calendar.add(Calendar.HOUR_OF_DAY, -9);
-            begin = calendar.getTimeInMillis();
+            allDayBegin = calendar.getTimeInMillis();
 
-            calendar.setTimeInMillis(end);
+            calendar.setTimeInMillis(originalEnd);
             calendar.add(Calendar.HOUR_OF_DAY, -9);
             calendar.add(Calendar.DAY_OF_MONTH, -1);
-            end = calendar.getTimeInMillis();
+            allDayEnd = calendar.getTimeInMillis();
         }
-        String beginStr = EventUtil.convertDateTime(begin, allDay, App.isPreference_key_using_24_hour_system());
-        String endStr = EventUtil.convertDateTime(end, allDay, App.isPreference_key_using_24_hour_system());
+        String beginStr = EventUtil.convertDateTime(allDay ? allDayBegin : originalBegin, allDay, App.isPreference_key_using_24_hour_system());
+        String endStr = EventUtil.convertDateTime(allDay ? allDayEnd : originalEnd, allDay, App.isPreference_key_using_24_hour_system());
 
         binding.instanceBeginTextview.setText(beginStr);
         binding.instanceEndTextview.setText(endStr);
@@ -231,8 +242,8 @@ public class InstanceMainActivity extends AppCompatActivity
             bundle.putLong("instanceId", instanceId);
             bundle.putLong("eventId", eventId);
             bundle.putInt("calendarId", calendarId);
-            bundle.putLong("begin", begin);
-            bundle.putLong("end", end);
+            bundle.putLong("begin", originalBegin);
+            bundle.putLong("end", originalEnd);
 
             intent.putExtras(bundle);
             instanceActivityResultLauncher.launch(intent);
@@ -251,7 +262,7 @@ public class InstanceMainActivity extends AppCompatActivity
                 bundle.putLong("instanceId", instanceId);
                 bundle.putLong("eventId", eventId);
                 bundle.putInt("calendarId", calendarId);
-                bundle.putLong("begin", begin);
+                bundle.putLong("begin", originalBegin);
 
                 intent.putExtras(bundle);
                 startActivityUsingLocation(intent, weatherActivityResultLauncher);
@@ -274,7 +285,7 @@ public class InstanceMainActivity extends AppCompatActivity
                 bundle.putLong("instanceId", instanceId);
                 bundle.putLong("eventId", eventId);
                 bundle.putInt("calendarId", calendarId);
-                bundle.putLong("begin", begin);
+                bundle.putLong("begin", originalBegin);
 
                 intent.putExtras(bundle);
                 startActivityUsingLocation(intent, mapActivityResultLauncher);
@@ -312,6 +323,9 @@ public class InstanceMainActivity extends AppCompatActivity
                         case RESULT_EXCEPTED_INSTANCE:
                             setResult(result.getResultCode());
                             finish();
+                            break;
+                        case RESULT_UPDATED_INSTANCE:
+                            setSimpleInstanceData();
                             break;
                     }
                 }

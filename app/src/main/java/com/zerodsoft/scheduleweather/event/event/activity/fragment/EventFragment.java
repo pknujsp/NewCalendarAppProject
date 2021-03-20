@@ -59,6 +59,7 @@ public class EventFragment extends Fragment
     private ContentValues instance;
     private List<ContentValues> attendeeList;
     private CalendarViewModel viewModel;
+
     private Integer calendarId;
     private Long instanceId;
     private Long eventId;
@@ -177,7 +178,7 @@ public class EventFragment extends Fragment
                 intent.putExtra("requestCode", EventDataController.MODIFY_EVENT);
                 intent.putExtra("calendarId", calendarId.intValue());
                 intent.putExtra("eventId", eventId.longValue());
-                activityResultLauncher.launch(intent);
+                editInstanceActivityResultLauncher.launch(intent);
           */
                 Toast.makeText(getActivity(), "작성 중", Toast.LENGTH_SHORT).show();
             }
@@ -245,7 +246,7 @@ public class EventFragment extends Fragment
         viewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
 
         instance = viewModel.getInstance(calendarId, instanceId, begin, end);
-        init();
+        setInstanceData();
     }
 
 
@@ -317,6 +318,10 @@ public class EventFragment extends Fragment
     {
         // 참석자 수, 참석 여부
         LayoutInflater layoutInflater = getLayoutInflater();
+        if (binding.eventAttendeesView.eventAttendeesTable.getChildCount() > 0)
+        {
+            binding.eventAttendeesView.eventAttendeesTable.removeAllViews();
+        }
 
         for (ContentValues attendee : attendees)
         {
@@ -376,10 +381,11 @@ public class EventFragment extends Fragment
             binding.eventAttendeesView.eventAttendeesTable.addView(tableRow,
                     new TableLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         }
+
     }
 
 
-    private void init()
+    private void setInstanceData()
     {
         // 제목, 캘린더, 시간, 시간대, 반복, 알림, 설명, 위치, 공개범위, 유효성, 참석자
         // 캘린더, 시간대, 참석자 정보는 따로 불러온다.
@@ -409,6 +415,7 @@ public class EventFragment extends Fragment
             String timeZoneStr = instance.getAsString(CalendarContract.Instances.EVENT_TIMEZONE);
             TimeZone timeZone = TimeZone.getTimeZone(timeZoneStr);
             setTimeZoneText(timeZone);
+            binding.eventDatetimeView.eventTimezoneLayout.setVisibility(View.VISIBLE);
         } else
         {
             // allday이면 시간대 뷰를 숨긴다
@@ -419,6 +426,7 @@ public class EventFragment extends Fragment
         if (instance.getAsString(CalendarContract.Instances.RRULE) != null)
         {
             setRecurrenceText(instance.getAsString(CalendarContract.Instances.RRULE));
+            binding.eventRecurrenceView.getRoot().setVisibility(View.VISIBLE);
         } else
         {
             binding.eventRecurrenceView.getRoot().setVisibility(View.GONE);
@@ -431,6 +439,7 @@ public class EventFragment extends Fragment
             setReminderText(reminderList);
             binding.eventRemindersView.notReminder.setVisibility(View.GONE);
             binding.eventRemindersView.remindersTable.setVisibility(View.VISIBLE);
+            binding.eventRemindersView.getRoot().setVisibility(View.VISIBLE);
         } else
         {
             // 알람이 없으면 알람 테이블을 숨기고, 알람 없음 텍스트를 표시한다.
@@ -446,6 +455,7 @@ public class EventFragment extends Fragment
             if (!instance.getAsString(CalendarContract.Instances.DESCRIPTION).isEmpty())
             {
                 binding.eventDescriptionView.descriptionTextview.setText(instance.getAsString(CalendarContract.Instances.DESCRIPTION));
+                binding.eventDescriptionView.getRoot().setVisibility(View.VISIBLE);
             } else
             {
                 binding.eventDescriptionView.getRoot().setVisibility(View.GONE);
@@ -461,6 +471,8 @@ public class EventFragment extends Fragment
             if (!instance.getAsString(CalendarContract.Instances.EVENT_LOCATION).isEmpty())
             {
                 binding.eventLocationView.eventLocation.setText(instance.getAsString(CalendarContract.Instances.EVENT_LOCATION));
+                binding.eventLocationView.getRoot().setVisibility(View.VISIBLE);
+                binding.selectDetailLocationFab.setVisibility(View.VISIBLE);
             } else
             {
                 binding.eventLocationView.getRoot().setVisibility(View.GONE);
@@ -473,8 +485,8 @@ public class EventFragment extends Fragment
         }
 
         // 참석자
-
         attendeeList = viewModel.getAttendees(calendarId, eventId);
+
         // 참석자가 없는 경우 - 테이블 숨김, 참석자 없음 텍스트 표시
         if (attendeeList.isEmpty())
         {
@@ -485,7 +497,7 @@ public class EventFragment extends Fragment
         {
             binding.eventAttendeesView.notAttendees.setVisibility(View.GONE);
             binding.eventAttendeesView.eventAttendeesTable.setVisibility(View.VISIBLE);
-
+            binding.eventAttendeesView.getRoot().setVisibility(View.VISIBLE);
             setAttendeesText(attendeeList);
         }
 
@@ -493,6 +505,7 @@ public class EventFragment extends Fragment
         if (instance.getAsInteger(CalendarContract.Instances.ACCESS_LEVEL) != null)
         {
             setAccessLevelText();
+            binding.eventAccessLevelView.getRoot().setVisibility(View.VISIBLE);
         } else
         {
             binding.eventAccessLevelView.getRoot().setVisibility(View.GONE);
@@ -502,6 +515,7 @@ public class EventFragment extends Fragment
         if (instance.getAsInteger(CalendarContract.Instances.AVAILABILITY) != null)
         {
             setAvailabilityText();
+            binding.eventAvailabilityView.getRoot().setVisibility(View.VISIBLE);
         } else
         {
             binding.eventAvailabilityView.getRoot().setVisibility(View.GONE);
@@ -549,6 +563,10 @@ public class EventFragment extends Fragment
     private void setReminderText(List<ContentValues> reminders)
     {
         LayoutInflater layoutInflater = getLayoutInflater();
+        if (binding.eventRemindersView.remindersTable.getChildCount() > 0)
+        {
+            binding.eventRemindersView.remindersTable.removeAllViews();
+        }
 
         for (ContentValues reminder : reminders)
         {
@@ -619,4 +637,19 @@ public class EventFragment extends Fragment
                 }
             });
 
+    private final ActivityResultLauncher<Intent> editInstanceActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
+            new ActivityResultCallback<ActivityResult>()
+            {
+                @Override
+                public void onActivityResult(ActivityResult result)
+                {
+                    switch (result.getResultCode())
+                    {
+                        case InstanceMainActivity.RESULT_UPDATED_INSTANCE:
+                            //데이터 갱신
+                            setInstanceData();
+                            break;
+                    }
+                }
+            });
 }

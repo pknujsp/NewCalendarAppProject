@@ -83,6 +83,69 @@
                             android:text="End" />
 
                     </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/location_label"
+                            style="@style/TextAppearance.MaterialComponents.Subtitle1"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginRight="16dp"
+                            android:text="@string/location"
+                            android:textColor="@color/gray_500" />
+
+                        <TextView
+                            android:id="@+id/location_textview"
+                            style="@style/TextAppearance.MaterialComponents.Subtitle1"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="선택한 장소명" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/detail_location_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/place_name_textview"
+                            style="@style/TextAppearance.MaterialComponents.Subtitle1"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:layout_marginBottom="6dp"
+                            android:text="장소명" />
+
+                        <TextView
+                            android:id="@+id/place_address_textview"
+                            style="@style/TextAppearance.MaterialComponents.Subtitle1"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="6dp"
+                            android:text="장소의 주소"
+                            android:textColor="@color/gray_600"
+                            android:textSize="14sp" />
+
+                        <TextView
+                            android:id="@+id/address_textview"
+                            style="@style/TextAppearance.MaterialComponents.Subtitle1"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="6dp"
+                            android:text="주소명" />
+
+                        <androidx.fragment.app.FragmentContainerView
+                            android:id="@+id/selected_location_map"
+                            android:layout_width="match_parent"
+                            android:layout_height="150dp" />
+
+                    </LinearLayout>
                 </LinearLayout>
 
                 <GridLayout
@@ -114,6 +177,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:gravity="center"
+                                android:paddingBottom="16dp"
                                 android:text="@string/instance_info"
                                 android:textColor="@color/black" />
 
@@ -131,19 +195,18 @@
                             android:layout_height="match_parent"
                             android:orientation="vertical">
 
-                            <TextView
-                                android:id="@+id/current_temperature_textview"
+                            <ImageView
                                 android:layout_width="match_parent"
                                 android:layout_height="0dp"
                                 android:layout_weight="1"
-                                android:gravity="center"
-                                android:text="15.0"
-                                android:textSize="28sp" />
+                                android:padding="16dp"
+                                android:src="@drawable/sunny_day_icon" />
 
                             <TextView
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:gravity="center"
+                                android:paddingBottom="16dp"
                                 android:text="@string/weather"
                                 android:textColor="@color/black" />
 
@@ -173,6 +236,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:gravity="center"
+                                android:paddingBottom="16dp"
                                 android:text="@string/info_around_location"
                                 android:textColor="@color/black" />
 
@@ -201,6 +265,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:gravity="center"
+                                android:paddingBottom="16dp"
                                 android:text="@string/restaurant"
                                 android:textColor="@color/black" />
 
