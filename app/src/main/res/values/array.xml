@@ -87,4 +87,153 @@
         <item name="12">12</item>
         <item name="24">24</item>
     </string-array>
+
+    <!-- 카테고리 별 가장 많이 주문한 음식 - 배민 트렌드2021 -->
+    <string-array name="most_delivered_chinese_foods">
+        <item>짜장면</item>
+        <item>짬뽕</item>
+        <item>간짜장</item>
+        <item>볶음밥</item>
+        <item>탕수육</item>
+    </string-array>
+
+    <string-array name="most_delivered_pork_cutlet_sashimi_japanese_foods">
+        <item>광어</item>
+        <item>모듬초밥</item>
+        <item>모듬회</item>
+        <item>연어초밥</item>
+        <item>냉모밀</item>
+    </string-array>
+
+    <string-array name="most_delivered_korean_foods">
+        <item>쇠고기야채죽</item>
+        <item>물냉면</item>
+        <item>돼지국밥</item>
+        <item>계란찜</item>
+        <item>제육볶음</item>
+    </string-array>
+
+    <string-array name="most_delivered_asian_western_foods">
+        <item>소고기 쌀국수</item>
+        <item>마라탕</item>
+        <item>까르보나라</item>
+        <item>목살 필라프</item>
+        <item>분짜</item>
+    </string-array>
+
+    <string-array name="most_delivered_snack_bar_foods">
+        <item>떡볶이</item>
+        <item>치즈떡볶이</item>
+        <item>김말이</item>
+        <item>오징어튀김</item>
+        <item>참치김밥</item>
+    </string-array>
+
+    <string-array name="most_delivered_midnight_snack_foods">
+        <item>야채곱창</item>
+        <item>무뼈닭발</item>
+        <item>오돌뼈</item>
+        <item>국물닭발</item>
+        <item>알곱창</item>
+    </string-array>
+
+    <string-array name="most_delivered_jokbal_bossam_foods">
+        <item>족발</item>
+        <item>보쌈</item>
+        <item>반반족발</item>
+        <item>쟁반국수</item>
+        <item>주먹밥</item>
+    </string-array>
+
+    <string-array name="most_delivered_pizza_foods">
+        <item>반반피자</item>
+        <item>치즈오븐스파게티</item>
+        <item>불고기피자</item>
+        <item>콤비네이션피자</item>
+        <item>고구마피자</item>
+    </string-array>
+
+    <string-array name="most_delivered_jjim_tang_foods">
+        <item>찜닭</item>
+        <item>아구찜</item>
+        <item>해물찜</item>
+        <item>감자탕</item>
+        <item>뼈해장국</item>
+    </string-array>
+
+    <string-array name="most_delivered_cafe_dessert_foods">
+        <item>아메리카노</item>
+        <item>바닐라라떼</item>
+        <item>아이스크림</item>
+        <item>카페라떼</item>
+        <item>크로플</item>
+    </string-array>
+
+    <!-- 봄(3월)에 검색이 증가하는 메뉴-->
+    <string-array name="menu_with_increasing_search_volume_in_march">
+        <item>산낙지</item>
+        <item>홍어</item>
+        <item>주꾸미</item>
+        <item>꼬막</item>
+        <item>간장게장</item>
+    </string-array>
+
+    <!-- 여름(5,7월)에 검색이 증가하는 메뉴-->
+    <string-array name="menu_with_increasing_search_volume_in_may">
+        <item>콩국수</item>
+        <item>수박</item>
+        <item>수제비</item>
+        <item>냉모밀</item>
+        <item>팥빙수</item>
+    </string-array>
+
+    <string-array name="menu_with_increasing_search_volume_in_july">
+        <item>백숙</item>
+        <item>삼계탕</item>
+        <item>수박</item>
+        <item>닭죽</item>
+        <item>닭한마리</item>
+    </string-array>
+
+    <!-- 비오는 날 검색이 증가하는 메뉴-->
+    <string-array name="menu_with_increasing_search_volume_rain">
+        <item>파전</item>
+        <item>모듬전</item>
+        <item>빈대떡</item>
+        <item>대창</item>
+        <item>생선구이</item>
+        <item>삼겹살</item>
+    </string-array>
+
+    <!-- 가을(9,11월)에 검색이 증가하는 메뉴-->
+    <string-array name="menu_with_increasing_search_volume_september">
+        <item>전어</item>
+        <item>대하</item>
+        <item>꽃게</item>
+        <item>뼈찜</item>
+        <item>생새우</item>
+    </string-array>
+
+    <string-array name="menu_with_increasing_search_volume_november">
+        <item>과매기</item>
+        <item>대방어</item>
+        <item>석화</item>
+        <item>굴보쌈</item>
+        <item>수육</item>
+    </string-array>
+
+    <!-- 겨울(12,1월)에 검색이 증가하는 메뉴-->
+    <string-array name="menu_with_increasing_search_volume_december">
+        <item>팥죽</item>
+        <item>케이크</item>
+        <item>군고구마</item>
+        <item>와인</item>
+        <item>만두전골</item>
+    </string-array>
+
+    <string-array name="menu_with_increasing_search_volume_january">
+        <item>떡국</item>
+        <item>떡만두국</item>
+        <item>딸기</item>
+    </string-array>
 </resources>

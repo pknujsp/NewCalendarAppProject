@@ -48,6 +48,8 @@ public class MLocActivity extends KakaoMapActivity
             @Override
             public void handleOnBackPressed()
             {
+                kakaoMapFragment.binding.mapView.removeAllViews();
+
                 setResult(RESULT_CANCELED);
                 finish();
                 onBackPressedCallback.remove();
@@ -57,11 +59,11 @@ public class MLocActivity extends KakaoMapActivity
 
         viewModel = new ViewModelProvider(this).get(LocationViewModel.class);
 
-        Intent intent = getIntent();
-        savedLocation = intent.getStringExtra("location");
-        ownerAccount = intent.getStringExtra("ownerAccount");
-        calendarId = intent.getIntExtra("calendarId", 0);
-        eventId = intent.getLongExtra("eventId", 0);
+        Bundle arguments = getIntent().getExtras();
+        savedLocation = arguments.getString("location");
+        ownerAccount = arguments.getString("ownerAccount");
+        calendarId = arguments.getInt("calendarId", 0);
+        eventId = arguments.getLong("eventId", 0);
 
         // 검색 결과가 바로 나타난다.
         kakaoMapFragment.setPlaceBottomSheetSelectBtnVisibility(View.VISIBLE);
@@ -78,7 +80,6 @@ public class MLocActivity extends KakaoMapActivity
     protected void onResume()
     {
         super.onResume();
-
     }
 
     @Override
@@ -93,16 +94,26 @@ public class MLocActivity extends KakaoMapActivity
             @Override
             public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
             {
-                if (aBoolean)
+                runOnUiThread(new Runnable()
                 {
-                    getIntent().putExtra("selectedLocationName", (location.getAddressName() == null ? location.getPlaceName() : location.getAddressName()) + " 지정완료");
-                    setResult(InstanceMainActivity.RESULT_SELECTED_LOCATION, getIntent());
-                    finish();
-                    onBackPressedCallback.remove();
-                } else
-                {
+                    @Override
+                    public void run()
+                    {
+                        if (aBoolean)
+                        {
+                            kakaoMapFragment.binding.mapView.removeAllViews();
 
-                }
+                            getIntent().putExtra("selectedLocationName", (location.getAddressName() == null ? location.getPlaceName() : location.getAddressName()) + " 지정완료");
+                            setResult(InstanceMainActivity.RESULT_SELECTED_LOCATION, getIntent());
+                            finish();
+                            onBackPressedCallback.remove();
+                        } else
+                        {
+
+                        }
+                    }
+                });
+
             }
         });
 

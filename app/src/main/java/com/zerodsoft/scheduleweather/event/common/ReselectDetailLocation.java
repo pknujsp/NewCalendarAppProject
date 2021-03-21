@@ -1,5 +1,6 @@
 package com.zerodsoft.scheduleweather.event.common;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.service.carrier.CarrierMessagingService;
@@ -32,7 +33,7 @@ public class ReselectDetailLocation extends KakaoMapActivity
 
     private LocationViewModel viewModel;
     private OnBackPressedCallback onBackPressedCallback;
-    private boolean isRemovedLocation;
+    private int resultCode = Activity.RESULT_CANCELED;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -43,15 +44,18 @@ public class ReselectDetailLocation extends KakaoMapActivity
             @Override
             public void handleOnBackPressed()
             {
-                setResult(isRemovedLocation ? InstanceMainActivity.RESULT_REMOVED_LOCATION : RESULT_CANCELED);
+                kakaoMapFragment.binding.mapView.removeAllViews();
+
+                setResult(resultCode);
                 finish();
-                onBackPressedCallback.remove();
             }
         };
         getOnBackPressedDispatcher().addCallback(onBackPressedCallback);
 
         viewModel = new ViewModelProvider(this).get(LocationViewModel.class);
-        savedLocationDto = (LocationDTO) getIntent().getParcelableExtra("savedLocationDto");
+
+        Bundle arguments = getIntent().getExtras();
+        savedLocationDto = (LocationDTO) arguments.getParcelable("savedLocationDto");
 
         showLocationItem();
     }
@@ -131,6 +135,12 @@ public class ReselectDetailLocation extends KakaoMapActivity
         return super.onCreateOptionsMenu(menu);
     }
 
+    @Override
+    protected void onStop()
+    {
+        super.onStop();
+        onBackPressedCallback.remove();
+    }
 
     @Override
     public void onSelectedLocation()
@@ -146,11 +156,13 @@ public class ReselectDetailLocation extends KakaoMapActivity
             {
                 if (isAdded)
                 {
+                    kakaoMapFragment.binding.mapView.removeAllViews();
+
+                    resultCode = InstanceMainActivity.RESULT_RESELECTED_LOCATION;
 
                     getIntent().putExtra("selectedLocationName", (location.getAddressName() == null ? location.getPlaceName() : location.getAddressName()) + " 지정완료");
-                    setResult(InstanceMainActivity.RESULT_RESELECTED_LOCATION, getIntent());
+                    setResult(resultCode, getIntent());
                     finish();
-                    onBackPressedCallback.remove();
                 } else
                 {
 
@@ -179,7 +191,8 @@ public class ReselectDetailLocation extends KakaoMapActivity
                         @Override
                         public void run()
                         {
-                            isRemovedLocation = true;
+                            resultCode = InstanceMainActivity.RESULT_REMOVED_LOCATION;
+
                             kakaoMapFragment.setPlaceBottomSheetSelectBtnVisibility(View.VISIBLE);
                             kakaoMapFragment.setPlaceBottomSheetUnSelectBtnVisibility(View.GONE);
                             kakaoMapFragment.getPlaceListBottomSheetBehavior().setState(BottomSheetBehavior.STATE_HIDDEN);

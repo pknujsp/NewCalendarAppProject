@@ -1,9 +1,14 @@
 package com.zerodsoft.scheduleweather.event.places.fragment;
 
 import android.os.Bundle;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.widget.FrameLayout;
+import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -42,8 +47,37 @@ public class SelectedLocationMapFragment extends KakaoMapFragment
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
+        mapView.setOnTouchListener(new View.OnTouchListener()
+        {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent)
+            {
+                return true;
+            }
+        });
         binding.appbarLayout.setVisibility(View.GONE);
-        binding.mapButtonsLayout.getRoot().setVisibility(View.GONE);
+        //  binding.mapButtonsLayout.getRoot().setVisibility(View.GONE);
+        binding.mapButtonsLayout.gpsButton.setVisibility(View.GONE);
+        binding.mapButtonsLayout.currentAddress.setVisibility(View.GONE);
+
+        FrameLayout.LayoutParams mapButtonsLayout = (FrameLayout.LayoutParams) binding.mapButtonsLayout.getRoot().getLayoutParams();
+        final int margin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16f, getResources().getDisplayMetrics());
+        mapButtonsLayout.rightMargin = margin;
+        mapButtonsLayout.bottomMargin = margin;
+
+        binding.mapButtonsLayout.getRoot().setLayoutParams(mapButtonsLayout);
+
+        RelativeLayout.LayoutParams zoomInLayoutParams = (RelativeLayout.LayoutParams) binding.mapButtonsLayout.zoomInButton.getLayoutParams();
+        RelativeLayout.LayoutParams zoomOutLayoutParams = (RelativeLayout.LayoutParams) binding.mapButtonsLayout.zoomOutButton.getLayoutParams();
+
+        final int size = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, getResources().getDisplayMetrics());
+        zoomInLayoutParams.width = size;
+        zoomInLayoutParams.height = size;
+        zoomOutLayoutParams.width = size;
+        zoomOutLayoutParams.height = size;
+
+        binding.mapButtonsLayout.zoomInButton.setLayoutParams(zoomInLayoutParams);
+        binding.mapButtonsLayout.zoomOutButton.setLayoutParams(zoomOutLayoutParams);
     }
 
     @Override
@@ -62,5 +96,6 @@ public class SelectedLocationMapFragment extends KakaoMapFragment
         mapView.addPOIItem(poiItem);
         mapView.setMapCenterPointAndZoomLevel(mapPoint, 4, false);
     }
+
 
 }

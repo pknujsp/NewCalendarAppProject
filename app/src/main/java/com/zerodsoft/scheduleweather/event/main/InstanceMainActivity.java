@@ -32,10 +32,16 @@ import com.zerodsoft.scheduleweather.event.common.ReselectDetailLocation;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.event.activity.InstanceActivity;
 import com.zerodsoft.scheduleweather.event.places.activity.PlacesActivity;
+import com.zerodsoft.scheduleweather.event.places.fragment.SelectedLocationMapFragment;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import com.zerodsoft.scheduleweather.event.weather.activity.WeatherActivity;
+import com.zerodsoft.scheduleweather.kakaomap.model.CoordToAddressUtil;
+import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
+import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.coordtoaddressresponse.CoordToAddress;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
+import java.io.Serializable;
 import java.util.Calendar;
 
 public class InstanceMainActivity extends AppCompatActivity
@@ -58,6 +64,9 @@ public class InstanceMainActivity extends AppCompatActivity
 
     public static final int RESULT_EDITED_PLACE_CATEGORY = 4000;
 
+    public static final int RESULT_UPDATED_VALUE = 5000;
+
+
     private InstanceMainActivityBinding binding;
     private CalendarViewModel calendarViewModel;
     private LocationViewModel locationViewModel;
@@ -69,6 +78,9 @@ public class InstanceMainActivity extends AppCompatActivity
     private Long originalEnd;
 
     private ContentValues instance;
+    private LocationDTO selectedLocationDto;
+    private CoordToAddress coordToAddress;
+    private SelectedLocationMapFragment selectedLocationMapFragment;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState)
@@ -92,7 +104,9 @@ public class InstanceMainActivity extends AppCompatActivity
 
         //인스턴스의 일부 정보(title, description, begin, end)를 표시한다.
         setSimpleInstanceData();
+        setLocationData();
     }
+
 
     private void setSimpleInstanceData()
     {
@@ -153,46 +167,104 @@ public class InstanceMainActivity extends AppCompatActivity
         binding.instanceEndTextview.setText(endStr);
     }
 
-    public static void showSetLocationDialog(Activity activity, ActivityResultLauncher<Intent> activityResultLauncher, ContentValues instance)
+    private void setLocationData()
     {
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(activity)
-                .setTitle(activity.getString(R.string.request_select_location_title))
-                .setMessage(activity.getString(R.string.request_select_location_description))
-                .setNegativeButton(activity.getString(R.string.cancel), new DialogInterface.OnClickListener()
+        if (hasSimpleLocation())
+        {
+            //인스턴스내에 선택된 위치값 표시
+            binding.locationTextview.setText(instance.getAsString(CalendarContract.Instances.EVENT_LOCATION));
+
+            locationViewModel.hasDetailLocation(calendarId, eventId, new CarrierMessagingService.ResultCallback<Boolean>()
+            {
+                @Override
+                public void onReceiveResult(@NonNull Boolean hasDetailLocation) throws RemoteException
                 {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i)
+                    if (hasDetailLocation)
                     {
-                        dialogInterface.cancel();
-                    }
-                })
-                .setPositiveButton(activity.getString(R.string.check), new DialogInterface.OnClickListener()
-                {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i)
+                        locationViewModel.getLocation(calendarId, eventId, new CarrierMessagingService.ResultCallback<LocationDTO>()
+                        {
+                            @Override
+                            public void onReceiveResult(@NonNull LocationDTO location) throws RemoteException
+                            {
+                                if (location.getId() >= 0)
+                                {
+                                    selectedLocationDto = location;
+
+                                    LocalApiPlaceParameter localApiPlaceParameter = new LocalApiPlaceParameter();
+                                    localApiPlaceParameter.setX(String.valueOf(location.getLongitude()));
+                                    localApiPlaceParameter.setY(String.valueOf(location.getLatitude()));
+
+                                    CoordToAddressUtil.coordToAddress(localApiPlaceParameter, new CarrierMessagingService.ResultCallback<DataWrapper<CoordToAddress>>()
+                                    {
+                                        @Override
+                                        public void onReceiveResult(@NonNull DataWrapper<CoordToAddress> coordToAddressDataWrapper) throws RemoteException
+                                        {
+                                            runOnUiThread(new Runnable()
+                                            {
+                                                @Override
+                                                public void run()
+                                                {
+                                                    binding.detailLocationLayout.setVisibility(View.VISIBLE);
+
+                                                    if (coordToAddressDataWrapper.getException() == null)
+                                                    {
+                                                        coordToAddress = coordToAddressDataWrapper.getData();
+                                                    }
+
+                                                    if (selectedLocationDto.getPlaceName() != null)
+                                                    {
+                                                        //장소와 주소 표기
+                                                        binding.placeNameTextview.setText(selectedLocationDto.getPlaceName());
+                                                        binding.placeAddressTextview.setText(coordToAddress.getCoordToAddressDocuments().get(0)
+                                                                .getCoordToAddressAddress().getAddressName());
+
+                                                        binding.placeNameTextview.setVisibility(View.VISIBLE);
+                                                        binding.placeAddressTextview.setVisibility(View.VISIBLE);
+                                                        binding.addressTextview.setVisibility(View.GONE);
+                                                    } else
+                                                    {
+                                                        //주소 표기
+                                                        binding.addressTextview.setText(coordToAddress.getCoordToAddressDocuments().get(0)
+                                                                .getCoordToAddressAddress().getAddressName());
+
+                                                        binding.placeNameTextview.setVisibility(View.GONE);
+                                                        binding.placeAddressTextview.setVisibility(View.GONE);
+                                                        binding.addressTextview.setVisibility(View.VISIBLE);
+                                                    }
+
+                                                    //mapview생성
+                                                    addSelectedLocationMap();
+                                                }
+                                            });
+
+                                        }
+                                    });
+
+
+                                }
+                            }
+                        });
+                    } else
                     {
-                        Intent intent = new Intent(activity, MLocActivity.class);
-
-                        intent.putExtra("calendarId", instance.getAsInteger(CalendarContract.Instances.CALENDAR_ID));
-                        intent.putExtra("eventId", instance.getAsLong(CalendarContract.Instances.EVENT_ID));
-                        intent.putExtra("location", instance.getAsString(CalendarContract.Instances.EVENT_LOCATION));
-                        intent.putExtra("ownerAccount", instance.getAsString(CalendarContract.Instances.OWNER_ACCOUNT));
-
-                        activityResultLauncher.launch(intent);
-                        dialogInterface.dismiss();
+                        runOnUiThread(new Runnable()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                binding.detailLocationLayout.setVisibility(View.GONE);
+                                binding.locationTextview.setText(instance.getAsString(CalendarContract.Instances.EVENT_LOCATION));
+                            }
+                        });
                     }
-                });
-
-        AlertDialog dialog = builder.create();
-        dialog.show();
+                }
+            });
+        } else
+        {
+            binding.detailLocationLayout.setVisibility(View.GONE);
+            binding.locationTextview.setText(getString(R.string.not_selected_location_in_event));
+        }
     }
 
-    public static void startEditLocationActivity(Activity activity, ActivityResultLauncher<Intent> activityResultLauncher, LocationDTO locationDTO)
-    {
-        Intent intent = new Intent(activity, ReselectDetailLocation.class);
-        intent.putExtra("savedLocationDto", locationDTO);
-        activityResultLauncher.launch(intent);
-    }
 
     private void startActivityUsingLocation(Intent intent, ActivityResultLauncher<Intent> activityResultLauncher)
     {
@@ -208,16 +280,36 @@ public class InstanceMainActivity extends AppCompatActivity
                     {
                         if (hasDetailLocation)
                         {
+                            removeSelectedLocationMap();
                             activityResultLauncher.launch(intent);
                         } else
                         {
-                            showSetLocationDialog(InstanceMainActivity.this, setLocationActivityResultLauncher, instance);
+                            locationAbstract.showSetLocationDialog(InstanceMainActivity.this, setLocationActivityResultLauncher, instance);
                         }
                     }
                 });
 
             }
         });
+    }
+
+    private void removeSelectedLocationMap()
+    {
+        if (selectedLocationMapFragment != null)
+        {
+            getSupportFragmentManager().beginTransaction().remove(selectedLocationMapFragment).commit();
+            selectedLocationMapFragment = null;
+        }
+    }
+
+    private void addSelectedLocationMap()
+    {
+        if (selectedLocationDto != null)
+        {
+            selectedLocationMapFragment = new SelectedLocationMapFragment(selectedLocationDto);
+            getSupportFragmentManager().beginTransaction().add(binding.selectedLocationMap.getId(),
+                    selectedLocationMapFragment, SelectedLocationMapFragment.TAG).commit();
+        }
     }
 
     public boolean hasSimpleLocation()
@@ -236,9 +328,12 @@ public class InstanceMainActivity extends AppCompatActivity
         @Override
         public void onClick(View v)
         {
+            removeSelectedLocationMap();
+
             Intent intent = new Intent(InstanceMainActivity.this, InstanceActivity.class);
 
             Bundle bundle = new Bundle();
+
             bundle.putLong("instanceId", instanceId);
             bundle.putLong("eventId", eventId);
             bundle.putInt("calendarId", calendarId);
@@ -259,6 +354,7 @@ public class InstanceMainActivity extends AppCompatActivity
             {
                 Intent intent = new Intent(InstanceMainActivity.this, WeatherActivity.class);
                 Bundle bundle = new Bundle();
+
                 bundle.putLong("instanceId", instanceId);
                 bundle.putLong("eventId", eventId);
                 bundle.putInt("calendarId", calendarId);
@@ -282,6 +378,7 @@ public class InstanceMainActivity extends AppCompatActivity
             {
                 Intent intent = new Intent(InstanceMainActivity.this, PlacesActivity.class);
                 Bundle bundle = new Bundle();
+
                 bundle.putLong("instanceId", instanceId);
                 bundle.putLong("eventId", eventId);
                 bundle.putInt("calendarId", calendarId);
@@ -324,8 +421,12 @@ public class InstanceMainActivity extends AppCompatActivity
                             setResult(result.getResultCode());
                             finish();
                             break;
-                        case RESULT_UPDATED_INSTANCE:
+                        case RESULT_UPDATED_VALUE:
                             setSimpleInstanceData();
+                            setLocationData();
+                            break;
+                        case RESULT_CANCELED:
+                            addSelectedLocationMap();
                             break;
                     }
                 }
@@ -337,7 +438,7 @@ public class InstanceMainActivity extends AppCompatActivity
                 @Override
                 public void onActivityResult(ActivityResult result)
                 {
-
+                    addSelectedLocationMap();
                 }
             });
 
@@ -347,7 +448,7 @@ public class InstanceMainActivity extends AppCompatActivity
                 @Override
                 public void onActivityResult(ActivityResult result)
                 {
-
+                    addSelectedLocationMap();
                 }
             });
 
@@ -357,7 +458,7 @@ public class InstanceMainActivity extends AppCompatActivity
                 @Override
                 public void onActivityResult(ActivityResult result)
                 {
-
+                    addSelectedLocationMap();
                 }
             });
 
@@ -371,6 +472,7 @@ public class InstanceMainActivity extends AppCompatActivity
                     if (result.getResultCode() == RESULT_SELECTED_LOCATION)
                     {
                         Toast.makeText(InstanceMainActivity.this, result.getData().getStringExtra("selectedLocationName"), Toast.LENGTH_SHORT).show();
+                        setLocationData();
                     } else
                     {
                         // 취소, 이벤트 정보 프래그먼트로 돌아감
@@ -389,12 +491,78 @@ public class InstanceMainActivity extends AppCompatActivity
                     {
                         case RESULT_RESELECTED_LOCATION:
                             String newLocation = result.getData().getStringExtra("selectedLocationName");
+                            setLocationData();
                             Toast.makeText(InstanceMainActivity.this, newLocation + " 변경완료", Toast.LENGTH_SHORT).show();
                             break;
                         case RESULT_REMOVED_LOCATION:
                             Toast.makeText(InstanceMainActivity.this, "위치 삭제완료", Toast.LENGTH_SHORT).show();
+                            setLocationData();
                             break;
                     }
                 }
             });
+
+    private final LocationAbstract locationAbstract = new LocationAbstract()
+    {
+        @Override
+        public void onRequestedActivity()
+        {
+            removeSelectedLocationMap();
+        }
+    };
+
+    public abstract static class LocationAbstract
+    {
+        public void showSetLocationDialog(Activity activity, ActivityResultLauncher<Intent> activityResultLauncher, ContentValues instance)
+        {
+            MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(activity)
+                    .setTitle(activity.getString(R.string.request_select_location_title))
+                    .setMessage(activity.getString(R.string.request_select_location_description))
+                    .setNegativeButton(activity.getString(R.string.cancel), new DialogInterface.OnClickListener()
+                    {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i)
+                        {
+                            dialogInterface.cancel();
+                        }
+                    })
+                    .setPositiveButton(activity.getString(R.string.check), new DialogInterface.OnClickListener()
+                    {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i)
+                        {
+                            onRequestedActivity();
+                            Intent intent = new Intent(activity, MLocActivity.class);
+
+                            Bundle bundle = new Bundle();
+
+                            bundle.putInt("calendarId", instance.getAsInteger(CalendarContract.Instances.CALENDAR_ID));
+                            bundle.putLong("eventId", instance.getAsLong(CalendarContract.Instances.EVENT_ID));
+                            bundle.putString("location", instance.getAsString(CalendarContract.Instances.EVENT_LOCATION));
+                            bundle.putString("ownerAccount", instance.getAsString(CalendarContract.Instances.OWNER_ACCOUNT));
+
+                            intent.putExtras(bundle);
+                            activityResultLauncher.launch(intent);
+                            dialogInterface.dismiss();
+                        }
+                    });
+
+            AlertDialog dialog = builder.create();
+            dialog.show();
+        }
+
+        public void startEditLocationActivity(Activity activity, ActivityResultLauncher<Intent> activityResultLauncher, LocationDTO locationDTO)
+        {
+            onRequestedActivity();
+            Intent intent = new Intent(activity, ReselectDetailLocation.class);
+
+            Bundle bundle = new Bundle();
+            bundle.putParcelable("savedLocationDto", locationDTO);
+
+            intent.putExtras(bundle);
+            activityResultLauncher.launch(intent);
+        }
+
+        public abstract void onRequestedActivity();
+    }
 }

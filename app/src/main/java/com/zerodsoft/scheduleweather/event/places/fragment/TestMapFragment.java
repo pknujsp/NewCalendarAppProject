@@ -3,6 +3,7 @@ package com.zerodsoft.scheduleweather.event.places.fragment;
 import android.content.Intent;
 import android.os.Bundle;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -61,8 +62,8 @@ public class TestMapFragment extends Fragment implements PlaceCategory, Fragment
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-
         Bundle bundle = getArguments();
+
         calendarId = bundle.getInt("calendarId");
         eventId = bundle.getLong("eventId");
         instanceId = bundle.getLong("instanceId");

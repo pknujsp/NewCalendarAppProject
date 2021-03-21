@@ -14,10 +14,12 @@ import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewpager2.widget.CompositePageTransformer;
 import androidx.viewpager2.widget.MarginPageTransformer;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.provider.CalendarContract;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -126,69 +128,36 @@ public class InstanceListOnDayFragment extends DialogFragment implements OnEvent
     {
         super.onViewCreated(view, savedInstanceState);
 
-        viewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
-        binding.instancesDialogViewpager.setOffscreenPageLimit(2);
+        final int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32f, getResources().getDisplayMetrics());
+        final int margin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, getResources().getDisplayMetrics());
+        binding.instancesDialogViewpager.setPadding(padding, 0, padding, 0);
+        binding.instancesDialogViewpager.setOffscreenPageLimit(3);
+        binding.instancesDialogViewpager.getChildAt(0).setOverScrollMode(View.OVER_SCROLL_NEVER);
 
-        /*
-        // increase this offset to show more of left/right
-        final int offsetPx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 30f, getResources().getDisplayMetrics());
-        binding.instancesDialogViewpager.setPadding(offsetPx, 0, offsetPx, 0);
-
-        // increase this offset to increase distance between 2 items
-        final int pageMarginPx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10f, getResources().getDisplayMetrics());
-        final ViewPager2.PageTransformer marginTransformer = new MarginPageTransformer(pageMarginPx);
-
-         */
-
-        float pageMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10f, getResources().getDisplayMetrics());
-        float pageOffset = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 20f, getResources().getDisplayMetrics());
-
-        binding.instancesDialogViewpager.setPageTransformer((page, position) ->
+        CompositePageTransformer compositePageTransformer = new CompositePageTransformer();
+        compositePageTransformer.addTransformer(new MarginPageTransformer(margin));
+        compositePageTransformer.addTransformer(new ViewPager2.PageTransformer()
         {
-            float myOffset = position * -(2 * pageOffset + pageMargin);
-            if (position < -1)
+            @Override
+            public void transformPage(@NonNull View page, float position)
             {
-                page.setTranslationX(-myOffset);
-            } else if (position <= 1)
-            {
-                float scaleFactor = Math.max(0.7f, 1 - Math.abs(position - 0.14285715f));
-                page.setTranslationX(myOffset);
-                page.setScaleY(scaleFactor);
-                page.setAlpha(scaleFactor);
-            } else
-            {
-                page.setAlpha(0);
-                page.setTranslationX(myOffset);
+                float r = 1 - Math.abs(position);
+                page.setScaleY(0.8f + r * 0.2f);
+                Log.e(TAG, String.valueOf(page.getScaleY()));
             }
         });
+        binding.instancesDialogViewpager.setPageTransformer(compositePageTransformer);
+
+        viewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
         adapter = new InstancesOfDayAdapter(begin, end, onEventItemClickListener, iConnectedCalendars, this);
         binding.instancesDialogViewpager.setAdapter(adapter);
         binding.instancesDialogViewpager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, false);
-
     }
 
     @Override
     public void createInstancePopupMenu(ContentValues instance, View anchorView, int gravity)
     {
         commonPopupMenu.createInstancePopupMenu(instance, getActivity(), anchorView, Gravity.CENTER);
-    }
-
-    static class HorizontalMarginItemDecoration extends RecyclerView.ItemDecoration
-    {
-        private int horizontalMarginInPx;
-
-        public HorizontalMarginItemDecoration(Context context)
-        {
-            horizontalMarginInPx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 42f, context.getResources().getDisplayMetrics());
-        }
-
-        @Override
-        public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent, @NonNull RecyclerView.State state)
-        {
-            super.getItemOffsets(outRect, view, parent, state);
-            outRect.left = horizontalMarginInPx;
-            outRect.right = horizontalMarginInPx;
-        }
     }
 
 

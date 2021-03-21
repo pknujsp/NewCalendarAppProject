@@ -2,6 +2,7 @@ package com.zerodsoft.scheduleweather.event.event.activity.fragment;
 
 import android.app.Activity;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -18,6 +19,7 @@ import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
@@ -33,6 +35,8 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.databinding.EventFragmentBinding;
+import com.zerodsoft.scheduleweather.event.common.MLocActivity;
+import com.zerodsoft.scheduleweather.event.common.ReselectDetailLocation;
 import com.zerodsoft.scheduleweather.event.main.InstanceMainActivity;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
@@ -69,9 +73,37 @@ public class EventFragment extends Fragment
     private AlertDialog attendeeDialog;
 
     private LocationViewModel locationViewModel;
+    private int resultCode = Activity.RESULT_CANCELED;
+
+    private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
+    {
+        @Override
+        public void handleOnBackPressed()
+        {
+            getActivity().setResult(resultCode);
+            getActivity().finish();
+            onBackPressedCallback.remove();
+        }
+    };
+
+    private InstanceMainActivity.LocationAbstract locationAbstract = new InstanceMainActivity.LocationAbstract()
+    {
+        @Override
+        public void onRequestedActivity()
+        {
+
+        }
+    };
 
     public EventFragment(Activity activity)
     {
+    }
+
+    @Override
+    public void onAttach(@NonNull Context context)
+    {
+        super.onAttach(context);
+        requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
     }
 
     @Override
@@ -150,14 +182,14 @@ public class EventFragment extends Fragment
                                         {
                                             if (!locationDTO.isEmpty())
                                             {
-                                                InstanceMainActivity.startEditLocationActivity(getActivity(), editLocationActivityResultLauncher,
+                                                locationAbstract.startEditLocationActivity(getActivity(), editLocationActivityResultLauncher,
                                                         locationDTO);
                                             }
                                         }
                                     });
                                 } else
                                 {
-                                    InstanceMainActivity.showSetLocationDialog(getActivity(), setLocationActivityResultLauncher, instance);
+                                    locationAbstract.showSetLocationDialog(getActivity(), setLocationActivityResultLauncher, instance);
                                 }
                             }
                         });
@@ -249,15 +281,14 @@ public class EventFragment extends Fragment
         setInstanceData();
     }
 
-
     private void deleteEvent()
     {
         // 참석자 - 알림 - 이벤트 순으로 삭제 (외래키 때문)
         // db column error
         viewModel.deleteEvent(calendarId, eventId);
         // 삭제 완료 후 캘린더 화면으로 나가고, 새로고침한다.
-        getActivity().setResult(InstanceMainActivity.RESULT_REMOVED_EVENT);
-        getActivity().finish();
+        resultCode = InstanceMainActivity.RESULT_REMOVED_EVENT;
+        onBackPressedCallback.handleOnBackPressed();
     }
 
     private void deleteSubsequentIncludingThis()
@@ -286,8 +317,8 @@ public class EventFragment extends Fragment
     {
         viewModel.deleteInstance(instance.getAsLong(CalendarContract.Instances.BEGIN), eventId);
 
-        getActivity().setResult(InstanceMainActivity.RESULT_EXCEPTED_INSTANCE);
-        getActivity().finish();
+        resultCode = InstanceMainActivity.RESULT_EXCEPTED_INSTANCE;
+        onBackPressedCallback.handleOnBackPressed();
     }
 
 
@@ -620,6 +651,7 @@ public class EventFragment extends Fragment
                     if (result.getResultCode() == InstanceMainActivity.RESULT_SELECTED_LOCATION)
                     {
                         Toast.makeText(getActivity(), result.getData().getStringExtra("selectedLocationName"), Toast.LENGTH_SHORT).show();
+                        resultCode = InstanceMainActivity.RESULT_UPDATED_VALUE;
                     } else
                     {
                         // 취소, 이벤트 정보 프래그먼트로 돌아감
@@ -633,7 +665,18 @@ public class EventFragment extends Fragment
                 @Override
                 public void onActivityResult(ActivityResult result)
                 {
-
+                    switch (result.getResultCode())
+                    {
+                        case InstanceMainActivity.RESULT_RESELECTED_LOCATION:
+                            String newLocation = result.getData().getStringExtra("selectedLocationName");
+                            Toast.makeText(getActivity(), newLocation + " 변경완료", Toast.LENGTH_SHORT).show();
+                            resultCode = InstanceMainActivity.RESULT_UPDATED_VALUE;
+                            break;
+                        case InstanceMainActivity.RESULT_REMOVED_LOCATION:
+                            Toast.makeText(getActivity(), "위치 삭제완료", Toast.LENGTH_SHORT).show();
+                            resultCode = InstanceMainActivity.RESULT_UPDATED_VALUE;
+                            break;
+                    }
                 }
             });
 
@@ -648,6 +691,7 @@ public class EventFragment extends Fragment
                         case InstanceMainActivity.RESULT_UPDATED_INSTANCE:
                             //데이터 갱신
                             setInstanceData();
+                            resultCode = InstanceMainActivity.RESULT_UPDATED_VALUE;
                             break;
                     }
                 }

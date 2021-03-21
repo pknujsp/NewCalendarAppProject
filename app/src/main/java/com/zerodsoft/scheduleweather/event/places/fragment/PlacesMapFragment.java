@@ -64,8 +64,9 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
         @Override
         public void handleOnBackPressed()
         {
-            onBackPressedCallback.remove();
+            binding.mapView.removeAllViews();
             requireActivity().finish();
+            onBackPressedCallback.remove();
         }
     };
 
