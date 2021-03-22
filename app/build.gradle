@@ -140,6 +140,8 @@ dependencies {
 
     implementation 'net.sf.biweekly:biweekly:0.6.5'
 
+    implementation 'org.jsoup:jsoup:1.13.1'
+
 }
 
 apply plugin: 'com.google.gms.google-services'
