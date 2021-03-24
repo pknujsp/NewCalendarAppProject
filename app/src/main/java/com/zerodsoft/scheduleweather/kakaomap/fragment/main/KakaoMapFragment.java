@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.location.Location;
 import android.location.LocationListener;
@@ -16,6 +17,7 @@ import android.net.NetworkCapabilities;
 import android.net.NetworkRequest;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -23,8 +25,12 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultCallback;
@@ -49,6 +55,7 @@ import com.zerodsoft.scheduleweather.event.places.interfaces.PoiItemOnClickListe
 import com.zerodsoft.scheduleweather.kakaomap.fragment.search.SearchFragment;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.searchresult.SearchResultListFragment;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.PlacesListBottomSheetController;
+import com.zerodsoft.scheduleweather.kakaomap.place.KakaoPlace;
 import com.zerodsoft.scheduleweather.kakaomap.util.RequestLocationTimer;
 import com.zerodsoft.scheduleweather.databinding.FragmentMapBinding;
 import com.zerodsoft.scheduleweather.etc.AppPermission;
@@ -106,7 +113,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     public ConnectivityManager.NetworkCallback networkCallback;
     public ConnectivityManager connectivityManager;
 
-    public FrameLayout placesListBottomSheet;
+    public RelativeLayout placesListBottomSheet;
     public PlacesListBottomSheetBehavior placeListBottomSheetBehavior;
     public BottomSheetBehavior searchBottomSheetBehavior;
     public ToolbarMenuCallback toolbarMenuCallback;
@@ -356,26 +363,47 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
         searchBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
     }
 
+    // 웹뷰 초기화 함수
+    public void initWebView()
+    {
+        // 1. 웹뷰클라이언트 연결 (로딩 시작/끝 받아오기)
+        binding.placeslistBottomSheet.placeWebView.setWebViewClient(new WebViewClient()
+        {
+            @Override                                   // 1) 로딩 시작
+            public void onPageStarted(WebView view, String url, Bitmap favicon)
+            {
+                super.onPageStarted(view, url, favicon);
+                binding.placeslistBottomSheet.progressBar.setVisibility(View.VISIBLE);       // 로딩이 시작되면 로딩바 보이기
+            }
+
+            @Override                                   // 2) 로딩 끝
+            public void onPageFinished(WebView view, String url)
+            {
+                super.onPageFinished(view, url);
+                binding.placeslistBottomSheet.progressBar.setVisibility(View.GONE);          // 로딩이 끝나면 로딩바 없애기
+            }
+
+            @Override                                   // 3) 외부 브라우저가 아닌 웹뷰 자체에서 url 호출
+            public boolean shouldOverrideUrlLoading(WebView view, String url)
+            {
+                view.loadUrl(url);
+                return true;
+            }
+        });
+        // 2. WebSettings: 웹뷰의 각종 설정을 정할 수 있다.
+        WebSettings ws = binding.placeslistBottomSheet.placeWebView.getSettings();
+        ws.setJavaScriptEnabled(true); // 자바스크립트 사용 허가
+        // 3. 웹페이지 호출
+    }
+
     private void setPlacesListBottomSheet()
     {
+        initWebView();
+
         placesListBottomSheet = binding.placeslistBottomSheet.getRoot();
         bottomSheetViewPager = (ViewPager2) placesListBottomSheet.findViewById(R.id.place_items_viewpager);
         bottomSheetViewPager.setOffscreenPageLimit(2);
 
-        ViewPager2.PageTransformer pageTransformer = new ViewPager2.PageTransformer()
-        {
-            @Override
-            public void transformPage(@NonNull View page, float position)
-            {
-
-            }
-        };
-
-        bottomSheetViewPager.setPageTransformer(pageTransformer);
-        /*
-        HorizontalMarginItemDecoration horizontalMarginItemDecoration = new HorizontalMarginItemDecoration(getContext());
-        bottomSheetViewPager.addItemDecoration(horizontalMarginItemDecoration);
-         */
         bottomSheetViewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback()
         {
             private int mCurrentPosition;
@@ -441,9 +469,11 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
         });
 
         placeListBottomSheetBehavior = PlacesListBottomSheetBehavior.from(placesListBottomSheet);
-        placeListBottomSheetBehavior.setPeekHeight(0);
-        placeListBottomSheetBehavior.setDraggable(false);
-        placeListBottomSheetBehavior.setState(PlacesListBottomSheetBehavior.STATE_HIDDEN);
+
+        final int peekHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 150f, getResources().getDisplayMetrics());
+        placeListBottomSheetBehavior.setPeekHeight(peekHeight);
+        placeListBottomSheetBehavior.setDraggable(true);
+        placeListBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
         placeListBottomSheetBehavior.setAnchorOffset(0.5f);
         placeListBottomSheetBehavior.setAnchorSheetCallback(new PlacesListBottomSheetBehavior.AnchorSheetCallback()
         {
@@ -452,31 +482,47 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
             {
                 if (newState == BottomSheetBehavior.STATE_COLLAPSED)
                 {
-                } else if (newState == PlacesListBottomSheetBehavior.STATE_EXPANDED)
+                    binding.placeslistBottomSheet.placeItemsViewpager.setVisibility(View.VISIBLE);
+                } else if (newState == BottomSheetBehavior.STATE_EXPANDED)
                 {
-                } else if (newState == PlacesListBottomSheetBehavior.STATE_DRAGGING)
+                    CustomPoiItem poiItem = (CustomPoiItem) mapView.getPOIItems()[selectedPoiItemIndex];
+                    if (poiItem.getKakaoLocalDocument() instanceof PlaceDocuments)
+                    {
+                        binding.placeslistBottomSheet.placeItemsViewpager.setVisibility(View.GONE);
+                        String placeId = ((PlaceDocuments) poiItem.getKakaoLocalDocument()).getId();
+                        binding.placeslistBottomSheet.placeWebView.loadUrl(KakaoPlace.WEB_URL + placeId);
+                    }
+                } else if (newState == BottomSheetBehavior.STATE_DRAGGING)
                 {
-                } else if (newState == PlacesListBottomSheetBehavior.STATE_HALF_EXPANDED)
+
+                } else if (newState == BottomSheetBehavior.STATE_HALF_EXPANDED)
                 {
+                    placeListBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+                } else if (newState == BottomSheetBehavior.STATE_HIDDEN)
+                {
+                    binding.placeslistBottomSheet.placeItemsViewpager.setVisibility(View.VISIBLE);
                 }
             }
 
             @Override
             public void onSlide(@NonNull View bottomSheet, float slideOffset)
             {
-
                 float h = bottomSheet.getHeight();
                 float off = h * slideOffset;
 
+
                 switch (placeListBottomSheetBehavior.getState())
                 {
-                    case PlacesListBottomSheetBehavior.STATE_DRAGGING:
-                    case PlacesListBottomSheetBehavior.STATE_SETTLING:
+                    case BottomSheetBehavior.STATE_DRAGGING:
+                        Log.e("SLIDING", "DRAGGING : " + Float.toString(slideOffset));
+                        break;
+                    case BottomSheetBehavior.STATE_SETTLING:
+                        Log.e("SLIDING", "SETTLING : " + Float.toString(slideOffset));
                         setMapPaddingBottom(off);
                         break;
-                    case PlacesListBottomSheetBehavior.STATE_HIDDEN:
+                    case BottomSheetBehavior.STATE_HIDDEN:
                     case BottomSheetBehavior.STATE_COLLAPSED:
-                    case PlacesListBottomSheetBehavior.STATE_EXPANDED:
+                    case BottomSheetBehavior.STATE_EXPANDED:
                         break;
                 }
             }
@@ -1000,7 +1046,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
 
         mapView.setMapCenterPoint(mapPOIItem.getMapPoint(), true);
         //open bottomsheet and show selected item data
-        placeListBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+        placeListBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
         bottomSheetViewPager.setCurrentItem(selectedPoiItemIndex, false);
     }
 
@@ -1017,7 +1063,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
 
         mapView.setMapCenterPoint(mapPOIItem.getMapPoint(), true);
         //open bottomsheet and show selected item data
-        placeListBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+        placeListBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
         bottomSheetViewPager.setCurrentItem(selectedPoiItemIndex, false);
     }
 
@@ -1033,7 +1079,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
 
         mapView.setMapCenterPoint(mapPOIItem.getMapPoint(), true);
         //open bottomsheet and show selected item data
-        placeListBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+        placeListBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
     }
 
     @Override

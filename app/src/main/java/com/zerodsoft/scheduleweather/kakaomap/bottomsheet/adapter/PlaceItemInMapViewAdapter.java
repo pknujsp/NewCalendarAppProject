@@ -1,8 +1,12 @@
 package com.zerodsoft.scheduleweather.kakaomap.bottomsheet.adapter;
 
+import android.graphics.Bitmap;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -150,5 +154,6 @@ public class PlaceItemInMapViewAdapter extends RecyclerView.Adapter<PlaceItemInM
                 }
             });
         }
+
     }
 }
