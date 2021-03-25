@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
@@ -78,6 +79,9 @@ public class SelectedLocationMapFragment extends KakaoMapFragment
 
         binding.mapButtonsLayout.zoomInButton.setLayoutParams(zoomInLayoutParams);
         binding.mapButtonsLayout.zoomOutButton.setLayoutParams(zoomOutLayoutParams);
+
+        binding.mapButtonsLayout.zoomInButton.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+        binding.mapButtonsLayout.zoomOutButton.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
     }
 
     @Override

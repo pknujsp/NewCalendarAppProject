@@ -180,6 +180,23 @@ public class WeatherItemFragment extends Fragment
             }
         });
 
+        binding.scrollview.setOnScrollChangeListener(new View.OnScrollChangeListener()
+        {
+            @Override
+            public void onScrollChange(View view, int scrollX, int scrollY, int oldScrollX, int oldScrollY)
+            {
+                if (scrollY - oldScrollY > 0)
+                {
+                    // 아래로 스크롤
+                    binding.refreshWeatherFab.setVisibility(View.GONE);
+                } else if (scrollY - oldScrollY < 0)
+                {
+                    // 위로 스크롤
+                    binding.refreshWeatherFab.setVisibility(View.VISIBLE);
+                }
+            }
+        });
+
         FragmentManager fragmentManager = getChildFragmentManager();
 
         ultraSrtNcstFragment = (UltraSrtNcstFragment) fragmentManager.findFragmentById(R.id.ultra_srt_ncst_fragment);

@@ -9,6 +9,7 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.ActivityKakaoMapBinding;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.main.KakaoMapFragment;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.PlacesItemBottomSheetButtonOnClickListener;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.KakaoLocalDocument;
 
 public class KakaoMapActivity extends AppCompatActivity implements PlacesItemBottomSheetButtonOnClickListener
 {
@@ -46,4 +47,5 @@ public class KakaoMapActivity extends AppCompatActivity implements PlacesItemBot
     {
 
     }
+
 }

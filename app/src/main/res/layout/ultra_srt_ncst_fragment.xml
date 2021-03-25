@@ -4,14 +4,14 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:gravity="center"
-    android:orientation="horizontal">
+    android:orientation="vertical"
+    android:padding="16dp">
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:orientation="vertical">
 
         <TextView
             android:id="@+id/ultra_srt_ncst_temp"
@@ -33,76 +33,89 @@
     </LinearLayout>
 
 
-    <RelativeLayout
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:gravity="center_vertical">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="100dp">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/humidity_label"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:layout_gravity="center"
+                android:layout_marginBottom="8dp"
+                android:gravity="center"
+                android:text="@string/humidity_not_n"
+                android:textColor="@color/gray_600" />
+
+            <TextView
+                android:id="@+id/ultra_srt_ncst_humidity"
+                style="@style/TextAppearance.MaterialComponents.Subtitle1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:text="50" />
+
+        </LinearLayout>
 
 
-        <TextView
-            android:id="@+id/humidity_label"
-            style="@style/TextAppearance.MaterialComponents.Subtitle1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_above="@id/wind_label"
-            android:layout_alignRight="@id/wind_label"
-            android:gravity="right"
-            android:text="@string/humidity_not_n" />
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/ultra_srt_ncst_humidity"
-            style="@style/TextAppearance.MaterialComponents.Subtitle1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignBottom="@id/humidity_label"
-            android:layout_toRightOf="@id/humidity_label"
-            android:paddingLeft="16dp"
-            android:text="50" />
+            <TextView
+                android:id="@+id/wind_label"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:layout_gravity="center"
+                android:layout_marginBottom="8dp"
+                android:gravity="center"
+                android:text="@string/wind_not_n"
+                android:textColor="@color/gray_600" />
 
+            <TextView
+                android:id="@+id/ultra_srt_ncst_wind"
+                style="@style/TextAppearance.MaterialComponents.Subtitle1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:text="5" />
+        </LinearLayout>
 
-        <TextView
-            android:id="@+id/wind_label"
-            style="@style/TextAppearance.MaterialComponents.Subtitle1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_above="@id/rain_1_hour_label"
-            android:layout_alignRight="@id/rain_1_hour_label"
-            android:layout_marginTop="8dp"
-            android:gravity="right"
-            android:text="@string/wind_not_n" />
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/ultra_srt_ncst_wind"
-            style="@style/TextAppearance.MaterialComponents.Subtitle1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignBottom="@id/wind_label"
-            android:layout_toRightOf="@id/wind_label"
-            android:gravity="center_vertical"
-            android:paddingLeft="16dp"
-            android:text="5555555555555555" />
+            <TextView
+                android:id="@+id/rain_1_hour_label"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:layout_gravity="center"
+                android:layout_marginBottom="8dp"
+                android:gravity="center"
+                android:text="@string/rain_1_hour"
+                android:textColor="@color/gray_600" />
 
+            <TextView
+                android:id="@+id/ultra_srt_ncst_rn1"
+                style="@style/TextAppearance.MaterialComponents.Subtitle1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:text="-" />
+        </LinearLayout>
 
-        <TextView
-            android:id="@+id/rain_1_hour_label"
-            style="@style/TextAppearance.MaterialComponents.Subtitle1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentBottom="true"
-            android:layout_marginTop="8dp"
-            android:text="@string/rain_1_hour" />
-
-        <TextView
-            android:id="@+id/ultra_srt_ncst_rn1"
-            style="@style/TextAppearance.MaterialComponents.Subtitle1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignBottom="@id/rain_1_hour_label"
-            android:layout_toRightOf="@id/rain_1_hour_label"
-            android:paddingLeft="16dp"
-            android:text="-" />
-
-
-    </RelativeLayout>
+    </LinearLayout>
 </LinearLayout>

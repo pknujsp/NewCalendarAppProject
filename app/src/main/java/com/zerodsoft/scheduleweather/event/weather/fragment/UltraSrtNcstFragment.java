@@ -55,12 +55,18 @@ public class UltraSrtNcstFragment extends Fragment
         humidity = (TextView) view.findViewById(R.id.ultra_srt_ncst_humidity);
         wind = (TextView) view.findViewById(R.id.ultra_srt_ncst_wind);
         rn1 = (TextView) view.findViewById(R.id.ultra_srt_ncst_rn1);
+
+        temp.setText("");
+        pty.setText("");
+        humidity.setText("");
+        wind.setText("");
+        rn1.setText("");
     }
 
     private void setValue()
     {
         //기온
-        temp.setText(ultraSrtNcstData.getTemperature());
+        temp.setText(ultraSrtNcstData.getTemperature() + "C");
         //강수형태
         pty.setText(WeatherDataConverter.convertPrecipitationForm(ultraSrtNcstData.getPrecipitationForm()));
         //습도

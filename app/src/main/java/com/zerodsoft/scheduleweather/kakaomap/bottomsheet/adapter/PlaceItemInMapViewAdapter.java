@@ -1,12 +1,8 @@
 package com.zerodsoft.scheduleweather.kakaomap.bottomsheet.adapter;
 
-import android.graphics.Bitmap;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.WebSettings;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -15,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.OnClickedBottomSheetListener;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.PlacesItemBottomSheetButtonOnClickListener;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.KakaoLocalDocument;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponseDocuments;
@@ -29,6 +26,7 @@ public class PlaceItemInMapViewAdapter extends RecyclerView.Adapter<PlaceItemInM
     private PlaceDocuments placeDocuments;
     private AddressResponseDocuments addressDocuments;
     private PlacesItemBottomSheetButtonOnClickListener placesItemBottomSheetButtonOnClickListener;
+    private OnClickedBottomSheetListener onClickedBottomSheetListener;
 
     private int isVisibleSelectBtn;
     private int isVisibleUnSelectBtn;
@@ -56,6 +54,11 @@ public class PlaceItemInMapViewAdapter extends RecyclerView.Adapter<PlaceItemInM
     public void setPlaceDocumentsList(List<? extends KakaoLocalDocument> placeDocumentsList)
     {
         this.placeDocumentsList = placeDocumentsList;
+    }
+
+    public void setOnClickedBottomSheetListener(OnClickedBottomSheetListener onClickedBottomSheetListener)
+    {
+        this.onClickedBottomSheetListener = onClickedBottomSheetListener;
     }
 
     @NonNull
@@ -101,14 +104,7 @@ public class PlaceItemInMapViewAdapter extends RecyclerView.Adapter<PlaceItemInM
             selectButton = (Button) view.findViewById(R.id.select_this_place_button);
             unselectButton = (Button) view.findViewById(R.id.unselect_this_place_button);
 
-            view.getRootView().setOnClickListener(new View.OnClickListener()
-            {
-                @Override
-                public void onClick(View view)
-                {
-
-                }
-            });
+            itemView.getRootView().setOnClickListener(onClickListener);
         }
 
         public void bind(KakaoLocalDocument data)
@@ -153,7 +149,30 @@ public class PlaceItemInMapViewAdapter extends RecyclerView.Adapter<PlaceItemInM
                     placesItemBottomSheetButtonOnClickListener.onRemovedLocation();
                 }
             });
+
+            final ViewHolderData viewHolderData = new ViewHolderData(data);
+            itemView.getRootView().setTag(viewHolderData);
         }
 
     }
+
+    static class ViewHolderData
+    {
+        KakaoLocalDocument kakaoLocalDocument;
+
+        public ViewHolderData(KakaoLocalDocument kakaoLocalDocument)
+        {
+            this.kakaoLocalDocument = kakaoLocalDocument;
+        }
+    }
+
+    private final View.OnClickListener onClickListener = new View.OnClickListener()
+    {
+        @Override
+        public void onClick(View view)
+        {
+            ViewHolderData viewHolderData = (ViewHolderData) view.getTag();
+            onClickedBottomSheetListener.onClickedPlaceBottomSheet(viewHolderData.kakaoLocalDocument);
+        }
+    };
 }
