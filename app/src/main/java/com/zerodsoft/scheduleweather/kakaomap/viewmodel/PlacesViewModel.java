@@ -7,7 +7,7 @@ import androidx.paging.LivePagedListBuilder;
 import androidx.paging.PagedList;
 
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.kakaomap.model.datasource.PlaceItemDataSource;
 import com.zerodsoft.scheduleweather.kakaomap.model.datasourcefactory.PlaceItemDataSourceFactory;
 

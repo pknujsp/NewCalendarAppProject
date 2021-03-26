@@ -236,4 +236,72 @@
         <item>떡만두국</item>
         <item>딸기</item>
     </string-array>
+
+
+    <!-- 대기상태 기준 -->
+    <string-array name="finddust_reference">
+        <item>0.0</item>
+        <item>30.0</item>
+        <item>30.0</item>
+        <item>80.0</item>
+        <item>80.0</item>
+        <item>150.0</item>
+        <item>150.0</item>
+        <item>180.0</item>
+    </string-array>
+
+    <string-array name="ultrafinddust_reference">
+        <item>0.0</item>
+        <item>15.0</item>
+        <item>15.0</item>
+        <item>35.0</item>
+        <item>35.0</item>
+        <item>75.0</item>
+        <item>75.0</item>
+        <item>90.0</item>
+    </string-array>
+
+    <string-array name="no2_reference">
+        <item>0.0</item>
+        <item>0.03</item>
+        <item>0.03</item>
+        <item>0.06</item>
+        <item>0.06</item>
+        <item>0.2</item>
+        <item>0.2</item>
+        <item>0.3</item>
+    </string-array>
+
+    <string-array name="o3_reference">
+        <item>0.0</item>
+        <item>0.03</item>
+        <item>0.03</item>
+        <item>0.09</item>
+        <item>0.09</item>
+        <item>0.15</item>
+        <item>0.15</item>
+        <item>0.19</item>
+    </string-array>
+
+    <string-array name="co_reference">
+        <item>0.0</item>
+        <item>2.0</item>
+        <item>2.0</item>
+        <item>9.0</item>
+        <item>9.0</item>
+        <item>15.0</item>
+        <item>15.0</item>
+        <item>18.0</item>
+    </string-array>
+
+    <string-array name="so2_reference">
+        <item>0.0</item>
+        <item>0.02</item>
+        <item>0.02</item>
+        <item>0.05</item>
+        <item>0.05</item>
+        <item>0.15</item>
+        <item>0.15</item>
+        <item>0.18</item>
+    </string-array>
 </resources>

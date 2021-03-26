@@ -1,15 +1,11 @@
 package com.zerodsoft.scheduleweather.event.places.fragment;
 
-import android.graphics.Color;
 import android.os.Bundle;
-import android.util.Log;
 import android.util.TypedValue;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -23,7 +19,6 @@ import androidx.paging.PagedList;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.button.MaterialButton;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.databinding.PlacelistFragmentBinding;
@@ -36,8 +31,8 @@ import com.zerodsoft.scheduleweather.event.places.interfaces.PlaceItemsGetter;
 import com.zerodsoft.scheduleweather.kakaomap.util.LocalParameterUtil;
 import com.zerodsoft.scheduleweather.kakaomap.viewmodel.PlacesViewModel;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.coordtoaddressresponse.CoordToAddress;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddress;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 
@@ -50,12 +45,12 @@ public class PlaceListFragment extends Fragment implements PlaceItemsGetter
     public static final String TAG = "PlaceListFragment";
     private final PlaceCategory placeCategoryInterface;
     private final FragmentController fragmentController;
+
     private OnClickedPlacesListListener onClickedPlacesListListener;
     private PlacelistFragmentBinding binding;
     private List<PlaceCategoryDTO> placeCategoryList;
     private LocationDTO selectedLocationDto;
     private CoordToAddress coordToAddressResult;
-    private Button mapButton;
 
     private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
     {
@@ -109,16 +104,7 @@ public class PlaceListFragment extends Fragment implements PlaceItemsGetter
     {
         super.onViewCreated(view, savedInstanceState);
 
-        mapButton = new MaterialButton(getContext());
-        mapButton.setText(R.string.open_map);
-        mapButton.setTextColor(Color.WHITE);
-        mapButton.setBackgroundColor(Color.GREEN);
-
-        FrameLayout.LayoutParams buttonLayoutParams = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        buttonLayoutParams.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
-        mapButton.setLayoutParams(buttonLayoutParams);
-        binding.rootLayout.addView(mapButton);
-
+        /*
         mapButton.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -129,30 +115,7 @@ public class PlaceListFragment extends Fragment implements PlaceItemsGetter
             }
         });
 
-        binding.scrollview.setOnScrollChangeListener(new View.OnScrollChangeListener()
-        {
-            @Override
-            public void onScrollChange(View v, int scrollX, int scrollY, int oldScrollX, int oldScrollY)
-            {
-                Log.e(TAG, "scrollY : " + scrollY + " , oldScrollY : " + oldScrollY);
-                if (scrollY - oldScrollY > 0)
-                {
-                    // 아래로 스크롤
-                    if (mapButton.getVisibility() == View.VISIBLE)
-                    {
-                        mapButton.setVisibility(View.GONE);
-                    }
-                } else if (scrollY - oldScrollY < 0)
-                {
-                    // 위로 스크롤
-                    if (mapButton.getVisibility() != View.VISIBLE)
-                    {
-                        mapButton.setVisibility(View.VISIBLE);
-                    }
-                }
-            }
-        });
-
+         */
         if (selectedLocationDto.getPlaceName() != null)
         {
             //장소와 주소 표기

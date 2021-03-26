@@ -1,24 +1,21 @@
 package com.zerodsoft.scheduleweather.event.places.fragment;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.FrameLayout;
 import android.widget.HorizontalScrollView;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
-import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.zerodsoft.scheduleweather.R;
@@ -30,8 +27,8 @@ import com.zerodsoft.scheduleweather.event.places.interfaces.PlaceCategory;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PlaceItemsGetter;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.main.KakaoMapFragment;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.SearchBottomSheetController;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.coordtoaddressresponse.CoordToAddress;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddress;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 
@@ -57,7 +54,7 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
 
     private ChipGroup categoryChipGroup;
     private Map<PlaceCategoryDTO, Chip> chipMap = new HashMap<>();
-    private Button listButton;
+    private Chip listChip;
 
     private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
     {
@@ -120,33 +117,14 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
     {
         super.onViewCreated(view, savedInstanceState);
 
-        listButton = new MaterialButton(getContext());
-        listButton.setText(R.string.open_list);
-        listButton.setTextColor(Color.WHITE);
-        listButton.setBackgroundColor(Color.GREEN);
-
-        CoordinatorLayout.LayoutParams buttonLayoutParams = new CoordinatorLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        buttonLayoutParams.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
-        listButton.setLayoutParams(buttonLayoutParams);
-        binding.mapRootLayout.addView(listButton);
-
-        listButton.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                //리스트 열고, placeslistbottomsheet닫고, poiitem이 선택된 경우 선택해제
-                fragmentController.replaceFragment(PlaceListFragment.TAG);
-            }
-        });
 
         //-----------chip group
         HorizontalScrollView chipScrollView = new HorizontalScrollView(getContext());
         chipScrollView.setHorizontalScrollBarEnabled(false);
-        CoordinatorLayout.LayoutParams chipLayoutParams = new CoordinatorLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        FrameLayout.LayoutParams chipLayoutParams = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         chipLayoutParams.gravity = Gravity.TOP;
         chipScrollView.setLayoutParams(chipLayoutParams);
-        binding.mapRootLayout.addView(chipScrollView);
+        binding.mapContainer.addView(chipScrollView);
 
         categoryChipGroup = new ChipGroup(getContext(), null, R.style.Widget_MaterialComponents_ChipGroup);
         categoryChipGroup.setSingleSelection(true);
@@ -163,7 +141,6 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
     {
         super.onClickedSearchView();
         //리스트 버튼과 chips, bottomsheet를 숨긴다
-        listButton.setVisibility(View.GONE);
         categoryChipGroup.setVisibility(View.GONE);
     }
 
@@ -174,7 +151,6 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
         switch (viewType)
         {
             case SearchBottomSheetController.SEARCH_VIEW:
-                listButton.setVisibility(View.VISIBLE);
                 categoryChipGroup.setVisibility(View.VISIBLE);
                 break;
         }
@@ -186,6 +162,7 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
         placeCategoryList = placeCategory.getPlaceCategoryList();
         //카테고리를 chip으로 표시
         int index = 0;
+
         for (PlaceCategoryDTO placeCategory : placeCategoryList)
         {
             Chip chip = new Chip(getContext(), null, R.style.Widget_MaterialComponents_Chip_Filter);
@@ -201,6 +178,23 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
             chipMap.put(placeCategory, chip);
             categoryChipGroup.addView(chip, new ChipGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         }
+
+        listChip = new Chip(getContext());
+        listChip.setChecked(false);
+        listChip.setText(R.string.open_list);
+        listChip.setClickable(true);
+        listChip.setCheckable(false);
+        listChip.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                //리스트 열고, placeslistbottomsheet닫고, poiitem이 선택된 경우 선택해제
+                fragmentController.replaceFragment(PlaceListFragment.TAG);
+            }
+        });
+
+        categoryChipGroup.addView(listChip, 0);
     }
 
     private final CompoundButton.OnCheckedChangeListener onCheckedChangeListener = new CompoundButton.OnCheckedChangeListener()

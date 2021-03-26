@@ -6,11 +6,25 @@
         <attr name="IndicatorSelectedDotDrawable" format="reference" />
     </declare-styleable>
     <declare-styleable name="header_instances_view">
-        <attr name="RowsLimit" format="integer"/>
-        <attr name="SpacingBetweenInstanceViews" format="dimension"/>
-        <attr name="TextLeftMargin" format="dimension"/>
-        <attr name="TextTopBottomMargin" format="dimension"/>
-        <attr name="TextSize" format="dimension"/>
+        <attr name="RowsLimit" format="integer" />
+        <attr name="SpacingBetweenInstanceViews" format="dimension" />
+        <attr name="TextLeftMargin" format="dimension" />
+        <attr name="TextTopBottomMargin" format="dimension" />
+        <attr name="TextSize" format="dimension" />
+    </declare-styleable>
+
+    <declare-styleable name="AirConditionBar">
+        <attr name="arrow_color" format="color" />
+        <attr name="arrow_width" format="dimension" />
+        <attr name="padding" format="dimension" />
+        <attr name="data_type" format="enum">
+            <enum name="finedust" value="0" />
+            <enum name="ultra_finedust" value="1" />
+            <enum name="so2" value="2" />
+            <enum name="co" value="3" />
+            <enum name="o3" value="4" />
+            <enum name="no2" value="5" />
+        </attr>
     </declare-styleable>
 
 </resources>

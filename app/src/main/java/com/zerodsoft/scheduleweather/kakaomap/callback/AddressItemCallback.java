@@ -3,7 +3,7 @@ package com.zerodsoft.scheduleweather.kakaomap.callback;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
 
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponseDocuments;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.addressresponse.AddressResponseDocuments;
 
 public class AddressItemCallback extends DiffUtil.ItemCallback<AddressResponseDocuments>
 {

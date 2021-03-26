@@ -1,6 +1,6 @@
 package com.zerodsoft.scheduleweather.kakaomap.interfaces;
 
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.KakaoLocalDocument;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalDocument;
 
 public interface OnClickedBottomSheetListener
 {

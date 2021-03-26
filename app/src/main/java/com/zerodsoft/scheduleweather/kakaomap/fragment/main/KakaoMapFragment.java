@@ -66,9 +66,9 @@ import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapPoint;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapToolbar;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.INetwork;
 import com.zerodsoft.scheduleweather.kakaomap.model.CustomPoiItem;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.KakaoLocalDocument;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponseDocuments;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalDocument;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.addressresponse.AddressResponseDocuments;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 
@@ -83,7 +83,6 @@ import java.util.Set;
 import java.util.Timer;
 
 import static androidx.core.content.ContextCompat.checkSelfPermission;
-import static androidx.core.content.ContextCompat.getDataDir;
 
 public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, MapView.POIItemEventListener, MapView.MapViewEventListener, MapReverseGeoCoder.ReverseGeoCodingResultListener,
         INetwork, IMapToolbar, OnClickedPlacesListListener, SearchViewController, SearchBottomSheetController, PlacesItemBottomSheetButtonOnClickListener,
@@ -445,6 +444,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
             {
                 if (newState == BottomSheetBehavior.STATE_COLLAPSED)
                 {
+
                 } else if (newState == BottomSheetBehavior.STATE_EXPANDED)
                 {
 
@@ -453,8 +453,10 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
 
                 } else if (newState == BottomSheetBehavior.STATE_HALF_EXPANDED)
                 {
+
                 } else if (newState == BottomSheetBehavior.STATE_HIDDEN)
                 {
+
                 }
             }
 

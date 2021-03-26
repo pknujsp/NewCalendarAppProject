@@ -24,12 +24,12 @@ import com.zerodsoft.scheduleweather.event.weather.repository.WeatherDownloader;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.MidFcstParameter;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.VilageFcstParameter;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.WeatherItems;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.midlandfcstresponse.MidLandFcstItems;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.midtaresponse.MidTaItems;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.ultrasrtfcstresponse.UltraSrtFcstItems;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.ultrasrtncstresponse.UltraSrtNcstItems;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.vilagefcstresponse.VilageFcstItems;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.WeatherItems;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.midlandfcstresponse.MidLandFcstItems;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.midtaresponse.MidTaItems;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.ultrasrtfcstresponse.UltraSrtFcstItems;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.ultrasrtncstresponse.UltraSrtNcstItems;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.vilagefcstresponse.VilageFcstItems;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
 import com.zerodsoft.scheduleweather.event.weather.SunSetRiseData;
@@ -56,6 +56,7 @@ public class WeatherItemFragment extends Fragment
     private UltraSrtFcstFragment ultraSrtFcstFragment;
     private VilageFcstFragment vilageFcstFragment;
     private MidFcstFragment midFcstFragment;
+    private AirConditionFragment airConditionFragment;
 
     private WeatherViewModel weatherViewModel;
     private LocationViewModel locationViewModel;
@@ -203,6 +204,7 @@ public class WeatherItemFragment extends Fragment
         ultraSrtFcstFragment = (UltraSrtFcstFragment) fragmentManager.findFragmentById(R.id.ultra_srt_fcst_fragment);
         vilageFcstFragment = (VilageFcstFragment) fragmentManager.findFragmentById(R.id.vilage_fcst_fragment);
         midFcstFragment = (MidFcstFragment) fragmentManager.findFragmentById(R.id.mid_fcst_fragment);
+        airConditionFragment = (AirConditionFragment) fragmentManager.findFragmentById(R.id.air_condition_fragment);
 
         weatherViewModel = new ViewModelProvider(this).get(WeatherViewModel.class);
         locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
@@ -254,7 +256,10 @@ public class WeatherItemFragment extends Fragment
                                     midLandFcstParameter.setNumOfRows("10").setPageNo("1").setRegId(weatherAreaCode.getMidLandFcstCode());
                                     midTaParameter.setNumOfRows("10").setPageNo("1").setRegId(weatherAreaCode.getMidTaCode());
 
-                                    // viewModel.getAllWeathersData(vilageFcstParameter, midLandFcstParameter, midTaParameter, weatherAreaCode);
+                                    Bundle bundle = new Bundle();
+                                    bundle.putDouble("latitude", locationDTO.getLatitude());
+                                    bundle.putDouble("longitude", locationDTO.getLongitude());
+                                    airConditionFragment.setArguments(bundle);
                                     refreshWeatherData();
                                 }
                             }
@@ -276,6 +281,7 @@ public class WeatherItemFragment extends Fragment
         binding.weatherUpdatedDatetime.setText("Updated : " + updatedDateTime);
         init();
 
+        airConditionFragment.refresh();
         weatherDownloader.getWeatherData(vilageFcstParameter, midLandFcstParameter, midTaParameter);
     }
 

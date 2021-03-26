@@ -38,10 +38,9 @@ import com.zerodsoft.scheduleweather.event.weather.activity.WeatherActivity;
 import com.zerodsoft.scheduleweather.kakaomap.model.CoordToAddressUtil;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.coordtoaddressresponse.CoordToAddress;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddress;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
-import java.io.Serializable;
 import java.util.Calendar;
 
 public class InstanceMainActivity extends AppCompatActivity

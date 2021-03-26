@@ -1,6 +1,6 @@
 package com.zerodsoft.scheduleweather.event.places.interfaces;
 
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 
 import java.util.List;
 

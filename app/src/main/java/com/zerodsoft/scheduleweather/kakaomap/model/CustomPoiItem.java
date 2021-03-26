@@ -1,8 +1,6 @@
 package com.zerodsoft.scheduleweather.kakaomap.model;
 
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.KakaoLocalDocument;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponseDocuments;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalDocument;
 
 import net.daum.mf.map.api.MapPOIItem;
 

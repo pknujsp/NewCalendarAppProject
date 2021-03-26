@@ -10,8 +10,8 @@ import android.view.View;
 import com.zerodsoft.scheduleweather.kakaomap.activity.KakaoMapActivity;
 
 import com.zerodsoft.scheduleweather.kakaomap.model.CustomPoiItem;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponseDocuments;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.addressresponse.AddressResponseDocuments;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
 import net.daum.mf.map.api.MapPOIItem;

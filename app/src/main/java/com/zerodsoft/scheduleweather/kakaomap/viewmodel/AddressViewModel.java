@@ -9,7 +9,7 @@ import androidx.paging.PagedList;
 import com.zerodsoft.scheduleweather.kakaomap.model.datasource.AddressItemDataSource;
 import com.zerodsoft.scheduleweather.kakaomap.model.datasourcefactory.AddressItemDataSourceFactory;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponseDocuments;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.addressresponse.AddressResponseDocuments;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;

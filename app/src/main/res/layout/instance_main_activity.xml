@@ -207,7 +207,7 @@
                                 android:layout_height="wrap_content"
                                 android:gravity="center"
                                 android:paddingBottom="16dp"
-                                android:text="@string/weather"
+                                android:text="@string/weather_and_air_condition"
                                 android:textColor="@color/black" />
 
                         </LinearLayout>

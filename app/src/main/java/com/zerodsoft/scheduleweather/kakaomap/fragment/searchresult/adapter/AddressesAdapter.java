@@ -16,7 +16,7 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.OnClickedLocListItem;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.kakaomap.callback.AddressItemCallback;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.addressresponse.AddressResponseDocuments;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.addressresponse.AddressResponseDocuments;
 
 public class AddressesAdapter extends PagedListAdapter<AddressResponseDocuments, AddressesAdapter.ItemViewHolder>
 {

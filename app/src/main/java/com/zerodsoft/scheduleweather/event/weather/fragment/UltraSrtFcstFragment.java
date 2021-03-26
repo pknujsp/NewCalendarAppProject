@@ -21,9 +21,7 @@ import androidx.fragment.app.Fragment;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.event.weather.SunSetRiseData;
-import com.zerodsoft.scheduleweather.event.weather.resultdata.WeatherData;
 import com.zerodsoft.scheduleweather.event.weather.resultdata.responseresult.UltraSrtFcstData;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.ultrasrtfcstresponse.UltraSrtFcstItems;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.utility.WeatherDataConverter;
 

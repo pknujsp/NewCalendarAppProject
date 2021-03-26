@@ -6,7 +6,7 @@ import androidx.paging.DataSource;
 
 import com.zerodsoft.scheduleweather.kakaomap.model.datasource.PlaceItemDataSource;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.placeresponse.PlaceDocuments;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 
 public class PlaceItemDataSourceFactory extends DataSource.Factory<Integer, PlaceDocuments>
 {
