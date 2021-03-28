@@ -81,20 +81,20 @@ public class BarInitDataCreater
         }
     }
 
-    public static int getGradeColor(String grade)
+    public static int getGradeColor(String grade, Context context)
     {
         if (grade.equals("1"))
         {
-            return Color.BLUE;
+            return context.getColor(R.color.air_condition_good);
         } else if (grade.equals("2"))
         {
-            return Color.GREEN;
+            return context.getColor(R.color.air_condition_normal);
         } else if (grade.equals("3"))
         {
-            return Color.CYAN;
+            return context.getColor(R.color.air_condition_bad);
         } else
         {
-            return Color.RED;
+            return context.getColor(R.color.air_condition_very_bad);
         }
     }
 

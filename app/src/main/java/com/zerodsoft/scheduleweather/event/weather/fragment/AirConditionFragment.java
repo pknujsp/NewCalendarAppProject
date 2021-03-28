@@ -173,7 +173,7 @@ public class AirConditionFragment extends Fragment
         {
             pm10 = BarInitDataCreater.getGrade(msrstnAcctoRltmMesureDnstyBody.getItem().get(0).getPm10Grade1h(), getContext()) + ", " + msrstnAcctoRltmMesureDnstyBody.getItem().get(0).getPm10Value()
                     + getString(R.string.finedust_unit);
-            binding.finedustStatus.setTextColor(BarInitDataCreater.getGradeColor(msrstnAcctoRltmMesureDnstyBody.getItem().get(0).getPm10Grade1h()));
+            binding.finedustStatus.setTextColor(BarInitDataCreater.getGradeColor(msrstnAcctoRltmMesureDnstyBody.getItem().get(0).getPm10Grade1h(), getContext()));
         } else
         {
             pm10 = msrstnAcctoRltmMesureDnstyBody.getItem().get(0).getPm10Flag();
@@ -184,7 +184,7 @@ public class AirConditionFragment extends Fragment
         {
             pm25 = BarInitDataCreater.getGrade(msrstnAcctoRltmMesureDnstyBody.getItem().get(0).getPm25Grade1h(), getContext()) + ", " + msrstnAcctoRltmMesureDnstyBody.getItem().get(0).getPm25Value()
                     + getString(R.string.finedust_unit);
-            binding.ultraFinedustStatus.setTextColor(BarInitDataCreater.getGradeColor(msrstnAcctoRltmMesureDnstyBody.getItem().get(0).getPm25Grade1h()));
+            binding.ultraFinedustStatus.setTextColor(BarInitDataCreater.getGradeColor(msrstnAcctoRltmMesureDnstyBody.getItem().get(0).getPm25Grade1h(), getContext()));
         } else
         {
             pm25 = msrstnAcctoRltmMesureDnstyBody.getItem().get(0).getPm25Flag();

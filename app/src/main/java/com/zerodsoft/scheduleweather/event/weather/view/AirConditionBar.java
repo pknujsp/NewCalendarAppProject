@@ -68,6 +68,7 @@ public class AirConditionBar extends View
         REFERENCE_STATUS_TEXTPAINT.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 10f, getResources().getDisplayMetrics()));
         REFERENCE_STATUS_TEXTPAINT.setColor(Color.WHITE);
         REFERENCE_STATUS_TEXTPAINT.setTextAlign(Paint.Align.CENTER);
+        REFERENCE_STATUS_TEXTPAINT.setShadowLayer(1.5f, 0.5f, 0.5f, Color.BLACK);
 
         BAR_PAINT = new Paint();
 
@@ -134,7 +135,7 @@ public class AirConditionBar extends View
         }
 
         //데이터 값 표시
-        int size = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4f, getResources().getDisplayMetrics());
+        int size = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 6f, getResources().getDisplayMetrics());
 
         float arrowLeft = (int) (barWidth * (dataValue / maxRef)) - (ARROW_WIDTH / 2);
         float arrowTop = top - size;

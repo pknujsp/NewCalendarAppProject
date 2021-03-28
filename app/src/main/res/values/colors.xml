@@ -36,4 +36,11 @@
 
     <color name="map_header_view_background">#2B2B2B</color>
     <color name="map_view_button_color">#CCFFFFFF</color>
+
+    <color name="air_condition_good">#25aefb</color>
+    <color name="air_condition_normal">#92f101</color>
+    <color name="air_condition_bad">#fde905</color>
+    <color name="air_condition_very_bad">#fc3037</color>
+
+    <color name="text_stroke_color">#000000</color>
 </resources>

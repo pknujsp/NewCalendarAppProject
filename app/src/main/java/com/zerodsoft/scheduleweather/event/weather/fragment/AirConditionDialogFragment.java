@@ -9,6 +9,8 @@ import androidx.fragment.app.DialogFragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.DialogFragmentAirConditionBinding;
@@ -71,7 +73,20 @@ public class AirConditionDialogFragment extends DialogFragment
         binding.coStatus.setText("");
         binding.o3Status.setText("");
         binding.so2Status.setText("");
+
         setData();
+    }
+
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+
+        WindowManager.LayoutParams layoutParams = getDialog().getWindow().getAttributes();
+        layoutParams.width = (int) (layoutParams.width * 0.8);
+        layoutParams.height = (int) (layoutParams.height * 0.7);
+
+        getDialog().getWindow().setAttributes(layoutParams);
     }
 
     private void setData()
