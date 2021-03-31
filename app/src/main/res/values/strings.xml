@@ -430,5 +430,9 @@
     <string name="tang">탕</string>
     <string name="bunsik">분식</string>
     <string name="juk">죽</string>
+    <string name="search_criteria_location_settings">검색 기준 위치 설정</string>
+    <string name="current_location">현재 위치</string>
+    <string name="search">검색</string>
+    <string name="hint_request_input_address_or_place">검색할 주소 또는 장소를 입력</string>
 
 </resources>

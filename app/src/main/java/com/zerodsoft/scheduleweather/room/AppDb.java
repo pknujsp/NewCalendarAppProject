@@ -6,7 +6,9 @@ import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
 
+import com.zerodsoft.scheduleweather.room.dao.CustomFoodCategoryDAO;
 import com.zerodsoft.scheduleweather.room.dao.CustomPlaceCategoryDAO;
+import com.zerodsoft.scheduleweather.room.dto.CustomFoodCategoryDTO;
 import com.zerodsoft.scheduleweather.room.dto.CustomPlaceCategoryDTO;
 import com.zerodsoft.scheduleweather.room.dao.FavoriteLocDAO;
 import com.zerodsoft.scheduleweather.room.dao.LocationDAO;
@@ -16,7 +18,7 @@ import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.SelectedPlaceCategoryDTO;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
 
-@Database(entities = {LocationDTO.class, WeatherAreaCodeDTO.class, SelectedPlaceCategoryDTO.class, CustomPlaceCategoryDTO.class}, version = 1, exportSchema = false)
+@Database(entities = {LocationDTO.class, WeatherAreaCodeDTO.class, SelectedPlaceCategoryDTO.class, CustomPlaceCategoryDTO.class, CustomFoodCategoryDTO.class}, version = 1, exportSchema = false)
 public abstract class AppDb extends RoomDatabase
 {
     private static volatile AppDb instance = null;
@@ -30,6 +32,8 @@ public abstract class AppDb extends RoomDatabase
     public abstract LocationDAO locationDAO();
 
     public abstract WeatherAreaCodeDAO weatherAreaCodeDAO();
+
+    public abstract CustomFoodCategoryDAO customFoodCategoryDAO();
 
     public static synchronized AppDb getInstance(Context context)
     {

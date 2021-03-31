@@ -50,6 +50,7 @@
                     android:id="@+id/food_category_gridview"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    tools:listitem="@layout/food_category_item"
                     android:numColumns="5" />
 
                 <Button

@@ -25,8 +25,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".event.places.activity.PlacesActivity"></activity>
-
+        <activity android:name=".event.foods.activity.LocationSettingsActivity"></activity>
+        <activity android:name=".event.places.activity.PlacesActivity" />
         <activity android:name=".event.weather.activity.WeatherActivity" />
         <activity android:name=".event.event.activity.InstanceActivity" />
         <activity android:name=".event.foods.activity.FoodsActivity" />
