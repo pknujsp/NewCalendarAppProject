@@ -71,6 +71,7 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.addressresponse.
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
+import com.zerodsoft.scheduleweather.utility.NetworkStatus;
 
 import net.daum.mf.map.api.MapPOIItem;
 import net.daum.mf.map.api.MapPoint;
@@ -118,6 +119,8 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
 
     public int placeBottomSheetSelectBtnVisibility;
     public int placeBottomSheetUnSelectBtnVisibility;
+
+    public NetworkStatus networkStatus;
 
     public KakaoMapFragment()
     {
@@ -171,6 +174,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+        networkStatus = new NetworkStatus(getActivity());
     }
 
     @Override
@@ -570,24 +574,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     @Override
     public boolean networkAvailable()
     {
-        if (connectivityManager.getActiveNetwork() == null)
-        {
-            Toast.makeText(getActivity(), getString(R.string.map_network_not_connected), Toast.LENGTH_SHORT).show();
-            return false;
-        } else
-        {
-            NetworkCapabilities nc = connectivityManager.getNetworkCapabilities(connectivityManager.getActiveNetwork());
-
-            if (nc.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ||
-                    nc.hasTransport(NetworkCapabilities.TRANSPORT_WIFI))
-            {
-                return true;
-            } else
-            {
-                Toast.makeText(getActivity(), getString(R.string.map_network_not_connected), Toast.LENGTH_SHORT).show();
-                return false;
-            }
-        }
+        return networkStatus.networkAvailable(getActivity());
     }
 
     public void onClickedSearchView()

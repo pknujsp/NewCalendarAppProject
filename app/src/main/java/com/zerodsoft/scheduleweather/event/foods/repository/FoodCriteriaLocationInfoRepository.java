@@ -59,7 +59,7 @@ public class FoodCriteriaLocationInfoRepository implements FoodCriteriaLocationI
             @Override
             public void run()
             {
-                dao.insertByEventId(calendarId, eventId, usingType);
+                dao.insertByEventId(calendarId, eventId, usingType, historyLocationId);
                 FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO = dao.selectByEventId(calendarId, eventId);
                 callback.onReceiveResult(foodCriteriaLocationInfoDTO);
             }
@@ -75,7 +75,7 @@ public class FoodCriteriaLocationInfoRepository implements FoodCriteriaLocationI
             @Override
             public void run()
             {
-                dao.insertByInstanceId(calendarId, instanceId, usingType);
+                dao.insertByInstanceId(calendarId, instanceId, usingType, historyLocationId);
                 FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO = dao.selectByInstanceId(calendarId, instanceId);
                 callback.onReceiveResult(foodCriteriaLocationInfoDTO);
             }
@@ -91,7 +91,7 @@ public class FoodCriteriaLocationInfoRepository implements FoodCriteriaLocationI
             @Override
             public void run()
             {
-                dao.updateByEventId(calendarId, eventId, usingType);
+                dao.updateByEventId(calendarId, eventId, usingType, historyLocationId);
                 FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO = dao.selectByEventId(calendarId, eventId);
                 callback.onReceiveResult(foodCriteriaLocationInfoDTO);
             }
@@ -107,7 +107,7 @@ public class FoodCriteriaLocationInfoRepository implements FoodCriteriaLocationI
             @Override
             public void run()
             {
-                dao.updateByInstanceId(calendarId, instanceId, usingType);
+                dao.updateByInstanceId(calendarId, instanceId, usingType, historyLocationId);
                 FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO = dao.selectByInstanceId(calendarId, instanceId);
                 callback.onReceiveResult(foodCriteriaLocationInfoDTO);
             }

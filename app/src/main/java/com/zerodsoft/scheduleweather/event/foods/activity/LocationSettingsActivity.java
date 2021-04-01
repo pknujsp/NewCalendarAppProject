@@ -20,7 +20,7 @@ import com.zerodsoft.scheduleweather.databinding.ActivityLocationSettingsBinding
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.foods.adapter.FoodCriteriaLocationHistoryAdapter;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationInfoViewModel;
-import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodSearchCriteriaLocationViewModel;
+import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationHistoryViewModel;
 import com.zerodsoft.scheduleweather.room.dto.FoodCriteriaLocationInfoDTO;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
@@ -31,7 +31,7 @@ public class LocationSettingsActivity extends AppCompatActivity
     private ActivityLocationSettingsBinding binding;
     private LocationViewModel locationViewModel;
     private FoodCriteriaLocationInfoViewModel foodCriteriaLocationInfoViewModel;
-    private FoodSearchCriteriaLocationViewModel foodSearchCriteriaLocationViewModel;
+    private FoodCriteriaLocationHistoryViewModel foodCriteriaLocationSearchHistoryViewModel;
 
     private int calendarId;
     private long instanceId;
@@ -61,7 +61,7 @@ public class LocationSettingsActivity extends AppCompatActivity
 
         locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
         foodCriteriaLocationInfoViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationInfoViewModel.class);
-        foodSearchCriteriaLocationViewModel = new ViewModelProvider(this).get(FoodSearchCriteriaLocationViewModel.class);
+        foodCriteriaLocationSearchHistoryViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationHistoryViewModel.class);
 
         locationViewModel.getLocation(calendarId, eventId, new CarrierMessagingService.ResultCallback<LocationDTO>()
         {
@@ -111,7 +111,7 @@ public class LocationSettingsActivity extends AppCompatActivity
             }
         });
 
-        foodSearchCriteriaLocationViewModel.selectByEventId(calendarId, eventId, new CarrierMessagingService.ResultCallback<List<FoodCriteriaLocationDTO>>()
+        foodCriteriaLocationSearchHistoryViewModel.selectByEventId(calendarId, eventId, new CarrierMessagingService.ResultCallback<List<FoodCriteriaLocationDTO>>()
         {
             @Override
             public void onReceiveResult(@NonNull List<FoodCriteriaLocationDTO> foodCriteriaLocationDTOS) throws RemoteException
@@ -216,14 +216,14 @@ public class LocationSettingsActivity extends AppCompatActivity
         {
             usingType = FoodCriteriaLocationInfoDTO.TYPE_CUSTOM_SELECTED_LOCATION;
             //선택된 위치값 업데이트
-            foodSearchCriteriaLocationViewModel.deleteByEventId(calendarId, eventId, new CarrierMessagingService.ResultCallback<Boolean>()
+            foodCriteriaLocationSearchHistoryViewModel.deleteByEventId(calendarId, eventId, new CarrierMessagingService.ResultCallback<Boolean>()
             {
                 @Override
                 public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
                 {
                     //리스트에서 선택된 라디오의 데이터를 가져온다.
                     FoodCriteriaLocationDTO selectedData = new FoodCriteriaLocationDTO();
-                    foodSearchCriteriaLocationViewModel.insertByEventId(calendarId, eventId, selectedData.getPlaceName(), selectedData.getAddressName(),
+                    foodCriteriaLocationSearchHistoryViewModel.insertByEventId(calendarId, eventId, selectedData.getPlaceName(), selectedData.getAddressName(),
                             selectedData.getRoadAddressName(), selectedData.getLatitude(), selectedData.getLongitude(), new CarrierMessagingService.ResultCallback<List<FoodCriteriaLocationDTO>>()
                             {
                                 @Override

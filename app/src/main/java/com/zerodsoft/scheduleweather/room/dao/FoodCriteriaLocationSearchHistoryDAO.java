@@ -16,6 +16,9 @@ public interface FoodCriteriaLocationSearchHistoryDAO
     @Query("SELECT * FROM food_criteria_location_search_history_table WHERE calendar_id = :calendarId AND instance_id = :instanceId")
     List<FoodCriteriaLocationSearchHistoryDTO> selectByInstanceId(int calendarId, long instanceId);
 
+    @Query("SELECT * FROM food_criteria_location_search_history_table WHERE id = :id")
+    FoodCriteriaLocationSearchHistoryDTO select(int id);
+
     @Query("SELECT * FROM food_criteria_location_search_history_table")
     List<FoodCriteriaLocationSearchHistoryDTO> selectAll();
 
@@ -37,11 +40,19 @@ public interface FoodCriteriaLocationSearchHistoryDAO
             "WHERE calendar_id = :calendarId AND instance_id = :instanceId")
     void updateByInstanceId(int calendarId, long instanceId, String placeName, String addressName, String roadAddressName, String latitude, String longitude);
 
+    @Query("UPDATE food_criteria_location_search_history_table " +
+            "SET place_name = :placeName AND address_name = :addressName AND road_address_name = :roadAddressName AND latitude = :latitude AND longitude = :longitude " +
+            "WHERE id = :id")
+    void update(int id, String placeName, String addressName, String roadAddressName, String latitude, String longitude);
+
     @Query("DELETE FROM food_criteria_location_search_history_table WHERE calendar_id = :calendarId AND event_id = :eventId")
     void deleteByEventId(int calendarId, long eventId);
 
     @Query("DELETE FROM food_criteria_location_search_history_table WHERE calendar_id = :calendarId AND instance_id = :instanceId")
     void deleteByInstanceId(int calendarId, long instanceId);
+
+    @Query("DELETE FROM food_criteria_location_search_history_table WHERE id = :id")
+    void delete(int id);
 
     @Query("DELETE FROM food_criteria_location_search_history_table")
     void deleteAll();

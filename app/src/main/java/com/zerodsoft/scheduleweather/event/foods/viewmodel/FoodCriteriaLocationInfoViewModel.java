@@ -35,25 +35,25 @@ public class FoodCriteriaLocationInfoViewModel extends AndroidViewModel implemen
     @Override
     public void insertByEventId(int calendarId, long eventId, int usingType, Integer historyLocationId, CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO> callback)
     {
-        repository.insertByEventId(calendarId, eventId, usingType, , callback);
+        repository.insertByEventId(calendarId, eventId, usingType, historyLocationId, callback);
     }
 
     @Override
     public void insertByInstanceId(int calendarId, long instanceId, int usingType, Integer historyLocationId, CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO> callback)
     {
-        repository.insertByInstanceId(calendarId, instanceId, usingType, , callback);
+        repository.insertByInstanceId(calendarId, instanceId, usingType, historyLocationId, callback);
     }
 
     @Override
     public void updateByEventId(int calendarId, long eventId, int usingType, Integer historyLocationId, CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO> callback)
     {
-        repository.updateByEventId(calendarId, eventId, usingType, , callback);
+        repository.updateByEventId(calendarId, eventId, usingType, historyLocationId, callback);
     }
 
     @Override
     public void updateByInstanceId(int calendarId, long instanceId, int usingType, Integer historyLocationId, CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO> callback)
     {
-        repository.updateByInstanceId(calendarId, instanceId, usingType, , callback);
+        repository.updateByInstanceId(calendarId, instanceId, usingType, historyLocationId, callback);
     }
 
     @Override

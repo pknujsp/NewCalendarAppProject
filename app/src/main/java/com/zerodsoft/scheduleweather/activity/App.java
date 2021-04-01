@@ -2,13 +2,19 @@ package com.zerodsoft.scheduleweather.activity;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
+import android.net.NetworkRequest;
 import android.os.Handler;
 import android.os.Looper;
+import android.widget.Toast;
 
 import androidx.core.os.HandlerCompat;
 import androidx.preference.PreferenceManager;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.event.foods.activity.FoodsActivity;
 
 import java.util.TimeZone;
 import java.util.concurrent.ExecutorService;
@@ -25,6 +31,9 @@ public class App extends android.app.Application
     private static boolean preference_key_show_week_of_year = true;
     private static boolean preference_key_using_24_hour_system = true;
     private static String preference_key_radius_range = "";
+
+
+
 
     public static void setAppSettings(Context context)
     {

@@ -6,7 +6,7 @@ import com.zerodsoft.scheduleweather.room.dto.FoodCriteriaLocationSearchHistoryD
 
 import java.util.List;
 
-public interface FoodSearchCriteriaLocationQuery
+public interface FoodCriteriaLocationHistoryQuery
 {
     void selectByEventId(int calendarId, long eventId, CarrierMessagingService.ResultCallback<List<FoodCriteriaLocationSearchHistoryDTO>> callback);
 
@@ -19,10 +19,18 @@ public interface FoodSearchCriteriaLocationQuery
     void insertByEventId(int calendarId, long eventId, String placeName, String addressName, String roadAddressName, String latitude, String longitude, CarrierMessagingService.ResultCallback<List<FoodCriteriaLocationSearchHistoryDTO>> callback);
 
     void insertByInstanceId(int calendarId, long instanceId, String placeName, String addressName, String roadAddressName, String latitude, String longitude, CarrierMessagingService.ResultCallback<List<FoodCriteriaLocationSearchHistoryDTO>> callback);
-    
+
+    void updateByEventId(int calendarId, long eventId, String placeName, String addressName, String roadAddressName, String latitude, String longitude, CarrierMessagingService.ResultCallback<List<FoodCriteriaLocationSearchHistoryDTO>> callback);
+
+    void updateByInstanceId(int calendarId, long instanceId, String placeName, String addressName, String roadAddressName, String latitude, String longitude, CarrierMessagingService.ResultCallback<List<FoodCriteriaLocationSearchHistoryDTO>> callback);
+
+    void update(int id, String placeName, String addressName, String roadAddressName, String latitude, String longitude, CarrierMessagingService.ResultCallback<FoodCriteriaLocationSearchHistoryDTO> callback);
+
     void deleteByEventId(int calendarId, long eventId, CarrierMessagingService.ResultCallback<Boolean> callback);
 
     void deleteByInstanceId(int calendarId, long instanceId, CarrierMessagingService.ResultCallback<Boolean> callback);
 
     void delete(int id, CarrierMessagingService.ResultCallback<Boolean> callback);
+
+    void deleteAll(CarrierMessagingService.ResultCallback<Boolean> callback);
 }

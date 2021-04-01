@@ -1,7 +1,12 @@
 package com.zerodsoft.scheduleweather.event.foods.fragment;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 
 import androidx.activity.result.ActivityResult;
@@ -10,11 +15,13 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.os.RemoteException;
 import android.provider.CalendarContract;
+import android.provider.Settings;
 import android.service.carrier.CarrierMessagingService;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -30,36 +37,53 @@ import com.zerodsoft.scheduleweather.event.foods.dto.FoodCategoryItem;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedCategoryItem;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.CustomFoodCategoryViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationInfoViewModel;
-import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodSearchCriteriaLocationViewModel;
+import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationHistoryViewModel;
+import com.zerodsoft.scheduleweather.kakaomap.fragment.main.KakaoMapFragment;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.INetwork;
+import com.zerodsoft.scheduleweather.kakaomap.util.RequestLocationTimer;
 import com.zerodsoft.scheduleweather.room.dto.CustomFoodCategoryDTO;
 import com.zerodsoft.scheduleweather.room.dto.FoodCriteriaLocationInfoDTO;
+import com.zerodsoft.scheduleweather.room.dto.FoodCriteriaLocationSearchHistoryDTO;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
+import net.daum.mf.map.api.MapPoint;
+import net.daum.mf.map.api.MapReverseGeoCoder;
+
 import java.util.List;
+import java.util.Timer;
+
+import static androidx.core.content.ContextCompat.checkSelfPermission;
 
 public class FoodsMainFragment extends Fragment implements OnClickedCategoryItem
 {
     public static final String TAG = "FoodsMainFragment";
     private FragmentFoodsMainBinding binding;
+    private final INetwork iNetwork;
+
     private CustomFoodCategoryViewModel customFoodCategoryViewModel;
     private LocationViewModel locationViewModel;
     private FoodCriteriaLocationInfoViewModel foodCriteriaLocationInfoViewModel;
-    private FoodSearchCriteriaLocationViewModel foodSearchCriteriaLocationViewModel;
+    private FoodCriteriaLocationHistoryViewModel foodCriteriaLocationSearchHistoryViewModel;
+
+    public LocationManager locationManager;
 
     private int calendarId;
     private long instanceId;
     private long eventId;
     private LocationDTO locationDTO;
+    private FoodCriteriaLocationSearchHistoryDTO foodCriteriaLocationSearchHistoryDTO;
+    private FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO;
 
-    public FoodsMainFragment()
+    public FoodsMainFragment(INetwork iNetwork)
     {
-
+        this.iNetwork = iNetwork;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+        locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
     }
 
     @Override
@@ -74,16 +98,17 @@ public class FoodsMainFragment extends Fragment implements OnClickedCategoryItem
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
+
         locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
         foodCriteriaLocationInfoViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationInfoViewModel.class);
-        foodSearchCriteriaLocationViewModel = new ViewModelProvider(this).get(FoodSearchCriteriaLocationViewModel.class);
+        foodCriteriaLocationSearchHistoryViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationHistoryViewModel.class);
         customFoodCategoryViewModel = new ViewModelProvider(this).get(CustomFoodCategoryViewModel.class);
 
         //기준 주소 표시
         setCriteriaLocation();
 
         setCategories();
-        binding.selectedAddress.setOnClickListener(new View.OnClickListener()
+        binding.criteriaLocation.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view)
@@ -103,6 +128,7 @@ public class FoodsMainFragment extends Fragment implements OnClickedCategoryItem
 
     private void setCriteriaLocation()
     {
+        //지정한 위치정보를 가져온다
         locationViewModel.getLocation(calendarId, eventId, new CarrierMessagingService.ResultCallback<LocationDTO>()
         {
             @Override
@@ -122,41 +148,60 @@ public class FoodsMainFragment extends Fragment implements OnClickedCategoryItem
                             @Override
                             public void onReceiveResult(@NonNull FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO) throws RemoteException
                             {
-                                switch (foodCriteriaLocationInfoDTO.getUsingType())
+                                getActivity().runOnUiThread(new Runnable()
                                 {
-                                    case FoodCriteriaLocationInfoDTO.TYPE_SELECTED_LOCATION:
-                                        if (locationDTO.getPlaceName() != null)
-                                        {
-                                            binding.criteriaLocation.setText(locationDTO.getPlaceName());
-                                        } else
-                                        {
-                                            binding.criteriaLocation.setText(locationDTO.getAddressName());
-                                        }
-                                        break;
-                                    case FoodCriteriaLocationInfoDTO.TYPE_CURRENT_LOCATION:
-                                        //현재 위치 파악
-                                        break;
-                                    case FoodCriteriaLocationInfoDTO.TYPE_CUSTOM_SELECTED_LOCATION:
+                                    @Override
+                                    public void run()
                                     {
-                                        //지정 위치 파악
-                                        foodSearchCriteriaLocationViewModel.selectByEventId(calendarId, eventId, new CarrierMessagingService.ResultCallback<List<FoodCriteriaLocationDTO>>()
+                                        //기준 설정 정보 객체 저장
+                                        FoodsMainFragment.this.foodCriteriaLocationInfoDTO = foodCriteriaLocationInfoDTO;
+
+                                        switch (foodCriteriaLocationInfoDTO.getUsingType())
                                         {
-                                            @Override
-                                            public void onReceiveResult(@NonNull List<FoodCriteriaLocationDTO> foodCriteriaLocationDTOS) throws RemoteException
+                                            case FoodCriteriaLocationInfoDTO.TYPE_SELECTED_LOCATION:
+                                                if (locationDTO.getPlaceName() != null)
+                                                {
+                                                    binding.criteriaLocation.setText(locationDTO.getPlaceName());
+                                                } else
+                                                {
+                                                    binding.criteriaLocation.setText(locationDTO.getAddressName());
+                                                }
+                                                break;
+                                            case FoodCriteriaLocationInfoDTO.TYPE_CURRENT_LOCATION:
+                                                //현재 위치 파악
+                                                break;
+                                            case FoodCriteriaLocationInfoDTO.TYPE_CUSTOM_SELECTED_LOCATION:
                                             {
-                                                getActivity().runOnUiThread(new Runnable()
+                                                //지정 위치 파악
+                                                foodCriteriaLocationSearchHistoryViewModel.select(foodCriteriaLocationInfoDTO.getHistoryLocationId(), new CarrierMessagingService.ResultCallback<FoodCriteriaLocationSearchHistoryDTO>()
                                                 {
                                                     @Override
-                                                    public void run()
+                                                    public void onReceiveResult(@NonNull FoodCriteriaLocationSearchHistoryDTO foodCriteriaLocationSearchHistoryDTO) throws RemoteException
                                                     {
+                                                        getActivity().runOnUiThread(new Runnable()
+                                                        {
+                                                            @Override
+                                                            public void run()
+                                                            {
+                                                                FoodsMainFragment.this.foodCriteriaLocationSearchHistoryDTO = foodCriteriaLocationSearchHistoryDTO;
 
+                                                                if (foodCriteriaLocationSearchHistoryDTO.getPlaceName() != null)
+                                                                {
+                                                                    binding.criteriaLocation.setText(foodCriteriaLocationSearchHistoryDTO.getPlaceName());
+                                                                } else
+                                                                {
+                                                                    binding.criteriaLocation.setText(foodCriteriaLocationSearchHistoryDTO.getAddressName());
+                                                                }
+                                                            }
+                                                        });
                                                     }
                                                 });
                                             }
-                                        });
+                                            break;
+                                        }
                                     }
-                                    break;
-                                }
+                                });
+
                             }
                         });
 
@@ -166,8 +211,81 @@ public class FoodsMainFragment extends Fragment implements OnClickedCategoryItem
             }
         });
 
+    }
+
+    private void gps()
+    {
+        //권한 확인
+        boolean isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        boolean isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+
+        checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION);
+        checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION);
+
+        if (iNetwork.networkAvailable())
+        {
+            if (isGpsEnabled && isNetworkEnabled)
+            {
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+            } else if (!isGpsEnabled)
+            {
+                showRequestGpsDialog();
+            }
+        }
 
     }
+
+    public void showRequestGpsDialog()
+    {
+        new AlertDialog.Builder(getActivity())
+                .setMessage(getString(R.string.request_to_make_gps_on))
+                .setPositiveButton(getString(R.string.check), new
+                        DialogInterface.OnClickListener()
+                        {
+                            @Override
+                            public void onClick(DialogInterface paramDialogInterface, int paramInt)
+                            {
+                                startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                            }
+                        })
+                .setNegativeButton(getString(R.string.no), new DialogInterface.OnClickListener()
+                {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i)
+                    {
+                    }
+                })
+                .setCancelable(false)
+                .show();
+    }
+
+    public final LocationListener locationListener = new LocationListener()
+    {
+        @Override
+        public void onLocationChanged(Location location)
+        {
+
+        }
+
+        @Override
+        public void onStatusChanged(String s, int i, Bundle bundle)
+        {
+
+        }
+
+        @Override
+        public void onProviderEnabled(String s)
+        {
+
+        }
+
+        @Override
+        public void onProviderDisabled(String s)
+        {
+
+        }
+    };
+
 
     private void setCategories()
     {
@@ -212,21 +330,7 @@ public class FoodsMainFragment extends Fragment implements OnClickedCategoryItem
             }
         });
 
-        /*
-          <string name="hansik">한식</string>
-    <string name="jungsik">중식</string>
-    <string name="illsik">일식</string>
-    <string name="sashimi">회</string>
-    <string name="yangsik">양식</string>
-    <string name="asian">아시안</string>
-    <string name="chicken">치킨</string>
-    <string name="fastfood">패스트푸드</string>
-    <string name="donkartz">돈까스</string>
-    <string name="jjim">찜</string>
-    <string name="tang">탕</string>
-    <string name="bunsik">분식</string>
-    <string name="juk">죽</string>
-         */
+
     }
 
     @Override

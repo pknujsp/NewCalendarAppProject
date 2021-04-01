@@ -9,6 +9,7 @@ import androidx.room.RoomDatabase;
 import com.zerodsoft.scheduleweather.room.dao.CustomFoodCategoryDAO;
 import com.zerodsoft.scheduleweather.room.dao.CustomPlaceCategoryDAO;
 import com.zerodsoft.scheduleweather.room.dao.FoodCriteriaLocationInfoDAO;
+import com.zerodsoft.scheduleweather.room.dao.FoodCriteriaLocationSearchHistoryDAO;
 import com.zerodsoft.scheduleweather.room.dto.CustomFoodCategoryDTO;
 import com.zerodsoft.scheduleweather.room.dto.CustomPlaceCategoryDTO;
 import com.zerodsoft.scheduleweather.room.dao.FavoriteLocDAO;
@@ -40,6 +41,8 @@ public abstract class AppDb extends RoomDatabase
     public abstract CustomFoodCategoryDAO customFoodCategoryDAO();
 
     public abstract FoodCriteriaLocationInfoDAO foodCriteriaLocationInfoDAO();
+
+    public abstract FoodCriteriaLocationSearchHistoryDAO foodCriteriaLocationSearchHistoryDAO();
 
 
     public static synchronized AppDb getInstance(Context context)
