@@ -100,4 +100,10 @@ public class FoodCriteriaLocationHistoryViewModel extends AndroidViewModel imple
     {
         repository.deleteAll(callback);
     }
+
+    @Override
+    public void containsData(int id, CarrierMessagingService.ResultCallback<Boolean> callback)
+    {
+        repository.containsData(id, callback);
+    }
 }

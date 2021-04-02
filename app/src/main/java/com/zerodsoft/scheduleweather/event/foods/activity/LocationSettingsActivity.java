@@ -19,14 +19,16 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.ActivityLocationSettingsBinding;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.foods.adapter.FoodCriteriaLocationHistoryAdapter;
+import com.zerodsoft.scheduleweather.event.foods.interfaces.LocationHistoryController;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationInfoViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationHistoryViewModel;
 import com.zerodsoft.scheduleweather.room.dto.FoodCriteriaLocationInfoDTO;
+import com.zerodsoft.scheduleweather.room.dto.FoodCriteriaLocationSearchHistoryDTO;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
 import java.util.List;
 
-public class LocationSettingsActivity extends AppCompatActivity
+public class LocationSettingsActivity extends AppCompatActivity implements LocationHistoryController
 {
     private ActivityLocationSettingsBinding binding;
     private LocationViewModel locationViewModel;
@@ -36,9 +38,10 @@ public class LocationSettingsActivity extends AppCompatActivity
     private int calendarId;
     private long instanceId;
     private long eventId;
-    private LocationDTO locationDTO;
-    private List<FoodCriteriaLocationDTO> foodCriteriaLocationDTOS;
 
+    private LocationDTO locationDTO;
+    private List<FoodCriteriaLocationSearchHistoryDTO> foodCriteriaLocationHistoryList;
+    private FoodCriteriaLocationSearchHistoryDTO selectedFoodCriteriaLocationSearchHistoryDTO;
     private FoodCriteriaLocationHistoryAdapter foodCriteriaLocationHistoryAdapter;
 
     @Override
@@ -100,6 +103,16 @@ public class LocationSettingsActivity extends AppCompatActivity
                                         break;
                                     case FoodCriteriaLocationInfoDTO.TYPE_CUSTOM_SELECTED_LOCATION:
                                         binding.radioCustomSelection.setSelected(true);
+                                        foodCriteriaLocationSearchHistoryViewModel.select(foodCriteriaLocationInfoDTO.getId(),
+                                                new CarrierMessagingService.ResultCallback<FoodCriteriaLocationSearchHistoryDTO>()
+                                                {
+                                                    @Override
+                                                    public void onReceiveResult(@NonNull FoodCriteriaLocationSearchHistoryDTO result) throws RemoteException
+                                                    {
+                                                        LocationSettingsActivity.this.selectedFoodCriteriaLocationSearchHistoryDTO =
+                                                                result;
+                                                    }
+                                                });
                                         break;
                                 }
                             }
@@ -111,20 +124,20 @@ public class LocationSettingsActivity extends AppCompatActivity
             }
         });
 
-        foodCriteriaLocationSearchHistoryViewModel.selectByEventId(calendarId, eventId, new CarrierMessagingService.ResultCallback<List<FoodCriteriaLocationDTO>>()
+        foodCriteriaLocationSearchHistoryViewModel.selectByEventId(calendarId, eventId, new CarrierMessagingService.ResultCallback<List<FoodCriteriaLocationSearchHistoryDTO>>()
         {
             @Override
-            public void onReceiveResult(@NonNull List<FoodCriteriaLocationDTO> foodCriteriaLocationDTOS) throws RemoteException
+            public void onReceiveResult(@NonNull List<FoodCriteriaLocationSearchHistoryDTO> result) throws RemoteException
             {
                 runOnUiThread(new Runnable()
                 {
                     @Override
                     public void run()
                     {
-                        LocationSettingsActivity.this.foodCriteriaLocationDTOS = foodCriteriaLocationDTOS;
+                        LocationSettingsActivity.this.foodCriteriaLocationHistoryList = result;
 
-                        foodCriteriaLocationHistoryAdapter = new FoodCriteriaLocationHistoryAdapter();
-                        foodCriteriaLocationHistoryAdapter.setFoodCriteriaLocationDTOS(foodCriteriaLocationDTOS);
+                        foodCriteriaLocationHistoryAdapter = new FoodCriteriaLocationHistoryAdapter(LocationSettingsActivity.this);
+                        foodCriteriaLocationHistoryAdapter.setFoodCriteriaLocationHistoryList(foodCriteriaLocationHistoryList);
 
                         binding.addressHistoryRecyclerview.setAdapter(foodCriteriaLocationHistoryAdapter);
                     }
@@ -215,29 +228,25 @@ public class LocationSettingsActivity extends AppCompatActivity
         } else if (checkedRadioId == binding.radioCustomSelection.getId())
         {
             usingType = FoodCriteriaLocationInfoDTO.TYPE_CUSTOM_SELECTED_LOCATION;
-            //선택된 위치값 업데이트
-            foodCriteriaLocationSearchHistoryViewModel.deleteByEventId(calendarId, eventId, new CarrierMessagingService.ResultCallback<Boolean>()
+            //선택된 정보가 없는 경우 : 이벤트에서 지정한 위치를 기준으로 강제설정
+            if (selectedFoodCriteriaLocationSearchHistoryDTO == null)
             {
-                @Override
-                public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
-                {
-                    //리스트에서 선택된 라디오의 데이터를 가져온다.
-                    FoodCriteriaLocationDTO selectedData = new FoodCriteriaLocationDTO();
-                    foodCriteriaLocationSearchHistoryViewModel.insertByEventId(calendarId, eventId, selectedData.getPlaceName(), selectedData.getAddressName(),
-                            selectedData.getRoadAddressName(), selectedData.getLatitude(), selectedData.getLongitude(), new CarrierMessagingService.ResultCallback<List<FoodCriteriaLocationDTO>>()
+                usingType = FoodCriteriaLocationInfoDTO.TYPE_SELECTED_LOCATION;
+                foodCriteriaLocationInfoViewModel.updateByEventId(calendarId, eventId, usingType, null,
+                        new CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO>()
+                        {
+                            @Override
+                            public void onReceiveResult(@NonNull FoodCriteriaLocationInfoDTO result) throws RemoteException
                             {
-                                @Override
-                                public void onReceiveResult(@NonNull List<FoodCriteriaLocationDTO> foodCriteriaLocationDTOS) throws RemoteException
-                                {
-
-                                }
-                            });
-                }
-            });
+                                setResult(RESULT_OK);
+                                finish();
+                            }
+                        });
+            }
         }
 
         //변경 타입 업데이트
-        foodCriteriaLocationInfoViewModel.updateByEventId(calendarId, eventId, FoodCriteriaLocationInfoDTO.TYPE_SELECTED_LOCATION, , new CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO>()
+        foodCriteriaLocationInfoViewModel.updateByEventId(calendarId, eventId, usingType, null, new CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO>()
         {
             @Override
             public void onReceiveResult(@NonNull FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO) throws RemoteException
@@ -247,10 +256,7 @@ public class LocationSettingsActivity extends AppCompatActivity
                     @Override
                     public void run()
                     {
-                        Bundle bundle = new Bundle();
-
-                        getIntent().putExtras(bundle);
-                        setResult(RESULT_OK, getIntent());
+                        setResult(RESULT_OK);
                         finish();
                     }
                 });
@@ -259,4 +265,97 @@ public class LocationSettingsActivity extends AppCompatActivity
 
 
     }
+
+    @Override
+    public void onClickedLocationHistoryItem(FoodCriteriaLocationSearchHistoryDTO foodCriteriaLocationSearchHistoryDTO)
+    {
+        foodCriteriaLocationSearchHistoryViewModel.deleteByEventId(calendarId, eventId, new CarrierMessagingService.ResultCallback<Boolean>()
+        {
+            @Override
+            public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
+            {
+                //리스트에서 선택된 라디오의 데이터를 가져온다.
+                if (aBoolean)
+                {
+                    foodCriteriaLocationSearchHistoryViewModel.insertByEventId(calendarId, eventId, foodCriteriaLocationSearchHistoryDTO.getPlaceName(), foodCriteriaLocationSearchHistoryDTO.getAddressName(),
+                            foodCriteriaLocationSearchHistoryDTO.getRoadAddressName()
+                            , foodCriteriaLocationSearchHistoryDTO.getLatitude(), foodCriteriaLocationSearchHistoryDTO.getLongitude(),
+                            new CarrierMessagingService.ResultCallback<List<FoodCriteriaLocationSearchHistoryDTO>>()
+                            {
+                                @Override
+                                public void onReceiveResult(@NonNull List<FoodCriteriaLocationSearchHistoryDTO> result) throws RemoteException
+                                {
+                                    //변경 타입 업데이트
+                                    int id = result.get(result.size() - 1).getId();
+                                    foodCriteriaLocationInfoViewModel.updateByEventId(calendarId, eventId, FoodCriteriaLocationInfoDTO.TYPE_CUSTOM_SELECTED_LOCATION, id, new CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO>()
+                                    {
+                                        @Override
+                                        public void onReceiveResult(@NonNull FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO) throws RemoteException
+                                        {
+                                            runOnUiThread(new Runnable()
+                                            {
+                                                @Override
+                                                public void run()
+                                                {
+                                                    setResult(RESULT_OK);
+                                                    finish();
+                                                }
+                                            });
+                                        }
+                                    });
+                                }
+                            });
+                }
+            }
+        });
+    }
+
+    @Override
+    public void delete(int id)
+    {
+        foodCriteriaLocationSearchHistoryViewModel.delete(id, new CarrierMessagingService.ResultCallback<Boolean>()
+        {
+            @Override
+            public void onReceiveResult(@NonNull Boolean result) throws RemoteException
+            {
+                if (result)
+                {
+                    foodCriteriaLocationSearchHistoryViewModel.selectByEventId(calendarId, eventId, new CarrierMessagingService.ResultCallback<List<FoodCriteriaLocationSearchHistoryDTO>>()
+                    {
+                        @Override
+                        public void onReceiveResult(@NonNull List<FoodCriteriaLocationSearchHistoryDTO> result) throws RemoteException
+                        {
+                            runOnUiThread(new Runnable()
+                            {
+                                @Override
+                                public void run()
+                                {
+                                    LocationSettingsActivity.this.foodCriteriaLocationHistoryList = result;
+
+                                    foodCriteriaLocationHistoryAdapter.setFoodCriteriaLocationHistoryList(foodCriteriaLocationHistoryList);
+                                    foodCriteriaLocationHistoryAdapter.notifyDataSetChanged();
+                                }
+                            });
+                        }
+                    });
+                }
+            }
+        });
+
+        if (selectedFoodCriteriaLocationSearchHistoryDTO != null)
+        {
+            if (selectedFoodCriteriaLocationSearchHistoryDTO.getId() == id)
+            {
+                foodCriteriaLocationInfoViewModel.deleteByEventId(calendarId, eventId, new CarrierMessagingService.ResultCallback<Boolean>()
+                {
+                    @Override
+                    public void onReceiveResult(@NonNull Boolean result) throws RemoteException
+                    {
+                        selectedFoodCriteriaLocationSearchHistoryDTO = null;
+                    }
+                });
+            }
+        }
+    }
+
 }

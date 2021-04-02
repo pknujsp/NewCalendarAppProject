@@ -341,7 +341,8 @@ public class PlaceListFragment extends Fragment implements IViewPager
 
     private void requestPlacesNow()
     {
-        LocalApiPlaceParameter parameter = LocalParameterUtil.getPlaceParameter(SEARCH_WORD, getLatitude(), getLongitude(),
+        LocalApiPlaceParameter parameter = LocalParameterUtil.getPlaceParameter(SEARCH_WORD, String.valueOf(getLatitude())
+                , String.valueOf(getLongitude()),
                 LocalApiPlaceParameter.DEFAULT_SIZE, LocalApiPlaceParameter.DEFAULT_PAGE, currSearchSortTypeCriteria);
 
         adapter = new PlacesAdapter(getContext(), iMapData, onClickedLocListItem);

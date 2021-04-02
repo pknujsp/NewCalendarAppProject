@@ -33,4 +33,6 @@ public interface FoodCriteriaLocationHistoryQuery
     void delete(int id, CarrierMessagingService.ResultCallback<Boolean> callback);
 
     void deleteAll(CarrierMessagingService.ResultCallback<Boolean> callback);
+
+    void containsData(int id, CarrierMessagingService.ResultCallback<Boolean> callback);
 }

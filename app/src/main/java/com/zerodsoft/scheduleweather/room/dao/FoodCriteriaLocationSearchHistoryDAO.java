@@ -56,4 +56,7 @@ public interface FoodCriteriaLocationSearchHistoryDAO
 
     @Query("DELETE FROM food_criteria_location_search_history_table")
     void deleteAll();
+
+    @Query("SELECT EXISTS (SELECT * FROM food_criteria_location_search_history_table WHERE id = :id) AS SUCCESS")
+    int containsData(int id);
 }

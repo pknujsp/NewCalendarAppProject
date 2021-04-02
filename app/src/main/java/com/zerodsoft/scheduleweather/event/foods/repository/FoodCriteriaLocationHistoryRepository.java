@@ -221,4 +221,18 @@ public class FoodCriteriaLocationHistoryRepository implements FoodCriteriaLocati
             }
         });
     }
+
+    @Override
+    public void containsData(int id, CarrierMessagingService.ResultCallback<Boolean> callback)
+    {
+        App.executorService.execute(new Runnable()
+        {
+            @SneakyThrows
+            @Override
+            public void run()
+            {
+                callback.onReceiveResult(dao.containsData(id) == 1);
+            }
+        });
+    }
 }

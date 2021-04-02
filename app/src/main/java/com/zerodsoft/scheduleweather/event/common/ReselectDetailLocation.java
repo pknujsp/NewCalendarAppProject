@@ -97,7 +97,7 @@ public class ReselectDetailLocation extends KakaoMapActivity
 
                 // 장소 검색 순서 : 장소의 위경도 내 10M 반경에서 장소 이름 검색(여러개 나올 경우 장소ID와 일치하는 장소를 선택)
                 LocalApiPlaceParameter parameter = LocalParameterUtil.getPlaceParameter(savedLocationDto.getPlaceName(),
-                        savedLocationDto.getLatitude(), savedLocationDto.getLongitude(), LocalApiPlaceParameter.DEFAULT_SIZE,
+                        String.valueOf(savedLocationDto.getLatitude()), String.valueOf(savedLocationDto.getLongitude()), LocalApiPlaceParameter.DEFAULT_SIZE,
                         LocalApiPlaceParameter.DEFAULT_PAGE, LocalApiPlaceParameter.SEARCH_CRITERIA_SORT_TYPE_ACCURACY);
                 parameter.setRadius("100");
 

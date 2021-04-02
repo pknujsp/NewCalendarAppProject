@@ -39,6 +39,11 @@ import com.zerodsoft.scheduleweather.event.foods.viewmodel.CustomFoodCategoryVie
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationInfoViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationHistoryViewModel;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.INetwork;
+import com.zerodsoft.scheduleweather.kakaomap.model.CoordToAddressUtil;
+import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
+import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddress;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddressDocuments;
 import com.zerodsoft.scheduleweather.room.dto.CustomFoodCategoryDTO;
 import com.zerodsoft.scheduleweather.room.dto.FoodCriteriaLocationInfoDTO;
 import com.zerodsoft.scheduleweather.room.dto.FoodCriteriaLocationSearchHistoryDTO;
@@ -281,7 +286,33 @@ public class FoodsMainFragment extends Fragment implements OnClickedCategoryItem
             criteriaLocationDTO.setLatitude(location.getLatitude());
             criteriaLocationDTO.setLongitude(location.getLongitude());
             //주소 reverse geocoding필요
-            
+            LocalApiPlaceParameter localApiPlaceParameter = new LocalApiPlaceParameter();
+            localApiPlaceParameter.setX(String.valueOf(criteriaLocationDTO.getLongitude()));
+            localApiPlaceParameter.setY(String.valueOf(criteriaLocationDTO.getLatitude()));
+
+            CoordToAddressUtil.coordToAddress(localApiPlaceParameter, new CarrierMessagingService.ResultCallback<DataWrapper<CoordToAddress>>()
+            {
+                @Override
+                public void onReceiveResult(@NonNull DataWrapper<CoordToAddress> coordToAddressDataWrapper) throws RemoteException
+                {
+                    getActivity().runOnUiThread(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            if (coordToAddressDataWrapper.getException() == null)
+                            {
+                                CoordToAddress coordToAddress = coordToAddressDataWrapper.getData();
+                                criteriaLocationDTO.setAddressName(coordToAddress.getCoordToAddressDocuments().get(0).getCoordToAddressAddress()
+                                        .getAddressName());
+
+                                binding.criteriaLocation.setText(criteriaLocationDTO.getAddressName());
+                            }
+                        }
+                    });
+
+                }
+            });
         }
 
         @Override

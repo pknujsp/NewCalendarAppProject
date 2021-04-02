@@ -32,7 +32,6 @@ public class KakaoPlace
             {
                 try
                 {
-                    //푸라닭 치킨
                     String json = readJsonFromUrl(WEB_JSON_URL + placeId);
 
                     JsonObject jsonObject = (JsonObject) JsonParser.parseString(json);
