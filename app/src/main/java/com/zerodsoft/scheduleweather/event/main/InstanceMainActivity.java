@@ -31,6 +31,7 @@ import com.zerodsoft.scheduleweather.event.common.MLocActivity;
 import com.zerodsoft.scheduleweather.event.common.ReselectDetailLocation;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.event.activity.InstanceActivity;
+import com.zerodsoft.scheduleweather.event.foods.activity.FoodsActivity;
 import com.zerodsoft.scheduleweather.event.places.activity.PlacesActivity;
 import com.zerodsoft.scheduleweather.event.places.fragment.SelectedLocationMapFragment;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
@@ -399,7 +400,15 @@ public class InstanceMainActivity extends AppCompatActivity
         {
             if (hasSimpleLocation())
             {
-                Toast.makeText(InstanceMainActivity.this, "작성 중", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(InstanceMainActivity.this, FoodsActivity.class);
+                Bundle bundle = new Bundle();
+
+                bundle.putLong(CalendarContract.Instances._ID, instanceId);
+                bundle.putLong(CalendarContract.Instances.EVENT_ID, eventId);
+                bundle.putInt(CalendarContract.Instances.CALENDAR_ID, calendarId);
+
+                intent.putExtras(bundle);
+                foodsActivityResultLauncher.launch(intent);
             } else
             {
                 Toast.makeText(InstanceMainActivity.this, getString(R.string.not_selected_location_in_event), Toast.LENGTH_SHORT).show();

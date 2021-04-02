@@ -40,6 +40,18 @@ public class LocationDTO implements Parcelable
 
     }
 
+    public LocationDTO(int id, int calendarId, long eventId, double latitude, double longitude, String addressName, String placeId, String placeName)
+    {
+        this.id = id;
+        this.calendarId = calendarId;
+        this.eventId = eventId;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.addressName = addressName;
+        this.placeId = placeId;
+        this.placeName = placeName;
+    }
+
     protected LocationDTO(Parcel in)
     {
         id = in.readInt();
@@ -169,5 +181,10 @@ public class LocationDTO implements Parcelable
     public boolean isEmpty()
     {
         return latitude == 0.0;
+    }
+
+    public LocationDTO copy()
+    {
+        return new LocationDTO(id, calendarId, eventId, latitude, longitude, addressName, placeId, placeName);
     }
 }

@@ -13,6 +13,7 @@ import android.net.NetworkCapabilities;
 import android.net.NetworkRequest;
 import android.os.Bundle;
 import android.os.RemoteException;
+import android.provider.CalendarContract;
 import android.service.carrier.CarrierMessagingService;
 import android.widget.Toast;
 
@@ -30,16 +31,21 @@ public class FoodsActivity extends AppCompatActivity implements INetwork
     private FoodCriteriaLocationInfoViewModel foodCriteriaLocationInfoViewModel;
     private NetworkStatus networkStatus;
 
-
-    private int calendarId;
-    private long instanceId;
-    private long eventId;
+    private Integer calendarId;
+    private Long instanceId;
+    private Long eventId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_foods);
+
+        Bundle bundle = getIntent().getExtras();
+
+        calendarId = bundle.getInt(CalendarContract.Instances.CALENDAR_ID);
+        instanceId = bundle.getLong(CalendarContract.Instances._ID);
+        eventId = bundle.getLong(CalendarContract.Instances.EVENT_ID);
 
         networkStatus = new NetworkStatus(this);
 
@@ -57,6 +63,7 @@ public class FoodsActivity extends AppCompatActivity implements INetwork
                     {
                         if (foodCriteriaLocationInfoDTO == null)
                         {
+                            //기준 정보가 지정되어 있지 않으면, 지정한 장소/주소를 기준으로 하도록 설정해준다
                             foodCriteriaLocationInfoViewModel.insertByEventId(calendarId, eventId, FoodCriteriaLocationInfoDTO.TYPE_SELECTED_LOCATION, null, new CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO>()
                             {
                                 @Override
@@ -64,6 +71,13 @@ public class FoodsActivity extends AppCompatActivity implements INetwork
                                 {
                                     FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
                                     FoodsMainFragment foodsMainFragment = new FoodsMainFragment(FoodsActivity.this::networkAvailable);
+
+                                    Bundle fragmentBundle = new Bundle();
+                                    fragmentBundle.putInt(CalendarContract.Instances.CALENDAR_ID, calendarId);
+                                    fragmentBundle.putLong(CalendarContract.Instances._ID, instanceId);
+                                    fragmentBundle.putLong(CalendarContract.Instances.EVENT_ID, eventId);
+
+                                    foodsMainFragment.setArguments(fragmentBundle);
                                     fragmentTransaction.add(binding.fragmentContainer.getId(), foodsMainFragment, FoodsMainFragment.TAG).commit();
                                 }
                             });
@@ -71,6 +85,12 @@ public class FoodsActivity extends AppCompatActivity implements INetwork
                         {
                             FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
                             FoodsMainFragment foodsMainFragment = new FoodsMainFragment(FoodsActivity.this::networkAvailable);
+                            Bundle fragmentBundle = new Bundle();
+                            fragmentBundle.putInt(CalendarContract.Instances.CALENDAR_ID, calendarId);
+                            fragmentBundle.putLong(CalendarContract.Instances._ID, instanceId);
+                            fragmentBundle.putLong(CalendarContract.Instances.EVENT_ID, eventId);
+
+                            foodsMainFragment.setArguments(fragmentBundle);
                             fragmentTransaction.add(binding.fragmentContainer.getId(), foodsMainFragment, FoodsMainFragment.TAG).commit();
                         }
                     }

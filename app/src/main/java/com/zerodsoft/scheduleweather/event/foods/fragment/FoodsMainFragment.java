@@ -38,19 +38,13 @@ import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedCategoryIte
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.CustomFoodCategoryViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationInfoViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationHistoryViewModel;
-import com.zerodsoft.scheduleweather.kakaomap.fragment.main.KakaoMapFragment;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.INetwork;
-import com.zerodsoft.scheduleweather.kakaomap.util.RequestLocationTimer;
 import com.zerodsoft.scheduleweather.room.dto.CustomFoodCategoryDTO;
 import com.zerodsoft.scheduleweather.room.dto.FoodCriteriaLocationInfoDTO;
 import com.zerodsoft.scheduleweather.room.dto.FoodCriteriaLocationSearchHistoryDTO;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
-import net.daum.mf.map.api.MapPoint;
-import net.daum.mf.map.api.MapReverseGeoCoder;
-
 import java.util.List;
-import java.util.Timer;
 
 import static androidx.core.content.ContextCompat.checkSelfPermission;
 
@@ -67,10 +61,12 @@ public class FoodsMainFragment extends Fragment implements OnClickedCategoryItem
 
     public LocationManager locationManager;
 
-    private int calendarId;
-    private long instanceId;
-    private long eventId;
-    private LocationDTO locationDTO;
+    private Integer calendarId;
+    private Long instanceId;
+    private Long eventId;
+
+    private LocationDTO selectedLocationDTO;
+    private LocationDTO criteriaLocationDTO;
     private FoodCriteriaLocationSearchHistoryDTO foodCriteriaLocationSearchHistoryDTO;
     private FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO;
 
@@ -84,6 +80,12 @@ public class FoodsMainFragment extends Fragment implements OnClickedCategoryItem
     {
         super.onCreate(savedInstanceState);
         locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
+
+        Bundle bundle = getArguments();
+
+        calendarId = bundle.getInt(CalendarContract.Instances.CALENDAR_ID);
+        instanceId = bundle.getLong(CalendarContract.Instances._ID);
+        eventId = bundle.getLong(CalendarContract.Instances.EVENT_ID);
     }
 
     @Override
@@ -140,7 +142,8 @@ public class FoodsMainFragment extends Fragment implements OnClickedCategoryItem
                     @Override
                     public void run()
                     {
-                        FoodsMainFragment.this.locationDTO = locationDTO;
+                        //가져온 위치 정보를 저장
+                        FoodsMainFragment.this.selectedLocationDTO = locationDTO;
 
                         //지정한 위치 정보 데이터를 가져왔으면 기준 위치 선택정보를 가져온다.
                         foodCriteriaLocationInfoViewModel.selectByEventId(calendarId, eventId, new CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO>()
@@ -159,16 +162,19 @@ public class FoodsMainFragment extends Fragment implements OnClickedCategoryItem
                                         switch (foodCriteriaLocationInfoDTO.getUsingType())
                                         {
                                             case FoodCriteriaLocationInfoDTO.TYPE_SELECTED_LOCATION:
-                                                if (locationDTO.getPlaceName() != null)
+                                                criteriaLocationDTO = locationDTO.copy();
+
+                                                if (criteriaLocationDTO.getPlaceName() != null)
                                                 {
-                                                    binding.criteriaLocation.setText(locationDTO.getPlaceName());
+                                                    binding.criteriaLocation.setText(criteriaLocationDTO.getPlaceName());
                                                 } else
                                                 {
-                                                    binding.criteriaLocation.setText(locationDTO.getAddressName());
+                                                    binding.criteriaLocation.setText(criteriaLocationDTO.getAddressName());
                                                 }
                                                 break;
                                             case FoodCriteriaLocationInfoDTO.TYPE_CURRENT_LOCATION:
                                                 //현재 위치 파악
+                                                gps();
                                                 break;
                                             case FoodCriteriaLocationInfoDTO.TYPE_CUSTOM_SELECTED_LOCATION:
                                             {
@@ -184,18 +190,25 @@ public class FoodsMainFragment extends Fragment implements OnClickedCategoryItem
                                                             public void run()
                                                             {
                                                                 FoodsMainFragment.this.foodCriteriaLocationSearchHistoryDTO = foodCriteriaLocationSearchHistoryDTO;
+                                                                criteriaLocationDTO = new LocationDTO();
+                                                                criteriaLocationDTO.setAddressName(foodCriteriaLocationSearchHistoryDTO.getAddressName());
+                                                                criteriaLocationDTO.setPlaceName(foodCriteriaLocationSearchHistoryDTO.getPlaceName());
+                                                                criteriaLocationDTO.setLatitude(Double.parseDouble(foodCriteriaLocationSearchHistoryDTO.getLatitude()));
+                                                                criteriaLocationDTO.setLongitude(Double.parseDouble(foodCriteriaLocationSearchHistoryDTO.getLongitude()));
 
-                                                                if (foodCriteriaLocationSearchHistoryDTO.getPlaceName() != null)
+                                                                if (criteriaLocationDTO.getPlaceName() != null)
                                                                 {
-                                                                    binding.criteriaLocation.setText(foodCriteriaLocationSearchHistoryDTO.getPlaceName());
+                                                                    binding.criteriaLocation.setText(criteriaLocationDTO.getPlaceName());
                                                                 } else
                                                                 {
-                                                                    binding.criteriaLocation.setText(foodCriteriaLocationSearchHistoryDTO.getAddressName());
+                                                                    binding.criteriaLocation.setText(criteriaLocationDTO.getAddressName());
                                                                 }
                                                             }
                                                         });
+
                                                     }
                                                 });
+
                                             }
                                             break;
                                         }
@@ -264,7 +277,11 @@ public class FoodsMainFragment extends Fragment implements OnClickedCategoryItem
         @Override
         public void onLocationChanged(Location location)
         {
-
+            criteriaLocationDTO = new LocationDTO();
+            criteriaLocationDTO.setLatitude(location.getLatitude());
+            criteriaLocationDTO.setLongitude(location.getLongitude());
+            //주소 reverse geocoding필요
+            
         }
 
         @Override
