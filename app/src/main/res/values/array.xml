@@ -304,4 +304,20 @@
         <item>0.15</item>
         <item>0.18</item>
     </string-array>
+
+    <string-array name="food_category_list">
+        <item name="hansik">@string/hansik</item>
+        <item name="jungsik">@string/jungsik</item>
+        <item name="illsik">@string/illsik</item>
+        <item name="sashimi">@string/sashimi</item>
+        <item name="yangsik">@string/yangsik</item>
+        <item name="asian">@string/asian</item>
+        <item name="chicken">@string/chicken</item>
+        <item name="fastfood">@string/fastfood</item>
+        <item name="donkartz">@string/donkartz</item>
+        <item name="jjim">@string/jjim</item>
+        <item name="tang">@string/tang</item>
+        <item name="bunsik">@string/bunsik</item>
+        <item name="juk">@string/juk</item>
+    </string-array>
 </resources>

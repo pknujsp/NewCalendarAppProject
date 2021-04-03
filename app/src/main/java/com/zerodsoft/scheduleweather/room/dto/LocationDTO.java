@@ -29,6 +29,9 @@ public class LocationDTO implements Parcelable
     @ColumnInfo(name = "address_name")
     private String addressName;
 
+    @ColumnInfo(name = "road_address_name")
+    private String roadAddressName;
+
     @ColumnInfo(name = "place_id")
     private String placeId;
 
@@ -37,10 +40,9 @@ public class LocationDTO implements Parcelable
 
     public LocationDTO()
     {
-
     }
 
-    public LocationDTO(int id, int calendarId, long eventId, double latitude, double longitude, String addressName, String placeId, String placeName)
+    public LocationDTO(int id, int calendarId, long eventId, double latitude, double longitude, String addressName, String roadAddressName, String placeId, String placeName)
     {
         this.id = id;
         this.calendarId = calendarId;
@@ -48,6 +50,7 @@ public class LocationDTO implements Parcelable
         this.latitude = latitude;
         this.longitude = longitude;
         this.addressName = addressName;
+        this.roadAddressName = roadAddressName;
         this.placeId = placeId;
         this.placeName = placeName;
     }
@@ -60,6 +63,7 @@ public class LocationDTO implements Parcelable
         latitude = in.readDouble();
         longitude = in.readDouble();
         addressName = in.readString();
+        roadAddressName = in.readString();
         placeId = in.readString();
         placeName = in.readString();
     }
@@ -79,6 +83,11 @@ public class LocationDTO implements Parcelable
         }
     };
 
+    public LocationDTO copy()
+    {
+        return new LocationDTO(id, calendarId, eventId, latitude, longitude, addressName, roadAddressName, placeId, placeName);
+    }
+
     @Override
     public int describeContents()
     {
@@ -94,6 +103,7 @@ public class LocationDTO implements Parcelable
         parcel.writeDouble(latitude);
         parcel.writeDouble(longitude);
         parcel.writeString(addressName);
+        parcel.writeString(roadAddressName);
         parcel.writeString(placeId);
         parcel.writeString(placeName);
     }
@@ -158,6 +168,16 @@ public class LocationDTO implements Parcelable
         this.addressName = addressName;
     }
 
+    public String getRoadAddressName()
+    {
+        return roadAddressName;
+    }
+
+    public void setRoadAddressName(String roadAddressName)
+    {
+        this.roadAddressName = roadAddressName;
+    }
+
     public String getPlaceId()
     {
         return placeId;
@@ -180,11 +200,6 @@ public class LocationDTO implements Parcelable
 
     public boolean isEmpty()
     {
-        return latitude == 0.0;
-    }
-
-    public LocationDTO copy()
-    {
-        return new LocationDTO(id, calendarId, eventId, latitude, longitude, addressName, placeId, placeName);
+        return latitude == 0;
     }
 }

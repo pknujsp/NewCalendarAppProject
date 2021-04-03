@@ -21,7 +21,7 @@ public class FoodCriteriaLocationInfoRepository implements FoodCriteriaLocationI
     }
 
     @Override
-    public void selectByEventId(int calendarId, long eventId, CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO> callback)
+    public void selectByEventId(Integer calendarId, Long eventId, CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO> callback)
     {
         App.executorService.execute(new Runnable()
         {
@@ -36,7 +36,7 @@ public class FoodCriteriaLocationInfoRepository implements FoodCriteriaLocationI
     }
 
     @Override
-    public void selectByInstanceId(int calendarId, long instanceId, CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO> callback)
+    public void selectByInstanceId(Integer calendarId, Long instanceId, CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO> callback)
     {
         App.executorService.execute(new Runnable()
         {
@@ -51,7 +51,7 @@ public class FoodCriteriaLocationInfoRepository implements FoodCriteriaLocationI
     }
 
     @Override
-    public void insertByEventId(int calendarId, long eventId, int usingType, Integer historyLocationId, CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO> callback)
+    public void insertByEventId(Integer calendarId, Long eventId, Integer usingType, Integer historyLocationId, CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO> callback)
     {
         App.executorService.execute(new Runnable()
         {
@@ -67,7 +67,7 @@ public class FoodCriteriaLocationInfoRepository implements FoodCriteriaLocationI
     }
 
     @Override
-    public void insertByInstanceId(int calendarId, long instanceId, int usingType, Integer historyLocationId, CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO> callback)
+    public void insertByInstanceId(Integer calendarId, Long instanceId, Integer usingType, Integer historyLocationId, CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO> callback)
     {
         App.executorService.execute(new Runnable()
         {
@@ -83,7 +83,7 @@ public class FoodCriteriaLocationInfoRepository implements FoodCriteriaLocationI
     }
 
     @Override
-    public void updateByEventId(int calendarId, long eventId, int usingType, Integer historyLocationId, CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO> callback)
+    public void updateByEventId(Integer calendarId, Long eventId, Integer usingType, Integer historyLocationId, CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO> callback)
     {
         App.executorService.execute(new Runnable()
         {
@@ -99,7 +99,7 @@ public class FoodCriteriaLocationInfoRepository implements FoodCriteriaLocationI
     }
 
     @Override
-    public void updateByInstanceId(int calendarId, long instanceId, int usingType, Integer historyLocationId, CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO> callback)
+    public void updateByInstanceId(Integer calendarId, Long instanceId, Integer usingType, Integer historyLocationId, CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO> callback)
     {
         App.executorService.execute(new Runnable()
         {
@@ -115,7 +115,7 @@ public class FoodCriteriaLocationInfoRepository implements FoodCriteriaLocationI
     }
 
     @Override
-    public void deleteByEventId(int calendarId, long eventId, CarrierMessagingService.ResultCallback<Boolean> callback)
+    public void deleteByEventId(Integer calendarId, Long eventId, CarrierMessagingService.ResultCallback<Boolean> callback)
     {
         App.executorService.execute(new Runnable()
         {
@@ -130,7 +130,7 @@ public class FoodCriteriaLocationInfoRepository implements FoodCriteriaLocationI
     }
 
     @Override
-    public void deleteByInstanceId(int calendarId, long instanceId, CarrierMessagingService.ResultCallback<Boolean> callback)
+    public void deleteByInstanceId(Integer calendarId, Long instanceId, CarrierMessagingService.ResultCallback<Boolean> callback)
     {
         App.executorService.execute(new Runnable()
         {

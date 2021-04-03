@@ -19,20 +19,20 @@ public class FoodCriteriaLocationInfoDTO
     @PrimaryKey(autoGenerate = true)
     private int id;
 
-    @ColumnInfo(name = "calendar_id")
-    private int calendarId;
+    @ColumnInfo(name = "calendar_id", defaultValue = "NULL")
+    private Integer calendarId;
 
-    @ColumnInfo(name = "event_id")
-    private long eventId;
+    @ColumnInfo(name = "event_id", defaultValue = "NULL")
+    private Long eventId;
 
-    @ColumnInfo(name = "instance_id")
-    private long instanceId;
+    @ColumnInfo(name = "instance_id", defaultValue = "NULL")
+    private Long instanceId;
 
     @ColumnInfo(name = "using_type")
-    private int usingType;
+    private Integer usingType;
 
-    @ColumnInfo(name = "history_location_id")
-    private int historyLocationId;
+    @ColumnInfo(name = "history_location_id", defaultValue = "NULL")
+    private Integer historyLocationId;
 
     public int getId()
     {
@@ -44,52 +44,52 @@ public class FoodCriteriaLocationInfoDTO
         this.id = id;
     }
 
-    public int getUsingType()
-    {
-        return usingType;
-    }
-
-    public void setUsingType(int usingType)
-    {
-        this.usingType = usingType;
-    }
-
-    public int getCalendarId()
+    public Integer getCalendarId()
     {
         return calendarId;
     }
 
-    public void setCalendarId(int calendarId)
+    public void setCalendarId(Integer calendarId)
     {
         this.calendarId = calendarId;
     }
 
-    public long getEventId()
+    public Long getEventId()
     {
         return eventId;
     }
 
-    public void setEventId(long eventId)
+    public void setEventId(Long eventId)
     {
         this.eventId = eventId;
     }
 
-    public long getInstanceId()
+    public Long getInstanceId()
     {
         return instanceId;
     }
 
-    public void setInstanceId(long instanceId)
+    public void setInstanceId(Long instanceId)
     {
         this.instanceId = instanceId;
     }
 
-    public int getHistoryLocationId()
+    public Integer getUsingType()
+    {
+        return usingType;
+    }
+
+    public void setUsingType(Integer usingType)
+    {
+        this.usingType = usingType;
+    }
+
+    public Integer getHistoryLocationId()
     {
         return historyLocationId;
     }
 
-    public void setHistoryLocationId(int historyLocationId)
+    public void setHistoryLocationId(Integer historyLocationId)
     {
         this.historyLocationId = historyLocationId;
     }

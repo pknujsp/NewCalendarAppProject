@@ -555,14 +555,12 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
             public void onAvailable(Network network)
             {
                 super.onAvailable(network);
-                Toast.makeText(getActivity(), getString(R.string.connected_network), Toast.LENGTH_SHORT).show();
             }
 
             @Override
             public void onLost(Network network)
             {
                 super.onLost(network);
-                Toast.makeText(getActivity(), getString(R.string.disconnected_network), Toast.LENGTH_SHORT).show();
             }
         };
         NetworkRequest.Builder builder = new NetworkRequest.Builder();

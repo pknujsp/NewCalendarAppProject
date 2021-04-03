@@ -18,6 +18,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.GridLayoutManager;
 
 import android.os.RemoteException;
 import android.provider.CalendarContract;
@@ -49,8 +50,10 @@ import com.zerodsoft.scheduleweather.room.dto.FoodCriteriaLocationInfoDTO;
 import com.zerodsoft.scheduleweather.room.dto.FoodCriteriaLocationSearchHistoryDTO;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import static android.app.Activity.RESULT_OK;
 import static androidx.core.content.ContextCompat.checkSelfPermission;
 
 public class FoodsMainFragment extends Fragment implements OnClickedCategoryItem
@@ -105,6 +108,7 @@ public class FoodsMainFragment extends Fragment implements OnClickedCategoryItem
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
+        binding.progressBar.setVisibility(View.GONE);
 
         locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
         foodCriteriaLocationInfoViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationInfoViewModel.class);
@@ -233,6 +237,10 @@ public class FoodsMainFragment extends Fragment implements OnClickedCategoryItem
 
     private void gps()
     {
+        binding.progressBar.setVisibility(View.VISIBLE);
+        binding.categoryGridview.setVisibility(View.GONE);
+        binding.criteriaLocation.setText(getString(R.string.finding_current_location));
+
         //권한 확인
         boolean isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
         boolean isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
@@ -244,7 +252,7 @@ public class FoodsMainFragment extends Fragment implements OnClickedCategoryItem
         {
             if (isGpsEnabled && isNetworkEnabled)
             {
-                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+                locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
             } else if (!isGpsEnabled)
             {
                 showRequestGpsDialog();
@@ -282,10 +290,13 @@ public class FoodsMainFragment extends Fragment implements OnClickedCategoryItem
         @Override
         public void onLocationChanged(Location location)
         {
+            locationManager.removeUpdates(locationListener);
+
             criteriaLocationDTO = new LocationDTO();
             criteriaLocationDTO.setLatitude(location.getLatitude());
             criteriaLocationDTO.setLongitude(location.getLongitude());
-            //주소 reverse geocoding필요
+
+            //주소 reverse geocoding
             LocalApiPlaceParameter localApiPlaceParameter = new LocalApiPlaceParameter();
             localApiPlaceParameter.setX(String.valueOf(criteriaLocationDTO.getLongitude()));
             localApiPlaceParameter.setY(String.valueOf(criteriaLocationDTO.getLatitude()));
@@ -302,6 +313,9 @@ public class FoodsMainFragment extends Fragment implements OnClickedCategoryItem
                         {
                             if (coordToAddressDataWrapper.getException() == null)
                             {
+                                binding.progressBar.setVisibility(View.GONE);
+                                binding.categoryGridview.setVisibility(View.VISIBLE);
+
                                 CoordToAddress coordToAddress = coordToAddressDataWrapper.getData();
                                 criteriaLocationDTO.setAddressName(coordToAddress.getCoordToAddressDocuments().get(0).getCoordToAddressAddress()
                                         .getAddressName());
@@ -350,29 +364,34 @@ public class FoodsMainFragment extends Fragment implements OnClickedCategoryItem
                         FoodCategoryAdapter foodCategoryAdapter = new FoodCategoryAdapter(getContext(), FoodsMainFragment.this);
 
                         Context context = getContext();
-                        foodCategoryAdapter.addItem(new FoodCategoryItem(getString(R.string.hansik), context.getDrawable(R.drawable.cloud_day_icon), true));
-                        foodCategoryAdapter.addItem(new FoodCategoryItem(getString(R.string.jungsik), context.getDrawable(R.drawable.cloud_day_icon), true));
-                        foodCategoryAdapter.addItem(new FoodCategoryItem(getString(R.string.illsik), context.getDrawable(R.drawable.cloud_day_icon), true));
-                        foodCategoryAdapter.addItem(new FoodCategoryItem(getString(R.string.sashimi), context.getDrawable(R.drawable.cloud_day_icon), true));
-                        foodCategoryAdapter.addItem(new FoodCategoryItem(getString(R.string.yangsik), context.getDrawable(R.drawable.cloud_day_icon), true));
-                        foodCategoryAdapter.addItem(new FoodCategoryItem(getString(R.string.asian), context.getDrawable(R.drawable.cloud_day_icon), true));
-                        foodCategoryAdapter.addItem(new FoodCategoryItem(getString(R.string.chicken), context.getDrawable(R.drawable.cloud_day_icon), true));
-                        foodCategoryAdapter.addItem(new FoodCategoryItem(getString(R.string.fastfood), context.getDrawable(R.drawable.cloud_day_icon), true));
-                        foodCategoryAdapter.addItem(new FoodCategoryItem(getString(R.string.donkartz), context.getDrawable(R.drawable.cloud_day_icon), true));
-                        foodCategoryAdapter.addItem(new FoodCategoryItem(getString(R.string.jjim), context.getDrawable(R.drawable.cloud_day_icon), true));
-                        foodCategoryAdapter.addItem(new FoodCategoryItem(getString(R.string.tang), context.getDrawable(R.drawable.cloud_day_icon), true));
-                        foodCategoryAdapter.addItem(new FoodCategoryItem(getString(R.string.bunsik), context.getDrawable(R.drawable.cloud_day_icon), true));
-                        foodCategoryAdapter.addItem(new FoodCategoryItem(getString(R.string.juk), context.getDrawable(R.drawable.cloud_day_icon), true));
+                        List<FoodCategoryItem> itemsList = new ArrayList<>();
+
+                        itemsList.add(new FoodCategoryItem(getString(R.string.hansik), context.getDrawable(R.drawable.cloud_day_icon), true));
+                        itemsList.add(new FoodCategoryItem(getString(R.string.jungsik), context.getDrawable(R.drawable.cloud_day_icon), true));
+                        itemsList.add(new FoodCategoryItem(getString(R.string.illsik), context.getDrawable(R.drawable.cloud_day_icon), true));
+                        itemsList.add(new FoodCategoryItem(getString(R.string.sashimi), context.getDrawable(R.drawable.cloud_day_icon), true));
+                        itemsList.add(new FoodCategoryItem(getString(R.string.yangsik), context.getDrawable(R.drawable.cloud_day_icon), true));
+                        itemsList.add(new FoodCategoryItem(getString(R.string.asian), context.getDrawable(R.drawable.cloud_day_icon), true));
+                        itemsList.add(new FoodCategoryItem(getString(R.string.chicken), context.getDrawable(R.drawable.cloud_day_icon), true));
+                        itemsList.add(new FoodCategoryItem(getString(R.string.fastfood), context.getDrawable(R.drawable.cloud_day_icon), true));
+                        itemsList.add(new FoodCategoryItem(getString(R.string.donkartz), context.getDrawable(R.drawable.cloud_day_icon), true));
+                        itemsList.add(new FoodCategoryItem(getString(R.string.jjim), context.getDrawable(R.drawable.cloud_day_icon), true));
+                        itemsList.add(new FoodCategoryItem(getString(R.string.tang), context.getDrawable(R.drawable.cloud_day_icon), true));
+                        itemsList.add(new FoodCategoryItem(getString(R.string.bunsik), context.getDrawable(R.drawable.cloud_day_icon), true));
+                        itemsList.add(new FoodCategoryItem(getString(R.string.juk), context.getDrawable(R.drawable.cloud_day_icon), true));
 
                         if (!resultList.isEmpty())
                         {
                             for (CustomFoodCategoryDTO customFoodCategory : resultList)
                             {
-                                foodCategoryAdapter.addItem(new FoodCategoryItem(customFoodCategory.getCategoryName(), null, false));
+                                itemsList.add(new FoodCategoryItem(customFoodCategory.getCategoryName(), null, false));
                             }
                         }
 
-                        binding.foodCategoryGridview.setAdapter(foodCategoryAdapter);
+                        foodCategoryAdapter.setItems(itemsList);
+                        GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(), 4);
+                        binding.categoryGridview.setLayoutManager(gridLayoutManager);
+                        binding.categoryGridview.setAdapter(foodCategoryAdapter);
                     }
                 });
             }
@@ -384,8 +403,8 @@ public class FoodsMainFragment extends Fragment implements OnClickedCategoryItem
     @Override
     public void onClickedFoodCategory(FoodCategoryItem foodCategoryItem)
     {
-        Toast.makeText(getActivity(), foodCategoryItem.getCategoryName(), Toast.LENGTH_SHORT).show();
-        //카테고리 리스트 프래그먼트로 이동
+        FoodCategoryTabFragment foodCategoryTabFragment = new FoodCategoryTabFragment(foodCategoryItem.getCategoryName());
+        foodCategoryTabFragment.show(getParentFragmentManager(), FoodCategoryTabFragment.TAG);
     }
 
     private final ActivityResultLauncher<Intent> locationSettingsActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
@@ -394,7 +413,71 @@ public class FoodsMainFragment extends Fragment implements OnClickedCategoryItem
                 @Override
                 public void onActivityResult(ActivityResult result)
                 {
+                    if (result.getResultCode() == RESULT_OK)
+                    {
+                        foodCriteriaLocationInfoViewModel.selectByEventId(calendarId, eventId, new CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO>()
+                        {
+                            @Override
+                            public void onReceiveResult(@NonNull FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO) throws RemoteException
+                            {
+                                getActivity().runOnUiThread(new Runnable()
+                                {
+                                    @Override
+                                    public void run()
+                                    {
+                                        FoodsMainFragment.this.foodCriteriaLocationInfoDTO = foodCriteriaLocationInfoDTO;
 
+                                        if (foodCriteriaLocationInfoDTO.getUsingType() == FoodCriteriaLocationInfoDTO.TYPE_SELECTED_LOCATION)
+                                        {
+                                            criteriaLocationDTO = selectedLocationDTO;
+
+                                            if (criteriaLocationDTO.getPlaceName() != null)
+                                            {
+                                                binding.criteriaLocation.setText(criteriaLocationDTO.getPlaceName());
+                                            } else
+                                            {
+                                                binding.criteriaLocation.setText(criteriaLocationDTO.getAddressName());
+                                            }
+                                        } else if (foodCriteriaLocationInfoDTO.getUsingType() == FoodCriteriaLocationInfoDTO.TYPE_CURRENT_LOCATION)
+                                        {
+                                            gps();
+                                        } else if (foodCriteriaLocationInfoDTO.getUsingType() == FoodCriteriaLocationInfoDTO.TYPE_CUSTOM_SELECTED_LOCATION)
+                                        {
+                                            foodCriteriaLocationSearchHistoryViewModel.select(foodCriteriaLocationInfoDTO.getHistoryLocationId(), new CarrierMessagingService.ResultCallback<FoodCriteriaLocationSearchHistoryDTO>()
+                                            {
+                                                @Override
+                                                public void onReceiveResult(@NonNull FoodCriteriaLocationSearchHistoryDTO foodCriteriaLocationSearchHistoryDTO) throws RemoteException
+                                                {
+                                                    getActivity().runOnUiThread(new Runnable()
+                                                    {
+                                                        @Override
+                                                        public void run()
+                                                        {
+                                                            FoodsMainFragment.this.foodCriteriaLocationSearchHistoryDTO = foodCriteriaLocationSearchHistoryDTO;
+
+                                                            criteriaLocationDTO = new LocationDTO();
+                                                            criteriaLocationDTO.setAddressName(foodCriteriaLocationSearchHistoryDTO.getAddressName());
+                                                            criteriaLocationDTO.setPlaceName(foodCriteriaLocationSearchHistoryDTO.getPlaceName());
+                                                            criteriaLocationDTO.setLatitude(Double.parseDouble(foodCriteriaLocationSearchHistoryDTO.getLatitude()));
+                                                            criteriaLocationDTO.setLongitude(Double.parseDouble(foodCriteriaLocationSearchHistoryDTO.getLongitude()));
+
+                                                            if (criteriaLocationDTO.getPlaceName() != null)
+                                                            {
+                                                                binding.criteriaLocation.setText(criteriaLocationDTO.getPlaceName());
+                                                            } else
+                                                            {
+                                                                binding.criteriaLocation.setText(criteriaLocationDTO.getAddressName());
+                                                            }
+                                                        }
+                                                    });
+                                                }
+                                            });
+                                        }
+                                    }
+                                });
+                            }
+                        });
+                    }
                 }
             });
 }

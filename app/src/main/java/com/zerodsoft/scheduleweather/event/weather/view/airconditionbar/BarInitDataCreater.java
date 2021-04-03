@@ -48,10 +48,10 @@ public class BarInitDataCreater
                 break;
         }
 
-        BarInitData good = new BarInitData(Color.BLUE, Double.parseDouble(references[0]), Double.parseDouble(references[1]), context.getString(R.string.good));
-        BarInitData normal = new BarInitData(Color.GREEN, Double.parseDouble(references[2]), Double.parseDouble(references[3]), context.getString(R.string.normal));
-        BarInitData bad = new BarInitData(Color.CYAN, Double.parseDouble(references[4]), Double.parseDouble(references[5]), context.getString(R.string.bad));
-        BarInitData veryBad = new BarInitData(Color.RED, Double.parseDouble(references[6]), Double.parseDouble(references[7]), context.getString(R.string.very_bad));
+        BarInitData good = new BarInitData(context.getColor(R.color.air_condition_good), Double.parseDouble(references[0]), Double.parseDouble(references[1]), context.getString(R.string.good));
+        BarInitData normal = new BarInitData(context.getColor(R.color.air_condition_normal), Double.parseDouble(references[2]), Double.parseDouble(references[3]), context.getString(R.string.normal));
+        BarInitData bad = new BarInitData(context.getColor(R.color.air_condition_bad), Double.parseDouble(references[4]), Double.parseDouble(references[5]), context.getString(R.string.bad));
+        BarInitData veryBad = new BarInitData(context.getColor(R.color.air_condition_very_bad), Double.parseDouble(references[6]), Double.parseDouble(references[7]), context.getString(R.string.very_bad));
 
         List<BarInitData> barInitDataList = new ArrayList<>();
 

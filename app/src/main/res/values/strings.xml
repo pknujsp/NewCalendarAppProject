@@ -434,5 +434,6 @@
     <string name="current_location">현재 위치</string>
     <string name="search">검색</string>
     <string name="hint_request_input_address_or_place">검색할 주소 또는 장소를 입력</string>
+    <string name="finding_current_location">현재 위치 파악중</string>
 
 </resources>

@@ -69,7 +69,6 @@ public class FoodsActivity extends AppCompatActivity implements INetwork
                                 @Override
                                 public void onReceiveResult(@NonNull FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO) throws RemoteException
                                 {
-                                    FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
                                     FoodsMainFragment foodsMainFragment = new FoodsMainFragment(FoodsActivity.this::networkAvailable);
 
                                     Bundle fragmentBundle = new Bundle();
@@ -78,12 +77,11 @@ public class FoodsActivity extends AppCompatActivity implements INetwork
                                     fragmentBundle.putLong(CalendarContract.Instances.EVENT_ID, eventId);
 
                                     foodsMainFragment.setArguments(fragmentBundle);
-                                    fragmentTransaction.add(binding.fragmentContainer.getId(), foodsMainFragment, FoodsMainFragment.TAG).commit();
+                                    getSupportFragmentManager().beginTransaction().add(binding.fragmentContainer.getId(), foodsMainFragment, FoodsMainFragment.TAG).commit();
                                 }
                             });
                         } else
                         {
-                            FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
                             FoodsMainFragment foodsMainFragment = new FoodsMainFragment(FoodsActivity.this::networkAvailable);
                             Bundle fragmentBundle = new Bundle();
                             fragmentBundle.putInt(CalendarContract.Instances.CALENDAR_ID, calendarId);
@@ -91,7 +89,7 @@ public class FoodsActivity extends AppCompatActivity implements INetwork
                             fragmentBundle.putLong(CalendarContract.Instances.EVENT_ID, eventId);
 
                             foodsMainFragment.setArguments(fragmentBundle);
-                            fragmentTransaction.add(binding.fragmentContainer.getId(), foodsMainFragment, FoodsMainFragment.TAG).commit();
+                            getSupportFragmentManager().beginTransaction().add(binding.fragmentContainer.getId(), foodsMainFragment, FoodsMainFragment.TAG).commit();
                         }
                     }
                 });

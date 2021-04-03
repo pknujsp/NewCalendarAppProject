@@ -1,14 +1,18 @@
 package com.zerodsoft.scheduleweather.utility;
 
 import android.app.Activity;
+import android.app.Application;
 import android.content.Context;
+import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
+import android.net.NetworkInfo;
 import android.net.NetworkRequest;
 import android.widget.Toast;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.event.foods.activity.FoodsActivity;
 
 public final class NetworkStatus
@@ -35,14 +39,14 @@ public final class NetworkStatus
             public void onAvailable(Network network)
             {
                 super.onAvailable(network);
-                Toast.makeText(activity, activity.getString(R.string.connected_network), Toast.LENGTH_SHORT).show();
+                // Toast.makeText(activity, activity.getString(R.string.connected_network), Toast.LENGTH_SHORT).show();
             }
 
             @Override
             public void onLost(Network network)
             {
                 super.onLost(network);
-                Toast.makeText(activity, activity.getString(R.string.disconnected_network), Toast.LENGTH_SHORT).show();
+                //  Toast.makeText(activity, activity.getString(R.string.disconnected_network), Toast.LENGTH_SHORT).show();
             }
         };
         NetworkRequest.Builder builder = new NetworkRequest.Builder();

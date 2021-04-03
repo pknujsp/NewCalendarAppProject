@@ -24,7 +24,7 @@ public class PlacesViewModel extends ViewModel
 
     public PlacesViewModel()
     {
-        executor = Executors.newFixedThreadPool(5);
+        executor = Executors.newSingleThreadExecutor();
         pagedListLiveData = new MutableLiveData<>();
     }
 

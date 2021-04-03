@@ -36,7 +36,7 @@ public class AddressViewModel extends ViewModel
                 .setPageSize(15)
                 .setPrefetchDistance(4)
                 .build();
-        executor = Executors.newFixedThreadPool(5);
+        executor = Executors.newSingleThreadExecutor();
         pagedListLiveData = new LivePagedListBuilder<Integer, AddressResponseDocuments>(dataSourceFactory, config)
                 .setFetchExecutor(executor)
                 .build();

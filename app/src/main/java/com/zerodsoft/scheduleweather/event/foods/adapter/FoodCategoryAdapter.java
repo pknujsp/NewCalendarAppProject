@@ -8,7 +8,9 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.event.foods.dto.FoodCategoryItem;
@@ -17,89 +19,77 @@ import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedCategoryIte
 import java.util.ArrayList;
 import java.util.List;
 
-public class FoodCategoryAdapter extends BaseAdapter
+public class FoodCategoryAdapter extends RecyclerView.Adapter<FoodCategoryAdapter.CategoryViewHolder>
 {
     private List<FoodCategoryItem> items = new ArrayList<>();
-    private LayoutInflater layoutInflater;
-    private FoodCategoryViewHolder viewHolder;
     private final OnClickedCategoryItem onClickedCategoryItem;
 
     public FoodCategoryAdapter(Context context, Fragment fragment)
     {
-        this.layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         this.onClickedCategoryItem = (OnClickedCategoryItem) fragment;
     }
 
+    @NonNull
     @Override
-    public int getCount()
+    public CategoryViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType)
+    {
+        return new CategoryViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.food_category_item, parent, false));
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull CategoryViewHolder holder, int position)
+    {
+        holder.onBind();
+    }
+
+    @Override
+    public int getItemCount()
     {
         return items.size();
     }
 
-    @Override
-    public Object getItem(int i)
+    public void setItems(List<FoodCategoryItem> items)
     {
-        return items.get(i);
+        this.items = items;
     }
 
-    @Override
-    public long getItemId(int i)
+    class CategoryViewHolder extends RecyclerView.ViewHolder
     {
-        return i;
-    }
+        private TextView foodCategoryNameTextView;
+        private ImageView foodCategoryImageView;
+        private FoodCategoryItem foodCategoryItem;
 
-    @Override
-    public View getView(int i, View view, ViewGroup viewGroup)
-    {
-        if (view == null)
+        public CategoryViewHolder(@NonNull View itemView)
         {
-            view = layoutInflater.inflate(R.layout.food_category_item, null);
+            super(itemView);
 
-            viewHolder = new FoodCategoryViewHolder(items.get(i));
-            viewHolder.foodCategoryNameTextView = (TextView) view.findViewById(R.id.food_category_name);
-            viewHolder.foodCategoryImageView = (ImageView) view.findViewById(R.id.food_category_image);
-
-            view.setTag(viewHolder);
+            foodCategoryNameTextView = (TextView) itemView.findViewById(R.id.food_category_name);
+            foodCategoryImageView = (ImageView) itemView.findViewById(R.id.food_category_image);
         }
 
-        viewHolder.foodCategoryNameTextView.setText(viewHolder.foodCategoryItem.getCategoryName());
-        if (viewHolder.foodCategoryItem.isDefault())
+        public void onBind()
         {
-            viewHolder.foodCategoryImageView.setImageDrawable(viewHolder.foodCategoryItem.getCategoryMainImage());
-            viewHolder.foodCategoryImageView.setVisibility(View.VISIBLE);
-        } else
-        {
-            viewHolder.foodCategoryImageView.setVisibility(View.GONE);
-        }
+            foodCategoryItem = items.get(getAdapterPosition());
 
-        view.setOnClickListener(onClickListener);
+            foodCategoryNameTextView.setText(foodCategoryItem.getCategoryName());
+            if (foodCategoryItem.isDefault())
+            {
+                foodCategoryImageView.setImageDrawable(foodCategoryItem.getCategoryMainImage());
+                foodCategoryImageView.setVisibility(View.VISIBLE);
+            } else
+            {
+                foodCategoryImageView.setVisibility(View.GONE);
+            }
 
-        return view;
-    }
-
-    public void addItem(FoodCategoryItem item)
-    {
-        items.add(item);
-    }
-
-    private final View.OnClickListener onClickListener = new View.OnClickListener()
-    {
-        @Override
-        public void onClick(View view)
-        {
-            onClickedCategoryItem.onClickedFoodCategory(((FoodCategoryViewHolder) view.getTag()).foodCategoryItem);
-        }
-    };
-
-    static class FoodCategoryViewHolder
-    {
-        TextView foodCategoryNameTextView;
-        ImageView foodCategoryImageView;
-        FoodCategoryItem foodCategoryItem;
-
-        public FoodCategoryViewHolder(FoodCategoryItem foodCategoryItem)
-        {
-            this.foodCategoryItem = foodCategoryItem;
+            itemView.getRootView().setOnClickListener(new View.OnClickListener()
+            {
+                @Override
+                public void onClick(View view)
+                {
+                    onClickedCategoryItem.onClickedFoodCategory(foodCategoryItem);
+                }
+            });
         }
     }
+
 }

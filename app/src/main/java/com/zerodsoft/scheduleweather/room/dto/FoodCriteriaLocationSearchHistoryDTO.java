@@ -12,13 +12,13 @@ public class FoodCriteriaLocationSearchHistoryDTO
     private int id;
 
     @ColumnInfo(name = "calendar_id")
-    private int calendarId;
+    private Integer calendarId;
 
     @ColumnInfo(name = "event_id")
-    private long eventId;
+    private Long eventId;
 
     @ColumnInfo(name = "instance_id")
-    private long instanceId;
+    private Long instanceId;
 
     @ColumnInfo(name = "place_name")
     private String placeName;
@@ -45,32 +45,32 @@ public class FoodCriteriaLocationSearchHistoryDTO
         this.id = id;
     }
 
-    public int getCalendarId()
+    public Integer getCalendarId()
     {
         return calendarId;
     }
 
-    public void setCalendarId(int calendarId)
+    public void setCalendarId(Integer calendarId)
     {
         this.calendarId = calendarId;
     }
 
-    public long getEventId()
+    public Long getEventId()
     {
         return eventId;
     }
 
-    public void setEventId(long eventId)
+    public void setEventId(Long eventId)
     {
         this.eventId = eventId;
     }
 
-    public long getInstanceId()
+    public Long getInstanceId()
     {
         return instanceId;
     }
 
-    public void setInstanceId(long instanceId)
+    public void setInstanceId(Long instanceId)
     {
         this.instanceId = instanceId;
     }

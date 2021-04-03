@@ -79,6 +79,7 @@
                 android:name="android.content.SyncAdapter"
                 android:resource="@xml/calendar_sync_adapter" />
         </service>
+
     </application>
 
 </manifest>

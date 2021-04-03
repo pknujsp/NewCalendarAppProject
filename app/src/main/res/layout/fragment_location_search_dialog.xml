@@ -2,7 +2,7 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".event.foods.fragment.LocationSearchDialogFragment">
+    tools:context=".event.foods.searchlocation.fragment.LocationSearchDialogFragment">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -10,8 +10,12 @@
         android:orientation="vertical">
 
         <SearchView
+            android:id="@+id/search_view"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:elevation="4dp"
+            app:defaultQueryHint="@string/hint_request_input_address_or_place"
+            app:iconifiedByDefault="false" />
 
         <FrameLayout
             android:layout_width="match_parent"
@@ -22,14 +26,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="horizontal" />
-
-            <ProgressBar
-                android:id="@+id/progress_bar"
-                style="@style/Widget.MaterialComponents.CircularProgressIndicator"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:indeterminateOnly="true" />
 
             <com.zerodsoft.scheduleweather.etc.ViewPagerIndicator
                 android:id="@+id/viewpager_indicator"

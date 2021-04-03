@@ -19,8 +19,18 @@
                 android:layout_height="18dp"
                 android:layout_centerVertical="true"
                 android:layout_marginRight="2dp"
-                android:layout_toLeftOf="@id/criteria_location"
+                android:layout_toLeftOf="@id/progress_bar"
                 android:src="@drawable/location_black" />
+
+            <ProgressBar
+                android:id="@+id/progress_bar"
+                style="@style/Widget.MaterialComponents.CircularProgressIndicator"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_centerVertical="true"
+                android:layout_marginRight="2dp"
+                android:layout_toLeftOf="@id/criteria_location"
+                android:indeterminateOnly="true" />
 
             <TextView
                 android:id="@+id/criteria_location"
@@ -35,35 +45,11 @@
 
         </RelativeLayout>
 
-        <ScrollView
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/category_gridview"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:padding="16dp">
-
-                <GridView
-                    android:id="@+id/food_category_gridview"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    tools:listitem="@layout/food_category_item"
-                    android:numColumns="5" />
-
-                <Button
-                    android:id="@+id/map_button"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/open_map" />
-
-
-            </LinearLayout>
-
-        </ScrollView>
+            tools:listitem="@layout/food_category_item" />
 
     </LinearLayout>
 
