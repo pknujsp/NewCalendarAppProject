@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.RemoteException;
 import android.service.carrier.CarrierMessagingService;
+import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +18,7 @@ import androidx.annotation.NonNull;
 import androidx.paging.PagedListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedRestaurantItem;
@@ -36,6 +38,10 @@ import java.util.List;
 public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, RestaurantListAdapter.ItemViewHolder>
 {
     private final OnClickedRestaurantItem onClickedRestaurantItem;
+
+    private SparseArray<KakaoPlaceJsonRoot> kakaoPlacesArr = new SparseArray<>();
+    private SparseArray<Bitmap> restaurantImagesArr = new SparseArray<>();
+
     private Activity activity;
     private Context context;
 
@@ -65,59 +71,33 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
             restaurantReviewLayout = (LinearLayout) view.findViewById(R.id.restaurant_review_layout);
             restaurantMenuInfo = (TextView) view.findViewById(R.id.restaurant_menuinfo);
             restaurantMenuInfo.setSelected(true);
+
+            restaurantName.setText("");
+            restaurantRating.setText("");
+            restaurantMenuInfo.setText("");
         }
 
         public void bind(PlaceDocuments item)
         {
             restaurantName.setText(item.getPlaceName());
 
-            KakaoPlace.getKakaoPlaceData(item.getId(), new CarrierMessagingService.ResultCallback<DataWrapper<KakaoPlaceJsonRoot>>()
+            if (kakaoPlacesArr.get(getAdapterPosition()) == null)
             {
-                @Override
-                public void onReceiveResult(@NonNull DataWrapper<KakaoPlaceJsonRoot> kakaoPlaceJsonRootDataWrapper) throws RemoteException
+                KakaoPlace.getKakaoPlaceData(item.getId(), new CarrierMessagingService.ResultCallback<DataWrapper<KakaoPlaceJsonRoot>>()
                 {
-                    KakaoPlaceJsonRoot kakaoPlaceJsonRoot = kakaoPlaceJsonRootDataWrapper.getData();
-                    setRestaurantImage(kakaoPlaceJsonRoot);
-                    StringBuffer menuStr = new StringBuffer();
-
-                    if (kakaoPlaceJsonRoot.getMenuInfo() != null)
+                    @Override
+                    public void onReceiveResult(@NonNull DataWrapper<KakaoPlaceJsonRoot> kakaoPlaceJsonRootDataWrapper) throws RemoteException
                     {
-                        MenuInfo menuInfo = kakaoPlaceJsonRoot.getMenuInfo();
-                        List<MenuItem> menuItems = menuInfo.getMenuList();
+                        KakaoPlaceJsonRoot kakaoPlaceJsonRoot = kakaoPlaceJsonRootDataWrapper.getData();
+                        kakaoPlacesArr.put(getAdapterPosition(), kakaoPlaceJsonRoot);
 
-                        for (MenuItem menuItem : menuItems)
-                        {
-                            menuStr.append(menuItem.getMenu()).append(", ");
-                        }
-
-                        if (menuStr.length() >= 1)
-                        {
-                            menuStr.delete(menuStr.length() - 2, menuStr.length());
-                        }
+                        setData(kakaoPlaceJsonRoot);
                     }
-
-                    String rating = "";
-
-                    if (kakaoPlaceJsonRoot.getBasicInfo().getFeedback() != null)
-                    {
-                        if (kakaoPlaceJsonRoot.getBasicInfo().getFeedback().getScoreAvg() != null)
-                        {
-                            rating = kakaoPlaceJsonRoot.getBasicInfo().getFeedback().getScoreAvg() + " / 5";
-                        }
-                    }
-
-                    String finalRating = rating;
-                    activity.runOnUiThread(new Runnable()
-                    {
-                        @Override
-                        public void run()
-                        {
-                            restaurantMenuInfo.setText(menuStr.toString());
-                            restaurantRating.setText(finalRating);
-                        }
-                    });
-                }
-            });
+                });
+            } else
+            {
+                setData(kakaoPlacesArr.get(getAdapterPosition()));
+            }
 
             itemView.getRootView().setOnClickListener(new View.OnClickListener()
             {
@@ -129,43 +109,104 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
             });
         }
 
+        public void setData(KakaoPlaceJsonRoot kakaoPlaceJsonRoot)
+        {
+            setRestaurantImage(kakaoPlaceJsonRoot);
+            StringBuffer menuStr = new StringBuffer();
+
+            if (kakaoPlaceJsonRoot.getMenuInfo() != null)
+            {
+                MenuInfo menuInfo = kakaoPlaceJsonRoot.getMenuInfo();
+                List<MenuItem> menuItems = menuInfo.getMenuList();
+
+                for (MenuItem menuItem : menuItems)
+                {
+                    menuStr.append(menuItem.getMenu()).append(", ");
+                }
+
+                if (menuStr.length() >= 1)
+                {
+                    menuStr.delete(menuStr.length() - 2, menuStr.length());
+                }
+            }
+
+            String rating = "";
+
+            if (kakaoPlaceJsonRoot.getBasicInfo().getFeedback() != null)
+            {
+                kakaoPlaceJsonRoot.getBasicInfo().getFeedback().setScoreAvg();
+                if (kakaoPlaceJsonRoot.getBasicInfo().getFeedback().getScoreAvg() != null)
+                {
+                    rating = kakaoPlaceJsonRoot.getBasicInfo().getFeedback().getScoreAvg() + " / 5";
+                }
+            }
+
+            String finalRating = rating;
+            activity.runOnUiThread(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    restaurantMenuInfo.setText(menuStr.toString());
+                    restaurantRating.setText(finalRating);
+                }
+            });
+        }
+
+
         public void setRestaurantImage(KakaoPlaceJsonRoot kakaoPlaceJsonRoot)
         {
             if (kakaoPlaceJsonRoot.getBasicInfo().getMainPhotoUrl() != null)
             {
-                App.executorService.execute(new Runnable()
+                if (restaurantImagesArr.get(getAdapterPosition()) == null)
                 {
-                    @Override
-                    public void run()
+                    App.executorService.execute(new Runnable()
                     {
-                        Bitmap bmp = null;
-                        try
+                        @Override
+                        public void run()
                         {
-                            String img_url = kakaoPlaceJsonRoot.getBasicInfo().getMainPhotoUrl(); //url of the image
-                            URL url = new URL(img_url);
-                            bmp = BitmapFactory.decodeStream(url.openConnection().getInputStream());
-
-                            Bitmap finalBmp = bmp;
-                            activity.runOnUiThread(new Runnable()
+                            Bitmap bmp = null;
+                            try
                             {
-                                @Override
-                                public void run()
+                                String img_url = kakaoPlaceJsonRoot.getBasicInfo().getMainPhotoUrl(); //url of the image
+                                URL url = new URL(img_url);
+                                bmp = BitmapFactory.decodeStream(url.openConnection().getInputStream());
+
+                                final Bitmap finalBmp = bmp;
+                                restaurantImagesArr.put(getAdapterPosition(), finalBmp);
+
+                                activity.runOnUiThread(new Runnable()
                                 {
-                                    restaurantImage.setImageBitmap(finalBmp);
-                                }
-                            });
-                        } catch (MalformedURLException e)
-                        {
-                            e.printStackTrace();
-                        } catch (IOException e)
-                        {
-                            e.printStackTrace();
+                                    @Override
+                                    public void run()
+                                    {
+                                        restaurantImage.setImageBitmap(finalBmp);
+                                        Glide.with(itemView)
+                                                .load(restaurantImagesArr.get(getAdapterPosition())).circleCrop()
+                                                .into(restaurantImage);
+                                    }
+                                });
+                            } catch (MalformedURLException e)
+                            {
+                                e.printStackTrace();
+                            } catch (IOException e)
+                            {
+                                e.printStackTrace();
+                            }
                         }
-                    }
-                });
+                    });
+                } else
+                {
+                    restaurantImage.setImageBitmap(restaurantImagesArr.get(getAdapterPosition()));
+                    Glide.with(itemView)
+                            .load(restaurantImagesArr.get(getAdapterPosition())).circleCrop()
+                            .into(restaurantImage);
+                }
             } else
             {
-                restaurantImage.setImageDrawable(context.getDrawable(R.drawable.not_image));
+                Glide.with(itemView)
+                        .load(context.getDrawable(R.drawable.not_image)).circleCrop()
+                        .into(restaurantImage);
             }
         }
 
@@ -174,7 +215,9 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
             restaurantName.setText("");
             restaurantMenuInfo.setText("");
             restaurantRating.setText("");
-            restaurantImage.setImageDrawable(context.getDrawable(R.drawable.not_image));
+            Glide.with(itemView)
+                    .load(context.getDrawable(R.drawable.not_image)).circleCrop()
+                    .into(restaurantImage);
         }
     }
 

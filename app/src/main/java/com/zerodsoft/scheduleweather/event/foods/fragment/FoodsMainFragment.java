@@ -388,7 +388,7 @@ public class FoodsMainFragment extends Fragment implements OnClickedCategoryItem
                         }
 
                         foodCategoryAdapter.setItems(itemsList);
-                        GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(), 4);
+                        GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(), 5);
                         binding.categoryGridview.setLayoutManager(gridLayoutManager);
                         binding.categoryGridview.setAdapter(foodCategoryAdapter);
                     }

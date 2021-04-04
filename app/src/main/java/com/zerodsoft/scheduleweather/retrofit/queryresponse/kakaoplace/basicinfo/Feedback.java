@@ -104,8 +104,18 @@ public class Feedback
     {
         if (scoreCnt != null && scoreSum != null)
         {
-            double avg = Double.parseDouble(scoreSum) / Double.parseDouble(scoreCnt);
-            scoreAvg = String.format("%.1f", avg);
+            double sum = Double.parseDouble(scoreSum);
+            double cnt = Double.parseDouble(scoreCnt);
+            if (sum > 0 && cnt > 0)
+            {
+                scoreAvg = String.format("%.1f", sum / cnt);
+            } else
+            {
+                scoreAvg = "별점없음";
+            }
+        } else
+        {
+            scoreAvg = "별점없음";
         }
     }
 }
