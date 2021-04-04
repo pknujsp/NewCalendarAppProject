@@ -1,6 +1,5 @@
 package com.zerodsoft.scheduleweather.event.foods.fragment;
 
-import android.content.Context;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -8,7 +7,6 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.GridLayoutManager;
 
 import android.os.RemoteException;
 import android.service.carrier.CarrierMessagingService;
@@ -20,9 +18,8 @@ import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.FragmentFoodCategoryTabBinding;
-import com.zerodsoft.scheduleweather.event.foods.adapter.FoodCategoryAdapter;
-import com.zerodsoft.scheduleweather.event.foods.adapter.RestaurantListAdapter;
-import com.zerodsoft.scheduleweather.event.foods.dto.FoodCategoryItem;
+import com.zerodsoft.scheduleweather.event.foods.adapter.FoodCategoryFragmentListAdapter;
+import com.zerodsoft.scheduleweather.event.foods.interfaces.CriteriaLocationListener;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedRestaurantItem;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.CustomFoodCategoryViewModel;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
@@ -30,20 +27,22 @@ import com.zerodsoft.scheduleweather.room.dto.CustomFoodCategoryDTO;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 public class FoodCategoryTabFragment extends DialogFragment implements OnClickedRestaurantItem
 {
     public static final String TAG = "FoodCategoryTabFragment";
     private FragmentFoodCategoryTabBinding binding;
+    private final CriteriaLocationListener criteriaLocationListener;
+
     private CustomFoodCategoryViewModel customFoodCategoryViewModel;
     private List<String> categoryList;
-    private RestaurantListAdapter adapter;
+    private FoodCategoryFragmentListAdapter adapter;
     private final String selectedCategoryName;
 
-    public FoodCategoryTabFragment(String selectedCategoryName)
+    public FoodCategoryTabFragment(Fragment fragment, String selectedCategoryName)
     {
+        this.criteriaLocationListener = (CriteriaLocationListener) fragment;
         this.selectedCategoryName = selectedCategoryName;
     }
 
@@ -93,8 +92,8 @@ public class FoodCategoryTabFragment extends DialogFragment implements OnClicked
 
                         int selectedIndex = categoryList.indexOf(selectedCategoryName);
 
-                        adapter = new RestaurantListAdapter(FoodCategoryTabFragment.this);
-                        adapter.init(FoodCategoryTabFragment.this::onClickedRestaurantItem, categoryList);
+                        adapter = new FoodCategoryFragmentListAdapter(FoodCategoryTabFragment.this);
+                        adapter.init(FoodCategoryTabFragment.this, criteriaLocationListener, categoryList);
                         binding.viewpager.setAdapter(adapter);
 
                         new TabLayoutMediator(binding.tabs, binding.viewpager,

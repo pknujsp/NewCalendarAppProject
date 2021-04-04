@@ -27,7 +27,6 @@ import android.service.carrier.CarrierMessagingService;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.FragmentFoodsMainBinding;
@@ -35,6 +34,7 @@ import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.foods.activity.LocationSettingsActivity;
 import com.zerodsoft.scheduleweather.event.foods.adapter.FoodCategoryAdapter;
 import com.zerodsoft.scheduleweather.event.foods.dto.FoodCategoryItem;
+import com.zerodsoft.scheduleweather.event.foods.interfaces.CriteriaLocationListener;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedCategoryItem;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.CustomFoodCategoryViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationInfoViewModel;
@@ -44,7 +44,6 @@ import com.zerodsoft.scheduleweather.kakaomap.model.CoordToAddressUtil;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddress;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddressDocuments;
 import com.zerodsoft.scheduleweather.room.dto.CustomFoodCategoryDTO;
 import com.zerodsoft.scheduleweather.room.dto.FoodCriteriaLocationInfoDTO;
 import com.zerodsoft.scheduleweather.room.dto.FoodCriteriaLocationSearchHistoryDTO;
@@ -56,7 +55,7 @@ import java.util.List;
 import static android.app.Activity.RESULT_OK;
 import static androidx.core.content.ContextCompat.checkSelfPermission;
 
-public class FoodsMainFragment extends Fragment implements OnClickedCategoryItem
+public class FoodsMainFragment extends Fragment implements OnClickedCategoryItem, CriteriaLocationListener
 {
     public static final String TAG = "FoodsMainFragment";
     private FragmentFoodsMainBinding binding;
@@ -403,7 +402,7 @@ public class FoodsMainFragment extends Fragment implements OnClickedCategoryItem
     @Override
     public void onClickedFoodCategory(FoodCategoryItem foodCategoryItem)
     {
-        FoodCategoryTabFragment foodCategoryTabFragment = new FoodCategoryTabFragment(foodCategoryItem.getCategoryName());
+        FoodCategoryTabFragment foodCategoryTabFragment = new FoodCategoryTabFragment(FoodsMainFragment.this, foodCategoryItem.getCategoryName());
         foodCategoryTabFragment.show(getParentFragmentManager(), FoodCategoryTabFragment.TAG);
     }
 
@@ -480,4 +479,10 @@ public class FoodsMainFragment extends Fragment implements OnClickedCategoryItem
                     }
                 }
             });
+
+    @Override
+    public LocationDTO getCriteriaLocation()
+    {
+        return criteriaLocationDTO;
+    }
 }

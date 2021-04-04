@@ -1,48 +1,70 @@
 package com.zerodsoft.scheduleweather.event.foods.adapter;
 
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
+
 import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
-import androidx.viewpager2.adapter.FragmentStateAdapter;
+import androidx.paging.PagedListAdapter;
+import androidx.recyclerview.widget.RecyclerView;
 
-import com.zerodsoft.scheduleweather.event.foods.fragment.RestaurantListFragment;
+import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedRestaurantItem;
+import com.zerodsoft.scheduleweather.event.foods.searchlocation.adapter.PlacesListAdapter;
+import com.zerodsoft.scheduleweather.event.foods.searchlocation.interfaces.OnClickedLocationItem;
+import com.zerodsoft.scheduleweather.kakaomap.callback.PlaceItemCallback;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class RestaurantListAdapter extends FragmentStateAdapter
+public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, RestaurantListAdapter.ItemViewHolder>
 {
-    private List<RestaurantListFragment> fragments;
-    private List<String> categoryList;
-    private OnClickedRestaurantItem onClickedRestaurantItem;
+    private final OnClickedRestaurantItem onClickedRestaurantItem;
 
-    public RestaurantListAdapter(@NonNull Fragment fragment)
+    public RestaurantListAdapter(OnClickedRestaurantItem onClickedRestaurantItem)
     {
-        super(fragment);
+        super(new PlaceItemCallback());
+        this.onClickedRestaurantItem = onClickedRestaurantItem;
     }
 
-    public void init(OnClickedRestaurantItem onClickedRestaurantItem, List<String> categoryList)
+    class ItemViewHolder extends RecyclerView.ViewHolder
     {
-        this.onClickedRestaurantItem = onClickedRestaurantItem;
-        this.categoryList = categoryList;
-        this.fragments = new ArrayList<>();
+        private TextView restaurantName;
+        private ImageView restaurantImage;
 
-        for (String categoryName : categoryList)
+        public ItemViewHolder(View view)
         {
-            fragments.add(new RestaurantListFragment(onClickedRestaurantItem, categoryName));
+            super(view);
+            restaurantName = (TextView) view.findViewById(R.id.restaurant_name);
+            restaurantImage = (ImageView) view.findViewById(R.id.restaurant_image);
+        }
+
+        public void bind(PlaceDocuments item)
+        {
+            restaurantName.setText(item.getPlaceName());
+
+            itemView.getRootView().setOnClickListener(new View.OnClickListener()
+            {
+                @Override
+                public void onClick(View view)
+                {
+                    onClickedRestaurantItem.onClickedRestaurantItem(getItem(getAdapterPosition()));
+                }
+            });
         }
     }
 
+
     @NonNull
     @Override
-    public Fragment createFragment(int position)
+    public ItemViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType)
     {
-        return fragments.get(position);
+        return new ItemViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.restaurant_itemview, parent, false));
     }
 
     @Override
-    public int getItemCount()
+    public void onBindViewHolder(@NonNull ItemViewHolder holder, int position)
     {
-        return fragments.size();
+        holder.bind(getItem(position));
     }
 }
