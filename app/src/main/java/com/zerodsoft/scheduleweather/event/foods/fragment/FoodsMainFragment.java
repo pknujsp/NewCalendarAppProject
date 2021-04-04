@@ -365,19 +365,19 @@ public class FoodsMainFragment extends Fragment implements OnClickedCategoryItem
                         Context context = getContext();
                         List<FoodCategoryItem> itemsList = new ArrayList<>();
 
-                        itemsList.add(new FoodCategoryItem(getString(R.string.hansik), context.getDrawable(R.drawable.cloud_day_icon), true));
-                        itemsList.add(new FoodCategoryItem(getString(R.string.jungsik), context.getDrawable(R.drawable.cloud_day_icon), true));
-                        itemsList.add(new FoodCategoryItem(getString(R.string.illsik), context.getDrawable(R.drawable.cloud_day_icon), true));
-                        itemsList.add(new FoodCategoryItem(getString(R.string.sashimi), context.getDrawable(R.drawable.cloud_day_icon), true));
-                        itemsList.add(new FoodCategoryItem(getString(R.string.yangsik), context.getDrawable(R.drawable.cloud_day_icon), true));
-                        itemsList.add(new FoodCategoryItem(getString(R.string.asian), context.getDrawable(R.drawable.cloud_day_icon), true));
-                        itemsList.add(new FoodCategoryItem(getString(R.string.chicken), context.getDrawable(R.drawable.cloud_day_icon), true));
-                        itemsList.add(new FoodCategoryItem(getString(R.string.fastfood), context.getDrawable(R.drawable.cloud_day_icon), true));
-                        itemsList.add(new FoodCategoryItem(getString(R.string.donkartz), context.getDrawable(R.drawable.cloud_day_icon), true));
-                        itemsList.add(new FoodCategoryItem(getString(R.string.jjim), context.getDrawable(R.drawable.cloud_day_icon), true));
-                        itemsList.add(new FoodCategoryItem(getString(R.string.tang), context.getDrawable(R.drawable.cloud_day_icon), true));
-                        itemsList.add(new FoodCategoryItem(getString(R.string.bunsik), context.getDrawable(R.drawable.cloud_day_icon), true));
-                        itemsList.add(new FoodCategoryItem(getString(R.string.juk), context.getDrawable(R.drawable.cloud_day_icon), true));
+                        itemsList.add(new FoodCategoryItem(getString(R.string.hansik), context.getDrawable(R.drawable.hansik_kimchi_jjigae), true));
+                        itemsList.add(new FoodCategoryItem(getString(R.string.jungsik), context.getDrawable(R.drawable.jungsik_jjajangmyeon), true));
+                        itemsList.add(new FoodCategoryItem(getString(R.string.illsik), context.getDrawable(R.drawable.illsik_chobab), true));
+                        itemsList.add(new FoodCategoryItem(getString(R.string.sashimi), context.getDrawable(R.drawable.sashimi), true));
+                        itemsList.add(new FoodCategoryItem(getString(R.string.yangsik), context.getDrawable(R.drawable.yangsik_barbeque), true));
+                        itemsList.add(new FoodCategoryItem(getString(R.string.asian), context.getDrawable(R.drawable.asain_ssalguksoo), true));
+                        itemsList.add(new FoodCategoryItem(getString(R.string.chicken), context.getDrawable(R.drawable.chicken), true));
+                        itemsList.add(new FoodCategoryItem(getString(R.string.fastfood), context.getDrawable(R.drawable.hamburger), true));
+                        itemsList.add(new FoodCategoryItem(getString(R.string.donkartz), context.getDrawable(R.drawable.donkartz), true));
+                        itemsList.add(new FoodCategoryItem(getString(R.string.jjim), context.getDrawable(R.drawable.jjim_galbijjim), true));
+                        itemsList.add(new FoodCategoryItem(getString(R.string.tang), context.getDrawable(R.drawable.tang_maewoontang), true));
+                        itemsList.add(new FoodCategoryItem(getString(R.string.bunsik), context.getDrawable(R.drawable.bunsik_ddeokboggi), true));
+                        itemsList.add(new FoodCategoryItem(getString(R.string.juk), context.getDrawable(R.drawable.juk), true));
 
                         if (!resultList.isEmpty())
                         {

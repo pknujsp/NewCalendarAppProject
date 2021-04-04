@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.event.foods.dto.FoodCategoryItem;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedCategoryItem;
@@ -75,6 +76,7 @@ public class FoodCategoryAdapter extends RecyclerView.Adapter<FoodCategoryAdapte
             if (foodCategoryItem.isDefault())
             {
                 foodCategoryImageView.setImageDrawable(foodCategoryItem.getCategoryMainImage());
+                Glide.with(itemView).load(foodCategoryItem.getCategoryMainImage()).circleCrop().into(foodCategoryImageView);
                 foodCategoryImageView.setVisibility(View.VISIBLE);
             } else
             {

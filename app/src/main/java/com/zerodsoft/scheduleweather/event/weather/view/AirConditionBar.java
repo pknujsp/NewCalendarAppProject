@@ -66,9 +66,9 @@ public class AirConditionBar extends View
 
         REFERENCE_STATUS_TEXTPAINT = new TextPaint();
         REFERENCE_STATUS_TEXTPAINT.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 10f, getResources().getDisplayMetrics()));
-        REFERENCE_STATUS_TEXTPAINT.setColor(Color.WHITE);
+        REFERENCE_STATUS_TEXTPAINT.setColor(Color.BLACK);
         REFERENCE_STATUS_TEXTPAINT.setTextAlign(Paint.Align.CENTER);
-        REFERENCE_STATUS_TEXTPAINT.setShadowLayer(1.5f, 0.5f, 0.5f, Color.BLACK);
+        // REFERENCE_STATUS_TEXTPAINT.setShadowLayer(1.7f, 0.5f, 0.5f, Color.BLACK);
 
         BAR_PAINT = new Paint();
 
@@ -138,6 +138,12 @@ public class AirConditionBar extends View
         int size = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 6f, getResources().getDisplayMetrics());
 
         float arrowLeft = (int) (barWidth * (dataValue / maxRef)) - (ARROW_WIDTH / 2);
+
+        if (arrowLeft >= (barWidth - ARROW_WIDTH))
+        {
+            arrowLeft = barWidth - ARROW_WIDTH;
+        }
+
         float arrowTop = top - size;
         float arrowRight = arrowLeft + ARROW_WIDTH;
         float arrowBottom = bottom + size;
