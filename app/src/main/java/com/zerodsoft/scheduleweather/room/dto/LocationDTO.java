@@ -5,6 +5,7 @@ import android.os.Parcelable;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 @Entity(tableName = "location_table")
@@ -38,6 +39,7 @@ public class LocationDTO implements Parcelable
     @ColumnInfo(name = "place_name")
     private String placeName;
 
+    @Ignore
     public LocationDTO()
     {
     }

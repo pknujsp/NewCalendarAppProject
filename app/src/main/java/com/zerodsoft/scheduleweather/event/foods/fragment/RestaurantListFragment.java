@@ -82,7 +82,7 @@ public class RestaurantListFragment extends Fragment
                 LocalApiPlaceParameter.SEARCH_CRITERIA_SORT_TYPE_ACCURACY);
         placeParameter.setRadius(App.getPreference_key_radius_range());
 
-        adapter = new RestaurantListAdapter(onClickedRestaurantItem);
+        adapter = new RestaurantListAdapter(getActivity(), onClickedRestaurantItem);
         restaurantRecyclerView.setAdapter(adapter);
         placesViewModel.init(placeParameter);
 

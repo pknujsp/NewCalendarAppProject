@@ -6,6 +6,7 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.MsrstnA
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.MsrstnAcctoRltmMesureDnsty.MsrstnAcctoRltmMesureDnstyRoot;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.NearbyMsrstnList.NearbyMsrstnListResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.NearbyMsrstnList.NearbyMsrstnListRoot;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.kakaoplace.KakaoPlaceJsonRoot;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.addressresponse.AddressKakaoLocalResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddress;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.auth.SgisAuthResponse;
@@ -22,6 +23,7 @@ import java.util.Map;
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Headers;
+import retrofit2.http.Path;
 import retrofit2.http.QueryMap;
 
 public interface Querys
@@ -81,4 +83,8 @@ public interface Querys
 
     @GET("transformation/transcoord.json")
     Call<TransCoordResponse> transcoord(@QueryMap(encoded = true) Map<String, String> queryMap);
+
+    // kakao place
+    @GET("v/{id}")
+    Call<KakaoPlaceJsonRoot> getPlaceData(@Path("id") String id);
 }

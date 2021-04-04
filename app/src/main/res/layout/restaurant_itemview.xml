@@ -12,7 +12,7 @@
         android:layout_height="match_parent"
         android:padding="16dp"
         android:scaleType="fitCenter"
-        android:src="@drawable/restaurant_icon" />
+        android:src="@drawable/not_image" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -27,8 +27,45 @@
             style="@style/TextAppearance.MaterialComponents.Headline6"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
             android:text="식당명"
             android:textSize="18sp" />
+
+        <LinearLayout
+            android:id="@+id/restaurant_review_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_gravity="center"
+                android:layout_marginRight="4dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/star_rate" />
+
+            <TextView
+                android:id="@+id/restaurant_rating"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="2.5/5"
+                android:textSize="14sp" />
+
+        </LinearLayout>
+
+
+        <TextView
+            android:id="@+id/restaurant_menuinfo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="marquee"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:singleLine="true"
+            android:text="@string/not_menuinfo"
+            android:textSize="15sp" />
 
     </LinearLayout>
 

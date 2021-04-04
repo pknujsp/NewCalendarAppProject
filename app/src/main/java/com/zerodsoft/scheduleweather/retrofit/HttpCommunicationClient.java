@@ -27,6 +27,7 @@ public class HttpCommunicationClient
     private static final String FIND_STATION_FOR_AIR_CONDITION_SERVICE_URL = "http://apis.data.go.kr/B552584/MsrstnInfoInqireSvc/";
 
     private static final String SGIS_SERVICE_URL = "https://sgisapi.kostat.go.kr/OpenAPI3/";
+    private static final String KAKAO_PLACE_JSON_URL = "https://place.map.kakao.com/main/";
 
     public static final String VILAGE_FCST_INFO_SERVICE_SERVICE_KEY = "T2nJm9zlOA0Z7Dut%2BThT6Jp0Itn0zZw80AUP3uMdOWlZJR1gVPkx9p1t8etuSW1kWsSNrGGHKdxbwr1IUlt%2Baw%3D%3D";
     public static final String MID_FCST_INFO_SERVICE_SERVICE_KEY = "T2nJm9zlOA0Z7Dut%2BThT6Jp0Itn0zZw80AUP3uMdOWlZJR1gVPkx9p1t8etuSW1kWsSNrGGHKdxbwr1IUlt%2Baw%3D%3D";
@@ -43,6 +44,8 @@ public class HttpCommunicationClient
     private static volatile Retrofit airConditionInstance = null;
     private static volatile Retrofit findStationInstance = null;
     private static volatile Retrofit sgisInstance = null;
+    private static volatile Retrofit kakaoPlaceInstance = null;
+
 
     public static final int KAKAO = 0;
     public static final int MID_FCST = 1;
@@ -50,6 +53,7 @@ public class HttpCommunicationClient
     public static final int AIR_CONDITION = 3;
     public static final int FIND_STATION_FOR_AIR_CONDITION = 4;
     public static final int SGIS = 5;
+    public static final int KAKAO_PLACE = 6;
 
     public static int lastService = -1;
 
@@ -66,6 +70,7 @@ public class HttpCommunicationClient
                         .baseUrl(KAKAO_LOCAL_API_URL).build();
             }
             return kakaoInstance.create(Querys.class);
+
         } else if (serviceType == VILAGE_FCST)
         {
             if (vilageFcstInstance == null)
@@ -77,6 +82,7 @@ public class HttpCommunicationClient
                         .baseUrl(VILAGE_FCST_INFO_SERVICE_URL).build();
             }
             return vilageFcstInstance.create(Querys.class);
+
         } else if (serviceType == MID_FCST)
         {
             if (midFcstInstance == null)
@@ -88,6 +94,7 @@ public class HttpCommunicationClient
                         .baseUrl(MID_FCST_INFO_SERVICE_URL).build();
             }
             return midFcstInstance.create(Querys.class);
+
         } else if (serviceType == AIR_CONDITION)
         {
             if (airConditionInstance == null)
@@ -99,6 +106,7 @@ public class HttpCommunicationClient
                         .baseUrl(AIR_CONDITION_SERVICE_URL).build();
             }
             return airConditionInstance.create(Querys.class);
+
         } else if (serviceType == FIND_STATION_FOR_AIR_CONDITION)
         {
             if (findStationInstance == null)
@@ -110,7 +118,8 @@ public class HttpCommunicationClient
                         .baseUrl(FIND_STATION_FOR_AIR_CONDITION_SERVICE_URL).build();
             }
             return findStationInstance.create(Querys.class);
-        } else
+
+        } else if (serviceType == SGIS)
         {
             if (sgisInstance == null)
             {
@@ -121,6 +130,19 @@ public class HttpCommunicationClient
                         .baseUrl(SGIS_SERVICE_URL).build();
             }
             return sgisInstance.create(Querys.class);
+
+        } else
+        {
+            if (kakaoPlaceInstance == null)
+            {
+                OkHttpClient client = new OkHttpClient.Builder().connectTimeout(5, TimeUnit.SECONDS).build();
+                Gson gson = new GsonBuilder().setLenient().create();
+
+                kakaoPlaceInstance = new Retrofit.Builder().client(client).addConverterFactory(GsonConverterFactory.create(gson))
+                        .baseUrl(KAKAO_PLACE_JSON_URL).build();
+            }
+            return kakaoPlaceInstance.create(Querys.class);
+
         }
     }
 }
