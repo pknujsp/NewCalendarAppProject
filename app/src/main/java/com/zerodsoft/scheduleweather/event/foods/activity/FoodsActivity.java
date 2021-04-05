@@ -3,29 +3,27 @@ package com.zerodsoft.scheduleweather.event.foods.activity;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.DataBindingUtil;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 
-import android.content.Context;
-import android.net.ConnectivityManager;
-import android.net.Network;
-import android.net.NetworkCapabilities;
-import android.net.NetworkRequest;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.provider.CalendarContract;
 import android.service.carrier.CarrierMessagingService;
-import android.widget.Toast;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.ActivityFoodsBinding;
+import com.zerodsoft.scheduleweather.event.foods.fragment.FoodCategoryTabFragment;
 import com.zerodsoft.scheduleweather.event.foods.fragment.FoodsMainFragment;
+import com.zerodsoft.scheduleweather.event.foods.interfaces.FragmentChanger;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationInfoViewModel;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.INetwork;
 import com.zerodsoft.scheduleweather.room.dto.FoodCriteriaLocationInfoDTO;
 import com.zerodsoft.scheduleweather.utility.NetworkStatus;
 
-public class FoodsActivity extends AppCompatActivity implements INetwork
+public class FoodsActivity extends AppCompatActivity implements INetwork, FragmentChanger
 {
     private ActivityFoodsBinding binding;
     private FoodCriteriaLocationInfoViewModel foodCriteriaLocationInfoViewModel;
@@ -69,7 +67,7 @@ public class FoodsActivity extends AppCompatActivity implements INetwork
                                 @Override
                                 public void onReceiveResult(@NonNull FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO) throws RemoteException
                                 {
-                                    FoodsMainFragment foodsMainFragment = new FoodsMainFragment(FoodsActivity.this::networkAvailable);
+                                    FoodsMainFragment foodsMainFragment = new FoodsMainFragment(FoodsActivity.this);
 
                                     Bundle fragmentBundle = new Bundle();
                                     fragmentBundle.putInt(CalendarContract.Instances.CALENDAR_ID, calendarId);
@@ -82,7 +80,7 @@ public class FoodsActivity extends AppCompatActivity implements INetwork
                             });
                         } else
                         {
-                            FoodsMainFragment foodsMainFragment = new FoodsMainFragment(FoodsActivity.this::networkAvailable);
+                            FoodsMainFragment foodsMainFragment = new FoodsMainFragment(FoodsActivity.this);
                             Bundle fragmentBundle = new Bundle();
                             fragmentBundle.putInt(CalendarContract.Instances.CALENDAR_ID, calendarId);
                             fragmentBundle.putLong(CalendarContract.Instances._ID, instanceId);
@@ -109,5 +107,24 @@ public class FoodsActivity extends AppCompatActivity implements INetwork
     public boolean networkAvailable()
     {
         return networkStatus.networkAvailable(this);
+    }
+
+
+    @Override
+    public void changeFragment(Fragment fragment, String tag)
+    {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+        if (tag.equals(FoodsMainFragment.TAG))
+        {
+            fragmentManager.popBackStack();
+            Fragment foodsMainFragment = fragmentManager.findFragmentByTag(FoodsMainFragment.TAG);
+            ((FoodsMainFragment) foodsMainFragment).addCallback();
+        } else if (tag.equals(FoodCategoryTabFragment.TAG))
+        {
+            Fragment foodsMainFragment = fragmentManager.findFragmentByTag(FoodsMainFragment.TAG);
+            fragmentTransaction.add(binding.fragmentContainer.getId(), fragment, tag).hide(foodsMainFragment).addToBackStack(tag).commit();
+        }
     }
 }

@@ -1,9 +1,12 @@
 package com.zerodsoft.scheduleweather.event.foods.fragment;
 
+import android.content.Context;
 import android.os.Bundle;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
@@ -11,6 +14,7 @@ import androidx.lifecycle.ViewModelProvider;
 import android.os.RemoteException;
 import android.service.carrier.CarrierMessagingService;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -20,6 +24,7 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.FragmentFoodCategoryTabBinding;
 import com.zerodsoft.scheduleweather.event.foods.adapter.FoodCategoryFragmentListAdapter;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.CriteriaLocationListener;
+import com.zerodsoft.scheduleweather.event.foods.interfaces.FragmentChanger;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedRestaurantItem;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.CustomFoodCategoryViewModel;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
@@ -29,28 +34,46 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class FoodCategoryTabFragment extends DialogFragment implements OnClickedRestaurantItem
+public class FoodCategoryTabFragment extends Fragment implements OnClickedRestaurantItem
 {
     public static final String TAG = "FoodCategoryTabFragment";
     private FragmentFoodCategoryTabBinding binding;
     private final CriteriaLocationListener criteriaLocationListener;
+    private final FragmentChanger fragmentChanger;
+    private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
+    {
+        @Override
+        public void handleOnBackPressed()
+        {
+            fragmentChanger.changeFragment(null, FoodsMainFragment.TAG);
+            onBackPressedCallback.remove();
+        }
+    };
 
     private CustomFoodCategoryViewModel customFoodCategoryViewModel;
     private List<String> categoryList;
     private FoodCategoryFragmentListAdapter adapter;
     private final String selectedCategoryName;
 
-    public FoodCategoryTabFragment(Fragment fragment, String selectedCategoryName)
+    public FoodCategoryTabFragment(Fragment fragment, FragmentChanger fragmentChanger, String selectedCategoryName)
     {
         this.criteriaLocationListener = (CriteriaLocationListener) fragment;
+        this.fragmentChanger = fragmentChanger;
         this.selectedCategoryName = selectedCategoryName;
     }
+
+    @Override
+    public void onAttach(@NonNull Context context)
+    {
+        super.onAttach(context);
+        getActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
+    }
+
 
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setStyle(STYLE_NO_TITLE, R.style.AppTheme_FullScreenDialog);
     }
 
     @Override
@@ -65,6 +88,11 @@ public class FoodCategoryTabFragment extends DialogFragment implements OnClicked
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
+
+        AppCompatActivity activity = (AppCompatActivity) getActivity();
+        activity.setSupportActionBar(binding.toolbar);
+        activity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        activity.getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         customFoodCategoryViewModel = new ViewModelProvider(this).get(CustomFoodCategoryViewModel.class);
         customFoodCategoryViewModel.select(new CarrierMessagingService.ResultCallback<List<CustomFoodCategoryDTO>>()
@@ -114,6 +142,17 @@ public class FoodCategoryTabFragment extends DialogFragment implements OnClicked
         });
 
 
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        switch (item.getItemId())
+        {
+            case android.R.id.home:
+                onBackPressedCallback.handleOnBackPressed();
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override

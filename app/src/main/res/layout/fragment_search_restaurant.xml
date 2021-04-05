@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".event.foods.search.search.fragment.SearchRestaurantFragment">
+
+        <SearchView
+            android:id="@+id/search_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:iconifiedByDefault="false"
+            android:queryHint="@string/hint_request_input_menu_restaurant_name" />
+
+        <TextView
+            android:id="@+id/search_history_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/search_view"
+            android:padding="16dp"
+            android:text="@string/search_history" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@id/search_history_text"
+            android:layout_alignParentBottom="true"
+            android:orientation="vertical" />
+
+    </RelativeLayout>
+</layout>

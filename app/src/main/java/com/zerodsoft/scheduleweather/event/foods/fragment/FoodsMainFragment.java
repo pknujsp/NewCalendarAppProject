@@ -1,6 +1,7 @@
 package com.zerodsoft.scheduleweather.event.foods.fragment;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -9,6 +10,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
@@ -16,6 +18,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -35,6 +38,7 @@ import com.zerodsoft.scheduleweather.event.foods.activity.LocationSettingsActivi
 import com.zerodsoft.scheduleweather.event.foods.adapter.FoodCategoryAdapter;
 import com.zerodsoft.scheduleweather.event.foods.dto.FoodCategoryItem;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.CriteriaLocationListener;
+import com.zerodsoft.scheduleweather.event.foods.interfaces.FragmentChanger;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedCategoryItem;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.CustomFoodCategoryViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationInfoViewModel;
@@ -60,6 +64,7 @@ public class FoodsMainFragment extends Fragment implements OnClickedCategoryItem
     public static final String TAG = "FoodsMainFragment";
     private FragmentFoodsMainBinding binding;
     private final INetwork iNetwork;
+    private final FragmentChanger fragmentChanger;
 
     private CustomFoodCategoryViewModel customFoodCategoryViewModel;
     private LocationViewModel locationViewModel;
@@ -77,9 +82,31 @@ public class FoodsMainFragment extends Fragment implements OnClickedCategoryItem
     private FoodCriteriaLocationSearchHistoryDTO foodCriteriaLocationSearchHistoryDTO;
     private FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO;
 
-    public FoodsMainFragment(INetwork iNetwork)
+    public FoodsMainFragment(Activity activity)
     {
-        this.iNetwork = iNetwork;
+        this.iNetwork = (INetwork) activity;
+        this.fragmentChanger = (FragmentChanger) activity;
+    }
+
+    private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
+    {
+        @Override
+        public void handleOnBackPressed()
+        {
+
+        }
+    };
+
+    @Override
+    public void onAttach(@NonNull Context context)
+    {
+        super.onAttach(context);
+        addCallback();
+    }
+
+    public void addCallback()
+    {
+        getActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
     }
 
     @Override
@@ -402,8 +429,9 @@ public class FoodsMainFragment extends Fragment implements OnClickedCategoryItem
     @Override
     public void onClickedFoodCategory(FoodCategoryItem foodCategoryItem)
     {
-        FoodCategoryTabFragment foodCategoryTabFragment = new FoodCategoryTabFragment(FoodsMainFragment.this, foodCategoryItem.getCategoryName());
-        foodCategoryTabFragment.show(getParentFragmentManager(), FoodCategoryTabFragment.TAG);
+        onBackPressedCallback.remove();
+        FoodCategoryTabFragment foodCategoryTabFragment = new FoodCategoryTabFragment(FoodsMainFragment.this, fragmentChanger, foodCategoryItem.getCategoryName());
+        fragmentChanger.changeFragment(foodCategoryTabFragment, FoodCategoryTabFragment.TAG);
     }
 
     private final ActivityResultLauncher<Intent> locationSettingsActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
