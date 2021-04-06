@@ -123,7 +123,7 @@ public class SearchResultListFragment extends Fragment implements IndicatorCreat
                 } else
                 {
                     // map인 경우
-                    placesListBottomSheetController.setPlacesListBottomSheetState(BottomSheetBehavior.STATE_HIDDEN);
+                    placesListBottomSheetController.setPlacesListBottomSheetState(BottomSheetBehavior.STATE_COLLAPSED);
                     changeFragment();
                 }
             }
@@ -275,7 +275,7 @@ public class SearchResultListFragment extends Fragment implements IndicatorCreat
             iMapPoint.setMapVisibility(View.GONE);
             iMapData.backToPreviousView();
             searchBottomSheetController.setSearchBottomSheetState(BottomSheetBehavior.STATE_EXPANDED);
-            placesListBottomSheetController.setPlacesListBottomSheetState(BottomSheetBehavior.STATE_HIDDEN);
+            placesListBottomSheetController.setPlacesListBottomSheetState(BottomSheetBehavior.STATE_COLLAPSED);
         }
 
         isVisibleList = !isVisibleList;

@@ -16,6 +16,7 @@ import android.net.NetworkCapabilities;
 import android.net.NetworkRequest;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -24,6 +25,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
@@ -110,8 +112,8 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     public ConnectivityManager.NetworkCallback networkCallback;
     public ConnectivityManager connectivityManager;
 
-    public RelativeLayout placesListBottomSheet;
-    public PlacesListBottomSheetBehavior placeListBottomSheetBehavior;
+    public LinearLayout placesListBottomSheet;
+    public BottomSheetBehavior placeListBottomSheetBehavior;
     public BottomSheetBehavior searchBottomSheetBehavior;
     public ToolbarMenuCallback toolbarMenuCallback;
     public ViewPager2 bottomSheetViewPager;
@@ -366,7 +368,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
 
     private void setPlacesListBottomSheet()
     {
-        placesListBottomSheet = binding.placeslistBottomSheet.getRoot();
+        placesListBottomSheet = binding.placeslistBottomSheet.placesBottomsheet;
         bottomSheetViewPager = (ViewPager2) placesListBottomSheet.findViewById(R.id.place_items_viewpager);
         bottomSheetViewPager.setOffscreenPageLimit(2);
 
@@ -434,12 +436,33 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
 
         });
 
-        placeListBottomSheetBehavior = PlacesListBottomSheetBehavior.from(placesListBottomSheet);
+        placeListBottomSheetBehavior = BottomSheetBehavior.from(placesListBottomSheet);
+        placeListBottomSheetBehavior.setDraggable(true);
+        placeListBottomSheetBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback()
+        {
+            @Override
+            public void onStateChanged(@NonNull View bottomSheet, int newState)
+            {
 
-        final int peekHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 150f, getResources().getDisplayMetrics());
+            }
+
+            @Override
+            public void onSlide(@NonNull View bottomSheet, float slideOffset)
+            {
+                //expanded일때 offset == 1.0, collapsed일때 offset == 0.0
+                //offset에 따라서 버튼들이 이동하고, 지도의 좌표가 변경되어야 한다.
+                float height = binding.mapButtonsLayout.getRoot().getHeight();
+                float translationValue = -height * slideOffset;
+
+                binding.mapButtonsLayout.getRoot().animate().translationY(translationValue);
+            }
+        });
+
+       /*
+
         placeListBottomSheetBehavior.setPeekHeight(0);
         placeListBottomSheetBehavior.setDraggable(true);
-        placeListBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+        placeListBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
         placeListBottomSheetBehavior.setAnchorOffset(0.5f);
         placeListBottomSheetBehavior.setAnchorSheetCallback(new PlacesListBottomSheetBehavior.AnchorSheetCallback()
         {
@@ -484,6 +507,8 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
                 }
             }
         });
+
+        */
     }
 
     public void setPlaceBottomSheetSelectBtnVisibility(int placeBottomSheetSelectBtnVisibility)
@@ -578,7 +603,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     public void onClickedSearchView()
     {
         searchBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
-        placeListBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+        placeListBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
 
         getChildFragmentManager().beginTransaction()
                 .add(binding.searchBottomSheet.searchBottomSheetFragmentContainer.getId(), SearchFragment.newInstance(this, new FragmentStateCallback()
@@ -606,7 +631,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
         }
         searchView.setIconified(true);
         setSearchBottomSheetState(BottomSheetBehavior.STATE_HIDDEN);
-        setPlacesListBottomSheetState(BottomSheetBehavior.STATE_HIDDEN);
+        setPlacesListBottomSheetState(BottomSheetBehavior.STATE_COLLAPSED);
     }
 
     @Override
@@ -876,7 +901,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
         if (isSelectedPoiItem)
         {
             deselectPoiItem();
-            placeListBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+            placeListBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
         }
     }
 
@@ -1093,7 +1118,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     }
 
 
-    public PlacesListBottomSheetBehavior getPlaceListBottomSheetBehavior()
+    public BottomSheetBehavior getPlaceListBottomSheetBehavior()
     {
         return placeListBottomSheetBehavior;
     }

@@ -195,7 +195,7 @@ public class ReselectDetailLocation extends KakaoMapActivity
 
                             kakaoMapFragment.setPlaceBottomSheetSelectBtnVisibility(View.VISIBLE);
                             kakaoMapFragment.setPlaceBottomSheetUnSelectBtnVisibility(View.GONE);
-                            kakaoMapFragment.getPlaceListBottomSheetBehavior().setState(BottomSheetBehavior.STATE_HIDDEN);
+                            kakaoMapFragment.getPlaceListBottomSheetBehavior().setState(BottomSheetBehavior.STATE_COLLAPSED);
                             Toast.makeText(ReselectDetailLocation.this, getString(R.string.removed_detail_location), Toast.LENGTH_SHORT).show();
                         }
                     });

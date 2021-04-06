@@ -24,8 +24,7 @@
             android:id="@+id/map_root_layout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_below="@id/appbar_layout"
-            android:layout_alignParentBottom="true">
+            android:layout_below="@id/appbar_layout">
 
             <FrameLayout
                 android:id="@+id/map_container"

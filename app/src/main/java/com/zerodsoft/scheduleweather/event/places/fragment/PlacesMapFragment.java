@@ -226,7 +226,7 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
                 removeAllPoiItems();
                 isSelectedPoiItem = false;
             }
-            setPlacesListBottomSheetState(BottomSheetBehavior.STATE_HIDDEN);
+            setPlacesListBottomSheetState(BottomSheetBehavior.STATE_COLLAPSED);
         }
     };
 
