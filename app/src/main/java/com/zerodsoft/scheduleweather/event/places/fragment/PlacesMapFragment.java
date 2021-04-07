@@ -117,7 +117,6 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
     {
         super.onViewCreated(view, savedInstanceState);
 
-
         //-----------chip group
         HorizontalScrollView chipScrollView = new HorizontalScrollView(getContext());
         chipScrollView.setHorizontalScrollBarEnabled(false);
@@ -134,26 +133,6 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
 
         chipScrollView.addView(categoryChipGroup);
         setChips();
-    }
-
-    @Override
-    public void onClickedSearchView()
-    {
-        super.onClickedSearchView();
-        //리스트 버튼과 chips, bottomsheet를 숨긴다
-        categoryChipGroup.setVisibility(View.GONE);
-    }
-
-    @Override
-    public void closeSearchView(int viewType)
-    {
-        super.closeSearchView(viewType);
-        switch (viewType)
-        {
-            case SearchBottomSheetController.SEARCH_VIEW:
-                categoryChipGroup.setVisibility(View.VISIBLE);
-                break;
-        }
     }
 
 

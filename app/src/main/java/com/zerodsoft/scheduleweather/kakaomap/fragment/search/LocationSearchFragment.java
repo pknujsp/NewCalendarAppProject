@@ -23,28 +23,26 @@ import android.view.ViewGroup;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PoiItemOnClickListener;
-import com.zerodsoft.scheduleweather.event.places.interfaces.SearchViewController;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.search.adapter.SearchLocationHistoryAdapter;
-import com.zerodsoft.scheduleweather.kakaomap.fragment.searchresult.SearchResultListFragment;
+import com.zerodsoft.scheduleweather.kakaomap.fragment.searchresult.LocationSearchResultFragment;
 import com.zerodsoft.scheduleweather.etc.FragmentStateCallback;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.PlacesListBottomSheetController;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.SearchBarController;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.SearchBottomSheetController;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapPoint;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.OnSelectedMapCategory;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.search.adapter.PlaceCategoriesAdapter;
 import com.zerodsoft.scheduleweather.databinding.FragmentSearchBinding;
-import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapToolbar;
 import com.zerodsoft.scheduleweather.kakaomap.viewmodel.SearchHistoryViewModel;
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 import com.zerodsoft.scheduleweather.room.dto.SearchHistoryDTO;
 
 import java.util.List;
 
-public class SearchFragment extends Fragment implements OnSelectedMapCategory, OnClickedListItem<SearchHistoryDTO>
+public class LocationSearchFragment extends Fragment implements OnSelectedMapCategory, OnClickedListItem<SearchHistoryDTO>
 {
     public static final String TAG = "SearchFragment";
-    private static SearchFragment instance;
 
     private FragmentSearchBinding binding;
     private PlaceCategoriesAdapter categoriesAdapter;
@@ -53,42 +51,25 @@ public class SearchFragment extends Fragment implements OnSelectedMapCategory, O
 
     private final IMapPoint iMapPoint;
     private final IMapData iMapData;
-    private final IMapToolbar iMapToolbar;
-    private final SearchViewController searchViewController;
-    private final SearchBottomSheetController searchBottomSheetController;
     private final FragmentStateCallback fragmentStateCallback;
     private final PlacesListBottomSheetController placesListBottomSheetController;
     private final PoiItemOnClickListener poiItemOnClickListener;
+    private final SearchBarController searchBarController;
 
     private OnBackPressedCallback onBackPressedCallback;
 
-    public SearchFragment(Fragment fragment, FragmentStateCallback fragmentStateCallback)
+    public LocationSearchFragment(IMapPoint iMapPoint, IMapData iMapData, FragmentStateCallback fragmentStateCallback
+            , PlacesListBottomSheetController placesListBottomSheetController, PoiItemOnClickListener poiItemOnClickListener,
+                                  SearchBarController searchBarController)
     {
-        this.iMapPoint = (IMapPoint) fragment;
-        this.iMapData = (IMapData) fragment;
-        this.iMapToolbar = (IMapToolbar) fragment;
-        this.searchViewController = (SearchViewController) fragment;
-        this.searchBottomSheetController = (SearchBottomSheetController) fragment;
-        this.placesListBottomSheetController = (PlacesListBottomSheetController) fragment;
-        this.poiItemOnClickListener = (PoiItemOnClickListener) fragment;
+        this.iMapPoint = iMapPoint;
+        this.iMapData = iMapData;
         this.fragmentStateCallback = fragmentStateCallback;
+        this.placesListBottomSheetController = placesListBottomSheetController;
+        this.poiItemOnClickListener = poiItemOnClickListener;
+        this.searchBarController = searchBarController;
     }
 
-    public static SearchFragment getInstance()
-    {
-        return instance;
-    }
-
-    public static SearchFragment newInstance(Fragment fragment, FragmentStateCallback fragmentStateCallback)
-    {
-        instance = new SearchFragment(fragment, fragmentStateCallback);
-        return instance;
-    }
-
-    public static void close()
-    {
-        instance = null;
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -105,11 +86,10 @@ public class SearchFragment extends Fragment implements OnSelectedMapCategory, O
             @Override
             public void handleOnBackPressed()
             {
-                getParentFragmentManager().beginTransaction().remove(instance).commitNow();
-                searchViewController.closeSearchView(SearchBottomSheetController.SEARCH_VIEW);
+                fragmentStateCallback.onChangedState(FragmentStateCallback.ON_REMOVED);
             }
         };
-        requireActivity().getOnBackPressedDispatcher().addCallback(SearchFragment.this, onBackPressedCallback);
+        requireActivity().getOnBackPressedDispatcher().addCallback(LocationSearchFragment.this, onBackPressedCallback);
     }
 
     @Override
@@ -146,7 +126,7 @@ public class SearchFragment extends Fragment implements OnSelectedMapCategory, O
                     @Override
                     public void run()
                     {
-                        searchLocationHistoryAdapter = new SearchLocationHistoryAdapter(SearchFragment.this);
+                        searchLocationHistoryAdapter = new SearchLocationHistoryAdapter(LocationSearchFragment.this);
                         searchLocationHistoryAdapter.setHistoryList(result);
 
                         binding.searchHistoryRecyclerview.setAdapter(searchLocationHistoryAdapter);
@@ -161,41 +141,31 @@ public class SearchFragment extends Fragment implements OnSelectedMapCategory, O
     }
 
 
-    public void search(String searchWord, boolean isClickedOnList)
-    {
-        if (!isClickedOnList)
-        {
-            searchHistoryViewModel.insert(SearchHistoryDTO.LOCATION_SEARCH, searchWord, new CarrierMessagingService.ResultCallback<SearchHistoryDTO>()
-            {
-                @Override
-                public void onReceiveResult(@NonNull SearchHistoryDTO result) throws RemoteException
-                {
-                    getActivity().runOnUiThread(new Runnable()
-                    {
-                        @Override
-                        public void run()
-                        {
-                            searchLocationHistoryAdapter.getHistoryList().add(result);
-                            searchLocationHistoryAdapter.notifyItemInserted(searchLocationHistoryAdapter.getItemCount() - 1);
-                        }
-                    });
-                }
-            });
-        }
-
-        FragmentManager fragmentManager = getParentFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.add(R.id.search_bottom_sheet_fragment_container
-                , SearchResultListFragment.newInstance(searchWord, iMapPoint, iMapData, iMapToolbar
-                        , searchBottomSheetController, placesListBottomSheetController, poiItemOnClickListener)
-                , SearchResultListFragment.TAG).hide(SearchFragment.this).addToBackStack(SearchResultListFragment.TAG).commit();
-    }
-
     @Override
     public void onSelectedMapCategory(PlaceCategoryDTO category)
     {
-        iMapToolbar.setText(category.getDescription());
-        search(category.getCode(), true);
+        searchBarController.setQuery(category.getCode(), true);
+        searchBarController.changeViewTypeImg(SearchBarController.MAP);
+    }
+
+    public void insertHistory(String value)
+    {
+        searchHistoryViewModel.insert(SearchHistoryDTO.LOCATION_SEARCH, value, new CarrierMessagingService.ResultCallback<SearchHistoryDTO>()
+        {
+            @Override
+            public void onReceiveResult(@NonNull SearchHistoryDTO result) throws RemoteException
+            {
+                getActivity().runOnUiThread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        searchLocationHistoryAdapter.getHistoryList().add(result);
+                        searchLocationHistoryAdapter.notifyItemInserted(searchLocationHistoryAdapter.getItemCount() - 1);
+                    }
+                });
+            }
+        });
     }
 
     private void updateSearchHistoryList()
@@ -226,8 +196,8 @@ public class SearchFragment extends Fragment implements OnSelectedMapCategory, O
     @Override
     public void onClickedListItem(SearchHistoryDTO e)
     {
-        iMapToolbar.setText(e.getValue());
-        search(e.getValue(), true);
+        searchBarController.setQuery(e.getValue(), true);
+        searchBarController.changeViewTypeImg(SearchBarController.MAP);
     }
 
     @Override

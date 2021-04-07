@@ -6,27 +6,17 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.graphics.Rect;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.net.ConnectivityManager;
-import android.net.Network;
-import android.net.NetworkCapabilities;
-import android.net.NetworkRequest;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultCallback;
@@ -34,13 +24,8 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager.widget.ViewPager;
 import androidx.viewpager2.widget.CompositePageTransformer;
 import androidx.viewpager2.widget.MarginPageTransformer;
@@ -50,8 +35,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.kakaomap.bottomsheet.adapter.PlaceItemInMapViewAdapter;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PoiItemOnClickListener;
-import com.zerodsoft.scheduleweather.kakaomap.fragment.search.SearchFragment;
-import com.zerodsoft.scheduleweather.kakaomap.fragment.searchresult.SearchResultListFragment;
+import com.zerodsoft.scheduleweather.kakaomap.fragment.search.LocationSearchTransactionFragment;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.OnClickedBottomSheetListener;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.PlacesListBottomSheetController;
 import com.zerodsoft.scheduleweather.kakaomap.place.PlaceInfoFragment;
@@ -60,14 +44,9 @@ import com.zerodsoft.scheduleweather.databinding.FragmentMapBinding;
 import com.zerodsoft.scheduleweather.etc.AppPermission;
 import com.zerodsoft.scheduleweather.etc.FragmentStateCallback;
 import com.zerodsoft.scheduleweather.event.places.interfaces.OnClickedPlacesListListener;
-import com.zerodsoft.scheduleweather.event.places.interfaces.SearchViewController;
-import com.zerodsoft.scheduleweather.kakaomap.bottomsheet.PlacesListBottomSheetBehavior;
-import com.zerodsoft.scheduleweather.kakaomap.callback.ToolbarMenuCallback;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.PlacesItemBottomSheetButtonOnClickListener;
-import com.zerodsoft.scheduleweather.kakaomap.interfaces.SearchBottomSheetController;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapPoint;
-import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapToolbar;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.INetwork;
 import com.zerodsoft.scheduleweather.kakaomap.model.CustomPoiItem;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalDocument;
@@ -90,7 +69,7 @@ import java.util.Timer;
 import static androidx.core.content.ContextCompat.checkSelfPermission;
 
 public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, MapView.POIItemEventListener, MapView.MapViewEventListener, MapReverseGeoCoder.ReverseGeoCodingResultListener,
-        INetwork, IMapToolbar, OnClickedPlacesListListener, SearchViewController, SearchBottomSheetController, PlacesItemBottomSheetButtonOnClickListener,
+        INetwork, OnClickedPlacesListListener, PlacesItemBottomSheetButtonOnClickListener,
         PlacesListBottomSheetController, PoiItemOnClickListener, OnClickedBottomSheetListener
 {
     public static final int REQUEST_CODE_LOCATION = 10000;
@@ -110,32 +89,21 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     public int selectedPoiItemIndex;
     public boolean isSelectedPoiItem;
 
-    public SearchView searchView;
-    public ConnectivityManager.NetworkCallback networkCallback;
-    public ConnectivityManager connectivityManager;
+    public NetworkStatus networkStatus;
 
-    public RelativeLayout searchBottomSheet;
     public LinearLayout placesListBottomSheet;
     public BottomSheetBehavior placeListBottomSheetBehavior;
-    public BottomSheetBehavior searchBottomSheetBehavior;
-    public ToolbarMenuCallback toolbarMenuCallback;
-    public ViewPager2 bottomSheetViewPager;
+    public ViewPager2 placesBottomSheetViewPager;
     public PlaceItemInMapViewAdapter adapter;
 
     public int placeBottomSheetSelectBtnVisibility;
     public int placeBottomSheetUnSelectBtnVisibility;
-
-    public NetworkStatus networkStatus;
 
     public KakaoMapFragment()
     {
 
     }
 
-    public void setToolbarMenuCallback(ToolbarMenuCallback toolbarMenuCallback)
-    {
-        this.toolbarMenuCallback = toolbarMenuCallback;
-    }
 
     public void setPlacesItemBottomSheetButtonOnClickListener(PlacesItemBottomSheetButtonOnClickListener placesItemBottomSheetButtonOnClickListener)
     {
@@ -201,9 +169,6 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     {
         super.onViewCreated(view, savedInstanceState);
 
-        setNetworkCallback();
-        initToolbar();
-        setSearchBottomSheet();
         setPlacesListBottomSheet();
 
         locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
@@ -211,6 +176,26 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
         zoomInButton = binding.mapButtonsLayout.zoomInButton;
         zoomOutButton = binding.mapButtonsLayout.zoomOutButton;
         gpsButton = binding.mapButtonsLayout.gpsButton;
+
+        binding.mapHeaderBar.getRoot().setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                LocationSearchTransactionFragment locationSearchTransactionFragment = new LocationSearchTransactionFragment(KakaoMapFragment.this, new FragmentStateCallback()
+                {
+                    @Override
+                    public void onChangedState(int state)
+                    {
+                        super.onChangedState(state);
+
+                    }
+                });
+
+                locationSearchTransactionFragment.show(getChildFragmentManager(), LocationSearchTransactionFragment.TAG);
+                binding.mapHeaderBar.getRoot().setVisibility(View.GONE);
+            }
+        });
 
         zoomInButton.setOnClickListener(new View.OnClickListener()
         {
@@ -315,67 +300,12 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
         super.onResume();
     }
 
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item)
-    {
-        switch (item.getItemId())
-        {
-            case R.id.map:
-            case R.id.list:
-                SearchResultListFragment.getInstance().changeFragment();
-                break;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public void changeOpenCloseMenuVisibility(boolean isSearching)
-    {
-
-    }
-
-    @Override
-    public void setMenuVisibility(int type, boolean state)
-    {
-        switch (type)
-        {
-            case IMapToolbar.MAP:
-                binding.mapSearchToolbar.getRoot().getMenu().findItem(R.id.list).setVisible(!state);
-                binding.mapSearchToolbar.getRoot().getMenu().findItem(R.id.map).setVisible(state);
-                break;
-            case IMapToolbar.LIST:
-                binding.mapSearchToolbar.getRoot().getMenu().findItem(R.id.list).setVisible(state);
-                binding.mapSearchToolbar.getRoot().getMenu().findItem(R.id.map).setVisible(!state);
-                break;
-            case IMapToolbar.ALL:
-                binding.mapSearchToolbar.getRoot().getMenu().findItem(R.id.list).setVisible(state);
-                binding.mapSearchToolbar.getRoot().getMenu().findItem(R.id.map).setVisible(state);
-                break;
-        }
-    }
-
-    @Override
-    public void setText(String text)
-    {
-        searchView.setQuery(text, false);
-    }
-
-    private void setSearchBottomSheet()
-    {
-        searchBottomSheet = binding.searchBottomSheet.searchBottomSheet;
-        searchBottomSheetBehavior = BottomSheetBehavior.from(searchBottomSheet);
-        searchBottomSheetBehavior.setDraggable(false);
-        searchBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-    }
-
-
     private void setPlacesListBottomSheet()
     {
         placesListBottomSheet = binding.placeslistBottomSheet.placesBottomsheet;
-        bottomSheetViewPager = (ViewPager2) placesListBottomSheet.findViewById(R.id.place_items_viewpager);
+        placesBottomSheetViewPager = (ViewPager2) placesListBottomSheet.findViewById(R.id.place_items_viewpager);
 
-        bottomSheetViewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback()
+        placesBottomSheetViewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback()
         {
             private int mCurrentPosition;
             private int mScrollState;
@@ -445,9 +375,9 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
         final int bPadding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, getResources().getDisplayMetrics());
         final int margin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 3f, getResources().getDisplayMetrics());
 
-        bottomSheetViewPager.setPadding(rlPadding, 0, rlPadding, bPadding);
-        bottomSheetViewPager.setOffscreenPageLimit(3);
-        bottomSheetViewPager.getChildAt(0).setOverScrollMode(View.OVER_SCROLL_NEVER);
+        placesBottomSheetViewPager.setPadding(rlPadding, 0, rlPadding, bPadding);
+        placesBottomSheetViewPager.setOffscreenPageLimit(3);
+        placesBottomSheetViewPager.getChildAt(0).setOverScrollMode(View.OVER_SCROLL_NEVER);
 
         CompositePageTransformer compositePageTransformer = new CompositePageTransformer();
         compositePageTransformer.addTransformer(new MarginPageTransformer(margin));
@@ -460,7 +390,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
                 page.setScaleY(0.8f + r * 0.2f);
             }
         });
-        bottomSheetViewPager.setPageTransformer(compositePageTransformer);
+        placesBottomSheetViewPager.setPageTransformer(compositePageTransformer);
 
         placeListBottomSheetBehavior = BottomSheetBehavior.from(placesListBottomSheet);
         placeListBottomSheetBehavior.setDraggable(true);
@@ -593,177 +523,15 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     public void onDestroy()
     {
         super.onDestroy();
-        connectivityManager.unregisterNetworkCallback(networkCallback);
+        networkStatus.unregisterNetworkCallback();
     }
 
-    public void setNetworkCallback()
-    {
-        connectivityManager = (ConnectivityManager) getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
-        networkCallback = new ConnectivityManager.NetworkCallback()
-        {
-            @Override
-            public void onAvailable(Network network)
-            {
-                super.onAvailable(network);
-            }
-
-            @Override
-            public void onLost(Network network)
-            {
-                super.onLost(network);
-            }
-        };
-        NetworkRequest.Builder builder = new NetworkRequest.Builder();
-        builder.addTransportType(NetworkCapabilities.TRANSPORT_WIFI);
-        builder.addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR);
-        connectivityManager.registerNetworkCallback(builder.build(), networkCallback);
-    }
 
     @Override
     public boolean networkAvailable()
     {
         return networkStatus.networkAvailable(getActivity());
     }
-
-    public void onClickedSearchView()
-    {
-        searchBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-        placeListBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-
-        getChildFragmentManager().beginTransaction()
-                .add(binding.searchBottomSheet.searchBottomSheetFragmentContainer.getId(), SearchFragment.newInstance(this, new FragmentStateCallback()
-                {
-
-                }), SearchFragment.TAG).commitNow();
-
-        binding.mapContainer.setVisibility(View.VISIBLE);
-        searchBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-    }
-
-    @Override
-    public void closeSearchView(int viewType)
-    {
-        switch (viewType)
-        {
-            case SearchBottomSheetController.SEARCH_VIEW:
-                binding.mapContainer.setVisibility(View.VISIBLE);
-                break;
-            case SearchBottomSheetController.SEARCH_RESULT_VIEW:
-                binding.mapContainer.setVisibility(View.VISIBLE);
-                setMenuVisibility(IMapToolbar.ALL, false);
-                removeAllPoiItems();
-                break;
-        }
-        searchView.setIconified(true);
-        setSearchBottomSheetState(BottomSheetBehavior.STATE_COLLAPSED);
-        setPlacesListBottomSheetState(BottomSheetBehavior.STATE_COLLAPSED);
-    }
-
-    @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater)
-    {
-        super.onCreateOptionsMenu(menu, menuInflater);
-        menuInflater.inflate(R.menu.default_map_toolbar, menu);
-
-        searchView = (SearchView) menu.findItem(R.id.search).getActionView();
-        searchView.setMaxWidth(Integer.MAX_VALUE);
-        searchView.setQueryHint(getString(R.string.input_location));
-        searchView.setOnSearchClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                onClickedSearchView();
-            }
-        });
-
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener()
-        {
-            @Override
-            public boolean onQueryTextSubmit(String query)
-            {
-                if (!query.isEmpty())
-                {
-                    // 현재 프래그먼트가 검색 결과 프래그먼트인 경우
-                    FragmentManager fragmentManager = getChildFragmentManager();
-
-                    if (fragmentManager.getBackStackEntryCount() > 0)
-                    {
-                        FragmentManager.BackStackEntry backStackEntry = fragmentManager.getBackStackEntryAt(fragmentManager.getBackStackEntryCount() - 1);
-
-                        if (backStackEntry.getName().equals(SearchResultListFragment.TAG))
-                        {
-                            SearchResultListFragment.getInstance().getOnBackPressedCallback().handleOnBackPressed();
-                            searchView.setQuery(query, false);
-                        }
-                    }
-                    SearchFragment.getInstance().search(query, false);
-                    return true;
-                } else
-                {
-                    return false;
-                }
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText)
-            {
-                return false;
-            }
-        });
-
-        searchView.setOnCloseListener(new SearchView.OnCloseListener()
-        {
-            @Override
-            public boolean onClose()
-            {
-                FragmentManager fragmentManager = getChildFragmentManager();
-                Fragment showingFragment = fragmentManager.findFragmentByTag(SearchResultListFragment.TAG);
-                if (showingFragment != null)
-                {
-                    if (showingFragment.isVisible())
-                    {
-                        fragmentManager.popBackStackImmediate();
-                        fragmentManager.beginTransaction().remove(SearchFragment.getInstance()).commitNow();
-                        closeSearchView(SearchBottomSheetController.SEARCH_RESULT_VIEW);
-                    }
-                } else
-                {
-                    showingFragment = fragmentManager.findFragmentByTag(SearchFragment.TAG);
-                    if (showingFragment != null)
-                    {
-                        if (showingFragment.isVisible())
-                        {
-                            fragmentManager.beginTransaction().remove(SearchFragment.getInstance()).commitNow();
-                            closeSearchView(SearchBottomSheetController.SEARCH_VIEW);
-                        }
-                    }
-                }
-                searchView.onActionViewCollapsed();
-                return true;
-            }
-        });
-
-        if (toolbarMenuCallback != null)
-        {
-            toolbarMenuCallback.onCreateOptionsMenu();
-        }
-
-    }
-
-    @Override
-    public void setSearchViewQuery(String value, boolean submit)
-    {
-        searchView.setQuery(value, submit);
-    }
-
-    private void initToolbar()
-    {
-        ((AppCompatActivity) getActivity()).setSupportActionBar(binding.mapSearchToolbar.getRoot());
-        ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
-        actionBar.setDisplayShowTitleEnabled(false);
-    }
-
 
     @Override
     public double getLatitude()
@@ -890,7 +658,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     public void setPlacesListAdapter(PlaceItemInMapViewAdapter adapter)
     {
         this.adapter = adapter;
-        bottomSheetViewPager.setAdapter(adapter);
+        placesBottomSheetViewPager.setAdapter(adapter);
         adapter.setPlacesItemBottomSheetButtonOnClickListener(placesItemBottomSheetButtonOnClickListener);
         adapter.setOnClickedBottomSheetListener(this);
         adapter.setVisibleSelectBtn(placeBottomSheetSelectBtnVisibility);
@@ -1042,7 +810,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
         mapView.setMapCenterPoint(mapPOIItem.getMapPoint(), true);
         //open bottomsheet and show selected item data
         placeListBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-        bottomSheetViewPager.setCurrentItem(selectedPoiItemIndex, false);
+        placesBottomSheetViewPager.setCurrentItem(selectedPoiItemIndex, false);
     }
 
     @Override
@@ -1059,7 +827,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
         mapView.setMapCenterPoint(mapPOIItem.getMapPoint(), true);
         //open bottomsheet and show selected item data
         placeListBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-        bottomSheetViewPager.setCurrentItem(selectedPoiItemIndex, false);
+        placesBottomSheetViewPager.setCurrentItem(selectedPoiItemIndex, false);
     }
 
     @Override
@@ -1124,17 +892,6 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
 
     }
 
-    @Override
-    public void setSearchBottomSheetState(int state)
-    {
-        searchBottomSheetBehavior.setState(state);
-    }
-
-    @Override
-    public int getSearchBottomSheetState()
-    {
-        return searchBottomSheetBehavior.getState();
-    }
 
     @Override
     public void onSelectedLocation()
@@ -1184,21 +941,4 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
         }
     }
 
-    static class HorizontalMarginItemDecoration extends RecyclerView.ItemDecoration
-    {
-        private int horizontalMarginInPx;
-
-        public HorizontalMarginItemDecoration(Context context)
-        {
-            horizontalMarginInPx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 12f, context.getResources().getDisplayMetrics());
-        }
-
-        @Override
-        public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent, @NonNull RecyclerView.State state)
-        {
-            super.getItemOffsets(outRect, view, parent, state);
-            outRect.left = horizontalMarginInPx;
-            outRect.right = horizontalMarginInPx;
-        }
-    }
 }

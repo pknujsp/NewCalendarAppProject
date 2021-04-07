@@ -1,48 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/search_fragment_root_layout"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/white">
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <TextView
-        android:id="@+id/error_text"
-        style="@style/TextAppearance.MaterialComponents.Headline6"
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:gravity="center"
-        android:visibility="gone" />
+        android:layout_height="match_parent">
 
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/list_viewpager"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal" />
 
-    <androidx.viewpager2.widget.ViewPager2
-        android:id="@+id/map_search_result_viewpager"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="horizontal" />
+        <com.zerodsoft.scheduleweather.etc.ViewPagerIndicator
+            android:id="@+id/viewpager_indicator"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_marginBottom="24dp"
+            android:gravity="center"
+            app:IndicatorSelectedDotDrawable="@drawable/selected_dot_indicator"
+            app:IndicatorUnselectedDotDrawable="@drawable/unselected_dot_indicator" />
 
-    <ProgressBar
-        android:id="@+id/map_request_progress_bar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:background="@color/gray_300"
-        android:indeterminateOnly="true"
-        android:paddingLeft="16dp"
-        android:paddingTop="8dp"
-        android:paddingRight="16dp"
-        android:paddingBottom="8dp" />
+        <TextView
+            android:id="@+id/error_text"
+            style="@style/TextAppearance.MaterialComponents.Headline6"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:visibility="visible" />
 
-    <com.zerodsoft.scheduleweather.etc.ViewPagerIndicator
-        android:id="@+id/map_result_view_pager_indicator"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|center_horizontal"
-        android:layout_marginBottom="24dp"
-        android:gravity="center"
-        app:IndicatorSelectedDotDrawable="@drawable/selected_dot_indicator"
-        app:IndicatorUnselectedDotDrawable="@drawable/unselected_dot_indicator" />
+    </FrameLayout>
 
-</FrameLayout>
+</layout>

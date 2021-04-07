@@ -31,8 +31,11 @@ public class MLocActivity extends KakaoMapActivity
         public void onCreateOptionsMenu()
         {
             // iconfy가 false가 되면 search listener실행
+            /*
             kakaoMapFragment.searchView.setIconified(false);
             kakaoMapFragment.searchView.setQuery(savedLocation, true);
+
+             */
         }
     };
 
@@ -41,7 +44,7 @@ public class MLocActivity extends KakaoMapActivity
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        kakaoMapFragment.setToolbarMenuCallback(toolbarMenuCallback);
+     //   kakaoMapFragment.setToolbarMenuCallback(toolbarMenuCallback);
 
         onBackPressedCallback = new OnBackPressedCallback(true)
         {

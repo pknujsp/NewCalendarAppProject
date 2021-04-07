@@ -103,6 +103,11 @@ public class KakaoLocalApiCategoryUtil
         return categoryList.get(id).getDescription();
     }
 
+    public static String getDefaultDescription(String code)
+    {
+        return defaultPlaceCategoryMap.get(code);
+    }
+
     class CategoryJsonItem
     {
         List<PlaceCategoryDTO> categories;

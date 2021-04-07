@@ -1,9 +1,7 @@
 package com.zerodsoft.scheduleweather.event.foods.searchlocation.fragment;
 
-import android.content.Context;
 import android.os.Bundle;
 
-import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
@@ -13,33 +11,14 @@ import androidx.viewpager2.widget.ViewPager2;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
-import android.widget.ProgressBar;
 import android.widget.SearchView;
-import android.widget.TextView;
-import android.widget.Toast;
 
-import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.FragmentLocationSearchDialogBinding;
-import com.zerodsoft.scheduleweather.databinding.FragmentSearchBinding;
-import com.zerodsoft.scheduleweather.databinding.FragmentSearchResultBinding;
-import com.zerodsoft.scheduleweather.etc.ViewPagerIndicator;
-import com.zerodsoft.scheduleweather.event.foods.activity.LocationSettingsActivity;
 import com.zerodsoft.scheduleweather.event.foods.searchlocation.interfaces.OnClickedLocationItem;
 import com.zerodsoft.scheduleweather.event.foods.searchlocation.interfaces.OnSelectedNewLocation;
-import com.zerodsoft.scheduleweather.event.places.interfaces.PoiItemOnClickListener;
-import com.zerodsoft.scheduleweather.kakaomap.fragment.searchresult.AddressListFragment;
-import com.zerodsoft.scheduleweather.kakaomap.fragment.searchresult.SearchResultListFragment;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.searchresult.adapter.SearchResultListAdapter;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.searchresult.interfaces.IndicatorCreater;
-import com.zerodsoft.scheduleweather.kakaomap.fragment.searchresult.interfaces.ResultFragmentChanger;
-import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapData;
-import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapPoint;
-import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapToolbar;
-import com.zerodsoft.scheduleweather.kakaomap.interfaces.OnClickedLocListItem;
-import com.zerodsoft.scheduleweather.kakaomap.interfaces.PlacesListBottomSheetController;
-import com.zerodsoft.scheduleweather.kakaomap.interfaces.SearchBottomSheetController;
 import com.zerodsoft.scheduleweather.kakaomap.model.SearchResultChecker;
 import com.zerodsoft.scheduleweather.kakaomap.model.callback.CheckerCallback;
 import com.zerodsoft.scheduleweather.kakaomap.util.LocalParameterUtil;
@@ -50,7 +29,6 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalRespon
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.addressresponse.AddressKakaoLocalResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceKakaoLocalResponse;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
-import com.zerodsoft.scheduleweather.utility.NetworkStatus;
 
 import java.util.ArrayList;
 import java.util.List;

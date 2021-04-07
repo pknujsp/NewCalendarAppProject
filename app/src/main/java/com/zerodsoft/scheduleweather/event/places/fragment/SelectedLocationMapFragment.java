@@ -56,7 +56,7 @@ public class SelectedLocationMapFragment extends KakaoMapFragment
                 return true;
             }
         });
-        binding.appbarLayout.setVisibility(View.GONE);
+        binding.mapHeaderBar.getRoot().setVisibility(View.GONE);
         //  binding.mapButtonsLayout.getRoot().setVisibility(View.GONE);
         binding.mapButtonsLayout.gpsButton.setVisibility(View.GONE);
         binding.mapButtonsLayout.currentAddress.setVisibility(View.GONE);
