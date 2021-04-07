@@ -268,7 +268,7 @@ public class SearchResultListFragment extends Fragment implements IndicatorCreat
             // 버튼 이미지, 프래그먼트 숨김/보이기 설정
             iMapPoint.setMapVisibility(View.VISIBLE);
             iMapData.showAllPoiItems();
-            searchBottomSheetController.setSearchBottomSheetState(BottomSheetBehavior.STATE_HIDDEN);
+            searchBottomSheetController.setSearchBottomSheetState(BottomSheetBehavior.STATE_COLLAPSED);
         } else
         {
             // to list
@@ -290,7 +290,7 @@ public class SearchResultListFragment extends Fragment implements IndicatorCreat
         iMapPoint.setMapVisibility(View.VISIBLE);
         poiItemOnClickListener.onPOIItemSelectedByList(index);
 
-        searchBottomSheetController.setSearchBottomSheetState(BottomSheetBehavior.STATE_HIDDEN);
+        searchBottomSheetController.setSearchBottomSheetState(BottomSheetBehavior.STATE_COLLAPSED);
     }
 
     class OnPageCallback extends ViewPager2.OnPageChangeCallback

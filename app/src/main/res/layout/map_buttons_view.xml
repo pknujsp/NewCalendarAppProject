@@ -20,6 +20,7 @@
         android:layout_height="@dimen/map_button_size"
         android:layout_below="@id/zoom_in_button"
         android:layout_alignParentRight="true"
+        android:layout_marginTop="4dp"
         android:background="@drawable/map_button_rect"
         android:src="@drawable/zoom_out_icon" />
 
@@ -40,8 +41,8 @@
         android:layout_height="wrap_content"
         android:layout_alignBottom="@id/gps_button"
         android:layout_alignParentLeft="true"
-        android:background="@color/map_view_button_color"
-        android:padding="2dp"
+        android:background="@drawable/map_view_background"
+        android:padding="4dp"
         android:text="address"
         android:textColor="@color/black"
         android:textSize="13sp" />

@@ -42,6 +42,8 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager.widget.ViewPager;
+import androidx.viewpager2.widget.CompositePageTransformer;
+import androidx.viewpager2.widget.MarginPageTransformer;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
@@ -112,6 +114,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     public ConnectivityManager.NetworkCallback networkCallback;
     public ConnectivityManager connectivityManager;
 
+    public RelativeLayout searchBottomSheet;
     public LinearLayout placesListBottomSheet;
     public BottomSheetBehavior placeListBottomSheetBehavior;
     public BottomSheetBehavior searchBottomSheetBehavior;
@@ -360,9 +363,10 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
 
     private void setSearchBottomSheet()
     {
-        searchBottomSheetBehavior = BottomSheetBehavior.from(binding.searchBottomSheet.getRoot());
+        searchBottomSheet = binding.searchBottomSheet.searchBottomSheet;
+        searchBottomSheetBehavior = BottomSheetBehavior.from(searchBottomSheet);
         searchBottomSheetBehavior.setDraggable(false);
-        searchBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+        searchBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
     }
 
 
@@ -370,7 +374,6 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     {
         placesListBottomSheet = binding.placeslistBottomSheet.placesBottomsheet;
         bottomSheetViewPager = (ViewPager2) placesListBottomSheet.findViewById(R.id.place_items_viewpager);
-        bottomSheetViewPager.setOffscreenPageLimit(2);
 
         bottomSheetViewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback()
         {
@@ -433,8 +436,26 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
                     onPOIItemSelectedByBottomSheet(mCurrentPosition);
                 }
             }
-
         });
+
+        final int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16f, getResources().getDisplayMetrics());
+        final int margin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, getResources().getDisplayMetrics());
+        bottomSheetViewPager.setPadding(padding, 0, padding, 0);
+        bottomSheetViewPager.setOffscreenPageLimit(3);
+        // bottomSheetViewPager.getChildAt(0).setOverScrollMode(View.OVER_SCROLL_NEVER);
+
+        CompositePageTransformer compositePageTransformer = new CompositePageTransformer();
+        compositePageTransformer.addTransformer(new MarginPageTransformer(margin));
+        compositePageTransformer.addTransformer(new ViewPager2.PageTransformer()
+        {
+            @Override
+            public void transformPage(@NonNull View page, float position)
+            {
+                float r = 1 - Math.abs(position);
+                page.setScaleY(0.8f + r * 0.2f);
+            }
+        });
+        bottomSheetViewPager.setPageTransformer(compositePageTransformer);
 
         placeListBottomSheetBehavior = BottomSheetBehavior.from(placesListBottomSheet);
         placeListBottomSheetBehavior.setDraggable(true);
@@ -459,7 +480,6 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
         });
 
        /*
-
         placeListBottomSheetBehavior.setPeekHeight(0);
         placeListBottomSheetBehavior.setDraggable(true);
         placeListBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
@@ -602,7 +622,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
 
     public void onClickedSearchView()
     {
-        searchBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+        searchBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
         placeListBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
 
         getChildFragmentManager().beginTransaction()
@@ -611,7 +631,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
 
                 }), SearchFragment.TAG).commitNow();
 
-        binding.mapContainer.setVisibility(View.INVISIBLE);
+        binding.mapContainer.setVisibility(View.VISIBLE);
         searchBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
     }
 
@@ -630,7 +650,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
                 break;
         }
         searchView.setIconified(true);
-        setSearchBottomSheetState(BottomSheetBehavior.STATE_HIDDEN);
+        setSearchBottomSheetState(BottomSheetBehavior.STATE_COLLAPSED);
         setPlacesListBottomSheetState(BottomSheetBehavior.STATE_COLLAPSED);
     }
 
@@ -672,7 +692,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
                             searchView.setQuery(query, false);
                         }
                     }
-                    SearchFragment.getInstance().search(query);
+                    SearchFragment.getInstance().search(query, false);
                     return true;
                 } else
                 {
@@ -724,6 +744,12 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
             toolbarMenuCallback.onCreateOptionsMenu();
         }
 
+    }
+
+    @Override
+    public void setSearchViewQuery(String value, boolean submit)
+    {
+        searchView.setQuery(value, submit);
     }
 
     private void initToolbar()

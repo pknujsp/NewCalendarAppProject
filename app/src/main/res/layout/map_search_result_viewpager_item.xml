@@ -74,15 +74,11 @@
 
         <ProgressBar
             android:id="@+id/map_request_progress_bar"
+            style="@style/Widget.MaterialComponents.CircularProgressIndicator"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:background="@color/gray_300"
-            android:indeterminateOnly="true"
-            android:paddingLeft="16dp"
-            android:paddingTop="8dp"
-            android:paddingRight="16dp"
-            android:paddingBottom="8dp" />
+            android:indeterminateOnly="true" />
     </FrameLayout>
 
 

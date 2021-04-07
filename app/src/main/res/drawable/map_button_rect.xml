@@ -4,7 +4,8 @@
 
     <item android:id="@android:id/background">
         <shape android:shape="rectangle">
-            <solid android:color="@color/map_view_button_color" />
+            <solid android:color="@color/white" />
+            <corners android:radius="30dp" />
         </shape>
     </item>
 </ripple>
