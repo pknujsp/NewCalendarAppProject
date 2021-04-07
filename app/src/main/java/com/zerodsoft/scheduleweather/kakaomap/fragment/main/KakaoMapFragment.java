@@ -410,14 +410,17 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
 
             private void handleSetNextItem()
             {
+                /*
                 final int lastPosition = bottomSheetViewPager.getAdapter().getItemCount() - 1;
                 if (mCurrentPosition == 0)
                 {
-                    bottomSheetViewPager.setCurrentItem(lastPosition, true);
+                    bottomSheetViewPager.setCurrentItem(lastPosition, false);
                 } else if (mCurrentPosition == lastPosition)
                 {
-                    bottomSheetViewPager.setCurrentItem(0, true);
+                    bottomSheetViewPager.setCurrentItem(0, false);
                 }
+
+                 */
             }
 
             @Override
@@ -438,11 +441,13 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
             }
         });
 
-        final int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16f, getResources().getDisplayMetrics());
-        final int margin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, getResources().getDisplayMetrics());
-        bottomSheetViewPager.setPadding(padding, 0, padding, 0);
+        final int rlPadding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 12f, getResources().getDisplayMetrics());
+        final int bPadding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, getResources().getDisplayMetrics());
+        final int margin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 3f, getResources().getDisplayMetrics());
+
+        bottomSheetViewPager.setPadding(rlPadding, 0, rlPadding, bPadding);
         bottomSheetViewPager.setOffscreenPageLimit(3);
-        // bottomSheetViewPager.getChildAt(0).setOverScrollMode(View.OVER_SCROLL_NEVER);
+        bottomSheetViewPager.getChildAt(0).setOverScrollMode(View.OVER_SCROLL_NEVER);
 
         CompositePageTransformer compositePageTransformer = new CompositePageTransformer();
         compositePageTransformer.addTransformer(new MarginPageTransformer(margin));
