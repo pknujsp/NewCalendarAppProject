@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.databinding.FragmentLocationSearchResultBinding;
 import com.zerodsoft.scheduleweather.kakaomap.bottomsheet.adapter.PlaceItemInMapViewAdapter;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.OnClickedLocListItem;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.searchresult.interfaces.IViewPager;
@@ -32,10 +33,10 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.addressresponse.
 
 public class AddressListFragment extends Fragment implements IViewPager
 {
-    private RecyclerView itemRecyclerView;
+    private FragmentLocationSearchResultBinding binding;
+
     private AddressViewModel viewModel;
     private AddressesAdapter adapter;
-    private ProgressBar progressBar;
 
     private final IMapData iMapData;
     private final OnClickedLocListItem onClickedLocListItem;
@@ -58,30 +59,33 @@ public class AddressListFragment extends Fragment implements IViewPager
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
     {
-        return inflater.inflate(R.layout.map_search_result_viewpager_item, container, false);
+        binding = FragmentLocationSearchResultBinding.inflate(inflater);
+        return binding.getRoot();
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
-        ((RelativeLayout) view.findViewById(R.id.map_search_result_header)).setVisibility(View.GONE);
-        ((RelativeLayout) view.findViewById(R.id.map_search_result_header)).setEnabled(false);
-        ((TextView) view.findViewById(R.id.map_search_result_type)).setText(getString(R.string.result_address));
 
-        progressBar = (ProgressBar) view.findViewById(R.id.map_request_progress_bar);
-        itemRecyclerView = (RecyclerView) view.findViewById(R.id.map_search_result_recyclerview);
-        itemRecyclerView.setLayoutManager(new LinearLayoutManager(view.getContext(), RecyclerView.VERTICAL, false));
-        itemRecyclerView.addItemDecoration(new DividerItemDecoration(view.getContext(), DividerItemDecoration.VERTICAL));
+        binding.mapSearchResultHeader.setVisibility(View.GONE);
+        binding.searchResultType.setText(getString(R.string.result_address));
+
+        binding.searchResultRecyclerview.setLayoutManager(new LinearLayoutManager(view.getContext(), RecyclerView.VERTICAL, false));
+        binding.searchResultRecyclerview.addItemDecoration(new DividerItemDecoration(view.getContext(), DividerItemDecoration.VERTICAL));
         viewModel = new ViewModelProvider(this).get(AddressViewModel.class);
-        progressBar.setVisibility(View.VISIBLE);
 
-        LocalApiPlaceParameter parameter = LocalParameterUtil.getAddressParameter(SEARCH_WORD, LocalApiPlaceParameter.DEFAULT_SIZE
+        requestAddresses(SEARCH_WORD);
+    }
+
+    private void requestAddresses(String searchWord)
+    {
+        LocalApiPlaceParameter parameter = LocalParameterUtil.getAddressParameter(searchWord, LocalApiPlaceParameter.DEFAULT_SIZE
                 , LocalApiPlaceParameter.DEFAULT_PAGE);
 
         if (KakaoLocalApiCategoryUtil.isCategory(SEARCH_WORD))
         {
-            progressBar.setVisibility(View.GONE);
+            binding.progressBar.setVisibility(View.GONE);
         } else
         {
             adapter = new AddressesAdapter(getContext(), iMapData, onClickedLocListItem);
@@ -94,19 +98,19 @@ public class AddressListFragment extends Fragment implements IViewPager
                     iMapData.createAddressesPoiItems(adapter.getCurrentList().snapshot());
                 }
             });
-            itemRecyclerView.setAdapter(adapter);
+
+            binding.searchResultRecyclerview.setAdapter(adapter);
             viewModel.init(parameter);
-            viewModel.getPagedListMutableLiveData().observe(getViewLifecycleOwner(), new CustomLiveDataObserver<PagedList<AddressResponseDocuments>>()
+            viewModel.getPagedListMutableLiveData().observe(getViewLifecycleOwner(), new Observer<PagedList<AddressResponseDocuments>>()
             {
                 @Override
                 public void onChanged(PagedList<AddressResponseDocuments> addressResponseDocuments)
                 {
                     adapter.submitList(addressResponseDocuments);
-                    progressBar.setVisibility(View.GONE);
+                    binding.progressBar.setVisibility(View.GONE);
                 }
             });
         }
-
     }
 
     /*
@@ -125,15 +129,6 @@ public class AddressListFragment extends Fragment implements IViewPager
                 iMapData.removeAllPoiItems();
                 iMapData.createAddressesPoiItems(adapter.getCurrentList().snapshot());
             }
-        }
-    }
-
-    abstract class CustomLiveDataObserver<T> implements Observer<T>
-    {
-        @Override
-        public void onChanged(T element)
-        {
-
         }
     }
 }

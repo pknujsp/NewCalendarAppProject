@@ -187,7 +187,10 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
                     @Override
                     public void onChangedState(int state)
                     {
-                        super.onChangedState(state);
+                        if (state == ON_REMOVED)
+                        {
+                            binding.mapHeaderBar.getRoot().setVisibility(View.VISIBLE);
+                        }
 
                     }
                 });

@@ -38,6 +38,7 @@ public class PlacesAdapter extends PagedListAdapter<PlaceDocuments, PlacesAdapte
             placeCategory = (TextView) view.findViewById(R.id.place_category);
             placeAddressName = (TextView) view.findViewById(R.id.place_address_name);
             placeDistance = (TextView) view.findViewById(R.id.place_distance);
+
             view.getRootView().setOnClickListener(new View.OnClickListener()
             {
                 @Override

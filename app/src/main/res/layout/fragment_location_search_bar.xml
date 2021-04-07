@@ -5,6 +5,7 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@color/transparent"
         tools:context=".kakaomap.fragment.search.LocationSearchTransactionFragment">
 
         <LinearLayout
@@ -34,8 +35,8 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_weight="1"
-
-                android:hint="@string/hint_request_input_address_or_place" />
+                android:hint="@string/hint_request_input_address_or_place"
+                android:inputType="text" />
 
             <ImageButton
                 android:id="@+id/close_button"

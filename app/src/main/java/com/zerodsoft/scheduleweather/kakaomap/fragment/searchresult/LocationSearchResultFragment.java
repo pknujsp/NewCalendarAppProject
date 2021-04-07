@@ -42,34 +42,32 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.Pl
 import java.util.ArrayList;
 import java.util.List;
 
-public class LocationSearchResultFragment extends Fragment implements IndicatorCreater, ResultFragmentChanger, OnClickedLocListItem
+public class LocationSearchResultFragment extends Fragment implements IndicatorCreater, OnClickedLocListItem
 {
     public static final String TAG = "SearchResultFragment";
     private static LocationSearchResultFragment instance;
     private FragmentSearchResultListBinding binding;
 
-    private FrameLayout rootLayout;
-    private ViewPager2 fragmentsViewPager;
     private SearchResultListAdapter searchResultListAdapter;
 
-    private ViewPagerIndicator viewPagerIndicator;
     private final String SEARCH_WORD;
 
     private OnPageCallback onPageCallback;
-    private OnBackPressedCallback onBackPressedCallback;
     private IMapPoint iMapPoint;
     private IMapData iMapData;
     private PlacesListBottomSheetController placesListBottomSheetController;
     private PoiItemOnClickListener poiItemOnClickListener;
     private SearchBarController searchBarController;
 
-
-    private boolean isVisibleList = true;
+    public static void close()
+    {
+        instance = null;
+    }
 
     @Override
     public void setIndicator(int fragmentSize)
     {
-        viewPagerIndicator.createDot(0, fragmentSize);
+        binding.viewpagerIndicator.createDot(0, fragmentSize);
     }
 
     public LocationSearchResultFragment(String searchWord, IMapPoint iMapPoint, IMapData iMapData
@@ -101,38 +99,6 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
 
 
     @Override
-    public void onAttach(@NonNull Context context)
-    {
-        super.onAttach(context);
-        onBackPressedCallback = new OnBackPressedCallback(true)
-        {
-            @Override
-            public void handleOnBackPressed()
-            {
-                if (isVisibleList)
-                {
-                    // list인 경우, to map
-                    iMapData.removeAllPoiItems();
-                    getParentFragmentManager().popBackStackImmediate();
-                    iMapPoint.setMapVisibility(View.GONE);
-                    onBackPressedCallback.remove();
-                } else
-                {
-                    // map인 경우
-                    placesListBottomSheetController.setPlacesListBottomSheetState(BottomSheetBehavior.STATE_COLLAPSED);
-                    changeFragment();
-                }
-            }
-        };
-        requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
-    }
-
-    public OnBackPressedCallback getOnBackPressedCallback()
-    {
-        return onBackPressedCallback;
-    }
-
-    @Override
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
@@ -155,12 +121,12 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
         search(SEARCH_WORD);
     }
 
-    private void search(String searchWord)
+    public void search(String searchWord)
     {
-        final LocalApiPlaceParameter addressParameter = LocalParameterUtil.getAddressParameter(searchWord, LocalApiPlaceParameter.DEFAULT_SIZE
+        final LocalApiPlaceParameter addressParameter = LocalParameterUtil.getAddressParameter(searchWord, "1"
                 , LocalApiPlaceParameter.DEFAULT_PAGE);
         final LocalApiPlaceParameter placeParameter = LocalParameterUtil.getPlaceParameter(searchWord, null, null,
-                LocalApiPlaceParameter.DEFAULT_SIZE, LocalApiPlaceParameter.DEFAULT_PAGE, LocalApiPlaceParameter.SEARCH_CRITERIA_SORT_TYPE_ACCURACY);
+                "1", LocalApiPlaceParameter.DEFAULT_PAGE, LocalApiPlaceParameter.SEARCH_CRITERIA_SORT_TYPE_ACCURACY);
 
         // 주소, 주소 & 장소, 장소, 검색 결과없음 인 경우
         SearchResultChecker.checkExisting(addressParameter, placeParameter, new CheckerCallback<DataWrapper<KakaoLocalResponse>>()
@@ -212,7 +178,7 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
 
                             if (!placeKakaoLocalResponse.getPlaceDocuments().isEmpty())
                             {
-                                fragments.add(new PlacesListFragment(LocationSearchResultFragment.this, searchWord));
+                                fragments.add(new PlaceListFragment(iMapPoint, searchWord, iMapData, LocationSearchResultFragment.this));
                             }
                         } else if (response.getData() instanceof AddressKakaoLocalResponse)
                         {
@@ -220,7 +186,7 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
 
                             if (!addressKakaoLocalResponse.getAddressResponseDocumentsList().isEmpty())
                             {
-                                fragments.add(new AddressesListFragment(LocationSearchResultFragment.this, searchWord));
+                                fragments.add(new AddressListFragment(searchWord, iMapData, LocationSearchResultFragment.this));
                             }
                         }
                     }
@@ -249,31 +215,12 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
         super.onDetach();
     }
 
-    @Override
-    public void changeFragment()
-    {
-        searchBarController.changeViewTypeImg(isVisibleList ? SearchBarController.MAP : SearchBarController.LIST);
-
-        if (isVisibleList)
-        {
-            // to map
-            // 버튼 이미지, 프래그먼트 숨김/보이기 설정
-            iMapData.showAllPoiItems();
-        } else
-        {
-            // to list
-            iMapData.backToPreviousView();
-            placesListBottomSheetController.setPlacesListBottomSheetState(BottomSheetBehavior.STATE_COLLAPSED);
-        }
-
-        isVisibleList = !isVisibleList;
-    }
 
     @Override
     public void onClickedLocItem(int index)
     {
-        isVisibleList = false;
         poiItemOnClickListener.onPOIItemSelectedByList(index);
+        searchBarController.showMap();
     }
 
     class OnPageCallback extends ViewPager2.OnPageChangeCallback
@@ -285,7 +232,7 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
         {
             super.onPageSelected(position);
             lastPosition = position;
-            viewPagerIndicator.selectDot(position);
+            binding.viewpagerIndicator.selectDot(position);
 
             Fragment curFragment = searchResultListAdapter.getFragment(position);
 
@@ -298,4 +245,5 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
             }
         }
     }
+
 }

@@ -56,8 +56,6 @@ public class LocationSearchFragment extends Fragment implements OnSelectedMapCat
     private final PoiItemOnClickListener poiItemOnClickListener;
     private final SearchBarController searchBarController;
 
-    private OnBackPressedCallback onBackPressedCallback;
-
     public LocationSearchFragment(IMapPoint iMapPoint, IMapData iMapData, FragmentStateCallback fragmentStateCallback
             , PlacesListBottomSheetController placesListBottomSheetController, PoiItemOnClickListener poiItemOnClickListener,
                                   SearchBarController searchBarController)
@@ -77,26 +75,12 @@ public class LocationSearchFragment extends Fragment implements OnSelectedMapCat
         super.onCreate(savedInstanceState);
     }
 
-    @Override
-    public void onAttach(@NonNull Context context)
-    {
-        super.onAttach(context);
-        onBackPressedCallback = new OnBackPressedCallback(true)
-        {
-            @Override
-            public void handleOnBackPressed()
-            {
-                fragmentStateCallback.onChangedState(FragmentStateCallback.ON_REMOVED);
-            }
-        };
-        requireActivity().getOnBackPressedDispatcher().addCallback(LocationSearchFragment.this, onBackPressedCallback);
-    }
+
 
     @Override
     public void onDetach()
     {
         super.onDetach();
-        onBackPressedCallback.remove();
     }
 
     @Override

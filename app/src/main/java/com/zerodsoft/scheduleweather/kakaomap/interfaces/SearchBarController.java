@@ -8,5 +8,9 @@ public interface SearchBarController
     void setQuery(String query, boolean submit);
 
     void changeViewTypeImg(int type);
+
+    void showList();
+
+    void showMap();
 }
 

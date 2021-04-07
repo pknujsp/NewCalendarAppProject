@@ -87,6 +87,7 @@ public class PlacesListFragment extends Fragment
         super.onViewCreated(view, savedInstanceState);
         binding.searchResultType.setText(getString(R.string.result_place));
 
+        binding.mapSearchResultHeader.setVisibility(View.GONE);
         binding.searchResultRecyclerview.setLayoutManager(new LinearLayoutManager(view.getContext(), RecyclerView.VERTICAL, false));
         binding.searchResultRecyclerview.addItemDecoration(new DividerItemDecoration(view.getContext(), DividerItemDecoration.VERTICAL));
         viewModel = new ViewModelProvider(this).get(PlacesViewModel.class);

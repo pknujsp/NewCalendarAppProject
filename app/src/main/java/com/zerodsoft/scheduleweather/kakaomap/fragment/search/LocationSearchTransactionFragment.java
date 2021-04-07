@@ -1,8 +1,10 @@
 package com.zerodsoft.scheduleweather.kakaomap.fragment.search;
 
+import android.app.Dialog;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
@@ -17,6 +19,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.TextView;
 
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.FragmentLocationSearchBarBinding;
 import com.zerodsoft.scheduleweather.etc.FragmentStateCallback;
@@ -49,6 +52,8 @@ public class LocationSearchTransactionFragment extends DialogFragment implements
     private LocationSearchFragment locationSearchFragment;
     private LocationSearchResultFragment locationSearchResultFragment;
 
+    private boolean isVisibleList = true;
+
     public LocationSearchTransactionFragment(Fragment fragment, FragmentStateCallback fragmentStateCallback)
     {
         this.iMapPoint = (IMapPoint) fragment;
@@ -63,6 +68,38 @@ public class LocationSearchTransactionFragment extends DialogFragment implements
     {
         super.onCreate(savedInstanceState);
         setStyle(STYLE_NO_TITLE, R.style.AppTheme_FullScreenDialog);
+    }
+
+    @NonNull
+    @Override
+    public Dialog onCreateDialog(@Nullable Bundle savedInstanceState)
+    {
+        return new Dialog(getActivity(), getTheme())
+        {
+            @Override
+            public void onBackPressed()
+            {
+                if (LocationSearchResultFragment.getInstance() != null)
+                {
+                    if (isVisibleList)
+                    {
+                        // list인 경우
+                        iMapData.removeAllPoiItems();
+                        getChildFragmentManager().popBackStackImmediate();
+                        LocationSearchResultFragment.close();
+                    } else
+                    {
+                        // map인 경우
+                        placesListBottomSheetController.setPlacesListBottomSheetState(BottomSheetBehavior.STATE_COLLAPSED);
+                        changeFragment();
+                    }
+                } else if (locationSearchFragment.isVisible())
+                {
+                    super.onBackPressed();
+                    fragmentStateCallback.onChangedState(FragmentStateCallback.ON_REMOVED);
+                }
+            }
+        };
     }
 
     @Override
@@ -96,16 +133,18 @@ public class LocationSearchTransactionFragment extends DialogFragment implements
             }
         });
 
-        binding.edittext.setOnEditorActionListener(new TextView.OnEditorActionListener()
+
+        binding.edittext.setOnKeyListener(new View.OnKeyListener()
         {
             @Override
-            public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent)
+            public boolean onKey(View view, int keyCode, KeyEvent keyEvent)
             {
-                if (actionId == EditorInfo.IME_ACTION_DONE)
+                if (keyCode == KeyEvent.KEYCODE_ENTER)
                 {
                     //검색
-                    search(textView.getText().toString());
-                    locationSearchFragment.insertHistory(textView.getText().toString());
+                    search(binding.edittext.getText().toString());
+                    locationSearchFragment.insertHistory(binding.edittext.getText().toString());
+                    return true;
                 }
                 return false;
             }
@@ -126,7 +165,7 @@ public class LocationSearchTransactionFragment extends DialogFragment implements
                     {
                         if (state == FragmentStateCallback.ON_REMOVED)
                         {
-                            dismiss();
+
                         }
                     }
                 }, placesListBottomSheetController, poiItemOnClickListener, LocationSearchTransactionFragment.this);
@@ -143,7 +182,7 @@ public class LocationSearchTransactionFragment extends DialogFragment implements
         {
             binding.edittext.setText(query);
         }
-        
+
         if (submit)
         {
             search(query);
@@ -167,14 +206,53 @@ public class LocationSearchTransactionFragment extends DialogFragment implements
 
     private void search(String query)
     {
-        FragmentTransaction fragmentTransaction = getChildFragmentManager().beginTransaction();
+        if (LocationSearchResultFragment.getInstance() == null)
+        {
+            FragmentTransaction fragmentTransaction = getChildFragmentManager().beginTransaction();
 
-        fragmentTransaction.add(binding.fragmentContainerView.getId()
-                , LocationSearchResultFragment.newInstance(query, iMapPoint, iMapData
-                        , placesListBottomSheetController, poiItemOnClickListener, LocationSearchTransactionFragment.this)
-                , LocationSearchResultFragment.TAG).hide(locationSearchFragment).addToBackStack(LocationSearchResultFragment.TAG).commit();
+            fragmentTransaction.add(binding.fragmentContainerView.getId()
+                    , LocationSearchResultFragment.newInstance(query, iMapPoint, iMapData
+                            , placesListBottomSheetController, poiItemOnClickListener, LocationSearchTransactionFragment.this)
+                    , LocationSearchResultFragment.TAG).hide(locationSearchFragment).addToBackStack(LocationSearchResultFragment.TAG).commit();
 
-        binding.viewTypeButton.setVisibility(View.VISIBLE);
+            binding.viewTypeButton.setVisibility(View.VISIBLE);
+        } else
+        {
+            LocationSearchResultFragment.getInstance().search(query);
+        }
+    }
+
+    @Override
+    public void showList()
+    {
+        isVisibleList = true;
+        binding.fragmentContainerView.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void showMap()
+    {
+        isVisibleList = false;
+        binding.fragmentContainerView.setVisibility(View.GONE);
+    }
+
+    public void changeFragment()
+    {
+        changeViewTypeImg(isVisibleList ? SearchBarController.MAP : SearchBarController.LIST);
+
+        if (isVisibleList)
+        {
+            // to map
+            // 버튼 이미지, 프래그먼트 숨김/보이기 설정
+            iMapData.showAllPoiItems();
+            showMap();
+        } else
+        {
+            // to list
+            iMapData.backToPreviousView();
+            showList();
+        }
+
     }
 
 }
