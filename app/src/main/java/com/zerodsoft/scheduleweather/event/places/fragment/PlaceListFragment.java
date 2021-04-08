@@ -21,6 +21,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
+import com.zerodsoft.scheduleweather.common.interfaces.OnProgressBarListener;
 import com.zerodsoft.scheduleweather.databinding.PlacelistFragmentBinding;
 import com.zerodsoft.scheduleweather.etc.RecyclerViewItemDecoration;
 import com.zerodsoft.scheduleweather.event.places.adapter.PlaceItemsAdapters;
@@ -40,7 +41,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class PlaceListFragment extends Fragment implements PlaceItemsGetter
+public class PlaceListFragment extends Fragment implements PlaceItemsGetter, OnProgressBarListener
 {
     public static final String TAG = "PlaceListFragment";
     private final PlaceCategory placeCategoryInterface;
@@ -166,7 +167,7 @@ public class PlaceListFragment extends Fragment implements PlaceItemsGetter
             itemRecyclerView.setAdapter(adapter);
 
             PlacesViewModel viewModel = new ViewModelProvider(getActivity()).get(PlacesViewModel.class);
-            viewModel.init(placeParameter);
+            viewModel.init(placeParameter,this);
             viewModel.getPagedListMutableLiveData().observe(getActivity(), new Observer<PagedList<PlaceDocuments>>()
             {
                 @Override
@@ -196,5 +197,11 @@ public class PlaceListFragment extends Fragment implements PlaceItemsGetter
     public List<PlaceDocuments> getPlaceItems(PlaceCategoryDTO placeCategoryDTO)
     {
         return adaptersMap.get(placeCategoryDTO).getCurrentList().snapshot();
+    }
+
+    @Override
+    public void setProgressBarVisibility(int visibility)
+    {
+
     }
 }

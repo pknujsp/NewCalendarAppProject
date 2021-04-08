@@ -36,16 +36,23 @@
         <activity android:name=".activity.placecategory.activity.CategorySettingsActivity" />
         <activity android:name=".activity.placecategory.activity.PlaceCategoryActivity" />
         <activity android:name=".activity.editevent.activity.AttendeesActivity" />
-        <activity android:name=".kakaomap.activity.KakaoMapActivity" />
-        <activity android:name=".event.common.MLocActivity" />
-        <activity android:name=".event.common.ReselectDetailLocation" />
+        <activity
+            android:name=".kakaomap.activity.KakaoMapActivity"
+            android:windowSoftInputMode="adjustNothing" />
+        <activity
+            android:name=".event.common.MLocActivity"
+            android:windowSoftInputMode="adjustNothing" />
+        <activity
+            android:name=".event.common.ReselectDetailLocation"
+            android:windowSoftInputMode="adjustNothing" />
         <activity android:name=".activity.editevent.activity.ReminderActivity" />
         <activity android:name=".activity.editevent.activity.TimeZoneActivity" />
         <activity android:name=".activity.editevent.activity.RecurrenceActivity" />
         <activity android:name=".event.main.InstanceMainActivity" />
         <activity
             android:name=".activity.map.SelectLocationActivity"
-            android:taskAffinity="com.zerodsoft.scheduleweather.Activity.MapActivity" />
+            android:taskAffinity="com.zerodsoft.scheduleweather.Activity.MapActivity"
+            android:windowSoftInputMode="adjustNothing" />
         <activity android:name=".activity.editevent.activity.EditEventActivity" />
         <activity
             android:name=".activity.main.AppMainActivity"

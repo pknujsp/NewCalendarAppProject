@@ -18,6 +18,7 @@ import android.view.ViewGroup;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
+import com.zerodsoft.scheduleweather.common.interfaces.OnProgressBarListener;
 import com.zerodsoft.scheduleweather.event.foods.adapter.RestaurantListAdapter;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.CriteriaLocationListener;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedRestaurantItem;
@@ -84,7 +85,14 @@ public class RestaurantListFragment extends Fragment
 
         adapter = new RestaurantListAdapter(getActivity(), onClickedRestaurantItem);
         restaurantRecyclerView.setAdapter(adapter);
-        placesViewModel.init(placeParameter);
+        placesViewModel.init(placeParameter, new OnProgressBarListener()
+        {
+            @Override
+            public void setProgressBarVisibility(int visibility)
+            {
+
+            }
+        });
 
         placesViewModel.getPagedListMutableLiveData().observe(getViewLifecycleOwner(), new Observer<PagedList<PlaceDocuments>>()
         {

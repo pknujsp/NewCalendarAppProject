@@ -30,6 +30,7 @@ import com.zerodsoft.scheduleweather.kakaomap.fragment.searchresult.interfaces.I
 import com.zerodsoft.scheduleweather.etc.ViewPagerIndicator;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.SearchBarController;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.SearchFragmentController;
 import com.zerodsoft.scheduleweather.kakaomap.model.SearchResultChecker;
 import com.zerodsoft.scheduleweather.kakaomap.model.callback.CheckerCallback;
 import com.zerodsoft.scheduleweather.kakaomap.util.LocalParameterUtil;
@@ -58,26 +59,28 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
     private PlacesListBottomSheetController placesListBottomSheetController;
     private PoiItemOnClickListener poiItemOnClickListener;
     private SearchBarController searchBarController;
-
-    private boolean isVisibleList = true;
+    private SearchFragmentController searchFragmentController;
 
     private OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
     {
         @Override
         public void handleOnBackPressed()
         {
-            if (isVisibleList)
+            boolean bottomSheetStateIsExpanded = searchFragmentController.getStateOfSearchBottomSheet() == BottomSheetBehavior.STATE_EXPANDED;
+            if (bottomSheetStateIsExpanded)
             {
                 // list인 경우
                 iMapData.removeAllPoiItems();
                 searchBarController.setViewTypeVisibility(View.GONE);
-                getChildFragmentManager().popBackStackImmediate();
+                getParentFragmentManager().popBackStackImmediate();
+                onBackPressedCallback.remove();
                 LocationSearchResultFragment.close();
             } else
             {
                 // map인 경우
+                iMapData.backToPreviousView();
+                searchFragmentController.setStateOfSearchBottomSheet(BottomSheetBehavior.STATE_EXPANDED);
                 placesListBottomSheetController.setPlacesListBottomSheetState(BottomSheetBehavior.STATE_COLLAPSED);
-                changeFragment();
             }
         }
     };
@@ -100,6 +103,7 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
         this.iMapData = (IMapData) fragment;
         this.placesListBottomSheetController = (PlacesListBottomSheetController) fragment;
         this.poiItemOnClickListener = (PoiItemOnClickListener) fragment;
+        this.searchFragmentController = (SearchFragmentController) fragment;
         this.searchBarController = searchBarController;
     }
 
@@ -112,6 +116,13 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
     {
         instance = new LocationSearchResultFragment(searchWord, fragment, searchBarController);
         return instance;
+    }
+
+    @Override
+    public void onAttach(@NonNull Context context)
+    {
+        super.onAttach(context);
+        getActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
     }
 
     @Override
@@ -154,6 +165,7 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
                     if (response.getException() != null)
                     {
                         // error, exception
+                        binding.listViewpager.removeAllViews();
                         binding.errorText.setText(getContext().getString(R.string.error) + ", (" + response.getException().getMessage() + ")");
                         binding.errorText.setVisibility(View.VISIBLE);
                         return;
@@ -174,9 +186,12 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
                     }
                 }
 
+                searchBarController.setViewTypeVisibility(View.VISIBLE);
+
                 if (totalResultCount == 0)
                 {
                     // 검색 결과 없음
+                    binding.listViewpager.removeAllViews();
                     binding.errorText.setText(getContext().getString(R.string.not_founded_search_result));
                     binding.errorText.setVisibility(View.VISIBLE);
                     // searchview클릭 후 재검색 시 search fragment로 이동
@@ -229,42 +244,12 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
         super.onDetach();
     }
 
-
-    public void showList()
-    {
-        isVisibleList = true;
-    }
-
-    public void showMap()
-    {
-        isVisibleList = false;
-    }
-
-    public void changeFragment()
-    {
-        searchBarController.changeViewTypeImg(isVisibleList ? SearchBarController.MAP : SearchBarController.LIST);
-
-        if (isVisibleList)
-        {
-            // to map
-            // 버튼 이미지, 프래그먼트 숨김/보이기 설정
-            // iMapData.showAllPoiItems();
-            showMap();
-        } else
-        {
-            // to list
-            // iMapData.backToPreviousView();
-            showList();
-        }
-
-    }
-
-
     @Override
     public void onClickedLocItem(int index)
     {
         poiItemOnClickListener.onPOIItemSelectedByList(index);
         searchBarController.changeViewTypeImg(SearchBarController.MAP);
+        searchFragmentController.setStateOfSearchBottomSheet(BottomSheetBehavior.STATE_COLLAPSED);
     }
 
     class OnPageCallback extends ViewPager2.OnPageChangeCallback

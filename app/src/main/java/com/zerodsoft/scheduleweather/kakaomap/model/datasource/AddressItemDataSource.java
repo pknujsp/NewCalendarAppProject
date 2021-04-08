@@ -1,8 +1,11 @@
 package com.zerodsoft.scheduleweather.kakaomap.model.datasource;
 
+import android.view.View;
+
 import androidx.annotation.NonNull;
 import androidx.paging.PositionalDataSource;
 
+import com.zerodsoft.scheduleweather.common.interfaces.OnProgressBarListener;
 import com.zerodsoft.scheduleweather.retrofit.HttpCommunicationClient;
 import com.zerodsoft.scheduleweather.retrofit.Querys;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
@@ -23,8 +26,9 @@ public class AddressItemDataSource extends PositionalDataSource<AddressResponseD
     private Querys querys;
     private AddressResponseMeta addressMeta;
     private LocalApiPlaceParameter localApiPlaceParameter;
+    private OnProgressBarListener onProgressBarListener;
 
-    public AddressItemDataSource(LocalApiPlaceParameter localApiParameter)
+    public AddressItemDataSource(LocalApiPlaceParameter localApiParameter, OnProgressBarListener onProgressBarListener)
     {
         this.localApiPlaceParameter = localApiParameter;
     }
@@ -32,6 +36,7 @@ public class AddressItemDataSource extends PositionalDataSource<AddressResponseD
     @Override
     public void loadInitial(@NonNull LoadInitialParams params, @NonNull LoadInitialCallback<AddressResponseDocuments> callback)
     {
+        onProgressBarListener.setProgressBarVisibility(View.VISIBLE);
         querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.KAKAO);
         Map<String, String> queryMap = localApiPlaceParameter.getParameterMap();
         Call<AddressKakaoLocalResponse> call = querys.getAddress(queryMap);
@@ -53,6 +58,7 @@ public class AddressItemDataSource extends PositionalDataSource<AddressResponseD
                     addressMeta = response.body().getAddressResponseMeta();
                 }
                 callback.onResult(addressDocuments, 0, addressDocuments.size());
+                onProgressBarListener.setProgressBarVisibility(View.GONE);
             }
 
             @Override
@@ -61,6 +67,7 @@ public class AddressItemDataSource extends PositionalDataSource<AddressResponseD
                 List<AddressResponseDocuments> addressDocuments = new ArrayList<>();
                 addressMeta = new AddressResponseMeta();
                 callback.onResult(addressDocuments, 0, addressDocuments.size());
+                onProgressBarListener.setProgressBarVisibility(View.GONE);
             }
         });
     }
@@ -68,6 +75,7 @@ public class AddressItemDataSource extends PositionalDataSource<AddressResponseD
     @Override
     public void loadRange(@NonNull LoadRangeParams params, @NonNull LoadRangeCallback<AddressResponseDocuments> callback)
     {
+        onProgressBarListener.setProgressBarVisibility(View.VISIBLE);
         querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.KAKAO);
 
         if (!addressMeta.isEnd())
@@ -84,6 +92,8 @@ public class AddressItemDataSource extends PositionalDataSource<AddressResponseD
                     List<AddressResponseDocuments> addressDocuments = response.body().getAddressResponseDocumentsList();
                     addressMeta = response.body().getAddressResponseMeta();
                     callback.onResult(addressDocuments);
+                    onProgressBarListener.setProgressBarVisibility(View.GONE);
+
                 }
 
                 @Override
@@ -91,6 +101,8 @@ public class AddressItemDataSource extends PositionalDataSource<AddressResponseD
                 {
                     List<AddressResponseDocuments> addressDocuments = new ArrayList<>();
                     callback.onResult(addressDocuments);
+                    onProgressBarListener.setProgressBarVisibility(View.GONE);
+
                 }
             });
         } else

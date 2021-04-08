@@ -4,13 +4,14 @@
     android:id="@+id/location_search_bottomsheet"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/map_location_search_bottom_sheet_background"
     android:orientation="vertical"
     app:behavior_hideable="false"
     app:behavior_peekHeight="0dp"
     app:layout_behavior="@string/bottom_sheet_behavior">
 
     <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/fragment_container_view"
+        android:id="@+id/search_fragment_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 

@@ -25,6 +25,7 @@ import android.view.WindowManager;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
+import com.zerodsoft.scheduleweather.common.interfaces.SearchHistoryDataController;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PoiItemOnClickListener;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.search.adapter.SearchLocationHistoryAdapter;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.searchresult.LocationSearchResultFragment;
@@ -43,11 +44,11 @@ import com.zerodsoft.scheduleweather.room.dto.SearchHistoryDTO;
 
 import java.util.List;
 
-public class LocationSearchFragment extends Fragment implements OnSelectedMapCategory, OnClickedListItem<SearchHistoryDTO>
+public class LocationSearchFragment extends Fragment implements OnSelectedMapCategory, OnClickedListItem<SearchHistoryDTO>, SearchHistoryDataController<SearchHistoryDTO>
 {
     public static final String TAG = "LocationSearchFragment";
-
     private FragmentSearchBinding binding;
+
     private PlaceCategoriesAdapter categoriesAdapter;
     private SearchLocationHistoryAdapter searchLocationHistoryAdapter;
     private SearchHistoryViewModel searchHistoryViewModel;
@@ -59,14 +60,13 @@ public class LocationSearchFragment extends Fragment implements OnSelectedMapCat
     private PoiItemOnClickListener poiItemOnClickListener;
     private SearchBarController searchBarController;
 
-    private int newHeight;
-
     private OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
     {
         @Override
         public void handleOnBackPressed()
         {
             fragmentStateCallback.onChangedState(FragmentStateCallback.ON_REMOVED);
+            onBackPressedCallback.remove();
         }
     };
 
@@ -80,12 +80,17 @@ public class LocationSearchFragment extends Fragment implements OnSelectedMapCat
         this.fragmentStateCallback = fragmentStateCallback;
     }
 
+    @Override
+    public void onAttach(@NonNull Context context)
+    {
+        super.onAttach(context);
+        getActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        getActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
     }
 
 
@@ -149,27 +154,9 @@ public class LocationSearchFragment extends Fragment implements OnSelectedMapCat
         searchBarController.changeViewTypeImg(SearchBarController.MAP);
     }
 
-    public void insertHistory(String value)
-    {
-        searchHistoryViewModel.insert(SearchHistoryDTO.LOCATION_SEARCH, value, new CarrierMessagingService.ResultCallback<SearchHistoryDTO>()
-        {
-            @Override
-            public void onReceiveResult(@NonNull SearchHistoryDTO result) throws RemoteException
-            {
-                getActivity().runOnUiThread(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        searchLocationHistoryAdapter.getHistoryList().add(result);
-                        searchLocationHistoryAdapter.notifyItemInserted(searchLocationHistoryAdapter.getItemCount() - 1);
-                    }
-                });
-            }
-        });
-    }
 
-    private void updateSearchHistoryList()
+    @Override
+    public void updateSearchHistoryList()
     {
         searchHistoryViewModel.select(SearchHistoryDTO.LOCATION_SEARCH, new CarrierMessagingService.ResultCallback<List<SearchHistoryDTO>>()
         {
@@ -222,5 +209,27 @@ public class LocationSearchFragment extends Fragment implements OnSelectedMapCat
             }
         });
 
+    }
+
+    @Override
+    public void insertValueToHistory(String value)
+    {
+        searchHistoryViewModel.insert(SearchHistoryDTO.LOCATION_SEARCH, value, new CarrierMessagingService.ResultCallback<SearchHistoryDTO>()
+        {
+            @Override
+            public void onReceiveResult(@NonNull SearchHistoryDTO result) throws RemoteException
+            {
+                getActivity().runOnUiThread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        //list 갱신
+                        searchLocationHistoryAdapter.getHistoryList().add(result);
+                        searchLocationHistoryAdapter.notifyItemInserted(searchLocationHistoryAdapter.getItemCount() - 1);
+                    }
+                });
+            }
+        });
     }
 }

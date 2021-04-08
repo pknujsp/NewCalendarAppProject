@@ -38,6 +38,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.common.interfaces.OnProgressBarListener;
 import com.zerodsoft.scheduleweather.databinding.FragmentLocationSearchResultBinding;
 import com.zerodsoft.scheduleweather.kakaomap.bottomsheet.adapter.PlaceItemInMapViewAdapter;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.OnClickedLocListItem;
@@ -54,7 +55,7 @@ import com.zerodsoft.scheduleweather.utility.NetworkStatus;
 
 import java.util.Timer;
 
-public class PlaceListFragment extends Fragment implements IViewPager
+public class PlaceListFragment extends Fragment implements IViewPager, OnProgressBarListener
 {
     private static int currSearchMapPointCriteria = LocalApiPlaceParameter.SEARCH_CRITERIA_MAP_POINT_MAP_CENTER;
     private static int currSearchSortTypeCriteria = LocalApiPlaceParameter.SEARCH_CRITERIA_SORT_TYPE_ACCURACY;
@@ -280,7 +281,7 @@ public class PlaceListFragment extends Fragment implements IViewPager
         binding.searchResultRecyclerview.removeAllViews();
         binding.searchResultRecyclerview.setAdapter(adapter);
 
-        viewModel.init(parameter);
+        viewModel.init(parameter, this);
         viewModel.getPagedListMutableLiveData().observe(getViewLifecycleOwner(), observer);
     }
 
@@ -290,7 +291,6 @@ public class PlaceListFragment extends Fragment implements IViewPager
         public void onChanged(PagedList<PlaceDocuments> placeDocuments)
         {
             adapter.submitList(placeDocuments);
-            binding.progressBar.setVisibility(View.GONE);
         }
     };
 
@@ -358,4 +358,18 @@ public class PlaceListFragment extends Fragment implements IViewPager
         }
 
     };
+
+    @Override
+    public void setProgressBarVisibility(int visibility)
+    {
+        getActivity().runOnUiThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                binding.progressBar.setVisibility(visibility);
+
+            }
+        });
+    }
 }

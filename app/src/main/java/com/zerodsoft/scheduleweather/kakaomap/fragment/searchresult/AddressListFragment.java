@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.common.interfaces.OnProgressBarListener;
 import com.zerodsoft.scheduleweather.databinding.FragmentLocationSearchResultBinding;
 import com.zerodsoft.scheduleweather.kakaomap.bottomsheet.adapter.PlaceItemInMapViewAdapter;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.OnClickedLocListItem;
@@ -31,7 +32,7 @@ import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.addressresponse.AddressResponseDocuments;
 
-public class AddressListFragment extends Fragment implements IViewPager
+public class AddressListFragment extends Fragment implements IViewPager, OnProgressBarListener
 {
     private FragmentLocationSearchResultBinding binding;
 
@@ -100,14 +101,13 @@ public class AddressListFragment extends Fragment implements IViewPager
             });
 
             binding.searchResultRecyclerview.setAdapter(adapter);
-            viewModel.init(parameter);
+            viewModel.init(parameter,this);
             viewModel.getPagedListMutableLiveData().observe(getViewLifecycleOwner(), new Observer<PagedList<AddressResponseDocuments>>()
             {
                 @Override
                 public void onChanged(PagedList<AddressResponseDocuments> addressResponseDocuments)
                 {
                     adapter.submitList(addressResponseDocuments);
-                    binding.progressBar.setVisibility(View.GONE);
                 }
             });
         }
@@ -130,5 +130,19 @@ public class AddressListFragment extends Fragment implements IViewPager
                 iMapData.createAddressesPoiItems(adapter.getCurrentList().snapshot());
             }
         }
+    }
+
+    @Override
+    public void setProgressBarVisibility(int visibility)
+    {
+        getActivity().runOnUiThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                binding.progressBar.setVisibility(visibility);
+
+            }
+        });
     }
 }

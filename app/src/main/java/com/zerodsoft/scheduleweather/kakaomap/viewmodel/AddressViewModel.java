@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel;
 import androidx.paging.LivePagedListBuilder;
 import androidx.paging.PagedList;
 
+import com.zerodsoft.scheduleweather.common.interfaces.OnProgressBarListener;
 import com.zerodsoft.scheduleweather.kakaomap.model.datasource.AddressItemDataSource;
 import com.zerodsoft.scheduleweather.kakaomap.model.datasourcefactory.AddressItemDataSourceFactory;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
@@ -25,9 +26,9 @@ public class AddressViewModel extends ViewModel
     {
     }
 
-    public void init(LocalApiPlaceParameter addressParameter)
+    public void init(LocalApiPlaceParameter addressParameter, OnProgressBarListener onProgressBarListener)
     {
-        dataSourceFactory = new AddressItemDataSourceFactory(addressParameter);
+        dataSourceFactory = new AddressItemDataSourceFactory(addressParameter, onProgressBarListener);
         dataSourceMutableLiveData = dataSourceFactory.getLiveData();
 
         PagedList.Config config = (new PagedList.Config.Builder())

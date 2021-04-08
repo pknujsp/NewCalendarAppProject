@@ -13,7 +13,9 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.common.interfaces.SearchHistoryDataController;
 import com.zerodsoft.scheduleweather.databinding.FragmentLocationSearchBarBinding;
 import com.zerodsoft.scheduleweather.etc.FragmentStateCallback;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PoiItemOnClickListener;
@@ -24,29 +26,35 @@ import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapPoint;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.PlacesListBottomSheetController;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.SearchBarController;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.SearchFragmentController;
 import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
+import com.zerodsoft.scheduleweather.room.dto.SearchHistoryDTO;
 
 public class MapHeaderSearchFragment extends Fragment implements SearchBarController
 {
     public static final String TAG = "MapSearchFragment";
     private FragmentLocationSearchBarBinding binding;
 
-    private final IMapPoint iMapPoint;
+    private final LocationSearchListener locationSearchListener;
+    private final SearchFragmentController searchFragmentController;
     private final IMapData iMapData;
     private final PlacesListBottomSheetController placesListBottomSheetController;
-    private final PoiItemOnClickListener poiItemOnClickListener;
-    private final LocationSearchListener locationSearchListener;
+    private SearchHistoryDataController<SearchHistoryDTO> searchHistoryDataController;
 
     private Drawable mapDrawable;
     private Drawable listDrawable;
 
     public MapHeaderSearchFragment(Fragment fragment)
     {
-        this.iMapPoint = (IMapPoint) fragment;
-        this.iMapData = (IMapData) fragment;
-        this.placesListBottomSheetController = (PlacesListBottomSheetController) fragment;
-        this.poiItemOnClickListener = (PoiItemOnClickListener) fragment;
         this.locationSearchListener = (LocationSearchListener) fragment;
+        this.searchFragmentController = (SearchFragmentController) fragment;
+        this.placesListBottomSheetController = (PlacesListBottomSheetController) fragment;
+        this.iMapData = (IMapData) fragment;
+    }
+
+    public void setSearchHistoryDataController(SearchHistoryDataController<SearchHistoryDTO> searchHistoryDataController)
+    {
+        this.searchHistoryDataController = searchHistoryDataController;
     }
 
     @Override
@@ -73,7 +81,7 @@ public class MapHeaderSearchFragment extends Fragment implements SearchBarContro
             @Override
             public void onClick(View view)
             {
-
+                searchFragmentController.closeSearchFragments();
             }
         });
 
@@ -82,7 +90,7 @@ public class MapHeaderSearchFragment extends Fragment implements SearchBarContro
             @Override
             public void onClick(View view)
             {
-
+                changeFragment();
             }
         });
 
@@ -97,7 +105,7 @@ public class MapHeaderSearchFragment extends Fragment implements SearchBarContro
                     //검색
                     binding.viewTypeButton.setVisibility(View.VISIBLE);
                     locationSearchListener.search(binding.edittext.getText().toString());
-                   // locationSearchFragment.insertHistory(binding.edittext.getText().toString());
+                    searchHistoryDataController.insertValueToHistory(binding.edittext.getText().toString());
                     return true;
                 }
                 return false;
@@ -128,7 +136,6 @@ public class MapHeaderSearchFragment extends Fragment implements SearchBarContro
 
         if (submit)
         {
-            binding.viewTypeButton.setVisibility(View.VISIBLE);
             locationSearchListener.search(query);
         } else
         {
@@ -147,6 +154,28 @@ public class MapHeaderSearchFragment extends Fragment implements SearchBarContro
             binding.viewTypeButton.setImageDrawable(listDrawable);
         }
     }
+
+    public void changeFragment()
+    {
+        boolean bottomSheetStateIsExpanded = searchFragmentController.getStateOfSearchBottomSheet() == BottomSheetBehavior.STATE_EXPANDED;
+        changeViewTypeImg(bottomSheetStateIsExpanded ? SearchBarController.LIST : SearchBarController.MAP);
+
+        if (bottomSheetStateIsExpanded)
+        {
+            // to map
+            // 버튼 이미지, 프래그먼트 숨김/보이기 설정
+            iMapData.showAllPoiItems();
+            placesListBottomSheetController.setPlacesListBottomSheetState(BottomSheetBehavior.STATE_COLLAPSED);
+            searchFragmentController.setStateOfSearchBottomSheet(BottomSheetBehavior.STATE_COLLAPSED);
+        } else
+        {
+            // to list
+            iMapData.backToPreviousView();
+            placesListBottomSheetController.setPlacesListBottomSheetState(BottomSheetBehavior.STATE_COLLAPSED);
+            searchFragmentController.setStateOfSearchBottomSheet(BottomSheetBehavior.STATE_EXPANDED);
+        }
+    }
+
 
     @Override
     public void setViewTypeVisibility(int visibility)

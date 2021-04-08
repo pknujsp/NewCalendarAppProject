@@ -36,6 +36,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.common.interfaces.OnProgressBarListener;
 import com.zerodsoft.scheduleweather.databinding.FragmentLocationSearchResultBinding;
 import com.zerodsoft.scheduleweather.event.foods.searchlocation.adapter.PlacesListAdapter;
 import com.zerodsoft.scheduleweather.event.foods.searchlocation.interfaces.OnClickedLocationItem;
@@ -52,7 +53,7 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.Pl
 
 import java.util.Timer;
 
-public class PlacesListFragment extends Fragment
+public class PlacesListFragment extends Fragment implements OnProgressBarListener
 {
     private PlacesViewModel viewModel;
     private PlacesListAdapter adapter;
@@ -102,7 +103,7 @@ public class PlacesListFragment extends Fragment
 
         adapter = new PlacesListAdapter(onClickedLocationItem);
         binding.searchResultRecyclerview.setAdapter(adapter);
-        viewModel.init(placeParameter);
+        viewModel.init(placeParameter, this);
 
         viewModel.getPagedListMutableLiveData().observe(getViewLifecycleOwner(), new Observer<PagedList<PlaceDocuments>>()
         {
@@ -116,4 +117,9 @@ public class PlacesListFragment extends Fragment
 
     }
 
+    @Override
+    public void setProgressBarVisibility(int visibility)
+    {
+        binding.progressBar.setVisibility(visibility);
+    }
 }
