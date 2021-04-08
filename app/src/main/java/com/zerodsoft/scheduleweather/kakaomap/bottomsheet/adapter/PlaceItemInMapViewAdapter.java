@@ -5,6 +5,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -88,6 +89,14 @@ public class PlaceItemInMapViewAdapter extends RecyclerView.Adapter<PlaceItemInM
         private TextView placeCategoryTextView;
         private TextView placeDistanceTextView;
 
+        private TextView addressIndex;
+        private TextView addressName;
+        private TextView anotherAddressType;
+        private TextView anotherAddressName;
+
+        private LinearLayout placeLayout;
+        private LinearLayout addressLayout;
+
         private ImageButton favoriteButton;
         private Button selectButton;
         private Button unselectButton;
@@ -95,14 +104,24 @@ public class PlaceItemInMapViewAdapter extends RecyclerView.Adapter<PlaceItemInM
         public PlaceItemInMapViewHolder(@NonNull View view)
         {
             super(view);
+            placeLayout = (LinearLayout) view.findViewById(R.id.place_layout);
+            addressLayout = (LinearLayout) view.findViewById(R.id.address_layout);
+
             placeNameTextView = (TextView) view.findViewById(R.id.place_item_name);
             placeAddressTextView = (TextView) view.findViewById(R.id.place_item_address);
             placeCategoryTextView = (TextView) view.findViewById(R.id.place_item_category);
             placeDistanceTextView = (TextView) view.findViewById(R.id.place_item_distance);
 
+            addressIndex = (TextView) addressLayout.findViewById(R.id.address_index);
+            addressName = (TextView) addressLayout.findViewById(R.id.address_name);
+            anotherAddressType = (TextView) addressLayout.findViewById(R.id.another_address_type);
+            anotherAddressName = (TextView) addressLayout.findViewById(R.id.another_address_name);
+
             favoriteButton = (ImageButton) view.findViewById(R.id.add_to_favorite_placeitem_button);
             selectButton = (Button) view.findViewById(R.id.select_this_place_button);
             unselectButton = (Button) view.findViewById(R.id.unselect_this_place_button);
+
+            addressIndex.setVisibility(View.GONE);
 
             itemView.getRootView().setOnClickListener(onClickListener);
         }
@@ -118,14 +137,26 @@ public class PlaceItemInMapViewAdapter extends RecyclerView.Adapter<PlaceItemInM
                 placeCategoryTextView.setText(placeDocuments.getCategoryName());
                 placeDistanceTextView.setText(placeDocuments.getDistance() + "m");
 
-                placeCategoryTextView.setVisibility(View.VISIBLE);
+                placeLayout.setVisibility(View.VISIBLE);
+                addressLayout.setVisibility(View.GONE);
                 placeDistanceTextView.setVisibility(View.VISIBLE);
             } else
             {
                 addressDocuments = (AddressResponseDocuments) data;
 
-                placeNameTextView.setText(addressDocuments.getAddressName());
-                placeCategoryTextView.setVisibility(View.GONE);
+                addressName.setText(addressDocuments.getAddressName());
+                if (addressDocuments.getAddressResponseRoadAddress() != null)
+                {
+                    anotherAddressType.setText(itemView.getContext().getString(R.string.road_addr));
+                    anotherAddressName.setText(addressDocuments.getAddressResponseRoadAddress().getAddressName());
+                } else if (addressDocuments.getAddressResponseAddress() != null)
+                {
+                    anotherAddressType.setText(itemView.getContext().getString(R.string.region_addr));
+                    anotherAddressName.setText(addressDocuments.getAddressResponseAddress().getAddressName());
+                }
+
+                placeLayout.setVisibility(View.GONE);
+                addressLayout.setVisibility(View.VISIBLE);
                 placeDistanceTextView.setVisibility(View.GONE);
             }
 

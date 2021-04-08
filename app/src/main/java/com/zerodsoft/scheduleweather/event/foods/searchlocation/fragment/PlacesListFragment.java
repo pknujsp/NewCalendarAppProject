@@ -111,7 +111,6 @@ public class PlacesListFragment extends Fragment implements OnProgressBarListene
             public void onChanged(PagedList<PlaceDocuments> placeDocuments)
             {
                 adapter.submitList(placeDocuments);
-                binding.progressBar.setVisibility(View.GONE);
             }
         });
 
@@ -120,6 +119,13 @@ public class PlacesListFragment extends Fragment implements OnProgressBarListene
     @Override
     public void setProgressBarVisibility(int visibility)
     {
-        binding.progressBar.setVisibility(visibility);
+        getActivity().runOnUiThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                binding.progressBar.setVisibility(visibility);
+            }
+        });
     }
 }

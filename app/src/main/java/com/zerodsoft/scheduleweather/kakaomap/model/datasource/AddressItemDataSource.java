@@ -31,6 +31,7 @@ public class AddressItemDataSource extends PositionalDataSource<AddressResponseD
     public AddressItemDataSource(LocalApiPlaceParameter localApiParameter, OnProgressBarListener onProgressBarListener)
     {
         this.localApiPlaceParameter = localApiParameter;
+        this.onProgressBarListener = onProgressBarListener;
     }
 
     @Override

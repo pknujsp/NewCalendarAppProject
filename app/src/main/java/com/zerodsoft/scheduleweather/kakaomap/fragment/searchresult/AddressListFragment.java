@@ -141,7 +141,6 @@ public class AddressListFragment extends Fragment implements IViewPager, OnProgr
             public void run()
             {
                 binding.progressBar.setVisibility(visibility);
-
             }
         });
     }

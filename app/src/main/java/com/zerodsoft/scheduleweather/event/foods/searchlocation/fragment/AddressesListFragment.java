@@ -89,7 +89,6 @@ public class AddressesListFragment extends Fragment implements OnProgressBarList
                 public void onChanged(PagedList<AddressResponseDocuments> addressResponseDocuments)
                 {
                     adapter.submitList(addressResponseDocuments);
-                    binding.progressBar.setVisibility(View.GONE);
                 }
             });
         }
@@ -98,6 +97,13 @@ public class AddressesListFragment extends Fragment implements OnProgressBarList
     @Override
     public void setProgressBarVisibility(int visibility)
     {
-        binding.progressBar.setVisibility(visibility);
+        getActivity().runOnUiThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                binding.progressBar.setVisibility(visibility);
+            }
+        });
     }
 }

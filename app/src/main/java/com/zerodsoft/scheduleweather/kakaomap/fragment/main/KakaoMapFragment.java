@@ -225,7 +225,6 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
                         });
                 mapHeaderSearchFragment.setSearchHistoryDataController(locationSearchFragment);
 
-
                 fragmentTransaction.remove(getChildFragmentManager().findFragmentByTag(MapHeaderMainFragment.TAG))
                         .add(binding.mapHeaderBar.headerFragmentContainer.getId(), mapHeaderSearchFragment, MapHeaderSearchFragment.TAG)
                         .add(binding.locationSearchBottomSheet.searchFragmentContainer.getId(), locationSearchFragment, LocationSearchFragment.TAG)
@@ -571,6 +570,11 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     public void onStart()
     {
         super.onStart();
+
+        int headerBarHeight = binding.mapHeaderBar.getRoot().getHeight();
+        RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) binding.mapHeaderBar.getRoot().getLayoutParams();
+        int headerBarMargin = layoutParams.topMargin + layoutParams.topMargin / 2;
+        int newHeight = binding.mapRootLayout.getHeight() - headerBarHeight - headerBarMargin;
     }
 
     @Override

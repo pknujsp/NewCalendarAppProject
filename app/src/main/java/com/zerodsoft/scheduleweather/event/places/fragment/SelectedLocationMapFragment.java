@@ -57,12 +57,11 @@ public class SelectedLocationMapFragment extends KakaoMapFragment
             }
         });
         binding.mapHeaderBar.getRoot().setVisibility(View.GONE);
-        //  binding.mapButtonsLayout.getRoot().setVisibility(View.GONE);
         binding.mapButtonsLayout.gpsButton.setVisibility(View.GONE);
         binding.mapButtonsLayout.currentAddress.setVisibility(View.GONE);
 
-        FrameLayout.LayoutParams mapButtonsLayout = (FrameLayout.LayoutParams) binding.mapButtonsLayout.getRoot().getLayoutParams();
-        final int margin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16f, getResources().getDisplayMetrics());
+        RelativeLayout.LayoutParams mapButtonsLayout = (RelativeLayout.LayoutParams) binding.mapButtonsLayout.getRoot().getLayoutParams();
+        final int margin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 12f, getResources().getDisplayMetrics());
         mapButtonsLayout.rightMargin = margin;
         mapButtonsLayout.bottomMargin = margin;
 
@@ -72,16 +71,15 @@ public class SelectedLocationMapFragment extends KakaoMapFragment
         RelativeLayout.LayoutParams zoomOutLayoutParams = (RelativeLayout.LayoutParams) binding.mapButtonsLayout.zoomOutButton.getLayoutParams();
 
         final int size = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, getResources().getDisplayMetrics());
+        final int bottomMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4f, getResources().getDisplayMetrics());
         zoomInLayoutParams.width = size;
         zoomInLayoutParams.height = size;
         zoomOutLayoutParams.width = size;
         zoomOutLayoutParams.height = size;
+        zoomOutLayoutParams.bottomMargin = bottomMargin;
 
         binding.mapButtonsLayout.zoomInButton.setLayoutParams(zoomInLayoutParams);
         binding.mapButtonsLayout.zoomOutButton.setLayoutParams(zoomOutLayoutParams);
-
-        binding.mapButtonsLayout.zoomInButton.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
-        binding.mapButtonsLayout.zoomOutButton.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
     }
 
     @Override

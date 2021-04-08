@@ -2,6 +2,9 @@ package com.zerodsoft.scheduleweather.event.common;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentOnAttachListener;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.content.Intent;
@@ -14,6 +17,8 @@ import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.main.InstanceMainActivity;
 import com.zerodsoft.scheduleweather.kakaomap.activity.KakaoMapActivity;
 import com.zerodsoft.scheduleweather.kakaomap.callback.ToolbarMenuCallback;
+import com.zerodsoft.scheduleweather.kakaomap.fragment.search.LocationSearchFragment;
+import com.zerodsoft.scheduleweather.kakaomap.fragment.searchheader.MapHeaderSearchFragment;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
 public class MLocActivity extends KakaoMapActivity
@@ -24,18 +29,16 @@ public class MLocActivity extends KakaoMapActivity
     private Long eventId;
 
     private LocationViewModel viewModel;
-    private OnBackPressedCallback onBackPressedCallback;
-    private final ToolbarMenuCallback toolbarMenuCallback = new ToolbarMenuCallback()
+    private OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
     {
         @Override
-        public void onCreateOptionsMenu()
+        public void handleOnBackPressed()
         {
-            // iconfy가 false가 되면 search listener실행
-            /*
-            kakaoMapFragment.searchView.setIconified(false);
-            kakaoMapFragment.searchView.setQuery(savedLocation, true);
+            kakaoMapFragment.binding.mapView.removeAllViews();
 
-             */
+            setResult(RESULT_CANCELED);
+            finish();
+            onBackPressedCallback.remove();
         }
     };
 
@@ -44,20 +47,6 @@ public class MLocActivity extends KakaoMapActivity
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-     //   kakaoMapFragment.setToolbarMenuCallback(toolbarMenuCallback);
-
-        onBackPressedCallback = new OnBackPressedCallback(true)
-        {
-            @Override
-            public void handleOnBackPressed()
-            {
-                kakaoMapFragment.binding.mapView.removeAllViews();
-
-                setResult(RESULT_CANCELED);
-                finish();
-                onBackPressedCallback.remove();
-            }
-        };
         getOnBackPressedDispatcher().addCallback(onBackPressedCallback);
 
         viewModel = new ViewModelProvider(this).get(LocationViewModel.class);
@@ -77,6 +66,21 @@ public class MLocActivity extends KakaoMapActivity
     protected void onStart()
     {
         super.onStart();
+
+        kakaoMapFragment.getChildFragmentManager().addFragmentOnAttachListener(new FragmentOnAttachListener()
+        {
+            @Override
+            public void onAttachFragment(@NonNull FragmentManager fragmentManager, @NonNull Fragment fragment)
+            {
+                if (fragment instanceof LocationSearchFragment)
+                {
+                    MapHeaderSearchFragment mapHeaderSearchFragment = (MapHeaderSearchFragment) fragmentManager.findFragmentByTag(MapHeaderSearchFragment.TAG);
+                    mapHeaderSearchFragment.setQuery(savedLocation, true);
+                }
+            }
+        });
+
+        kakaoMapFragment.binding.mapHeaderBar.getRoot().performClick();
     }
 
     @Override

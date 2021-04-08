@@ -2,6 +2,7 @@ package com.zerodsoft.scheduleweather.event.places.fragment;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,11 +10,14 @@ import android.view.ViewGroup;
 import android.widget.CompoundButton;
 import android.widget.FrameLayout;
 import android.widget.HorizontalScrollView;
+import android.widget.RelativeLayout;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentOnAttachListener;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.chip.Chip;
@@ -26,6 +30,7 @@ import com.zerodsoft.scheduleweather.event.places.interfaces.OnClickedPlacesList
 import com.zerodsoft.scheduleweather.event.places.interfaces.PlaceCategory;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PlaceItemsGetter;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.main.KakaoMapFragment;
+import com.zerodsoft.scheduleweather.kakaomap.fragment.searchheader.MapHeaderSearchFragment;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.SearchBottomSheetController;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddress;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
@@ -120,8 +125,9 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
         //-----------chip group
         HorizontalScrollView chipScrollView = new HorizontalScrollView(getContext());
         chipScrollView.setHorizontalScrollBarEnabled(false);
-        FrameLayout.LayoutParams chipLayoutParams = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        chipLayoutParams.gravity = Gravity.TOP;
+        RelativeLayout.LayoutParams chipLayoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        chipLayoutParams.addRule(RelativeLayout.BELOW, binding.mapHeaderBar.getRoot().getId());
+        chipLayoutParams.topMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, getResources().getDisplayMetrics());
         chipScrollView.setLayoutParams(chipLayoutParams);
         binding.mapViewLayout.addView(chipScrollView);
 
@@ -151,6 +157,7 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
             chip.setCheckable(true);
             chip.setVisibility(View.VISIBLE);
             chip.setOnCheckedChangeListener(onCheckedChangeListener);
+
             final ChipViewHolder chipViewHolder = new ChipViewHolder(placeCategory, index++);
             chip.setTag(chipViewHolder);
 
@@ -174,6 +181,21 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
         });
 
         categoryChipGroup.addView(listChip, 0);
+
+        getChildFragmentManager().addFragmentOnAttachListener(new FragmentOnAttachListener()
+        {
+            @Override
+            public void onAttachFragment(@NonNull FragmentManager fragmentManager, @NonNull Fragment fragment)
+            {
+                if (fragment instanceof MapHeaderSearchFragment)
+                {
+                    if (categoryChipGroup.getCheckedChipId() != View.NO_ID)
+                    {
+                        categoryChipGroup.findViewById(categoryChipGroup.getCheckedChipId()).performClick();
+                    }
+                }
+            }
+        });
     }
 
     private final CompoundButton.OnCheckedChangeListener onCheckedChangeListener = new CompoundButton.OnCheckedChangeListener()

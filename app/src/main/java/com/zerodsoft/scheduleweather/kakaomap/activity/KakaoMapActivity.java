@@ -47,4 +47,5 @@ public class KakaoMapActivity extends AppCompatActivity implements PlacesItemBot
 
     }
 
+
 }
