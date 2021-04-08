@@ -85,6 +85,7 @@ public class LocationSearchTransactionFragment extends DialogFragment implements
                     {
                         // list인 경우
                         iMapData.removeAllPoiItems();
+                        binding.viewTypeButton.setVisibility(View.GONE);
                         getChildFragmentManager().popBackStackImmediate();
                         LocationSearchResultFragment.close();
                     } else
@@ -129,7 +130,7 @@ public class LocationSearchTransactionFragment extends DialogFragment implements
             @Override
             public void onClick(View view)
             {
-
+                changeFragment();
             }
         });
 
@@ -139,7 +140,7 @@ public class LocationSearchTransactionFragment extends DialogFragment implements
             @Override
             public boolean onKey(View view, int keyCode, KeyEvent keyEvent)
             {
-                if (keyCode == KeyEvent.KEYCODE_ENTER)
+                if (keyCode == KeyEvent.KEYCODE_ENTER && keyEvent.getAction() == KeyEvent.ACTION_DOWN)
                 {
                     //검색
                     search(binding.edittext.getText().toString());
@@ -226,14 +227,14 @@ public class LocationSearchTransactionFragment extends DialogFragment implements
     public void showList()
     {
         isVisibleList = true;
-        binding.fragmentContainerView.setVisibility(View.VISIBLE);
+        getDialog().show();
     }
 
     @Override
     public void showMap()
     {
         isVisibleList = false;
-        binding.fragmentContainerView.setVisibility(View.GONE);
+        getDialog().hide();
     }
 
     public void changeFragment()

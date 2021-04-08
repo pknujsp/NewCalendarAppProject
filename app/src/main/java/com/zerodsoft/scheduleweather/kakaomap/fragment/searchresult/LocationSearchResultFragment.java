@@ -116,8 +116,6 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
-
-        searchResultListAdapter = new SearchResultListAdapter(LocationSearchResultFragment.this);
         search(SEARCH_WORD);
     }
 
