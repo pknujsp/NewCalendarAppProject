@@ -151,6 +151,7 @@ public class FoodCategoryTabFragment extends Fragment implements OnClickedRestau
         {
             case android.R.id.home:
                 onBackPressedCallback.handleOnBackPressed();
+                break;
         }
         return super.onOptionsItemSelected(item);
     }

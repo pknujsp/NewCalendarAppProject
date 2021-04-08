@@ -6,6 +6,7 @@ import android.os.Bundle;
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -19,6 +20,8 @@ import android.service.carrier.CarrierMessagingService;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
@@ -42,30 +45,39 @@ import java.util.List;
 
 public class LocationSearchFragment extends Fragment implements OnSelectedMapCategory, OnClickedListItem<SearchHistoryDTO>
 {
-    public static final String TAG = "SearchFragment";
+    public static final String TAG = "LocationSearchFragment";
 
     private FragmentSearchBinding binding;
     private PlaceCategoriesAdapter categoriesAdapter;
     private SearchLocationHistoryAdapter searchLocationHistoryAdapter;
     private SearchHistoryViewModel searchHistoryViewModel;
 
-    private final IMapPoint iMapPoint;
-    private final IMapData iMapData;
-    private final FragmentStateCallback fragmentStateCallback;
-    private final PlacesListBottomSheetController placesListBottomSheetController;
-    private final PoiItemOnClickListener poiItemOnClickListener;
-    private final SearchBarController searchBarController;
+    private IMapPoint iMapPoint;
+    private IMapData iMapData;
+    private FragmentStateCallback fragmentStateCallback;
+    private PlacesListBottomSheetController placesListBottomSheetController;
+    private PoiItemOnClickListener poiItemOnClickListener;
+    private SearchBarController searchBarController;
 
-    public LocationSearchFragment(IMapPoint iMapPoint, IMapData iMapData, FragmentStateCallback fragmentStateCallback
-            , PlacesListBottomSheetController placesListBottomSheetController, PoiItemOnClickListener poiItemOnClickListener,
-                                  SearchBarController searchBarController)
+    private int newHeight;
+
+    private OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
     {
-        this.iMapPoint = iMapPoint;
-        this.iMapData = iMapData;
+        @Override
+        public void handleOnBackPressed()
+        {
+            fragmentStateCallback.onChangedState(FragmentStateCallback.ON_REMOVED);
+        }
+    };
+
+    public LocationSearchFragment(Fragment mapFragment, Fragment headerBarFragment, FragmentStateCallback fragmentStateCallback)
+    {
+        this.iMapPoint = (IMapPoint) mapFragment;
+        this.iMapData = (IMapData) mapFragment;
+        this.placesListBottomSheetController = (PlacesListBottomSheetController) mapFragment;
+        this.poiItemOnClickListener = (PoiItemOnClickListener) mapFragment;
+        this.searchBarController = (SearchBarController) headerBarFragment;
         this.fragmentStateCallback = fragmentStateCallback;
-        this.placesListBottomSheetController = placesListBottomSheetController;
-        this.poiItemOnClickListener = poiItemOnClickListener;
-        this.searchBarController = searchBarController;
     }
 
 
@@ -73,8 +85,8 @@ public class LocationSearchFragment extends Fragment implements OnSelectedMapCat
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+        getActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
     }
-
 
 
     @Override
@@ -87,7 +99,7 @@ public class LocationSearchFragment extends Fragment implements OnSelectedMapCat
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState)
     {
-        binding = FragmentSearchBinding.inflate(inflater, container, false);
+        binding = FragmentSearchBinding.inflate(inflater);
         return binding.getRoot();
     }
 
@@ -124,6 +136,11 @@ public class LocationSearchFragment extends Fragment implements OnSelectedMapCat
         binding.categoriesRecyclerview.setAdapter(categoriesAdapter);
     }
 
+    @Override
+    public void onStart()
+    {
+        super.onStart();
+    }
 
     @Override
     public void onSelectedMapCategory(PlaceCategoryDTO category)

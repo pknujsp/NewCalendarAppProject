@@ -3,70 +3,55 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <RelativeLayout
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:id="@+id/map_root_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <androidx.coordinatorlayout.widget.CoordinatorLayout
-            android:id="@+id/map_root_layout"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-
-            <FrameLayout
-                android:id="@+id/map_container"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-                <FrameLayout
-                    android:id="@+id/map_view"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
-
-                <RelativeLayout
-                    android:id="@+id/map_function_view_layout"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="@color/transparent">
-
-                    <include
-                        android:id="@+id/map_header_bar"
-                        layout="@layout/view_map_search_bar"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentTop="true"
-                        android:layout_gravity="top"
-                        android:layout_marginLeft="32dp"
-                        android:layout_marginTop="36dp"
-                        android:layout_marginRight="28dp" />
-
-                    <include
-                        android:id="@+id/map_buttons_layout"
-                        layout="@layout/map_buttons_view"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentBottom="true"
-                        android:layout_gravity="bottom"
-                        android:layout_marginLeft="28dp"
-                        android:layout_marginRight="28dp"
-                        android:layout_marginBottom="32dp" />
-
-                </RelativeLayout>
-
-            </FrameLayout>
-
-            <include
-                android:id="@+id/placeslist_bottom_sheet"
-                layout="@layout/place_list_bottom_sheet_view" />
-
-        </androidx.coordinatorlayout.widget.CoordinatorLayout>
-
-        <androidx.fragment.app.FragmentContainerView
-            android:id="@+id/fragment_container_view"
+        <RelativeLayout
+            android:id="@+id/map_view_layout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/transparent" />
+            android:background="@color/transparent">
 
-    </RelativeLayout>
+            <include
+                android:id="@+id/map_header_bar"
+                layout="@layout/view_map_search_bar"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_alignParentTop="true"
+                android:layout_marginLeft="32dp"
+                android:layout_marginTop="32dp"
+                android:layout_marginRight="32dp" />
+
+            <FrameLayout
+                android:id="@+id/map_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentBottom="true" />
+
+            <include
+                android:id="@+id/map_buttons_layout"
+                layout="@layout/map_buttons_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_gravity="bottom"
+                android:layout_marginLeft="28dp"
+                android:layout_marginRight="28dp"
+                android:layout_marginBottom="32dp" />
+
+        </RelativeLayout>
+
+        <include
+            android:id="@+id/location_search_bottom_sheet"
+            layout="@layout/bottom_sheet_location_search" />
+
+        <include
+            android:id="@+id/placeslist_bottom_sheet"
+            layout="@layout/place_list_bottom_sheet_view" />
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
 </layout>

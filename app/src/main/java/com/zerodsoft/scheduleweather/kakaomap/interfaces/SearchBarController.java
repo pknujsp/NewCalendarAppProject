@@ -9,8 +9,6 @@ public interface SearchBarController
 
     void changeViewTypeImg(int type);
 
-    void showList();
-
-    void showMap();
+    void setViewTypeVisibility(int visibility);
 }
 

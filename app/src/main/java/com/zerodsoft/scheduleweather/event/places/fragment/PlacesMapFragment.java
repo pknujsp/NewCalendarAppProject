@@ -123,7 +123,7 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
         FrameLayout.LayoutParams chipLayoutParams = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         chipLayoutParams.gravity = Gravity.TOP;
         chipScrollView.setLayoutParams(chipLayoutParams);
-        binding.mapContainer.addView(chipScrollView);
+        binding.mapViewLayout.addView(chipScrollView);
 
         categoryChipGroup = new ChipGroup(getContext(), null, R.style.Widget_MaterialComponents_ChipGroup);
         categoryChipGroup.setSingleSelection(true);

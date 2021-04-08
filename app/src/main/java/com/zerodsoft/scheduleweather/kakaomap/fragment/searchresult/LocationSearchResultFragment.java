@@ -44,7 +44,7 @@ import java.util.List;
 
 public class LocationSearchResultFragment extends Fragment implements IndicatorCreater, OnClickedLocListItem
 {
-    public static final String TAG = "SearchResultFragment";
+    public static final String TAG = "LocationSearchResultFragment";
     private static LocationSearchResultFragment instance;
     private FragmentSearchResultListBinding binding;
 
@@ -59,6 +59,29 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
     private PoiItemOnClickListener poiItemOnClickListener;
     private SearchBarController searchBarController;
 
+    private boolean isVisibleList = true;
+
+    private OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
+    {
+        @Override
+        public void handleOnBackPressed()
+        {
+            if (isVisibleList)
+            {
+                // list인 경우
+                iMapData.removeAllPoiItems();
+                searchBarController.setViewTypeVisibility(View.GONE);
+                getChildFragmentManager().popBackStackImmediate();
+                LocationSearchResultFragment.close();
+            } else
+            {
+                // map인 경우
+                placesListBottomSheetController.setPlacesListBottomSheetState(BottomSheetBehavior.STATE_COLLAPSED);
+                changeFragment();
+            }
+        }
+    };
+
     public static void close()
     {
         instance = null;
@@ -70,15 +93,13 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
         binding.viewpagerIndicator.createDot(0, fragmentSize);
     }
 
-    public LocationSearchResultFragment(String searchWord, IMapPoint iMapPoint, IMapData iMapData
-            , PlacesListBottomSheetController placesListBottomSheetController,
-                                        PoiItemOnClickListener poiItemOnClickListener, SearchBarController searchBarController)
+    public LocationSearchResultFragment(String searchWord, Fragment fragment, SearchBarController searchBarController)
     {
         this.SEARCH_WORD = searchWord;
-        this.iMapPoint = iMapPoint;
-        this.iMapData = iMapData;
-        this.placesListBottomSheetController = placesListBottomSheetController;
-        this.poiItemOnClickListener = poiItemOnClickListener;
+        this.iMapPoint = (IMapPoint) fragment;
+        this.iMapData = (IMapData) fragment;
+        this.placesListBottomSheetController = (PlacesListBottomSheetController) fragment;
+        this.poiItemOnClickListener = (PoiItemOnClickListener) fragment;
         this.searchBarController = searchBarController;
     }
 
@@ -87,16 +108,11 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
         return instance;
     }
 
-    public static LocationSearchResultFragment newInstance(String searchWord, IMapPoint iMapPoint, IMapData iMapData
-            , PlacesListBottomSheetController placesListBottomSheetController
-            , PoiItemOnClickListener poiItemOnClickListener, SearchBarController searchBarController)
+    public static LocationSearchResultFragment newInstance(String searchWord, Fragment fragment, SearchBarController searchBarController)
     {
-        instance = new LocationSearchResultFragment(searchWord, iMapPoint, iMapData
-                , placesListBottomSheetController, poiItemOnClickListener, searchBarController
-        );
+        instance = new LocationSearchResultFragment(searchWord, fragment, searchBarController);
         return instance;
     }
-
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -214,11 +230,41 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
     }
 
 
+    public void showList()
+    {
+        isVisibleList = true;
+    }
+
+    public void showMap()
+    {
+        isVisibleList = false;
+    }
+
+    public void changeFragment()
+    {
+        searchBarController.changeViewTypeImg(isVisibleList ? SearchBarController.MAP : SearchBarController.LIST);
+
+        if (isVisibleList)
+        {
+            // to map
+            // 버튼 이미지, 프래그먼트 숨김/보이기 설정
+            // iMapData.showAllPoiItems();
+            showMap();
+        } else
+        {
+            // to list
+            // iMapData.backToPreviousView();
+            showList();
+        }
+
+    }
+
+
     @Override
     public void onClickedLocItem(int index)
     {
         poiItemOnClickListener.onPOIItemSelectedByList(index);
-        searchBarController.showMap();
+        searchBarController.changeViewTypeImg(SearchBarController.MAP);
     }
 
     class OnPageCallback extends ViewPager2.OnPageChangeCallback

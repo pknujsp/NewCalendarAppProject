@@ -9,12 +9,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.zerodsoft.scheduleweather.databinding.FragmentLocationHeaderBarBinding;
 import com.zerodsoft.scheduleweather.databinding.FragmentLocationSearchBarBinding;
 
-public class LocationSearchHeaderFragment extends Fragment
+public class MapHeaderMainFragment extends Fragment
 {
-    public static final String TAG = "LocationSearchHeaderFragment";
-    private FragmentLocationSearchBarBinding binding;
+    public static final String TAG = "MapHeaderFragment";
+    private FragmentLocationHeaderBarBinding binding;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState)
@@ -26,7 +27,7 @@ public class LocationSearchHeaderFragment extends Fragment
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
     {
-        binding = FragmentLocationSearchBarBinding.inflate(inflater);
+        binding = FragmentLocationHeaderBarBinding.inflate(inflater);
         return binding.getRoot();
     }
 
