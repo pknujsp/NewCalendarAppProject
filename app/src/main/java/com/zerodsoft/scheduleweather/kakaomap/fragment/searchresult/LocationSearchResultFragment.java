@@ -46,7 +46,6 @@ import java.util.List;
 public class LocationSearchResultFragment extends Fragment implements IndicatorCreater, OnClickedLocListItem
 {
     public static final String TAG = "LocationSearchResultFragment";
-    private static LocationSearchResultFragment instance;
     private FragmentSearchResultListBinding binding;
 
     private SearchResultListAdapter searchResultListAdapter;
@@ -61,7 +60,7 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
     private SearchBarController searchBarController;
     private SearchFragmentController searchFragmentController;
 
-    private OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
+    public OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
     {
         @Override
         public void handleOnBackPressed()
@@ -74,7 +73,6 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
                 searchBarController.setViewTypeVisibility(View.GONE);
                 getParentFragmentManager().popBackStackImmediate();
                 onBackPressedCallback.remove();
-                LocationSearchResultFragment.close();
             } else
             {
                 // map인 경우
@@ -84,11 +82,6 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
             }
         }
     };
-
-    public static void close()
-    {
-        instance = null;
-    }
 
     @Override
     public void setIndicator(int fragmentSize)
@@ -105,17 +98,6 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
         this.poiItemOnClickListener = (PoiItemOnClickListener) fragment;
         this.searchFragmentController = (SearchFragmentController) fragment;
         this.searchBarController = searchBarController;
-    }
-
-    public static LocationSearchResultFragment getInstance()
-    {
-        return instance;
-    }
-
-    public static LocationSearchResultFragment newInstance(String searchWord, Fragment fragment, SearchBarController searchBarController)
-    {
-        instance = new LocationSearchResultFragment(searchWord, fragment, searchBarController);
-        return instance;
     }
 
     @Override

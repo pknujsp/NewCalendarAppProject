@@ -60,13 +60,12 @@ public class LocationSearchFragment extends Fragment implements OnSelectedMapCat
     private PoiItemOnClickListener poiItemOnClickListener;
     private SearchBarController searchBarController;
 
-    private OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
+    public OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
     {
         @Override
         public void handleOnBackPressed()
         {
             fragmentStateCallback.onChangedState(FragmentStateCallback.ON_REMOVED);
-            onBackPressedCallback.remove();
         }
     };
 
