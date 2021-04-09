@@ -24,6 +24,7 @@ import android.view.Window;
 import android.view.WindowManager;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.common.interfaces.SearchHistoryDataController;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PoiItemOnClickListener;
@@ -38,13 +39,15 @@ import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapPoint;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.OnSelectedMapCategory;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.search.adapter.PlaceCategoriesAdapter;
 import com.zerodsoft.scheduleweather.databinding.FragmentSearchBinding;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.SearchFragmentController;
 import com.zerodsoft.scheduleweather.kakaomap.viewmodel.SearchHistoryViewModel;
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 import com.zerodsoft.scheduleweather.room.dto.SearchHistoryDTO;
 
 import java.util.List;
 
-public class LocationSearchFragment extends Fragment implements OnSelectedMapCategory, OnClickedListItem<SearchHistoryDTO>, SearchHistoryDataController<SearchHistoryDTO>
+public class LocationSearchFragment extends Fragment implements OnSelectedMapCategory, OnClickedListItem<SearchHistoryDTO>, SearchHistoryDataController<SearchHistoryDTO>,
+        OnBackPressedCallbackController
 {
     public static final String TAG = "LocationSearchFragment";
     private FragmentSearchBinding binding;
@@ -59,32 +62,32 @@ public class LocationSearchFragment extends Fragment implements OnSelectedMapCat
     private PlacesListBottomSheetController placesListBottomSheetController;
     private PoiItemOnClickListener poiItemOnClickListener;
     private SearchBarController searchBarController;
+    private SearchFragmentController searchFragmentController;
 
     public OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
     {
         @Override
         public void handleOnBackPressed()
         {
-            fragmentStateCallback.onChangedState(FragmentStateCallback.ON_REMOVED);
+            searchFragmentController.closeSearchFragments(LocationSearchFragment.TAG);
         }
     };
 
-    public LocationSearchFragment(Fragment mapFragment, Fragment headerBarFragment, FragmentStateCallback fragmentStateCallback)
+    public LocationSearchFragment(Fragment mapFragment, FragmentStateCallback fragmentStateCallback)
     {
         this.iMapPoint = (IMapPoint) mapFragment;
         this.iMapData = (IMapData) mapFragment;
         this.placesListBottomSheetController = (PlacesListBottomSheetController) mapFragment;
         this.poiItemOnClickListener = (PoiItemOnClickListener) mapFragment;
-        this.searchBarController = (SearchBarController) headerBarFragment;
         this.fragmentStateCallback = fragmentStateCallback;
+        this.searchFragmentController = (SearchFragmentController) mapFragment;
     }
 
-    @Override
-    public void onAttach(@NonNull Context context)
+    public void setSearchBarController(SearchBarController searchBarController)
     {
-        super.onAttach(context);
-        getActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
+        this.searchBarController = searchBarController;
     }
+
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -184,7 +187,6 @@ public class LocationSearchFragment extends Fragment implements OnSelectedMapCat
     public void onClickedListItem(SearchHistoryDTO e)
     {
         searchBarController.setQuery(e.getValue(), true);
-        searchBarController.changeViewTypeImg(SearchBarController.MAP);
     }
 
     @Override
@@ -230,5 +232,17 @@ public class LocationSearchFragment extends Fragment implements OnSelectedMapCat
                 });
             }
         });
+    }
+
+    @Override
+    public void addOnBackPressedCallback()
+    {
+        getActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
+    }
+
+    @Override
+    public void removeOnBackPressedCallback()
+    {
+        onBackPressedCallback.remove();
     }
 }

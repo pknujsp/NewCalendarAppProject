@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.os.RemoteException;
 import android.service.carrier.CarrierMessagingService;
 import android.view.View;
+import android.view.ViewTreeObserver;
 
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.main.InstanceMainActivity;
@@ -60,27 +61,41 @@ public class MLocActivity extends KakaoMapActivity
         // 검색 결과가 바로 나타난다.
         kakaoMapFragment.setPlaceBottomSheetSelectBtnVisibility(View.VISIBLE);
         kakaoMapFragment.setPlaceBottomSheetUnSelectBtnVisibility(View.GONE);
+
+        binding.mapActivityRootLayout.getViewTreeObserver().addOnGlobalLayoutListener(acitivityRootOnGlobalLayoutListener);
     }
+
+    private ViewTreeObserver.OnGlobalLayoutListener acitivityRootOnGlobalLayoutListener =
+            new ViewTreeObserver.OnGlobalLayoutListener()
+            {
+                @Override
+                public void onGlobalLayout()
+                {
+                    kakaoMapFragment.binding.locationSearchBottomSheet.searchFragmentContainer.getViewTreeObserver()
+                            .addOnGlobalLayoutListener(searchBottomSheetFragmentOnGlobalLayoutListener);
+
+                    kakaoMapFragment.binding.mapHeaderBar.getRoot().performClick();
+
+                    binding.mapActivityRootLayout.getViewTreeObserver().removeOnGlobalLayoutListener(acitivityRootOnGlobalLayoutListener);
+                }
+            };
+
+    private ViewTreeObserver.OnGlobalLayoutListener searchBottomSheetFragmentOnGlobalLayoutListener =
+            new ViewTreeObserver.OnGlobalLayoutListener()
+            {
+                @Override
+                public void onGlobalLayout()
+                {
+                    ((MapHeaderSearchFragment) kakaoMapFragment.getChildFragmentManager().findFragmentByTag(MapHeaderSearchFragment.TAG)).setQuery(savedLocation, true);
+
+                    kakaoMapFragment.binding.locationSearchBottomSheet.searchFragmentContainer.getViewTreeObserver().removeOnGlobalLayoutListener(searchBottomSheetFragmentOnGlobalLayoutListener);
+                }
+            };
 
     @Override
     protected void onStart()
     {
         super.onStart();
-
-        kakaoMapFragment.getChildFragmentManager().addFragmentOnAttachListener(new FragmentOnAttachListener()
-        {
-            @Override
-            public void onAttachFragment(@NonNull FragmentManager fragmentManager, @NonNull Fragment fragment)
-            {
-                if (fragment instanceof LocationSearchFragment)
-                {
-                    MapHeaderSearchFragment mapHeaderSearchFragment = (MapHeaderSearchFragment) fragmentManager.findFragmentByTag(MapHeaderSearchFragment.TAG);
-                    mapHeaderSearchFragment.setQuery(savedLocation, true);
-                }
-            }
-        });
-
-        kakaoMapFragment.binding.mapHeaderBar.getRoot().performClick();
     }
 
     @Override

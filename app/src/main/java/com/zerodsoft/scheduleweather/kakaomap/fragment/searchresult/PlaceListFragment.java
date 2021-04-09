@@ -368,7 +368,6 @@ public class PlaceListFragment extends Fragment implements IViewPager, OnProgres
             public void run()
             {
                 binding.progressBar.setVisibility(visibility);
-
             }
         });
     }

@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
 import com.zerodsoft.scheduleweather.databinding.FragmentSearchResultListBinding;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PoiItemOnClickListener;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.OnClickedLocListItem;
@@ -37,7 +38,7 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.Pl
 import java.util.ArrayList;
 import java.util.List;
 
-public class LocationSearchResultFragment extends Fragment implements IndicatorCreater, OnClickedLocListItem
+public class LocationSearchResultFragment extends Fragment implements IndicatorCreater, OnClickedLocListItem, OnBackPressedCallbackController
 {
     public static final String TAG = "LocationSearchResultFragment";
     private FragmentSearchResultListBinding binding;
@@ -91,12 +92,6 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
         this.searchBarController = searchBarController;
     }
 
-    @Override
-    public void onAttach(@NonNull Context context)
-    {
-        super.onAttach(context);
-        getActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -246,6 +241,18 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
                 ((PlaceListFragment) curFragment).onChangedPage();
             }
         }
+    }
+
+    @Override
+    public void addOnBackPressedCallback()
+    {
+        getActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
+    }
+
+    @Override
+    public void removeOnBackPressedCallback()
+    {
+        onBackPressedCallback.remove();
     }
 
 }

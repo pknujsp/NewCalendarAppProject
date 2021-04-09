@@ -109,6 +109,7 @@ public class AddressItemDataSource extends PositionalDataSource<AddressResponseD
         } else
         {
             callback.onResult(new ArrayList<AddressResponseDocuments>(0));
+            onProgressBarListener.setProgressBarVisibility(View.GONE);
         }
     }
 }

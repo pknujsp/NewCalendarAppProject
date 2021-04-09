@@ -14,7 +14,7 @@ import com.zerodsoft.scheduleweather.databinding.FragmentLocationSearchBarBindin
 
 public class MapHeaderMainFragment extends Fragment
 {
-    public static final String TAG = "MapHeaderFragment";
+    public static final String TAG = "MapHeaderMainFragment";
     private FragmentLocationHeaderBarBinding binding;
 
     @Override

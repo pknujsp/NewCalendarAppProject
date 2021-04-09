@@ -58,4 +58,8 @@
     inner_frame_layout_padding (below variable) on round screens.
     -->
     <dimen name="inner_frame_layout_padding">5dp</dimen>
+
+
+    <dimen name="map_header_bar_height">48dp</dimen>
+    <dimen name="map_header_bar_top_margin">32dp</dimen>
 </resources>

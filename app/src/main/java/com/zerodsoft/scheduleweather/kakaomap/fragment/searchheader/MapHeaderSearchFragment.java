@@ -28,7 +28,7 @@ import com.zerodsoft.scheduleweather.room.dto.SearchHistoryDTO;
 
 public class MapHeaderSearchFragment extends Fragment implements SearchBarController
 {
-    public static final String TAG = "MapSearchFragment";
+    public static final String TAG = "MapHeaderSearchFragment";
     private FragmentLocationSearchBarBinding binding;
 
     private final LocationSearchListener locationSearchListener;
