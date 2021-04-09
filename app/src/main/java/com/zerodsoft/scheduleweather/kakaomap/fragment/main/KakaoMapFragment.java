@@ -26,7 +26,6 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.view.ViewCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -218,10 +217,6 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
                             @Override
                             public void onChangedState(int state)
                             {
-                                if (state == FragmentStateCallback.ON_REMOVED)
-                                {
-                                    closeSearchFragments();
-                                }
                             }
                         });
                 mapHeaderSearchFragment.setSearchHistoryDataController(locationSearchFragment);
@@ -229,7 +224,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
                 fragmentTransaction.remove(getChildFragmentManager().findFragmentByTag(MapHeaderMainFragment.TAG))
                         .add(binding.mapHeaderBar.headerFragmentContainer.getId(), mapHeaderSearchFragment, MapHeaderSearchFragment.TAG)
                         .add(binding.locationSearchBottomSheet.searchFragmentContainer.getId(), locationSearchFragment, LocationSearchFragment.TAG)
-                        .commit();
+                        .commitNow();
 
                 locationSearchBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
             }
@@ -1030,33 +1025,36 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
             fragmentTransaction.add(binding.locationSearchBottomSheet.searchFragmentContainer.getId()
                     , new LocationSearchResultFragment(query, KakaoMapFragment.this, mapHeaderSearchFragment)
                     , LocationSearchResultFragment.TAG).hide(getChildFragmentManager().findFragmentByTag(LocationSearchFragment.TAG))
-                    .addToBackStack(null).commit();
+                    .commitNow();
         }
     }
 
-    public void closeSearchFragments()
+    /**
+     * current fragment tag마다 별도로 동작
+     */
+    @Override
+    public void closeSearchFragments(String currentFragmentTag)
     {
-        locationSearchBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-
         FragmentManager fragmentManager = getChildFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
-        MapHeaderMainFragment mapHeaderMainFragment = new MapHeaderMainFragment();
+        LocationSearchFragment locationSearchFragment = (LocationSearchFragment) fragmentManager.findFragmentByTag(LocationSearchFragment.TAG);
         MapHeaderSearchFragment mapHeaderSearchFragment =
                 (MapHeaderSearchFragment) fragmentManager.findFragmentByTag(MapHeaderSearchFragment.TAG);
 
-        fragmentTransaction.remove(mapHeaderSearchFragment)
-                .add(binding.mapHeaderBar.headerFragmentContainer.getId(), mapHeaderMainFragment, MapHeaderMainFragment.TAG);
-
-        if (fragmentManager.findFragmentByTag(LocationSearchFragment.TAG) != null)
+        if (currentFragmentTag.equals(LocationSearchFragment.TAG))
         {
-            LocationSearchFragment locationSearchFragment = (LocationSearchFragment) fragmentManager.findFragmentByTag(LocationSearchFragment.TAG);
+            locationSearchBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+
             locationSearchFragment.onBackPressedCallback.remove();
 
-            fragmentTransaction.remove(locationSearchFragment);
-        }
+            MapHeaderMainFragment mapHeaderMainFragment = new MapHeaderMainFragment();
 
-        if (fragmentManager.findFragmentByTag(LocationSearchResultFragment.TAG) != null)
+            fragmentTransaction.remove(mapHeaderSearchFragment)
+                    .add(binding.mapHeaderBar.headerFragmentContainer.getId(), mapHeaderMainFragment, MapHeaderMainFragment.TAG)
+                    .remove(locationSearchFragment)
+                    .commitNow();
+        } else if (currentFragmentTag.equals(LocationSearchResultFragment.TAG))
         {
             LocationSearchResultFragment locationSearchResultFragment =
                     (LocationSearchResultFragment) fragmentManager.findFragmentByTag(LocationSearchResultFragment.TAG);
@@ -1065,10 +1063,8 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
             mapHeaderSearchFragment.setViewTypeVisibility(View.GONE);
             locationSearchResultFragment.onBackPressedCallback.remove();
 
-            fragmentTransaction.remove(locationSearchResultFragment);
+            fragmentTransaction.remove(locationSearchResultFragment).show(locationSearchFragment);
         }
-
-        fragmentTransaction.commitNow();
     }
 
     @Override

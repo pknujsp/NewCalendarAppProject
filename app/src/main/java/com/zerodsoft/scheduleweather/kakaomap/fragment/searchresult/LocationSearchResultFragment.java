@@ -12,22 +12,16 @@ import androidx.viewpager2.widget.ViewPager2;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.databinding.FragmentSearchResultListBinding;
-import com.zerodsoft.scheduleweather.event.foods.searchlocation.fragment.AddressesListFragment;
-import com.zerodsoft.scheduleweather.event.foods.searchlocation.fragment.LocationSearchDialogFragment;
-import com.zerodsoft.scheduleweather.event.foods.searchlocation.fragment.PlacesListFragment;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PoiItemOnClickListener;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.OnClickedLocListItem;
-import com.zerodsoft.scheduleweather.kakaomap.fragment.searchresult.interfaces.ResultFragmentChanger;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.PlacesListBottomSheetController;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapPoint;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.searchresult.adapter.SearchResultListAdapter;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.searchresult.interfaces.IndicatorCreater;
-import com.zerodsoft.scheduleweather.etc.ViewPagerIndicator;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.SearchBarController;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.SearchFragmentController;
@@ -69,10 +63,7 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
             if (bottomSheetStateIsExpanded)
             {
                 // list인 경우
-                iMapData.removeAllPoiItems();
-                searchBarController.setViewTypeVisibility(View.GONE);
-                getParentFragmentManager().popBackStackImmediate();
-                onBackPressedCallback.remove();
+                searchFragmentController.closeSearchFragments(LocationSearchResultFragment.TAG);
             } else
             {
                 // map인 경우

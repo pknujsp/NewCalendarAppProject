@@ -11,19 +11,15 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
+import androidx.fragment.app.FragmentManager;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.interfaces.SearchHistoryDataController;
 import com.zerodsoft.scheduleweather.databinding.FragmentLocationSearchBarBinding;
-import com.zerodsoft.scheduleweather.etc.FragmentStateCallback;
-import com.zerodsoft.scheduleweather.event.places.interfaces.PoiItemOnClickListener;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.search.LocationSearchFragment;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.searchresult.LocationSearchResultFragment;
-import com.zerodsoft.scheduleweather.kakaomap.fragment.searchresult.adapter.SearchResultListAdapter;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapData;
-import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapPoint;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.PlacesListBottomSheetController;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.SearchBarController;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.SearchFragmentController;
@@ -81,7 +77,26 @@ public class MapHeaderSearchFragment extends Fragment implements SearchBarContro
             @Override
             public void onClick(View view)
             {
-                searchFragmentController.closeSearchFragments();
+                //현재 프래그먼트 파악
+                FragmentManager fragmentManager = getParentFragmentManager();
+
+                if (fragmentManager.findFragmentByTag(LocationSearchFragment.TAG) != null)
+                {
+                    if (fragmentManager.findFragmentByTag(LocationSearchFragment.TAG).isVisible())
+                    {
+                        searchFragmentController.closeSearchFragments(LocationSearchFragment.TAG);
+                    }
+                }
+
+                if (fragmentManager.findFragmentByTag(LocationSearchResultFragment.TAG) != null)
+                {
+                    if (fragmentManager.findFragmentByTag(LocationSearchResultFragment.TAG).isVisible())
+                    {
+                        searchFragmentController.closeSearchFragments(LocationSearchResultFragment.TAG);
+                        searchFragmentController.closeSearchFragments(LocationSearchFragment.TAG);
+                    }
+                }
+
             }
         });
 
