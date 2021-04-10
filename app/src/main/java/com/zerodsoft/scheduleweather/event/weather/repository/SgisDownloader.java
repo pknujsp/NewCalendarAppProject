@@ -3,12 +3,8 @@ package com.zerodsoft.scheduleweather.event.weather.repository;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.retrofit.HttpCommunicationClient;
 import com.zerodsoft.scheduleweather.retrofit.Querys;
-import com.zerodsoft.scheduleweather.retrofit.paremeters.MsrstnAcctoRltmMesureDnstyParameter;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.sgis.SgisAuthParameter;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.sgis.TransCoordParameter;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.AirConditionRoot;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.MsrstnAcctoRltmMesureDnsty.MsrstnAcctoRltmMesureDnstyBody;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.MsrstnAcctoRltmMesureDnsty.MsrstnAcctoRltmMesureDnstyRoot;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.SgisRoot;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.auth.SgisAuthResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.auth.SgisAuthResult;
@@ -28,7 +24,7 @@ public abstract class SgisDownloader
      */
     public void auth(SgisAuthParameter parameter)
     {
-        Querys querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.SGIS);
+        Querys querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.SGIS_AUTH);
 
         Call<SgisAuthResponse> call = querys.auth(parameter.toMap());
         call.enqueue(new Callback<SgisAuthResponse>()
@@ -53,7 +49,7 @@ public abstract class SgisDownloader
      */
     public void transcood(TransCoordParameter parameter)
     {
-        Querys querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.SGIS);
+        Querys querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.SGIS_AUTH);
 
         Call<TransCoordResponse> call = querys.transcoord(parameter.toMap());
         call.enqueue(new Callback<TransCoordResponse>()

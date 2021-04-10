@@ -10,6 +10,10 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.kakaoplace.KakaoPlac
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.addressresponse.AddressKakaoLocalResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddress;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.auth.SgisAuthResponse;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.building.buildingarea.BuildingAreaResponse;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.building.buildingattribute.BuildingAttributeResponse;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.building.floorcompanyinfo.FloorCompanyInfoResponse;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.building.flooretcfacility.FloorEtcFacilityResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.transcoord.TransCoordResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.midlandfcstresponse.MidLandFcstRoot;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.midtaresponse.MidTaRoot;
@@ -77,12 +81,26 @@ public interface Querys
     @GET("getNearbyMsrstnList")
     Call<NearbyMsrstnListRoot> getNearbyMsrstnList(@QueryMap(encoded = true) Map<String, String> queryMap);
 
-    //정부 SGIS
-    @GET("auth/authentication.json")
+    //정부 SGIS 인증
+    @GET("authentication.json")
     Call<SgisAuthResponse> auth(@QueryMap(encoded = true) Map<String, String> queryMap);
 
-    @GET("transformation/transcoord.json")
+    //정부 SGIS 좌표변환
+    @GET("transcoord.json")
     Call<TransCoordResponse> transcoord(@QueryMap(encoded = true) Map<String, String> queryMap);
+
+    //정부 SGIS 건물정보
+    @GET("buildingarea.json")
+    Call<BuildingAreaResponse> buildingArea(@QueryMap(encoded = true) Map<String, String> queryMap);
+
+    @GET("buildingattribute.json")
+    Call<BuildingAttributeResponse> buildingAttribute(@QueryMap(encoded = true) Map<String, String> queryMap);
+
+    @GET("flooretcfacility.json")
+    Call<FloorEtcFacilityResponse> floorEtcFacility(@QueryMap(encoded = true) Map<String, String> queryMap);
+
+    @GET("floorcompanyinfo.json")
+    Call<FloorCompanyInfoResponse> floorCompanyInfo(@QueryMap(encoded = true) Map<String, String> queryMap);
 
     // kakao place
     @GET("v/{id}")
