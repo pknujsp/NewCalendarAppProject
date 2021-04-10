@@ -1,5 +1,6 @@
 package com.zerodsoft.scheduleweather.event.weather.repository;
 
+import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.retrofit.HttpCommunicationClient;
 import com.zerodsoft.scheduleweather.retrofit.Querys;
@@ -16,8 +17,9 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public abstract class AirConditionDownloader
+public abstract class AirConditionDownloader extends JsonDownloader<AirConditionRoot>
 {
+    @Override
     public abstract void onResponse(DataWrapper<? extends AirConditionRoot> result);
 
     /*

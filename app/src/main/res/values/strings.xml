@@ -439,4 +439,10 @@
     <string name="hint_request_input_menu_restaurant_name">메뉴, 식당명 입력</string>
     <string name="search_history">검색 기록</string>
 
+    <!-- 건물 -->
+    <string name="building_search_list">건물 검색 목록</string>
+    <string name="criteria_address">기준 주소</string>
+    <string name="min_floor">최하층</string>
+    <string name="max_floor">최상층</string>
+
 </resources>
