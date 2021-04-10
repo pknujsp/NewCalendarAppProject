@@ -444,5 +444,6 @@
     <string name="criteria_address">기준 주소</string>
     <string name="min_floor">최하층</string>
     <string name="max_floor">최상층</string>
+    <string name="search_buildings">건물 검색</string>
 
 </resources>

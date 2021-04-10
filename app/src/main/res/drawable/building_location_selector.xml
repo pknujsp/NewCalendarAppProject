@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:width="@dimen/building_selector_background_arrow_width"
+        android:height="@dimen/building_selector_background_arrow_height"
+        android:gravity="center"
+        android:top="@dimen/building_selector_background_arrow_height">
+
+
+    </item>
+
+
+</layer-list>

@@ -16,7 +16,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
@@ -244,6 +246,21 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
             public void onClick(View view)
             {
                 //드래그로 이동가능한 마커 생성
+                View selectorView = getLayoutInflater().inflate(R.layout.building_location_selector_view, null);
+                RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
+
+                ((Button) selectorView.findViewById(R.id.search_buildings_button)).setOnClickListener(new View.OnClickListener()
+                {
+                    @Override
+                    public void onClick(View view)
+                    {
+                        //빌딩 목록 바텀 시트 열기
+                        //map center point를 좌표로 지정
+                    }
+                });
+
+                binding.mapViewLayout.addView(selectorView, layoutParams);
             }
         });
 
