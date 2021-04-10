@@ -2,11 +2,28 @@
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:width="@dimen/building_selector_background_arrow_width"
-        android:height="@dimen/building_selector_background_arrow_height"
-        android:gravity="center"
-        android:top="@dimen/building_selector_background_arrow_height">
+        android:width="@dimen/building_selector_small_circle_width"
+        android:height="@dimen/building_selector_small_circle_height"
+        android:gravity="center">
 
+        <shape android:shape="oval">
+            <solid android:color="@color/light_blue_600"/>
+        </shape>
+
+    </item>
+
+    <item
+        android:width="@dimen/building_selector_big_circle_width"
+        android:height="@dimen/building_selector_big_circle_height"
+        android:gravity="center">
+
+        <shape android:shape="oval">
+            <solid android:color="@color/transparent" />
+            <stroke
+                android:width="@dimen/building_selector_big_circle_stroke_size"
+                android:color="@color/light_blue_600" />
+
+        </shape>
 
     </item>
 

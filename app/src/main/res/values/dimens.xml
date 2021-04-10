@@ -63,11 +63,11 @@
     <dimen name="map_header_bar_height">48dp</dimen>
     <dimen name="map_header_bar_top_margin">32dp</dimen>
 
-    <dimen name="building_selector_background_arrow_height">24dp</dimen>
-    <dimen name="building_selector_background_arrow_width">24dp</dimen>
-    <dimen name="building_selector_background_width">36dp</dimen>
-    <dimen name="building_selector_background_height">36dp</dimen>
-    <dimen name="building_selector_width">36dp</dimen>
-    <dimen name="building_selector_height">60dp</dimen>
+    <dimen name="building_selector_small_circle_width">6dp</dimen>
+    <dimen name="building_selector_small_circle_height">4dp</dimen>
+    <dimen name="building_selector_big_circle_width">30dp</dimen>
+    <dimen name="building_selector_big_circle_height">26dp</dimen>
+    <dimen name="building_selector_big_circle_stroke_size">6dp</dimen>
+
 
 </resources>
