@@ -5,10 +5,11 @@ import android.os.Parcelable;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.building.SgisBuildingRoot;
 
 import java.util.List;
 
-public class BuildingAreaResponse implements Parcelable
+public class BuildingAreaResponse extends SgisBuildingRoot implements Parcelable
 {
     @Expose
     @SerializedName("result")

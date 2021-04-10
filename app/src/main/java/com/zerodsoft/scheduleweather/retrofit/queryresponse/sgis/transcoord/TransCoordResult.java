@@ -7,7 +7,7 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.SgisRoot;
 
-public class TransCoordResult extends SgisRoot implements Parcelable
+public class TransCoordResult implements Parcelable
 {
     @Expose
     @SerializedName("toSrs")

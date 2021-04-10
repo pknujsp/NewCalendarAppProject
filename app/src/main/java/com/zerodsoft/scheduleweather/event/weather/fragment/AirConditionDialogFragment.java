@@ -9,29 +9,13 @@ import androidx.fragment.app.DialogFragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.view.WindowManager;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.DialogFragmentAirConditionBinding;
-import com.zerodsoft.scheduleweather.databinding.FragmentAirConditionBinding;
-import com.zerodsoft.scheduleweather.event.weather.repository.AirConditionDownloader;
-import com.zerodsoft.scheduleweather.event.weather.repository.FindAirConditionStationDownloader;
-import com.zerodsoft.scheduleweather.event.weather.repository.SgisDownloader;
 import com.zerodsoft.scheduleweather.event.weather.view.airconditionbar.BarInitDataCreater;
-import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
-import com.zerodsoft.scheduleweather.retrofit.paremeters.MsrstnAcctoRltmMesureDnstyParameter;
-import com.zerodsoft.scheduleweather.retrofit.paremeters.NearbyMsrstnListParameter;
-import com.zerodsoft.scheduleweather.retrofit.paremeters.sgis.SgisAuthParameter;
-import com.zerodsoft.scheduleweather.retrofit.paremeters.sgis.TransCoordParameter;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.AirConditionRoot;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.CtprvnRltmMesureDnsty.CtprvnRltmMesureDnstyBody;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.FindStationRoot;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.MsrstnAcctoRltmMesureDnsty.MsrstnAcctoRltmMesureDnstyBody;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.NearbyMsrstnList.NearbyMsrstnListBody;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.SgisRoot;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.auth.SgisAuthResult;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.transcoord.TransCoordResult;
 
 public class AirConditionDialogFragment extends DialogFragment
 {

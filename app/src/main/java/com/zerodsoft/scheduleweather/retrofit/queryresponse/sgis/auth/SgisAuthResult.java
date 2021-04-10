@@ -7,7 +7,7 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.SgisRoot;
 
-public class SgisAuthResult extends SgisRoot implements Parcelable
+public class SgisAuthResult implements Parcelable
 {
     @Expose
     @SerializedName("accessToken")

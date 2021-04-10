@@ -19,9 +19,6 @@ import retrofit2.Response;
 
 public abstract class AirConditionDownloader extends JsonDownloader<AirConditionRoot>
 {
-    @Override
-    public abstract void onResponse(DataWrapper<? extends AirConditionRoot> result);
-
     /*
     관측소 별 실시간 측정정보 조회
      */

@@ -13,7 +13,7 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.FragmentAirConditionBinding;
 import com.zerodsoft.scheduleweather.event.weather.repository.AirConditionDownloader;
 import com.zerodsoft.scheduleweather.event.weather.repository.FindAirConditionStationDownloader;
-import com.zerodsoft.scheduleweather.event.weather.repository.SgisDownloader;
+import com.zerodsoft.scheduleweather.event.weather.repository.SgisTranscoord;
 import com.zerodsoft.scheduleweather.event.weather.view.airconditionbar.BarInitDataCreater;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.MsrstnAcctoRltmMesureDnstyParameter;
@@ -26,8 +26,11 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.FindSta
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.MsrstnAcctoRltmMesureDnsty.MsrstnAcctoRltmMesureDnstyBody;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.NearbyMsrstnList.NearbyMsrstnListBody;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.SgisRoot;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.auth.SgisAuthResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.auth.SgisAuthResult;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.transcoord.TransCoordResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.transcoord.TransCoordResult;
+import com.zerodsoft.scheduleweather.sgis.SgisAuth;
 
 public class AirConditionFragment extends Fragment
 {
@@ -38,7 +41,6 @@ public class AirConditionFragment extends Fragment
     private MsrstnAcctoRltmMesureDnstyParameter msrstnAcctoRltmMesureDnstyParameter;
     private MsrstnAcctoRltmMesureDnstyBody msrstnAcctoRltmMesureDnstyBody;
     private NearbyMsrstnListBody nearbyMsrstnListBody;
-    private SgisAuthResult sgisAuthResult;
 
     private final AirConditionDownloader airConditionDownloader = new AirConditionDownloader()
     {
@@ -91,28 +93,43 @@ public class AirConditionFragment extends Fragment
         }
     };
 
-    private final SgisDownloader sgisDownloader = new SgisDownloader()
+    private final SgisAuth sgisAuth = new SgisAuth()
     {
         @Override
-        public void onResponse(DataWrapper<? extends SgisRoot> result)
+        public void onResponse(DataWrapper<? extends SgisAuthResponse> result)
         {
             if (result.getException() == null)
             {
-                if (result.getData() instanceof SgisAuthResult)
+                if (result.getData() instanceof SgisAuthResponse)
                 {
-                    sgisAuthResult = (SgisAuthResult) result.getData();
+                    SgisAuth.setSgisAuthResponse(result.getData());
 
                     TransCoordParameter parameter = new TransCoordParameter();
-                    parameter.setAccessToken(sgisAuthResult.getAccessToken());
+                    parameter.setAccessToken(result.getData().getResult().getAccessToken());
                     parameter.setSrc(TransCoordParameter.WGS84);
                     parameter.setDst(TransCoordParameter.JUNGBU_ORIGIN);
                     parameter.setPosX(String.valueOf(longitude));
                     parameter.setPosY(String.valueOf(latitude));
 
-                    sgisDownloader.transcood(parameter);
-                } else if (result.getData() instanceof TransCoordResult)
+                    sgisTranscoord.transcoord(parameter);
+                }
+            } else
+            {
+
+            }
+        }
+    };
+
+    private final SgisTranscoord sgisTranscoord = new SgisTranscoord()
+    {
+        @Override
+        public void onResponse(DataWrapper<? extends TransCoordResponse> result)
+        {
+            if (result.getException() == null)
+            {
+                if (result.getData() instanceof TransCoordResponse)
                 {
-                    TransCoordResult transCoordResult = (TransCoordResult) result.getData();
+                    TransCoordResult transCoordResult = ((TransCoordResponse) result.getData()).getResult();
                     NearbyMsrstnListParameter parameter = new NearbyMsrstnListParameter();
                     parameter.setTmX(transCoordResult.getPosX());
                     parameter.setTmY(transCoordResult.getPosY());
@@ -196,10 +213,10 @@ public class AirConditionFragment extends Fragment
 
     public void refresh()
     {
-        if (sgisAuthResult == null)
+        if (SgisAuth.getSgisAuthResponse() == null)
         {
             SgisAuthParameter parameter = new SgisAuthParameter();
-            sgisDownloader.auth(parameter);
+            sgisAuth.auth(parameter);
         } else
         {
             airConditionDownloader.getMsrstnAcctoRltmMesureDnsty(msrstnAcctoRltmMesureDnstyParameter);

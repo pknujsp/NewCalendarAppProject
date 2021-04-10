@@ -5,8 +5,9 @@ import android.os.Parcelable;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.building.SgisBuildingRoot;
 
-public class FloorCompanyInfoResponse implements Parcelable
+public class FloorCompanyInfoResponse extends SgisBuildingRoot implements Parcelable
 {
     @Expose
     @SerializedName("result")

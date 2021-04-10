@@ -51,6 +51,10 @@
             android:id="@+id/placeslist_bottom_sheet"
             layout="@layout/place_list_bottom_sheet_view" />
 
+        <include
+            android:id="@+id/building_bottom_sheet"
+            layout="@layout/bottom_sheet_building" />
+
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
 </layout>

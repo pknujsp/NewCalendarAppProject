@@ -96,6 +96,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     public ImageButton zoomInButton;
     public ImageButton zoomOutButton;
     public ImageButton gpsButton;
+    public ImageButton buildingButton;
 
     public int selectedPoiItemIndex;
     public boolean isSelectedPoiItem;
@@ -108,6 +109,9 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
 
     public LinearLayout locationSearchBottomSheet;
     public BottomSheetBehavior locationSearchBottomSheetBehavior;
+
+    public LinearLayout buildingBottomSheet;
+    public BottomSheetBehavior buildingBottomSheetBehavior;
 
     public ViewPager2 placesBottomSheetViewPager;
     public PlaceItemInMapViewAdapter adapter;
@@ -188,12 +192,14 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
 
         setPlacesListBottomSheet();
         setLocationSearchBottomSheet();
+        setBuildingBottomSheet();
 
         locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
 
         zoomInButton = binding.mapButtonsLayout.zoomInButton;
         zoomOutButton = binding.mapButtonsLayout.zoomOutButton;
         gpsButton = binding.mapButtonsLayout.gpsButton;
+        buildingButton = binding.mapButtonsLayout.buildingButton;
 
         binding.mapRootLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener()
         {
@@ -229,6 +235,15 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
 
                 locationSearchFragment.addOnBackPressedCallback();
                 locationSearchBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+            }
+        });
+
+        buildingButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                //드래그로 이동가능한 마커 생성
             }
         });
 
@@ -380,6 +395,29 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
                 .add(binding.locationSearchBottomSheet.searchFragmentContainer.getId(), locationSearchFragment, LocationSearchFragment.TAG)
                 .hide(mapHeaderSearchFragment)
                 .commitNow();
+    }
+
+    private void setBuildingBottomSheet()
+    {
+        buildingBottomSheet = (LinearLayout) binding.buildingBottomSheet.buildingBottomsheet;
+
+        buildingBottomSheetBehavior = BottomSheetBehavior.from(buildingBottomSheet);
+        buildingBottomSheetBehavior.setDraggable(false);
+        buildingBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+        buildingBottomSheetBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback()
+        {
+            @Override
+            public void onStateChanged(@NonNull View bottomSheet, int newState)
+            {
+
+            }
+
+            @Override
+            public void onSlide(@NonNull View bottomSheet, float slideOffset)
+            {
+
+            }
+        });
     }
 
     private void setPlacesListBottomSheet()
