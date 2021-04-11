@@ -1,11 +1,14 @@
 package com.zerodsoft.scheduleweather.kakaomap.fragment.main;
 
 import android.Manifest;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -16,6 +19,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -39,14 +43,19 @@ import androidx.viewpager2.widget.MarginPageTransformer;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.etc.FragmentStateCallback;
 import com.zerodsoft.scheduleweather.kakaomap.bottomsheet.adapter.PlaceItemInMapViewAdapter;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PoiItemOnClickListener;
+import com.zerodsoft.scheduleweather.kakaomap.building.BuildingFragment;
+import com.zerodsoft.scheduleweather.kakaomap.building.BuildingListFragment;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.search.LocationSearchFragment;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.searchheader.MapHeaderMainFragment;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.searchheader.MapHeaderSearchFragment;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.searchresult.LocationSearchResultFragment;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.BuildingFragmentController;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.BuildingLocationSelectorController;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.OnClickedBottomSheetListener;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.PlacesListBottomSheetController;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.SearchBarController;
@@ -68,6 +77,8 @@ import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 import com.zerodsoft.scheduleweather.utility.NetworkStatus;
 
+import net.daum.mf.map.api.CameraUpdate;
+import net.daum.mf.map.api.MapCircle;
 import net.daum.mf.map.api.MapPOIItem;
 import net.daum.mf.map.api.MapPoint;
 import net.daum.mf.map.api.MapReverseGeoCoder;
@@ -83,13 +94,16 @@ import static androidx.core.content.ContextCompat.checkSelfPermission;
 public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, MapView.POIItemEventListener, MapView.MapViewEventListener, MapReverseGeoCoder.ReverseGeoCodingResultListener,
         INetwork, OnClickedPlacesListListener, PlacesItemBottomSheetButtonOnClickListener,
         PlacesListBottomSheetController, PoiItemOnClickListener, OnClickedBottomSheetListener,
-        MapHeaderSearchFragment.LocationSearchListener, SearchFragmentController
+        MapHeaderSearchFragment.LocationSearchListener, SearchFragmentController, BuildingLocationSelectorController,
+        BuildingFragmentController
 {
     public static final int REQUEST_CODE_LOCATION = 10000;
 
     public PlacesItemBottomSheetButtonOnClickListener placesItemBottomSheetButtonOnClickListener;
     public FragmentMapBinding binding;
     public MapView mapView;
+
+    public static final int BUILDING_RANGE_OVERLAY_TAG = 1500;
 
     private String appKey;
     public MapReverseGeoCoder mapReverseGeoCoder;
@@ -102,7 +116,6 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
 
     public int selectedPoiItemIndex;
     public boolean isSelectedPoiItem;
-    private Integer searchBottomSheetHeight;
 
     public NetworkStatus networkStatus;
 
@@ -142,6 +155,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
                 mapView.setMapCenterPoint(MapPoint.mapPointWithGeoCoord(location.getLatitude(), location.getLongitude()), true);
                 mapReverseGeoCoder = new MapReverseGeoCoder(appKey, mapView.getMapCenterPoint(), KakaoMapFragment.this, getActivity());
                 mapReverseGeoCoder.startFindingAddress(MapReverseGeoCoder.AddressType.ShortAddress);
+                locationManager.removeUpdates(locationListener);
             }
         }
 
@@ -208,15 +222,24 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
             @Override
             public void onGlobalLayout()
             {
+                //search bottom sheet 크기 조정
                 int headerBarHeight = (int) getResources().getDimension(R.dimen.map_header_bar_height);
                 int headerBarTopMargin = (int) getResources().getDimension(R.dimen.map_header_bar_top_margin);
                 int headerBarMargin = (int) (headerBarTopMargin * 1.5f);
 
-                searchBottomSheetHeight = binding.mapRootLayout.getHeight() - headerBarHeight - headerBarMargin;
+                int searchBottomSheetHeight = binding.mapRootLayout.getHeight() - headerBarHeight - headerBarMargin;
 
                 locationSearchBottomSheet.getLayoutParams().height = searchBottomSheetHeight;
                 locationSearchBottomSheet.requestLayout();
                 locationSearchBottomSheetBehavior.onLayoutChild(binding.mapRootLayout, locationSearchBottomSheet, ViewCompat.LAYOUT_DIRECTION_LTR);
+
+                //building list bottom sheet 크기 조정
+                int buildingBottomSheetExtraHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 48f, getContext().getResources().getDisplayMetrics());
+                int buildingBottomSheetHeight = binding.mapRootLayout.getHeight() / 2 + buildingBottomSheetExtraHeight;
+
+                buildingBottomSheet.getLayoutParams().height = buildingBottomSheetHeight;
+                buildingBottomSheet.requestLayout();
+                buildingBottomSheetBehavior.onLayoutChild(binding.mapRootLayout, buildingBottomSheet, ViewCompat.LAYOUT_DIRECTION_LTR);
 
                 binding.mapRootLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
             }
@@ -227,6 +250,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
             @Override
             public void onClick(View v)
             {
+                removeBuildingLocationSelector();
                 FragmentManager fragmentManager = getChildFragmentManager();
                 LocationSearchFragment locationSearchFragment = (LocationSearchFragment) fragmentManager.findFragmentByTag(LocationSearchFragment.TAG);
 
@@ -245,22 +269,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
             @Override
             public void onClick(View view)
             {
-                //드래그로 이동가능한 마커 생성
-                View selectorView = getLayoutInflater().inflate(R.layout.building_location_selector_view, null);
-                RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
-
-                ((Button) selectorView.findViewById(R.id.search_buildings_button)).setOnClickListener(new View.OnClickListener()
-                {
-                    @Override
-                    public void onClick(View view)
-                    {
-                        //빌딩 목록 바텀 시트 열기
-                        //map center point를 좌표로 지정
-                    }
-                });
-
-                binding.mapViewLayout.addView(selectorView, layoutParams);
+                showBuildingLocationSelector();
             }
         });
 
@@ -283,7 +292,6 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
         });
 
         gpsButton.setOnClickListener(new View.OnClickListener()
-
         {
             @Override
             public void onClick(View view)
@@ -1138,6 +1146,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
                     .commitNow();
         } else if (currentFragmentTag.equals(LocationSearchResultFragment.TAG))
         {
+            removeBuildingLocationSelector();
             backToPreviousView();
             placeListBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
 
@@ -1164,5 +1173,97 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     public int getStateOfSearchBottomSheet()
     {
         return locationSearchBottomSheetBehavior.getState();
+    }
+
+    @Override
+    public void removeBuildingLocationSelector()
+    {
+        if (binding.mapViewLayout.findViewWithTag("BUILDING_SELECTOR") != null)
+        {
+            buildingButton.setImageDrawable(getContext().getDrawable(R.drawable.building_black));
+            binding.mapViewLayout.removeView(binding.mapViewLayout.findViewWithTag("BUILDING_SELECTOR"));
+        }
+    }
+
+    @Override
+    public void showBuildingLocationSelector()
+    {
+        if (binding.mapViewLayout.findViewWithTag("BUILDING_SELECTOR") == null)
+        {
+            buildingButton.setImageDrawable(getContext().getDrawable(R.drawable.building_blue));
+            //드래그로 이동가능한 마커 생성
+            View selectorView = getLayoutInflater().inflate(R.layout.building_location_selector_view, null);
+            RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
+            selectorView.setLayoutParams(layoutParams);
+            selectorView.setTag("BUILDING_SELECTOR");
+
+            binding.mapViewLayout.addView(selectorView);
+
+            ((Button) selectorView.findViewById(R.id.search_buildings_button)).setOnClickListener(new View.OnClickListener()
+            {
+                @Override
+                public void onClick(View view)
+                {
+                    //빌딩 목록 바텀 시트 열기
+                    //map center point를 좌표로 지정
+                    removeBuildingLocationSelector();
+
+                    MapPoint mapPoint = mapView.getMapCenterPoint();
+                    String centerLatitude = String.valueOf(mapPoint.getMapPointGeoCoord().latitude);
+                    String centerLongitude = String.valueOf(mapPoint.getMapPointGeoCoord().longitude);
+
+                    BuildingListFragment buildingListFragment = new BuildingListFragment(KakaoMapFragment.this);
+                    Bundle bundle = new Bundle();
+                    bundle.putString("centerLatitude", centerLatitude);
+                    bundle.putString("centerLongitude", centerLongitude);
+                    buildingListFragment.setArguments(bundle);
+
+                    getChildFragmentManager().beginTransaction().add(binding.buildingBottomSheet.buildingFragmentContainer.getId(), buildingListFragment,
+                            BuildingListFragment.TAG)
+                            .commitNow();
+
+                    buildingListFragment.addOnBackPressedCallback();
+                    buildingBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+
+                    MapCircle circle = new MapCircle(
+                            mapPoint, 200,
+                            Color.argb(128, 255, 0, 0), // strokeColor
+                            Color.argb(128, 0, 255, 0) // fillColor
+                    );
+                    circle.setTag(BUILDING_RANGE_OVERLAY_TAG);
+                    mapView.addCircle(circle);
+                }
+
+            });
+        } else
+        {
+            removeBuildingLocationSelector();
+        }
+
+    }
+
+    @Override
+    public void closeBuildingFragments(String currentFragmentTag)
+    {
+        FragmentManager fragmentManager = getChildFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+        BuildingListFragment buildingListFragment = (BuildingListFragment) fragmentManager.findFragmentByTag(BuildingListFragment.TAG);
+        BuildingFragment buildingFragment = (BuildingFragment) fragmentManager.findFragmentByTag(BuildingFragment.TAG);
+
+        if (currentFragmentTag.equals(BuildingListFragment.TAG))
+        {
+            buildingBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+            buildingListFragment.removeOnBackPressedCallback();
+
+            fragmentTransaction.remove(buildingListFragment)
+                    .commitNow();
+            mapView.removeCircle(mapView.getCircles()[0]);
+        } else if (currentFragmentTag.equals(BuildingFragment.TAG))
+        {
+            buildingFragment.removeOnBackPressedCallback();
+            fragmentTransaction.remove(buildingFragment).show(buildingListFragment).commitNow();
+        }
     }
 }

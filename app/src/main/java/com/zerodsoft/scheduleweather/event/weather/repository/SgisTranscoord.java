@@ -21,7 +21,7 @@ public abstract class SgisTranscoord extends JsonDownloader<TransCoordResponse>
 
     public void transcoord(TransCoordParameter parameter)
     {
-        Querys querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.SGIS_AUTH);
+        Querys querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.SGIS_TRANSFORMATION);
 
         Call<TransCoordResponse> call = querys.transcoord(parameter.toMap());
         call.enqueue(new Callback<TransCoordResponse>()

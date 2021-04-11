@@ -21,11 +21,14 @@ import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.databinding.FragmentBuildingListBinding;
 import com.zerodsoft.scheduleweather.event.weather.repository.SgisTranscoord;
 import com.zerodsoft.scheduleweather.kakaomap.building.adapter.BuildingListAdapter;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.BuildingFragmentController;
+import com.zerodsoft.scheduleweather.kakaomap.model.CoordToAddressUtil;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
-import com.zerodsoft.scheduleweather.retrofit.paremeters.NearbyMsrstnListParameter;
+import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.sgis.SgisAuthParameter;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.sgis.TransCoordParameter;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.sgis.building.BuildingAreaParameter;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddress;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.auth.SgisAuthResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.building.SgisBuildingRoot;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.building.buildingarea.BuildingAreaItem;
@@ -34,30 +37,41 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.building.buildi
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.building.floorcompanyinfo.FloorCompanyInfoResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.building.flooretcfacility.FloorEtcFacilityResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.transcoord.TransCoordResponse;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.transcoord.TransCoordResult;
 import com.zerodsoft.scheduleweather.sgis.SgisAuth;
 
 
 public class BuildingListFragment extends Fragment implements OnClickedListItem<BuildingAreaItem>, OnBackPressedCallbackController
 {
     private FragmentBuildingListBinding binding;
+    public static final String TAG = "BuildingListFragment";
+    private final BuildingFragmentController buildingFragmentController;
+
+    public enum CalcType
+    {
+        MIN, MAX
+    }
 
     private TransCoordResponse minTransCoordResponse;
     private TransCoordResponse maxTransCoordResponse;
 
-    private String minLongitude;
-    private String minLatitude;
-    private String maxLongitude;
-    private String maxLatitude;
+    private String centerLatitude;
+    private String centerLongitude;
+
+    private int rangeMeter = 200;
 
     private BuildingListAdapter buildingListAdapter;
+
+    public BuildingListFragment(Fragment fragment)
+    {
+        buildingFragmentController = (BuildingFragmentController) fragment;
+    }
 
     private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
     {
         @Override
         public void handleOnBackPressed()
         {
-
+            buildingFragmentController.closeBuildingFragments(TAG);
         }
     };
 
@@ -147,10 +161,13 @@ public class BuildingListFragment extends Fragment implements OnClickedListItem<
             BuildingAreaParameter parameter = new BuildingAreaParameter();
 
             parameter.setAccessToken(SgisAuth.getSgisAuthResponse().getResult().getAccessToken());
-            parameter.setMinX(minTransCoordResponse.getResult().getPosX());
-            parameter.setMinY(minTransCoordResponse.getResult().getPosY());
-            parameter.setMaxX(maxTransCoordResponse.getResult().getPosX());
-            parameter.setMaxY(maxTransCoordResponse.getResult().getPosY());
+            parameter.setMinX(String.valueOf((int) Double.parseDouble(minTransCoordResponse.getResult().getPosX())));
+            parameter.setMinY(String.valueOf((int) Double.parseDouble(minTransCoordResponse.getResult().getPosY())));
+            parameter.setMaxX(String.valueOf((int) Double.parseDouble(maxTransCoordResponse.getResult().getPosX())));
+            parameter.setMaxY(String.valueOf((int) Double.parseDouble(maxTransCoordResponse.getResult().getPosY())));
+
+            minTransCoordResponse = null;
+            maxTransCoordResponse = null;
 
             sgisBuildingDownloader.getBuildingList(parameter, new CarrierMessagingService.ResultCallback<DataWrapper<BuildingAreaResponse>>()
             {
@@ -178,10 +195,8 @@ public class BuildingListFragment extends Fragment implements OnClickedListItem<
         super.onCreate(savedInstanceState);
 
         Bundle bundle = getArguments();
-        minLatitude = bundle.getString("minLatitude");
-        minLongitude = bundle.getString("minLongitude");
-        maxLatitude = bundle.getString("maxLatitude");
-        maxLongitude = bundle.getString("maxLongitude");
+        centerLatitude = bundle.getString("centerLatitude");
+        centerLongitude = bundle.getString("centerLongitude");
     }
 
     @Override
@@ -200,6 +215,32 @@ public class BuildingListFragment extends Fragment implements OnClickedListItem<
         binding.buildingSearchList.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
         binding.buildingSearchList.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
 
+        //중심 좌표 기준으로 최소/최대 좌표값 계산
+        LocalApiPlaceParameter coordToAddressParameter = new LocalApiPlaceParameter();
+        coordToAddressParameter.setX(centerLongitude);
+        coordToAddressParameter.setY(centerLatitude);
+
+        CoordToAddressUtil.coordToAddress(coordToAddressParameter, new CarrierMessagingService.ResultCallback<DataWrapper<CoordToAddress>>()
+        {
+            @Override
+            public void onReceiveResult(@NonNull DataWrapper<CoordToAddress> coordToAddressDataWrapper) throws RemoteException
+            {
+                getActivity().runOnUiThread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        if (coordToAddressDataWrapper.getException() == null)
+                        {
+                            CoordToAddress coordToAddress = coordToAddressDataWrapper.getData();
+                            binding.criteriaAddress.setText(coordToAddress.getCoordToAddressDocuments().get(0).getCoordToAddressAddress().getAddressName());
+                        }
+                    }
+                });
+
+            }
+        });
+
         transcoord();
     }
 
@@ -207,17 +248,25 @@ public class BuildingListFragment extends Fragment implements OnClickedListItem<
     {
         if (SgisAuth.getSgisAuthResponse() != null)
         {
+            String[] min = calcCoordinate(centerLatitude, centerLongitude, rangeMeter, CalcType.MIN);
+            String minLongitude = min[1];
+            String minLatitude = min[0];
+
+            String[] max = calcCoordinate(centerLatitude, centerLongitude, rangeMeter, CalcType.MAX);
+            String maxLongitude = max[1];
+            String maxLatitude = max[0];
+
             TransCoordParameter minParameter = new TransCoordParameter();
             minParameter.setAccessToken(SgisAuth.getSgisAuthResponse().getResult().getAccessToken());
             minParameter.setSrc(TransCoordParameter.WGS84);
-            minParameter.setDst(TransCoordParameter.JUNGBU_ORIGIN);
+            minParameter.setDst(TransCoordParameter.UTM_K);
             minParameter.setPosX(minLongitude);
             minParameter.setPosY(minLatitude);
 
             TransCoordParameter maxParameter = new TransCoordParameter();
             maxParameter.setAccessToken(SgisAuth.getSgisAuthResponse().getResult().getAccessToken());
             maxParameter.setSrc(TransCoordParameter.WGS84);
-            maxParameter.setDst(TransCoordParameter.JUNGBU_ORIGIN);
+            maxParameter.setDst(TransCoordParameter.UTM_K);
             maxParameter.setPosX(maxLongitude);
             maxParameter.setPosY(maxLatitude);
 
@@ -229,11 +278,43 @@ public class BuildingListFragment extends Fragment implements OnClickedListItem<
         }
     }
 
+    private String[] calcCoordinate(String latitude, String longitude, int meter, CalcType type)
+    {
+        final int LAT = (int) Double.parseDouble(latitude);
+
+        //위도 1도의 미터
+        final double METER_PER_DEGREE_LAT = 111000;
+
+        //1미터의 위도 소수점 값
+        final double METER_1_DECIMAL_LAT = 1.0 / METER_PER_DEGREE_LAT;
+
+        //경도 1도의 미터
+        final double METER_PER_DEGREE_LON = (2.0 * 3.14 * 6380.0 * Math.cos(LAT) / 360.0) * 1000.0;
+
+        //1미터의 경도 소수점 값
+        final double METER_1_DECIMAL_LON = 1.0 / METER_PER_DEGREE_LON;
+
+        if (type == CalcType.MIN)
+        {
+            return new String[]{String.valueOf(Double.parseDouble(latitude) - METER_1_DECIMAL_LAT * meter),
+                    String.valueOf(Double.parseDouble(longitude) - METER_1_DECIMAL_LON * meter)};
+        } else
+        {
+            return new String[]{String.valueOf(Double.parseDouble(latitude) + METER_1_DECIMAL_LAT * meter),
+                    String.valueOf(Double.parseDouble(longitude) + METER_1_DECIMAL_LON * meter)};
+        }
+    }
+
     @Override
     public void onClickedListItem(BuildingAreaItem e)
     {
         //change fragment
+        BuildingFragment buildingFragment = new BuildingFragment(buildingFragmentController);
+        Bundle bundle = new Bundle();
+        bundle.putParcelable("building", e);
+        buildingFragment.setArguments(bundle);
 
+        getParentFragmentManager().beginTransaction().hide(this).add(R.id.building_fragment_container, buildingFragment, BuildingFragment.TAG).commitNow();
     }
 
     @Override
