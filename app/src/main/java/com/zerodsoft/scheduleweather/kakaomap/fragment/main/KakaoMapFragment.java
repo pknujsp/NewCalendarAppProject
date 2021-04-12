@@ -136,6 +136,8 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     public int placeBottomSheetSelectBtnVisibility;
     public int placeBottomSheetUnSelectBtnVisibility;
 
+    public Double mapTranslationYByBuildingBottomSheet;
+
     public KakaoMapFragment()
     {
 
@@ -356,25 +358,6 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
         }
 
 
-        mapView.setOnDragListener(new View.OnDragListener()
-        {
-            @Override
-            public boolean onDrag(View view, DragEvent dragEvent)
-            {
-                Log.e("DRAG : ", String.valueOf(dragEvent.getY()));
-                return false;
-            }
-        });
-
-        mapView.setOnScrollChangeListener(new View.OnScrollChangeListener()
-        {
-            @Override
-            public void onScrollChange(View view, int i, int i1, int i2, int i3)
-            {
-                Log.e("SCROLL : ", String.valueOf(i) + String.valueOf(i1) + String.valueOf(i2) + String.valueOf(i3));
-            }
-        });
-
     }
 
     final ActivityResultLauncher<String[]> permissionResultLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(),
@@ -458,16 +441,44 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
             @Override
             public void onStateChanged(@NonNull View bottomSheet, int newState)
             {
+                switch (newState)
+                {
+                    case BottomSheetBehavior.STATE_EXPANDED:
+                    {
+                       /*
+                       <지도 카메라 위치 이동 방법>
 
+                       MapView.getMapCenterPoint() 메소드로 지도 중심 좌표(MapPoint center)를 얻습니다.
+                        중심 좌표 객체의 center.getMapPointScreenLocation() 메소드를 통해 pixel 좌표값(MapPoint.PlainCoordinate pixel)을 얻어냅니다.
+                        그 pixel 좌표값으로부터 얼마나 이동시키면 될 지 계산합니다. 앞서 구한 pixel에 이동하고자 하는 offset을 더하여 tx, ty 값을 확보합니다.
+                        (double tx = pixel.x + offsetX, double ty = pixel.y + offsetY)
+                        MapPoint newCenter = MapPoint.mapPointWithScreenLocation(tx, ty) 정적 메소드로 입력한 스크린 좌표를 역변환 하여 지도상 좌표(newCenter)를 구합니다.
+                        MapView.setMapCenterPoint(newCenter, true) 메소드로 지도 중심을 이동시킵니다.
+                        */
+                        MapPoint.PlainCoordinate currentCenterCoordinate = mapView.getMapCenterPoint().getMapPointScreenLocation();
+
+                        MapPoint newCenter = MapPoint.mapPointWithScreenLocation(currentCenterCoordinate.x, currentCenterCoordinate.y + mapTranslationYByBuildingBottomSheet);
+                        mapView.setMapCenterPoint(newCenter, true);
+
+                        break;
+                    }
+                    case BottomSheetBehavior.STATE_COLLAPSED:
+                    {
+                        MapPoint.PlainCoordinate currentMapCenterCoordinate = mapView.getMapCenterPoint().getMapPointScreenLocation();
+                        MapPoint newCenter = MapPoint.mapPointWithScreenLocation(currentMapCenterCoordinate.x, currentMapCenterCoordinate.y - mapTranslationYByBuildingBottomSheet);
+                        mapView.setMapCenterPoint(newCenter, true);
+
+                        break;
+                    }
+                }
             }
 
             @Override
             public void onSlide(@NonNull View bottomSheet, float slideOffset)
             {
                 //expanded일때 offset == 1.0, collapsed일때 offset == 0.0
-                //offset에 따라서 지도가 움직여야 한다.
-                float height = binding.mapButtonsLayout.getRoot().getHeight();
-                float translationValue = -height * slideOffset;
+                //offset에 따라서 버튼들이 이동하고, 지도의 좌표가 변경되어야 한다.
+                float translationValue = -buildingBottomSheet.getHeight() * slideOffset;
 
                 binding.mapButtonsLayout.getRoot().animate().translationY(translationValue);
             }
@@ -585,8 +596,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
             {
                 //expanded일때 offset == 1.0, collapsed일때 offset == 0.0
                 //offset에 따라서 버튼들이 이동하고, 지도의 좌표가 변경되어야 한다.
-                float height = binding.mapButtonsLayout.getRoot().getHeight();
-                float translationValue = -height * slideOffset;
+                float translationValue = -placesListBottomSheet.getHeight() * slideOffset;
 
                 binding.mapButtonsLayout.getRoot().animate().translationY(translationValue);
             }
@@ -846,6 +856,13 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     @Override
     public void onMapViewInitialized(MapView mapView)
     {
+        //바텀 시트의 상태에 따라서 맵의 카메라 되기 위해 이동해야할 Y값
+        final int bottomSheetTopY = binding.mapViewLayout.getHeight() - buildingBottomSheet.getHeight();
+        final int mapHeaderBarBottomY = binding.mapHeaderBar.getRoot().getBottom();
+        final int SIZE_BETWEEN_HEADER_BAR_BOTTOM_AND_BOTTOM_SHEET_TOP = bottomSheetTopY - mapHeaderBarBottomY;
+        mapTranslationYByBuildingBottomSheet = (mapView.getMapCenterPoint().getMapPointScreenLocation().y - (mapHeaderBarBottomY +
+                SIZE_BETWEEN_HEADER_BAR_BOTTOM_AND_BOTTOM_SHEET_TOP / 2.0));
+
         ApplicationInfo ai = null;
         try
         {
