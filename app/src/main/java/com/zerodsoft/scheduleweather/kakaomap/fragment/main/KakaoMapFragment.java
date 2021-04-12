@@ -14,7 +14,9 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.Log;
 import android.util.TypedValue;
+import android.view.DragEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -217,6 +219,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
         gpsButton = binding.mapButtonsLayout.gpsButton;
         buildingButton = binding.mapButtonsLayout.buildingButton;
 
+
         binding.mapRootLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener()
         {
             @Override
@@ -351,6 +354,27 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
         {
             permissionResultLauncher.launch(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION});
         }
+
+
+        mapView.setOnDragListener(new View.OnDragListener()
+        {
+            @Override
+            public boolean onDrag(View view, DragEvent dragEvent)
+            {
+                Log.e("DRAG : ", String.valueOf(dragEvent.getY()));
+                return false;
+            }
+        });
+
+        mapView.setOnScrollChangeListener(new View.OnScrollChangeListener()
+        {
+            @Override
+            public void onScrollChange(View view, int i, int i1, int i2, int i3)
+            {
+                Log.e("SCROLL : ", String.valueOf(i) + String.valueOf(i1) + String.valueOf(i2) + String.valueOf(i3));
+            }
+        });
+
     }
 
     final ActivityResultLauncher<String[]> permissionResultLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(),
@@ -440,7 +464,12 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
             @Override
             public void onSlide(@NonNull View bottomSheet, float slideOffset)
             {
+                //expanded일때 offset == 1.0, collapsed일때 offset == 0.0
+                //offset에 따라서 지도가 움직여야 한다.
+                float height = binding.mapButtonsLayout.getRoot().getHeight();
+                float translationValue = -height * slideOffset;
 
+                binding.mapButtonsLayout.getRoot().animate().translationY(translationValue);
             }
         });
     }
