@@ -59,6 +59,7 @@ public class SelectedLocationMapFragment extends KakaoMapFragment
         binding.mapHeaderBar.getRoot().setVisibility(View.GONE);
         binding.mapButtonsLayout.gpsButton.setVisibility(View.GONE);
         binding.mapButtonsLayout.currentAddress.setVisibility(View.GONE);
+        binding.mapButtonsLayout.buildingButton.setVisibility(View.GONE);
 
         RelativeLayout.LayoutParams mapButtonsLayout = (RelativeLayout.LayoutParams) binding.mapButtonsLayout.getRoot().getLayoutParams();
         final int margin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 12f, getResources().getDisplayMetrics());

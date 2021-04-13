@@ -67,11 +67,11 @@ public class BuildingListAdapter extends RecyclerView.Adapter<BuildingListAdapte
         {
             BuildingAreaItem building = buildingList.get(getAdapterPosition());
 
-            buildingName.setText(building.getBdName());
-            buildingAddress.setText(building.getBdNewAddress());
+            buildingName.setText(building.getBdName() == null ? itemView.getContext().getString(R.string.not_data) : building.getBdName());
+            buildingAddress.setText(building.getBdNewAddress() == null ? itemView.getContext().getString(R.string.not_data) : building.getBdNewAddress());
 
-            minFloor.setText(building.getLowestFloor() == null ? "" : building.getLowestFloor());
-            maxFloor.setText(building.getHighestFloor() == null ? "" : building.getHighestFloor());
+            minFloor.setText(building.getLowestFloor() == null ? itemView.getContext().getString(R.string.not_data) : building.getLowestFloor());
+            maxFloor.setText(building.getHighestFloor() == null ? itemView.getContext().getString(R.string.not_data) : building.getHighestFloor());
 
             itemView.getRootView().setOnClickListener(new View.OnClickListener()
             {
@@ -81,6 +81,7 @@ public class BuildingListAdapter extends RecyclerView.Adapter<BuildingListAdapte
                     onClickedListItem.onClickedListItem(building);
                 }
             });
+
         }
     }
 

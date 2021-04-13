@@ -1,11 +1,13 @@
-package com.zerodsoft.scheduleweather.kakaomap.building;
+package com.zerodsoft.scheduleweather.kakaomap.building.fragment;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
@@ -16,10 +18,12 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.databinding.FragmentBuildingListBinding;
 import com.zerodsoft.scheduleweather.event.weather.repository.SgisTranscoord;
+import com.zerodsoft.scheduleweather.kakaomap.building.SgisBuildingDownloader;
 import com.zerodsoft.scheduleweather.kakaomap.building.adapter.BuildingListAdapter;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.BuildingFragmentController;
 import com.zerodsoft.scheduleweather.kakaomap.model.CoordToAddressUtil;
@@ -39,6 +43,8 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.building.floore
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.transcoord.TransCoordResponse;
 import com.zerodsoft.scheduleweather.sgis.SgisAuth;
 
+import java.util.TimeZone;
+
 
 public class BuildingListFragment extends Fragment implements OnClickedListItem<BuildingAreaItem>, OnBackPressedCallbackController
 {
@@ -57,13 +63,13 @@ public class BuildingListFragment extends Fragment implements OnClickedListItem<
     private String centerLatitude;
     private String centerLongitude;
 
-    private int rangeMeter = 200;
-
     private BuildingListAdapter buildingListAdapter;
+    private OnSearchRadiusChangeListener onSearchRadiusChangeListener;
 
     public BuildingListFragment(Fragment fragment)
     {
         buildingFragmentController = (BuildingFragmentController) fragment;
+        onSearchRadiusChangeListener = (OnSearchRadiusChangeListener) fragment;
     }
 
     private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
@@ -179,9 +185,19 @@ public class BuildingListFragment extends Fragment implements OnClickedListItem<
                         @Override
                         public void run()
                         {
+                            binding.progressBar.setVisibility(View.GONE);
+
                             //리스트 생성
-                            buildingListAdapter = new BuildingListAdapter(buildingAreaResponseDataWrapper.getData().getResult(), BuildingListFragment.this);
-                            binding.buildingSearchList.setAdapter(buildingListAdapter);
+                            if (buildingAreaResponseDataWrapper.getData().getResult().isEmpty())
+                            {
+                                binding.errorText.setText(getString(R.string.no_results_for_searching_buildings));
+                                binding.errorText.setVisibility(View.VISIBLE);
+                            } else
+                            {
+                                binding.errorText.setVisibility(View.GONE);
+                                buildingListAdapter = new BuildingListAdapter(buildingAreaResponseDataWrapper.getData().getResult(), BuildingListFragment.this);
+                                binding.buildingSearchList.setAdapter(buildingListAdapter);
+                            }
                         }
                     });
                 }
@@ -211,6 +227,46 @@ public class BuildingListFragment extends Fragment implements OnClickedListItem<
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
+
+        clearText();
+        setSearchRadius();
+
+        binding.errorText.setVisibility(View.GONE);
+        binding.radiusSeekbarLayout.setVisibility(View.GONE);
+        binding.radiusSeekbar.setValue(Float.valueOf(App.getPreference_key_range_meter_for_search_buildings()));
+
+        binding.searchRadius.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                binding.radiusSeekbarLayout.setVisibility(binding.radiusSeekbarLayout.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
+            }
+        });
+
+        binding.applyRadius.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                //변경한 값 적용
+                binding.radiusSeekbarLayout.setVisibility(View.GONE);
+
+                SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+                SharedPreferences.Editor editor = preferences.edit();
+
+                final String newValue = String.valueOf((int) binding.radiusSeekbar.getValue());
+                editor.putString(getString(R.string.preference_key_range_meter_for_search_buildings), newValue);
+                editor.commit();
+
+                App.setPreference_key_range_meter_for_search_buildings(newValue);
+                setSearchRadius();
+
+                binding.buildingSearchList.setAdapter(null);
+                transcoord();
+            }
+        });
+
 
         binding.buildingSearchList.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
         binding.buildingSearchList.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
@@ -244,15 +300,25 @@ public class BuildingListFragment extends Fragment implements OnClickedListItem<
         transcoord();
     }
 
+    private void setSearchRadius()
+    {
+        onSearchRadiusChangeListener.drawSearchRadiusCircle();
+        binding.searchRadius.setText(getString(R.string.search_radius) + " " + App.getPreference_key_range_meter_for_search_buildings() + "m");
+    }
+
     public void transcoord()
     {
+        binding.progressBar.setVisibility(View.VISIBLE);
+
         if (SgisAuth.getSgisAuthResponse() != null)
         {
-            String[] min = calcCoordinate(centerLatitude, centerLongitude, rangeMeter, CalcType.MIN);
+            final int RANGE_RADIUS = Integer.parseInt(App.getPreference_key_range_meter_for_search_buildings());
+
+            String[] min = calcCoordinate(centerLatitude, centerLongitude, RANGE_RADIUS, CalcType.MIN);
             String minLongitude = min[1];
             String minLatitude = min[0];
 
-            String[] max = calcCoordinate(centerLatitude, centerLongitude, rangeMeter, CalcType.MAX);
+            String[] max = calcCoordinate(centerLatitude, centerLongitude, RANGE_RADIUS, CalcType.MAX);
             String maxLongitude = max[1];
             String maxLatitude = max[0];
 
@@ -305,6 +371,11 @@ public class BuildingListFragment extends Fragment implements OnClickedListItem<
         }
     }
 
+    private void clearText()
+    {
+        binding.criteriaAddress.setText("");
+    }
+
     @Override
     public void onClickedListItem(BuildingAreaItem e)
     {
@@ -315,6 +386,7 @@ public class BuildingListFragment extends Fragment implements OnClickedListItem<
         buildingFragment.setArguments(bundle);
 
         getParentFragmentManager().beginTransaction().hide(this).add(R.id.building_fragment_container, buildingFragment, BuildingFragment.TAG).commitNow();
+        buildingFragment.addOnBackPressedCallback();
     }
 
     @Override
@@ -333,6 +405,11 @@ public class BuildingListFragment extends Fragment implements OnClickedListItem<
     public void removeOnBackPressedCallback()
     {
         onBackPressedCallback.remove();
+    }
+
+    public interface OnSearchRadiusChangeListener
+    {
+        void drawSearchRadiusCircle();
     }
 
 }

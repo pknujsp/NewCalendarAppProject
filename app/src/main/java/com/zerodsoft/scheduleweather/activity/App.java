@@ -23,7 +23,6 @@ import java.util.concurrent.Executors;
 public class App extends android.app.Application
 {
     public static ExecutorService executorService = Executors.newSingleThreadExecutor();
-    public static Handler mainThreadHandler = HandlerCompat.createAsync(Looper.getMainLooper());
 
     private static boolean preference_key_using_timezone_of_device = true;
     private static TimeZone preference_key_custom_timezone = null;
@@ -31,8 +30,7 @@ public class App extends android.app.Application
     private static boolean preference_key_show_week_of_year = true;
     private static boolean preference_key_using_24_hour_system = true;
     private static String preference_key_radius_range = "";
-
-
+    private static String preference_key_range_meter_for_search_buildings = "";
 
 
     public static void setAppSettings(Context context)
@@ -67,6 +65,10 @@ public class App extends android.app.Application
             preference_key_radius_range = "1000";
             editor.putString(context.getString(R.string.preference_key_radius_range), preference_key_radius_range);
 
+            //빌딩 검색 범위(반지름)길이 설정
+            preference_key_range_meter_for_search_buildings = "500";
+            editor.putString(context.getString(R.string.preference_key_range_meter_for_search_buildings), preference_key_range_meter_for_search_buildings);
+
             editor.commit();
         } else
         {
@@ -76,6 +78,7 @@ public class App extends android.app.Application
             preference_key_show_week_of_year = preferences.getBoolean(context.getString(R.string.preference_key_show_week_of_year), false);
             preference_key_using_24_hour_system = preferences.getBoolean(context.getString(R.string.preference_key_using_24_hour_system), false);
             preference_key_radius_range = preferences.getString(context.getString(R.string.preference_key_radius_range), "");
+            preference_key_range_meter_for_search_buildings = preferences.getString(context.getString(R.string.preference_key_range_meter_for_search_buildings), "");
         }
     }
 
@@ -109,6 +112,11 @@ public class App extends android.app.Application
         return preference_key_radius_range;
     }
 
+    public static String getPreference_key_range_meter_for_search_buildings()
+    {
+        return preference_key_range_meter_for_search_buildings;
+    }
+
     public static void setPreference_key_using_timezone_of_device(boolean preference_key_using_timezone_of_device)
     {
         App.preference_key_using_timezone_of_device = preference_key_using_timezone_of_device;
@@ -138,4 +146,11 @@ public class App extends android.app.Application
     {
         App.preference_key_radius_range = preference_key_radius_range;
     }
+
+    public static void setPreference_key_range_meter_for_search_buildings(String preference_key_range_meter_for_search_buildings)
+    {
+        App.preference_key_range_meter_for_search_buildings = preference_key_range_meter_for_search_buildings;
+    }
+
+
 }

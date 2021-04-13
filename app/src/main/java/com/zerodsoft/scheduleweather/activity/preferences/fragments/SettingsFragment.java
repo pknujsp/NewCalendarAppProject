@@ -21,6 +21,7 @@ import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.activity.placecategory.activity.PlaceCategoryActivity;
 import com.zerodsoft.scheduleweather.activity.preferences.SettingsActivity;
 import com.zerodsoft.scheduleweather.activity.preferences.custom.RadiusPreference;
+import com.zerodsoft.scheduleweather.activity.preferences.custom.SearchBuildingRangeRadiusPreference;
 import com.zerodsoft.scheduleweather.activity.preferences.custom.TimeZonePreference;
 import com.zerodsoft.scheduleweather.activity.preferences.interfaces.IPreferenceFragment;
 import com.zerodsoft.scheduleweather.activity.preferences.interfaces.PreferenceListener;
@@ -39,7 +40,8 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
     private Preference calendarColorListPreference;
     private SwitchPreference hourSystemSwitchPreference;
 
-    private RadiusPreference searchingRadiusPreference;
+    private RadiusPreference searchMapCateogoryRangeRadiusPreference;
+    private SearchBuildingRangeRadiusPreference searchBuildingRangeRadiusPreference;
     private Preference placesCategoryPreference;
 
     @Override
@@ -108,9 +110,14 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
             //값 변경완료시 호출됨
 
             // 범위
-            if (key.equals(searchingRadiusPreference.getKey()))
+            if (key.equals(searchMapCateogoryRangeRadiusPreference.getKey()))
             {
-                searchingRadiusPreference.setValue();
+                searchMapCateogoryRangeRadiusPreference.setValue();
+            }
+
+            if (key.equals(searchBuildingRangeRadiusPreference.getKey()))
+            {
+                searchBuildingRangeRadiusPreference.setValue();
             }
         }
     };
@@ -139,18 +146,18 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
         ((PreferenceCategory) getPreferenceManager().findPreference(getString(R.string.preference_calendar_category_title)))
                 .addPreference(customTimeZonePreference);
 
-        //검색 반지름
-        searchingRadiusPreference = new RadiusPreference(getContext());
-        searchingRadiusPreference.setKey(getString(R.string.preference_key_radius_range));
-        searchingRadiusPreference.setSummary(R.string.preference_summary_radius_range);
-        searchingRadiusPreference.setTitle(R.string.preference_title_radius_range);
-        searchingRadiusPreference.setWidgetLayoutResource(R.layout.custom_preference_layout);
-        searchingRadiusPreference.setDialogTitle(R.string.preference_dialog_message_radius_range);
+        //카테고리 검색범위 반지름
+        searchMapCateogoryRangeRadiusPreference = new RadiusPreference(getContext());
+        searchMapCateogoryRangeRadiusPreference.setKey(getString(R.string.preference_key_radius_range));
+        searchMapCateogoryRangeRadiusPreference.setSummary(R.string.preference_summary_radius_range);
+        searchMapCateogoryRangeRadiusPreference.setTitle(R.string.preference_title_radius_range);
+        searchMapCateogoryRangeRadiusPreference.setWidgetLayoutResource(R.layout.custom_preference_layout);
+        searchMapCateogoryRangeRadiusPreference.setDialogTitle(R.string.preference_dialog_message_radius_range);
 
         ((PreferenceCategory) getPreferenceManager().findPreference(getString(R.string.preference_place_category_title)))
-                .addPreference(searchingRadiusPreference);
+                .addPreference(searchMapCateogoryRangeRadiusPreference);
 
-        searchingRadiusPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener()
+        searchMapCateogoryRangeRadiusPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener()
         {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue)
@@ -172,6 +179,44 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
                 } else
                 {
                     Toast.makeText(getActivity(), "0~20000사이로 입력하세요", Toast.LENGTH_SHORT).show();
+                    return false;
+                }
+            }
+        });
+
+        //빌딩 검색범위 반지름
+        searchBuildingRangeRadiusPreference = new SearchBuildingRangeRadiusPreference(getContext());
+        searchBuildingRangeRadiusPreference.setKey(getString(R.string.preference_key_range_meter_for_search_buildings));
+        searchBuildingRangeRadiusPreference.setSummary(R.string.preference_summary_range_meter_for_search_buildings);
+        searchBuildingRangeRadiusPreference.setTitle(R.string.preference_title_range_meter_for_search_buildings);
+        searchBuildingRangeRadiusPreference.setWidgetLayoutResource(R.layout.custom_preference_layout);
+        searchBuildingRangeRadiusPreference.setDialogTitle(R.string.preference_message_range_meter_for_search_buildings);
+
+        ((PreferenceCategory) getPreferenceManager().findPreference(getString(R.string.preference_place_category_title)))
+                .addPreference(searchBuildingRangeRadiusPreference);
+
+        searchBuildingRangeRadiusPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener()
+        {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newValue)
+            {
+                int radius = 0;
+                try
+                {
+                    radius = Integer.parseInt((String) newValue);
+                } catch (NumberFormatException e)
+                {
+                    Toast.makeText(getActivity(), "50~ 500 사이의 숫자를 입력해주세요", Toast.LENGTH_SHORT).show();
+                    return false;
+                }
+
+                if (radius >= 50 && radius <= 500)
+                {
+                    App.setPreference_key_radius_range((String) newValue);
+                    return true;
+                } else
+                {
+                    Toast.makeText(getActivity(), "50~500 사이로 입력하세요", Toast.LENGTH_SHORT).show();
                     return false;
                 }
             }
@@ -288,9 +333,13 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
         boolean using24HourSystem = preferences.getBoolean(getString(R.string.preference_key_using_24_hour_system), false);
         hourSystemSwitchPreference.setChecked(using24HourSystem);
 
-        //검색 반지름 범위
-        String searchingRadius = preferences.getString(getString(R.string.preference_key_radius_range), "");
-        searchingRadiusPreference.setDefaultValue(searchingRadius);
+        //지도 카테고리 검색 반지름 범위
+        String searchMapCategoryRadius = preferences.getString(getString(R.string.preference_key_radius_range), "");
+        searchMapCateogoryRangeRadiusPreference.setDefaultValue(searchMapCategoryRadius);
+
+        //지도 빌딩 검색 반지름 범위
+        String searchBuildingRangeRadius = preferences.getString(getString(R.string.preference_key_range_meter_for_search_buildings), "");
+        searchBuildingRangeRadiusPreference.setDefaultValue(searchBuildingRangeRadius);
     }
 
     @Override

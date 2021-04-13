@@ -5,9 +5,34 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".kakaomap.building.BuildingFragment">
+        tools:context=".kakaomap.building.fragment.BuildingFragment">
 
+        <ScrollView
+            android:id="@+id/scroll_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scrollbarSize="4dp"
+            android:scrollbarStyle="insideInset">
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <include
+                    android:id="@+id/building_info_layout"
+                    layout="@layout/building_info_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp" />
+
+                <include
+                    android:id="@+id/building_floor_info_layout"
+                    layout="@layout/building_floor_info_view" />
+
+            </LinearLayout>
+
+        </ScrollView>
 
     </FrameLayout>
 </layout>

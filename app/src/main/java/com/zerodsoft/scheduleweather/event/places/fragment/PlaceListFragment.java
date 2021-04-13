@@ -167,7 +167,7 @@ public class PlaceListFragment extends Fragment implements PlaceItemsGetter, OnP
             itemRecyclerView.setAdapter(adapter);
 
             PlacesViewModel viewModel = new ViewModelProvider(getActivity()).get(PlacesViewModel.class);
-            viewModel.init(placeParameter,this);
+            viewModel.init(placeParameter, this);
             viewModel.getPagedListMutableLiveData().observe(getActivity(), new Observer<PagedList<PlaceDocuments>>()
             {
                 @Override

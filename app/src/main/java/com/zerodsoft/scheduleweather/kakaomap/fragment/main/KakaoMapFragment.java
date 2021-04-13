@@ -1,30 +1,24 @@
 package com.zerodsoft.scheduleweather.kakaomap.fragment.main;
 
 import android.Manifest;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.util.Log;
 import android.util.TypedValue;
-import android.view.DragEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
-import android.view.Window;
 import android.widget.Button;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
@@ -45,13 +39,13 @@ import androidx.viewpager2.widget.MarginPageTransformer;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.etc.FragmentStateCallback;
 import com.zerodsoft.scheduleweather.kakaomap.bottomsheet.adapter.PlaceItemInMapViewAdapter;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PoiItemOnClickListener;
-import com.zerodsoft.scheduleweather.kakaomap.building.BuildingFragment;
-import com.zerodsoft.scheduleweather.kakaomap.building.BuildingListFragment;
+import com.zerodsoft.scheduleweather.kakaomap.building.fragment.BuildingFragment;
+import com.zerodsoft.scheduleweather.kakaomap.building.fragment.BuildingListFragment;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.search.LocationSearchFragment;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.searchheader.MapHeaderMainFragment;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.searchheader.MapHeaderSearchFragment;
@@ -79,7 +73,6 @@ import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 import com.zerodsoft.scheduleweather.utility.NetworkStatus;
 
-import net.daum.mf.map.api.CameraUpdate;
 import net.daum.mf.map.api.MapCircle;
 import net.daum.mf.map.api.MapPOIItem;
 import net.daum.mf.map.api.MapPoint;
@@ -97,7 +90,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
         INetwork, OnClickedPlacesListListener, PlacesItemBottomSheetButtonOnClickListener,
         PlacesListBottomSheetController, PoiItemOnClickListener, OnClickedBottomSheetListener,
         MapHeaderSearchFragment.LocationSearchListener, SearchFragmentController, BuildingLocationSelectorController,
-        BuildingFragmentController
+        BuildingFragmentController, BuildingListFragment.OnSearchRadiusChangeListener
 {
     public static final int REQUEST_CODE_LOCATION = 10000;
 
@@ -256,6 +249,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
             public void onClick(View v)
             {
                 removeBuildingLocationSelector();
+                closeBuildingFragments();
                 FragmentManager fragmentManager = getChildFragmentManager();
                 LocationSearchFragment locationSearchFragment = (LocationSearchFragment) fragmentManager.findFragmentByTag(LocationSearchFragment.TAG);
 
@@ -1193,6 +1187,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
         } else if (currentFragmentTag.equals(LocationSearchResultFragment.TAG))
         {
             removeBuildingLocationSelector();
+            closeBuildingFragments();
             backToPreviousView();
             placeListBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
 
@@ -1255,7 +1250,9 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
                     //map center point를 좌표로 지정
                     removeBuildingLocationSelector();
 
+                    drawSearchRadiusCircle();
                     MapPoint mapPoint = mapView.getMapCenterPoint();
+
                     String centerLatitude = String.valueOf(mapPoint.getMapPointGeoCoord().latitude);
                     String centerLongitude = String.valueOf(mapPoint.getMapPointGeoCoord().longitude);
 
@@ -1271,19 +1268,12 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
 
                     buildingListFragment.addOnBackPressedCallback();
                     buildingBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-
-                    MapCircle circle = new MapCircle(
-                            mapPoint, 200,
-                            Color.argb(128, 255, 0, 0), // strokeColor
-                            Color.argb(128, 0, 255, 0) // fillColor
-                    );
-                    circle.setTag(BUILDING_RANGE_OVERLAY_TAG);
-                    mapView.addCircle(circle);
                 }
 
             });
         } else
         {
+            closeBuildingFragments();
             removeBuildingLocationSelector();
         }
 
@@ -1296,7 +1286,6 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
         BuildingListFragment buildingListFragment = (BuildingListFragment) fragmentManager.findFragmentByTag(BuildingListFragment.TAG);
-        BuildingFragment buildingFragment = (BuildingFragment) fragmentManager.findFragmentByTag(BuildingFragment.TAG);
 
         if (currentFragmentTag.equals(BuildingListFragment.TAG))
         {
@@ -1308,8 +1297,59 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
             mapView.removeCircle(mapView.getCircles()[0]);
         } else if (currentFragmentTag.equals(BuildingFragment.TAG))
         {
+            BuildingFragment buildingFragment = (BuildingFragment) fragmentManager.findFragmentByTag(BuildingFragment.TAG);
             buildingFragment.removeOnBackPressedCallback();
             fragmentTransaction.remove(buildingFragment).show(buildingListFragment).commitNow();
         }
+    }
+
+    public void closeBuildingFragments()
+    {
+        if (buildingBottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED)
+        {
+            FragmentManager fragmentManager = getChildFragmentManager();
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+            BuildingListFragment buildingListFragment = (BuildingListFragment) fragmentManager.findFragmentByTag(BuildingListFragment.TAG);
+            BuildingFragment buildingFragment = (BuildingFragment) fragmentManager.findFragmentByTag(BuildingFragment.TAG);
+
+            mapView.removeCircle(mapView.getCircles()[0]);
+            buildingBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+
+            if (buildingFragment != null)
+            {
+                buildingFragment.removeOnBackPressedCallback();
+                buildingListFragment.removeOnBackPressedCallback();
+
+                fragmentTransaction.remove(buildingListFragment)
+                        .remove(buildingFragment)
+                        .commitNow();
+            } else
+            {
+                buildingListFragment.removeOnBackPressedCallback();
+
+                fragmentTransaction.remove(buildingListFragment)
+                        .commitNow();
+            }
+        }
+    }
+
+    @Override
+    public void drawSearchRadiusCircle()
+    {
+        MapPoint mapPoint = mapView.getMapCenterPoint();
+        if (mapView.findCircleByTag(BUILDING_RANGE_OVERLAY_TAG) != null)
+        {
+            mapPoint = mapView.findCircleByTag(BUILDING_RANGE_OVERLAY_TAG).getCenter();
+            mapView.removeCircle(mapView.findCircleByTag(BUILDING_RANGE_OVERLAY_TAG));
+        }
+
+        MapCircle circle = new MapCircle(
+                mapPoint, Integer.parseInt(App.getPreference_key_range_meter_for_search_buildings()),
+                Color.argb(128, 255, 0, 0), // strokeColor
+                Color.argb(128, 0, 255, 0) // fillColor
+        );
+        circle.setTag(BUILDING_RANGE_OVERLAY_TAG);
+        mapView.addCircle(circle);
     }
 }

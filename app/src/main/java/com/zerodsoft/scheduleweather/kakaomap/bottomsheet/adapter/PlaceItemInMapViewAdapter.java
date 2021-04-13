@@ -9,6 +9,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
@@ -84,6 +85,8 @@ public class PlaceItemInMapViewAdapter extends RecyclerView.Adapter<PlaceItemInM
 
     class PlaceItemInMapViewHolder extends RecyclerView.ViewHolder
     {
+        private CardView cardView;
+
         private TextView placeNameTextView;
         private TextView placeAddressTextView;
         private TextView placeCategoryTextView;
@@ -123,7 +126,8 @@ public class PlaceItemInMapViewAdapter extends RecyclerView.Adapter<PlaceItemInM
 
             addressIndex.setVisibility(View.GONE);
 
-            itemView.getRootView().setOnClickListener(onClickListener);
+            cardView = itemView.findViewById(R.id.place_item_cardview_in_bottomsheet);
+            cardView.setOnClickListener(onClickListener);
         }
 
         public void bind(KakaoLocalDocument data)
@@ -182,7 +186,7 @@ public class PlaceItemInMapViewAdapter extends RecyclerView.Adapter<PlaceItemInM
             });
 
             final ViewHolderData viewHolderData = new ViewHolderData(data);
-            itemView.getRootView().setTag(viewHolderData);
+            cardView.setTag(viewHolderData);
         }
 
     }

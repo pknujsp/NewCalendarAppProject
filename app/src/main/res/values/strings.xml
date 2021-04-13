@@ -352,8 +352,14 @@
     <!-- 장소 검색 기본 범위(거리, 반지름) 설정 관련 -->
     <string name="preference_key_radius_range" translatable="false">preference_key_radius_range</string>
     <string name="preference_title_radius_range">장소 검색 거리범위 선택</string>
-    <string name="preference_summary_radius_range">위치 중심으로 부터 장소를 검색할 범위(반지름)을 설정합니다</string>
+    <string name="preference_summary_radius_range">위치 중심으로 부터 장소를 검색할 범위(반지름)를 설정합니다</string>
     <string name="preference_dialog_message_radius_range">0 ~ 20KM 범위로 입력가능 합니다\nMeter단위로 입력하세요</string>
+
+    <!-- 빌딩 검색 범위(반지름)길이 설정 관련 -->
+    <string name="preference_key_range_meter_for_search_buildings" translatable="false">preference_key_range_meter_for_search_buildings</string>
+    <string name="preference_title_range_meter_for_search_buildings">빌딩 검색 범위 지정</string>
+    <string name="preference_summary_range_meter_for_search_buildings">지정 위치 중심으로 부터 빌딩을 검색할 범위(반지름)를 설정합니다</string>
+    <string name="preference_message_range_meter_for_search_buildings">50 ~ 500M 범위로 입력가능 합니다\nMeter단위로 입력하세요</string>
 
     <!-- 장소 카테고리 사용 설정 관련 -->
     <string name="preference_key_places_category" translatable="false">preference_key_places_category</string>
@@ -362,8 +368,8 @@
 
     <!-- 설정화면 카테고리 이름 설정 관련 -->
     <string name="preference_calendar_category_title">캘린더</string>
-    <string name="preference_place_category_title">날씨</string>
-    <string name="preference_weather_category_title">주변 장소</string>
+    <string name="preference_place_category_title">주변 장소</string>
+    <string name="preference_weather_category_title">날씨</string>
 
 
     <!-- 권한 거부된 경우 표시할 메시지 -->
@@ -440,10 +446,20 @@
     <string name="search_history">검색 기록</string>
 
     <!-- 건물 -->
+    <string name="no_results_for_searching_buildings">건물검색 결과가 없습니다</string>
     <string name="building_search_list">건물 검색 목록</string>
     <string name="criteria_address">기준 주소</string>
     <string name="min_floor">최하층</string>
     <string name="max_floor">최상층</string>
     <string name="search_buildings">건물 검색</string>
+    <string name="building_name">건물명</string>
+    <string name="building_address">건물주소</string>
+    <string name="building_new_address">새 주소</string>
+    <string name="building_adm_address">행정동 주소</string>
+
+    <string name="not_data">정보없음</string>
+    <string name="search_radius">검색반경</string>
+    <string name="apply">적용</string>
+
 
 </resources>
