@@ -78,6 +78,11 @@ public class BuildingFragment extends Fragment implements OnBackPressedCallbackC
     {
         super.onViewCreated(view, savedInstanceState);
 
+        binding.errorText.setVisibility(View.GONE);
+        binding.progressBar.setVisibility(View.VISIBLE);
+        binding.buildingInfoLayout.getRoot().setVisibility(View.GONE);
+        binding.buildingFloorInfoLayout.getRoot().setVisibility(View.GONE);
+
         clearText();
 
         BuildingAttributeParameter buildingAttributeParameter = new BuildingAttributeParameter();
@@ -94,7 +99,17 @@ public class BuildingFragment extends Fragment implements OnBackPressedCallbackC
                     @Override
                     public void run()
                     {
-                        setBuildingInfo(buildingAttributeResponseDataWrapper.getData());
+                        binding.progressBar.setVisibility(View.GONE);
+
+                        if (buildingAttributeResponseDataWrapper.getException() == null)
+                        {
+                            setBuildingInfo(buildingAttributeResponseDataWrapper.getData());
+                            binding.buildingInfoLayout.getRoot().setVisibility(View.VISIBLE);
+                            binding.buildingFloorInfoLayout.getRoot().setVisibility(View.VISIBLE);
+                        } else
+                        {
+                            binding.errorText.setVisibility(View.VISIBLE);
+                        }
                     }
                 });
             }

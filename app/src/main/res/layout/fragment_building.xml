@@ -14,23 +14,45 @@
             android:scrollbarSize="4dp"
             android:scrollbarStyle="insideInset">
 
-            <LinearLayout
+            <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:layout_height="wrap_content">
 
-                <include
-                    android:id="@+id/building_info_layout"
-                    layout="@layout/building_info_view"
+                <TextView
+                    android:id="@+id/error_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="@string/error" />
+
+                <ProgressBar
+                    android:id="@+id/progress_bar"
+                    style="@style/Widget.MaterialComponents.CircularProgressIndicator"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:indeterminate="true" />
+
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="16dp" />
+                    android:orientation="vertical">
 
-                <include
-                    android:id="@+id/building_floor_info_layout"
-                    layout="@layout/building_floor_info_view" />
+                    <include
+                        android:id="@+id/building_info_layout"
+                        layout="@layout/building_info_view"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp" />
 
-            </LinearLayout>
+                    <include
+                        android:id="@+id/building_floor_info_layout"
+                        layout="@layout/building_floor_info_view" />
+
+                </LinearLayout>
+
+            </FrameLayout>
+
 
         </ScrollView>
 
