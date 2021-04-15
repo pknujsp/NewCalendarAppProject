@@ -465,4 +465,14 @@
     <string name="facility">시설물</string>
 
 
+    <string name="vacant_room">공실</string>
+    <string name="stairs">계단</string>
+    <string name="elevator">엘리베이터</string>
+    <string name="toilet">화장실</string>
+    <string name="entrance">출입구</string>
+    <string name="moving_work">무빙워크</string>
+    <string name="get_floor_info_in_building">층 정보 검색</string>
+    <string name="show_extra_floor" >다른 층 더보기</string>
+
+
 </resources>

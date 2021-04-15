@@ -17,6 +17,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
@@ -387,6 +388,8 @@ public class BuildingListFragment extends Fragment implements OnClickedListItem<
 
         getParentFragmentManager().beginTransaction().hide(this).add(R.id.building_fragment_container, buildingFragment, BuildingFragment.TAG).commitNow();
         buildingFragment.addOnBackPressedCallback();
+
+        buildingFragmentController.setStateBuildingBottomSheet(BottomSheetBehavior.STATE_EXPANDED);
     }
 
     @Override

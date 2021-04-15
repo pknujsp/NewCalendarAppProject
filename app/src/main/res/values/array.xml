@@ -320,4 +320,13 @@
         <item name="bunsik">@string/bunsik</item>
         <item name="juk">@string/juk</item>
     </string-array>
+
+    <string-array name="building_facility_list">
+        <item name="X">@string/vacant_room</item>
+        <item name="S">@string/stairs</item>
+        <item name="E">@string/elevator</item>
+        <item name="T">@string/toilet</item>
+        <item name="D">@string/entrance</item>
+        <item name="M">@string/moving_work</item>
+    </string-array>
 </resources>

@@ -6,7 +6,7 @@ import android.os.Parcelable;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-class FloorCompanyInfoCompanyListItem implements Parcelable
+public class FloorCompanyInfoCompanyListItem implements Parcelable
 {
     @Expose
     @SerializedName("center_x")
@@ -24,12 +24,18 @@ class FloorCompanyInfoCompanyListItem implements Parcelable
     @SerializedName("decilist_serial")
     private String deciListSerial;
 
+    @Expose
+    @SerializedName("theme_cd")
+    private String themeCd;
+
+
     protected FloorCompanyInfoCompanyListItem(Parcel in)
     {
         centerX = in.readString();
         centerY = in.readString();
         corpName = in.readString();
         deciListSerial = in.readString();
+        themeCd = in.readString();
     }
 
     public static final Creator<FloorCompanyInfoCompanyListItem> CREATOR = new Creator<FloorCompanyInfoCompanyListItem>()
@@ -46,6 +52,22 @@ class FloorCompanyInfoCompanyListItem implements Parcelable
             return new FloorCompanyInfoCompanyListItem[size];
         }
     };
+
+    @Override
+    public int describeContents()
+    {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i)
+    {
+        parcel.writeString(centerX);
+        parcel.writeString(centerY);
+        parcel.writeString(corpName);
+        parcel.writeString(deciListSerial);
+        parcel.writeString(themeCd);
+    }
 
     public String getCenterX()
     {
@@ -87,18 +109,13 @@ class FloorCompanyInfoCompanyListItem implements Parcelable
         this.deciListSerial = deciListSerial;
     }
 
-    @Override
-    public int describeContents()
+    public String getThemeCd()
     {
-        return 0;
+        return themeCd;
     }
 
-    @Override
-    public void writeToParcel(Parcel parcel, int i)
+    public void setThemeCd(String themeCd)
     {
-        parcel.writeString(centerX);
-        parcel.writeString(centerY);
-        parcel.writeString(corpName);
-        parcel.writeString(deciListSerial);
+        this.themeCd = themeCd;
     }
 }

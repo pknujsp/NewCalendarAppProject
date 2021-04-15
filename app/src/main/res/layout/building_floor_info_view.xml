@@ -1,15 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:layout_height="match_parent"
+    android:paddingLeft="8dp"
+    android:paddingTop="8dp"
+    android:paddingRight="8dp">
 
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/building_floor_recyclerview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical" />
+        android:orientation="vertical"
+        android:scrollbarSize="4dp"
+        android:scrollbarStyle="insideInset"
+        tools:itemCount="2"
+        tools:listitem="@layout/building_floor_list_item" />
 
-</LinearLayout>
+    <Button
+        android:id="@+id/add_extra_underground_floor_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal|top"
+        android:layout_marginTop="4dp"
+        android:text="@string/show_extra_floor" />
+
+    <Button
+        android:id="@+id/add_extra_aboveground_floor_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal|bottom"
+        android:layout_marginBottom="4dp"
+        android:text="@string/show_extra_floor" />
+</FrameLayout>

@@ -232,12 +232,14 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
                 locationSearchBottomSheetBehavior.onLayoutChild(binding.mapRootLayout, locationSearchBottomSheet, ViewCompat.LAYOUT_DIRECTION_LTR);
 
                 //building list bottom sheet 크기 조정
-                int buildingBottomSheetExtraHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 48f, getContext().getResources().getDisplayMetrics());
+                int buildingBottomSheetExtraHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 60f, getContext().getResources().getDisplayMetrics());
                 int buildingBottomSheetHeight = binding.mapRootLayout.getHeight() / 2 + buildingBottomSheetExtraHeight;
 
-                buildingBottomSheet.getLayoutParams().height = buildingBottomSheetHeight;
+                //  buildingBottomSheet.getLayoutParams().height = buildingBottomSheetHeight;
+                buildingBottomSheet.getLayoutParams().height = searchBottomSheetHeight;
                 buildingBottomSheet.requestLayout();
                 buildingBottomSheetBehavior.onLayoutChild(binding.mapRootLayout, buildingBottomSheet, ViewCompat.LAYOUT_DIRECTION_LTR);
+                buildingBottomSheetBehavior.setHalfExpandedRatio(0.6f);
 
                 binding.mapRootLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
             }
@@ -1267,7 +1269,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
                             .commitNow();
 
                     buildingListFragment.addOnBackPressedCallback();
-                    buildingBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+                    buildingBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
                 }
 
             });
@@ -1277,6 +1279,12 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
             removeBuildingLocationSelector();
         }
 
+    }
+
+    @Override
+    public void setStateBuildingBottomSheet(int state)
+    {
+        buildingBottomSheetBehavior.setState(state);
     }
 
     @Override
@@ -1290,6 +1298,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
         if (currentFragmentTag.equals(BuildingListFragment.TAG))
         {
             buildingBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+
             buildingListFragment.removeOnBackPressedCallback();
 
             fragmentTransaction.remove(buildingListFragment)
@@ -1297,6 +1306,8 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
             mapView.removeCircle(mapView.getCircles()[0]);
         } else if (currentFragmentTag.equals(BuildingFragment.TAG))
         {
+            buildingBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
+
             BuildingFragment buildingFragment = (BuildingFragment) fragmentManager.findFragmentByTag(BuildingFragment.TAG);
             buildingFragment.removeOnBackPressedCallback();
             fragmentTransaction.remove(buildingFragment).show(buildingListFragment).commitNow();
@@ -1305,7 +1316,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
 
     public void closeBuildingFragments()
     {
-        if (buildingBottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED)
+        if (buildingBottomSheetBehavior.getState() != BottomSheetBehavior.STATE_COLLAPSED)
         {
             FragmentManager fragmentManager = getChildFragmentManager();
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
