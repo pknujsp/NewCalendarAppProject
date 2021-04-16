@@ -233,13 +233,17 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
 
                 //building list bottom sheet 크기 조정
                 int buildingBottomSheetExtraHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 60f, getContext().getResources().getDisplayMetrics());
-                int buildingBottomSheetHeight = binding.mapRootLayout.getHeight() / 2 + buildingBottomSheetExtraHeight;
 
-                //  buildingBottomSheet.getLayoutParams().height = buildingBottomSheetHeight;
-                buildingBottomSheet.getLayoutParams().height = searchBottomSheetHeight;
+                //list 프래그먼트와 빌딩 정보 프래그먼트 두 개의 높이를 다르게 설정
+                int buildingListHeight = binding.mapRootLayout.getHeight() / 2 + buildingBottomSheetExtraHeight;
+                int buildingInfoHeight = searchBottomSheetHeight;
+                BuildingBottomSheetHeightViewHolder buildingBottomSheetHeightViewHolder = new BuildingBottomSheetHeightViewHolder(buildingListHeight, buildingInfoHeight);
+
+                buildingBottomSheet.setTag(buildingBottomSheetHeightViewHolder);
+
+                buildingBottomSheet.getLayoutParams().height = buildingListHeight;
                 buildingBottomSheet.requestLayout();
                 buildingBottomSheetBehavior.onLayoutChild(binding.mapRootLayout, buildingBottomSheet, ViewCompat.LAYOUT_DIRECTION_LTR);
-                buildingBottomSheetBehavior.setHalfExpandedRatio(0.6f);
 
                 binding.mapRootLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
             }
@@ -1250,6 +1254,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
                 {
                     //빌딩 목록 바텀 시트 열기
                     //map center point를 좌표로 지정
+                    setBuildingBottomSheetHeight(BuildingListFragment.TAG);
                     removeBuildingLocationSelector();
 
                     drawSearchRadiusCircle();
@@ -1269,7 +1274,8 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
                             .commitNow();
 
                     buildingListFragment.addOnBackPressedCallback();
-                    buildingBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
+
+                    buildingBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
                 }
 
             });
@@ -1306,11 +1312,13 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
             mapView.removeCircle(mapView.getCircles()[0]);
         } else if (currentFragmentTag.equals(BuildingFragment.TAG))
         {
-            buildingBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
+            setBuildingBottomSheetHeight(BuildingListFragment.TAG);
 
             BuildingFragment buildingFragment = (BuildingFragment) fragmentManager.findFragmentByTag(BuildingFragment.TAG);
             buildingFragment.removeOnBackPressedCallback();
             fragmentTransaction.remove(buildingFragment).show(buildingListFragment).commitNow();
+
+            buildingBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
         }
     }
 
@@ -1318,6 +1326,8 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     {
         if (buildingBottomSheetBehavior.getState() != BottomSheetBehavior.STATE_COLLAPSED)
         {
+            setBuildingBottomSheetHeight(BuildingListFragment.TAG);
+
             FragmentManager fragmentManager = getChildFragmentManager();
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
@@ -1362,5 +1372,34 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
         );
         circle.setTag(BUILDING_RANGE_OVERLAY_TAG);
         mapView.addCircle(circle);
+    }
+
+    @Override
+    public void setBuildingBottomSheetHeight(String fragmentTag)
+    {
+        BuildingBottomSheetHeightViewHolder buildingBottomSheetHeightViewHolder = (BuildingBottomSheetHeightViewHolder) buildingBottomSheet.getTag();
+
+        if (fragmentTag.equals(BuildingListFragment.TAG))
+        {
+            buildingBottomSheet.getLayoutParams().height = buildingBottomSheetHeightViewHolder.listHeight;
+        } else if (fragmentTag.equals(BuildingFragment.TAG))
+        {
+            buildingBottomSheet.getLayoutParams().height = buildingBottomSheetHeightViewHolder.infoHeight;
+        }
+
+        buildingBottomSheet.requestLayout();
+        buildingBottomSheetBehavior.onLayoutChild(binding.mapRootLayout, buildingBottomSheet, ViewCompat.LAYOUT_DIRECTION_LTR);
+    }
+
+    static class BuildingBottomSheetHeightViewHolder
+    {
+        final int listHeight;
+        final int infoHeight;
+
+        public BuildingBottomSheetHeightViewHolder(int listHeight, int infoHeight)
+        {
+            this.listHeight = listHeight;
+            this.infoHeight = infoHeight;
+        }
     }
 }

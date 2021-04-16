@@ -381,6 +381,8 @@ public class BuildingListFragment extends Fragment implements OnClickedListItem<
     public void onClickedListItem(BuildingAreaItem e)
     {
         //change fragment
+        buildingFragmentController.setBuildingBottomSheetHeight(BuildingFragment.TAG);
+
         BuildingFragment buildingFragment = new BuildingFragment(buildingFragmentController);
         Bundle bundle = new Bundle();
         bundle.putParcelable("building", e);
