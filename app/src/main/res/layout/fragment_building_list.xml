@@ -6,6 +6,7 @@
         android:id="@+id/building_list_root_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:clickable="true"
         tools:context=".kakaomap.building.fragment.BuildingListFragment">
 
         <LinearLayout
@@ -103,6 +104,10 @@
             android:layout_alignParentBottom="true"
             android:layout_marginTop="12dp"
             android:orientation="vertical"
+            android:scrollbarFadeDuration="10000"
+            android:scrollbarSize="4dp"
+            android:scrollbarStyle="insideOverlay"
+            android:scrollbars="vertical"
             tools:listitem="@layout/building_list_item" />
 
 

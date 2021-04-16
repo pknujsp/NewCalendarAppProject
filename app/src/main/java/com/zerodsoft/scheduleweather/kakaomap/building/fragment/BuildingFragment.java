@@ -8,12 +8,15 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewpager2.widget.ViewPager2;
 
 import android.os.RemoteException;
 import android.service.carrier.CarrierMessagingService;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Scroller;
+import android.widget.Toast;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendarview.callback.EventCallback;
@@ -49,6 +52,8 @@ public class BuildingFragment extends Fragment implements OnBackPressedCallbackC
     private FragmentBuildingBinding binding;
     private BuildingAreaItem buildingAreaItem;
     private BuildingFloorListAdapter buildingFloorListAdapter;
+    private static final int SCROLLING_TOP = -1;
+    private static final int SCROLLING_BOTTOM = 1;
     private final BuildingFragmentController buildingFragmentController;
     private final SgisBuildingDownloader sgisBuildingDownloader = new SgisBuildingDownloader()
     {
@@ -144,15 +149,23 @@ public class BuildingFragment extends Fragment implements OnBackPressedCallbackC
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy)
             {
                 super.onScrolled(recyclerView, dx, dy);
-                if (!recyclerView.canScrollVertically(-1))
-                {
-                    //list item 추가
-                } else if (!recyclerView.canScrollVertically(1))
-                {
 
-                } else
+                if (!recyclerView.canScrollVertically(SCROLLING_TOP))
                 {
+                    if (buildingFloorListAdapter.getUnderGroundCount() < BuildingFloorListAdapter.UNDERGROUND_COUNT_MAX)
+                    {
+                        buildingFloorListAdapter.addFloors(BuildingFloorListAdapter.FloorClassification.UNDERGROUND);
+                    }
+                    return;
+                }
 
+                if (!recyclerView.canScrollVertically(SCROLLING_BOTTOM))
+                {
+                    if (buildingFloorListAdapter.getAboveGroundCount() < BuildingFloorListAdapter.ABOVEGROUND_COUNT_MAX)
+                    {
+                        buildingFloorListAdapter.addFloors(BuildingFloorListAdapter.FloorClassification.ABOVEGROUND);
+                    }
+                    return;
                 }
             }
         });

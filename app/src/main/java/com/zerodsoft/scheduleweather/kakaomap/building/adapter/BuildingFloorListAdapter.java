@@ -25,6 +25,13 @@ public class BuildingFloorListAdapter extends RecyclerView.Adapter<BuildingFloor
     private final OnClickDownloadListener onClickDownloadListener;
     private int aboveGroundCount = 10;
     private int underGroundCount = 1;
+    public static final int UNDERGROUND_COUNT_MAX = 8;
+    public static final int ABOVEGROUND_COUNT_MAX = 130;
+
+    public enum FloorClassification
+    {
+        UNDERGROUND, ABOVEGROUND
+    }
 
     public BuildingFloorListAdapter(Fragment fragment)
     {
@@ -72,7 +79,7 @@ public class BuildingFloorListAdapter extends RecyclerView.Adapter<BuildingFloor
     {
         int floor = 0;
 
-        if (underGroundCount < 0)
+        if (underGroundCount > 0)
         {
             //지하 있음
             floor = (position - underGroundCount) >= 0 ? position - underGroundCount + 1 : position - underGroundCount;
@@ -83,6 +90,52 @@ public class BuildingFloorListAdapter extends RecyclerView.Adapter<BuildingFloor
         }
 
         return String.valueOf(floor);
+    }
+
+    public void addFloors(FloorClassification floorClassification)
+    {
+        if (floorClassification == FloorClassification.ABOVEGROUND)
+        {
+            if (aboveGroundCount == ABOVEGROUND_COUNT_MAX)
+            {
+                return;
+            } else
+            {
+                aboveGroundCount += 10;
+
+                if (aboveGroundCount >= ABOVEGROUND_COUNT_MAX)
+                {
+                    aboveGroundCount = ABOVEGROUND_COUNT_MAX;
+                }
+            }
+
+        } else if (floorClassification == FloorClassification.UNDERGROUND)
+        {
+            if (underGroundCount == UNDERGROUND_COUNT_MAX)
+            {
+                return;
+            } else
+            {
+                underGroundCount += 2;
+
+                if (underGroundCount >= UNDERGROUND_COUNT_MAX)
+                {
+                    underGroundCount = UNDERGROUND_COUNT_MAX;
+                }
+            }
+        }
+
+        notifyDataSetChanged();
+    }
+
+    public int getAboveGroundCount()
+    {
+        return aboveGroundCount;
+    }
+
+    public int getUnderGroundCount()
+    {
+        return underGroundCount;
     }
 
 
@@ -137,16 +190,17 @@ public class BuildingFloorListAdapter extends RecyclerView.Adapter<BuildingFloor
         public void setResultData()
         {
             final String FLOOR = getFloor(getAdapterPosition());
+            String noFloor = Integer.parseInt(FLOOR) < 0 ? "지하 " + Math.abs(Integer.parseInt(FLOOR)) : FLOOR;
 
             if (buildingFloorDataArrayMap.get(FLOOR) == null)
             {
-                binding.noFloorForSearch.setText(FLOOR);
+                binding.noFloorForSearch.setText(noFloor);
 
                 binding.layoutForSearchFloorInfo.setVisibility(View.VISIBLE);
                 binding.floorInfoLayout.setVisibility(View.GONE);
             } else
             {
-                binding.noFloor.setText(FLOOR);
+                binding.noFloor.setText(noFloor + "층");
                 companyListAdapter = new CompanyListAdapter(buildingFloorDataArrayMap.get(FLOOR).getCompanyDataList());
                 binding.companyRecyclerView.setAdapter(companyListAdapter);
 
