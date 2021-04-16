@@ -1,14 +1,66 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".navermap.NaverMapFragment">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:id="@+id/naver_map_fragment_root_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:layout_height="match_parent">
 
-</FrameLayout>
+        <RelativeLayout
+            android:id="@+id/naver_map_view_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+
+            <include
+                android:id="@+id/naver_map_header_bar"
+                layout="@layout/view_map_search_bar"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/map_header_bar_height"
+                android:layout_alignParentTop="true"
+                android:layout_marginLeft="32dp"
+                android:layout_marginTop="@dimen/map_header_bar_top_margin"
+                android:layout_marginRight="32dp" />
+
+            <fragment
+                android:id="@+id/naver_map_fragment"
+                android:name="com.naver.maps.map.MapFragment"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentBottom="true"
+                app:navermap_latitude="37.6076585"
+                app:navermap_longitude="127.0965492"
+                app:navermap_mapType="Basic"
+                app:navermap_zoom="15" />
+
+            <include
+                android:id="@+id/naver_map_buttons_layout"
+                layout="@layout/map_buttons_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_gravity="bottom"
+                android:layout_marginLeft="28dp"
+                android:layout_marginRight="28dp"
+                android:layout_marginBottom="32dp" />
+
+
+        </RelativeLayout>
+
+        <include
+            android:id="@+id/location_search_bottom_sheet"
+            layout="@layout/bottom_sheet_location_search" />
+
+        <include
+            android:id="@+id/placeslist_bottom_sheet"
+            layout="@layout/place_list_bottom_sheet_view" />
+
+        <include
+            android:id="@+id/building_bottom_sheet"
+            layout="@layout/bottom_sheet_building" />
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+</layout>

@@ -25,6 +25,7 @@ public class HttpCommunicationClient
     private static final String SGIS_AUTH_SERVICE_URL = "https://sgisapi.kostat.go.kr/OpenAPI3/auth/";
     private static final String SGIS_TRANSFORMATION_SERVICE_URL = "https://sgisapi.kostat.go.kr/OpenAPI3/transformation/";
     private static final String SGIS_FIGURE_SERVICE_URL = "https://sgisapi.kostat.go.kr/OpenAPI3/figure/";
+    private static final String SGIS_ADDRESS_SERVICE_URL = "https://sgisapi.kostat.go.kr/OpenAPI3/addr/";
 
     //날씨
     public static final String VILAGE_FCST_INFO_SERVICE_SERVICE_KEY = "T2nJm9zlOA0Z7Dut%2BThT6Jp0Itn0zZw80AUP3uMdOWlZJR1gVPkx9p1t8etuSW1kWsSNrGGHKdxbwr1IUlt%2Baw%3D%3D";
@@ -48,6 +49,7 @@ public class HttpCommunicationClient
     private static volatile Retrofit sgisTransformationInstance = null;
     private static volatile Retrofit sgisFigureInstance = null;
     private static volatile Retrofit kakaoPlaceInstance = null;
+    private static volatile Retrofit sgisAddressInstance = null;
 
     public static final int KAKAO = 0;
     public static final int MID_FCST = 1;
@@ -58,6 +60,7 @@ public class HttpCommunicationClient
     public static final int KAKAO_PLACE = 6;
     public static final int SGIS_TRANSFORMATION = 7;
     public static final int SGIS_FIGURE = 8;
+    public static final int SGIS_ADDRESS = 9;
 
     public static int lastService = -1;
 
@@ -180,6 +183,19 @@ public class HttpCommunicationClient
                             .baseUrl(SGIS_FIGURE_SERVICE_URL).build();
                 }
                 return sgisFigureInstance.create(Querys.class);
+            }
+
+            case SGIS_ADDRESS:
+            {
+                if (sgisAddressInstance == null)
+                {
+                    OkHttpClient client = new OkHttpClient.Builder().connectTimeout(5, TimeUnit.SECONDS).build();
+                    Gson gson = new GsonBuilder().setLenient().create();
+
+                    sgisAddressInstance = new Retrofit.Builder().client(client).addConverterFactory(GsonConverterFactory.create(gson))
+                            .baseUrl(SGIS_ADDRESS_SERVICE_URL).build();
+                }
+                return sgisAddressInstance.create(Querys.class);
             }
 
             default:

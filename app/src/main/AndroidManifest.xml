@@ -25,7 +25,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".event.foods.activity.LocationSettingsActivity"></activity>
+        <activity android:name=".navermap.NaverMapActivity"></activity>
+        <activity android:name=".event.foods.activity.LocationSettingsActivity" />
         <activity android:name=".event.places.activity.PlacesActivity" />
         <activity android:name=".event.weather.activity.WeatherActivity" />
         <activity android:name=".event.event.activity.InstanceActivity" />
@@ -69,6 +70,9 @@
         <meta-data
             android:name="com.kakao.sdk.AppKey"
             android:value="0dc55f983ec285210efb88d1389f7c2b" />
+        <meta-data
+            android:name="com.naver.maps.map.CLIENT_ID"
+            android:value="oybkul82gs" />
 
         <uses-library
             android:name="org.apache.http.legacy"
@@ -86,7 +90,6 @@
                 android:name="android.content.SyncAdapter"
                 android:resource="@xml/calendar_sync_adapter" />
         </service>
-
     </application>
 
 </manifest>

@@ -51,6 +51,7 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
+import com.zerodsoft.scheduleweather.navermap.NaverMapActivity;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.utility.RecurrenceRule;
 import com.zerodsoft.scheduleweather.utility.model.ReminderDto;
@@ -528,7 +529,21 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
         binding.locationLayout.eventLocation.setOnClickListener(view ->
         {
             //위치를 설정하는 액티비티 표시
+            /*
             Intent intent = new Intent(EditEventActivity.this, SelectLocationActivity.class);
+            String location = "";
+
+            if (dataController.getEventValueAsString(CalendarContract.Events.EVENT_LOCATION) != null)
+            {
+                location = dataController.getEventValueAsString(CalendarContract.Events.EVENT_LOCATION);
+            }
+
+            intent.putExtra(CalendarContract.Events.EVENT_LOCATION, location);
+            startActivityForResult(intent, REQUEST_LOCATION);
+
+             */
+
+            Intent intent = new Intent(EditEventActivity.this, NaverMapActivity.class);
             String location = "";
 
             if (dataController.getEventValueAsString(CalendarContract.Events.EVENT_LOCATION) != null)

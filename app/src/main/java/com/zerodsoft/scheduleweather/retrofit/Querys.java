@@ -9,6 +9,7 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.NearbyM
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.kakaoplace.KakaoPlaceJsonRoot;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.addressresponse.AddressKakaoLocalResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddress;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.address.reversegeocoding.ReverseGeoCodingResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.auth.SgisAuthResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.building.buildingarea.BuildingAreaResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.building.buildingattribute.BuildingAttributeResponse;
@@ -101,6 +102,10 @@ public interface Querys
 
     @GET("floorcompanyinfo.json")
     Call<FloorCompanyInfoResponse> floorCompanyInfo(@QueryMap(encoded = true) Map<String, String> queryMap);
+
+    //정부 SGIS 주소
+    @GET("rgeocode.json")
+    Call<ReverseGeoCodingResponse> reverseGeoCoding(@QueryMap(encoded = true) Map<String, String> queryMap);
 
     // kakao place
     @GET("v/{id}")

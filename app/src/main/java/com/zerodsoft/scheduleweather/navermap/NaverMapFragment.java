@@ -1,72 +1,1413 @@
 package com.zerodsoft.scheduleweather.navermap;
 
+import android.Manifest;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.PointF;
+import android.location.Address;
+import android.location.Geocoder;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.UiThread;
+import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.ContextCompat;
+import androidx.core.view.ViewCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.viewpager.widget.ViewPager;
+import androidx.viewpager2.widget.CompositePageTransformer;
+import androidx.viewpager2.widget.MarginPageTransformer;
+import androidx.viewpager2.widget.ViewPager2;
 
+import android.provider.Settings;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.Toast;
 
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.naver.maps.geometry.LatLng;
+import com.naver.maps.geometry.LatLngBounds;
+import com.naver.maps.map.CameraPosition;
+import com.naver.maps.map.CameraUpdate;
+import com.naver.maps.map.LocationSource;
+import com.naver.maps.map.MapFragment;
+import com.naver.maps.map.NaverMap;
+import com.naver.maps.map.NaverMapOptions;
+import com.naver.maps.map.OnMapReadyCallback;
+import com.naver.maps.map.Projection;
+import com.naver.maps.map.overlay.Marker;
+import com.naver.maps.map.overlay.Overlay;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.activity.App;
+import com.zerodsoft.scheduleweather.databinding.FragmentMapBinding;
+import com.zerodsoft.scheduleweather.databinding.FragmentNaverMapBinding;
+import com.zerodsoft.scheduleweather.etc.AppPermission;
+import com.zerodsoft.scheduleweather.etc.FragmentStateCallback;
+import com.zerodsoft.scheduleweather.event.places.interfaces.OnClickedPlacesListListener;
+import com.zerodsoft.scheduleweather.event.places.interfaces.PoiItemOnClickListener;
+import com.zerodsoft.scheduleweather.kakaomap.bottomsheet.adapter.PlaceItemInMapViewAdapter;
+import com.zerodsoft.scheduleweather.kakaomap.building.fragment.BuildingFragment;
+import com.zerodsoft.scheduleweather.kakaomap.building.fragment.BuildingListFragment;
+import com.zerodsoft.scheduleweather.kakaomap.fragment.main.KakaoMapFragment;
+import com.zerodsoft.scheduleweather.kakaomap.fragment.search.LocationSearchFragment;
+import com.zerodsoft.scheduleweather.kakaomap.fragment.searchheader.MapHeaderMainFragment;
+import com.zerodsoft.scheduleweather.kakaomap.fragment.searchheader.MapHeaderSearchFragment;
+import com.zerodsoft.scheduleweather.kakaomap.fragment.searchresult.LocationSearchResultFragment;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.BuildingFragmentController;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.BuildingLocationSelectorController;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapData;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapPoint;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.INetwork;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.PlacesItemBottomSheetButtonOnClickListener;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.PlacesListBottomSheetController;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.SearchBarController;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.SearchFragmentController;
+import com.zerodsoft.scheduleweather.kakaomap.model.CustomPoiItem;
+import com.zerodsoft.scheduleweather.kakaomap.place.PlaceInfoFragment;
+import com.zerodsoft.scheduleweather.kakaomap.util.RequestLocationTimer;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalDocument;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.addressresponse.AddressResponseDocuments;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
+import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
+import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
+import com.zerodsoft.scheduleweather.utility.NetworkStatus;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link NaverMapFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
-public class NaverMapFragment extends Fragment
+import net.daum.mf.map.api.MapCircle;
+import net.daum.mf.map.api.MapPOIItem;
+import net.daum.mf.map.api.MapPoint;
+import net.daum.mf.map.api.MapReverseGeoCoder;
+import net.daum.mf.map.api.MapView;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Timer;
+
+public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IMapPoint, IMapData, INetwork, OnClickedPlacesListListener, PlacesItemBottomSheetButtonOnClickListener,
+        PlacesListBottomSheetController, PoiItemOnClickListener, OnClickedBottomSheetListener,
+        MapHeaderSearchFragment.LocationSearchListener, SearchFragmentController, BuildingLocationSelectorController,
+        BuildingFragmentController, BuildingListFragment.OnSearchRadiusChangeListener
 {
+    public static final int REQUEST_CODE_LOCATION = 10000;
+    public static final int BUILDING_RANGE_OVERLAY_TAG = 1500;
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    public FragmentNaverMapBinding binding;
+    public MapFragment mapFragment;
+    public NaverMap naverMap;
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    public PlacesItemBottomSheetButtonOnClickListener placesItemBottomSheetButtonOnClickListener;
 
-    public NaverMapFragment()
+    private static String appKey;
+    public MapReverseGeoCoder mapReverseGeoCoder;
+    public LocationManager locationManager;
+
+    public ImageButton zoomInButton;
+    public ImageButton zoomOutButton;
+    public ImageButton gpsButton;
+    public ImageButton buildingButton;
+
+    public int selectedPoiItemIndex;
+    public boolean isSelectedPoiItem;
+
+    public NetworkStatus networkStatus;
+
+    public LinearLayout placesListBottomSheet;
+    public BottomSheetBehavior placeListBottomSheetBehavior;
+
+    public LinearLayout locationSearchBottomSheet;
+    public BottomSheetBehavior locationSearchBottomSheetBehavior;
+
+    public LinearLayout buildingBottomSheet;
+    public BottomSheetBehavior buildingBottomSheetBehavior;
+
+    public ViewPager2 placesBottomSheetViewPager;
+    public PlaceItemInMapViewAdapter adapter;
+
+    public int placeBottomSheetSelectBtnVisibility;
+    public int placeBottomSheetUnSelectBtnVisibility;
+
+    public Double mapTranslationYByBuildingBottomSheet;
+
+    public List<Marker> markerList;
+
+
+    public void setPlacesItemBottomSheetButtonOnClickListener(PlacesItemBottomSheetButtonOnClickListener placesItemBottomSheetButtonOnClickListener)
     {
-        // Required empty public constructor
+        this.placesItemBottomSheetButtonOnClickListener = placesItemBottomSheetButtonOnClickListener;
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment NaverMapFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static NaverMapFragment newInstance(String param1, String param2)
+
+    public final LocationListener locationListener = new LocationListener()
     {
-        NaverMapFragment fragment = new NaverMapFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
+        @Override
+        public void onLocationChanged(Location location)
+        {
+            if (getActivity() != null)
+            {
+                mapView.setMapCenterPoint(MapPoint.mapPointWithGeoCoord(location.getLatitude(), location.getLongitude()), true);
+                mapReverseGeoCoder = new MapReverseGeoCoder(appKey, mapView.getMapCenterPoint(), KakaoMapFragment.this, getActivity());
+                mapReverseGeoCoder.startFindingAddress(MapReverseGeoCoder.AddressType.ShortAddress);
+                locationManager.removeUpdates(locationListener);
+            }
+        }
+
+        @Override
+        public void onStatusChanged(String s, int i, Bundle bundle)
+        {
+
+        }
+
+        @Override
+        public void onProviderEnabled(String s)
+        {
+
+        }
+
+        @Override
+        public void onProviderDisabled(String s)
+        {
+
+        }
+    };
 
     @Override
-    public void onCreate(Bundle savedInstanceState)
+    public void onCreate(@Nullable Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null)
-        {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
+        setHasOptionsMenu(true);
+        networkStatus = new NetworkStatus(getActivity());
     }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState)
     {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_naver_map, container, false);
+        binding = FragmentNaverMapBinding.inflate(inflater);
+        return binding.getRoot();
     }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
+    {
+        super.onViewCreated(view, savedInstanceState);
+
+        setPlacesListBottomSheet();
+        setLocationSearchBottomSheet();
+        setBuildingBottomSheet();
+
+        locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
+
+        zoomInButton = binding.naverMapButtonsLayout.zoomInButton;
+        zoomOutButton = binding.naverMapButtonsLayout.zoomOutButton;
+        gpsButton = binding.naverMapButtonsLayout.gpsButton;
+        buildingButton = binding.naverMapButtonsLayout.buildingButton;
+
+
+        binding.naverMapFragmentRootLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener()
+        {
+            @Override
+            public void onGlobalLayout()
+            {
+                //search bottom sheet 크기 조정
+                int headerBarHeight = (int) getResources().getDimension(R.dimen.map_header_bar_height);
+                int headerBarTopMargin = (int) getResources().getDimension(R.dimen.map_header_bar_top_margin);
+                int headerBarMargin = (int) (headerBarTopMargin * 1.5f);
+
+                int searchBottomSheetHeight = binding.naverMapFragmentRootLayout.getHeight() - headerBarHeight - headerBarMargin;
+
+                locationSearchBottomSheet.getLayoutParams().height = searchBottomSheetHeight;
+                locationSearchBottomSheet.requestLayout();
+                locationSearchBottomSheetBehavior.onLayoutChild(binding.naverMapFragmentRootLayout, locationSearchBottomSheet, ViewCompat.LAYOUT_DIRECTION_LTR);
+
+                //building list bottom sheet 크기 조정
+                int buildingBottomSheetExtraHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 60f, getContext().getResources().getDisplayMetrics());
+
+                //list 프래그먼트와 빌딩 정보 프래그먼트 두 개의 높이를 다르게 설정
+                int buildingListHeight = binding.naverMapFragmentRootLayout.getHeight() / 2 + buildingBottomSheetExtraHeight;
+                int buildingInfoHeight = searchBottomSheetHeight;
+                BuildingBottomSheetHeightViewHolder buildingBottomSheetHeightViewHolder = new BuildingBottomSheetHeightViewHolder(buildingListHeight, buildingInfoHeight);
+
+                buildingBottomSheet.setTag(buildingBottomSheetHeightViewHolder);
+
+                buildingBottomSheet.getLayoutParams().height = buildingListHeight;
+                buildingBottomSheet.requestLayout();
+                buildingBottomSheetBehavior.onLayoutChild(binding.naverMapFragmentRootLayout, buildingBottomSheet, ViewCompat.LAYOUT_DIRECTION_LTR);
+
+                binding.naverMapFragmentRootLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+            }
+        });
+
+        binding.naverMapHeaderBar.getRoot().setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                removeBuildingLocationSelector();
+                closeBuildingFragments();
+                FragmentManager fragmentManager = getChildFragmentManager();
+                LocationSearchFragment locationSearchFragment = (LocationSearchFragment) fragmentManager.findFragmentByTag(LocationSearchFragment.TAG);
+
+                fragmentManager.beginTransaction().hide(fragmentManager.findFragmentByTag(MapHeaderMainFragment.TAG))
+                        .show(fragmentManager.findFragmentByTag(MapHeaderSearchFragment.TAG))
+                        .show(locationSearchFragment)
+                        .commitNow();
+
+                locationSearchFragment.addOnBackPressedCallback();
+                locationSearchBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+            }
+        });
+
+        buildingButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                showBuildingLocationSelector();
+            }
+        });
+
+        zoomInButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                naverMap.moveCamera(CameraUpdate.zoomIn());
+            }
+        });
+
+        zoomOutButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                naverMap.moveCamera(CameraUpdate.zoomOut());
+            }
+        });
+
+        gpsButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                //권한 확인
+                boolean isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+                boolean isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+
+                ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION);
+                ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION);
+
+                if (networkAvailable())
+                {
+                    if (isGpsEnabled && isNetworkEnabled)
+                    {
+                        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+                        Timer timer = new Timer();
+                        timer.schedule(new RequestLocationTimer()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                timer.cancel();
+                                getActivity().runOnUiThread(new Runnable()
+                                {
+                                    @Override
+                                    public void run()
+                                    {
+                                        locationManager.removeUpdates(locationListener);
+                                        ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION);
+                                        ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION);
+                                        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
+                                    }
+                                });
+
+                            }
+                        }, 2000);
+                    } else if (!isGpsEnabled)
+                    {
+                        showRequestGpsDialog();
+                    }
+                }
+
+            }
+        });
+
+
+        FragmentManager fragmentManager = getChildFragmentManager();
+
+        mapFragment = (MapFragment) fragmentManager.findFragmentById(R.id.naver_map_fragment);
+        if (mapFragment == null)
+        {
+            NaverMapOptions naverMapOptions = new NaverMapOptions();
+            naverMapOptions.scaleBarEnabled(true).locationButtonEnabled(false).compassEnabled(false).zoomControlEnabled(false);
+
+            mapFragment = MapFragment.newInstance(naverMapOptions);
+            fragmentManager.beginTransaction().add(R.id.naver_map_fragment, mapFragment).commitNow();
+        }
+
+        mapFragment.getMapAsync(this);
+
+        if (!AppPermission.grantedPermissions(
+                getContext(), Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION))
+
+        {
+            permissionResultLauncher.launch(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION});
+        }
+    }
+
+
+    final ActivityResultLauncher<String[]> permissionResultLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(),
+            new ActivityResultCallback<Map<String, Boolean>>()
+            {
+                @Override
+                public void onActivityResult(Map<String, Boolean> result)
+                {
+                    Set<String> keySet = result.keySet();
+                    for (String key : keySet)
+                    {
+                        if (!result.get(key))
+                        {
+                            Toast.makeText(getActivity(), getString(R.string.message_needs_location_permission), Toast.LENGTH_SHORT).show();
+                            binding.naverMapButtonsLayout.gpsButton.setVisibility(View.GONE);
+                            break;
+                        }
+                    }
+                }
+            });
+
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+    }
+
+    private void setLocationSearchBottomSheet()
+    {
+        locationSearchBottomSheet = binding.locationSearchBottomSheet.locationSearchBottomsheet;
+
+        locationSearchBottomSheetBehavior = BottomSheetBehavior.from(locationSearchBottomSheet);
+        locationSearchBottomSheetBehavior.setDraggable(false);
+        locationSearchBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+        locationSearchBottomSheetBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback()
+        {
+            @Override
+            public void onStateChanged(@NonNull View bottomSheet, int newState)
+            {
+
+            }
+
+            @Override
+            public void onSlide(@NonNull View bottomSheet, float slideOffset)
+            {
+
+            }
+        });
+
+
+        MapHeaderSearchFragment mapHeaderSearchFragment = new MapHeaderSearchFragment(NaverMapFragment.this);
+        LocationSearchFragment locationSearchFragment = new LocationSearchFragment(NaverMapFragment.this,
+                new FragmentStateCallback()
+                {
+                    @Override
+                    public void onChangedState(int state)
+                    {
+                    }
+                });
+
+        mapHeaderSearchFragment.setSearchHistoryDataController(locationSearchFragment);
+        locationSearchFragment.setSearchBarController(mapHeaderSearchFragment);
+
+        getChildFragmentManager().beginTransaction()
+                .add(binding.naverMapHeaderBar.headerFragmentContainer.getId(), new MapHeaderMainFragment(), MapHeaderMainFragment.TAG)
+                .add(binding.naverMapHeaderBar.headerFragmentContainer.getId(), mapHeaderSearchFragment, MapHeaderSearchFragment.TAG)
+                .add(binding.locationSearchBottomSheet.searchFragmentContainer.getId(), locationSearchFragment, LocationSearchFragment.TAG)
+                .hide(mapHeaderSearchFragment)
+                .commitNow();
+    }
+
+    private void setBuildingBottomSheet()
+    {
+        buildingBottomSheet = (LinearLayout) binding.buildingBottomSheet.buildingBottomsheet;
+
+        buildingBottomSheetBehavior = BottomSheetBehavior.from(buildingBottomSheet);
+        buildingBottomSheetBehavior.setDraggable(false);
+        buildingBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+        buildingBottomSheetBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback()
+        {
+            @Override
+            public void onStateChanged(@NonNull View bottomSheet, int newState)
+            {
+                switch (newState)
+                {
+                    case BottomSheetBehavior.STATE_EXPANDED:
+                    {
+                       /*
+                       <지도 카메라 위치 이동 방법>
+                       MapView.getMapCenterPoint() 메소드로 지도 중심 좌표(MapPoint center)를 얻습니다.
+                        중심 좌표 객체의 center.getMapPointScreenLocation() 메소드를 통해 pixel 좌표값(MapPoint.PlainCoordinate pixel)을 얻어냅니다.
+                        그 pixel 좌표값으로부터 얼마나 이동시키면 될 지 계산합니다. 앞서 구한 pixel에 이동하고자 하는 offset을 더하여 tx, ty 값을 확보합니다.
+                        (double tx = pixel.x + offsetX, double ty = pixel.y + offsetY)
+                        MapPoint newCenter = MapPoint.mapPointWithScreenLocation(tx, ty) 정적 메소드로 입력한 스크린 좌표를 역변환 하여 지도상 좌표(newCenter)를 구합니다.
+                        MapView.setMapCenterPoint(newCenter, true) 메소드로 지도 중심을 이동시킵니다.
+                        */
+
+                        LatLngBounds currentLatLngBounds = naverMap.getContentBounds();
+                        Projection projection = naverMap.getProjection();
+
+                        PointF point = projection.toScreenLocation(currentLatLngBounds.getCenter());
+
+                        PointF movePoint = new PointF(point.x, (float) (point.y + mapTranslationYByBuildingBottomSheet));
+                        CameraUpdate cameraUpdate = CameraUpdate.scrollBy(movePoint);
+                        naverMap.moveCamera(cameraUpdate);
+
+                        break;
+                    }
+                    case BottomSheetBehavior.STATE_COLLAPSED:
+                    {
+                        LatLngBounds currentLatLngBounds = naverMap.getContentBounds();
+                        Projection projection = naverMap.getProjection();
+
+                        PointF point = projection.toScreenLocation(currentLatLngBounds.getCenter());
+
+                        PointF movePoint = new PointF(point.x, (float) (point.y - mapTranslationYByBuildingBottomSheet));
+                        CameraUpdate cameraUpdate = CameraUpdate.scrollBy(movePoint);
+                        naverMap.moveCamera(cameraUpdate);
+
+                        break;
+                    }
+                }
+            }
+
+            @Override
+            public void onSlide(@NonNull View bottomSheet, float slideOffset)
+            {
+                //expanded일때 offset == 1.0, collapsed일때 offset == 0.0
+                //offset에 따라서 버튼들이 이동하고, 지도의 좌표가 변경되어야 한다.
+                float translationValue = -buildingBottomSheet.getHeight() * slideOffset;
+
+                binding.naverMapButtonsLayout.getRoot().animate().translationY(translationValue);
+            }
+        });
+    }
+
+    private void setPlacesListBottomSheet()
+    {
+        placesListBottomSheet = binding.placeslistBottomSheet.placesBottomsheet;
+        placesBottomSheetViewPager = (ViewPager2) placesListBottomSheet.findViewById(R.id.place_items_viewpager);
+
+        placesBottomSheetViewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback()
+        {
+            private int mCurrentPosition;
+            private int mScrollState;
+
+            @Override
+            public void onPageScrollStateChanged(final int state)
+            {
+                handleScrollState(state);
+                mScrollState = state;
+            }
+
+            private void handleScrollState(final int state)
+            {
+                if (state == ViewPager.SCROLL_STATE_IDLE && mScrollState == ViewPager.SCROLL_STATE_DRAGGING)
+                {
+                    setNextItemIfNeeded();
+                }
+            }
+
+            private void setNextItemIfNeeded()
+            {
+                if (!isScrollStateSettling())
+                {
+                    handleSetNextItem();
+                }
+            }
+
+            private boolean isScrollStateSettling()
+            {
+                return mScrollState == ViewPager.SCROLL_STATE_SETTLING;
+            }
+
+            private void handleSetNextItem()
+            {
+                /*
+                final int lastPosition = bottomSheetViewPager.getAdapter().getItemCount() - 1;
+                if (mCurrentPosition == 0)
+                {
+                    bottomSheetViewPager.setCurrentItem(lastPosition, false);
+                } else if (mCurrentPosition == lastPosition)
+                {
+                    bottomSheetViewPager.setCurrentItem(0, false);
+                }
+                 */
+            }
+
+            @Override
+            public void onPageScrolled(final int position, final float positionOffset, final int positionOffsetPixels)
+            {
+            }
+
+            @Override
+            public void onPageSelected(int position)
+            {
+                super.onPageSelected(position);
+
+                mCurrentPosition = position;
+                if (isSelectedPoiItem)
+                {
+                    onPOIItemSelectedByBottomSheet(mCurrentPosition);
+                }
+            }
+        });
+
+        final int rlPadding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 12f, getResources().getDisplayMetrics());
+        final int bPadding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, getResources().getDisplayMetrics());
+        final int margin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 3f, getResources().getDisplayMetrics());
+
+        placesBottomSheetViewPager.setPadding(rlPadding, 0, rlPadding, bPadding);
+        placesBottomSheetViewPager.setOffscreenPageLimit(3);
+        placesBottomSheetViewPager.getChildAt(0).setOverScrollMode(View.OVER_SCROLL_NEVER);
+
+        CompositePageTransformer compositePageTransformer = new CompositePageTransformer();
+        compositePageTransformer.addTransformer(new MarginPageTransformer(margin));
+        compositePageTransformer.addTransformer(new ViewPager2.PageTransformer()
+        {
+            @Override
+            public void transformPage(@NonNull View page, float position)
+            {
+                float r = 1 - Math.abs(position);
+                page.setScaleY(0.8f + r * 0.2f);
+            }
+        });
+        placesBottomSheetViewPager.setPageTransformer(compositePageTransformer);
+
+        placeListBottomSheetBehavior = BottomSheetBehavior.from(placesListBottomSheet);
+        placeListBottomSheetBehavior.setDraggable(true);
+        placeListBottomSheetBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback()
+        {
+            @Override
+            public void onStateChanged(@NonNull View bottomSheet, int newState)
+            {
+                switch (newState)
+                {
+                    case BottomSheetBehavior.STATE_EXPANDED:
+                        break;
+                }
+            }
+
+            @Override
+            public void onSlide(@NonNull View bottomSheet, float slideOffset)
+            {
+                //expanded일때 offset == 1.0, collapsed일때 offset == 0.0
+                //offset에 따라서 버튼들이 이동하고, 지도의 좌표가 변경되어야 한다.
+                float translationValue = -placesListBottomSheet.getHeight() * slideOffset;
+
+                binding.naverMapButtonsLayout.getRoot().animate().translationY(translationValue);
+            }
+        });
+
+       /*
+        placeListBottomSheetBehavior.setPeekHeight(0);
+        placeListBottomSheetBehavior.setDraggable(true);
+        placeListBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+        placeListBottomSheetBehavior.setAnchorOffset(0.5f);
+        placeListBottomSheetBehavior.setAnchorSheetCallback(new PlacesListBottomSheetBehavior.AnchorSheetCallback()
+        {
+            @Override
+            public void onStateChanged(@NonNull View bottomSheet, int newState)
+            {
+                if (newState == BottomSheetBehavior.STATE_COLLAPSED)
+                {
+                } else if (newState == BottomSheetBehavior.STATE_EXPANDED)
+                {
+                } else if (newState == BottomSheetBehavior.STATE_DRAGGING)
+                {
+                } else if (newState == BottomSheetBehavior.STATE_HALF_EXPANDED)
+                {
+                } else if (newState == BottomSheetBehavior.STATE_HIDDEN)
+                {
+                }
+            }
+            @Override
+            public void onSlide(@NonNull View bottomSheet, float slideOffset)
+            {
+                float h = bottomSheet.getHeight();
+                float off = h * slideOffset;
+                switch (placeListBottomSheetBehavior.getState())
+                {
+                    case BottomSheetBehavior.STATE_DRAGGING:
+                    case BottomSheetBehavior.STATE_SETTLING:
+                        setMapPaddingBottom(off);
+                        break;
+                    case BottomSheetBehavior.STATE_HIDDEN:
+                    case BottomSheetBehavior.STATE_COLLAPSED:
+                    case BottomSheetBehavior.STATE_EXPANDED:
+                        break;
+                }
+            }
+        });
+        */
+    }
+
+    public void setPlaceBottomSheetSelectBtnVisibility(int placeBottomSheetSelectBtnVisibility)
+    {
+        this.placeBottomSheetSelectBtnVisibility = placeBottomSheetSelectBtnVisibility;
+    }
+
+    public void setPlaceBottomSheetUnSelectBtnVisibility(
+            int placeBottomSheetUnSelectBtnVisibility)
+    {
+        this.placeBottomSheetUnSelectBtnVisibility = placeBottomSheetUnSelectBtnVisibility;
+    }
+
+
+    public void showRequestGpsDialog()
+    {
+        new AlertDialog.Builder(getActivity())
+                .setMessage(getString(R.string.request_to_make_gps_on))
+                .setPositiveButton(getString(R.string.check), new
+                        DialogInterface.OnClickListener()
+                        {
+                            @Override
+                            public void onClick(DialogInterface paramDialogInterface, int paramInt)
+                            {
+                                startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                            }
+                        })
+                .setNegativeButton(getString(R.string.no), new DialogInterface.OnClickListener()
+                {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i)
+                    {
+                    }
+                })
+                .setCancelable(false)
+                .show();
+    }
+
+    @Override
+    public void onMapReady(@NonNull NaverMap naverMap)
+    {
+        this.naverMap = naverMap;
+        naverMap.setLocationSource(null);
+
+        //바텀 시트의 상태에 따라서 카메라를 이동시킬 Y값
+        final int bottomSheetTopY = binding.naverMapViewLayout.getHeight() - buildingBottomSheet.getHeight();
+        final int mapHeaderBarBottomY = binding.naverMapHeaderBar.getRoot().getBottom();
+        final int SIZE_BETWEEN_HEADER_BAR_BOTTOM_AND_BOTTOM_SHEET_TOP = bottomSheetTopY - mapHeaderBarBottomY;
+
+        Projection projection = naverMap.getProjection();
+        PointF point = projection.toScreenLocation(naverMap.getContentBounds().getCenter());
+
+        mapTranslationYByBuildingBottomSheet = (point.y - (mapHeaderBarBottomY +
+                SIZE_BETWEEN_HEADER_BAR_BOTTOM_AND_BOTTOM_SHEET_TOP / 2.0));
+
+    }
+
+    @Override
+    public void onDestroy()
+    {
+        super.onDestroy();
+        networkStatus.unregisterNetworkCallback();
+    }
+
+    public void setCurrentAddress()
+    {
+        //sgis reverse geocoding 이용
+    }
+
+
+    @Override
+    public boolean networkAvailable()
+    {
+        return networkStatus.networkAvailable(getActivity());
+    }
+
+    @Override
+    public double getLatitude()
+    {
+        return naverMap.getContentBounds().getCenter().latitude;
+    }
+
+    @Override
+    public double getLongitude()
+    {
+        return naverMap.getContentBounds().getCenter().longitude;
+    }
+
+    @Override
+    public void setMapVisibility(int visibility)
+    {
+        binding.naverMapViewLayout.setVisibility(visibility);
+    }
+
+    @Override
+    public void createPlacesPoiItems(List<PlaceDocuments> placeDocuments)
+    {
+
+        if (!placeDocuments.isEmpty())
+        {
+            adapter.setPlaceDocumentsList(placeDocuments);
+            adapter.notifyDataSetChanged();
+
+            markerList = new ArrayList<>();
+            KakaoLocalDocument kakaoLocalDocument = null;
+
+            for (PlaceDocuments document : placeDocuments)
+            {
+                Marker marker = new Marker();
+                marker.setPosition(new LatLng(document.getY(), document.getX()));
+                marker.setMap(naverMap);
+                marker.setCaptionText(document.getPlaceName());
+                marker.setOnClickListener(new Overlay.OnClickListener()
+                {
+                    @Override
+                    public boolean onClick(@NonNull Overlay overlay)
+                    {
+                        return true;
+                    }
+                });
+
+                kakaoLocalDocument = document;
+                marker.setTag(kakaoLocalDocument);
+                markerList.add(marker);
+            }
+        }
+    }
+
+    @Override
+    public void createAddressesPoiItems(List<AddressResponseDocuments> addressDocuments)
+    {
+        if (!addressDocuments.isEmpty())
+        {
+            adapter.setPlaceDocumentsList(addressDocuments);
+            adapter.notifyDataSetChanged();
+
+            markerList = new ArrayList<>();
+            KakaoLocalDocument kakaoLocalDocument = null;
+
+            for (AddressResponseDocuments document : addressDocuments)
+            {
+                Marker marker = new Marker();
+                marker.setPosition(new LatLng(document.getY(), document.getX()));
+                marker.setMap(naverMap);
+                marker.setCaptionText(document.getAddressName());
+                marker.setOnClickListener(new Overlay.OnClickListener()
+                {
+                    @Override
+                    public boolean onClick(@NonNull Overlay overlay)
+                    {
+                        return true;
+                    }
+                });
+
+                kakaoLocalDocument = document;
+                marker.setTag(kakaoLocalDocument);
+                markerList.add(marker);
+            }
+        }
+    }
+
+    @Override
+    public void selectPoiItem(int index)
+    {
+        onPOIItemSelectedByList(index);
+    }
+
+
+    @Override
+    public void removeAllPoiItems()
+    {
+        for (Marker marker : markerList)
+        {
+            marker.setMap(null);
+        }
+
+    }
+
+    @Override
+    public void showAllPoiItems()
+    {
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+        List<LatLng> latLngList = new ArrayList<>();
+
+        for (Marker marker : markerList)
+        {
+            latLngList.add(marker.getPosition());
+        }
+
+        builder.include(latLngList);
+        CameraUpdate cameraUpdate = CameraUpdate.fitBounds(builder.build(), 10);
+        naverMap.moveCamera(cameraUpdate);
+    }
+
+    @Override
+    public void deselectPoiItem()
+    {
+        mapView.deselectPOIItem(mapView.getPOIItems()[selectedPoiItemIndex]);
+        isSelectedPoiItem = false;
+    }
+
+    @Override
+    public void backToPreviousView()
+    {
+        if (isSelectedPoiItem)
+        {
+            deselectPoiItem();
+        }
+    }
+
+    @Override
+    public int getPoiItemSize()
+    {
+        return markerList.size();
+    }
+
+    @Override
+    public void setPlacesListAdapter(PlaceItemInMapViewAdapter adapter)
+    {
+        this.adapter = adapter;
+        placesBottomSheetViewPager.setAdapter(adapter);
+        adapter.setPlacesItemBottomSheetButtonOnClickListener(placesItemBottomSheetButtonOnClickListener);
+        adapter.setOnClickedBottomSheetListener(this);
+        adapter.setVisibleSelectBtn(placeBottomSheetSelectBtnVisibility);
+        adapter.setVisibleUnSelectBtn(placeBottomSheetUnSelectBtnVisibility);
+    }
+
+
+    @Override
+    public void onMapViewSingleTapped(MapView mapView, MapPoint mapPoint)
+    {
+        if (isSelectedPoiItem)
+        {
+            deselectPoiItem();
+            placeListBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+        }
+    }
+
+    @Override
+    public void onMapViewDoubleTapped(MapView mapView, MapPoint mapPoint)
+    {
+
+    }
+
+    /*
+    롱 클릭한 부분의 위치 정보를 표시
+     */
+    @Override
+    public void onMapViewLongPressed(MapView mapView, MapPoint mapPoint)
+    {
+
+    }
+
+    @Override
+    public void onMapViewDragStarted(MapView mapView, MapPoint mapPoint)
+    {
+
+    }
+
+    @Override
+    public void onMapViewDragEnded(MapView mapView, MapPoint mapPoint)
+    {
+
+    }
+
+    @Override
+    public void onMapViewMoveFinished(MapView mapView, MapPoint mapPoint)
+    {
+        if (networkAvailable())
+        {
+            if (getActivity() != null)
+            {
+                mapReverseGeoCoder = new MapReverseGeoCoder(appKey, mapPoint, this, getActivity());
+                mapReverseGeoCoder.startFindingAddress(MapReverseGeoCoder.AddressType.ShortAddress);
+            }
+        }
+    }
+
+    public LocationDTO getSelectedLocationDto(int calendarId, long eventId)
+    {
+        // 선택된 poiitem의 리스트내 인덱스를 가져온다.
+        MapPOIItem[] poiItems = mapView.getPOIItems();
+        // 인덱스로 아이템을 가져온다.
+        CustomPoiItem item = (CustomPoiItem) poiItems[selectedPoiItemIndex];
+
+        LocationDTO location = new LocationDTO();
+        location.setCalendarId(calendarId);
+        location.setEventId(eventId);
+
+        // 주소인지 장소인지를 구분한다.
+        if (item.getKakaoLocalDocument() instanceof PlaceDocuments)
+        {
+            PlaceDocuments placeDocuments = (PlaceDocuments) item.getKakaoLocalDocument();
+            location.setPlaceId(placeDocuments.getId());
+            location.setPlaceName(placeDocuments.getPlaceName());
+            location.setLatitude(placeDocuments.getY());
+            location.setLongitude(placeDocuments.getX());
+        } else
+        {
+            AddressResponseDocuments addressDocuments = (AddressResponseDocuments) item.getKakaoLocalDocument();
+
+            location.setAddressName(addressDocuments.getAddressName());
+            location.setLatitude(addressDocuments.getY());
+            location.setLongitude(addressDocuments.getX());
+        }
+        return location;
+    }
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults)
+    {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == REQUEST_CODE_LOCATION)
+        {
+            if (grantResults.length > 0 &&
+                    grantResults[0] == PackageManager.PERMISSION_GRANTED)
+            {
+                // 권한 허용됨
+                gpsButton.callOnClick();
+            } else
+            {
+                // 권한 거부됨
+            }
+        }
+    }
+
+    @Override
+    public void onPOIItemSelected(MapView mapView, MapPOIItem mapPOIItem)
+    {
+        onPOIItemSelectedByTouch(mapView, mapPOIItem);
+    }
+
+    @Override
+    public void onPOIItemSelectedByTouch(MapView mapView, MapPOIItem mapPOIItem)
+    {
+        //poiitem을 직접 선택한 경우 호출
+        selectedPoiItemIndex = mapPOIItem.getTag();
+        isSelectedPoiItem = true;
+
+        mapView.setMapCenterPoint(mapPOIItem.getMapPoint(), true);
+        //open bottomsheet and show selected item data
+        placeListBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+        placesBottomSheetViewPager.setCurrentItem(selectedPoiItemIndex, false);
+    }
+
+    @Override
+    public void onPOIItemSelectedByList(int index)
+    {
+        //bottomsheet가 아닌 list에서 아이템을 선택한 경우 호출
+        //adapter -> poiitem생성 -> select poiitem -> bottomsheet열고 정보 표시
+        MapPOIItem mapPOIItem = mapView.getPOIItems()[index];
+        mapView.selectPOIItem(mapPOIItem, true);
+
+        selectedPoiItemIndex = mapPOIItem.getTag();
+        isSelectedPoiItem = true;
+
+        mapView.setMapCenterPoint(mapPOIItem.getMapPoint(), true);
+        //open bottomsheet and show selected item data
+        placeListBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+        placesBottomSheetViewPager.setCurrentItem(selectedPoiItemIndex, false);
+    }
+
+    @Override
+    public void onPOIItemSelectedByBottomSheet(int index)
+    {
+        //bottomsheet에서 스크롤 하는 경우 호출
+        MapPOIItem mapPOIItem = mapView.getPOIItems()[index];
+        mapView.selectPOIItem(mapPOIItem, true);
+
+        selectedPoiItemIndex = mapPOIItem.getTag();
+        isSelectedPoiItem = true;
+
+        mapView.setMapCenterPoint(mapPOIItem.getMapPoint(), true);
+        //open bottomsheet and show selected item data
+        placeListBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+    }
+
+    @Override
+    public void onCalloutBalloonOfPOIItemTouched(MapView mapView, MapPOIItem mapPOIItem)
+    {
+
+    }
+
+    @Override
+    public void onCalloutBalloonOfPOIItemTouched(MapView mapView, MapPOIItem
+            mapPOIItem, MapPOIItem.CalloutBalloonButtonType calloutBalloonButtonType)
+    {
+
+    }
+
+    @Override
+    public void onDraggablePOIItemMoved(MapView mapView, MapPOIItem mapPOIItem, MapPoint
+            mapPoint)
+    {
+
+    }
+
+    @Override
+    public void onReverseGeoCoderFoundAddress(MapReverseGeoCoder mapReverseGeoCoder, String
+            address)
+    {
+        binding.mapButtonsLayout.currentAddress.setText(address);
+    }
+
+    @Override
+    public void onReverseGeoCoderFailedToFindAddress(MapReverseGeoCoder mapReverseGeoCoder)
+    {
+    }
+
+    public int getSelectedPoiItemIndex()
+    {
+        return selectedPoiItemIndex;
+    }
+
+    @Override
+    public void onClickedItemInList(PlaceCategoryDTO placeCategory, int index)
+    {
+
+    }
+
+    @Override
+    public void onClickedMoreInList(PlaceCategoryDTO placeCategory)
+    {
+
+    }
+
+
+    @Override
+    public void onSelectedLocation()
+    {
+
+    }
+
+    @Override
+    public void onRemovedLocation()
+    {
+
+    }
+
+
+    public BottomSheetBehavior getPlaceListBottomSheetBehavior()
+    {
+        return placeListBottomSheetBehavior;
+    }
+
+    @Override
+    public void setPlacesListBottomSheetState(int state)
+    {
+        placeListBottomSheetBehavior.setState(state);
+    }
+
+    @Override
+    public int getPlacesListBottomSheetState()
+    {
+        return placeListBottomSheetBehavior.getState();
+    }
+
+    @Override
+    public void onClickedPlaceBottomSheet(KakaoLocalDocument kakaoLocalDocument)
+    {
+        //place or address
+        if (kakaoLocalDocument instanceof PlaceDocuments)
+        {
+            PlaceInfoFragment placeInfoFragment = new PlaceInfoFragment();
+            Bundle bundle = new Bundle();
+            bundle.putString("placeId", ((PlaceDocuments) kakaoLocalDocument).getId());
+            placeInfoFragment.setArguments(bundle);
+
+            placeInfoFragment.show(getChildFragmentManager(), PlaceInfoFragment.TAG);
+        } else
+        {
+
+        }
+    }
+
+    @Override
+    public void search(String query)
+    {
+        FragmentManager fragmentManager = getChildFragmentManager();
+        boolean locationSearchResultIsVisible = fragmentManager.findFragmentByTag(LocationSearchResultFragment.TAG)
+                != null ? true : false;
+
+        if (locationSearchResultIsVisible)
+        {
+            placeListBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+            removeAllPoiItems();
+
+            LocationSearchResultFragment locationSearchResultFragment =
+                    (LocationSearchResultFragment) fragmentManager.findFragmentByTag(LocationSearchResultFragment.TAG);
+            locationSearchResultFragment.search(query);
+        } else
+        {
+            MapHeaderSearchFragment mapHeaderSearchFragment = (MapHeaderSearchFragment) fragmentManager.findFragmentByTag(MapHeaderSearchFragment.TAG);
+            mapHeaderSearchFragment.setViewTypeVisibility(View.VISIBLE);
+            LocationSearchResultFragment locationSearchResultFragment = new LocationSearchResultFragment(query, KakaoMapFragment.this, mapHeaderSearchFragment);
+
+            fragmentManager.beginTransaction().add(binding.locationSearchBottomSheet.searchFragmentContainer.getId()
+                    , locationSearchResultFragment, LocationSearchResultFragment.TAG).hide(fragmentManager.findFragmentByTag(LocationSearchFragment.TAG))
+                    .commitNow();
+
+            locationSearchResultFragment.addOnBackPressedCallback();
+        }
+    }
+
+    /**
+     * current fragment tag마다 별도로 동작
+     */
+    @Override
+    public void closeSearchFragments(String currentFragmentTag)
+    {
+        FragmentManager fragmentManager = getChildFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+        LocationSearchFragment locationSearchFragment = (LocationSearchFragment) fragmentManager.findFragmentByTag(LocationSearchFragment.TAG);
+        MapHeaderMainFragment mapHeaderMainFragment = (MapHeaderMainFragment) fragmentManager.findFragmentByTag(MapHeaderMainFragment.TAG);
+        MapHeaderSearchFragment mapHeaderSearchFragment = (MapHeaderSearchFragment) fragmentManager.findFragmentByTag(MapHeaderSearchFragment.TAG);
+
+        if (currentFragmentTag.equals(LocationSearchFragment.TAG))
+        {
+            locationSearchBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+
+            locationSearchFragment.removeOnBackPressedCallback();
+
+            fragmentTransaction.hide(mapHeaderSearchFragment)
+                    .show(mapHeaderMainFragment)
+                    .commitNow();
+        } else if (currentFragmentTag.equals(LocationSearchResultFragment.TAG))
+        {
+            removeBuildingLocationSelector();
+            closeBuildingFragments();
+            backToPreviousView();
+            placeListBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+
+            LocationSearchResultFragment locationSearchResultFragment =
+                    (LocationSearchResultFragment) fragmentManager.findFragmentByTag(LocationSearchResultFragment.TAG);
+
+            removeAllPoiItems();
+            mapHeaderSearchFragment.setViewTypeVisibility(View.GONE);
+            mapHeaderSearchFragment.changeViewTypeImg(SearchBarController.MAP);
+            mapHeaderSearchFragment.setQuery("", false);
+
+            locationSearchResultFragment.removeOnBackPressedCallback();
+            fragmentTransaction.remove(locationSearchResultFragment).show(locationSearchFragment).commitNow();
+        }
+    }
+
+    @Override
+    public void setStateOfSearchBottomSheet(int state)
+    {
+        locationSearchBottomSheetBehavior.setState(state);
+    }
+
+    @Override
+    public int getStateOfSearchBottomSheet()
+    {
+        return locationSearchBottomSheetBehavior.getState();
+    }
+
+    @Override
+    public void removeBuildingLocationSelector()
+    {
+        if (binding.mapViewLayout.findViewWithTag("BUILDING_SELECTOR") != null)
+        {
+            buildingButton.setImageDrawable(getContext().getDrawable(R.drawable.building_black));
+            binding.mapViewLayout.removeView(binding.mapViewLayout.findViewWithTag("BUILDING_SELECTOR"));
+        }
+    }
+
+    @Override
+    public void showBuildingLocationSelector()
+    {
+        if (binding.mapViewLayout.findViewWithTag("BUILDING_SELECTOR") == null)
+        {
+            buildingButton.setImageDrawable(getContext().getDrawable(R.drawable.building_blue));
+            //드래그로 이동가능한 마커 생성
+            View selectorView = getLayoutInflater().inflate(R.layout.building_location_selector_view, null);
+            RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
+            selectorView.setLayoutParams(layoutParams);
+            selectorView.setTag("BUILDING_SELECTOR");
+
+            binding.mapViewLayout.addView(selectorView);
+
+            ((Button) selectorView.findViewById(R.id.search_buildings_button)).setOnClickListener(new View.OnClickListener()
+            {
+                @Override
+                public void onClick(View view)
+                {
+                    //빌딩 목록 바텀 시트 열기
+                    //map center point를 좌표로 지정
+                    setBuildingBottomSheetHeight(BuildingListFragment.TAG);
+                    removeBuildingLocationSelector();
+
+                    drawSearchRadiusCircle();
+                    MapPoint mapPoint = mapView.getMapCenterPoint();
+
+                    String centerLatitude = String.valueOf(mapPoint.getMapPointGeoCoord().latitude);
+                    String centerLongitude = String.valueOf(mapPoint.getMapPointGeoCoord().longitude);
+
+                    BuildingListFragment buildingListFragment = new BuildingListFragment(KakaoMapFragment.this);
+                    Bundle bundle = new Bundle();
+                    bundle.putString("centerLatitude", centerLatitude);
+                    bundle.putString("centerLongitude", centerLongitude);
+                    buildingListFragment.setArguments(bundle);
+
+                    getChildFragmentManager().beginTransaction().add(binding.buildingBottomSheet.buildingFragmentContainer.getId(), buildingListFragment,
+                            BuildingListFragment.TAG)
+                            .commitNow();
+
+                    buildingListFragment.addOnBackPressedCallback();
+
+                    buildingBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+                }
+
+            });
+        } else
+        {
+            closeBuildingFragments();
+            removeBuildingLocationSelector();
+        }
+
+    }
+
+    @Override
+    public void setStateBuildingBottomSheet(int state)
+    {
+        buildingBottomSheetBehavior.setState(state);
+    }
+
+    @Override
+    public void closeBuildingFragments(String currentFragmentTag)
+    {
+        FragmentManager fragmentManager = getChildFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+        BuildingListFragment buildingListFragment = (BuildingListFragment) fragmentManager.findFragmentByTag(BuildingListFragment.TAG);
+
+        if (currentFragmentTag.equals(BuildingListFragment.TAG))
+        {
+            buildingBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+
+            buildingListFragment.removeOnBackPressedCallback();
+
+            fragmentTransaction.remove(buildingListFragment)
+                    .commitNow();
+            mapView.removeCircle(mapView.getCircles()[0]);
+        } else if (currentFragmentTag.equals(BuildingFragment.TAG))
+        {
+            setBuildingBottomSheetHeight(BuildingListFragment.TAG);
+
+            BuildingFragment buildingFragment = (BuildingFragment) fragmentManager.findFragmentByTag(BuildingFragment.TAG);
+            buildingFragment.removeOnBackPressedCallback();
+            fragmentTransaction.remove(buildingFragment).show(buildingListFragment).commitNow();
+
+            buildingBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+        }
+    }
+
+    public void closeBuildingFragments()
+    {
+        if (buildingBottomSheetBehavior.getState() != BottomSheetBehavior.STATE_COLLAPSED)
+        {
+            setBuildingBottomSheetHeight(BuildingListFragment.TAG);
+
+            FragmentManager fragmentManager = getChildFragmentManager();
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+            BuildingListFragment buildingListFragment = (BuildingListFragment) fragmentManager.findFragmentByTag(BuildingListFragment.TAG);
+            BuildingFragment buildingFragment = (BuildingFragment) fragmentManager.findFragmentByTag(BuildingFragment.TAG);
+
+            mapView.removeCircle(mapView.getCircles()[0]);
+            buildingBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+
+            if (buildingFragment != null)
+            {
+                buildingFragment.removeOnBackPressedCallback();
+                buildingListFragment.removeOnBackPressedCallback();
+
+                fragmentTransaction.remove(buildingListFragment)
+                        .remove(buildingFragment)
+                        .commitNow();
+            } else
+            {
+                buildingListFragment.removeOnBackPressedCallback();
+
+                fragmentTransaction.remove(buildingListFragment)
+                        .commitNow();
+            }
+        }
+    }
+
+    @Override
+    public void drawSearchRadiusCircle()
+    {
+        MapPoint mapPoint = mapView.getMapCenterPoint();
+        if (mapView.findCircleByTag(BUILDING_RANGE_OVERLAY_TAG) != null)
+        {
+            mapPoint = mapView.findCircleByTag(BUILDING_RANGE_OVERLAY_TAG).getCenter();
+            mapView.removeCircle(mapView.findCircleByTag(BUILDING_RANGE_OVERLAY_TAG));
+        }
+
+        MapCircle circle = new MapCircle(
+                mapPoint, Integer.parseInt(App.getPreference_key_range_meter_for_search_buildings()),
+                Color.argb(128, 255, 0, 0), // strokeColor
+                Color.argb(128, 0, 255, 0) // fillColor
+        );
+        circle.setTag(BUILDING_RANGE_OVERLAY_TAG);
+        mapView.addCircle(circle);
+    }
+
+    @Override
+    public void setBuildingBottomSheetHeight(String fragmentTag)
+    {
+        BuildingBottomSheetHeightViewHolder buildingBottomSheetHeightViewHolder = (BuildingBottomSheetHeightViewHolder) buildingBottomSheet.getTag();
+
+        if (fragmentTag.equals(BuildingListFragment.TAG))
+        {
+            buildingBottomSheet.getLayoutParams().height = buildingBottomSheetHeightViewHolder.listHeight;
+        } else if (fragmentTag.equals(BuildingFragment.TAG))
+        {
+            buildingBottomSheet.getLayoutParams().height = buildingBottomSheetHeightViewHolder.infoHeight;
+        }
+
+        buildingBottomSheet.requestLayout();
+        buildingBottomSheetBehavior.onLayoutChild(binding.mapRootLayout, buildingBottomSheet, ViewCompat.LAYOUT_DIRECTION_LTR);
+    }
+
+    static class BuildingBottomSheetHeightViewHolder
+    {
+        final int listHeight;
+        final int infoHeight;
+
+        public BuildingBottomSheetHeightViewHolder(int listHeight, int infoHeight)
+        {
+            this.listHeight = listHeight;
+            this.infoHeight = infoHeight;
+        }
+    }
+
 }

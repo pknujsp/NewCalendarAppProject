@@ -142,6 +142,8 @@ dependencies {
 
     implementation 'org.jsoup:jsoup:1.13.1'
 
+    implementation 'com.naver.maps:map-sdk:3.11.0'
+
 }
 
 apply plugin: 'com.google.gms.google-services'
