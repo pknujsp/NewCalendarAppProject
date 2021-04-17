@@ -29,15 +29,17 @@ import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
+import java.util.function.ObjIntConsumer;
+
 public class RestaurantListFragment extends Fragment
 {
-    private final OnClickedRestaurantItem onClickedRestaurantItem;
-    private final CriteriaLocationListener criteriaLocationListener;
-    private final String CATEGORY_NAME;
+    protected final OnClickedRestaurantItem onClickedRestaurantItem;
+    protected final CriteriaLocationListener criteriaLocationListener;
+    protected String CATEGORY_NAME;
 
-    private RecyclerView restaurantRecyclerView;
-    private PlacesViewModel placesViewModel;
-    private RestaurantListAdapter adapter;
+    protected RecyclerView restaurantRecyclerView;
+    protected PlacesViewModel placesViewModel;
+    protected RestaurantListAdapter adapter;
 
     public RestaurantListFragment(OnClickedRestaurantItem onClickedRestaurantItem, CriteriaLocationListener criteriaLocationListener, String CATEGORY_NAME)
     {
@@ -74,8 +76,14 @@ public class RestaurantListFragment extends Fragment
     }
 
 
-    private void requestRestaurantList(String categoryName)
+    protected void requestRestaurantList(String categoryName)
     {
+        if (adapter != null)
+        {
+            restaurantRecyclerView.setAdapter(null);
+            adapter = null;
+        }
+
         LocationDTO criteriaLocation = criteriaLocationListener.getCriteriaLocation();
 
         final LocalApiPlaceParameter placeParameter = LocalParameterUtil.getPlaceParameter(categoryName, String.valueOf(criteriaLocation.getLatitude()),

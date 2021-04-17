@@ -7,11 +7,11 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-public class RecyclerViewItemDecoration extends RecyclerView.ItemDecoration
+public class CustomRecyclerViewItemDecoration extends RecyclerView.ItemDecoration
 {
     private final int spacing;
 
-    public RecyclerViewItemDecoration(int spacing)
+    public CustomRecyclerViewItemDecoration(int spacing)
     {
         this.spacing = spacing;
     }

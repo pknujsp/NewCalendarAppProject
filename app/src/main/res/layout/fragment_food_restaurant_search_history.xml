@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:context=".event.foods.search.search.fragment.FoodRestaurantSearchHistoryFragment">
+
+        <TextView
+            android:id="@+id/search_history_text_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:padding="8dp"
+            android:text="@string/search_history" />
+
+        <TextView
+            android:id="@+id/delete_all_search_history"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:padding="8dp"
+            android:text="@string/delete_all" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/search_history_recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/search_history_text_label"
+            android:orientation="horizontal"
+            tools:itemCount="10"
+            tools:listitem="@layout/search_history_horizontal_item_view" />
+
+        <TextView
+            android:id="@+id/not_history"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/search_history_recycler_view"
+            android:padding="8dp"
+            android:text="@string/not_search_history"
+            android:textSize="13sp" />
+
+    </RelativeLayout>
+</layout>

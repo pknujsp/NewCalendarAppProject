@@ -25,7 +25,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".navermap.NaverMapActivity"
+        <activity
+            android:name=".navermap.NaverMapActivity"
             android:windowSoftInputMode="adjustNothing"></activity>
         <activity
             android:name=".event.common.MLocActivityNaver"
@@ -37,7 +38,9 @@
         <activity android:name=".event.places.activity.PlacesActivity" />
         <activity android:name=".event.weather.activity.WeatherActivity" />
         <activity android:name=".event.event.activity.InstanceActivity" />
-        <activity android:name=".event.foods.activity.FoodsActivity" />
+        <activity
+            android:name=".event.foods.activity.FoodsActivity"
+            android:windowSoftInputMode="adjustNothing" />
         <activity
             android:name=".activity.preferences.SettingsActivity"
             android:label="@string/app_settings" />
@@ -61,7 +64,9 @@
             android:name=".activity.map.SelectLocationActivityKakao"
             android:taskAffinity="com.zerodsoft.scheduleweather.Activity.MapActivity"
             android:windowSoftInputMode="adjustNothing" />
-        <activity android:name=".activity.editevent.activity.EditEventActivity" />
+        <activity
+            android:name=".activity.editevent.activity.EditEventActivity"
+            android:windowSoftInputMode="adjustNothing" />
         <activity
             android:name=".activity.main.AppMainActivity"
             android:label="@string/app_name"

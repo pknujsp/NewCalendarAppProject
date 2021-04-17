@@ -21,6 +21,7 @@ import android.view.ViewGroup;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
 import com.zerodsoft.scheduleweather.databinding.FragmentFoodCategoryTabBinding;
 import com.zerodsoft.scheduleweather.event.foods.adapter.FoodCategoryFragmentListAdapter;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.CriteriaLocationListener;
@@ -34,7 +35,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class FoodCategoryTabFragment extends Fragment implements OnClickedRestaurantItem
+public class FoodCategoryTabFragment extends Fragment implements OnClickedRestaurantItem, OnBackPressedCallbackController
 {
     public static final String TAG = "FoodCategoryTabFragment";
     private FragmentFoodCategoryTabBinding binding;
@@ -66,7 +67,7 @@ public class FoodCategoryTabFragment extends Fragment implements OnClickedRestau
     public void onAttach(@NonNull Context context)
     {
         super.onAttach(context);
-        getActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
+        addOnBackPressedCallback();
     }
 
 
@@ -145,6 +146,13 @@ public class FoodCategoryTabFragment extends Fragment implements OnClickedRestau
     }
 
     @Override
+    public void onDestroy()
+    {
+        super.onDestroy();
+        removeOnBackPressedCallback();
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item)
     {
         switch (item.getItemId())
@@ -160,5 +168,17 @@ public class FoodCategoryTabFragment extends Fragment implements OnClickedRestau
     public void onClickedRestaurantItem(PlaceDocuments placeDocuments)
     {
 
+    }
+
+    @Override
+    public void addOnBackPressedCallback()
+    {
+        getActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
+    }
+
+    @Override
+    public void removeOnBackPressedCallback()
+    {
+        onBackPressedCallback.remove();
     }
 }

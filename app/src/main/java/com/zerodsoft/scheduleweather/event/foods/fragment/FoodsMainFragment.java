@@ -32,6 +32,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
 import com.zerodsoft.scheduleweather.databinding.FragmentFoodsMainBinding;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.foods.activity.LocationSettingsActivity;
@@ -59,7 +60,7 @@ import java.util.List;
 import static android.app.Activity.RESULT_OK;
 import static androidx.core.content.ContextCompat.checkSelfPermission;
 
-public class FoodsMainFragment extends Fragment implements OnClickedCategoryItem, CriteriaLocationListener
+public class FoodsMainFragment extends Fragment implements OnClickedCategoryItem, CriteriaLocationListener, OnBackPressedCallbackController
 {
     public static final String TAG = "FoodsMainFragment";
     private FragmentFoodsMainBinding binding;
@@ -93,7 +94,7 @@ public class FoodsMainFragment extends Fragment implements OnClickedCategoryItem
         @Override
         public void handleOnBackPressed()
         {
-
+            getActivity().finish();
         }
     };
 
@@ -101,13 +102,9 @@ public class FoodsMainFragment extends Fragment implements OnClickedCategoryItem
     public void onAttach(@NonNull Context context)
     {
         super.onAttach(context);
-        addCallback();
+        addOnBackPressedCallback();
     }
 
-    public void addCallback()
-    {
-        getActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -259,6 +256,13 @@ public class FoodsMainFragment extends Fragment implements OnClickedCategoryItem
             }
         });
 
+    }
+
+    @Override
+    public void onDestroy()
+    {
+        super.onDestroy();
+        removeOnBackPressedCallback();
     }
 
     private void gps()
@@ -512,5 +516,17 @@ public class FoodsMainFragment extends Fragment implements OnClickedCategoryItem
     public LocationDTO getCriteriaLocation()
     {
         return criteriaLocationDTO;
+    }
+
+    @Override
+    public void addOnBackPressedCallback()
+    {
+        getActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
+    }
+
+    @Override
+    public void removeOnBackPressedCallback()
+    {
+        onBackPressedCallback.remove();
     }
 }

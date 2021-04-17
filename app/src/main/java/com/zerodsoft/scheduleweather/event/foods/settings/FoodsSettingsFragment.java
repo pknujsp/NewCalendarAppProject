@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.event.foods.search.searchresult.fragment;
+package com.zerodsoft.scheduleweather.event.foods.settings;
 
 import android.os.Bundle;
 
@@ -12,11 +12,12 @@ import com.zerodsoft.scheduleweather.R;
 
 /**
  * A simple {@link Fragment} subclass.
- * Use the {@link SearchResultRestaurantFragment#newInstance} factory method to
+ * Use the {@link FoodsSettingsFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class SearchResultRestaurantFragment extends Fragment
+public class FoodsSettingsFragment extends Fragment
 {
+    public static final String TAG = "FoodsSettingsFragment";
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -27,7 +28,7 @@ public class SearchResultRestaurantFragment extends Fragment
     private String mParam1;
     private String mParam2;
 
-    public SearchResultRestaurantFragment()
+    public FoodsSettingsFragment()
     {
         // Required empty public constructor
     }
@@ -38,12 +39,12 @@ public class SearchResultRestaurantFragment extends Fragment
      *
      * @param param1 Parameter 1.
      * @param param2 Parameter 2.
-     * @return A new instance of fragment SearchResultRestaurantFragment.
+     * @return A new instance of fragment FoodsSettingsFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static SearchResultRestaurantFragment newInstance(String param1, String param2)
+    public static FoodsSettingsFragment newInstance(String param1, String param2)
     {
-        SearchResultRestaurantFragment fragment = new SearchResultRestaurantFragment();
+        FoodsSettingsFragment fragment = new FoodsSettingsFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
@@ -67,6 +68,6 @@ public class SearchResultRestaurantFragment extends Fragment
                              Bundle savedInstanceState)
     {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_search_result_restaurant, container, false);
+        return inflater.inflate(R.layout.fragment_foods_settings, container, false);
     }
 }
