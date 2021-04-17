@@ -5,9 +5,9 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import net.daum.mf.map.api.MapPOIItem;
 import net.daum.mf.map.api.MapView;
 
-public interface PoiItemOnClickListener
+public interface PoiItemOnClickListener<T>
 {
-    void onPOIItemSelectedByTouch(MapView mapView, MapPOIItem mapPOIItem);
+    void onPOIItemSelectedByTouch(T e);
 
     void onPOIItemSelectedByList(int index);
 

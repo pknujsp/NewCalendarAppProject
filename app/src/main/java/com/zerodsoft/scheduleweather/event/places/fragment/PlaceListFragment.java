@@ -58,7 +58,12 @@ public class PlaceListFragment extends Fragment implements PlaceItemsGetter, OnP
         @Override
         public void handleOnBackPressed()
         {
-            fragmentController.replaceFragment(PlacesMapFragment.TAG);
+            /*
+            kakao
+             fragmentController.replaceFragment(PlacesMapFragmentKakao.TAG);
+             */
+            fragmentController.replaceFragment(PlacesMapFragmentNaver.TAG);
+
             onBackPressedCallback.remove();
         }
     };

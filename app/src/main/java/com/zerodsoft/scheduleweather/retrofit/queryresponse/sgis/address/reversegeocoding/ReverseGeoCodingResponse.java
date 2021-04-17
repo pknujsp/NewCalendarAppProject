@@ -46,4 +46,14 @@ public class ReverseGeoCodingResponse implements Parcelable
     {
         parcel.writeTypedList(result);
     }
+
+    public List<ReverseGeoCodingItem> getResult()
+    {
+        return result;
+    }
+
+    public void setResult(List<ReverseGeoCodingItem> result)
+    {
+        this.result = result;
+    }
 }

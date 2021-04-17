@@ -35,7 +35,8 @@ public class TestMapFragment extends Fragment implements PlaceCategory, Fragment
 {
     public static final String TAG = "TestMapFragment";
     private FragmentTestMapBinding binding;
-    private PlacesMapFragment placesMapFragment;
+    private PlacesMapFragmentKakao placesMapFragmentKakao;
+    private PlacesMapFragmentNaver placesMapFragmentNaver;
     private PlaceListFragment placeListFragment;
 
     private CoordToAddress coordToAddressResult;
@@ -128,18 +129,26 @@ public class TestMapFragment extends Fragment implements PlaceCategory, Fragment
                                                         Toast.makeText(getActivity(), coordToAddressDataWrapper.getException().getMessage(), Toast.LENGTH_SHORT).show();
                                                     }
 
-                                                    placesMapFragment = new PlacesMapFragment(TestMapFragment.this);
-                                                    placesMapFragment.setSelectedLocationDto(selectedLocationDto);
+                                                    /*
+                                                    kakao
+                                                               placesMapFragmentKakao = new PlacesMapFragmentKakao(TestMapFragment.this);
+                                                    placesMapFragmentKakao.setSelectedLocationDto(selectedLocationDto);
+                                                     */
+                                                    placesMapFragmentNaver = new PlacesMapFragmentNaver(TestMapFragment.this);
+                                                    placesMapFragmentNaver.setSelectedLocationDto(selectedLocationDto);
 
                                                     placeListFragment = new PlaceListFragment(TestMapFragment.this);
-                                                    placeListFragment.setOnClickedPlacesListListener(placesMapFragment);
+                                                    // placeListFragment.setOnClickedPlacesListListener(placesMapFragmentKakao);
+                                                    placeListFragment.setOnClickedPlacesListListener(placesMapFragmentNaver);
+
                                                     placeListFragment.setSelectedLocationDto(selectedLocationDto);
                                                     placeListFragment.setCoordToAddressResult(coordToAddressResult);
 
-                                                    placesMapFragment.setPlaceItemsGetter(placeListFragment);
+                                                    // placesMapFragmentKakao.setPlaceItemsGetter(placeListFragment);
+                                                    placesMapFragmentNaver.setPlaceItemsGetter(placeListFragment);
 
                                                     FragmentManager fragmentManager = getChildFragmentManager();
-                                                    fragmentManager.beginTransaction().add(binding.placesMapFragmentContainer.getId(), placesMapFragment, PlacesMapFragment.TAG)
+                                                    fragmentManager.beginTransaction().add(binding.placesMapFragmentContainer.getId(), placesMapFragmentNaver, PlacesMapFragmentNaver.TAG)
                                                             .add(binding.placesListFragment.getId(), placeListFragment, PlaceListFragment.TAG)
                                                             .hide(placeListFragment)
                                                             .commit();
@@ -179,11 +188,13 @@ public class TestMapFragment extends Fragment implements PlaceCategory, Fragment
 
         if (tag.equals(PlaceListFragment.TAG))
         {
-            fragmentTransaction.hide(placesMapFragment).show(placeListFragment).commit();
+            // fragmentTransaction.hide(placesMapFragmentKakao).show(placeListFragment).commit();
+            fragmentTransaction.hide(placesMapFragmentNaver).show(placeListFragment).commit();
             placeListFragment.setOnBackPressedCallback();
-        } else if (tag.equals(PlacesMapFragment.TAG))
+        } else if (tag.equals(PlacesMapFragmentNaver.TAG))
         {
-            fragmentTransaction.hide(placeListFragment).show(placesMapFragment).commit();
+            // fragmentTransaction.hide(placeListFragment).show(placesMapFragmentKakao).commit();
+            fragmentTransaction.hide(placeListFragment).show(placesMapFragmentNaver).commit();
         }
     }
 

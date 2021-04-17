@@ -25,7 +25,14 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".navermap.NaverMapActivity"></activity>
+        <activity android:name=".navermap.NaverMapActivity"
+            android:windowSoftInputMode="adjustNothing"></activity>
+        <activity
+            android:name=".event.common.MLocActivityNaver"
+            android:windowSoftInputMode="adjustNothing" />
+        <activity
+            android:name=".event.common.ReselectDetailLocationNaver"
+            android:windowSoftInputMode="adjustNothing" />
         <activity android:name=".event.foods.activity.LocationSettingsActivity" />
         <activity android:name=".event.places.activity.PlacesActivity" />
         <activity android:name=".event.weather.activity.WeatherActivity" />
@@ -41,17 +48,17 @@
             android:name=".kakaomap.activity.KakaoMapActivity"
             android:windowSoftInputMode="adjustNothing" />
         <activity
-            android:name=".event.common.MLocActivity"
+            android:name=".event.common.MLocActivityKakao"
             android:windowSoftInputMode="adjustNothing" />
         <activity
-            android:name=".event.common.ReselectDetailLocation"
+            android:name=".event.common.ReselectDetailLocationKakao"
             android:windowSoftInputMode="adjustNothing" />
         <activity android:name=".activity.editevent.activity.ReminderActivity" />
         <activity android:name=".activity.editevent.activity.TimeZoneActivity" />
         <activity android:name=".activity.editevent.activity.RecurrenceActivity" />
         <activity android:name=".event.main.InstanceMainActivity" />
         <activity
-            android:name=".activity.map.SelectLocationActivity"
+            android:name=".activity.map.SelectLocationActivityKakao"
             android:taskAffinity="com.zerodsoft.scheduleweather.Activity.MapActivity"
             android:windowSoftInputMode="adjustNothing" />
         <activity android:name=".activity.editevent.activity.EditEventActivity" />

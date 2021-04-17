@@ -16,13 +16,13 @@ import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
 import net.daum.mf.map.api.MapPOIItem;
 
-public class SelectLocationActivity extends KakaoMapActivity
+public class SelectLocationActivityKakao extends KakaoMapActivity
 {
     private OnBackPressedCallback onBackPressedCallback;
     private String eventLocation;
     public static final int RESULT_REMOVED_LOCATION = 10;
 
-    public SelectLocationActivity()
+    public SelectLocationActivityKakao()
     {
         super();
     }

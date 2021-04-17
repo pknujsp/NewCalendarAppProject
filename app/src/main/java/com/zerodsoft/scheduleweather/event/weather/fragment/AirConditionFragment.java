@@ -219,7 +219,14 @@ public class AirConditionFragment extends Fragment
             sgisAuth.auth(parameter);
         } else
         {
-            airConditionDownloader.getMsrstnAcctoRltmMesureDnsty(msrstnAcctoRltmMesureDnstyParameter);
+            TransCoordParameter parameter = new TransCoordParameter();
+            parameter.setAccessToken(SgisAuth.getSgisAuthResponse().getResult().getAccessToken());
+            parameter.setSrc(TransCoordParameter.WGS84);
+            parameter.setDst(TransCoordParameter.JUNGBU_ORIGIN);
+            parameter.setPosX(String.valueOf(longitude));
+            parameter.setPosY(String.valueOf(latitude));
+
+            sgisTranscoord.transcoord(parameter);
         }
     }
 

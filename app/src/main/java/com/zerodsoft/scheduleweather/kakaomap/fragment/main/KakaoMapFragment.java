@@ -88,7 +88,7 @@ import static androidx.core.content.ContextCompat.checkSelfPermission;
 
 public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, MapView.POIItemEventListener, MapView.MapViewEventListener, MapReverseGeoCoder.ReverseGeoCodingResultListener,
         INetwork, OnClickedPlacesListListener, PlacesItemBottomSheetButtonOnClickListener,
-        PlacesListBottomSheetController, PoiItemOnClickListener, OnClickedBottomSheetListener,
+        PlacesListBottomSheetController, PoiItemOnClickListener<MapPOIItem>, OnClickedBottomSheetListener,
         MapHeaderSearchFragment.LocationSearchListener, SearchFragmentController, BuildingLocationSelectorController,
         BuildingFragmentController, BuildingListFragment.OnSearchRadiusChangeListener
 {
@@ -993,17 +993,17 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     @Override
     public void onPOIItemSelected(MapView mapView, MapPOIItem mapPOIItem)
     {
-        onPOIItemSelectedByTouch(mapView, mapPOIItem);
+        onPOIItemSelectedByTouch(mapPOIItem);
     }
 
     @Override
-    public void onPOIItemSelectedByTouch(MapView mapView, MapPOIItem mapPOIItem)
+    public void onPOIItemSelectedByTouch(MapPOIItem e)
     {
         //poiitem을 직접 선택한 경우 호출
-        selectedPoiItemIndex = mapPOIItem.getTag();
+        selectedPoiItemIndex = e.getTag();
         isSelectedPoiItem = true;
 
-        mapView.setMapCenterPoint(mapPOIItem.getMapPoint(), true);
+        mapView.setMapCenterPoint(e.getMapPoint(), true);
         //open bottomsheet and show selected item data
         placeListBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
         placesBottomSheetViewPager.setCurrentItem(selectedPoiItemIndex, false);

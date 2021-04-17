@@ -21,12 +21,12 @@ import net.daum.mf.map.api.MapPOIItem;
 import net.daum.mf.map.api.MapPoint;
 import net.daum.mf.map.api.MapView;
 
-public class SelectedLocationMapFragment extends KakaoMapFragment
+public class SelectedLocationMapFragmentKakao extends KakaoMapFragment
 {
-    public static final String TAG = "SelectedLocationMapFragment";
+    public static final String TAG = "SelectedLocationMapFragmentKakao";
     private final LocationDTO selectedLocation;
 
-    public SelectedLocationMapFragment(LocationDTO selectedLocation)
+    public SelectedLocationMapFragmentKakao(LocationDTO selectedLocation)
     {
         this.selectedLocation = selectedLocation;
     }

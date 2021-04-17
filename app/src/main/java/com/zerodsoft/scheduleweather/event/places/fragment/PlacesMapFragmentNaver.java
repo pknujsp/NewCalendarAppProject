@@ -3,12 +3,10 @@ package com.zerodsoft.scheduleweather.event.places.fragment;
 import android.content.Context;
 import android.os.Bundle;
 import android.util.TypedValue;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
-import android.widget.FrameLayout;
 import android.widget.HorizontalScrollView;
 import android.widget.RelativeLayout;
 
@@ -22,16 +20,19 @@ import androidx.fragment.app.FragmentOnAttachListener;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
+import com.naver.maps.geometry.LatLng;
+import com.naver.maps.map.CameraUpdate;
+import com.naver.maps.map.NaverMap;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IstartActivity;
-import com.zerodsoft.scheduleweather.kakaomap.bottomsheet.adapter.PlaceItemInMapViewAdapter;
 import com.zerodsoft.scheduleweather.event.places.interfaces.FragmentController;
 import com.zerodsoft.scheduleweather.event.places.interfaces.OnClickedPlacesListListener;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PlaceCategory;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PlaceItemsGetter;
+import com.zerodsoft.scheduleweather.kakaomap.bottomsheet.adapter.PlaceItemInMapViewAdapter;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.main.KakaoMapFragment;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.searchheader.MapHeaderSearchFragment;
-import com.zerodsoft.scheduleweather.kakaomap.interfaces.SearchBottomSheetController;
+import com.zerodsoft.scheduleweather.navermap.NaverMapFragment;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddress;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
@@ -44,9 +45,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlacesListListener
+public class PlacesMapFragmentNaver extends NaverMapFragment implements OnClickedPlacesListListener
 {
-    public static final String TAG = "PlacesMapFragment";
+    public static final String TAG = "PlacesMapFragmentNaver";
 
     private IstartActivity istartActivity;
     private final PlaceCategory placeCategory;
@@ -66,13 +67,13 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
         @Override
         public void handleOnBackPressed()
         {
-            binding.mapView.removeAllViews();
+            binding.naverMapViewLayout.removeAllViews();
             requireActivity().finish();
             onBackPressedCallback.remove();
         }
     };
 
-    public PlacesMapFragment(Fragment fragment)
+    public PlacesMapFragmentNaver(Fragment fragment)
     {
         super();
         this.placeCategory = (PlaceCategory) fragment;
@@ -126,10 +127,10 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
         HorizontalScrollView chipScrollView = new HorizontalScrollView(getContext());
         chipScrollView.setHorizontalScrollBarEnabled(false);
         RelativeLayout.LayoutParams chipLayoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        chipLayoutParams.addRule(RelativeLayout.BELOW, binding.mapHeaderBar.getRoot().getId());
+        chipLayoutParams.addRule(RelativeLayout.BELOW, binding.naverMapHeaderBar.getRoot().getId());
         chipLayoutParams.topMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, getResources().getDisplayMetrics());
         chipScrollView.setLayoutParams(chipLayoutParams);
-        binding.mapViewLayout.addView(chipScrollView);
+        binding.naverMapViewLayout.addView(chipScrollView);
 
         categoryChipGroup = new ChipGroup(getContext(), null, R.style.Widget_MaterialComponents_ChipGroup);
         categoryChipGroup.setSingleSelection(true);
@@ -221,8 +222,8 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
                 List<PlaceDocuments> placeDocumentsList = placeItemsGetter.getPlaceItems(placeCategory);
 
                 createPlacesPoiItems(placeDocumentsList);
-                mapView.fitMapViewAreaToShowAllPOIItems();
-            } else if (categoryChipGroup.getCheckedChipIds().isEmpty() && mapView.getPOIItems().length > 0)
+                showAllPoiItems();
+            } else if (categoryChipGroup.getCheckedChipIds().isEmpty() && !markerList.isEmpty())
             {
                 removeAllPoiItems();
                 isSelectedPoiItem = false;
@@ -232,17 +233,18 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
     };
 
     @Override
-    public void onMapViewInitialized(MapView mapView)
+    public void onMapReady(@NonNull NaverMap naverMap)
     {
-        super.onMapViewInitialized(mapView);
-        MapPoint selectedLocationMapPoint = MapPoint.mapPointWithGeoCoord(selectedLocationDto.getLatitude(), selectedLocationDto.getLongitude());
-        mapView.setMapCenterPointAndZoomLevel(selectedLocationMapPoint, 4, false);
+        super.onMapReady(naverMap);
+        LatLng latLng = new LatLng(selectedLocationDto.getLatitude(), selectedLocationDto.getLongitude());
+        CameraUpdate cameraUpdate = CameraUpdate.scrollAndZoomTo(latLng, 10);
+        naverMap.moveCamera(cameraUpdate);
     }
 
     @Override
     public void onClickedItemInList(PlaceCategoryDTO placeCategory, int index)
     {
-        fragmentController.replaceFragment(PlacesMapFragment.TAG);
+        fragmentController.replaceFragment(PlacesMapFragmentNaver.TAG);
         requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
         //create poi items
         chipMap.get(placeCategory).setChecked(true);
@@ -253,7 +255,7 @@ public class PlacesMapFragment extends KakaoMapFragment implements OnClickedPlac
     @Override
     public void onClickedMoreInList(PlaceCategoryDTO placeCategory)
     {
-        fragmentController.replaceFragment(PlacesMapFragment.TAG);
+        fragmentController.replaceFragment(PlacesMapFragmentNaver.TAG);
         requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
         chipMap.get(placeCategory).setChecked(true);
     }

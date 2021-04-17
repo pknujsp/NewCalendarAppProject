@@ -18,7 +18,7 @@ import retrofit2.Response;
 
 public abstract class SgisAddress extends JsonDownloader<ReverseGeoCodingResponse>
 {
-    public void auth(ReverseGeoCodingParameter parameter, CarrierMessagingService.ResultCallback<DataWrapper<ReverseGeoCodingResponse>> callback)
+    public static void reverseGeoCoding(ReverseGeoCodingParameter parameter, CarrierMessagingService.ResultCallback<DataWrapper<ReverseGeoCodingResponse>> callback)
     {
         Querys querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.SGIS_ADDRESS);
 

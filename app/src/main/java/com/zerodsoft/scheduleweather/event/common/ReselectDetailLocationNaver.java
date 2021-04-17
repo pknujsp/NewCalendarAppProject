@@ -13,12 +13,15 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.naver.maps.map.NaverMap;
+import com.naver.maps.map.OnMapReadyCallback;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.main.InstanceMainActivity;
 import com.zerodsoft.scheduleweather.kakaomap.activity.KakaoMapActivity;
 import com.zerodsoft.scheduleweather.kakaomap.bottomsheet.adapter.PlaceItemInMapViewAdapter;
 import com.zerodsoft.scheduleweather.kakaomap.util.LocalParameterUtil;
+import com.zerodsoft.scheduleweather.navermap.NaverMapActivity;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.addressresponse.AddressResponseDocuments;
@@ -27,7 +30,7 @@ import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
 import java.util.Collections;
 
-public class ReselectDetailLocation extends KakaoMapActivity
+public class ReselectDetailLocationNaver extends NaverMapActivity implements OnMapReadyCallback
 {
     private LocationDTO savedLocationDto;
 
@@ -44,8 +47,6 @@ public class ReselectDetailLocation extends KakaoMapActivity
             @Override
             public void handleOnBackPressed()
             {
-                kakaoMapFragment.binding.mapView.removeAllViews();
-
                 setResult(resultCode);
                 finish();
             }
@@ -57,18 +58,18 @@ public class ReselectDetailLocation extends KakaoMapActivity
         Bundle arguments = getIntent().getExtras();
         savedLocationDto = (LocationDTO) arguments.getParcelable("savedLocationDto");
 
-        showLocationItem();
+        naverMapFragment.mapFragment.getMapAsync(this::onMapReady);
     }
 
     private void showLocationItem()
     {
         // 위치가 이미 선택되어 있는 경우 해당 위치 정보를 표시함 (삭제 버튼 추가)
-        if (kakaoMapFragment.networkAvailable())
+        if (naverMapFragment.networkAvailable())
         {
             if (savedLocationDto.getAddressName() != null)
             {
-                kakaoMapFragment.setPlaceBottomSheetSelectBtnVisibility(View.GONE);
-                kakaoMapFragment.setPlaceBottomSheetUnSelectBtnVisibility(View.VISIBLE);
+                naverMapFragment.setPlaceBottomSheetSelectBtnVisibility(View.GONE);
+                naverMapFragment.setPlaceBottomSheetUnSelectBtnVisibility(View.VISIBLE);
 
                 // 주소 검색 순서 : 좌표로 주소 변환
                 LocalApiPlaceParameter parameter = LocalParameterUtil.getCoordToAddressParameter(savedLocationDto.getLatitude(), savedLocationDto.getLongitude());
@@ -80,9 +81,9 @@ public class ReselectDetailLocation extends KakaoMapActivity
                         if (result.getException() == null)
                         {
                             AddressResponseDocuments address = result.getData();
-                            kakaoMapFragment.setPlacesListAdapter(new PlaceItemInMapViewAdapter());
-                            kakaoMapFragment.createAddressesPoiItems(Collections.singletonList(address));
-                            kakaoMapFragment.onPOIItemSelectedByList(0);
+                            naverMapFragment.setPlacesListAdapter(new PlaceItemInMapViewAdapter());
+                            naverMapFragment.createAddressesPoiItems(Collections.singletonList(address));
+                            naverMapFragment.onPOIItemSelectedByList(0);
                         } else
                         {
                             // exception(error)
@@ -92,8 +93,8 @@ public class ReselectDetailLocation extends KakaoMapActivity
 
             } else
             {
-                kakaoMapFragment.setPlaceBottomSheetSelectBtnVisibility(View.GONE);
-                kakaoMapFragment.setPlaceBottomSheetUnSelectBtnVisibility(View.VISIBLE);
+                naverMapFragment.setPlaceBottomSheetSelectBtnVisibility(View.GONE);
+                naverMapFragment.setPlaceBottomSheetUnSelectBtnVisibility(View.VISIBLE);
 
                 // 장소 검색 순서 : 장소의 위경도 내 10M 반경에서 장소 이름 검색(여러개 나올 경우 장소ID와 일치하는 장소를 선택)
                 LocalApiPlaceParameter parameter = LocalParameterUtil.getPlaceParameter(savedLocationDto.getPlaceName(),
@@ -109,9 +110,9 @@ public class ReselectDetailLocation extends KakaoMapActivity
                         if (result.getException() == null)
                         {
                             PlaceDocuments document = result.getData();
-                            kakaoMapFragment.setPlacesListAdapter(new PlaceItemInMapViewAdapter());
-                            kakaoMapFragment.createPlacesPoiItems(Collections.singletonList(document));
-                            kakaoMapFragment.onPOIItemSelectedByList(0);
+                            naverMapFragment.setPlacesListAdapter(new PlaceItemInMapViewAdapter());
+                            naverMapFragment.createPlacesPoiItems(Collections.singletonList(document));
+                            naverMapFragment.onPOIItemSelectedByList(0);
                         } else
                         {
                             // exception(error)
@@ -146,7 +147,7 @@ public class ReselectDetailLocation extends KakaoMapActivity
     public void onSelectedLocation()
     {
         // 지정이 완료된 경우 - DB에 등록하고 이벤트 액티비티로 넘어가서 날씨 또는 주변 정보 프래그먼트를 실행한다.
-        LocationDTO location = kakaoMapFragment.getSelectedLocationDto(savedLocationDto.getCalendarId(), savedLocationDto.getEventId());
+        LocationDTO location = naverMapFragment.getSelectedLocationDto(savedLocationDto.getCalendarId(), savedLocationDto.getEventId());
 
         //선택된 위치를 DB에 등록
         viewModel.addLocation(location, new CarrierMessagingService.ResultCallback<Boolean>()
@@ -156,8 +157,6 @@ public class ReselectDetailLocation extends KakaoMapActivity
             {
                 if (isAdded)
                 {
-                    kakaoMapFragment.binding.mapView.removeAllViews();
-
                     resultCode = InstanceMainActivity.RESULT_RESELECTED_LOCATION;
 
                     getIntent().putExtra("selectedLocationName", (location.getAddressName() == null ? location.getPlaceName() : location.getAddressName()) + " 지정완료");
@@ -183,8 +182,8 @@ public class ReselectDetailLocation extends KakaoMapActivity
             {
                 if (isRemoved)
                 {
-                    kakaoMapFragment.deselectPoiItem();
-                    kakaoMapFragment.removeAllPoiItems();
+                    naverMapFragment.deselectPoiItem();
+                    naverMapFragment.removeAllPoiItems();
 
                     runOnUiThread(new Runnable()
                     {
@@ -193,10 +192,10 @@ public class ReselectDetailLocation extends KakaoMapActivity
                         {
                             resultCode = InstanceMainActivity.RESULT_REMOVED_LOCATION;
 
-                            kakaoMapFragment.setPlaceBottomSheetSelectBtnVisibility(View.VISIBLE);
-                            kakaoMapFragment.setPlaceBottomSheetUnSelectBtnVisibility(View.GONE);
-                            kakaoMapFragment.getPlaceListBottomSheetBehavior().setState(BottomSheetBehavior.STATE_COLLAPSED);
-                            Toast.makeText(ReselectDetailLocation.this, getString(R.string.removed_detail_location), Toast.LENGTH_SHORT).show();
+                            naverMapFragment.setPlaceBottomSheetSelectBtnVisibility(View.VISIBLE);
+                            naverMapFragment.setPlaceBottomSheetUnSelectBtnVisibility(View.GONE);
+                            naverMapFragment.getPlaceListBottomSheetBehavior().setState(BottomSheetBehavior.STATE_COLLAPSED);
+                            Toast.makeText(ReselectDetailLocationNaver.this, getString(R.string.removed_detail_location), Toast.LENGTH_SHORT).show();
                         }
                     });
                 } else
@@ -205,5 +204,11 @@ public class ReselectDetailLocation extends KakaoMapActivity
                 }
             }
         });
+    }
+
+    @Override
+    public void onMapReady(@NonNull NaverMap naverMap)
+    {
+        showLocationItem();
     }
 }

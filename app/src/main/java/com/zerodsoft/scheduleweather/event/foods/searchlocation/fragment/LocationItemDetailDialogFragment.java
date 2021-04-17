@@ -5,7 +5,6 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.Fragment;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,7 +13,7 @@ import android.view.ViewGroup;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.FragmentLocationItemDetailDialogBinding;
 import com.zerodsoft.scheduleweather.event.foods.searchlocation.interfaces.OnSelectedNewLocation;
-import com.zerodsoft.scheduleweather.event.places.fragment.SelectedLocationMapFragment;
+import com.zerodsoft.scheduleweather.event.places.fragment.SelectedLocationMapFragmentKakao;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalDocument;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.addressresponse.AddressResponseDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
@@ -102,16 +101,16 @@ public class LocationItemDetailDialogFragment extends DialogFragment
             }
         }
 
-        SelectedLocationMapFragment selectedLocationMapFragment = new SelectedLocationMapFragment(selectedLocationDto);
+        SelectedLocationMapFragmentKakao selectedLocationMapFragmentKakao = new SelectedLocationMapFragmentKakao(selectedLocationDto);
         getChildFragmentManager().beginTransaction().add(binding.locationMap.getId(),
-                selectedLocationMapFragment, SelectedLocationMapFragment.TAG).commit();
+                selectedLocationMapFragmentKakao, SelectedLocationMapFragmentKakao.TAG).commit();
 
         binding.cancelButton.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view)
             {
-                selectedLocationMapFragment.mapView = null;
+                selectedLocationMapFragmentKakao.mapView = null;
                 dismiss();
             }
         });
@@ -121,7 +120,7 @@ public class LocationItemDetailDialogFragment extends DialogFragment
             @Override
             public void onClick(View view)
             {
-                selectedLocationMapFragment.mapView = null;
+                selectedLocationMapFragmentKakao.mapView = null;
                 dismiss();
                 onSelectedNewLocation.onSelectedNewLocation(selectedLocationDto);
             }

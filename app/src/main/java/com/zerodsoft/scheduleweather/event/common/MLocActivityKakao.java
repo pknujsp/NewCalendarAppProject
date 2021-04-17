@@ -22,7 +22,7 @@ import com.zerodsoft.scheduleweather.kakaomap.fragment.search.LocationSearchFrag
 import com.zerodsoft.scheduleweather.kakaomap.fragment.searchheader.MapHeaderSearchFragment;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
-public class MLocActivity extends KakaoMapActivity
+public class MLocActivityKakao extends KakaoMapActivity
 {
     private String savedLocation;
     private String ownerAccount;

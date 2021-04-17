@@ -27,13 +27,16 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.databinding.InstanceMainActivityBinding;
-import com.zerodsoft.scheduleweather.event.common.MLocActivity;
-import com.zerodsoft.scheduleweather.event.common.ReselectDetailLocation;
+import com.zerodsoft.scheduleweather.event.common.MLocActivityKakao;
+import com.zerodsoft.scheduleweather.event.common.MLocActivityNaver;
+import com.zerodsoft.scheduleweather.event.common.ReselectDetailLocationKakao;
+import com.zerodsoft.scheduleweather.event.common.ReselectDetailLocationNaver;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.event.activity.InstanceActivity;
 import com.zerodsoft.scheduleweather.event.foods.activity.FoodsActivity;
 import com.zerodsoft.scheduleweather.event.places.activity.PlacesActivity;
-import com.zerodsoft.scheduleweather.event.places.fragment.SelectedLocationMapFragment;
+import com.zerodsoft.scheduleweather.event.places.fragment.SelectedLocationMapFragmentKakao;
+import com.zerodsoft.scheduleweather.event.places.fragment.SelectedLocationMapFragmentNaver;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import com.zerodsoft.scheduleweather.event.weather.activity.WeatherActivity;
 import com.zerodsoft.scheduleweather.kakaomap.model.CoordToAddressUtil;
@@ -80,7 +83,8 @@ public class InstanceMainActivity extends AppCompatActivity
     private ContentValues instance;
     private LocationDTO selectedLocationDto;
     private CoordToAddress coordToAddress;
-    private SelectedLocationMapFragment selectedLocationMapFragment;
+    private SelectedLocationMapFragmentKakao selectedLocationMapFragmentKakao;
+    private SelectedLocationMapFragmentNaver selectedLocationMapFragmentNaver;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState)
@@ -295,10 +299,20 @@ public class InstanceMainActivity extends AppCompatActivity
 
     private void removeSelectedLocationMap()
     {
-        if (selectedLocationMapFragment != null)
+        /*
+        kakao
+         if (selectedLocationMapFragmentKakao != null)
         {
-            getSupportFragmentManager().beginTransaction().remove(selectedLocationMapFragment).commit();
-            selectedLocationMapFragment = null;
+            getSupportFragmentManager().beginTransaction().remove(selectedLocationMapFragmentKakao).commit();
+            selectedLocationMapFragmentKakao = null;
+        }
+         */
+
+        //naver
+        if (selectedLocationMapFragmentNaver != null)
+        {
+            getSupportFragmentManager().beginTransaction().remove(selectedLocationMapFragmentNaver).commit();
+            selectedLocationMapFragmentNaver = null;
         }
     }
 
@@ -306,9 +320,17 @@ public class InstanceMainActivity extends AppCompatActivity
     {
         if (selectedLocationDto != null)
         {
-            selectedLocationMapFragment = new SelectedLocationMapFragment(selectedLocationDto);
+            /*
+            kakao
+                 selectedLocationMapFragmentKakao = new SelectedLocationMapFragmentKakao(selectedLocationDto);
             getSupportFragmentManager().beginTransaction().add(binding.selectedLocationMap.getId(),
-                    selectedLocationMapFragment, SelectedLocationMapFragment.TAG).commit();
+                    selectedLocationMapFragmentKakao, SelectedLocationMapFragmentKakao.TAG).commit();
+             */
+
+            //naver
+            selectedLocationMapFragmentNaver = new SelectedLocationMapFragmentNaver(selectedLocationDto);
+            getSupportFragmentManager().beginTransaction().add(binding.selectedLocationMap.getId(),
+                    selectedLocationMapFragmentNaver, SelectedLocationMapFragmentNaver.TAG).commit();
         }
     }
 
@@ -540,8 +562,10 @@ public class InstanceMainActivity extends AppCompatActivity
                         public void onClick(DialogInterface dialogInterface, int i)
                         {
                             onRequestedActivity();
-                            Intent intent = new Intent(activity, MLocActivity.class);
-
+                          /* kakao
+                            Intent intent = new Intent(activity, MLocActivityKakao.class);
+                           */
+                            Intent intent = new Intent(activity, MLocActivityNaver.class);
                             Bundle bundle = new Bundle();
 
                             bundle.putInt("calendarId", instance.getAsInteger(CalendarContract.Instances.CALENDAR_ID));
@@ -562,8 +586,12 @@ public class InstanceMainActivity extends AppCompatActivity
         public void startEditLocationActivity(Activity activity, ActivityResultLauncher<Intent> activityResultLauncher, LocationDTO locationDTO)
         {
             onRequestedActivity();
-            Intent intent = new Intent(activity, ReselectDetailLocation.class);
+            /* kakao
+            Intent intent = new Intent(activity, ReselectDetailLocationKakao.class);
+             */
 
+            //naver
+            Intent intent = new Intent(activity, ReselectDetailLocationNaver.class);
             Bundle bundle = new Bundle();
             bundle.putParcelable("savedLocationDto", locationDTO);
 

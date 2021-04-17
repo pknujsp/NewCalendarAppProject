@@ -46,7 +46,12 @@ import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendar.dto.AccountDto;
 import com.zerodsoft.scheduleweather.etc.AppPermission;
 import com.zerodsoft.scheduleweather.event.main.InstanceMainActivity;
+import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
+import com.zerodsoft.scheduleweather.retrofit.paremeters.sgis.SgisAuthParameter;
+import com.zerodsoft.scheduleweather.retrofit.paremeters.sgis.TransCoordParameter;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.auth.SgisAuthResponse;
+import com.zerodsoft.scheduleweather.sgis.SgisAuth;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.utility.WeatherDataConverter;
 
@@ -93,6 +98,24 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 
     private MonthAssistantCalendarFragment monthAssistantCalendarFragment;
     private Date currentCalendarDate;
+
+    private final SgisAuth sgisAuth = new SgisAuth()
+    {
+        @Override
+        public void onResponse(DataWrapper<? extends SgisAuthResponse> result)
+        {
+            if (result.getException() == null)
+            {
+                if (result.getData() instanceof SgisAuthResponse)
+                {
+                    SgisAuth.setSgisAuthResponse(result.getData());
+                }
+            } else
+            {
+
+            }
+        }
+    };
 
     private final View.OnClickListener currMonthOnClickListener = new View.OnClickListener()
     {
@@ -155,6 +178,12 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
             permissionsResultLauncher.launch(new String[]{Manifest.permission.READ_CALENDAR, Manifest.permission.WRITE_CALENDAR});
         }
         // getAppKeyHash();
+
+        if (SgisAuth.getSgisAuthResponse() == null)
+        {
+            SgisAuthParameter parameter = new SgisAuthParameter();
+            sgisAuth.auth(parameter);
+        }
     }
 
     private void getAppKeyHash()
