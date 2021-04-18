@@ -9,7 +9,7 @@
         <androidx.coordinatorlayout.widget.CoordinatorLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            tools:context=".event.places.fragment.TestMapFragment">
+            tools:context=".event.places.main.PlacesMapTransactionFragment">
 
             <androidx.fragment.app.FragmentContainerView
                 android:id="@+id/places_map_fragment_container"

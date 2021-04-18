@@ -68,4 +68,5 @@
     <dimen name="building_selector_big_circle_stroke_size">4dp</dimen>
 
 
+    <dimen name="corner_radius">16dp</dimen>
 </resources>

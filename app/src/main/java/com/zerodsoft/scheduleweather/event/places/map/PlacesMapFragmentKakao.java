@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.event.places.fragment;
+package com.zerodsoft.scheduleweather.event.places.map;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -22,6 +22,7 @@ import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IstartActivity;
+import com.zerodsoft.scheduleweather.event.places.placecategorylist.PlaceListFragment;
 import com.zerodsoft.scheduleweather.kakaomap.bottomsheet.adapter.PlaceItemInMapViewAdapter;
 import com.zerodsoft.scheduleweather.event.places.interfaces.FragmentController;
 import com.zerodsoft.scheduleweather.event.places.interfaces.OnClickedPlacesListListener;

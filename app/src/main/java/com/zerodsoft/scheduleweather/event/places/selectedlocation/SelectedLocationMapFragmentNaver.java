@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.event.places.fragment;
+package com.zerodsoft.scheduleweather.event.places.selectedlocation;
 
 import android.os.Bundle;
 import android.util.TypedValue;
@@ -60,10 +60,10 @@ public class SelectedLocationMapFragmentNaver extends NaverMapFragment
             }
         });
 
-        binding.naverMapHeaderBar.getRoot().setVisibility(View.GONE);
-        binding.naverMapButtonsLayout.gpsButton.setVisibility(View.GONE);
-        binding.naverMapButtonsLayout.currentAddress.setVisibility(View.GONE);
-        binding.naverMapButtonsLayout.buildingButton.setVisibility(View.GONE);
+        binding.naverMapHeaderBar.getRoot().setVisibility(View.INVISIBLE);
+        binding.naverMapButtonsLayout.gpsButton.setVisibility(View.INVISIBLE);
+        binding.naverMapButtonsLayout.currentAddress.setVisibility(View.INVISIBLE);
+        binding.naverMapButtonsLayout.buildingButton.setVisibility(View.INVISIBLE);
 
         RelativeLayout.LayoutParams mapButtonsLayout = (RelativeLayout.LayoutParams) binding.naverMapButtonsLayout.getRoot().getLayoutParams();
         final int margin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 12f, getResources().getDisplayMetrics());
@@ -95,7 +95,7 @@ public class SelectedLocationMapFragmentNaver extends NaverMapFragment
         Marker marker = new Marker(new LatLng(selectedLocation.getLatitude(), selectedLocation.getLongitude()));
         marker.setMap(naverMap);
 
-        CameraUpdate cameraUpdate = CameraUpdate.scrollAndZoomTo(marker.getPosition(), 14);
+        CameraUpdate cameraUpdate = CameraUpdate.scrollAndZoomTo(marker.getPosition(), 15);
         naverMap.moveCamera(cameraUpdate);
     }
 }

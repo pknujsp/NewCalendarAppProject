@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.event.places.fragment;
+package com.zerodsoft.scheduleweather.event.places.placecategorylist;
 
 import android.os.Bundle;
 import android.util.TypedValue;
@@ -21,10 +21,12 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
+import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
 import com.zerodsoft.scheduleweather.common.interfaces.OnProgressBarListener;
 import com.zerodsoft.scheduleweather.databinding.PlacelistFragmentBinding;
 import com.zerodsoft.scheduleweather.etc.CustomRecyclerViewItemDecoration;
 import com.zerodsoft.scheduleweather.event.places.adapter.PlaceItemsAdapters;
+import com.zerodsoft.scheduleweather.event.places.map.PlacesMapFragmentNaver;
 import com.zerodsoft.scheduleweather.event.places.interfaces.FragmentController;
 import com.zerodsoft.scheduleweather.event.places.interfaces.OnClickedPlacesListListener;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PlaceCategory;
@@ -45,7 +47,6 @@ public class PlaceListFragment extends Fragment implements PlaceItemsGetter, OnP
 {
     public static final String TAG = "PlaceListFragment";
     private final PlaceCategory placeCategoryInterface;
-    private final FragmentController fragmentController;
 
     private OnClickedPlacesListListener onClickedPlacesListListener;
     private PlacelistFragmentBinding binding;
@@ -53,27 +54,11 @@ public class PlaceListFragment extends Fragment implements PlaceItemsGetter, OnP
     private LocationDTO selectedLocationDto;
     private CoordToAddress coordToAddressResult;
 
-    private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
-    {
-        @Override
-        public void handleOnBackPressed()
-        {
-            /*
-            kakao
-             fragmentController.replaceFragment(PlacesMapFragmentKakao.TAG);
-             */
-            fragmentController.replaceFragment(PlacesMapFragmentNaver.TAG);
-
-            onBackPressedCallback.remove();
-        }
-    };
-
     private Map<PlaceCategoryDTO, PlaceItemsAdapters> adaptersMap;
 
     public PlaceListFragment(Fragment fragment)
     {
         this.placeCategoryInterface = (PlaceCategory) fragment;
-        this.fragmentController = (FragmentController) fragment;
     }
 
     public void setSelectedLocationDto(LocationDTO selectedLocationDto)
@@ -109,19 +94,6 @@ public class PlaceListFragment extends Fragment implements PlaceItemsGetter, OnP
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
-
-        /*
-        mapButton.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                //목록 열고(리스트), 닫기(맵)
-                fragmentController.replaceFragment(PlacesMapFragment.TAG);
-            }
-        });
-
-         */
         if (selectedLocationDto.getPlaceName() != null)
         {
             //장소와 주소 표기
@@ -138,11 +110,6 @@ public class PlaceListFragment extends Fragment implements PlaceItemsGetter, OnP
         }
 
         makeCategoryListView();
-    }
-
-    public void setOnBackPressedCallback()
-    {
-        requireActivity().getOnBackPressedDispatcher().addCallback(onBackPressedCallback);
     }
 
     public void makeCategoryListView()
@@ -209,4 +176,5 @@ public class PlaceListFragment extends Fragment implements PlaceItemsGetter, OnP
     {
 
     }
+
 }

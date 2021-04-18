@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.event.places.fragment;
+package com.zerodsoft.scheduleweather.event.places.selectedlocation;
 
 import android.os.Bundle;
 import android.util.TypedValue;

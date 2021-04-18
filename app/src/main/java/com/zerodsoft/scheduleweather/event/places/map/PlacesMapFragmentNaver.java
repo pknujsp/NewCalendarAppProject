@@ -1,36 +1,53 @@
-package com.zerodsoft.scheduleweather.event.places.fragment;
+package com.zerodsoft.scheduleweather.event.places.map;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.os.Bundle;
+import android.util.AttributeSet;
 import android.util.TypedValue;
+import android.util.Xml;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.CompoundButton;
 import android.widget.HorizontalScrollView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.core.content.ContextCompat;
+import androidx.core.view.ViewCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentContainerView;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentOnAttachListener;
 
+import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
+import com.naver.maps.geometry.Coord;
 import com.naver.maps.geometry.LatLng;
 import com.naver.maps.map.CameraUpdate;
 import com.naver.maps.map.NaverMap;
+import com.naver.maps.map.overlay.Marker;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IstartActivity;
+import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
+import com.zerodsoft.scheduleweather.etc.FragmentStateCallback;
 import com.zerodsoft.scheduleweather.event.places.interfaces.FragmentController;
 import com.zerodsoft.scheduleweather.event.places.interfaces.OnClickedPlacesListListener;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PlaceCategory;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PlaceItemsGetter;
+import com.zerodsoft.scheduleweather.event.places.main.PlacesMapTransactionFragment;
+import com.zerodsoft.scheduleweather.event.places.placecategorylist.PlaceListFragment;
 import com.zerodsoft.scheduleweather.kakaomap.bottomsheet.adapter.PlaceItemInMapViewAdapter;
-import com.zerodsoft.scheduleweather.kakaomap.fragment.main.KakaoMapFragment;
+import com.zerodsoft.scheduleweather.kakaomap.fragment.search.LocationSearchFragment;
+import com.zerodsoft.scheduleweather.kakaomap.fragment.searchheader.MapHeaderMainFragment;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.searchheader.MapHeaderSearchFragment;
 import com.zerodsoft.scheduleweather.navermap.NaverMapFragment;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddress;
@@ -38,20 +55,18 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.Pl
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 
-import net.daum.mf.map.api.MapPoint;
-import net.daum.mf.map.api.MapView;
+import org.xmlpull.v1.XmlPullParser;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class PlacesMapFragmentNaver extends NaverMapFragment implements OnClickedPlacesListListener
+public class PlacesMapFragmentNaver extends NaverMapFragment implements OnClickedPlacesListListener, OnBackPressedCallbackController
 {
     public static final String TAG = "PlacesMapFragmentNaver";
 
     private IstartActivity istartActivity;
     private final PlaceCategory placeCategory;
-    private final FragmentController fragmentController;
     private PlaceItemsGetter placeItemsGetter;
 
     private List<PlaceCategoryDTO> placeCategoryList;
@@ -62,14 +77,21 @@ public class PlacesMapFragmentNaver extends NaverMapFragment implements OnClicke
     private Map<PlaceCategoryDTO, Chip> chipMap = new HashMap<>();
     private Chip listChip;
 
+    private LinearLayout placeCategoryBottomSheet;
+    private BottomSheetBehavior placeCategoryBottomSheetBehavior;
+
     private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
     {
         @Override
         public void handleOnBackPressed()
         {
-            binding.naverMapViewLayout.removeAllViews();
-            requireActivity().finish();
-            onBackPressedCallback.remove();
+            if (placeCategoryBottomSheetBehavior.getState() != BottomSheetBehavior.STATE_COLLAPSED)
+            {
+                placeCategoryBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+            } else
+            {
+                requireActivity().finish();
+            }
         }
     };
 
@@ -77,7 +99,6 @@ public class PlacesMapFragmentNaver extends NaverMapFragment implements OnClicke
     {
         super();
         this.placeCategory = (PlaceCategory) fragment;
-        this.fragmentController = (FragmentController) fragment;
     }
 
     public void setIstartActivity(IstartActivity istartActivity)
@@ -95,12 +116,24 @@ public class PlacesMapFragmentNaver extends NaverMapFragment implements OnClicke
         this.placeItemsGetter = placeItemsGetter;
     }
 
+    public void setCoordToAddressResult(CoordToAddress coordToAddressResult)
+    {
+        this.coordToAddressResult = coordToAddressResult;
+    }
+
     @Override
 
     public void onAttach(@NonNull Context context)
     {
         super.onAttach(context);
-        requireActivity().getOnBackPressedDispatcher().addCallback(onBackPressedCallback);
+        addOnBackPressedCallback();
+    }
+
+    @Override
+    public void onDetach()
+    {
+        super.onDetach();
+        removeOnBackPressedCallback();
     }
 
     @Override
@@ -140,8 +173,101 @@ public class PlacesMapFragmentNaver extends NaverMapFragment implements OnClicke
 
         chipScrollView.addView(categoryChipGroup);
         setChips();
+
+        setPlaceCategoryBottomSheet();
+        binding.naverMapFragmentRootLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener()
+        {
+            @Override
+            public void onGlobalLayout()
+            {
+                //search bottom sheet 크기 조정
+                int headerBarHeight = (int) getResources().getDimension(R.dimen.map_header_bar_height);
+                int headerBarTopMargin = (int) getResources().getDimension(R.dimen.map_header_bar_top_margin);
+                int headerBarMargin = (int) (headerBarTopMargin * 1.5f);
+
+                int placeCategoryBottomSheetHeight = binding.naverMapFragmentRootLayout.getHeight() - headerBarHeight - headerBarMargin;
+                //placecategory list bottom sheet 크기 조정
+                int extraHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 68f, getContext().getResources().getDisplayMetrics());
+
+                placeCategoryBottomSheet.getLayoutParams().height = placeCategoryBottomSheetHeight - extraHeight;
+                placeCategoryBottomSheet.requestLayout();
+                placeCategoryBottomSheetBehavior.onLayoutChild(binding.naverMapFragmentRootLayout, placeCategoryBottomSheet, ViewCompat.LAYOUT_DIRECTION_LTR);
+
+                binding.naverMapFragmentRootLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+            }
+        });
     }
 
+    private void setPlaceCategoryBottomSheet()
+    {
+        XmlPullParser parser = getResources().getXml(R.xml.persistent_bottom_sheet_default_attrs);
+        try
+        {
+            parser.next();
+            parser.nextTag();
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        AttributeSet attr = Xml.asAttributeSet(parser);
+        placeCategoryBottomSheet = new LinearLayout(getContext(), attr);
+
+        CoordinatorLayout.LayoutParams layoutParams = new CoordinatorLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        layoutParams.setBehavior(new BottomSheetBehavior());
+        placeCategoryBottomSheet.setLayoutParams(layoutParams);
+
+        placeCategoryBottomSheet.setClickable(true);
+        placeCategoryBottomSheet.setOrientation(LinearLayout.VERTICAL);
+
+        binding.naverMapFragmentRootLayout.addView(placeCategoryBottomSheet);
+
+        //fragmentcontainerview 추가
+        FragmentContainerView fragmentContainerView = new FragmentContainerView(getContext());
+        fragmentContainerView.setId(R.id.fragment_container);
+        fragmentContainerView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        fragmentContainerView.setPadding(0, getResources().getDimensionPixelSize(R.dimen.corner_radius), 0, 0);
+        placeCategoryBottomSheet.addView(fragmentContainerView);
+
+        placeCategoryBottomSheetBehavior = BottomSheetBehavior.from(placeCategoryBottomSheet);
+        placeCategoryBottomSheetBehavior.setDraggable(false);
+        placeCategoryBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+        placeCategoryBottomSheetBehavior.setHideable(false);
+        placeCategoryBottomSheetBehavior.setPeekHeight(0);
+        placeCategoryBottomSheetBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback()
+        {
+            @Override
+            public void onStateChanged(@NonNull View bottomSheet, int newState)
+            {
+                if (newState == BottomSheetBehavior.STATE_EXPANDED)
+                {
+                    listChip.setText(R.string.close_list);
+                } else if (newState == BottomSheetBehavior.STATE_COLLAPSED)
+                {
+                    listChip.setText(R.string.open_list);
+                }
+            }
+
+            @Override
+            public void onSlide(@NonNull View bottomSheet, float slideOffset)
+            {
+
+            }
+        });
+
+        PlaceListFragment placeListFragment = new PlaceListFragment(getParentFragment());
+        // placeListFragment.setOnClickedPlacesListListener(placesMapFragmentKakao);
+        placeListFragment.setOnClickedPlacesListListener(this);
+
+        placeListFragment.setSelectedLocationDto(selectedLocationDto);
+        placeListFragment.setCoordToAddressResult(coordToAddressResult);
+
+        // placesMapFragmentKakao.setPlaceItemsGetter(placeListFragment);
+        setPlaceItemsGetter(placeListFragment);
+
+        getChildFragmentManager().beginTransaction()
+                .add(fragmentContainerView.getId(), placeListFragment, PlaceListFragment.TAG).commitNow();
+    }
 
     private void setChips()
     {
@@ -176,8 +302,8 @@ public class PlacesMapFragmentNaver extends NaverMapFragment implements OnClicke
             @Override
             public void onClick(View view)
             {
-                //리스트 열고, placeslistbottomsheet닫고, poiitem이 선택된 경우 선택해제
-                fragmentController.replaceFragment(PlaceListFragment.TAG);
+                placeCategoryBottomSheetBehavior.setState(placeCategoryBottomSheetBehavior.getState() == BottomSheetBehavior.STATE_COLLAPSED
+                        ? BottomSheetBehavior.STATE_EXPANDED : BottomSheetBehavior.STATE_COLLAPSED);
             }
         });
 
@@ -237,15 +363,17 @@ public class PlacesMapFragmentNaver extends NaverMapFragment implements OnClicke
     {
         super.onMapReady(naverMap);
         LatLng latLng = new LatLng(selectedLocationDto.getLatitude(), selectedLocationDto.getLongitude());
-        CameraUpdate cameraUpdate = CameraUpdate.scrollAndZoomTo(latLng, 10);
+        Marker marker = new Marker(latLng);
+        marker.setMap(naverMap);
+
+        CameraUpdate cameraUpdate = CameraUpdate.scrollAndZoomTo(latLng, 12);
         naverMap.moveCamera(cameraUpdate);
     }
 
     @Override
     public void onClickedItemInList(PlaceCategoryDTO placeCategory, int index)
     {
-        fragmentController.replaceFragment(PlacesMapFragmentNaver.TAG);
-        requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
+        listChip.callOnClick();
         //create poi items
         chipMap.get(placeCategory).setChecked(true);
         //select poi item
@@ -255,9 +383,20 @@ public class PlacesMapFragmentNaver extends NaverMapFragment implements OnClicke
     @Override
     public void onClickedMoreInList(PlaceCategoryDTO placeCategory)
     {
-        fragmentController.replaceFragment(PlacesMapFragmentNaver.TAG);
-        requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
+        listChip.callOnClick();
         chipMap.get(placeCategory).setChecked(true);
+    }
+
+    @Override
+    public void addOnBackPressedCallback()
+    {
+        requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
+    }
+
+    @Override
+    public void removeOnBackPressedCallback()
+    {
+        onBackPressedCallback.remove();
     }
 
 

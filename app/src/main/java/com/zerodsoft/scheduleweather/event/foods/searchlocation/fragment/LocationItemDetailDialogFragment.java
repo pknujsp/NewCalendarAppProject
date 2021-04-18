@@ -13,7 +13,8 @@ import android.view.ViewGroup;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.FragmentLocationItemDetailDialogBinding;
 import com.zerodsoft.scheduleweather.event.foods.searchlocation.interfaces.OnSelectedNewLocation;
-import com.zerodsoft.scheduleweather.event.places.fragment.SelectedLocationMapFragmentKakao;
+import com.zerodsoft.scheduleweather.event.places.selectedlocation.SelectedLocationMapFragmentKakao;
+import com.zerodsoft.scheduleweather.event.places.selectedlocation.SelectedLocationMapFragmentNaver;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalDocument;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.addressresponse.AddressResponseDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
@@ -101,16 +102,16 @@ public class LocationItemDetailDialogFragment extends DialogFragment
             }
         }
 
-        SelectedLocationMapFragmentKakao selectedLocationMapFragmentKakao = new SelectedLocationMapFragmentKakao(selectedLocationDto);
+        SelectedLocationMapFragmentNaver selectedLocationMapFragmentNaver = new SelectedLocationMapFragmentNaver(selectedLocationDto);
         getChildFragmentManager().beginTransaction().add(binding.locationMap.getId(),
-                selectedLocationMapFragmentKakao, SelectedLocationMapFragmentKakao.TAG).commit();
+                selectedLocationMapFragmentNaver, SelectedLocationMapFragmentNaver.TAG).commit();
 
         binding.cancelButton.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view)
             {
-                selectedLocationMapFragmentKakao.mapView = null;
+                selectedLocationMapFragmentNaver.mapFragment = null;
                 dismiss();
             }
         });
@@ -120,7 +121,7 @@ public class LocationItemDetailDialogFragment extends DialogFragment
             @Override
             public void onClick(View view)
             {
-                selectedLocationMapFragmentKakao.mapView = null;
+                selectedLocationMapFragmentNaver.mapFragment = null;
                 dismiss();
                 onSelectedNewLocation.onSelectedNewLocation(selectedLocationDto);
             }

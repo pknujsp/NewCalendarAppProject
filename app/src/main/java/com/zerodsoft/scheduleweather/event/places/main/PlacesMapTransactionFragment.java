@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.event.places.fragment;
+package com.zerodsoft.scheduleweather.event.places.main;
 
 import android.os.Bundle;
 
@@ -17,10 +17,13 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.zerodsoft.scheduleweather.activity.placecategory.viewmodel.PlaceCategoryViewModel;
-import com.zerodsoft.scheduleweather.databinding.FragmentTestMapBinding;
+import com.zerodsoft.scheduleweather.databinding.FragmentPlacesMapTransactionBinding;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
+import com.zerodsoft.scheduleweather.event.places.map.PlacesMapFragmentKakao;
+import com.zerodsoft.scheduleweather.event.places.map.PlacesMapFragmentNaver;
 import com.zerodsoft.scheduleweather.event.places.interfaces.FragmentController;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PlaceCategory;
+import com.zerodsoft.scheduleweather.event.places.placecategorylist.PlaceListFragment;
 import com.zerodsoft.scheduleweather.kakaomap.model.CoordToAddressUtil;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
@@ -31,13 +34,12 @@ import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 import java.util.List;
 
 
-public class TestMapFragment extends Fragment implements PlaceCategory, FragmentController
+public class PlacesMapTransactionFragment extends Fragment implements PlaceCategory
 {
     public static final String TAG = "TestMapFragment";
-    private FragmentTestMapBinding binding;
+    private FragmentPlacesMapTransactionBinding binding;
     private PlacesMapFragmentKakao placesMapFragmentKakao;
     private PlacesMapFragmentNaver placesMapFragmentNaver;
-    private PlaceListFragment placeListFragment;
 
     private CoordToAddress coordToAddressResult;
     private LocationDTO selectedLocationDto;
@@ -51,7 +53,7 @@ public class TestMapFragment extends Fragment implements PlaceCategory, Fragment
     private Long instanceId;
     private Long begin;
 
-    public TestMapFragment()
+    public PlacesMapTransactionFragment()
     {
     }
 
@@ -71,7 +73,7 @@ public class TestMapFragment extends Fragment implements PlaceCategory, Fragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState)
     {
-        binding = FragmentTestMapBinding.inflate(inflater);
+        binding = FragmentPlacesMapTransactionBinding.inflate(inflater);
         return binding.getRoot();
     }
 
@@ -134,25 +136,12 @@ public class TestMapFragment extends Fragment implements PlaceCategory, Fragment
                                                                placesMapFragmentKakao = new PlacesMapFragmentKakao(TestMapFragment.this);
                                                     placesMapFragmentKakao.setSelectedLocationDto(selectedLocationDto);
                                                      */
-                                                    placesMapFragmentNaver = new PlacesMapFragmentNaver(TestMapFragment.this);
+                                                    placesMapFragmentNaver = new PlacesMapFragmentNaver(PlacesMapTransactionFragment.this);
                                                     placesMapFragmentNaver.setSelectedLocationDto(selectedLocationDto);
+                                                    placesMapFragmentNaver.setCoordToAddressResult(coordToAddressResult);
 
-                                                    placeListFragment = new PlaceListFragment(TestMapFragment.this);
-                                                    // placeListFragment.setOnClickedPlacesListListener(placesMapFragmentKakao);
-                                                    placeListFragment.setOnClickedPlacesListListener(placesMapFragmentNaver);
-
-                                                    placeListFragment.setSelectedLocationDto(selectedLocationDto);
-                                                    placeListFragment.setCoordToAddressResult(coordToAddressResult);
-
-                                                    // placesMapFragmentKakao.setPlaceItemsGetter(placeListFragment);
-                                                    placesMapFragmentNaver.setPlaceItemsGetter(placeListFragment);
-
-                                                    FragmentManager fragmentManager = getChildFragmentManager();
-                                                    fragmentManager.beginTransaction().add(binding.placesMapFragmentContainer.getId(), placesMapFragmentNaver, PlacesMapFragmentNaver.TAG)
-                                                            .add(binding.placesListFragment.getId(), placeListFragment, PlaceListFragment.TAG)
-                                                            .hide(placeListFragment)
+                                                    getChildFragmentManager().beginTransaction().add(binding.placesMapFragmentContainer.getId(), placesMapFragmentNaver, PlacesMapFragmentNaver.TAG)
                                                             .commit();
-
                                                 }
                                             });
 
@@ -180,22 +169,4 @@ public class TestMapFragment extends Fragment implements PlaceCategory, Fragment
     {
         return placeCategoryList;
     }
-
-    @Override
-    public void replaceFragment(String tag)
-    {
-        FragmentTransaction fragmentTransaction = getChildFragmentManager().beginTransaction();
-
-        if (tag.equals(PlaceListFragment.TAG))
-        {
-            // fragmentTransaction.hide(placesMapFragmentKakao).show(placeListFragment).commit();
-            fragmentTransaction.hide(placesMapFragmentNaver).show(placeListFragment).commit();
-            placeListFragment.setOnBackPressedCallback();
-        } else if (tag.equals(PlacesMapFragmentNaver.TAG))
-        {
-            // fragmentTransaction.hide(placeListFragment).show(placesMapFragmentKakao).commit();
-            fragmentTransaction.hide(placeListFragment).show(placesMapFragmentNaver).commit();
-        }
-    }
-
 }

@@ -5,7 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.event.places.fragment.TestMapFragment;
+import com.zerodsoft.scheduleweather.event.places.main.PlacesMapTransactionFragment;
 
 public class PlacesActivity extends AppCompatActivity
 {
@@ -16,8 +16,8 @@ public class PlacesActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_places);
 
-        TestMapFragment testMapFragment = new TestMapFragment();
-        testMapFragment.setArguments(getIntent().getExtras());
-        getSupportFragmentManager().beginTransaction().add(R.id.places_fragment_container, testMapFragment, TestMapFragment.TAG).commit();
+        PlacesMapTransactionFragment placesMapTransactionFragment = new PlacesMapTransactionFragment();
+        placesMapTransactionFragment.setArguments(getIntent().getExtras());
+        getSupportFragmentManager().beginTransaction().add(R.id.places_fragment_container, placesMapTransactionFragment, PlacesMapTransactionFragment.TAG).commit();
     }
 }
