@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.event.foods.fragment;
+package com.zerodsoft.scheduleweather.event.foods.categorylist;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -7,7 +7,6 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -24,7 +23,6 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
 import com.zerodsoft.scheduleweather.databinding.FragmentFoodCategoryTabBinding;
 import com.zerodsoft.scheduleweather.event.foods.adapter.FoodCategoryFragmentListAdapter;
-import com.zerodsoft.scheduleweather.event.foods.interfaces.CriteriaLocationListener;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.FragmentChanger;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedRestaurantItem;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.CustomFoodCategoryViewModel;
@@ -35,39 +33,19 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class FoodCategoryTabFragment extends Fragment implements OnClickedRestaurantItem, OnBackPressedCallbackController
+public class FoodCategoryTabFragment extends Fragment implements OnClickedRestaurantItem
 {
     public static final String TAG = "FoodCategoryTabFragment";
     private FragmentFoodCategoryTabBinding binding;
-    private final CriteriaLocationListener criteriaLocationListener;
-    private final FragmentChanger fragmentChanger;
-    private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
-    {
-        @Override
-        public void handleOnBackPressed()
-        {
-            fragmentChanger.changeFragment(null, FoodsMainFragment.TAG);
-            onBackPressedCallback.remove();
-        }
-    };
 
     private CustomFoodCategoryViewModel customFoodCategoryViewModel;
     private List<String> categoryList;
     private FoodCategoryFragmentListAdapter adapter;
     private final String selectedCategoryName;
 
-    public FoodCategoryTabFragment(Fragment fragment, FragmentChanger fragmentChanger, String selectedCategoryName)
+    public FoodCategoryTabFragment(String selectedCategoryName)
     {
-        this.criteriaLocationListener = (CriteriaLocationListener) fragment;
-        this.fragmentChanger = fragmentChanger;
         this.selectedCategoryName = selectedCategoryName;
-    }
-
-    @Override
-    public void onAttach(@NonNull Context context)
-    {
-        super.onAttach(context);
-        addOnBackPressedCallback();
     }
 
 
@@ -122,7 +100,7 @@ public class FoodCategoryTabFragment extends Fragment implements OnClickedRestau
                         int selectedIndex = categoryList.indexOf(selectedCategoryName);
 
                         adapter = new FoodCategoryFragmentListAdapter(FoodCategoryTabFragment.this);
-                        adapter.init(FoodCategoryTabFragment.this, criteriaLocationListener, categoryList);
+                        adapter.init(FoodCategoryTabFragment.this, categoryList);
                         binding.viewpager.setAdapter(adapter);
 
                         new TabLayoutMediator(binding.tabs, binding.viewpager,
@@ -146,19 +124,12 @@ public class FoodCategoryTabFragment extends Fragment implements OnClickedRestau
     }
 
     @Override
-    public void onDestroy()
-    {
-        super.onDestroy();
-        removeOnBackPressedCallback();
-    }
-
-    @Override
     public boolean onOptionsItemSelected(MenuItem item)
     {
         switch (item.getItemId())
         {
             case android.R.id.home:
-                onBackPressedCallback.handleOnBackPressed();
+
                 break;
         }
         return super.onOptionsItemSelected(item);
@@ -168,17 +139,5 @@ public class FoodCategoryTabFragment extends Fragment implements OnClickedRestau
     public void onClickedRestaurantItem(PlaceDocuments placeDocuments)
     {
 
-    }
-
-    @Override
-    public void addOnBackPressedCallback()
-    {
-        getActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
-    }
-
-    @Override
-    public void removeOnBackPressedCallback()
-    {
-        onBackPressedCallback.remove();
     }
 }

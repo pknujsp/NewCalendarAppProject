@@ -86,7 +86,7 @@ public class FoodRestaurantSearchHistoryAdapter extends RecyclerView.Adapter<Foo
                 @Override
                 public void onClick(View view)
                 {
-                    onClickedListItem.onClickedListItem(historyList.get(getAdapterPosition()));
+                    onClickedListItem.deleteListItem(historyList.get(getAdapterPosition()), getAdapterPosition());
                 }
             });
         }

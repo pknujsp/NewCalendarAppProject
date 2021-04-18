@@ -17,6 +17,18 @@
             android:text="@string/search_history" />
 
         <TextView
+            android:id="@+id/not_history"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@id/search_history_text_label"
+            android:layout_alignBottom="@id/search_history_text_label"
+            android:layout_marginLeft="8dp"
+            android:layout_toRightOf="@id/search_history_text_label"
+            android:gravity="center"
+            android:text="@string/not_search_history"
+            android:textSize="13sp" />
+
+        <TextView
             android:id="@+id/delete_all_search_history"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -36,14 +48,6 @@
             tools:itemCount="10"
             tools:listitem="@layout/search_history_horizontal_item_view" />
 
-        <TextView
-            android:id="@+id/not_history"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/search_history_recycler_view"
-            android:padding="8dp"
-            android:text="@string/not_search_history"
-            android:textSize="13sp" />
 
     </RelativeLayout>
 </layout>

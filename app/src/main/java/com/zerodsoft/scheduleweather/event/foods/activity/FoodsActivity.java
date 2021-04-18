@@ -17,9 +17,10 @@ import android.view.MenuItem;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.ActivityFoodsBinding;
-import com.zerodsoft.scheduleweather.event.foods.fragment.FoodCategoryTabFragment;
-import com.zerodsoft.scheduleweather.event.foods.fragment.FoodsMainFragment;
+import com.zerodsoft.scheduleweather.event.foods.categorylist.FoodCategoryTabFragment;
+import com.zerodsoft.scheduleweather.event.foods.categorylist.FoodsCategoryListFragment;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.FragmentChanger;
+import com.zerodsoft.scheduleweather.event.foods.main.fragment.FoodsMainFragment;
 import com.zerodsoft.scheduleweather.event.foods.search.search.fragment.SearchRestaurantFragment;
 import com.zerodsoft.scheduleweather.event.foods.settings.FoodsSettingsFragment;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationInfoViewModel;
@@ -27,7 +28,7 @@ import com.zerodsoft.scheduleweather.kakaomap.interfaces.INetwork;
 import com.zerodsoft.scheduleweather.room.dto.FoodCriteriaLocationInfoDTO;
 import com.zerodsoft.scheduleweather.utility.NetworkStatus;
 
-public class FoodsActivity extends AppCompatActivity implements INetwork, FragmentChanger, BottomNavigationView.OnNavigationItemSelectedListener
+public class FoodsActivity extends AppCompatActivity implements INetwork, BottomNavigationView.OnNavigationItemSelectedListener
 {
     private ActivityFoodsBinding binding;
     private FoodCriteriaLocationInfoViewModel foodCriteriaLocationInfoViewModel;
@@ -111,10 +112,10 @@ public class FoodsActivity extends AppCompatActivity implements INetwork, Fragme
         fragmentBundle.putLong(CalendarContract.Instances._ID, instanceId);
         fragmentBundle.putLong(CalendarContract.Instances.EVENT_ID, eventId);
 
-        FoodsMainFragment foodsMainFragment = new FoodsMainFragment(FoodsActivity.this);
+        FoodsMainFragment foodsMainFragment = new FoodsMainFragment(FoodsActivity.this::networkAvailable);
         foodsMainFragment.setArguments(fragmentBundle);
 
-        SearchRestaurantFragment searchRestaurantFragment = new SearchRestaurantFragment(foodsMainFragment);
+        SearchRestaurantFragment searchRestaurantFragment = new SearchRestaurantFragment();
         FoodsSettingsFragment foodsSettingsFragment = new FoodsSettingsFragment();
 
         getSupportFragmentManager().beginTransaction()
@@ -143,65 +144,68 @@ public class FoodsActivity extends AppCompatActivity implements INetwork, Fragme
 
 
     @Override
-    public void changeFragment(Fragment fragment, String tag)
-    {
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-
-        if (tag.equals(FoodsMainFragment.TAG))
-        {
-            fragmentManager.popBackStack();
-            Fragment foodsMainFragment = fragmentManager.findFragmentByTag(FoodsMainFragment.TAG);
-            ((FoodsMainFragment) foodsMainFragment).addOnBackPressedCallback();
-        } else if (tag.equals(FoodCategoryTabFragment.TAG))
-        {
-            Fragment foodsMainFragment = fragmentManager.findFragmentByTag(FoodsMainFragment.TAG);
-            fragmentTransaction.add(binding.fragmentContainer.getId(), fragment, tag).hide(foodsMainFragment).addToBackStack(tag).commit();
-        }
-    }
-
-    @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item)
     {
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.hide(currentShowingFragment);
-
-        if (fragmentManager.findFragmentByTag(FoodCategoryTabFragment.TAG) != null)
-        {
-            fragmentManager.popBackStackImmediate();
-        }
+        Fragment newFragment = null;
 
         switch (item.getItemId())
         {
             case R.id.food_main:
             {
-                fragmentTransaction.show(fragmentManager.findFragmentByTag(FoodsMainFragment.TAG))
-                        .commitNow();
-
-                currentShowingFragment = fragmentManager.findFragmentByTag(FoodsMainFragment.TAG);
+                newFragment = fragmentManager.findFragmentByTag(FoodsMainFragment.TAG);
                 break;
             }
 
             case R.id.food_search:
             {
-                fragmentTransaction.show(fragmentManager.findFragmentByTag(SearchRestaurantFragment.TAG))
-                        .commitNow();
-
-                currentShowingFragment = fragmentManager.findFragmentByTag(SearchRestaurantFragment.TAG);
+                newFragment = fragmentManager.findFragmentByTag(SearchRestaurantFragment.TAG);
                 break;
             }
 
             case R.id.food_settings:
             {
-                fragmentTransaction.show(fragmentManager.findFragmentByTag(FoodsSettingsFragment.TAG))
-                        .commitNow();
-
-                currentShowingFragment = fragmentManager.findFragmentByTag(FoodsSettingsFragment.TAG);
+                newFragment = fragmentManager.findFragmentByTag(FoodsSettingsFragment.TAG);
                 break;
             }
         }
+        // removeOnBackPressedOfPreviousFragment(currentShowingFragment);
+        // addOnBackPressedOfNewFragment(newFragment);
 
+        fragmentTransaction.show(newFragment)
+                .commitNow();
+
+        currentShowingFragment = newFragment;
         return true;
+    }
+
+    private void removeOnBackPressedOfPreviousFragment(Fragment previousFragment)
+    {
+        if (previousFragment instanceof FoodsMainFragment)
+        {
+            ((FoodsMainFragment) previousFragment).removeOnBackPressedCallback();
+        } else if (previousFragment instanceof SearchRestaurantFragment)
+        {
+            ((SearchRestaurantFragment) previousFragment).removeOnBackPressedCallback();
+        } else if (previousFragment instanceof FoodsSettingsFragment)
+        {
+            ((FoodsSettingsFragment) previousFragment).removeOnBackPressedCallback();
+        }
+    }
+
+    private void addOnBackPressedOfNewFragment(Fragment newFragment)
+    {
+        if (newFragment instanceof FoodsMainFragment)
+        {
+            ((FoodsMainFragment) newFragment).addOnBackPressedCallback();
+        } else if (newFragment instanceof SearchRestaurantFragment)
+        {
+            ((SearchRestaurantFragment) newFragment).addOnBackPressedCallback();
+        } else if (newFragment instanceof FoodsSettingsFragment)
+        {
+            ((FoodsSettingsFragment) newFragment).addOnBackPressedCallback();
+        }
     }
 }

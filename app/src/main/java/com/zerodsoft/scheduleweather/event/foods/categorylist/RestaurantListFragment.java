@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.event.foods.fragment;
+package com.zerodsoft.scheduleweather.event.foods.categorylist;
 
 import android.os.Bundle;
 
@@ -15,36 +15,33 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.common.interfaces.OnProgressBarListener;
 import com.zerodsoft.scheduleweather.event.foods.adapter.RestaurantListAdapter;
-import com.zerodsoft.scheduleweather.event.foods.interfaces.CriteriaLocationListener;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedRestaurantItem;
-import com.zerodsoft.scheduleweather.event.foods.searchlocation.adapter.PlacesListAdapter;
+import com.zerodsoft.scheduleweather.event.foods.share.CriteriaLocationRepository;
 import com.zerodsoft.scheduleweather.kakaomap.util.LocalParameterUtil;
 import com.zerodsoft.scheduleweather.kakaomap.viewmodel.PlacesViewModel;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
-import java.util.function.ObjIntConsumer;
-
 public class RestaurantListFragment extends Fragment
 {
     protected final OnClickedRestaurantItem onClickedRestaurantItem;
-    protected final CriteriaLocationListener criteriaLocationListener;
     protected String CATEGORY_NAME;
+    protected TextView errorTextView;
 
     protected RecyclerView restaurantRecyclerView;
     protected PlacesViewModel placesViewModel;
     protected RestaurantListAdapter adapter;
 
-    public RestaurantListFragment(OnClickedRestaurantItem onClickedRestaurantItem, CriteriaLocationListener criteriaLocationListener, String CATEGORY_NAME)
+    public RestaurantListFragment(OnClickedRestaurantItem onClickedRestaurantItem, String CATEGORY_NAME)
     {
         this.onClickedRestaurantItem = onClickedRestaurantItem;
-        this.criteriaLocationListener = criteriaLocationListener;
         this.CATEGORY_NAME = CATEGORY_NAME;
     }
 
@@ -66,6 +63,7 @@ public class RestaurantListFragment extends Fragment
     {
         super.onViewCreated(view, savedInstanceState);
 
+        errorTextView = (TextView) view.findViewById(R.id.error_text);
         restaurantRecyclerView = (RecyclerView) view.findViewById(R.id.recycler_view);
 
         restaurantRecyclerView.setLayoutManager(new LinearLayoutManager(view.getContext(), RecyclerView.VERTICAL, false));
@@ -73,6 +71,7 @@ public class RestaurantListFragment extends Fragment
         placesViewModel = new ViewModelProvider(this).get(PlacesViewModel.class);
 
         requestRestaurantList(CATEGORY_NAME);
+        errorTextView.setVisibility(View.GONE);
     }
 
 
@@ -84,7 +83,7 @@ public class RestaurantListFragment extends Fragment
             adapter = null;
         }
 
-        LocationDTO criteriaLocation = criteriaLocationListener.getCriteriaLocation();
+        LocationDTO criteriaLocation = CriteriaLocationRepository.getRestaurantCriteriaLocation();
 
         final LocalApiPlaceParameter placeParameter = LocalParameterUtil.getPlaceParameter(categoryName, String.valueOf(criteriaLocation.getLatitude()),
                 String.valueOf(criteriaLocation.getLongitude()), LocalApiPlaceParameter.DEFAULT_SIZE, LocalApiPlaceParameter.DEFAULT_PAGE,
@@ -92,7 +91,19 @@ public class RestaurantListFragment extends Fragment
         placeParameter.setRadius(App.getPreference_key_radius_range());
 
         adapter = new RestaurantListAdapter(getActivity(), onClickedRestaurantItem);
+
+        adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver()
+        {
+            @Override
+            public void onItemRangeInserted(int positionStart, int itemCount)
+            {
+                super.onItemRangeInserted(positionStart, itemCount);
+                errorTextView.setVisibility(View.GONE);
+            }
+        });
+
         restaurantRecyclerView.setAdapter(adapter);
+
         placesViewModel.init(placeParameter, new OnProgressBarListener()
         {
             @Override
@@ -108,6 +119,10 @@ public class RestaurantListFragment extends Fragment
             public void onChanged(PagedList<PlaceDocuments> placeDocuments)
             {
                 adapter.submitList(placeDocuments);
+                if (adapter.getCurrentList().snapshot().isEmpty())
+                {
+                    errorTextView.setVisibility(View.VISIBLE);
+                }
             }
         });
 

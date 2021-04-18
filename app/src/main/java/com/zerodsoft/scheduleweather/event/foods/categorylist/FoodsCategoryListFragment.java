@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.event.foods.fragment;
+package com.zerodsoft.scheduleweather.event.foods.categorylist;
 
 import android.Manifest;
 import android.app.Activity;
@@ -18,8 +18,8 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 
@@ -33,14 +33,14 @@ import android.view.ViewGroup;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
-import com.zerodsoft.scheduleweather.databinding.FragmentFoodsMainBinding;
+import com.zerodsoft.scheduleweather.databinding.FragmentFoodsCategoryListBinding;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.foods.activity.LocationSettingsActivity;
 import com.zerodsoft.scheduleweather.event.foods.adapter.FoodCategoryAdapter;
 import com.zerodsoft.scheduleweather.event.foods.dto.FoodCategoryItem;
-import com.zerodsoft.scheduleweather.event.foods.interfaces.CriteriaLocationListener;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.FragmentChanger;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedCategoryItem;
+import com.zerodsoft.scheduleweather.event.foods.share.CriteriaLocationRepository;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.CustomFoodCategoryViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationInfoViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationHistoryViewModel;
@@ -60,12 +60,11 @@ import java.util.List;
 import static android.app.Activity.RESULT_OK;
 import static androidx.core.content.ContextCompat.checkSelfPermission;
 
-public class FoodsMainFragment extends Fragment implements OnClickedCategoryItem, CriteriaLocationListener, OnBackPressedCallbackController
+public class FoodsCategoryListFragment extends Fragment implements OnClickedCategoryItem
 {
     public static final String TAG = "FoodsMainFragment";
-    private FragmentFoodsMainBinding binding;
+    private FragmentFoodsCategoryListBinding binding;
     private final INetwork iNetwork;
-    private final FragmentChanger fragmentChanger;
 
     private CustomFoodCategoryViewModel customFoodCategoryViewModel;
     private LocationViewModel locationViewModel;
@@ -79,30 +78,12 @@ public class FoodsMainFragment extends Fragment implements OnClickedCategoryItem
     private Long eventId;
 
     private LocationDTO selectedLocationDTO;
-    private LocationDTO criteriaLocationDTO;
     private FoodCriteriaLocationSearchHistoryDTO foodCriteriaLocationSearchHistoryDTO;
     private FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO;
 
-    public FoodsMainFragment(Activity activity)
+    public FoodsCategoryListFragment(INetwork iNetwork)
     {
-        this.iNetwork = (INetwork) activity;
-        this.fragmentChanger = (FragmentChanger) activity;
-    }
-
-    private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
-    {
-        @Override
-        public void handleOnBackPressed()
-        {
-            getActivity().finish();
-        }
-    };
-
-    @Override
-    public void onAttach(@NonNull Context context)
-    {
-        super.onAttach(context);
-        addOnBackPressedCallback();
+        this.iNetwork = iNetwork;
     }
 
 
@@ -123,7 +104,7 @@ public class FoodsMainFragment extends Fragment implements OnClickedCategoryItem
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState)
     {
-        binding = FragmentFoodsMainBinding.inflate(inflater);
+        binding = FragmentFoodsCategoryListBinding.inflate(inflater);
         return binding.getRoot();
     }
 
@@ -175,7 +156,7 @@ public class FoodsMainFragment extends Fragment implements OnClickedCategoryItem
                     public void run()
                     {
                         //가져온 위치 정보를 저장
-                        FoodsMainFragment.this.selectedLocationDTO = locationDTO;
+                        FoodsCategoryListFragment.this.selectedLocationDTO = locationDTO;
 
                         //지정한 위치 정보 데이터를 가져왔으면 기준 위치 선택정보를 가져온다.
                         foodCriteriaLocationInfoViewModel.selectByEventId(calendarId, eventId, new CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO>()
@@ -189,12 +170,13 @@ public class FoodsMainFragment extends Fragment implements OnClickedCategoryItem
                                     public void run()
                                     {
                                         //기준 설정 정보 객체 저장
-                                        FoodsMainFragment.this.foodCriteriaLocationInfoDTO = foodCriteriaLocationInfoDTO;
+                                        FoodsCategoryListFragment.this.foodCriteriaLocationInfoDTO = foodCriteriaLocationInfoDTO;
 
                                         switch (foodCriteriaLocationInfoDTO.getUsingType())
                                         {
                                             case FoodCriteriaLocationInfoDTO.TYPE_SELECTED_LOCATION:
-                                                criteriaLocationDTO = locationDTO.copy();
+                                                LocationDTO criteriaLocationDTO = locationDTO.copy();
+                                                CriteriaLocationRepository.setRestaurantCriteriaLocation(criteriaLocationDTO);
 
                                                 if (criteriaLocationDTO.getPlaceName() != null)
                                                 {
@@ -221,12 +203,14 @@ public class FoodsMainFragment extends Fragment implements OnClickedCategoryItem
                                                             @Override
                                                             public void run()
                                                             {
-                                                                FoodsMainFragment.this.foodCriteriaLocationSearchHistoryDTO = foodCriteriaLocationSearchHistoryDTO;
-                                                                criteriaLocationDTO = new LocationDTO();
+                                                                FoodsCategoryListFragment.this.foodCriteriaLocationSearchHistoryDTO = foodCriteriaLocationSearchHistoryDTO;
+                                                                LocationDTO criteriaLocationDTO = new LocationDTO();
                                                                 criteriaLocationDTO.setAddressName(foodCriteriaLocationSearchHistoryDTO.getAddressName());
                                                                 criteriaLocationDTO.setPlaceName(foodCriteriaLocationSearchHistoryDTO.getPlaceName());
                                                                 criteriaLocationDTO.setLatitude(Double.parseDouble(foodCriteriaLocationSearchHistoryDTO.getLatitude()));
                                                                 criteriaLocationDTO.setLongitude(Double.parseDouble(foodCriteriaLocationSearchHistoryDTO.getLongitude()));
+
+                                                                CriteriaLocationRepository.setRestaurantCriteriaLocation(criteriaLocationDTO);
 
                                                                 if (criteriaLocationDTO.getPlaceName() != null)
                                                                 {
@@ -258,12 +242,6 @@ public class FoodsMainFragment extends Fragment implements OnClickedCategoryItem
 
     }
 
-    @Override
-    public void onDestroy()
-    {
-        super.onDestroy();
-        removeOnBackPressedCallback();
-    }
 
     private void gps()
     {
@@ -282,7 +260,8 @@ public class FoodsMainFragment extends Fragment implements OnClickedCategoryItem
         {
             if (isGpsEnabled && isNetworkEnabled)
             {
-                locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 1, locationListener);
+                locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 1, locationListener);
             } else if (!isGpsEnabled)
             {
                 showRequestGpsDialog();
@@ -317,46 +296,25 @@ public class FoodsMainFragment extends Fragment implements OnClickedCategoryItem
 
     public final LocationListener locationListener = new LocationListener()
     {
+        private boolean isSuccess = false;
+
         @Override
         public void onLocationChanged(Location location)
         {
-            locationManager.removeUpdates(locationListener);
+            locationManager.removeUpdates(this);
 
-            criteriaLocationDTO = new LocationDTO();
-            criteriaLocationDTO.setLatitude(location.getLatitude());
-            criteriaLocationDTO.setLongitude(location.getLongitude());
-
-            //주소 reverse geocoding
-            LocalApiPlaceParameter localApiPlaceParameter = new LocalApiPlaceParameter();
-            localApiPlaceParameter.setX(String.valueOf(criteriaLocationDTO.getLongitude()));
-            localApiPlaceParameter.setY(String.valueOf(criteriaLocationDTO.getLatitude()));
-
-            CoordToAddressUtil.coordToAddress(localApiPlaceParameter, new CarrierMessagingService.ResultCallback<DataWrapper<CoordToAddress>>()
+            if (!isSuccess)
             {
-                @Override
-                public void onReceiveResult(@NonNull DataWrapper<CoordToAddress> coordToAddressDataWrapper) throws RemoteException
-                {
-                    getActivity().runOnUiThread(new Runnable()
-                    {
-                        @Override
-                        public void run()
-                        {
-                            if (coordToAddressDataWrapper.getException() == null)
-                            {
-                                binding.progressBar.setVisibility(View.GONE);
-                                binding.categoryGridview.setVisibility(View.VISIBLE);
+                isSuccess = true;
 
-                                CoordToAddress coordToAddress = coordToAddressDataWrapper.getData();
-                                criteriaLocationDTO.setAddressName(coordToAddress.getCoordToAddressDocuments().get(0).getCoordToAddressAddress()
-                                        .getAddressName());
+                LocationDTO criteriaLocationDTO = new LocationDTO();
+                criteriaLocationDTO.setLatitude(location.getLatitude());
+                criteriaLocationDTO.setLongitude(location.getLongitude());
+                setCurrentLocationData(criteriaLocationDTO);
+                return;
+            }
 
-                                binding.criteriaLocation.setText(criteriaLocationDTO.getAddressName());
-                            }
-                        }
-                    });
-
-                }
-            });
+            isSuccess = false;
         }
 
         @Override
@@ -378,6 +336,43 @@ public class FoodsMainFragment extends Fragment implements OnClickedCategoryItem
         }
     };
 
+    private void setCurrentLocationData(LocationDTO criteriaLocationDTO)
+    {
+        CriteriaLocationRepository.setRestaurantCriteriaLocation(criteriaLocationDTO);
+
+        //주소 reverse geocoding
+        LocalApiPlaceParameter localApiPlaceParameter = new LocalApiPlaceParameter();
+        localApiPlaceParameter.setX(String.valueOf(criteriaLocationDTO.getLongitude()));
+        localApiPlaceParameter.setY(String.valueOf(criteriaLocationDTO.getLatitude()));
+
+        CoordToAddressUtil.coordToAddress(localApiPlaceParameter, new CarrierMessagingService.ResultCallback<DataWrapper<CoordToAddress>>()
+        {
+            @Override
+            public void onReceiveResult(@NonNull DataWrapper<CoordToAddress> coordToAddressDataWrapper) throws RemoteException
+            {
+                getActivity().runOnUiThread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        if (coordToAddressDataWrapper.getException() == null)
+                        {
+                            binding.progressBar.setVisibility(View.GONE);
+                            binding.categoryGridview.setVisibility(View.VISIBLE);
+
+                            CoordToAddress coordToAddress = coordToAddressDataWrapper.getData();
+                            criteriaLocationDTO.setAddressName(coordToAddress.getCoordToAddressDocuments().get(0).getCoordToAddressAddress()
+                                    .getAddressName());
+
+                            binding.criteriaLocation.setText(criteriaLocationDTO.getAddressName());
+                        }
+                    }
+                });
+
+            }
+        });
+    }
+
 
     private void setCategories()
     {
@@ -391,7 +386,7 @@ public class FoodsMainFragment extends Fragment implements OnClickedCategoryItem
                     @Override
                     public void run()
                     {
-                        FoodCategoryAdapter foodCategoryAdapter = new FoodCategoryAdapter(getContext(), FoodsMainFragment.this);
+                        FoodCategoryAdapter foodCategoryAdapter = new FoodCategoryAdapter(getContext(), FoodsCategoryListFragment.this);
 
                         Context context = getContext();
                         List<FoodCategoryItem> itemsList = new ArrayList<>();
@@ -419,7 +414,7 @@ public class FoodsMainFragment extends Fragment implements OnClickedCategoryItem
                         }
 
                         foodCategoryAdapter.setItems(itemsList);
-                        GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(), 5);
+                        GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(), 4);
                         binding.categoryGridview.setLayoutManager(gridLayoutManager);
                         binding.categoryGridview.setAdapter(foodCategoryAdapter);
                     }
@@ -433,9 +428,9 @@ public class FoodsMainFragment extends Fragment implements OnClickedCategoryItem
     @Override
     public void onClickedFoodCategory(FoodCategoryItem foodCategoryItem)
     {
-        onBackPressedCallback.remove();
-        FoodCategoryTabFragment foodCategoryTabFragment = new FoodCategoryTabFragment(FoodsMainFragment.this, fragmentChanger, foodCategoryItem.getCategoryName());
-        fragmentChanger.changeFragment(foodCategoryTabFragment, FoodCategoryTabFragment.TAG);
+        FoodCategoryTabFragment foodCategoryTabFragment = new FoodCategoryTabFragment(foodCategoryItem.getCategoryName());
+        FragmentManager fragmentManager = getParentFragmentManager();
+        fragmentManager.beginTransaction().hide(this).add(R.id.foods_main_fragment_container, foodCategoryTabFragment, FoodCategoryTabFragment.TAG).addToBackStack(null).commit();
     }
 
     private final ActivityResultLauncher<Intent> locationSettingsActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
@@ -456,11 +451,12 @@ public class FoodsMainFragment extends Fragment implements OnClickedCategoryItem
                                     @Override
                                     public void run()
                                     {
-                                        FoodsMainFragment.this.foodCriteriaLocationInfoDTO = foodCriteriaLocationInfoDTO;
+                                        FoodsCategoryListFragment.this.foodCriteriaLocationInfoDTO = foodCriteriaLocationInfoDTO;
 
                                         if (foodCriteriaLocationInfoDTO.getUsingType() == FoodCriteriaLocationInfoDTO.TYPE_SELECTED_LOCATION)
                                         {
-                                            criteriaLocationDTO = selectedLocationDTO;
+                                            LocationDTO criteriaLocationDTO = selectedLocationDTO;
+                                            CriteriaLocationRepository.setRestaurantCriteriaLocation(criteriaLocationDTO);
 
                                             if (criteriaLocationDTO.getPlaceName() != null)
                                             {
@@ -484,13 +480,15 @@ public class FoodsMainFragment extends Fragment implements OnClickedCategoryItem
                                                         @Override
                                                         public void run()
                                                         {
-                                                            FoodsMainFragment.this.foodCriteriaLocationSearchHistoryDTO = foodCriteriaLocationSearchHistoryDTO;
+                                                            FoodsCategoryListFragment.this.foodCriteriaLocationSearchHistoryDTO = foodCriteriaLocationSearchHistoryDTO;
 
-                                                            criteriaLocationDTO = new LocationDTO();
+                                                            LocationDTO criteriaLocationDTO = new LocationDTO();
                                                             criteriaLocationDTO.setAddressName(foodCriteriaLocationSearchHistoryDTO.getAddressName());
                                                             criteriaLocationDTO.setPlaceName(foodCriteriaLocationSearchHistoryDTO.getPlaceName());
                                                             criteriaLocationDTO.setLatitude(Double.parseDouble(foodCriteriaLocationSearchHistoryDTO.getLatitude()));
                                                             criteriaLocationDTO.setLongitude(Double.parseDouble(foodCriteriaLocationSearchHistoryDTO.getLongitude()));
+
+                                                            CriteriaLocationRepository.setRestaurantCriteriaLocation(criteriaLocationDTO);
 
                                                             if (criteriaLocationDTO.getPlaceName() != null)
                                                             {
@@ -512,21 +510,5 @@ public class FoodsMainFragment extends Fragment implements OnClickedCategoryItem
                 }
             });
 
-    @Override
-    public LocationDTO getCriteriaLocation()
-    {
-        return criteriaLocationDTO;
-    }
 
-    @Override
-    public void addOnBackPressedCallback()
-    {
-        getActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
-    }
-
-    @Override
-    public void removeOnBackPressedCallback()
-    {
-        onBackPressedCallback.remove();
-    }
 }

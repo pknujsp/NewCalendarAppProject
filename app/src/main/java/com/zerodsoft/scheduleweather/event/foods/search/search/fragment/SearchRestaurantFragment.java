@@ -1,44 +1,74 @@
 package com.zerodsoft.scheduleweather.event.foods.search.search.fragment;
 
+import android.content.Context;
 import android.os.Bundle;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.SearchView;
 
 import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.databinding.FragmentSearchRestaurantBinding;
-import com.zerodsoft.scheduleweather.event.foods.interfaces.CriteriaLocationListener;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedRestaurantItem;
-import com.zerodsoft.scheduleweather.event.foods.search.search.adapter.FoodRestaurantSearchHistoryAdapter;
 import com.zerodsoft.scheduleweather.event.foods.search.searchresult.fragment.FoodRestaurantSearchResultFragment;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
-import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.SearchHistoryDTO;
 
 public class SearchRestaurantFragment extends Fragment implements OnClickedListItem<SearchHistoryDTO>, FoodRestaurantSearchResultFragment.OnDeleteSearchView,
-        OnClickedRestaurantItem
+        OnClickedRestaurantItem, OnBackPressedCallbackController
 {
     public static final String TAG = "SearchRestaurantFragment";
     private FragmentSearchRestaurantBinding binding;
     private FoodRestaurantSearchHistoryFragment foodRestaurantSearchHistoryFragment;
     private FoodRestaurantSearchResultFragment searchResultFragment;
-    private CriteriaLocationListener criteriaLocationListener;
-
-
-    public SearchRestaurantFragment(Fragment fragment)
+    private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
     {
-        this.criteriaLocationListener = (CriteriaLocationListener) fragment;
+        @Override
+        public void handleOnBackPressed()
+        {
+            FragmentManager fragmentManager = getChildFragmentManager();
+            if (fragmentManager.findFragmentByTag(FoodRestaurantSearchHistoryFragment.TAG) != null)
+            {
+                if (fragmentManager.findFragmentByTag(FoodRestaurantSearchHistoryFragment.TAG).isVisible())
+                {
+                    getActivity().finish();
+                } else if (fragmentManager.findFragmentByTag(FoodRestaurantSearchResultFragment.TAG) != null)
+                {
+                    binding.deleteQueryButton.setVisibility(View.GONE);
+                    binding.searchButton.setVisibility(View.VISIBLE);
+                    deleteQuery();
+                    fragmentManager.popBackStackImmediate();
+                }
+            }
+        }
+    };
+
+    public SearchRestaurantFragment()
+    {
+
     }
 
+    @Override
+    public void onAttach(@NonNull Context context)
+    {
+        super.onAttach(context);
+        // addOnBackPressedCallback();
+    }
+
+    @Override
+    public void onDetach()
+    {
+        super.onDetach();
+        //  removeOnBackPressedCallback();
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -73,21 +103,57 @@ public class SearchRestaurantFragment extends Fragment implements OnClickedListI
                 if (keyCode == KeyEvent.KEYCODE_ENTER && keyEvent.getAction() == KeyEvent.ACTION_DOWN)
                 {
                     //검색
-                    search(binding.editTextSearch.getText().toString());
-                    foodRestaurantSearchHistoryFragment.insertHistory(binding.editTextSearch.getText().toString());
+                    binding.searchButton.callOnClick();
                     return true;
                 }
                 return false;
             }
         });
 
+        binding.searchButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                search(binding.editTextSearch.getText().toString());
+                foodRestaurantSearchHistoryFragment.insertHistory(binding.editTextSearch.getText().toString());
+            }
+        });
+
+        binding.deleteQueryButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                onBackPressedCallback.handleOnBackPressed();
+            }
+        });
+
+        binding.deleteQueryButton.setVisibility(View.GONE);
+        binding.searchButton.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void onHiddenChanged(boolean hidden)
+    {
+        super.onHiddenChanged(hidden);
+        if (hidden)
+        {
+            removeOnBackPressedCallback();
+        } else
+        {
+            addOnBackPressedCallback();
+        }
     }
 
     private void search(String value)
     {
+        binding.deleteQueryButton.setVisibility(View.VISIBLE);
+        binding.searchButton.setVisibility(View.GONE);
+
         if (getChildFragmentManager().findFragmentByTag(FoodRestaurantSearchResultFragment.TAG) == null)
         {
-            searchResultFragment = new FoodRestaurantSearchResultFragment(value, this, criteriaLocationListener);
+            searchResultFragment = new FoodRestaurantSearchResultFragment(value, this);
 
             getChildFragmentManager().beginTransaction().hide(foodRestaurantSearchHistoryFragment)
                     .add(binding.searchFoodRestaurantFragmentContainer.getId(),
@@ -123,5 +189,17 @@ public class SearchRestaurantFragment extends Fragment implements OnClickedListI
     public void onClickedRestaurantItem(PlaceDocuments placeDocuments)
     {
 
+    }
+
+    @Override
+    public void addOnBackPressedCallback()
+    {
+        requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
+    }
+
+    @Override
+    public void removeOnBackPressedCallback()
+    {
+        onBackPressedCallback.remove();
     }
 }

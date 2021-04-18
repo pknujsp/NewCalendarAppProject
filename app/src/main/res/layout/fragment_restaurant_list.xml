@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".event.foods.fragment.RestaurantListFragment">
+    tools:context=".event.foods.categorylist.RestaurantListFragment">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view"
@@ -14,5 +14,13 @@
         android:scrollbarStyle="insideInset"
         android:scrollbars="vertical"
         tools:listitem="@layout/restaurant_itemview" />
+
+    <TextView
+        android:id="@+id/error_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:text="@string/not_founded_search_result" />
 
 </FrameLayout>

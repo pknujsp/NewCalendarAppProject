@@ -12,41 +12,21 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
-import com.zerodsoft.scheduleweather.databinding.FragmentSearchResultRestaurantBinding;
-import com.zerodsoft.scheduleweather.event.foods.fragment.RestaurantListFragment;
-import com.zerodsoft.scheduleweather.event.foods.interfaces.CriteriaLocationListener;
+import com.zerodsoft.scheduleweather.event.foods.categorylist.RestaurantListFragment;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedRestaurantItem;
 
-public class FoodRestaurantSearchResultFragment extends RestaurantListFragment implements OnBackPressedCallbackController
+public class FoodRestaurantSearchResultFragment extends RestaurantListFragment
 {
     public static final String TAG = "FoodRestaurantSearchResultFragment";
     private final OnDeleteSearchView onDeleteSearchView;
 
-    public FoodRestaurantSearchResultFragment(String searchWord, Fragment fragment, CriteriaLocationListener criteriaLocationListener)
+    public FoodRestaurantSearchResultFragment(String searchWord, Fragment fragment)
     {
-        super((OnClickedRestaurantItem) fragment, criteriaLocationListener, searchWord);
+        super((OnClickedRestaurantItem) fragment, searchWord);
         this.onDeleteSearchView = (OnDeleteSearchView) fragment;
     }
 
-    private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
-    {
-        @Override
-        public void handleOnBackPressed()
-        {
-            onDeleteSearchView.deleteQuery();
-            getParentFragmentManager().popBackStackImmediate();
-            removeOnBackPressedCallback();
-        }
-    };
-
-    @Override
-    public void onAttach(@NonNull Context context)
-    {
-        super.onAttach(context);
-        addOnBackPressedCallback();
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -73,24 +53,6 @@ public class FoodRestaurantSearchResultFragment extends RestaurantListFragment i
         super.onViewCreated(view, savedInstanceState);
     }
 
-    @Override
-    public void onDestroy()
-    {
-        super.onDestroy();
-        removeOnBackPressedCallback();
-    }
-
-    @Override
-    public void addOnBackPressedCallback()
-    {
-        getActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
-    }
-
-    @Override
-    public void removeOnBackPressedCallback()
-    {
-        onBackPressedCallback.remove();
-    }
 
     public interface OnDeleteSearchView
     {

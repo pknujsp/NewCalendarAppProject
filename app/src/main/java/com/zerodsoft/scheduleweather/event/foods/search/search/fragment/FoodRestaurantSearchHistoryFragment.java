@@ -30,7 +30,7 @@ import com.zerodsoft.scheduleweather.room.dto.SearchHistoryDTO;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FoodRestaurantSearchHistoryFragment extends Fragment implements OnClickedListItem<SearchHistoryDTO>, OnBackPressedCallbackController
+public class FoodRestaurantSearchHistoryFragment extends Fragment implements OnClickedListItem<SearchHistoryDTO>
 {
     public static final String TAG = "FoodRestaurantSearchHistoryFragment";
     private FragmentFoodRestaurantSearchHistoryBinding binding;
@@ -38,26 +38,12 @@ public class FoodRestaurantSearchHistoryFragment extends Fragment implements OnC
     private SearchHistoryViewModel viewModel;
     private FoodRestaurantSearchHistoryAdapter adapter;
 
-    private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
-    {
-        @Override
-        public void handleOnBackPressed()
-        {
-            getActivity().finish();
-        }
-    };
 
     public FoodRestaurantSearchHistoryFragment(OnClickedListItem<SearchHistoryDTO> onClickedListItem)
     {
         this.onClickedListItem = onClickedListItem;
     }
 
-    @Override
-    public void onAttach(@NonNull Context context)
-    {
-        super.onAttach(context);
-        addOnBackPressedCallback();
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -82,7 +68,7 @@ public class FoodRestaurantSearchHistoryFragment extends Fragment implements OnC
 
         binding.searchHistoryRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
         binding.searchHistoryRecyclerView.addItemDecoration
-                (new CustomRecyclerViewItemDecoration((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, getResources().getDisplayMetrics())));
+                (new CustomRecyclerViewItemDecoration((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10f, getResources().getDisplayMetrics())));
 
         binding.deleteAllSearchHistory.setOnClickListener(new View.OnClickListener()
         {
@@ -101,8 +87,8 @@ public class FoodRestaurantSearchHistoryFragment extends Fragment implements OnC
                                 @Override
                                 public void run()
                                 {
-                                    adapter.notifyItemRangeRemoved(0, adapter.getItemCount());
-                                    binding.notHistory.setVisibility(View.VISIBLE);
+                                    adapter.getHistoryList().clear();
+                                    adapter.notifyDataSetChanged();
                                 }
                             });
 
@@ -123,21 +109,65 @@ public class FoodRestaurantSearchHistoryFragment extends Fragment implements OnC
                     @Override
                     public void run()
                     {
-                        if (!searchHistoryDTOS.isEmpty())
-                        {
-                            binding.notHistory.setVisibility(View.GONE);
-                        } else
-                        {
-                            binding.notHistory.setVisibility(View.VISIBLE);
-                        }
                         adapter = new FoodRestaurantSearchHistoryAdapter(FoodRestaurantSearchHistoryFragment.this);
                         adapter.setHistoryList(searchHistoryDTOS);
+                        adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver()
+                        {
+                            @Override
+                            public void onChanged()
+                            {
+                                super.onChanged();
+                                if (adapter.getItemCount() > 0)
+                                {
+                                    binding.searchHistoryRecyclerView.setVisibility(View.VISIBLE);
+                                    binding.notHistory.setVisibility(View.GONE);
+                                } else
+                                {
+                                    binding.searchHistoryRecyclerView.setVisibility(View.GONE);
+                                    binding.notHistory.setVisibility(View.VISIBLE);
+                                }
+                            }
+
+                            @Override
+                            public void onItemRangeInserted(int positionStart, int itemCount)
+                            {
+                                super.onItemRangeInserted(positionStart, itemCount);
+                                if (adapter.getItemCount() > 0)
+                                {
+                                    binding.searchHistoryRecyclerView.setVisibility(View.VISIBLE);
+                                    binding.notHistory.setVisibility(View.GONE);
+                                }
+                            }
+
+                            @Override
+                            public void onItemRangeRemoved(int positionStart, int itemCount)
+                            {
+                                super.onItemRangeRemoved(positionStart, itemCount);
+                                if (adapter.getItemCount() > 0)
+                                {
+                                    binding.searchHistoryRecyclerView.setVisibility(View.VISIBLE);
+                                    binding.notHistory.setVisibility(View.GONE);
+                                } else
+                                {
+                                    binding.searchHistoryRecyclerView.setVisibility(View.GONE);
+                                    binding.notHistory.setVisibility(View.VISIBLE);
+                                }
+                            }
+                        });
 
                         binding.searchHistoryRecyclerView.setAdapter(adapter);
                     }
                 });
             }
         });
+
+
+    }
+
+    @Override
+    public void onDestroy()
+    {
+        super.onDestroy();
     }
 
     public void insertHistory(String value)
@@ -160,12 +190,6 @@ public class FoodRestaurantSearchHistoryFragment extends Fragment implements OnC
         });
     }
 
-    @Override
-    public void onDestroy()
-    {
-        super.onDestroy();
-        removeOnBackPressedCallback();
-    }
 
     @Override
     public void onClickedListItem(SearchHistoryDTO e)
@@ -186,22 +210,17 @@ public class FoodRestaurantSearchHistoryFragment extends Fragment implements OnC
                     @Override
                     public void run()
                     {
-                        adapter.notifyItemRemoved(position);
+                        if (aBoolean)
+                        {
+                            adapter.getHistoryList().remove(position);
+                            adapter.notifyItemRemoved(position);
+                        }
                     }
+
                 });
+
             }
         });
     }
 
-    @Override
-    public void addOnBackPressedCallback()
-    {
-        getActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
-    }
-
-    @Override
-    public void removeOnBackPressedCallback()
-    {
-        onBackPressedCallback.remove();
-    }
 }
