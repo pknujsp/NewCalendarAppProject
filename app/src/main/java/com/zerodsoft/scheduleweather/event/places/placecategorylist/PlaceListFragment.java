@@ -1,5 +1,6 @@
 package com.zerodsoft.scheduleweather.event.places.placecategorylist;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -16,6 +17,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.paging.PagedList;
+import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -110,6 +112,49 @@ public class PlaceListFragment extends Fragment implements PlaceItemsGetter, OnP
         }
 
         makeCategoryListView();
+
+        binding.radiusSeekbarLayout.setVisibility(View.GONE);
+        binding.radiusSeekbar.setValue(Float.valueOf(App.getPreference_key_radius_range()) / 1000f);
+
+        binding.searchRadius.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                binding.radiusSeekbarLayout.setVisibility(binding.radiusSeekbarLayout.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
+            }
+        });
+
+        binding.applyRadius.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                //변경한 값 적용
+                binding.radiusSeekbarLayout.setVisibility(View.GONE);
+
+                SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+                SharedPreferences.Editor editor = preferences.edit();
+
+                final String newValueStrMeter = String.valueOf(binding.radiusSeekbar.getValue() * 1000);
+                editor.putString(getString(R.string.preference_key_radius_range), newValueStrMeter);
+                editor.commit();
+
+                App.setPreference_key_radius_range(newValueStrMeter);
+                setSearchRadius();
+
+                makeCategoryListView();
+            }
+        });
+
+        setSearchRadius();
+    }
+
+    private void setSearchRadius()
+    {
+        float value = Float.parseFloat(App.getPreference_key_radius_range()) / 1000f;
+        String newValueStrKm = String.valueOf(value);
+        binding.searchRadius.setText(getString(R.string.search_radius) + " " + newValueStrKm + "km");
     }
 
     public void makeCategoryListView()

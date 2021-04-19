@@ -268,31 +268,48 @@ public class InstanceMainActivity extends AppCompatActivity
     }
 
 
-    private void startActivityUsingLocation(Intent intent, ActivityResultLauncher<Intent> activityResultLauncher)
+    private void startActivityUsingLocation(Class activity, ActivityResultLauncher<Intent> activityResultLauncher)
     {
-        locationViewModel.hasDetailLocation(calendarId, eventId, new CarrierMessagingService.ResultCallback<Boolean>()
+        if (hasSimpleLocation())
         {
-            @Override
-            public void onReceiveResult(@NonNull Boolean hasDetailLocation) throws RemoteException
-            {
-                runOnUiThread(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        if (hasDetailLocation)
-                        {
-                            removeSelectedLocationMap();
-                            activityResultLauncher.launch(intent);
-                        } else
-                        {
-                            locationAbstract.showSetLocationDialog(InstanceMainActivity.this, setLocationActivityResultLauncher, instance);
-                        }
-                    }
-                });
+            Intent intent = new Intent(this, activity);
+            Bundle bundle = new Bundle();
 
-            }
-        });
+            bundle.putLong("instanceId", instanceId);
+            bundle.putLong("eventId", eventId);
+            bundle.putInt("calendarId", calendarId);
+            bundle.putLong("begin", originalBegin);
+
+            intent.putExtras(bundle);
+
+            locationViewModel.hasDetailLocation(calendarId, eventId, new CarrierMessagingService.ResultCallback<Boolean>()
+            {
+                @Override
+                public void onReceiveResult(@NonNull Boolean hasDetailLocation) throws RemoteException
+                {
+                    runOnUiThread(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            if (hasDetailLocation)
+                            {
+                                removeSelectedLocationMap();
+                                activityResultLauncher.launch(intent);
+                            } else
+                            {
+                                locationAbstract.showSetLocationDialog(InstanceMainActivity.this, setLocationActivityResultLauncher, instance);
+                            }
+                        }
+                    });
+
+                }
+            });
+        } else
+        {
+            Toast.makeText(InstanceMainActivity.this, getString(R.string.not_selected_location_in_event), Toast.LENGTH_SHORT).show();
+        }
+
     }
 
     private void removeSelectedLocationMap()
@@ -309,7 +326,7 @@ public class InstanceMainActivity extends AppCompatActivity
         //naver
         if (selectedLocationMapFragmentNaver != null)
         {
-            getSupportFragmentManager().beginTransaction().remove(selectedLocationMapFragmentNaver).commit();
+            getSupportFragmentManager().beginTransaction().remove(selectedLocationMapFragmentNaver).commitNow();
             selectedLocationMapFragmentNaver = null;
         }
     }
@@ -328,7 +345,7 @@ public class InstanceMainActivity extends AppCompatActivity
             //naver
             selectedLocationMapFragmentNaver = new SelectedLocationMapFragmentNaver(selectedLocationDto);
             getSupportFragmentManager().beginTransaction().add(binding.selectedLocationMap.getId(),
-                    selectedLocationMapFragmentNaver, SelectedLocationMapFragmentNaver.TAG).commit();
+                    selectedLocationMapFragmentNaver, SelectedLocationMapFragmentNaver.TAG).commitNow();
         }
     }
 
@@ -370,22 +387,7 @@ public class InstanceMainActivity extends AppCompatActivity
         @Override
         public void onClick(View v)
         {
-            if (hasSimpleLocation())
-            {
-                Intent intent = new Intent(InstanceMainActivity.this, WeatherActivity.class);
-                Bundle bundle = new Bundle();
-
-                bundle.putLong("instanceId", instanceId);
-                bundle.putLong("eventId", eventId);
-                bundle.putInt("calendarId", calendarId);
-                bundle.putLong("begin", originalBegin);
-
-                intent.putExtras(bundle);
-                startActivityUsingLocation(intent, weatherActivityResultLauncher);
-            } else
-            {
-                Toast.makeText(InstanceMainActivity.this, getString(R.string.not_selected_location_in_event), Toast.LENGTH_SHORT).show();
-            }
+            startActivityUsingLocation(WeatherActivity.class, weatherActivityResultLauncher);
         }
     };
 
@@ -394,22 +396,7 @@ public class InstanceMainActivity extends AppCompatActivity
         @Override
         public void onClick(View v)
         {
-            if (hasSimpleLocation())
-            {
-                Intent intent = new Intent(InstanceMainActivity.this, PlacesActivity.class);
-                Bundle bundle = new Bundle();
-
-                bundle.putLong("instanceId", instanceId);
-                bundle.putLong("eventId", eventId);
-                bundle.putInt("calendarId", calendarId);
-                bundle.putLong("begin", originalBegin);
-
-                intent.putExtras(bundle);
-                startActivityUsingLocation(intent, mapActivityResultLauncher);
-            } else
-            {
-                Toast.makeText(InstanceMainActivity.this, getString(R.string.not_selected_location_in_event), Toast.LENGTH_SHORT).show();
-            }
+            startActivityUsingLocation(PlacesActivity.class, mapActivityResultLauncher);
         }
     };
 
@@ -418,21 +405,7 @@ public class InstanceMainActivity extends AppCompatActivity
         @Override
         public void onClick(View v)
         {
-            if (hasSimpleLocation())
-            {
-                Intent intent = new Intent(InstanceMainActivity.this, FoodsActivity.class);
-                Bundle bundle = new Bundle();
-
-                bundle.putLong(CalendarContract.Instances._ID, instanceId);
-                bundle.putLong(CalendarContract.Instances.EVENT_ID, eventId);
-                bundle.putInt(CalendarContract.Instances.CALENDAR_ID, calendarId);
-
-                intent.putExtras(bundle);
-                foodsActivityResultLauncher.launch(intent);
-            } else
-            {
-                Toast.makeText(InstanceMainActivity.this, getString(R.string.not_selected_location_in_event), Toast.LENGTH_SHORT).show();
-            }
+            startActivityUsingLocation(FoodsActivity.class, foodsActivityResultLauncher);
         }
     };
 

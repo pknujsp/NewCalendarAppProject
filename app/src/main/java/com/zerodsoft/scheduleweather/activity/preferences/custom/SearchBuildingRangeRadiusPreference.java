@@ -13,6 +13,7 @@ import androidx.preference.EditTextPreference;
 import androidx.preference.PreferenceViewHolder;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.activity.App;
 
 public class SearchBuildingRangeRadiusPreference extends EditTextPreference
 {
@@ -47,7 +48,7 @@ public class SearchBuildingRangeRadiusPreference extends EditTextPreference
             radiusTextView = new TextView(getContext());
             radiusTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
             radiusTextView.setTextColor(Color.BLACK);
-            radiusTextView.setText(getText() + "M");
+            radiusTextView.setText(App.getPreference_key_range_meter_for_search_buildings() + "M");
 
             int height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32f, getContext().getResources().getDisplayMetrics());
             LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, height);
@@ -73,7 +74,7 @@ public class SearchBuildingRangeRadiusPreference extends EditTextPreference
     {
         if (radiusTextView != null)
         {
-            radiusTextView.setText(getText() + "M");
+            radiusTextView.setText(App.getPreference_key_range_meter_for_search_buildings() + "M");
         }
     }
 }

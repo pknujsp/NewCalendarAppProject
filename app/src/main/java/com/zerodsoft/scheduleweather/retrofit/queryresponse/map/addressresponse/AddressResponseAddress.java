@@ -60,6 +60,10 @@ public class AddressResponseAddress implements Parcelable
     @Expose
     private double y;
 
+    public AddressResponseAddress()
+    {
+    }
+
     protected AddressResponseAddress(Parcel in)
     {
         addressName = in.readString();

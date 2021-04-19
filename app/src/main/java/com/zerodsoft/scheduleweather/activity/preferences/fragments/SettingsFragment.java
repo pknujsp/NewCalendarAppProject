@@ -1,10 +1,15 @@
 package com.zerodsoft.scheduleweather.activity.preferences.fragments;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
@@ -16,6 +21,8 @@ import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 import androidx.preference.SwitchPreference;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.slider.Slider;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.activity.placecategory.activity.PlaceCategoryActivity;
@@ -40,7 +47,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
     private Preference calendarColorListPreference;
     private SwitchPreference hourSystemSwitchPreference;
 
-    private RadiusPreference searchMapCateogoryRangeRadiusPreference;
+    private RadiusPreference searchMapCategoryRangeRadiusPreference;
     private SearchBuildingRangeRadiusPreference searchBuildingRangeRadiusPreference;
     private Preference placesCategoryPreference;
 
@@ -108,17 +115,8 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key)
         {
             //값 변경완료시 호출됨
-
             // 범위
-            if (key.equals(searchMapCateogoryRangeRadiusPreference.getKey()))
-            {
-                searchMapCateogoryRangeRadiusPreference.setValue();
-            }
 
-            if (key.equals(searchBuildingRangeRadiusPreference.getKey()))
-            {
-                searchBuildingRangeRadiusPreference.setValue();
-            }
         }
     };
 
@@ -147,42 +145,74 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
                 .addPreference(customTimeZonePreference);
 
         //카테고리 검색범위 반지름
-        searchMapCateogoryRangeRadiusPreference = new RadiusPreference(getContext());
-        searchMapCateogoryRangeRadiusPreference.setKey(getString(R.string.preference_key_radius_range));
-        searchMapCateogoryRangeRadiusPreference.setSummary(R.string.preference_summary_radius_range);
-        searchMapCateogoryRangeRadiusPreference.setTitle(R.string.preference_title_radius_range);
-        searchMapCateogoryRangeRadiusPreference.setWidgetLayoutResource(R.layout.custom_preference_layout);
-        searchMapCateogoryRangeRadiusPreference.setDialogTitle(R.string.preference_dialog_message_radius_range);
+        searchMapCategoryRangeRadiusPreference = new RadiusPreference(getContext());
+        searchMapCategoryRangeRadiusPreference.setKey(getString(R.string.preference_key_radius_range));
+        searchMapCategoryRangeRadiusPreference.setSummary(R.string.preference_summary_radius_range);
+        searchMapCategoryRangeRadiusPreference.setTitle(R.string.preference_title_radius_range);
+        searchMapCategoryRangeRadiusPreference.setWidgetLayoutResource(R.layout.custom_preference_layout);
+        searchMapCategoryRangeRadiusPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener()
+        {
+            @Override
+            public boolean onPreferenceClick(Preference preference)
+            {
+                LinearLayout linearLayout = new LinearLayout(getContext());
+                linearLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                linearLayout.setOrientation(LinearLayout.HORIZONTAL);
 
-        ((PreferenceCategory) getPreferenceManager().findPreference(getString(R.string.preference_place_category_title)))
-                .addPreference(searchMapCateogoryRangeRadiusPreference);
+                Slider slider = new Slider(getContext());
+                LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT);
+                layoutParams.gravity = Gravity.CENTER_VERTICAL;
+                layoutParams.weight = 1;
 
-        searchMapCateogoryRangeRadiusPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener()
+                int margin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32f, getResources().getDisplayMetrics());
+
+                layoutParams.topMargin = margin;
+                layoutParams.bottomMargin = margin;
+
+                slider.setLayoutParams(layoutParams);
+                slider.setValue(Float.parseFloat(App.getPreference_key_radius_range()) / 1000f);
+                slider.setValueFrom(0.1f);
+                slider.setValueTo(20.0f);
+                slider.setStepSize(0.1f);
+
+                linearLayout.addView(slider);
+
+                new MaterialAlertDialogBuilder(getActivity()).setView(linearLayout)
+                        .setPositiveButton(R.string.check, new DialogInterface.OnClickListener()
+                        {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i)
+                            {
+                                String value = String.valueOf(slider.getValue() * 1000);
+                                searchMapCategoryRangeRadiusPreference.callChangeListener(value);
+                                dialogInterface.dismiss();
+                            }
+                        })
+                        .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener()
+                        {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i)
+                            {
+                                dialogInterface.dismiss();
+                            }
+                        }).create().show();
+                return true;
+            }
+        });
+
+        searchMapCategoryRangeRadiusPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener()
         {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue)
             {
-                int radius = 0;
-                try
-                {
-                    radius = Integer.parseInt((String) newValue);
-                } catch (NumberFormatException e)
-                {
-                    Toast.makeText(getActivity(), "0~20000사이의 숫자를 입력해주세요", Toast.LENGTH_SHORT).show();
-                    return false;
-                }
-
-                if (radius >= 0 && radius <= 20000)
-                {
-                    App.setPreference_key_radius_range((String) newValue);
-                    return true;
-                } else
-                {
-                    Toast.makeText(getActivity(), "0~20000사이로 입력하세요", Toast.LENGTH_SHORT).show();
-                    return false;
-                }
+                App.setPreference_key_radius_range((String) newValue);
+                searchMapCategoryRangeRadiusPreference.setValue();
+                return true;
             }
         });
+
+        ((PreferenceCategory) getPreferenceManager().findPreference(getString(R.string.preference_place_category_title)))
+                .addPreference(searchMapCategoryRangeRadiusPreference);
 
         //빌딩 검색범위 반지름
         searchBuildingRangeRadiusPreference = new SearchBuildingRangeRadiusPreference(getContext());
@@ -206,13 +236,14 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
                     radius = Integer.parseInt((String) newValue);
                 } catch (NumberFormatException e)
                 {
-                    Toast.makeText(getActivity(), "50~ 500 사이의 숫자를 입력해주세요", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), "50~500 사이의 숫자를 입력해주세요", Toast.LENGTH_SHORT).show();
                     return false;
                 }
 
                 if (radius >= 50 && radius <= 500)
                 {
-                    App.setPreference_key_radius_range((String) newValue);
+                    App.setPreference_key_range_meter_for_search_buildings((String) newValue);
+                    searchBuildingRangeRadiusPreference.setValue();
                     return true;
                 } else
                 {
@@ -335,7 +366,8 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
 
         //지도 카테고리 검색 반지름 범위
         String searchMapCategoryRadius = preferences.getString(getString(R.string.preference_key_radius_range), "");
-        searchMapCateogoryRangeRadiusPreference.setDefaultValue(searchMapCategoryRadius);
+        float convertedRadius = Float.parseFloat(searchMapCategoryRadius) / 1000f;
+        searchMapCategoryRangeRadiusPreference.setDefaultValue(String.valueOf(convertedRadius));
 
         //지도 빌딩 검색 반지름 범위
         String searchBuildingRangeRadius = preferences.getString(getString(R.string.preference_key_range_meter_for_search_buildings), "");

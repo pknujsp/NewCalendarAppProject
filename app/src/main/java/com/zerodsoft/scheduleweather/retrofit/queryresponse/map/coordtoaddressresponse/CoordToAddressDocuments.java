@@ -5,8 +5,9 @@ import android.os.Parcelable;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalDocument;
 
-public class CoordToAddressDocuments implements Parcelable
+public class CoordToAddressDocuments extends KakaoLocalDocument implements Parcelable
 {
     @SerializedName("address")
     @Expose

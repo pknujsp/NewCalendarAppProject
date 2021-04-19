@@ -55,6 +55,7 @@ import com.naver.maps.map.NaverMapOptions;
 import com.naver.maps.map.OnMapReadyCallback;
 import com.naver.maps.map.Projection;
 import com.naver.maps.map.overlay.CircleOverlay;
+import com.naver.maps.map.overlay.LocationOverlay;
 import com.naver.maps.map.overlay.Marker;
 import com.naver.maps.map.overlay.Overlay;
 import com.naver.maps.map.util.FusedLocationSource;
@@ -87,6 +88,7 @@ import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.sgis.address.ReverseGeoCodingParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalDocument;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.addressresponse.AddressResponseDocuments;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddressDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.address.reversegeocoding.ReverseGeoCodingResponse;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
@@ -629,6 +631,10 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
     public void onMapReady(@NonNull NaverMap naverMap)
     {
         this.naverMap = naverMap;
+
+        LocationOverlay locationOverlay = naverMap.getLocationOverlay();
+        locationOverlay.setVisible(false);
+
         naverMap.addOnLocationChangeListener(this::onLocationChange);
         naverMap.addOnCameraIdleListener(this);
         naverMap.setOnMapClickListener(this);
@@ -805,6 +811,41 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
                 marker.setPosition(new LatLng(document.getY(), document.getX()));
                 marker.setMap(naverMap);
                 marker.setCaptionText(document.getAddressName());
+                marker.setOnClickListener(new Overlay.OnClickListener()
+                {
+                    @Override
+                    public boolean onClick(@NonNull Overlay overlay)
+                    {
+                        onClickedMarkerByTouch(marker);
+                        return true;
+                    }
+                });
+
+                kakaoLocalDocument = document;
+                marker.setTag(kakaoLocalDocument);
+                markerList.add(marker);
+            }
+        }
+    }
+
+    @Override
+    public void createCoordToAddressesPoiItems(List<CoordToAddressDocuments> addressDocuments)
+    {
+        if (!addressDocuments.isEmpty())
+        {
+            adapter.setPlaceDocumentsList(addressDocuments);
+            adapter.notifyDataSetChanged();
+
+            removeAllPoiItems();
+            KakaoLocalDocument kakaoLocalDocument = null;
+
+            for (CoordToAddressDocuments document : addressDocuments)
+            {
+                Marker marker = new Marker();
+                marker.setPosition(new LatLng(Double.parseDouble(document.getCoordToAddressAddress().getLatitude())
+                        , Double.parseDouble(document.getCoordToAddressAddress().getLongitude())));
+                marker.setMap(naverMap);
+                marker.setCaptionText(document.getCoordToAddressAddress().getAddressName());
                 marker.setOnClickListener(new Overlay.OnClickListener()
                 {
                     @Override
@@ -1295,9 +1336,15 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
     @Override
     public void onLocationChange(@NonNull Location location)
     {
-        CameraUpdate cameraUpdate = CameraUpdate.scrollTo(new LatLng(location.getLatitude(), location.getLongitude()));
+        LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+
+        CameraUpdate cameraUpdate = CameraUpdate.scrollTo(latLng);
         naverMap.moveCamera(cameraUpdate);
         naverMap.setLocationSource(null);
+
+        LocationOverlay locationOverlay = naverMap.getLocationOverlay();
+        locationOverlay.setVisible(true);
+        locationOverlay.setPosition(latLng);
     }
 
     static class BuildingBottomSheetHeightViewHolder

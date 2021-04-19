@@ -20,11 +20,16 @@ import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.main.InstanceMainActivity;
 import com.zerodsoft.scheduleweather.kakaomap.activity.KakaoMapActivity;
 import com.zerodsoft.scheduleweather.kakaomap.bottomsheet.adapter.PlaceItemInMapViewAdapter;
+import com.zerodsoft.scheduleweather.kakaomap.model.CoordToAddressUtil;
+import com.zerodsoft.scheduleweather.kakaomap.place.KakaoPlace;
 import com.zerodsoft.scheduleweather.kakaomap.util.LocalParameterUtil;
 import com.zerodsoft.scheduleweather.navermap.NaverMapActivity;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.addressresponse.AddressResponseAddress;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.addressresponse.AddressResponseDocuments;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddress;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddressDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
@@ -68,21 +73,25 @@ public class ReselectDetailLocationNaver extends NaverMapActivity implements OnM
         {
             if (savedLocationDto.getAddressName() != null)
             {
-                naverMapFragment.setPlaceBottomSheetSelectBtnVisibility(View.GONE);
+                naverMapFragment.setPlaceBottomSheetSelectBtnVisibility(View.INVISIBLE);
                 naverMapFragment.setPlaceBottomSheetUnSelectBtnVisibility(View.VISIBLE);
 
                 // 주소 검색 순서 : 좌표로 주소 변환
                 LocalApiPlaceParameter parameter = LocalParameterUtil.getCoordToAddressParameter(savedLocationDto.getLatitude(), savedLocationDto.getLongitude());
-                viewModel.getAddressItem(parameter, new CarrierMessagingService.ResultCallback<DataWrapper<AddressResponseDocuments>>()
+                CoordToAddressUtil.coordToAddress(parameter, new CarrierMessagingService.ResultCallback<DataWrapper<CoordToAddress>>()
                 {
                     @Override
-                    public void onReceiveResult(@NonNull DataWrapper<AddressResponseDocuments> result) throws RemoteException
+                    public void onReceiveResult(@NonNull DataWrapper<CoordToAddress> coordToAddressDataWrapper) throws RemoteException
                     {
-                        if (result.getException() == null)
+                        if (coordToAddressDataWrapper.getException() == null)
                         {
-                            AddressResponseDocuments address = result.getData();
+                            CoordToAddress coordToAddress = coordToAddressDataWrapper.getData();
+                            CoordToAddressDocuments coordToAddressDocuments = coordToAddress.getCoordToAddressDocuments().get(0);
+                            coordToAddressDocuments.getCoordToAddressAddress().setLatitude(String.valueOf(savedLocationDto.getLatitude()));
+                            coordToAddressDocuments.getCoordToAddressAddress().setLongitude(String.valueOf(savedLocationDto.getLongitude()));
+
                             naverMapFragment.setPlacesListAdapter(new PlaceItemInMapViewAdapter());
-                            naverMapFragment.createAddressesPoiItems(Collections.singletonList(address));
+                            naverMapFragment.createCoordToAddressesPoiItems(Collections.singletonList(coordToAddressDocuments));
                             naverMapFragment.onPOIItemSelectedByList(0);
                         } else
                         {
@@ -93,7 +102,7 @@ public class ReselectDetailLocationNaver extends NaverMapActivity implements OnM
 
             } else
             {
-                naverMapFragment.setPlaceBottomSheetSelectBtnVisibility(View.GONE);
+                naverMapFragment.setPlaceBottomSheetSelectBtnVisibility(View.INVISIBLE);
                 naverMapFragment.setPlaceBottomSheetUnSelectBtnVisibility(View.VISIBLE);
 
                 // 장소 검색 순서 : 장소의 위경도 내 10M 반경에서 장소 이름 검색(여러개 나올 경우 장소ID와 일치하는 장소를 선택)
@@ -136,10 +145,11 @@ public class ReselectDetailLocationNaver extends NaverMapActivity implements OnM
         return super.onCreateOptionsMenu(menu);
     }
 
+
     @Override
-    protected void onStop()
+    protected void onDestroy()
     {
-        super.onStop();
+        super.onDestroy();
         onBackPressedCallback.remove();
     }
 

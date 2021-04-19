@@ -15,6 +15,8 @@ import com.naver.maps.geometry.LatLng;
 import com.naver.maps.map.CameraUpdate;
 import com.naver.maps.map.NaverMap;
 import com.naver.maps.map.overlay.Marker;
+import com.naver.maps.map.overlay.OverlayImage;
+import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.main.KakaoMapFragment;
 import com.zerodsoft.scheduleweather.navermap.NaverMapFragment;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
@@ -94,6 +96,8 @@ public class SelectedLocationMapFragmentNaver extends NaverMapFragment
 
         Marker marker = new Marker(new LatLng(selectedLocation.getLatitude(), selectedLocation.getLongitude()));
         marker.setMap(naverMap);
+        marker.setIcon(OverlayImage.fromResource(R.drawable.current_location_icon));
+        marker.setForceShowIcon(true);
 
         CameraUpdate cameraUpdate = CameraUpdate.scrollAndZoomTo(marker.getPosition(), 15);
         naverMap.moveCamera(cameraUpdate);

@@ -38,6 +38,10 @@ public class AddressResponseDocuments extends KakaoLocalDocument implements Parc
     public static final String REGION_ADDR = "REGION_ADDR";
     public static final String ROAD_ADDR = "ROAD_ADDR";
 
+    public AddressResponseDocuments()
+    {
+    }
+
     protected AddressResponseDocuments(Parcel in)
     {
         addressName = in.readString();

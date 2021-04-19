@@ -68,6 +68,7 @@ import com.zerodsoft.scheduleweather.kakaomap.interfaces.INetwork;
 import com.zerodsoft.scheduleweather.kakaomap.model.CustomPoiItem;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalDocument;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.addressresponse.AddressResponseDocuments;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddressDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
@@ -799,6 +800,12 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
             }
             mapView.addPOIItems(poiItems);
         }
+    }
+
+    @Override
+    public void createCoordToAddressesPoiItems(List<CoordToAddressDocuments> addressDocuments)
+    {
+
     }
 
     @Override

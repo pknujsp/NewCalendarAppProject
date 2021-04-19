@@ -36,6 +36,9 @@ public class CoordToAddressAddress implements Parcelable
     @Expose
     private String subAddressNo;
 
+    private String latitude;
+    private String longitude;
+
     protected CoordToAddressAddress(Parcel in)
     {
         addressName = in.readString();
@@ -45,6 +48,8 @@ public class CoordToAddressAddress implements Parcelable
         mountainYn = in.readString();
         mainAddressNo = in.readString();
         subAddressNo = in.readString();
+        latitude = in.readString();
+        longitude = in.readString();
     }
 
     public static final Creator<CoordToAddressAddress> CREATOR = new Creator<CoordToAddressAddress>()
@@ -78,6 +83,8 @@ public class CoordToAddressAddress implements Parcelable
         parcel.writeString(mountainYn);
         parcel.writeString(mainAddressNo);
         parcel.writeString(subAddressNo);
+        parcel.writeString(latitude);
+        parcel.writeString(longitude);
     }
 
     public String getAddressName()
@@ -148,5 +155,25 @@ public class CoordToAddressAddress implements Parcelable
     public void setSubAddressNo(String subAddressNo)
     {
         this.subAddressNo = subAddressNo;
+    }
+
+    public String getLatitude()
+    {
+        return latitude;
+    }
+
+    public void setLatitude(String latitude)
+    {
+        this.latitude = latitude;
+    }
+
+    public String getLongitude()
+    {
+        return longitude;
+    }
+
+    public void setLongitude(String longitude)
+    {
+        this.longitude = longitude;
     }
 }

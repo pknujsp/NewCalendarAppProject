@@ -35,6 +35,7 @@ import com.naver.maps.geometry.LatLng;
 import com.naver.maps.map.CameraUpdate;
 import com.naver.maps.map.NaverMap;
 import com.naver.maps.map.overlay.Marker;
+import com.naver.maps.map.overlay.OverlayImage;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IstartActivity;
 import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
@@ -365,6 +366,8 @@ public class PlacesMapFragmentNaver extends NaverMapFragment implements OnClicke
         LatLng latLng = new LatLng(selectedLocationDto.getLatitude(), selectedLocationDto.getLongitude());
         Marker marker = new Marker(latLng);
         marker.setMap(naverMap);
+        marker.setIcon(OverlayImage.fromResource(R.drawable.current_location_icon));
+        marker.setForceShowIcon(true);
 
         CameraUpdate cameraUpdate = CameraUpdate.scrollAndZoomTo(latLng, 12);
         naverMap.moveCamera(cameraUpdate);

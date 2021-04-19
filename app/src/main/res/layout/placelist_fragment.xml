@@ -16,36 +16,83 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <LinearLayout
+            <RelativeLayout
                 android:id="@+id/location_info_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="18dp">
+                android:padding="12dp">
 
-                <TextView
-                    android:id="@+id/location_name"
+                <LinearLayout
+                    android:id="@+id/location_name_layout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
+                    android:layout_alignParentTop="true"
                     android:layout_marginBottom="4dp"
-                    android:ellipsize="end"
-                    android:singleLine="true"
-                    android:text="위치"
-                    android:textColor="@color/black"
-                    android:textSize="16sp" />
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/location_name"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:ellipsize="end"
+                        android:singleLine="true"
+                        android:text="위치"
+                        android:textColor="@color/black"
+                        android:textSize="16sp" />
+
+                    <TextView
+                        android:id="@+id/search_radius"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:text="검색반경 50m"
+                        android:textSize="13sp" />
+
+                </LinearLayout>
+
 
                 <TextView
                     android:id="@+id/place_address_name"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_below="@id/location_name_layout"
                     android:ellipsize="end"
                     android:singleLine="true"
                     android:text="주소"
                     android:textColor="@color/gray_500"
                     android:textSize="14sp" />
 
-            </LinearLayout>
+                <LinearLayout
+                    android:id="@+id/radius_seekbar_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/place_address_name"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.slider.Slider
+                        android:id="@+id/radius_seekbar"
+                        style="@style/Widget.MaterialComponents.Slider"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_weight="1"
+                        android:stepSize="0.1"
+                        android:valueFrom="0.1"
+                        android:valueTo="20.0" />
+
+                    <TextView
+                        android:id="@+id/apply_radius"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:background="?attr/selectableItemBackground"
+                        android:padding="8dp"
+                        android:text="@string/apply" />
+                </LinearLayout>
+
+            </RelativeLayout>
 
             <LinearLayout
                 android:id="@+id/category_viewlist"

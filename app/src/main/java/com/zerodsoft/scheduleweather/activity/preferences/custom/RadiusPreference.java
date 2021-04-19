@@ -12,12 +12,14 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.preference.EditTextPreference;
+import androidx.preference.Preference;
 import androidx.preference.PreferenceViewHolder;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
 
-public class RadiusPreference extends EditTextPreference
+public class RadiusPreference extends Preference
 {
     private TextView radiusTextView;
 
@@ -50,7 +52,7 @@ public class RadiusPreference extends EditTextPreference
             radiusTextView = new TextView(getContext());
             radiusTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
             radiusTextView.setTextColor(Color.BLACK);
-            radiusTextView.setText(getText() + "M");
+            radiusTextView.setText(convert() + "km");
 
             int height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32f, getContext().getResources().getDisplayMetrics());
             LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, height);
@@ -76,7 +78,12 @@ public class RadiusPreference extends EditTextPreference
     {
         if (radiusTextView != null)
         {
-            radiusTextView.setText(getText() + "M");
+            radiusTextView.setText(convert() + "km");
         }
+    }
+
+    private String convert()
+    {
+        return String.valueOf(Float.parseFloat(App.getPreference_key_radius_range()) / 1000f);
     }
 }

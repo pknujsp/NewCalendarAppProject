@@ -62,7 +62,7 @@ public class App extends android.app.Application
             editor.putBoolean(context.getString(R.string.preference_key_using_24_hour_system), preference_key_using_24_hour_system);
 
             //기본 장소 검색 범위(반지름)길이 설정
-            preference_key_radius_range = "1000";
+            preference_key_radius_range = "1500";
             editor.putString(context.getString(R.string.preference_key_radius_range), preference_key_radius_range);
 
             //빌딩 검색 범위(반지름)길이 설정

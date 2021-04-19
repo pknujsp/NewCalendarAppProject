@@ -353,7 +353,7 @@
     <string name="preference_key_radius_range" translatable="false">preference_key_radius_range</string>
     <string name="preference_title_radius_range">장소 검색 거리범위 선택</string>
     <string name="preference_summary_radius_range">위치 중심으로 부터 장소를 검색할 범위(반지름)를 설정합니다</string>
-    <string name="preference_dialog_message_radius_range">0 ~ 20KM 범위로 입력가능 합니다\nMeter단위로 입력하세요</string>
+    <string name="preference_dialog_message_radius_range">0.1 ~ 20.0km 범위로 가능 합니다\n0.1km단위로 입력하세요</string>
 
     <!-- 빌딩 검색 범위(반지름)길이 설정 관련 -->
     <string name="preference_key_range_meter_for_search_buildings" translatable="false">preference_key_range_meter_for_search_buildings</string>
@@ -475,6 +475,7 @@
     <string name="show_extra_floor">다른 층 더보기</string>
     <string name="delete_all">모두 삭제</string>
     <string name="not_search_history">검색 기록 없음</string>
+    <string name="message_request_double_click_for_close">앱을 종료하시려면 한번 더 클릭해주세요</string>
 
 
 </resources>
