@@ -4,11 +4,15 @@ import android.app.Activity;
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.provider.CalendarContract;
 import android.service.carrier.CarrierMessagingService;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResult;
@@ -23,9 +27,12 @@ import androidx.databinding.DataBindingUtil;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.naver.maps.map.NaverMap;
+import com.naver.maps.map.OnMapReadyCallback;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
+import com.zerodsoft.scheduleweather.common.interfaces.OnChangedVisibilityListener;
 import com.zerodsoft.scheduleweather.databinding.InstanceMainActivityBinding;
 import com.zerodsoft.scheduleweather.event.common.MLocActivityNaver;
 import com.zerodsoft.scheduleweather.event.common.ReselectDetailLocationNaver;
@@ -42,10 +49,11 @@ import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddress;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
+import com.zerodsoft.scheduleweather.utility.NetworkStatus;
 
 import java.util.Calendar;
 
-public class InstanceMainActivity extends AppCompatActivity
+public class InstanceMainActivity extends AppCompatActivity implements OnMapReadyCallback
 {
     //request
     public static final int REQUEST_SELECT_LOCATION = 1000;
@@ -64,9 +72,7 @@ public class InstanceMainActivity extends AppCompatActivity
     public static final int RESULT_UPDATED_INSTANCE = 3200;
 
     public static final int RESULT_EDITED_PLACE_CATEGORY = 4000;
-
     public static final int RESULT_UPDATED_VALUE = 5000;
-
 
     private InstanceMainActivityBinding binding;
     private CalendarViewModel calendarViewModel;
@@ -83,6 +89,7 @@ public class InstanceMainActivity extends AppCompatActivity
     private CoordToAddress coordToAddress;
     private SelectedLocationMapFragmentKakao selectedLocationMapFragmentKakao;
     private SelectedLocationMapFragmentNaver selectedLocationMapFragmentNaver;
+    private NetworkStatus networkStatus;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState)
@@ -95,6 +102,30 @@ public class InstanceMainActivity extends AppCompatActivity
         binding.cardviewWeather.setOnClickListener(weatherCardOnClickListener);
         binding.cardviewFood.setOnClickListener(foodsCardOnClickListener);
 
+        binding.progressBar.setVisibility(View.GONE);
+        binding.progressBar.setOnChangedVisibilityListener(new OnChangedVisibilityListener()
+        {
+            @Override
+            public void onChangedVisibility(int visibility)
+            {
+                switch (visibility)
+                {
+                    case View.VISIBLE:
+                    {
+                        //터치막기
+                        getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+                        break;
+                    }
+                    case View.GONE:
+                    {
+                        //터치막기 풀기
+                        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+                        break;
+                    }
+                }
+            }
+        });
+
         instanceId = getIntent().getLongExtra("instanceId", 0);
         calendarId = getIntent().getIntExtra("calendarId", 0);
         eventId = getIntent().getLongExtra("eventId", 0);
@@ -106,9 +137,46 @@ public class InstanceMainActivity extends AppCompatActivity
 
         //인스턴스의 일부 정보(title, description, begin, end)를 표시한다.
         setSimpleInstanceData();
-        setLocationData();
+        networkStatus = new NetworkStatus(getApplicationContext(), new ConnectivityManager.NetworkCallback()
+        {
+            @Override
+            public void onAvailable(@NonNull Network network)
+            {
+                super.onAvailable(network);
+                runOnUiThread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        setLocationData();
+                    }
+                });
+            }
+
+            @Override
+            public void onLost(@NonNull Network network)
+            {
+                super.onLost(network);
+                runOnUiThread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        networkStatus.showToastDisconnected();
+                        finish();
+                    }
+                });
+            }
+
+        });
     }
 
+    @Override
+    protected void onDestroy()
+    {
+        super.onDestroy();
+        networkStatus.unregisterNetworkCallback();
+    }
 
     private void setSimpleInstanceData()
     {
@@ -167,15 +235,23 @@ public class InstanceMainActivity extends AppCompatActivity
 
         binding.instanceBeginTextview.setText(beginStr);
         binding.instanceEndTextview.setText(endStr);
+
+        //location
+        if (hasSimpleLocation())
+        {
+            //인스턴스내에 선택된 위치값 표시
+            binding.locationTextview.setText(instance.getAsString(CalendarContract.Instances.EVENT_LOCATION));
+        } else
+        {
+            binding.detailLocationLayout.setVisibility(View.GONE);
+            binding.locationTextview.setText(getString(R.string.not_selected_location_in_event));
+        }
     }
 
     private void setLocationData()
     {
         if (hasSimpleLocation())
         {
-            //인스턴스내에 선택된 위치값 표시
-            binding.locationTextview.setText(instance.getAsString(CalendarContract.Instances.EVENT_LOCATION));
-
             locationViewModel.hasDetailLocation(calendarId, eventId, new CarrierMessagingService.ResultCallback<Boolean>()
             {
                 @Override
@@ -191,58 +267,7 @@ public class InstanceMainActivity extends AppCompatActivity
                                 if (location.getId() >= 0)
                                 {
                                     selectedLocationDto = location;
-
-                                    LocalApiPlaceParameter localApiPlaceParameter = new LocalApiPlaceParameter();
-                                    localApiPlaceParameter.setX(String.valueOf(location.getLongitude()));
-                                    localApiPlaceParameter.setY(String.valueOf(location.getLatitude()));
-
-                                    CoordToAddressUtil.coordToAddress(localApiPlaceParameter, new CarrierMessagingService.ResultCallback<DataWrapper<CoordToAddress>>()
-                                    {
-                                        @Override
-                                        public void onReceiveResult(@NonNull DataWrapper<CoordToAddress> coordToAddressDataWrapper) throws RemoteException
-                                        {
-                                            runOnUiThread(new Runnable()
-                                            {
-                                                @Override
-                                                public void run()
-                                                {
-                                                    binding.detailLocationLayout.setVisibility(View.VISIBLE);
-
-                                                    if (coordToAddressDataWrapper.getException() == null)
-                                                    {
-                                                        coordToAddress = coordToAddressDataWrapper.getData();
-                                                    }
-
-                                                    if (selectedLocationDto.getPlaceName() != null)
-                                                    {
-                                                        //장소와 주소 표기
-                                                        binding.placeNameTextview.setText(selectedLocationDto.getPlaceName());
-                                                        binding.placeAddressTextview.setText(coordToAddress.getCoordToAddressDocuments().get(0)
-                                                                .getCoordToAddressAddress().getAddressName());
-
-                                                        binding.placeNameTextview.setVisibility(View.VISIBLE);
-                                                        binding.placeAddressTextview.setVisibility(View.VISIBLE);
-                                                        binding.addressTextview.setVisibility(View.GONE);
-                                                    } else
-                                                    {
-                                                        //주소 표기
-                                                        binding.addressTextview.setText(coordToAddress.getCoordToAddressDocuments().get(0)
-                                                                .getCoordToAddressAddress().getAddressName());
-
-                                                        binding.placeNameTextview.setVisibility(View.GONE);
-                                                        binding.placeAddressTextview.setVisibility(View.GONE);
-                                                        binding.addressTextview.setVisibility(View.VISIBLE);
-                                                    }
-
-                                                    //mapview생성
-                                                    addSelectedLocationMap();
-                                                }
-                                            });
-
-                                        }
-                                    });
-
-
+                                    coordToAddress();
                                 }
                             }
                         });
@@ -260,11 +285,61 @@ public class InstanceMainActivity extends AppCompatActivity
                     }
                 }
             });
-        } else
-        {
-            binding.detailLocationLayout.setVisibility(View.GONE);
-            binding.locationTextview.setText(getString(R.string.not_selected_location_in_event));
         }
+    }
+
+    private void coordToAddress()
+    {
+        LocalApiPlaceParameter localApiPlaceParameter = new LocalApiPlaceParameter();
+        localApiPlaceParameter.setX(String.valueOf(selectedLocationDto.getLongitude()));
+        localApiPlaceParameter.setY(String.valueOf(selectedLocationDto.getLatitude()));
+
+        CoordToAddressUtil.coordToAddress(localApiPlaceParameter, new CarrierMessagingService.ResultCallback<DataWrapper<CoordToAddress>>()
+        {
+            @Override
+            public void onReceiveResult(@NonNull DataWrapper<CoordToAddress> coordToAddressDataWrapper) throws RemoteException
+            {
+                runOnUiThread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        binding.detailLocationLayout.setVisibility(View.VISIBLE);
+
+                        if (coordToAddressDataWrapper.getException() == null)
+                        {
+                            coordToAddress = coordToAddressDataWrapper.getData();
+                        }
+
+                        if (selectedLocationDto.getPlaceName() != null)
+                        {
+                            //장소와 주소 표기
+                            binding.placeNameTextview.setText(selectedLocationDto.getPlaceName());
+                            binding.placeAddressTextview.setText(coordToAddress.getCoordToAddressDocuments().get(0)
+                                    .getCoordToAddressAddress().getAddressName());
+
+                            binding.placeNameTextview.setVisibility(View.VISIBLE);
+                            binding.placeAddressTextview.setVisibility(View.VISIBLE);
+                            binding.addressTextview.setVisibility(View.GONE);
+                        } else
+                        {
+                            //주소 표기
+                            binding.addressTextview.setText(coordToAddress.getCoordToAddressDocuments().get(0)
+                                    .getCoordToAddressAddress().getAddressName());
+
+                            binding.placeNameTextview.setVisibility(View.GONE);
+                            binding.placeAddressTextview.setVisibility(View.GONE);
+                            binding.addressTextview.setVisibility(View.VISIBLE);
+                        }
+
+                        //mapview생성
+                        addSelectedLocationMap();
+                    }
+                });
+
+            }
+        });
+
     }
 
 
@@ -275,10 +350,10 @@ public class InstanceMainActivity extends AppCompatActivity
             Intent intent = new Intent(this, activity);
             Bundle bundle = new Bundle();
 
-            bundle.putLong("instanceId", instanceId);
-            bundle.putLong("eventId", eventId);
-            bundle.putInt("calendarId", calendarId);
-            bundle.putLong("begin", originalBegin);
+            bundle.putLong(CalendarContract.Instances._ID, instanceId);
+            bundle.putLong(CalendarContract.Instances.EVENT_ID, eventId);
+            bundle.putInt(CalendarContract.Instances.CALENDAR_ID, calendarId);
+            bundle.putLong(CalendarContract.Instances.BEGIN, originalBegin);
 
             intent.putExtras(bundle);
 
@@ -294,8 +369,14 @@ public class InstanceMainActivity extends AppCompatActivity
                         {
                             if (hasDetailLocation)
                             {
-                                removeSelectedLocationMap();
-                                activityResultLauncher.launch(intent);
+                                if (networkStatus.networkAvailable())
+                                {
+                                    removeSelectedLocationMap();
+                                    activityResultLauncher.launch(intent);
+                                } else
+                                {
+                                    networkStatus.showToastDisconnected();
+                                }
                             } else
                             {
                                 locationAbstract.showSetLocationDialog(InstanceMainActivity.this, setLocationActivityResultLauncher, instance);
@@ -343,7 +424,9 @@ public class InstanceMainActivity extends AppCompatActivity
              */
 
             //naver
-            selectedLocationMapFragmentNaver = new SelectedLocationMapFragmentNaver(selectedLocationDto);
+            //map을 초기화 할때에는 인스턴스 전체 상호작용 중지
+            binding.progressBar.setVisibility(View.VISIBLE);
+            selectedLocationMapFragmentNaver = new SelectedLocationMapFragmentNaver(selectedLocationDto, this::onMapReady);
             getSupportFragmentManager().beginTransaction().add(binding.selectedLocationMap.getId(),
                     selectedLocationMapFragmentNaver, SelectedLocationMapFragmentNaver.TAG).commitNow();
         }
@@ -511,6 +594,15 @@ public class InstanceMainActivity extends AppCompatActivity
             removeSelectedLocationMap();
         }
     };
+
+    /**
+     * SelectedLocationMap의 map이 준비완료 되었을때 동작
+     */
+    @Override
+    public void onMapReady(@NonNull NaverMap naverMap)
+    {
+        binding.progressBar.setVisibility(View.GONE);
+    }
 
     public abstract static class LocationAbstract
     {

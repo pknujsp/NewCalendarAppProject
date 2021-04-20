@@ -14,6 +14,7 @@ import androidx.annotation.Nullable;
 import com.naver.maps.geometry.LatLng;
 import com.naver.maps.map.CameraUpdate;
 import com.naver.maps.map.NaverMap;
+import com.naver.maps.map.OnMapReadyCallback;
 import com.naver.maps.map.overlay.Marker;
 import com.naver.maps.map.overlay.OverlayImage;
 import com.zerodsoft.scheduleweather.R;
@@ -29,10 +30,12 @@ public class SelectedLocationMapFragmentNaver extends NaverMapFragment
 {
     public static final String TAG = "SelectedLocationMapFragmentNaver";
     private final LocationDTO selectedLocation;
+    private final OnMapReadyCallback onMapReadyCallback;
 
-    public SelectedLocationMapFragmentNaver(LocationDTO selectedLocation)
+    public SelectedLocationMapFragmentNaver(LocationDTO selectedLocation, OnMapReadyCallback onMapReadyCallback)
     {
         this.selectedLocation = selectedLocation;
+        this.onMapReadyCallback = onMapReadyCallback;
     }
 
     @Override
@@ -101,5 +104,10 @@ public class SelectedLocationMapFragmentNaver extends NaverMapFragment
 
         CameraUpdate cameraUpdate = CameraUpdate.scrollAndZoomTo(marker.getPosition(), 15);
         naverMap.moveCamera(cameraUpdate);
+
+        if (onMapReadyCallback != null)
+        {
+            onMapReadyCallback.onMapReady(naverMap);
+        }
     }
 }

@@ -29,6 +29,7 @@ public abstract class SgisAddress extends JsonDownloader<ReverseGeoCodingRespons
             @Override
             public void onResponse(Call<ReverseGeoCodingResponse> call, Response<ReverseGeoCodingResponse> response)
             {
+
                 callback.onReceiveResult(new DataWrapper<ReverseGeoCodingResponse>(response.body()));
             }
 
@@ -37,6 +38,30 @@ public abstract class SgisAddress extends JsonDownloader<ReverseGeoCodingRespons
             public void onFailure(Call<ReverseGeoCodingResponse> call, Throwable t)
             {
                 callback.onReceiveResult(new DataWrapper<ReverseGeoCodingResponse>(new Exception(t)));
+            }
+        });
+
+    }
+
+    public void reverseGeoCoding(ReverseGeoCodingParameter parameter)
+    {
+        Querys querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.SGIS_ADDRESS);
+
+        Call<ReverseGeoCodingResponse> call = querys.reverseGeoCoding(parameter.toMap());
+        call.enqueue(new Callback<ReverseGeoCodingResponse>()
+        {
+            @SneakyThrows
+            @Override
+            public void onResponse(Call<ReverseGeoCodingResponse> call, Response<ReverseGeoCodingResponse> response)
+            {
+                processResult(response);
+            }
+
+            @SneakyThrows
+            @Override
+            public void onFailure(Call<ReverseGeoCodingResponse> call, Throwable t)
+            {
+                processResult(t);
             }
         });
 

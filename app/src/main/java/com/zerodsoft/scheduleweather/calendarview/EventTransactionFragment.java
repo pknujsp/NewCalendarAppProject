@@ -3,6 +3,8 @@ package com.zerodsoft.scheduleweather.calendarview;
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.Network;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,6 +33,7 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClic
 import com.zerodsoft.scheduleweather.calendarview.month.MonthFragment;
 import com.zerodsoft.scheduleweather.calendarview.week.WeekFragment;
 import com.zerodsoft.scheduleweather.event.main.InstanceMainActivity;
+import com.zerodsoft.scheduleweather.utility.NetworkStatus;
 
 import java.util.Date;
 import java.util.Map;
@@ -48,6 +51,7 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
     private final IConnectedCalendars iConnectedCalendars;
     private final IstartActivity istartActivity;
     private final IRefreshView monthAssistantViewRefresher;
+    private NetworkStatus networkStatus;
 
     private final CommonPopupMenu commonPopupMenu = new CommonPopupMenu()
     {
@@ -83,6 +87,10 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
     public void onCreate(@Nullable Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+        networkStatus = new NetworkStatus(getContext(), new ConnectivityManager.NetworkCallback()
+        {
+
+        });
     }
 
     @Nullable
@@ -111,6 +119,13 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
     public void onStart()
     {
         super.onStart();
+    }
+
+    @Override
+    public void onDestroy()
+    {
+        super.onDestroy();
+        networkStatus.unregisterNetworkCallback();
     }
 
     public void replaceFragment(String fragmentTag)
@@ -176,14 +191,17 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
     public void onClicked(int calendarId, long instanceId, long eventId, long viewBegin, long viewEnd)
     {
         // 이벤트 정보 액티비티로 전환
-        Intent intent = new Intent(getActivity(), InstanceMainActivity.class);
-        intent.putExtra("calendarId", calendarId);
-        intent.putExtra("instanceId", instanceId);
-        intent.putExtra("eventId", eventId);
-        intent.putExtra("begin", viewBegin);
-        intent.putExtra("end", viewEnd);
+        if (networkStatus.networkAvailable())
+        {
+            Intent intent = new Intent(getActivity(), InstanceMainActivity.class);
+            intent.putExtra("calendarId", calendarId);
+            intent.putExtra("instanceId", instanceId);
+            intent.putExtra("eventId", eventId);
+            intent.putExtra("begin", viewBegin);
+            intent.putExtra("end", viewEnd);
 
-        istartActivity.startActivityResult(intent, 0);
+            istartActivity.startActivityResult(intent, 0);
+        }
     }
 
     @Override

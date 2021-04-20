@@ -2,6 +2,7 @@ package com.zerodsoft.scheduleweather.event.weather.fragment;
 
 import android.os.Bundle;
 import android.os.RemoteException;
+import android.provider.CalendarContract;
 import android.service.carrier.CarrierMessagingService;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -154,10 +155,10 @@ public class WeatherItemFragment extends Fragment
         super.onCreate(savedInstanceState);
 
         Bundle bundle = getArguments();
-        calendarId = bundle.getInt("calendarId");
-        eventId = bundle.getLong("eventId");
-        instanceId = bundle.getLong("instanceId");
-        begin = bundle.getLong("begin");
+        calendarId = bundle.getInt(CalendarContract.Instances.CALENDAR_ID);
+        eventId = bundle.getLong(CalendarContract.Instances.EVENT_ID);
+        instanceId = bundle.getLong(CalendarContract.Instances._ID);
+        begin = bundle.getLong(CalendarContract.Instances.BEGIN);
     }
 
     @Nullable

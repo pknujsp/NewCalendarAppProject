@@ -85,79 +85,47 @@ public class BuildingListFragment extends Fragment implements OnClickedListItem<
     private final SgisBuildingDownloader sgisBuildingDownloader = new SgisBuildingDownloader()
     {
         @Override
-        public void onResponse(DataWrapper<? extends SgisBuildingRoot> result)
+        public void onResponseSuccessful(SgisBuildingRoot result)
         {
-            if (result.getData() instanceof BuildingAreaResponse)
-            {
-
-            } else if (result.getData() instanceof BuildingAttributeResponse)
-            {
-
-            } else if (result.getData() instanceof FloorEtcFacilityResponse)
-            {
-
-            } else if (result.getData() instanceof FloorCompanyInfoResponse)
-            {
-
-            }
 
         }
-    };
 
-    private final SgisAuth sgisAuth = new SgisAuth()
-    {
         @Override
-        public void onResponse(DataWrapper<? extends SgisAuthResponse> result)
+        public void onResponseFailed(Exception e)
         {
-            if (result.getException() == null)
-            {
-                if (result.getData() instanceof SgisAuthResponse)
-                {
-                    SgisAuth.setSgisAuthResponse(result.getData());
-                    transcoord();
-                }
-            } else
-            {
 
-            }
         }
     };
 
     private final SgisTranscoord minSgisTranscoord = new SgisTranscoord()
     {
         @Override
-        public void onResponse(DataWrapper<? extends TransCoordResponse> result)
+        public void onResponseSuccessful(TransCoordResponse result)
         {
-            if (result.getException() == null)
-            {
-                if (result.getData() instanceof TransCoordResponse)
-                {
-                    minTransCoordResponse = result.getData();
-                    getBuildingList();
-                }
-            } else
-            {
+            minTransCoordResponse = result;
+            getBuildingList();
+        }
 
-            }
+        @Override
+        public void onResponseFailed(Exception e)
+        {
+
         }
     };
 
     private final SgisTranscoord maxSgisTranscoord = new SgisTranscoord()
     {
         @Override
-        public void onResponse(DataWrapper<? extends TransCoordResponse> result)
+        public void onResponseSuccessful(TransCoordResponse result)
         {
-            if (result.getException() == null)
-            {
-                if (result.getData() instanceof TransCoordResponse)
-                {
-                    maxTransCoordResponse = result.getData();
-                    getBuildingList();
-                }
-            } else
-            {
+            maxTransCoordResponse = result;
+            getBuildingList();
+        }
 
-            }
+        @Override
+        public void onResponseFailed(Exception e)
+        {
+
         }
     };
 
@@ -311,38 +279,32 @@ public class BuildingListFragment extends Fragment implements OnClickedListItem<
     {
         binding.progressBar.setVisibility(View.VISIBLE);
 
-        if (SgisAuth.getSgisAuthResponse() != null)
-        {
-            final int RANGE_RADIUS = Integer.parseInt(App.getPreference_key_range_meter_for_search_buildings());
+        final int RANGE_RADIUS = Integer.parseInt(App.getPreference_key_range_meter_for_search_buildings());
 
-            String[] min = calcCoordinate(centerLatitude, centerLongitude, RANGE_RADIUS, CalcType.MIN);
-            String minLongitude = min[1];
-            String minLatitude = min[0];
+        String[] min = calcCoordinate(centerLatitude, centerLongitude, RANGE_RADIUS, CalcType.MIN);
+        String minLongitude = min[1];
+        String minLatitude = min[0];
 
-            String[] max = calcCoordinate(centerLatitude, centerLongitude, RANGE_RADIUS, CalcType.MAX);
-            String maxLongitude = max[1];
-            String maxLatitude = max[0];
+        String[] max = calcCoordinate(centerLatitude, centerLongitude, RANGE_RADIUS, CalcType.MAX);
+        String maxLongitude = max[1];
+        String maxLatitude = max[0];
 
-            TransCoordParameter minParameter = new TransCoordParameter();
-            minParameter.setAccessToken(SgisAuth.getSgisAuthResponse().getResult().getAccessToken());
-            minParameter.setSrc(TransCoordParameter.WGS84);
-            minParameter.setDst(TransCoordParameter.UTM_K);
-            minParameter.setPosX(minLongitude);
-            minParameter.setPosY(minLatitude);
+        TransCoordParameter minParameter = new TransCoordParameter();
+        minParameter.setAccessToken(SgisAuth.getSgisAuthResponse().getResult().getAccessToken());
+        minParameter.setSrc(TransCoordParameter.WGS84);
+        minParameter.setDst(TransCoordParameter.UTM_K);
+        minParameter.setPosX(minLongitude);
+        minParameter.setPosY(minLatitude);
 
-            TransCoordParameter maxParameter = new TransCoordParameter();
-            maxParameter.setAccessToken(SgisAuth.getSgisAuthResponse().getResult().getAccessToken());
-            maxParameter.setSrc(TransCoordParameter.WGS84);
-            maxParameter.setDst(TransCoordParameter.UTM_K);
-            maxParameter.setPosX(maxLongitude);
-            maxParameter.setPosY(maxLatitude);
+        TransCoordParameter maxParameter = new TransCoordParameter();
+        maxParameter.setAccessToken(SgisAuth.getSgisAuthResponse().getResult().getAccessToken());
+        maxParameter.setSrc(TransCoordParameter.WGS84);
+        maxParameter.setDst(TransCoordParameter.UTM_K);
+        maxParameter.setPosX(maxLongitude);
+        maxParameter.setPosY(maxLatitude);
 
-            minSgisTranscoord.transcoord(minParameter);
-            maxSgisTranscoord.transcoord(maxParameter);
-        } else
-        {
-            sgisAuth.auth(new SgisAuthParameter());
-        }
+        minSgisTranscoord.transcoord(minParameter);
+        maxSgisTranscoord.transcoord(maxParameter);
     }
 
     private String[] calcCoordinate(String latitude, String longitude, int meter, CalcType type)

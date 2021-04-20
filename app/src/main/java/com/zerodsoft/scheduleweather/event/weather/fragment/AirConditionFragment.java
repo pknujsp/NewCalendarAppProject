@@ -24,7 +24,9 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.AirCond
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.CtprvnRltmMesureDnsty.CtprvnRltmMesureDnstyBody;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.FindStationRoot;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.MsrstnAcctoRltmMesureDnsty.MsrstnAcctoRltmMesureDnstyBody;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.MsrstnAcctoRltmMesureDnsty.MsrstnAcctoRltmMesureDnstyRoot;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.NearbyMsrstnList.NearbyMsrstnListBody;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.NearbyMsrstnList.NearbyMsrstnListRoot;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.SgisRoot;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.auth.SgisAuthResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.auth.SgisAuthResult;
@@ -45,101 +47,92 @@ public class AirConditionFragment extends Fragment
     private final AirConditionDownloader airConditionDownloader = new AirConditionDownloader()
     {
         @Override
-        public void onResponse(DataWrapper<? extends AirConditionRoot> result)
+        public void onResponseSuccessful(AirConditionRoot result)
         {
-            if (result.getException() == null)
+            if (result instanceof MsrstnAcctoRltmMesureDnstyRoot)
             {
-                if (result.getData() instanceof MsrstnAcctoRltmMesureDnstyBody)
-                {
-                    msrstnAcctoRltmMesureDnstyBody = (MsrstnAcctoRltmMesureDnstyBody) result.getData();
-                    setData(msrstnAcctoRltmMesureDnstyBody);
-                } else if (result.getData() instanceof CtprvnRltmMesureDnstyBody)
-                {
-                }
-            } else
+                msrstnAcctoRltmMesureDnstyBody = ((MsrstnAcctoRltmMesureDnstyRoot) result).getResponse().getBody();
+
+                        setData(msrstnAcctoRltmMesureDnstyBody);
+
+            } else if (result instanceof CtprvnRltmMesureDnstyBody)
             {
-                if (result.getData() instanceof MsrstnAcctoRltmMesureDnstyBody)
-                {
-
-                } else if (result.getData() instanceof CtprvnRltmMesureDnstyBody)
-                {
-
-                }
             }
+
+        }
+
+        @Override
+        public void onResponseFailed(Exception e)
+        {
+
         }
     };
 
     private final FindAirConditionStationDownloader findAirConditionStationDownloader = new FindAirConditionStationDownloader()
     {
         @Override
-        public void onResponse(DataWrapper<? extends FindStationRoot> result)
+        public void onResponseSuccessful(FindStationRoot result)
         {
-            if (result.getException() == null)
+            if (result instanceof NearbyMsrstnListRoot)
             {
-                if (result.getData() instanceof NearbyMsrstnListBody)
-                {
-                    nearbyMsrstnListBody = (NearbyMsrstnListBody) result.getData();
+                nearbyMsrstnListBody = ((NearbyMsrstnListRoot) result).getResponse().getBody();
 
-                    msrstnAcctoRltmMesureDnstyParameter = new MsrstnAcctoRltmMesureDnstyParameter();
-                    msrstnAcctoRltmMesureDnstyParameter.setDataTerm(MsrstnAcctoRltmMesureDnstyParameter.DATATERM_DAILY);
-                    msrstnAcctoRltmMesureDnstyParameter.setStationName(nearbyMsrstnListBody.getItems().get(0).getStationName());
+                msrstnAcctoRltmMesureDnstyParameter = new MsrstnAcctoRltmMesureDnstyParameter();
+                msrstnAcctoRltmMesureDnstyParameter.setDataTerm(MsrstnAcctoRltmMesureDnstyParameter.DATATERM_DAILY);
+                msrstnAcctoRltmMesureDnstyParameter.setStationName(nearbyMsrstnListBody.getItems().get(0).getStationName());
 
-                    airConditionDownloader.getMsrstnAcctoRltmMesureDnsty(msrstnAcctoRltmMesureDnstyParameter);
-                }
-            } else
-            {
-
+                airConditionDownloader.getMsrstnAcctoRltmMesureDnsty(msrstnAcctoRltmMesureDnstyParameter);
             }
+        }
+
+        @Override
+        public void onResponseFailed(Exception e)
+        {
+
         }
     };
 
     private final SgisAuth sgisAuth = new SgisAuth()
     {
         @Override
-        public void onResponse(DataWrapper<? extends SgisAuthResponse> result)
+        public void onResponseSuccessful(SgisAuthResponse result)
         {
-            if (result.getException() == null)
-            {
-                if (result.getData() instanceof SgisAuthResponse)
-                {
-                    SgisAuth.setSgisAuthResponse(result.getData());
+            SgisAuth.setSgisAuthResponse(result);
 
-                    TransCoordParameter parameter = new TransCoordParameter();
-                    parameter.setAccessToken(result.getData().getResult().getAccessToken());
-                    parameter.setSrc(TransCoordParameter.WGS84);
-                    parameter.setDst(TransCoordParameter.JUNGBU_ORIGIN);
-                    parameter.setPosX(String.valueOf(longitude));
-                    parameter.setPosY(String.valueOf(latitude));
+            TransCoordParameter parameter = new TransCoordParameter();
+            parameter.setAccessToken(result.getResult().getAccessToken());
+            parameter.setSrc(TransCoordParameter.WGS84);
+            parameter.setDst(TransCoordParameter.JUNGBU_ORIGIN);
+            parameter.setPosX(String.valueOf(longitude));
+            parameter.setPosY(String.valueOf(latitude));
 
-                    sgisTranscoord.transcoord(parameter);
-                }
-            } else
-            {
+            sgisTranscoord.transcoord(parameter);
+        }
 
-            }
+        @Override
+        public void onResponseFailed(Exception e)
+        {
+
         }
     };
 
     private final SgisTranscoord sgisTranscoord = new SgisTranscoord()
     {
         @Override
-        public void onResponse(DataWrapper<? extends TransCoordResponse> result)
+        public void onResponseSuccessful(TransCoordResponse result)
         {
-            if (result.getException() == null)
-            {
-                if (result.getData() instanceof TransCoordResponse)
-                {
-                    TransCoordResult transCoordResult = ((TransCoordResponse) result.getData()).getResult();
-                    NearbyMsrstnListParameter parameter = new NearbyMsrstnListParameter();
-                    parameter.setTmX(transCoordResult.getPosX());
-                    parameter.setTmY(transCoordResult.getPosY());
+            TransCoordResult transCoordResult = result.getResult();
+            NearbyMsrstnListParameter parameter = new NearbyMsrstnListParameter();
+            parameter.setTmX(transCoordResult.getPosX());
+            parameter.setTmY(transCoordResult.getPosY());
 
-                    findAirConditionStationDownloader.getNearbyMsrstnList(parameter);
-                }
-            } else
-            {
+            findAirConditionStationDownloader.getNearbyMsrstnList(parameter);
+        }
 
-            }
+        @Override
+        public void onResponseFailed(Exception e)
+        {
+
         }
     };
 
@@ -215,8 +208,7 @@ public class AirConditionFragment extends Fragment
     {
         if (SgisAuth.getSgisAuthResponse() == null)
         {
-            SgisAuthParameter parameter = new SgisAuthParameter();
-            sgisAuth.auth(parameter);
+            sgisAuth.auth();
         } else
         {
             TransCoordParameter parameter = new TransCoordParameter();

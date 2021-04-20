@@ -32,13 +32,13 @@ public abstract class AirConditionDownloader extends JsonDownloader<AirCondition
             @Override
             public void onResponse(Call<MsrstnAcctoRltmMesureDnstyRoot> call, Response<MsrstnAcctoRltmMesureDnstyRoot> response)
             {
-                AirConditionDownloader.this.onResponse(new DataWrapper<MsrstnAcctoRltmMesureDnstyBody>(response.body().getResponse().getBody()));
+                processResult(response);
             }
 
             @Override
             public void onFailure(Call<MsrstnAcctoRltmMesureDnstyRoot> call, Throwable t)
             {
-                AirConditionDownloader.this.onResponse(new DataWrapper<MsrstnAcctoRltmMesureDnstyBody>(new Exception(t)));
+                processResult(t);
             }
         });
 
@@ -52,24 +52,18 @@ public abstract class AirConditionDownloader extends JsonDownloader<AirCondition
         Querys querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.AIR_CONDITION);
 
         Call<CtprvnRltmMesureDnstyRoot> call = querys.getCtprvnRltmMesureDnsty(parameter.getMap());
-        call.enqueue(new RetrofitCallback<CtprvnRltmMesureDnstyRoot>()
+        call.enqueue(new Callback<CtprvnRltmMesureDnstyRoot>()
         {
             @Override
-            protected void handleResponse(CtprvnRltmMesureDnstyRoot data)
+            public void onResponse(Call<CtprvnRltmMesureDnstyRoot> call, Response<CtprvnRltmMesureDnstyRoot> response)
             {
-                AirConditionDownloader.this.onResponse(new DataWrapper<CtprvnRltmMesureDnstyBody>(data.getResponse().getBody()));
+                processResult(response);
             }
 
             @Override
-            protected void handleError(Response<CtprvnRltmMesureDnstyRoot> response)
+            public void onFailure(Call<CtprvnRltmMesureDnstyRoot> call, Throwable t)
             {
-                AirConditionDownloader.this.onResponse(new DataWrapper<CtprvnRltmMesureDnstyBody>(new Exception(response.message())));
-            }
-
-            @Override
-            protected void handleFailure(Exception e)
-            {
-                AirConditionDownloader.this.onResponse(new DataWrapper<CtprvnRltmMesureDnstyBody>(e));
+                processResult(t);
             }
         });
 

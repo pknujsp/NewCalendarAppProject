@@ -5,8 +5,9 @@ import android.os.Parcelable;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.FindStationRoot;
 
-public class NearbyMsrstnListRoot implements Parcelable
+public class NearbyMsrstnListRoot extends FindStationRoot implements Parcelable
 {
     @Expose
     @SerializedName("response")

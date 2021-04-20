@@ -10,6 +10,8 @@ import android.graphics.PointF;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.ConnectivityManager;
+import android.net.Network;
 import android.os.Bundle;
 
 import androidx.activity.result.ActivityResultCallback;
@@ -85,12 +87,14 @@ import com.zerodsoft.scheduleweather.kakaomap.interfaces.SearchBarController;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.SearchFragmentController;
 import com.zerodsoft.scheduleweather.kakaomap.place.PlaceInfoFragment;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
+import com.zerodsoft.scheduleweather.retrofit.paremeters.sgis.SgisAuthParameter;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.sgis.address.ReverseGeoCodingParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalDocument;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.addressresponse.AddressResponseDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddressDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.address.reversegeocoding.ReverseGeoCodingResponse;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.auth.SgisAuthResponse;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 import com.zerodsoft.scheduleweather.sgis.SgisAddress;
@@ -160,6 +164,28 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
     public List<Marker> markerList = new ArrayList<>();
 
+    private SgisAuth sgisAuth = new SgisAuth()
+    {
+        @Override
+        public void onResponseSuccessful(SgisAuthResponse result)
+        {
+            SgisAuth.setSgisAuthResponse(result);
+            getActivity().runOnUiThread(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    setCurrentAddress();
+                }
+            });
+        }
+
+        @Override
+        public void onResponseFailed(Exception e)
+        {
+
+        }
+    };
 
     public void setPlacesItemBottomSheetButtonOnClickListener(PlacesItemBottomSheetButtonOnClickListener placesItemBottomSheetButtonOnClickListener)
     {
@@ -204,7 +230,30 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
     {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-        networkStatus = new NetworkStatus(getActivity());
+        networkStatus = new NetworkStatus(getContext(), new ConnectivityManager.NetworkCallback()
+        {
+            @Override
+            public void onAvailable(@NonNull Network network)
+            {
+                super.onAvailable(network);
+            }
+
+            @Override
+            public void onLost(@NonNull Network network)
+            {
+                super.onLost(network);
+                getActivity().runOnUiThread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        networkStatus.showToastDisconnected();
+                        getActivity().finish();
+                    }
+                });
+            }
+        });
+
     }
 
 
@@ -651,6 +700,10 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
         mapTranslationYByBuildingBottomSheet = (point.y - (mapHeaderBarBottomY +
                 SIZE_BETWEEN_HEADER_BAR_BOTTOM_AND_BOTTOM_SHEET_TOP / 2.0));
 
+        if (SgisAuth.getSgisAuthResponse() == null)
+        {
+            sgisAuth.auth();
+        }
     }
 
     private final ActivityResultLauncher<String[]> requestLocationUpdates = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(),
@@ -680,52 +733,67 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
         networkStatus.unregisterNetworkCallback();
     }
 
+    private final SgisAddress sgisAddress = new SgisAddress()
+    {
+        @Override
+        public void onResponseSuccessful(ReverseGeoCodingResponse result)
+        {
+            getActivity().runOnUiThread(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    if (result.getResult() != null)
+                    {
+                        if (!result.getResult().isEmpty())
+                        {
+                            binding.naverMapButtonsLayout.currentAddress.setText(result.getResult().get(0).getFullAddress());
+                            return;
+                        }
+                    }
+                    binding.naverMapButtonsLayout.currentAddress.setText("");
+                }
+            });
+
+        }
+
+        @Override
+        public void onResponseFailed(Exception e)
+        {
+            getActivity().runOnUiThread(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    binding.naverMapButtonsLayout.currentAddress.setText("");
+                }
+            });
+        }
+    };
+
     public void setCurrentAddress()
     {
         //sgis reverse geocoding 이용
-        LatLng latLng = naverMap.getContentBounds().getCenter();
-        Utmk utmk = Utmk.valueOf(latLng);
-
-        ReverseGeoCodingParameter parameter = new ReverseGeoCodingParameter();
-        parameter.setAccessToken(SgisAuth.getSgisAuthResponse().getResult().getAccessToken());
-        parameter.setAddrType("20");
-        parameter.setxCoor(String.valueOf(utmk.x));
-        parameter.setyCoor(String.valueOf(utmk.y));
-
-        SgisAddress.reverseGeoCoding(parameter, new CarrierMessagingService.ResultCallback<DataWrapper<ReverseGeoCodingResponse>>()
+        if (SgisAuth.getSgisAuthResponse() != null)
         {
-            @Override
-            public void onReceiveResult(@NonNull DataWrapper<ReverseGeoCodingResponse> reverseGeoCodingResponseDataWrapper) throws RemoteException
-            {
-                getActivity().runOnUiThread(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        if (reverseGeoCodingResponseDataWrapper.getData() != null)
-                        {
-                            if (reverseGeoCodingResponseDataWrapper.getData().getResult() != null)
-                            {
-                                if (!reverseGeoCodingResponseDataWrapper.getData().getResult().isEmpty())
-                                {
-                                    binding.naverMapButtonsLayout.currentAddress.setText(reverseGeoCodingResponseDataWrapper.getData().getResult().get(0).getFullAddress());
-                                    return;
-                                }
-                            }
-                        }
-                        binding.naverMapButtonsLayout.currentAddress.setText("");
+            LatLng latLng = naverMap.getContentBounds().getCenter();
+            Utmk utmk = Utmk.valueOf(latLng);
 
-                    }
-                });
-            }
-        });
+            ReverseGeoCodingParameter parameter = new ReverseGeoCodingParameter();
+            parameter.setAccessToken(SgisAuth.getSgisAuthResponse().getResult().getAccessToken());
+            parameter.setAddrType("20");
+            parameter.setxCoor(String.valueOf(utmk.x));
+            parameter.setyCoor(String.valueOf(utmk.y));
+
+            sgisAddress.reverseGeoCoding(parameter);
+        }
     }
 
 
     @Override
     public boolean networkAvailable()
     {
-        return networkStatus.networkAvailable(getActivity());
+        return networkStatus.networkAvailable();
     }
 
     @Override

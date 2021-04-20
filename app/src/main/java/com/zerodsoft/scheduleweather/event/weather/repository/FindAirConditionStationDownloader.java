@@ -1,5 +1,6 @@
 package com.zerodsoft.scheduleweather.event.weather.repository;
 
+import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.retrofit.HttpCommunicationClient;
 import com.zerodsoft.scheduleweather.retrofit.Querys;
@@ -10,11 +11,11 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.NearbyM
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.NearbyMsrstnList.NearbyMsrstnListRoot;
 
 import retrofit2.Call;
+import retrofit2.Callback;
 import retrofit2.Response;
 
-public abstract class FindAirConditionStationDownloader
+public abstract class FindAirConditionStationDownloader extends JsonDownloader<FindStationRoot>
 {
-    public abstract void onResponse(DataWrapper<? extends FindStationRoot> result);
 
     /*
     가장 가까운 관측소 검색
@@ -24,24 +25,18 @@ public abstract class FindAirConditionStationDownloader
         Querys querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.FIND_STATION_FOR_AIR_CONDITION);
 
         Call<NearbyMsrstnListRoot> call = querys.getNearbyMsrstnList(parameter.getMap());
-        call.enqueue(new RetrofitCallback<NearbyMsrstnListRoot>()
+        call.enqueue(new Callback<NearbyMsrstnListRoot>()
         {
             @Override
-            protected void handleResponse(NearbyMsrstnListRoot data)
+            public void onResponse(Call<NearbyMsrstnListRoot> call, Response<NearbyMsrstnListRoot> response)
             {
-                FindAirConditionStationDownloader.this.onResponse(new DataWrapper<NearbyMsrstnListBody>(data.getResponse().getBody()));
+                processResult(response);
             }
 
             @Override
-            protected void handleError(Response<NearbyMsrstnListRoot> response)
+            public void onFailure(Call<NearbyMsrstnListRoot> call, Throwable t)
             {
-                FindAirConditionStationDownloader.this.onResponse(new DataWrapper<NearbyMsrstnListBody>(new Exception(response.message())));
-            }
-
-            @Override
-            protected void handleFailure(Exception e)
-            {
-                FindAirConditionStationDownloader.this.onResponse(new DataWrapper<NearbyMsrstnListBody>(e));
+                processResult(t);
             }
         });
 

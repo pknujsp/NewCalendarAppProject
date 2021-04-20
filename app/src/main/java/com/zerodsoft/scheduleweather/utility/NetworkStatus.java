@@ -1,28 +1,24 @@
 package com.zerodsoft.scheduleweather.utility;
 
-import android.app.Activity;
-import android.app.Application;
 import android.content.Context;
-import android.content.Intent;
 import android.net.ConnectivityManager;
-import android.net.Network;
 import android.net.NetworkCapabilities;
-import android.net.NetworkInfo;
 import android.net.NetworkRequest;
 import android.widget.Toast;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.activity.App;
-import com.zerodsoft.scheduleweather.event.foods.activity.FoodsActivity;
 
 public final class NetworkStatus
 {
     private ConnectivityManager.NetworkCallback networkCallback;
     private ConnectivityManager connectivityManager;
+    private Context context;
 
-    public NetworkStatus(Activity activity)
+    public NetworkStatus(Context context, ConnectivityManager.NetworkCallback networkCallback)
     {
-        setNetworkCallback(activity);
+        this.context = context;
+        this.networkCallback = networkCallback;
+        setNetworkCallback();
     }
 
     public void unregisterNetworkCallback()
@@ -30,36 +26,21 @@ public final class NetworkStatus
         connectivityManager.unregisterNetworkCallback(networkCallback);
     }
 
-    public void setNetworkCallback(Activity activity)
+    public void setNetworkCallback()
     {
-        connectivityManager = (ConnectivityManager) activity.getSystemService(Context.CONNECTIVITY_SERVICE);
-        networkCallback = new ConnectivityManager.NetworkCallback()
-        {
-            @Override
-            public void onAvailable(Network network)
-            {
-                super.onAvailable(network);
-                // Toast.makeText(activity, activity.getString(R.string.connected_network), Toast.LENGTH_SHORT).show();
-            }
+        connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
 
-            @Override
-            public void onLost(Network network)
-            {
-                super.onLost(network);
-                //  Toast.makeText(activity, activity.getString(R.string.disconnected_network), Toast.LENGTH_SHORT).show();
-            }
-        };
         NetworkRequest.Builder builder = new NetworkRequest.Builder();
         builder.addTransportType(NetworkCapabilities.TRANSPORT_WIFI);
         builder.addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR);
         connectivityManager.registerNetworkCallback(builder.build(), networkCallback);
     }
 
-    public boolean networkAvailable(Activity activity)
+    public boolean networkAvailable()
     {
         if (connectivityManager.getActiveNetwork() == null)
         {
-            Toast.makeText(activity, activity.getString(R.string.map_network_not_connected), Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, context.getString(R.string.disconnected_network), Toast.LENGTH_SHORT).show();
             return false;
         } else
         {
@@ -71,9 +52,19 @@ public final class NetworkStatus
                 return true;
             } else
             {
-                Toast.makeText(activity, activity.getString(R.string.map_network_not_connected), Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, context.getString(R.string.disconnected_network), Toast.LENGTH_SHORT).show();
                 return false;
             }
         }
+    }
+
+    public void showToastDisconnected()
+    {
+        Toast.makeText(context, R.string.disconnected_network, Toast.LENGTH_SHORT).show();
+    }
+
+    public void showToastConnected()
+    {
+        Toast.makeText(context, R.string.connected_network, Toast.LENGTH_SHORT).show();
     }
 }

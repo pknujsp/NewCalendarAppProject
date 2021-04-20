@@ -5,6 +5,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.provider.CalendarContract;
@@ -39,6 +40,7 @@ import com.zerodsoft.scheduleweather.event.main.InstanceMainActivity;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
+import com.zerodsoft.scheduleweather.utility.NetworkStatus;
 import com.zerodsoft.scheduleweather.utility.RecurrenceRule;
 import com.zerodsoft.scheduleweather.utility.model.ReminderDto;
 
@@ -72,6 +74,7 @@ public class EventFragment extends Fragment
 
     private LocationViewModel locationViewModel;
     private int resultCode = Activity.RESULT_CANCELED;
+    private NetworkStatus networkStatus;
 
     private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
     {
@@ -115,6 +118,8 @@ public class EventFragment extends Fragment
         eventId = arguments.getLong("eventId");
         begin = arguments.getLong("begin");
         end = arguments.getLong("end");
+
+        networkStatus = new NetworkStatus(getContext(), new ConnectivityManager.NetworkCallback());
     }
 
     @Nullable
@@ -173,18 +178,24 @@ public class EventFragment extends Fragment
                             {
                                 if (hasDetailLocation)
                                 {
-                                    locationViewModel.getLocation(calendarId, eventId, new CarrierMessagingService.ResultCallback<LocationDTO>()
+                                    if (networkStatus.networkAvailable())
                                     {
-                                        @Override
-                                        public void onReceiveResult(@NonNull LocationDTO locationDTO) throws RemoteException
+                                        locationViewModel.getLocation(calendarId, eventId, new CarrierMessagingService.ResultCallback<LocationDTO>()
                                         {
-                                            if (!locationDTO.isEmpty())
+                                            @Override
+                                            public void onReceiveResult(@NonNull LocationDTO locationDTO) throws RemoteException
                                             {
-                                                locationAbstract.startEditLocationActivity(getActivity(), editLocationActivityResultLauncher,
-                                                        locationDTO);
+                                                if (!locationDTO.isEmpty())
+                                                {
+                                                    locationAbstract.startEditLocationActivity(getActivity(), editLocationActivityResultLauncher,
+                                                            locationDTO);
+                                                }
                                             }
-                                        }
-                                    });
+                                        });
+                                    } else
+                                    {
+                                        networkStatus.showToastDisconnected();
+                                    }
                                 } else
                                 {
                                     locationAbstract.showSetLocationDialog(getActivity(), setLocationActivityResultLauncher, instance);

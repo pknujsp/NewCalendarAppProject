@@ -192,14 +192,15 @@ public class ReselectDetailLocationNaver extends NaverMapActivity implements OnM
             {
                 if (isRemoved)
                 {
-                    naverMapFragment.deselectPoiItem();
-                    naverMapFragment.removeAllPoiItems();
 
                     runOnUiThread(new Runnable()
                     {
                         @Override
                         public void run()
                         {
+                            naverMapFragment.deselectPoiItem();
+                            naverMapFragment.removeAllPoiItems();
+
                             resultCode = InstanceMainActivity.RESULT_REMOVED_LOCATION;
 
                             naverMapFragment.setPlaceBottomSheetSelectBtnVisibility(View.VISIBLE);

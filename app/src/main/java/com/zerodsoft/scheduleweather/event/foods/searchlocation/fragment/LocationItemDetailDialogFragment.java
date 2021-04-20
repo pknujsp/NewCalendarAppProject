@@ -102,7 +102,7 @@ public class LocationItemDetailDialogFragment extends DialogFragment
             }
         }
 
-        SelectedLocationMapFragmentNaver selectedLocationMapFragmentNaver = new SelectedLocationMapFragmentNaver(selectedLocationDto);
+        SelectedLocationMapFragmentNaver selectedLocationMapFragmentNaver = new SelectedLocationMapFragmentNaver(selectedLocationDto, null);
         getChildFragmentManager().beginTransaction().add(binding.locationMap.getId(),
                 selectedLocationMapFragmentNaver, SelectedLocationMapFragmentNaver.TAG).commit();
 

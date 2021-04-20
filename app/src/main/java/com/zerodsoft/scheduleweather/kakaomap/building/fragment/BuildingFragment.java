@@ -58,7 +58,13 @@ public class BuildingFragment extends Fragment implements OnBackPressedCallbackC
     private final SgisBuildingDownloader sgisBuildingDownloader = new SgisBuildingDownloader()
     {
         @Override
-        public void onResponse(DataWrapper<? extends SgisBuildingRoot> result)
+        public void onResponseSuccessful(SgisBuildingRoot result)
+        {
+
+        }
+
+        @Override
+        public void onResponseFailed(Exception e)
         {
 
         }

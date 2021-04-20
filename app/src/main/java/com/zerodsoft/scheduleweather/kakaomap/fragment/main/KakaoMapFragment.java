@@ -10,6 +10,8 @@ import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.ConnectivityManager;
+import android.net.Network;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.TypedValue;
@@ -181,7 +183,26 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-        networkStatus = new NetworkStatus(getActivity());
+        networkStatus = new NetworkStatus(getContext(), new ConnectivityManager.NetworkCallback()
+        {
+            @Override
+            public void onAvailable(@NonNull Network network)
+            {
+                super.onAvailable(network);
+            }
+
+            @Override
+            public void onLost(@NonNull Network network)
+            {
+                super.onLost(network);
+            }
+
+            @Override
+            public void onUnavailable()
+            {
+                super.onUnavailable();
+            }
+        });
     }
 
     @Override
@@ -719,7 +740,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     @Override
     public boolean networkAvailable()
     {
-        return networkStatus.networkAvailable(getActivity());
+        return networkStatus.networkAvailable();
     }
 
     @Override

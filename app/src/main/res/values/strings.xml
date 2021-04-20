@@ -167,7 +167,7 @@
 
     <!-- shared preference file name -->
     <string name="check">확인</string>
-    <string name="map_network_not_connected">네트워크 오류</string>
+    <string name="network_not_connected">네트워크 오류</string>
 
     <string name="preferences_selected_calendars_key">selected_calendars</string>
     <string name="preferences_selected_calendar_type_key">selected_calendar_type</string>

@@ -17,6 +17,7 @@ import com.zerodsoft.scheduleweather.kakaomap.interfaces.OnClickedBottomSheetLis
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.PlacesItemBottomSheetButtonOnClickListener;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalDocument;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.addressresponse.AddressResponseDocuments;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddressDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 
 import java.util.ArrayList;
@@ -27,6 +28,7 @@ public class PlaceItemInMapViewAdapter extends RecyclerView.Adapter<PlaceItemInM
     private List<? extends KakaoLocalDocument> placeDocumentsList = new ArrayList<>();
     private PlaceDocuments placeDocuments;
     private AddressResponseDocuments addressDocuments;
+    private CoordToAddressDocuments coordToAddressDocuments;
     private PlacesItemBottomSheetButtonOnClickListener placesItemBottomSheetButtonOnClickListener;
     private OnClickedBottomSheetListener onClickedBottomSheetListener;
 
@@ -144,7 +146,7 @@ public class PlaceItemInMapViewAdapter extends RecyclerView.Adapter<PlaceItemInM
                 placeLayout.setVisibility(View.VISIBLE);
                 addressLayout.setVisibility(View.GONE);
                 placeDistanceTextView.setVisibility(View.VISIBLE);
-            } else
+            } else if (data instanceof AddressResponseDocuments)
             {
                 addressDocuments = (AddressResponseDocuments) data;
 
@@ -162,7 +164,26 @@ public class PlaceItemInMapViewAdapter extends RecyclerView.Adapter<PlaceItemInM
                 placeLayout.setVisibility(View.GONE);
                 addressLayout.setVisibility(View.VISIBLE);
                 placeDistanceTextView.setVisibility(View.GONE);
+            } else if (data instanceof CoordToAddressDocuments)
+            {
+                coordToAddressDocuments = (CoordToAddressDocuments) data;
+
+                addressName.setText(coordToAddressDocuments.getCoordToAddressAddress().getAddressName());
+                if (coordToAddressDocuments.getCoordToAddressRoadAddress() != null)
+                {
+                    anotherAddressType.setText(itemView.getContext().getString(R.string.road_addr));
+                    anotherAddressName.setText(coordToAddressDocuments.getCoordToAddressRoadAddress().getAddressName());
+                } else if (coordToAddressDocuments.getCoordToAddressAddress() != null)
+                {
+                    anotherAddressType.setText(itemView.getContext().getString(R.string.region_addr));
+                    anotherAddressName.setText(coordToAddressDocuments.getCoordToAddressAddress().getAddressName());
+                }
+
+                placeLayout.setVisibility(View.GONE);
+                addressLayout.setVisibility(View.VISIBLE);
+                placeDistanceTextView.setVisibility(View.GONE);
             }
+
 
             selectButton.setVisibility(isVisibleSelectBtn);
             unselectButton.setVisibility(isVisibleUnSelectBtn);

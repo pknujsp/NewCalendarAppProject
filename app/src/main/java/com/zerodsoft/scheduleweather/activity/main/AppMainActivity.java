@@ -105,18 +105,15 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
     private final SgisAuth sgisAuth = new SgisAuth()
     {
         @Override
-        public void onResponse(DataWrapper<? extends SgisAuthResponse> result)
+        public void onResponseSuccessful(SgisAuthResponse result)
         {
-            if (result.getException() == null)
-            {
-                if (result.getData() instanceof SgisAuthResponse)
-                {
-                    SgisAuth.setSgisAuthResponse(result.getData());
-                }
-            } else
-            {
+            SgisAuth.setSgisAuthResponse(result);
+        }
 
-            }
+        @Override
+        public void onResponseFailed(Exception e)
+        {
+
         }
     };
 
@@ -184,8 +181,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 
         if (SgisAuth.getSgisAuthResponse() == null)
         {
-            SgisAuthParameter parameter = new SgisAuthParameter();
-            sgisAuth.auth(parameter);
+            sgisAuth.auth();
         }
     }
 
@@ -680,7 +676,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
             } else
             {
                 firstPressedTime = System.currentTimeMillis();
-                Toast.makeText(activity,activity.getString(R.string.message_request_double_click_for_close),Toast.LENGTH_SHORT).show();
+                Toast.makeText(activity, activity.getString(R.string.message_request_double_click_for_close), Toast.LENGTH_SHORT).show();
 
                 new Timer().schedule(new TimerTask()
                 {

@@ -16,6 +16,7 @@ import androidx.lifecycle.ViewModelProvider;
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.os.RemoteException;
@@ -53,6 +54,7 @@ import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import com.zerodsoft.scheduleweather.navermap.NaverMapActivity;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
+import com.zerodsoft.scheduleweather.utility.NetworkStatus;
 import com.zerodsoft.scheduleweather.utility.RecurrenceRule;
 import com.zerodsoft.scheduleweather.utility.model.ReminderDto;
 
@@ -97,6 +99,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
     private Integer requestCode;
     private List<ContentValues> calendarList;
     private LocationDTO locationDTO;
+    private NetworkStatus networkStatus;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
@@ -178,6 +181,8 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
     {
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_edit_event);
+
+        networkStatus = new NetworkStatus(getApplicationContext(), new ConnectivityManager.NetworkCallback());
         init();
         initEventData();
     }
@@ -529,36 +534,30 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
         binding.locationLayout.eventLocation.setOnClickListener(view ->
         {
             //위치를 설정하는 액티비티 표시
-            /*
-            Intent intent = new Intent(EditEventActivity.this, SelectLocationActivity.class);
-            String location = "";
-
-            if (dataController.getEventValueAsString(CalendarContract.Events.EVENT_LOCATION) != null)
+            if (networkStatus.networkAvailable())
             {
-                location = dataController.getEventValueAsString(CalendarContract.Events.EVENT_LOCATION);
-            }
+                Intent intent = new Intent(EditEventActivity.this, NaverMapActivity.class);
+                String location = "";
 
-            intent.putExtra(CalendarContract.Events.EVENT_LOCATION, location);
-            startActivityForResult(intent, REQUEST_LOCATION);
+                if (dataController.getEventValueAsString(CalendarContract.Events.EVENT_LOCATION) != null)
+                {
+                    location = dataController.getEventValueAsString(CalendarContract.Events.EVENT_LOCATION);
+                }
 
-             */
-
-            Intent intent = new Intent(EditEventActivity.this, NaverMapActivity.class);
-            String location = "";
-
-            if (dataController.getEventValueAsString(CalendarContract.Events.EVENT_LOCATION) != null)
+                intent.putExtra(CalendarContract.Events.EVENT_LOCATION, location);
+                startActivityForResult(intent, REQUEST_LOCATION);
+            } else
             {
-                location = dataController.getEventValueAsString(CalendarContract.Events.EVENT_LOCATION);
+                networkStatus.showToastDisconnected();
             }
-
-            intent.putExtra(CalendarContract.Events.EVENT_LOCATION, location);
-            startActivityForResult(intent, REQUEST_LOCATION);
+        
         });
 
         /*
         참석자 상세정보 버튼
          */
         binding.attendeeLayout.showAttendeesDetail.setOnClickListener(new View.OnClickListener()
+
         {
             @Override
             public void onClick(View view)

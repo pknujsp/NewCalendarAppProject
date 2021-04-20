@@ -81,6 +81,8 @@ public class FoodsCategoryListFragment extends Fragment implements OnClickedCate
     private FoodCriteriaLocationSearchHistoryDTO foodCriteriaLocationSearchHistoryDTO;
     private FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO;
 
+    private boolean clickedGps = false;
+
     public FoodsCategoryListFragment(INetwork iNetwork)
     {
         this.iNetwork = iNetwork;
@@ -249,6 +251,8 @@ public class FoodsCategoryListFragment extends Fragment implements OnClickedCate
         binding.categoryGridview.setVisibility(View.GONE);
         binding.criteriaLocation.setText(getString(R.string.finding_current_location));
 
+        clickedGps = true;
+
         //권한 확인
         boolean isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
         boolean isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
@@ -258,16 +262,87 @@ public class FoodsCategoryListFragment extends Fragment implements OnClickedCate
 
         if (iNetwork.networkAvailable())
         {
-            if (isGpsEnabled && isNetworkEnabled)
+            if (isGpsEnabled)
             {
-                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 1, locationListener);
-                locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 1, locationListener);
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, new LocationListener()
+                {
+                    @Override
+                    public void onLocationChanged(Location location)
+                    {
+                        locationManager.removeUpdates(this);
+
+                        if (clickedGps)
+                        {
+                            clickedGps = false;
+                            onCatchedGps(location);
+                        }
+                    }
+
+                    @Override
+                    public void onStatusChanged(String s, int i, Bundle bundle)
+                    {
+
+                    }
+
+                    @Override
+                    public void onProviderEnabled(String s)
+                    {
+
+                    }
+
+                    @Override
+                    public void onProviderDisabled(String s)
+                    {
+
+                    }
+                });
+                locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, new LocationListener()
+                {
+                    @Override
+                    public void onLocationChanged(Location location)
+                    {
+                        locationManager.removeUpdates(this);
+
+                        if (clickedGps)
+                        {
+                            clickedGps = false;
+                            onCatchedGps(location);
+                        }
+                    }
+
+                    @Override
+                    public void onStatusChanged(String s, int i, Bundle bundle)
+                    {
+
+                    }
+
+                    @Override
+                    public void onProviderEnabled(String s)
+                    {
+
+                    }
+
+                    @Override
+                    public void onProviderDisabled(String s)
+                    {
+
+                    }
+                });
             } else if (!isGpsEnabled)
             {
                 showRequestGpsDialog();
             }
         }
 
+    }
+
+    private void onCatchedGps(Location location)
+    {
+        LocationDTO criteriaLocationDTO = new LocationDTO();
+        criteriaLocationDTO.setLatitude(location.getLatitude());
+        criteriaLocationDTO.setLongitude(location.getLongitude());
+        setCurrentLocationData(criteriaLocationDTO);
+        return;
     }
 
     public void showRequestGpsDialog()
@@ -294,47 +369,6 @@ public class FoodsCategoryListFragment extends Fragment implements OnClickedCate
                 .show();
     }
 
-    public final LocationListener locationListener = new LocationListener()
-    {
-        private boolean isSuccess = false;
-
-        @Override
-        public void onLocationChanged(Location location)
-        {
-            locationManager.removeUpdates(this);
-
-            if (!isSuccess)
-            {
-                isSuccess = true;
-
-                LocationDTO criteriaLocationDTO = new LocationDTO();
-                criteriaLocationDTO.setLatitude(location.getLatitude());
-                criteriaLocationDTO.setLongitude(location.getLongitude());
-                setCurrentLocationData(criteriaLocationDTO);
-                return;
-            }
-
-            isSuccess = false;
-        }
-
-        @Override
-        public void onStatusChanged(String s, int i, Bundle bundle)
-        {
-
-        }
-
-        @Override
-        public void onProviderEnabled(String s)
-        {
-
-        }
-
-        @Override
-        public void onProviderDisabled(String s)
-        {
-
-        }
-    };
 
     private void setCurrentLocationData(LocationDTO criteriaLocationDTO)
     {

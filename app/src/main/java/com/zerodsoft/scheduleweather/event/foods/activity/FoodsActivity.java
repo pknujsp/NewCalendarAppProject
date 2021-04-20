@@ -8,6 +8,9 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.provider.CalendarContract;
@@ -51,7 +54,28 @@ public class FoodsActivity extends AppCompatActivity implements INetwork, Bottom
         instanceId = bundle.getLong(CalendarContract.Instances._ID);
         eventId = bundle.getLong(CalendarContract.Instances.EVENT_ID);
 
-        networkStatus = new NetworkStatus(this);
+        networkStatus = new NetworkStatus(getApplicationContext(), new ConnectivityManager.NetworkCallback()
+        {
+            @Override
+            public void onAvailable(@NonNull Network network)
+            {
+                super.onAvailable(network);
+            }
+
+            @Override
+            public void onLost(@NonNull Network network)
+            {
+                super.onLost(network);
+                runOnUiThread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        finish();
+                    }
+                });
+            }
+        });
 
         binding.bottomNavigation.setOnNavigationItemSelectedListener(this::onNavigationItemSelected);
         binding.bottomNavigation.setOnNavigationItemReselectedListener(new BottomNavigationView.OnNavigationItemReselectedListener()
@@ -139,7 +163,7 @@ public class FoodsActivity extends AppCompatActivity implements INetwork, Bottom
     @Override
     public boolean networkAvailable()
     {
-        return networkStatus.networkAvailable(this);
+        return networkStatus.networkAvailable();
     }
 
 
