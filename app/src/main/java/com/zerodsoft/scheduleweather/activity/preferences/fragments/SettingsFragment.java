@@ -50,6 +50,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
     private RadiusPreference searchMapCategoryRangeRadiusPreference;
     private SearchBuildingRangeRadiusPreference searchBuildingRangeRadiusPreference;
     private Preference placesCategoryPreference;
+    private Preference customFoodPreference;
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey)
@@ -65,6 +66,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
         hourSystemSwitchPreference = findPreference(getString(R.string.preference_key_using_24_hour_system));
         calendarColorListPreference = findPreference(getString(R.string.preference_key_calendar_color));
         placesCategoryPreference = findPreference(getString(R.string.preference_key_places_category));
+        customFoodPreference = findPreference(getString(R.string.preference_key_custom_food_menu));
 
         initPreference();
         initValue();

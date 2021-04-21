@@ -4,15 +4,15 @@ import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
-@Entity(tableName = "custom_food_category_table")
-public class CustomFoodCategoryDTO
+@Entity(tableName = "custom_food_menu_table")
+public class CustomFoodMenuDTO
 {
     @ColumnInfo(name = "id")
     @PrimaryKey(autoGenerate = true)
     private int id;
 
-    @ColumnInfo(name = "category_name")
-    private String categoryName;
+    @ColumnInfo(name = "menu_name")
+    private String menuName;
 
     public int getId()
     {
@@ -24,13 +24,13 @@ public class CustomFoodCategoryDTO
         this.id = id;
     }
 
-    public String getCategoryName()
+    public String getMenuName()
     {
-        return categoryName;
+        return menuName;
     }
 
-    public void setCategoryName(String categoryName)
+    public void setMenuName(String menuName)
     {
-        this.categoryName = categoryName;
+        this.menuName = menuName;
     }
 }

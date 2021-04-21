@@ -6,12 +6,12 @@ import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
 
-import com.zerodsoft.scheduleweather.room.dao.CustomFoodCategoryDAO;
+import com.zerodsoft.scheduleweather.room.dao.CustomFoodMenuDAO;
 import com.zerodsoft.scheduleweather.room.dao.CustomPlaceCategoryDAO;
 import com.zerodsoft.scheduleweather.room.dao.FoodCriteriaLocationInfoDAO;
 import com.zerodsoft.scheduleweather.room.dao.FoodCriteriaLocationSearchHistoryDAO;
 import com.zerodsoft.scheduleweather.room.dao.SearchHistoryDAO;
-import com.zerodsoft.scheduleweather.room.dto.CustomFoodCategoryDTO;
+import com.zerodsoft.scheduleweather.room.dto.CustomFoodMenuDTO;
 import com.zerodsoft.scheduleweather.room.dto.CustomPlaceCategoryDTO;
 import com.zerodsoft.scheduleweather.room.dao.FavoriteLocDAO;
 import com.zerodsoft.scheduleweather.room.dao.LocationDAO;
@@ -24,7 +24,7 @@ import com.zerodsoft.scheduleweather.room.dto.SearchHistoryDTO;
 import com.zerodsoft.scheduleweather.room.dto.SelectedPlaceCategoryDTO;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
 
-@Database(entities = {LocationDTO.class, WeatherAreaCodeDTO.class, SelectedPlaceCategoryDTO.class, CustomPlaceCategoryDTO.class, CustomFoodCategoryDTO.class,
+@Database(entities = {LocationDTO.class, WeatherAreaCodeDTO.class, SelectedPlaceCategoryDTO.class, CustomPlaceCategoryDTO.class, CustomFoodMenuDTO.class,
         FoodCriteriaLocationInfoDTO.class, FoodCriteriaLocationSearchHistoryDTO.class, SearchHistoryDTO.class}, version = 1, exportSchema = false)
 public abstract class AppDb extends RoomDatabase
 {
@@ -40,7 +40,7 @@ public abstract class AppDb extends RoomDatabase
 
     public abstract WeatherAreaCodeDAO weatherAreaCodeDAO();
 
-    public abstract CustomFoodCategoryDAO customFoodCategoryDAO();
+    public abstract CustomFoodMenuDAO customFoodCategoryDAO();
 
     public abstract FoodCriteriaLocationInfoDAO foodCriteriaLocationInfoDAO();
 

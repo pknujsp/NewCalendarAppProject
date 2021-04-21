@@ -1,7 +1,6 @@
 package com.zerodsoft.scheduleweather.event.foods.categorylist;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -10,7 +9,6 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 
-import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
@@ -32,16 +30,15 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
+import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.databinding.FragmentFoodsCategoryListBinding;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.foods.activity.LocationSettingsActivity;
 import com.zerodsoft.scheduleweather.event.foods.adapter.FoodCategoryAdapter;
 import com.zerodsoft.scheduleweather.event.foods.dto.FoodCategoryItem;
-import com.zerodsoft.scheduleweather.event.foods.interfaces.FragmentChanger;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedCategoryItem;
 import com.zerodsoft.scheduleweather.event.foods.share.CriteriaLocationRepository;
-import com.zerodsoft.scheduleweather.event.foods.viewmodel.CustomFoodCategoryViewModel;
+import com.zerodsoft.scheduleweather.event.foods.viewmodel.CustomFoodMenuViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationInfoViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationHistoryViewModel;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.INetwork;
@@ -49,7 +46,7 @@ import com.zerodsoft.scheduleweather.kakaomap.model.CoordToAddressUtil;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddress;
-import com.zerodsoft.scheduleweather.room.dto.CustomFoodCategoryDTO;
+import com.zerodsoft.scheduleweather.room.dto.CustomFoodMenuDTO;
 import com.zerodsoft.scheduleweather.room.dto.FoodCriteriaLocationInfoDTO;
 import com.zerodsoft.scheduleweather.room.dto.FoodCriteriaLocationSearchHistoryDTO;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
@@ -60,13 +57,13 @@ import java.util.List;
 import static android.app.Activity.RESULT_OK;
 import static androidx.core.content.ContextCompat.checkSelfPermission;
 
-public class FoodsCategoryListFragment extends Fragment implements OnClickedCategoryItem
+public class FoodsCategoryListFragment extends Fragment implements OnClickedCategoryItem, OnClickedListItem<FoodCategoryItem>
 {
     public static final String TAG = "FoodsMainFragment";
     private FragmentFoodsCategoryListBinding binding;
     private final INetwork iNetwork;
 
-    private CustomFoodCategoryViewModel customFoodCategoryViewModel;
+    private CustomFoodMenuViewModel customFoodCategoryViewModel;
     private LocationViewModel locationViewModel;
     private FoodCriteriaLocationInfoViewModel foodCriteriaLocationInfoViewModel;
     private FoodCriteriaLocationHistoryViewModel foodCriteriaLocationSearchHistoryViewModel;
@@ -119,7 +116,7 @@ public class FoodsCategoryListFragment extends Fragment implements OnClickedCate
         locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
         foodCriteriaLocationInfoViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationInfoViewModel.class);
         foodCriteriaLocationSearchHistoryViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationHistoryViewModel.class);
-        customFoodCategoryViewModel = new ViewModelProvider(this).get(CustomFoodCategoryViewModel.class);
+        customFoodCategoryViewModel = new ViewModelProvider(this).get(CustomFoodMenuViewModel.class);
 
         //기준 주소 표시
         setCriteriaLocation();
@@ -410,17 +407,18 @@ public class FoodsCategoryListFragment extends Fragment implements OnClickedCate
 
     private void setCategories()
     {
-        customFoodCategoryViewModel.select(new CarrierMessagingService.ResultCallback<List<CustomFoodCategoryDTO>>()
+        customFoodCategoryViewModel.select(new CarrierMessagingService.ResultCallback<List<CustomFoodMenuDTO>>()
         {
             @Override
-            public void onReceiveResult(@NonNull List<CustomFoodCategoryDTO> resultList) throws RemoteException
+            public void onReceiveResult(@NonNull List<CustomFoodMenuDTO> resultList) throws RemoteException
             {
                 getActivity().runOnUiThread(new Runnable()
                 {
                     @Override
                     public void run()
                     {
-                        FoodCategoryAdapter foodCategoryAdapter = new FoodCategoryAdapter(getContext(), FoodsCategoryListFragment.this);
+                        final int columnCount =4;
+                        FoodCategoryAdapter foodCategoryAdapter = new FoodCategoryAdapter(FoodsCategoryListFragment.this, columnCount);
 
                         Context context = getContext();
                         List<FoodCategoryItem> itemsList = new ArrayList<>();
@@ -441,14 +439,14 @@ public class FoodsCategoryListFragment extends Fragment implements OnClickedCate
 
                         if (!resultList.isEmpty())
                         {
-                            for (CustomFoodCategoryDTO customFoodCategory : resultList)
+                            for (CustomFoodMenuDTO customFoodCategory : resultList)
                             {
-                                itemsList.add(new FoodCategoryItem(customFoodCategory.getCategoryName(), null, false));
+                                itemsList.add(new FoodCategoryItem(customFoodCategory.getMenuName(), null, false));
                             }
                         }
 
                         foodCategoryAdapter.setItems(itemsList);
-                        GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(), 4);
+                        GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(), columnCount);
                         binding.categoryGridview.setLayoutManager(gridLayoutManager);
                         binding.categoryGridview.setAdapter(foodCategoryAdapter);
                     }
@@ -462,9 +460,7 @@ public class FoodsCategoryListFragment extends Fragment implements OnClickedCate
     @Override
     public void onClickedFoodCategory(FoodCategoryItem foodCategoryItem)
     {
-        FoodCategoryTabFragment foodCategoryTabFragment = new FoodCategoryTabFragment(foodCategoryItem.getCategoryName());
-        FragmentManager fragmentManager = getParentFragmentManager();
-        fragmentManager.beginTransaction().hide(this).add(R.id.foods_main_fragment_container, foodCategoryTabFragment, FoodCategoryTabFragment.TAG).addToBackStack(null).commit();
+
     }
 
     private final ActivityResultLauncher<Intent> locationSettingsActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
@@ -545,4 +541,17 @@ public class FoodsCategoryListFragment extends Fragment implements OnClickedCate
             });
 
 
+    @Override
+    public void onClickedListItem(FoodCategoryItem e)
+    {
+        FoodCategoryTabFragment foodCategoryTabFragment = new FoodCategoryTabFragment(e.getCategoryName());
+        FragmentManager fragmentManager = getParentFragmentManager();
+        fragmentManager.beginTransaction().hide(this).add(R.id.foods_main_fragment_container, foodCategoryTabFragment, FoodCategoryTabFragment.TAG).addToBackStack(null).commit();
+    }
+
+    @Override
+    public void deleteListItem(FoodCategoryItem e, int position)
+    {
+
+    }
 }

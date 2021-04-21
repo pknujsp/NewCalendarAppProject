@@ -165,22 +165,23 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
                         @Override
                         public void run()
                         {
-                            Bitmap bmp = null;
                             try
                             {
                                 String img_url = kakaoPlaceJsonRoot.getBasicInfo().getMainPhotoUrl(); //url of the image
                                 URL url = new URL(img_url);
-                                bmp = BitmapFactory.decodeStream(url.openConnection().getInputStream());
+                                BitmapFactory.Options options = new BitmapFactory.Options();
+                                options.inSampleSize = 3;
+                                Bitmap bmp =  BitmapFactory.decodeStream(url.openConnection().getInputStream(),null,options);
 
-                                final Bitmap finalBmp = bmp;
-                                restaurantImagesArr.put(getAdapterPosition(), finalBmp);
+                                restaurantImagesArr.put(getAdapterPosition(), bmp);
 
                                 activity.runOnUiThread(new Runnable()
                                 {
                                     @Override
                                     public void run()
                                     {
-                                        restaurantImage.setImageBitmap(finalBmp);
+                                        restaurantImage.setImageBitmap(bmp);
+
                                         Glide.with(itemView)
                                                 .load(restaurantImagesArr.get(getAdapterPosition())).circleCrop()
                                                 .into(restaurantImage);

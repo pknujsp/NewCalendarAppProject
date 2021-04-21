@@ -1,9 +1,7 @@
 package com.zerodsoft.scheduleweather.event.foods.categorylist;
 
-import android.content.Context;
 import android.os.Bundle;
 
-import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -20,14 +18,12 @@ import android.view.ViewGroup;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
 import com.zerodsoft.scheduleweather.databinding.FragmentFoodCategoryTabBinding;
 import com.zerodsoft.scheduleweather.event.foods.adapter.FoodCategoryFragmentListAdapter;
-import com.zerodsoft.scheduleweather.event.foods.interfaces.FragmentChanger;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedRestaurantItem;
-import com.zerodsoft.scheduleweather.event.foods.viewmodel.CustomFoodCategoryViewModel;
+import com.zerodsoft.scheduleweather.event.foods.viewmodel.CustomFoodMenuViewModel;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
-import com.zerodsoft.scheduleweather.room.dto.CustomFoodCategoryDTO;
+import com.zerodsoft.scheduleweather.room.dto.CustomFoodMenuDTO;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,7 +34,7 @@ public class FoodCategoryTabFragment extends Fragment implements OnClickedRestau
     public static final String TAG = "FoodCategoryTabFragment";
     private FragmentFoodCategoryTabBinding binding;
 
-    private CustomFoodCategoryViewModel customFoodCategoryViewModel;
+    private CustomFoodMenuViewModel customFoodCategoryViewModel;
     private List<String> categoryList;
     private FoodCategoryFragmentListAdapter adapter;
     private final String selectedCategoryName;
@@ -73,11 +69,11 @@ public class FoodCategoryTabFragment extends Fragment implements OnClickedRestau
         activity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         activity.getSupportActionBar().setDisplayShowTitleEnabled(false);
 
-        customFoodCategoryViewModel = new ViewModelProvider(this).get(CustomFoodCategoryViewModel.class);
-        customFoodCategoryViewModel.select(new CarrierMessagingService.ResultCallback<List<CustomFoodCategoryDTO>>()
+        customFoodCategoryViewModel = new ViewModelProvider(this).get(CustomFoodMenuViewModel.class);
+        customFoodCategoryViewModel.select(new CarrierMessagingService.ResultCallback<List<CustomFoodMenuDTO>>()
         {
             @Override
-            public void onReceiveResult(@NonNull List<CustomFoodCategoryDTO> resultList) throws RemoteException
+            public void onReceiveResult(@NonNull List<CustomFoodMenuDTO> resultList) throws RemoteException
             {
                 getActivity().runOnUiThread(new Runnable()
                 {
@@ -91,9 +87,9 @@ public class FoodCategoryTabFragment extends Fragment implements OnClickedRestau
 
                         if (!resultList.isEmpty())
                         {
-                            for (CustomFoodCategoryDTO customFoodCategory : resultList)
+                            for (CustomFoodMenuDTO customFoodCategory : resultList)
                             {
-                                categoryList.add(customFoodCategory.getCategoryName());
+                                categoryList.add(customFoodCategory.getMenuName());
                             }
                         }
 

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        tools:context=".activity.preferences.customfoodmenu.fragment.CustomFoodMenuSettingsFragment">
+
+        <LinearLayout
+            android:id="@+id/header_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:orientation="horizontal"
+            android:padding="12dp">
+
+            <EditText
+                android:id="@+id/edittext_custom_foodmenu"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:hint="@string/hint_request_input_custom_food_menu" />
+
+            <ImageView
+                android:id="@+id/add_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:src="@drawable/zoom_in_icon" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/error"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/header_bar"
+            android:layout_centerHorizontal="true"
+            android:gravity="center"
+            android:text="@string/not_added_custom_food_menu" />
+
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/custom_food_menu_recyclerview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@id/error"
+            android:layout_alignParentBottom="true"
+            android:orientation="vertical" />
+
+
+    </RelativeLayout>
+</layout>

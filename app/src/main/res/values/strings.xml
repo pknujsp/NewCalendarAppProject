@@ -366,6 +366,11 @@
     <string name="preference_title_places_category">표시할 장소 카테고리 설정</string>
     <string name="preference_summary_places_category">지정된 장소 주변의 표시할 카테고리를 설정합니다</string>
 
+    <!-- 나만의 음식메뉴 카테고리 설정 관련 -->
+    <string name="preference_key_custom_food_menu" translatable="false">preference_key_custom_food_menu</string>
+    <string name="preference_title_custom_food_menu">나만의 음식 메뉴 설정</string>
+    <string name="preference_summary_custom_food_menu">기본 음식 메뉴에 추가로 표시할 나만의 메뉴를 설정합니다</string>
+
     <!-- 설정화면 카테고리 이름 설정 관련 -->
     <string name="preference_calendar_category_title">캘린더</string>
     <string name="preference_place_category_title">주변 장소</string>
@@ -476,6 +481,8 @@
     <string name="delete_all">모두 삭제</string>
     <string name="not_search_history">검색 기록 없음</string>
     <string name="message_request_double_click_for_close">앱을 종료하시려면 한번 더 클릭해주세요</string>
+    <string name="hint_request_input_custom_food_menu">추가할 음식 메뉴를 입력해주세요</string>
+    <string name="not_added_custom_food_menu">추가된 음식 메뉴가 없습니다</string>
 
 
 </resources>

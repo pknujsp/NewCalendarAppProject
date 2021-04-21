@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -14,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.event.foods.dto.FoodCategoryItem;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedCategoryItem;
 
@@ -23,18 +25,26 @@ import java.util.List;
 public class FoodCategoryAdapter extends RecyclerView.Adapter<FoodCategoryAdapter.CategoryViewHolder>
 {
     private List<FoodCategoryItem> items = new ArrayList<>();
-    private final OnClickedCategoryItem onClickedCategoryItem;
+    private final OnClickedListItem<FoodCategoryItem> onClickedCategoryItem;
+    private final int COLUMN_COUNT;
 
-    public FoodCategoryAdapter(Context context, Fragment fragment)
+    public FoodCategoryAdapter(OnClickedListItem<FoodCategoryItem> onClickedCategoryItem,int columnCount)
     {
-        this.onClickedCategoryItem = (OnClickedCategoryItem) fragment;
+        this.onClickedCategoryItem = onClickedCategoryItem;
+        this.COLUMN_COUNT = columnCount;
     }
 
     @NonNull
     @Override
     public CategoryViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType)
     {
-        return new CategoryViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.food_category_item, parent, false));
+        LinearLayout layoutView = (LinearLayout) LayoutInflater.from(parent.getContext()).inflate(R.layout.food_category_item, parent, false);
+        final int CHILD_VIEW_SIZE = parent.getWidth() / COLUMN_COUNT;
+
+        layoutView.getLayoutParams().width = CHILD_VIEW_SIZE;
+        layoutView.getLayoutParams().height = CHILD_VIEW_SIZE;
+
+        return new CategoryViewHolder(layoutView);
     }
 
     @Override
@@ -71,24 +81,32 @@ public class FoodCategoryAdapter extends RecyclerView.Adapter<FoodCategoryAdapte
         public void onBind()
         {
             foodCategoryItem = items.get(getAdapterPosition());
-
             foodCategoryNameTextView.setText(foodCategoryItem.getCategoryName());
+
+            LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) foodCategoryNameTextView.getLayoutParams();
+
             if (foodCategoryItem.isDefault())
             {
                 foodCategoryImageView.setImageDrawable(foodCategoryItem.getCategoryMainImage());
                 Glide.with(itemView).load(foodCategoryItem.getCategoryMainImage()).circleCrop().into(foodCategoryImageView);
+
+                layoutParams.height = ViewGroup.LayoutParams.WRAP_CONTENT;
                 foodCategoryImageView.setVisibility(View.VISIBLE);
             } else
             {
+                layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT;
                 foodCategoryImageView.setVisibility(View.GONE);
             }
+
+            foodCategoryNameTextView.requestLayout();
+            foodCategoryNameTextView.invalidate();
 
             itemView.getRootView().setOnClickListener(new View.OnClickListener()
             {
                 @Override
                 public void onClick(View view)
                 {
-                    onClickedCategoryItem.onClickedFoodCategory(foodCategoryItem);
+                    onClickedCategoryItem.onClickedListItem(foodCategoryItem);
                 }
             });
         }

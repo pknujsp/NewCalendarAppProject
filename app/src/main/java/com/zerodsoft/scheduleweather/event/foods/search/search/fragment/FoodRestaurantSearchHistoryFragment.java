@@ -98,6 +98,53 @@ public class FoodRestaurantSearchHistoryFragment extends Fragment implements OnC
             }
         });
 
+        adapter = new FoodRestaurantSearchHistoryAdapter(FoodRestaurantSearchHistoryFragment.this);
+        adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver()
+        {
+            @Override
+            public void onChanged()
+            {
+                super.onChanged();
+                if (adapter.getItemCount() > 0)
+                {
+                    binding.searchHistoryRecyclerView.setVisibility(View.VISIBLE);
+                    binding.notHistory.setVisibility(View.GONE);
+                } else
+                {
+                    binding.searchHistoryRecyclerView.setVisibility(View.GONE);
+                    binding.notHistory.setVisibility(View.VISIBLE);
+                }
+            }
+
+            @Override
+            public void onItemRangeInserted(int positionStart, int itemCount)
+            {
+                super.onItemRangeInserted(positionStart, itemCount);
+                if (adapter.getItemCount() > 0)
+                {
+                    binding.searchHistoryRecyclerView.setVisibility(View.VISIBLE);
+                    binding.notHistory.setVisibility(View.GONE);
+                }
+            }
+
+            @Override
+            public void onItemRangeRemoved(int positionStart, int itemCount)
+            {
+                super.onItemRangeRemoved(positionStart, itemCount);
+                if (adapter.getItemCount() > 0)
+                {
+                    binding.searchHistoryRecyclerView.setVisibility(View.VISIBLE);
+                    binding.notHistory.setVisibility(View.GONE);
+                } else
+                {
+                    binding.searchHistoryRecyclerView.setVisibility(View.GONE);
+                    binding.notHistory.setVisibility(View.VISIBLE);
+                }
+            }
+        });
+
+        binding.searchHistoryRecyclerView.setAdapter(adapter);
+
         viewModel = new ViewModelProvider(this).get(SearchHistoryViewModel.class);
         viewModel.select(SearchHistoryDTO.FOOD_RESTAURANT_SEARCH, new CarrierMessagingService.ResultCallback<List<SearchHistoryDTO>>()
         {
@@ -109,53 +156,8 @@ public class FoodRestaurantSearchHistoryFragment extends Fragment implements OnC
                     @Override
                     public void run()
                     {
-                        adapter = new FoodRestaurantSearchHistoryAdapter(FoodRestaurantSearchHistoryFragment.this);
                         adapter.setHistoryList(searchHistoryDTOS);
-                        adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver()
-                        {
-                            @Override
-                            public void onChanged()
-                            {
-                                super.onChanged();
-                                if (adapter.getItemCount() > 0)
-                                {
-                                    binding.searchHistoryRecyclerView.setVisibility(View.VISIBLE);
-                                    binding.notHistory.setVisibility(View.GONE);
-                                } else
-                                {
-                                    binding.searchHistoryRecyclerView.setVisibility(View.GONE);
-                                    binding.notHistory.setVisibility(View.VISIBLE);
-                                }
-                            }
-
-                            @Override
-                            public void onItemRangeInserted(int positionStart, int itemCount)
-                            {
-                                super.onItemRangeInserted(positionStart, itemCount);
-                                if (adapter.getItemCount() > 0)
-                                {
-                                    binding.searchHistoryRecyclerView.setVisibility(View.VISIBLE);
-                                    binding.notHistory.setVisibility(View.GONE);
-                                }
-                            }
-
-                            @Override
-                            public void onItemRangeRemoved(int positionStart, int itemCount)
-                            {
-                                super.onItemRangeRemoved(positionStart, itemCount);
-                                if (adapter.getItemCount() > 0)
-                                {
-                                    binding.searchHistoryRecyclerView.setVisibility(View.VISIBLE);
-                                    binding.notHistory.setVisibility(View.GONE);
-                                } else
-                                {
-                                    binding.searchHistoryRecyclerView.setVisibility(View.GONE);
-                                    binding.notHistory.setVisibility(View.VISIBLE);
-                                }
-                            }
-                        });
-
-                        binding.searchHistoryRecyclerView.setAdapter(adapter);
+                        adapter.notifyDataSetChanged();
                     }
                 });
             }
