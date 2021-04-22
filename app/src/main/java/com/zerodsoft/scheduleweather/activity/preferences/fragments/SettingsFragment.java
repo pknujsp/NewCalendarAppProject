@@ -185,7 +185,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i)
                             {
-                                String value = String.valueOf(slider.getValue() * 1000);
+                                String value = String.valueOf((int) (slider.getValue() * 1000));
                                 searchMapCategoryRangeRadiusPreference.callChangeListener(value);
                                 dialogInterface.dismiss();
                             }

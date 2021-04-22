@@ -172,6 +172,20 @@ public class InstanceMainActivity extends AppCompatActivity implements OnMapRead
     }
 
     @Override
+    protected void onRestart()
+    {
+        super.onRestart();
+        addSelectedLocationMap();
+    }
+
+    @Override
+    protected void onPause()
+    {
+        removeSelectedLocationMap();
+        super.onPause();
+    }
+
+    @Override
     protected void onDestroy()
     {
         super.onDestroy();
@@ -230,6 +244,7 @@ public class InstanceMainActivity extends AppCompatActivity implements OnMapRead
             calendar.add(Calendar.DAY_OF_MONTH, -1);
             allDayEnd = calendar.getTimeInMillis();
         }
+
         String beginStr = EventUtil.convertDateTime(allDay ? allDayBegin : originalBegin, allDay, App.isPreference_key_using_24_hour_system());
         String endStr = EventUtil.convertDateTime(allDay ? allDayEnd : originalEnd, allDay, App.isPreference_key_using_24_hour_system());
 
@@ -252,6 +267,7 @@ public class InstanceMainActivity extends AppCompatActivity implements OnMapRead
     {
         if (hasSimpleLocation())
         {
+
             locationViewModel.hasDetailLocation(calendarId, eventId, new CarrierMessagingService.ResultCallback<Boolean>()
             {
                 @Override
@@ -268,11 +284,14 @@ public class InstanceMainActivity extends AppCompatActivity implements OnMapRead
                                 {
                                     selectedLocationDto = location;
                                     coordToAddress();
+
                                 }
                             }
                         });
+
                     } else
                     {
+
                         runOnUiThread(new Runnable()
                         {
                             @Override
@@ -282,10 +301,14 @@ public class InstanceMainActivity extends AppCompatActivity implements OnMapRead
                                 binding.locationTextview.setText(instance.getAsString(CalendarContract.Instances.EVENT_LOCATION));
                             }
                         });
+
                     }
+
                 }
             });
+
         }
+
     }
 
     private void coordToAddress()
@@ -299,6 +322,7 @@ public class InstanceMainActivity extends AppCompatActivity implements OnMapRead
             @Override
             public void onReceiveResult(@NonNull DataWrapper<CoordToAddress> coordToAddressDataWrapper) throws RemoteException
             {
+
                 runOnUiThread(new Runnable()
                 {
                     @Override
@@ -332,7 +356,7 @@ public class InstanceMainActivity extends AppCompatActivity implements OnMapRead
                             binding.addressTextview.setVisibility(View.VISIBLE);
                         }
 
-                        //mapview생성
+                        // mapview생성
                         addSelectedLocationMap();
                     }
                 });
@@ -404,7 +428,9 @@ public class InstanceMainActivity extends AppCompatActivity implements OnMapRead
         }
          */
 
-        //naver
+        /*
+        naver
+         */
         if (selectedLocationMapFragmentNaver != null)
         {
             getSupportFragmentManager().beginTransaction().remove(selectedLocationMapFragmentNaver).commitNow();
@@ -448,8 +474,7 @@ public class InstanceMainActivity extends AppCompatActivity implements OnMapRead
         @Override
         public void onClick(View v)
         {
-            removeSelectedLocationMap();
-
+            // removeSelectedLocationMap();
             Intent intent = new Intent(InstanceMainActivity.this, InstanceActivity.class);
 
             Bundle bundle = new Bundle();
@@ -505,12 +530,14 @@ public class InstanceMainActivity extends AppCompatActivity implements OnMapRead
                             setResult(result.getResultCode());
                             finish();
                             break;
+
                         case RESULT_UPDATED_VALUE:
                             setSimpleInstanceData();
                             setLocationData();
                             break;
+
                         case RESULT_CANCELED:
-                            addSelectedLocationMap();
+                            // addSelectedLocationMap();
                             break;
                     }
                 }
@@ -565,6 +592,7 @@ public class InstanceMainActivity extends AppCompatActivity implements OnMapRead
                 }
             });
 
+
     private final ActivityResultLauncher<Intent> editLocationActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
             new ActivityResultCallback<ActivityResult>()
             {
@@ -578,6 +606,7 @@ public class InstanceMainActivity extends AppCompatActivity implements OnMapRead
                             setLocationData();
                             Toast.makeText(InstanceMainActivity.this, newLocation + " 변경완료", Toast.LENGTH_SHORT).show();
                             break;
+
                         case RESULT_REMOVED_LOCATION:
                             Toast.makeText(InstanceMainActivity.this, "위치 삭제완료", Toast.LENGTH_SHORT).show();
                             setLocationData();
@@ -591,7 +620,7 @@ public class InstanceMainActivity extends AppCompatActivity implements OnMapRead
         @Override
         public void onRequestedActivity()
         {
-            removeSelectedLocationMap();
+          //  removeSelectedLocationMap();
         }
     };
 
@@ -630,7 +659,6 @@ public class InstanceMainActivity extends AppCompatActivity implements OnMapRead
                            */
                             Intent intent = new Intent(activity, MLocActivityNaver.class);
                             Bundle bundle = new Bundle();
-
                             bundle.putInt("calendarId", instance.getAsInteger(CalendarContract.Instances.CALENDAR_ID));
                             bundle.putLong("eventId", instance.getAsLong(CalendarContract.Instances.EVENT_ID));
                             bundle.putString("location", instance.getAsString(CalendarContract.Instances.EVENT_LOCATION));
@@ -648,7 +676,7 @@ public class InstanceMainActivity extends AppCompatActivity implements OnMapRead
 
         public void startEditLocationActivity(Activity activity, ActivityResultLauncher<Intent> activityResultLauncher, LocationDTO locationDTO)
         {
-            onRequestedActivity();
+           // onRequestedActivity();
             /* kakao
             Intent intent = new Intent(activity, ReselectDetailLocationKakao.class);
              */
@@ -664,4 +692,5 @@ public class InstanceMainActivity extends AppCompatActivity implements OnMapRead
 
         public abstract void onRequestedActivity();
     }
+
 }

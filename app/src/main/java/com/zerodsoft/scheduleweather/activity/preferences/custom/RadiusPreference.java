@@ -19,6 +19,8 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
 
+import java.text.DecimalFormat;
+
 public class RadiusPreference extends Preference
 {
     private TextView radiusTextView;
@@ -84,6 +86,8 @@ public class RadiusPreference extends Preference
 
     private String convert()
     {
-        return String.valueOf(Float.parseFloat(App.getPreference_key_radius_range()) / 1000f);
+        double value = Double.parseDouble(App.getPreference_key_radius_range()) / 1000.0;
+        DecimalFormat decimalFormat = new DecimalFormat("#.#");
+        return String.valueOf(decimalFormat.format(value));
     }
 }

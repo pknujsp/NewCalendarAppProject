@@ -41,6 +41,7 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.Pl
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 
+import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -114,7 +115,8 @@ public class PlaceListFragment extends Fragment implements PlaceItemsGetter, OnP
         makeCategoryListView();
 
         binding.radiusSeekbarLayout.setVisibility(View.GONE);
-        binding.radiusSeekbar.setValue(Float.valueOf(App.getPreference_key_radius_range()) / 1000f);
+        DecimalFormat decimalFormat = new DecimalFormat("#.#");
+        binding.radiusSeekbar.setValue(Float.parseFloat(decimalFormat.format(Double.valueOf(App.getPreference_key_radius_range()) / 1000)));
 
         binding.searchRadius.setOnClickListener(new View.OnClickListener()
         {
@@ -136,9 +138,9 @@ public class PlaceListFragment extends Fragment implements PlaceItemsGetter, OnP
                 SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
                 SharedPreferences.Editor editor = preferences.edit();
 
-                final String newValueStrMeter = String.valueOf(binding.radiusSeekbar.getValue() * 1000);
+                final String newValueStrMeter = String.valueOf((int) (binding.radiusSeekbar.getValue() * 1000));
                 editor.putString(getString(R.string.preference_key_radius_range), newValueStrMeter);
-                editor.commit();
+                editor.apply();
 
                 App.setPreference_key_radius_range(newValueStrMeter);
                 setSearchRadius();
@@ -152,9 +154,9 @@ public class PlaceListFragment extends Fragment implements PlaceItemsGetter, OnP
 
     private void setSearchRadius()
     {
-        float value = Float.parseFloat(App.getPreference_key_radius_range()) / 1000f;
-        String newValueStrKm = String.valueOf(value);
-        binding.searchRadius.setText(getString(R.string.search_radius) + " " + newValueStrKm + "km");
+        double value = Double.parseDouble(App.getPreference_key_radius_range()) / 1000.0;
+        DecimalFormat decimalFormat = new DecimalFormat("#.#");
+        binding.searchRadius.setText(getString(R.string.search_radius) + " " + decimalFormat.format(value) + "km");
     }
 
     public void makeCategoryListView()
