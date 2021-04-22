@@ -24,6 +24,7 @@ import java.text.DecimalFormat;
 public class RadiusPreference extends Preference
 {
     private TextView radiusTextView;
+    private DecimalFormat decimalFormat = new DecimalFormat("#.#");
 
     public RadiusPreference(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes)
     {
@@ -86,8 +87,7 @@ public class RadiusPreference extends Preference
 
     private String convert()
     {
-        double value = Double.parseDouble(App.getPreference_key_radius_range()) / 1000.0;
-        DecimalFormat decimalFormat = new DecimalFormat("#.#");
+        float value = Math.round((Float.parseFloat(App.getPreference_key_radius_range()) / 1000f) * 10) / 10f;
         return String.valueOf(decimalFormat.format(value));
     }
 }

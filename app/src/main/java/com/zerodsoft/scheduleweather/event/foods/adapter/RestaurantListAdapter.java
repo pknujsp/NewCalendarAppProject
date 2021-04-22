@@ -171,7 +171,7 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
                                 URL url = new URL(img_url);
                                 BitmapFactory.Options options = new BitmapFactory.Options();
                                 options.inSampleSize = 3;
-                                Bitmap bmp =  BitmapFactory.decodeStream(url.openConnection().getInputStream(),null,options);
+                                Bitmap bmp = BitmapFactory.decodeStream(url.openConnection().getInputStream(), null, options);
 
                                 restaurantImagesArr.put(getAdapterPosition(), bmp);
 

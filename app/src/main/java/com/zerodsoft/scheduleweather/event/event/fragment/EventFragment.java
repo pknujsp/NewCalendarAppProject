@@ -89,11 +89,7 @@ public class EventFragment extends Fragment
 
     private InstanceMainActivity.LocationAbstract locationAbstract = new InstanceMainActivity.LocationAbstract()
     {
-        @Override
-        public void onRequestedActivity()
-        {
 
-        }
     };
 
     public EventFragment(Activity activity)

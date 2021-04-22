@@ -483,6 +483,11 @@
     <string name="message_request_double_click_for_close">앱을 종료하시려면 한번 더 클릭해주세요</string>
     <string name="hint_request_input_custom_food_menu">추가할 음식 메뉴를 입력해주세요</string>
     <string name="not_added_custom_food_menu">추가된 음식 메뉴가 없습니다</string>
+    <string name="place">장소</string>
+    <string name="address">주소</string>
+    <string name="detail_location">상세위치</string>
+    <string name="selected_place">장소 선택됨</string>
+    <string name="selected_address">주소 선택됨</string>
 
 
 </resources>

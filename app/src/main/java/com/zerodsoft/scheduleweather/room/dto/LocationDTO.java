@@ -8,6 +8,8 @@ import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
+import java.util.Objects;
+
 @Entity(tableName = "location_table")
 public class LocationDTO implements Parcelable
 {
@@ -203,5 +205,29 @@ public class LocationDTO implements Parcelable
     public boolean isEmpty()
     {
         return latitude == 0;
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        LocationDTO that = (LocationDTO) o;
+        return calendarId == that.calendarId &&
+                eventId == that.eventId &&
+                Double.compare(that.latitude, latitude) == 0 &&
+                Double.compare(that.longitude, longitude) == 0 &&
+                Objects.equals(addressName, that.addressName) &&
+                Objects.equals(roadAddressName, that.roadAddressName) &&
+                Objects.equals(placeId, that.placeId) &&
+                Objects.equals(placeName, that.placeName);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(calendarId, eventId, latitude, longitude, addressName, roadAddressName, placeId, placeName);
     }
 }

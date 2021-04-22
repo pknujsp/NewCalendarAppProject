@@ -13,14 +13,15 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:layout_margin="16dp"
                 android:orientation="vertical">
 
                 <LinearLayout
                     android:id="@+id/instance_info_layout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
+                    android:layout_marginBottom="16dp"
+                    android:orientation="vertical">
 
                     <TextView
                         android:id="@+id/instance_title_textview"
@@ -107,173 +108,118 @@
 
                     </LinearLayout>
 
-                    <LinearLayout
-                        android:id="@+id/detail_location_layout"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical">
 
-                        <TextView
-                            android:id="@+id/place_name_textview"
-                            style="@style/TextAppearance.MaterialComponents.Subtitle1"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:layout_marginBottom="6dp"
-                            android:text="장소명" />
-
-                        <TextView
-                            android:id="@+id/place_address_textview"
-                            style="@style/TextAppearance.MaterialComponents.Subtitle1"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginBottom="6dp"
-                            android:text="장소의 주소"
-                            android:textColor="@color/gray_600"
-                            android:textSize="14sp" />
-
-                        <TextView
-                            android:id="@+id/address_textview"
-                            style="@style/TextAppearance.MaterialComponents.Subtitle1"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginBottom="6dp"
-                            android:text="주소명" />
-
-                        <androidx.fragment.app.FragmentContainerView
-                            android:id="@+id/selected_location_map"
-                            android:layout_width="match_parent"
-                            android:layout_height="150dp" />
-
-                    </LinearLayout>
                 </LinearLayout>
 
-                <GridLayout
-                    android:id="@+id/function_gridlayout"
+                <include
+                    android:id="@+id/instance_main_detail_location_layout"
+                    layout="@layout/instance_main_detail_location_view"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:columnCount="2"
-                    android:padding="16dp"
-                    android:rowCount="2">
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp" />
 
-                    <androidx.cardview.widget.CardView
-                        android:id="@+id/cardview_instance_info"
-                        style="@style/CardView.Function"
-                        android:clickable="true">
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/cardview_instance_info"
+                    android:layout_width="match_parent"
+                    android:layout_height="80dp"
+                    android:layout_marginBottom="12dp"
+                    android:background="?attr/selectableItemBackground"
+                    android:clickable="true"
+                    app:cardBackgroundColor="@color/gray_100">
 
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:orientation="vertical">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:padding="8dp">
 
-                            <ImageView
-                                android:layout_width="match_parent"
-                                android:layout_height="0dp"
-                                android:layout_weight="1"
-                                android:padding="16dp"
-                                android:src="@drawable/event_icon" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/instance_info"
+                            android:textColor="@color/black" />
 
-                            <TextView
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:gravity="center"
-                                android:paddingBottom="16dp"
-                                android:text="@string/instance_info"
-                                android:textColor="@color/black" />
+                    </LinearLayout>
 
-                        </LinearLayout>
+                </androidx.cardview.widget.CardView>
 
-                    </androidx.cardview.widget.CardView>
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/cardview_weather"
+                    android:layout_width="match_parent"
+                    android:layout_height="80dp"
+                    android:layout_marginBottom="12dp"
+                    android:background="?attr/selectableItemBackground"
+                    android:clickable="true"
 
-                    <androidx.cardview.widget.CardView
-                        android:id="@+id/cardview_weather"
-                        style="@style/CardView.Function"
-                        android:clickable="true">
+                    app:cardBackgroundColor="@color/gray_100">
 
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:orientation="vertical">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:padding="8dp">
 
-                            <ImageView
-                                android:layout_width="match_parent"
-                                android:layout_height="0dp"
-                                android:layout_weight="1"
-                                android:padding="16dp"
-                                android:src="@drawable/sunny_day_icon" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/weather_and_air_condition"
+                            android:textColor="@color/black" />
 
-                            <TextView
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:gravity="center"
-                                android:paddingBottom="16dp"
-                                android:text="@string/weather_and_air_condition"
-                                android:textColor="@color/black" />
+                    </LinearLayout>
 
-                        </LinearLayout>
+                </androidx.cardview.widget.CardView>
 
-                    </androidx.cardview.widget.CardView>
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/cardview_map"
+                    android:layout_width="match_parent"
+                    android:layout_height="80dp"
+                    android:layout_marginBottom="12dp"
+                    android:background="?attr/selectableItemBackground"
+                    android:clickable="true"
 
-                    <androidx.cardview.widget.CardView
-                        android:id="@+id/cardview_map"
-                        style="@style/CardView.Function"
-                        android:clickable="true">
+                    app:cardBackgroundColor="@color/gray_100">
 
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:orientation="vertical">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:padding="8dp">
 
-                            <ImageView
-                                android:layout_width="match_parent"
-                                android:layout_height="0dp"
-                                android:layout_weight="1"
-                                android:padding="16dp"
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/info_around_location"
+                            android:textColor="@color/black" />
 
-                                android:src="@drawable/share_location_icon" />
+                    </LinearLayout>
 
-                            <TextView
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:gravity="center"
-                                android:paddingBottom="16dp"
-                                android:text="@string/info_around_location"
-                                android:textColor="@color/black" />
+                </androidx.cardview.widget.CardView>
 
-                        </LinearLayout>
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/cardview_food"
+                    android:layout_width="match_parent"
+                    android:layout_height="80dp"
+                    android:layout_marginBottom="12dp"
+                    android:background="?attr/selectableItemBackground"
+                    android:clickable="true"
+                    app:cardBackgroundColor="@color/gray_100">
 
-                    </androidx.cardview.widget.CardView>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:padding="8dp">
 
-                    <androidx.cardview.widget.CardView
-                        android:id="@+id/cardview_food"
-                        style="@style/CardView.Function"
-                        android:clickable="true">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/restaurant"
+                            android:textColor="@color/black" />
 
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:orientation="vertical">
+                    </LinearLayout>
 
-                            <ImageView
-                                android:layout_width="match_parent"
-                                android:layout_height="0dp"
-                                android:layout_weight="1"
-                                android:padding="16dp"
-                                android:src="@drawable/restaurant_icon" />
+                </androidx.cardview.widget.CardView>
 
-                            <TextView
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:gravity="center"
-                                android:paddingBottom="16dp"
-                                android:text="@string/restaurant"
-                                android:textColor="@color/black" />
-
-                        </LinearLayout>
-
-                    </androidx.cardview.widget.CardView>
-
-                </GridLayout>
             </LinearLayout>
         </ScrollView>
 

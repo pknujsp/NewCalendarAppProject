@@ -33,6 +33,7 @@ import com.zerodsoft.scheduleweather.activity.preferences.custom.TimeZonePrefere
 import com.zerodsoft.scheduleweather.activity.preferences.interfaces.IPreferenceFragment;
 import com.zerodsoft.scheduleweather.activity.preferences.interfaces.PreferenceListener;
 
+import java.text.DecimalFormat;
 import java.util.TimeZone;
 
 public class SettingsFragment extends PreferenceFragmentCompat implements PreferenceListener, IPreferenceFragment
@@ -172,7 +173,9 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
                 layoutParams.bottomMargin = margin;
 
                 slider.setLayoutParams(layoutParams);
-                slider.setValue(Float.parseFloat(App.getPreference_key_radius_range()) / 1000f);
+                DecimalFormat decimalFormat = new DecimalFormat("#.#");
+                float value = Math.round((Float.parseFloat(App.getPreference_key_radius_range()) / 1000f) * 10) / 10f;
+                slider.setValue(Float.parseFloat(decimalFormat.format(value)));
                 slider.setValueFrom(0.1f);
                 slider.setValueTo(20.0f);
                 slider.setStepSize(0.1f);

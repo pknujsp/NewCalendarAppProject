@@ -6,7 +6,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.Network;
-import android.net.NetworkCapabilities;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.provider.CalendarContract;
@@ -97,6 +96,8 @@ public class InstanceMainActivity extends AppCompatActivity implements OnMapRead
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.instance_main_activity);
 
+        clearTextView();
+
         binding.cardviewInstanceInfo.setOnClickListener(instanceCardOnClickListener);
         binding.cardviewMap.setOnClickListener(placesCardOnClickListener);
         binding.cardviewWeather.setOnClickListener(weatherCardOnClickListener);
@@ -137,6 +138,7 @@ public class InstanceMainActivity extends AppCompatActivity implements OnMapRead
 
         //인스턴스의 일부 정보(title, description, begin, end)를 표시한다.
         setSimpleInstanceData();
+
         networkStatus = new NetworkStatus(getApplicationContext(), new ConnectivityManager.NetworkCallback()
         {
             @Override
@@ -148,7 +150,7 @@ public class InstanceMainActivity extends AppCompatActivity implements OnMapRead
                     @Override
                     public void run()
                     {
-                        setLocationData();
+                        setDetailLocationData();
                     }
                 });
             }
@@ -175,7 +177,7 @@ public class InstanceMainActivity extends AppCompatActivity implements OnMapRead
     protected void onRestart()
     {
         super.onRestart();
-        addSelectedLocationMap();
+        setDetailLocationData();
     }
 
     @Override
@@ -258,16 +260,30 @@ public class InstanceMainActivity extends AppCompatActivity implements OnMapRead
             binding.locationTextview.setText(instance.getAsString(CalendarContract.Instances.EVENT_LOCATION));
         } else
         {
-            binding.detailLocationLayout.setVisibility(View.GONE);
+            binding.instanceMainDetailLocationLayout.getRoot().setVisibility(View.GONE);
             binding.locationTextview.setText(getString(R.string.not_selected_location_in_event));
         }
     }
 
-    private void setLocationData()
+    private void clearTextView()
+    {
+        binding.instanceMainDetailLocationLayout.placeInfoLayout.placeName.setText("");
+        binding.instanceMainDetailLocationLayout.placeInfoLayout.addressName.setText("");
+        binding.instanceMainDetailLocationLayout.addressInfoLayout.addressName.setText("");
+        binding.instanceMainDetailLocationLayout.addressInfoLayout.anotherAddressType.setText("");
+        binding.instanceMainDetailLocationLayout.addressInfoLayout.anotherAddressName.setText("");
+
+        binding.locationTextview.setText("");
+        binding.instanceDescriptionTextview.setText("");
+        binding.instanceBeginTextview.setText("");
+        binding.instanceEndTextview.setText("");
+        binding.instanceTitleTextview.setText("");
+    }
+
+    private void setDetailLocationData()
     {
         if (hasSimpleLocation())
         {
-
             locationViewModel.hasDetailLocation(calendarId, eventId, new CarrierMessagingService.ResultCallback<Boolean>()
             {
                 @Override
@@ -282,28 +298,67 @@ public class InstanceMainActivity extends AppCompatActivity implements OnMapRead
                             {
                                 if (location.getId() >= 0)
                                 {
-                                    selectedLocationDto = location;
-                                    coordToAddress();
+                                    if (location.equals(selectedLocationDto))
+                                    {
+                                        runOnUiThread(new Runnable()
+                                        {
+                                            @Override
+                                            public void run()
+                                            {
+                                                addSelectedLocationMap();
+                                            }
+                                        });
+
+                                    } else
+                                    {
+                                        selectedLocationDto = location;
+                                        boolean isPlace = true;
+                                        String label = getString(R.string.detail_location) + ", ";
+
+                                        if (selectedLocationDto.getPlaceName() != null)
+                                        {
+                                            //장소
+                                            isPlace = true;
+                                            label += getString(R.string.selected_place);
+                                        } else
+                                        {
+                                            //주소
+                                            isPlace = false;
+                                            label += getString(R.string.selected_address);
+                                        }
+
+                                        boolean finalIsPlace = isPlace;
+                                        String finalLabel = label;
+                                        runOnUiThread(new Runnable()
+                                        {
+                                            @Override
+                                            public void run()
+                                            {
+
+                                                binding.instanceMainDetailLocationLayout.detailLocationLabel
+                                                        .setText(finalLabel);
+                                                binding.instanceMainDetailLocationLayout.placeInfoLayout.getRoot().setVisibility(finalIsPlace ? View.VISIBLE : View.GONE);
+                                                binding.instanceMainDetailLocationLayout.addressInfoLayout.getRoot().setVisibility(finalIsPlace ? View.VISIBLE : View.GONE);
+                                            }
+                                        });
+
+                                        coordToAddress();
+                                    }
 
                                 }
                             }
                         });
 
-                    } else
-                    {
-
-                        runOnUiThread(new Runnable()
-                        {
-                            @Override
-                            public void run()
-                            {
-                                binding.detailLocationLayout.setVisibility(View.GONE);
-                                binding.locationTextview.setText(instance.getAsString(CalendarContract.Instances.EVENT_LOCATION));
-                            }
-                        });
-
                     }
 
+                    runOnUiThread(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            binding.instanceMainDetailLocationLayout.getRoot().setVisibility(hasDetailLocation ? View.VISIBLE : View.GONE);
+                        }
+                    });
                 }
             });
 
@@ -328,7 +383,7 @@ public class InstanceMainActivity extends AppCompatActivity implements OnMapRead
                     @Override
                     public void run()
                     {
-                        binding.detailLocationLayout.setVisibility(View.VISIBLE);
+                        binding.instanceMainDetailLocationLayout.getRoot().setVisibility(View.VISIBLE);
 
                         if (coordToAddressDataWrapper.getException() == null)
                         {
@@ -338,22 +393,34 @@ public class InstanceMainActivity extends AppCompatActivity implements OnMapRead
                         if (selectedLocationDto.getPlaceName() != null)
                         {
                             //장소와 주소 표기
-                            binding.placeNameTextview.setText(selectedLocationDto.getPlaceName());
-                            binding.placeAddressTextview.setText(coordToAddress.getCoordToAddressDocuments().get(0)
+                            binding.instanceMainDetailLocationLayout.placeInfoLayout.placeName.setText(selectedLocationDto.getPlaceName());
+                            binding.instanceMainDetailLocationLayout.placeInfoLayout.addressName.setText(coordToAddress.getCoordToAddressDocuments().get(0)
                                     .getCoordToAddressAddress().getAddressName());
 
-                            binding.placeNameTextview.setVisibility(View.VISIBLE);
-                            binding.placeAddressTextview.setVisibility(View.VISIBLE);
-                            binding.addressTextview.setVisibility(View.GONE);
+                            binding.instanceMainDetailLocationLayout.placeInfoLayout.getRoot().setVisibility(View.VISIBLE);
+                            binding.instanceMainDetailLocationLayout.addressInfoLayout.getRoot().setVisibility(View.GONE);
                         } else
                         {
                             //주소 표기
-                            binding.addressTextview.setText(coordToAddress.getCoordToAddressDocuments().get(0)
+                            binding.instanceMainDetailLocationLayout.addressInfoLayout.addressName.setText(coordToAddress.getCoordToAddressDocuments().get(0)
                                     .getCoordToAddressAddress().getAddressName());
 
-                            binding.placeNameTextview.setVisibility(View.GONE);
-                            binding.placeAddressTextview.setVisibility(View.GONE);
-                            binding.addressTextview.setVisibility(View.VISIBLE);
+                            if (coordToAddress.getCoordToAddressDocuments().get(0).getCoordToAddressRoadAddress() != null)
+                            {
+                                binding.instanceMainDetailLocationLayout.addressInfoLayout.anotherAddressName
+                                        .setText(coordToAddress.getCoordToAddressDocuments().get(0).getCoordToAddressRoadAddress().getAddressName());
+                                binding.instanceMainDetailLocationLayout.addressInfoLayout.anotherAddressType.setText(R.string.road);
+                            }
+
+                            binding.instanceMainDetailLocationLayout.addressInfoLayout.anotherAddressName
+                                    .setVisibility(coordToAddress.getCoordToAddressDocuments().get(0).getCoordToAddressRoadAddress() != null ?
+                                            View.VISIBLE : View.GONE);
+                            binding.instanceMainDetailLocationLayout.addressInfoLayout.anotherAddressType
+                                    .setVisibility(coordToAddress.getCoordToAddressDocuments().get(0).getCoordToAddressRoadAddress() != null ?
+                                            View.VISIBLE : View.GONE);
+
+                            binding.instanceMainDetailLocationLayout.placeInfoLayout.getRoot().setVisibility(View.GONE);
+                            binding.instanceMainDetailLocationLayout.addressInfoLayout.getRoot().setVisibility(View.VISIBLE);
                         }
 
                         // mapview생성
@@ -453,7 +520,7 @@ public class InstanceMainActivity extends AppCompatActivity implements OnMapRead
             //map을 초기화 할때에는 인스턴스 전체 상호작용 중지
             binding.progressBar.setVisibility(View.VISIBLE);
             selectedLocationMapFragmentNaver = new SelectedLocationMapFragmentNaver(selectedLocationDto, this::onMapReady);
-            getSupportFragmentManager().beginTransaction().add(binding.selectedLocationMap.getId(),
+            getSupportFragmentManager().beginTransaction().add(binding.instanceMainDetailLocationLayout.selectedLocationMap.getId(),
                     selectedLocationMapFragmentNaver, SelectedLocationMapFragmentNaver.TAG).commitNow();
         }
     }
@@ -533,11 +600,9 @@ public class InstanceMainActivity extends AppCompatActivity implements OnMapRead
 
                         case RESULT_UPDATED_VALUE:
                             setSimpleInstanceData();
-                            setLocationData();
                             break;
 
                         case RESULT_CANCELED:
-                            // addSelectedLocationMap();
                             break;
                     }
                 }
@@ -549,7 +614,7 @@ public class InstanceMainActivity extends AppCompatActivity implements OnMapRead
                 @Override
                 public void onActivityResult(ActivityResult result)
                 {
-                    addSelectedLocationMap();
+
                 }
             });
 
@@ -559,7 +624,7 @@ public class InstanceMainActivity extends AppCompatActivity implements OnMapRead
                 @Override
                 public void onActivityResult(ActivityResult result)
                 {
-                    addSelectedLocationMap();
+
                 }
             });
 
@@ -569,7 +634,7 @@ public class InstanceMainActivity extends AppCompatActivity implements OnMapRead
                 @Override
                 public void onActivityResult(ActivityResult result)
                 {
-                    addSelectedLocationMap();
+
                 }
             });
 
@@ -583,7 +648,6 @@ public class InstanceMainActivity extends AppCompatActivity implements OnMapRead
                     if (result.getResultCode() == RESULT_SELECTED_LOCATION)
                     {
                         Toast.makeText(InstanceMainActivity.this, result.getData().getStringExtra("selectedLocationName"), Toast.LENGTH_SHORT).show();
-                        setLocationData();
                     } else
                     {
                         // 취소, 이벤트 정보 프래그먼트로 돌아감
@@ -603,26 +667,17 @@ public class InstanceMainActivity extends AppCompatActivity implements OnMapRead
                     {
                         case RESULT_RESELECTED_LOCATION:
                             String newLocation = result.getData().getStringExtra("selectedLocationName");
-                            setLocationData();
                             Toast.makeText(InstanceMainActivity.this, newLocation + " 변경완료", Toast.LENGTH_SHORT).show();
                             break;
 
                         case RESULT_REMOVED_LOCATION:
                             Toast.makeText(InstanceMainActivity.this, "위치 삭제완료", Toast.LENGTH_SHORT).show();
-                            setLocationData();
                             break;
                     }
                 }
             });
 
-    private final LocationAbstract locationAbstract = new LocationAbstract()
-    {
-        @Override
-        public void onRequestedActivity()
-        {
-          //  removeSelectedLocationMap();
-        }
-    };
+    private final LocationAbstract locationAbstract = new LocationAbstract();
 
     /**
      * SelectedLocationMap의 map이 준비완료 되었을때 동작
@@ -633,7 +688,7 @@ public class InstanceMainActivity extends AppCompatActivity implements OnMapRead
         binding.progressBar.setVisibility(View.GONE);
     }
 
-    public abstract static class LocationAbstract
+    public static class LocationAbstract
     {
         public void showSetLocationDialog(Activity activity, ActivityResultLauncher<Intent> activityResultLauncher, ContentValues instance)
         {
@@ -653,7 +708,6 @@ public class InstanceMainActivity extends AppCompatActivity implements OnMapRead
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i)
                         {
-                            onRequestedActivity();
                           /* kakao
                             Intent intent = new Intent(activity, MLocActivityKakao.class);
                            */
@@ -676,7 +730,7 @@ public class InstanceMainActivity extends AppCompatActivity implements OnMapRead
 
         public void startEditLocationActivity(Activity activity, ActivityResultLauncher<Intent> activityResultLauncher, LocationDTO locationDTO)
         {
-           // onRequestedActivity();
+            // onRequestedActivity();
             /* kakao
             Intent intent = new Intent(activity, ReselectDetailLocationKakao.class);
              */
@@ -689,8 +743,6 @@ public class InstanceMainActivity extends AppCompatActivity implements OnMapRead
             intent.putExtras(bundle);
             activityResultLauncher.launch(intent);
         }
-
-        public abstract void onRequestedActivity();
     }
 
 }

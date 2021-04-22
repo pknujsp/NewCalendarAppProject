@@ -50,6 +50,7 @@ public class PlaceListFragment extends Fragment implements PlaceItemsGetter, OnP
 {
     public static final String TAG = "PlaceListFragment";
     private final PlaceCategory placeCategoryInterface;
+    private DecimalFormat decimalFormat = new DecimalFormat("#.#");
 
     private OnClickedPlacesListListener onClickedPlacesListListener;
     private PlacelistFragmentBinding binding;
@@ -116,7 +117,8 @@ public class PlaceListFragment extends Fragment implements PlaceItemsGetter, OnP
 
         binding.radiusSeekbarLayout.setVisibility(View.GONE);
         DecimalFormat decimalFormat = new DecimalFormat("#.#");
-        binding.radiusSeekbar.setValue(Float.parseFloat(decimalFormat.format(Double.valueOf(App.getPreference_key_radius_range()) / 1000)));
+        float value = Math.round((Float.parseFloat(App.getPreference_key_radius_range()) / 1000f) * 10) / 10f;
+        binding.radiusSeekbar.setValue(Float.parseFloat(decimalFormat.format(value)));
 
         binding.searchRadius.setOnClickListener(new View.OnClickListener()
         {
@@ -154,8 +156,7 @@ public class PlaceListFragment extends Fragment implements PlaceItemsGetter, OnP
 
     private void setSearchRadius()
     {
-        double value = Double.parseDouble(App.getPreference_key_radius_range()) / 1000.0;
-        DecimalFormat decimalFormat = new DecimalFormat("#.#");
+        float value = Math.round((Float.parseFloat(App.getPreference_key_radius_range()) / 1000f) * 10) / 10f;
         binding.searchRadius.setText(getString(R.string.search_radius) + " " + decimalFormat.format(value) + "km");
     }
 
