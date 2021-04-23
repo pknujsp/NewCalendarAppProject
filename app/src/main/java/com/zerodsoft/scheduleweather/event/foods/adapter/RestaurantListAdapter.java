@@ -21,6 +21,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
+import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedRestaurantItem;
 import com.zerodsoft.scheduleweather.kakaomap.callback.PlaceItemCallback;
 import com.zerodsoft.scheduleweather.kakaoplace.KakaoPlace;
@@ -37,7 +38,7 @@ import java.util.List;
 
 public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, RestaurantListAdapter.ItemViewHolder>
 {
-    private final OnClickedRestaurantItem onClickedRestaurantItem;
+    private final OnClickedListItem<PlaceDocuments> onClickedListItem;
 
     private SparseArray<KakaoPlaceJsonRoot> kakaoPlacesArr = new SparseArray<>();
     private SparseArray<Bitmap> restaurantImagesArr = new SparseArray<>();
@@ -45,12 +46,12 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
     private Activity activity;
     private Context context;
 
-    public RestaurantListAdapter(Activity activity, OnClickedRestaurantItem onClickedRestaurantItem)
+    public RestaurantListAdapter(Activity activity, OnClickedListItem<PlaceDocuments> onClickedListItem)
     {
         super(new PlaceItemCallback());
         this.activity = activity;
         this.context = activity.getApplicationContext();
-        this.onClickedRestaurantItem = onClickedRestaurantItem;
+        this.onClickedListItem = onClickedListItem;
     }
 
     class ItemViewHolder extends RecyclerView.ViewHolder
@@ -104,7 +105,7 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
                 @Override
                 public void onClick(View view)
                 {
-                    onClickedRestaurantItem.onClickedRestaurantItem(getItem(getAdapterPosition()));
+                    onClickedListItem.onClickedListItem(getItem(getAdapterPosition()));
                 }
             });
         }

@@ -13,12 +13,26 @@ public class CriteriaLocationRepository
 
     public static void setRestaurantCriteriaLocation(LocationDTO restaurantCriteriaLocation)
     {
-        CriteriaLocationRepository.restaurantCriteriaLocation = restaurantCriteriaLocation;
+        try
+        {
+            CriteriaLocationRepository.restaurantCriteriaLocation = (LocationDTO) restaurantCriteriaLocation.clone();
+        } catch (CloneNotSupportedException e)
+        {
+            e.printStackTrace();
+        }
     }
 
     public static LocationDTO getRestaurantCriteriaLocation()
     {
-        return restaurantCriteriaLocation.copy();
+        LocationDTO locationDTO = null;
+        try
+        {
+            locationDTO = (LocationDTO) restaurantCriteriaLocation.clone();
+        } catch (Exception e)
+        {
+
+        }
+        return locationDTO;
     }
 
     public static void removeRestaurantCriteriaLocation()

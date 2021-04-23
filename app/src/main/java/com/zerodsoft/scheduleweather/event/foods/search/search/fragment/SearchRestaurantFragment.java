@@ -8,17 +8,23 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+import androidx.lifecycle.ViewModelProvider;
 
+import android.os.RemoteException;
+import android.service.carrier.CarrierMessagingService;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
+import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.databinding.FragmentSearchRestaurantBinding;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedRestaurantItem;
 import com.zerodsoft.scheduleweather.event.foods.search.searchresult.fragment.FoodRestaurantSearchResultFragment;
+import com.zerodsoft.scheduleweather.kakaomap.viewmodel.SearchHistoryViewModel;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.SearchHistoryDTO;
 
@@ -29,6 +35,7 @@ public class SearchRestaurantFragment extends Fragment implements OnClickedListI
     private FragmentSearchRestaurantBinding binding;
     private FoodRestaurantSearchHistoryFragment foodRestaurantSearchHistoryFragment;
     private FoodRestaurantSearchResultFragment searchResultFragment;
+    private SearchHistoryViewModel searchHistoryViewModel;
     private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
     {
         @Override
@@ -90,6 +97,7 @@ public class SearchRestaurantFragment extends Fragment implements OnClickedListI
     {
         super.onViewCreated(view, savedInstanceState);
 
+        searchHistoryViewModel = new ViewModelProvider(this).get(SearchHistoryViewModel.class);
         //검색 기록 프래그먼트 표시
         foodRestaurantSearchHistoryFragment = new FoodRestaurantSearchHistoryFragment(this);
         getChildFragmentManager().beginTransaction().add(binding.searchFoodRestaurantFragmentContainer.getId(),
@@ -115,8 +123,31 @@ public class SearchRestaurantFragment extends Fragment implements OnClickedListI
             @Override
             public void onClick(View view)
             {
-                search(binding.editTextSearch.getText().toString());
-                foodRestaurantSearchHistoryFragment.insertHistory(binding.editTextSearch.getText().toString());
+                String value = binding.editTextSearch.getText().toString();
+                searchHistoryViewModel.contains(SearchHistoryDTO.FOOD_RESTAURANT_SEARCH, value, new CarrierMessagingService.ResultCallback<Boolean>()
+                {
+                    @Override
+                    public void onReceiveResult(@NonNull Boolean isDuplicate) throws RemoteException
+                    {
+                        getActivity().runOnUiThread(new Runnable()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                if (isDuplicate)
+                                {
+                                    Toast.makeText(getContext(), R.string.duplicate_value, Toast.LENGTH_SHORT).show();
+                                } else
+                                {
+                                    search(binding.editTextSearch.getText().toString());
+                                    foodRestaurantSearchHistoryFragment.insertHistory(value);
+                                }
+                            }
+                        });
+
+                    }
+                });
+
             }
         });
 

@@ -8,9 +8,9 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 
+import android.content.ContentValues;
 import android.net.ConnectivityManager;
 import android.net.Network;
-import android.net.NetworkCapabilities;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.provider.CalendarContract;
@@ -20,9 +20,6 @@ import android.view.MenuItem;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.ActivityFoodsBinding;
-import com.zerodsoft.scheduleweather.event.foods.categorylist.FoodCategoryTabFragment;
-import com.zerodsoft.scheduleweather.event.foods.categorylist.FoodsCategoryListFragment;
-import com.zerodsoft.scheduleweather.event.foods.interfaces.FragmentChanger;
 import com.zerodsoft.scheduleweather.event.foods.main.fragment.FoodsMainFragment;
 import com.zerodsoft.scheduleweather.event.foods.search.search.fragment.SearchRestaurantFragment;
 import com.zerodsoft.scheduleweather.event.foods.settings.FoodsSettingsFragment;
@@ -37,10 +34,7 @@ public class FoodsActivity extends AppCompatActivity implements INetwork, Bottom
     private FoodCriteriaLocationInfoViewModel foodCriteriaLocationInfoViewModel;
     private NetworkStatus networkStatus;
     private Fragment currentShowingFragment;
-
-    private Integer calendarId;
-    private Long instanceId;
-    private Long eventId;
+    private final ContentValues INSTANCE_VALUES = new ContentValues();
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -50,9 +44,9 @@ public class FoodsActivity extends AppCompatActivity implements INetwork, Bottom
 
         Bundle bundle = getIntent().getExtras();
 
-        calendarId = bundle.getInt(CalendarContract.Instances.CALENDAR_ID);
-        instanceId = bundle.getLong(CalendarContract.Instances._ID);
-        eventId = bundle.getLong(CalendarContract.Instances.EVENT_ID);
+        INSTANCE_VALUES.put(CalendarContract.Instances.CALENDAR_ID, bundle.getInt(CalendarContract.Instances.CALENDAR_ID));
+        INSTANCE_VALUES.put(CalendarContract.Instances._ID, bundle.getLong(CalendarContract.Instances._ID));
+        INSTANCE_VALUES.put(CalendarContract.Instances.EVENT_ID, bundle.getLong(CalendarContract.Instances.EVENT_ID));
 
         networkStatus = new NetworkStatus(getApplicationContext(), new ConnectivityManager.NetworkCallback()
         {
@@ -89,52 +83,55 @@ public class FoodsActivity extends AppCompatActivity implements INetwork, Bottom
 
         foodCriteriaLocationInfoViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationInfoViewModel.class);
         //기준 위치 정보가 저장되어있는지 확인
-        foodCriteriaLocationInfoViewModel.selectByEventId(calendarId, eventId, new CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO>()
-        {
-            @Override
-            public void onReceiveResult(@NonNull FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO) throws RemoteException
-            {
-                runOnUiThread(new Runnable()
+        foodCriteriaLocationInfoViewModel.selectByEventId(INSTANCE_VALUES.getAsInteger(CalendarContract.Instances.CALENDAR_ID)
+                , INSTANCE_VALUES.getAsLong(CalendarContract.Instances.EVENT_ID), new CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO>()
                 {
                     @Override
-                    public void run()
+                    public void onReceiveResult(@NonNull FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO) throws RemoteException
                     {
-                        if (foodCriteriaLocationInfoDTO == null)
+                        runOnUiThread(new Runnable()
                         {
-                            //기준 정보가 지정되어 있지 않으면, 지정한 장소/주소를 기준으로 하도록 설정해준다
-                            foodCriteriaLocationInfoViewModel.insertByEventId(calendarId, eventId, FoodCriteriaLocationInfoDTO.TYPE_SELECTED_LOCATION, null, new CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO>()
+                            @Override
+                            public void run()
                             {
-                                @Override
-                                public void onReceiveResult(@NonNull FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO) throws RemoteException
+                                if (foodCriteriaLocationInfoDTO == null)
                                 {
-                                    runOnUiThread(new Runnable()
-                                    {
-                                        @Override
-                                        public void run()
-                                        {
-                                            setInitFragments();
-                                        }
-                                    });
+                                    //기준 정보가 지정되어 있지 않으면, 지정한 장소/주소를 기준으로 하도록 설정해준다
+                                    foodCriteriaLocationInfoViewModel.insertByEventId(INSTANCE_VALUES.getAsInteger(CalendarContract.Instances.CALENDAR_ID)
+                                            , INSTANCE_VALUES.getAsLong(CalendarContract.Instances.EVENT_ID)
+                                            , FoodCriteriaLocationInfoDTO.TYPE_SELECTED_LOCATION, null, new CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO>()
+                                            {
+                                                @Override
+                                                public void onReceiveResult(@NonNull FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO) throws RemoteException
+                                                {
+                                                    runOnUiThread(new Runnable()
+                                                    {
+                                                        @Override
+                                                        public void run()
+                                                        {
+                                                            setInitFragments();
+                                                        }
+                                                    });
 
+                                                }
+                                            });
+                                } else
+                                {
+                                    setInitFragments();
                                 }
-                            });
-                        } else
-                        {
-                            setInitFragments();
-                        }
+                            }
+                        });
                     }
                 });
-            }
-        });
 
     }
 
     private void setInitFragments()
     {
         Bundle fragmentBundle = new Bundle();
-        fragmentBundle.putInt(CalendarContract.Instances.CALENDAR_ID, calendarId);
-        fragmentBundle.putLong(CalendarContract.Instances._ID, instanceId);
-        fragmentBundle.putLong(CalendarContract.Instances.EVENT_ID, eventId);
+        fragmentBundle.putInt(CalendarContract.Instances.CALENDAR_ID, INSTANCE_VALUES.getAsInteger(CalendarContract.Instances.CALENDAR_ID));
+        fragmentBundle.putLong(CalendarContract.Instances._ID, INSTANCE_VALUES.getAsLong(CalendarContract.Instances._ID));
+        fragmentBundle.putLong(CalendarContract.Instances.EVENT_ID, INSTANCE_VALUES.getAsLong(CalendarContract.Instances.EVENT_ID));
 
         FoodsMainFragment foodsMainFragment = new FoodsMainFragment(FoodsActivity.this::networkAvailable);
         foodsMainFragment.setArguments(fragmentBundle);

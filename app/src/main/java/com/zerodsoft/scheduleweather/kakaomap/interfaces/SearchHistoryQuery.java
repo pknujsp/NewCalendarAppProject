@@ -2,9 +2,6 @@ package com.zerodsoft.scheduleweather.kakaomap.interfaces;
 
 import android.service.carrier.CarrierMessagingService;
 
-import androidx.room.Query;
-
-import com.zerodsoft.scheduleweather.room.dao.SearchHistoryDAO;
 import com.zerodsoft.scheduleweather.room.dto.SearchHistoryDTO;
 
 import java.util.List;
@@ -22,4 +19,6 @@ public interface SearchHistoryQuery
     void delete(Integer type, String value, CarrierMessagingService.ResultCallback<Boolean> callback);
 
     void deleteAll(Integer type, CarrierMessagingService.ResultCallback<Boolean> callback);
+
+    void contains(Integer type, String value, CarrierMessagingService.ResultCallback<Boolean> callback);
 }

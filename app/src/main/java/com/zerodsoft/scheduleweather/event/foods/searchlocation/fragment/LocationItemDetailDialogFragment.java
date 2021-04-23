@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.FragmentLocationItemDetailDialogBinding;
+import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.foods.searchlocation.interfaces.OnSelectedNewLocation;
 import com.zerodsoft.scheduleweather.event.places.selectedlocation.SelectedLocationMapFragmentKakao;
 import com.zerodsoft.scheduleweather.event.places.selectedlocation.SelectedLocationMapFragmentNaver;
@@ -53,7 +54,6 @@ public class LocationItemDetailDialogFragment extends DialogFragment
     {
         super.onViewCreated(view, savedInstanceState);
         binding.locationInfo.deleteButton.setVisibility(View.GONE);
-
         selectedLocationDto = new LocationDTO();
 
         if (kakaoLocalDocument instanceof PlaceDocuments)
@@ -64,6 +64,7 @@ public class LocationItemDetailDialogFragment extends DialogFragment
             selectedLocationDto.setLongitude(placeDocuments.getX());
             selectedLocationDto.setPlaceName(placeDocuments.getPlaceName());
             selectedLocationDto.setAddressName(placeDocuments.getAddressName());
+            selectedLocationDto.setLocationType(LocationType.PLACE);
 
             binding.locationInfo.placeName.setText(placeDocuments.getPlaceName());
             binding.locationInfo.addressName.setText(placeDocuments.getAddressName());
@@ -86,6 +87,7 @@ public class LocationItemDetailDialogFragment extends DialogFragment
             selectedLocationDto.setLatitude(addressResponseDocuments.getY());
             selectedLocationDto.setLongitude(addressResponseDocuments.getX());
             selectedLocationDto.setAddressName(addressResponseDocuments.getAddressName());
+            selectedLocationDto.setLocationType(LocationType.ADDRESS);
 
             binding.locationInfo.placeName.setVisibility(View.GONE);
             binding.locationInfo.addressName.setText(addressResponseDocuments.getAddressName());

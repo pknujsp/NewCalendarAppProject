@@ -27,4 +27,7 @@ public interface SearchHistoryDAO
 
     @Query("DELETE FROM search_history_table WHERE type = :type")
     void deleteAll(Integer type);
+
+    @Query("SELECT EXISTS (SELECT * FROM search_history_table WHERE type = :type AND value = :value) AS SUCCESS")
+    int contains(Integer type, String value);
 }

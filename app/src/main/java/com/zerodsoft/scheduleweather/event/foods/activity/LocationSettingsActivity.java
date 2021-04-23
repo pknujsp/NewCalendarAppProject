@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import android.content.ContentValues;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.provider.CalendarContract;
@@ -17,6 +18,7 @@ import android.widget.RadioGroup;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.ActivityLocationSettingsBinding;
+import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.foods.adapter.FoodCriteriaLocationHistoryAdapter;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.LocationHistoryController;
@@ -38,10 +40,7 @@ public class LocationSettingsActivity extends AppCompatActivity implements Locat
     private LocationViewModel locationViewModel;
     private FoodCriteriaLocationInfoViewModel foodCriteriaLocationInfoViewModel;
     private FoodCriteriaLocationHistoryViewModel foodCriteriaLocationSearchHistoryViewModel;
-
-    private int calendarId;
-    private long instanceId;
-    private long eventId;
+    private ContentValues instanceValues;
 
     private LocationDTO locationDTO;
     private List<FoodCriteriaLocationSearchHistoryDTO> foodCriteriaLocationHistoryList;
@@ -55,9 +54,7 @@ public class LocationSettingsActivity extends AppCompatActivity implements Locat
         binding = DataBindingUtil.setContentView(this, R.layout.activity_location_settings);
 
         Bundle bundle = getIntent().getExtras();
-        calendarId = bundle.getInt(CalendarContract.Instances.CALENDAR_ID);
-        instanceId = bundle.getLong(CalendarContract.Instances._ID);
-        eventId = bundle.getLong(CalendarContract.Instances.EVENT_ID);
+        instanceValues = bundle.getParcelable("INSTANCE_VALUES");
 
         binding.addressHistoryRecyclerview.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         binding.addressHistoryRecyclerview.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
@@ -70,62 +67,67 @@ public class LocationSettingsActivity extends AppCompatActivity implements Locat
         foodCriteriaLocationInfoViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationInfoViewModel.class);
         foodCriteriaLocationSearchHistoryViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationHistoryViewModel.class);
 
-        locationViewModel.getLocation(calendarId, eventId, new CarrierMessagingService.ResultCallback<LocationDTO>()
-        {
-            @Override
-            public void onReceiveResult(@NonNull LocationDTO locationDTO) throws RemoteException
-            {
-                //address, place 구분
-                runOnUiThread(new Runnable()
+        locationViewModel.getLocation(instanceValues.getAsInteger(CalendarContract.Instances.CALENDAR_ID)
+                , instanceValues.getAsLong(CalendarContract.Instances.EVENT_ID), new CarrierMessagingService.ResultCallback<LocationDTO>()
                 {
                     @Override
-                    public void run()
+                    public void onReceiveResult(@NonNull LocationDTO locationDTO) throws RemoteException
                     {
-                        LocationSettingsActivity.this.locationDTO = locationDTO;
-
-                        if (locationDTO.getPlaceName() != null)
-                        {
-                            binding.radioUseSelectedLocation.setText(locationDTO.getPlaceName());
-                        } else
-                        {
-                            binding.radioUseSelectedLocation.setText(locationDTO.getAddressName());
-                        }
-
-                        //지정한 위치 정보 데이터를 가져왔으면 기준 위치 선택정보를 가져온다.
-                        foodCriteriaLocationInfoViewModel.selectByEventId(calendarId, eventId, new CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO>()
+                        //address, place 구분
+                        runOnUiThread(new Runnable()
                         {
                             @Override
-                            public void onReceiveResult(@NonNull FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO) throws RemoteException
+                            public void run()
                             {
-                                runOnUiThread(new Runnable()
+                                LocationSettingsActivity.this.locationDTO = locationDTO;
+
+                                if (locationDTO.getLocationType() == LocationType.PLACE)
                                 {
-                                    @Override
-                                    public void run()
-                                    {
-                                        switch (foodCriteriaLocationInfoDTO.getUsingType())
+                                    binding.radioUseSelectedLocation.setText(locationDTO.getPlaceName());
+                                } else
+                                {
+                                    binding.radioUseSelectedLocation.setText(locationDTO.getAddressName());
+                                }
+
+                                //지정한 위치 정보 데이터를 가져왔으면 기준 위치 선택정보를 가져온다.
+                                foodCriteriaLocationInfoViewModel.selectByEventId(instanceValues.getAsInteger(CalendarContract.Instances.CALENDAR_ID)
+                                        , instanceValues.getAsLong(CalendarContract.Instances.EVENT_ID), new CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO>()
                                         {
-                                            case FoodCriteriaLocationInfoDTO.TYPE_SELECTED_LOCATION:
-                                                binding.radioUseSelectedLocation.setChecked(true);
-                                                break;
-                                            case FoodCriteriaLocationInfoDTO.TYPE_CURRENT_LOCATION:
-                                                binding.radioCurrentLocation.setChecked(true);
-                                                break;
-                                            case FoodCriteriaLocationInfoDTO.TYPE_CUSTOM_SELECTED_LOCATION:
-                                                binding.radioCustomSelection.setChecked(true);
-                                                foodCriteriaLocationSearchHistoryViewModel.select(foodCriteriaLocationInfoDTO.getId(),
-                                                        new CarrierMessagingService.ResultCallback<FoodCriteriaLocationSearchHistoryDTO>()
+                                            @Override
+                                            public void onReceiveResult(@NonNull FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO) throws RemoteException
+                                            {
+                                                runOnUiThread(new Runnable()
+                                                {
+                                                    @Override
+                                                    public void run()
+                                                    {
+                                                        switch (foodCriteriaLocationInfoDTO.getUsingType())
                                                         {
-                                                            @Override
-                                                            public void onReceiveResult(@NonNull FoodCriteriaLocationSearchHistoryDTO result) throws RemoteException
-                                                            {
-                                                                LocationSettingsActivity.this.selectedFoodCriteriaLocationSearchHistoryDTO =
-                                                                        result;
-                                                            }
-                                                        });
-                                                break;
-                                        }
-                                    }
-                                });
+                                                            case FoodCriteriaLocationInfoDTO.TYPE_SELECTED_LOCATION:
+                                                                binding.radioUseSelectedLocation.setChecked(true);
+                                                                break;
+                                                            case FoodCriteriaLocationInfoDTO.TYPE_CURRENT_LOCATION:
+                                                                binding.radioCurrentLocation.setChecked(true);
+                                                                break;
+                                                            case FoodCriteriaLocationInfoDTO.TYPE_CUSTOM_SELECTED_LOCATION:
+                                                                binding.radioCustomSelection.setChecked(true);
+                                                                foodCriteriaLocationSearchHistoryViewModel.select(foodCriteriaLocationInfoDTO.getId(),
+                                                                        new CarrierMessagingService.ResultCallback<FoodCriteriaLocationSearchHistoryDTO>()
+                                                                        {
+                                                                            @Override
+                                                                            public void onReceiveResult(@NonNull FoodCriteriaLocationSearchHistoryDTO result) throws RemoteException
+                                                                            {
+                                                                                LocationSettingsActivity.this.selectedFoodCriteriaLocationSearchHistoryDTO =
+                                                                                        result;
+                                                                            }
+                                                                        });
+                                                                break;
+                                                        }
+                                                    }
+                                                });
+
+                                            }
+                                        });
 
                             }
                         });
@@ -133,29 +135,27 @@ public class LocationSettingsActivity extends AppCompatActivity implements Locat
                     }
                 });
 
-            }
-        });
-
-        foodCriteriaLocationSearchHistoryViewModel.selectByEventId(calendarId, eventId, new CarrierMessagingService.ResultCallback<List<FoodCriteriaLocationSearchHistoryDTO>>()
-        {
-            @Override
-            public void onReceiveResult(@NonNull List<FoodCriteriaLocationSearchHistoryDTO> result) throws RemoteException
-            {
-                runOnUiThread(new Runnable()
+        foodCriteriaLocationSearchHistoryViewModel.selectByEventId(instanceValues.getAsInteger(CalendarContract.Instances.CALENDAR_ID)
+                , instanceValues.getAsLong(CalendarContract.Instances.EVENT_ID), new CarrierMessagingService.ResultCallback<List<FoodCriteriaLocationSearchHistoryDTO>>()
                 {
                     @Override
-                    public void run()
+                    public void onReceiveResult(@NonNull List<FoodCriteriaLocationSearchHistoryDTO> result) throws RemoteException
                     {
-                        LocationSettingsActivity.this.foodCriteriaLocationHistoryList = result;
+                        runOnUiThread(new Runnable()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                LocationSettingsActivity.this.foodCriteriaLocationHistoryList = result;
 
-                        foodCriteriaLocationHistoryAdapter = new FoodCriteriaLocationHistoryAdapter(LocationSettingsActivity.this);
-                        foodCriteriaLocationHistoryAdapter.setFoodCriteriaLocationHistoryList(foodCriteriaLocationHistoryList);
+                                foodCriteriaLocationHistoryAdapter = new FoodCriteriaLocationHistoryAdapter(LocationSettingsActivity.this);
+                                foodCriteriaLocationHistoryAdapter.setFoodCriteriaLocationHistoryList(foodCriteriaLocationHistoryList);
 
-                        binding.addressHistoryRecyclerview.setAdapter(foodCriteriaLocationHistoryAdapter);
+                                binding.addressHistoryRecyclerview.setAdapter(foodCriteriaLocationHistoryAdapter);
+                            }
+                        });
                     }
                 });
-            }
-        });
     }
 
     private RadioGroup.OnCheckedChangeListener radioOnCheckedChangeListener = new RadioGroup.OnCheckedChangeListener()
@@ -226,19 +226,22 @@ public class LocationSettingsActivity extends AppCompatActivity implements Locat
         if (binding.radioGroup.getCheckedRadioButtonId() == binding.radioUseSelectedLocation.getId())
         {
             //변경 타입 업데이트
-            foodCriteriaLocationInfoViewModel.updateByEventId(calendarId, eventId, FoodCriteriaLocationInfoDTO.TYPE_SELECTED_LOCATION, null, finishCallback);
+            foodCriteriaLocationInfoViewModel.updateByEventId(instanceValues.getAsInteger(CalendarContract.Instances.CALENDAR_ID)
+                    , instanceValues.getAsLong(CalendarContract.Instances.EVENT_ID), FoodCriteriaLocationInfoDTO.TYPE_SELECTED_LOCATION, null, finishCallback);
 
         } else if (binding.radioGroup.getCheckedRadioButtonId() == binding.radioCurrentLocation.getId())
         {
             //변경 타입 업데이트
-            foodCriteriaLocationInfoViewModel.updateByEventId(calendarId, eventId, FoodCriteriaLocationInfoDTO.TYPE_CURRENT_LOCATION, null, finishCallback);
+            foodCriteriaLocationInfoViewModel.updateByEventId(instanceValues.getAsInteger(CalendarContract.Instances.CALENDAR_ID)
+                    , instanceValues.getAsLong(CalendarContract.Instances.EVENT_ID), FoodCriteriaLocationInfoDTO.TYPE_CURRENT_LOCATION, null, finishCallback);
 
         } else if (binding.radioGroup.getCheckedRadioButtonId() == binding.radioCustomSelection.getId())
         {
             //선택된 정보가 없는 경우 : 이벤트에서 지정한 위치를 기준으로 강제설정
             if (selectedFoodCriteriaLocationSearchHistoryDTO == null)
             {
-                foodCriteriaLocationInfoViewModel.updateByEventId(calendarId, eventId, FoodCriteriaLocationInfoDTO.TYPE_SELECTED_LOCATION, null, finishCallback);
+                foodCriteriaLocationInfoViewModel.updateByEventId(instanceValues.getAsInteger(CalendarContract.Instances.CALENDAR_ID)
+                        , instanceValues.getAsLong(CalendarContract.Instances.EVENT_ID), FoodCriteriaLocationInfoDTO.TYPE_SELECTED_LOCATION, null, finishCallback);
             } else
             {
                 foodCriteriaLocationSearchHistoryViewModel.containsData(selectedFoodCriteriaLocationSearchHistoryDTO.getId(), new CarrierMessagingService.ResultCallback<Boolean>()
@@ -257,7 +260,8 @@ public class LocationSettingsActivity extends AppCompatActivity implements Locat
                                     finish();
                                 } else
                                 {
-                                    foodCriteriaLocationInfoViewModel.updateByEventId(calendarId, eventId, FoodCriteriaLocationInfoDTO.TYPE_SELECTED_LOCATION, null, finishCallback);
+                                    foodCriteriaLocationInfoViewModel.updateByEventId(instanceValues.getAsInteger(CalendarContract.Instances.CALENDAR_ID)
+                                            , instanceValues.getAsLong(CalendarContract.Instances.EVENT_ID), FoodCriteriaLocationInfoDTO.TYPE_SELECTED_LOCATION, null, finishCallback);
                                 }
 
                             }
@@ -290,7 +294,8 @@ public class LocationSettingsActivity extends AppCompatActivity implements Locat
     @Override
     public void onClickedLocationHistoryItem(FoodCriteriaLocationSearchHistoryDTO foodCriteriaLocationSearchHistoryDTO)
     {
-        foodCriteriaLocationInfoViewModel.updateByEventId(calendarId, eventId, FoodCriteriaLocationInfoDTO.TYPE_CUSTOM_SELECTED_LOCATION
+        foodCriteriaLocationInfoViewModel.updateByEventId(instanceValues.getAsInteger(CalendarContract.Instances.CALENDAR_ID)
+                , instanceValues.getAsLong(CalendarContract.Instances.EVENT_ID), FoodCriteriaLocationInfoDTO.TYPE_CUSTOM_SELECTED_LOCATION
                 , foodCriteriaLocationSearchHistoryDTO.getId(), new CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO>()
                 {
                     @Override
@@ -320,25 +325,26 @@ public class LocationSettingsActivity extends AppCompatActivity implements Locat
             {
                 if (result)
                 {
-                    foodCriteriaLocationSearchHistoryViewModel.selectByEventId(calendarId, eventId, new CarrierMessagingService.ResultCallback<List<FoodCriteriaLocationSearchHistoryDTO>>()
-                    {
-                        @Override
-                        public void onReceiveResult(@NonNull List<FoodCriteriaLocationSearchHistoryDTO> result) throws RemoteException
-                        {
-                            runOnUiThread(new Runnable()
+                    foodCriteriaLocationSearchHistoryViewModel.selectByEventId(instanceValues.getAsInteger(CalendarContract.Instances.CALENDAR_ID)
+                            , instanceValues.getAsLong(CalendarContract.Instances.EVENT_ID), new CarrierMessagingService.ResultCallback<List<FoodCriteriaLocationSearchHistoryDTO>>()
                             {
                                 @Override
-                                public void run()
+                                public void onReceiveResult(@NonNull List<FoodCriteriaLocationSearchHistoryDTO> result) throws RemoteException
                                 {
-                                    LocationSettingsActivity.this.foodCriteriaLocationHistoryList = result;
+                                    runOnUiThread(new Runnable()
+                                    {
+                                        @Override
+                                        public void run()
+                                        {
+                                            LocationSettingsActivity.this.foodCriteriaLocationHistoryList = result;
 
-                                    foodCriteriaLocationHistoryAdapter.setFoodCriteriaLocationHistoryList(foodCriteriaLocationHistoryList);
-                                    foodCriteriaLocationHistoryAdapter.notifyDataSetChanged();
+                                            foodCriteriaLocationHistoryAdapter.setFoodCriteriaLocationHistoryList(foodCriteriaLocationHistoryList);
+                                            foodCriteriaLocationHistoryAdapter.notifyDataSetChanged();
+                                        }
+                                    });
+
                                 }
                             });
-
-                        }
-                    });
                 }
 
             }
@@ -349,7 +355,8 @@ public class LocationSettingsActivity extends AppCompatActivity implements Locat
     @Override
     public void onSelectedNewLocation(LocationDTO locationDTO)
     {
-        foodCriteriaLocationSearchHistoryViewModel.insertByEventId(calendarId, eventId, locationDTO.getPlaceName(), locationDTO.getAddressName(),
+        foodCriteriaLocationSearchHistoryViewModel.insertByEventId(instanceValues.getAsInteger(CalendarContract.Instances.CALENDAR_ID)
+                , instanceValues.getAsLong(CalendarContract.Instances.EVENT_ID), locationDTO.getPlaceName(), locationDTO.getAddressName(),
                 locationDTO.getRoadAddressName()
                 , String.valueOf(locationDTO.getLatitude()), String.valueOf(locationDTO.getLongitude()),
                 new CarrierMessagingService.ResultCallback<List<FoodCriteriaLocationSearchHistoryDTO>>()
@@ -359,22 +366,23 @@ public class LocationSettingsActivity extends AppCompatActivity implements Locat
                     {
                         //변경 타입 업데이트
                         int id = result.get(result.size() - 1).getId();
-                        foodCriteriaLocationInfoViewModel.updateByEventId(calendarId, eventId, FoodCriteriaLocationInfoDTO.TYPE_CUSTOM_SELECTED_LOCATION, id, new CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO>()
-                        {
-                            @Override
-                            public void onReceiveResult(@NonNull FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO) throws RemoteException
-                            {
-                                runOnUiThread(new Runnable()
+                        foodCriteriaLocationInfoViewModel.updateByEventId(instanceValues.getAsInteger(CalendarContract.Instances.CALENDAR_ID)
+                                , instanceValues.getAsLong(CalendarContract.Instances.EVENT_ID), FoodCriteriaLocationInfoDTO.TYPE_CUSTOM_SELECTED_LOCATION, id, new CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO>()
                                 {
                                     @Override
-                                    public void run()
+                                    public void onReceiveResult(@NonNull FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO) throws RemoteException
                                     {
-                                        setResult(RESULT_OK);
-                                        finish();
+                                        runOnUiThread(new Runnable()
+                                        {
+                                            @Override
+                                            public void run()
+                                            {
+                                                setResult(RESULT_OK);
+                                                finish();
+                                            }
+                                        });
                                     }
                                 });
-                            }
-                        });
                     }
                 });
 

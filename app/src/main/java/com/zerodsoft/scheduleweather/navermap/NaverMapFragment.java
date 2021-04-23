@@ -66,6 +66,7 @@ import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.databinding.FragmentNaverMapBinding;
 import com.zerodsoft.scheduleweather.etc.AppPermission;
 import com.zerodsoft.scheduleweather.etc.FragmentStateCallback;
+import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.places.interfaces.OnClickedPlacesListListener;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PoiItemOnClickListener;
 import com.zerodsoft.scheduleweather.kakaomap.bottomsheet.adapter.PlaceItemInMapViewAdapter;
@@ -1016,6 +1017,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
             location.setPlaceName(placeDocuments.getPlaceName());
             location.setLatitude(placeDocuments.getY());
             location.setLongitude(placeDocuments.getX());
+            location.setLocationType(LocationType.PLACE);
         } else
         {
             AddressResponseDocuments addressDocuments = (AddressResponseDocuments) kakaoLocalDocument;
@@ -1023,6 +1025,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
             location.setAddressName(addressDocuments.getAddressName());
             location.setLatitude(addressDocuments.getY());
             location.setLongitude(addressDocuments.getX());
+            location.setLocationType(LocationType.ADDRESS);
         }
         return location;
     }

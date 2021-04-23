@@ -10,6 +10,7 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.main.InstanceMainActivity;
 import com.zerodsoft.scheduleweather.kakaomap.activity.KakaoMapActivity;
@@ -116,7 +117,7 @@ public class MLocActivityNaver extends NaverMapActivity
                     {
                         if (aBoolean)
                         {
-                            getIntent().putExtra("selectedLocationName", (location.getAddressName() == null ? location.getPlaceName() : location.getAddressName()) + " 지정완료");
+                            getIntent().putExtra("selectedLocationName", (location.getLocationType() == LocationType.PLACE ? location.getPlaceName() : location.getAddressName()) + " 지정완료");
                             setResult(InstanceMainActivity.RESULT_SELECTED_LOCATION, getIntent());
                             finish();
                             onBackPressedCallback.remove();

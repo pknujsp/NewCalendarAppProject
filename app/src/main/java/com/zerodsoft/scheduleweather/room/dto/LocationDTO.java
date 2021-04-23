@@ -3,6 +3,7 @@ package com.zerodsoft.scheduleweather.room.dto;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.Ignore;
@@ -11,8 +12,9 @@ import androidx.room.PrimaryKey;
 import java.util.Objects;
 
 @Entity(tableName = "location_table")
-public class LocationDTO implements Parcelable
+public class LocationDTO implements Parcelable, Cloneable
 {
+
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "id")
     private int id;
@@ -41,12 +43,15 @@ public class LocationDTO implements Parcelable
     @ColumnInfo(name = "place_name")
     private String placeName;
 
+    @ColumnInfo(name = "location_type")
+    private int locationType;
+
     @Ignore
     public LocationDTO()
     {
     }
 
-    public LocationDTO(int id, int calendarId, long eventId, double latitude, double longitude, String addressName, String roadAddressName, String placeId, String placeName)
+    public LocationDTO(int id, int calendarId, long eventId, double latitude, double longitude, String addressName, String roadAddressName, String placeId, String placeName, int locationType)
     {
         this.id = id;
         this.calendarId = calendarId;
@@ -57,6 +62,7 @@ public class LocationDTO implements Parcelable
         this.roadAddressName = roadAddressName;
         this.placeId = placeId;
         this.placeName = placeName;
+        this.locationType = locationType;
     }
 
     protected LocationDTO(Parcel in)
@@ -70,6 +76,7 @@ public class LocationDTO implements Parcelable
         roadAddressName = in.readString();
         placeId = in.readString();
         placeName = in.readString();
+        locationType = in.readInt();
     }
 
     public static final Creator<LocationDTO> CREATOR = new Creator<LocationDTO>()
@@ -86,11 +93,6 @@ public class LocationDTO implements Parcelable
             return new LocationDTO[size];
         }
     };
-
-    public LocationDTO copy()
-    {
-        return new LocationDTO(id, calendarId, eventId, latitude, longitude, addressName, roadAddressName, placeId, placeName);
-    }
 
     @Override
     public int describeContents()
@@ -110,6 +112,40 @@ public class LocationDTO implements Parcelable
         parcel.writeString(roadAddressName);
         parcel.writeString(placeId);
         parcel.writeString(placeName);
+        parcel.writeInt(locationType);
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        LocationDTO that = (LocationDTO) o;
+        return calendarId == that.calendarId &&
+                eventId == that.eventId &&
+                Double.compare(that.latitude, latitude) == 0 &&
+                Double.compare(that.longitude, longitude) == 0 &&
+                locationType == that.locationType &&
+                Objects.equals(addressName, that.addressName) &&
+                Objects.equals(roadAddressName, that.roadAddressName) &&
+                Objects.equals(placeId, that.placeId) &&
+                Objects.equals(placeName, that.placeName);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(calendarId, eventId, latitude, longitude, addressName, roadAddressName, placeId, placeName, locationType);
+    }
+
+
+    @NonNull
+    @Override
+    public LocationDTO clone() throws CloneNotSupportedException
+    {
+        return (LocationDTO) super.clone();
     }
 
     public int getId()
@@ -202,32 +238,18 @@ public class LocationDTO implements Parcelable
         this.placeName = placeName;
     }
 
+    public int getLocationType()
+    {
+        return locationType;
+    }
+
+    public void setLocationType(int locationType)
+    {
+        this.locationType = locationType;
+    }
+
     public boolean isEmpty()
     {
-        return latitude == 0;
-    }
-
-    @Override
-    public boolean equals(Object o)
-    {
-        if (this == o)
-            return true;
-        if (o == null || getClass() != o.getClass())
-            return false;
-        LocationDTO that = (LocationDTO) o;
-        return calendarId == that.calendarId &&
-                eventId == that.eventId &&
-                Double.compare(that.latitude, latitude) == 0 &&
-                Double.compare(that.longitude, longitude) == 0 &&
-                Objects.equals(addressName, that.addressName) &&
-                Objects.equals(roadAddressName, that.roadAddressName) &&
-                Objects.equals(placeId, that.placeId) &&
-                Objects.equals(placeName, that.placeName);
-    }
-
-    @Override
-    public int hashCode()
-    {
-        return Objects.hash(calendarId, eventId, latitude, longitude, addressName, roadAddressName, placeId, placeName);
+        return latitude == 0 ? true : false;
     }
 }

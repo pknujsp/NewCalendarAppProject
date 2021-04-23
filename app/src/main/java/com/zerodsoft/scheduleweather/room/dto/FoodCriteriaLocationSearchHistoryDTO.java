@@ -35,6 +35,10 @@ public class FoodCriteriaLocationSearchHistoryDTO
     @ColumnInfo(name = "longitude")
     private String longitude;
 
+    @ColumnInfo(name = "location_type")
+    private int locationType;
+
+
     public int getId()
     {
         return id;
@@ -123,5 +127,15 @@ public class FoodCriteriaLocationSearchHistoryDTO
     public void setLongitude(String longitude)
     {
         this.longitude = longitude;
+    }
+
+    public void setLocationType(int locationType)
+    {
+        this.locationType = locationType;
+    }
+
+    public int getLocationType()
+    {
+        return locationType;
     }
 }

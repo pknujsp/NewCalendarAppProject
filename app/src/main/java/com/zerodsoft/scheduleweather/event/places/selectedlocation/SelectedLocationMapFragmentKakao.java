@@ -14,6 +14,7 @@ import android.widget.RelativeLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.main.KakaoMapFragment;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
@@ -90,7 +91,7 @@ public class SelectedLocationMapFragmentKakao extends KakaoMapFragment
 
         MapPoint mapPoint = MapPoint.mapPointWithGeoCoord(selectedLocation.getLatitude(), selectedLocation.getLongitude());
         MapPOIItem poiItem = new MapPOIItem();
-        poiItem.setItemName(selectedLocation.getPlaceName() != null ? selectedLocation.getPlaceName() : selectedLocation.getAddressName());
+        poiItem.setItemName(selectedLocation.getLocationType() == LocationType.PLACE ? selectedLocation.getPlaceName() : selectedLocation.getAddressName());
         poiItem.setMapPoint(mapPoint);
         poiItem.setTag(0);
         poiItem.setMarkerType(MapPOIItem.MarkerType.BluePin); // 기본으로 제공하는 BluePin 마커 모양.

@@ -27,6 +27,7 @@ import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackCont
 import com.zerodsoft.scheduleweather.common.interfaces.OnProgressBarListener;
 import com.zerodsoft.scheduleweather.databinding.PlacelistFragmentBinding;
 import com.zerodsoft.scheduleweather.etc.CustomRecyclerViewItemDecoration;
+import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.places.adapter.PlaceItemsAdapters;
 import com.zerodsoft.scheduleweather.event.places.map.PlacesMapFragmentNaver;
 import com.zerodsoft.scheduleweather.event.places.interfaces.FragmentController;
@@ -98,7 +99,7 @@ public class PlaceListFragment extends Fragment implements PlaceItemsGetter, OnP
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
-        if (selectedLocationDto.getPlaceName() != null)
+        if (selectedLocationDto.getLocationType() == LocationType.PLACE)
         {
             //장소와 주소 표기
             binding.locationName.setText(selectedLocationDto.getPlaceName());

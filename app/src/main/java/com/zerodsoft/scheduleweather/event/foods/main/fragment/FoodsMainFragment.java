@@ -33,6 +33,7 @@ public class FoodsMainFragment extends Fragment implements OnBackPressedCallback
         public void handleOnBackPressed()
         {
             FragmentManager fragmentManager = getChildFragmentManager();
+
             if (fragmentManager.findFragmentByTag(FoodsCategoryListFragment.TAG) != null)
             {
                 if (fragmentManager.findFragmentByTag(FoodsCategoryListFragment.TAG).isVisible())

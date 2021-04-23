@@ -16,6 +16,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.naver.maps.map.NaverMap;
 import com.naver.maps.map.OnMapReadyCallback;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.main.InstanceMainActivity;
 import com.zerodsoft.scheduleweather.kakaomap.activity.KakaoMapActivity;
@@ -169,7 +170,7 @@ public class ReselectDetailLocationNaver extends NaverMapActivity implements OnM
                 {
                     resultCode = InstanceMainActivity.RESULT_RESELECTED_LOCATION;
 
-                    getIntent().putExtra("selectedLocationName", (location.getAddressName() == null ? location.getPlaceName() : location.getAddressName()) + " 지정완료");
+                    getIntent().putExtra("selectedLocationName", (location.getLocationType() == LocationType.PLACE ? location.getPlaceName() : location.getAddressName()) + " 지정완료");
                     setResult(resultCode, getIntent());
                     finish();
                 } else

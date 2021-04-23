@@ -18,7 +18,9 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
+import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.databinding.FragmentFoodRestaurantSearchHistoryBinding;
@@ -190,6 +192,7 @@ public class FoodRestaurantSearchHistoryFragment extends Fragment implements OnC
                 });
             }
         });
+
     }
 
 

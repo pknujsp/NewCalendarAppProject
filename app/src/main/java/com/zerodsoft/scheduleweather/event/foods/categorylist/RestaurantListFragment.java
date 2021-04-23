@@ -19,17 +19,19 @@ import android.widget.TextView;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
+import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.common.interfaces.OnProgressBarListener;
 import com.zerodsoft.scheduleweather.event.foods.adapter.RestaurantListAdapter;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedRestaurantItem;
 import com.zerodsoft.scheduleweather.event.foods.share.CriteriaLocationRepository;
+import com.zerodsoft.scheduleweather.kakaomap.place.PlaceInfoFragment;
 import com.zerodsoft.scheduleweather.kakaomap.util.LocalParameterUtil;
 import com.zerodsoft.scheduleweather.kakaomap.viewmodel.PlacesViewModel;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
-public class RestaurantListFragment extends Fragment
+public class RestaurantListFragment extends Fragment implements OnClickedListItem<PlaceDocuments>
 {
     protected final OnClickedRestaurantItem onClickedRestaurantItem;
     protected String CATEGORY_NAME;
@@ -90,7 +92,7 @@ public class RestaurantListFragment extends Fragment
                 LocalApiPlaceParameter.SEARCH_CRITERIA_SORT_TYPE_ACCURACY);
         placeParameter.setRadius(App.getPreference_key_radius_range());
 
-        adapter = new RestaurantListAdapter(getActivity(), onClickedRestaurantItem);
+        adapter = new RestaurantListAdapter(getActivity(), RestaurantListFragment.this);
 
         adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver()
         {
@@ -125,6 +127,30 @@ public class RestaurantListFragment extends Fragment
                 }
             }
         });
+
+    }
+
+
+    @Override
+    public void onClickedListItem(PlaceDocuments e)
+    {
+        if (e instanceof PlaceDocuments)
+        {
+            PlaceInfoFragment placeInfoFragment = new PlaceInfoFragment();
+            Bundle bundle = new Bundle();
+            bundle.putString("placeId", ((PlaceDocuments) e).getId());
+            placeInfoFragment.setArguments(bundle);
+
+            placeInfoFragment.show(getChildFragmentManager(), PlaceInfoFragment.TAG);
+        } else
+        {
+
+        }
+    }
+
+    @Override
+    public void deleteListItem(PlaceDocuments e, int position)
+    {
 
     }
 }

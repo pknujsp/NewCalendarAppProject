@@ -44,6 +44,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.etc.FragmentStateCallback;
+import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.kakaomap.bottomsheet.adapter.PlaceItemInMapViewAdapter;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PoiItemOnClickListener;
 import com.zerodsoft.scheduleweather.kakaomap.building.fragment.BuildingFragment;
@@ -986,6 +987,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
             location.setPlaceName(placeDocuments.getPlaceName());
             location.setLatitude(placeDocuments.getY());
             location.setLongitude(placeDocuments.getX());
+            location.setLocationType(LocationType.PLACE);
         } else
         {
             AddressResponseDocuments addressDocuments = (AddressResponseDocuments) item.getKakaoLocalDocument();
@@ -993,6 +995,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
             location.setAddressName(addressDocuments.getAddressName());
             location.setLatitude(addressDocuments.getY());
             location.setLongitude(addressDocuments.getX());
+            location.setLocationType(LocationType.ADDRESS);
         }
         return location;
     }

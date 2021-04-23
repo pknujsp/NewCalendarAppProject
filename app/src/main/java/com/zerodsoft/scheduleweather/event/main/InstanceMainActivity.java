@@ -33,6 +33,7 @@ import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.common.interfaces.OnChangedVisibilityListener;
 import com.zerodsoft.scheduleweather.databinding.InstanceMainActivityBinding;
+import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.common.MLocActivityNaver;
 import com.zerodsoft.scheduleweather.event.common.ReselectDetailLocationNaver;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
@@ -315,7 +316,7 @@ public class InstanceMainActivity extends AppCompatActivity implements OnMapRead
                                         boolean isPlace = true;
                                         String label = getString(R.string.detail_location) + ", ";
 
-                                        if (selectedLocationDto.getPlaceName() != null)
+                                        if (selectedLocationDto.getLocationType() == LocationType.PLACE)
                                         {
                                             //장소
                                             isPlace = true;
@@ -390,7 +391,7 @@ public class InstanceMainActivity extends AppCompatActivity implements OnMapRead
                             coordToAddress = coordToAddressDataWrapper.getData();
                         }
 
-                        if (selectedLocationDto.getPlaceName() != null)
+                        if (selectedLocationDto.getLocationType() == LocationType.PLACE)
                         {
                             //장소와 주소 표기
                             binding.instanceMainDetailLocationLayout.placeInfoLayout.placeName.setText(selectedLocationDto.getPlaceName());

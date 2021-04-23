@@ -58,4 +58,10 @@ public class SearchHistoryViewModel extends AndroidViewModel implements SearchHi
     {
         repository.deleteAll(type, callback);
     }
+
+    @Override
+    public void contains(Integer type, String value, CarrierMessagingService.ResultCallback<Boolean> callback)
+    {
+        repository.contains(type, value, callback);
+    }
 }

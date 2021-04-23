@@ -115,4 +115,19 @@ public class SearchLocationHistoryRepository implements SearchHistoryQuery
             }
         });
     }
+
+    @Override
+    public void contains(Integer type, String value, CarrierMessagingService.ResultCallback<Boolean> callback)
+    {
+        App.executorService.execute(new Runnable()
+        {
+            @SneakyThrows
+            @Override
+            public void run()
+            {
+                int result = dao.contains(type, value);
+                callback.onReceiveResult(result == 1);
+            }
+        });
+    }
 }

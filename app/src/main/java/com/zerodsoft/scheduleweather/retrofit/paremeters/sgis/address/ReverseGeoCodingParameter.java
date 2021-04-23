@@ -1,10 +1,26 @@
 package com.zerodsoft.scheduleweather.retrofit.paremeters.sgis.address;
 
+import com.naver.maps.geometry.LatLng;
+import com.naver.maps.geometry.Utmk;
+
 import java.util.HashMap;
 import java.util.Map;
 
 public class ReverseGeoCodingParameter
 {
+    /*
+    도로명 : 10
+행정동(읍면동) : 20
+행정동(지번함) : 21
+(default : 10)
+     */
+    public static class AddressType
+    {
+        public static final String ROAD_ADDRESS = "10";
+        public static final String ADM_EUP_MYEON_DONG = "20";
+        public static final String ADM_ZIBEON = "21";
+    }
+
     private String accessToken;
     private String xCoor;
     private String yCoor;
@@ -12,6 +28,14 @@ public class ReverseGeoCodingParameter
 
     public ReverseGeoCodingParameter()
     {
+    }
+
+    public void setCoord(double latitude, double longitude)
+    {
+        LatLng latLng = new LatLng(latitude, longitude);
+        Utmk utmk = Utmk.valueOf(latLng);
+        xCoor = String.valueOf(utmk.x);
+        yCoor = String.valueOf(utmk.y);
     }
 
     public String getAccessToken()
