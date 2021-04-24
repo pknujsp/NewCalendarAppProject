@@ -22,7 +22,6 @@ import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IstartActivity;
-import com.zerodsoft.scheduleweather.event.places.placecategorylist.PlaceListFragment;
 import com.zerodsoft.scheduleweather.kakaomap.bottomsheet.adapter.PlaceItemInMapViewAdapter;
 import com.zerodsoft.scheduleweather.event.places.interfaces.FragmentController;
 import com.zerodsoft.scheduleweather.event.places.interfaces.OnClickedPlacesListListener;
@@ -30,6 +29,7 @@ import com.zerodsoft.scheduleweather.event.places.interfaces.PlaceCategory;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PlaceItemsGetter;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.main.KakaoMapFragment;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.searchheader.MapHeaderSearchFragment;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalDocument;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddress;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
@@ -174,7 +174,7 @@ public class PlacesMapFragmentKakao extends KakaoMapFragment implements OnClicke
             public void onClick(View view)
             {
                 //리스트 열고, placeslistbottomsheet닫고, poiitem이 선택된 경우 선택해제
-                fragmentController.replaceFragment(PlaceListFragment.TAG);
+                fragmentController.replaceFragment(PlacesOfSelectedCategoriesFragment.TAG);
             }
         });
 
@@ -218,7 +218,7 @@ public class PlacesMapFragmentKakao extends KakaoMapFragment implements OnClicke
                 PlaceCategoryDTO placeCategory = ((ChipViewHolder) compoundButton.getTag()).placeCategory;
                 List<PlaceDocuments> placeDocumentsList = placeItemsGetter.getPlaceItems(placeCategory);
 
-                createPlacesPoiItems(placeDocumentsList);
+                createPoiItems(placeDocumentsList);
                 mapView.fitMapViewAreaToShowAllPOIItems();
             } else if (categoryChipGroup.getCheckedChipIds().isEmpty() && mapView.getPOIItems().length > 0)
             {
@@ -265,6 +265,18 @@ public class PlacesMapFragmentKakao extends KakaoMapFragment implements OnClicke
         fragmentController.replaceFragment(PlacesMapFragmentNaver.TAG);
         requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
         chipMap.get(placeCategory).setChecked(true);
+    }
+
+    @Override
+    public void createPoiItems(List<? extends KakaoLocalDocument> kakaoLocalDocuments)
+    {
+
+    }
+
+    @Override
+    public void addPoiItems(List<? extends KakaoLocalDocument> kakaoLocalDocuments)
+    {
+
     }
 
 

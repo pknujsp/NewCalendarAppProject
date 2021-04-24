@@ -12,7 +12,7 @@ import androidx.fragment.app.FragmentTransaction;
 import android.view.View;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.event.event.activity.fragment.EventFragment;
+import com.zerodsoft.scheduleweather.event.event.fragments.EventFragment;
 
 public class InstanceActivity extends AppCompatActivity
 {

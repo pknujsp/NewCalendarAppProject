@@ -4,6 +4,7 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.paging.PositionalDataSource;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.common.interfaces.OnProgressBarListener;
 import com.zerodsoft.scheduleweather.retrofit.HttpCommunicationClient;

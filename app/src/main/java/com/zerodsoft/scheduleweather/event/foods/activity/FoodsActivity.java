@@ -20,18 +20,24 @@ import android.view.MenuItem;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.ActivityFoodsBinding;
+import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteRestaurantViewModel;
 import com.zerodsoft.scheduleweather.event.foods.main.fragment.FoodsMainFragment;
 import com.zerodsoft.scheduleweather.event.foods.search.search.fragment.SearchRestaurantFragment;
 import com.zerodsoft.scheduleweather.event.foods.settings.FoodsSettingsFragment;
+import com.zerodsoft.scheduleweather.event.foods.share.FavoriteRestaurantCloud;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationInfoViewModel;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.INetwork;
+import com.zerodsoft.scheduleweather.room.dto.FavoriteRestaurantDTO;
 import com.zerodsoft.scheduleweather.room.dto.FoodCriteriaLocationInfoDTO;
 import com.zerodsoft.scheduleweather.utility.NetworkStatus;
+
+import java.util.List;
 
 public class FoodsActivity extends AppCompatActivity implements INetwork, BottomNavigationView.OnNavigationItemSelectedListener
 {
     private ActivityFoodsBinding binding;
     private FoodCriteriaLocationInfoViewModel foodCriteriaLocationInfoViewModel;
+    private FavoriteRestaurantViewModel favoriteRestaurantViewModel;
     private NetworkStatus networkStatus;
     private Fragment currentShowingFragment;
     private final ContentValues INSTANCE_VALUES = new ContentValues();
@@ -78,6 +84,20 @@ public class FoodsActivity extends AppCompatActivity implements INetwork, Bottom
             public void onNavigationItemReselected(@NonNull MenuItem item)
             {
 
+            }
+        });
+
+        favoriteRestaurantViewModel = new ViewModelProvider(this).get(FavoriteRestaurantViewModel.class);
+        favoriteRestaurantViewModel.select(new CarrierMessagingService.ResultCallback<List<FavoriteRestaurantDTO>>()
+        {
+            @Override
+            public void onReceiveResult(@NonNull List<FavoriteRestaurantDTO> favoriteRestaurantDTOS) throws RemoteException
+            {
+                FavoriteRestaurantCloud favoriteRestaurantCloud = FavoriteRestaurantCloud.newInstance();
+                for (FavoriteRestaurantDTO favoriteRestaurantDTO : favoriteRestaurantDTOS)
+                {
+                    favoriteRestaurantCloud.add(favoriteRestaurantDTO.getRestaurantId());
+                }
             }
         });
 
@@ -155,6 +175,7 @@ public class FoodsActivity extends AppCompatActivity implements INetwork, Bottom
     {
         super.onDestroy();
         networkStatus.unregisterNetworkCallback();
+        FavoriteRestaurantCloud.close();
     }
 
     @Override

@@ -92,7 +92,7 @@ public class ReselectDetailLocationNaver extends NaverMapActivity implements OnM
                             coordToAddressDocuments.getCoordToAddressAddress().setLongitude(String.valueOf(savedLocationDto.getLongitude()));
 
                             naverMapFragment.setPlacesListAdapter(new PlaceItemInMapViewAdapter());
-                            naverMapFragment.createCoordToAddressesPoiItems(Collections.singletonList(coordToAddressDocuments));
+                            naverMapFragment.createPoiItems(Collections.singletonList(coordToAddressDocuments));
                             naverMapFragment.onPOIItemSelectedByList(0);
                         } else
                         {
@@ -121,7 +121,7 @@ public class ReselectDetailLocationNaver extends NaverMapActivity implements OnM
                         {
                             PlaceDocuments document = result.getData();
                             naverMapFragment.setPlacesListAdapter(new PlaceItemInMapViewAdapter());
-                            naverMapFragment.createPlacesPoiItems(Collections.singletonList(document));
+                            naverMapFragment.createPoiItems(Collections.singletonList(document));
                             naverMapFragment.onPOIItemSelectedByList(0);
                         } else
                         {

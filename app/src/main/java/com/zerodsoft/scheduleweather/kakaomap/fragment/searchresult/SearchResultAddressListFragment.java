@@ -21,6 +21,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.interfaces.OnProgressBarListener;
 import com.zerodsoft.scheduleweather.databinding.FragmentLocationSearchResultBinding;
+import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.kakaomap.bottomsheet.adapter.PlaceItemInMapViewAdapter;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.OnClickedLocListItem;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.searchresult.interfaces.IViewPager;
@@ -28,11 +29,13 @@ import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.searchresult.adapter.AddressesAdapter;
 import com.zerodsoft.scheduleweather.kakaomap.util.LocalParameterUtil;
 import com.zerodsoft.scheduleweather.kakaomap.viewmodel.AddressViewModel;
+import com.zerodsoft.scheduleweather.navermap.interfaces.OnExtraListDataListener;
 import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.addressresponse.AddressResponseDocuments;
+import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 
-public class AddressListFragment extends Fragment implements IViewPager, OnProgressBarListener
+public class SearchResultAddressListFragment extends Fragment implements IViewPager, OnProgressBarListener, OnExtraListDataListener<LocationType>
 {
     private FragmentLocationSearchResultBinding binding;
 
@@ -43,7 +46,7 @@ public class AddressListFragment extends Fragment implements IViewPager, OnProgr
     private final OnClickedLocListItem onClickedLocListItem;
     private final String SEARCH_WORD;
 
-    public AddressListFragment(String searchWord, IMapData iMapData, OnClickedLocListItem onClickedLocListItem)
+    public SearchResultAddressListFragment(String searchWord, IMapData iMapData, OnClickedLocListItem onClickedLocListItem)
     {
         this.SEARCH_WORD = searchWord;
         this.iMapData = iMapData;
@@ -96,12 +99,18 @@ public class AddressListFragment extends Fragment implements IViewPager, OnProgr
                 public void onItemRangeInserted(int positionStart, int itemCount)
                 {
                     super.onItemRangeInserted(positionStart, itemCount);
-                    iMapData.createAddressesPoiItems(adapter.getCurrentList().snapshot());
+                    if (positionStart > 0)
+                    {
+                        iMapData.addPoiItems(adapter.getCurrentList().snapshot());
+                    } else
+                    {
+                        iMapData.createPoiItems(adapter.getCurrentList().snapshot());
+                    }
                 }
             });
 
             binding.searchResultRecyclerview.setAdapter(adapter);
-            viewModel.init(parameter,this);
+            viewModel.init(parameter, this);
             viewModel.getPagedListMutableLiveData().observe(getViewLifecycleOwner(), new Observer<PagedList<AddressResponseDocuments>>()
             {
                 @Override
@@ -127,7 +136,7 @@ public class AddressListFragment extends Fragment implements IViewPager, OnProgr
             if (adapter.getItemCount() > 0)
             {
                 iMapData.removeAllPoiItems();
-                iMapData.createAddressesPoiItems(adapter.getCurrentList().snapshot());
+                iMapData.createPoiItems(adapter.getCurrentList().snapshot());
             }
         }
     }
@@ -143,5 +152,27 @@ public class AddressListFragment extends Fragment implements IViewPager, OnProgr
                 binding.progressBar.setVisibility(visibility);
             }
         });
+    }
+
+    @Override
+    public void loadExtraListData(LocationType e, RecyclerView.AdapterDataObserver adapterDataObserver)
+    {
+
+    }
+
+    @Override
+    public void loadExtraListData(RecyclerView.AdapterDataObserver adapterDataObserver)
+    {
+        adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver()
+        {
+            @Override
+            public void onItemRangeInserted(int positionStart, int itemCount)
+            {
+                super.onItemRangeInserted(positionStart, itemCount);
+                adapterDataObserver.onItemRangeInserted(positionStart, itemCount);
+                adapter.unregisterAdapterDataObserver(this);
+            }
+        });
+        binding.searchResultRecyclerview.scrollBy(0, 10000);
     }
 }

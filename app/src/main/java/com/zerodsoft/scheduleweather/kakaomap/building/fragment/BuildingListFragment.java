@@ -1,5 +1,6 @@
 package com.zerodsoft.scheduleweather.kakaomap.building.fragment;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 
@@ -128,6 +129,20 @@ public class BuildingListFragment extends Fragment implements OnClickedListItem<
 
         }
     };
+
+    @Override
+    public void onAttach(@NonNull Context context)
+    {
+        super.onAttach(context);
+        addOnBackPressedCallback();
+    }
+
+    @Override
+    public void onDestroy()
+    {
+        super.onDestroy();
+        removeOnBackPressedCallback();
+    }
 
     private void getBuildingList()
     {

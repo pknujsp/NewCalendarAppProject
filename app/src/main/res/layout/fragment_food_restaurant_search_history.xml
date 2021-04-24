@@ -46,6 +46,7 @@
             android:layout_below="@id/search_history_text_label"
             android:orientation="horizontal"
             tools:itemCount="10"
+            android:layout_marginLeft="8dp"
             tools:listitem="@layout/search_history_horizontal_item_view" />
 
 

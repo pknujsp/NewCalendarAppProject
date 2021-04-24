@@ -1,8 +1,13 @@
 package com.zerodsoft.scheduleweather.event.places.map;
 
+import android.content.ContentValues;
 import android.content.Context;
-import android.content.res.TypedArray;
+import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.os.RemoteException;
+import android.provider.CalendarContract;
+import android.service.carrier.CarrierMessagingService;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.util.Xml;
@@ -14,43 +19,47 @@ import android.widget.CompoundButton;
 import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
-import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
-import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentContainerView;
 import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentOnAttachListener;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewpager2.widget.ViewPager2;
 
-import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
-import com.naver.maps.geometry.Coord;
 import com.naver.maps.geometry.LatLng;
 import com.naver.maps.map.CameraUpdate;
 import com.naver.maps.map.NaverMap;
 import com.naver.maps.map.overlay.Marker;
 import com.naver.maps.map.overlay.OverlayImage;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.calendarview.interfaces.IstartActivity;
+import com.zerodsoft.scheduleweather.activity.placecategory.activity.PlaceCategoryActivity;
+import com.zerodsoft.scheduleweather.activity.placecategory.viewmodel.PlaceCategoryViewModel;
 import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
-import com.zerodsoft.scheduleweather.etc.FragmentStateCallback;
-import com.zerodsoft.scheduleweather.event.places.interfaces.FragmentController;
+import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
+import com.zerodsoft.scheduleweather.event.main.InstanceMainActivity;
 import com.zerodsoft.scheduleweather.event.places.interfaces.OnClickedPlacesListListener;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PlaceCategory;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PlaceItemsGetter;
-import com.zerodsoft.scheduleweather.event.places.main.PlacesMapTransactionFragment;
-import com.zerodsoft.scheduleweather.event.places.placecategorylist.PlaceListFragment;
 import com.zerodsoft.scheduleweather.kakaomap.bottomsheet.adapter.PlaceItemInMapViewAdapter;
-import com.zerodsoft.scheduleweather.kakaomap.fragment.search.LocationSearchFragment;
-import com.zerodsoft.scheduleweather.kakaomap.fragment.searchheader.MapHeaderMainFragment;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.searchheader.MapHeaderSearchFragment;
+import com.zerodsoft.scheduleweather.kakaomap.fragment.searchresult.LocationSearchResultFragment;
+import com.zerodsoft.scheduleweather.kakaomap.model.CoordToAddressUtil;
 import com.zerodsoft.scheduleweather.navermap.NaverMapFragment;
+import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
+import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddress;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
@@ -61,26 +70,31 @@ import org.xmlpull.v1.XmlPullParser;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-public class PlacesMapFragmentNaver extends NaverMapFragment implements OnClickedPlacesListListener, OnBackPressedCallbackController
+public class PlacesMapFragmentNaver extends NaverMapFragment implements OnClickedPlacesListListener, OnBackPressedCallbackController, PlaceCategory
 {
     public static final String TAG = "PlacesMapFragmentNaver";
 
-    private IstartActivity istartActivity;
-    private final PlaceCategory placeCategory;
+    private CoordToAddress coordToAddressResult;
+    private LocationDTO selectedLocationDto;
+    private List<PlaceCategoryDTO> placeCategoryList;
+    private PlaceCategoryViewModel placeCategoryViewModel;
+
+    private LocationViewModel locationViewModel;
     private PlaceItemsGetter placeItemsGetter;
 
-    private List<PlaceCategoryDTO> placeCategoryList;
-    private LocationDTO selectedLocationDto;
-    private CoordToAddress coordToAddressResult;
-
     private ChipGroup categoryChipGroup;
-    private Map<PlaceCategoryDTO, Chip> chipMap = new HashMap<>();
+    private Map<String, Chip> chipMap = new HashMap<>();
     private Chip listChip;
+    private Chip settingsChip;
 
     private LinearLayout placeCategoryBottomSheet;
     private BottomSheetBehavior placeCategoryBottomSheetBehavior;
+    private PlacesOfSelectedCategoriesFragment placesOfSelectedCategoriesFragment;
+    private PlaceCategoryDTO selectedPlaceCategory;
 
+    private final ContentValues INSTANCE_VALUES = new ContentValues();
     private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
     {
         @Override
@@ -96,34 +110,13 @@ public class PlacesMapFragmentNaver extends NaverMapFragment implements OnClicke
         }
     };
 
-    public PlacesMapFragmentNaver(Fragment fragment)
+    public PlacesMapFragmentNaver()
     {
         super();
-        this.placeCategory = (PlaceCategory) fragment;
     }
 
-    public void setIstartActivity(IstartActivity istartActivity)
-    {
-        this.istartActivity = istartActivity;
-    }
-
-    public void setSelectedLocationDto(LocationDTO selectedLocationDto)
-    {
-        this.selectedLocationDto = selectedLocationDto;
-    }
-
-    public void setPlaceItemsGetter(PlaceItemsGetter placeItemsGetter)
-    {
-        this.placeItemsGetter = placeItemsGetter;
-    }
-
-    public void setCoordToAddressResult(CoordToAddress coordToAddressResult)
-    {
-        this.coordToAddressResult = coordToAddressResult;
-    }
 
     @Override
-
     public void onAttach(@NonNull Context context)
     {
         super.onAttach(context);
@@ -143,6 +136,13 @@ public class PlacesMapFragmentNaver extends NaverMapFragment implements OnClicke
         super.onCreate(savedInstanceState);
         placeBottomSheetSelectBtnVisibility = View.GONE;
         placeBottomSheetUnSelectBtnVisibility = View.GONE;
+
+        Bundle bundle = getArguments();
+
+        INSTANCE_VALUES.put(CalendarContract.Instances.CALENDAR_ID, bundle.getInt(CalendarContract.Instances.CALENDAR_ID));
+        INSTANCE_VALUES.put(CalendarContract.Instances.EVENT_ID, bundle.getLong(CalendarContract.Instances.EVENT_ID));
+        INSTANCE_VALUES.put(CalendarContract.Instances._ID, bundle.getLong(CalendarContract.Instances._ID));
+        INSTANCE_VALUES.put(CalendarContract.Instances.BEGIN, bundle.getLong(CalendarContract.Instances.BEGIN));
     }
 
     @Nullable
@@ -156,6 +156,9 @@ public class PlacesMapFragmentNaver extends NaverMapFragment implements OnClicke
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
+
+        locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
+        placeCategoryViewModel = new ViewModelProvider(this).get(PlaceCategoryViewModel.class);
 
         //-----------chip group
         HorizontalScrollView chipScrollView = new HorizontalScrollView(getContext());
@@ -173,9 +176,12 @@ public class PlacesMapFragmentNaver extends NaverMapFragment implements OnClicke
         categoryChipGroup.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         chipScrollView.addView(categoryChipGroup);
-        setChips();
 
         setPlaceCategoryBottomSheet();
+        addListChip();
+        addSettingsChip();
+        initLocation();
+
         binding.naverMapFragmentRootLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener()
         {
             @Override
@@ -197,6 +203,107 @@ public class PlacesMapFragmentNaver extends NaverMapFragment implements OnClicke
                 binding.naverMapFragmentRootLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
             }
         });
+
+    }
+
+    private void initLocation()
+    {
+        locationViewModel.getLocation(INSTANCE_VALUES.getAsInteger(CalendarContract.Instances.CALENDAR_ID)
+                , INSTANCE_VALUES.getAsLong(CalendarContract.Instances.EVENT_ID), new CarrierMessagingService.ResultCallback<LocationDTO>()
+                {
+                    @Override
+                    public void onReceiveResult(@NonNull LocationDTO location) throws RemoteException
+                    {
+                        if (!location.isEmpty())
+                        {
+                            selectedLocationDto = location;
+                            setPlaceCategoryList();
+                        }
+                    }
+                });
+    }
+
+    private void setPlaceCategoryList()
+    {
+        placeCategoryViewModel.selectConvertedSelected(new CarrierMessagingService.ResultCallback<List<PlaceCategoryDTO>>()
+        {
+            @Override
+            public void onReceiveResult(@NonNull List<PlaceCategoryDTO> result) throws RemoteException
+            {
+                placeCategoryList = result;
+                //  coordToAddress();
+                getActivity().runOnUiThread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        setCategoryChips();
+                    }
+                });
+            }
+        });
+    }
+
+    private void coordToAddress()
+    {
+        LocalApiPlaceParameter localApiPlaceParameter = new LocalApiPlaceParameter();
+        localApiPlaceParameter.setX(String.valueOf(selectedLocationDto.getLongitude()));
+        localApiPlaceParameter.setY(String.valueOf(selectedLocationDto.getLatitude()));
+
+        CoordToAddressUtil.coordToAddress(localApiPlaceParameter, new CarrierMessagingService.ResultCallback<DataWrapper<CoordToAddress>>()
+        {
+            @Override
+            public void onReceiveResult(@NonNull DataWrapper<CoordToAddress> coordToAddressDataWrapper) throws RemoteException
+            {
+                getActivity().runOnUiThread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        if (coordToAddressDataWrapper.getException() == null)
+                        {
+                            coordToAddressResult = coordToAddressDataWrapper.getData();
+                        } else
+                        {
+                            Toast.makeText(getActivity(), coordToAddressDataWrapper.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+
+            }
+        });
+    }
+
+    @Override
+    public void onPageSelectedPlaceBottomSheetViewPager(int position)
+    {
+        if (adapter.getItemCount() - 1 == position)
+        {
+            FragmentManager fragmentManager = getChildFragmentManager();
+
+            PlacesOfSelectedCategoriesFragment placesOfSelectedCategoriesFragment
+                    = (PlacesOfSelectedCategoriesFragment) fragmentManager.findFragmentByTag(PlacesOfSelectedCategoriesFragment.TAG);
+
+            if (placesOfSelectedCategoriesFragment != null)
+            {
+                if (placesOfSelectedCategoriesFragment.isVisible() && categoryChipGroup.getCheckedChipIds().size() >= 1)
+                {
+                    placesOfSelectedCategoriesFragment.loadExtraListData(selectedPlaceCategory, new RecyclerView.AdapterDataObserver()
+                    {
+                        @Override
+                        public void onItemRangeInserted(int positionStart, int itemCount)
+                        {
+                            super.onItemRangeInserted(positionStart, itemCount);
+                            addPoiItems(placeItemsGetter.getPlaceItems(selectedPlaceCategory));
+                        }
+                    });
+                    return;
+                }
+            }
+
+        }
+
+        super.onPageSelectedPlaceBottomSheetViewPager(position);
     }
 
     private void setPlaceCategoryBottomSheet()
@@ -256,23 +363,29 @@ public class PlacesMapFragmentNaver extends NaverMapFragment implements OnClicke
             }
         });
 
-        PlaceListFragment placeListFragment = new PlaceListFragment(getParentFragment());
-        // placeListFragment.setOnClickedPlacesListListener(placesMapFragmentKakao);
-        placeListFragment.setOnClickedPlacesListListener(this);
-
-        placeListFragment.setSelectedLocationDto(selectedLocationDto);
-        placeListFragment.setCoordToAddressResult(coordToAddressResult);
-
-        // placesMapFragmentKakao.setPlaceItemsGetter(placeListFragment);
-        setPlaceItemsGetter(placeListFragment);
-
-        getChildFragmentManager().beginTransaction()
-                .add(fragmentContainerView.getId(), placeListFragment, PlaceListFragment.TAG).commitNow();
+        addPlaceListFragment();
     }
 
-    private void setChips()
+    private void addPlaceListFragment()
     {
-        placeCategoryList = placeCategory.getPlaceCategoryList();
+        placesOfSelectedCategoriesFragment = new PlacesOfSelectedCategoriesFragment(INSTANCE_VALUES, this);
+        // placeListFragment.setOnClickedPlacesListListener(placesMapFragmentKakao);
+
+        // placesMapFragmentKakao.setPlaceItemsGetter(placeListFragment);
+        placeItemsGetter = placesOfSelectedCategoriesFragment;
+
+        getChildFragmentManager().beginTransaction()
+                .add(placeCategoryBottomSheet.getChildAt(0).getId(), placesOfSelectedCategoriesFragment, PlacesOfSelectedCategoriesFragment.TAG).commitNow();
+    }
+
+    private void setCategoryChips()
+    {
+        if (categoryChipGroup.getChildCount() >= 3)
+        {
+            categoryChipGroup.removeViews(2, categoryChipGroup.getChildCount() - 2);
+        }
+        chipMap.clear();
+
         //카테고리를 chip으로 표시
         int index = 0;
 
@@ -289,15 +402,21 @@ public class PlacesMapFragmentNaver extends NaverMapFragment implements OnClicke
             final ChipViewHolder chipViewHolder = new ChipViewHolder(placeCategory, index++);
             chip.setTag(chipViewHolder);
 
-            chipMap.put(placeCategory, chip);
+            chipMap.put(placeCategory.getCode(), chip);
             categoryChipGroup.addView(chip, new ChipGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         }
 
+
+    }
+
+    private void addListChip()
+    {
         listChip = new Chip(getContext());
         listChip.setChecked(false);
         listChip.setText(R.string.open_list);
         listChip.setClickable(true);
         listChip.setCheckable(false);
+        listChip.setTextColor(Color.BLACK);
         listChip.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -309,22 +428,45 @@ public class PlacesMapFragmentNaver extends NaverMapFragment implements OnClicke
         });
 
         categoryChipGroup.addView(listChip, 0);
+    }
 
-        getChildFragmentManager().addFragmentOnAttachListener(new FragmentOnAttachListener()
+    private void addSettingsChip()
+    {
+        settingsChip = new Chip(getContext());
+        settingsChip.setChecked(false);
+        settingsChip.setText(R.string.app_settings);
+        settingsChip.setClickable(true);
+        settingsChip.setCheckable(false);
+        settingsChip.setTextColor(Color.BLACK);
+        settingsChip.setOnClickListener(new View.OnClickListener()
         {
             @Override
-            public void onAttachFragment(@NonNull FragmentManager fragmentManager, @NonNull Fragment fragment)
+            public void onClick(View view)
             {
-                if (fragment instanceof MapHeaderSearchFragment)
-                {
-                    if (categoryChipGroup.getCheckedChipId() != View.NO_ID)
-                    {
-                        categoryChipGroup.findViewById(categoryChipGroup.getCheckedChipId()).performClick();
-                    }
-                }
+                placeCategoryActivityResultLauncher.launch(new Intent(getActivity(), PlaceCategoryActivity.class));
             }
         });
+
+        categoryChipGroup.addView(settingsChip, 1);
     }
+
+    private final ActivityResultLauncher<Intent> placeCategoryActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
+            new ActivityResultCallback<ActivityResult>()
+            {
+                @Override
+                public void onActivityResult(ActivityResult result)
+                {
+                    if (result.getResultCode() == InstanceMainActivity.RESULT_EDITED_PLACE_CATEGORY)
+                    {
+                        if (categoryChipGroup.getCheckedChipIds().size() > 0)
+                        {
+                            chipMap.get(selectedPlaceCategory.getCode()).setChecked(false);
+                        }
+                        setPlaceCategoryList();
+                        ((PlacesOfSelectedCategoriesFragment) getChildFragmentManager().findFragmentByTag(PlacesOfSelectedCategoriesFragment.TAG)).makeCategoryListView();
+                    }
+                }
+            });
 
     private final CompoundButton.OnCheckedChangeListener onCheckedChangeListener = new CompoundButton.OnCheckedChangeListener()
     {
@@ -339,6 +481,14 @@ public class PlacesMapFragmentNaver extends NaverMapFragment implements OnClicke
              */
             if (isChecked)
             {
+                if (getChildFragmentManager().findFragmentByTag(MapHeaderSearchFragment.TAG) != null)
+                {
+                    if (getChildFragmentManager().findFragmentByTag(MapHeaderSearchFragment.TAG).isVisible())
+                    {
+                        ((MapHeaderSearchFragment) getChildFragmentManager().findFragmentByTag(MapHeaderSearchFragment.TAG)).getBinding().closeButton.callOnClick();
+                    }
+                }
+
                 if (isSelectedPoiItem)
                 {
                     deselectPoiItem();
@@ -347,17 +497,20 @@ public class PlacesMapFragmentNaver extends NaverMapFragment implements OnClicke
 
                 PlaceCategoryDTO placeCategory = ((ChipViewHolder) compoundButton.getTag()).placeCategory;
                 List<PlaceDocuments> placeDocumentsList = placeItemsGetter.getPlaceItems(placeCategory);
+                selectedPlaceCategory = placeCategory;
 
-                createPlacesPoiItems(placeDocumentsList);
+                createPoiItems(placeDocumentsList);
                 showAllPoiItems();
             } else if (categoryChipGroup.getCheckedChipIds().isEmpty() && !markerList.isEmpty())
             {
                 removeAllPoiItems();
                 isSelectedPoiItem = false;
+                selectedPlaceCategory = null;
             }
             setPlacesListBottomSheetState(BottomSheetBehavior.STATE_COLLAPSED);
         }
     };
+
 
     @Override
     public void onMapReady(@NonNull NaverMap naverMap)
@@ -378,7 +531,7 @@ public class PlacesMapFragmentNaver extends NaverMapFragment implements OnClicke
     {
         listChip.callOnClick();
         //create poi items
-        chipMap.get(placeCategory).setChecked(true);
+        chipMap.get(placeCategory.getCode()).setChecked(true);
         //select poi item
         onPOIItemSelectedByList(index);
     }
@@ -387,7 +540,7 @@ public class PlacesMapFragmentNaver extends NaverMapFragment implements OnClicke
     public void onClickedMoreInList(PlaceCategoryDTO placeCategory)
     {
         listChip.callOnClick();
-        chipMap.get(placeCategory).setChecked(true);
+        chipMap.get(placeCategory.getCode()).setChecked(true);
     }
 
     @Override
@@ -402,6 +555,21 @@ public class PlacesMapFragmentNaver extends NaverMapFragment implements OnClicke
         onBackPressedCallback.remove();
     }
 
+    @Override
+    public List<PlaceCategoryDTO> getPlaceCategoryList()
+    {
+        return placeCategoryList;
+    }
+
+    @Override
+    public void search(String query)
+    {
+        super.search(query);
+        if (categoryChipGroup.getCheckedChipIds().size() > 0)
+        {
+            chipMap.get(selectedPlaceCategory.getCode()).setChecked(false);
+        }
+    }
 
     static final class ChipViewHolder
     {

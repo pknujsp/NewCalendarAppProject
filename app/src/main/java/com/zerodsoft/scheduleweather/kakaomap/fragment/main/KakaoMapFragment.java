@@ -762,6 +762,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
         binding.mapViewLayout.setVisibility(visibility);
     }
 
+    /*
     @Override
     public void createPlacesPoiItems(List<PlaceDocuments> placeDocuments)
     {
@@ -824,8 +825,18 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
         }
     }
 
+
+     */
+
+
     @Override
-    public void createCoordToAddressesPoiItems(List<CoordToAddressDocuments> addressDocuments)
+    public void createPoiItems(List<? extends KakaoLocalDocument> kakaoLocalDocuments)
+    {
+
+    }
+
+    @Override
+    public void addPoiItems(List<? extends KakaoLocalDocument> kakaoLocalDocuments)
     {
 
     }

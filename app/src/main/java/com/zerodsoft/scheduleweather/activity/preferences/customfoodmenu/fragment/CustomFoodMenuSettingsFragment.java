@@ -1,9 +1,11 @@
 package com.zerodsoft.scheduleweather.activity.preferences.customfoodmenu.fragment;
 
+import android.app.Dialog;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.DividerItemDecoration;
@@ -28,9 +30,11 @@ import java.util.List;
 
 public class CustomFoodMenuSettingsFragment extends Fragment implements OnClickedListItem<CustomFoodMenuDTO>
 {
+    public static final String TAG = "CustomFoodMenuSettingsFragment";
     private FragmentCustomFoodMenuSettingsBinding binding;
     private CustomFoodMenuAdapter adapter;
     private CustomFoodMenuViewModel viewModel;
+    private boolean isEdited = false;
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -45,6 +49,7 @@ public class CustomFoodMenuSettingsFragment extends Fragment implements OnClicke
         binding = FragmentCustomFoodMenuSettingsBinding.inflate(inflater);
         return binding.getRoot();
     }
+
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
@@ -134,6 +139,7 @@ public class CustomFoodMenuSettingsFragment extends Fragment implements OnClicke
                                 @Override
                                 public void run()
                                 {
+                                    isEdited = true;
                                     binding.edittextCustomFoodmenu.setText("");
                                     adapter.getList().add(customFoodMenuDTO);
                                     adapter.notifyItemInserted(adapter.getItemCount());
@@ -169,11 +175,17 @@ public class CustomFoodMenuSettingsFragment extends Fragment implements OnClicke
                     @Override
                     public void run()
                     {
+                        isEdited = true;
                         adapter.getList().remove(e);
                         adapter.notifyItemRemoved(position);
                     }
                 });
             }
         });
+    }
+
+    public boolean isEdited()
+    {
+        return isEdited;
     }
 }

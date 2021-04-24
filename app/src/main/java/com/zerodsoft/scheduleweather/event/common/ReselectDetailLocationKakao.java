@@ -82,7 +82,7 @@ public class ReselectDetailLocationKakao extends KakaoMapActivity
                         {
                             AddressResponseDocuments address = result.getData();
                             kakaoMapFragment.setPlacesListAdapter(new PlaceItemInMapViewAdapter());
-                            kakaoMapFragment.createAddressesPoiItems(Collections.singletonList(address));
+                            kakaoMapFragment.createPoiItems(Collections.singletonList(address));
                             kakaoMapFragment.onPOIItemSelectedByList(0);
                         } else
                         {
@@ -111,7 +111,7 @@ public class ReselectDetailLocationKakao extends KakaoMapActivity
                         {
                             PlaceDocuments document = result.getData();
                             kakaoMapFragment.setPlacesListAdapter(new PlaceItemInMapViewAdapter());
-                            kakaoMapFragment.createPlacesPoiItems(Collections.singletonList(document));
+                            kakaoMapFragment.createPoiItems(Collections.singletonList(document));
                             kakaoMapFragment.onPOIItemSelectedByList(0);
                         } else
                         {

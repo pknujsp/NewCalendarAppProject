@@ -15,6 +15,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.paging.PagedListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -23,6 +24,7 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedRestaurantItem;
+import com.zerodsoft.scheduleweather.event.foods.share.FavoriteRestaurantCloud;
 import com.zerodsoft.scheduleweather.kakaomap.callback.PlaceItemCallback;
 import com.zerodsoft.scheduleweather.kakaoplace.KakaoPlace;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
@@ -30,6 +32,8 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.kakaoplace.KakaoPlac
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.kakaoplace.menuinfo.MenuInfo;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.kakaoplace.menuinfo.MenuItem;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
+import com.zerodsoft.scheduleweather.room.dto.FavoriteRestaurantDTO;
+import com.zerodsoft.scheduleweather.room.interfaces.FavoriteRestaurantQuery;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -39,19 +43,22 @@ import java.util.List;
 public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, RestaurantListAdapter.ItemViewHolder>
 {
     private final OnClickedListItem<PlaceDocuments> onClickedListItem;
+    private final FavoriteRestaurantQuery favoriteRestaurantQuery;
 
     private SparseArray<KakaoPlaceJsonRoot> kakaoPlacesArr = new SparseArray<>();
     private SparseArray<Bitmap> restaurantImagesArr = new SparseArray<>();
+    private FavoriteRestaurantCloud favoriteRestaurantCloud = FavoriteRestaurantCloud.getInstance();
 
     private Activity activity;
     private Context context;
 
-    public RestaurantListAdapter(Activity activity, OnClickedListItem<PlaceDocuments> onClickedListItem)
+    public RestaurantListAdapter(Activity activity, OnClickedListItem<PlaceDocuments> onClickedListItem, FavoriteRestaurantQuery favoriteRestaurantQuery)
     {
         super(new PlaceItemCallback());
         this.activity = activity;
         this.context = activity.getApplicationContext();
         this.onClickedListItem = onClickedListItem;
+        this.favoriteRestaurantQuery = favoriteRestaurantQuery;
     }
 
     class ItemViewHolder extends RecyclerView.ViewHolder
@@ -60,6 +67,7 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
         private ImageView restaurantImage;
         private TextView restaurantMenuInfo;
         private TextView restaurantRating;
+        private ImageView favoriteButton;
         private LinearLayout restaurantReviewLayout;
 
         public ItemViewHolder(View view)
@@ -69,6 +77,7 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
             restaurantName = (TextView) view.findViewById(R.id.restaurant_name);
             restaurantImage = (ImageView) view.findViewById(R.id.restaurant_image);
             restaurantRating = (TextView) view.findViewById(R.id.restaurant_rating);
+            favoriteButton = (ImageView) view.findViewById(R.id.favorite_button);
             restaurantReviewLayout = (LinearLayout) view.findViewById(R.id.restaurant_review_layout);
             restaurantMenuInfo = (TextView) view.findViewById(R.id.restaurant_menuinfo);
             restaurantMenuInfo.setSelected(true);
@@ -108,6 +117,53 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
                     onClickedListItem.onClickedListItem(getItem(getAdapterPosition()));
                 }
             });
+
+            favoriteButton.setOnClickListener(new View.OnClickListener()
+            {
+                @Override
+                public void onClick(View view)
+                {
+                    if (favoriteRestaurantCloud.contains(item.getId()))
+                    {
+                        favoriteRestaurantQuery.delete(item.getId(), new CarrierMessagingService.ResultCallback<Boolean>()
+                        {
+                            @Override
+                            public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
+                            {
+                                activity.runOnUiThread(new Runnable()
+                                {
+                                    @Override
+                                    public void run()
+                                    {
+                                        favoriteButton.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.favorite_disabled_icon));
+                                    }
+                                });
+
+                            }
+                        });
+                    } else
+                    {
+                        favoriteRestaurantQuery.insert(item.getId(), new CarrierMessagingService.ResultCallback<FavoriteRestaurantDTO>()
+                        {
+                            @Override
+                            public void onReceiveResult(@NonNull FavoriteRestaurantDTO favoriteRestaurantDTO) throws RemoteException
+                            {
+                                activity.runOnUiThread(new Runnable()
+                                {
+                                    @Override
+                                    public void run()
+                                    {
+                                        favoriteButton.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.favorite_enabled_icon));
+                                    }
+                                });
+                            }
+                        });
+                    }
+                }
+            });
+
+            favoriteButton.setImageDrawable(favoriteRestaurantCloud.contains(item.getId()) ? ContextCompat.getDrawable(context, R.drawable.favorite_enabled_icon)
+                    : ContextCompat.getDrawable(context, R.drawable.favorite_disabled_icon));
         }
 
         public void setData(KakaoPlaceJsonRoot kakaoPlaceJsonRoot)

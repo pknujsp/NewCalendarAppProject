@@ -5,6 +5,7 @@ import android.service.carrier.CarrierMessagingService;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.zerodsoft.scheduleweather.activity.placecategory.interfaces.IPlaceCategory;
@@ -19,6 +20,7 @@ import java.util.List;
 public class PlaceCategoryViewModel extends AndroidViewModel implements IPlaceCategory
 {
     private PlaceCategoryRepository repository;
+    private MutableLiveData<List<PlaceCategoryDTO>> convertedSelectedCategoriesLiveData = new MutableLiveData<>();
 
     public PlaceCategoryViewModel(@NonNull Application application)
     {
@@ -108,5 +110,10 @@ public class PlaceCategoryViewModel extends AndroidViewModel implements IPlaceCa
     public void insertAllSelected(List<PlaceCategoryDTO> list, CarrierMessagingService.ResultCallback<List<SelectedPlaceCategoryDTO>> callback)
     {
         repository.insertAllSelected(list, callback);
+    }
+
+    public MutableLiveData<List<PlaceCategoryDTO>> getConvertedSelectedCategoriesLiveData()
+    {
+        return convertedSelectedCategoriesLiveData;
     }
 }

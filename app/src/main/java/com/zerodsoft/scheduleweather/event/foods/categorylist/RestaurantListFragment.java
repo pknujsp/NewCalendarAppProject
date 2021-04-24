@@ -22,6 +22,7 @@ import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.common.interfaces.OnProgressBarListener;
 import com.zerodsoft.scheduleweather.event.foods.adapter.RestaurantListAdapter;
+import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteRestaurantViewModel;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedRestaurantItem;
 import com.zerodsoft.scheduleweather.event.foods.share.CriteriaLocationRepository;
 import com.zerodsoft.scheduleweather.kakaomap.place.PlaceInfoFragment;
@@ -30,10 +31,12 @@ import com.zerodsoft.scheduleweather.kakaomap.viewmodel.PlacesViewModel;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
+import com.zerodsoft.scheduleweather.room.interfaces.FavoriteRestaurantQuery;
 
 public class RestaurantListFragment extends Fragment implements OnClickedListItem<PlaceDocuments>
 {
     protected final OnClickedRestaurantItem onClickedRestaurantItem;
+    protected FavoriteRestaurantQuery favoriteRestaurantQuery;
     protected String CATEGORY_NAME;
     protected TextView errorTextView;
 
@@ -41,13 +44,26 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
     protected PlacesViewModel placesViewModel;
     protected RestaurantListAdapter adapter;
 
+    public RestaurantListFragment(OnClickedRestaurantItem onClickedRestaurantItem, FavoriteRestaurantQuery favoriteRestaurantQuery, String CATEGORY_NAME)
+    {
+        this.onClickedRestaurantItem = onClickedRestaurantItem;
+        this.favoriteRestaurantQuery = favoriteRestaurantQuery;
+        this.CATEGORY_NAME = CATEGORY_NAME;
+    }
+
     public RestaurantListFragment(OnClickedRestaurantItem onClickedRestaurantItem, String CATEGORY_NAME)
     {
         this.onClickedRestaurantItem = onClickedRestaurantItem;
         this.CATEGORY_NAME = CATEGORY_NAME;
     }
 
+    public void setFavoriteRestaurantQuery(FavoriteRestaurantQuery favoriteRestaurantQuery)
+    {
+        this.favoriteRestaurantQuery = favoriteRestaurantQuery;
+    }
+
     @Override
+
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
@@ -92,7 +108,7 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
                 LocalApiPlaceParameter.SEARCH_CRITERIA_SORT_TYPE_ACCURACY);
         placeParameter.setRadius(App.getPreference_key_radius_range());
 
-        adapter = new RestaurantListAdapter(getActivity(), RestaurantListFragment.this);
+        adapter = new RestaurantListAdapter(getActivity(), RestaurantListFragment.this, favoriteRestaurantQuery);
 
         adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver()
         {

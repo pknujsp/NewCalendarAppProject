@@ -1,12 +1,12 @@
 package com.zerodsoft.scheduleweather.kakaomap.fragment.searchresult;
 
-import android.content.Context;
 import android.os.Bundle;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.view.LayoutInflater;
@@ -16,6 +16,7 @@ import android.view.ViewGroup;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
 import com.zerodsoft.scheduleweather.databinding.FragmentSearchResultListBinding;
+import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PoiItemOnClickListener;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.OnClickedLocListItem;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.PlacesListBottomSheetController;
@@ -29,6 +30,7 @@ import com.zerodsoft.scheduleweather.kakaomap.interfaces.SearchFragmentControlle
 import com.zerodsoft.scheduleweather.kakaomap.model.SearchResultChecker;
 import com.zerodsoft.scheduleweather.kakaomap.model.callback.CheckerCallback;
 import com.zerodsoft.scheduleweather.kakaomap.util.LocalParameterUtil;
+import com.zerodsoft.scheduleweather.navermap.interfaces.OnExtraListDataListener;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalResponse;
@@ -38,7 +40,8 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.Pl
 import java.util.ArrayList;
 import java.util.List;
 
-public class LocationSearchResultFragment extends Fragment implements IndicatorCreater, OnClickedLocListItem, OnBackPressedCallbackController
+public class LocationSearchResultFragment extends Fragment implements IndicatorCreater, OnClickedLocListItem, OnBackPressedCallbackController,
+        OnExtraListDataListener<LocationType>
 {
     public static final String TAG = "LocationSearchResultFragment";
     private FragmentSearchResultListBinding binding;
@@ -54,6 +57,9 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
     private PoiItemOnClickListener poiItemOnClickListener;
     private SearchBarController searchBarController;
     private SearchFragmentController searchFragmentController;
+
+    private OnExtraListDataListener<LocationType> placesOnExtraListDataListener;
+    private OnExtraListDataListener<LocationType> addressesOnExtraListDataListener;
 
     public OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
     {
@@ -175,7 +181,9 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
 
                             if (!placeKakaoLocalResponse.getPlaceDocuments().isEmpty())
                             {
-                                fragments.add(new PlaceListFragment(iMapPoint, searchWord, iMapData, LocationSearchResultFragment.this));
+                                SearchResultPlaceListFragment searchResultPlaceListFragment = new SearchResultPlaceListFragment(iMapPoint, searchWord, iMapData, LocationSearchResultFragment.this);
+                                placesOnExtraListDataListener = searchResultPlaceListFragment;
+                                fragments.add(searchResultPlaceListFragment);
                             }
                         } else if (response.getData() instanceof AddressKakaoLocalResponse)
                         {
@@ -183,7 +191,9 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
 
                             if (!addressKakaoLocalResponse.getAddressResponseDocumentsList().isEmpty())
                             {
-                                fragments.add(new AddressListFragment(searchWord, iMapData, LocationSearchResultFragment.this));
+                                SearchResultAddressListFragment addressesListFragment = new SearchResultAddressListFragment(searchWord, iMapData, LocationSearchResultFragment.this);
+                                addressesOnExtraListDataListener = addressesListFragment;
+                                fragments.add(addressesListFragment);
                             }
                         }
                     }
@@ -220,6 +230,27 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
         searchFragmentController.setStateOfSearchBottomSheet(BottomSheetBehavior.STATE_COLLAPSED);
     }
 
+    @Override
+    public void loadExtraListData(LocationType e, RecyclerView.AdapterDataObserver adapterDataObserver)
+    {
+
+
+    }
+
+    @Override
+    public void loadExtraListData(RecyclerView.AdapterDataObserver adapterDataObserver)
+    {
+        Fragment curFragment = searchResultListAdapter.getFragment(binding.listViewpager.getCurrentItem());
+
+        if (curFragment instanceof SearchResultAddressListFragment)
+        {
+            addressesOnExtraListDataListener.loadExtraListData(adapterDataObserver);
+        } else if (curFragment instanceof SearchResultPlaceListFragment)
+        {
+            placesOnExtraListDataListener.loadExtraListData(adapterDataObserver);
+        }
+    }
+
     class OnPageCallback extends ViewPager2.OnPageChangeCallback
     {
         public int lastPosition;
@@ -233,15 +264,16 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
 
             Fragment curFragment = searchResultListAdapter.getFragment(position);
 
-            if (curFragment instanceof AddressListFragment)
+            if (curFragment instanceof SearchResultAddressListFragment)
             {
-                ((AddressListFragment) curFragment).onChangedPage();
-            } else if (curFragment instanceof PlaceListFragment)
+                ((SearchResultAddressListFragment) curFragment).onChangedPage();
+            } else if (curFragment instanceof SearchResultPlaceListFragment)
             {
-                ((PlaceListFragment) curFragment).onChangedPage();
+                ((SearchResultPlaceListFragment) curFragment).onChangedPage();
             }
         }
     }
+
 
     @Override
     public void addOnBackPressedCallback()

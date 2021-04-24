@@ -28,7 +28,7 @@ public class FoodCategoryAdapter extends RecyclerView.Adapter<FoodCategoryAdapte
     private final OnClickedListItem<FoodCategoryItem> onClickedCategoryItem;
     private final int COLUMN_COUNT;
 
-    public FoodCategoryAdapter(OnClickedListItem<FoodCategoryItem> onClickedCategoryItem,int columnCount)
+    public FoodCategoryAdapter(OnClickedListItem<FoodCategoryItem> onClickedCategoryItem, int columnCount)
     {
         this.onClickedCategoryItem = onClickedCategoryItem;
         this.COLUMN_COUNT = columnCount;
@@ -100,6 +100,7 @@ public class FoodCategoryAdapter extends RecyclerView.Adapter<FoodCategoryAdapte
 
             foodCategoryNameTextView.requestLayout();
             foodCategoryNameTextView.invalidate();
+
 
             itemView.getRootView().setOnClickListener(new View.OnClickListener()
             {

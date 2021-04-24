@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.event.event.activity.fragment;
+package com.zerodsoft.scheduleweather.event.event.fragments;
 
 import android.app.Activity;
 import android.content.ContentValues;
@@ -36,6 +36,8 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.databinding.EventFragmentBinding;
+import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationHistoryViewModel;
+import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationInfoViewModel;
 import com.zerodsoft.scheduleweather.event.main.InstanceMainActivity;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
@@ -73,6 +75,8 @@ public class EventFragment extends Fragment
     private AlertDialog attendeeDialog;
 
     private LocationViewModel locationViewModel;
+    private FoodCriteriaLocationInfoViewModel foodCriteriaLocationInfoViewModel;
+    private FoodCriteriaLocationHistoryViewModel foodCriteriaLocationHistoryViewModel;
     private int resultCode = Activity.RESULT_CANCELED;
     private NetworkStatus networkStatus;
 
@@ -133,6 +137,8 @@ public class EventFragment extends Fragment
         super.onViewCreated(view, savedInstanceState);
 
         locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
+        foodCriteriaLocationHistoryViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationHistoryViewModel.class);
+        foodCriteriaLocationInfoViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationInfoViewModel.class);
 
         binding.eventRemindersView.addReminderButton.setVisibility(View.GONE);
         binding.eventAttendeesView.showAttendeesDetail.setVisibility(View.GONE);
@@ -291,6 +297,30 @@ public class EventFragment extends Fragment
         // 참석자 - 알림 - 이벤트 순으로 삭제 (외래키 때문)
         // db column error
         viewModel.deleteEvent(calendarId, eventId);
+        locationViewModel.removeLocation(calendarId, eventId, new CarrierMessagingService.ResultCallback<Boolean>()
+        {
+            @Override
+            public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
+            {
+
+            }
+        });
+        foodCriteriaLocationInfoViewModel.deleteByEventId(calendarId, eventId, new CarrierMessagingService.ResultCallback<Boolean>()
+        {
+            @Override
+            public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
+            {
+
+            }
+        });
+        foodCriteriaLocationHistoryViewModel.deleteByEventId(calendarId, eventId, new CarrierMessagingService.ResultCallback<Boolean>()
+        {
+            @Override
+            public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
+            {
+
+            }
+        });
         // 삭제 완료 후 캘린더 화면으로 나가고, 새로고침한다.
         resultCode = InstanceMainActivity.RESULT_REMOVED_EVENT;
         onBackPressedCallback.handleOnBackPressed();

@@ -31,15 +31,16 @@
                     android:orientation="horizontal">
 
                     <TextView
-                        android:id="@+id/location_name"
+                        android:id="@+id/address_name"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:ellipsize="end"
                         android:singleLine="true"
-                        android:text="위치"
+                        android:text="address"
                         android:textColor="@color/black"
                         android:textSize="16sp" />
+
 
                     <TextView
                         android:id="@+id/search_radius"
@@ -53,22 +54,11 @@
                 </LinearLayout>
 
 
-                <TextView
-                    android:id="@+id/place_address_name"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@id/location_name_layout"
-                    android:ellipsize="end"
-                    android:singleLine="true"
-                    android:text="주소"
-                    android:textColor="@color/gray_500"
-                    android:textSize="14sp" />
-
                 <LinearLayout
                     android:id="@+id/radius_seekbar_layout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_below="@id/place_address_name"
+                    android:layout_below="@id/location_name_layout"
                     android:orientation="horizontal">
 
                     <com.google.android.material.slider.Slider
@@ -93,6 +83,13 @@
                 </LinearLayout>
 
             </RelativeLayout>
+
+            <TextView
+                android:id="@+id/error_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="@string/not_selected_place_category" />
 
             <LinearLayout
                 android:id="@+id/category_viewlist"

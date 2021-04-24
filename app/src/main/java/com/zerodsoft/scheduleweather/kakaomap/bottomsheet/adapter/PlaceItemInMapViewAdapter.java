@@ -25,7 +25,7 @@ import java.util.List;
 
 public class PlaceItemInMapViewAdapter extends RecyclerView.Adapter<PlaceItemInMapViewAdapter.PlaceItemInMapViewHolder>
 {
-    private List<? extends KakaoLocalDocument> placeDocumentsList = new ArrayList<>();
+    private List<KakaoLocalDocument> placeDocumentsList = new ArrayList<>();
     private PlaceDocuments placeDocuments;
     private AddressResponseDocuments addressDocuments;
     private CoordToAddressDocuments coordToAddressDocuments;
@@ -57,7 +57,7 @@ public class PlaceItemInMapViewAdapter extends RecyclerView.Adapter<PlaceItemInM
 
     public void setPlaceDocumentsList(List<? extends KakaoLocalDocument> placeDocumentsList)
     {
-        this.placeDocumentsList = placeDocumentsList;
+        this.placeDocumentsList.addAll(placeDocumentsList);
     }
 
     public void setOnClickedBottomSheetListener(OnClickedBottomSheetListener onClickedBottomSheetListener)
@@ -78,6 +78,10 @@ public class PlaceItemInMapViewAdapter extends RecyclerView.Adapter<PlaceItemInM
         holder.bind(placeDocumentsList.get(position));
     }
 
+    public List<KakaoLocalDocument> getPlaceDocumentsList()
+    {
+        return placeDocumentsList;
+    }
 
     @Override
     public int getItemCount()

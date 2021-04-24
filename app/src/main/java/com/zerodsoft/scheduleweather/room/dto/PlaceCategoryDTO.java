@@ -1,5 +1,7 @@
 package com.zerodsoft.scheduleweather.room.dto;
 
+import java.util.Objects;
+
 public class PlaceCategoryDTO
 {
     private String description;
@@ -44,5 +46,24 @@ public class PlaceCategoryDTO
     public void setCustom(boolean custom)
     {
         isCustom = custom;
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        PlaceCategoryDTO that = (PlaceCategoryDTO) o;
+        return isCustom == that.isCustom &&
+                Objects.equals(description, that.description) &&
+                Objects.equals(code, that.code);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(description, code, isCustom);
     }
 }

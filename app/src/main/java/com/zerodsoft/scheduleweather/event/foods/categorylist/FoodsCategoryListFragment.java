@@ -20,6 +20,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 
@@ -36,6 +37,7 @@ import android.widget.Toast;
 import com.naver.maps.geometry.LatLng;
 import com.naver.maps.geometry.Utmk;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.activity.preferences.customfoodmenu.fragment.CustomFoodMenuSettingsFragment;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.databinding.FragmentFoodsCategoryListBinding;
 import com.zerodsoft.scheduleweather.etc.AppPermission;
@@ -45,6 +47,7 @@ import com.zerodsoft.scheduleweather.event.foods.activity.LocationSettingsActivi
 import com.zerodsoft.scheduleweather.event.foods.adapter.FoodCategoryAdapter;
 import com.zerodsoft.scheduleweather.event.foods.dto.FoodCategoryItem;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedCategoryItem;
+import com.zerodsoft.scheduleweather.event.foods.settings.CustomFoodMenuSettingsActivity;
 import com.zerodsoft.scheduleweather.event.foods.share.CriteriaLocationRepository;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.CustomFoodMenuViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationInfoViewModel;
@@ -524,6 +527,7 @@ public class FoodsCategoryListFragment extends Fragment implements OnClickedCate
                                 itemsList.add(new FoodCategoryItem(customFoodCategory.getMenuName(), null, false));
                             }
                         }
+                        itemsList.add(new FoodCategoryItem(getString(R.string.add_custom_food_menu), null, false));
 
                         foodCategoryAdapter.setItems(itemsList);
                         GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(), columnCount);
@@ -560,9 +564,18 @@ public class FoodsCategoryListFragment extends Fragment implements OnClickedCate
     @Override
     public void onClickedListItem(FoodCategoryItem e)
     {
-        FoodCategoryTabFragment foodCategoryTabFragment = new FoodCategoryTabFragment(e.getCategoryName());
-        FragmentManager fragmentManager = getParentFragmentManager();
-        fragmentManager.beginTransaction().hide(this).add(R.id.foods_main_fragment_container, foodCategoryTabFragment, FoodCategoryTabFragment.TAG).addToBackStack(null).commit();
+
+        if (!e.isDefault() && e.getCategoryName().equals(getString(R.string.add_custom_food_menu)))
+        {
+            customFoodSettingsActivityResultLauncher.launch(new Intent(getActivity(), CustomFoodMenuSettingsActivity.class));
+        } else
+        {
+            FragmentManager fragmentManager = getParentFragmentManager();
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction().hide(this);
+
+            FoodCategoryTabFragment foodCategoryTabFragment = new FoodCategoryTabFragment(e.getCategoryName());
+            fragmentTransaction.add(R.id.foods_main_fragment_container, foodCategoryTabFragment, FoodCategoryTabFragment.TAG).addToBackStack(null).commit();
+        }
     }
 
     @Override
@@ -570,4 +583,17 @@ public class FoodsCategoryListFragment extends Fragment implements OnClickedCate
     {
 
     }
+
+    private final ActivityResultLauncher<Intent> customFoodSettingsActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
+            new ActivityResultCallback<ActivityResult>()
+            {
+                @Override
+                public void onActivityResult(ActivityResult result)
+                {
+                    if (result.getResultCode() == RESULT_OK)
+                    {
+                        setCategories();
+                    }
+                }
+            });
 }

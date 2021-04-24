@@ -3,6 +3,8 @@ package com.zerodsoft.scheduleweather.activity.placecategory.repository;
 import android.content.Context;
 import android.service.carrier.CarrierMessagingService;
 
+import androidx.lifecycle.MutableLiveData;
+
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.activity.placecategory.interfaces.IPlaceCategory;
 import com.zerodsoft.scheduleweather.activity.placecategory.model.PlaceCategoryData;
@@ -24,6 +26,7 @@ public class PlaceCategoryRepository implements IPlaceCategory
 {
     private final SelectedPlaceCategoryDAO selectedPlaceCategoryDAO;
     private final CustomPlaceCategoryDAO customPlaceCategoryDAO;
+    private MutableLiveData<List<PlaceCategoryDTO>> convertedSelectedCategoriesLiveData = new MutableLiveData<>();
 
     public PlaceCategoryRepository(Context context)
     {
@@ -320,5 +323,10 @@ public class PlaceCategoryRepository implements IPlaceCategory
                 callback.onReceiveResult(selectedPlaceCategoryList);
             }
         });
+    }
+
+    public MutableLiveData<List<PlaceCategoryDTO>> getConvertedSelectedCategoriesLiveData()
+    {
+        return convertedSelectedCategoriesLiveData;
     }
 }
