@@ -32,7 +32,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class FoodCategoryTabFragment extends Fragment implements OnClickedRestaurantItem
+public class FoodCategoryTabFragment extends Fragment
 {
     public static final String TAG = "FoodCategoryTabFragment";
     private FragmentFoodCategoryTabBinding binding;
@@ -102,7 +102,7 @@ public class FoodCategoryTabFragment extends Fragment implements OnClickedRestau
                         int selectedIndex = categoryList.indexOf(selectedCategoryName);
 
                         adapter = new FoodCategoryFragmentListAdapter(FoodCategoryTabFragment.this);
-                        adapter.init(FoodCategoryTabFragment.this, favoriteRestaurantViewModel, categoryList);
+                        adapter.init(favoriteRestaurantViewModel, categoryList);
                         binding.viewpager.setAdapter(adapter);
 
                         new TabLayoutMediator(binding.tabs, binding.viewpager,
@@ -135,12 +135,6 @@ public class FoodCategoryTabFragment extends Fragment implements OnClickedRestau
                 break;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public void onClickedRestaurantItem(PlaceDocuments placeDocuments)
-    {
-
     }
 
 

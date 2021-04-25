@@ -20,6 +20,7 @@ import android.view.MenuItem;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.ActivityFoodsBinding;
+import com.zerodsoft.scheduleweather.event.foods.favorite.FavoritesMainFragment;
 import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteRestaurantViewModel;
 import com.zerodsoft.scheduleweather.event.foods.main.fragment.FoodsMainFragment;
 import com.zerodsoft.scheduleweather.event.foods.search.search.fragment.SearchRestaurantFragment;
@@ -158,13 +159,16 @@ public class FoodsActivity extends AppCompatActivity implements INetwork, Bottom
 
         SearchRestaurantFragment searchRestaurantFragment = new SearchRestaurantFragment();
         FoodsSettingsFragment foodsSettingsFragment = new FoodsSettingsFragment();
+        FavoritesMainFragment favoritesMainFragment = new FavoritesMainFragment();
 
         getSupportFragmentManager().beginTransaction()
                 .add(binding.fragmentContainer.getId(), foodsMainFragment, FoodsMainFragment.TAG)
                 .add(binding.fragmentContainer.getId(), searchRestaurantFragment, SearchRestaurantFragment.TAG)
                 .add(binding.fragmentContainer.getId(), foodsSettingsFragment, FoodsSettingsFragment.TAG)
+                .add(binding.fragmentContainer.getId(), favoritesMainFragment, FavoritesMainFragment.TAG)
                 .hide(foodsSettingsFragment)
                 .hide(searchRestaurantFragment)
+                .hide(favoritesMainFragment)
                 .commit();
 
         currentShowingFragment = foodsMainFragment;
@@ -198,6 +202,12 @@ public class FoodsActivity extends AppCompatActivity implements INetwork, Bottom
             case R.id.food_main:
             {
                 newFragment = fragmentManager.findFragmentByTag(FoodsMainFragment.TAG);
+                break;
+            }
+
+            case R.id.food_favorite_restaurant:
+            {
+                newFragment = fragmentManager.findFragmentByTag(FavoritesMainFragment.TAG);
                 break;
             }
 

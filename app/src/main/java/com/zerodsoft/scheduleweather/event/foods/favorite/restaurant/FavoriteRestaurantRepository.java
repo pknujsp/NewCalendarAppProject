@@ -3,8 +3,6 @@ package com.zerodsoft.scheduleweather.event.foods.favorite.restaurant;
 import android.app.Application;
 import android.service.carrier.CarrierMessagingService;
 
-import androidx.lifecycle.MutableLiveData;
-
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.event.foods.share.FavoriteRestaurantCloud;
 import com.zerodsoft.scheduleweather.room.AppDb;
@@ -27,7 +25,7 @@ class FavoriteRestaurantRepository implements FavoriteRestaurantQuery
 
 
     @Override
-    public void insert(String restaurantId, CarrierMessagingService.ResultCallback<FavoriteRestaurantDTO> callback)
+    public void insert(String restaurantId, String restaurantName, String latitude, String longitude, CarrierMessagingService.ResultCallback<FavoriteRestaurantDTO> callback)
     {
         App.executorService.execute(new Runnable()
         {
@@ -35,7 +33,7 @@ class FavoriteRestaurantRepository implements FavoriteRestaurantQuery
             @Override
             public void run()
             {
-                favoriteRestaurantDAO.insert(restaurantId);
+                favoriteRestaurantDAO.insert(restaurantId, restaurantName, latitude, longitude);
                 FavoriteRestaurantDTO favoriteRestaurantDTO = favoriteRestaurantDAO.select(restaurantId);
                 FavoriteRestaurantCloud.getInstance().add(restaurantId);
                 callback.onReceiveResult(favoriteRestaurantDTO);

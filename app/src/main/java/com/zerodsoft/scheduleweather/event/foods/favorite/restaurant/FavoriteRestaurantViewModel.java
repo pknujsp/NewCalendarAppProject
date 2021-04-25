@@ -23,9 +23,9 @@ public class FavoriteRestaurantViewModel extends AndroidViewModel implements Fav
 
 
     @Override
-    public void insert(String restaurantId, CarrierMessagingService.ResultCallback<FavoriteRestaurantDTO> callback)
+    public void insert(String restaurantId, String restaurantName, String latitude, String longitude, CarrierMessagingService.ResultCallback<FavoriteRestaurantDTO> callback)
     {
-        restaurantRepository.insert(restaurantId, callback);
+        restaurantRepository.insert(restaurantId, restaurantName, latitude, longitude, callback);
     }
 
     @Override

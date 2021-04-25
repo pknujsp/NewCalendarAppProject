@@ -2,15 +2,13 @@ package com.zerodsoft.scheduleweather.room.interfaces;
 
 import android.service.carrier.CarrierMessagingService;
 
-import androidx.room.Query;
-
 import com.zerodsoft.scheduleweather.room.dto.FavoriteRestaurantDTO;
 
 import java.util.List;
 
 public interface FavoriteRestaurantQuery
 {
-    void insert(String restaurantId, CarrierMessagingService.ResultCallback<FavoriteRestaurantDTO> callback);
+    void insert(String restaurantId, String restaurantName, String latitude, String longitude, CarrierMessagingService.ResultCallback<FavoriteRestaurantDTO> callback);
 
     void select(CarrierMessagingService.ResultCallback<List<FavoriteRestaurantDTO>> callback);
 

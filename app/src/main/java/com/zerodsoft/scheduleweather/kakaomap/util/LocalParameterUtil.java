@@ -33,6 +33,28 @@ public class LocalParameterUtil
         return parameter;
     }
 
+    public static LocalApiPlaceParameter getPlaceParameterForSpecific(String searchWord, String latitude, String longitude)
+    {
+        LocalApiPlaceParameter parameter = new LocalApiPlaceParameter();
+
+        parameter.setY(latitude).setX(longitude)
+                .setSize("5").setPage("1");
+
+        parameter.setSort(LocalApiPlaceParameter.SORT_ACCURACY);
+
+        if (KakaoLocalApiCategoryUtil.isCategory(searchWord))
+        {
+            parameter.setCategoryGroupCode(KakaoLocalApiCategoryUtil.getCode(searchWord));
+        } else
+        {
+            parameter.setQuery(searchWord);
+        }
+
+        parameter.setRadius("100");
+
+        return parameter;
+    }
+
     public static LocalApiPlaceParameter getAddressParameter(String searchWord, String size, String page)
     {
         LocalApiPlaceParameter parameter = new LocalApiPlaceParameter();

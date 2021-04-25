@@ -15,7 +15,6 @@ public class FoodCategoryFragmentListAdapter extends FragmentStateAdapter
 {
     private List<RestaurantListFragment> fragments;
     private List<String> categoryList;
-    private OnClickedRestaurantItem onClickedRestaurantItem;
     private FavoriteRestaurantQuery favoriteRestaurantQuery;
 
     public FoodCategoryFragmentListAdapter(@NonNull Fragment fragment)
@@ -23,16 +22,15 @@ public class FoodCategoryFragmentListAdapter extends FragmentStateAdapter
         super(fragment);
     }
 
-    public void init(OnClickedRestaurantItem onClickedRestaurantItem, FavoriteRestaurantQuery favoriteRestaurantQuery, List<String> categoryList)
+    public void init(FavoriteRestaurantQuery favoriteRestaurantQuery, List<String> categoryList)
     {
-        this.onClickedRestaurantItem = onClickedRestaurantItem;
         this.favoriteRestaurantQuery = favoriteRestaurantQuery;
         this.categoryList = categoryList;
         this.fragments = new ArrayList<>();
 
         for (String categoryName : categoryList)
         {
-            fragments.add(new RestaurantListFragment(onClickedRestaurantItem, favoriteRestaurantQuery, categoryName));
+            fragments.add(new RestaurantListFragment(favoriteRestaurantQuery, categoryName));
         }
     }
 

@@ -11,8 +11,8 @@ import java.util.List;
 @Dao
 public interface FavoriteRestaurantDAO
 {
-    @Query("INSERT INTO favorite_restaurant_table (restaurant_id) VALUES(:restaurantId)")
-    void insert(String restaurantId);
+    @Query("INSERT INTO favorite_restaurant_table (restaurant_id,restaurant_name,latitude,longitude) VALUES(:restaurantId,:restaurantName,:latitude,:longitude)")
+    void insert(String restaurantId, String restaurantName, String latitude, String longitude);
 
     @Query("SELECT * FROM favorite_restaurant_table")
     List<FavoriteRestaurantDTO> select();

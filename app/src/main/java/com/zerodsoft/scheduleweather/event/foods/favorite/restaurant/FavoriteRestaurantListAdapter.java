@@ -1,68 +1,217 @@
 package com.zerodsoft.scheduleweather.event.foods.favorite.restaurant;
 
+import android.app.Activity;
+import android.content.Context;
+import android.os.RemoteException;
+import android.service.carrier.CarrierMessagingService;
+import android.util.ArrayMap;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
-public class FavoriteRestaurantListAdapter extends BaseExpandableListAdapter
+import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
+
+import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.ICalendarCheckBox;
+import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
+import com.zerodsoft.scheduleweather.event.foods.share.FavoriteRestaurantCloud;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
+import com.zerodsoft.scheduleweather.room.dto.FavoriteRestaurantDTO;
+import com.zerodsoft.scheduleweather.room.interfaces.FavoriteRestaurantQuery;
+
+import java.util.List;
+
+class FavoriteRestaurantListAdapter extends BaseExpandableListAdapter
 {
+    private Context context;
+    private Activity activity;
+    private ICalendarCheckBox iCalendarCheckBox;
+    private ArrayMap<String, List<PlaceDocuments>> restaurantListMap;
+    private LayoutInflater layoutInflater;
+
+    private GroupViewHolder groupViewHolder;
+    private ChildViewHolder childViewHolder;
+    private OnClickedListItem<PlaceDocuments> onClickedListItem;
+    private FavoriteRestaurantQuery favoriteRestaurantQuery;
+    private FavoriteRestaurantCloud favoriteRestaurantCloud = FavoriteRestaurantCloud.getInstance();
+
+    public FavoriteRestaurantListAdapter(Activity activity, OnClickedListItem<PlaceDocuments> onClickedListItem
+            , FavoriteRestaurantQuery favoriteRestaurantQuery, ArrayMap<String, List<PlaceDocuments>> restaurantListMap)
+    {
+        this.context = activity;
+        this.activity = activity;
+        this.onClickedListItem = onClickedListItem;
+        this.restaurantListMap = restaurantListMap;
+        this.favoriteRestaurantQuery = favoriteRestaurantQuery;
+        this.layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+    }
+
+    public void setRestaurantListMap(ArrayMap<String, List<PlaceDocuments>> restaurantListMap)
+    {
+        this.restaurantListMap = restaurantListMap;
+    }
+
     @Override
     public int getGroupCount()
     {
-        return 0;
+        return restaurantListMap.size();
     }
 
     @Override
-    public int getChildrenCount(int i)
+    public int getChildrenCount(int groupPosition)
     {
-        return 0;
+        return restaurantListMap.get(restaurantListMap.keyAt(groupPosition)).size();
     }
 
     @Override
-    public Object getGroup(int i)
+    public Object getGroup(int groupPosition)
     {
-        return null;
+        return restaurantListMap.get(restaurantListMap.keyAt(groupPosition));
     }
 
     @Override
-    public Object getChild(int i, int i1)
+    public Object getChild(int groupPosition, int childPosition)
     {
-        return null;
+        return restaurantListMap.get(restaurantListMap.keyAt(groupPosition)).get(childPosition);
     }
 
     @Override
     public long getGroupId(int i)
     {
-        return 0;
+        return i;
     }
 
     @Override
     public long getChildId(int i, int i1)
     {
-        return 0;
+        return i1;
     }
 
     @Override
     public boolean hasStableIds()
     {
-        return false;
+        return true;
     }
 
     @Override
     public View getGroupView(int i, boolean b, View view, ViewGroup viewGroup)
     {
-        return null;
+        if (view == null)
+        {
+            view = layoutInflater.inflate(R.layout.expandablelist_group_view, null);
+
+            groupViewHolder = new GroupViewHolder();
+            groupViewHolder.foodMenuName = (TextView) view.findViewById(R.id.group_name);
+
+            view.setTag(groupViewHolder);
+        } else
+        {
+            groupViewHolder = (GroupViewHolder) view.getTag();
+        }
+
+        groupViewHolder.foodMenuName.setText(restaurantListMap.keyAt(i) + ", " + restaurantListMap.get(restaurantListMap.keyAt(i)).size());
+        return view;
     }
 
     @Override
-    public View getChildView(int i, int i1, boolean b, View view, ViewGroup viewGroup)
+    public View getChildView(int groupPosition, int childPosition, boolean b, View view, ViewGroup viewGroup)
     {
-        return null;
+        if (view == null)
+        {
+            view = layoutInflater.inflate(R.layout.restaurant_itemview, null);
+
+            childViewHolder = new ChildViewHolder();
+            childViewHolder.restaurantName = (TextView) view.findViewById(R.id.restaurant_name);
+            childViewHolder.restaurantImage = (ImageView) view.findViewById(R.id.restaurant_image);
+            childViewHolder.restaurantRating = (TextView) view.findViewById(R.id.restaurant_rating);
+            childViewHolder.favoriteButton = (ImageView) view.findViewById(R.id.favorite_button);
+            childViewHolder.restaurantReviewLayout = (LinearLayout) view.findViewById(R.id.restaurant_review_layout);
+            childViewHolder.restaurantMenuInfo = (TextView) view.findViewById(R.id.restaurant_menuinfo);
+
+            childViewHolder.restaurantMenuInfo.setSelected(true);
+            childViewHolder.restaurantName.setText("");
+            childViewHolder.restaurantRating.setText("");
+            childViewHolder.restaurantMenuInfo.setText("");
+
+            view.setTag(R.layout.restaurant_itemview, childViewHolder);
+        } else
+        {
+            childViewHolder = (ChildViewHolder) view.getTag(R.layout.restaurant_itemview);
+        }
+
+        childViewHolder.restaurantName.setText(restaurantListMap.get(restaurantListMap.keyAt(groupPosition)).get(childPosition).getPlaceName());
+        childViewHolder.favoriteButton.setImageDrawable(favoriteRestaurantCloud.contains(restaurantListMap.get(restaurantListMap.keyAt(groupPosition)).get(childPosition).getId())
+                ? ContextCompat.getDrawable(context, R.drawable.favorite_enabled_icon) : ContextCompat.getDrawable(context, R.drawable.favorite_disabled_icon));
+
+        view.getRootView().setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                onClickedListItem.onClickedListItem(restaurantListMap.get(restaurantListMap.keyAt(groupPosition)).get(childPosition));
+            }
+        });
+
+        childViewHolder.favoriteButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                if (favoriteRestaurantCloud.contains(restaurantListMap.get(restaurantListMap.keyAt(groupPosition)).get(childPosition).getId()))
+                {
+                    favoriteRestaurantQuery.delete(restaurantListMap.get(restaurantListMap.keyAt(groupPosition)).get(childPosition).getId()
+                            , new CarrierMessagingService.ResultCallback<Boolean>()
+                            {
+                                @Override
+                                public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
+                                {
+                                    activity.runOnUiThread(new Runnable()
+                                    {
+                                        @Override
+                                        public void run()
+                                        {
+                                            restaurantListMap.get(restaurantListMap.keyAt(groupPosition)).remove(childPosition);
+                                            if (restaurantListMap.get(restaurantListMap.keyAt(groupPosition)).isEmpty())
+                                            {
+                                                restaurantListMap.remove(restaurantListMap.keyAt(groupPosition));
+                                            }
+                                            notifyDataSetChanged();
+                                        }
+                                    });
+
+                                }
+                            });
+                }
+
+            }
+        });
+
+        return view;
     }
 
     @Override
     public boolean isChildSelectable(int i, int i1)
     {
-        return false;
+        return true;
+    }
+
+    static class GroupViewHolder
+    {
+        TextView foodMenuName;
+    }
+
+    static class ChildViewHolder
+    {
+        TextView restaurantName;
+        ImageView restaurantImage;
+        TextView restaurantMenuInfo;
+        TextView restaurantRating;
+        ImageView favoriteButton;
+        LinearLayout restaurantReviewLayout;
     }
 }

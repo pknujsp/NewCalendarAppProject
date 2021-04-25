@@ -5,6 +5,7 @@ import android.os.Bundle;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.FavoriteRestaurantDTO;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -37,6 +38,11 @@ public class FavoriteRestaurantCloud
     public boolean contains(String restaurantId)
     {
         return favoriteRestaurantSet.contains(restaurantId);
+    }
+
+    public Set<String> getSet()
+    {
+        return new HashSet<>(favoriteRestaurantSet);
     }
 
     public void delete(String restaurantId)

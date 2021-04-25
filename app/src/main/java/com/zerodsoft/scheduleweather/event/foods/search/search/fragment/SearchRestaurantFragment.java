@@ -63,19 +63,6 @@ public class SearchRestaurantFragment extends Fragment implements OnClickedListI
 
     }
 
-    @Override
-    public void onAttach(@NonNull Context context)
-    {
-        super.onAttach(context);
-        // addOnBackPressedCallback();
-    }
-
-    @Override
-    public void onDetach()
-    {
-        super.onDetach();
-        //  removeOnBackPressedCallback();
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState)

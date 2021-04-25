@@ -23,11 +23,8 @@ import com.bumptech.glide.Glide;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
-import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedRestaurantItem;
 import com.zerodsoft.scheduleweather.event.foods.share.FavoriteRestaurantCloud;
 import com.zerodsoft.scheduleweather.kakaomap.callback.PlaceItemCallback;
-import com.zerodsoft.scheduleweather.kakaoplace.KakaoPlace;
-import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.kakaoplace.KakaoPlaceJsonRoot;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.kakaoplace.menuinfo.MenuInfo;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.kakaoplace.menuinfo.MenuItem;
@@ -146,7 +143,12 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
                         });
                     } else
                     {
-                        favoriteRestaurantQuery.insert(item.getId(), new CarrierMessagingService.ResultCallback<FavoriteRestaurantDTO>()
+                        String id = item.getId();
+                        String name = item.getPlaceName();
+                        String latitude = String.valueOf(item.getY());
+                        String longitude = String.valueOf(item.getX());
+
+                        favoriteRestaurantQuery.insert(id, name, latitude, longitude, new CarrierMessagingService.ResultCallback<FavoriteRestaurantDTO>()
                         {
                             @Override
                             public void onReceiveResult(@NonNull FavoriteRestaurantDTO favoriteRestaurantDTO) throws RemoteException
