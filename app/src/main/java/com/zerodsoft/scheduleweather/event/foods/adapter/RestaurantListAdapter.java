@@ -91,7 +91,8 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
         {
             restaurantName.setText(item.getPlaceName());
 
-            if (kakaoPlacesArr.get(getAdapterPosition()) == null)
+            /*
+            if (kakaoPlacesArr.get(getBindingAdapterPosition()) == null)
             {
                 KakaoPlace.getKakaoPlaceData(item.getId(), new CarrierMessagingService.ResultCallback<DataWrapper<KakaoPlaceJsonRoot>>()
                 {
@@ -99,22 +100,24 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
                     public void onReceiveResult(@NonNull DataWrapper<KakaoPlaceJsonRoot> kakaoPlaceJsonRootDataWrapper) throws RemoteException
                     {
                         KakaoPlaceJsonRoot kakaoPlaceJsonRoot = kakaoPlaceJsonRootDataWrapper.getData();
-                        kakaoPlacesArr.put(getAdapterPosition(), kakaoPlaceJsonRoot);
+                        kakaoPlacesArr.put(getBindingAdapterPosition(), kakaoPlaceJsonRoot);
 
                         setData(kakaoPlaceJsonRoot);
                     }
                 });
             } else
             {
-                setData(kakaoPlacesArr.get(getAdapterPosition()));
+                setData(kakaoPlacesArr.get(getBindingAdapterPosition()));
             }
+
+             */
 
             itemView.getRootView().setOnClickListener(new View.OnClickListener()
             {
                 @Override
                 public void onClick(View view)
                 {
-                    onClickedListItem.onClickedListItem(getItem(getAdapterPosition()));
+                    onClickedListItem.onClickedListItem(getItem(getBindingAdapterPosition()));
                 }
             });
 
@@ -215,7 +218,7 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
         {
             if (kakaoPlaceJsonRoot.getBasicInfo().getMainPhotoUrl() != null)
             {
-                if (restaurantImagesArr.get(getAdapterPosition()) == null)
+                if (restaurantImagesArr.get(getBindingAdapterPosition()) == null)
                 {
                     App.executorService.execute(new Runnable()
                     {
@@ -230,7 +233,7 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
                                 options.inSampleSize = 3;
                                 Bitmap bmp = BitmapFactory.decodeStream(url.openConnection().getInputStream(), null, options);
 
-                                restaurantImagesArr.put(getAdapterPosition(), bmp);
+                                restaurantImagesArr.put(getBindingAdapterPosition(), bmp);
 
                                 activity.runOnUiThread(new Runnable()
                                 {
@@ -240,7 +243,7 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
                                         restaurantImage.setImageBitmap(bmp);
 
                                         Glide.with(itemView)
-                                                .load(restaurantImagesArr.get(getAdapterPosition())).circleCrop()
+                                                .load(restaurantImagesArr.get(getBindingAdapterPosition())).circleCrop()
                                                 .into(restaurantImage);
                                     }
                                 });
@@ -255,7 +258,7 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
                     });
                 } else
                 {
-                    restaurantImage.setImageBitmap(restaurantImagesArr.get(getAdapterPosition()));
+                    restaurantImage.setImageBitmap(restaurantImagesArr.get(getBindingAdapterPosition()));
                     Glide.with(itemView)
                             .load(restaurantImagesArr.get(getAdapterPosition())).circleCrop()
                             .into(restaurantImage);
@@ -273,9 +276,13 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
             restaurantName.setText("");
             restaurantMenuInfo.setText("");
             restaurantRating.setText("");
+
+            /*
             Glide.with(itemView)
                     .load(context.getDrawable(R.drawable.not_image)).circleCrop()
                     .into(restaurantImage);
+
+             */
         }
     }
 

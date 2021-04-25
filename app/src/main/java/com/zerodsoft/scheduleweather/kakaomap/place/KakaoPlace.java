@@ -34,7 +34,8 @@ public class KakaoPlace
                 {
                     String json = readJsonFromUrl(WEB_JSON_URL + placeId);
 
-                    JsonObject jsonObject = (JsonObject) JsonParser.parseString(json);
+                    JsonParser jsonParser = new JsonParser();
+                    JsonObject jsonObject = (JsonObject) jsonParser.parse(json);
                     DataWrapper<JsonObject> dataWrapper = new DataWrapper<>(jsonObject);
                     resultCallback.onReceiveResult(dataWrapper);
                 } catch (Exception e)

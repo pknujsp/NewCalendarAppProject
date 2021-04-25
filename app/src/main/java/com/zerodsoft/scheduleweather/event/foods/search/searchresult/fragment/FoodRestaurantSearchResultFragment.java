@@ -27,7 +27,7 @@ public class FoodRestaurantSearchResultFragment extends RestaurantListFragment
 
     public FoodRestaurantSearchResultFragment(String searchWord, Fragment fragment)
     {
-        super((OnClickedRestaurantItem) fragment, searchWord);
+        super(searchWord);
         this.onDeleteSearchView = (OnDeleteSearchView) fragment;
     }
 

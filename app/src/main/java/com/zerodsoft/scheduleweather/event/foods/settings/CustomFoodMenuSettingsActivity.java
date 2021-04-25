@@ -23,8 +23,7 @@ public class CustomFoodMenuSettingsActivity extends AppCompatActivity
     @Override
     public void onBackPressed()
     {
-        super.onBackPressed();
         setResult(customFoodMenuSettingsFragment.isEdited() ? RESULT_OK : RESULT_CANCELED);
-        finish();
+        super.onBackPressed();
     }
 }

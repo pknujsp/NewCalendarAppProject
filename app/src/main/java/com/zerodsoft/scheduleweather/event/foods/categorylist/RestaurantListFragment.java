@@ -35,7 +35,6 @@ import com.zerodsoft.scheduleweather.room.interfaces.FavoriteRestaurantQuery;
 
 public class RestaurantListFragment extends Fragment implements OnClickedListItem<PlaceDocuments>
 {
-    protected final OnClickedRestaurantItem onClickedRestaurantItem;
     protected FavoriteRestaurantQuery favoriteRestaurantQuery;
     protected String CATEGORY_NAME;
     protected TextView errorTextView;
@@ -44,16 +43,14 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
     protected PlacesViewModel placesViewModel;
     protected RestaurantListAdapter adapter;
 
-    public RestaurantListFragment(OnClickedRestaurantItem onClickedRestaurantItem, FavoriteRestaurantQuery favoriteRestaurantQuery, String CATEGORY_NAME)
+    public RestaurantListFragment(String CATEGORY_NAME)
     {
-        this.onClickedRestaurantItem = onClickedRestaurantItem;
-        this.favoriteRestaurantQuery = favoriteRestaurantQuery;
         this.CATEGORY_NAME = CATEGORY_NAME;
     }
 
-    public RestaurantListFragment(OnClickedRestaurantItem onClickedRestaurantItem, String CATEGORY_NAME)
+    public RestaurantListFragment(FavoriteRestaurantQuery favoriteRestaurantQuery, String CATEGORY_NAME)
     {
-        this.onClickedRestaurantItem = onClickedRestaurantItem;
+        this.favoriteRestaurantQuery = favoriteRestaurantQuery;
         this.CATEGORY_NAME = CATEGORY_NAME;
     }
 

@@ -564,7 +564,6 @@ public class FoodsCategoryListFragment extends Fragment implements OnClickedCate
     @Override
     public void onClickedListItem(FoodCategoryItem e)
     {
-
         if (!e.isDefault() && e.getCategoryName().equals(getString(R.string.add_custom_food_menu)))
         {
             customFoodSettingsActivityResultLauncher.launch(new Intent(getActivity(), CustomFoodMenuSettingsActivity.class));

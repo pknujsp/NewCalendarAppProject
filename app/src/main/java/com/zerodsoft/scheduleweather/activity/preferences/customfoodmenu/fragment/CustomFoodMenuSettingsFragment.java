@@ -128,25 +128,39 @@ public class CustomFoodMenuSettingsFragment extends Fragment implements OnClicke
                 if (binding.edittextCustomFoodmenu.getText().length() > 0)
                 {
                     String value = binding.edittextCustomFoodmenu.getText().toString();
-
-                    viewModel.insert(value, new CarrierMessagingService.ResultCallback<CustomFoodMenuDTO>()
+                    //중복검사
+                    viewModel.containsMenu(value, new CarrierMessagingService.ResultCallback<Boolean>()
                     {
                         @Override
-                        public void onReceiveResult(@NonNull CustomFoodMenuDTO customFoodMenuDTO) throws RemoteException
+                        public void onReceiveResult(@NonNull Boolean isDuplicate) throws RemoteException
                         {
-                            getActivity().runOnUiThread(new Runnable()
+                            if (isDuplicate)
                             {
-                                @Override
-                                public void run()
+                                Toast.makeText(getContext(), R.string.duplicate_value, Toast.LENGTH_SHORT).show();
+                            } else
+                            {
+                                viewModel.insert(value, new CarrierMessagingService.ResultCallback<CustomFoodMenuDTO>()
                                 {
-                                    isEdited = true;
-                                    binding.edittextCustomFoodmenu.setText("");
-                                    adapter.getList().add(customFoodMenuDTO);
-                                    adapter.notifyItemInserted(adapter.getItemCount());
-                                }
-                            });
+                                    @Override
+                                    public void onReceiveResult(@NonNull CustomFoodMenuDTO customFoodMenuDTO) throws RemoteException
+                                    {
+                                        getActivity().runOnUiThread(new Runnable()
+                                        {
+                                            @Override
+                                            public void run()
+                                            {
+                                                isEdited = true;
+                                                binding.edittextCustomFoodmenu.setText("");
+                                                adapter.getList().add(customFoodMenuDTO);
+                                                adapter.notifyItemInserted(adapter.getItemCount());
+                                            }
+                                        });
+                                    }
+                                });
+                            }
                         }
                     });
+
 
                 } else
                 {

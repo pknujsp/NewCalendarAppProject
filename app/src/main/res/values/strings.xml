@@ -490,6 +490,11 @@
     <string name="selected_address">주소 선택됨</string>
     <string name="duplicate_value">이미 존재하는 값 입니다</string>
     <string name="add_custom_food_menu">메뉴 추가</string>
+    <string name="favorite_restaurant">즐겨찾기, 음식점</string>
+    <string name="settings">설정</string>
+    <string name="favorites">즐겨찾기</string>
+    <string name="main">메인</string>
+    <string name="show_all">모두 보기</string>
 
 
 </resources>
