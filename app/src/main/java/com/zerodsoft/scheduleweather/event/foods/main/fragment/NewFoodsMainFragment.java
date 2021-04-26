@@ -1,28 +1,31 @@
-package com.zerodsoft.scheduleweather.event.foods.activity;
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.databinding.DataBindingUtil;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.lifecycle.ViewModelProvider;
+package com.zerodsoft.scheduleweather.event.foods.main.fragment;
 
 import android.content.ContentValues;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.ViewModelProvider;
+
 import android.os.RemoteException;
 import android.provider.CalendarContract;
 import android.service.carrier.CarrierMessagingService;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.databinding.ActivityFoodsBinding;
+import com.zerodsoft.scheduleweather.databinding.FragmentNewFoodsMainBinding;
+import com.zerodsoft.scheduleweather.event.foods.activity.FoodsActivity;
 import com.zerodsoft.scheduleweather.event.foods.favorite.FavoritesMainFragment;
 import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteRestaurantViewModel;
-import com.zerodsoft.scheduleweather.event.foods.main.fragment.FoodsMainFragment;
 import com.zerodsoft.scheduleweather.event.foods.search.search.fragment.SearchRestaurantFragment;
 import com.zerodsoft.scheduleweather.event.foods.settings.FoodsSettingsFragment;
 import com.zerodsoft.scheduleweather.event.foods.share.FavoriteRestaurantCloud;
@@ -34,9 +37,12 @@ import com.zerodsoft.scheduleweather.utility.NetworkStatus;
 
 import java.util.List;
 
-public class FoodsActivity extends AppCompatActivity implements INetwork, BottomNavigationView.OnNavigationItemSelectedListener
+
+public class NewFoodsMainFragment extends Fragment implements INetwork, BottomNavigationView.OnNavigationItemSelectedListener
 {
-    private ActivityFoodsBinding binding;
+    public static final String TAG = "NewFoodsMainFragment";
+    private FragmentNewFoodsMainBinding binding;
+
     private FoodCriteriaLocationInfoViewModel foodCriteriaLocationInfoViewModel;
     private FavoriteRestaurantViewModel favoriteRestaurantViewModel;
     private NetworkStatus networkStatus;
@@ -44,18 +50,32 @@ public class FoodsActivity extends AppCompatActivity implements INetwork, Bottom
     private final ContentValues INSTANCE_VALUES = new ContentValues();
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
+    public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_foods);
 
-        Bundle bundle = getIntent().getExtras();
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState)
+    {
+        binding = FragmentNewFoodsMainBinding.inflate(inflater);
+        return binding.getRoot();
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
+    {
+        super.onViewCreated(view, savedInstanceState);
+
+        Bundle bundle = getArguments();
 
         INSTANCE_VALUES.put(CalendarContract.Instances.CALENDAR_ID, bundle.getInt(CalendarContract.Instances.CALENDAR_ID));
         INSTANCE_VALUES.put(CalendarContract.Instances._ID, bundle.getLong(CalendarContract.Instances._ID));
         INSTANCE_VALUES.put(CalendarContract.Instances.EVENT_ID, bundle.getLong(CalendarContract.Instances.EVENT_ID));
 
-        networkStatus = new NetworkStatus(getApplicationContext(), new ConnectivityManager.NetworkCallback()
+        networkStatus = new NetworkStatus(getContext(), new ConnectivityManager.NetworkCallback()
         {
             @Override
             public void onAvailable(@NonNull Network network)
@@ -67,12 +87,12 @@ public class FoodsActivity extends AppCompatActivity implements INetwork, Bottom
             public void onLost(@NonNull Network network)
             {
                 super.onLost(network);
-                runOnUiThread(new Runnable()
+                getActivity().runOnUiThread(new Runnable()
                 {
                     @Override
                     public void run()
                     {
-                        finish();
+                        requireActivity().finish();
                     }
                 });
             }
@@ -110,7 +130,7 @@ public class FoodsActivity extends AppCompatActivity implements INetwork, Bottom
                     @Override
                     public void onReceiveResult(@NonNull FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO) throws RemoteException
                     {
-                        runOnUiThread(new Runnable()
+                        requireActivity().runOnUiThread(new Runnable()
                         {
                             @Override
                             public void run()
@@ -125,7 +145,7 @@ public class FoodsActivity extends AppCompatActivity implements INetwork, Bottom
                                                 @Override
                                                 public void onReceiveResult(@NonNull FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO) throws RemoteException
                                                 {
-                                                    runOnUiThread(new Runnable()
+                                                    requireActivity().runOnUiThread(new Runnable()
                                                     {
                                                         @Override
                                                         public void run()
@@ -154,14 +174,14 @@ public class FoodsActivity extends AppCompatActivity implements INetwork, Bottom
         fragmentBundle.putLong(CalendarContract.Instances._ID, INSTANCE_VALUES.getAsLong(CalendarContract.Instances._ID));
         fragmentBundle.putLong(CalendarContract.Instances.EVENT_ID, INSTANCE_VALUES.getAsLong(CalendarContract.Instances.EVENT_ID));
 
-        FoodsMainFragment foodsMainFragment = new FoodsMainFragment(FoodsActivity.this::networkAvailable);
+        FoodsMainFragment foodsMainFragment = new FoodsMainFragment(this);
         foodsMainFragment.setArguments(fragmentBundle);
 
         SearchRestaurantFragment searchRestaurantFragment = new SearchRestaurantFragment();
         FoodsSettingsFragment foodsSettingsFragment = new FoodsSettingsFragment();
         FavoritesMainFragment favoritesMainFragment = new FavoritesMainFragment();
 
-        getSupportFragmentManager().beginTransaction()
+        getChildFragmentManager().beginTransaction()
                 .add(binding.fragmentContainer.getId(), foodsMainFragment, FoodsMainFragment.TAG)
                 .add(binding.fragmentContainer.getId(), searchRestaurantFragment, SearchRestaurantFragment.TAG)
                 .add(binding.fragmentContainer.getId(), foodsSettingsFragment, FoodsSettingsFragment.TAG)
@@ -175,7 +195,7 @@ public class FoodsActivity extends AppCompatActivity implements INetwork, Bottom
     }
 
     @Override
-    protected void onDestroy()
+    public void onDestroy()
     {
         super.onDestroy();
         networkStatus.unregisterNetworkCallback();
@@ -192,7 +212,7 @@ public class FoodsActivity extends AppCompatActivity implements INetwork, Bottom
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item)
     {
-        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentManager fragmentManager = getChildFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.hide(currentShowingFragment);
         Fragment newFragment = null;
@@ -223,8 +243,6 @@ public class FoodsActivity extends AppCompatActivity implements INetwork, Bottom
                 break;
             }
         }
-        // removeOnBackPressedOfPreviousFragment(currentShowingFragment);
-        // addOnBackPressedOfNewFragment(newFragment);
 
         fragmentTransaction.show(newFragment)
                 .commitNow();

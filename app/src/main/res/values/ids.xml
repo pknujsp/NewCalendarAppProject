@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <item name="map_fragment_container_view" type="id" />
+    <item name="instance_info_fragment_container" type="id" />
+    <item name="weather_fragment_container" type="id" />
+    <item name="restaurant_fragment_container" type="id" />
 </resources>
