@@ -66,11 +66,11 @@ public class EventFragment extends Fragment
     private List<ContentValues> attendeeList;
     private CalendarViewModel viewModel;
 
-    private Integer calendarId;
-    private Long instanceId;
-    private Long eventId;
-    private Long begin;
-    private Long end;
+    private final int CALENDAR_ID;
+    private final long EVENT_ID;
+    private final long INSTANCE_ID;
+    private final long ORIGINAL_BEGIN;
+    private final long ORIGINAL_END;
 
     private AlertDialog attendeeDialog;
 
@@ -96,8 +96,14 @@ public class EventFragment extends Fragment
 
     };
 
-    public EventFragment(Activity activity)
+
+    public EventFragment(int CALENDAR_ID, long EVENT_ID, long INSTANCE_ID, long ORIGINAL_BEGIN, long ORIGINAL_END)
     {
+        this.CALENDAR_ID = CALENDAR_ID;
+        this.EVENT_ID = EVENT_ID;
+        this.INSTANCE_ID = INSTANCE_ID;
+        this.ORIGINAL_BEGIN = ORIGINAL_BEGIN;
+        this.ORIGINAL_END = ORIGINAL_END;
     }
 
     @Override
@@ -111,14 +117,6 @@ public class EventFragment extends Fragment
     public void onCreate(@Nullable Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-
-        Bundle arguments = getArguments();
-        calendarId = arguments.getInt("calendarId");
-        instanceId = arguments.getLong("instanceId");
-        eventId = arguments.getLong("eventId");
-        begin = arguments.getLong("begin");
-        end = arguments.getLong("end");
-
         networkStatus = new NetworkStatus(getContext(), new ConnectivityManager.NetworkCallback());
     }
 
@@ -168,7 +166,7 @@ public class EventFragment extends Fragment
             @Override
             public void onClick(View view)
             {
-                locationViewModel.hasDetailLocation(calendarId, eventId, new CarrierMessagingService.ResultCallback<Boolean>()
+                locationViewModel.hasDetailLocation(CALENDAR_ID, EVENT_ID, new CarrierMessagingService.ResultCallback<Boolean>()
                 {
                     @Override
                     public void onReceiveResult(@NonNull Boolean hasDetailLocation) throws RemoteException
@@ -182,7 +180,7 @@ public class EventFragment extends Fragment
                                 {
                                     if (networkStatus.networkAvailable())
                                     {
-                                        locationViewModel.getLocation(calendarId, eventId, new CarrierMessagingService.ResultCallback<LocationDTO>()
+                                        locationViewModel.getLocation(CALENDAR_ID, EVENT_ID, new CarrierMessagingService.ResultCallback<LocationDTO>()
                                         {
                                             @Override
                                             public void onReceiveResult(@NonNull LocationDTO locationDTO) throws RemoteException
@@ -288,7 +286,7 @@ public class EventFragment extends Fragment
 
         viewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
 
-        instance = viewModel.getInstance(calendarId, instanceId, begin, end);
+        instance = viewModel.getInstance(CALENDAR_ID, INSTANCE_ID, ORIGINAL_BEGIN, ORIGINAL_END);
         setInstanceData();
     }
 
@@ -296,8 +294,8 @@ public class EventFragment extends Fragment
     {
         // 참석자 - 알림 - 이벤트 순으로 삭제 (외래키 때문)
         // db column error
-        viewModel.deleteEvent(calendarId, eventId);
-        locationViewModel.removeLocation(calendarId, eventId, new CarrierMessagingService.ResultCallback<Boolean>()
+        viewModel.deleteEvent(CALENDAR_ID, EVENT_ID);
+        locationViewModel.removeLocation(CALENDAR_ID, EVENT_ID, new CarrierMessagingService.ResultCallback<Boolean>()
         {
             @Override
             public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
@@ -305,7 +303,7 @@ public class EventFragment extends Fragment
 
             }
         });
-        foodCriteriaLocationInfoViewModel.deleteByEventId(calendarId, eventId, new CarrierMessagingService.ResultCallback<Boolean>()
+        foodCriteriaLocationInfoViewModel.deleteByEventId(CALENDAR_ID, EVENT_ID, new CarrierMessagingService.ResultCallback<Boolean>()
         {
             @Override
             public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
@@ -313,7 +311,7 @@ public class EventFragment extends Fragment
 
             }
         });
-        foodCriteriaLocationHistoryViewModel.deleteByEventId(calendarId, eventId, new CarrierMessagingService.ResultCallback<Boolean>()
+        foodCriteriaLocationHistoryViewModel.deleteByEventId(CALENDAR_ID, EVENT_ID, new CarrierMessagingService.ResultCallback<Boolean>()
         {
             @Override
             public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
@@ -350,7 +348,7 @@ public class EventFragment extends Fragment
 
     private void exceptThisInstance()
     {
-        viewModel.deleteInstance(instance.getAsLong(CalendarContract.Instances.BEGIN), eventId);
+        viewModel.deleteInstance(instance.getAsLong(CalendarContract.Instances.BEGIN), EVENT_ID);
 
         resultCode = InstanceMainActivity.RESULT_EXCEPTED_INSTANCE;
         onBackPressedCallback.handleOnBackPressed();
@@ -364,6 +362,7 @@ public class EventFragment extends Fragment
         binding.removeEventFab.animate().translationY(0);
         binding.modifyEventFab.animate().translationY(0);
         binding.selectDetailLocationFab.animate().translationY(0);
+
     }
 
 
@@ -501,7 +500,7 @@ public class EventFragment extends Fragment
         // 알람
         if (instance.getAsBoolean(CalendarContract.Instances.HAS_ALARM))
         {
-            List<ContentValues> reminderList = viewModel.getReminders(calendarId, eventId);
+            List<ContentValues> reminderList = viewModel.getReminders(CALENDAR_ID, EVENT_ID);
             setReminderText(reminderList);
             binding.eventRemindersView.notReminder.setVisibility(View.GONE);
             binding.eventRemindersView.remindersTable.setVisibility(View.VISIBLE);
@@ -551,7 +550,7 @@ public class EventFragment extends Fragment
         }
 
         // 참석자
-        attendeeList = viewModel.getAttendees(calendarId, eventId);
+        attendeeList = viewModel.getAttendees(CALENDAR_ID, EVENT_ID);
 
         // 참석자가 없는 경우 - 테이블 숨김, 참석자 없음 텍스트 표시
         if (attendeeList.isEmpty())

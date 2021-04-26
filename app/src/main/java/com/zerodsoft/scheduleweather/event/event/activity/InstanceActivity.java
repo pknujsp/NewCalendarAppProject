@@ -25,8 +25,11 @@ public class InstanceActivity extends AppCompatActivity
 
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
 
+        /*
         EventFragment eventFragment = new EventFragment(this);
         eventFragment.setArguments(getIntent().getExtras());
         fragmentTransaction.add(R.id.instance_fragment_container, eventFragment, EventFragment.TAG).commit();
+
+         */
     }
 }

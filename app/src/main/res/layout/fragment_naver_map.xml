@@ -13,7 +13,6 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-
             <include
                 android:id="@+id/naver_map_header_bar"
                 layout="@layout/view_map_search_bar"
@@ -40,7 +39,7 @@
                 android:id="@+id/naver_map_buttons_layout"
                 layout="@layout/map_buttons_view"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_alignParentBottom="true"
                 android:layout_gravity="bottom"
                 android:layout_marginLeft="28dp"

@@ -206,13 +206,13 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
              */
             Intent intent = new Intent(getActivity(), NewInstanceMainActivity.class);
             Bundle bundle = new Bundle();
-            intent.putExtras(bundle);
 
             bundle.putInt(CalendarContract.Instances.CALENDAR_ID, calendarId);
             bundle.putLong(CalendarContract.Instances._ID, instanceId);
             bundle.putLong(CalendarContract.Instances.EVENT_ID, eventId);
             bundle.putLong(CalendarContract.Instances.BEGIN, viewBegin);
             bundle.putLong(CalendarContract.Instances.END, viewEnd);
+            intent.putExtras(bundle);
 
             istartActivity.startActivityResult(intent, 0);
         }

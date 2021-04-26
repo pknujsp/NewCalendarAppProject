@@ -2,6 +2,8 @@ package com.zerodsoft.scheduleweather.kakaomap.model;
 
 import android.service.carrier.CarrierMessagingService;
 
+import com.google.gson.internal.$Gson$Preconditions;
+import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.retrofit.HttpCommunicationClient;
 import com.zerodsoft.scheduleweather.retrofit.Querys;
@@ -13,6 +15,7 @@ import java.util.Map;
 
 import lombok.SneakyThrows;
 import retrofit2.Call;
+import retrofit2.Callback;
 import retrofit2.Response;
 
 public final class CoordToAddressUtil
@@ -44,6 +47,29 @@ public final class CoordToAddressUtil
             protected void handleFailure(Exception e)
             {
                 retrofitCallback.onReceiveResult(new DataWrapper<>(e));
+            }
+        });
+
+    }
+
+    public static void coordToAddress(LocalApiPlaceParameter parameter, JsonDownloader<CoordToAddress> callback)
+    {
+        Querys querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.KAKAO);
+        Map<String, String> queryMap = parameter.getParameterMap();
+        Call<CoordToAddress> call = querys.getCoordToAddress(queryMap);
+
+        call.enqueue(new Callback<CoordToAddress>()
+        {
+            @Override
+            public void onResponse(Call<CoordToAddress> call, Response<CoordToAddress> response)
+            {
+                callback.processResult(response);
+            }
+
+            @Override
+            public void onFailure(Call<CoordToAddress> call, Throwable t)
+            {
+                callback.processResult(t);
             }
         });
 
