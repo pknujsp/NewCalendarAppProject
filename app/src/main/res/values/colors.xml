@@ -43,4 +43,7 @@
     <color name="air_condition_very_bad">#fc3037</color>
 
     <color name="text_stroke_color">#000000</color>
+    <color name="light_green_500">#8BC34A</color>
+    <color name="light_green_600">#7CB342</color>
+    <color name="light_green_700">#689F38</color>
 </resources>

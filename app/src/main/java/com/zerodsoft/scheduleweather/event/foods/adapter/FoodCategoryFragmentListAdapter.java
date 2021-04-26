@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
+import com.zerodsoft.scheduleweather.event.foods.categorylist.FoodCategoryTabFragment;
 import com.zerodsoft.scheduleweather.event.foods.categorylist.RestaurantListFragment;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedRestaurantItem;
 import com.zerodsoft.scheduleweather.room.interfaces.FavoriteRestaurantQuery;
@@ -11,7 +12,7 @@ import com.zerodsoft.scheduleweather.room.interfaces.FavoriteRestaurantQuery;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FoodCategoryFragmentListAdapter extends FragmentStateAdapter
+public class FoodCategoryFragmentListAdapter extends FragmentStateAdapter implements FoodCategoryTabFragment.RefreshFavoriteState
 {
     private List<RestaurantListFragment> fragments;
     private List<String> categoryList;
@@ -45,5 +46,14 @@ public class FoodCategoryFragmentListAdapter extends FragmentStateAdapter
     public int getItemCount()
     {
         return fragments.size();
+    }
+
+    @Override
+    public void refreshFavorites()
+    {
+        for (RestaurantListFragment fragment : fragments)
+        {
+            fragment.refreshFavorites();
+        }
     }
 }

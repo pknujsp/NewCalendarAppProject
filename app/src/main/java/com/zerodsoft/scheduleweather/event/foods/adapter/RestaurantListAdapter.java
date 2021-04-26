@@ -23,6 +23,7 @@ import com.bumptech.glide.Glide;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
+import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedFavoriteButtonListener;
 import com.zerodsoft.scheduleweather.event.foods.share.FavoriteRestaurantCloud;
 import com.zerodsoft.scheduleweather.kakaomap.callback.PlaceItemCallback;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.kakaoplace.KakaoPlaceJsonRoot;
@@ -40,22 +41,20 @@ import java.util.List;
 public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, RestaurantListAdapter.ItemViewHolder>
 {
     private final OnClickedListItem<PlaceDocuments> onClickedListItem;
-    private final FavoriteRestaurantQuery favoriteRestaurantQuery;
+    private final OnClickedFavoriteButtonListener onClickedFavoriteButtonListener;
 
     private SparseArray<KakaoPlaceJsonRoot> kakaoPlacesArr = new SparseArray<>();
     private SparseArray<Bitmap> restaurantImagesArr = new SparseArray<>();
     private FavoriteRestaurantCloud favoriteRestaurantCloud = FavoriteRestaurantCloud.getInstance();
 
-    private Activity activity;
     private Context context;
 
-    public RestaurantListAdapter(Activity activity, OnClickedListItem<PlaceDocuments> onClickedListItem, FavoriteRestaurantQuery favoriteRestaurantQuery)
+    public RestaurantListAdapter(Context context, OnClickedListItem<PlaceDocuments> onClickedListItem, OnClickedFavoriteButtonListener onClickedFavoriteButtonListener)
     {
         super(new PlaceItemCallback());
-        this.activity = activity;
-        this.context = activity.getApplicationContext();
+        this.context = context;
         this.onClickedListItem = onClickedListItem;
-        this.favoriteRestaurantQuery = favoriteRestaurantQuery;
+        this.onClickedFavoriteButtonListener = onClickedFavoriteButtonListener;
     }
 
     class ItemViewHolder extends RecyclerView.ViewHolder
@@ -123,47 +122,7 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
                 @Override
                 public void onClick(View view)
                 {
-                    if (favoriteRestaurantCloud.contains(item.getId()))
-                    {
-                        favoriteRestaurantQuery.delete(item.getId(), new CarrierMessagingService.ResultCallback<Boolean>()
-                        {
-                            @Override
-                            public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
-                            {
-                                activity.runOnUiThread(new Runnable()
-                                {
-                                    @Override
-                                    public void run()
-                                    {
-                                        favoriteButton.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.favorite_disabled_icon));
-                                    }
-                                });
-
-                            }
-                        });
-                    } else
-                    {
-                        String id = item.getId();
-                        String name = item.getPlaceName();
-                        String latitude = String.valueOf(item.getY());
-                        String longitude = String.valueOf(item.getX());
-
-                        favoriteRestaurantQuery.insert(id, name, latitude, longitude, new CarrierMessagingService.ResultCallback<FavoriteRestaurantDTO>()
-                        {
-                            @Override
-                            public void onReceiveResult(@NonNull FavoriteRestaurantDTO favoriteRestaurantDTO) throws RemoteException
-                            {
-                                activity.runOnUiThread(new Runnable()
-                                {
-                                    @Override
-                                    public void run()
-                                    {
-                                        favoriteButton.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.favorite_enabled_icon));
-                                    }
-                                });
-                            }
-                        });
-                    }
+                    onClickedFavoriteButtonListener.onClickedFavoriteButton(item, getBindingAdapterPosition());
                 }
             });
 
@@ -204,7 +163,8 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
             }
 
             String finalRating = rating;
-            activity.runOnUiThread(new Runnable()
+            /*
+            context.runOnUiThread(new Runnable()
             {
                 @Override
                 public void run()
@@ -213,6 +173,8 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
                     restaurantRating.setText(finalRating);
                 }
             });
+
+             */
         }
 
 
@@ -237,6 +199,7 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
 
                                 restaurantImagesArr.put(getBindingAdapterPosition(), bmp);
 
+                                /*
                                 activity.runOnUiThread(new Runnable()
                                 {
                                     @Override
@@ -249,6 +212,8 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
                                                 .into(restaurantImage);
                                     }
                                 });
+
+                                 */
                             } catch (MalformedURLException e)
                             {
                                 e.printStackTrace();

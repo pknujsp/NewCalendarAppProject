@@ -25,6 +25,7 @@ import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackCont
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.databinding.FragmentFoodRestaurantSearchHistoryBinding;
 import com.zerodsoft.scheduleweather.etc.CustomRecyclerViewItemDecoration;
+import com.zerodsoft.scheduleweather.event.foods.categorylist.FoodCategoryTabFragment;
 import com.zerodsoft.scheduleweather.event.foods.search.search.adapter.FoodRestaurantSearchHistoryAdapter;
 import com.zerodsoft.scheduleweather.kakaomap.viewmodel.SearchHistoryViewModel;
 import com.zerodsoft.scheduleweather.room.dto.SearchHistoryDTO;

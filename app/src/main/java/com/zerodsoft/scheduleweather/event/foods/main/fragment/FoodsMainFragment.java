@@ -59,12 +59,6 @@ public class FoodsMainFragment extends Fragment implements OnBackPressedCallback
         addOnBackPressedCallback();
     }
 
-    @Override
-    public void onDetach()
-    {
-        super.onDetach();
-        // removeOnBackPressedCallback();
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -96,12 +90,24 @@ public class FoodsMainFragment extends Fragment implements OnBackPressedCallback
     public void onHiddenChanged(boolean hidden)
     {
         super.onHiddenChanged(hidden);
+        Fragment foodCategoryTabFragment = getChildFragmentManager().findFragmentByTag(FoodCategoryTabFragment.TAG);
+
         if (hidden)
         {
             removeOnBackPressedCallback();
+            if (foodCategoryTabFragment != null)
+            {
+                getChildFragmentManager().beginTransaction().hide(foodCategoryTabFragment)
+                        .commitNow();
+            }
         } else
         {
             addOnBackPressedCallback();
+            if (foodCategoryTabFragment != null)
+            {
+                getChildFragmentManager().beginTransaction().show(foodCategoryTabFragment)
+                        .commitNow();
+            }
         }
     }
 

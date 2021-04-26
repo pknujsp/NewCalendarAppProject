@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.os.Bundle;
+import android.provider.CalendarContract;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,6 +34,7 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClic
 import com.zerodsoft.scheduleweather.calendarview.month.MonthFragment;
 import com.zerodsoft.scheduleweather.calendarview.week.WeekFragment;
 import com.zerodsoft.scheduleweather.event.main.InstanceMainActivity;
+import com.zerodsoft.scheduleweather.event.main.NewInstanceMainActivity;
 import com.zerodsoft.scheduleweather.utility.NetworkStatus;
 
 import java.util.Date;
@@ -193,12 +195,24 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
         // 이벤트 정보 액티비티로 전환
         if (networkStatus.networkAvailable())
         {
+            /*
             Intent intent = new Intent(getActivity(), InstanceMainActivity.class);
             intent.putExtra("calendarId", calendarId);
             intent.putExtra("instanceId", instanceId);
             intent.putExtra("eventId", eventId);
             intent.putExtra("begin", viewBegin);
             intent.putExtra("end", viewEnd);
+
+             */
+            Intent intent = new Intent(getActivity(), NewInstanceMainActivity.class);
+            Bundle bundle = new Bundle();
+            intent.putExtras(bundle);
+
+            bundle.putInt(CalendarContract.Instances.CALENDAR_ID, calendarId);
+            bundle.putLong(CalendarContract.Instances._ID, instanceId);
+            bundle.putLong(CalendarContract.Instances.EVENT_ID, eventId);
+            bundle.putLong(CalendarContract.Instances.BEGIN, viewBegin);
+            bundle.putLong(CalendarContract.Instances.END, viewEnd);
 
             istartActivity.startActivityResult(intent, 0);
         }

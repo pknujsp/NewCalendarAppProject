@@ -26,7 +26,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".event.foods.settings.CustomFoodMenuSettingsActivity"></activity>
+        <activity android:name=".event.main.NewInstanceMainActivity"></activity>
+        <activity android:name=".event.foods.settings.CustomFoodMenuSettingsActivity" />
         <activity
             android:name=".navermap.NaverMapActivity"
             android:windowSoftInputMode="adjustNothing" />

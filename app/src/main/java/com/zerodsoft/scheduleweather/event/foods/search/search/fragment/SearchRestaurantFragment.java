@@ -22,6 +22,7 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.databinding.FragmentSearchRestaurantBinding;
+import com.zerodsoft.scheduleweather.event.foods.categorylist.FoodCategoryTabFragment;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedRestaurantItem;
 import com.zerodsoft.scheduleweather.event.foods.search.searchresult.fragment.FoodRestaurantSearchResultFragment;
 import com.zerodsoft.scheduleweather.kakaomap.viewmodel.SearchHistoryViewModel;
@@ -155,12 +156,21 @@ public class SearchRestaurantFragment extends Fragment implements OnClickedListI
     public void onHiddenChanged(boolean hidden)
     {
         super.onHiddenChanged(hidden);
+
+
         if (hidden)
         {
             removeOnBackPressedCallback();
+
         } else
         {
             addOnBackPressedCallback();
+            FoodRestaurantSearchResultFragment foodRestaurantSearchResultFragment =
+                    (FoodRestaurantSearchResultFragment) getChildFragmentManager().findFragmentByTag(FoodRestaurantSearchResultFragment.TAG);
+            if (foodRestaurantSearchResultFragment != null)
+            {
+                foodRestaurantSearchResultFragment.refreshFavorites();
+            }
         }
     }
 

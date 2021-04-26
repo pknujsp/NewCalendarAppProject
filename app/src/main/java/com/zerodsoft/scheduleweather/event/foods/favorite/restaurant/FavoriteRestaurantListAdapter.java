@@ -19,6 +19,7 @@ import androidx.core.content.ContextCompat;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.ICalendarCheckBox;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
+import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedFavoriteButtonListener;
 import com.zerodsoft.scheduleweather.event.foods.share.FavoriteRestaurantCloud;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.FavoriteRestaurantDTO;
@@ -29,7 +30,6 @@ import java.util.List;
 class FavoriteRestaurantListAdapter extends BaseExpandableListAdapter
 {
     private Context context;
-    private Activity activity;
     private ICalendarCheckBox iCalendarCheckBox;
     private ArrayMap<String, List<PlaceDocuments>> restaurantListMap;
     private LayoutInflater layoutInflater;
@@ -37,17 +37,16 @@ class FavoriteRestaurantListAdapter extends BaseExpandableListAdapter
     private GroupViewHolder groupViewHolder;
     private ChildViewHolder childViewHolder;
     private OnClickedListItem<PlaceDocuments> onClickedListItem;
-    private FavoriteRestaurantQuery favoriteRestaurantQuery;
+    private OnClickedFavoriteButtonListener onClickedFavoriteButtonListener;
     private FavoriteRestaurantCloud favoriteRestaurantCloud = FavoriteRestaurantCloud.getInstance();
 
-    public FavoriteRestaurantListAdapter(Activity activity, OnClickedListItem<PlaceDocuments> onClickedListItem
-            , FavoriteRestaurantQuery favoriteRestaurantQuery, ArrayMap<String, List<PlaceDocuments>> restaurantListMap)
+    public FavoriteRestaurantListAdapter(Context context, OnClickedFavoriteButtonListener onClickedFavoriteButtonListener, OnClickedListItem<PlaceDocuments> onClickedListItem
+            , ArrayMap<String, List<PlaceDocuments>> restaurantListMap)
     {
-        this.context = activity;
-        this.activity = activity;
+        this.context = context;
+        this.onClickedFavoriteButtonListener = onClickedFavoriteButtonListener;
         this.onClickedListItem = onClickedListItem;
         this.restaurantListMap = restaurantListMap;
-        this.favoriteRestaurantQuery = favoriteRestaurantQuery;
         this.layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
 
@@ -162,32 +161,8 @@ class FavoriteRestaurantListAdapter extends BaseExpandableListAdapter
             @Override
             public void onClick(View view)
             {
-                if (favoriteRestaurantCloud.contains(restaurantListMap.get(restaurantListMap.keyAt(groupPosition)).get(childPosition).getId()))
-                {
-                    favoriteRestaurantQuery.delete(restaurantListMap.get(restaurantListMap.keyAt(groupPosition)).get(childPosition).getId()
-                            , new CarrierMessagingService.ResultCallback<Boolean>()
-                            {
-                                @Override
-                                public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
-                                {
-                                    activity.runOnUiThread(new Runnable()
-                                    {
-                                        @Override
-                                        public void run()
-                                        {
-                                            restaurantListMap.get(restaurantListMap.keyAt(groupPosition)).remove(childPosition);
-                                            if (restaurantListMap.get(restaurantListMap.keyAt(groupPosition)).isEmpty())
-                                            {
-                                                restaurantListMap.remove(restaurantListMap.keyAt(groupPosition));
-                                            }
-                                            notifyDataSetChanged();
-                                        }
-                                    });
-
-                                }
-                            });
-                }
-
+                onClickedFavoriteButtonListener.onClickedFavoriteButton(restaurantListMap.get(restaurantListMap.keyAt(groupPosition)).get(childPosition).getId(),
+                        groupPosition, childPosition);
             }
         });
 

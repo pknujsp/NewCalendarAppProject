@@ -6,6 +6,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.os.RemoteException;
@@ -137,5 +139,22 @@ public class FoodCategoryTabFragment extends Fragment
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onHiddenChanged(boolean hidden)
+    {
+        super.onHiddenChanged(hidden);
+        if (hidden)
+        {
+            //음식점 즐겨찾기 갱신
+        } else
+        {
+            adapter.refreshFavorites();
+        }
+    }
 
+
+    public interface RefreshFavoriteState
+    {
+        void refreshFavorites();
+    }
 }

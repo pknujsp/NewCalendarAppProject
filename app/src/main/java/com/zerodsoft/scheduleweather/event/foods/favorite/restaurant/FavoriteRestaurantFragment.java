@@ -1,5 +1,6 @@
 package com.zerodsoft.scheduleweather.event.foods.favorite.restaurant;
 
+import android.database.DataSetObserver;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -26,6 +27,7 @@ import com.zerodsoft.scheduleweather.common.interfaces.OnProgressBarListener;
 import com.zerodsoft.scheduleweather.databinding.FragmentFavoriteRestaurantBinding;
 import com.zerodsoft.scheduleweather.event.foods.adapter.FoodCategoryFragmentListAdapter;
 import com.zerodsoft.scheduleweather.event.foods.categorylist.FoodCategoryTabFragment;
+import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedFavoriteButtonListener;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedRestaurantItem;
 import com.zerodsoft.scheduleweather.event.foods.searchlocation.fragment.AddressesListFragment;
 import com.zerodsoft.scheduleweather.event.foods.searchlocation.fragment.LocationSearchDialogFragment;
@@ -57,7 +59,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class FavoriteRestaurantFragment extends Fragment implements OnClickedListItem<PlaceDocuments>, OnProgressBarListener
+public class FavoriteRestaurantFragment extends Fragment implements OnClickedListItem<PlaceDocuments>, OnProgressBarListener, OnClickedFavoriteButtonListener
 {
     public static final String TAG = "FavoriteRestaurantFragment";
     private FragmentFavoriteRestaurantBinding binding;
@@ -108,7 +110,30 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
         super.onViewCreated(view, savedInstanceState);
 
         favoriteRestaurantViewModel = new ViewModelProvider(this).get(FavoriteRestaurantViewModel.class);
-        adapter = new FavoriteRestaurantListAdapter(getActivity(), this, favoriteRestaurantViewModel, restaurantListMap);
+
+        binding.favoriteRestaurantList.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener()
+        {
+            @Override
+            public boolean onGroupClick(ExpandableListView expandableListView, View view, int i, long l)
+            {
+                return false;
+            }
+        });
+        adapter = new FavoriteRestaurantListAdapter(getContext(), this, this, restaurantListMap);
+        adapter.registerDataSetObserver(new DataSetObserver()
+        {
+            @Override
+            public void onChanged()
+            {
+                super.onChanged();
+            }
+
+            @Override
+            public void onInvalidated()
+            {
+                super.onInvalidated();
+            }
+        });
         binding.favoriteRestaurantList.setAdapter(adapter);
         downloadPlaceDocuments();
     }
@@ -215,17 +240,8 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
 
     private void createListView()
     {
-        binding.progressBar.setVisibility(View.GONE);
-        adapter.setRestaurantListMap(restaurantListMap);
+        setProgressBarVisibility(View.GONE);
         adapter.notifyDataSetChanged();
-        binding.favoriteRestaurantList.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener()
-        {
-            @Override
-            public boolean onGroupClick(ExpandableListView expandableListView, View view, int i, long l)
-            {
-                return false;
-            }
-        });
     }
 
     @Override
@@ -267,9 +283,12 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
     public void refreshList()
     {
         //restaurantId비교
-        Set<String> keySet = restaurantListMap.keySet();
+        //바뀐 부분만 수정
+        setProgressBarVisibility(View.VISIBLE);
+        Set<String> restaurantIdSetInCloud = FavoriteRestaurantCloud.getInstance().getSet();
         Set<String> restaurantIdSetInList = new HashSet<>();
 
+        final Set<String> keySet = restaurantListMap.keySet();
         for (String key : keySet)
         {
             for (int i = 0; i < restaurantListMap.get(key).size(); i++)
@@ -278,11 +297,156 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
             }
         }
 
-        Set<String> restaurantIdInCloud = FavoriteRestaurantCloud.getInstance().getSet();
+        Set<String> removedSet = new HashSet<>(restaurantIdSetInList);
+        Set<String> addedSet = new HashSet<>(restaurantIdSetInCloud);
 
-        if (!restaurantIdInCloud.equals(restaurantIdSetInList))
+        removedSet.removeAll(restaurantIdSetInCloud);
+        addedSet.removeAll(restaurantIdSetInList);
+
+        if (removedSet.isEmpty() && addedSet.isEmpty())
         {
-            downloadPlaceDocuments();
+            setProgressBarVisibility(View.GONE);
+            return;
         }
+
+        if (!removedSet.isEmpty())
+        {
+            for (String id : removedSet)
+            {
+                for (String key : keySet)
+                {
+                    for (int i = restaurantListMap.get(key).size() - 1; i >= 0; i--)
+                    {
+                        if (restaurantListMap.get(key).get(i).getId().equals(id))
+                        {
+                            restaurantListMap.get(key).remove(i);
+                        }
+                    }
+                }
+            }
+
+            for (int i = restaurantListMap.size() - 1; i >= 0; i--)
+            {
+                if (restaurantListMap.get(restaurantListMap.keyAt(i)).isEmpty())
+                {
+                    restaurantListMap.removeAt(i);
+                }
+            }
+
+            adapter.notifyDataSetChanged();
+            setProgressBarVisibility(View.GONE);
+        }
+
+        if (!addedSet.isEmpty())
+        {
+            setProgressBarVisibility(View.VISIBLE);
+
+            favoriteRestaurantViewModel.select(new CarrierMessagingService.ResultCallback<List<FavoriteRestaurantDTO>>()
+            {
+                @Override
+                public void onReceiveResult(@NonNull List<FavoriteRestaurantDTO> favoriteRestaurantDTOS) throws RemoteException
+                {
+                    Set<FavoriteRestaurantDTO> restaurantDTOSet = new HashSet<>();
+                    for (FavoriteRestaurantDTO favoriteRestaurantDTO : favoriteRestaurantDTOS)
+                    {
+                        if (addedSet.contains(favoriteRestaurantDTO.getRestaurantId()))
+                        {
+                            restaurantDTOSet.add(favoriteRestaurantDTO);
+                        }
+                    }
+
+                    requestCount = restaurantDTOSet.size();
+                    responseCount = 0;
+
+                    for (FavoriteRestaurantDTO favoriteRestaurant : restaurantDTOSet)
+                    {
+                        LocalApiPlaceParameter placeParameter = LocalParameterUtil.getPlaceParameterForSpecific(favoriteRestaurant.getRestaurantName()
+                                , favoriteRestaurant.getLatitude(), favoriteRestaurant.getLongitude());
+
+                        kakaoPlaceDownloader.getPlacesForSpecific(placeParameter, new JsonDownloader<PlaceKakaoLocalResponse>()
+                        {
+                            @Override
+                            public void onResponseSuccessful(PlaceKakaoLocalResponse result)
+                            {
+                                //id값과 일치하는 장소 데이터 추출
+                                ++responseCount;
+                                List<PlaceDocuments> placeDocumentsList = result.getPlaceDocuments();
+                                final String restaurantId = favoriteRestaurant.getRestaurantId();
+
+                                int i = 0;
+                                for (; i < placeDocumentsList.size(); i++)
+                                {
+                                    if (placeDocumentsList.get(i).getId().equals(restaurantId))
+                                    {
+                                        break;
+                                    }
+                                }
+
+                                createList(placeDocumentsList.get(i));
+
+                                if (requestCount == responseCount)
+                                {
+                                    getActivity().runOnUiThread(new Runnable()
+                                    {
+                                        @Override
+                                        public void run()
+                                        {
+                                            createListView();
+                                        }
+                                    });
+                                }
+                            }
+
+                            @Override
+                            public void onResponseFailed(Exception e)
+                            {
+
+                            }
+                        });
+                    }
+                }
+            });
+        }
+    }
+
+    @Override
+    public void onClickedFavoriteButton(String restaurantId, int groupPosition, int childPosition)
+    {
+        if (FavoriteRestaurantCloud.getInstance().contains(restaurantListMap.get(restaurantListMap.keyAt(groupPosition)).get(childPosition).getId()))
+        {
+            favoriteRestaurantViewModel.delete(restaurantListMap.get(restaurantListMap.keyAt(groupPosition)).get(childPosition).getId()
+                    , new CarrierMessagingService.ResultCallback<Boolean>()
+                    {
+                        @Override
+                        public void onReceiveResult(@NonNull Boolean isDeleted) throws RemoteException
+                        {
+                            getActivity().runOnUiThread(new Runnable()
+                            {
+                                @Override
+                                public void run()
+                                {
+                                    String key = restaurantListMap.keyAt(groupPosition);
+                                    restaurantListMap.get(key).remove(childPosition);
+                                    if (restaurantListMap.get(key).isEmpty())
+                                    {
+                                        restaurantListMap.remove(key);
+                                    }
+                                    adapter.notifyDataSetChanged();
+                                    if (restaurantListMap.size() >= 1 && !restaurantListMap.containsKey(key))
+                                    {
+                                        binding.favoriteRestaurantList.collapseGroup(groupPosition);
+                                    }
+                                }
+                            });
+
+                        }
+                    });
+        }
+    }
+
+    @Override
+    public void onClickedFavoriteButton(PlaceDocuments placeDocuments, int position)
+    {
+
     }
 }
