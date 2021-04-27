@@ -11,7 +11,6 @@ import androidx.annotation.Nullable;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
-import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentContainerView;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -37,23 +36,14 @@ import com.naver.maps.map.NaverMap;
 import com.naver.maps.map.overlay.Marker;
 import com.naver.maps.map.overlay.OverlayImage;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
-import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
 import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
-import com.zerodsoft.scheduleweather.databinding.InstanceMainActivityBinding;
-import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.event.fragments.EventFragment;
 import com.zerodsoft.scheduleweather.event.foods.main.fragment.NewFoodsMainFragment;
-import com.zerodsoft.scheduleweather.event.places.map.PlacesOfSelectedCategoriesFragment;
-import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import com.zerodsoft.scheduleweather.event.weather.fragment.WeatherItemFragment;
-import com.zerodsoft.scheduleweather.kakaomap.model.CoordToAddressUtil;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.navermap.NaverMapFragment;
-import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
-import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddress;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
 import org.xmlpull.v1.XmlPullParser;
@@ -61,7 +51,7 @@ import org.xmlpull.v1.XmlPullParser;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NewInstanceMainFragment extends NaverMapFragment implements OnBackPressedCallbackController
+public class NewInstanceMainFragment extends NaverMapFragment implements OnBackPressedCallbackController, BottomSheetController
 {
     public static final String TAG = "NewInstanceMainFragment";
 
@@ -107,20 +97,13 @@ public class NewInstanceMainFragment extends NaverMapFragment implements OnBackP
     private LinearLayout weatherBottomSheet;
     private LinearLayout restaurantsBottomSheet;
 
-    private List<BottomSheetBehavior> bottomSheetBehaviorList = new ArrayList<>();
 
     private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
     {
         @Override
         public void handleOnBackPressed()
         {
-            if (!areCollapsedBottomSheets())
-            {
-                collapseBottomSheet();
-            } else
-            {
-                requireActivity().finish();
-            }
+            requireActivity().finish();
         }
     };
 
@@ -180,13 +163,22 @@ public class NewInstanceMainFragment extends NaverMapFragment implements OnBackP
         restaurantsBottomSheet = (LinearLayout) results2[0];
         restaurantsBottomSheetBehavior = (BottomSheetBehavior) results2[1];
 
-
         instanceInfoBottomSheetBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback()
         {
             @Override
             public void onStateChanged(@NonNull View bottomSheet, int newState)
             {
-
+                switch (newState)
+                {
+                    case BottomSheetBehavior.STATE_EXPANDED:
+                        removeOnBackPressedCallback();
+                        ((EventFragment) getChildFragmentManager().findFragmentByTag(EventFragment.TAG)).addOnBackPressedCallback();
+                        break;
+                    case BottomSheetBehavior.STATE_COLLAPSED:
+                        ((EventFragment) getChildFragmentManager().findFragmentByTag(EventFragment.TAG)).removeOnBackPressedCallback();
+                        addOnBackPressedCallback();
+                        break;
+                }
             }
 
             @Override
@@ -201,7 +193,17 @@ public class NewInstanceMainFragment extends NaverMapFragment implements OnBackP
             @Override
             public void onStateChanged(@NonNull View bottomSheet, int newState)
             {
-
+                switch (newState)
+                {
+                    case BottomSheetBehavior.STATE_EXPANDED:
+                        removeOnBackPressedCallback();
+                        ((WeatherItemFragment) getChildFragmentManager().findFragmentByTag(WeatherItemFragment.TAG)).addOnBackPressedCallback();
+                        break;
+                    case BottomSheetBehavior.STATE_COLLAPSED:
+                        ((WeatherItemFragment) getChildFragmentManager().findFragmentByTag(WeatherItemFragment.TAG)).removeOnBackPressedCallback();
+                        addOnBackPressedCallback();
+                        break;
+                }
             }
 
             @Override
@@ -216,7 +218,17 @@ public class NewInstanceMainFragment extends NaverMapFragment implements OnBackP
             @Override
             public void onStateChanged(@NonNull View bottomSheet, int newState)
             {
-
+                switch (newState)
+                {
+                    case BottomSheetBehavior.STATE_EXPANDED:
+                        removeOnBackPressedCallback();
+                        ((NewFoodsMainFragment) getChildFragmentManager().findFragmentByTag(NewFoodsMainFragment.TAG)).addOnBackPressedCallback();
+                        break;
+                    case BottomSheetBehavior.STATE_COLLAPSED:
+                        ((NewFoodsMainFragment) getChildFragmentManager().findFragmentByTag(NewFoodsMainFragment.TAG)).removeOnBackPressedCallback();
+                        addOnBackPressedCallback();
+                        break;
+                }
             }
 
             @Override
@@ -246,13 +258,12 @@ public class NewInstanceMainFragment extends NaverMapFragment implements OnBackP
             }
         });
 
-        bottomSheetBehaviorList.add(locationSearchBottomSheetBehavior);
-        bottomSheetBehaviorList.add(placeListBottomSheetBehavior);
-        bottomSheetBehaviorList.add(buildingBottomSheetBehavior);
+
         bottomSheetBehaviorList.add(instanceInfoBottomSheetBehavior);
         bottomSheetBehaviorList.add(weatherBottomSheetBehavior);
         bottomSheetBehaviorList.add(restaurantsBottomSheetBehavior);
     }
+
 
     private void setHeightOfBottomSheet(int height, LinearLayout bottomSheetView, BottomSheetBehavior bottomSheetBehavior)
     {
@@ -344,6 +355,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements OnBackP
             {
                 //이벤트 정보
                 functionButton.callOnClick();
+                onCalledBottomSheet(BottomSheetBehavior.STATE_EXPANDED, instanceInfoBottomSheetBehavior);
                 instanceInfoBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
                 if (getChildFragmentManager().findFragmentByTag(EventFragment.TAG) == null)
                 {
@@ -359,6 +371,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements OnBackP
             {
                 //날씨
                 functionButton.callOnClick();
+                onCalledBottomSheet(BottomSheetBehavior.STATE_EXPANDED, weatherBottomSheetBehavior);
                 weatherBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
                 if (getChildFragmentManager().findFragmentByTag(WeatherItemFragment.TAG) == null)
                 {
@@ -374,6 +387,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements OnBackP
             {
                 //음식점
                 functionButton.callOnClick();
+                onCalledBottomSheet(BottomSheetBehavior.STATE_EXPANDED, restaurantsBottomSheetBehavior);
                 restaurantsBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
                 if (getChildFragmentManager().findFragmentByTag(NewFoodsMainFragment.TAG) == null)
                 {
@@ -541,14 +555,14 @@ public class NewInstanceMainFragment extends NaverMapFragment implements OnBackP
 
     private void addEventFragmentIntoBottomSheet()
     {
-        EventFragment eventFragment = new EventFragment(CALENDAR_ID, EVENT_ID, INSTANCE_ID, ORIGINAL_BEGIN, ORIGINAL_END);
+        EventFragment eventFragment = new EventFragment(this, CALENDAR_ID, EVENT_ID, INSTANCE_ID, ORIGINAL_BEGIN, ORIGINAL_END);
         getChildFragmentManager().beginTransaction()
                 .add(instanceInfoBottomSheet.getChildAt(0).getId(), eventFragment, EventFragment.TAG).commit();
     }
 
     private void addWeatherFragmentIntoBottomSheet()
     {
-        WeatherItemFragment weatherFragment = new WeatherItemFragment();
+        WeatherItemFragment weatherFragment = new WeatherItemFragment(this);
         Bundle bundle = new Bundle();
         bundle.putInt(CalendarContract.Instances.CALENDAR_ID, CALENDAR_ID);
         bundle.putLong(CalendarContract.Instances.EVENT_ID, EVENT_ID);
@@ -562,64 +576,11 @@ public class NewInstanceMainFragment extends NaverMapFragment implements OnBackP
 
     private void addRestaurantFragmentIntoBottomSheet()
     {
-        NewFoodsMainFragment newFoodsMainFragment = new NewFoodsMainFragment();
-
-        Bundle bundle = new Bundle();
-        bundle.putInt(CalendarContract.Instances.CALENDAR_ID, CALENDAR_ID);
-        bundle.putLong(CalendarContract.Instances.EVENT_ID, EVENT_ID);
-        bundle.putLong(CalendarContract.Instances._ID, INSTANCE_ID);
-        bundle.putLong(CalendarContract.Instances.BEGIN, ORIGINAL_BEGIN);
-        newFoodsMainFragment.setArguments(bundle);
-
+        NewFoodsMainFragment newFoodsMainFragment = new NewFoodsMainFragment(this, CALENDAR_ID, INSTANCE_ID, EVENT_ID);
         getChildFragmentManager().beginTransaction()
                 .add(restaurantsBottomSheet.getChildAt(0).getId(), newFoodsMainFragment, NewFoodsMainFragment.TAG).commit();
     }
 
-    private boolean areCollapsedBottomSheets()
-    {
-        for (BottomSheetBehavior bottomSheetBehavior : bottomSheetBehaviorList)
-        {
-            if (bottomSheetBehavior.getState() != BottomSheetBehavior.STATE_COLLAPSED)
-            {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private void collapseBottomSheet()
-    {
-        // search, building, location item, instanceInfo, weather, restaurant
-        if (locationSearchBottomSheetBehavior.getState() != BottomSheetBehavior.STATE_COLLAPSED)
-        {
-            locationSearchBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-        }
-
-        if (buildingBottomSheetBehavior.getState() != BottomSheetBehavior.STATE_COLLAPSED)
-        {
-            buildingBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-        }
-
-        if (placeListBottomSheetBehavior.getState() != BottomSheetBehavior.STATE_COLLAPSED)
-        {
-            placeListBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-        }
-
-        if (instanceInfoBottomSheetBehavior.getState() != BottomSheetBehavior.STATE_COLLAPSED)
-        {
-            instanceInfoBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-        }
-
-        if (weatherBottomSheetBehavior.getState() != BottomSheetBehavior.STATE_COLLAPSED)
-        {
-            weatherBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-        }
-
-        if (restaurantsBottomSheetBehavior.getState() != BottomSheetBehavior.STATE_COLLAPSED)
-        {
-            restaurantsBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-        }
-    }
 
     @Override
     public void addOnBackPressedCallback()
@@ -632,4 +593,20 @@ public class NewInstanceMainFragment extends NaverMapFragment implements OnBackP
     {
         onBackPressedCallback.remove();
     }
+
+    @Override
+    public void setStateOfBottomSheet(String fragmentTag, int state)
+    {
+        if (fragmentTag.equals(EventFragment.TAG))
+        {
+            instanceInfoBottomSheetBehavior.setState(state);
+        } else if (fragmentTag.equals(WeatherItemFragment.TAG))
+        {
+            weatherBottomSheetBehavior.setState(state);
+        } else if (fragmentTag.equals(NewFoodsMainFragment.TAG))
+        {
+            restaurantsBottomSheetBehavior.setState(state);
+        }
+    }
+
 }

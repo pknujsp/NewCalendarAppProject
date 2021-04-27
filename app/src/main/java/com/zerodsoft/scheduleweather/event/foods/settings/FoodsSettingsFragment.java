@@ -11,37 +11,32 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
 import com.zerodsoft.scheduleweather.databinding.FragmentFoodsSettingsBinding;
+import com.zerodsoft.scheduleweather.event.foods.main.fragment.NewFoodsMainFragment;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.BottomSheetController;
 
 public class FoodsSettingsFragment extends Fragment implements OnBackPressedCallbackController
 {
     public static final String TAG = "FoodsSettingsFragment";
     private FragmentFoodsSettingsBinding binding;
+    private final BottomSheetController bottomSheetController;
     private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
     {
         @Override
         public void handleOnBackPressed()
         {
-            getActivity().finish();
+            bottomSheetController.setStateOfBottomSheet(NewFoodsMainFragment.TAG, BottomSheetBehavior.STATE_COLLAPSED);
         }
     };
 
-    @Override
-    public void onAttach(@NonNull Context context)
+    public FoodsSettingsFragment(BottomSheetController bottomSheetController)
     {
-        super.onAttach(context);
-       // addOnBackPressedCallback();
+        this.bottomSheetController = bottomSheetController;
     }
-
-    @Override
-    public void onDetach()
-    {
-        super.onDetach();
-       // removeOnBackPressedCallback();
-    }
-
+    
     @Override
     public void onCreate(Bundle savedInstanceState)
     {

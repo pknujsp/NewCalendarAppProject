@@ -154,12 +154,12 @@ public class FoodsActivity extends AppCompatActivity implements INetwork, Bottom
         fragmentBundle.putLong(CalendarContract.Instances._ID, INSTANCE_VALUES.getAsLong(CalendarContract.Instances._ID));
         fragmentBundle.putLong(CalendarContract.Instances.EVENT_ID, INSTANCE_VALUES.getAsLong(CalendarContract.Instances.EVENT_ID));
 
-        FoodsMainFragment foodsMainFragment = new FoodsMainFragment(FoodsActivity.this::networkAvailable);
+        FoodsMainFragment foodsMainFragment = new FoodsMainFragment(FoodsActivity.this::networkAvailable, null);
         foodsMainFragment.setArguments(fragmentBundle);
 
-        SearchRestaurantFragment searchRestaurantFragment = new SearchRestaurantFragment();
-        FoodsSettingsFragment foodsSettingsFragment = new FoodsSettingsFragment();
-        FavoritesMainFragment favoritesMainFragment = new FavoritesMainFragment();
+        SearchRestaurantFragment searchRestaurantFragment = new SearchRestaurantFragment(null);
+        FoodsSettingsFragment foodsSettingsFragment = new FoodsSettingsFragment(null);
+        FavoritesMainFragment favoritesMainFragment = new FavoritesMainFragment(null);
 
         getSupportFragmentManager().beginTransaction()
                 .add(binding.fragmentContainer.getId(), foodsMainFragment, FoodsMainFragment.TAG)

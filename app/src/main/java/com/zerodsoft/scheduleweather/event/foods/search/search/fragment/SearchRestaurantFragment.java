@@ -18,13 +18,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.databinding.FragmentSearchRestaurantBinding;
 import com.zerodsoft.scheduleweather.event.foods.categorylist.FoodCategoryTabFragment;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedRestaurantItem;
+import com.zerodsoft.scheduleweather.event.foods.main.fragment.NewFoodsMainFragment;
 import com.zerodsoft.scheduleweather.event.foods.search.searchresult.fragment.FoodRestaurantSearchResultFragment;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.kakaomap.viewmodel.SearchHistoryViewModel;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.SearchHistoryDTO;
@@ -33,6 +36,7 @@ public class SearchRestaurantFragment extends Fragment implements OnClickedListI
         OnClickedRestaurantItem, OnBackPressedCallbackController
 {
     public static final String TAG = "SearchRestaurantFragment";
+    private final BottomSheetController bottomSheetController;
     private FragmentSearchRestaurantBinding binding;
     private FoodRestaurantSearchHistoryFragment foodRestaurantSearchHistoryFragment;
     private FoodRestaurantSearchResultFragment searchResultFragment;
@@ -47,7 +51,7 @@ public class SearchRestaurantFragment extends Fragment implements OnClickedListI
             {
                 if (fragmentManager.findFragmentByTag(FoodRestaurantSearchHistoryFragment.TAG).isVisible())
                 {
-                    getActivity().finish();
+                    bottomSheetController.setStateOfBottomSheet(NewFoodsMainFragment.TAG, BottomSheetBehavior.STATE_COLLAPSED);
                 } else if (fragmentManager.findFragmentByTag(FoodRestaurantSearchResultFragment.TAG) != null)
                 {
                     binding.deleteQueryButton.setVisibility(View.GONE);
@@ -59,9 +63,9 @@ public class SearchRestaurantFragment extends Fragment implements OnClickedListI
         }
     };
 
-    public SearchRestaurantFragment()
+    public SearchRestaurantFragment(BottomSheetController bottomSheetController)
     {
-
+        this.bottomSheetController = bottomSheetController;
     }
 
 

@@ -26,7 +26,6 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.viewpager.widget.ViewPager;
 import androidx.viewpager2.widget.CompositePageTransformer;
 import androidx.viewpager2.widget.MarginPageTransformer;
 import androidx.viewpager2.widget.ViewPager2;
@@ -67,7 +66,6 @@ import com.zerodsoft.scheduleweather.etc.FragmentStateCallback;
 import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.places.interfaces.OnClickedPlacesListListener;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PoiItemOnClickListener;
-import com.zerodsoft.scheduleweather.event.places.map.PlacesOfSelectedCategoriesFragment;
 import com.zerodsoft.scheduleweather.kakaomap.bottomsheet.adapter.PlaceItemInMapViewAdapter;
 import com.zerodsoft.scheduleweather.kakaomap.building.fragment.BuildingFragment;
 import com.zerodsoft.scheduleweather.kakaomap.building.fragment.BuildingListFragment;
@@ -161,6 +159,9 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
     private Integer markerWidth;
     private Integer markerHeight;
+
+    public List<BottomSheetBehavior> bottomSheetBehaviorList = new ArrayList<>();
+
 
     private SgisAuth sgisAuth = new SgisAuth()
     {
@@ -326,7 +327,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
                 if (locationSearchBottomSheetBehavior.getState() == BottomSheetBehavior.STATE_COLLAPSED &&
                         fragmentManager.findFragmentByTag(LocationSearchResultFragment.TAG) == null)
                 {
-
+                    onCalledBottomSheet(BottomSheetBehavior.STATE_EXPANDED, locationSearchBottomSheetBehavior);
                     removeBuildingLocationSelector();
                     closeBuildingFragments();
                     LocationSearchFragment locationSearchFragment = (LocationSearchFragment) fragmentManager.findFragmentByTag(LocationSearchFragment.TAG);
@@ -434,6 +435,10 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
         mapFragment.getMapAsync(this);
         binding.naverMapButtonsLayout.currentAddress.setText("");
+
+        bottomSheetBehaviorList.add(locationSearchBottomSheetBehavior);
+        bottomSheetBehaviorList.add(placeListBottomSheetBehavior);
+        bottomSheetBehaviorList.add(buildingBottomSheetBehavior);
     }
 
     @Override
@@ -1259,6 +1264,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
                             BuildingListFragment.TAG)
                             .commitNow();
 
+                    onCalledBottomSheet(BottomSheetBehavior.STATE_EXPANDED, buildingBottomSheetBehavior);
                     buildingBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
                 }
 
@@ -1417,6 +1423,45 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
         LocationOverlay locationOverlay = naverMap.getLocationOverlay();
         locationOverlay.setVisible(true);
         locationOverlay.setPosition(latLng);
+    }
+
+    public BottomSheetBehavior getBottomSheetBehaviorOfExpanded(BottomSheetBehavior currentBottomSheetBehavior)
+    {
+        for (BottomSheetBehavior bottomSheetBehavior : bottomSheetBehaviorList)
+        {
+            if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED)
+            {
+                if (!bottomSheetBehavior.equals(currentBottomSheetBehavior))
+                {
+                    return bottomSheetBehavior;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public void collapseBottomSheet(BottomSheetBehavior currentBottomSheetBehavior)
+    {
+        BottomSheetBehavior bottomSheetBehavior = getBottomSheetBehaviorOfExpanded(currentBottomSheetBehavior);
+        if (bottomSheetBehavior != null)
+        {
+            if (!currentBottomSheetBehavior.equals(bottomSheetBehavior))
+            {
+                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+            }
+        }
+    }
+
+    public void onCalledBottomSheet(int newState, BottomSheetBehavior currentBottomSheetBehavior)
+    {
+        if (newState == BottomSheetBehavior.STATE_EXPANDED)
+        {
+            collapseBottomSheet(currentBottomSheetBehavior);
+        } else if (newState == BottomSheetBehavior.STATE_COLLAPSED)
+        {
+
+        }
     }
 
     static class BuildingBottomSheetHeightViewHolder

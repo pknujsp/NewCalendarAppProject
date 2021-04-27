@@ -15,16 +15,21 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
 import com.zerodsoft.scheduleweather.databinding.FragmentFoodsMainBinding;
+import com.zerodsoft.scheduleweather.event.event.fragments.EventFragment;
 import com.zerodsoft.scheduleweather.event.foods.activity.FoodsActivity;
 import com.zerodsoft.scheduleweather.event.foods.categorylist.FoodCategoryTabFragment;
 import com.zerodsoft.scheduleweather.event.foods.categorylist.FoodsCategoryListFragment;
+import com.zerodsoft.scheduleweather.event.places.interfaces.BottomSheet;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.INetwork;
 
 public class FoodsMainFragment extends Fragment implements OnBackPressedCallbackController
 {
     public static final String TAG = "FoodsMainFragment";
+    private final BottomSheetController bottomSheetController;
     private FragmentFoodsMainBinding binding;
     private final INetwork iNetwork;
     private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
@@ -38,7 +43,7 @@ public class FoodsMainFragment extends Fragment implements OnBackPressedCallback
             {
                 if (fragmentManager.findFragmentByTag(FoodsCategoryListFragment.TAG).isVisible())
                 {
-                    getActivity().finish();
+                    bottomSheetController.setStateOfBottomSheet(NewFoodsMainFragment.TAG, BottomSheetBehavior.STATE_COLLAPSED);
                 } else if (fragmentManager.findFragmentByTag(FoodCategoryTabFragment.TAG) != null)
                 {
                     fragmentManager.popBackStackImmediate();
@@ -47,9 +52,10 @@ public class FoodsMainFragment extends Fragment implements OnBackPressedCallback
         }
     };
 
-    public FoodsMainFragment(INetwork iNetwork)
+    public FoodsMainFragment(INetwork iNetwork, BottomSheetController bottomSheetController)
     {
         this.iNetwork = iNetwork;
+        this.bottomSheetController = bottomSheetController;
     }
 
     @Override
@@ -122,4 +128,5 @@ public class FoodsMainFragment extends Fragment implements OnBackPressedCallback
     {
         onBackPressedCallback.remove();
     }
+
 }

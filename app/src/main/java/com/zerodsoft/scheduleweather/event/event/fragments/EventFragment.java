@@ -31,16 +31,19 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
+import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
 import com.zerodsoft.scheduleweather.databinding.EventFragmentBinding;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationHistoryViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationInfoViewModel;
 import com.zerodsoft.scheduleweather.event.main.InstanceMainActivity;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.utility.NetworkStatus;
 import com.zerodsoft.scheduleweather.utility.RecurrenceRule;
@@ -53,7 +56,7 @@ import java.util.TimeZone;
 
 import lombok.SneakyThrows;
 
-public class EventFragment extends Fragment
+public class EventFragment extends Fragment implements OnBackPressedCallbackController
 {
     public static final String TAG = "EventFragment";
     // 참석자가 있는 경우 참석 여부 표시
@@ -71,6 +74,7 @@ public class EventFragment extends Fragment
     private final long INSTANCE_ID;
     private final long ORIGINAL_BEGIN;
     private final long ORIGINAL_END;
+    private final BottomSheetController bottomSheetController;
 
     private AlertDialog attendeeDialog;
 
@@ -85,9 +89,7 @@ public class EventFragment extends Fragment
         @Override
         public void handleOnBackPressed()
         {
-            getActivity().setResult(resultCode);
-            getActivity().finish();
-            onBackPressedCallback.remove();
+            bottomSheetController.setStateOfBottomSheet(EventFragment.TAG, BottomSheetBehavior.STATE_COLLAPSED);
         }
     };
 
@@ -97,8 +99,9 @@ public class EventFragment extends Fragment
     };
 
 
-    public EventFragment(int CALENDAR_ID, long EVENT_ID, long INSTANCE_ID, long ORIGINAL_BEGIN, long ORIGINAL_END)
+    public EventFragment(BottomSheetController bottomSheetController, int CALENDAR_ID, long EVENT_ID, long INSTANCE_ID, long ORIGINAL_BEGIN, long ORIGINAL_END)
     {
+        this.bottomSheetController = bottomSheetController;
         this.CALENDAR_ID = CALENDAR_ID;
         this.EVENT_ID = EVENT_ID;
         this.INSTANCE_ID = INSTANCE_ID;
@@ -110,7 +113,6 @@ public class EventFragment extends Fragment
     public void onAttach(@NonNull Context context)
     {
         super.onAttach(context);
-        requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
     }
 
     @Override
@@ -730,4 +732,16 @@ public class EventFragment extends Fragment
                     }
                 }
             });
+
+    @Override
+    public void addOnBackPressedCallback()
+    {
+        requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
+    }
+
+    @Override
+    public void removeOnBackPressedCallback()
+    {
+        onBackPressedCallback.remove();
+    }
 }

@@ -12,18 +12,22 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
 import com.zerodsoft.scheduleweather.databinding.FragmentFavoritesMainBinding;
 import com.zerodsoft.scheduleweather.event.foods.categorylist.FoodCategoryTabFragment;
 import com.zerodsoft.scheduleweather.event.foods.categorylist.FoodsCategoryListFragment;
 import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteRestaurantFragment;
+import com.zerodsoft.scheduleweather.event.foods.main.fragment.NewFoodsMainFragment;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.BottomSheetController;
 
 
 public class FavoritesMainFragment extends Fragment implements OnBackPressedCallbackController
 {
     public static final String TAG = "FavoritesMainFragment";
     private FragmentFavoritesMainBinding binding;
+    private final BottomSheetController bottomSheetController;
     private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
     {
         @Override
@@ -35,11 +39,16 @@ public class FavoritesMainFragment extends Fragment implements OnBackPressedCall
             {
                 if (fragmentManager.findFragmentByTag(FavoriteRestaurantFragment.TAG).isVisible())
                 {
-                    getActivity().finish();
+                    bottomSheetController.setStateOfBottomSheet(NewFoodsMainFragment.TAG, BottomSheetBehavior.STATE_COLLAPSED);
                 }
             }
         }
     };
+
+    public FavoritesMainFragment(BottomSheetController bottomSheetController)
+    {
+        this.bottomSheetController = bottomSheetController;
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState)

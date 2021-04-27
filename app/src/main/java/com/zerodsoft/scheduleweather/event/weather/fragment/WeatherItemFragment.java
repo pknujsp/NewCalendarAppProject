@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -16,12 +17,15 @@ import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.luckycatlabs.sunrisesunset.SunriseSunsetCalculator;
 import com.luckycatlabs.sunrisesunset.dto.Location;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
 import com.zerodsoft.scheduleweather.databinding.FragmentWeatherItemBinding;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.weather.repository.WeatherDownloader;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.MidFcstParameter;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.VilageFcstParameter;
@@ -45,10 +49,10 @@ import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 
-public class WeatherItemFragment extends Fragment
+public class WeatherItemFragment extends Fragment implements OnBackPressedCallbackController
 {
     public static final String TAG = "WeatherItemFragment";
-
+    private final BottomSheetController bottomSheetController;
     private FragmentWeatherItemBinding binding;
     private WeatherData weatherData;
     private LocationDTO locationDTO;
@@ -72,6 +76,15 @@ public class WeatherItemFragment extends Fragment
     private Long eventId;
     private Long instanceId;
     private Long begin;
+
+    private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
+    {
+        @Override
+        public void handleOnBackPressed()
+        {
+            bottomSheetController.setStateOfBottomSheet(WeatherItemFragment.TAG, BottomSheetBehavior.STATE_COLLAPSED);
+        }
+    };
 
     private final WeatherDownloader weatherDownloader = new WeatherDownloader()
     {
@@ -145,8 +158,9 @@ public class WeatherItemFragment extends Fragment
         }
     };
 
-    public WeatherItemFragment()
+    public WeatherItemFragment(BottomSheetController bottomSheetController)
     {
+        this.bottomSheetController = bottomSheetController;
     }
 
     @Override
@@ -327,6 +341,18 @@ public class WeatherItemFragment extends Fragment
             sunSet = sunriseSunsetCalculator.getOfficialSunsetCalendarForDate(date);
             sunSetRiseList.add(new SunSetRiseData(date.getTime(), sunRise.getTime(), sunSet.getTime()));
         }
+    }
+
+    @Override
+    public void addOnBackPressedCallback()
+    {
+        requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
+    }
+
+    @Override
+    public void removeOnBackPressedCallback()
+    {
+        onBackPressedCallback.remove();
     }
 
     static class LocationPoint
