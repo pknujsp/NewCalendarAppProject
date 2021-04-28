@@ -71,6 +71,7 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
             if (bottomSheetStateIsExpanded)
             {
                 // list인 경우
+                getParentFragmentManager().popBackStack();
                 searchFragmentController.closeSearchFragments(LocationSearchResultFragment.TAG);
             } else
             {

@@ -108,7 +108,8 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
         PlacesListBottomSheetController, PoiItemOnClickListener<Marker>, OnClickedBottomSheetListener,
         MapHeaderSearchFragment.LocationSearchListener, SearchFragmentController, BuildingLocationSelectorController,
         BuildingFragmentController, BuildingListFragment.OnSearchRadiusChangeListener, NaverMap.OnMapClickListener,
-        NaverMap.OnCameraIdleListener, CameraUpdate.FinishCallback, NaverMap.OnLocationChangeListener, OnBackPressedCallbackController
+        NaverMap.OnCameraIdleListener, CameraUpdate.FinishCallback, NaverMap.OnLocationChangeListener, OnBackPressedCallbackController,
+        FragmentManager.OnBackStackChangedListener
 {
     public static final int REQUEST_CODE_LOCATION = 10000;
     public static final int BUILDING_RANGE_OVERLAY_TAG = 1500;
@@ -357,10 +358,11 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
                     fragmentManager.beginTransaction().hide(fragmentManager.findFragmentByTag(MapHeaderMainFragment.TAG))
                             .show(fragmentManager.findFragmentByTag(MapHeaderSearchFragment.TAG))
                             .show(locationSearchFragment)
+                            .addToBackStack(LocationSearchFragment.TAG)
                             .commit();
 
-                    locationSearchFragment.addOnBackPressedCallback();
                     locationSearchBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+                    removeOnBackPressedCallback();
                 }
             }
         });
@@ -481,17 +483,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
             @Override
             public void onStateChanged(@NonNull View bottomSheet, int newState)
             {
-                switch (newState)
-                {
-                    case BottomSheetBehavior.STATE_EXPANDED:
-                        removeOnBackPressedCallback();
-                        ((LocationSearchFragment) getChildFragmentManager().findFragmentByTag(LocationSearchFragment.TAG)).addOnBackPressedCallback();
-                        break;
-                    case BottomSheetBehavior.STATE_COLLAPSED:
-                        ((LocationSearchFragment) getChildFragmentManager().findFragmentByTag(LocationSearchFragment.TAG)).removeOnBackPressedCallback();
-                        addOnBackPressedCallback();
-                        break;
-                }
+
             }
 
             @Override
@@ -1081,8 +1073,8 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
     {
         //bottomsheet가 아닌 list에서 아이템을 선택한 경우 호출
         //adapter -> poiitem생성 -> select poiitem -> bottomsheet열고 정보 표시
-        Marker marker = markerList.get(index);
-        marker.performClick();
+
+        markerList.get(index).performClick();
     }
 
     @Override
@@ -1164,12 +1156,14 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
     public void search(String query)
     {
         FragmentManager fragmentManager = getChildFragmentManager();
-        boolean locationSearchResultIsVisible = fragmentManager.findFragmentByTag(LocationSearchResultFragment.TAG)
-                != null ? true : false;
 
-        if (locationSearchResultIsVisible)
+        if (fragmentManager.findFragmentByTag(LocationSearchResultFragment.TAG)
+                != null)
         {
-            placeListBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+            if (placeListBottomSheetBehavior.getState() != BottomSheetBehavior.STATE_COLLAPSED)
+            {
+                placeListBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+            }
             removeAllPoiItems();
 
             LocationSearchResultFragment locationSearchResultFragment =
@@ -1191,39 +1185,15 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
     @Override
     public void closeSearchFragments()
     {
-        if (placeListBottomSheetBehavior.getState() != BottomSheetBehavior.STATE_COLLAPSED)
-        {
-            placeListBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-        }
-        if (locationSearchBottomSheetBehavior.getState() != BottomSheetBehavior.STATE_COLLAPSED)
-        {
-            locationSearchBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-        }
-
-        binding.naverMapHeaderBar.getRoot().setClickable(true);
-
         FragmentManager fragmentManager = getChildFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
-        LocationSearchFragment locationSearchFragment = (LocationSearchFragment) fragmentManager.findFragmentByTag(LocationSearchFragment.TAG);
-        LocationSearchResultFragment locationSearchResultFragment = (LocationSearchResultFragment) fragmentManager.findFragmentByTag(LocationSearchResultFragment.TAG);
-        MapHeaderMainFragment mapHeaderMainFragment = (MapHeaderMainFragment) fragmentManager.findFragmentByTag(MapHeaderMainFragment.TAG);
-        MapHeaderSearchFragment mapHeaderSearchFragment = (MapHeaderSearchFragment) fragmentManager.findFragmentByTag(MapHeaderSearchFragment.TAG);
-
-        if (locationSearchResultFragment != null)
+        if (fragmentManager.findFragmentByTag(LocationSearchResultFragment.TAG) != null)
         {
-            locationSearchResultFragment.removeOnBackPressedCallback();
-
-            fragmentTransaction.remove(locationSearchResultFragment).show(locationSearchFragment);
-
-            backToPreviousView();
-            removeAllPoiItems();
-            mapHeaderSearchFragment.resetState();
+            fragmentManager.popBackStack();
+            closeSearchFragments(LocationSearchResultFragment.TAG);
         }
-        fragmentTransaction.hide(mapHeaderSearchFragment)
-                .show(mapHeaderMainFragment).commitNow();
-
-
+        fragmentManager.popBackStack();
+        closeSearchFragments(LocationSearchFragment.TAG);
     }
 
     /**
@@ -1233,10 +1203,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
     public void closeSearchFragments(String currentFragmentTag)
     {
         FragmentManager fragmentManager = getChildFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-
-        LocationSearchFragment locationSearchFragment = (LocationSearchFragment) fragmentManager.findFragmentByTag(LocationSearchFragment.TAG);
-        MapHeaderMainFragment mapHeaderMainFragment = (MapHeaderMainFragment) fragmentManager.findFragmentByTag(MapHeaderMainFragment.TAG);
         MapHeaderSearchFragment mapHeaderSearchFragment = (MapHeaderSearchFragment) fragmentManager.findFragmentByTag(MapHeaderSearchFragment.TAG);
 
         if (currentFragmentTag.equals(LocationSearchFragment.TAG))
@@ -1246,21 +1212,14 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
                 locationSearchBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
             }
 
-            fragmentTransaction.hide(mapHeaderSearchFragment)
-                    .show(mapHeaderMainFragment)
-                    .commit();
-
             binding.naverMapHeaderBar.getRoot().setClickable(true);
+            addOnBackPressedCallback();
+
         } else if (currentFragmentTag.equals(LocationSearchResultFragment.TAG))
         {
             backToPreviousView();
-
-            LocationSearchResultFragment locationSearchResultFragment =
-                    (LocationSearchResultFragment) fragmentManager.findFragmentByTag(LocationSearchResultFragment.TAG);
-
             removeAllPoiItems();
             mapHeaderSearchFragment.resetState();
-            fragmentTransaction.remove(locationSearchResultFragment).show(locationSearchFragment).commitNow();
 
             if (placeListBottomSheetBehavior.getState() != BottomSheetBehavior.STATE_COLLAPSED)
             {
@@ -1548,6 +1507,13 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
         }
     }
+
+    @Override
+    public void onBackStackChanged()
+    {
+
+    }
+
 
     static class BuildingBottomSheetHeightViewHolder
     {

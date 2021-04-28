@@ -69,6 +69,7 @@ public class LocationSearchFragment extends Fragment implements OnSelectedMapCat
         @Override
         public void handleOnBackPressed()
         {
+            getParentFragmentManager().popBackStack();
             searchFragmentController.closeSearchFragments(LocationSearchFragment.TAG);
         }
     };
