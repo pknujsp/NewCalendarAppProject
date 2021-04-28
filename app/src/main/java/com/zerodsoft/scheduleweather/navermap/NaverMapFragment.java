@@ -14,6 +14,7 @@ import android.net.ConnectivityManager;
 import android.net.Network;
 import android.os.Bundle;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -61,11 +62,13 @@ import com.naver.maps.map.overlay.Overlay;
 import com.naver.maps.map.util.FusedLocationSource;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
+import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
 import com.zerodsoft.scheduleweather.databinding.FragmentNaverMapBinding;
 import com.zerodsoft.scheduleweather.etc.FragmentStateCallback;
 import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.places.interfaces.OnClickedPlacesListListener;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PoiItemOnClickListener;
+import com.zerodsoft.scheduleweather.event.weather.fragment.WeatherItemFragment;
 import com.zerodsoft.scheduleweather.kakaomap.bottomsheet.adapter.PlaceItemInMapViewAdapter;
 import com.zerodsoft.scheduleweather.kakaomap.building.fragment.BuildingFragment;
 import com.zerodsoft.scheduleweather.kakaomap.building.fragment.BuildingListFragment;
@@ -105,7 +108,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
         PlacesListBottomSheetController, PoiItemOnClickListener<Marker>, OnClickedBottomSheetListener,
         MapHeaderSearchFragment.LocationSearchListener, SearchFragmentController, BuildingLocationSelectorController,
         BuildingFragmentController, BuildingListFragment.OnSearchRadiusChangeListener, NaverMap.OnMapClickListener,
-        NaverMap.OnCameraIdleListener, CameraUpdate.FinishCallback, NaverMap.OnLocationChangeListener
+        NaverMap.OnCameraIdleListener, CameraUpdate.FinishCallback, NaverMap.OnLocationChangeListener, OnBackPressedCallbackController
 {
     public static final int REQUEST_CODE_LOCATION = 10000;
     public static final int BUILDING_RANGE_OVERLAY_TAG = 1500;
@@ -161,6 +164,27 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
     private Integer markerHeight;
 
     public List<BottomSheetBehavior> bottomSheetBehaviorList = new ArrayList<>();
+
+    private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
+    {
+        @Override
+        public void handleOnBackPressed()
+        {
+            requireActivity().finish();
+        }
+    };
+
+    @Override
+    public void addOnBackPressedCallback()
+    {
+        requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
+    }
+
+    @Override
+    public void removeOnBackPressedCallback()
+    {
+        onBackPressedCallback.remove();
+    }
 
 
     private SgisAuth sgisAuth = new SgisAuth()
@@ -328,14 +352,12 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
                         fragmentManager.findFragmentByTag(LocationSearchResultFragment.TAG) == null)
                 {
                     onCalledBottomSheet(BottomSheetBehavior.STATE_EXPANDED, locationSearchBottomSheetBehavior);
-                    removeBuildingLocationSelector();
-                    closeBuildingFragments();
                     LocationSearchFragment locationSearchFragment = (LocationSearchFragment) fragmentManager.findFragmentByTag(LocationSearchFragment.TAG);
 
                     fragmentManager.beginTransaction().hide(fragmentManager.findFragmentByTag(MapHeaderMainFragment.TAG))
                             .show(fragmentManager.findFragmentByTag(MapHeaderSearchFragment.TAG))
                             .show(locationSearchFragment)
-                            .commitNow();
+                            .commit();
 
                     locationSearchFragment.addOnBackPressedCallback();
                     locationSearchBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
@@ -459,6 +481,17 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
             @Override
             public void onStateChanged(@NonNull View bottomSheet, int newState)
             {
+                switch (newState)
+                {
+                    case BottomSheetBehavior.STATE_EXPANDED:
+                        removeOnBackPressedCallback();
+                        ((LocationSearchFragment) getChildFragmentManager().findFragmentByTag(LocationSearchFragment.TAG)).addOnBackPressedCallback();
+                        break;
+                    case BottomSheetBehavior.STATE_COLLAPSED:
+                        ((LocationSearchFragment) getChildFragmentManager().findFragmentByTag(LocationSearchFragment.TAG)).removeOnBackPressedCallback();
+                        addOnBackPressedCallback();
+                        break;
+                }
             }
 
             @Override
@@ -518,6 +551,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
                         CameraUpdate cameraUpdate = CameraUpdate.scrollBy(movePoint);
                         naverMap.moveCamera(cameraUpdate);
 
+                        removeOnBackPressedCallback();
                         break;
                     }
                     case BottomSheetBehavior.STATE_COLLAPSED:
@@ -526,6 +560,10 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
                         CameraUpdate cameraUpdate = CameraUpdate.scrollBy(movePoint);
                         naverMap.moveCamera(cameraUpdate);
 
+                        if (!restoreOnBackPressedInLocationSearch())
+                        {
+                            addOnBackPressedCallback();
+                        }
                         break;
                     }
                 }
@@ -619,11 +657,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
             @Override
             public void onStateChanged(@NonNull View bottomSheet, int newState)
             {
-                switch (newState)
-                {
-                    case BottomSheetBehavior.STATE_EXPANDED:
-                        break;
-                }
+
             }
 
             @Override
@@ -1149,10 +1183,47 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
             fragmentManager.beginTransaction().add(binding.locationSearchBottomSheet.searchFragmentContainer.getId()
                     , locationSearchResultFragment, LocationSearchResultFragment.TAG).hide(fragmentManager.findFragmentByTag(LocationSearchFragment.TAG))
-                    .commitNow();
-
-            locationSearchResultFragment.addOnBackPressedCallback();
+                    .addToBackStack(LocationSearchResultFragment.TAG)
+                    .commit();
         }
+    }
+
+    @Override
+    public void closeSearchFragments()
+    {
+        if (placeListBottomSheetBehavior.getState() != BottomSheetBehavior.STATE_COLLAPSED)
+        {
+            placeListBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+        }
+        if (locationSearchBottomSheetBehavior.getState() != BottomSheetBehavior.STATE_COLLAPSED)
+        {
+            locationSearchBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+        }
+
+        binding.naverMapHeaderBar.getRoot().setClickable(true);
+
+        FragmentManager fragmentManager = getChildFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+        LocationSearchFragment locationSearchFragment = (LocationSearchFragment) fragmentManager.findFragmentByTag(LocationSearchFragment.TAG);
+        LocationSearchResultFragment locationSearchResultFragment = (LocationSearchResultFragment) fragmentManager.findFragmentByTag(LocationSearchResultFragment.TAG);
+        MapHeaderMainFragment mapHeaderMainFragment = (MapHeaderMainFragment) fragmentManager.findFragmentByTag(MapHeaderMainFragment.TAG);
+        MapHeaderSearchFragment mapHeaderSearchFragment = (MapHeaderSearchFragment) fragmentManager.findFragmentByTag(MapHeaderSearchFragment.TAG);
+
+        if (locationSearchResultFragment != null)
+        {
+            locationSearchResultFragment.removeOnBackPressedCallback();
+
+            fragmentTransaction.remove(locationSearchResultFragment).show(locationSearchFragment);
+
+            backToPreviousView();
+            removeAllPoiItems();
+            mapHeaderSearchFragment.resetState();
+        }
+        fragmentTransaction.hide(mapHeaderSearchFragment)
+                .show(mapHeaderMainFragment).commitNow();
+
+
     }
 
     /**
@@ -1170,32 +1241,32 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
         if (currentFragmentTag.equals(LocationSearchFragment.TAG))
         {
-            locationSearchBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-
-            locationSearchFragment.removeOnBackPressedCallback();
+            if (locationSearchBottomSheetBehavior.getState() != BottomSheetBehavior.STATE_COLLAPSED)
+            {
+                locationSearchBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+            }
 
             fragmentTransaction.hide(mapHeaderSearchFragment)
                     .show(mapHeaderMainFragment)
-                    .commitNow();
+                    .commit();
 
             binding.naverMapHeaderBar.getRoot().setClickable(true);
         } else if (currentFragmentTag.equals(LocationSearchResultFragment.TAG))
         {
-            removeBuildingLocationSelector();
-            closeBuildingFragments();
             backToPreviousView();
-            placeListBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
 
             LocationSearchResultFragment locationSearchResultFragment =
                     (LocationSearchResultFragment) fragmentManager.findFragmentByTag(LocationSearchResultFragment.TAG);
 
             removeAllPoiItems();
-            mapHeaderSearchFragment.setViewTypeVisibility(View.GONE);
-            mapHeaderSearchFragment.changeViewTypeImg(SearchBarController.MAP);
-            mapHeaderSearchFragment.setQuery("", false);
-
-            locationSearchResultFragment.removeOnBackPressedCallback();
+            mapHeaderSearchFragment.resetState();
             fragmentTransaction.remove(locationSearchResultFragment).show(locationSearchFragment).commitNow();
+
+            if (placeListBottomSheetBehavior.getState() != BottomSheetBehavior.STATE_COLLAPSED)
+            {
+                placeListBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+            }
+
         }
     }
 
@@ -1262,7 +1333,8 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
                     getChildFragmentManager().beginTransaction().add(binding.buildingBottomSheet.buildingFragmentContainer.getId(), buildingListFragment,
                             BuildingListFragment.TAG)
-                            .commitNow();
+                            .addToBackStack(BuildingListFragment.TAG)
+                            .commit();
 
                     onCalledBottomSheet(BottomSheetBehavior.STATE_EXPANDED, buildingBottomSheetBehavior);
                     buildingBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
@@ -1295,8 +1367,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
         {
             buildingBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
 
-            buildingListFragment.removeOnBackPressedCallback();
-
             fragmentTransaction.remove(buildingListFragment)
                     .commitNow();
             if (buildingRangeCircleOverlay != null)
@@ -1309,7 +1379,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
             setBuildingBottomSheetHeight(BuildingListFragment.TAG);
 
             BuildingFragment buildingFragment = (BuildingFragment) fragmentManager.findFragmentByTag(BuildingFragment.TAG);
-            buildingFragment.removeOnBackPressedCallback();
             fragmentTransaction.remove(buildingFragment).show(buildingListFragment).commitNow();
 
             buildingBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
@@ -1318,6 +1387,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
     public void closeBuildingFragments()
     {
+        removeBuildingLocationSelector();
         if (buildingBottomSheetBehavior.getState() != BottomSheetBehavior.STATE_COLLAPSED)
         {
             setBuildingBottomSheetHeight(BuildingListFragment.TAG);
@@ -1339,15 +1409,12 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
             if (buildingFragment != null)
             {
                 buildingFragment.removeOnBackPressedCallback();
-                buildingListFragment.removeOnBackPressedCallback();
 
                 fragmentTransaction.remove(buildingListFragment)
                         .remove(buildingFragment)
                         .commitNow();
             } else
             {
-                buildingListFragment.removeOnBackPressedCallback();
-
                 fragmentTransaction.remove(buildingListFragment)
                         .commitNow();
             }
@@ -1449,8 +1516,26 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
             if (!currentBottomSheetBehavior.equals(bottomSheetBehavior))
             {
                 bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+
+                if (bottomSheetBehavior.equals(buildingBottomSheetBehavior))
+                {
+                    closeBuildingFragments();
+                }
+
             }
         }
+    }
+
+    public boolean restoreOnBackPressedInLocationSearch()
+    {
+        FragmentManager fragmentManager = getChildFragmentManager();
+        LocationSearchResultFragment locationSearchResultFragment = (LocationSearchResultFragment) fragmentManager.findFragmentByTag(LocationSearchResultFragment.TAG);
+        if (locationSearchResultFragment != null)
+        {
+            locationSearchResultFragment.addOnBackPressedCallback();
+            return true;
+        }
+        return false;
     }
 
     public void onCalledBottomSheet(int newState, BottomSheetBehavior currentBottomSheetBehavior)

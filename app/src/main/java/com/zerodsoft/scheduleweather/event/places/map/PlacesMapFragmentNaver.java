@@ -485,7 +485,7 @@ public class PlacesMapFragmentNaver extends NaverMapFragment implements OnClicke
                 {
                     if (getChildFragmentManager().findFragmentByTag(MapHeaderSearchFragment.TAG).isVisible())
                     {
-                        ((MapHeaderSearchFragment) getChildFragmentManager().findFragmentByTag(MapHeaderSearchFragment.TAG)).getBinding().closeButton.callOnClick();
+                        closeSearchFragments();
                     }
                 }
 

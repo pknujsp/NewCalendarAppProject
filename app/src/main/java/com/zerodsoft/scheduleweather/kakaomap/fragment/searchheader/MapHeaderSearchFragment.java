@@ -77,26 +77,7 @@ public class MapHeaderSearchFragment extends Fragment implements SearchBarContro
             @Override
             public void onClick(View view)
             {
-                //현재 프래그먼트 파악
-                FragmentManager fragmentManager = getParentFragmentManager();
-
-                if (fragmentManager.findFragmentByTag(LocationSearchFragment.TAG) != null)
-                {
-                    if (fragmentManager.findFragmentByTag(LocationSearchFragment.TAG).isVisible())
-                    {
-                        searchFragmentController.closeSearchFragments(LocationSearchFragment.TAG);
-                    }
-                }
-
-                if (fragmentManager.findFragmentByTag(LocationSearchResultFragment.TAG) != null)
-                {
-                    if (fragmentManager.findFragmentByTag(LocationSearchResultFragment.TAG).isVisible())
-                    {
-                        searchFragmentController.closeSearchFragments(LocationSearchResultFragment.TAG);
-                        searchFragmentController.closeSearchFragments(LocationSearchFragment.TAG);
-                    }
-                }
-
+                searchFragmentController.closeSearchFragments();
             }
         });
 
@@ -138,7 +119,7 @@ public class MapHeaderSearchFragment extends Fragment implements SearchBarContro
         return binding;
     }
 
-    @Override
+
     public void setQuery(String query, boolean submit)
     {
         if (KakaoLocalApiCategoryUtil.isCategory(query))
@@ -191,6 +172,25 @@ public class MapHeaderSearchFragment extends Fragment implements SearchBarContro
         }
     }
 
+    @Override
+    public void onHiddenChanged(boolean hidden)
+    {
+        super.onHiddenChanged(hidden);
+        if (hidden)
+        {
+
+        } else
+        {
+
+        }
+    }
+
+    public void resetState()
+    {
+        setViewTypeVisibility(View.GONE);
+        changeViewTypeImg(SearchBarController.MAP);
+        setQuery("", false);
+    }
 
     @Override
     public void setViewTypeVisibility(int visibility)

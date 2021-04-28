@@ -1253,6 +1253,12 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     }
 
     @Override
+    public void closeSearchFragments()
+    {
+
+    }
+
+    @Override
     public void setStateOfSearchBottomSheet(int state)
     {
         locationSearchBottomSheetBehavior.setState(state);

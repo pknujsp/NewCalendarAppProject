@@ -73,6 +73,19 @@ public class LocationSearchFragment extends Fragment implements OnSelectedMapCat
         }
     };
 
+    @Override
+    public void onHiddenChanged(boolean hidden)
+    {
+        super.onHiddenChanged(hidden);
+        if (hidden)
+        {
+            removeOnBackPressedCallback();
+        } else
+        {
+            addOnBackPressedCallback();
+        }
+    }
+
     public LocationSearchFragment(Fragment mapFragment, FragmentStateCallback fragmentStateCallback)
     {
         this.iMapPoint = (IMapPoint) mapFragment;
@@ -95,12 +108,6 @@ public class LocationSearchFragment extends Fragment implements OnSelectedMapCat
         super.onCreate(savedInstanceState);
     }
 
-
-    @Override
-    public void onDetach()
-    {
-        super.onDetach();
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,

@@ -1,5 +1,6 @@
 package com.zerodsoft.scheduleweather.kakaomap.fragment.searchresult;
 
+import android.content.Context;
 import android.os.Bundle;
 
 import androidx.activity.OnBackPressedCallback;
@@ -80,6 +81,14 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
             }
         }
     };
+
+    @Override
+    public void onAttach(@NonNull Context context)
+    {
+        super.onAttach(context);
+        addOnBackPressedCallback();
+    }
+
 
     @Override
     public void setIndicator(int fragmentSize)
@@ -220,6 +229,7 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
     public void onDetach()
     {
         super.onDetach();
+        removeOnBackPressedCallback();
     }
 
     @Override

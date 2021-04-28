@@ -1,5 +1,6 @@
 package com.zerodsoft.scheduleweather.kakaomap.building.fragment;
 
+import android.content.Context;
 import android.os.Bundle;
 
 import androidx.activity.OnBackPressedCallback;
@@ -82,6 +83,20 @@ public class BuildingFragment extends Fragment implements OnBackPressedCallbackC
     public BuildingFragment(BuildingFragmentController buildingFragmentController)
     {
         this.buildingFragmentController = buildingFragmentController;
+    }
+
+    @Override
+    public void onAttach(@NonNull Context context)
+    {
+        super.onAttach(context);
+        addOnBackPressedCallback();
+    }
+
+    @Override
+    public void onDetach()
+    {
+        super.onDetach();
+        removeOnBackPressedCallback();
     }
 
     @Override

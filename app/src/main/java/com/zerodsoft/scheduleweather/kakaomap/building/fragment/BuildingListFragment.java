@@ -8,6 +8,7 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -48,11 +49,17 @@ import com.zerodsoft.scheduleweather.sgis.SgisAuth;
 import java.util.TimeZone;
 
 
-public class BuildingListFragment extends Fragment implements OnClickedListItem<BuildingAreaItem>, OnBackPressedCallbackController
+public class BuildingListFragment extends Fragment implements OnClickedListItem<BuildingAreaItem>, OnBackPressedCallbackController, FragmentManager.OnBackStackChangedListener
 {
     private FragmentBuildingListBinding binding;
     public static final String TAG = "BuildingListFragment";
     private final BuildingFragmentController buildingFragmentController;
+
+    @Override
+    public void onBackStackChanged()
+    {
+
+    }
 
     public enum CalcType
     {
@@ -130,6 +137,7 @@ public class BuildingListFragment extends Fragment implements OnClickedListItem<
         }
     };
 
+
     @Override
     public void onAttach(@NonNull Context context)
     {
@@ -142,6 +150,19 @@ public class BuildingListFragment extends Fragment implements OnClickedListItem<
     {
         super.onDestroy();
         removeOnBackPressedCallback();
+    }
+
+    @Override
+    public void onHiddenChanged(boolean hidden)
+    {
+        super.onHiddenChanged(hidden);
+        if (hidden)
+        {
+            removeOnBackPressedCallback();
+        } else
+        {
+            addOnBackPressedCallback();
+        }
     }
 
     private void getBuildingList()

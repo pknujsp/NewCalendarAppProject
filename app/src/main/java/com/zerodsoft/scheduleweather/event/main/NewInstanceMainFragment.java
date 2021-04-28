@@ -51,7 +51,7 @@ import org.xmlpull.v1.XmlPullParser;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NewInstanceMainFragment extends NaverMapFragment implements OnBackPressedCallbackController, BottomSheetController
+public class NewInstanceMainFragment extends NaverMapFragment implements BottomSheetController
 {
     public static final String TAG = "NewInstanceMainFragment";
 
@@ -97,15 +97,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements OnBackP
     private LinearLayout weatherBottomSheet;
     private LinearLayout restaurantsBottomSheet;
 
-
-    private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
-    {
-        @Override
-        public void handleOnBackPressed()
-        {
-            requireActivity().finish();
-        }
-    };
 
     @Override
     public void onAttach(@NonNull Context context)
@@ -176,7 +167,10 @@ public class NewInstanceMainFragment extends NaverMapFragment implements OnBackP
                         break;
                     case BottomSheetBehavior.STATE_COLLAPSED:
                         ((EventFragment) getChildFragmentManager().findFragmentByTag(EventFragment.TAG)).removeOnBackPressedCallback();
-                        addOnBackPressedCallback();
+                        if (!restoreOnBackPressedInLocationSearch())
+                        {
+                            addOnBackPressedCallback();
+                        }
                         break;
                 }
             }
@@ -201,7 +195,10 @@ public class NewInstanceMainFragment extends NaverMapFragment implements OnBackP
                         break;
                     case BottomSheetBehavior.STATE_COLLAPSED:
                         ((WeatherItemFragment) getChildFragmentManager().findFragmentByTag(WeatherItemFragment.TAG)).removeOnBackPressedCallback();
-                        addOnBackPressedCallback();
+                        if (!restoreOnBackPressedInLocationSearch())
+                        {
+                            addOnBackPressedCallback();
+                        }
                         break;
                 }
             }
@@ -226,7 +223,10 @@ public class NewInstanceMainFragment extends NaverMapFragment implements OnBackP
                         break;
                     case BottomSheetBehavior.STATE_COLLAPSED:
                         ((NewFoodsMainFragment) getChildFragmentManager().findFragmentByTag(NewFoodsMainFragment.TAG)).removeOnBackPressedCallback();
-                        addOnBackPressedCallback();
+                        if (!restoreOnBackPressedInLocationSearch())
+                        {
+                            addOnBackPressedCallback();
+                        }
                         break;
                 }
             }
@@ -581,18 +581,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements OnBackP
                 .add(restaurantsBottomSheet.getChildAt(0).getId(), newFoodsMainFragment, NewFoodsMainFragment.TAG).commit();
     }
 
-
-    @Override
-    public void addOnBackPressedCallback()
-    {
-        requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
-    }
-
-    @Override
-    public void removeOnBackPressedCallback()
-    {
-        onBackPressedCallback.remove();
-    }
 
     @Override
     public void setStateOfBottomSheet(String fragmentTag, int state)
