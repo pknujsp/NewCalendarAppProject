@@ -23,11 +23,9 @@ import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.foods.adapter.FoodCriteriaLocationHistoryAdapter;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.LocationHistoryController;
 import com.zerodsoft.scheduleweather.event.foods.searchlocation.fragment.LocationSearchDialogFragment;
-import com.zerodsoft.scheduleweather.event.foods.searchlocation.interfaces.OnClickedLocationItem;
 import com.zerodsoft.scheduleweather.event.foods.searchlocation.interfaces.OnSelectedNewLocation;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationInfoViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationHistoryViewModel;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalDocument;
 import com.zerodsoft.scheduleweather.room.dto.FoodCriteriaLocationInfoDTO;
 import com.zerodsoft.scheduleweather.room.dto.FoodCriteriaLocationSearchHistoryDTO;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
@@ -358,7 +356,7 @@ public class LocationSettingsActivity extends AppCompatActivity implements Locat
         foodCriteriaLocationSearchHistoryViewModel.insertByEventId(instanceValues.getAsInteger(CalendarContract.Instances.CALENDAR_ID)
                 , instanceValues.getAsLong(CalendarContract.Instances.EVENT_ID), locationDTO.getPlaceName(), locationDTO.getAddressName(),
                 locationDTO.getRoadAddressName()
-                , String.valueOf(locationDTO.getLatitude()), String.valueOf(locationDTO.getLongitude()),
+                , String.valueOf(locationDTO.getLatitude()), String.valueOf(locationDTO.getLongitude()), locationDTO.getLocationType(),
                 new CarrierMessagingService.ResultCallback<List<FoodCriteriaLocationSearchHistoryDTO>>()
                 {
                     @Override

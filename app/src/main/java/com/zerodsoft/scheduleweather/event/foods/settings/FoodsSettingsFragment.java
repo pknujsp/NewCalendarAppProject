@@ -28,6 +28,8 @@ public class FoodsSettingsFragment extends Fragment implements OnBackPressedCall
         @Override
         public void handleOnBackPressed()
         {
+            getParentFragment().getParentFragmentManager().popBackStack();
+
             bottomSheetController.setStateOfBottomSheet(NewFoodsMainFragment.TAG, BottomSheetBehavior.STATE_COLLAPSED);
         }
     };

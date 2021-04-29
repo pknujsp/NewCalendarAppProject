@@ -80,7 +80,7 @@ public class FoodCategoryAdapter extends RecyclerView.Adapter<FoodCategoryAdapte
 
         public void onBind()
         {
-            foodCategoryItem = items.get(getAdapterPosition());
+            foodCategoryItem = items.get(getBindingAdapterPosition());
             foodCategoryNameTextView.setText(foodCategoryItem.getCategoryName());
 
             LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) foodCategoryNameTextView.getLayoutParams();

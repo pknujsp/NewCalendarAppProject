@@ -22,7 +22,7 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.ActivityFoodsBinding;
 import com.zerodsoft.scheduleweather.event.foods.favorite.FavoritesMainFragment;
 import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteRestaurantViewModel;
-import com.zerodsoft.scheduleweather.event.foods.main.fragment.FoodsMainFragment;
+import com.zerodsoft.scheduleweather.event.foods.main.fragment.FoodsHomeFragment;
 import com.zerodsoft.scheduleweather.event.foods.search.search.fragment.SearchRestaurantFragment;
 import com.zerodsoft.scheduleweather.event.foods.settings.FoodsSettingsFragment;
 import com.zerodsoft.scheduleweather.event.foods.share.FavoriteRestaurantCloud;
@@ -154,15 +154,15 @@ public class FoodsActivity extends AppCompatActivity implements INetwork, Bottom
         fragmentBundle.putLong(CalendarContract.Instances._ID, INSTANCE_VALUES.getAsLong(CalendarContract.Instances._ID));
         fragmentBundle.putLong(CalendarContract.Instances.EVENT_ID, INSTANCE_VALUES.getAsLong(CalendarContract.Instances.EVENT_ID));
 
-        FoodsMainFragment foodsMainFragment = new FoodsMainFragment(FoodsActivity.this::networkAvailable, null);
-        foodsMainFragment.setArguments(fragmentBundle);
+        FoodsHomeFragment foodsHomeFragment = new FoodsHomeFragment(FoodsActivity.this::networkAvailable, null);
+        foodsHomeFragment.setArguments(fragmentBundle);
 
         SearchRestaurantFragment searchRestaurantFragment = new SearchRestaurantFragment(null);
         FoodsSettingsFragment foodsSettingsFragment = new FoodsSettingsFragment(null);
         FavoritesMainFragment favoritesMainFragment = new FavoritesMainFragment(null);
 
         getSupportFragmentManager().beginTransaction()
-                .add(binding.fragmentContainer.getId(), foodsMainFragment, FoodsMainFragment.TAG)
+                .add(binding.fragmentContainer.getId(), foodsHomeFragment, FoodsHomeFragment.TAG)
                 .add(binding.fragmentContainer.getId(), searchRestaurantFragment, SearchRestaurantFragment.TAG)
                 .add(binding.fragmentContainer.getId(), foodsSettingsFragment, FoodsSettingsFragment.TAG)
                 .add(binding.fragmentContainer.getId(), favoritesMainFragment, FavoritesMainFragment.TAG)
@@ -171,7 +171,7 @@ public class FoodsActivity extends AppCompatActivity implements INetwork, Bottom
                 .hide(favoritesMainFragment)
                 .commit();
 
-        currentShowingFragment = foodsMainFragment;
+        currentShowingFragment = foodsHomeFragment;
     }
 
     @Override
@@ -201,7 +201,7 @@ public class FoodsActivity extends AppCompatActivity implements INetwork, Bottom
         {
             case R.id.food_main:
             {
-                newFragment = fragmentManager.findFragmentByTag(FoodsMainFragment.TAG);
+                newFragment = fragmentManager.findFragmentByTag(FoodsHomeFragment.TAG);
                 break;
             }
 

@@ -58,7 +58,7 @@ public class PlacesListAdapter extends PagedListAdapter<PlaceDocuments, PlacesLi
                 @Override
                 public void onClick(View view)
                 {
-                    onClickedLocationItem.onClickedLocationItem(getItem(getAdapterPosition()));
+                    onClickedLocationItem.onClickedLocationItem(getItem(getBindingAdapterPosition()));
                 }
             });
         }

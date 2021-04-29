@@ -26,9 +26,9 @@ import com.zerodsoft.scheduleweather.event.places.interfaces.BottomSheet;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.INetwork;
 
-public class FoodsMainFragment extends Fragment implements OnBackPressedCallbackController
+public class FoodsHomeFragment extends Fragment implements OnBackPressedCallbackController
 {
-    public static final String TAG = "FoodsMainFragment";
+    public static final String TAG = "FoodsHomeFragment";
     private final BottomSheetController bottomSheetController;
     private FragmentFoodsMainBinding binding;
     private final INetwork iNetwork;
@@ -43,6 +43,7 @@ public class FoodsMainFragment extends Fragment implements OnBackPressedCallback
             {
                 if (fragmentManager.findFragmentByTag(FoodsCategoryListFragment.TAG).isVisible())
                 {
+                    getParentFragment().getParentFragmentManager().popBackStack();
                     bottomSheetController.setStateOfBottomSheet(NewFoodsMainFragment.TAG, BottomSheetBehavior.STATE_COLLAPSED);
                 } else if (fragmentManager.findFragmentByTag(FoodCategoryTabFragment.TAG) != null)
                 {
@@ -52,7 +53,7 @@ public class FoodsMainFragment extends Fragment implements OnBackPressedCallback
         }
     };
 
-    public FoodsMainFragment(INetwork iNetwork, BottomSheetController bottomSheetController)
+    public FoodsHomeFragment(INetwork iNetwork, BottomSheetController bottomSheetController)
     {
         this.iNetwork = iNetwork;
         this.bottomSheetController = bottomSheetController;

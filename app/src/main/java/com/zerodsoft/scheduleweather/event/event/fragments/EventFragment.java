@@ -89,6 +89,7 @@ public class EventFragment extends Fragment implements OnBackPressedCallbackCont
         @Override
         public void handleOnBackPressed()
         {
+            getParentFragmentManager().popBackStack();
             bottomSheetController.setStateOfBottomSheet(EventFragment.TAG, BottomSheetBehavior.STATE_COLLAPSED);
         }
     };
@@ -98,6 +99,18 @@ public class EventFragment extends Fragment implements OnBackPressedCallbackCont
 
     };
 
+    @Override
+    public void onHiddenChanged(boolean hidden)
+    {
+        super.onHiddenChanged(hidden);
+        if (hidden)
+        {
+            removeOnBackPressedCallback();
+        } else
+        {
+            addOnBackPressedCallback();
+        }
+    }
 
     public EventFragment(BottomSheetController bottomSheetController, int CALENDAR_ID, long EVENT_ID, long INSTANCE_ID, long ORIGINAL_BEGIN, long ORIGINAL_END)
     {

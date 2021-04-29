@@ -82,9 +82,24 @@ public class WeatherItemFragment extends Fragment implements OnBackPressedCallba
         @Override
         public void handleOnBackPressed()
         {
+            getParentFragmentManager().popBackStack();
             bottomSheetController.setStateOfBottomSheet(WeatherItemFragment.TAG, BottomSheetBehavior.STATE_COLLAPSED);
         }
     };
+
+    @Override
+    public void onHiddenChanged(boolean hidden)
+    {
+        super.onHiddenChanged(hidden);
+        if (hidden)
+        {
+            removeOnBackPressedCallback();
+        } else
+        {
+            addOnBackPressedCallback();
+        }
+    }
+
 
     private final WeatherDownloader weatherDownloader = new WeatherDownloader()
     {

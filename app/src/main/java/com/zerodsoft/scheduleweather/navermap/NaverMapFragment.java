@@ -171,7 +171,13 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
         @Override
         public void handleOnBackPressed()
         {
-            requireActivity().finish();
+            if (getChildFragmentManager().getBackStackEntryCount() > 0)
+            {
+                getChildFragmentManager().popBackStack();
+            } else
+            {
+                requireActivity().finish();
+            }
         }
     };
 
@@ -280,7 +286,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
         markerWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, getResources().getDisplayMetrics());
         markerHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32f, getResources().getDisplayMetrics());
-
     }
 
 
@@ -1315,9 +1320,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
     public void closeBuildingFragments(String currentFragmentTag)
     {
         FragmentManager fragmentManager = getChildFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-
-        BuildingListFragment buildingListFragment = (BuildingListFragment) fragmentManager.findFragmentByTag(BuildingListFragment.TAG);
 
         if (currentFragmentTag.equals(BuildingListFragment.TAG))
         {
@@ -1332,7 +1334,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
         {
             setBuildingBottomSheetHeight(BuildingListFragment.TAG);
 
-            BuildingFragment buildingFragment = (BuildingFragment) fragmentManager.findFragmentByTag(BuildingFragment.TAG);
             buildingBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
         }
     }
@@ -1360,15 +1361,13 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
             if (buildingFragment != null)
             {
-                buildingFragment.removeOnBackPressedCallback();
-
                 fragmentTransaction.remove(buildingListFragment)
                         .remove(buildingFragment)
-                        .commitNow();
+                        .commit();
             } else
             {
                 fragmentTransaction.remove(buildingListFragment)
-                        .commitNow();
+                        .commit();
             }
         }
     }

@@ -83,7 +83,7 @@ public class FoodCriteriaLocationHistoryRepository implements FoodCriteriaLocati
     }
 
     @Override
-    public void insertByEventId(int calendarId, long eventId, String placeName, String addressName, String roadAddressName, String latitude, String longitude, CarrierMessagingService.ResultCallback<List<FoodCriteriaLocationSearchHistoryDTO>> callback)
+    public void insertByEventId(int calendarId, long eventId, String placeName, String addressName, String roadAddressName, String latitude, String longitude, Integer locationType, CarrierMessagingService.ResultCallback<List<FoodCriteriaLocationSearchHistoryDTO>> callback)
     {
         App.executorService.execute(new Runnable()
         {
@@ -91,7 +91,7 @@ public class FoodCriteriaLocationHistoryRepository implements FoodCriteriaLocati
             @Override
             public void run()
             {
-                dao.insertByEventId(calendarId, eventId, placeName, addressName, roadAddressName, latitude, longitude);
+                dao.insertByEventId(calendarId, eventId, placeName, addressName, roadAddressName, latitude, longitude, locationType);
                 List<FoodCriteriaLocationSearchHistoryDTO> list = dao.selectByEventId(calendarId, eventId);
                 callback.onReceiveResult(list);
             }
@@ -99,7 +99,7 @@ public class FoodCriteriaLocationHistoryRepository implements FoodCriteriaLocati
     }
 
     @Override
-    public void insertByInstanceId(int calendarId, long instanceId, String placeName, String addressName, String roadAddressName, String latitude, String longitude, CarrierMessagingService.ResultCallback<List<FoodCriteriaLocationSearchHistoryDTO>> callback)
+    public void insertByInstanceId(int calendarId, long instanceId, String placeName, String addressName, String roadAddressName, String latitude, String longitude, Integer locationType, CarrierMessagingService.ResultCallback<List<FoodCriteriaLocationSearchHistoryDTO>> callback)
     {
         App.executorService.execute(new Runnable()
         {
@@ -107,7 +107,7 @@ public class FoodCriteriaLocationHistoryRepository implements FoodCriteriaLocati
             @Override
             public void run()
             {
-                dao.insertByInstanceId(calendarId, instanceId, placeName, addressName, roadAddressName, latitude, longitude);
+                dao.insertByInstanceId(calendarId, instanceId, placeName, addressName, roadAddressName, latitude, longitude, locationType);
                 List<FoodCriteriaLocationSearchHistoryDTO> list = dao.selectByInstanceId(calendarId, instanceId);
                 callback.onReceiveResult(list);
             }
@@ -115,7 +115,7 @@ public class FoodCriteriaLocationHistoryRepository implements FoodCriteriaLocati
     }
 
     @Override
-    public void updateByEventId(int calendarId, long eventId, String placeName, String addressName, String roadAddressName, String latitude, String longitude, CarrierMessagingService.ResultCallback<List<FoodCriteriaLocationSearchHistoryDTO>> callback)
+    public void updateByEventId(int calendarId, long eventId, String placeName, String addressName, String roadAddressName, String latitude, String longitude, Integer locationType, CarrierMessagingService.ResultCallback<List<FoodCriteriaLocationSearchHistoryDTO>> callback)
     {
         App.executorService.execute(new Runnable()
         {
@@ -123,7 +123,7 @@ public class FoodCriteriaLocationHistoryRepository implements FoodCriteriaLocati
             @Override
             public void run()
             {
-                dao.updateByEventId(calendarId, eventId, placeName, addressName, roadAddressName, latitude, longitude);
+                dao.updateByEventId(calendarId, eventId, placeName, addressName, roadAddressName, latitude, longitude, locationType);
                 List<FoodCriteriaLocationSearchHistoryDTO> list = dao.selectByEventId(calendarId, eventId);
                 callback.onReceiveResult(list);
             }
@@ -131,7 +131,7 @@ public class FoodCriteriaLocationHistoryRepository implements FoodCriteriaLocati
     }
 
     @Override
-    public void updateByInstanceId(int calendarId, long instanceId, String placeName, String addressName, String roadAddressName, String latitude, String longitude, CarrierMessagingService.ResultCallback<List<FoodCriteriaLocationSearchHistoryDTO>> callback)
+    public void updateByInstanceId(int calendarId, long instanceId, String placeName, String addressName, String roadAddressName, String latitude, String longitude, Integer locationType, CarrierMessagingService.ResultCallback<List<FoodCriteriaLocationSearchHistoryDTO>> callback)
     {
         App.executorService.execute(new Runnable()
         {
@@ -139,7 +139,7 @@ public class FoodCriteriaLocationHistoryRepository implements FoodCriteriaLocati
             @Override
             public void run()
             {
-                dao.updateByInstanceId(calendarId, instanceId, placeName, addressName, roadAddressName, latitude, longitude);
+                dao.updateByInstanceId(calendarId, instanceId, placeName, addressName, roadAddressName, latitude, longitude, locationType);
                 List<FoodCriteriaLocationSearchHistoryDTO> list = dao.selectByInstanceId(calendarId, instanceId);
                 callback.onReceiveResult(list);
             }
@@ -147,7 +147,7 @@ public class FoodCriteriaLocationHistoryRepository implements FoodCriteriaLocati
     }
 
     @Override
-    public void update(int id, String placeName, String addressName, String roadAddressName, String latitude, String longitude, CarrierMessagingService.ResultCallback<FoodCriteriaLocationSearchHistoryDTO> callback)
+    public void update(int id, String placeName, String addressName, String roadAddressName, String latitude, String longitude, Integer locationType, CarrierMessagingService.ResultCallback<FoodCriteriaLocationSearchHistoryDTO> callback)
     {
         App.executorService.execute(new Runnable()
         {
@@ -155,7 +155,7 @@ public class FoodCriteriaLocationHistoryRepository implements FoodCriteriaLocati
             @Override
             public void run()
             {
-                dao.update(id, placeName, addressName, roadAddressName, latitude, longitude);
+                dao.update(id, placeName, addressName, roadAddressName, latitude, longitude, locationType);
                 FoodCriteriaLocationSearchHistoryDTO result = dao.select(id);
                 callback.onReceiveResult(result);
             }

@@ -48,33 +48,33 @@ public class FoodCriteriaLocationHistoryViewModel extends AndroidViewModel imple
     }
 
     @Override
-    public void insertByEventId(int calendarId, long eventId, String placeName, String addressName, String roadAddressName, String latitude, String longitude, CarrierMessagingService.ResultCallback<List<FoodCriteriaLocationSearchHistoryDTO>> callback)
+    public void insertByEventId(int calendarId, long eventId, String placeName, String addressName, String roadAddressName, String latitude, String longitude, Integer locationType, CarrierMessagingService.ResultCallback<List<FoodCriteriaLocationSearchHistoryDTO>> callback)
     {
-        repository.insertByEventId(calendarId, eventId, placeName, addressName, roadAddressName, latitude, longitude, callback);
+        repository.insertByEventId(calendarId, eventId, placeName, addressName, roadAddressName, latitude, longitude, locationType, callback);
     }
 
     @Override
-    public void insertByInstanceId(int calendarId, long instanceId, String placeName, String addressName, String roadAddressName, String latitude, String longitude, CarrierMessagingService.ResultCallback<List<FoodCriteriaLocationSearchHistoryDTO>> callback)
+    public void insertByInstanceId(int calendarId, long instanceId, String placeName, String addressName, String roadAddressName, String latitude, String longitude, Integer locationType, CarrierMessagingService.ResultCallback<List<FoodCriteriaLocationSearchHistoryDTO>> callback)
     {
-        repository.insertByInstanceId(calendarId, instanceId, placeName, addressName, roadAddressName, latitude, longitude, callback);
+        repository.insertByInstanceId(calendarId, instanceId, placeName, addressName, roadAddressName, latitude, longitude, locationType, callback);
     }
 
     @Override
-    public void updateByEventId(int calendarId, long eventId, String placeName, String addressName, String roadAddressName, String latitude, String longitude, CarrierMessagingService.ResultCallback<List<FoodCriteriaLocationSearchHistoryDTO>> callback)
+    public void updateByEventId(int calendarId, long eventId, String placeName, String addressName, String roadAddressName, String latitude, String longitude, Integer locationType, CarrierMessagingService.ResultCallback<List<FoodCriteriaLocationSearchHistoryDTO>> callback)
     {
-        repository.updateByEventId(calendarId, eventId, placeName, addressName, roadAddressName, latitude, longitude, callback);
+        repository.updateByEventId(calendarId, eventId, placeName, addressName, roadAddressName, latitude, longitude, locationType, callback);
     }
 
     @Override
-    public void updateByInstanceId(int calendarId, long instanceId, String placeName, String addressName, String roadAddressName, String latitude, String longitude, CarrierMessagingService.ResultCallback<List<FoodCriteriaLocationSearchHistoryDTO>> callback)
+    public void updateByInstanceId(int calendarId, long instanceId, String placeName, String addressName, String roadAddressName, String latitude, String longitude, Integer locationType, CarrierMessagingService.ResultCallback<List<FoodCriteriaLocationSearchHistoryDTO>> callback)
     {
-        repository.updateByInstanceId(calendarId, instanceId, placeName, addressName, roadAddressName, latitude, longitude, callback);
+        repository.updateByInstanceId(calendarId, instanceId, placeName, addressName, roadAddressName, latitude, longitude, locationType, callback);
     }
 
     @Override
-    public void update(int id, String placeName, String addressName, String roadAddressName, String latitude, String longitude, CarrierMessagingService.ResultCallback<FoodCriteriaLocationSearchHistoryDTO> callback)
+    public void update(int id, String placeName, String addressName, String roadAddressName, String latitude, String longitude, Integer locationType, CarrierMessagingService.ResultCallback<FoodCriteriaLocationSearchHistoryDTO> callback)
     {
-        repository.update(id, placeName, addressName, roadAddressName, latitude, longitude, callback);
+        repository.update(id, placeName, addressName, roadAddressName, latitude, longitude, locationType, callback);
     }
 
     @Override

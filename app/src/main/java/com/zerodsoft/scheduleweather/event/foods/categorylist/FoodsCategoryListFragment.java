@@ -18,6 +18,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -92,6 +93,7 @@ public class FoodsCategoryListFragment extends Fragment implements OnClickedCate
     private FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO;
 
     private boolean clickedGps = false;
+    final int columnCount = 4;
 
     public FoodsCategoryListFragment(INetwork iNetwork)
     {
@@ -129,6 +131,8 @@ public class FoodsCategoryListFragment extends Fragment implements OnClickedCate
         foodCriteriaLocationSearchHistoryViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationHistoryViewModel.class);
         customFoodCategoryViewModel = new ViewModelProvider(this).get(CustomFoodMenuViewModel.class);
 
+        GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(), columnCount);
+        binding.categoryGridview.setLayoutManager(gridLayoutManager);
         //기준 주소 표시
         setSelectedLocation();
         setCategories();
@@ -161,7 +165,7 @@ public class FoodsCategoryListFragment extends Fragment implements OnClickedCate
                     public void onReceiveResult(@NonNull LocationDTO locationDTO) throws RemoteException
                     {
                         //가져온 위치 정보를 저장
-                        FoodsCategoryListFragment.this.selectedLocationDTO = locationDTO;
+                        selectedLocationDTO = locationDTO;
                         //지정한 위치 정보 데이터를 가져왔으면 기준 위치 선택정보를 가져온다.
                         setCriteriaLocation();
                     }
@@ -176,94 +180,119 @@ public class FoodsCategoryListFragment extends Fragment implements OnClickedCate
                     @Override
                     public void onReceiveResult(@NonNull FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO) throws RemoteException
                     {
+                        if (foodCriteriaLocationInfoDTO == null)
+                        {
+                            //기준 정보가 지정되어 있지 않으면, 지정한 장소/주소를 기준으로 하도록 설정해준다
+                            foodCriteriaLocationInfoViewModel.insertByEventId(INSTANCE_VALUES.getAsInteger(CalendarContract.Instances.CALENDAR_ID)
+                                    , INSTANCE_VALUES.getAsLong(CalendarContract.Instances.EVENT_ID)
+                                    , FoodCriteriaLocationInfoDTO.TYPE_SELECTED_LOCATION, null, new CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO>()
+                                    {
+                                        @Override
+                                        public void onReceiveResult(@NonNull FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO) throws RemoteException
+                                        {
+                                            FoodsCategoryListFragment.this.foodCriteriaLocationInfoDTO = foodCriteriaLocationInfoDTO;
+                                            getActivity().runOnUiThread(new Runnable()
+                                            {
+                                                @Override
+                                                public void run()
+                                                {
+                                                    init();
+                                                }
+                                            });
+                                        }
+                                    });
+                        } else
+                        {
+                            FoodsCategoryListFragment.this.foodCriteriaLocationInfoDTO = foodCriteriaLocationInfoDTO;
+                            getActivity().runOnUiThread(new Runnable()
+                            {
+                                @Override
+                                public void run()
+                                {
+                                    init();
+                                }
+                            });
+                        }
+                    }
+                });
+
+
+    }
+
+    private void init()
+    {
+        switch (foodCriteriaLocationInfoDTO.getUsingType())
+        {
+            case FoodCriteriaLocationInfoDTO.TYPE_SELECTED_LOCATION:
+            {
+                LocationDTO criteriaLocationDTO = null;
+                try
+                {
+                    criteriaLocationDTO = selectedLocationDTO.clone();
+                } catch (CloneNotSupportedException e)
+                {
+                    e.printStackTrace();
+                }
+                CriteriaLocationRepository.setRestaurantCriteriaLocation(criteriaLocationDTO);
+
+                if (criteriaLocationDTO.getLocationType() == LocationType.PLACE)
+                {
+                    binding.criteriaLocation.setText(criteriaLocationDTO.getPlaceName());
+                } else
+                {
+                    binding.criteriaLocation.setText(criteriaLocationDTO.getAddressName());
+                }
+                binding.progressBar.setVisibility(View.GONE);
+                break;
+            }
+
+            case FoodCriteriaLocationInfoDTO.TYPE_CURRENT_LOCATION:
+            {
+                //현재 위치 파악
+                gps();
+                break;
+            }
+
+            case FoodCriteriaLocationInfoDTO.TYPE_CUSTOM_SELECTED_LOCATION:
+            {
+                //지정 위치 파악
+                foodCriteriaLocationSearchHistoryViewModel.select(foodCriteriaLocationInfoDTO.getHistoryLocationId(), new CarrierMessagingService.ResultCallback<FoodCriteriaLocationSearchHistoryDTO>()
+                {
+                    @Override
+                    public void onReceiveResult(@NonNull FoodCriteriaLocationSearchHistoryDTO foodCriteriaLocationSearchHistoryDTO) throws RemoteException
+                    {
+                        FoodsCategoryListFragment.this.foodCriteriaLocationSearchHistoryDTO = foodCriteriaLocationSearchHistoryDTO;
+                        LocationDTO criteriaLocationDTO = new LocationDTO();
+                        criteriaLocationDTO.setAddressName(foodCriteriaLocationSearchHistoryDTO.getAddressName());
+                        criteriaLocationDTO.setPlaceName(foodCriteriaLocationSearchHistoryDTO.getPlaceName());
+                        criteriaLocationDTO.setLatitude(Double.parseDouble(foodCriteriaLocationSearchHistoryDTO.getLatitude()));
+                        criteriaLocationDTO.setLongitude(Double.parseDouble(foodCriteriaLocationSearchHistoryDTO.getLongitude()));
+                        criteriaLocationDTO.setLocationType(foodCriteriaLocationSearchHistoryDTO.getLocationType());
+
+                        CriteriaLocationRepository.setRestaurantCriteriaLocation(criteriaLocationDTO);
+
                         getActivity().runOnUiThread(new Runnable()
                         {
-
                             @Override
                             public void run()
                             {
-                                //기준 설정 정보 객체 저장
-                                FoodsCategoryListFragment.this.foodCriteriaLocationInfoDTO = foodCriteriaLocationInfoDTO;
-
-                                switch (foodCriteriaLocationInfoDTO.getUsingType())
+                                if (criteriaLocationDTO.getLocationType() == LocationType.PLACE)
                                 {
-                                    case FoodCriteriaLocationInfoDTO.TYPE_SELECTED_LOCATION:
-                                    {
-                                        LocationDTO criteriaLocationDTO = null;
-                                        try
-                                        {
-                                            criteriaLocationDTO = selectedLocationDTO.clone();
-                                        } catch (CloneNotSupportedException e)
-                                        {
-                                            e.printStackTrace();
-                                        }
-                                        CriteriaLocationRepository.setRestaurantCriteriaLocation(criteriaLocationDTO);
-
-                                        if (criteriaLocationDTO.getLocationType() == LocationType.PLACE)
-                                        {
-                                            binding.criteriaLocation.setText(criteriaLocationDTO.getPlaceName());
-                                        } else
-                                        {
-                                            binding.criteriaLocation.setText(criteriaLocationDTO.getAddressName());
-                                        }
-                                        binding.progressBar.setVisibility(View.GONE);
-                                        break;
-                                    }
-
-                                    case FoodCriteriaLocationInfoDTO.TYPE_CURRENT_LOCATION:
-                                    {
-                                        //현재 위치 파악
-                                        gps();
-                                        break;
-                                    }
-
-                                    case FoodCriteriaLocationInfoDTO.TYPE_CUSTOM_SELECTED_LOCATION:
-                                    {
-                                        //지정 위치 파악
-                                        foodCriteriaLocationSearchHistoryViewModel.select(foodCriteriaLocationInfoDTO.getHistoryLocationId(), new CarrierMessagingService.ResultCallback<FoodCriteriaLocationSearchHistoryDTO>()
-                                        {
-                                            @Override
-                                            public void onReceiveResult(@NonNull FoodCriteriaLocationSearchHistoryDTO foodCriteriaLocationSearchHistoryDTO) throws RemoteException
-                                            {
-                                                FoodsCategoryListFragment.this.foodCriteriaLocationSearchHistoryDTO = foodCriteriaLocationSearchHistoryDTO;
-                                                LocationDTO criteriaLocationDTO = new LocationDTO();
-                                                criteriaLocationDTO.setAddressName(foodCriteriaLocationSearchHistoryDTO.getAddressName());
-                                                criteriaLocationDTO.setPlaceName(foodCriteriaLocationSearchHistoryDTO.getPlaceName());
-                                                criteriaLocationDTO.setLatitude(Double.parseDouble(foodCriteriaLocationSearchHistoryDTO.getLatitude()));
-                                                criteriaLocationDTO.setLongitude(Double.parseDouble(foodCriteriaLocationSearchHistoryDTO.getLongitude()));
-                                                criteriaLocationDTO.setLocationType(foodCriteriaLocationSearchHistoryDTO.getLocationType());
-
-                                                CriteriaLocationRepository.setRestaurantCriteriaLocation(criteriaLocationDTO);
-
-                                                getActivity().runOnUiThread(new Runnable()
-                                                {
-                                                    @Override
-                                                    public void run()
-                                                    {
-                                                        if (criteriaLocationDTO.getLocationType() == LocationType.PLACE)
-                                                        {
-                                                            binding.criteriaLocation.setText(criteriaLocationDTO.getPlaceName());
-                                                        } else
-                                                        {
-                                                            binding.criteriaLocation.setText(criteriaLocationDTO.getAddressName());
-                                                        }
-                                                        binding.progressBar.setVisibility(View.GONE);
-                                                    }
-                                                });
-
-                                            }
-                                        });
-
-                                    }
-                                    break;
+                                    binding.criteriaLocation.setText(criteriaLocationDTO.getPlaceName());
+                                } else
+                                {
+                                    binding.criteriaLocation.setText(criteriaLocationDTO.getAddressName());
                                 }
+                                binding.progressBar.setVisibility(View.GONE);
                             }
                         });
 
                     }
                 });
 
-
+            }
+            break;
+        }
     }
 
     private void gps()
@@ -495,43 +524,41 @@ public class FoodsCategoryListFragment extends Fragment implements OnClickedCate
             @Override
             public void onReceiveResult(@NonNull List<CustomFoodMenuDTO> resultList) throws RemoteException
             {
+                FoodCategoryAdapter foodCategoryAdapter = new FoodCategoryAdapter(FoodsCategoryListFragment.this, columnCount);
+
+                Context context = getContext();
+                List<FoodCategoryItem> itemsList = new ArrayList<>();
+
+                itemsList.add(new FoodCategoryItem(getString(R.string.hansik), ContextCompat.getDrawable(context, R.drawable.hansik_kimchi_jjigae), true));
+                itemsList.add(new FoodCategoryItem(getString(R.string.jungsik), ContextCompat.getDrawable(context, R.drawable.jungsik_jjajangmyeon), true));
+                itemsList.add(new FoodCategoryItem(getString(R.string.illsik), ContextCompat.getDrawable(context, R.drawable.illsik_chobab), true));
+                itemsList.add(new FoodCategoryItem(getString(R.string.sashimi), ContextCompat.getDrawable(context, R.drawable.sashimi), true));
+                itemsList.add(new FoodCategoryItem(getString(R.string.yangsik), ContextCompat.getDrawable(context, R.drawable.yangsik_barbeque), true));
+                itemsList.add(new FoodCategoryItem(getString(R.string.asian), ContextCompat.getDrawable(context, R.drawable.asain_ssalguksoo), true));
+                itemsList.add(new FoodCategoryItem(getString(R.string.chicken), ContextCompat.getDrawable(context, R.drawable.chicken), true));
+                itemsList.add(new FoodCategoryItem(getString(R.string.fastfood), ContextCompat.getDrawable(context, R.drawable.hamburger), true));
+                itemsList.add(new FoodCategoryItem(getString(R.string.donkartz), ContextCompat.getDrawable(context, R.drawable.donkartz), true));
+                itemsList.add(new FoodCategoryItem(getString(R.string.jjim), ContextCompat.getDrawable(context, R.drawable.jjim_galbijjim), true));
+                itemsList.add(new FoodCategoryItem(getString(R.string.tang), ContextCompat.getDrawable(context, R.drawable.tang_maewoontang), true));
+                itemsList.add(new FoodCategoryItem(getString(R.string.bunsik), ContextCompat.getDrawable(context, R.drawable.bunsik_ddeokboggi), true));
+                itemsList.add(new FoodCategoryItem(getString(R.string.juk), ContextCompat.getDrawable(context, R.drawable.juk), true));
+
+                if (!resultList.isEmpty())
+                {
+                    for (CustomFoodMenuDTO customFoodCategory : resultList)
+                    {
+                        itemsList.add(new FoodCategoryItem(customFoodCategory.getMenuName(), null, false));
+                    }
+                }
+                itemsList.add(new FoodCategoryItem(getString(R.string.add_custom_food_menu), null, false));
+
+                foodCategoryAdapter.setItems(itemsList);
+
                 getActivity().runOnUiThread(new Runnable()
                 {
                     @Override
                     public void run()
                     {
-                        final int columnCount = 4;
-                        FoodCategoryAdapter foodCategoryAdapter = new FoodCategoryAdapter(FoodsCategoryListFragment.this, columnCount);
-
-                        Context context = getContext();
-                        List<FoodCategoryItem> itemsList = new ArrayList<>();
-
-                        itemsList.add(new FoodCategoryItem(getString(R.string.hansik), context.getDrawable(R.drawable.hansik_kimchi_jjigae), true));
-                        itemsList.add(new FoodCategoryItem(getString(R.string.jungsik), context.getDrawable(R.drawable.jungsik_jjajangmyeon), true));
-                        itemsList.add(new FoodCategoryItem(getString(R.string.illsik), context.getDrawable(R.drawable.illsik_chobab), true));
-                        itemsList.add(new FoodCategoryItem(getString(R.string.sashimi), context.getDrawable(R.drawable.sashimi), true));
-                        itemsList.add(new FoodCategoryItem(getString(R.string.yangsik), context.getDrawable(R.drawable.yangsik_barbeque), true));
-                        itemsList.add(new FoodCategoryItem(getString(R.string.asian), context.getDrawable(R.drawable.asain_ssalguksoo), true));
-                        itemsList.add(new FoodCategoryItem(getString(R.string.chicken), context.getDrawable(R.drawable.chicken), true));
-                        itemsList.add(new FoodCategoryItem(getString(R.string.fastfood), context.getDrawable(R.drawable.hamburger), true));
-                        itemsList.add(new FoodCategoryItem(getString(R.string.donkartz), context.getDrawable(R.drawable.donkartz), true));
-                        itemsList.add(new FoodCategoryItem(getString(R.string.jjim), context.getDrawable(R.drawable.jjim_galbijjim), true));
-                        itemsList.add(new FoodCategoryItem(getString(R.string.tang), context.getDrawable(R.drawable.tang_maewoontang), true));
-                        itemsList.add(new FoodCategoryItem(getString(R.string.bunsik), context.getDrawable(R.drawable.bunsik_ddeokboggi), true));
-                        itemsList.add(new FoodCategoryItem(getString(R.string.juk), context.getDrawable(R.drawable.juk), true));
-
-                        if (!resultList.isEmpty())
-                        {
-                            for (CustomFoodMenuDTO customFoodCategory : resultList)
-                            {
-                                itemsList.add(new FoodCategoryItem(customFoodCategory.getMenuName(), null, false));
-                            }
-                        }
-                        itemsList.add(new FoodCategoryItem(getString(R.string.add_custom_food_menu), null, false));
-
-                        foodCategoryAdapter.setItems(itemsList);
-                        GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(), columnCount);
-                        binding.categoryGridview.setLayoutManager(gridLayoutManager);
                         binding.categoryGridview.setAdapter(foodCategoryAdapter);
                     }
                 });

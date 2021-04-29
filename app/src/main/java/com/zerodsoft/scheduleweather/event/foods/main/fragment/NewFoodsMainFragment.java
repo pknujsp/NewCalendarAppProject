@@ -1,6 +1,5 @@
 package com.zerodsoft.scheduleweather.event.foods.main.fragment;
 
-import android.content.ContentValues;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.os.Bundle;
@@ -24,7 +23,6 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
 import com.zerodsoft.scheduleweather.databinding.FragmentNewFoodsMainBinding;
-import com.zerodsoft.scheduleweather.event.foods.activity.FoodsActivity;
 import com.zerodsoft.scheduleweather.event.foods.favorite.FavoritesMainFragment;
 import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteRestaurantViewModel;
 import com.zerodsoft.scheduleweather.event.foods.search.search.fragment.SearchRestaurantFragment;
@@ -45,7 +43,6 @@ public class NewFoodsMainFragment extends Fragment implements INetwork, BottomNa
     public static final String TAG = "NewFoodsMainFragment";
     private FragmentNewFoodsMainBinding binding;
 
-    private FoodCriteriaLocationInfoViewModel foodCriteriaLocationInfoViewModel;
     private FavoriteRestaurantViewModel favoriteRestaurantViewModel;
     private NetworkStatus networkStatus;
     private Fragment currentShowingFragment;
@@ -64,24 +61,22 @@ public class NewFoodsMainFragment extends Fragment implements INetwork, BottomNa
     }
 
     @Override
+    public void onHiddenChanged(boolean hidden)
+    {
+        super.onHiddenChanged(hidden);
+        if (hidden)
+        {
+            removeOnBackPressedCallback();
+        } else
+        {
+            addOnBackPressedCallback();
+        }
+    }
+
+    @Override
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState)
-    {
-        binding = FragmentNewFoodsMainBinding.inflate(inflater);
-        return binding.getRoot();
-    }
-
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
-    {
-        super.onViewCreated(view, savedInstanceState);
-
         networkStatus = new NetworkStatus(getContext(), new ConnectivityManager.NetworkCallback()
         {
             @Override
@@ -104,6 +99,20 @@ public class NewFoodsMainFragment extends Fragment implements INetwork, BottomNa
                 });
             }
         });
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState)
+    {
+        binding = FragmentNewFoodsMainBinding.inflate(inflater);
+        return binding.getRoot();
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
+    {
+        super.onViewCreated(view, savedInstanceState);
 
         binding.bottomNavigation.setOnNavigationItemSelectedListener(this::onNavigationItemSelected);
         binding.bottomNavigation.setOnNavigationItemReselectedListener(new BottomNavigationView.OnNavigationItemReselectedListener()
@@ -129,49 +138,7 @@ public class NewFoodsMainFragment extends Fragment implements INetwork, BottomNa
             }
         });
 
-        foodCriteriaLocationInfoViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationInfoViewModel.class);
-        //기준 위치 정보가 저장되어있는지 확인
-        foodCriteriaLocationInfoViewModel.selectByEventId(CALENDAR_ID
-                , EVENT_ID, new CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO>()
-                {
-                    @Override
-                    public void onReceiveResult(@NonNull FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO) throws RemoteException
-                    {
-                        requireActivity().runOnUiThread(new Runnable()
-                        {
-                            @Override
-                            public void run()
-                            {
-                                if (foodCriteriaLocationInfoDTO == null)
-                                {
-                                    //기준 정보가 지정되어 있지 않으면, 지정한 장소/주소를 기준으로 하도록 설정해준다
-                                    foodCriteriaLocationInfoViewModel.insertByEventId(CALENDAR_ID
-                                            , EVENT_ID
-                                            , FoodCriteriaLocationInfoDTO.TYPE_SELECTED_LOCATION, null, new CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO>()
-                                            {
-                                                @Override
-                                                public void onReceiveResult(@NonNull FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO) throws RemoteException
-                                                {
-                                                    requireActivity().runOnUiThread(new Runnable()
-                                                    {
-                                                        @Override
-                                                        public void run()
-                                                        {
-                                                            setInitFragments();
-                                                        }
-                                                    });
-
-                                                }
-                                            });
-                                } else
-                                {
-                                    setInitFragments();
-                                }
-                            }
-                        });
-                    }
-                });
-
+        setInitFragments();
     }
 
     private void setInitFragments()
@@ -181,24 +148,24 @@ public class NewFoodsMainFragment extends Fragment implements INetwork, BottomNa
         fragmentBundle.putLong(CalendarContract.Instances._ID, INSTANCE_ID);
         fragmentBundle.putLong(CalendarContract.Instances.EVENT_ID, EVENT_ID);
 
-        FoodsMainFragment foodsMainFragment = new FoodsMainFragment(this, bottomSheetController);
-        foodsMainFragment.setArguments(fragmentBundle);
+        FoodsHomeFragment foodsHomeFragment = new FoodsHomeFragment(this, bottomSheetController);
+        foodsHomeFragment.setArguments(fragmentBundle);
 
         SearchRestaurantFragment searchRestaurantFragment = new SearchRestaurantFragment(bottomSheetController);
         FoodsSettingsFragment foodsSettingsFragment = new FoodsSettingsFragment(bottomSheetController);
         FavoritesMainFragment favoritesMainFragment = new FavoritesMainFragment(bottomSheetController);
 
         getChildFragmentManager().beginTransaction()
-                .add(binding.fragmentContainer.getId(), foodsMainFragment, FoodsMainFragment.TAG)
+                .add(binding.fragmentContainer.getId(), foodsHomeFragment, FoodsHomeFragment.TAG)
                 .add(binding.fragmentContainer.getId(), searchRestaurantFragment, SearchRestaurantFragment.TAG)
                 .add(binding.fragmentContainer.getId(), foodsSettingsFragment, FoodsSettingsFragment.TAG)
                 .add(binding.fragmentContainer.getId(), favoritesMainFragment, FavoritesMainFragment.TAG)
                 .hide(foodsSettingsFragment)
                 .hide(searchRestaurantFragment)
                 .hide(favoritesMainFragment)
-                .commit();
+                .commitNow();
 
-        currentShowingFragment = foodsMainFragment;
+        currentShowingFragment = foodsHomeFragment;
     }
 
     @Override
@@ -226,7 +193,7 @@ public class NewFoodsMainFragment extends Fragment implements INetwork, BottomNa
         {
             case R.id.food_main:
             {
-                newFragment = fragmentManager.findFragmentByTag(FoodsMainFragment.TAG);
+                newFragment = fragmentManager.findFragmentByTag(FoodsHomeFragment.TAG);
                 break;
             }
 
@@ -264,9 +231,9 @@ public class NewFoodsMainFragment extends Fragment implements INetwork, BottomNa
         FragmentManager fragmentManager = getChildFragmentManager();
         Fragment fragment = fragmentManager.getPrimaryNavigationFragment();
 
-        if (fragment instanceof FoodsMainFragment)
+        if (fragment instanceof FoodsHomeFragment)
         {
-            ((FoodsMainFragment) fragment).addOnBackPressedCallback();
+            ((FoodsHomeFragment) fragment).addOnBackPressedCallback();
         } else if (fragment instanceof FavoritesMainFragment)
         {
             ((FavoritesMainFragment) fragment).addOnBackPressedCallback();
@@ -285,9 +252,9 @@ public class NewFoodsMainFragment extends Fragment implements INetwork, BottomNa
         FragmentManager fragmentManager = getChildFragmentManager();
         Fragment fragment = fragmentManager.getPrimaryNavigationFragment();
 
-        if (fragment instanceof FoodsMainFragment)
+        if (fragment instanceof FoodsHomeFragment)
         {
-            ((FoodsMainFragment) fragment).removeOnBackPressedCallback();
+            ((FoodsHomeFragment) fragment).removeOnBackPressedCallback();
         } else if (fragment instanceof FavoritesMainFragment)
         {
             ((FavoritesMainFragment) fragment).removeOnBackPressedCallback();

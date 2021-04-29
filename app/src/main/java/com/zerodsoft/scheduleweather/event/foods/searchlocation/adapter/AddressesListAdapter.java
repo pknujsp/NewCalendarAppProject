@@ -61,7 +61,7 @@ public class AddressesListAdapter extends PagedListAdapter<AddressResponseDocume
                 @Override
                 public void onClick(View view)
                 {
-                    onClickedLocationItem.onClickedLocationItem(getItem(getAdapterPosition()));
+                    onClickedLocationItem.onClickedLocationItem(getItem(getBindingAdapterPosition()));
                 }
             });
         }

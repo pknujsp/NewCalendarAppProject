@@ -51,6 +51,8 @@ public class SearchRestaurantFragment extends Fragment implements OnClickedListI
             {
                 if (fragmentManager.findFragmentByTag(FoodRestaurantSearchHistoryFragment.TAG).isVisible())
                 {
+                    getParentFragment().getParentFragmentManager().popBackStack();
+
                     bottomSheetController.setStateOfBottomSheet(NewFoodsMainFragment.TAG, BottomSheetBehavior.STATE_COLLAPSED);
                 } else if (fragmentManager.findFragmentByTag(FoodRestaurantSearchResultFragment.TAG) != null)
                 {
@@ -161,11 +163,9 @@ public class SearchRestaurantFragment extends Fragment implements OnClickedListI
     {
         super.onHiddenChanged(hidden);
 
-
         if (hidden)
         {
             removeOnBackPressedCallback();
-
         } else
         {
             addOnBackPressedCallback();
