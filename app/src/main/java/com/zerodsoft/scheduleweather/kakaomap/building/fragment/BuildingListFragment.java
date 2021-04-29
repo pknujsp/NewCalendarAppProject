@@ -86,6 +86,7 @@ public class BuildingListFragment extends Fragment implements OnClickedListItem<
         @Override
         public void handleOnBackPressed()
         {
+            getParentFragmentManager().popBackStack();
             buildingFragmentController.closeBuildingFragments(TAG);
         }
     };
@@ -386,9 +387,9 @@ public class BuildingListFragment extends Fragment implements OnClickedListItem<
         bundle.putParcelable("building", e);
         buildingFragment.setArguments(bundle);
 
-        getParentFragmentManager().beginTransaction().hide(this).add(R.id.building_fragment_container, buildingFragment, BuildingFragment.TAG).commitNow();
-        buildingFragment.addOnBackPressedCallback();
-
+        getParentFragmentManager().beginTransaction().hide(this)
+                .add(R.id.building_fragment_container, buildingFragment, BuildingFragment.TAG)
+                .addToBackStack(BuildingFragment.TAG).commit();
         buildingFragmentController.setStateBuildingBottomSheet(BottomSheetBehavior.STATE_EXPANDED);
     }
 

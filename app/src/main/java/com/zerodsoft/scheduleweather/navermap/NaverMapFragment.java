@@ -511,7 +511,8 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
                 .add(binding.naverMapHeaderBar.headerFragmentContainer.getId(), mapHeaderSearchFragment, MapHeaderSearchFragment.TAG)
                 .add(binding.locationSearchBottomSheet.searchFragmentContainer.getId(), locationSearchFragment, LocationSearchFragment.TAG)
                 .hide(mapHeaderSearchFragment)
-                .commitNow();
+                .hide(locationSearchFragment)
+                .commit();
     }
 
     private void setBuildingBottomSheet()
@@ -552,10 +553,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
                         CameraUpdate cameraUpdate = CameraUpdate.scrollBy(movePoint);
                         naverMap.moveCamera(cameraUpdate);
 
-                        if (!restoreOnBackPressedInLocationSearch())
-                        {
-                            addOnBackPressedCallback();
-                        }
                         break;
                     }
                 }
@@ -1326,8 +1323,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
         {
             buildingBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
 
-            fragmentTransaction.remove(buildingListFragment)
-                    .commitNow();
             if (buildingRangeCircleOverlay != null)
             {
                 buildingRangeCircleOverlay.setMap(null);
@@ -1338,8 +1333,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
             setBuildingBottomSheetHeight(BuildingListFragment.TAG);
 
             BuildingFragment buildingFragment = (BuildingFragment) fragmentManager.findFragmentByTag(BuildingFragment.TAG);
-            fragmentTransaction.remove(buildingFragment).show(buildingListFragment).commitNow();
-
             buildingBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
         }
     }
@@ -1485,17 +1478,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
         }
     }
 
-    public boolean restoreOnBackPressedInLocationSearch()
-    {
-        FragmentManager fragmentManager = getChildFragmentManager();
-        LocationSearchResultFragment locationSearchResultFragment = (LocationSearchResultFragment) fragmentManager.findFragmentByTag(LocationSearchResultFragment.TAG);
-        if (locationSearchResultFragment != null)
-        {
-            locationSearchResultFragment.addOnBackPressedCallback();
-            return true;
-        }
-        return false;
-    }
 
     public void onCalledBottomSheet(int newState, BottomSheetBehavior currentBottomSheetBehavior)
     {

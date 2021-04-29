@@ -167,10 +167,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements BottomS
                         break;
                     case BottomSheetBehavior.STATE_COLLAPSED:
                         ((EventFragment) getChildFragmentManager().findFragmentByTag(EventFragment.TAG)).removeOnBackPressedCallback();
-                        if (!restoreOnBackPressedInLocationSearch())
-                        {
-                            addOnBackPressedCallback();
-                        }
+                        addOnBackPressedCallback();
                         break;
                 }
             }
@@ -195,10 +192,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements BottomS
                         break;
                     case BottomSheetBehavior.STATE_COLLAPSED:
                         ((WeatherItemFragment) getChildFragmentManager().findFragmentByTag(WeatherItemFragment.TAG)).removeOnBackPressedCallback();
-                        if (!restoreOnBackPressedInLocationSearch())
-                        {
-                            addOnBackPressedCallback();
-                        }
+                        addOnBackPressedCallback();
                         break;
                 }
             }
@@ -223,7 +217,10 @@ public class NewInstanceMainFragment extends NaverMapFragment implements BottomS
                         break;
                     case BottomSheetBehavior.STATE_COLLAPSED:
                         ((NewFoodsMainFragment) getChildFragmentManager().findFragmentByTag(NewFoodsMainFragment.TAG)).removeOnBackPressedCallback();
-                        if (!restoreOnBackPressedInLocationSearch())
+                        if (getChildFragmentManager().getBackStackEntryCount() > 0)
+                        {
+
+                        } else
                         {
                             addOnBackPressedCallback();
                         }

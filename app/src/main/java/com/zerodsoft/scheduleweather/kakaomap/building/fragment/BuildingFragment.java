@@ -76,6 +76,7 @@ public class BuildingFragment extends Fragment implements OnBackPressedCallbackC
         @Override
         public void handleOnBackPressed()
         {
+            getParentFragmentManager().popBackStack();
             buildingFragmentController.closeBuildingFragments(TAG);
         }
     };
