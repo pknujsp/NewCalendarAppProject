@@ -77,6 +77,9 @@ public class WeatherItemFragment extends Fragment implements OnBackPressedCallba
     private Long instanceId;
     private Long begin;
 
+    private final OnBackPressedCallbackController mainFragmentOnBackPressedCallbackController;
+
+
     private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
     {
         @Override
@@ -94,9 +97,11 @@ public class WeatherItemFragment extends Fragment implements OnBackPressedCallba
         if (hidden)
         {
             removeOnBackPressedCallback();
+            mainFragmentOnBackPressedCallbackController.addOnBackPressedCallback();
         } else
         {
             addOnBackPressedCallback();
+            mainFragmentOnBackPressedCallbackController.removeOnBackPressedCallback();
         }
     }
 
@@ -173,9 +178,10 @@ public class WeatherItemFragment extends Fragment implements OnBackPressedCallba
         }
     };
 
-    public WeatherItemFragment(BottomSheetController bottomSheetController)
+    public WeatherItemFragment(BottomSheetController bottomSheetController, OnBackPressedCallbackController onBackPressedCallbackController)
     {
         this.bottomSheetController = bottomSheetController;
+        this.mainFragmentOnBackPressedCallbackController = onBackPressedCallbackController;
     }
 
     @Override

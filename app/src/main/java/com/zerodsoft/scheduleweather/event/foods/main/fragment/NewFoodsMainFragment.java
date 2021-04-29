@@ -52,9 +52,13 @@ public class NewFoodsMainFragment extends Fragment implements INetwork, BottomNa
     private final long EVENT_ID;
     private final BottomSheetController bottomSheetController;
 
-    public NewFoodsMainFragment(BottomSheetController bottomSheetController, int CALENDAR_ID, long INSTANCE_ID, long EVENT_ID)
+    private final OnBackPressedCallbackController mainFragmentOnBackPressedCallbackController;
+
+    public NewFoodsMainFragment(BottomSheetController bottomSheetController, OnBackPressedCallbackController onBackPressedCallbackController
+            , int CALENDAR_ID, long INSTANCE_ID, long EVENT_ID)
     {
         this.bottomSheetController = bottomSheetController;
+        this.mainFragmentOnBackPressedCallbackController = onBackPressedCallbackController;
         this.CALENDAR_ID = CALENDAR_ID;
         this.INSTANCE_ID = INSTANCE_ID;
         this.EVENT_ID = EVENT_ID;
@@ -67,9 +71,11 @@ public class NewFoodsMainFragment extends Fragment implements INetwork, BottomNa
         if (hidden)
         {
             removeOnBackPressedCallback();
+            mainFragmentOnBackPressedCallbackController.addOnBackPressedCallback();
         } else
         {
             addOnBackPressedCallback();
+            mainFragmentOnBackPressedCallbackController.removeOnBackPressedCallback();
         }
     }
 

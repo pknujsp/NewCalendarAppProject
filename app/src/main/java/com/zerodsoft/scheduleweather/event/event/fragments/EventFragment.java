@@ -84,6 +84,8 @@ public class EventFragment extends Fragment implements OnBackPressedCallbackCont
     private int resultCode = Activity.RESULT_CANCELED;
     private NetworkStatus networkStatus;
 
+    private final OnBackPressedCallbackController mainFragmentOnBackPressedCallbackController;
+
     private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
     {
         @Override
@@ -106,15 +108,19 @@ public class EventFragment extends Fragment implements OnBackPressedCallbackCont
         if (hidden)
         {
             removeOnBackPressedCallback();
+            mainFragmentOnBackPressedCallbackController.addOnBackPressedCallback();
         } else
         {
             addOnBackPressedCallback();
+            mainFragmentOnBackPressedCallbackController.removeOnBackPressedCallback();
         }
     }
 
-    public EventFragment(BottomSheetController bottomSheetController, int CALENDAR_ID, long EVENT_ID, long INSTANCE_ID, long ORIGINAL_BEGIN, long ORIGINAL_END)
+    public EventFragment(BottomSheetController bottomSheetController, OnBackPressedCallbackController onBackPressedCallbackController
+            , int CALENDAR_ID, long EVENT_ID, long INSTANCE_ID, long ORIGINAL_BEGIN, long ORIGINAL_END)
     {
         this.bottomSheetController = bottomSheetController;
+        this.mainFragmentOnBackPressedCallbackController = onBackPressedCallbackController;
         this.CALENDAR_ID = CALENDAR_ID;
         this.EVENT_ID = EVENT_ID;
         this.INSTANCE_ID = INSTANCE_ID;

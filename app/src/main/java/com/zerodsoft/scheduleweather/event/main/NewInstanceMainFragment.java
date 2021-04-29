@@ -163,12 +163,10 @@ public class NewInstanceMainFragment extends NaverMapFragment implements BottomS
                 switch (newState)
                 {
                     case BottomSheetBehavior.STATE_EXPANDED:
-                        removeOnBackPressedCallback();
                         EventFragment eventFragment = (EventFragment) getChildFragmentManager().findFragmentByTag(EventFragment.TAG);
                         getChildFragmentManager().beginTransaction().show(eventFragment).addToBackStack(EventFragment.TAG).commit();
                         break;
                     case BottomSheetBehavior.STATE_COLLAPSED:
-                        addOnBackPressedCallback();
                         break;
                 }
             }
@@ -188,13 +186,10 @@ public class NewInstanceMainFragment extends NaverMapFragment implements BottomS
                 switch (newState)
                 {
                     case BottomSheetBehavior.STATE_EXPANDED:
-                        removeOnBackPressedCallback();
                         WeatherItemFragment weatherItemFragment = (WeatherItemFragment) getChildFragmentManager().findFragmentByTag(WeatherItemFragment.TAG);
                         getChildFragmentManager().beginTransaction().show(weatherItemFragment).addToBackStack(WeatherItemFragment.TAG).commit();
                         break;
                     case BottomSheetBehavior.STATE_COLLAPSED:
-                        addOnBackPressedCallback();
-
                         break;
                 }
             }
@@ -214,12 +209,10 @@ public class NewInstanceMainFragment extends NaverMapFragment implements BottomS
                 switch (newState)
                 {
                     case BottomSheetBehavior.STATE_EXPANDED:
-                        removeOnBackPressedCallback();
                         NewFoodsMainFragment newFoodsMainFragment = (NewFoodsMainFragment) getChildFragmentManager().findFragmentByTag(NewFoodsMainFragment.TAG);
                         getChildFragmentManager().beginTransaction().show(newFoodsMainFragment).addToBackStack(NewFoodsMainFragment.TAG).commit();
                         break;
                     case BottomSheetBehavior.STATE_COLLAPSED:
-                        addOnBackPressedCallback();
                         break;
                 }
             }
@@ -552,14 +545,14 @@ public class NewInstanceMainFragment extends NaverMapFragment implements BottomS
 
     private void addEventFragmentIntoBottomSheet()
     {
-        EventFragment eventFragment = new EventFragment(this, CALENDAR_ID, EVENT_ID, INSTANCE_ID, ORIGINAL_BEGIN, ORIGINAL_END);
+        EventFragment eventFragment = new EventFragment(this, this, CALENDAR_ID, EVENT_ID, INSTANCE_ID, ORIGINAL_BEGIN, ORIGINAL_END);
         getChildFragmentManager().beginTransaction()
                 .add(instanceInfoBottomSheet.getChildAt(0).getId(), eventFragment, EventFragment.TAG).hide(eventFragment).commitNow();
     }
 
     private void addWeatherFragmentIntoBottomSheet()
     {
-        WeatherItemFragment weatherFragment = new WeatherItemFragment(this);
+        WeatherItemFragment weatherFragment = new WeatherItemFragment(this, this);
         Bundle bundle = new Bundle();
         bundle.putInt(CalendarContract.Instances.CALENDAR_ID, CALENDAR_ID);
         bundle.putLong(CalendarContract.Instances.EVENT_ID, EVENT_ID);
@@ -573,7 +566,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements BottomS
 
     private void addRestaurantFragmentIntoBottomSheet()
     {
-        NewFoodsMainFragment newFoodsMainFragment = new NewFoodsMainFragment(this, CALENDAR_ID, INSTANCE_ID, EVENT_ID);
+        NewFoodsMainFragment newFoodsMainFragment = new NewFoodsMainFragment(this, this, CALENDAR_ID, INSTANCE_ID, EVENT_ID);
         getChildFragmentManager().beginTransaction()
                 .add(restaurantsBottomSheet.getChildAt(0).getId(), newFoodsMainFragment, NewFoodsMainFragment.TAG).hide(newFoodsMainFragment).commitNow();
     }

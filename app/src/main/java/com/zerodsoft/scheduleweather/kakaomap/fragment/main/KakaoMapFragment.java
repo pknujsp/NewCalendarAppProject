@@ -43,6 +43,7 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
+import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
 import com.zerodsoft.scheduleweather.etc.FragmentStateCallback;
 import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.kakaomap.bottomsheet.adapter.PlaceItemInMapViewAdapter;
@@ -94,7 +95,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
         INetwork, OnClickedPlacesListListener, PlacesItemBottomSheetButtonOnClickListener,
         PlacesListBottomSheetController, PoiItemOnClickListener<MapPOIItem>, OnClickedBottomSheetListener,
         MapHeaderSearchFragment.LocationSearchListener, SearchFragmentController, BuildingLocationSelectorController,
-        BuildingFragmentController, BuildingListFragment.OnSearchRadiusChangeListener
+        BuildingFragmentController, BuildingListFragment.OnSearchRadiusChangeListener, OnBackPressedCallbackController
 {
     public static final int REQUEST_CODE_LOCATION = 10000;
 
@@ -432,7 +433,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
 
 
         MapHeaderSearchFragment mapHeaderSearchFragment = new MapHeaderSearchFragment(KakaoMapFragment.this);
-        LocationSearchFragment locationSearchFragment = new LocationSearchFragment(KakaoMapFragment.this,
+        LocationSearchFragment locationSearchFragment = new LocationSearchFragment(KakaoMapFragment.this, KakaoMapFragment.this,
                 new FragmentStateCallback()
                 {
                     @Override
@@ -1311,7 +1312,7 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
                     String centerLatitude = String.valueOf(mapPoint.getMapPointGeoCoord().latitude);
                     String centerLongitude = String.valueOf(mapPoint.getMapPointGeoCoord().longitude);
 
-                    BuildingListFragment buildingListFragment = new BuildingListFragment(KakaoMapFragment.this);
+                    BuildingListFragment buildingListFragment = new BuildingListFragment(KakaoMapFragment.this, KakaoMapFragment.this);
                     Bundle bundle = new Bundle();
                     bundle.putString("centerLatitude", centerLatitude);
                     bundle.putString("centerLongitude", centerLongitude);
@@ -1437,6 +1438,18 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
 
         buildingBottomSheet.requestLayout();
         buildingBottomSheetBehavior.onLayoutChild(binding.mapRootLayout, buildingBottomSheet, ViewCompat.LAYOUT_DIRECTION_LTR);
+    }
+
+    @Override
+    public void addOnBackPressedCallback()
+    {
+
+    }
+
+    @Override
+    public void removeOnBackPressedCallback()
+    {
+
     }
 
     static class BuildingBottomSheetHeightViewHolder

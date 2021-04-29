@@ -75,10 +75,13 @@ public class BuildingListFragment extends Fragment implements OnClickedListItem<
     private BuildingListAdapter buildingListAdapter;
     private OnSearchRadiusChangeListener onSearchRadiusChangeListener;
 
-    public BuildingListFragment(Fragment fragment)
+    private final OnBackPressedCallbackController mainFragmentOnBackPressedCallbackController;
+
+    public BuildingListFragment(Fragment fragment, OnBackPressedCallbackController onBackPressedCallbackController)
     {
         buildingFragmentController = (BuildingFragmentController) fragment;
         onSearchRadiusChangeListener = (OnSearchRadiusChangeListener) fragment;
+        this.mainFragmentOnBackPressedCallbackController = onBackPressedCallbackController;
     }
 
     private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
@@ -143,6 +146,7 @@ public class BuildingListFragment extends Fragment implements OnClickedListItem<
     public void onAttach(@NonNull Context context)
     {
         super.onAttach(context);
+        mainFragmentOnBackPressedCallbackController.removeOnBackPressedCallback();
         addOnBackPressedCallback();
     }
 
@@ -151,6 +155,7 @@ public class BuildingListFragment extends Fragment implements OnClickedListItem<
     {
         super.onDestroy();
         removeOnBackPressedCallback();
+        mainFragmentOnBackPressedCallbackController.addOnBackPressedCallback();
     }
 
     @Override
@@ -159,10 +164,16 @@ public class BuildingListFragment extends Fragment implements OnClickedListItem<
         super.onHiddenChanged(hidden);
         if (hidden)
         {
-            removeOnBackPressedCallback();
+            if (getChildFragmentManager().findFragmentByTag(BuildingFragment.TAG) == null)
+            {
+                removeOnBackPressedCallback();
+            }
         } else
         {
-            addOnBackPressedCallback();
+            if (getChildFragmentManager().findFragmentByTag(BuildingFragment.TAG) == null)
+            {
+                addOnBackPressedCallback();
+            }
         }
     }
 

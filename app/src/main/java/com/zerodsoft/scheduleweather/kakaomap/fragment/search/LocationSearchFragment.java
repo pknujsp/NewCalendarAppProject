@@ -64,6 +64,8 @@ public class LocationSearchFragment extends Fragment implements OnSelectedMapCat
     private SearchBarController searchBarController;
     private SearchFragmentController searchFragmentController;
 
+    private final OnBackPressedCallbackController mainFragmentOnBackPressedCallbackController;
+
     public OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
     {
         @Override
@@ -81,15 +83,24 @@ public class LocationSearchFragment extends Fragment implements OnSelectedMapCat
         if (hidden)
         {
             removeOnBackPressedCallback();
+            if (getParentFragmentManager().findFragmentByTag(LocationSearchResultFragment.TAG) == null)
+            {
+                mainFragmentOnBackPressedCallbackController.addOnBackPressedCallback();
+            }
         } else
         {
             addOnBackPressedCallback();
+            if (getParentFragmentManager().findFragmentByTag(LocationSearchResultFragment.TAG) == null)
+            {
+                mainFragmentOnBackPressedCallbackController.removeOnBackPressedCallback();
+            }
         }
     }
 
-    public LocationSearchFragment(Fragment mapFragment, FragmentStateCallback fragmentStateCallback)
+    public LocationSearchFragment(Fragment mapFragment, OnBackPressedCallbackController onBackPressedCallbackController, FragmentStateCallback fragmentStateCallback)
     {
         this.iMapPoint = (IMapPoint) mapFragment;
+        this.mainFragmentOnBackPressedCallbackController = onBackPressedCallbackController;
         this.iMapData = (IMapData) mapFragment;
         this.placesListBottomSheetController = (PlacesListBottomSheetController) mapFragment;
         this.poiItemOnClickListener = (PoiItemOnClickListener) mapFragment;

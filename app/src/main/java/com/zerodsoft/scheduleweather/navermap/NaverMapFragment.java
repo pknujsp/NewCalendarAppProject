@@ -407,7 +407,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
                 /*
                 if (!AppPermission.grantedPermissions(
                         getContext(), Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION))
-
                 {
                     requestLocationUpdates.launch(PERMISSIONS);
                 } else
@@ -417,7 +416,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
                 }
 
                  */
-
 
                 if (naverMap.getLocationTrackingMode() == LocationTrackingMode.None)
                 {
@@ -499,7 +497,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
         });
 
         MapHeaderSearchFragment mapHeaderSearchFragment = new MapHeaderSearchFragment(NaverMapFragment.this);
-        LocationSearchFragment locationSearchFragment = new LocationSearchFragment(NaverMapFragment.this,
+        LocationSearchFragment locationSearchFragment = new LocationSearchFragment(NaverMapFragment.this, NaverMapFragment.this,
                 new FragmentStateCallback()
                 {
                     @Override
@@ -548,8 +546,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
                         PointF movePoint = new PointF(0f, -mapTranslationYByBuildingBottomSheet.floatValue());
                         CameraUpdate cameraUpdate = CameraUpdate.scrollBy(movePoint);
                         naverMap.moveCamera(cameraUpdate);
-
-                        removeOnBackPressedCallback();
                         break;
                     }
                     case BottomSheetBehavior.STATE_COLLAPSED:
@@ -660,7 +656,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
                 //expanded일때 offset == 1.0, collapsed일때 offset == 0.0
                 //offset에 따라서 버튼들이 이동하고, 지도의 좌표가 변경되어야 한다.
                 float translationValue = -placesListBottomSheet.getHeight() * slideOffset;
-
                 binding.naverMapButtonsLayout.getRoot().animate().translationY(translationValue);
             }
         });
@@ -1286,7 +1281,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
                     String centerLatitude = String.valueOf(latLng.latitude);
                     String centerLongitude = String.valueOf(latLng.longitude);
 
-                    BuildingListFragment buildingListFragment = new BuildingListFragment(NaverMapFragment.this);
+                    BuildingListFragment buildingListFragment = new BuildingListFragment(NaverMapFragment.this, NaverMapFragment.this);
                     Bundle bundle = new Bundle();
                     bundle.putString("centerLatitude", centerLatitude);
                     bundle.putString("centerLongitude", centerLongitude);
@@ -1319,8 +1314,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
     @Override
     public void closeBuildingFragments(String currentFragmentTag)
     {
-        FragmentManager fragmentManager = getChildFragmentManager();
-
         if (currentFragmentTag.equals(BuildingListFragment.TAG))
         {
             buildingBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
@@ -1333,7 +1326,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
         } else if (currentFragmentTag.equals(BuildingFragment.TAG))
         {
             setBuildingBottomSheetHeight(BuildingListFragment.TAG);
-
             buildingBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
         }
     }
@@ -1344,12 +1336,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
         if (buildingBottomSheetBehavior.getState() != BottomSheetBehavior.STATE_COLLAPSED)
         {
             setBuildingBottomSheetHeight(BuildingListFragment.TAG);
-
             FragmentManager fragmentManager = getChildFragmentManager();
-            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-
-            BuildingListFragment buildingListFragment = (BuildingListFragment) fragmentManager.findFragmentByTag(BuildingListFragment.TAG);
-            BuildingFragment buildingFragment = (BuildingFragment) fragmentManager.findFragmentByTag(BuildingFragment.TAG);
 
             buildingBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
 
@@ -1359,16 +1346,11 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
                 buildingRangeCircleOverlay = null;
             }
 
-            if (buildingFragment != null)
+            if (fragmentManager.findFragmentByTag(BuildingFragment.TAG) != null)
             {
-                fragmentTransaction.remove(buildingListFragment)
-                        .remove(buildingFragment)
-                        .commit();
-            } else
-            {
-                fragmentTransaction.remove(buildingListFragment)
-                        .commit();
+                fragmentManager.popBackStack();
             }
+            fragmentManager.popBackStack();
         }
     }
 
@@ -1443,36 +1425,33 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
         locationOverlay.setPosition(latLng);
     }
 
-    public BottomSheetBehavior getBottomSheetBehaviorOfExpanded(BottomSheetBehavior currentBottomSheetBehavior)
+    public List<BottomSheetBehavior> getBottomSheetBehaviorOfExpanded(BottomSheetBehavior currentBottomSheetBehavior)
     {
+        List<BottomSheetBehavior> bottomSheetBehaviors = new ArrayList<>();
         for (BottomSheetBehavior bottomSheetBehavior : bottomSheetBehaviorList)
         {
             if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED)
             {
                 if (!bottomSheetBehavior.equals(currentBottomSheetBehavior))
                 {
-                    return bottomSheetBehavior;
+                    bottomSheetBehaviors.add(bottomSheetBehavior);
                 }
             }
         }
 
-        return null;
+        return bottomSheetBehaviors;
     }
 
     public void collapseBottomSheet(BottomSheetBehavior currentBottomSheetBehavior)
     {
-        BottomSheetBehavior bottomSheetBehavior = getBottomSheetBehaviorOfExpanded(currentBottomSheetBehavior);
-        if (bottomSheetBehavior != null)
+        List<BottomSheetBehavior> bottomSheetBehaviors = getBottomSheetBehaviorOfExpanded(currentBottomSheetBehavior);
+        for (BottomSheetBehavior bottomSheetBehavior : bottomSheetBehaviors)
         {
-            if (!currentBottomSheetBehavior.equals(bottomSheetBehavior))
+            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+
+            if (bottomSheetBehavior.equals(buildingBottomSheetBehavior))
             {
-                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-
-                if (bottomSheetBehavior.equals(buildingBottomSheetBehavior))
-                {
-                    closeBuildingFragments();
-                }
-
+                closeBuildingFragments();
             }
         }
     }
