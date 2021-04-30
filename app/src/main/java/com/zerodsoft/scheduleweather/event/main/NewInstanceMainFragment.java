@@ -43,6 +43,8 @@ import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.event.fragments.EventFragment;
 import com.zerodsoft.scheduleweather.event.foods.main.fragment.NewFoodsMainFragment;
 import com.zerodsoft.scheduleweather.event.weather.fragment.WeatherItemFragment;
+import com.zerodsoft.scheduleweather.kakaomap.building.fragment.BuildingListFragment;
+import com.zerodsoft.scheduleweather.kakaomap.fragment.search.LocationSearchFragment;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.navermap.NaverMapFragment;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
@@ -52,7 +54,7 @@ import org.xmlpull.v1.XmlPullParser;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NewInstanceMainFragment extends NaverMapFragment implements BottomSheetController
+public class NewInstanceMainFragment extends NaverMapFragment
 {
     public static final String TAG = "NewInstanceMainFragment";
 
@@ -248,6 +250,10 @@ public class NewInstanceMainFragment extends NaverMapFragment implements BottomS
         bottomSheetBehaviorList.add(instanceInfoBottomSheetBehavior);
         bottomSheetBehaviorList.add(weatherBottomSheetBehavior);
         bottomSheetBehaviorList.add(restaurantsBottomSheetBehavior);
+
+        bottomSheetBehaviorMap.put(EventFragment.TAG, instanceInfoBottomSheetBehavior);
+        bottomSheetBehaviorMap.put(WeatherItemFragment.TAG, weatherBottomSheetBehavior);
+        bottomSheetBehaviorMap.put(NewFoodsMainFragment.TAG, restaurantsBottomSheetBehavior);
     }
 
 
@@ -569,22 +575,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements BottomS
         NewFoodsMainFragment newFoodsMainFragment = new NewFoodsMainFragment(this, this, CALENDAR_ID, INSTANCE_ID, EVENT_ID);
         getChildFragmentManager().beginTransaction()
                 .add(restaurantsBottomSheet.getChildAt(0).getId(), newFoodsMainFragment, NewFoodsMainFragment.TAG).hide(newFoodsMainFragment).commitNow();
-    }
-
-
-    @Override
-    public void setStateOfBottomSheet(String fragmentTag, int state)
-    {
-        if (fragmentTag.equals(EventFragment.TAG))
-        {
-            instanceInfoBottomSheetBehavior.setState(state);
-        } else if (fragmentTag.equals(WeatherItemFragment.TAG))
-        {
-            weatherBottomSheetBehavior.setState(state);
-        } else if (fragmentTag.equals(NewFoodsMainFragment.TAG))
-        {
-            restaurantsBottomSheetBehavior.setState(state);
-        }
     }
 
 }

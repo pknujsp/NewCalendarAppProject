@@ -53,6 +53,8 @@ public class WeatherItemFragment extends Fragment implements OnBackPressedCallba
 {
     public static final String TAG = "WeatherItemFragment";
     private final BottomSheetController bottomSheetController;
+    private final OnBackPressedCallbackController mainFragmentOnBackPressedCallbackController;
+
     private FragmentWeatherItemBinding binding;
     private WeatherData weatherData;
     private LocationDTO locationDTO;
@@ -77,8 +79,6 @@ public class WeatherItemFragment extends Fragment implements OnBackPressedCallba
     private Long instanceId;
     private Long begin;
 
-    private final OnBackPressedCallbackController mainFragmentOnBackPressedCallbackController;
-
 
     private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
     {
@@ -86,7 +86,6 @@ public class WeatherItemFragment extends Fragment implements OnBackPressedCallba
         public void handleOnBackPressed()
         {
             getParentFragmentManager().popBackStack();
-            bottomSheetController.setStateOfBottomSheet(WeatherItemFragment.TAG, BottomSheetBehavior.STATE_COLLAPSED);
         }
     };
 
@@ -98,10 +97,12 @@ public class WeatherItemFragment extends Fragment implements OnBackPressedCallba
         {
             removeOnBackPressedCallback();
             mainFragmentOnBackPressedCallbackController.addOnBackPressedCallback();
+            bottomSheetController.setStateOfBottomSheet(WeatherItemFragment.TAG, BottomSheetBehavior.STATE_COLLAPSED);
         } else
         {
             addOnBackPressedCallback();
             mainFragmentOnBackPressedCallbackController.removeOnBackPressedCallback();
+            bottomSheetController.setStateOfBottomSheet(WeatherItemFragment.TAG, BottomSheetBehavior.STATE_EXPANDED);
         }
     }
 

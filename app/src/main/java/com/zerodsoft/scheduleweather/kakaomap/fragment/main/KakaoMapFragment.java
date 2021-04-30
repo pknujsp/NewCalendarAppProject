@@ -54,6 +54,7 @@ import com.zerodsoft.scheduleweather.kakaomap.fragment.search.LocationSearchFrag
 import com.zerodsoft.scheduleweather.kakaomap.fragment.searchheader.MapHeaderMainFragment;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.searchheader.MapHeaderSearchFragment;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.searchresult.LocationSearchResultFragment;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.BuildingFragmentController;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.BuildingLocationSelectorController;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.OnClickedBottomSheetListener;
@@ -72,7 +73,6 @@ import com.zerodsoft.scheduleweather.kakaomap.interfaces.INetwork;
 import com.zerodsoft.scheduleweather.kakaomap.model.CustomPoiItem;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalDocument;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.addressresponse.AddressResponseDocuments;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddressDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
@@ -95,7 +95,8 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
         INetwork, OnClickedPlacesListListener, PlacesItemBottomSheetButtonOnClickListener,
         PlacesListBottomSheetController, PoiItemOnClickListener<MapPOIItem>, OnClickedBottomSheetListener,
         MapHeaderSearchFragment.LocationSearchListener, SearchFragmentController, BuildingLocationSelectorController,
-        BuildingFragmentController, BuildingListFragment.OnSearchRadiusChangeListener, OnBackPressedCallbackController
+        BuildingFragmentController, BuildingListFragment.OnSearchRadiusChangeListener, OnBackPressedCallbackController,
+        BottomSheetController
 {
     public static final int REQUEST_CODE_LOCATION = 10000;
 
@@ -433,7 +434,8 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
 
 
         MapHeaderSearchFragment mapHeaderSearchFragment = new MapHeaderSearchFragment(KakaoMapFragment.this);
-        LocationSearchFragment locationSearchFragment = new LocationSearchFragment(KakaoMapFragment.this, KakaoMapFragment.this,
+        LocationSearchFragment locationSearchFragment = new LocationSearchFragment(KakaoMapFragment.this
+                , KakaoMapFragment.this, KakaoMapFragment.this,
                 new FragmentStateCallback()
                 {
                     @Override
@@ -1260,18 +1262,6 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     }
 
     @Override
-    public void setStateOfSearchBottomSheet(int state)
-    {
-        locationSearchBottomSheetBehavior.setState(state);
-    }
-
-    @Override
-    public int getStateOfSearchBottomSheet()
-    {
-        return locationSearchBottomSheetBehavior.getState();
-    }
-
-    @Override
     public void removeBuildingLocationSelector()
     {
         if (binding.mapViewLayout.findViewWithTag("BUILDING_SELECTOR") != null)
@@ -1450,6 +1440,18 @@ public class KakaoMapFragment extends Fragment implements IMapPoint, IMapData, M
     public void removeOnBackPressedCallback()
     {
 
+    }
+
+    @Override
+    public void setStateOfBottomSheet(String fragmentTag, int state)
+    {
+
+    }
+
+    @Override
+    public int getStateOfBottomSheet(String fragmentTag)
+    {
+        return 1;
     }
 
     static class BuildingBottomSheetHeightViewHolder

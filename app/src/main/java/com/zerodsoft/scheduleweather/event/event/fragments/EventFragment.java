@@ -92,7 +92,6 @@ public class EventFragment extends Fragment implements OnBackPressedCallbackCont
         public void handleOnBackPressed()
         {
             getParentFragmentManager().popBackStack();
-            bottomSheetController.setStateOfBottomSheet(EventFragment.TAG, BottomSheetBehavior.STATE_COLLAPSED);
         }
     };
 
@@ -109,10 +108,12 @@ public class EventFragment extends Fragment implements OnBackPressedCallbackCont
         {
             removeOnBackPressedCallback();
             mainFragmentOnBackPressedCallbackController.addOnBackPressedCallback();
+            bottomSheetController.setStateOfBottomSheet(TAG, BottomSheetBehavior.STATE_COLLAPSED);
         } else
         {
             addOnBackPressedCallback();
             mainFragmentOnBackPressedCallbackController.removeOnBackPressedCallback();
+            bottomSheetController.setStateOfBottomSheet(TAG, BottomSheetBehavior.STATE_EXPANDED);
         }
     }
 

@@ -25,7 +25,6 @@ import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.CompositePageTransformer;
 import androidx.viewpager2.widget.MarginPageTransformer;
@@ -68,7 +67,6 @@ import com.zerodsoft.scheduleweather.etc.FragmentStateCallback;
 import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.places.interfaces.OnClickedPlacesListListener;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PoiItemOnClickListener;
-import com.zerodsoft.scheduleweather.event.weather.fragment.WeatherItemFragment;
 import com.zerodsoft.scheduleweather.kakaomap.bottomsheet.adapter.PlaceItemInMapViewAdapter;
 import com.zerodsoft.scheduleweather.kakaomap.building.fragment.BuildingFragment;
 import com.zerodsoft.scheduleweather.kakaomap.building.fragment.BuildingListFragment;
@@ -76,6 +74,7 @@ import com.zerodsoft.scheduleweather.kakaomap.fragment.search.LocationSearchFrag
 import com.zerodsoft.scheduleweather.kakaomap.fragment.searchheader.MapHeaderMainFragment;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.searchheader.MapHeaderSearchFragment;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.searchresult.LocationSearchResultFragment;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.BuildingFragmentController;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.BuildingLocationSelectorController;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapData;
@@ -84,7 +83,6 @@ import com.zerodsoft.scheduleweather.kakaomap.interfaces.INetwork;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.OnClickedBottomSheetListener;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.PlacesItemBottomSheetButtonOnClickListener;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.PlacesListBottomSheetController;
-import com.zerodsoft.scheduleweather.kakaomap.interfaces.SearchBarController;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.SearchFragmentController;
 import com.zerodsoft.scheduleweather.kakaomap.place.PlaceInfoFragment;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.sgis.address.ReverseGeoCodingParameter;
@@ -101,6 +99,7 @@ import com.zerodsoft.scheduleweather.sgis.SgisAuth;
 import com.zerodsoft.scheduleweather.utility.NetworkStatus;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -109,7 +108,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
         MapHeaderSearchFragment.LocationSearchListener, SearchFragmentController, BuildingLocationSelectorController,
         BuildingFragmentController, BuildingListFragment.OnSearchRadiusChangeListener, NaverMap.OnMapClickListener,
         NaverMap.OnCameraIdleListener, CameraUpdate.FinishCallback, NaverMap.OnLocationChangeListener, OnBackPressedCallbackController,
-        FragmentManager.OnBackStackChangedListener
+        FragmentManager.OnBackStackChangedListener, BottomSheetController
 {
     public static final int REQUEST_CODE_LOCATION = 10000;
     public static final int BUILDING_RANGE_OVERLAY_TAG = 1500;
@@ -142,6 +141,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
     public NetworkStatus networkStatus;
 
+
     public LinearLayout placesListBottomSheet;
     public BottomSheetBehavior placeListBottomSheetBehavior;
 
@@ -160,6 +160,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
     public Double mapTranslationYByBuildingBottomSheet;
 
     public List<Marker> markerList = new ArrayList<>();
+    public Map<String, BottomSheetBehavior> bottomSheetBehaviorMap = new HashMap<>();
 
     private Integer markerWidth;
     private Integer markerHeight;
@@ -171,26 +172,20 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
         @Override
         public void handleOnBackPressed()
         {
-            if (getChildFragmentManager().getBackStackEntryCount() > 0)
-            {
-                getChildFragmentManager().popBackStack();
-            } else
-            {
-                requireActivity().finish();
-            }
+            requireActivity().finish();
         }
     };
 
     @Override
     public void addOnBackPressedCallback()
     {
-        requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
+        // requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
     }
 
     @Override
     public void removeOnBackPressedCallback()
     {
-        onBackPressedCallback.remove();
+        // onBackPressedCallback.remove();
     }
 
 
@@ -365,9 +360,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
                             .show(locationSearchFragment)
                             .addToBackStack(LocationSearchFragment.TAG)
                             .commit();
-
-                    locationSearchBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-                    removeOnBackPressedCallback();
                 }
             }
         });
@@ -466,6 +458,10 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
         bottomSheetBehaviorList.add(locationSearchBottomSheetBehavior);
         bottomSheetBehaviorList.add(placeListBottomSheetBehavior);
         bottomSheetBehaviorList.add(buildingBottomSheetBehavior);
+
+        bottomSheetBehaviorMap.put(LocationSearchFragment.TAG, locationSearchBottomSheetBehavior);
+        bottomSheetBehaviorMap.put(BuildingListFragment.TAG, buildingBottomSheetBehavior);
+        bottomSheetBehaviorMap.put(PlaceItemInMapViewAdapter.TAG, placeListBottomSheetBehavior);
     }
 
     @Override
@@ -497,7 +493,9 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
         });
 
         MapHeaderSearchFragment mapHeaderSearchFragment = new MapHeaderSearchFragment(NaverMapFragment.this);
-        LocationSearchFragment locationSearchFragment = new LocationSearchFragment(NaverMapFragment.this, NaverMapFragment.this,
+        LocationSearchFragment locationSearchFragment = new LocationSearchFragment(NaverMapFragment.this
+                , NaverMapFragment.this
+                , NaverMapFragment.this,
                 new FragmentStateCallback()
                 {
                     @Override
@@ -1186,10 +1184,10 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
         if (fragmentManager.findFragmentByTag(LocationSearchResultFragment.TAG) != null)
         {
-            fragmentManager.popBackStack();
+            fragmentManager.popBackStackImmediate(LocationSearchFragment.TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE);
             closeSearchFragments(LocationSearchResultFragment.TAG);
         }
-        fragmentManager.popBackStack();
+        fragmentManager.popBackStackImmediate(LocationSearchFragment.TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE);
         closeSearchFragments(LocationSearchFragment.TAG);
     }
 
@@ -1210,8 +1208,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
             }
 
             binding.naverMapHeaderBar.getRoot().setClickable(true);
-            addOnBackPressedCallback();
-
         } else if (currentFragmentTag.equals(LocationSearchResultFragment.TAG))
         {
             backToPreviousView();
@@ -1224,18 +1220,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
             }
 
         }
-    }
-
-    @Override
-    public void setStateOfSearchBottomSheet(int state)
-    {
-        locationSearchBottomSheetBehavior.setState(state);
-    }
-
-    @Override
-    public int getStateOfSearchBottomSheet()
-    {
-        return locationSearchBottomSheetBehavior.getState();
     }
 
     @Override
@@ -1293,7 +1277,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
                             .commit();
 
                     onCalledBottomSheet(BottomSheetBehavior.STATE_EXPANDED, buildingBottomSheetBehavior);
-                    buildingBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
                 }
 
             });
@@ -1472,6 +1455,18 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
     public void onBackStackChanged()
     {
 
+    }
+
+    @Override
+    public void setStateOfBottomSheet(String fragmentTag, int state)
+    {
+        bottomSheetBehaviorMap.get(fragmentTag).setState(state);
+    }
+
+    @Override
+    public int getStateOfBottomSheet(String fragmentTag)
+    {
+        return bottomSheetBehaviorMap.get(fragmentTag).getState();
     }
 
 

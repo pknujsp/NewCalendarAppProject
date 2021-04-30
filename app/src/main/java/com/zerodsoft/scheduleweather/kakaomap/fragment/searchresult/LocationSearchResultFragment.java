@@ -19,6 +19,9 @@ import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackCont
 import com.zerodsoft.scheduleweather.databinding.FragmentSearchResultListBinding;
 import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PoiItemOnClickListener;
+import com.zerodsoft.scheduleweather.kakaomap.bottomsheet.adapter.PlaceItemInMapViewAdapter;
+import com.zerodsoft.scheduleweather.kakaomap.fragment.search.LocationSearchFragment;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.OnClickedLocListItem;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.PlacesListBottomSheetController;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapData;
@@ -58,6 +61,7 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
     private PoiItemOnClickListener poiItemOnClickListener;
     private SearchBarController searchBarController;
     private SearchFragmentController searchFragmentController;
+    private BottomSheetController bottomSheetController;
 
     private OnExtraListDataListener<LocationType> placesOnExtraListDataListener;
     private OnExtraListDataListener<LocationType> addressesOnExtraListDataListener;
@@ -67,7 +71,7 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
         @Override
         public void handleOnBackPressed()
         {
-            boolean bottomSheetStateIsExpanded = searchFragmentController.getStateOfSearchBottomSheet() == BottomSheetBehavior.STATE_EXPANDED;
+            boolean bottomSheetStateIsExpanded = bottomSheetController.getStateOfBottomSheet(LocationSearchFragment.TAG) == BottomSheetBehavior.STATE_EXPANDED;
             if (bottomSheetStateIsExpanded)
             {
                 // list인 경우
@@ -77,8 +81,8 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
             {
                 // map인 경우
                 iMapData.backToPreviousView();
-                searchFragmentController.setStateOfSearchBottomSheet(BottomSheetBehavior.STATE_EXPANDED);
-                placesListBottomSheetController.setPlacesListBottomSheetState(BottomSheetBehavior.STATE_COLLAPSED);
+                bottomSheetController.setStateOfBottomSheet(LocationSearchFragment.TAG, BottomSheetBehavior.STATE_EXPANDED);
+                bottomSheetController.setStateOfBottomSheet(PlaceItemInMapViewAdapter.TAG, BottomSheetBehavior.STATE_COLLAPSED);
             }
         }
     };
@@ -106,6 +110,7 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
         this.poiItemOnClickListener = (PoiItemOnClickListener) fragment;
         this.searchFragmentController = (SearchFragmentController) fragment;
         this.searchBarController = searchBarController;
+        this.bottomSheetController = (BottomSheetController) fragment;
     }
 
 
@@ -238,7 +243,8 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
     {
         poiItemOnClickListener.onPOIItemSelectedByList(index);
         searchBarController.changeViewTypeImg(SearchBarController.MAP);
-        searchFragmentController.setStateOfSearchBottomSheet(BottomSheetBehavior.STATE_COLLAPSED);
+        bottomSheetController.setStateOfBottomSheet(LocationSearchFragment.TAG, BottomSheetBehavior.STATE_COLLAPSED);
+
     }
 
     @Override

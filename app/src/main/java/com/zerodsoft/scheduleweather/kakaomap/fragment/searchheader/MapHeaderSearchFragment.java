@@ -17,8 +17,10 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.interfaces.SearchHistoryDataController;
 import com.zerodsoft.scheduleweather.databinding.FragmentLocationSearchBarBinding;
+import com.zerodsoft.scheduleweather.kakaomap.bottomsheet.adapter.PlaceItemInMapViewAdapter;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.search.LocationSearchFragment;
 import com.zerodsoft.scheduleweather.kakaomap.fragment.searchresult.LocationSearchResultFragment;
+import com.zerodsoft.scheduleweather.kakaomap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.PlacesListBottomSheetController;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.SearchBarController;
@@ -34,7 +36,7 @@ public class MapHeaderSearchFragment extends Fragment implements SearchBarContro
     private final LocationSearchListener locationSearchListener;
     private final SearchFragmentController searchFragmentController;
     private final IMapData iMapData;
-    private final PlacesListBottomSheetController placesListBottomSheetController;
+    private final BottomSheetController bottomSheetController;
     private SearchHistoryDataController<SearchHistoryDTO> searchHistoryDataController;
 
     private Drawable mapDrawable;
@@ -44,7 +46,7 @@ public class MapHeaderSearchFragment extends Fragment implements SearchBarContro
     {
         this.locationSearchListener = (LocationSearchListener) fragment;
         this.searchFragmentController = (SearchFragmentController) fragment;
-        this.placesListBottomSheetController = (PlacesListBottomSheetController) fragment;
+        this.bottomSheetController = (BottomSheetController) fragment;
         this.iMapData = (IMapData) fragment;
     }
 
@@ -153,7 +155,8 @@ public class MapHeaderSearchFragment extends Fragment implements SearchBarContro
 
     public void changeFragment()
     {
-        boolean bottomSheetStateIsExpanded = searchFragmentController.getStateOfSearchBottomSheet() == BottomSheetBehavior.STATE_EXPANDED;
+        boolean bottomSheetStateIsExpanded = bottomSheetController.getStateOfBottomSheet(LocationSearchFragment.TAG)
+                == BottomSheetBehavior.STATE_EXPANDED ? true : false;
         changeViewTypeImg(bottomSheetStateIsExpanded ? SearchBarController.LIST : SearchBarController.MAP);
 
         if (bottomSheetStateIsExpanded)
@@ -161,14 +164,14 @@ public class MapHeaderSearchFragment extends Fragment implements SearchBarContro
             // to map
             // 버튼 이미지, 프래그먼트 숨김/보이기 설정
             iMapData.showAllPoiItems();
-            placesListBottomSheetController.setPlacesListBottomSheetState(BottomSheetBehavior.STATE_COLLAPSED);
-            searchFragmentController.setStateOfSearchBottomSheet(BottomSheetBehavior.STATE_COLLAPSED);
+            bottomSheetController.setStateOfBottomSheet(PlaceItemInMapViewAdapter.TAG, BottomSheetBehavior.STATE_COLLAPSED);
+            bottomSheetController.setStateOfBottomSheet(LocationSearchFragment.TAG, BottomSheetBehavior.STATE_COLLAPSED);
         } else
         {
             // to list
             iMapData.backToPreviousView();
-            placesListBottomSheetController.setPlacesListBottomSheetState(BottomSheetBehavior.STATE_COLLAPSED);
-            searchFragmentController.setStateOfSearchBottomSheet(BottomSheetBehavior.STATE_EXPANDED);
+            bottomSheetController.setStateOfBottomSheet(PlaceItemInMapViewAdapter.TAG, BottomSheetBehavior.STATE_COLLAPSED);
+            bottomSheetController.setStateOfBottomSheet(LocationSearchFragment.TAG, BottomSheetBehavior.STATE_EXPANDED);
         }
     }
 

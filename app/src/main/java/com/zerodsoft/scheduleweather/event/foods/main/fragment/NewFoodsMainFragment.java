@@ -20,6 +20,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
 import com.zerodsoft.scheduleweather.databinding.FragmentNewFoodsMainBinding;
@@ -72,10 +73,13 @@ public class NewFoodsMainFragment extends Fragment implements INetwork, BottomNa
         {
             removeOnBackPressedCallback();
             mainFragmentOnBackPressedCallbackController.addOnBackPressedCallback();
+            bottomSheetController.setStateOfBottomSheet(TAG, BottomSheetBehavior.STATE_COLLAPSED);
         } else
         {
             addOnBackPressedCallback();
             mainFragmentOnBackPressedCallbackController.removeOnBackPressedCallback();
+            bottomSheetController.setStateOfBottomSheet(TAG, BottomSheetBehavior.STATE_EXPANDED);
+
         }
     }
 

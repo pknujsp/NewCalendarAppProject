@@ -25,6 +25,7 @@ import java.util.List;
 
 public class PlaceItemInMapViewAdapter extends RecyclerView.Adapter<PlaceItemInMapViewAdapter.PlaceItemInMapViewHolder>
 {
+    public static final String TAG = "PlaceItemInMapViewAdapter";
     private List<KakaoLocalDocument> placeDocumentsList = new ArrayList<>();
     private PlaceDocuments placeDocuments;
     private AddressResponseDocuments addressDocuments;
