@@ -4,4 +4,5 @@
     <item name="instance_info_fragment_container" type="id" />
     <item name="weather_fragment_container" type="id" />
     <item name="restaurant_fragment_container" type="id" />
+    <item name="chip_scroll_view" type="id" />
 </resources>

@@ -30,6 +30,7 @@ public class FoodsHomeFragment extends Fragment implements OnBackPressedCallback
 {
     public static final String TAG = "FoodsHomeFragment";
     private final BottomSheetController bottomSheetController;
+    private final NewFoodsMainFragment.FoodMenuChipsViewController foodMenuChipsViewController;
     private FragmentFoodsMainBinding binding;
     private final INetwork iNetwork;
     private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
@@ -53,10 +54,11 @@ public class FoodsHomeFragment extends Fragment implements OnBackPressedCallback
         }
     };
 
-    public FoodsHomeFragment(INetwork iNetwork, BottomSheetController bottomSheetController)
+    public FoodsHomeFragment(INetwork iNetwork, BottomSheetController bottomSheetController, NewFoodsMainFragment.FoodMenuChipsViewController foodMenuChipsViewController)
     {
         this.iNetwork = iNetwork;
         this.bottomSheetController = bottomSheetController;
+        this.foodMenuChipsViewController = foodMenuChipsViewController;
     }
 
     @Override
@@ -86,7 +88,7 @@ public class FoodsHomeFragment extends Fragment implements OnBackPressedCallback
     {
         super.onViewCreated(view, savedInstanceState);
 
-        FoodsCategoryListFragment foodsCategoryListFragment = new FoodsCategoryListFragment(iNetwork);
+        FoodsCategoryListFragment foodsCategoryListFragment = new FoodsCategoryListFragment(iNetwork, foodMenuChipsViewController);
         foodsCategoryListFragment.setArguments(getArguments());
 
         getChildFragmentManager().beginTransaction().add(binding.foodsMainFragmentContainer.getId(), foodsCategoryListFragment, FoodsCategoryListFragment.TAG)

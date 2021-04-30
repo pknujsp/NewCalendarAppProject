@@ -154,7 +154,7 @@ public class FoodsActivity extends AppCompatActivity implements INetwork, Bottom
         fragmentBundle.putLong(CalendarContract.Instances._ID, INSTANCE_VALUES.getAsLong(CalendarContract.Instances._ID));
         fragmentBundle.putLong(CalendarContract.Instances.EVENT_ID, INSTANCE_VALUES.getAsLong(CalendarContract.Instances.EVENT_ID));
 
-        FoodsHomeFragment foodsHomeFragment = new FoodsHomeFragment(FoodsActivity.this::networkAvailable, null);
+        FoodsHomeFragment foodsHomeFragment = new FoodsHomeFragment(FoodsActivity.this::networkAvailable, null, null);
         foodsHomeFragment.setArguments(fragmentBundle);
 
         SearchRestaurantFragment searchRestaurantFragment = new SearchRestaurantFragment(null);

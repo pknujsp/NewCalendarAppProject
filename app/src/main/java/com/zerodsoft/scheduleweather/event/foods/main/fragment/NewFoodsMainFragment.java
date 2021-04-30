@@ -29,11 +29,9 @@ import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteRes
 import com.zerodsoft.scheduleweather.event.foods.search.search.fragment.SearchRestaurantFragment;
 import com.zerodsoft.scheduleweather.event.foods.settings.FoodsSettingsFragment;
 import com.zerodsoft.scheduleweather.event.foods.share.FavoriteRestaurantCloud;
-import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationInfoViewModel;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.INetwork;
 import com.zerodsoft.scheduleweather.room.dto.FavoriteRestaurantDTO;
-import com.zerodsoft.scheduleweather.room.dto.FoodCriteriaLocationInfoDTO;
 import com.zerodsoft.scheduleweather.utility.NetworkStatus;
 
 import java.util.List;
@@ -52,14 +50,17 @@ public class NewFoodsMainFragment extends Fragment implements INetwork, BottomNa
     private final long INSTANCE_ID;
     private final long EVENT_ID;
     private final BottomSheetController bottomSheetController;
+    private final FoodMenuChipsViewController foodMenuChipsViewController;
 
     private final OnBackPressedCallbackController mainFragmentOnBackPressedCallbackController;
 
     public NewFoodsMainFragment(BottomSheetController bottomSheetController, OnBackPressedCallbackController onBackPressedCallbackController
+            , FoodMenuChipsViewController foodMenuChipsViewController
             , int CALENDAR_ID, long INSTANCE_ID, long EVENT_ID)
     {
         this.bottomSheetController = bottomSheetController;
         this.mainFragmentOnBackPressedCallbackController = onBackPressedCallbackController;
+        this.foodMenuChipsViewController = foodMenuChipsViewController;
         this.CALENDAR_ID = CALENDAR_ID;
         this.INSTANCE_ID = INSTANCE_ID;
         this.EVENT_ID = EVENT_ID;
@@ -71,6 +72,7 @@ public class NewFoodsMainFragment extends Fragment implements INetwork, BottomNa
         super.onHiddenChanged(hidden);
         if (hidden)
         {
+            foodMenuChipsViewController.removeRestaurantListView();
             removeOnBackPressedCallback();
             mainFragmentOnBackPressedCallbackController.addOnBackPressedCallback();
             bottomSheetController.setStateOfBottomSheet(TAG, BottomSheetBehavior.STATE_COLLAPSED);
@@ -158,7 +160,7 @@ public class NewFoodsMainFragment extends Fragment implements INetwork, BottomNa
         fragmentBundle.putLong(CalendarContract.Instances._ID, INSTANCE_ID);
         fragmentBundle.putLong(CalendarContract.Instances.EVENT_ID, EVENT_ID);
 
-        FoodsHomeFragment foodsHomeFragment = new FoodsHomeFragment(this, bottomSheetController);
+        FoodsHomeFragment foodsHomeFragment = new FoodsHomeFragment(this, bottomSheetController, foodMenuChipsViewController);
         foodsHomeFragment.setArguments(fragmentBundle);
 
         SearchRestaurantFragment searchRestaurantFragment = new SearchRestaurantFragment(bottomSheetController);
@@ -275,5 +277,18 @@ public class NewFoodsMainFragment extends Fragment implements INetwork, BottomNa
         {
             ((FoodsSettingsFragment) fragment).removeOnBackPressedCallback();
         }
+    }
+
+    public interface FoodMenuChipsViewController
+    {
+        void createRestaurantListView(List<String> foodMenuList);
+
+        void removeRestaurantListView();
+
+        void createFoodMenuChips();
+
+        void setFoodMenuChips(List<String> foodMenuList);
+
+        void addFoodMenuListChip();
     }
 }

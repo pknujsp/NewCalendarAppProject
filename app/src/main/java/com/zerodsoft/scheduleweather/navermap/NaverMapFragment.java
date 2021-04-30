@@ -61,6 +61,7 @@ import com.naver.maps.map.overlay.Overlay;
 import com.naver.maps.map.util.FusedLocationSource;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
+import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
 import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
 import com.zerodsoft.scheduleweather.databinding.FragmentNaverMapBinding;
 import com.zerodsoft.scheduleweather.etc.FragmentStateCallback;
@@ -84,10 +85,14 @@ import com.zerodsoft.scheduleweather.kakaomap.interfaces.OnClickedBottomSheetLis
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.PlacesItemBottomSheetButtonOnClickListener;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.PlacesListBottomSheetController;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.SearchFragmentController;
+import com.zerodsoft.scheduleweather.kakaomap.model.CoordToAddressUtil;
 import com.zerodsoft.scheduleweather.kakaomap.place.PlaceInfoFragment;
+import com.zerodsoft.scheduleweather.kakaomap.util.LocalParameterUtil;
+import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.sgis.address.ReverseGeoCodingParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalDocument;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.addressresponse.AddressResponseDocuments;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddress;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddressDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.address.reversegeocoding.ReverseGeoCodingResponse;
@@ -108,7 +113,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
         MapHeaderSearchFragment.LocationSearchListener, SearchFragmentController, BuildingLocationSelectorController,
         BuildingFragmentController, BuildingListFragment.OnSearchRadiusChangeListener, NaverMap.OnMapClickListener,
         NaverMap.OnCameraIdleListener, CameraUpdate.FinishCallback, NaverMap.OnLocationChangeListener, OnBackPressedCallbackController,
-        FragmentManager.OnBackStackChangedListener, BottomSheetController
+        FragmentManager.OnBackStackChangedListener, BottomSheetController, NaverMap.OnMapLongClickListener
 {
     public static final int REQUEST_CODE_LOCATION = 10000;
     public static final int BUILDING_RANGE_OVERLAY_TAG = 1500;
@@ -164,6 +169,8 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
     private Integer markerWidth;
     private Integer markerHeight;
+
+    public Marker markerOfSelectedLocation;
 
     public List<BottomSheetBehavior> bottomSheetBehaviorList = new ArrayList<>();
 
@@ -707,6 +714,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
         naverMap.addOnLocationChangeListener(this::onLocationChange);
         naverMap.addOnCameraIdleListener(this);
         naverMap.setOnMapClickListener(this);
+        naverMap.setOnMapLongClickListener(this::onMapLongClick);
         naverMap.getUiSettings().setZoomControlEnabled(false);
 
         //바텀 시트의 상태에 따라서 카메라를 이동시킬 Y값
@@ -1469,6 +1477,75 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
         return bottomSheetBehaviorMap.get(fragmentTag).getState();
     }
 
+    @Override
+    public void onMapLongClick(@NonNull PointF pointF, @NonNull LatLng latLng)
+    {
+        showAddressOfSelectedLocation(latLng);
+    }
+
+    private void showAddressOfSelectedLocation(LatLng latLng)
+    {
+        //주소 표시
+        CameraUpdate cameraUpdate = CameraUpdate.scrollTo(latLng);
+        naverMap.moveCamera(cameraUpdate);
+
+        if (markerOfSelectedLocation == null)
+        {
+            markerOfSelectedLocation = new Marker();
+            markerOfSelectedLocation.setSubCaptionText(getString(R.string.message_click_marker_to_delete));
+            markerOfSelectedLocation.setSubCaptionColor(Color.BLUE);
+            markerOfSelectedLocation.setSubCaptionHaloColor(Color.rgb(200, 255, 200));
+            markerOfSelectedLocation.setSubCaptionTextSize(14f);
+
+            markerOfSelectedLocation.setCaptionColor(Color.BLUE);
+            markerOfSelectedLocation.setCaptionHaloColor(Color.rgb(200, 255, 200));
+            markerOfSelectedLocation.setCaptionTextSize(17f);
+
+            markerOfSelectedLocation.setOnClickListener(new Overlay.OnClickListener()
+            {
+                @Override
+                public boolean onClick(@NonNull Overlay overlay)
+                {
+                    markerOfSelectedLocation.setMap(null);
+                    return true;
+                }
+            });
+        }
+
+        markerOfSelectedLocation.setCaptionText("");
+        markerOfSelectedLocation.setPosition(latLng);
+        markerOfSelectedLocation.setMap(naverMap);
+
+        LocalApiPlaceParameter parameter = LocalParameterUtil.getCoordToAddressParameter(latLng.latitude, latLng.longitude);
+        CoordToAddressUtil.coordToAddress(parameter, new JsonDownloader<CoordToAddress>()
+        {
+            @Override
+            public void onResponseSuccessful(CoordToAddress result)
+            {
+                getActivity().runOnUiThread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        markerOfSelectedLocation.setCaptionText(result.getCoordToAddressDocuments().get(0).getCoordToAddressAddress().getAddressName());
+                    }
+                });
+            }
+
+            @Override
+            public void onResponseFailed(Exception e)
+            {
+                getActivity().runOnUiThread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        markerOfSelectedLocation.setCaptionText(getString(R.string.error_downloading_address));
+                    }
+                });
+            }
+        });
+    }
 
     static class BuildingBottomSheetHeightViewHolder
     {

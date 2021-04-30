@@ -305,7 +305,7 @@
         <item>0.18</item>
     </string-array>
 
-    <string-array name="food_category_list">
+    <string-array name="food_menu_list">
         <item name="hansik">@string/hansik</item>
         <item name="jungsik">@string/jungsik</item>
         <item name="illsik">@string/illsik</item>
@@ -320,6 +320,22 @@
         <item name="bunsik">@string/bunsik</item>
         <item name="juk">@string/juk</item>
     </string-array>
+
+    <array name="food_menu_image_list">
+        <item name="hansik">@drawable/hansik_kimchi_jjigae</item>
+        <item name="jungsik">@drawable/jungsik_jjajangmyeon</item>
+        <item name="illsik">@drawable/illsik_chobab</item>
+        <item name="sashimi">@drawable/sashimi</item>
+        <item name="yangsik">@drawable/yangsik_barbeque</item>
+        <item name="asian">@drawable/asain_ssalguksoo</item>
+        <item name="chicken">@drawable/chicken</item>
+        <item name="fastfood">@drawable/hamburger</item>
+        <item name="donkartz">@drawable/donkartz</item>
+        <item name="jjim">@drawable/jjim_galbijjim</item>
+        <item name="tang">@drawable/tang_maewoontang</item>
+        <item name="bunsik">@drawable/bunsik_ddeokboggi</item>
+        <item name="juk">@drawable/juk</item>
+    </array>
 
     <string-array name="building_facility_list">
         <item name="X">@string/vacant_room</item>

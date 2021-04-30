@@ -31,6 +31,7 @@ import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedFavoriteBut
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedRestaurantItem;
 import com.zerodsoft.scheduleweather.event.foods.share.CriteriaLocationRepository;
 import com.zerodsoft.scheduleweather.event.foods.share.FavoriteRestaurantCloud;
+import com.zerodsoft.scheduleweather.event.places.interfaces.PlaceItemsGetter;
 import com.zerodsoft.scheduleweather.kakaomap.place.PlaceInfoFragment;
 import com.zerodsoft.scheduleweather.kakaomap.util.LocalParameterUtil;
 import com.zerodsoft.scheduleweather.kakaomap.viewmodel.PlacesViewModel;
@@ -40,7 +41,10 @@ import com.zerodsoft.scheduleweather.room.dto.FavoriteRestaurantDTO;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.interfaces.FavoriteRestaurantQuery;
 
-public class RestaurantListFragment extends Fragment implements OnClickedListItem<PlaceDocuments>, OnClickedFavoriteButtonListener, FoodCategoryTabFragment.RefreshFavoriteState
+import java.util.List;
+
+public class RestaurantListFragment extends Fragment implements OnClickedListItem<PlaceDocuments>, OnClickedFavoriteButtonListener
+        , FoodCategoryTabFragment.RefreshFavoriteState, FoodsCategoryListFragment.RestaurantItemGetter
 {
     protected FavoriteRestaurantQuery favoriteRestaurantQuery;
     protected FragmentRestaurantListBinding binding;
@@ -77,26 +81,10 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
-
+        placesViewModel = new ViewModelProvider(this).get(PlacesViewModel.class);
 
         binding.recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext(), RecyclerView.VERTICAL, false));
         binding.recyclerView.addItemDecoration(new DividerItemDecoration(view.getContext(), DividerItemDecoration.VERTICAL));
-        binding.recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener()
-        {
-            @Override
-            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy)
-            {
-                super.onScrolled(recyclerView, dx, dy);
-                if (!recyclerView.canScrollVertically(1))
-                {
-                    binding.openMapButton.setVisibility(View.GONE);
-                } else
-                {
-                    binding.openMapButton.setVisibility(View.VISIBLE);
-                }
-            }
-        });
-        placesViewModel = new ViewModelProvider(this).get(PlacesViewModel.class);
 
         requestRestaurantList(CATEGORY_NAME);
         binding.errorText.setVisibility(View.GONE);
@@ -245,6 +233,12 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
         {
             adapter.notifyDataSetChanged();
         }
+    }
+
+    @Override
+    public List<PlaceDocuments> getRestaurantList(String foodMenuName)
+    {
+        return adapter.getCurrentList().snapshot();
     }
 
     public interface OnClickedOpenMapButtonListener

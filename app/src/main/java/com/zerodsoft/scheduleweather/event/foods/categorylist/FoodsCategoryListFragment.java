@@ -25,7 +25,6 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 
-import android.os.Looper;
 import android.os.RemoteException;
 import android.provider.CalendarContract;
 import android.provider.Settings;
@@ -35,10 +34,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-import com.naver.maps.geometry.LatLng;
-import com.naver.maps.geometry.Utmk;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.activity.preferences.customfoodmenu.fragment.CustomFoodMenuSettingsFragment;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.databinding.FragmentFoodsCategoryListBinding;
 import com.zerodsoft.scheduleweather.etc.AppPermission;
@@ -48,17 +44,16 @@ import com.zerodsoft.scheduleweather.event.foods.activity.LocationSettingsActivi
 import com.zerodsoft.scheduleweather.event.foods.adapter.FoodCategoryAdapter;
 import com.zerodsoft.scheduleweather.event.foods.dto.FoodCategoryItem;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedCategoryItem;
+import com.zerodsoft.scheduleweather.event.foods.main.fragment.NewFoodsMainFragment;
 import com.zerodsoft.scheduleweather.event.foods.settings.CustomFoodMenuSettingsActivity;
 import com.zerodsoft.scheduleweather.event.foods.share.CriteriaLocationRepository;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.CustomFoodMenuViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationInfoViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationHistoryViewModel;
 import com.zerodsoft.scheduleweather.kakaomap.interfaces.INetwork;
-import com.zerodsoft.scheduleweather.kakaomap.model.CoordToAddressUtil;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
-import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.sgis.address.ReverseGeoCodingParameter;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddress;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.address.reversegeocoding.ReverseGeoCodingResponse;
 import com.zerodsoft.scheduleweather.room.dto.CustomFoodMenuDTO;
 import com.zerodsoft.scheduleweather.room.dto.FoodCriteriaLocationInfoDTO;
@@ -68,6 +63,7 @@ import com.zerodsoft.scheduleweather.sgis.SgisAddress;
 import com.zerodsoft.scheduleweather.sgis.SgisAuth;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -79,6 +75,7 @@ public class FoodsCategoryListFragment extends Fragment implements OnClickedCate
     public static final String TAG = "FoodsCategoryListFragment";
     private FragmentFoodsCategoryListBinding binding;
     private final INetwork iNetwork;
+    private final NewFoodsMainFragment.FoodMenuChipsViewController foodMenuChipsViewController;
 
     private CustomFoodMenuViewModel customFoodCategoryViewModel;
     private LocationViewModel locationViewModel;
@@ -91,13 +88,15 @@ public class FoodsCategoryListFragment extends Fragment implements OnClickedCate
     private LocationDTO selectedLocationDTO;
     private FoodCriteriaLocationSearchHistoryDTO foodCriteriaLocationSearchHistoryDTO;
     private FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO;
+    private RestaurantItemGetter restaurantItemGetter;
 
     private boolean clickedGps = false;
     final int columnCount = 4;
 
-    public FoodsCategoryListFragment(INetwork iNetwork)
+    public FoodsCategoryListFragment(INetwork iNetwork, NewFoodsMainFragment.FoodMenuChipsViewController foodMenuChipsViewController)
     {
         this.iNetwork = iNetwork;
+        this.foodMenuChipsViewController = foodMenuChipsViewController;
     }
 
 
@@ -527,32 +526,29 @@ public class FoodsCategoryListFragment extends Fragment implements OnClickedCate
                 FoodCategoryAdapter foodCategoryAdapter = new FoodCategoryAdapter(FoodsCategoryListFragment.this, columnCount);
 
                 Context context = getContext();
+                final String[] DEFAULT_FOOD_MENU_NAME_ARR = getResources().getStringArray(R.array.food_menu_list);
+                final List<String> foodMenuNameList = Arrays.asList(DEFAULT_FOOD_MENU_NAME_ARR);
+                final int[] DEFAULT_FOOD_MENU_IMG_ARR = getResources().getIntArray(R.array.food_menu_image_list);
                 List<FoodCategoryItem> itemsList = new ArrayList<>();
 
-                itemsList.add(new FoodCategoryItem(getString(R.string.hansik), ContextCompat.getDrawable(context, R.drawable.hansik_kimchi_jjigae), true));
-                itemsList.add(new FoodCategoryItem(getString(R.string.jungsik), ContextCompat.getDrawable(context, R.drawable.jungsik_jjajangmyeon), true));
-                itemsList.add(new FoodCategoryItem(getString(R.string.illsik), ContextCompat.getDrawable(context, R.drawable.illsik_chobab), true));
-                itemsList.add(new FoodCategoryItem(getString(R.string.sashimi), ContextCompat.getDrawable(context, R.drawable.sashimi), true));
-                itemsList.add(new FoodCategoryItem(getString(R.string.yangsik), ContextCompat.getDrawable(context, R.drawable.yangsik_barbeque), true));
-                itemsList.add(new FoodCategoryItem(getString(R.string.asian), ContextCompat.getDrawable(context, R.drawable.asain_ssalguksoo), true));
-                itemsList.add(new FoodCategoryItem(getString(R.string.chicken), ContextCompat.getDrawable(context, R.drawable.chicken), true));
-                itemsList.add(new FoodCategoryItem(getString(R.string.fastfood), ContextCompat.getDrawable(context, R.drawable.hamburger), true));
-                itemsList.add(new FoodCategoryItem(getString(R.string.donkartz), ContextCompat.getDrawable(context, R.drawable.donkartz), true));
-                itemsList.add(new FoodCategoryItem(getString(R.string.jjim), ContextCompat.getDrawable(context, R.drawable.jjim_galbijjim), true));
-                itemsList.add(new FoodCategoryItem(getString(R.string.tang), ContextCompat.getDrawable(context, R.drawable.tang_maewoontang), true));
-                itemsList.add(new FoodCategoryItem(getString(R.string.bunsik), ContextCompat.getDrawable(context, R.drawable.bunsik_ddeokboggi), true));
-                itemsList.add(new FoodCategoryItem(getString(R.string.juk), ContextCompat.getDrawable(context, R.drawable.juk), true));
+                for (int index = 0; index < DEFAULT_FOOD_MENU_NAME_ARR.length; index++)
+                {
+                    itemsList.add(new FoodCategoryItem(DEFAULT_FOOD_MENU_NAME_ARR[index]
+                            , ContextCompat.getDrawable(context, DEFAULT_FOOD_MENU_IMG_ARR[index]), true));
+                }
 
                 if (!resultList.isEmpty())
                 {
                     for (CustomFoodMenuDTO customFoodCategory : resultList)
                     {
+                        foodMenuNameList.add(customFoodCategory.getMenuName());
                         itemsList.add(new FoodCategoryItem(customFoodCategory.getMenuName(), null, false));
                     }
                 }
                 itemsList.add(new FoodCategoryItem(getString(R.string.add_custom_food_menu), null, false));
 
                 foodCategoryAdapter.setItems(itemsList);
+                foodMenuChipsViewController.createRestaurantListView(foodMenuNameList);
 
                 getActivity().runOnUiThread(new Runnable()
                 {
@@ -622,4 +618,9 @@ public class FoodsCategoryListFragment extends Fragment implements OnClickedCate
                     }
                 }
             });
+
+    public interface RestaurantItemGetter
+    {
+        List<PlaceDocuments> getRestaurantList(String foodMenuName);
+    }
 }

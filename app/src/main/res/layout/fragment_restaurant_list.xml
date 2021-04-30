@@ -25,21 +25,5 @@
             android:gravity="center"
             android:text="@string/not_founded_search_result" />
 
-        <TextView
-            android:id="@+id/open_map_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|center_horizontal"
-            android:layout_marginBottom="32dp"
-            android:background="@drawable/sub_button_for_list_background"
-            android:clickable="true"
-            android:gravity="center"
-            android:paddingLeft="8dp"
-            android:paddingTop="4dp"
-            android:paddingRight="8dp"
-            android:paddingBottom="4dp"
-            android:text="@string/open_map"
-            android:textColor="@color/white" />
-
     </FrameLayout>
 </layout>

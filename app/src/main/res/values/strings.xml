@@ -496,6 +496,8 @@
     <string name="main">메인</string>
     <string name="show_all">모두 보기</string>
     <string name="function">기능</string>
-
+    <string name="message_click_marker_to_delete">마커 클릭 시 삭제됩니다</string>
+    <string name="error_downloading_address">주소파악 오류</string>
+    <string name="open_map_to_show_restaurants">지도로 보기</string>
 
 </resources>

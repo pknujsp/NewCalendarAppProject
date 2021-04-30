@@ -4,16 +4,12 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.os.RemoteException;
 import android.service.carrier.CarrierMessagingService;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -23,12 +19,8 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.FragmentFoodCategoryTabBinding;
 import com.zerodsoft.scheduleweather.event.foods.adapter.FoodCategoryFragmentListAdapter;
 import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteRestaurantViewModel;
-import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedRestaurantItem;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.CustomFoodMenuViewModel;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.CustomFoodMenuDTO;
-import com.zerodsoft.scheduleweather.room.dto.FavoriteRestaurantDTO;
-import com.zerodsoft.scheduleweather.room.interfaces.FavoriteRestaurantQuery;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -45,12 +37,17 @@ public class FoodCategoryTabFragment extends Fragment
     private List<String> categoryList;
     private FoodCategoryFragmentListAdapter adapter;
     private final String selectedCategoryName;
+    private FoodsCategoryListFragment.RestaurantItemGetter restaurantItemGetter;
 
     public FoodCategoryTabFragment(String selectedCategoryName)
     {
         this.selectedCategoryName = selectedCategoryName;
     }
 
+    public FoodsCategoryListFragment.RestaurantItemGetter getRestaurantItemGetter()
+    {
+        return restaurantItemGetter;
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -71,10 +68,14 @@ public class FoodCategoryTabFragment extends Fragment
     {
         super.onViewCreated(view, savedInstanceState);
 
-        AppCompatActivity activity = (AppCompatActivity) getActivity();
-        activity.setSupportActionBar(binding.toolbar);
-        activity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        activity.getSupportActionBar().setDisplayShowTitleEnabled(false);
+        binding.openMapToShowRestaurants.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                String currentCategoryName = categoryList.get(binding.viewpager.getCurrentItem());
+            }
+        });
 
         favoriteRestaurantViewModel = new ViewModelProvider(this).get(FavoriteRestaurantViewModel.class);
         customFoodCategoryViewModel = new ViewModelProvider(this).get(CustomFoodMenuViewModel.class);
@@ -90,7 +91,7 @@ public class FoodCategoryTabFragment extends Fragment
                     {
                         categoryList = new ArrayList<>();
 
-                        String[] defaultCategoryList = getResources().getStringArray(R.array.food_category_list);
+                        String[] defaultCategoryList = getResources().getStringArray(R.array.food_menu_list);
                         categoryList.addAll(Arrays.asList(defaultCategoryList));
 
                         if (!resultList.isEmpty())
@@ -104,6 +105,7 @@ public class FoodCategoryTabFragment extends Fragment
                         int selectedIndex = categoryList.indexOf(selectedCategoryName);
 
                         adapter = new FoodCategoryFragmentListAdapter(FoodCategoryTabFragment.this);
+                        restaurantItemGetter = adapter;
                         adapter.init(favoriteRestaurantViewModel, categoryList);
                         binding.viewpager.setAdapter(adapter);
 
@@ -128,18 +130,6 @@ public class FoodCategoryTabFragment extends Fragment
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item)
-    {
-        switch (item.getItemId())
-        {
-            case android.R.id.home:
-
-                break;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
     public void onHiddenChanged(boolean hidden)
     {
         super.onHiddenChanged(hidden);
@@ -151,7 +141,6 @@ public class FoodCategoryTabFragment extends Fragment
             adapter.refreshFavorites();
         }
     }
-
 
     public interface RefreshFavoriteState
     {
