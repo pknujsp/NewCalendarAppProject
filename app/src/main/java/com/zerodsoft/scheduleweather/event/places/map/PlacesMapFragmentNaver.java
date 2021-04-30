@@ -34,7 +34,6 @@ import androidx.fragment.app.FragmentContainerView;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.chip.Chip;
@@ -53,10 +52,9 @@ import com.zerodsoft.scheduleweather.event.main.InstanceMainActivity;
 import com.zerodsoft.scheduleweather.event.places.interfaces.OnClickedPlacesListListener;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PlaceCategory;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PlaceItemsGetter;
-import com.zerodsoft.scheduleweather.kakaomap.bottomsheet.adapter.PlaceItemInMapViewAdapter;
-import com.zerodsoft.scheduleweather.kakaomap.fragment.searchheader.MapHeaderSearchFragment;
-import com.zerodsoft.scheduleweather.kakaomap.fragment.searchresult.LocationSearchResultFragment;
-import com.zerodsoft.scheduleweather.kakaomap.model.CoordToAddressUtil;
+import com.zerodsoft.scheduleweather.navermap.bottomsheet.adapter.PlaceItemInMapViewAdapter;
+import com.zerodsoft.scheduleweather.navermap.fragment.searchheader.MapHeaderSearchFragment;
+import com.zerodsoft.scheduleweather.navermap.model.CoordToAddressUtil;
 import com.zerodsoft.scheduleweather.navermap.NaverMapFragment;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
@@ -70,7 +68,6 @@ import org.xmlpull.v1.XmlPullParser;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class PlacesMapFragmentNaver extends NaverMapFragment implements OnClickedPlacesListListener, OnBackPressedCallbackController, PlaceCategory
 {
@@ -277,7 +274,7 @@ public class PlacesMapFragmentNaver extends NaverMapFragment implements OnClicke
     @Override
     public void onPageSelectedPlaceBottomSheetViewPager(int position)
     {
-        if (adapter.getItemCount() - 1 == position)
+        if (searchResultBottomSheetViewPagerAdapter.getItemCount() - 1 == position)
         {
             FragmentManager fragmentManager = getChildFragmentManager();
 
@@ -294,7 +291,7 @@ public class PlacesMapFragmentNaver extends NaverMapFragment implements OnClicke
                         public void onItemRangeInserted(int positionStart, int itemCount)
                         {
                             super.onItemRangeInserted(positionStart, itemCount);
-                            addPoiItems(placeItemsGetter.getPlaceItems(selectedPlaceCategory));
+                            addPoiItems(placeItemsGetter.getPlaceItems(selectedPlaceCategory), );
                         }
                     });
                     return;
@@ -499,9 +496,9 @@ public class PlacesMapFragmentNaver extends NaverMapFragment implements OnClicke
                 List<PlaceDocuments> placeDocumentsList = placeItemsGetter.getPlaceItems(placeCategory);
                 selectedPlaceCategory = placeCategory;
 
-                createPoiItems(placeDocumentsList);
+                createPoiItems(placeDocumentsList, );
                 showAllPoiItems();
-            } else if (categoryChipGroup.getCheckedChipIds().isEmpty() && !markerList.isEmpty())
+            } else if (categoryChipGroup.getCheckedChipIds().isEmpty() && !searchResultMarkerList.isEmpty())
             {
                 removeAllPoiItems();
                 isSelectedPoiItem = false;
@@ -533,7 +530,7 @@ public class PlacesMapFragmentNaver extends NaverMapFragment implements OnClicke
         //create poi items
         chipMap.get(placeCategory.getCode()).setChecked(true);
         //select poi item
-        onPOIItemSelectedByList(index);
+        onPOIItemSelectedByList(index, );
     }
 
     @Override

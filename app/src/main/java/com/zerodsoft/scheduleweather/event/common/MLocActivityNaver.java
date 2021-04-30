@@ -13,8 +13,7 @@ import androidx.lifecycle.ViewModelProvider;
 import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.main.InstanceMainActivity;
-import com.zerodsoft.scheduleweather.kakaomap.activity.KakaoMapActivity;
-import com.zerodsoft.scheduleweather.kakaomap.fragment.searchheader.MapHeaderSearchFragment;
+import com.zerodsoft.scheduleweather.navermap.fragment.searchheader.MapHeaderSearchFragment;
 import com.zerodsoft.scheduleweather.navermap.NaverMapActivity;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 

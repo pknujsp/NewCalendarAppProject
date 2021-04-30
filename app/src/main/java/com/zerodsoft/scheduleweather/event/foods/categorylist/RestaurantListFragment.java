@@ -4,7 +4,6 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
@@ -18,23 +17,19 @@ import android.service.carrier.CarrierMessagingService;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
-import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.common.interfaces.OnProgressBarListener;
 import com.zerodsoft.scheduleweather.databinding.FragmentRestaurantListBinding;
 import com.zerodsoft.scheduleweather.event.foods.adapter.RestaurantListAdapter;
-import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteRestaurantViewModel;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedFavoriteButtonListener;
-import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedRestaurantItem;
 import com.zerodsoft.scheduleweather.event.foods.share.CriteriaLocationRepository;
 import com.zerodsoft.scheduleweather.event.foods.share.FavoriteRestaurantCloud;
-import com.zerodsoft.scheduleweather.event.places.interfaces.PlaceItemsGetter;
-import com.zerodsoft.scheduleweather.kakaomap.place.PlaceInfoFragment;
-import com.zerodsoft.scheduleweather.kakaomap.util.LocalParameterUtil;
-import com.zerodsoft.scheduleweather.kakaomap.viewmodel.PlacesViewModel;
+import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoFragment;
+import com.zerodsoft.scheduleweather.navermap.util.LocalParameterUtil;
+import com.zerodsoft.scheduleweather.navermap.viewmodel.PlacesViewModel;
+import com.zerodsoft.scheduleweather.navermap.interfaces.OnExtraListDataListener;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.FavoriteRestaurantDTO;
@@ -44,7 +39,7 @@ import com.zerodsoft.scheduleweather.room.interfaces.FavoriteRestaurantQuery;
 import java.util.List;
 
 public class RestaurantListFragment extends Fragment implements OnClickedListItem<PlaceDocuments>, OnClickedFavoriteButtonListener
-        , FoodCategoryTabFragment.RefreshFavoriteState, FoodsCategoryListFragment.RestaurantItemGetter
+        , FoodCategoryTabFragment.RefreshFavoriteState, FoodsCategoryListFragment.RestaurantItemGetter, OnExtraListDataListener<String>
 {
     protected FavoriteRestaurantQuery favoriteRestaurantQuery;
     protected FragmentRestaurantListBinding binding;
@@ -239,6 +234,28 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
     public List<PlaceDocuments> getRestaurantList(String foodMenuName)
     {
         return adapter.getCurrentList().snapshot();
+    }
+
+    @Override
+    public void loadExtraListData(String e, RecyclerView.AdapterDataObserver adapterDataObserver)
+    {
+
+    }
+
+    @Override
+    public void loadExtraListData(RecyclerView.AdapterDataObserver adapterDataObserver)
+    {
+        adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver()
+        {
+            @Override
+            public void onItemRangeInserted(int positionStart, int itemCount)
+            {
+                super.onItemRangeInserted(positionStart, itemCount);
+                adapterDataObserver.onItemRangeInserted(positionStart, itemCount);
+                adapter.unregisterAdapterDataObserver(this);
+            }
+        });
+        binding.recyclerView.scrollBy(0, 10000);
     }
 
     public interface OnClickedOpenMapButtonListener

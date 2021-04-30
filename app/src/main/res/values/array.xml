@@ -321,7 +321,7 @@
         <item name="juk">@string/juk</item>
     </string-array>
 
-    <array name="food_menu_image_list">
+    <integer-array name="food_menu_image_list">
         <item name="hansik">@drawable/hansik_kimchi_jjigae</item>
         <item name="jungsik">@drawable/jungsik_jjajangmyeon</item>
         <item name="illsik">@drawable/illsik_chobab</item>
@@ -335,7 +335,8 @@
         <item name="tang">@drawable/tang_maewoontang</item>
         <item name="bunsik">@drawable/bunsik_ddeokboggi</item>
         <item name="juk">@drawable/juk</item>
-    </array>
+    </integer-array>
+
 
     <string-array name="building_facility_list">
         <item name="X">@string/vacant_room</item>

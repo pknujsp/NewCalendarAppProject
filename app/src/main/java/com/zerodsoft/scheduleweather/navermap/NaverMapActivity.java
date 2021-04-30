@@ -7,8 +7,8 @@ import android.os.Bundle;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.ActivityNaverMapBinding;
-import com.zerodsoft.scheduleweather.kakaomap.fragment.main.KakaoMapFragment;
-import com.zerodsoft.scheduleweather.kakaomap.interfaces.PlacesItemBottomSheetButtonOnClickListener;
+import com.zerodsoft.scheduleweather.navermap.fragment.main.KakaoMapFragment;
+import com.zerodsoft.scheduleweather.navermap.interfaces.PlacesItemBottomSheetButtonOnClickListener;
 
 public class NaverMapActivity extends AppCompatActivity implements PlacesItemBottomSheetButtonOnClickListener
 {

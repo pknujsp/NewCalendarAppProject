@@ -25,7 +25,7 @@ import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackCont
 import com.zerodsoft.scheduleweather.databinding.FragmentWeatherItemBinding;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.weather.repository.WeatherDownloader;
-import com.zerodsoft.scheduleweather.kakaomap.interfaces.BottomSheetController;
+import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.MidFcstParameter;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.VilageFcstParameter;

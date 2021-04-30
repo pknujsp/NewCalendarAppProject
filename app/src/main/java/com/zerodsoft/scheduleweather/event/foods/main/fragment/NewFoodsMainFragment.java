@@ -24,13 +24,14 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
 import com.zerodsoft.scheduleweather.databinding.FragmentNewFoodsMainBinding;
+import com.zerodsoft.scheduleweather.event.foods.categorylist.FoodsCategoryListFragment;
 import com.zerodsoft.scheduleweather.event.foods.favorite.FavoritesMainFragment;
 import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteRestaurantViewModel;
 import com.zerodsoft.scheduleweather.event.foods.search.search.fragment.SearchRestaurantFragment;
 import com.zerodsoft.scheduleweather.event.foods.settings.FoodsSettingsFragment;
 import com.zerodsoft.scheduleweather.event.foods.share.FavoriteRestaurantCloud;
-import com.zerodsoft.scheduleweather.kakaomap.interfaces.BottomSheetController;
-import com.zerodsoft.scheduleweather.kakaomap.interfaces.INetwork;
+import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
+import com.zerodsoft.scheduleweather.navermap.interfaces.INetwork;
 import com.zerodsoft.scheduleweather.room.dto.FavoriteRestaurantDTO;
 import com.zerodsoft.scheduleweather.utility.NetworkStatus;
 
@@ -72,7 +73,6 @@ public class NewFoodsMainFragment extends Fragment implements INetwork, BottomNa
         super.onHiddenChanged(hidden);
         if (hidden)
         {
-            foodMenuChipsViewController.removeRestaurantListView();
             removeOnBackPressedCallback();
             mainFragmentOnBackPressedCallbackController.addOnBackPressedCallback();
             bottomSheetController.setStateOfBottomSheet(TAG, BottomSheetBehavior.STATE_COLLAPSED);
@@ -281,7 +281,7 @@ public class NewFoodsMainFragment extends Fragment implements INetwork, BottomNa
 
     public interface FoodMenuChipsViewController
     {
-        void createRestaurantListView(List<String> foodMenuList);
+        void createRestaurantListView(List<String> foodMenuList, FoodsCategoryListFragment.RestaurantItemGetter restaurantItemGetter);
 
         void removeRestaurantListView();
 

@@ -13,13 +13,16 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.FragmentFoodCategoryTabBinding;
 import com.zerodsoft.scheduleweather.event.foods.adapter.FoodCategoryFragmentListAdapter;
 import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteRestaurantViewModel;
+import com.zerodsoft.scheduleweather.event.foods.main.fragment.NewFoodsMainFragment;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.CustomFoodMenuViewModel;
+import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.room.dto.CustomFoodMenuDTO;
 
 import java.util.ArrayList;
@@ -38,10 +41,14 @@ public class FoodCategoryTabFragment extends Fragment
     private FoodCategoryFragmentListAdapter adapter;
     private final String selectedCategoryName;
     private FoodsCategoryListFragment.RestaurantItemGetter restaurantItemGetter;
+    private final NewFoodsMainFragment.FoodMenuChipsViewController foodMenuChipsViewController;
+    private final BottomSheetController bottomSheetController;
 
-    public FoodCategoryTabFragment(String selectedCategoryName)
+    public FoodCategoryTabFragment(String selectedCategoryName, NewFoodsMainFragment.FoodMenuChipsViewController foodMenuChipsViewController, BottomSheetController bottomSheetController)
     {
         this.selectedCategoryName = selectedCategoryName;
+        this.foodMenuChipsViewController = foodMenuChipsViewController;
+        this.bottomSheetController = bottomSheetController;
     }
 
     public FoodsCategoryListFragment.RestaurantItemGetter getRestaurantItemGetter()
@@ -53,6 +60,13 @@ public class FoodCategoryTabFragment extends Fragment
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    public void onDestroy()
+    {
+        super.onDestroy();
+        foodMenuChipsViewController.removeRestaurantListView();
     }
 
     @Override
@@ -74,6 +88,8 @@ public class FoodCategoryTabFragment extends Fragment
             public void onClick(View v)
             {
                 String currentCategoryName = categoryList.get(binding.viewpager.getCurrentItem());
+
+                bottomSheetController.setStateOfBottomSheet(NewFoodsMainFragment.TAG, BottomSheetBehavior.STATE_COLLAPSED);
             }
         });
 
@@ -91,13 +107,16 @@ public class FoodCategoryTabFragment extends Fragment
                     {
                         categoryList = new ArrayList<>();
 
-                        String[] defaultCategoryList = getResources().getStringArray(R.array.food_menu_list);
-                        categoryList.addAll(Arrays.asList(defaultCategoryList));
+                        final String[] DEFAULT_FOOD_MENU_NAME_ARR = getResources().getStringArray(R.array.food_menu_list);
+                        final List<String> foodMenuNameList = Arrays.asList(DEFAULT_FOOD_MENU_NAME_ARR);
+
+                        categoryList.addAll(Arrays.asList(DEFAULT_FOOD_MENU_NAME_ARR));
 
                         if (!resultList.isEmpty())
                         {
                             for (CustomFoodMenuDTO customFoodCategory : resultList)
                             {
+                                foodMenuNameList.add(customFoodCategory.getMenuName());
                                 categoryList.add(customFoodCategory.getMenuName());
                             }
                         }
@@ -120,6 +139,7 @@ public class FoodCategoryTabFragment extends Fragment
                                 }
                         ).attach();
 
+                        foodMenuChipsViewController.createRestaurantListView(foodMenuNameList, adapter);
                         binding.tabs.selectTab(binding.tabs.getTabAt(selectedIndex));
                     }
                 });
@@ -140,6 +160,11 @@ public class FoodCategoryTabFragment extends Fragment
         {
             adapter.refreshFavorites();
         }
+    }
+
+    public void createFragment(int index)
+    {
+
     }
 
     public interface RefreshFavoriteState

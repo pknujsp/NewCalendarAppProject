@@ -7,15 +7,11 @@ import android.view.View;
 
 import androidx.activity.OnBackPressedCallback;
 
-import com.zerodsoft.scheduleweather.kakaomap.activity.KakaoMapActivity;
-import com.zerodsoft.scheduleweather.kakaomap.model.CustomPoiItem;
 import com.zerodsoft.scheduleweather.navermap.NaverMapActivity;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalDocument;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.addressresponse.AddressResponseDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
-
-import net.daum.mf.map.api.MapPOIItem;
 
 public class SelectLocationActivityNaver extends NaverMapActivity
 {
@@ -67,7 +63,7 @@ public class SelectLocationActivityNaver extends NaverMapActivity
         String location = null;
         LocationDTO locationDTO = naverMapFragment.getSelectedLocationDto(0, 0L);
 
-        KakaoLocalDocument kakaoLocalDocument = (KakaoLocalDocument) naverMapFragment.markerList.get(naverMapFragment.selectedPoiItemIndex).getTag();
+        KakaoLocalDocument kakaoLocalDocument = (KakaoLocalDocument) naverMapFragment.searchResultMarkerList.get(naverMapFragment.selectedPoiItemIndex).getTag();
 
         // 주소인지 장소인지를 구분한다.
         if (kakaoLocalDocument instanceof PlaceDocuments)

@@ -46,7 +46,6 @@ import com.zerodsoft.scheduleweather.activity.editevent.adapter.CalendarListAdap
 import com.zerodsoft.scheduleweather.activity.editevent.value.EventData;
 import com.zerodsoft.scheduleweather.activity.editevent.value.EventDataController;
 import com.zerodsoft.scheduleweather.activity.editevent.interfaces.IEventRepeat;
-import com.zerodsoft.scheduleweather.activity.map.SelectLocationActivityKakao;
 import com.zerodsoft.scheduleweather.databinding.ActivityEditEventBinding;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;

@@ -1,10 +1,7 @@
 package com.zerodsoft.scheduleweather.event.foods.search.search.fragment;
 
-import android.content.Context;
-import android.graphics.Canvas;
 import android.os.Bundle;
 
-import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -18,19 +15,14 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
-import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.databinding.FragmentFoodRestaurantSearchHistoryBinding;
 import com.zerodsoft.scheduleweather.etc.CustomRecyclerViewItemDecoration;
-import com.zerodsoft.scheduleweather.event.foods.categorylist.FoodCategoryTabFragment;
 import com.zerodsoft.scheduleweather.event.foods.search.search.adapter.FoodRestaurantSearchHistoryAdapter;
-import com.zerodsoft.scheduleweather.kakaomap.viewmodel.SearchHistoryViewModel;
+import com.zerodsoft.scheduleweather.navermap.viewmodel.SearchHistoryViewModel;
 import com.zerodsoft.scheduleweather.room.dto.SearchHistoryDTO;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class FoodRestaurantSearchHistoryFragment extends Fragment implements OnClickedListItem<SearchHistoryDTO>

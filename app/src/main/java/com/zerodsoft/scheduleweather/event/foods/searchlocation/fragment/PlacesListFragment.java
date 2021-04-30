@@ -1,19 +1,9 @@
 package com.zerodsoft.scheduleweather.event.foods.searchlocation.fragment;
 
-import android.Manifest;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.location.LocationManager;
-import android.net.ConnectivityManager;
-import android.net.Network;
-import android.net.NetworkCapabilities;
-import android.net.NetworkRequest;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
@@ -22,36 +12,19 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.provider.Settings;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.ProgressBar;
-import android.widget.Spinner;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.interfaces.OnProgressBarListener;
 import com.zerodsoft.scheduleweather.databinding.FragmentLocationSearchResultBinding;
 import com.zerodsoft.scheduleweather.event.foods.searchlocation.adapter.PlacesListAdapter;
 import com.zerodsoft.scheduleweather.event.foods.searchlocation.interfaces.OnClickedLocationItem;
-import com.zerodsoft.scheduleweather.kakaomap.bottomsheet.adapter.PlaceItemInMapViewAdapter;
-import com.zerodsoft.scheduleweather.kakaomap.fragment.searchresult.adapter.PlacesAdapter;
-import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapData;
-import com.zerodsoft.scheduleweather.kakaomap.interfaces.IMapPoint;
-import com.zerodsoft.scheduleweather.kakaomap.interfaces.OnClickedLocListItem;
-import com.zerodsoft.scheduleweather.kakaomap.util.LocalParameterUtil;
-import com.zerodsoft.scheduleweather.kakaomap.util.RequestLocationTimer;
-import com.zerodsoft.scheduleweather.kakaomap.viewmodel.PlacesViewModel;
+import com.zerodsoft.scheduleweather.navermap.util.LocalParameterUtil;
+import com.zerodsoft.scheduleweather.navermap.viewmodel.PlacesViewModel;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
-
-import java.util.Timer;
 
 public class PlacesListFragment extends Fragment implements OnProgressBarListener
 {

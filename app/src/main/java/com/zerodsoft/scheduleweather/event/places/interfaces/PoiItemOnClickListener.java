@@ -1,15 +1,12 @@
 package com.zerodsoft.scheduleweather.event.places.interfaces;
 
-import com.google.android.material.bottomsheet.BottomSheetBehavior;
-
-import net.daum.mf.map.api.MapPOIItem;
-import net.daum.mf.map.api.MapView;
+import com.zerodsoft.scheduleweather.navermap.PoiItemType;
 
 public interface PoiItemOnClickListener<T>
 {
     void onPOIItemSelectedByTouch(T e);
 
-    void onPOIItemSelectedByList(int index);
+    void onPOIItemSelectedByList(int index, PoiItemType poiItemType);
 
-    void onPOIItemSelectedByBottomSheet(int index);
+    void onPOIItemSelectedByBottomSheet(int index, PoiItemType poiItemType);
 }

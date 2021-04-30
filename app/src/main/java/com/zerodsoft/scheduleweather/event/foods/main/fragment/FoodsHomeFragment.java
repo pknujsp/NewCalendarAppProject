@@ -1,6 +1,5 @@
 package com.zerodsoft.scheduleweather.event.foods.main.fragment;
 
-import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 
@@ -9,7 +8,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,13 +16,10 @@ import android.view.ViewGroup;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
 import com.zerodsoft.scheduleweather.databinding.FragmentFoodsMainBinding;
-import com.zerodsoft.scheduleweather.event.event.fragments.EventFragment;
-import com.zerodsoft.scheduleweather.event.foods.activity.FoodsActivity;
 import com.zerodsoft.scheduleweather.event.foods.categorylist.FoodCategoryTabFragment;
 import com.zerodsoft.scheduleweather.event.foods.categorylist.FoodsCategoryListFragment;
-import com.zerodsoft.scheduleweather.event.places.interfaces.BottomSheet;
-import com.zerodsoft.scheduleweather.kakaomap.interfaces.BottomSheetController;
-import com.zerodsoft.scheduleweather.kakaomap.interfaces.INetwork;
+import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
+import com.zerodsoft.scheduleweather.navermap.interfaces.INetwork;
 
 public class FoodsHomeFragment extends Fragment implements OnBackPressedCallbackController
 {
@@ -88,7 +83,7 @@ public class FoodsHomeFragment extends Fragment implements OnBackPressedCallback
     {
         super.onViewCreated(view, savedInstanceState);
 
-        FoodsCategoryListFragment foodsCategoryListFragment = new FoodsCategoryListFragment(iNetwork, foodMenuChipsViewController);
+        FoodsCategoryListFragment foodsCategoryListFragment = new FoodsCategoryListFragment(iNetwork, foodMenuChipsViewController, bottomSheetController);
         foodsCategoryListFragment.setArguments(getArguments());
 
         getChildFragmentManager().beginTransaction().add(binding.foodsMainFragmentContainer.getId(), foodsCategoryListFragment, FoodsCategoryListFragment.TAG)

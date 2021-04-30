@@ -1,11 +1,8 @@
 package com.zerodsoft.scheduleweather.event.foods.adapter;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.RemoteException;
-import android.service.carrier.CarrierMessagingService;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,13 +22,11 @@ import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedFavoriteButtonListener;
 import com.zerodsoft.scheduleweather.event.foods.share.FavoriteRestaurantCloud;
-import com.zerodsoft.scheduleweather.kakaomap.callback.PlaceItemCallback;
+import com.zerodsoft.scheduleweather.navermap.callback.PlaceItemCallback;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.kakaoplace.KakaoPlaceJsonRoot;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.kakaoplace.menuinfo.MenuInfo;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.kakaoplace.menuinfo.MenuItem;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
-import com.zerodsoft.scheduleweather.room.dto.FavoriteRestaurantDTO;
-import com.zerodsoft.scheduleweather.room.interfaces.FavoriteRestaurantQuery;
 
 import java.io.IOException;
 import java.net.MalformedURLException;

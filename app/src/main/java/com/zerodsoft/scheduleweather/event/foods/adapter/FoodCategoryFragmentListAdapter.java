@@ -62,6 +62,7 @@ public class FoodCategoryFragmentListAdapter extends FragmentStateAdapter implem
     @Override
     public List<PlaceDocuments> getRestaurantList(String foodMenuName)
     {
+
         return fragments.get(categoryList.indexOf(foodMenuName)).getRestaurantList(foodMenuName);
     }
 }

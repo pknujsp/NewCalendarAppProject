@@ -27,7 +27,7 @@ import com.zerodsoft.scheduleweather.event.foods.search.search.fragment.SearchRe
 import com.zerodsoft.scheduleweather.event.foods.settings.FoodsSettingsFragment;
 import com.zerodsoft.scheduleweather.event.foods.share.FavoriteRestaurantCloud;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationInfoViewModel;
-import com.zerodsoft.scheduleweather.kakaomap.interfaces.INetwork;
+import com.zerodsoft.scheduleweather.navermap.interfaces.INetwork;
 import com.zerodsoft.scheduleweather.room.dto.FavoriteRestaurantDTO;
 import com.zerodsoft.scheduleweather.room.dto.FoodCriteriaLocationInfoDTO;
 import com.zerodsoft.scheduleweather.utility.NetworkStatus;

@@ -13,14 +13,11 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
-import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
 import com.zerodsoft.scheduleweather.databinding.FragmentFavoritesMainBinding;
-import com.zerodsoft.scheduleweather.event.foods.categorylist.FoodCategoryTabFragment;
-import com.zerodsoft.scheduleweather.event.foods.categorylist.FoodsCategoryListFragment;
 import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteRestaurantFragment;
 import com.zerodsoft.scheduleweather.event.foods.main.fragment.NewFoodsMainFragment;
-import com.zerodsoft.scheduleweather.kakaomap.interfaces.BottomSheetController;
+import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
 
 
 public class FavoritesMainFragment extends Fragment implements OnBackPressedCallbackController

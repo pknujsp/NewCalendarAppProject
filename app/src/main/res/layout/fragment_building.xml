@@ -5,7 +5,7 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".kakaomap.building.fragment.BuildingFragment">
+        tools:context=".navermap.building.fragment.BuildingFragment">
 
         <TextView
             android:id="@+id/error_text"

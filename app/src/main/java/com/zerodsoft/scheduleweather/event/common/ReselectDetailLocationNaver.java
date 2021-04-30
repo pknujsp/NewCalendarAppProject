@@ -19,16 +19,13 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.main.InstanceMainActivity;
-import com.zerodsoft.scheduleweather.kakaomap.activity.KakaoMapActivity;
-import com.zerodsoft.scheduleweather.kakaomap.bottomsheet.adapter.PlaceItemInMapViewAdapter;
-import com.zerodsoft.scheduleweather.kakaomap.model.CoordToAddressUtil;
-import com.zerodsoft.scheduleweather.kakaomap.place.KakaoPlace;
-import com.zerodsoft.scheduleweather.kakaomap.util.LocalParameterUtil;
+import com.zerodsoft.scheduleweather.navermap.bottomsheet.adapter.PlaceItemInMapViewAdapter;
+import com.zerodsoft.scheduleweather.navermap.model.CoordToAddressUtil;
+import com.zerodsoft.scheduleweather.navermap.util.LocalParameterUtil;
 import com.zerodsoft.scheduleweather.navermap.NaverMapActivity;
+import com.zerodsoft.scheduleweather.navermap.PoiItemType;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.addressresponse.AddressResponseAddress;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.addressresponse.AddressResponseDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddress;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddressDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
@@ -92,8 +89,8 @@ public class ReselectDetailLocationNaver extends NaverMapActivity implements OnM
                             coordToAddressDocuments.getCoordToAddressAddress().setLongitude(String.valueOf(savedLocationDto.getLongitude()));
 
                             naverMapFragment.setPlacesListAdapter(new PlaceItemInMapViewAdapter());
-                            naverMapFragment.createPoiItems(Collections.singletonList(coordToAddressDocuments));
-                            naverMapFragment.onPOIItemSelectedByList(0);
+                            naverMapFragment.createPoiItems(Collections.singletonList(coordToAddressDocuments), PoiItemType.SELECTED_ADDRESS_IN_EVENT);
+                            naverMapFragment.onPOIItemSelectedByList(0, PoiItemType.SELECTED_ADDRESS_IN_EVENT);
                         } else
                         {
                             // exception(error)
@@ -121,8 +118,8 @@ public class ReselectDetailLocationNaver extends NaverMapActivity implements OnM
                         {
                             PlaceDocuments document = result.getData();
                             naverMapFragment.setPlacesListAdapter(new PlaceItemInMapViewAdapter());
-                            naverMapFragment.createPoiItems(Collections.singletonList(document));
-                            naverMapFragment.onPOIItemSelectedByList(0);
+                            naverMapFragment.createPoiItems(Collections.singletonList(document), PoiItemType.SELECTED_PLACE_IN_EVENT);
+                            naverMapFragment.onPOIItemSelectedByList(0, PoiItemType.SELECTED_PLACE_IN_EVENT);
                         } else
                         {
                             // exception(error)

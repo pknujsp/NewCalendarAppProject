@@ -11,7 +11,9 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
 import androidx.fragment.app.FragmentContainerView;
+import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.RemoteException;
 import android.provider.CalendarContract;
@@ -44,10 +46,11 @@ import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.event.fragments.EventFragment;
 import com.zerodsoft.scheduleweather.event.foods.categorylist.FoodsCategoryListFragment;
 import com.zerodsoft.scheduleweather.event.foods.main.fragment.NewFoodsMainFragment;
+import com.zerodsoft.scheduleweather.event.places.map.PlacesOfSelectedCategoriesFragment;
 import com.zerodsoft.scheduleweather.event.weather.fragment.WeatherItemFragment;
-import com.zerodsoft.scheduleweather.kakaomap.bottomsheet.adapter.PlaceItemInMapViewAdapter;
-import com.zerodsoft.scheduleweather.kakaomap.fragment.searchheader.MapHeaderSearchFragment;
+import com.zerodsoft.scheduleweather.navermap.bottomsheet.adapter.PlaceItemInMapViewAdapter;
 import com.zerodsoft.scheduleweather.navermap.NaverMapFragment;
+import com.zerodsoft.scheduleweather.navermap.PoiItemType;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
@@ -108,6 +111,9 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
     private Chip foodMenuListChip;
     private String selectedFoodMenu;
     private FoodsCategoryListFragment.RestaurantItemGetter restaurantItemGetter;
+
+    public PlaceItemInMapViewAdapter restaurantListBottomSheetViewPagerAdapter;
+
 
     @Override
     public void onAttach(@NonNull Context context)
@@ -587,8 +593,9 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
     }
 
     @Override
-    public void createRestaurantListView(List<String> foodMenuList)
+    public void createRestaurantListView(List<String> foodMenuList, FoodsCategoryListFragment.RestaurantItemGetter restaurantItemGetter)
     {
+        this.restaurantItemGetter = restaurantItemGetter;
         createFoodMenuChips();
         addFoodMenuListChip();
         setFoodMenuChips(foodMenuList);
@@ -617,11 +624,12 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
         HorizontalScrollView chipScrollView = new HorizontalScrollView(getContext());
         chipScrollView.setId(R.id.chip_scroll_view);
         chipScrollView.setHorizontalScrollBarEnabled(false);
+
         RelativeLayout.LayoutParams chipLayoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         chipLayoutParams.addRule(RelativeLayout.BELOW, binding.naverMapHeaderBar.getRoot().getId());
         chipLayoutParams.topMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, getResources().getDisplayMetrics());
-        chipScrollView.setLayoutParams(chipLayoutParams);
-        binding.naverMapViewLayout.addView(chipScrollView);
+
+        binding.naverMapViewLayout.addView(chipScrollView, chipLayoutParams);
 
         foodMenuChipGroup = new ChipGroup(getContext(), null, R.style.Widget_MaterialComponents_ChipGroup);
         foodMenuChipGroup.setSingleSelection(true);
@@ -637,7 +645,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
     {
         if (foodMenuChipGroup.getChildCount() >= 2)
         {
-            foodMenuChipGroup.removeViews(1, foodMenuChipGroup.getChildCount() - 2);
+            foodMenuChipGroup.removeViews(1, foodMenuChipGroup.getChildCount() - 1);
         }
         foodMenuChipMap.clear();
 
@@ -652,7 +660,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
             chip.setClickable(true);
             chip.setCheckable(true);
             chip.setVisibility(View.VISIBLE);
-            chip.setOnCheckedChangeListener(onCheckedChangeListener);
+            chip.setOnCheckedChangeListener(foodMenuOnCheckedChangeListener);
 
             final ChipViewHolder chipViewHolder = new ChipViewHolder(menu, index++);
             chip.setTag(chipViewHolder);
@@ -663,7 +671,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
     }
 
 
-    private final CompoundButton.OnCheckedChangeListener onCheckedChangeListener = new CompoundButton.OnCheckedChangeListener()
+    private final CompoundButton.OnCheckedChangeListener foodMenuOnCheckedChangeListener = new CompoundButton.OnCheckedChangeListener()
     {
         @Override
         public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked)
@@ -676,14 +684,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
              */
             if (isChecked)
             {
-                if (getChildFragmentManager().findFragmentByTag(MapHeaderSearchFragment.TAG) != null)
-                {
-                    if (getChildFragmentManager().findFragmentByTag(MapHeaderSearchFragment.TAG).isVisible())
-                    {
-                        closeSearchFragments();
-                    }
-                }
-
                 if (isSelectedPoiItem)
                 {
                     deselectPoiItem();
@@ -694,11 +694,11 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
                 List<PlaceDocuments> placeDocumentsList = restaurantItemGetter.getRestaurantList(foodMenuName);
                 selectedFoodMenu = foodMenuName;
 
-                createPoiItems(placeDocumentsList);
-                showAllPoiItems();
-            } else if (foodMenuChipGroup.getCheckedChipIds().isEmpty() && !markerList.isEmpty())
+                createPoiItems(placeDocumentsList, PoiItemType.RESTAURANT);
+                showPoiItems(PoiItemType.RESTAURANT);
+            } else if (foodMenuChipGroup.getCheckedChipIds().isEmpty() && !searchResultMarkerList.isEmpty())
             {
-                removeAllPoiItems();
+                removePoiItems(PoiItemType.RESTAURANT);
                 isSelectedPoiItem = false;
                 selectedFoodMenu = null;
             }
@@ -720,11 +720,43 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
             @Override
             public void onClick(View view)
             {
-
+                setStateOfBottomSheet(NewFoodsMainFragment.TAG, BottomSheetBehavior.STATE_EXPANDED);
             }
         });
 
         foodMenuChipGroup.addView(foodMenuListChip, 0);
+    }
+
+    @Override
+    public void onPageSelectedPlaceBottomSheetViewPager(int position)
+    {
+        if (searchResultBottomSheetViewPagerAdapter.getItemCount() - 1 == position)
+        {
+            FragmentManager fragmentManager = getChildFragmentManager();
+
+            PlacesOfSelectedCategoriesFragment placesOfSelectedCategoriesFragment
+                    = (PlacesOfSelectedCategoriesFragment) fragmentManager.findFragmentByTag(PlacesOfSelectedCategoriesFragment.TAG);
+
+            if (placesOfSelectedCategoriesFragment != null)
+            {
+                if (placesOfSelectedCategoriesFragment.isVisible() && categoryChipGroup.getCheckedChipIds().size() >= 1)
+                {
+                    placesOfSelectedCategoriesFragment.loadExtraListData(selectedPlaceCategory, new RecyclerView.AdapterDataObserver()
+                    {
+                        @Override
+                        public void onItemRangeInserted(int positionStart, int itemCount)
+                        {
+                            super.onItemRangeInserted(positionStart, itemCount);
+                            addPoiItems(placeItemsGetter.getPlaceItems(selectedPlaceCategory), );
+                        }
+                    });
+                    return;
+                }
+            }
+
+        }
+
+        super.onPageSelectedPlaceBottomSheetViewPager(position);
     }
 
     static final class ChipViewHolder

@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.event.foods.searchlocation.interfaces.OnClickedLocationItem;
-import com.zerodsoft.scheduleweather.kakaomap.callback.AddressItemCallback;
+import com.zerodsoft.scheduleweather.navermap.callback.AddressItemCallback;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.addressresponse.AddressResponseDocuments;
 
 public class AddressesListAdapter extends PagedListAdapter<AddressResponseDocuments, AddressesListAdapter.ItemViewHolder>

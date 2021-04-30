@@ -1,10 +1,8 @@
 package com.zerodsoft.scheduleweather.event.foods.settings;
 
-import android.content.Context;
 import android.os.Bundle;
 
 import androidx.activity.OnBackPressedCallback;
-import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
 import android.view.LayoutInflater;
@@ -12,11 +10,10 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
-import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
 import com.zerodsoft.scheduleweather.databinding.FragmentFoodsSettingsBinding;
 import com.zerodsoft.scheduleweather.event.foods.main.fragment.NewFoodsMainFragment;
-import com.zerodsoft.scheduleweather.kakaomap.interfaces.BottomSheetController;
+import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
 
 public class FoodsSettingsFragment extends Fragment implements OnBackPressedCallbackController
 {
