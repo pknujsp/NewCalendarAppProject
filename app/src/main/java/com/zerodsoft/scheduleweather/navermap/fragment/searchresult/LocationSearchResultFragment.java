@@ -21,8 +21,6 @@ import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PoiItemOnClickListener;
 import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.PoiItemType;
-import com.zerodsoft.scheduleweather.navermap.bottomsheet.adapter.LocationItemViewPagerAdapter;
-import com.zerodsoft.scheduleweather.navermap.fragment.search.LocationSearchFragment;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.navermap.interfaces.OnClickedLocListItem;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapData;
@@ -71,15 +69,15 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
         @Override
         public void handleOnBackPressed()
         {
-            boolean bottomSheetStateIsExpanded = bottomSheetController.getStateOfBottomSheet(BottomSheetType.SEARCH_LOCATION) == BottomSheetBehavior.STATE_EXPANDED;
-            if (bottomSheetStateIsExpanded)
+            if (bottomSheetController.getStateOfBottomSheet(BottomSheetType.SEARCH_LOCATION) == BottomSheetBehavior.STATE_EXPANDED)
             {
                 // list인 경우
-                getParentFragmentManager().popBackStack();
+                getParentFragmentManager().popBackStackImmediate();
                 searchFragmentController.closeSearchFragments(LocationSearchResultFragment.TAG);
             } else
             {
                 // map인 경우
+                searchBarController.changeViewTypeImg(SearchBarController.MAP);
                 bottomSheetController.setStateOfBottomSheet(BottomSheetType.SEARCH_LOCATION, BottomSheetBehavior.STATE_EXPANDED);
                 bottomSheetController.setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_COLLAPSED);
             }
@@ -130,10 +128,10 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
-        search(SEARCH_WORD);
+        searchLocation(SEARCH_WORD);
     }
 
-    public void search(String searchWord)
+    public void searchLocation(String searchWord)
     {
         final LocalApiPlaceParameter addressParameter = LocalParameterUtil.getAddressParameter(searchWord, "1"
                 , LocalApiPlaceParameter.DEFAULT_PAGE);
@@ -240,9 +238,8 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
     public void onClickedLocItem(int index)
     {
         poiItemOnClickListener.onPOIItemSelectedByList(index, PoiItemType.SEARCH_RESULT);
-        searchBarController.changeViewTypeImg(SearchBarController.MAP);
+        searchBarController.changeViewTypeImg(SearchBarController.LIST);
         bottomSheetController.setStateOfBottomSheet(BottomSheetType.SEARCH_LOCATION, BottomSheetBehavior.STATE_COLLAPSED);
-
     }
 
     @Override
@@ -293,7 +290,7 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
     @Override
     public void addOnBackPressedCallback()
     {
-        getActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
+        requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
     }
 
     @Override

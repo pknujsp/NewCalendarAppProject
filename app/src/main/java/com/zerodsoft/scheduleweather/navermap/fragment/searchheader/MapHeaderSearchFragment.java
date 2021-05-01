@@ -18,8 +18,6 @@ import com.zerodsoft.scheduleweather.common.interfaces.SearchHistoryDataControll
 import com.zerodsoft.scheduleweather.databinding.FragmentLocationSearchBarBinding;
 import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.PoiItemType;
-import com.zerodsoft.scheduleweather.navermap.bottomsheet.adapter.LocationItemViewPagerAdapter;
-import com.zerodsoft.scheduleweather.navermap.fragment.search.LocationSearchFragment;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.navermap.interfaces.SearchBarController;
@@ -87,7 +85,7 @@ public class MapHeaderSearchFragment extends Fragment implements SearchBarContro
             @Override
             public void onClick(View view)
             {
-                changeFragment();
+                changeStateOfBottomSheet();
             }
         });
 
@@ -101,7 +99,7 @@ public class MapHeaderSearchFragment extends Fragment implements SearchBarContro
                 {
                     //검색
                     binding.viewTypeButton.setVisibility(View.VISIBLE);
-                    locationSearchListener.search(binding.edittext.getText().toString());
+                    locationSearchListener.searchLocation(binding.edittext.getText().toString());
                     searchHistoryDataController.insertValueToHistory(binding.edittext.getText().toString());
                     return true;
                 }
@@ -133,7 +131,7 @@ public class MapHeaderSearchFragment extends Fragment implements SearchBarContro
 
         if (submit)
         {
-            locationSearchListener.search(query);
+            locationSearchListener.searchLocation(query);
         } else
         {
 
@@ -146,30 +144,28 @@ public class MapHeaderSearchFragment extends Fragment implements SearchBarContro
         if (type == SearchBarController.MAP)
         {
             binding.viewTypeButton.setImageDrawable(mapDrawable);
-        } else
+        } else if (type == SearchBarController.LIST)
         {
             binding.viewTypeButton.setImageDrawable(listDrawable);
         }
     }
 
-    public void changeFragment()
+    public void changeStateOfBottomSheet()
     {
-        boolean bottomSheetStateIsExpanded = bottomSheetController.getStateOfBottomSheet(BottomSheetType.SEARCH_LOCATION)
-                == BottomSheetBehavior.STATE_EXPANDED ? true : false;
+        final boolean bottomSheetStateIsExpanded = bottomSheetController.getStateOfBottomSheet(BottomSheetType.SEARCH_LOCATION)
+                == BottomSheetBehavior.STATE_EXPANDED;
         changeViewTypeImg(bottomSheetStateIsExpanded ? SearchBarController.LIST : SearchBarController.MAP);
+        bottomSheetController.setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_COLLAPSED);
 
         if (bottomSheetStateIsExpanded)
         {
             // to map
             // 버튼 이미지, 프래그먼트 숨김/보이기 설정
             iMapData.showPoiItems(PoiItemType.SEARCH_RESULT);
-            bottomSheetController.setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_COLLAPSED);
             bottomSheetController.setStateOfBottomSheet(BottomSheetType.SEARCH_LOCATION, BottomSheetBehavior.STATE_COLLAPSED);
         } else
         {
             // to list
-            iMapData.showPoiItems(PoiItemType.SEARCH_RESULT);
-            bottomSheetController.setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_COLLAPSED);
             bottomSheetController.setStateOfBottomSheet(BottomSheetType.SEARCH_LOCATION, BottomSheetBehavior.STATE_EXPANDED);
         }
     }
@@ -203,7 +199,7 @@ public class MapHeaderSearchFragment extends Fragment implements SearchBarContro
 
     public interface LocationSearchListener
     {
-        void search(String query);
+        void searchLocation(String query);
     }
 
 }

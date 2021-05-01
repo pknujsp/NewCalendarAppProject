@@ -1,6 +1,6 @@
 package com.zerodsoft.scheduleweather.navermap.interfaces;
 
-import com.zerodsoft.scheduleweather.navermap.bottomsheet.adapter.LocationItemViewPagerAdapter;
+import com.zerodsoft.scheduleweather.navermap.LocationItemViewPagerAdapter;
 import com.zerodsoft.scheduleweather.navermap.PoiItemType;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalDocument;
 
@@ -22,5 +22,5 @@ public interface IMapData
 
     int getPoiItemSize(PoiItemType... poiItemTypes);
 
-    void setPlacesListAdapter(LocationItemViewPagerAdapter adapter, PoiItemType poiItemType);
+    void setLocationItemViewPagerAdapter(LocationItemViewPagerAdapter adapter, PoiItemType poiItemType);
 }

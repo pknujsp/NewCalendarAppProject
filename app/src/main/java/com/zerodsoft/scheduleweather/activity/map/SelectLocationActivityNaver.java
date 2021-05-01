@@ -65,7 +65,7 @@ public class SelectLocationActivityNaver extends NaverMapActivity
         String location = null;
         LocationDTO locationDTO = naverMapFragment.getSelectedLocationDto(0, 0L);
 
-        KakaoLocalDocument kakaoLocalDocument = (KakaoLocalDocument) naverMapFragment.markerMap.get((PoiItemType) naverMapFragment.locationItemBottomSheetViewPager.getTag(NaverMapFragment.POI_ITEM_TYPE_OF_LOCATION_ITEMS_BOTTOM_SHEET))
+        KakaoLocalDocument kakaoLocalDocument = (KakaoLocalDocument) naverMapFragment.markerMap.get((PoiItemType) naverMapFragment.locationItemBottomSheetViewPager.getTag())
                 .get(naverMapFragment.selectedPoiItemIndex).getTag();
 
         // 주소인지 장소인지를 구분한다.

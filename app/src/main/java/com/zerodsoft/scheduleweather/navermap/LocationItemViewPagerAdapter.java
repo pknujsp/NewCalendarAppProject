@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.navermap.bottomsheet.adapter;
+package com.zerodsoft.scheduleweather.navermap;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,7 +25,7 @@ import java.util.List;
 
 public class LocationItemViewPagerAdapter extends RecyclerView.Adapter<LocationItemViewPagerAdapter.PlaceItemInMapViewHolder>
 {
-    public static final String TAG = "PlaceItemInMapViewAdapter";
+    public static final String TAG = "LocationItemViewPagerAdapter";
     private List<KakaoLocalDocument> placeDocumentsList = new ArrayList<>();
     private PlaceDocuments placeDocuments;
     private AddressResponseDocuments addressDocuments;

@@ -32,7 +32,7 @@ import com.zerodsoft.scheduleweather.common.interfaces.OnProgressBarListener;
 import com.zerodsoft.scheduleweather.databinding.FragmentLocationSearchResultBinding;
 import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.navermap.PoiItemType;
-import com.zerodsoft.scheduleweather.navermap.bottomsheet.adapter.LocationItemViewPagerAdapter;
+import com.zerodsoft.scheduleweather.navermap.LocationItemViewPagerAdapter;
 import com.zerodsoft.scheduleweather.navermap.interfaces.OnClickedLocListItem;
 import com.zerodsoft.scheduleweather.navermap.fragment.searchresult.interfaces.IViewPager;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapData;
@@ -324,14 +324,14 @@ public class SearchResultPlaceListFragment extends Fragment implements IViewPage
     @Override
     public void onChangedPage()
     {
-        int poiItemSize = iMapData.getPoiItemSize();
-        iMapData.setPlacesListAdapter(new LocationItemViewPagerAdapter(), PoiItemType.SEARCH_RESULT);
+        int poiItemSize = iMapData.getPoiItemSize(PoiItemType.SEARCH_RESULT);
+        iMapData.setLocationItemViewPagerAdapter(new LocationItemViewPagerAdapter(), PoiItemType.SEARCH_RESULT);
 
         if (poiItemSize > 0 && adapter != null)
         {
             if (adapter.getItemCount() > 0)
             {
-                iMapData.removeAllPoiItems();
+                iMapData.removePoiItems(PoiItemType.SEARCH_RESULT);
                 iMapData.createPoiItems(adapter.getCurrentList().snapshot(), PoiItemType.SEARCH_RESULT);
             }
         }

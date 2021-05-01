@@ -14,7 +14,7 @@ import com.zerodsoft.scheduleweather.room.interfaces.FavoriteRestaurantQuery;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FoodCategoryFragmentListAdapter extends FragmentStateAdapter implements FoodCategoryTabFragment.RefreshFavoriteState, FoodsCategoryListFragment.RestaurantItemGetter
+public class FoodCategoryFragmentListAdapter extends FragmentStateAdapter implements FoodCategoryTabFragment.RefreshFavoriteState
 {
     private List<RestaurantListFragment> fragments;
     private List<String> categoryList;
@@ -23,6 +23,11 @@ public class FoodCategoryFragmentListAdapter extends FragmentStateAdapter implem
     public FoodCategoryFragmentListAdapter(@NonNull Fragment fragment)
     {
         super(fragment);
+    }
+
+    public List<RestaurantListFragment> getFragments()
+    {
+        return fragments;
     }
 
     public void init(FavoriteRestaurantQuery favoriteRestaurantQuery, List<String> categoryList)
@@ -59,10 +64,4 @@ public class FoodCategoryFragmentListAdapter extends FragmentStateAdapter implem
         }
     }
 
-    @Override
-    public List<PlaceDocuments> getRestaurantList(String foodMenuName)
-    {
-
-        return fragments.get(categoryList.indexOf(foodMenuName)).getRestaurantList(foodMenuName);
-    }
 }

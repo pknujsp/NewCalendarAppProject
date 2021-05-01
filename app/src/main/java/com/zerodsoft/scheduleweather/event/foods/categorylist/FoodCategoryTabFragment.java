@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.RemoteException;
 import android.service.carrier.CarrierMessagingService;
@@ -22,15 +23,20 @@ import com.zerodsoft.scheduleweather.event.foods.adapter.FoodCategoryFragmentLis
 import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteRestaurantViewModel;
 import com.zerodsoft.scheduleweather.event.foods.main.fragment.NewFoodsMainFragment;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.CustomFoodMenuViewModel;
+import com.zerodsoft.scheduleweather.event.main.NewInstanceMainFragment;
 import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
+import com.zerodsoft.scheduleweather.navermap.interfaces.OnExtraListDataListener;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.CustomFoodMenuDTO;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class FoodCategoryTabFragment extends Fragment
+import lombok.SneakyThrows;
+
+public class FoodCategoryTabFragment extends Fragment implements NewInstanceMainFragment.RestaurantsGetter, OnExtraListDataListener<String>
 {
     public static final String TAG = "FoodCategoryTabFragment";
     private FragmentFoodCategoryTabBinding binding;
@@ -41,9 +47,11 @@ public class FoodCategoryTabFragment extends Fragment
     private List<String> categoryList;
     private FoodCategoryFragmentListAdapter adapter;
     private final String selectedCategoryName;
-    private FoodsCategoryListFragment.RestaurantItemGetter restaurantItemGetter;
     private final NewFoodsMainFragment.FoodMenuChipsViewController foodMenuChipsViewController;
     private final BottomSheetController bottomSheetController;
+
+    private int lastFoodMenuIndex;
+    private float lastRecyclerViewY;
 
     public FoodCategoryTabFragment(String selectedCategoryName, NewFoodsMainFragment.FoodMenuChipsViewController foodMenuChipsViewController, BottomSheetController bottomSheetController)
     {
@@ -52,10 +60,6 @@ public class FoodCategoryTabFragment extends Fragment
         this.bottomSheetController = bottomSheetController;
     }
 
-    public FoodsCategoryListFragment.RestaurantItemGetter getRestaurantItemGetter()
-    {
-        return restaurantItemGetter;
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -88,7 +92,9 @@ public class FoodCategoryTabFragment extends Fragment
             @Override
             public void onClick(View v)
             {
-                String currentCategoryName = categoryList.get(binding.viewpager.getCurrentItem());
+                lastFoodMenuIndex = binding.viewpager.getCurrentItem();
+                lastRecyclerViewY = adapter.getFragments().get(lastFoodMenuIndex).binding.recyclerView.getScrollY();
+                foodMenuChipsViewController.setCurrentFoodMenuName(categoryList.get(binding.viewpager.getCurrentItem()));
                 bottomSheetController.setStateOfBottomSheet(BottomSheetType.RESTAURANT, BottomSheetBehavior.STATE_COLLAPSED);
             }
         });
@@ -124,7 +130,6 @@ public class FoodCategoryTabFragment extends Fragment
                         int selectedIndex = categoryList.indexOf(selectedCategoryName);
 
                         adapter = new FoodCategoryFragmentListAdapter(FoodCategoryTabFragment.this);
-                        restaurantItemGetter = adapter;
                         adapter.init(favoriteRestaurantViewModel, categoryList);
                         binding.viewpager.setAdapter(adapter);
 
@@ -139,7 +144,7 @@ public class FoodCategoryTabFragment extends Fragment
                                 }
                         ).attach();
 
-                        foodMenuChipsViewController.createRestaurantListView(foodMenuNameList, adapter);
+                        foodMenuChipsViewController.createRestaurantListView(foodMenuNameList, FoodCategoryTabFragment.this, FoodCategoryTabFragment.this);
                         binding.tabs.selectTab(binding.tabs.getTabAt(selectedIndex));
                     }
                 });
@@ -162,7 +167,67 @@ public class FoodCategoryTabFragment extends Fragment
         }
     }
 
-    public void createFragment(int index)
+    @Override
+    public void getRestaurants(String foodName, CarrierMessagingService.ResultCallback<List<PlaceDocuments>> callback)
+    {
+        final int index = categoryList.indexOf(foodName);
+        RestaurantListFragment fragment = adapter.getFragments().get(index);
+        if (fragment.adapter == null)
+        {
+            fragment.setAdapterDataObserver(new RecyclerView.AdapterDataObserver()
+            {
+                @Override
+                public void onItemRangeInserted(int positionStart, int itemCount)
+                {
+                    requireActivity().runOnUiThread(new Runnable()
+                    {
+                        @SneakyThrows
+                        @Override
+                        public void run()
+                        {
+                            callback.onReceiveResult(fragment.adapter.getCurrentList().snapshot());
+                        }
+                    });
+
+                    fragment.adapterDataObserver = null;
+                }
+            });
+            binding.viewpager.setCurrentItem(index);
+        } else
+        {
+            requireActivity().runOnUiThread(new Runnable()
+            {
+                @SneakyThrows
+                @Override
+                public void run()
+                {
+                    callback.onReceiveResult(fragment.adapter.getCurrentList().snapshot());
+                }
+            });
+        }
+    }
+
+    @Override
+    public void loadExtraListData(String foodMenuName, RecyclerView.AdapterDataObserver adapterDataObserver)
+    {
+        final int index = categoryList.indexOf(foodMenuName);
+        RestaurantListFragment fragment = adapter.getFragments().get(index);
+
+        fragment.adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver()
+        {
+            @Override
+            public void onItemRangeInserted(int positionStart, int itemCount)
+            {
+                super.onItemRangeInserted(positionStart, itemCount);
+                adapterDataObserver.onItemRangeInserted(positionStart, itemCount);
+                fragment.adapter.unregisterAdapterDataObserver(this);
+            }
+        });
+        fragment.binding.recyclerView.scrollBy(0, 10000);
+    }
+
+    @Override
+    public void loadExtraListData(RecyclerView.AdapterDataObserver adapterDataObserver)
     {
 
     }
@@ -171,4 +236,6 @@ public class FoodCategoryTabFragment extends Fragment
     {
         void refreshFavorites();
     }
+
+
 }

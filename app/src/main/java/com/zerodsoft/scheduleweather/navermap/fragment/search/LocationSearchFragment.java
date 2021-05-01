@@ -74,12 +74,16 @@ public class LocationSearchFragment extends Fragment implements OnSelectedMapCat
     public void onHiddenChanged(boolean hidden)
     {
         super.onHiddenChanged(hidden);
+
         if (hidden)
         {
             removeOnBackPressedCallback();
             if (getParentFragmentManager().findFragmentByTag(LocationSearchResultFragment.TAG) == null)
             {
-                mainFragmentOnBackPressedCallbackController.addOnBackPressedCallback();
+                if (getParentFragmentManager().getBackStackEntryCount() == 0)
+                {
+                    mainFragmentOnBackPressedCallbackController.addOnBackPressedCallback();
+                }
                 bottomSheetController.setStateOfBottomSheet(BottomSheetType.SEARCH_LOCATION, BottomSheetBehavior.STATE_COLLAPSED);
             }
         } else
@@ -87,7 +91,10 @@ public class LocationSearchFragment extends Fragment implements OnSelectedMapCat
             addOnBackPressedCallback();
             if (getParentFragmentManager().findFragmentByTag(LocationSearchResultFragment.TAG) == null)
             {
-                mainFragmentOnBackPressedCallbackController.removeOnBackPressedCallback();
+                if (getParentFragmentManager().getBackStackEntryCount() == 0)
+                {
+                    mainFragmentOnBackPressedCallbackController.removeOnBackPressedCallback();
+                }
                 bottomSheetController.setStateOfBottomSheet(BottomSheetType.SEARCH_LOCATION, BottomSheetBehavior.STATE_EXPANDED);
             }
         }
@@ -160,11 +167,6 @@ public class LocationSearchFragment extends Fragment implements OnSelectedMapCat
         binding.categoriesRecyclerview.setAdapter(categoriesAdapter);
     }
 
-    @Override
-    public void onStart()
-    {
-        super.onStart();
-    }
 
     @Override
     public void onSelectedMapCategory(PlaceCategoryDTO category)

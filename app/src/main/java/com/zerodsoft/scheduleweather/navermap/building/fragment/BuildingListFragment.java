@@ -86,7 +86,7 @@ public class BuildingListFragment extends Fragment implements OnClickedListItem<
         @Override
         public void handleOnBackPressed()
         {
-            getParentFragmentManager().popBackStack();
+            getParentFragmentManager().popBackStackImmediate();
             buildingFragmentController.closeBuildingFragments(TAG);
         }
     };
@@ -143,7 +143,10 @@ public class BuildingListFragment extends Fragment implements OnClickedListItem<
     public void onAttach(@NonNull Context context)
     {
         super.onAttach(context);
-        mainFragmentOnBackPressedCallbackController.removeOnBackPressedCallback();
+        if (getParentFragmentManager().getBackStackEntryCount() == 1)
+        {
+            mainFragmentOnBackPressedCallbackController.removeOnBackPressedCallback();
+        }
         addOnBackPressedCallback();
     }
 
@@ -152,7 +155,10 @@ public class BuildingListFragment extends Fragment implements OnClickedListItem<
     {
         super.onDestroy();
         removeOnBackPressedCallback();
-        mainFragmentOnBackPressedCallbackController.addOnBackPressedCallback();
+        if (getParentFragmentManager().getBackStackEntryCount() == 1)
+        {
+            mainFragmentOnBackPressedCallbackController.addOnBackPressedCallback();
+        }
     }
 
     @Override
@@ -312,6 +318,7 @@ public class BuildingListFragment extends Fragment implements OnClickedListItem<
         });
 
         transcoord();
+        bottomSheetController.setStateOfBottomSheet(BottomSheetType.BUILDING, BottomSheetBehavior.STATE_EXPANDED);
     }
 
     private void setSearchRadius()
@@ -399,7 +406,6 @@ public class BuildingListFragment extends Fragment implements OnClickedListItem<
                 .add(R.id.building_fragment_container, buildingFragment, BuildingFragment.TAG)
                 .addToBackStack(BuildingFragment.TAG).commit();
 
-        bottomSheetController.setStateOfBottomSheet(BottomSheetType.BUILDING, BottomSheetBehavior.STATE_EXPANDED);
     }
 
     @Override

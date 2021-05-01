@@ -39,13 +39,15 @@ import com.zerodsoft.scheduleweather.room.interfaces.FavoriteRestaurantQuery;
 import java.util.List;
 
 public class RestaurantListFragment extends Fragment implements OnClickedListItem<PlaceDocuments>, OnClickedFavoriteButtonListener
-        , FoodCategoryTabFragment.RefreshFavoriteState, FoodsCategoryListFragment.RestaurantItemGetter, OnExtraListDataListener<String>
+        , FoodCategoryTabFragment.RefreshFavoriteState
 {
     protected FavoriteRestaurantQuery favoriteRestaurantQuery;
     protected FragmentRestaurantListBinding binding;
     protected String CATEGORY_NAME;
     protected PlacesViewModel placesViewModel;
     protected RestaurantListAdapter adapter;
+
+    protected RecyclerView.AdapterDataObserver adapterDataObserver;
 
     public RestaurantListFragment(String CATEGORY_NAME)
     {
@@ -56,6 +58,11 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
     {
         this.favoriteRestaurantQuery = favoriteRestaurantQuery;
         this.CATEGORY_NAME = CATEGORY_NAME;
+    }
+
+    public void setAdapterDataObserver(RecyclerView.AdapterDataObserver adapterDataObserver)
+    {
+        this.adapterDataObserver = adapterDataObserver;
     }
 
     @Override
@@ -81,6 +88,9 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
         binding.recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext(), RecyclerView.VERTICAL, false));
         binding.recyclerView.addItemDecoration(new DividerItemDecoration(view.getContext(), DividerItemDecoration.VERTICAL));
 
+        adapter = new RestaurantListAdapter(getContext(), RestaurantListFragment.this, RestaurantListFragment.this);
+        binding.recyclerView.setAdapter(adapter);
+
         requestRestaurantList(CATEGORY_NAME);
         binding.errorText.setVisibility(View.GONE);
     }
@@ -88,32 +98,12 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 
     protected void requestRestaurantList(String categoryName)
     {
-        if (adapter != null)
-        {
-            binding.recyclerView.setAdapter(null);
-            adapter = null;
-        }
-
         LocationDTO criteriaLocation = CriteriaLocationRepository.getRestaurantCriteriaLocation();
 
         final LocalApiPlaceParameter placeParameter = LocalParameterUtil.getPlaceParameter(categoryName, String.valueOf(criteriaLocation.getLatitude()),
                 String.valueOf(criteriaLocation.getLongitude()), LocalApiPlaceParameter.DEFAULT_SIZE, LocalApiPlaceParameter.DEFAULT_PAGE,
                 LocalApiPlaceParameter.SEARCH_CRITERIA_SORT_TYPE_ACCURACY);
         placeParameter.setRadius(App.getPreference_key_radius_range());
-
-        adapter = new RestaurantListAdapter(getContext(), RestaurantListFragment.this, RestaurantListFragment.this);
-
-        adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver()
-        {
-            @Override
-            public void onItemRangeInserted(int positionStart, int itemCount)
-            {
-                super.onItemRangeInserted(positionStart, itemCount);
-                binding.errorText.setVisibility(View.GONE);
-            }
-        });
-
-        binding.recyclerView.setAdapter(adapter);
 
         placesViewModel.init(placeParameter, new OnProgressBarListener()
         {
@@ -126,13 +116,36 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 
         placesViewModel.getPagedListMutableLiveData().observe(getViewLifecycleOwner(), new Observer<PagedList<PlaceDocuments>>()
         {
+            boolean isFirst = true;
+
             @Override
             public void onChanged(PagedList<PlaceDocuments> placeDocuments)
             {
                 adapter.submitList(placeDocuments);
-                if (adapter.getCurrentList().snapshot().isEmpty())
+
+                if (isFirst)
                 {
-                    binding.errorText.setVisibility(View.VISIBLE);
+                    isFirst = false;
+                    adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver()
+                    {
+                        @Override
+                        public void onItemRangeInserted(int positionStart, int itemCount)
+                        {
+                            super.onItemRangeInserted(positionStart, itemCount);
+                            binding.errorText.setVisibility(View.GONE);
+
+                            if (adapterDataObserver != null)
+                            {
+                                adapterDataObserver.onItemRangeInserted(0, itemCount);
+                            }
+                        }
+                    });
+                } else
+                {
+                    if (adapter.getCurrentList().snapshot().isEmpty())
+                    {
+                        binding.errorText.setVisibility(View.VISIBLE);
+                    }
                 }
             }
         });
@@ -230,36 +243,5 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
         }
     }
 
-    @Override
-    public List<PlaceDocuments> getRestaurantList(String foodMenuName)
-    {
-        return adapter.getCurrentList().snapshot();
-    }
 
-    @Override
-    public void loadExtraListData(String e, RecyclerView.AdapterDataObserver adapterDataObserver)
-    {
-
-    }
-
-    @Override
-    public void loadExtraListData(RecyclerView.AdapterDataObserver adapterDataObserver)
-    {
-        adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver()
-        {
-            @Override
-            public void onItemRangeInserted(int positionStart, int itemCount)
-            {
-                super.onItemRangeInserted(positionStart, itemCount);
-                adapterDataObserver.onItemRangeInserted(positionStart, itemCount);
-                adapter.unregisterAdapterDataObserver(this);
-            }
-        });
-        binding.recyclerView.scrollBy(0, 10000);
-    }
-
-    public interface OnClickedOpenMapButtonListener
-    {
-        void onClickedOpenMapButton(String currentCategoryName);
-    }
 }

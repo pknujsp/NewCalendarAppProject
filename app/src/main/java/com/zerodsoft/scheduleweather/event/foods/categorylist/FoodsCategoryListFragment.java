@@ -89,7 +89,6 @@ public class FoodsCategoryListFragment extends Fragment implements OnClickedCate
     private LocationDTO selectedLocationDTO;
     private FoodCriteriaLocationSearchHistoryDTO foodCriteriaLocationSearchHistoryDTO;
     private FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO;
-    private RestaurantItemGetter restaurantItemGetter;
 
     private boolean clickedGps = false;
     final int columnCount = 4;
@@ -619,8 +618,4 @@ public class FoodsCategoryListFragment extends Fragment implements OnClickedCate
                 }
             });
 
-    public interface RestaurantItemGetter
-    {
-        List<PlaceDocuments> getRestaurantList(String foodMenuName);
-    }
 }

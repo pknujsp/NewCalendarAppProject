@@ -11,7 +11,6 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
 import androidx.fragment.app.FragmentContainerView;
-import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -44,16 +43,18 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.event.fragments.EventFragment;
-import com.zerodsoft.scheduleweather.event.foods.categorylist.FoodsCategoryListFragment;
 import com.zerodsoft.scheduleweather.event.foods.main.fragment.NewFoodsMainFragment;
+import com.zerodsoft.scheduleweather.event.places.interfaces.PlaceItemsGetter;
 import com.zerodsoft.scheduleweather.event.places.map.PlacesOfSelectedCategoriesFragment;
 import com.zerodsoft.scheduleweather.event.weather.fragment.WeatherItemFragment;
 import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
-import com.zerodsoft.scheduleweather.navermap.bottomsheet.adapter.LocationItemViewPagerAdapter;
+import com.zerodsoft.scheduleweather.navermap.LocationItemViewPagerAdapter;
 import com.zerodsoft.scheduleweather.navermap.NaverMapFragment;
 import com.zerodsoft.scheduleweather.navermap.PoiItemType;
+import com.zerodsoft.scheduleweather.navermap.interfaces.OnExtraListDataListener;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
+import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 
 import org.xmlpull.v1.XmlPullParser;
 
@@ -103,9 +104,16 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
     private Map<String, Chip> foodMenuChipMap = new HashMap<>();
     private Chip foodMenuListChip;
     private String selectedFoodMenu;
-    private FoodsCategoryListFragment.RestaurantItemGetter restaurantItemGetter;
+    private RestaurantsGetter restaurantItemGetter;
+    private OnExtraListDataListener<String> restaurantOnExtraListDataListener;
 
-    public LocationItemViewPagerAdapter restaurantListBottomSheetViewPagerAdapter;
+    private PlaceItemsGetter placeItemsGetter;
+
+    private ChipGroup placeCategoryChipGroup;
+    private Map<String, Chip> placeCategoryChipMap = new HashMap<>();
+    private Chip placeCategoryListChip;
+    private Chip placeCategorySettingsChip;
+    private PlaceCategoryDTO selectedPlaceCategory;
 
     @Override
     public void onAttach(@NonNull Context context)
@@ -581,9 +589,10 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
     }
 
     @Override
-    public void createRestaurantListView(List<String> foodMenuList, FoodsCategoryListFragment.RestaurantItemGetter restaurantItemGetter)
+    public void createRestaurantListView(List<String> foodMenuList, RestaurantsGetter restaurantsGetter, OnExtraListDataListener<String> onExtraListDataListener)
     {
-        this.restaurantItemGetter = restaurantItemGetter;
+        this.restaurantItemGetter = restaurantsGetter;
+        this.restaurantOnExtraListDataListener = onExtraListDataListener;
 
         createFoodMenuChips();
         addFoodMenuListChip();
@@ -603,7 +612,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
 
         foodMenuChipGroup = null;
         foodMenuListChip = null;
-        removeAllPoiItems();
+        removePoiItems(PoiItemType.RESTAURANT);
     }
 
     @Override
@@ -673,22 +682,32 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
              */
             if (isChecked)
             {
-                setPlacesListAdapter(new LocationItemViewPagerAdapter(), PoiItemType.RESTAURANT);
+                setLocationItemViewPagerAdapter(new LocationItemViewPagerAdapter(), PoiItemType.RESTAURANT);
 
-                final String foodMenuName = ((ChipViewHolder) compoundButton.getTag()).foodMenuName;
-                List<PlaceDocuments> placeDocumentsList = restaurantItemGetter.getRestaurantList(foodMenuName);
-                selectedFoodMenu = foodMenuName;
+                selectedFoodMenu = ((ChipViewHolder) compoundButton.getTag()).foodMenuName;
+                restaurantItemGetter.getRestaurants(selectedFoodMenu, new CarrierMessagingService.ResultCallback<List<PlaceDocuments>>()
+                {
+                    @Override
+                    public void onReceiveResult(@NonNull List<PlaceDocuments> placeDocuments) throws RemoteException
+                    {
+                        requireActivity().runOnUiThread(new Runnable()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                createPoiItems(placeDocuments, PoiItemType.RESTAURANT);
+                                showPoiItems(PoiItemType.RESTAURANT);
+                            }
+                        });
 
-                createPoiItems(placeDocumentsList, PoiItemType.RESTAURANT);
-                showPoiItems(PoiItemType.RESTAURANT);
-
-            } else if (foodMenuChipGroup.getCheckedChipIds().isEmpty() && !markerMap.get((PoiItemType) locationItemBottomSheetViewPager
-                    .getTag(POI_ITEM_TYPE_OF_LOCATION_ITEMS_BOTTOM_SHEET)).isEmpty())
+                    }
+                });
+            } else if (foodMenuChipGroup.getCheckedChipIds().isEmpty())
             {
                 removePoiItems(PoiItemType.RESTAURANT);
                 selectedFoodMenu = null;
             }
-            setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_EXPANDED);
+            setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_COLLAPSED);
         }
     };
 
@@ -714,19 +733,25 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
     }
 
     @Override
-    public void onPageSelectedPlaceBottomSheetViewPager(int position, PoiItemType poiItemType)
+    public void setCurrentFoodMenuName(String foodMenuName)
     {
-        if (viewPagerAdapterMap.get(poiItemType).getItemCount() - 1 == position)
+        this.selectedFoodMenu = foodMenuName;
+        foodMenuChipMap.get(selectedFoodMenu).setChecked(true);
+    }
+
+    @Override
+    public void onPageSelectedLocationItemBottomSheetViewPager(int position, PoiItemType poiItemType)
+    {
+        super.onPageSelectedLocationItemBottomSheetViewPager(position, poiItemType);
+
+        switch (poiItemType)
         {
-            /*
-            FragmentManager fragmentManager = getChildFragmentManager();
-
-            PlacesOfSelectedCategoriesFragment placesOfSelectedCategoriesFragment
-                    = (PlacesOfSelectedCategoriesFragment) fragmentManager.findFragmentByTag(PlacesOfSelectedCategoriesFragment.TAG);
-
-            if (placesOfSelectedCategoriesFragment != null)
+            case SELECTED_PLACE_CATEGORY:
             {
-                if (placesOfSelectedCategoriesFragment.isVisible() && categoryChipGroup.getCheckedChipIds().size() >= 1)
+                PlacesOfSelectedCategoriesFragment placesOfSelectedCategoriesFragment
+                        = (PlacesOfSelectedCategoriesFragment) bottomSheetFragmentMap.get(BottomSheetType.SELECTED_PLACE_CATEGORY);
+
+                if (placesOfSelectedCategoriesFragment.isVisible() && placeCategoryChipGroup.getCheckedChipIds().size() >= 1)
                 {
                     placesOfSelectedCategoriesFragment.loadExtraListData(selectedPlaceCategory, new RecyclerView.AdapterDataObserver()
                     {
@@ -739,13 +764,42 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
                     });
                     return;
                 }
+                break;
             }
-             */
 
+            case RESTAURANT:
+            {
+                if (foodMenuChipGroup.getCheckedChipIds().size() >= 1)
+                {
+                    restaurantOnExtraListDataListener.loadExtraListData(selectedFoodMenu, new RecyclerView.AdapterDataObserver()
+                    {
+                        @Override
+                        public void onItemRangeInserted(int positionStart, int itemCount)
+                        {
+                            restaurantItemGetter.getRestaurants(selectedFoodMenu, new CarrierMessagingService.ResultCallback<List<PlaceDocuments>>()
+                            {
+                                @Override
+                                public void onReceiveResult(@NonNull List<PlaceDocuments> placeDocuments) throws RemoteException
+                                {
+                                    requireActivity().runOnUiThread(new Runnable()
+                                    {
+                                        @Override
+                                        public void run()
+                                        {
+                                            addPoiItems(placeDocuments, poiItemType);
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    });
+                    return;
+                }
+                break;
+            }
         }
-
-        super.onPageSelectedPlaceBottomSheetViewPager(position, poiItemType);
     }
+
 
     static final class ChipViewHolder
     {
@@ -757,5 +811,10 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
             this.foodMenuName = foodMenuName;
             this.index = index;
         }
+    }
+
+    public interface RestaurantsGetter
+    {
+        void getRestaurants(String foodName, CarrierMessagingService.ResultCallback<List<PlaceDocuments>> callback);
     }
 }

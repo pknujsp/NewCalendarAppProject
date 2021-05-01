@@ -31,9 +31,7 @@ import androidx.annotation.Nullable;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.view.ViewCompat;
 import androidx.fragment.app.FragmentContainerView;
-import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.chip.Chip;
@@ -54,7 +52,7 @@ import com.zerodsoft.scheduleweather.event.places.interfaces.PlaceCategory;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PlaceItemsGetter;
 import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.PoiItemType;
-import com.zerodsoft.scheduleweather.navermap.bottomsheet.adapter.LocationItemViewPagerAdapter;
+import com.zerodsoft.scheduleweather.navermap.LocationItemViewPagerAdapter;
 import com.zerodsoft.scheduleweather.navermap.fragment.searchheader.MapHeaderSearchFragment;
 import com.zerodsoft.scheduleweather.navermap.model.CoordToAddressUtil;
 import com.zerodsoft.scheduleweather.navermap.NaverMapFragment;
@@ -274,9 +272,9 @@ public class PlacesMapFragmentNaver extends NaverMapFragment implements OnClicke
     }
 
     @Override
-    public void onPageSelectedPlaceBottomSheetViewPager(int position, PoiItemType poiItemType)
+    public void onPageSelectedLocationItemBottomSheetViewPager(int position, PoiItemType poiItemType)
     {
-        super.onPageSelectedPlaceBottomSheetViewPager(position, poiItemType);
+        super.onPageSelectedLocationItemBottomSheetViewPager(position, poiItemType);
           /*
         if (searchLocationResultBottomSheetViewPagerAdapter.getItemCount() - 1 == position)
         {
@@ -490,7 +488,7 @@ public class PlacesMapFragmentNaver extends NaverMapFragment implements OnClicke
                     }
                 }
 
-                setPlacesListAdapter(new LocationItemViewPagerAdapter(), PoiItemType.SELECTED_PLACE_CATEGORY);
+                setLocationItemViewPagerAdapter(new LocationItemViewPagerAdapter(), PoiItemType.SELECTED_PLACE_CATEGORY);
 
                 PlaceCategoryDTO placeCategory = ((ChipViewHolder) compoundButton.getTag()).placeCategory;
                 List<PlaceDocuments> placeDocumentsList = placeItemsGetter.getPlaceItems(placeCategory);
@@ -499,7 +497,7 @@ public class PlacesMapFragmentNaver extends NaverMapFragment implements OnClicke
                 createPoiItems(placeDocumentsList, PoiItemType.SELECTED_PLACE_CATEGORY);
                 showPoiItems(PoiItemType.SELECTED_PLACE_CATEGORY);
             } else if (categoryChipGroup.getCheckedChipIds().isEmpty()
-                    && !markerMap.get((PoiItemType) locationItemBottomSheetViewPager.getTag(POI_ITEM_TYPE_OF_LOCATION_ITEMS_BOTTOM_SHEET))
+                    && !markerMap.get((PoiItemType) locationItemBottomSheetViewPager.getTag())
                     .isEmpty())
             {
                 removeAllPoiItems();
@@ -560,9 +558,9 @@ public class PlacesMapFragmentNaver extends NaverMapFragment implements OnClicke
     }
 
     @Override
-    public void search(String query)
+    public void searchLocation(String query)
     {
-        super.search(query);
+        super.searchLocation(query);
         if (categoryChipGroup.getCheckedChipIds().size() > 0)
         {
             chipMap.get(selectedPlaceCategory.getCode()).setChecked(false);

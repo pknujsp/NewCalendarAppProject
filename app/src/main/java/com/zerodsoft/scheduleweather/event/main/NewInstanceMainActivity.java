@@ -5,6 +5,7 @@ import androidx.databinding.DataBindingUtil;
 
 import android.os.Bundle;
 import android.provider.CalendarContract;
+import android.view.View;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.ActivityNewInstanceMainBinding;
@@ -12,7 +13,6 @@ import com.zerodsoft.scheduleweather.databinding.ActivityNewInstanceMainBinding;
 public class NewInstanceMainActivity extends AppCompatActivity
 {
     private ActivityNewInstanceMainBinding binding;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -29,6 +29,8 @@ public class NewInstanceMainActivity extends AppCompatActivity
         final long end = bundle.getLong(CalendarContract.Instances.END);
 
         NewInstanceMainFragment newInstanceMainFragment = new NewInstanceMainFragment(calendarId, eventId, instanceId, begin, end);
+        newInstanceMainFragment.setPlaceBottomSheetSelectBtnVisibility(View.GONE);
+        newInstanceMainFragment.setPlaceBottomSheetUnSelectBtnVisibility(View.GONE);
         getSupportFragmentManager().beginTransaction().add(binding.fragmentContainer.getId(), newInstanceMainFragment, NewInstanceMainFragment.TAG).commitNow();
     }
 

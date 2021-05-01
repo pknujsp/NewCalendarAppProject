@@ -97,12 +97,18 @@ public class WeatherItemFragment extends Fragment implements OnBackPressedCallba
         if (hidden)
         {
             removeOnBackPressedCallback();
-            mainFragmentOnBackPressedCallbackController.addOnBackPressedCallback();
+            if (getParentFragmentManager().getBackStackEntryCount() == 0)
+            {
+                mainFragmentOnBackPressedCallbackController.addOnBackPressedCallback();
+            }
             bottomSheetController.setStateOfBottomSheet(BottomSheetType.WEATHER, BottomSheetBehavior.STATE_COLLAPSED);
         } else
         {
             addOnBackPressedCallback();
-            mainFragmentOnBackPressedCallbackController.removeOnBackPressedCallback();
+            if (getParentFragmentManager().getBackStackEntryCount() == 0)
+            {
+                mainFragmentOnBackPressedCallbackController.removeOnBackPressedCallback();
+            }
             bottomSheetController.setStateOfBottomSheet(BottomSheetType.WEATHER, BottomSheetBehavior.STATE_EXPANDED);
         }
     }

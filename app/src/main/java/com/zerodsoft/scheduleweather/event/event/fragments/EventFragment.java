@@ -108,12 +108,18 @@ public class EventFragment extends Fragment implements OnBackPressedCallbackCont
         if (hidden)
         {
             removeOnBackPressedCallback();
-            mainFragmentOnBackPressedCallbackController.addOnBackPressedCallback();
+            if (getParentFragmentManager().getBackStackEntryCount() == 0)
+            {
+                mainFragmentOnBackPressedCallbackController.addOnBackPressedCallback();
+            }
             bottomSheetController.setStateOfBottomSheet(BottomSheetType.INSTANCE_INFO, BottomSheetBehavior.STATE_COLLAPSED);
         } else
         {
             addOnBackPressedCallback();
-            mainFragmentOnBackPressedCallbackController.removeOnBackPressedCallback();
+            if (getParentFragmentManager().getBackStackEntryCount() == 0)
+            {
+                mainFragmentOnBackPressedCallbackController.removeOnBackPressedCallback();
+            }
             bottomSheetController.setStateOfBottomSheet(BottomSheetType.INSTANCE_INFO, BottomSheetBehavior.STATE_EXPANDED);
         }
     }
