@@ -18,6 +18,7 @@ import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackCont
 import com.zerodsoft.scheduleweather.databinding.FragmentFoodsMainBinding;
 import com.zerodsoft.scheduleweather.event.foods.categorylist.FoodCategoryTabFragment;
 import com.zerodsoft.scheduleweather.event.foods.categorylist.FoodsCategoryListFragment;
+import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.navermap.interfaces.INetwork;
 
@@ -40,7 +41,7 @@ public class FoodsHomeFragment extends Fragment implements OnBackPressedCallback
                 if (fragmentManager.findFragmentByTag(FoodsCategoryListFragment.TAG).isVisible())
                 {
                     getParentFragment().getParentFragmentManager().popBackStack();
-                    bottomSheetController.setStateOfBottomSheet(NewFoodsMainFragment.TAG, BottomSheetBehavior.STATE_COLLAPSED);
+                    bottomSheetController.setStateOfBottomSheet(BottomSheetType.RESTAURANT, BottomSheetBehavior.STATE_COLLAPSED);
                 } else if (fragmentManager.findFragmentByTag(FoodCategoryTabFragment.TAG) != null)
                 {
                     fragmentManager.popBackStackImmediate();

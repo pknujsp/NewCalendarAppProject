@@ -22,6 +22,7 @@ import com.zerodsoft.scheduleweather.event.foods.adapter.FoodCategoryFragmentLis
 import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteRestaurantViewModel;
 import com.zerodsoft.scheduleweather.event.foods.main.fragment.NewFoodsMainFragment;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.CustomFoodMenuViewModel;
+import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.room.dto.CustomFoodMenuDTO;
 
@@ -88,8 +89,7 @@ public class FoodCategoryTabFragment extends Fragment
             public void onClick(View v)
             {
                 String currentCategoryName = categoryList.get(binding.viewpager.getCurrentItem());
-
-                bottomSheetController.setStateOfBottomSheet(NewFoodsMainFragment.TAG, BottomSheetBehavior.STATE_COLLAPSED);
+                bottomSheetController.setStateOfBottomSheet(BottomSheetType.RESTAURANT, BottomSheetBehavior.STATE_COLLAPSED);
             }
         });
 

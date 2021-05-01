@@ -19,7 +19,8 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.main.InstanceMainActivity;
-import com.zerodsoft.scheduleweather.navermap.bottomsheet.adapter.PlaceItemInMapViewAdapter;
+import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
+import com.zerodsoft.scheduleweather.navermap.bottomsheet.adapter.LocationItemViewPagerAdapter;
 import com.zerodsoft.scheduleweather.navermap.model.CoordToAddressUtil;
 import com.zerodsoft.scheduleweather.navermap.util.LocalParameterUtil;
 import com.zerodsoft.scheduleweather.navermap.NaverMapActivity;
@@ -88,7 +89,7 @@ public class ReselectDetailLocationNaver extends NaverMapActivity implements OnM
                             coordToAddressDocuments.getCoordToAddressAddress().setLatitude(String.valueOf(savedLocationDto.getLatitude()));
                             coordToAddressDocuments.getCoordToAddressAddress().setLongitude(String.valueOf(savedLocationDto.getLongitude()));
 
-                            naverMapFragment.setPlacesListAdapter(new PlaceItemInMapViewAdapter());
+                            naverMapFragment.setPlacesListAdapter(new LocationItemViewPagerAdapter(), PoiItemType.SELECTED_ADDRESS_IN_EVENT);
                             naverMapFragment.createPoiItems(Collections.singletonList(coordToAddressDocuments), PoiItemType.SELECTED_ADDRESS_IN_EVENT);
                             naverMapFragment.onPOIItemSelectedByList(0, PoiItemType.SELECTED_ADDRESS_IN_EVENT);
                         } else
@@ -117,7 +118,7 @@ public class ReselectDetailLocationNaver extends NaverMapActivity implements OnM
                         if (result.getException() == null)
                         {
                             PlaceDocuments document = result.getData();
-                            naverMapFragment.setPlacesListAdapter(new PlaceItemInMapViewAdapter());
+                            naverMapFragment.setPlacesListAdapter(new LocationItemViewPagerAdapter(), PoiItemType.SELECTED_PLACE_IN_EVENT);
                             naverMapFragment.createPoiItems(Collections.singletonList(document), PoiItemType.SELECTED_PLACE_IN_EVENT);
                             naverMapFragment.onPOIItemSelectedByList(0, PoiItemType.SELECTED_PLACE_IN_EVENT);
                         } else
@@ -203,7 +204,7 @@ public class ReselectDetailLocationNaver extends NaverMapActivity implements OnM
 
                             naverMapFragment.setPlaceBottomSheetSelectBtnVisibility(View.VISIBLE);
                             naverMapFragment.setPlaceBottomSheetUnSelectBtnVisibility(View.GONE);
-                            naverMapFragment.getPlaceListBottomSheetBehavior().setState(BottomSheetBehavior.STATE_COLLAPSED);
+                            naverMapFragment.getBottomSheetBehavior(BottomSheetType.LOCATION_ITEM).setState(BottomSheetBehavior.STATE_COLLAPSED);
                             Toast.makeText(ReselectDetailLocationNaver.this, getString(R.string.removed_detail_location), Toast.LENGTH_SHORT).show();
                         }
                     });

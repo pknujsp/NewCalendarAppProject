@@ -46,6 +46,7 @@ import com.zerodsoft.scheduleweather.activity.editevent.adapter.CalendarListAdap
 import com.zerodsoft.scheduleweather.activity.editevent.value.EventData;
 import com.zerodsoft.scheduleweather.activity.editevent.value.EventDataController;
 import com.zerodsoft.scheduleweather.activity.editevent.interfaces.IEventRepeat;
+import com.zerodsoft.scheduleweather.activity.map.SelectLocationActivityNaver;
 import com.zerodsoft.scheduleweather.databinding.ActivityEditEventBinding;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
@@ -631,7 +632,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                 } else if (resultCode == RESULT_CANCELED)
                 {
 
-                } else if (resultCode == SelectLocationActivityKakao.RESULT_REMOVED_LOCATION)
+                } else if (resultCode == SelectLocationActivityNaver.RESULT_REMOVED_LOCATION)
                 {
                     dataController.removeEventValue(CalendarContract.Events.EVENT_LOCATION);
                     locationDTO = null;

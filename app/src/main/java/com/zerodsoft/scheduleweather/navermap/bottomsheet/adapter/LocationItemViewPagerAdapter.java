@@ -23,7 +23,7 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.Pl
 import java.util.ArrayList;
 import java.util.List;
 
-public class PlaceItemInMapViewAdapter extends RecyclerView.Adapter<PlaceItemInMapViewAdapter.PlaceItemInMapViewHolder>
+public class LocationItemViewPagerAdapter extends RecyclerView.Adapter<LocationItemViewPagerAdapter.PlaceItemInMapViewHolder>
 {
     public static final String TAG = "PlaceItemInMapViewAdapter";
     private List<KakaoLocalDocument> placeDocumentsList = new ArrayList<>();
@@ -36,7 +36,7 @@ public class PlaceItemInMapViewAdapter extends RecyclerView.Adapter<PlaceItemInM
     private int isVisibleSelectBtn;
     private int isVisibleUnSelectBtn;
 
-    public PlaceItemInMapViewAdapter()
+    public LocationItemViewPagerAdapter()
     {
 
     }

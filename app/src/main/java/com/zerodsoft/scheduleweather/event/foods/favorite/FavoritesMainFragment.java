@@ -17,6 +17,7 @@ import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackCont
 import com.zerodsoft.scheduleweather.databinding.FragmentFavoritesMainBinding;
 import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteRestaurantFragment;
 import com.zerodsoft.scheduleweather.event.foods.main.fragment.NewFoodsMainFragment;
+import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
 
 
@@ -38,7 +39,7 @@ public class FavoritesMainFragment extends Fragment implements OnBackPressedCall
                 {
                     getParentFragment().getParentFragmentManager().popBackStack();
 
-                    bottomSheetController.setStateOfBottomSheet(NewFoodsMainFragment.TAG, BottomSheetBehavior.STATE_COLLAPSED);
+                    bottomSheetController.setStateOfBottomSheet(BottomSheetType.RESTAURANT, BottomSheetBehavior.STATE_COLLAPSED);
                 }
             }
         }

@@ -22,11 +22,11 @@ import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackCont
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.common.interfaces.SearchHistoryDataController;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PoiItemOnClickListener;
+import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.fragment.search.adapter.SearchLocationHistoryAdapter;
 import com.zerodsoft.scheduleweather.navermap.fragment.searchresult.LocationSearchResultFragment;
 import com.zerodsoft.scheduleweather.etc.FragmentStateCallback;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
-import com.zerodsoft.scheduleweather.navermap.interfaces.PlacesListBottomSheetController;
 import com.zerodsoft.scheduleweather.navermap.interfaces.SearchBarController;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint;
@@ -53,7 +53,6 @@ public class LocationSearchFragment extends Fragment implements OnSelectedMapCat
     private IMapPoint iMapPoint;
     private IMapData iMapData;
     private FragmentStateCallback fragmentStateCallback;
-    private PlacesListBottomSheetController placesListBottomSheetController;
     private PoiItemOnClickListener poiItemOnClickListener;
     private SearchBarController searchBarController;
     private SearchFragmentController searchFragmentController;
@@ -81,7 +80,7 @@ public class LocationSearchFragment extends Fragment implements OnSelectedMapCat
             if (getParentFragmentManager().findFragmentByTag(LocationSearchResultFragment.TAG) == null)
             {
                 mainFragmentOnBackPressedCallbackController.addOnBackPressedCallback();
-                bottomSheetController.setStateOfBottomSheet(TAG, BottomSheetBehavior.STATE_COLLAPSED);
+                bottomSheetController.setStateOfBottomSheet(BottomSheetType.SEARCH_LOCATION, BottomSheetBehavior.STATE_COLLAPSED);
             }
         } else
         {
@@ -89,7 +88,7 @@ public class LocationSearchFragment extends Fragment implements OnSelectedMapCat
             if (getParentFragmentManager().findFragmentByTag(LocationSearchResultFragment.TAG) == null)
             {
                 mainFragmentOnBackPressedCallbackController.removeOnBackPressedCallback();
-                bottomSheetController.setStateOfBottomSheet(TAG, BottomSheetBehavior.STATE_EXPANDED);
+                bottomSheetController.setStateOfBottomSheet(BottomSheetType.SEARCH_LOCATION, BottomSheetBehavior.STATE_EXPANDED);
             }
         }
     }
@@ -102,7 +101,6 @@ public class LocationSearchFragment extends Fragment implements OnSelectedMapCat
         this.mainFragmentOnBackPressedCallbackController = onBackPressedCallbackController;
         this.bottomSheetController = bottomSheetController;
         this.iMapData = (IMapData) mapFragment;
-        this.placesListBottomSheetController = (PlacesListBottomSheetController) mapFragment;
         this.poiItemOnClickListener = (PoiItemOnClickListener) mapFragment;
         this.fragmentStateCallback = fragmentStateCallback;
         this.searchFragmentController = (SearchFragmentController) mapFragment;

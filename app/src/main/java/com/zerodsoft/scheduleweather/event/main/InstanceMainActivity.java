@@ -86,7 +86,6 @@ public class InstanceMainActivity extends AppCompatActivity implements OnMapRead
     private ContentValues instance;
     private LocationDTO selectedLocationDto;
     private CoordToAddress coordToAddress;
-    private SelectedLocationMapFragmentKakao selectedLocationMapFragmentKakao;
     private SelectedLocationMapFragmentNaver selectedLocationMapFragmentNaver;
     private NetworkStatus networkStatus;
 

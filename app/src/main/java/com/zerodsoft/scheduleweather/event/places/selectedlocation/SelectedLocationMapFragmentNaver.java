@@ -18,7 +18,6 @@ import com.naver.maps.map.OnMapReadyCallback;
 import com.naver.maps.map.overlay.Marker;
 import com.naver.maps.map.overlay.OverlayImage;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.navermap.fragment.main.KakaoMapFragment;
 import com.zerodsoft.scheduleweather.navermap.NaverMapFragment;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 

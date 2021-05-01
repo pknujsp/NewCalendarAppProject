@@ -13,6 +13,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
 import com.zerodsoft.scheduleweather.databinding.FragmentFoodsSettingsBinding;
 import com.zerodsoft.scheduleweather.event.foods.main.fragment.NewFoodsMainFragment;
+import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
 
 public class FoodsSettingsFragment extends Fragment implements OnBackPressedCallbackController
@@ -27,7 +28,7 @@ public class FoodsSettingsFragment extends Fragment implements OnBackPressedCall
         {
             getParentFragment().getParentFragmentManager().popBackStack();
 
-            bottomSheetController.setStateOfBottomSheet(NewFoodsMainFragment.TAG, BottomSheetBehavior.STATE_COLLAPSED);
+            bottomSheetController.setStateOfBottomSheet(BottomSheetType.RESTAURANT, BottomSheetBehavior.STATE_COLLAPSED);
         }
     };
 

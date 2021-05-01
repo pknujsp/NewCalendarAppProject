@@ -19,11 +19,12 @@ import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackCont
 import com.zerodsoft.scheduleweather.databinding.FragmentSearchResultListBinding;
 import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PoiItemOnClickListener;
-import com.zerodsoft.scheduleweather.navermap.bottomsheet.adapter.PlaceItemInMapViewAdapter;
+import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
+import com.zerodsoft.scheduleweather.navermap.PoiItemType;
+import com.zerodsoft.scheduleweather.navermap.bottomsheet.adapter.LocationItemViewPagerAdapter;
 import com.zerodsoft.scheduleweather.navermap.fragment.search.LocationSearchFragment;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.navermap.interfaces.OnClickedLocListItem;
-import com.zerodsoft.scheduleweather.navermap.interfaces.PlacesListBottomSheetController;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint;
 import com.zerodsoft.scheduleweather.navermap.fragment.searchresult.adapter.SearchResultListAdapter;
@@ -57,7 +58,6 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
     private OnPageCallback onPageCallback;
     private IMapPoint iMapPoint;
     private IMapData iMapData;
-    private PlacesListBottomSheetController placesListBottomSheetController;
     private PoiItemOnClickListener poiItemOnClickListener;
     private SearchBarController searchBarController;
     private SearchFragmentController searchFragmentController;
@@ -71,7 +71,7 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
         @Override
         public void handleOnBackPressed()
         {
-            boolean bottomSheetStateIsExpanded = bottomSheetController.getStateOfBottomSheet(LocationSearchFragment.TAG) == BottomSheetBehavior.STATE_EXPANDED;
+            boolean bottomSheetStateIsExpanded = bottomSheetController.getStateOfBottomSheet(BottomSheetType.SEARCH_LOCATION) == BottomSheetBehavior.STATE_EXPANDED;
             if (bottomSheetStateIsExpanded)
             {
                 // list인 경우
@@ -80,9 +80,8 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
             } else
             {
                 // map인 경우
-                iMapData.backToPreviousView();
-                bottomSheetController.setStateOfBottomSheet(LocationSearchFragment.TAG, BottomSheetBehavior.STATE_EXPANDED);
-                bottomSheetController.setStateOfBottomSheet(PlaceItemInMapViewAdapter.TAG, BottomSheetBehavior.STATE_COLLAPSED);
+                bottomSheetController.setStateOfBottomSheet(BottomSheetType.SEARCH_LOCATION, BottomSheetBehavior.STATE_EXPANDED);
+                bottomSheetController.setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_COLLAPSED);
             }
         }
     };
@@ -106,7 +105,6 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
         this.SEARCH_WORD = searchWord;
         this.iMapPoint = (IMapPoint) fragment;
         this.iMapData = (IMapData) fragment;
-        this.placesListBottomSheetController = (PlacesListBottomSheetController) fragment;
         this.poiItemOnClickListener = (PoiItemOnClickListener) fragment;
         this.searchFragmentController = (SearchFragmentController) fragment;
         this.searchBarController = searchBarController;
@@ -241,9 +239,9 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
     @Override
     public void onClickedLocItem(int index)
     {
-        poiItemOnClickListener.onPOIItemSelectedByList(index, );
+        poiItemOnClickListener.onPOIItemSelectedByList(index, PoiItemType.SEARCH_RESULT);
         searchBarController.changeViewTypeImg(SearchBarController.MAP);
-        bottomSheetController.setStateOfBottomSheet(LocationSearchFragment.TAG, BottomSheetBehavior.STATE_COLLAPSED);
+        bottomSheetController.setStateOfBottomSheet(BottomSheetType.SEARCH_LOCATION, BottomSheetBehavior.STATE_COLLAPSED);
 
     }
 

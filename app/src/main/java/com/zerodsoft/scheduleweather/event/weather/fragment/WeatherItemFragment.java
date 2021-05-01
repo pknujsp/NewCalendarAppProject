@@ -25,6 +25,7 @@ import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackCont
 import com.zerodsoft.scheduleweather.databinding.FragmentWeatherItemBinding;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.weather.repository.WeatherDownloader;
+import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.MidFcstParameter;
@@ -97,12 +98,12 @@ public class WeatherItemFragment extends Fragment implements OnBackPressedCallba
         {
             removeOnBackPressedCallback();
             mainFragmentOnBackPressedCallbackController.addOnBackPressedCallback();
-            bottomSheetController.setStateOfBottomSheet(WeatherItemFragment.TAG, BottomSheetBehavior.STATE_COLLAPSED);
+            bottomSheetController.setStateOfBottomSheet(BottomSheetType.WEATHER, BottomSheetBehavior.STATE_COLLAPSED);
         } else
         {
             addOnBackPressedCallback();
             mainFragmentOnBackPressedCallbackController.removeOnBackPressedCallback();
-            bottomSheetController.setStateOfBottomSheet(WeatherItemFragment.TAG, BottomSheetBehavior.STATE_EXPANDED);
+            bottomSheetController.setStateOfBottomSheet(BottomSheetType.WEATHER, BottomSheetBehavior.STATE_EXPANDED);
         }
     }
 

@@ -1,8 +1,10 @@
 package com.zerodsoft.scheduleweather.navermap.interfaces;
 
+import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
+
 public interface BottomSheetController
 {
-    void setStateOfBottomSheet(String fragmentTag, int state);
+    void setStateOfBottomSheet(BottomSheetType bottomSheetType, int state);
 
-    int getStateOfBottomSheet(String fragmentTag);
+    int getStateOfBottomSheet(BottomSheetType bottomSheetType);
 }

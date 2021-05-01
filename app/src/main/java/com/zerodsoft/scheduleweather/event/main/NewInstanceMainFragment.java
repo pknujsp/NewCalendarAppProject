@@ -48,7 +48,8 @@ import com.zerodsoft.scheduleweather.event.foods.categorylist.FoodsCategoryListF
 import com.zerodsoft.scheduleweather.event.foods.main.fragment.NewFoodsMainFragment;
 import com.zerodsoft.scheduleweather.event.places.map.PlacesOfSelectedCategoriesFragment;
 import com.zerodsoft.scheduleweather.event.weather.fragment.WeatherItemFragment;
-import com.zerodsoft.scheduleweather.navermap.bottomsheet.adapter.PlaceItemInMapViewAdapter;
+import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
+import com.zerodsoft.scheduleweather.navermap.bottomsheet.adapter.LocationItemViewPagerAdapter;
 import com.zerodsoft.scheduleweather.navermap.NaverMapFragment;
 import com.zerodsoft.scheduleweather.navermap.PoiItemType;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
@@ -98,22 +99,13 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
     private ImageView functionButton;
     private Marker selectedLocationMarker;
 
-    private BottomSheetBehavior instanceInfoBottomSheetBehavior;
-    private BottomSheetBehavior weatherBottomSheetBehavior;
-    private BottomSheetBehavior restaurantsBottomSheetBehavior;
-
-    private LinearLayout instanceInfoBottomSheet;
-    private LinearLayout weatherBottomSheet;
-    private LinearLayout restaurantsBottomSheet;
-
     private ChipGroup foodMenuChipGroup;
     private Map<String, Chip> foodMenuChipMap = new HashMap<>();
     private Chip foodMenuListChip;
     private String selectedFoodMenu;
     private FoodsCategoryListFragment.RestaurantItemGetter restaurantItemGetter;
 
-    public PlaceItemInMapViewAdapter restaurantListBottomSheetViewPagerAdapter;
-
+    public LocationItemViewPagerAdapter restaurantListBottomSheetViewPagerAdapter;
 
     @Override
     public void onAttach(@NonNull Context context)
@@ -160,16 +152,23 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
         createFunctionList();
 
         Object[] results0 = createBottomSheet(R.id.instance_info_fragment_container);
-        instanceInfoBottomSheet = (LinearLayout) results0[0];
-        instanceInfoBottomSheetBehavior = (BottomSheetBehavior) results0[1];
+        LinearLayout instanceInfoBottomSheet = (LinearLayout) results0[0];
+        BottomSheetBehavior instanceInfoBottomSheetBehavior = (BottomSheetBehavior) results0[1];
 
         Object[] results1 = createBottomSheet(R.id.weather_fragment_container);
-        weatherBottomSheet = (LinearLayout) results1[0];
-        weatherBottomSheetBehavior = (BottomSheetBehavior) results1[1];
+        LinearLayout weatherBottomSheet = (LinearLayout) results1[0];
+        BottomSheetBehavior weatherBottomSheetBehavior = (BottomSheetBehavior) results1[1];
 
         Object[] results2 = createBottomSheet(R.id.restaurant_fragment_container);
-        restaurantsBottomSheet = (LinearLayout) results2[0];
-        restaurantsBottomSheetBehavior = (BottomSheetBehavior) results2[1];
+        LinearLayout restaurantsBottomSheet = (LinearLayout) results2[0];
+        BottomSheetBehavior restaurantsBottomSheetBehavior = (BottomSheetBehavior) results2[1];
+
+        bottomSheetViewMap.put(BottomSheetType.INSTANCE_INFO, instanceInfoBottomSheet);
+        bottomSheetViewMap.put(BottomSheetType.WEATHER, weatherBottomSheet);
+        bottomSheetViewMap.put(BottomSheetType.RESTAURANT, restaurantsBottomSheet);
+        bottomSheetBehaviorMap.put(BottomSheetType.INSTANCE_INFO, instanceInfoBottomSheetBehavior);
+        bottomSheetBehaviorMap.put(BottomSheetType.WEATHER, weatherBottomSheetBehavior);
+        bottomSheetBehaviorMap.put(BottomSheetType.RESTAURANT, restaurantsBottomSheetBehavior);
 
         instanceInfoBottomSheetBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback()
         {
@@ -259,17 +258,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
                 binding.naverMapFragmentRootLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
             }
         });
-
-
-        bottomSheetBehaviorList.add(instanceInfoBottomSheetBehavior);
-        bottomSheetBehaviorList.add(weatherBottomSheetBehavior);
-        bottomSheetBehaviorList.add(restaurantsBottomSheetBehavior);
-
-        bottomSheetBehaviorMap.put(EventFragment.TAG, instanceInfoBottomSheetBehavior);
-        bottomSheetBehaviorMap.put(WeatherItemFragment.TAG, weatherBottomSheetBehavior);
-        bottomSheetBehaviorMap.put(NewFoodsMainFragment.TAG, restaurantsBottomSheetBehavior);
     }
-
 
     private void setHeightOfBottomSheet(int height, LinearLayout bottomSheetView, BottomSheetBehavior bottomSheetBehavior)
     {
@@ -365,9 +354,8 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
                 {
                     addEventFragmentIntoBottomSheet();
                 }
-
-                onCalledBottomSheet(BottomSheetBehavior.STATE_EXPANDED, instanceInfoBottomSheetBehavior);
-                instanceInfoBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+                onCalledBottomSheet(BottomSheetBehavior.STATE_EXPANDED, bottomSheetBehaviorMap.get(BottomSheetType.INSTANCE_INFO));
+                bottomSheetBehaviorMap.get(BottomSheetType.INSTANCE_INFO).setState(BottomSheetBehavior.STATE_EXPANDED);
             }
         });
 
@@ -382,10 +370,8 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
                 {
                     addWeatherFragmentIntoBottomSheet();
                 }
-
-                onCalledBottomSheet(BottomSheetBehavior.STATE_EXPANDED, weatherBottomSheetBehavior);
-                weatherBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-
+                onCalledBottomSheet(BottomSheetBehavior.STATE_EXPANDED, bottomSheetBehaviorMap.get(BottomSheetType.WEATHER));
+                bottomSheetBehaviorMap.get(BottomSheetType.WEATHER).setState(BottomSheetBehavior.STATE_EXPANDED);
             }
         });
 
@@ -400,9 +386,8 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
                 {
                     addRestaurantFragmentIntoBottomSheet();
                 }
-
-                onCalledBottomSheet(BottomSheetBehavior.STATE_EXPANDED, restaurantsBottomSheetBehavior);
-                restaurantsBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+                onCalledBottomSheet(BottomSheetBehavior.STATE_EXPANDED, bottomSheetBehaviorMap.get(BottomSheetType.RESTAURANT));
+                bottomSheetBehaviorMap.get(BottomSheetType.RESTAURANT).setState(BottomSheetBehavior.STATE_EXPANDED);
             }
         });
 
@@ -567,7 +552,8 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
     {
         EventFragment eventFragment = new EventFragment(this, this, CALENDAR_ID, EVENT_ID, INSTANCE_ID, ORIGINAL_BEGIN, ORIGINAL_END);
         getChildFragmentManager().beginTransaction()
-                .add(instanceInfoBottomSheet.getChildAt(0).getId(), eventFragment, EventFragment.TAG).hide(eventFragment).commitNow();
+                .add(bottomSheetViewMap.get(BottomSheetType.INSTANCE_INFO).getChildAt(0).getId(), eventFragment, EventFragment.TAG).hide(eventFragment).commitNow();
+        bottomSheetFragmentMap.put(BottomSheetType.INSTANCE_INFO, eventFragment);
     }
 
     private void addWeatherFragmentIntoBottomSheet()
@@ -581,7 +567,8 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
 
         weatherFragment.setArguments(bundle);
         getChildFragmentManager().beginTransaction()
-                .add(weatherBottomSheet.getChildAt(0).getId(), weatherFragment, WeatherItemFragment.TAG).hide(weatherFragment).commitNow();
+                .add(bottomSheetViewMap.get(BottomSheetType.WEATHER).getChildAt(0).getId(), weatherFragment, WeatherItemFragment.TAG).hide(weatherFragment).commitNow();
+        bottomSheetFragmentMap.put(BottomSheetType.WEATHER, weatherFragment);
     }
 
     private void addRestaurantFragmentIntoBottomSheet()
@@ -589,13 +576,15 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
         NewFoodsMainFragment newFoodsMainFragment = new NewFoodsMainFragment(this, this
                 , this, CALENDAR_ID, INSTANCE_ID, EVENT_ID);
         getChildFragmentManager().beginTransaction()
-                .add(restaurantsBottomSheet.getChildAt(0).getId(), newFoodsMainFragment, NewFoodsMainFragment.TAG).hide(newFoodsMainFragment).commitNow();
+                .add(bottomSheetViewMap.get(BottomSheetType.RESTAURANT).getChildAt(0).getId(), newFoodsMainFragment, NewFoodsMainFragment.TAG).hide(newFoodsMainFragment).commitNow();
+        bottomSheetFragmentMap.put(BottomSheetType.RESTAURANT, newFoodsMainFragment);
     }
 
     @Override
     public void createRestaurantListView(List<String> foodMenuList, FoodsCategoryListFragment.RestaurantItemGetter restaurantItemGetter)
     {
         this.restaurantItemGetter = restaurantItemGetter;
+
         createFoodMenuChips();
         addFoodMenuListChip();
         setFoodMenuChips(foodMenuList);
@@ -684,11 +673,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
              */
             if (isChecked)
             {
-                if (isSelectedPoiItem)
-                {
-                    deselectPoiItem();
-                }
-                setPlacesListAdapter(new PlaceItemInMapViewAdapter());
+                setPlacesListAdapter(new LocationItemViewPagerAdapter(), PoiItemType.RESTAURANT);
 
                 final String foodMenuName = ((ChipViewHolder) compoundButton.getTag()).foodMenuName;
                 List<PlaceDocuments> placeDocumentsList = restaurantItemGetter.getRestaurantList(foodMenuName);
@@ -696,13 +681,14 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
 
                 createPoiItems(placeDocumentsList, PoiItemType.RESTAURANT);
                 showPoiItems(PoiItemType.RESTAURANT);
-            } else if (foodMenuChipGroup.getCheckedChipIds().isEmpty() && !searchResultMarkerList.isEmpty())
+
+            } else if (foodMenuChipGroup.getCheckedChipIds().isEmpty() && !markerMap.get((PoiItemType) locationItemBottomSheetViewPager
+                    .getTag(POI_ITEM_TYPE_OF_LOCATION_ITEMS_BOTTOM_SHEET)).isEmpty())
             {
                 removePoiItems(PoiItemType.RESTAURANT);
-                isSelectedPoiItem = false;
                 selectedFoodMenu = null;
             }
-            setStateOfBottomSheet(PlaceItemInMapViewAdapter.TAG, BottomSheetBehavior.STATE_EXPANDED);
+            setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_EXPANDED);
         }
     };
 
@@ -720,7 +706,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
             @Override
             public void onClick(View view)
             {
-                setStateOfBottomSheet(NewFoodsMainFragment.TAG, BottomSheetBehavior.STATE_EXPANDED);
+                setStateOfBottomSheet(BottomSheetType.RESTAURANT, BottomSheetBehavior.STATE_EXPANDED);
             }
         });
 
@@ -728,10 +714,11 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
     }
 
     @Override
-    public void onPageSelectedPlaceBottomSheetViewPager(int position)
+    public void onPageSelectedPlaceBottomSheetViewPager(int position, PoiItemType poiItemType)
     {
-        if (searchResultBottomSheetViewPagerAdapter.getItemCount() - 1 == position)
+        if (viewPagerAdapterMap.get(poiItemType).getItemCount() - 1 == position)
         {
+            /*
             FragmentManager fragmentManager = getChildFragmentManager();
 
             PlacesOfSelectedCategoriesFragment placesOfSelectedCategoriesFragment
@@ -747,16 +734,17 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
                         public void onItemRangeInserted(int positionStart, int itemCount)
                         {
                             super.onItemRangeInserted(positionStart, itemCount);
-                            addPoiItems(placeItemsGetter.getPlaceItems(selectedPlaceCategory), );
+                            addPoiItems(placeItemsGetter.getPlaceItems(selectedPlaceCategory), poiItemType);
                         }
                     });
                     return;
                 }
             }
+             */
 
         }
 
-        super.onPageSelectedPlaceBottomSheetViewPager(position);
+        super.onPageSelectedPlaceBottomSheetViewPager(position, poiItemType);
     }
 
     static final class ChipViewHolder

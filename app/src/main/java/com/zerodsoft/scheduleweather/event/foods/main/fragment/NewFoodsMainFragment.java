@@ -30,6 +30,7 @@ import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteRes
 import com.zerodsoft.scheduleweather.event.foods.search.search.fragment.SearchRestaurantFragment;
 import com.zerodsoft.scheduleweather.event.foods.settings.FoodsSettingsFragment;
 import com.zerodsoft.scheduleweather.event.foods.share.FavoriteRestaurantCloud;
+import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.navermap.interfaces.INetwork;
 import com.zerodsoft.scheduleweather.room.dto.FavoriteRestaurantDTO;
@@ -75,12 +76,12 @@ public class NewFoodsMainFragment extends Fragment implements INetwork, BottomNa
         {
             removeOnBackPressedCallback();
             mainFragmentOnBackPressedCallbackController.addOnBackPressedCallback();
-            bottomSheetController.setStateOfBottomSheet(TAG, BottomSheetBehavior.STATE_COLLAPSED);
+            bottomSheetController.setStateOfBottomSheet(BottomSheetType.RESTAURANT, BottomSheetBehavior.STATE_COLLAPSED);
         } else
         {
             addOnBackPressedCallback();
             mainFragmentOnBackPressedCallbackController.removeOnBackPressedCallback();
-            bottomSheetController.setStateOfBottomSheet(TAG, BottomSheetBehavior.STATE_EXPANDED);
+            bottomSheetController.setStateOfBottomSheet(BottomSheetType.RESTAURANT, BottomSheetBehavior.STATE_EXPANDED);
 
         }
     }

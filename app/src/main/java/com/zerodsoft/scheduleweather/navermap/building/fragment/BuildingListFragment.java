@@ -26,8 +26,10 @@ import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackCont
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.databinding.FragmentBuildingListBinding;
 import com.zerodsoft.scheduleweather.event.weather.repository.SgisTranscoord;
+import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.building.SgisBuildingDownloader;
 import com.zerodsoft.scheduleweather.navermap.building.adapter.BuildingListAdapter;
+import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BuildingFragmentController;
 import com.zerodsoft.scheduleweather.navermap.model.CoordToAddressUtil;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
@@ -47,6 +49,7 @@ public class BuildingListFragment extends Fragment implements OnClickedListItem<
     private FragmentBuildingListBinding binding;
     public static final String TAG = "BuildingListFragment";
     private final BuildingFragmentController buildingFragmentController;
+    private final BottomSheetController bottomSheetController;
 
     @Override
     public void onBackStackChanged()
@@ -73,6 +76,7 @@ public class BuildingListFragment extends Fragment implements OnClickedListItem<
     public BuildingListFragment(Fragment fragment, OnBackPressedCallbackController onBackPressedCallbackController)
     {
         buildingFragmentController = (BuildingFragmentController) fragment;
+        bottomSheetController = (BottomSheetController) fragment;
         onSearchRadiusChangeListener = (OnSearchRadiusChangeListener) fragment;
         this.mainFragmentOnBackPressedCallbackController = onBackPressedCallbackController;
     }
@@ -394,7 +398,8 @@ public class BuildingListFragment extends Fragment implements OnClickedListItem<
         getParentFragmentManager().beginTransaction().hide(this)
                 .add(R.id.building_fragment_container, buildingFragment, BuildingFragment.TAG)
                 .addToBackStack(BuildingFragment.TAG).commit();
-        buildingFragmentController.setStateBuildingBottomSheet(BottomSheetBehavior.STATE_EXPANDED);
+
+        bottomSheetController.setStateOfBottomSheet(BottomSheetType.BUILDING, BottomSheetBehavior.STATE_EXPANDED);
     }
 
     @Override

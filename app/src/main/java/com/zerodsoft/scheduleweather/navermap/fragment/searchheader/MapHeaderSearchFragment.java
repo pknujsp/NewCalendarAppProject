@@ -16,7 +16,9 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.interfaces.SearchHistoryDataController;
 import com.zerodsoft.scheduleweather.databinding.FragmentLocationSearchBarBinding;
-import com.zerodsoft.scheduleweather.navermap.bottomsheet.adapter.PlaceItemInMapViewAdapter;
+import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
+import com.zerodsoft.scheduleweather.navermap.PoiItemType;
+import com.zerodsoft.scheduleweather.navermap.bottomsheet.adapter.LocationItemViewPagerAdapter;
 import com.zerodsoft.scheduleweather.navermap.fragment.search.LocationSearchFragment;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapData;
@@ -152,7 +154,7 @@ public class MapHeaderSearchFragment extends Fragment implements SearchBarContro
 
     public void changeFragment()
     {
-        boolean bottomSheetStateIsExpanded = bottomSheetController.getStateOfBottomSheet(LocationSearchFragment.TAG)
+        boolean bottomSheetStateIsExpanded = bottomSheetController.getStateOfBottomSheet(BottomSheetType.SEARCH_LOCATION)
                 == BottomSheetBehavior.STATE_EXPANDED ? true : false;
         changeViewTypeImg(bottomSheetStateIsExpanded ? SearchBarController.LIST : SearchBarController.MAP);
 
@@ -160,15 +162,15 @@ public class MapHeaderSearchFragment extends Fragment implements SearchBarContro
         {
             // to map
             // 버튼 이미지, 프래그먼트 숨김/보이기 설정
-            iMapData.showAllPoiItems();
-            bottomSheetController.setStateOfBottomSheet(PlaceItemInMapViewAdapter.TAG, BottomSheetBehavior.STATE_COLLAPSED);
-            bottomSheetController.setStateOfBottomSheet(LocationSearchFragment.TAG, BottomSheetBehavior.STATE_COLLAPSED);
+            iMapData.showPoiItems(PoiItemType.SEARCH_RESULT);
+            bottomSheetController.setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_COLLAPSED);
+            bottomSheetController.setStateOfBottomSheet(BottomSheetType.SEARCH_LOCATION, BottomSheetBehavior.STATE_COLLAPSED);
         } else
         {
             // to list
-            iMapData.backToPreviousView();
-            bottomSheetController.setStateOfBottomSheet(PlaceItemInMapViewAdapter.TAG, BottomSheetBehavior.STATE_COLLAPSED);
-            bottomSheetController.setStateOfBottomSheet(LocationSearchFragment.TAG, BottomSheetBehavior.STATE_EXPANDED);
+            iMapData.showPoiItems(PoiItemType.SEARCH_RESULT);
+            bottomSheetController.setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_COLLAPSED);
+            bottomSheetController.setStateOfBottomSheet(BottomSheetType.SEARCH_LOCATION, BottomSheetBehavior.STATE_EXPANDED);
         }
     }
 

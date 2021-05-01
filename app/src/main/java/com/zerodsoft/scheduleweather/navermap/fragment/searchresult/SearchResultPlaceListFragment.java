@@ -31,7 +31,8 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.interfaces.OnProgressBarListener;
 import com.zerodsoft.scheduleweather.databinding.FragmentLocationSearchResultBinding;
 import com.zerodsoft.scheduleweather.etc.LocationType;
-import com.zerodsoft.scheduleweather.navermap.bottomsheet.adapter.PlaceItemInMapViewAdapter;
+import com.zerodsoft.scheduleweather.navermap.PoiItemType;
+import com.zerodsoft.scheduleweather.navermap.bottomsheet.adapter.LocationItemViewPagerAdapter;
 import com.zerodsoft.scheduleweather.navermap.interfaces.OnClickedLocListItem;
 import com.zerodsoft.scheduleweather.navermap.fragment.searchresult.interfaces.IViewPager;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapData;
@@ -324,14 +325,14 @@ public class SearchResultPlaceListFragment extends Fragment implements IViewPage
     public void onChangedPage()
     {
         int poiItemSize = iMapData.getPoiItemSize();
-        iMapData.setPlacesListAdapter(new PlaceItemInMapViewAdapter());
+        iMapData.setPlacesListAdapter(new LocationItemViewPagerAdapter(), PoiItemType.SEARCH_RESULT);
 
         if (poiItemSize > 0 && adapter != null)
         {
             if (adapter.getItemCount() > 0)
             {
                 iMapData.removeAllPoiItems();
-                iMapData.createPoiItems(adapter.getCurrentList().snapshot(), );
+                iMapData.createPoiItems(adapter.getCurrentList().snapshot(), PoiItemType.SEARCH_RESULT);
             }
         }
     }
@@ -345,10 +346,10 @@ public class SearchResultPlaceListFragment extends Fragment implements IViewPage
             super.onItemRangeInserted(positionStart, itemCount);
             if (positionStart > 0)
             {
-                iMapData.addPoiItems(adapter.getCurrentList().snapshot(), );
+                iMapData.addPoiItems(adapter.getCurrentList().snapshot(), PoiItemType.SEARCH_RESULT);
             } else
             {
-                iMapData.createPoiItems(adapter.getCurrentList().snapshot(), );
+                iMapData.createPoiItems(adapter.getCurrentList().snapshot(), PoiItemType.SEARCH_RESULT);
             }
         }
 
