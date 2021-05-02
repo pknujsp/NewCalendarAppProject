@@ -25,16 +25,15 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
 import com.zerodsoft.scheduleweather.databinding.FragmentNewFoodsMainBinding;
 import com.zerodsoft.scheduleweather.event.foods.favorite.FavoritesMainFragment;
-import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteRestaurantViewModel;
+import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteLocationViewModel;
 import com.zerodsoft.scheduleweather.event.foods.search.search.fragment.SearchRestaurantFragment;
 import com.zerodsoft.scheduleweather.event.foods.settings.FoodsSettingsFragment;
-import com.zerodsoft.scheduleweather.event.foods.share.FavoriteRestaurantCloud;
 import com.zerodsoft.scheduleweather.event.main.NewInstanceMainFragment;
 import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.navermap.interfaces.INetwork;
 import com.zerodsoft.scheduleweather.navermap.interfaces.OnExtraListDataListener;
-import com.zerodsoft.scheduleweather.room.dto.FavoriteRestaurantDTO;
+import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
 import com.zerodsoft.scheduleweather.utility.NetworkStatus;
 
 import java.util.List;
@@ -45,7 +44,6 @@ public class NewFoodsMainFragment extends Fragment implements INetwork, BottomNa
     public static final String TAG = "NewFoodsMainFragment";
     private FragmentNewFoodsMainBinding binding;
 
-    private FavoriteRestaurantViewModel favoriteRestaurantViewModel;
     private NetworkStatus networkStatus;
     private Fragment currentShowingFragment;
 
@@ -143,21 +141,6 @@ public class NewFoodsMainFragment extends Fragment implements INetwork, BottomNa
 
             }
         });
-
-        favoriteRestaurantViewModel = new ViewModelProvider(this).get(FavoriteRestaurantViewModel.class);
-        favoriteRestaurantViewModel.select(new CarrierMessagingService.ResultCallback<List<FavoriteRestaurantDTO>>()
-        {
-            @Override
-            public void onReceiveResult(@NonNull List<FavoriteRestaurantDTO> favoriteRestaurantDTOS) throws RemoteException
-            {
-                FavoriteRestaurantCloud favoriteRestaurantCloud = FavoriteRestaurantCloud.newInstance();
-                for (FavoriteRestaurantDTO favoriteRestaurantDTO : favoriteRestaurantDTOS)
-                {
-                    favoriteRestaurantCloud.add(favoriteRestaurantDTO.getRestaurantId());
-                }
-            }
-        });
-
         setInitFragments();
     }
 
@@ -193,7 +176,6 @@ public class NewFoodsMainFragment extends Fragment implements INetwork, BottomNa
     {
         super.onDestroy();
         networkStatus.unregisterNetworkCallback();
-        FavoriteRestaurantCloud.close();
     }
 
     @Override

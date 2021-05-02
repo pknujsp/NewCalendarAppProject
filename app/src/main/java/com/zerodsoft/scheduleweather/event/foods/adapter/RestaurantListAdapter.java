@@ -3,6 +3,7 @@ package com.zerodsoft.scheduleweather.event.foods.adapter;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,7 +13,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
 import androidx.paging.PagedListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -20,13 +20,14 @@ import com.bumptech.glide.Glide;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
+import com.zerodsoft.scheduleweather.common.interfaces.OnDbQueryListener;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedFavoriteButtonListener;
-import com.zerodsoft.scheduleweather.event.foods.share.FavoriteRestaurantCloud;
 import com.zerodsoft.scheduleweather.navermap.callback.PlaceItemCallback;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.kakaoplace.KakaoPlaceJsonRoot;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.kakaoplace.menuinfo.MenuInfo;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.kakaoplace.menuinfo.MenuItem;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
+import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -40,14 +41,15 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
 
     private SparseArray<KakaoPlaceJsonRoot> kakaoPlacesArr = new SparseArray<>();
     private SparseArray<Bitmap> restaurantImagesArr = new SparseArray<>();
-    private FavoriteRestaurantCloud favoriteRestaurantCloud = FavoriteRestaurantCloud.getInstance();
+    private OnContainsRestaurantListener onContainsRestaurantListener;
 
     private Context context;
 
-    public RestaurantListAdapter(Context context, OnClickedListItem<PlaceDocuments> onClickedListItem, OnClickedFavoriteButtonListener onClickedFavoriteButtonListener)
+    public RestaurantListAdapter(Context context, OnContainsRestaurantListener onContainsRestaurantListener, OnClickedListItem<PlaceDocuments> onClickedListItem, OnClickedFavoriteButtonListener onClickedFavoriteButtonListener)
     {
         super(new PlaceItemCallback());
         this.context = context;
+        this.onContainsRestaurantListener = onContainsRestaurantListener;
         this.onClickedListItem = onClickedListItem;
         this.onClickedFavoriteButtonListener = onClickedFavoriteButtonListener;
     }
@@ -121,8 +123,22 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
                 }
             });
 
-            favoriteButton.setImageDrawable(favoriteRestaurantCloud.contains(item.getId()) ? ContextCompat.getDrawable(context, R.drawable.favorite_enabled_icon)
-                    : ContextCompat.getDrawable(context, R.drawable.favorite_disabled_icon));
+
+            onContainsRestaurantListener.contains(FavoriteLocationDTO.RESTAURANT, item.getPlaceName(), item.getId(), new OnDbQueryListener<Drawable>()
+            {
+                @Override
+                public void onSuccessful(Drawable result)
+                {
+                    favoriteButton.setImageDrawable(result);
+                }
+
+                @Override
+                public void onFailed(Exception e)
+                {
+
+                }
+            });
+
         }
 
         public void setData(KakaoPlaceJsonRoot kakaoPlaceJsonRoot)
@@ -222,7 +238,7 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
                 {
                     restaurantImage.setImageBitmap(restaurantImagesArr.get(getBindingAdapterPosition()));
                     Glide.with(itemView)
-                            .load(restaurantImagesArr.get(getAdapterPosition())).circleCrop()
+                            .load(restaurantImagesArr.get(getBindingAdapterPosition())).circleCrop()
                             .into(restaurantImage);
                 }
             } else
@@ -267,5 +283,10 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
     {
         super.onViewRecycled(holder);
         holder.clearData();
+    }
+
+    public interface OnContainsRestaurantListener
+    {
+        void contains(int type, String name, String id, OnDbQueryListener<Drawable> callback);
     }
 }

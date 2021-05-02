@@ -1,9 +1,11 @@
 package com.zerodsoft.scheduleweather.event.foods.categorylist;
 
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
@@ -18,30 +20,28 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
+import com.zerodsoft.scheduleweather.common.interfaces.OnDbQueryListener;
 import com.zerodsoft.scheduleweather.common.interfaces.OnProgressBarListener;
 import com.zerodsoft.scheduleweather.databinding.FragmentRestaurantListBinding;
 import com.zerodsoft.scheduleweather.event.foods.adapter.RestaurantListAdapter;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedFavoriteButtonListener;
 import com.zerodsoft.scheduleweather.event.foods.share.CriteriaLocationRepository;
-import com.zerodsoft.scheduleweather.event.foods.share.FavoriteRestaurantCloud;
 import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoFragment;
 import com.zerodsoft.scheduleweather.navermap.util.LocalParameterUtil;
 import com.zerodsoft.scheduleweather.navermap.viewmodel.PlacesViewModel;
-import com.zerodsoft.scheduleweather.navermap.interfaces.OnExtraListDataListener;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
-import com.zerodsoft.scheduleweather.room.dto.FavoriteRestaurantDTO;
+import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
-import com.zerodsoft.scheduleweather.room.interfaces.FavoriteRestaurantQuery;
-
-import java.util.List;
+import com.zerodsoft.scheduleweather.room.interfaces.FavoriteLocationQuery;
 
 public class RestaurantListFragment extends Fragment implements OnClickedListItem<PlaceDocuments>, OnClickedFavoriteButtonListener
-        , FoodCategoryTabFragment.RefreshFavoriteState
+        , RestaurantListTabFragment.RefreshFavoriteState, RestaurantListAdapter.OnContainsRestaurantListener
 {
-    protected FavoriteRestaurantQuery favoriteRestaurantQuery;
+    protected FavoriteLocationQuery favoriteRestaurantDbQuery;
     protected FragmentRestaurantListBinding binding;
     protected String CATEGORY_NAME;
     protected PlacesViewModel placesViewModel;
@@ -54,9 +54,9 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
         this.CATEGORY_NAME = CATEGORY_NAME;
     }
 
-    public RestaurantListFragment(FavoriteRestaurantQuery favoriteRestaurantQuery, String CATEGORY_NAME)
+    public RestaurantListFragment(FavoriteLocationQuery favoriteRestaurantDbQuery, String CATEGORY_NAME)
     {
-        this.favoriteRestaurantQuery = favoriteRestaurantQuery;
+        this.favoriteRestaurantDbQuery = favoriteRestaurantDbQuery;
         this.CATEGORY_NAME = CATEGORY_NAME;
     }
 
@@ -88,7 +88,7 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
         binding.recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext(), RecyclerView.VERTICAL, false));
         binding.recyclerView.addItemDecoration(new DividerItemDecoration(view.getContext(), DividerItemDecoration.VERTICAL));
 
-        adapter = new RestaurantListAdapter(getContext(), RestaurantListFragment.this, RestaurantListFragment.this);
+        adapter = new RestaurantListAdapter(getContext(), RestaurantListFragment.this, RestaurantListFragment.this, RestaurantListFragment.this);
         binding.recyclerView.setAdapter(adapter);
 
         requestRestaurantList(CATEGORY_NAME);
@@ -183,7 +183,7 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
     }
 
     @Override
-    public void onClickedFavoriteButton(String restaurantId, int groupPosition, int childPosition)
+    public void onClickedFavoriteButton(String placeId, int groupPosition, int childPosition)
     {
 
     }
@@ -191,47 +191,56 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
     @Override
     public void onClickedFavoriteButton(PlaceDocuments placeDocuments, int position)
     {
-        if (FavoriteRestaurantCloud.getInstance().contains(placeDocuments.getId()))
+        favoriteRestaurantDbQuery.contains(FavoriteLocationDTO.RESTAURANT, placeDocuments.getPlaceName(), placeDocuments.getId(), new CarrierMessagingService.ResultCallback<Boolean>()
         {
-            favoriteRestaurantQuery.delete(placeDocuments.getId(), new CarrierMessagingService.ResultCallback<Boolean>()
+            @Override
+            public void onReceiveResult(@NonNull Boolean isDuplicate) throws RemoteException
             {
-                @Override
-                public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
+                if (isDuplicate)
                 {
-                    getActivity().runOnUiThread(new Runnable()
+                    favoriteRestaurantDbQuery.delete(placeDocuments.getPlaceName(), FavoriteLocationDTO.RESTAURANT, new CarrierMessagingService.ResultCallback<Boolean>()
                     {
                         @Override
-                        public void run()
+                        public void onReceiveResult(@NonNull Boolean isDeleted) throws RemoteException
                         {
-                            adapter.notifyItemChanged(position);
+                            requireActivity().runOnUiThread(new Runnable()
+                            {
+                                @Override
+                                public void run()
+                                {
+                                    adapter.notifyItemChanged(position);
+                                }
+                            });
+
                         }
                     });
-
-                }
-            });
-        } else
-        {
-            String id = placeDocuments.getId();
-            String name = placeDocuments.getPlaceName();
-            String latitude = String.valueOf(placeDocuments.getY());
-            String longitude = String.valueOf(placeDocuments.getX());
-
-            favoriteRestaurantQuery.insert(id, name, latitude, longitude, new CarrierMessagingService.ResultCallback<FavoriteRestaurantDTO>()
-            {
-                @Override
-                public void onReceiveResult(@NonNull FavoriteRestaurantDTO favoriteRestaurantDTO) throws RemoteException
+                } else
                 {
-                    getActivity().runOnUiThread(new Runnable()
+                    String id = placeDocuments.getId();
+                    String name = placeDocuments.getPlaceName();
+                    String latitude = String.valueOf(placeDocuments.getY());
+                    String longitude = String.valueOf(placeDocuments.getX());
+
+                    favoriteRestaurantDbQuery.insert(id, name, latitude, longitude, FavoriteLocationDTO.RESTAURANT, new CarrierMessagingService.ResultCallback<FavoriteLocationDTO>()
                     {
                         @Override
-                        public void run()
+                        public void onReceiveResult(@NonNull FavoriteLocationDTO favoriteLocationDTO) throws RemoteException
                         {
-                            adapter.notifyItemChanged(position);
+                            requireActivity().runOnUiThread(new Runnable()
+                            {
+                                @Override
+                                public void run()
+                                {
+                                    adapter.notifyItemChanged(position);
+                                }
+                            });
                         }
                     });
                 }
-            });
-        }
+            }
+        });
+
+
     }
 
     @Override
@@ -243,5 +252,24 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
         }
     }
 
-
+    @Override
+    public void contains(int type, String name, String id, OnDbQueryListener<Drawable> callback)
+    {
+        favoriteRestaurantDbQuery.contains(type, name, id, new CarrierMessagingService.ResultCallback<Boolean>()
+        {
+            @Override
+            public void onReceiveResult(@NonNull Boolean isContain) throws RemoteException
+            {
+                requireActivity().runOnUiThread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        callback.onSuccessful(isContain ? ContextCompat.getDrawable(getContext(), R.drawable.favorite_enabled_icon)
+                                : ContextCompat.getDrawable(getContext(), R.drawable.favorite_disabled_icon));
+                    }
+                });
+            }
+        });
+    }
 }

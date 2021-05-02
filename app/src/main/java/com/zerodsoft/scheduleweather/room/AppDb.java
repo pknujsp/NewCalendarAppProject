@@ -8,7 +8,7 @@ import androidx.room.RoomDatabase;
 
 import com.zerodsoft.scheduleweather.room.dao.CustomFoodMenuDAO;
 import com.zerodsoft.scheduleweather.room.dao.CustomPlaceCategoryDAO;
-import com.zerodsoft.scheduleweather.room.dao.FavoriteRestaurantDAO;
+import com.zerodsoft.scheduleweather.room.dao.FavoriteLocationDAO;
 import com.zerodsoft.scheduleweather.room.dao.FoodCriteriaLocationInfoDAO;
 import com.zerodsoft.scheduleweather.room.dao.FoodCriteriaLocationSearchHistoryDAO;
 import com.zerodsoft.scheduleweather.room.dao.SearchHistoryDAO;
@@ -18,7 +18,7 @@ import com.zerodsoft.scheduleweather.room.dao.FavoriteLocDAO;
 import com.zerodsoft.scheduleweather.room.dao.LocationDAO;
 import com.zerodsoft.scheduleweather.room.dao.SelectedPlaceCategoryDAO;
 import com.zerodsoft.scheduleweather.room.dao.WeatherAreaCodeDAO;
-import com.zerodsoft.scheduleweather.room.dto.FavoriteRestaurantDTO;
+import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.FoodCriteriaLocationInfoDTO;
 import com.zerodsoft.scheduleweather.room.dto.FoodCriteriaLocationSearchHistoryDTO;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
@@ -27,7 +27,7 @@ import com.zerodsoft.scheduleweather.room.dto.SelectedPlaceCategoryDTO;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
 
 @Database(entities = {LocationDTO.class, WeatherAreaCodeDTO.class, SelectedPlaceCategoryDTO.class, CustomPlaceCategoryDTO.class, CustomFoodMenuDTO.class,
-        FoodCriteriaLocationInfoDTO.class, FoodCriteriaLocationSearchHistoryDTO.class, SearchHistoryDTO.class, FavoriteRestaurantDTO.class}, version = 1, exportSchema = false)
+        FoodCriteriaLocationInfoDTO.class, FoodCriteriaLocationSearchHistoryDTO.class, SearchHistoryDTO.class, FavoriteLocationDTO.class}, version = 1, exportSchema = false)
 public abstract class AppDb extends RoomDatabase
 {
     private static volatile AppDb instance = null;
@@ -50,7 +50,7 @@ public abstract class AppDb extends RoomDatabase
 
     public abstract SearchHistoryDAO searchHistoryDAO();
 
-    public abstract FavoriteRestaurantDAO favoriteRestaurantDAO();
+    public abstract FavoriteLocationDAO favoriteRestaurantDAO();
 
 
     public static synchronized AppDb getInstance(Context context)

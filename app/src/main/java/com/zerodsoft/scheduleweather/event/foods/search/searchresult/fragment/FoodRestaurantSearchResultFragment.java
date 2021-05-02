@@ -1,9 +1,7 @@
 package com.zerodsoft.scheduleweather.event.foods.search.searchresult.fragment;
 
-import android.content.Context;
 import android.os.Bundle;
 
-import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -13,17 +11,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
 import com.zerodsoft.scheduleweather.event.foods.categorylist.RestaurantListFragment;
-import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteRestaurantViewModel;
-import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedRestaurantItem;
-import com.zerodsoft.scheduleweather.room.interfaces.FavoriteRestaurantQuery;
+import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteLocationViewModel;
 
 public class FoodRestaurantSearchResultFragment extends RestaurantListFragment
 {
     public static final String TAG = "FoodRestaurantSearchResultFragment";
     private final OnDeleteSearchView onDeleteSearchView;
-    private FavoriteRestaurantViewModel favoriteRestaurantViewModel;
+    private FavoriteLocationViewModel favoriteRestaurantViewModel;
 
     public FoodRestaurantSearchResultFragment(String searchWord, Fragment fragment)
     {
@@ -54,8 +49,8 @@ public class FoodRestaurantSearchResultFragment extends RestaurantListFragment
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
-        favoriteRestaurantViewModel = new ViewModelProvider(this).get(FavoriteRestaurantViewModel.class);
-        favoriteRestaurantQuery = favoriteRestaurantViewModel;
+        favoriteRestaurantViewModel = new ViewModelProvider(this).get(FavoriteLocationViewModel.class);
+        favoriteRestaurantDbQuery = favoriteRestaurantViewModel;
 
         super.onViewCreated(view, savedInstanceState);
     }

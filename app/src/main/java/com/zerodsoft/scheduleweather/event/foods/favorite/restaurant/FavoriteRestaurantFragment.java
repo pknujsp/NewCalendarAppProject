@@ -16,12 +16,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ExpandableListView;
 
+import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.common.interfaces.OnProgressBarListener;
 import com.zerodsoft.scheduleweather.databinding.FragmentFavoriteRestaurantBinding;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedFavoriteButtonListener;
-import com.zerodsoft.scheduleweather.event.foods.share.FavoriteRestaurantCloud;
 import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoFragment;
 import com.zerodsoft.scheduleweather.navermap.util.LocalParameterUtil;
 import com.zerodsoft.scheduleweather.kakaoplace.retrofit.KakaoPlaceDownloader;
@@ -29,7 +29,7 @@ import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceKakaoLocalResponse;
-import com.zerodsoft.scheduleweather.room.dto.FavoriteRestaurantDTO;
+import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,12 +42,12 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
 {
     public static final String TAG = "FavoriteRestaurantFragment";
     private FragmentFavoriteRestaurantBinding binding;
-    private FavoriteRestaurantViewModel favoriteRestaurantViewModel;
+    private FavoriteLocationViewModel favoriteRestaurantViewModel;
     private FavoriteRestaurantListAdapter adapter;
 
     private ArrayMap<String, List<PlaceDocuments>> restaurantListMap = new ArrayMap<>();
-    private List<FavoriteRestaurantDTO> favoriteRestaurantDTOList = new ArrayList<>();
-    private Map<String, FavoriteRestaurantDTO> favoriteRestaurantDTOMap = new HashMap<>();
+    private List<FavoriteLocationDTO> favoriteLocationDTOList = new ArrayList<>();
+    private Map<String, FavoriteLocationDTO> favoriteRestaurantDTOMap = new HashMap<>();
 
     private final KakaoPlaceDownloader kakaoPlaceDownloader = new KakaoPlaceDownloader(this::setProgressBarVisibility)
     {
@@ -88,7 +88,7 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
     {
         super.onViewCreated(view, savedInstanceState);
 
-        favoriteRestaurantViewModel = new ViewModelProvider(this).get(FavoriteRestaurantViewModel.class);
+        favoriteRestaurantViewModel = new ViewModelProvider(this).get(FavoriteLocationViewModel.class);
 
         binding.favoriteRestaurantList.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener()
         {
@@ -119,13 +119,13 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
 
     private void downloadPlaceDocuments()
     {
-        favoriteRestaurantViewModel.select(new CarrierMessagingService.ResultCallback<List<FavoriteRestaurantDTO>>()
+        favoriteRestaurantViewModel.select(FavoriteLocationDTO.RESTAURANT, new CarrierMessagingService.ResultCallback<List<FavoriteLocationDTO>>()
         {
             @Override
-            public void onReceiveResult(@NonNull List<FavoriteRestaurantDTO> list) throws RemoteException
+            public void onReceiveResult(@NonNull List<FavoriteLocationDTO> list) throws RemoteException
             {
                 favoriteRestaurantDTOMap.clear();
-                favoriteRestaurantDTOList.clear();
+                favoriteLocationDTOList.clear();
                 if (!restaurantListMap.isEmpty())
                 {
                     restaurantListMap.clear();
@@ -139,19 +139,19 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
                     });
                 }
 
-                favoriteRestaurantDTOList.addAll(list);
+                favoriteLocationDTOList.addAll(list);
 
-                for (FavoriteRestaurantDTO favoriteRestaurantDTO : favoriteRestaurantDTOList)
+                for (FavoriteLocationDTO favoriteLocationDTO : favoriteLocationDTOList)
                 {
-                    favoriteRestaurantDTOMap.put(favoriteRestaurantDTO.getRestaurantId(), favoriteRestaurantDTO);
+                    favoriteRestaurantDTOMap.put(favoriteLocationDTO.getLocationId(), favoriteLocationDTO);
                 }
 
                 requestCount = list.size();
                 responseCount = 0;
 
-                for (FavoriteRestaurantDTO favoriteRestaurant : list)
+                for (FavoriteLocationDTO favoriteRestaurant : list)
                 {
-                    LocalApiPlaceParameter placeParameter = LocalParameterUtil.getPlaceParameterForSpecific(favoriteRestaurant.getRestaurantName()
+                    LocalApiPlaceParameter placeParameter = LocalParameterUtil.getPlaceParameterForSpecific(favoriteRestaurant.getLocationName()
                             , favoriteRestaurant.getLatitude(), favoriteRestaurant.getLongitude());
 
                     kakaoPlaceDownloader.getPlacesForSpecific(placeParameter, new JsonDownloader<PlaceKakaoLocalResponse>()
@@ -162,7 +162,7 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
                             //id값과 일치하는 장소 데이터 추출
                             ++responseCount;
                             List<PlaceDocuments> placeDocumentsList = result.getPlaceDocuments();
-                            final String restaurantId = favoriteRestaurant.getRestaurantId();
+                            final String restaurantId = favoriteRestaurant.getLocationId();
 
                             int i = 0;
                             for (; i < placeDocumentsList.size(); i++)
@@ -264,163 +264,203 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
         //restaurantId비교
         //바뀐 부분만 수정
         setProgressBarVisibility(View.VISIBLE);
-        Set<String> restaurantIdSetInCloud = FavoriteRestaurantCloud.getInstance().getSet();
-        Set<String> restaurantIdSetInList = new HashSet<>();
 
-        final Set<String> keySet = restaurantListMap.keySet();
-        for (String key : keySet)
+        favoriteRestaurantViewModel.select(FavoriteLocationDTO.RESTAURANT, new CarrierMessagingService.ResultCallback<List<FavoriteLocationDTO>>()
         {
-            for (int i = 0; i < restaurantListMap.get(key).size(); i++)
+            @Override
+            public void onReceiveResult(@NonNull List<FavoriteLocationDTO> favoriteLocationDTOS) throws RemoteException
             {
-                restaurantIdSetInList.add(restaurantListMap.get(key).get(i).getId());
-            }
-        }
+                Set<String> restaurantIdSetInDb = new HashSet<>();
+                for (FavoriteLocationDTO favoriteLocationDTO : favoriteLocationDTOS)
+                {
+                    restaurantIdSetInDb.add(favoriteLocationDTO.getLocationId());
+                }
+                Set<String> restaurantIdSetInList = new HashSet<>();
 
-        Set<String> removedSet = new HashSet<>(restaurantIdSetInList);
-        Set<String> addedSet = new HashSet<>(restaurantIdSetInCloud);
-
-        removedSet.removeAll(restaurantIdSetInCloud);
-        addedSet.removeAll(restaurantIdSetInList);
-
-        if (removedSet.isEmpty() && addedSet.isEmpty())
-        {
-            setProgressBarVisibility(View.GONE);
-            return;
-        }
-
-        if (!removedSet.isEmpty())
-        {
-            for (String id : removedSet)
-            {
+                final Set<String> keySet = restaurantListMap.keySet();
                 for (String key : keySet)
                 {
-                    for (int i = restaurantListMap.get(key).size() - 1; i >= 0; i--)
+                    for (int i = 0; i < restaurantListMap.get(key).size(); i++)
                     {
-                        if (restaurantListMap.get(key).get(i).getId().equals(id))
-                        {
-                            restaurantListMap.get(key).remove(i);
-                        }
+                        restaurantIdSetInList.add(restaurantListMap.get(key).get(i).getId());
                     }
                 }
-            }
 
-            for (int i = restaurantListMap.size() - 1; i >= 0; i--)
-            {
-                if (restaurantListMap.get(restaurantListMap.keyAt(i)).isEmpty())
+                Set<String> removedSet = new HashSet<>(restaurantIdSetInList);
+                Set<String> addedSet = new HashSet<>(restaurantIdSetInDb);
+
+                removedSet.removeAll(restaurantIdSetInDb);
+                addedSet.removeAll(restaurantIdSetInList);
+
+                if (removedSet.isEmpty() && addedSet.isEmpty())
                 {
-                    restaurantListMap.removeAt(i);
-                }
-            }
-
-            adapter.notifyDataSetChanged();
-            setProgressBarVisibility(View.GONE);
-        }
-
-        if (!addedSet.isEmpty())
-        {
-            setProgressBarVisibility(View.VISIBLE);
-
-            favoriteRestaurantViewModel.select(new CarrierMessagingService.ResultCallback<List<FavoriteRestaurantDTO>>()
-            {
-                @Override
-                public void onReceiveResult(@NonNull List<FavoriteRestaurantDTO> favoriteRestaurantDTOS) throws RemoteException
-                {
-                    Set<FavoriteRestaurantDTO> restaurantDTOSet = new HashSet<>();
-                    for (FavoriteRestaurantDTO favoriteRestaurantDTO : favoriteRestaurantDTOS)
+                    requireActivity().runOnUiThread(new Runnable()
                     {
-                        if (addedSet.contains(favoriteRestaurantDTO.getRestaurantId()))
+                        @Override
+                        public void run()
                         {
-                            restaurantDTOSet.add(favoriteRestaurantDTO);
+                            setProgressBarVisibility(View.GONE);
                         }
-                    }
+                    });
 
-                    requestCount = restaurantDTOSet.size();
-                    responseCount = 0;
-
-                    for (FavoriteRestaurantDTO favoriteRestaurant : restaurantDTOSet)
+                } else
+                {
+                    if (!removedSet.isEmpty())
                     {
-                        LocalApiPlaceParameter placeParameter = LocalParameterUtil.getPlaceParameterForSpecific(favoriteRestaurant.getRestaurantName()
-                                , favoriteRestaurant.getLatitude(), favoriteRestaurant.getLongitude());
+                        for (String id : removedSet)
+                        {
+                            for (String key : keySet)
+                            {
+                                for (int i = restaurantListMap.get(key).size() - 1; i >= 0; i--)
+                                {
+                                    if (restaurantListMap.get(key).get(i).getId().equals(id))
+                                    {
+                                        restaurantListMap.get(key).remove(i);
+                                    }
+                                }
+                            }
+                        }
 
-                        kakaoPlaceDownloader.getPlacesForSpecific(placeParameter, new JsonDownloader<PlaceKakaoLocalResponse>()
+                        for (int i = restaurantListMap.size() - 1; i >= 0; i--)
+                        {
+                            if (restaurantListMap.get(restaurantListMap.keyAt(i)).isEmpty())
+                            {
+                                restaurantListMap.removeAt(i);
+                            }
+                        }
+
+                        requireActivity().runOnUiThread(new Runnable()
                         {
                             @Override
-                            public void onResponseSuccessful(PlaceKakaoLocalResponse result)
+                            public void run()
                             {
-                                //id값과 일치하는 장소 데이터 추출
-                                ++responseCount;
-                                List<PlaceDocuments> placeDocumentsList = result.getPlaceDocuments();
-                                final String restaurantId = favoriteRestaurant.getRestaurantId();
+                                adapter.notifyDataSetChanged();
+                                setProgressBarVisibility(View.GONE);
+                            }
+                        });
 
-                                int i = 0;
-                                for (; i < placeDocumentsList.size(); i++)
+                    }
+
+                    if (!addedSet.isEmpty())
+                    {
+                        requireActivity().runOnUiThread(new Runnable()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                setProgressBarVisibility(View.VISIBLE);
+                            }
+                        });
+
+                        Set<FavoriteLocationDTO> restaurantDTOSet = new HashSet<>();
+                        for (FavoriteLocationDTO favoriteLocationDTO : favoriteLocationDTOS)
+                        {
+                            if (addedSet.contains(favoriteLocationDTO.getLocationId()))
+                            {
+                                restaurantDTOSet.add(favoriteLocationDTO);
+                            }
+                        }
+
+                        requestCount = restaurantDTOSet.size();
+                        responseCount = 0;
+
+                        for (FavoriteLocationDTO favoriteRestaurant : restaurantDTOSet)
+                        {
+                            LocalApiPlaceParameter placeParameter = LocalParameterUtil.getPlaceParameterForSpecific(favoriteRestaurant.getLocationName()
+                                    , favoriteRestaurant.getLatitude(), favoriteRestaurant.getLongitude());
+
+                            kakaoPlaceDownloader.getPlacesForSpecific(placeParameter, new JsonDownloader<PlaceKakaoLocalResponse>()
+                            {
+                                @Override
+                                public void onResponseSuccessful(PlaceKakaoLocalResponse result)
                                 {
-                                    if (placeDocumentsList.get(i).getId().equals(restaurantId))
+                                    //id값과 일치하는 장소 데이터 추출
+                                    ++responseCount;
+                                    List<PlaceDocuments> placeDocumentsList = result.getPlaceDocuments();
+                                    final String restaurantId = favoriteRestaurant.getLocationId();
+
+                                    int i = 0;
+                                    for (; i < placeDocumentsList.size(); i++)
                                     {
-                                        break;
+                                        if (placeDocumentsList.get(i).getId().equals(restaurantId))
+                                        {
+                                            break;
+                                        }
+                                    }
+
+                                    createList(placeDocumentsList.get(i));
+
+                                    if (requestCount == responseCount)
+                                    {
+                                        requireActivity().runOnUiThread(new Runnable()
+                                        {
+                                            @Override
+                                            public void run()
+                                            {
+                                                createListView();
+                                            }
+                                        });
                                     }
                                 }
 
-                                createList(placeDocumentsList.get(i));
-
-                                if (requestCount == responseCount)
+                                @Override
+                                public void onResponseFailed(Exception e)
                                 {
-                                    getActivity().runOnUiThread(new Runnable()
-                                    {
-                                        @Override
-                                        public void run()
-                                        {
-                                            createListView();
-                                        }
-                                    });
+
                                 }
-                            }
-
-                            @Override
-                            public void onResponseFailed(Exception e)
-                            {
-
-                            }
-                        });
+                            });
+                        }
                     }
                 }
-            });
-        }
+            }
+        });
+
     }
 
     @Override
-    public void onClickedFavoriteButton(String restaurantId, int groupPosition, int childPosition)
+    public void onClickedFavoriteButton(String placeId, int groupPosition, int childPosition)
     {
-        if (FavoriteRestaurantCloud.getInstance().contains(restaurantListMap.get(restaurantListMap.keyAt(groupPosition)).get(childPosition).getId()))
-        {
-            favoriteRestaurantViewModel.delete(restaurantListMap.get(restaurantListMap.keyAt(groupPosition)).get(childPosition).getId()
-                    , new CarrierMessagingService.ResultCallback<Boolean>()
+        favoriteRestaurantViewModel.contains(FavoriteLocationDTO.RESTAURANT
+                , restaurantListMap.get(restaurantListMap.keyAt(groupPosition)).get(childPosition).getPlaceName()
+                , restaurantListMap.get(restaurantListMap.keyAt(groupPosition)).get(childPosition).getId()
+                , new CarrierMessagingService.ResultCallback<Boolean>()
+                {
+                    @Override
+                    public void onReceiveResult(@NonNull Boolean isContain) throws RemoteException
                     {
-                        @Override
-                        public void onReceiveResult(@NonNull Boolean isDeleted) throws RemoteException
+                        if (isContain)
                         {
-                            getActivity().runOnUiThread(new Runnable()
-                            {
-                                @Override
-                                public void run()
-                                {
-                                    String key = restaurantListMap.keyAt(groupPosition);
-                                    restaurantListMap.get(key).remove(childPosition);
-                                    if (restaurantListMap.get(key).isEmpty())
+                            favoriteRestaurantViewModel.delete(restaurantListMap.get(restaurantListMap.keyAt(groupPosition)).get(childPosition).getId(), FavoriteLocationDTO.RESTAURANT
+                                    , new CarrierMessagingService.ResultCallback<Boolean>()
                                     {
-                                        restaurantListMap.remove(key);
-                                    }
-                                    adapter.notifyDataSetChanged();
-                                    if (restaurantListMap.size() >= 1 && !restaurantListMap.containsKey(key))
-                                    {
-                                        binding.favoriteRestaurantList.collapseGroup(groupPosition);
-                                    }
-                                }
-                            });
+                                        @Override
+                                        public void onReceiveResult(@NonNull Boolean isDeleted) throws RemoteException
+                                        {
+                                            getActivity().runOnUiThread(new Runnable()
+                                            {
+                                                @Override
+                                                public void run()
+                                                {
+                                                    String key = restaurantListMap.keyAt(groupPosition);
+                                                    restaurantListMap.get(key).remove(childPosition);
+                                                    if (restaurantListMap.get(key).isEmpty())
+                                                    {
+                                                        restaurantListMap.remove(key);
+                                                    }
+                                                    
+                                                    adapter.notifyDataSetChanged();
+                                                    if (restaurantListMap.size() >= 1 && !restaurantListMap.containsKey(key))
+                                                    {
+                                                        binding.favoriteRestaurantList.collapseGroup(groupPosition);
+                                                    }
+                                                }
+                                            });
 
+                                        }
+                                    });
                         }
-                    });
-        }
+                    }
+                });
     }
 
     @Override

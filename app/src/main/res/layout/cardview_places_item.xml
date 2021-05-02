@@ -67,16 +67,35 @@
                     android:layout_toRightOf="@id/select_this_place_button"
                     android:text="@string/cancel_location" />
 
-                <TextView
-                    android:id="@+id/place_item_distance"
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentRight="true"
                     android:layout_centerVertical="true"
-                    android:gravity="right"
-                    android:text="100M"
-                    android:textColor="@color/gray_600"
-                    android:textSize="11sp" />
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/item_position"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="4dp"
+                        android:gravity="right"
+                        android:text="10/30"
+                        android:textColor="@color/gray_600"
+                        android:textSize="11sp" />
+
+                    <TextView
+                        android:id="@+id/place_item_distance"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="right"
+                        android:text="100M"
+                        android:textColor="@color/gray_600"
+                        android:textSize="11sp" />
+
+
+                </LinearLayout>
+
 
             </RelativeLayout>
 

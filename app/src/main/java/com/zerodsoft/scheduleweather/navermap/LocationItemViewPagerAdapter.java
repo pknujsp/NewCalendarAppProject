@@ -36,6 +36,8 @@ public class LocationItemViewPagerAdapter extends RecyclerView.Adapter<LocationI
     private int isVisibleSelectBtn;
     private int isVisibleUnSelectBtn;
 
+    private String itemPosition;
+
     public LocationItemViewPagerAdapter()
     {
 
@@ -99,6 +101,8 @@ public class LocationItemViewPagerAdapter extends RecyclerView.Adapter<LocationI
         private TextView placeCategoryTextView;
         private TextView placeDistanceTextView;
 
+        private TextView itemPositionTextView;
+
         private TextView addressIndex;
         private TextView addressName;
         private TextView anotherAddressType;
@@ -121,6 +125,7 @@ public class LocationItemViewPagerAdapter extends RecyclerView.Adapter<LocationI
             placeAddressTextView = (TextView) view.findViewById(R.id.place_item_address);
             placeCategoryTextView = (TextView) view.findViewById(R.id.place_item_category);
             placeDistanceTextView = (TextView) view.findViewById(R.id.place_item_distance);
+            itemPositionTextView = (TextView) view.findViewById(R.id.item_position);
 
             addressIndex = (TextView) addressLayout.findViewById(R.id.address_index);
             addressName = (TextView) addressLayout.findViewById(R.id.address_name);
@@ -139,6 +144,9 @@ public class LocationItemViewPagerAdapter extends RecyclerView.Adapter<LocationI
 
         public void bind(KakaoLocalDocument data)
         {
+            itemPosition = (getBindingAdapterPosition() + 1) + " / " + placeDocumentsList.size();
+            itemPositionTextView.setText(itemPosition);
+
             if (data instanceof PlaceDocuments)
             {
                 placeDocuments = (PlaceDocuments) data;

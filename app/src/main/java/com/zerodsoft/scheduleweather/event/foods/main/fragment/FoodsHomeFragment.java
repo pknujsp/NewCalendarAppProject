@@ -16,8 +16,8 @@ import android.view.ViewGroup;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
 import com.zerodsoft.scheduleweather.databinding.FragmentFoodsMainBinding;
-import com.zerodsoft.scheduleweather.event.foods.categorylist.FoodCategoryTabFragment;
-import com.zerodsoft.scheduleweather.event.foods.categorylist.FoodsCategoryListFragment;
+import com.zerodsoft.scheduleweather.event.foods.categorylist.RestaurantListTabFragment;
+import com.zerodsoft.scheduleweather.event.foods.categorylist.FoodsMenuListFragment;
 import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.navermap.interfaces.INetwork;
@@ -36,13 +36,13 @@ public class FoodsHomeFragment extends Fragment implements OnBackPressedCallback
         {
             FragmentManager fragmentManager = getChildFragmentManager();
 
-            if (fragmentManager.findFragmentByTag(FoodsCategoryListFragment.TAG) != null)
+            if (fragmentManager.findFragmentByTag(FoodsMenuListFragment.TAG) != null)
             {
-                if (fragmentManager.findFragmentByTag(FoodsCategoryListFragment.TAG).isVisible())
+                if (fragmentManager.findFragmentByTag(FoodsMenuListFragment.TAG).isVisible())
                 {
                     getParentFragment().getParentFragmentManager().popBackStack();
                     bottomSheetController.setStateOfBottomSheet(BottomSheetType.RESTAURANT, BottomSheetBehavior.STATE_COLLAPSED);
-                } else if (fragmentManager.findFragmentByTag(FoodCategoryTabFragment.TAG) != null)
+                } else if (fragmentManager.findFragmentByTag(RestaurantListTabFragment.TAG) != null)
                 {
                     fragmentManager.popBackStackImmediate();
                 }
@@ -84,10 +84,10 @@ public class FoodsHomeFragment extends Fragment implements OnBackPressedCallback
     {
         super.onViewCreated(view, savedInstanceState);
 
-        FoodsCategoryListFragment foodsCategoryListFragment = new FoodsCategoryListFragment(iNetwork, foodMenuChipsViewController, bottomSheetController);
-        foodsCategoryListFragment.setArguments(getArguments());
+        FoodsMenuListFragment foodsMenuListFragment = new FoodsMenuListFragment(iNetwork, foodMenuChipsViewController, bottomSheetController);
+        foodsMenuListFragment.setArguments(getArguments());
 
-        getChildFragmentManager().beginTransaction().add(binding.foodsMainFragmentContainer.getId(), foodsCategoryListFragment, FoodsCategoryListFragment.TAG)
+        getChildFragmentManager().beginTransaction().add(binding.foodsMainFragmentContainer.getId(), foodsMenuListFragment, FoodsMenuListFragment.TAG)
                 .commit();
     }
 
@@ -95,7 +95,7 @@ public class FoodsHomeFragment extends Fragment implements OnBackPressedCallback
     public void onHiddenChanged(boolean hidden)
     {
         super.onHiddenChanged(hidden);
-        Fragment foodCategoryTabFragment = getChildFragmentManager().findFragmentByTag(FoodCategoryTabFragment.TAG);
+        Fragment foodCategoryTabFragment = getChildFragmentManager().findFragmentByTag(RestaurantListTabFragment.TAG);
 
         if (hidden)
         {

@@ -4,7 +4,7 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.Pl
 
 public interface OnClickedFavoriteButtonListener
 {
-    void onClickedFavoriteButton(String restaurantId, int groupPosition, int childPosition);
+    void onClickedFavoriteButton(String placeId, int groupPosition, int childPosition);
 
     void onClickedFavoriteButton(PlaceDocuments placeDocuments, int position);
 }

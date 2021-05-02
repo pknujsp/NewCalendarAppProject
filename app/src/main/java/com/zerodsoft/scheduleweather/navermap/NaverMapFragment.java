@@ -66,6 +66,7 @@ import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackCont
 import com.zerodsoft.scheduleweather.databinding.FragmentNaverMapBinding;
 import com.zerodsoft.scheduleweather.etc.FragmentStateCallback;
 import com.zerodsoft.scheduleweather.etc.LocationType;
+import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedFavoriteButtonListener;
 import com.zerodsoft.scheduleweather.event.places.interfaces.OnClickedPlacesListListener;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PoiItemOnClickListener;
 import com.zerodsoft.scheduleweather.navermap.building.fragment.BuildingFragment;
@@ -112,7 +113,8 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
         MapHeaderSearchFragment.LocationSearchListener, SearchFragmentController, BuildingLocationSelectorController,
         BuildingFragmentController, BuildingListFragment.OnSearchRadiusChangeListener, NaverMap.OnMapClickListener,
         NaverMap.OnCameraIdleListener, CameraUpdate.FinishCallback, NaverMap.OnLocationChangeListener, OnBackPressedCallbackController,
-        FragmentManager.OnBackStackChangedListener, BottomSheetController, NaverMap.OnMapLongClickListener
+        FragmentManager.OnBackStackChangedListener, BottomSheetController, NaverMap.OnMapLongClickListener,
+        OnClickedFavoriteButtonListener
 {
     public static final int PERMISSION_REQUEST_CODE = 100;
     public static final int REQUEST_CODE_LOCATION = 10000;
@@ -581,7 +583,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
         {
             case SEARCH_RESULT:
             {
-                LocationSearchResultFragment locationSearchResultFragment = (LocationSearchResultFragment) bottomSheetFragmentMap.get(BottomSheetType.SEARCH_LOCATION);
+                LocationSearchResultFragment locationSearchResultFragment = (LocationSearchResultFragment) getChildFragmentManager().findFragmentByTag(LocationSearchResultFragment.TAG);
                 if (locationSearchResultFragment != null)
                 {
                     if (locationSearchResultFragment.isVisible())
@@ -1563,6 +1565,17 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
                 });
             }
         });
+    }
+
+    @Override
+    public void onClickedFavoriteButton(String placeId, int groupPosition, int childPosition)
+    {
+
+    }
+
+    @Override
+    public void onClickedFavoriteButton(PlaceDocuments placeDocuments, int position)
+    {
     }
 
     static class BuildingBottomSheetHeightViewHolder

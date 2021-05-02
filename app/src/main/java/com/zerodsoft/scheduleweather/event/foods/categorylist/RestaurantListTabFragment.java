@@ -20,7 +20,7 @@ import com.google.android.material.tabs.TabLayoutMediator;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.FragmentFoodCategoryTabBinding;
 import com.zerodsoft.scheduleweather.event.foods.adapter.FoodCategoryFragmentListAdapter;
-import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteRestaurantViewModel;
+import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteLocationViewModel;
 import com.zerodsoft.scheduleweather.event.foods.main.fragment.NewFoodsMainFragment;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.CustomFoodMenuViewModel;
 import com.zerodsoft.scheduleweather.event.main.NewInstanceMainFragment;
@@ -36,13 +36,13 @@ import java.util.List;
 
 import lombok.SneakyThrows;
 
-public class FoodCategoryTabFragment extends Fragment implements NewInstanceMainFragment.RestaurantsGetter, OnExtraListDataListener<String>
+public class RestaurantListTabFragment extends Fragment implements NewInstanceMainFragment.RestaurantsGetter, OnExtraListDataListener<String>
 {
-    public static final String TAG = "FoodCategoryTabFragment";
+    public static final String TAG = "RestaurantListTabFragment";
     private FragmentFoodCategoryTabBinding binding;
 
     private CustomFoodMenuViewModel customFoodCategoryViewModel;
-    private FavoriteRestaurantViewModel favoriteRestaurantViewModel;
+    private FavoriteLocationViewModel favoriteRestaurantViewModel;
 
     private List<String> categoryList;
     private FoodCategoryFragmentListAdapter adapter;
@@ -53,7 +53,7 @@ public class FoodCategoryTabFragment extends Fragment implements NewInstanceMain
     private int lastFoodMenuIndex;
     private float lastRecyclerViewY;
 
-    public FoodCategoryTabFragment(String selectedCategoryName, NewFoodsMainFragment.FoodMenuChipsViewController foodMenuChipsViewController, BottomSheetController bottomSheetController)
+    public RestaurantListTabFragment(String selectedCategoryName, NewFoodsMainFragment.FoodMenuChipsViewController foodMenuChipsViewController, BottomSheetController bottomSheetController)
     {
         this.selectedCategoryName = selectedCategoryName;
         this.foodMenuChipsViewController = foodMenuChipsViewController;
@@ -99,7 +99,7 @@ public class FoodCategoryTabFragment extends Fragment implements NewInstanceMain
             }
         });
 
-        favoriteRestaurantViewModel = new ViewModelProvider(this).get(FavoriteRestaurantViewModel.class);
+        favoriteRestaurantViewModel = new ViewModelProvider(this).get(FavoriteLocationViewModel.class);
         customFoodCategoryViewModel = new ViewModelProvider(this).get(CustomFoodMenuViewModel.class);
         customFoodCategoryViewModel.select(new CarrierMessagingService.ResultCallback<List<CustomFoodMenuDTO>>()
         {
@@ -129,7 +129,7 @@ public class FoodCategoryTabFragment extends Fragment implements NewInstanceMain
 
                         int selectedIndex = categoryList.indexOf(selectedCategoryName);
 
-                        adapter = new FoodCategoryFragmentListAdapter(FoodCategoryTabFragment.this);
+                        adapter = new FoodCategoryFragmentListAdapter(RestaurantListTabFragment.this);
                         adapter.init(favoriteRestaurantViewModel, categoryList);
                         binding.viewpager.setAdapter(adapter);
 
@@ -144,7 +144,7 @@ public class FoodCategoryTabFragment extends Fragment implements NewInstanceMain
                                 }
                         ).attach();
 
-                        foodMenuChipsViewController.createRestaurantListView(foodMenuNameList, FoodCategoryTabFragment.this, FoodCategoryTabFragment.this);
+                        foodMenuChipsViewController.createRestaurantListView(foodMenuNameList, RestaurantListTabFragment.this, RestaurantListTabFragment.this);
                         binding.tabs.selectTab(binding.tabs.getTabAt(selectedIndex));
                     }
                 });

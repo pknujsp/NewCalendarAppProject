@@ -54,7 +54,6 @@ import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.navermap.interfaces.INetwork;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.sgis.address.ReverseGeoCodingParameter;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.address.reversegeocoding.ReverseGeoCodingResponse;
 import com.zerodsoft.scheduleweather.room.dto.CustomFoodMenuDTO;
 import com.zerodsoft.scheduleweather.room.dto.FoodCriteriaLocationInfoDTO;
@@ -70,9 +69,9 @@ import java.util.Map;
 import static android.app.Activity.RESULT_OK;
 import static androidx.core.content.ContextCompat.checkSelfPermission;
 
-public class FoodsCategoryListFragment extends Fragment implements OnClickedCategoryItem, OnClickedListItem<FoodCategoryItem>
+public class FoodsMenuListFragment extends Fragment implements OnClickedCategoryItem, OnClickedListItem<FoodCategoryItem>
 {
-    public static final String TAG = "FoodsCategoryListFragment";
+    public static final String TAG = "FoodsMenuListFragment";
     private FragmentFoodsCategoryListBinding binding;
     private final INetwork iNetwork;
     private final NewFoodsMainFragment.FoodMenuChipsViewController foodMenuChipsViewController;
@@ -93,7 +92,7 @@ public class FoodsCategoryListFragment extends Fragment implements OnClickedCate
     private boolean clickedGps = false;
     final int columnCount = 4;
 
-    public FoodsCategoryListFragment(INetwork iNetwork, NewFoodsMainFragment.FoodMenuChipsViewController foodMenuChipsViewController, BottomSheetController bottomSheetController)
+    public FoodsMenuListFragment(INetwork iNetwork, NewFoodsMainFragment.FoodMenuChipsViewController foodMenuChipsViewController, BottomSheetController bottomSheetController)
     {
         this.iNetwork = iNetwork;
         this.foodMenuChipsViewController = foodMenuChipsViewController;
@@ -190,7 +189,7 @@ public class FoodsCategoryListFragment extends Fragment implements OnClickedCate
                                         @Override
                                         public void onReceiveResult(@NonNull FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO) throws RemoteException
                                         {
-                                            FoodsCategoryListFragment.this.foodCriteriaLocationInfoDTO = foodCriteriaLocationInfoDTO;
+                                            FoodsMenuListFragment.this.foodCriteriaLocationInfoDTO = foodCriteriaLocationInfoDTO;
                                             getActivity().runOnUiThread(new Runnable()
                                             {
                                                 @Override
@@ -203,7 +202,7 @@ public class FoodsCategoryListFragment extends Fragment implements OnClickedCate
                                     });
                         } else
                         {
-                            FoodsCategoryListFragment.this.foodCriteriaLocationInfoDTO = foodCriteriaLocationInfoDTO;
+                            FoodsMenuListFragment.this.foodCriteriaLocationInfoDTO = foodCriteriaLocationInfoDTO;
                             getActivity().runOnUiThread(new Runnable()
                             {
                                 @Override
@@ -261,7 +260,7 @@ public class FoodsCategoryListFragment extends Fragment implements OnClickedCate
                     @Override
                     public void onReceiveResult(@NonNull FoodCriteriaLocationSearchHistoryDTO foodCriteriaLocationSearchHistoryDTO) throws RemoteException
                     {
-                        FoodsCategoryListFragment.this.foodCriteriaLocationSearchHistoryDTO = foodCriteriaLocationSearchHistoryDTO;
+                        FoodsMenuListFragment.this.foodCriteriaLocationSearchHistoryDTO = foodCriteriaLocationSearchHistoryDTO;
                         LocationDTO criteriaLocationDTO = new LocationDTO();
                         criteriaLocationDTO.setAddressName(foodCriteriaLocationSearchHistoryDTO.getAddressName());
                         criteriaLocationDTO.setPlaceName(foodCriteriaLocationSearchHistoryDTO.getPlaceName());
@@ -524,7 +523,7 @@ public class FoodsCategoryListFragment extends Fragment implements OnClickedCate
             @Override
             public void onReceiveResult(@NonNull List<CustomFoodMenuDTO> resultList) throws RemoteException
             {
-                FoodCategoryAdapter foodCategoryAdapter = new FoodCategoryAdapter(FoodsCategoryListFragment.this, columnCount);
+                FoodCategoryAdapter foodCategoryAdapter = new FoodCategoryAdapter(FoodsMenuListFragment.this, columnCount);
 
                 Context context = getContext();
                 final String[] DEFAULT_FOOD_MENU_NAME_ARR = getResources().getStringArray(R.array.food_menu_list);
@@ -594,8 +593,8 @@ public class FoodsCategoryListFragment extends Fragment implements OnClickedCate
             FragmentManager fragmentManager = getParentFragmentManager();
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction().hide(this);
 
-            FoodCategoryTabFragment foodCategoryTabFragment = new FoodCategoryTabFragment(e.getCategoryName(), foodMenuChipsViewController, bottomSheetController);
-            fragmentTransaction.add(R.id.foods_main_fragment_container, foodCategoryTabFragment, FoodCategoryTabFragment.TAG).addToBackStack(null).commit();
+            RestaurantListTabFragment restaurantListTabFragment = new RestaurantListTabFragment(e.getCategoryName(), foodMenuChipsViewController, bottomSheetController);
+            fragmentTransaction.add(R.id.foods_main_fragment_container, restaurantListTabFragment, RestaurantListTabFragment.TAG).addToBackStack(null).commit();
         }
     }
 

@@ -4,21 +4,18 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
-import com.zerodsoft.scheduleweather.event.foods.categorylist.FoodCategoryTabFragment;
-import com.zerodsoft.scheduleweather.event.foods.categorylist.FoodsCategoryListFragment;
+import com.zerodsoft.scheduleweather.event.foods.categorylist.RestaurantListTabFragment;
 import com.zerodsoft.scheduleweather.event.foods.categorylist.RestaurantListFragment;
-import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedRestaurantItem;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
-import com.zerodsoft.scheduleweather.room.interfaces.FavoriteRestaurantQuery;
+import com.zerodsoft.scheduleweather.room.interfaces.FavoriteLocationQuery;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class FoodCategoryFragmentListAdapter extends FragmentStateAdapter implements FoodCategoryTabFragment.RefreshFavoriteState
+public class FoodCategoryFragmentListAdapter extends FragmentStateAdapter implements RestaurantListTabFragment.RefreshFavoriteState
 {
     private List<RestaurantListFragment> fragments;
     private List<String> categoryList;
-    private FavoriteRestaurantQuery favoriteRestaurantQuery;
+    private FavoriteLocationQuery favoriteLocationQuery;
 
     public FoodCategoryFragmentListAdapter(@NonNull Fragment fragment)
     {
@@ -30,15 +27,15 @@ public class FoodCategoryFragmentListAdapter extends FragmentStateAdapter implem
         return fragments;
     }
 
-    public void init(FavoriteRestaurantQuery favoriteRestaurantQuery, List<String> categoryList)
+    public void init(FavoriteLocationQuery favoriteLocationQuery, List<String> categoryList)
     {
-        this.favoriteRestaurantQuery = favoriteRestaurantQuery;
+        this.favoriteLocationQuery = favoriteLocationQuery;
         this.categoryList = categoryList;
         this.fragments = new ArrayList<>();
 
         for (String categoryName : categoryList)
         {
-            fragments.add(new RestaurantListFragment(favoriteRestaurantQuery, categoryName));
+            fragments.add(new RestaurantListFragment(favoriteLocationQuery, categoryName));
         }
     }
 

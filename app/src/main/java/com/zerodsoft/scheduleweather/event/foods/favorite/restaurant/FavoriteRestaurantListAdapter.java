@@ -1,9 +1,6 @@
 package com.zerodsoft.scheduleweather.event.foods.favorite.restaurant;
 
-import android.app.Activity;
 import android.content.Context;
-import android.os.RemoteException;
-import android.service.carrier.CarrierMessagingService;
 import android.util.ArrayMap;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,17 +10,13 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.ICalendarCheckBox;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedFavoriteButtonListener;
-import com.zerodsoft.scheduleweather.event.foods.share.FavoriteRestaurantCloud;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
-import com.zerodsoft.scheduleweather.room.dto.FavoriteRestaurantDTO;
-import com.zerodsoft.scheduleweather.room.interfaces.FavoriteRestaurantQuery;
 
 import java.util.List;
 
@@ -38,7 +31,6 @@ class FavoriteRestaurantListAdapter extends BaseExpandableListAdapter
     private ChildViewHolder childViewHolder;
     private OnClickedListItem<PlaceDocuments> onClickedListItem;
     private OnClickedFavoriteButtonListener onClickedFavoriteButtonListener;
-    private FavoriteRestaurantCloud favoriteRestaurantCloud = FavoriteRestaurantCloud.getInstance();
 
     public FavoriteRestaurantListAdapter(Context context, OnClickedFavoriteButtonListener onClickedFavoriteButtonListener, OnClickedListItem<PlaceDocuments> onClickedListItem
             , ArrayMap<String, List<PlaceDocuments>> restaurantListMap)
@@ -144,8 +136,7 @@ class FavoriteRestaurantListAdapter extends BaseExpandableListAdapter
         }
 
         childViewHolder.restaurantName.setText(restaurantListMap.get(restaurantListMap.keyAt(groupPosition)).get(childPosition).getPlaceName());
-        childViewHolder.favoriteButton.setImageDrawable(favoriteRestaurantCloud.contains(restaurantListMap.get(restaurantListMap.keyAt(groupPosition)).get(childPosition).getId())
-                ? ContextCompat.getDrawable(context, R.drawable.favorite_enabled_icon) : ContextCompat.getDrawable(context, R.drawable.favorite_disabled_icon));
+        childViewHolder.favoriteButton.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.favorite_enabled_icon));
 
         view.getRootView().setOnClickListener(new View.OnClickListener()
         {
