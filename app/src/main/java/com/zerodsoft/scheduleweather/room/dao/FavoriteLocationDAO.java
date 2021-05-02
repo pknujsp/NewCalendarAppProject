@@ -40,9 +40,9 @@ public interface FavoriteLocationDAO
     // @Query("SELECT EXISTS (SELECT * FROM favorite_location_table WHERE location_name = :locationName AND type = :type) AS SUCCESS")
     @Query("SELECT EXISTS (SELECT * FROM favorite_location_table " +
             "WHERE (CASE " +
-            "WHEN type = 0 THEN location_id = :locationId " +
-            "WHEN type = 1 THEN location_id = :locationId " +
-            "WHEN type = 2 THEN location_name = :locationName " +
+            "WHEN :type = 0 THEN type = :type AND location_id = :locationId " +
+            "WHEN :type = 1 THEN type = :type AND location_id = :locationId " +
+            "WHEN :type = 2 THEN type = :type AND location_name = :locationName " +
             "END)) AS SUCCESS")
     int contains(Integer type, String locationName, String locationId);
 }

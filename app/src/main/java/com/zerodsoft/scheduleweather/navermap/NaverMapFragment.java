@@ -1067,8 +1067,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
         location.setCalendarId(calendarId);
         location.setEventId(eventId);
 
-        KakaoLocalDocument kakaoLocalDocument = (KakaoLocalDocument) markerMap.get((PoiItemType) locationItemBottomSheetViewPager.getTag())
-                .get(selectedPoiItemIndex).getTag();
+        KakaoLocalDocument kakaoLocalDocument = viewPagerAdapterMap.get(PoiItemType.SEARCH_RESULT).getPlaceDocumentsList().get(selectedPoiItemIndex);
 
         // 주소인지 장소인지를 구분한다.
         if (kakaoLocalDocument instanceof PlaceDocuments)

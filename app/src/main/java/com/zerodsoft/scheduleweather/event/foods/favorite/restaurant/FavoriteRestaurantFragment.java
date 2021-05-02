@@ -420,9 +420,10 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
     @Override
     public void onClickedFavoriteButton(String placeId, int groupPosition, int childPosition)
     {
-        favoriteRestaurantViewModel.contains(FavoriteLocationDTO.RESTAURANT
-                , restaurantListMap.get(restaurantListMap.keyAt(groupPosition)).get(childPosition).getPlaceName()
-                , restaurantListMap.get(restaurantListMap.keyAt(groupPosition)).get(childPosition).getId()
+        final String id = restaurantListMap.get(restaurantListMap.keyAt(groupPosition)).get(childPosition).getId();
+        final String name = restaurantListMap.get(restaurantListMap.keyAt(groupPosition)).get(childPosition).getPlaceName();
+
+        favoriteRestaurantViewModel.contains(FavoriteLocationDTO.RESTAURANT, name, id
                 , new CarrierMessagingService.ResultCallback<Boolean>()
                 {
                     @Override
@@ -430,13 +431,13 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
                     {
                         if (isContain)
                         {
-                            favoriteRestaurantViewModel.delete(restaurantListMap.get(restaurantListMap.keyAt(groupPosition)).get(childPosition).getId(), FavoriteLocationDTO.RESTAURANT
+                            favoriteRestaurantViewModel.delete(id, FavoriteLocationDTO.RESTAURANT
                                     , new CarrierMessagingService.ResultCallback<Boolean>()
                                     {
                                         @Override
                                         public void onReceiveResult(@NonNull Boolean isDeleted) throws RemoteException
                                         {
-                                            getActivity().runOnUiThread(new Runnable()
+                                            requireActivity().runOnUiThread(new Runnable()
                                             {
                                                 @Override
                                                 public void run()
@@ -447,7 +448,7 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
                                                     {
                                                         restaurantListMap.remove(key);
                                                     }
-                                                    
+
                                                     adapter.notifyDataSetChanged();
                                                     if (restaurantListMap.size() >= 1 && !restaurantListMap.containsKey(key))
                                                     {
