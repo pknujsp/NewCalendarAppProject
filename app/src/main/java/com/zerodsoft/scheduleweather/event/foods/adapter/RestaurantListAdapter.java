@@ -13,6 +13,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.paging.PagedListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -43,6 +44,9 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
     private SparseArray<Bitmap> restaurantImagesArr = new SparseArray<>();
     private OnContainsRestaurantListener onContainsRestaurantListener;
 
+    private final Drawable favoriteDisabledDrawable;
+    private final Drawable favoriteEnabledDrawable;
+
     private Context context;
 
     public RestaurantListAdapter(Context context, OnContainsRestaurantListener onContainsRestaurantListener, OnClickedListItem<PlaceDocuments> onClickedListItem, OnClickedFavoriteButtonListener onClickedFavoriteButtonListener)
@@ -52,6 +56,8 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
         this.onContainsRestaurantListener = onContainsRestaurantListener;
         this.onClickedListItem = onClickedListItem;
         this.onClickedFavoriteButtonListener = onClickedFavoriteButtonListener;
+        favoriteDisabledDrawable = ContextCompat.getDrawable(context, R.drawable.favorite_disabled_icon);
+        favoriteEnabledDrawable = ContextCompat.getDrawable(context, R.drawable.favorite_enabled_icon);
     }
 
     class ItemViewHolder extends RecyclerView.ViewHolder
@@ -62,6 +68,8 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
         private TextView restaurantRating;
         private ImageView favoriteButton;
         private LinearLayout restaurantReviewLayout;
+
+        private FavoriteLocationDTO favoriteLocationDTO;
 
         public ItemViewHolder(View view)
         {
@@ -119,17 +127,25 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
                 @Override
                 public void onClick(View view)
                 {
-                    onClickedFavoriteButtonListener.onClickedFavoriteButton(item, getBindingAdapterPosition());
+                    onClickedFavoriteButtonListener.onClickedFavoriteButton(item, favoriteLocationDTO, getBindingAdapterPosition());
                 }
             });
 
 
-            onContainsRestaurantListener.contains(FavoriteLocationDTO.RESTAURANT, item.getPlaceName(), item.getId(), new OnDbQueryListener<Drawable>()
+            onContainsRestaurantListener.contains(item.getId(), new OnDbQueryListener<FavoriteLocationDTO>()
             {
                 @Override
-                public void onSuccessful(Drawable result)
+                public void onSuccessful(FavoriteLocationDTO result)
                 {
-                    favoriteButton.setImageDrawable(result);
+                    if (result != null)
+                    {
+                        favoriteLocationDTO = result;
+                        favoriteButton.setImageDrawable(favoriteEnabledDrawable);
+                    } else
+                    {
+                        favoriteButton.setImageDrawable(favoriteDisabledDrawable);
+                    }
+
                 }
 
                 @Override
@@ -255,6 +271,8 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
             restaurantMenuInfo.setText("");
             restaurantRating.setText("");
 
+            favoriteButton.setImageDrawable(favoriteDisabledDrawable);
+
             /*
             Glide.with(itemView)
                     .load(context.getDrawable(R.drawable.not_image)).circleCrop()
@@ -287,6 +305,6 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
 
     public interface OnContainsRestaurantListener
     {
-        void contains(int type, String name, String id, OnDbQueryListener<Drawable> callback);
+        void contains(String id, OnDbQueryListener<FavoriteLocationDTO> callback);
     }
 }

@@ -3,7 +3,6 @@ package com.zerodsoft.scheduleweather.event.foods.favorite.restaurant;
 import android.app.Application;
 import android.service.carrier.CarrierMessagingService;
 
-import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.room.AppDb;
 import com.zerodsoft.scheduleweather.room.dao.FavoriteLocationDAO;
 import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
@@ -15,102 +14,104 @@ import lombok.SneakyThrows;
 
 class FavoriteLocationRepository implements FavoriteLocationQuery
 {
-    private final FavoriteLocationDAO favoriteLocationDAO;
+    private final FavoriteLocationDAO dao;
 
     public FavoriteLocationRepository(Application application)
     {
-        favoriteLocationDAO = AppDb.getInstance(application.getApplicationContext()).favoriteRestaurantDAO();
+        dao = AppDb.getInstance(application.getApplicationContext()).favoriteRestaurantDAO();
     }
 
 
     @Override
-    public void insert(String locationId, String locationName, String latitude, String longitude, Integer type, CarrierMessagingService.ResultCallback<FavoriteLocationDTO> callback)
+    public void insert(FavoriteLocationDTO favoriteLocationDTO, CarrierMessagingService.ResultCallback<FavoriteLocationDTO> callback)
     {
-        App.executorService.execute(new Runnable()
+        new Thread(new Runnable()
         {
             @SneakyThrows
             @Override
             public void run()
             {
-                favoriteLocationDAO.insert(locationId, locationName, latitude, longitude, type);
-                FavoriteLocationDTO favoriteLocationDTO = favoriteLocationDAO.select(locationName, type);
+                long id = dao.insert(favoriteLocationDTO);
+                int type = favoriteLocationDTO.getType();
+                FavoriteLocationDTO favoriteLocationDTO = dao.select(type, (int) id);
                 callback.onReceiveResult(favoriteLocationDTO);
             }
-        });
+        }).start();
     }
 
     @Override
     public void select(Integer type, CarrierMessagingService.ResultCallback<List<FavoriteLocationDTO>> callback)
     {
-        App.executorService.execute(new Runnable()
+        new Thread(new Runnable()
         {
             @SneakyThrows
             @Override
             public void run()
             {
-                List<FavoriteLocationDTO> list = favoriteLocationDAO.select(type);
+                List<FavoriteLocationDTO> list = dao.select(type);
                 callback.onReceiveResult(list);
             }
-        });
+        }).start();
     }
 
     @Override
-    public void select(String locationName, Integer type, CarrierMessagingService.ResultCallback<FavoriteLocationDTO> callback)
+    public void select(Integer type, Integer id, CarrierMessagingService.ResultCallback<FavoriteLocationDTO> callback)
     {
-        App.executorService.execute(new Runnable()
+        new Thread(new Runnable()
         {
             @SneakyThrows
             @Override
             public void run()
             {
-                callback.onReceiveResult(favoriteLocationDAO.select(locationName, type));
+                FavoriteLocationDTO favoriteLocationDTO = dao.select(type, id);
+                callback.onReceiveResult(favoriteLocationDTO);
             }
-        });
+        }).start();
     }
 
     @Override
-    public void delete(String locationName, Integer type, CarrierMessagingService.ResultCallback<Boolean> callback)
+    public void delete(Integer id, CarrierMessagingService.ResultCallback<Boolean> callback)
     {
-        App.executorService.execute(new Runnable()
+        new Thread(new Runnable()
         {
             @SneakyThrows
             @Override
             public void run()
             {
-                favoriteLocationDAO.delete(locationName, type);
+                dao.delete(id);
                 callback.onReceiveResult(true);
             }
-        });
+        }).start();
     }
 
     @Override
     public void deleteAll(Integer type, CarrierMessagingService.ResultCallback<Boolean> callback)
     {
-        App.executorService.execute(new Runnable()
+        new Thread(new Runnable()
         {
             @SneakyThrows
             @Override
             public void run()
             {
-                favoriteLocationDAO.deleteAll(type);
+                dao.deleteAll(type);
                 callback.onReceiveResult(true);
             }
-        });
+        }).start();
     }
 
-
     @Override
-    public void contains(Integer type, String locationName, String locationId, CarrierMessagingService.ResultCallback<Boolean> callback)
+    public void contains(Integer type, String placeId, String address, String latitude, String longitude, CarrierMessagingService.ResultCallback<FavoriteLocationDTO> callback)
     {
-        App.executorService.execute(new Runnable()
+        new Thread(new Runnable()
         {
             @SneakyThrows
             @Override
             public void run()
             {
-                callback.onReceiveResult(favoriteLocationDAO.contains(type, locationName, locationId) == 1);
+                FavoriteLocationDTO favoriteLocationDTO = dao.contains(type, placeId, address, latitude, longitude);
+                callback.onReceiveResult(favoriteLocationDTO);
             }
-        });
+        }).start();
     }
 }
 

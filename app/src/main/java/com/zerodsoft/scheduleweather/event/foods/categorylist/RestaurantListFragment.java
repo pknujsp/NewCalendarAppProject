@@ -1,11 +1,9 @@
 package com.zerodsoft.scheduleweather.event.foods.categorylist;
 
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
@@ -20,7 +18,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.common.interfaces.OnDbQueryListener;
@@ -33,6 +30,7 @@ import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoFragment;
 import com.zerodsoft.scheduleweather.navermap.util.LocalParameterUtil;
 import com.zerodsoft.scheduleweather.navermap.viewmodel.PlacesViewModel;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalDocument;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
@@ -183,62 +181,68 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
     }
 
     @Override
-    public void onClickedFavoriteButton(String placeId, int groupPosition, int childPosition)
+    public void onClickedFavoriteButton(KakaoLocalDocument kakaoLocalDocument, FavoriteLocationDTO favoriteLocationDTO, int groupPosition, int childPosition)
     {
 
     }
 
     @Override
-    public void onClickedFavoriteButton(PlaceDocuments placeDocuments, int position)
+    public void onClickedFavoriteButton(KakaoLocalDocument kakaoLocalDocument, FavoriteLocationDTO favoriteLocationDTO, int position)
     {
-        favoriteRestaurantDbQuery.contains(FavoriteLocationDTO.RESTAURANT, placeDocuments.getPlaceName(), placeDocuments.getId(), new CarrierMessagingService.ResultCallback<Boolean>()
-        {
-            @Override
-            public void onReceiveResult(@NonNull Boolean isDuplicate) throws RemoteException
-            {
-                if (isDuplicate)
+        favoriteRestaurantDbQuery.contains(FavoriteLocationDTO.RESTAURANT, ((PlaceDocuments) kakaoLocalDocument).getId()
+                , null, null, null, new CarrierMessagingService.ResultCallback<FavoriteLocationDTO>()
                 {
-                    favoriteRestaurantDbQuery.delete(placeDocuments.getPlaceName(), FavoriteLocationDTO.RESTAURANT, new CarrierMessagingService.ResultCallback<Boolean>()
+                    @Override
+                    public void onReceiveResult(@NonNull FavoriteLocationDTO favoriteLocationDTO) throws RemoteException
                     {
-                        @Override
-                        public void onReceiveResult(@NonNull Boolean isDeleted) throws RemoteException
+                        if (favoriteLocationDTO != null)
                         {
-                            requireActivity().runOnUiThread(new Runnable()
+                            favoriteRestaurantDbQuery.delete(favoriteLocationDTO.getId(),
+                                    new CarrierMessagingService.ResultCallback<Boolean>()
+                                    {
+                                        @Override
+                                        public void onReceiveResult(@NonNull Boolean isDeleted) throws RemoteException
+                                        {
+                                            requireActivity().runOnUiThread(new Runnable()
+                                            {
+                                                @Override
+                                                public void run()
+                                                {
+                                                    adapter.notifyItemChanged(position);
+                                                }
+                                            });
+
+                                        }
+                                    });
+                        } else
+                        {
+                            PlaceDocuments placeDocuments = (PlaceDocuments) kakaoLocalDocument;
+                            FavoriteLocationDTO newFavoriteLocationDTO = new FavoriteLocationDTO();
+                            newFavoriteLocationDTO.setPlaceId(placeDocuments.getId());
+                            newFavoriteLocationDTO.setPlaceName(placeDocuments.getPlaceName());
+                            newFavoriteLocationDTO.setLatitude(String.valueOf(placeDocuments.getY()));
+                            newFavoriteLocationDTO.setLongitude(String.valueOf(placeDocuments.getX()));
+                            newFavoriteLocationDTO.setType(FavoriteLocationDTO.RESTAURANT);
+                            newFavoriteLocationDTO.setAddress(placeDocuments.getAddressName());
+
+                            favoriteRestaurantDbQuery.insert(newFavoriteLocationDTO, new CarrierMessagingService.ResultCallback<FavoriteLocationDTO>()
                             {
                                 @Override
-                                public void run()
+                                public void onReceiveResult(@NonNull FavoriteLocationDTO favoriteLocationDTO) throws RemoteException
                                 {
-                                    adapter.notifyItemChanged(position);
-                                }
-                            });
-
-                        }
-                    });
-                } else
-                {
-                    String id = placeDocuments.getId();
-                    String name = placeDocuments.getPlaceName();
-                    String latitude = String.valueOf(placeDocuments.getY());
-                    String longitude = String.valueOf(placeDocuments.getX());
-
-                    favoriteRestaurantDbQuery.insert(id, name, latitude, longitude, FavoriteLocationDTO.RESTAURANT, new CarrierMessagingService.ResultCallback<FavoriteLocationDTO>()
-                    {
-                        @Override
-                        public void onReceiveResult(@NonNull FavoriteLocationDTO favoriteLocationDTO) throws RemoteException
-                        {
-                            requireActivity().runOnUiThread(new Runnable()
-                            {
-                                @Override
-                                public void run()
-                                {
-                                    adapter.notifyItemChanged(position);
+                                    requireActivity().runOnUiThread(new Runnable()
+                                    {
+                                        @Override
+                                        public void run()
+                                        {
+                                            adapter.notifyItemChanged(position);
+                                        }
+                                    });
                                 }
                             });
                         }
-                    });
-                }
-            }
-        });
+                    }
+                });
 
 
     }
@@ -253,23 +257,16 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
     }
 
     @Override
-    public void contains(int type, String name, String id, OnDbQueryListener<Drawable> callback)
+    public void contains(String id, OnDbQueryListener<FavoriteLocationDTO> callback)
     {
-        favoriteRestaurantDbQuery.contains(type, name, id, new CarrierMessagingService.ResultCallback<Boolean>()
-        {
-            @Override
-            public void onReceiveResult(@NonNull Boolean isContain) throws RemoteException
-            {
-                requireActivity().runOnUiThread(new Runnable()
+        favoriteRestaurantDbQuery.contains(FavoriteLocationDTO.RESTAURANT, id, null, null
+                , null, new CarrierMessagingService.ResultCallback<FavoriteLocationDTO>()
                 {
                     @Override
-                    public void run()
+                    public void onReceiveResult(@NonNull FavoriteLocationDTO favoriteLocationDTO) throws RemoteException
                     {
-                        callback.onSuccessful(isContain ? ContextCompat.getDrawable(getContext(), R.drawable.favorite_enabled_icon)
-                                : ContextCompat.getDrawable(getContext(), R.drawable.favorite_disabled_icon));
+                        callback.onSuccessful(favoriteLocationDTO);
                     }
                 });
-            }
-        });
     }
 }

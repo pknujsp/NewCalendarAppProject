@@ -22,9 +22,9 @@ public class FavoriteLocationViewModel extends AndroidViewModel implements Favor
     }
 
     @Override
-    public void insert(String locationId, String locationName, String latitude, String longitude, Integer type, CarrierMessagingService.ResultCallback<FavoriteLocationDTO> callback)
+    public void insert(FavoriteLocationDTO favoriteLocationDTO, CarrierMessagingService.ResultCallback<FavoriteLocationDTO> callback)
     {
-        restaurantRepository.insert(locationId, locationName, latitude, longitude, type, callback);
+        restaurantRepository.insert(favoriteLocationDTO, callback);
     }
 
     @Override
@@ -34,15 +34,15 @@ public class FavoriteLocationViewModel extends AndroidViewModel implements Favor
     }
 
     @Override
-    public void select(String locationName, Integer type, CarrierMessagingService.ResultCallback<FavoriteLocationDTO> callback)
+    public void select(Integer type, Integer id, CarrierMessagingService.ResultCallback<FavoriteLocationDTO> callback)
     {
-        restaurantRepository.select(locationName, type, callback);
+        restaurantRepository.select(type, id, callback);
     }
 
     @Override
-    public void delete(String locationName, Integer type, CarrierMessagingService.ResultCallback<Boolean> callback)
+    public void delete(Integer id, CarrierMessagingService.ResultCallback<Boolean> callback)
     {
-        restaurantRepository.delete(locationName, type, callback);
+        restaurantRepository.delete(id, callback);
     }
 
     @Override
@@ -52,8 +52,8 @@ public class FavoriteLocationViewModel extends AndroidViewModel implements Favor
     }
 
     @Override
-    public void contains(Integer type, String locationName, String locationId, CarrierMessagingService.ResultCallback<Boolean> callback)
+    public void contains(Integer type, String placeId, String address, String latitude, String longitude, CarrierMessagingService.ResultCallback<FavoriteLocationDTO> callback)
     {
-        restaurantRepository.contains(type, locationName, locationId, callback);
+        restaurantRepository.contains(type, placeId, address, latitude, longitude, callback);
     }
 }

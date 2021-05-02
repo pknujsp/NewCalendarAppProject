@@ -152,7 +152,7 @@ class FavoriteRestaurantListAdapter extends BaseExpandableListAdapter
             @Override
             public void onClick(View view)
             {
-                onClickedFavoriteButtonListener.onClickedFavoriteButton(restaurantListMap.get(restaurantListMap.keyAt(groupPosition)).get(childPosition).getId(),
+                onClickedFavoriteButtonListener.onClickedFavoriteButton(restaurantListMap.get(restaurantListMap.keyAt(groupPosition)).get(childPosition), null,
                         groupPosition, childPosition);
             }
         });

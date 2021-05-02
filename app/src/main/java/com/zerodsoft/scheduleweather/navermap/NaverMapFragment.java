@@ -96,6 +96,7 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressre
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.address.reversegeocoding.ReverseGeoCodingResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.auth.SgisAuthResponse;
+import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 import com.zerodsoft.scheduleweather.sgis.SgisAddress;
@@ -856,7 +857,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
         selectedPoiItemIndex = markerMap.get(poiItemType).indexOf(marker);
 
         CameraUpdate cameraUpdate = CameraUpdate.scrollTo(marker.getPosition());
-        cameraUpdate.animate(CameraAnimation.Easing, 150);
+        cameraUpdate.animate(CameraAnimation.Easing, 200);
         naverMap.moveCamera(cameraUpdate);
         //open bottomsheet and show selected item data
 
@@ -948,7 +949,8 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
             List<? extends KakaoLocalDocument> subList = (List<? extends KakaoLocalDocument>) kakaoLocalDocuments.subList(LAST_INDEX + 1, kakaoLocalDocuments.size());
             currentList.addAll(subList);
 
-            viewPagerAdapterMap.get(poiItemType).notifyItemRangeInserted(LAST_INDEX + 1, subList.size());
+            //viewPagerAdapterMap.get(poiItemType).notifyItemRangeInserted(LAST_INDEX + 1, subList.size());
+            viewPagerAdapterMap.get(poiItemType).notifyDataSetChanged();
 
             if (kakaoLocalDocuments.get(0) instanceof PlaceDocuments)
             {
@@ -986,13 +988,16 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
     {
         for (PoiItemType poiItemType : poiItemTypes)
         {
-            List<Marker> markerList = markerMap.get(poiItemType);
-            for (Marker marker : markerList)
+            if (markerMap.containsKey(poiItemType))
             {
-                marker.setMap(null);
-            }
+                List<Marker> markerList = markerMap.get(poiItemType);
+                for (Marker marker : markerList)
+                {
+                    marker.setMap(null);
+                }
 
-            markerList.clear();
+                markerList.clear();
+            }
         }
     }
 
@@ -1567,13 +1572,13 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
     }
 
     @Override
-    public void onClickedFavoriteButton(String placeId, int groupPosition, int childPosition)
+    public void onClickedFavoriteButton(KakaoLocalDocument kakaoLocalDocument, FavoriteLocationDTO favoriteLocationDTO, int groupPosition, int childPosition)
     {
 
     }
 
     @Override
-    public void onClickedFavoriteButton(PlaceDocuments placeDocuments, int position)
+    public void onClickedFavoriteButton(KakaoLocalDocument kakaoLocalDocument, FavoriteLocationDTO favoriteLocationDTO, int position)
     {
     }
 

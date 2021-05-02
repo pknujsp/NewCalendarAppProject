@@ -10,13 +10,16 @@ public class FavoriteLocationDTO
 {
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "id")
-    private int id;
+    private Integer id;
 
-    @ColumnInfo(name = "location_name")
-    private String locationName;
+    @ColumnInfo(name = "place_name")
+    private String placeName;
 
-    @ColumnInfo(name = "location_id")
-    private String locationId;
+    @ColumnInfo(name = "address")
+    private String address;
+
+    @ColumnInfo(name = "place_id")
+    private String placeId;
 
     @ColumnInfo(name = "latitude")
     private String latitude;
@@ -34,34 +37,34 @@ public class FavoriteLocationDTO
     @Ignore
     public static final int ADDRESS = 2;
 
-    public int getId()
+    public Integer getId()
     {
         return id;
     }
 
-    public void setId(int id)
+    public void setId(Integer id)
     {
         this.id = id;
     }
 
-    public String getLocationName()
+    public String getPlaceName()
     {
-        return locationName;
+        return placeName;
     }
 
-    public void setLocationName(String locationName)
+    public void setPlaceName(String placeName)
     {
-        this.locationName = locationName;
+        this.placeName = placeName;
     }
 
-    public String getLocationId()
+    public String getPlaceId()
     {
-        return locationId;
+        return placeId;
     }
 
-    public void setLocationId(String locationId)
+    public void setPlaceId(String placeId)
     {
-        this.locationId = locationId;
+        this.placeId = placeId;
     }
 
     public String getLatitude()
@@ -92,5 +95,15 @@ public class FavoriteLocationDTO
     public Integer getType()
     {
         return type;
+    }
+
+    public void setAddress(String address)
+    {
+        this.address = address;
+    }
+
+    public String getAddress()
+    {
+        return address;
     }
 }

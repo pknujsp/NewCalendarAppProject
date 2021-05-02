@@ -37,10 +37,13 @@ import com.google.android.material.chip.ChipGroup;
 import com.naver.maps.geometry.LatLng;
 import com.naver.maps.map.CameraUpdate;
 import com.naver.maps.map.NaverMap;
+import com.naver.maps.map.overlay.InfoWindow;
 import com.naver.maps.map.overlay.Marker;
+import com.naver.maps.map.overlay.Overlay;
 import com.naver.maps.map.overlay.OverlayImage;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
+import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.event.fragments.EventFragment;
 import com.zerodsoft.scheduleweather.event.foods.main.fragment.NewFoodsMainFragment;
@@ -95,10 +98,11 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
     private LocationViewModel locationViewModel;
 
     private ContentValues instance;
-    private LocationDTO selectedLocationDto;
+    private LocationDTO selectedLocationDtoInEvent;
     private TextView[] functionButtons;
     private ImageView functionButton;
-    private Marker selectedLocationMarker;
+    private Marker selectedLocationInEventMarker;
+    private InfoWindow selectedLocationInEventInfoWindow;
 
     private ChipGroup foodMenuChipGroup;
     private Map<String, Chip> foodMenuChipMap = new HashMap<>();
@@ -466,9 +470,9 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
                         @Override
                         public void onReceiveResult(@NonNull LocationDTO locationDTO) throws RemoteException
                         {
-                            if (selectedLocationDto == null)
+                            if (selectedLocationDtoInEvent == null)
                             {
-                                selectedLocationDto = locationDTO;
+                                selectedLocationDtoInEvent = locationDTO;
 
                                 getActivity().runOnUiThread(new Runnable()
                                 {
@@ -480,13 +484,13 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
                                 });
                             } else
                             {
-                                if (locationDTO.equals(selectedLocationDto))
+                                if (locationDTO.equals(selectedLocationDtoInEvent))
                                 {
                                 } else
                                 {
-                                    selectedLocationDto = locationDTO;
-                                    selectedLocationMarker.setMap(null);
-                                    selectedLocationMarker = null;
+                                    selectedLocationDtoInEvent = locationDTO;
+                                    selectedLocationInEventMarker.setMap(null);
+                                    selectedLocationInEventMarker = null;
 
                                     getActivity().runOnUiThread(new Runnable()
                                     {
@@ -508,13 +512,64 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
 
     private void createSelectedLocationMarker()
     {
-        LatLng latLng = new LatLng(selectedLocationDto.getLatitude(), selectedLocationDto.getLongitude());
-        selectedLocationMarker = new Marker(latLng);
-        selectedLocationMarker.setMap(naverMap);
-        selectedLocationMarker.setIcon(OverlayImage.fromResource(R.drawable.current_location_icon));
-        selectedLocationMarker.setForceShowIcon(true);
+        LatLng latLng = new LatLng(selectedLocationDtoInEvent.getLatitude(), selectedLocationDtoInEvent.getLongitude());
 
-        CameraUpdate cameraUpdate = CameraUpdate.scrollAndZoomTo(latLng, 12);
+        selectedLocationInEventMarker = new Marker(latLng);
+        selectedLocationInEventMarker.setMap(naverMap);
+        selectedLocationInEventMarker.setIcon(OverlayImage.fromResource(R.drawable.current_location_icon));
+        selectedLocationInEventMarker.setForceShowIcon(true);
+        selectedLocationInEventMarker.setCaptionColor(Color.BLUE);
+        selectedLocationInEventMarker.setCaptionHaloColor(Color.rgb(200, 255, 200));
+        selectedLocationInEventMarker.setCaptionTextSize(13f);
+        selectedLocationInEventMarker.setOnClickListener(new Overlay.OnClickListener()
+        {
+            @Override
+            public boolean onClick(@NonNull Overlay overlay)
+            {
+                if (selectedLocationInEventInfoWindow.getMarker() == null)
+                {
+                    selectedLocationInEventInfoWindow.open(selectedLocationInEventMarker);
+                    selectedLocationInEventMarker.setCaptionText(getString(R.string.message_click_marker_to_delete));
+                } else
+                {
+                    selectedLocationInEventInfoWindow.close();
+                    selectedLocationInEventMarker.setCaptionText("");
+                }
+                return true;
+            }
+        });
+
+        selectedLocationInEventInfoWindow = new InfoWindow();
+        selectedLocationInEventInfoWindow.setAdapter(new InfoWindow.DefaultTextAdapter(getContext())
+        {
+            @NonNull
+            @Override
+            public CharSequence getText(@NonNull InfoWindow infoWindow)
+            {
+                StringBuilder stringBuilder = new StringBuilder();
+                stringBuilder.append(getString(R.string.selected_location_in_event));
+                stringBuilder.append("\n");
+                if (selectedLocationDtoInEvent.getLocationType() == LocationType.PLACE)
+                {
+                    stringBuilder.append(getString(R.string.place));
+                    stringBuilder.append(" : ");
+                    stringBuilder.append(selectedLocationDtoInEvent.getPlaceName());
+                    stringBuilder.append("\n");
+                    stringBuilder.append(getString(R.string.address));
+                    stringBuilder.append(" : ");
+                    stringBuilder.append(selectedLocationDtoInEvent.getAddressName());
+                } else
+                {
+                    stringBuilder.append(getString(R.string.address));
+                    stringBuilder.append(" : ");
+                    stringBuilder.append(selectedLocationDtoInEvent.getAddressName());
+                }
+                return stringBuilder.toString();
+            }
+        });
+
+        selectedLocationInEventMarker.performClick();
+        CameraUpdate cameraUpdate = CameraUpdate.scrollAndZoomTo(latLng, 13);
         naverMap.moveCamera(cameraUpdate);
     }
 
