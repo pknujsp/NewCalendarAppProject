@@ -488,7 +488,7 @@ public class PlacesMapFragmentNaver extends NaverMapFragment implements OnClicke
                     }
                 }
 
-                setLocationItemViewPagerAdapter(new LocationItemViewPagerAdapter(), PoiItemType.SELECTED_PLACE_CATEGORY);
+                setLocationItemViewPagerAdapter(new LocationItemViewPagerAdapter(getContext()), PoiItemType.SELECTED_PLACE_CATEGORY);
 
                 PlaceCategoryDTO placeCategory = ((ChipViewHolder) compoundButton.getTag()).placeCategory;
                 List<PlaceDocuments> placeDocumentsList = placeItemsGetter.getPlaceItems(placeCategory);

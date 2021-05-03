@@ -9,4 +9,8 @@ public interface FavoriteLocationsListener
     void createFavoriteLocationsPoiItems(List<FavoriteLocationDTO> favoriteLocationList);
 
     void createFavoriteLocationsPoiItem(FavoriteLocationDTO favoriteLocationDTO, double latitude, double longitude);
+
+    void addFavoriteLocationsPoiItem(FavoriteLocationDTO favoriteLocationDTO);
+
+    void removeFavoriteLocationsPoiItem(FavoriteLocationDTO favoriteLocationDTO);
 }

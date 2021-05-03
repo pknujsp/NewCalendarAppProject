@@ -126,7 +126,7 @@ public class SearchResultAddressListFragment extends Fragment implements IViewPa
     public void onChangedPage()
     {
         int poiItemSize = iMapData.getPoiItemSize(PoiItemType.SEARCH_RESULT);
-        iMapData.setLocationItemViewPagerAdapter(new LocationItemViewPagerAdapter(), PoiItemType.SEARCH_RESULT);
+        iMapData.setLocationItemViewPagerAdapter(new LocationItemViewPagerAdapter(getContext()), PoiItemType.SEARCH_RESULT);
 
         if (poiItemSize > 0 && adapter != null)
         {

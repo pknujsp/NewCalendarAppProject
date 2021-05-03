@@ -163,6 +163,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
     private Integer markerWidth;
     private Integer markerHeight;
+    private Integer favoriteMarkerSize;
 
     public Marker markerOfSelectedLocation;
     public ViewPager2 locationItemBottomSheetViewPager;
@@ -288,6 +289,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
         markerWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, getResources().getDisplayMetrics());
         markerHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32f, getResources().getDisplayMetrics());
+        favoriteMarkerSize = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 20f, getResources().getDisplayMetrics());
     }
 
 
@@ -1130,7 +1132,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
         locationItemBottomSheetViewPager.setAdapter(adapter);
         locationItemBottomSheetViewPager.setTag(poiItemType);
 
-        adapter.setFavoriteLocationQuery(((FavoriteLocationFragment) bottomSheetFragmentMap.get(BottomSheetType.FAVORITE_LOCATIONS)).getFavoriteLocationViewModel());
+        adapter.setFavoriteLocationQuery(((FavoriteLocationFragment) bottomSheetFragmentMap.get(BottomSheetType.FAVORITE_LOCATIONS)));
         adapter.setPlacesItemBottomSheetButtonOnClickListener(placesItemBottomSheetButtonOnClickListener);
         adapter.setOnClickedBottomSheetListener(this);
         adapter.setVisibleSelectBtn(placeBottomSheetSelectBtnVisibility);
@@ -1666,7 +1668,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
     @Override
     public void createFavoriteLocationsPoiItems(List<FavoriteLocationDTO> favoriteLocationList)
     {
-        FavoriteLocationItemViewPagerAdapter adapter = new FavoriteLocationItemViewPagerAdapter(requireActivity(), locationViewModel);
+        FavoriteLocationItemViewPagerAdapter adapter = new FavoriteLocationItemViewPagerAdapter(getContext(), locationViewModel);
         adapter.setFavoriteLocationList(favoriteLocationList);
         setLocationItemViewPagerAdapter(adapter, PoiItemType.FAVORITE);
 
@@ -1690,15 +1692,35 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
     }
 
     @Override
+    public void addFavoriteLocationsPoiItem(FavoriteLocationDTO favoriteLocationDTO)
+    {
+        FavoriteLocationItemViewPagerAdapter adapter = new FavoriteLocationItemViewPagerAdapter(getContext(), locationViewModel);
+        adapter.getFavoriteLocationList().add(favoriteLocationDTO);
+        adapter.notifyDataSetChanged();
+        createFavoriteLocationsPoiItem(favoriteLocationDTO, Double.parseDouble(favoriteLocationDTO.getLatitude()), Double.parseDouble(favoriteLocationDTO.getLongitude()));
+    }
+
+    @Override
+    public void removeFavoriteLocationsPoiItem(FavoriteLocationDTO favoriteLocationDTO)
+    {
+        FavoriteLocationItemViewPagerAdapter adapter = (FavoriteLocationItemViewPagerAdapter) viewPagerAdapterMap.get(PoiItemType.FAVORITE);
+        adapter.getFavoriteLocationList().remove(favoriteLocationDTO);
+        adapter.notifyDataSetChanged();
+        //마커삭제
+        markerMap.get(PoiItemType.FAVORITE).remove(favoriteLocationDTO);
+    }
+
+    @Override
     public void createFavoriteLocationsPoiItem(FavoriteLocationDTO favoriteLocationDTO, double latitude, double longitude)
     {
         Marker marker = new Marker();
-        marker.setWidth(markerWidth);
-        marker.setHeight(markerHeight);
+        marker.setWidth(favoriteMarkerSize);
+        marker.setHeight(favoriteMarkerSize);
         marker.setPosition(new LatLng(latitude, longitude));
         marker.setMap(naverMap);
-        marker.setIcon(OverlayImage.fromResource(R.drawable.star_rate));
+        marker.setIcon(OverlayImage.fromResource(R.drawable.favorite_icon));
         marker.setOnClickListener(markerOnClickListener);
+        marker.setForceShowIcon(true);
 
         marker.setTag(PoiItemType.FAVORITE);
         markerMap.get(PoiItemType.FAVORITE).add(marker);

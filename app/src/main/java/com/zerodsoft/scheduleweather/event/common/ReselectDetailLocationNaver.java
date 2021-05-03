@@ -91,7 +91,7 @@ public class ReselectDetailLocationNaver extends NaverMapActivity implements OnM
                             coordToAddressDocuments.getCoordToAddressAddress().setLatitude(String.valueOf(savedLocationDto.getLatitude()));
                             coordToAddressDocuments.getCoordToAddressAddress().setLongitude(String.valueOf(savedLocationDto.getLongitude()));
 
-                            naverMapFragment.setLocationItemViewPagerAdapter(new LocationItemViewPagerAdapter(), PoiItemType.SELECTED_ADDRESS_IN_EVENT);
+                            naverMapFragment.setLocationItemViewPagerAdapter(new LocationItemViewPagerAdapter(getApplicationContext()), PoiItemType.SELECTED_ADDRESS_IN_EVENT);
                             naverMapFragment.createPoiItems(Collections.singletonList(coordToAddressDocuments), PoiItemType.SELECTED_ADDRESS_IN_EVENT);
                             naverMapFragment.onPOIItemSelectedByList(0, PoiItemType.SELECTED_ADDRESS_IN_EVENT);
                         } else
@@ -118,7 +118,7 @@ public class ReselectDetailLocationNaver extends NaverMapActivity implements OnM
                     public void onResponseSuccessful(PlaceKakaoLocalResponse result)
                     {
                         PlaceDocuments document = result.getPlaceDocuments().get(0);
-                        naverMapFragment.setLocationItemViewPagerAdapter(new LocationItemViewPagerAdapter(), PoiItemType.SELECTED_PLACE_IN_EVENT);
+                        naverMapFragment.setLocationItemViewPagerAdapter(new LocationItemViewPagerAdapter(getApplicationContext()), PoiItemType.SELECTED_PLACE_IN_EVENT);
                         naverMapFragment.createPoiItems(Collections.singletonList(document), PoiItemType.SELECTED_PLACE_IN_EVENT);
                         naverMapFragment.onPOIItemSelectedByList(0, PoiItemType.SELECTED_PLACE_IN_EVENT);
                     }

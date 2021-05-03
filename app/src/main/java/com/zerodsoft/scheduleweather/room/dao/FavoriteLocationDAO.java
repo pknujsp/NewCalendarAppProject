@@ -3,6 +3,7 @@ package com.zerodsoft.scheduleweather.room.dao;
 import android.service.carrier.CarrierMessagingService;
 
 import androidx.room.Dao;
+import androidx.room.Ignore;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
@@ -36,7 +37,13 @@ public interface FavoriteLocationDAO
             "END)")
     List<FavoriteLocationDTO> select(Integer type);
 
-    @Query("SELECT * FROM favorite_location_table WHERE type = :type AND id = :id")
+    @SuppressWarnings("Unused parameter")
+    @Ignore()
+    @Query("SELECT * FROM favorite_location_table " +
+            "WHERE (CASE " +
+            "WHEN :type == null THEN id = :id " +
+            "ELSE id = :id " +
+            "END)")
     FavoriteLocationDTO select(Integer type, Integer id);
 
     @Query("DELETE FROM favorite_location_table WHERE id = :id")

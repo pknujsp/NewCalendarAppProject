@@ -45,7 +45,7 @@
                     android:layout_centerVertical="true"
                     android:layout_marginRight="16dp"
                     android:background="?attr/selectableItemBackground"
-                    android:src="@drawable/favorite_disabled_icon" />
+                    android:src="@drawable/favorite_disabled" />
 
                 <Button
                     android:id="@+id/select_this_place_button"

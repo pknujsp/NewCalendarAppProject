@@ -1,6 +1,7 @@
 package com.zerodsoft.scheduleweather.navermap;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.RemoteException;
 import android.service.carrier.CarrierMessagingService;
 import android.view.LayoutInflater;
@@ -36,14 +37,12 @@ public class FavoriteLocationItemViewPagerAdapter extends LocationItemViewPagerA
 {
     private List<FavoriteLocationDTO> favoriteLocationList = new ArrayList<>();
     private final ILocationDao iLocationDao;
-    private Activity activity;
 
     private final Map<Integer, KakaoLocalDocument> kakaoLocalDocumentMap = new HashMap<>();
 
-    public FavoriteLocationItemViewPagerAdapter(Activity activity, ILocationDao iLocationDao)
+    public FavoriteLocationItemViewPagerAdapter(Context context, ILocationDao iLocationDao)
     {
-        super();
-        this.activity = activity;
+        super(context);
         this.iLocationDao = iLocationDao;
     }
 
@@ -194,14 +193,7 @@ public class FavoriteLocationItemViewPagerAdapter extends LocationItemViewPagerA
                             coordToAddressDocuments.getCoordToAddressAddress().setLongitude(favoriteLocationDTO.getLongitude());
 
                             kakaoLocalDocumentMap.put(favoriteLocationDTO.getId(), coordToAddressDocuments);
-                            activity.runOnUiThread(new Runnable()
-                            {
-                                @Override
-                                public void run()
-                                {
-                                    FavoriteLocationItemInMapViewHolder.super.bind(coordToAddressDocuments);
-                                }
-                            });
+                            FavoriteLocationItemInMapViewHolder.super.bind(coordToAddressDocuments);
                         }
 
                         @Override
@@ -226,14 +218,7 @@ public class FavoriteLocationItemViewPagerAdapter extends LocationItemViewPagerA
                         {
                             PlaceDocuments placeDocuments = result.getPlaceDocuments().get(0);
                             kakaoLocalDocumentMap.put(favoriteLocationDTO.getId(), placeDocuments);
-                            activity.runOnUiThread(new Runnable()
-                            {
-                                @Override
-                                public void run()
-                                {
-                                    FavoriteLocationItemInMapViewHolder.super.bind(placeDocuments);
-                                }
-                            });
+                            FavoriteLocationItemInMapViewHolder.super.bind(placeDocuments);
                         }
 
                         @Override

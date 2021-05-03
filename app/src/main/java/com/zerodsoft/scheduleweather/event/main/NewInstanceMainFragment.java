@@ -737,7 +737,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
              */
             if (isChecked)
             {
-                LocationItemViewPagerAdapter locationItemViewPagerAdapter = new LocationItemViewPagerAdapter();
+                LocationItemViewPagerAdapter locationItemViewPagerAdapter = new LocationItemViewPagerAdapter(getContext());
                 locationItemViewPagerAdapter.setIsVisibleFavoriteBtn(View.GONE);
                 setLocationItemViewPagerAdapter(locationItemViewPagerAdapter, PoiItemType.RESTAURANT);
 

@@ -35,12 +35,15 @@ import com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint;
 import com.zerodsoft.scheduleweather.navermap.interfaces.SearchBarController;
 import com.zerodsoft.scheduleweather.navermap.interfaces.SearchFragmentController;
 import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
+import com.zerodsoft.scheduleweather.room.interfaces.FavoriteLocationQuery;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class FavoriteLocationFragment extends Fragment implements OnBackPressedCallbackController, OnClickedFavoriteItem
+import lombok.SneakyThrows;
+
+public class FavoriteLocationFragment extends Fragment implements OnBackPressedCallbackController, OnClickedFavoriteItem, FavoriteLocationQuery
 {
     private FragmentFavoriteLocationBinding binding;
     public static final String TAG = "FavoriteLocationFragment";
@@ -193,19 +196,6 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
         });
     }
 
-    public void add(FavoriteLocationDTO favoriteLocationDTO)
-    {
-        favoriteLocationViewModel.insert(favoriteLocationDTO, new CarrierMessagingService.ResultCallback<FavoriteLocationDTO>()
-        {
-            @Override
-            public void onReceiveResult(@NonNull FavoriteLocationDTO favoriteLocationDTO) throws RemoteException
-            {
-
-            }
-        });
-    }
-
-
     @Override
     public void addOnBackPressedCallback()
     {
@@ -240,5 +230,142 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
     public void onClickedShareButton(FavoriteLocationDTO e)
     {
 
+    }
+
+    @Override
+    public void insert(FavoriteLocationDTO favoriteLocationDTO, CarrierMessagingService.ResultCallback<FavoriteLocationDTO> callback)
+    {
+        favoriteLocationViewModel.insert(favoriteLocationDTO, new CarrierMessagingService.ResultCallback<FavoriteLocationDTO>()
+        {
+            @Override
+            public void onReceiveResult(@NonNull FavoriteLocationDTO insertedFavoriteLocationDTO) throws RemoteException
+            {
+                requireActivity().runOnUiThread(new Runnable()
+                {
+                    @SneakyThrows
+                    @Override
+                    public void run()
+                    {
+                        callback.onReceiveResult(insertedFavoriteLocationDTO);
+                        favoriteLocationsListener.addFavoriteLocationsPoiItem(insertedFavoriteLocationDTO);
+                    }
+                });
+            }
+        });
+    }
+
+    @Override
+    public void select(Integer type, CarrierMessagingService.ResultCallback<List<FavoriteLocationDTO>> callback)
+    {
+        favoriteLocationViewModel.select(type, new CarrierMessagingService.ResultCallback<List<FavoriteLocationDTO>>()
+        {
+            @Override
+            public void onReceiveResult(@NonNull List<FavoriteLocationDTO> favoriteLocationDTOS) throws RemoteException
+            {
+                requireActivity().runOnUiThread(new Runnable()
+                {
+                    @SneakyThrows
+                    @Override
+                    public void run()
+                    {
+                        callback.onReceiveResult(favoriteLocationDTOS);
+                    }
+                });
+            }
+        });
+    }
+
+    @Override
+    public void select(Integer type, Integer id, CarrierMessagingService.ResultCallback<FavoriteLocationDTO> callback)
+    {
+        favoriteLocationViewModel.select(type, id, new CarrierMessagingService.ResultCallback<FavoriteLocationDTO>()
+        {
+            @Override
+            public void onReceiveResult(@NonNull FavoriteLocationDTO favoriteLocationDTO) throws RemoteException
+            {
+                requireActivity().runOnUiThread(new Runnable()
+                {
+                    @SneakyThrows
+                    @Override
+                    public void run()
+                    {
+                        callback.onReceiveResult(favoriteLocationDTO);
+                    }
+                });
+            }
+        });
+    }
+
+    @Override
+    public void delete(Integer id, CarrierMessagingService.ResultCallback<Boolean> callback)
+    {
+        favoriteLocationViewModel.select(null, id, new CarrierMessagingService.ResultCallback<FavoriteLocationDTO>()
+        {
+            @Override
+            public void onReceiveResult(@NonNull FavoriteLocationDTO favoriteLocationDTO) throws RemoteException
+            {
+                favoriteLocationViewModel.delete(id, new CarrierMessagingService.ResultCallback<Boolean>()
+                {
+                    @Override
+                    public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
+                    {
+                        requireActivity().runOnUiThread(new Runnable()
+                        {
+                            @SneakyThrows
+                            @Override
+                            public void run()
+                            {
+                                callback.onReceiveResult(aBoolean);
+                                favoriteLocationsListener.removeFavoriteLocationsPoiItem(favoriteLocationDTO);
+                            }
+                        });
+                    }
+                });
+            }
+        });
+
+
+    }
+
+    @Override
+    public void deleteAll(Integer type, CarrierMessagingService.ResultCallback<Boolean> callback)
+    {
+        favoriteLocationViewModel.deleteAll(type, new CarrierMessagingService.ResultCallback<Boolean>()
+        {
+            @Override
+            public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
+            {
+                requireActivity().runOnUiThread(new Runnable()
+                {
+                    @SneakyThrows
+                    @Override
+                    public void run()
+                    {
+                        callback.onReceiveResult(aBoolean);
+                    }
+                });
+            }
+        });
+    }
+
+    @Override
+    public void contains(Integer type, String placeId, String address, String latitude, String longitude, CarrierMessagingService.ResultCallback<FavoriteLocationDTO> callback)
+    {
+        favoriteLocationViewModel.contains(type, placeId, address, latitude, longitude, new CarrierMessagingService.ResultCallback<FavoriteLocationDTO>()
+        {
+            @Override
+            public void onReceiveResult(@NonNull FavoriteLocationDTO favoriteLocationDTO) throws RemoteException
+            {
+                requireActivity().runOnUiThread(new Runnable()
+                {
+                    @SneakyThrows
+                    @Override
+                    public void run()
+                    {
+                        callback.onReceiveResult(favoriteLocationDTO);
+                    }
+                });
+            }
+        });
     }
 }
