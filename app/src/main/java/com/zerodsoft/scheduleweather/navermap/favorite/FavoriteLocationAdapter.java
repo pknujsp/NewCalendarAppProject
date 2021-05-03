@@ -24,6 +24,16 @@ public class FavoriteLocationAdapter extends RecyclerView.Adapter<FavoriteLocati
         this.onClickedFavoriteItem = onClickedFavoriteItem;
     }
 
+    public void setList(List<FavoriteLocationDTO> list)
+    {
+        this.list = list;
+    }
+
+    public List<FavoriteLocationDTO> getList()
+    {
+        return list;
+    }
+
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType)

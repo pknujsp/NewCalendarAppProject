@@ -71,6 +71,7 @@ import com.zerodsoft.scheduleweather.event.places.interfaces.OnClickedPlacesList
 import com.zerodsoft.scheduleweather.event.places.interfaces.PoiItemOnClickListener;
 import com.zerodsoft.scheduleweather.navermap.building.fragment.BuildingFragment;
 import com.zerodsoft.scheduleweather.navermap.building.fragment.BuildingListFragment;
+import com.zerodsoft.scheduleweather.navermap.favorite.FavoriteLocationFragment;
 import com.zerodsoft.scheduleweather.navermap.fragment.search.LocationSearchFragment;
 import com.zerodsoft.scheduleweather.navermap.fragment.searchheader.MapHeaderMainFragment;
 import com.zerodsoft.scheduleweather.navermap.fragment.searchheader.MapHeaderSearchFragment;
@@ -142,6 +143,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
     public ImageButton zoomOutButton;
     public ImageButton gpsButton;
     public ImageButton buildingButton;
+    public ImageButton favoriteLocationsButton;
 
     public int selectedPoiItemIndex;
 
@@ -298,11 +300,13 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
         setLocationItemsBottomSheet();
         setLocationSearchBottomSheet();
         setBuildingBottomSheet();
+        setFavoriteLocationsBottomSheet();
 
         zoomInButton = binding.naverMapButtonsLayout.zoomInButton;
         zoomOutButton = binding.naverMapButtonsLayout.zoomOutButton;
         gpsButton = binding.naverMapButtonsLayout.gpsButton;
         buildingButton = binding.naverMapButtonsLayout.buildingButton;
+        favoriteLocationsButton = binding.naverMapButtonsLayout.favoriteLocationsButton;
 
         locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
 
@@ -312,11 +316,11 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
             public void onGlobalLayout()
             {
                 //search bottom sheet 크기 조정
-                int headerBarHeight = (int) getResources().getDimension(R.dimen.map_header_bar_height);
-                int headerBarTopMargin = (int) getResources().getDimension(R.dimen.map_header_bar_top_margin);
-                int headerBarMargin = (int) (headerBarTopMargin * 1.5f);
+                final int headerBarHeight = (int) getResources().getDimension(R.dimen.map_header_bar_height);
+                final int headerBarTopMargin = (int) getResources().getDimension(R.dimen.map_header_bar_top_margin);
+                final int headerBarMargin = (int) (headerBarTopMargin * 1.5f);
 
-                int searchBottomSheetHeight = binding.naverMapFragmentRootLayout.getHeight() - headerBarHeight - headerBarMargin;
+                final int searchBottomSheetHeight = binding.naverMapFragmentRootLayout.getHeight() - headerBarHeight - headerBarMargin;
 
                 LinearLayout locationSearchBottomSheet = bottomSheetViewMap.get(BottomSheetType.SEARCH_LOCATION);
 
@@ -326,12 +330,12 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
                 BottomSheetBehavior locationSearchBottomSheetBehavior = bottomSheetBehaviorMap.get(BottomSheetType.SEARCH_LOCATION);
                 locationSearchBottomSheetBehavior.onLayoutChild(binding.naverMapFragmentRootLayout, locationSearchBottomSheet, ViewCompat.LAYOUT_DIRECTION_LTR);
 
-                //building list bottom sheet 크기 조정
+                //building list bottom sheet 크기 조정 --------------------------------------------------------------
                 int buildingBottomSheetExtraHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 60f, getContext().getResources().getDisplayMetrics());
 
                 //list 프래그먼트와 빌딩 정보 프래그먼트 두 개의 높이를 다르게 설정
-                int buildingListHeight = binding.naverMapFragmentRootLayout.getHeight() / 2 + buildingBottomSheetExtraHeight;
-                int buildingInfoHeight = searchBottomSheetHeight;
+                final int buildingListHeight = binding.naverMapFragmentRootLayout.getHeight() / 2 + buildingBottomSheetExtraHeight;
+                final int buildingInfoHeight = searchBottomSheetHeight;
                 BuildingBottomSheetHeightViewHolder buildingBottomSheetHeightViewHolder = new BuildingBottomSheetHeightViewHolder(buildingListHeight, buildingInfoHeight);
 
                 LinearLayout buildingBottomSheet = bottomSheetViewMap.get(BottomSheetType.BUILDING);
@@ -343,6 +347,16 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
                 BottomSheetBehavior buildingBottomSheetBehavior = bottomSheetBehaviorMap.get(BottomSheetType.BUILDING);
                 buildingBottomSheetBehavior.onLayoutChild(binding.naverMapFragmentRootLayout, buildingBottomSheet, ViewCompat.LAYOUT_DIRECTION_LTR);
+
+                //favorite locations bottom sheet 크기 조정 ---------------------------------------------------------------
+                final int favoriteLocationsHeight = buildingListHeight;
+                LinearLayout favoriteLocationsBottomSheet = bottomSheetViewMap.get(BottomSheetType.FAVORITE_LOCATIONS);
+
+                favoriteLocationsBottomSheet.getLayoutParams().height = favoriteLocationsHeight;
+                favoriteLocationsBottomSheet.requestLayout();
+
+                BottomSheetBehavior favoriteLocationsBottomSheetBehavior = bottomSheetBehaviorMap.get(BottomSheetType.FAVORITE_LOCATIONS);
+                favoriteLocationsBottomSheetBehavior.onLayoutChild(binding.naverMapFragmentRootLayout, favoriteLocationsBottomSheet, ViewCompat.LAYOUT_DIRECTION_LTR);
 
                 binding.naverMapFragmentRootLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
             }
@@ -369,6 +383,15 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
                             .addToBackStack(LocationSearchFragment.TAG)
                             .commit();
                 }
+            }
+        });
+
+        favoriteLocationsButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                showFavoriteLocationsBottomSheet();
             }
         });
 
@@ -575,6 +598,42 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
         bottomSheetViewMap.put(BottomSheetType.BUILDING, buildingBottomSheet);
         bottomSheetBehaviorMap.put(BottomSheetType.BUILDING, buildingBottomSheetBehavior);
+    }
+
+    private void setFavoriteLocationsBottomSheet()
+    {
+        LinearLayout favoriteLocationsBottomSheet = (LinearLayout) binding.favoriteLocationsBottomSheet.persistentBottomSheetRootLayout;
+
+        BottomSheetBehavior favoriteLocationsBottomSheetBehavior = BottomSheetBehavior.from(favoriteLocationsBottomSheet);
+        favoriteLocationsBottomSheetBehavior.setDraggable(false);
+        favoriteLocationsBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+        favoriteLocationsBottomSheetBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback()
+        {
+            @Override
+            public void onStateChanged(@NonNull View bottomSheet, int newState)
+            {
+            }
+
+            @Override
+            public void onSlide(@NonNull View bottomSheet, float slideOffset)
+            {
+                float translationValue = -favoriteLocationsBottomSheet.getHeight() * slideOffset;
+                binding.naverMapButtonsLayout.getRoot().animate().translationY(translationValue);
+            }
+        });
+
+        FavoriteLocationFragment favoriteLocationFragment = new FavoriteLocationFragment(this, this, this, this);
+
+
+        getChildFragmentManager().beginTransaction()
+                .add(binding.favoriteLocationsBottomSheet.fragmentContainerView.getId()
+                        , favoriteLocationFragment, FavoriteLocationFragment.TAG)
+                .hide(favoriteLocationFragment)
+                .commit();
+
+        bottomSheetViewMap.put(BottomSheetType.FAVORITE_LOCATIONS, favoriteLocationsBottomSheet);
+        bottomSheetBehaviorMap.put(BottomSheetType.FAVORITE_LOCATIONS, favoriteLocationsBottomSheetBehavior);
+        bottomSheetFragmentMap.put(BottomSheetType.FAVORITE_LOCATIONS, favoriteLocationFragment);
     }
 
 
@@ -1580,6 +1639,14 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
     @Override
     public void onClickedFavoriteButton(KakaoLocalDocument kakaoLocalDocument, FavoriteLocationDTO favoriteLocationDTO, int position)
     {
+    }
+
+    public void showFavoriteLocationsBottomSheet()
+    {
+        FavoriteLocationFragment favoriteLocationFragment = (FavoriteLocationFragment) bottomSheetFragmentMap.get(BottomSheetType.FAVORITE_LOCATIONS);
+
+        onCalledBottomSheet(BottomSheetBehavior.STATE_EXPANDED, bottomSheetBehaviorMap.get(BottomSheetType.FAVORITE_LOCATIONS));
+        getChildFragmentManager().beginTransaction().show(favoriteLocationFragment).addToBackStack(FavoriteLocationFragment.TAG).commit();
     }
 
     static class BuildingBottomSheetHeightViewHolder

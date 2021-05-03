@@ -61,5 +61,13 @@
             android:id="@+id/building_bottom_sheet"
             layout="@layout/bottom_sheet_building" />
 
+        <include
+            android:id="@+id/favorite_locations_bottom_sheet"
+            layout="@layout/persistent_bottom_sheet_layout" />
+
+        <include
+            android:id="@+id/map_settings_bottom_sheet"
+            layout="@layout/persistent_bottom_sheet_layout" />
+
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>

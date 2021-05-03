@@ -8,12 +8,24 @@
     android:clickable="false">
 
     <ImageButton
-        android:id="@+id/building_button"
+        android:id="@+id/favorite_locations_button"
         android:layout_width="@dimen/map_button_size"
         android:layout_height="@dimen/map_button_size"
         android:layout_alignParentTop="true"
         android:layout_alignParentRight="true"
         android:layout_margin="4dp"
+        android:background="@drawable/map_button_rect"
+        android:elevation="3dp"
+        android:scaleType="centerInside"
+        app:srcCompat="@drawable/more_icon" />
+
+    <ImageButton
+        android:id="@+id/building_button"
+        android:layout_width="@dimen/map_button_size"
+        android:layout_height="@dimen/map_button_size"
+        android:layout_below="@id/favorite_locations_button"
+        android:layout_alignLeft="@id/favorite_locations_button"
+        android:layout_marginTop="4dp"
         android:background="@drawable/map_button_rect"
         android:elevation="3dp"
         android:padding="6dp"
