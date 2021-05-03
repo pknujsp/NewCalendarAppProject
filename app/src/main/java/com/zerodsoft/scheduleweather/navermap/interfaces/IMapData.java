@@ -3,6 +3,7 @@ package com.zerodsoft.scheduleweather.navermap.interfaces;
 import com.zerodsoft.scheduleweather.navermap.LocationItemViewPagerAdapter;
 import com.zerodsoft.scheduleweather.navermap.PoiItemType;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalDocument;
+import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
 
 import java.util.List;
 

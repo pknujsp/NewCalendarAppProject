@@ -5,6 +5,8 @@ import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
+import java.util.Objects;
+
 @Entity(tableName = "favorite_location_table")
 public class FavoriteLocationDTO
 {
@@ -36,6 +38,8 @@ public class FavoriteLocationDTO
     public static final int PLACE = 1;
     @Ignore
     public static final int ADDRESS = 2;
+    @Ignore
+    public static final int ONLY_FOR_MAP = 3;
 
     public Integer getId()
     {
@@ -105,5 +109,28 @@ public class FavoriteLocationDTO
     public String getAddress()
     {
         return address;
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        FavoriteLocationDTO that = (FavoriteLocationDTO) o;
+        return Objects.equals(id, that.id) &&
+                Objects.equals(placeName, that.placeName) &&
+                Objects.equals(address, that.address) &&
+                Objects.equals(placeId, that.placeId) &&
+                Objects.equals(latitude, that.latitude) &&
+                Objects.equals(longitude, that.longitude) &&
+                Objects.equals(type, that.type);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(id, placeName, address, placeId, latitude, longitude, type);
     }
 }

@@ -6,7 +6,13 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import android.os.RemoteException;
+import android.service.carrier.CarrierMessagingService;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,37 +23,50 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
 import com.zerodsoft.scheduleweather.databinding.FragmentFavoriteLocationBinding;
 import com.zerodsoft.scheduleweather.etc.FragmentStateCallback;
+import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteLocationViewModel;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PoiItemOnClickListener;
 import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.fragment.search.LocationSearchFragment;
 import com.zerodsoft.scheduleweather.navermap.fragment.searchresult.LocationSearchResultFragment;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
+import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint;
 import com.zerodsoft.scheduleweather.navermap.interfaces.SearchBarController;
 import com.zerodsoft.scheduleweather.navermap.interfaces.SearchFragmentController;
 import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 public class FavoriteLocationFragment extends Fragment implements OnBackPressedCallbackController, OnClickedFavoriteItem
 {
     private FragmentFavoriteLocationBinding binding;
     public static final String TAG = "FavoriteLocationFragment";
 
-    private final IMapData iMapData;
+    private final FavoriteLocationsListener favoriteLocationsListener;
     private final PoiItemOnClickListener<Marker> poiItemOnClickListener;
     private final OnBackPressedCallbackController mainFragmentOnBackPressedCallbackController;
     private final BottomSheetController bottomSheetController;
 
-    public FavoriteLocationFragment(IMapData iMapData, OnBackPressedCallbackController onBackPressedCallbackController
+    private FavoriteLocationViewModel favoriteLocationViewModel;
+    private FavoriteLocationAdapter favoriteLocationAdapter;
+
+    public FavoriteLocationFragment(FavoriteLocationsListener favoriteLocationsListener, OnBackPressedCallbackController onBackPressedCallbackController
             , BottomSheetController bottomSheetController
             , PoiItemOnClickListener<Marker> poiItemOnClickListener)
     {
         this.mainFragmentOnBackPressedCallbackController = onBackPressedCallbackController;
         this.bottomSheetController = bottomSheetController;
-        this.iMapData = iMapData;
+        this.favoriteLocationsListener = favoriteLocationsListener;
         this.poiItemOnClickListener = poiItemOnClickListener;
     }
 
+    public FavoriteLocationViewModel getFavoriteLocationViewModel()
+    {
+        return favoriteLocationViewModel;
+    }
 
     public OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
     {
@@ -100,6 +119,90 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
+
+        favoriteLocationViewModel = new ViewModelProvider(this).get(FavoriteLocationViewModel.class);
+        binding.favoriteLocationRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false));
+        binding.favoriteLocationRecyclerView.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
+
+        favoriteLocationAdapter = new FavoriteLocationAdapter(this);
+        binding.favoriteLocationRecyclerView.setAdapter(favoriteLocationAdapter);
+
+        setFavoriteLocationList();
+    }
+
+    private void setFavoriteLocationList()
+    {
+        favoriteLocationViewModel.select(FavoriteLocationDTO.ONLY_FOR_MAP, new CarrierMessagingService.ResultCallback<List<FavoriteLocationDTO>>()
+        {
+            @Override
+            public void onReceiveResult(@NonNull List<FavoriteLocationDTO> list) throws RemoteException
+            {
+                favoriteLocationAdapter.setList(list);
+                requireActivity().runOnUiThread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        favoriteLocationsListener.createFavoriteLocationsPoiItems(list);
+                        favoriteLocationAdapter.notifyDataSetChanged();
+                    }
+                });
+            }
+        });
+    }
+
+    public void refresh()
+    {
+        //추가,삭제 된 경우만 동작시킨다
+        favoriteLocationViewModel.select(FavoriteLocationDTO.ONLY_FOR_MAP, new CarrierMessagingService.ResultCallback<List<FavoriteLocationDTO>>()
+        {
+            @Override
+            public void onReceiveResult(@NonNull List<FavoriteLocationDTO> newList) throws RemoteException
+            {
+                Set<FavoriteLocationDTO> currentSet = new HashSet<>(favoriteLocationAdapter.getList());
+                Set<FavoriteLocationDTO> newSet = new HashSet<>(newList);
+
+                Set<FavoriteLocationDTO> addedSet = new HashSet<>(newSet);
+                Set<FavoriteLocationDTO> removedSet = new HashSet<>(currentSet);
+
+                addedSet.removeAll(currentSet);
+                removedSet.removeAll(newSet);
+
+                if (!addedSet.isEmpty() || !removedSet.isEmpty())
+                {
+                    if (!addedSet.isEmpty())
+                    {
+                        favoriteLocationAdapter.getList().addAll(addedSet);
+                    }
+
+                    if (!removedSet.isEmpty())
+                    {
+                        favoriteLocationAdapter.getList().removeAll(removedSet);
+                    }
+
+                    requireActivity().runOnUiThread(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            favoriteLocationAdapter.notifyDataSetChanged();
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    public void add(FavoriteLocationDTO favoriteLocationDTO)
+    {
+        favoriteLocationViewModel.insert(favoriteLocationDTO, new CarrierMessagingService.ResultCallback<FavoriteLocationDTO>()
+        {
+            @Override
+            public void onReceiveResult(@NonNull FavoriteLocationDTO favoriteLocationDTO) throws RemoteException
+            {
+
+            }
+        });
     }
 
 

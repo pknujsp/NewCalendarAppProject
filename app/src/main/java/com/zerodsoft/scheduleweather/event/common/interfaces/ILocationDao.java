@@ -2,10 +2,11 @@ package com.zerodsoft.scheduleweather.event.common.interfaces;
 
 import android.service.carrier.CarrierMessagingService;
 
+import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.addressresponse.AddressResponseDocuments;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceKakaoLocalResponse;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
 public interface ILocationDao
@@ -22,5 +23,5 @@ public interface ILocationDao
 
     public void getAddressItem(LocalApiPlaceParameter parameter, CarrierMessagingService.ResultCallback<DataWrapper<AddressResponseDocuments>> callback);
 
-    public void getPlaceItem(LocalApiPlaceParameter parameter, String placeId, CarrierMessagingService.ResultCallback<DataWrapper<PlaceDocuments>> callback);
+    public void getPlaceItem(LocalApiPlaceParameter parameter, String placeId, JsonDownloader<PlaceKakaoLocalResponse> callback);
 }

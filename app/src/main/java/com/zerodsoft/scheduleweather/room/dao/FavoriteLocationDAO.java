@@ -22,12 +22,18 @@ public interface FavoriteLocationDAO
     public static final int PLACE = 1;
     @Ignore
     public static final int ADDRESS = 2;
+
+    ONLY_FOR_MAP = 3
      */
 
     @Insert(onConflict = OnConflictStrategy.IGNORE, entity = FavoriteLocationDTO.class)
     long insert(FavoriteLocationDTO favoriteLocationDTO);
 
-    @Query("SELECT * FROM favorite_location_table WHERE type = :type")
+    @Query("SELECT * FROM favorite_location_table " +
+            "WHERE (CASE " +
+            "WHEN :type = 3 THEN type = 1 OR type = 2 " +
+            "ELSE type = 0 " +
+            "END)")
     List<FavoriteLocationDTO> select(Integer type);
 
     @Query("SELECT * FROM favorite_location_table WHERE type = :type AND id = :id")

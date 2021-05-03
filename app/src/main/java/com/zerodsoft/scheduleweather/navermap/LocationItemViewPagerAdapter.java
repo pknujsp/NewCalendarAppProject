@@ -1,5 +1,7 @@
 package com.zerodsoft.scheduleweather.navermap;
 
+import android.os.RemoteException;
+import android.service.carrier.CarrierMessagingService;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,12 +15,15 @@ import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
 import com.zerodsoft.scheduleweather.navermap.interfaces.OnClickedBottomSheetListener;
 import com.zerodsoft.scheduleweather.navermap.interfaces.PlacesItemBottomSheetButtonOnClickListener;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalDocument;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.addressresponse.AddressResponseDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddressDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
+import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
+import com.zerodsoft.scheduleweather.room.interfaces.FavoriteLocationQuery;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,26 +31,37 @@ import java.util.List;
 public class LocationItemViewPagerAdapter extends RecyclerView.Adapter<LocationItemViewPagerAdapter.PlaceItemInMapViewHolder>
 {
     public static final String TAG = "LocationItemViewPagerAdapter";
-    private List<KakaoLocalDocument> placeDocumentsList = new ArrayList<>();
-    private PlaceDocuments placeDocuments;
-    private AddressResponseDocuments addressDocuments;
-    private CoordToAddressDocuments coordToAddressDocuments;
-    private PlacesItemBottomSheetButtonOnClickListener placesItemBottomSheetButtonOnClickListener;
-    private OnClickedBottomSheetListener onClickedBottomSheetListener;
+    protected List<KakaoLocalDocument> placeDocumentsList = new ArrayList<>();
+    protected PlaceDocuments placeDocuments;
+    protected AddressResponseDocuments addressDocuments;
+    protected CoordToAddressDocuments coordToAddressDocuments;
+    protected PlacesItemBottomSheetButtonOnClickListener placesItemBottomSheetButtonOnClickListener;
+    protected OnClickedBottomSheetListener onClickedBottomSheetListener;
+    protected FavoriteLocationQuery favoriteLocationQuery;
 
-    private int isVisibleSelectBtn;
-    private int isVisibleUnSelectBtn;
+    protected int isVisibleSelectBtn = View.GONE;
+    protected int isVisibleUnSelectBtn = View.GONE;
+    protected int isVisibleFavoriteBtn = View.VISIBLE;
 
-    private String itemPosition;
+    protected String itemPosition;
 
     public LocationItemViewPagerAdapter()
     {
+    }
 
+    public void setFavoriteLocationQuery(FavoriteLocationQuery favoriteLocationQuery)
+    {
+        this.favoriteLocationQuery = favoriteLocationQuery;
     }
 
     public void setPlacesItemBottomSheetButtonOnClickListener(PlacesItemBottomSheetButtonOnClickListener placesItemBottomSheetButtonOnClickListener)
     {
         this.placesItemBottomSheetButtonOnClickListener = placesItemBottomSheetButtonOnClickListener;
+    }
+
+    public void setIsVisibleFavoriteBtn(int isVisibleFavoriteBtn)
+    {
+        this.isVisibleFavoriteBtn = isVisibleFavoriteBtn;
     }
 
     public void setVisibleSelectBtn(int visibleSelectBtn)
@@ -92,7 +108,7 @@ public class LocationItemViewPagerAdapter extends RecyclerView.Adapter<LocationI
         return placeDocumentsList.size();
     }
 
-    class PlaceItemInMapViewHolder extends RecyclerView.ViewHolder
+    public class PlaceItemInMapViewHolder extends RecyclerView.ViewHolder
     {
         private CardView cardView;
 
@@ -200,6 +216,7 @@ public class LocationItemViewPagerAdapter extends RecyclerView.Adapter<LocationI
 
             selectButton.setVisibility(isVisibleSelectBtn);
             unselectButton.setVisibility(isVisibleUnSelectBtn);
+            favoriteButton.setVisibility(isVisibleFavoriteBtn);
 
             selectButton.setOnClickListener(new View.OnClickListener()
             {
@@ -216,6 +233,50 @@ public class LocationItemViewPagerAdapter extends RecyclerView.Adapter<LocationI
                 public void onClick(View view)
                 {
                     placesItemBottomSheetButtonOnClickListener.onRemovedLocation();
+                }
+            });
+
+            favoriteButton.setOnClickListener(new View.OnClickListener()
+            {
+                @Override
+                public void onClick(View view)
+                {
+                    FavoriteLocationDTO favoriteLocationDTO = new FavoriteLocationDTO();
+                    if (data instanceof PlaceDocuments)
+                    {
+                        favoriteLocationDTO.setType(FavoriteLocationDTO.PLACE);
+
+                        placeDocuments = (PlaceDocuments) data;
+                        favoriteLocationDTO.setAddress(placeDocuments.getAddressName());
+                        favoriteLocationDTO.setLongitude(String.valueOf(placeDocuments.getX()));
+                        favoriteLocationDTO.setLatitude(String.valueOf(placeDocuments.getY()));
+                        favoriteLocationDTO.setPlaceName(placeDocuments.getPlaceName());
+                        favoriteLocationDTO.setPlaceId(placeDocuments.getId());
+                    } else if (data instanceof AddressResponseDocuments)
+                    {
+                        favoriteLocationDTO.setType(FavoriteLocationDTO.ADDRESS);
+
+                        addressDocuments = (AddressResponseDocuments) data;
+                        favoriteLocationDTO.setAddress(addressDocuments.getAddressName());
+                        favoriteLocationDTO.setLatitude(String.valueOf(addressDocuments.getY()));
+                        favoriteLocationDTO.setLongitude(String.valueOf(addressDocuments.getX()));
+                    } else if (data instanceof CoordToAddressDocuments)
+                    {
+                        favoriteLocationDTO.setType(FavoriteLocationDTO.ADDRESS);
+
+                        coordToAddressDocuments = (CoordToAddressDocuments) data;
+                        favoriteLocationDTO.setAddress(coordToAddressDocuments.getCoordToAddressAddress().getAddressName());
+                        favoriteLocationDTO.setLatitude(coordToAddressDocuments.getCoordToAddressAddress().getLatitude());
+                        favoriteLocationDTO.setLongitude(coordToAddressDocuments.getCoordToAddressAddress().getLongitude());
+                    }
+                    favoriteLocationQuery.insert(favoriteLocationDTO, new CarrierMessagingService.ResultCallback<FavoriteLocationDTO>()
+                    {
+                        @Override
+                        public void onReceiveResult(@NonNull FavoriteLocationDTO favoriteLocationDTO) throws RemoteException
+                        {
+
+                        }
+                    });
                 }
             });
 

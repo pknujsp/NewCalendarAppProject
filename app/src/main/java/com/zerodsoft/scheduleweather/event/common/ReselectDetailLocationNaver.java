@@ -16,6 +16,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.naver.maps.map.NaverMap;
 import com.naver.maps.map.OnMapReadyCallback;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
 import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.main.InstanceMainActivity;
@@ -30,6 +31,7 @@ import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddress;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddressDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceKakaoLocalResponse;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
 import java.util.Collections;
@@ -110,21 +112,21 @@ public class ReselectDetailLocationNaver extends NaverMapActivity implements OnM
                         LocalApiPlaceParameter.DEFAULT_PAGE, LocalApiPlaceParameter.SEARCH_CRITERIA_SORT_TYPE_ACCURACY);
                 parameter.setRadius("100");
 
-                viewModel.getPlaceItem(parameter, savedLocationDto.getPlaceId(), new CarrierMessagingService.ResultCallback<DataWrapper<PlaceDocuments>>()
+                viewModel.getPlaceItem(parameter, savedLocationDto.getPlaceId(), new JsonDownloader<PlaceKakaoLocalResponse>()
                 {
                     @Override
-                    public void onReceiveResult(@NonNull DataWrapper<PlaceDocuments> result) throws RemoteException
+                    public void onResponseSuccessful(PlaceKakaoLocalResponse result)
                     {
-                        if (result.getException() == null)
-                        {
-                            PlaceDocuments document = result.getData();
-                            naverMapFragment.setLocationItemViewPagerAdapter(new LocationItemViewPagerAdapter(), PoiItemType.SELECTED_PLACE_IN_EVENT);
-                            naverMapFragment.createPoiItems(Collections.singletonList(document), PoiItemType.SELECTED_PLACE_IN_EVENT);
-                            naverMapFragment.onPOIItemSelectedByList(0, PoiItemType.SELECTED_PLACE_IN_EVENT);
-                        } else
-                        {
-                            // exception(error)
-                        }
+                        PlaceDocuments document = result.getPlaceDocuments().get(0);
+                        naverMapFragment.setLocationItemViewPagerAdapter(new LocationItemViewPagerAdapter(), PoiItemType.SELECTED_PLACE_IN_EVENT);
+                        naverMapFragment.createPoiItems(Collections.singletonList(document), PoiItemType.SELECTED_PLACE_IN_EVENT);
+                        naverMapFragment.onPOIItemSelectedByList(0, PoiItemType.SELECTED_PLACE_IN_EVENT);
+                    }
+
+                    @Override
+                    public void onResponseFailed(Exception e)
+                    {
+
                     }
                 });
             }

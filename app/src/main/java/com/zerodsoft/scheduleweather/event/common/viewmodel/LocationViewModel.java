@@ -7,12 +7,13 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.MutableLiveData;
 
+import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
 import com.zerodsoft.scheduleweather.event.common.interfaces.ILocationDao;
 import com.zerodsoft.scheduleweather.event.common.repository.LocationRepository;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.addressresponse.AddressResponseDocuments;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceKakaoLocalResponse;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
 public class LocationViewModel extends AndroidViewModel implements ILocationDao
@@ -64,7 +65,7 @@ public class LocationViewModel extends AndroidViewModel implements ILocationDao
     }
 
     @Override
-    public void getPlaceItem(LocalApiPlaceParameter parameter, String placeId, CarrierMessagingService.ResultCallback<DataWrapper<PlaceDocuments>> callback)
+    public void getPlaceItem(LocalApiPlaceParameter parameter, String placeId, JsonDownloader<PlaceKakaoLocalResponse> callback)
     {
         locationRepository.getPlaceItem(parameter, placeId, callback);
     }

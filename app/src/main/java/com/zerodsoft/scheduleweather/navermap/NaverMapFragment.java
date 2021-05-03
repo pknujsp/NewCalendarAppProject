@@ -25,6 +25,7 @@ import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.CompositePageTransformer;
 import androidx.viewpager2.widget.MarginPageTransformer;
@@ -58,6 +59,7 @@ import com.naver.maps.map.overlay.CircleOverlay;
 import com.naver.maps.map.overlay.LocationOverlay;
 import com.naver.maps.map.overlay.Marker;
 import com.naver.maps.map.overlay.Overlay;
+import com.naver.maps.map.overlay.OverlayImage;
 import com.naver.maps.map.util.FusedLocationSource;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
@@ -66,11 +68,13 @@ import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackCont
 import com.zerodsoft.scheduleweather.databinding.FragmentNaverMapBinding;
 import com.zerodsoft.scheduleweather.etc.FragmentStateCallback;
 import com.zerodsoft.scheduleweather.etc.LocationType;
+import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedFavoriteButtonListener;
 import com.zerodsoft.scheduleweather.event.places.interfaces.OnClickedPlacesListListener;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PoiItemOnClickListener;
 import com.zerodsoft.scheduleweather.navermap.building.fragment.BuildingFragment;
 import com.zerodsoft.scheduleweather.navermap.building.fragment.BuildingListFragment;
+import com.zerodsoft.scheduleweather.navermap.favorite.FavoriteLocationAdapter;
 import com.zerodsoft.scheduleweather.navermap.favorite.FavoriteLocationFragment;
 import com.zerodsoft.scheduleweather.navermap.fragment.search.LocationSearchFragment;
 import com.zerodsoft.scheduleweather.navermap.fragment.searchheader.MapHeaderMainFragment;
@@ -79,6 +83,7 @@ import com.zerodsoft.scheduleweather.navermap.fragment.searchresult.LocationSear
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BuildingFragmentController;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BuildingLocationSelectorController;
+import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint;
 import com.zerodsoft.scheduleweather.navermap.interfaces.INetwork;
@@ -116,7 +121,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
         BuildingFragmentController, BuildingListFragment.OnSearchRadiusChangeListener, NaverMap.OnMapClickListener,
         NaverMap.OnCameraIdleListener, CameraUpdate.FinishCallback, NaverMap.OnLocationChangeListener, OnBackPressedCallbackController,
         FragmentManager.OnBackStackChangedListener, BottomSheetController, NaverMap.OnMapLongClickListener,
-        OnClickedFavoriteButtonListener
+        OnClickedFavoriteButtonListener, FavoriteLocationsListener
 {
     public static final int PERMISSION_REQUEST_CODE = 100;
     public static final int REQUEST_CODE_LOCATION = 10000;
@@ -136,6 +141,8 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
     public FragmentNaverMapBinding binding;
     public MapFragment mapFragment;
     public NaverMap naverMap;
+
+    public LocationViewModel locationViewModel;
 
     public PlacesItemBottomSheetButtonOnClickListener placesItemBottomSheetButtonOnClickListener;
 
@@ -309,6 +316,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
         favoriteLocationsButton = binding.naverMapButtonsLayout.favoriteLocationsButton;
 
         locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
+        locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
 
         binding.naverMapFragmentRootLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener()
         {
@@ -622,8 +630,13 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
             }
         });
 
-        FavoriteLocationFragment favoriteLocationFragment = new FavoriteLocationFragment(this, this, this, this);
+        bottomSheetViewMap.put(BottomSheetType.FAVORITE_LOCATIONS, favoriteLocationsBottomSheet);
+        bottomSheetBehaviorMap.put(BottomSheetType.FAVORITE_LOCATIONS, favoriteLocationsBottomSheetBehavior);
+    }
 
+    public void addFavoriteLocationsFragment()
+    {
+        FavoriteLocationFragment favoriteLocationFragment = new FavoriteLocationFragment(this, this, this, this);
 
         getChildFragmentManager().beginTransaction()
                 .add(binding.favoriteLocationsBottomSheet.fragmentContainerView.getId()
@@ -631,11 +644,8 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
                 .hide(favoriteLocationFragment)
                 .commit();
 
-        bottomSheetViewMap.put(BottomSheetType.FAVORITE_LOCATIONS, favoriteLocationsBottomSheet);
-        bottomSheetBehaviorMap.put(BottomSheetType.FAVORITE_LOCATIONS, favoriteLocationsBottomSheetBehavior);
         bottomSheetFragmentMap.put(BottomSheetType.FAVORITE_LOCATIONS, favoriteLocationFragment);
     }
-
 
     public void onPageSelectedLocationItemBottomSheetViewPager(int position, PoiItemType poiItemType)
     {
@@ -774,6 +784,8 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
     public void onMapReady(@NonNull NaverMap naverMap)
     {
         this.naverMap = naverMap;
+
+        addFavoriteLocationsFragment();
 
         LocationOverlay locationOverlay = naverMap.getLocationOverlay();
         locationOverlay.setVisible(false);
@@ -987,6 +999,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
         markerMap.get(poiItemType).add(marker);
     }
 
+
     private final Overlay.OnClickListener markerOnClickListener = new Overlay.OnClickListener()
     {
         @Override
@@ -1117,6 +1130,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
         locationItemBottomSheetViewPager.setAdapter(adapter);
         locationItemBottomSheetViewPager.setTag(poiItemType);
 
+        adapter.setFavoriteLocationQuery(((FavoriteLocationFragment) bottomSheetFragmentMap.get(BottomSheetType.FAVORITE_LOCATIONS)).getFavoriteLocationViewModel());
         adapter.setPlacesItemBottomSheetButtonOnClickListener(placesItemBottomSheetButtonOnClickListener);
         adapter.setOnClickedBottomSheetListener(this);
         adapter.setVisibleSelectBtn(placeBottomSheetSelectBtnVisibility);
@@ -1648,6 +1662,48 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
         onCalledBottomSheet(BottomSheetBehavior.STATE_EXPANDED, bottomSheetBehaviorMap.get(BottomSheetType.FAVORITE_LOCATIONS));
         getChildFragmentManager().beginTransaction().show(favoriteLocationFragment).addToBackStack(FavoriteLocationFragment.TAG).commit();
     }
+
+    @Override
+    public void createFavoriteLocationsPoiItems(List<FavoriteLocationDTO> favoriteLocationList)
+    {
+        FavoriteLocationItemViewPagerAdapter adapter = new FavoriteLocationItemViewPagerAdapter(requireActivity(), locationViewModel);
+        adapter.setFavoriteLocationList(favoriteLocationList);
+        setLocationItemViewPagerAdapter(adapter, PoiItemType.FAVORITE);
+
+        if (!markerMap.containsKey(PoiItemType.FAVORITE))
+        {
+            markerMap.put(PoiItemType.FAVORITE, new ArrayList<>());
+        } else
+        {
+            removePoiItems(PoiItemType.FAVORITE);
+        }
+
+        if (favoriteLocationList.isEmpty())
+        {
+            return;
+        }
+
+        for (FavoriteLocationDTO favoriteLocationDTO : favoriteLocationList)
+        {
+            createFavoriteLocationsPoiItem(favoriteLocationDTO, Double.parseDouble(favoriteLocationDTO.getLatitude()), Double.parseDouble(favoriteLocationDTO.getLongitude()));
+        }
+    }
+
+    @Override
+    public void createFavoriteLocationsPoiItem(FavoriteLocationDTO favoriteLocationDTO, double latitude, double longitude)
+    {
+        Marker marker = new Marker();
+        marker.setWidth(markerWidth);
+        marker.setHeight(markerHeight);
+        marker.setPosition(new LatLng(latitude, longitude));
+        marker.setMap(naverMap);
+        marker.setIcon(OverlayImage.fromResource(R.drawable.star_rate));
+        marker.setOnClickListener(markerOnClickListener);
+
+        marker.setTag(PoiItemType.FAVORITE);
+        markerMap.get(PoiItemType.FAVORITE).add(marker);
+    }
+
 
     static class BuildingBottomSheetHeightViewHolder
     {
