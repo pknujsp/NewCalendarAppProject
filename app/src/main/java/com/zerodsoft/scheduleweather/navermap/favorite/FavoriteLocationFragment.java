@@ -105,6 +105,7 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
             bottomSheetController.setStateOfBottomSheet(BottomSheetType.FAVORITE_LOCATIONS, BottomSheetBehavior.STATE_COLLAPSED);
         } else
         {
+            refresh();
             addOnBackPressedCallback();
             if (getParentFragmentManager().getBackStackEntryCount() == 0)
             {

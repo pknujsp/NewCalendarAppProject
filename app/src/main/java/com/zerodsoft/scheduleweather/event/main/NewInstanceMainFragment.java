@@ -159,6 +159,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
     {
         super.onViewCreated(view, savedInstanceState);
 
+
         calendarViewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
         locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
         createFunctionList();
@@ -514,8 +515,12 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
     {
         LatLng latLng = new LatLng(selectedLocationDtoInEvent.getLatitude(), selectedLocationDtoInEvent.getLongitude());
 
+        final int markerSize = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, getResources().getDisplayMetrics());
+
         selectedLocationInEventMarker = new Marker(latLng);
         selectedLocationInEventMarker.setMap(naverMap);
+        selectedLocationInEventMarker.setWidth(markerSize);
+        selectedLocationInEventMarker.setHeight(markerSize);
         selectedLocationInEventMarker.setIcon(OverlayImage.fromResource(R.drawable.current_location_icon));
         selectedLocationInEventMarker.setForceShowIcon(true);
         selectedLocationInEventMarker.setCaptionColor(Color.BLUE);

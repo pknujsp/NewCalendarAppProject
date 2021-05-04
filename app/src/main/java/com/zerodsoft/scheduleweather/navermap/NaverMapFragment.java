@@ -110,6 +110,7 @@ import com.zerodsoft.scheduleweather.sgis.SgisAuth;
 import com.zerodsoft.scheduleweather.utility.NetworkStatus;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -289,7 +290,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
         markerWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, getResources().getDisplayMetrics());
         markerHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32f, getResources().getDisplayMetrics());
-        favoriteMarkerSize = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 20f, getResources().getDisplayMetrics());
+        favoriteMarkerSize = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, getResources().getDisplayMetrics());
     }
 
 
@@ -936,6 +937,9 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
         naverMap.moveCamera(cameraUpdate);
         //open bottomsheet and show selected item data
 
+        LocationItemViewPagerAdapter adapter = viewPagerAdapterMap.get(poiItemType);
+        locationItemBottomSheetViewPager.setTag(poiItemType);
+        locationItemBottomSheetViewPager.setAdapter(adapter);
         locationItemBottomSheetViewPager.setCurrentItem(selectedPoiItemIndex, false);
         setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_EXPANDED);
     }
@@ -1025,7 +1029,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
             List<? extends KakaoLocalDocument> subList = (List<? extends KakaoLocalDocument>) kakaoLocalDocuments.subList(LAST_INDEX + 1, kakaoLocalDocuments.size());
             currentList.addAll(subList);
 
-            //viewPagerAdapterMap.get(poiItemType).notifyItemRangeInserted(LAST_INDEX + 1, subList.size());
             viewPagerAdapterMap.get(poiItemType).notifyDataSetChanged();
 
             if (kakaoLocalDocuments.get(0) instanceof PlaceDocuments)
@@ -1706,7 +1709,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
     @Override
     public void addFavoriteLocationsPoiItem(FavoriteLocationDTO favoriteLocationDTO)
     {
-        FavoriteLocationItemViewPagerAdapter adapter = new FavoriteLocationItemViewPagerAdapter(getContext(), locationViewModel);
+        FavoriteLocationItemViewPagerAdapter adapter = (FavoriteLocationItemViewPagerAdapter) viewPagerAdapterMap.get(PoiItemType.FAVORITE);
         adapter.getFavoriteLocationList().add(favoriteLocationDTO);
         adapter.notifyDataSetChanged();
         createFavoriteLocationsPoiItem(favoriteLocationDTO, Double.parseDouble(favoriteLocationDTO.getLatitude()), Double.parseDouble(favoriteLocationDTO.getLongitude()));
@@ -1727,10 +1730,11 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
             }
         }
 
-        adapter.getFavoriteLocationList().remove(favoriteLocationDTO);
-        adapter.notifyDataSetChanged();
-        //마커삭제
+        setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_COLLAPSED);
         removePoiItem(PoiItemType.FAVORITE, indexOfList);
+
+        adapter.getFavoriteLocationList().remove(indexOfList);
+        adapter.notifyDataSetChanged();
     }
 
     @Override

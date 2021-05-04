@@ -297,6 +297,7 @@ public class LocationItemViewPagerAdapter extends RecyclerView.Adapter<LocationI
                                                 @Override
                                                 public void onReceiveResult(@NonNull FavoriteLocationDTO insertedFavoriteLocationDTO) throws RemoteException
                                                 {
+                                                    favoriteLocationId = insertedFavoriteLocationDTO.getId();
                                                     favoriteButton.setImageDrawable(favoriteEnabledDrawable);
                                                 }
                                             });
