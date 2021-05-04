@@ -1,5 +1,6 @@
 package com.zerodsoft.scheduleweather.navermap.favorite;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.activity.OnBackPressedCallback;
@@ -7,6 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -16,16 +18,19 @@ import android.service.carrier.CarrierMessagingService;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CompoundButton;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.naver.maps.map.overlay.Marker;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
 import com.zerodsoft.scheduleweather.databinding.FragmentFavoriteLocationBinding;
 import com.zerodsoft.scheduleweather.etc.FragmentStateCallback;
 import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteLocationViewModel;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PoiItemOnClickListener;
 import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
+import com.zerodsoft.scheduleweather.navermap.PoiItemType;
 import com.zerodsoft.scheduleweather.navermap.fragment.search.LocationSearchFragment;
 import com.zerodsoft.scheduleweather.navermap.fragment.searchresult.LocationSearchResultFragment;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
@@ -44,6 +49,7 @@ import java.util.Set;
 import lombok.SneakyThrows;
 
 public class FavoriteLocationFragment extends Fragment implements OnBackPressedCallbackController, OnClickedFavoriteItem, FavoriteLocationQuery
+        , SharedPreferences.OnSharedPreferenceChangeListener
 {
     private FragmentFavoriteLocationBinding binding;
     public static final String TAG = "FavoriteLocationFragment";
@@ -52,18 +58,22 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
     private final PoiItemOnClickListener<Marker> poiItemOnClickListener;
     private final OnBackPressedCallbackController mainFragmentOnBackPressedCallbackController;
     private final BottomSheetController bottomSheetController;
+    private final IMapData iMapData;
 
     private FavoriteLocationViewModel favoriteLocationViewModel;
     private FavoriteLocationAdapter favoriteLocationAdapter;
 
+    private SharedPreferences sharedPreferences;
+
     public FavoriteLocationFragment(FavoriteLocationsListener favoriteLocationsListener, OnBackPressedCallbackController onBackPressedCallbackController
             , BottomSheetController bottomSheetController
-            , PoiItemOnClickListener<Marker> poiItemOnClickListener)
+            , PoiItemOnClickListener<Marker> poiItemOnClickListener, IMapData iMapData)
     {
         this.mainFragmentOnBackPressedCallbackController = onBackPressedCallbackController;
         this.bottomSheetController = bottomSheetController;
         this.favoriteLocationsListener = favoriteLocationsListener;
         this.poiItemOnClickListener = poiItemOnClickListener;
+        this.iMapData = iMapData;
     }
 
     public FavoriteLocationViewModel getFavoriteLocationViewModel()
@@ -108,6 +118,9 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
     }
 
     @Override
@@ -122,6 +135,23 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
+
+        boolean showFavoriteLocationsMarkersOnMap = App.isPreference_key_show_favorite_locations_markers_on_map();
+        binding.switchShowFavoriteLocationsMarkerOnMap.setChecked(showFavoriteLocationsMarkersOnMap);
+
+        binding.switchShowFavoriteLocationsMarkerOnMap.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
+        {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
+            {
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putBoolean(getString(R.string.preference_key_show_favorite_locations_markers_on_map), isChecked);
+                App.setPreference_key_show_favorite_locations_markers_on_map(isChecked);
+                editor.commit();
+
+                iMapData.showPoiItems(PoiItemType.FAVORITE, isChecked);
+            }
+        });
 
         favoriteLocationViewModel = new ViewModelProvider(this).get(FavoriteLocationViewModel.class);
         binding.favoriteLocationRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false));
@@ -147,6 +177,7 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
                     public void run()
                     {
                         favoriteLocationsListener.createFavoriteLocationsPoiItems(list);
+                        iMapData.showPoiItems(PoiItemType.FAVORITE, App.isPreference_key_show_favorite_locations_markers_on_map());
                         favoriteLocationAdapter.notifyDataSetChanged();
                     }
                 });
@@ -367,5 +398,11 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
                 });
             }
         });
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key)
+    {
+
     }
 }

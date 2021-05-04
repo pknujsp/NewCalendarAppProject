@@ -16,21 +16,37 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_alignParentTop="true"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp">
 
                 <TextView
                     android:id="@+id/favorite_location_header_name"
-                    style="@style/TextAppearance.AppCompat.SearchResult.Title"
+                    style="@style/TextAppearance.MaterialComponents.Headline6"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentLeft="true"
-                    android:layout_alignParentTop="true"
                     android:text="@string/favorite_location" />
+
+                <LinearLayout
+                    android:id="@+id/favorite_locations_settings_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp">
+
+                    <Switch
+                        android:id="@+id/switch_show_favorite_locations_marker_on_map"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:switchMinWidth="60dp"
+                        android:text="@string/show_favorite_locations_marker_on_map"/>
+
+                </LinearLayout>
 
                 <RelativeLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@id/favorite_location_header_name">
+                    android:layout_height="wrap_content">
 
                     <Spinner
                         android:id="@+id/sort_spinner"

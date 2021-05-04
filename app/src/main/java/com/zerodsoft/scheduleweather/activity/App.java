@@ -31,6 +31,7 @@ public class App extends android.app.Application
     private static boolean preference_key_using_24_hour_system = true;
     private static String preference_key_radius_range = "";
     private static String preference_key_range_meter_for_search_buildings = "";
+    private static boolean preference_key_show_favorite_locations_markers_on_map = true;
 
 
     public static void setAppSettings(Context context)
@@ -69,6 +70,9 @@ public class App extends android.app.Application
             preference_key_range_meter_for_search_buildings = "500";
             editor.putString(context.getString(R.string.preference_key_range_meter_for_search_buildings), preference_key_range_meter_for_search_buildings);
 
+            preference_key_show_favorite_locations_markers_on_map = true;
+            editor.putBoolean(context.getString(R.string.preference_key_show_favorite_locations_markers_on_map), preference_key_show_favorite_locations_markers_on_map);
+
             editor.commit();
         } else
         {
@@ -79,6 +83,7 @@ public class App extends android.app.Application
             preference_key_using_24_hour_system = preferences.getBoolean(context.getString(R.string.preference_key_using_24_hour_system), false);
             preference_key_radius_range = preferences.getString(context.getString(R.string.preference_key_radius_range), "");
             preference_key_range_meter_for_search_buildings = preferences.getString(context.getString(R.string.preference_key_range_meter_for_search_buildings), "");
+            preference_key_show_favorite_locations_markers_on_map = preferences.getBoolean(context.getString(R.string.preference_key_show_favorite_locations_markers_on_map), false);
         }
     }
 
@@ -152,5 +157,13 @@ public class App extends android.app.Application
         App.preference_key_range_meter_for_search_buildings = preference_key_range_meter_for_search_buildings;
     }
 
+    public static void setPreference_key_show_favorite_locations_markers_on_map(boolean preference_key_show_favorite_locations_markers_on_map)
+    {
+        App.preference_key_show_favorite_locations_markers_on_map = preference_key_show_favorite_locations_markers_on_map;
+    }
 
+    public static boolean isPreference_key_show_favorite_locations_markers_on_map()
+    {
+        return preference_key_show_favorite_locations_markers_on_map;
+    }
 }

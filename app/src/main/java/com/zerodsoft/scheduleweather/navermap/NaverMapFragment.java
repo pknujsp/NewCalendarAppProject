@@ -638,7 +638,9 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
     public void addFavoriteLocationsFragment()
     {
-        FavoriteLocationFragment favoriteLocationFragment = new FavoriteLocationFragment(this, this, this, this);
+        FavoriteLocationFragment favoriteLocationFragment
+                = new FavoriteLocationFragment
+                (this, this, this, this, this);
 
         getChildFragmentManager().beginTransaction()
                 .add(binding.favoriteLocationsBottomSheet.fragmentContainerView.getId()
@@ -1054,6 +1056,16 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
                 }
             }
 
+        }
+    }
+
+    @Override
+    public void removePoiItem(PoiItemType poiItemType, int index)
+    {
+        if (markerMap.containsKey(poiItemType))
+        {
+            markerMap.get(poiItemType).get(index).setMap(null);
+            markerMap.get(poiItemType).remove(index);
         }
     }
 
@@ -1704,10 +1716,21 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
     public void removeFavoriteLocationsPoiItem(FavoriteLocationDTO favoriteLocationDTO)
     {
         FavoriteLocationItemViewPagerAdapter adapter = (FavoriteLocationItemViewPagerAdapter) viewPagerAdapterMap.get(PoiItemType.FAVORITE);
+        int indexOfList = 0;
+        List<FavoriteLocationDTO> favoriteLocationDTOListInAdapter = adapter.getFavoriteLocationList();
+
+        for (; indexOfList < favoriteLocationDTOListInAdapter.size(); indexOfList++)
+        {
+            if (favoriteLocationDTO.getId().equals(favoriteLocationDTOListInAdapter.get(indexOfList).getId()))
+            {
+                break;
+            }
+        }
+
         adapter.getFavoriteLocationList().remove(favoriteLocationDTO);
         adapter.notifyDataSetChanged();
         //마커삭제
-        markerMap.get(PoiItemType.FAVORITE).remove(favoriteLocationDTO);
+        removePoiItem(PoiItemType.FAVORITE, indexOfList);
     }
 
     @Override
@@ -1726,6 +1749,18 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
         markerMap.get(PoiItemType.FAVORITE).add(marker);
     }
 
+    @Override
+    public void showPoiItems(PoiItemType poiItemType, boolean isShow)
+    {
+        if (markerMap.containsKey(poiItemType))
+        {
+            List<Marker> markers = markerMap.get(poiItemType);
+            for (Marker marker : markers)
+            {
+                marker.setMap(isShow ? naverMap : null);
+            }
+        }
+    }
 
     static class BuildingBottomSheetHeightViewHolder
     {

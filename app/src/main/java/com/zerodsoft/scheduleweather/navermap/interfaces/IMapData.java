@@ -15,9 +15,13 @@ public interface IMapData
 
     void removePoiItems(PoiItemType... poiItemTypes);
 
+    void removePoiItem(PoiItemType poiItemType, int index);
+
     void removeAllPoiItems();
 
     void showPoiItems(PoiItemType... poiItemTypes);
+
+    void showPoiItems(PoiItemType poiItemType, boolean isShow);
 
     void deselectPoiItem();
 
