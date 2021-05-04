@@ -1,5 +1,7 @@
 package com.zerodsoft.scheduleweather.event.weather.fragment;
 
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.provider.CalendarContract;
@@ -7,23 +9,30 @@ import android.service.carrier.CarrierMessagingService;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.core.view.ViewCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+import com.google.android.material.shape.MaterialShapeDrawable;
 import com.luckycatlabs.sunrisesunset.SunriseSunsetCalculator;
 import com.luckycatlabs.sunrisesunset.dto.Location;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
 import com.zerodsoft.scheduleweather.databinding.FragmentWeatherItemBinding;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
+import com.zerodsoft.scheduleweather.event.places.interfaces.BottomSheet;
 import com.zerodsoft.scheduleweather.event.weather.repository.WeatherDownloader;
 import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
@@ -50,11 +59,9 @@ import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 
-public class WeatherItemFragment extends Fragment implements OnBackPressedCallbackController
+public class WeatherItemFragment extends BottomSheetDialogFragment
 {
     public static final String TAG = "WeatherItemFragment";
-    private final BottomSheetController bottomSheetController;
-    private final OnBackPressedCallbackController mainFragmentOnBackPressedCallbackController;
 
     private FragmentWeatherItemBinding binding;
     private WeatherData weatherData;
@@ -80,39 +87,23 @@ public class WeatherItemFragment extends Fragment implements OnBackPressedCallba
     private Long instanceId;
     private Long begin;
 
+    private final int VIEW_HEIGHT;
 
-    private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
-    {
-        @Override
-        public void handleOnBackPressed()
-        {
-            getParentFragmentManager().popBackStack();
-        }
-    };
+    private static WeatherItemFragment instance;
 
-    @Override
-    public void onHiddenChanged(boolean hidden)
+    private BottomSheetBehavior bottomSheetBehavior;
+
+
+    public static WeatherItemFragment newInstance(int viewHeight)
     {
-        super.onHiddenChanged(hidden);
-        if (hidden)
-        {
-            removeOnBackPressedCallback();
-            if (getParentFragmentManager().getBackStackEntryCount() == 0)
-            {
-                mainFragmentOnBackPressedCallbackController.addOnBackPressedCallback();
-            }
-            bottomSheetController.setStateOfBottomSheet(BottomSheetType.WEATHER, BottomSheetBehavior.STATE_COLLAPSED);
-        } else
-        {
-            addOnBackPressedCallback();
-            if (getParentFragmentManager().getBackStackEntryCount() == 0)
-            {
-                mainFragmentOnBackPressedCallbackController.removeOnBackPressedCallback();
-            }
-            bottomSheetController.setStateOfBottomSheet(BottomSheetType.WEATHER, BottomSheetBehavior.STATE_EXPANDED);
-        }
+        instance = new WeatherItemFragment(viewHeight);
+        return instance;
     }
 
+    public static WeatherItemFragment getInstance()
+    {
+        return instance;
+    }
 
     private final WeatherDownloader weatherDownloader = new WeatherDownloader()
     {
@@ -186,10 +177,21 @@ public class WeatherItemFragment extends Fragment implements OnBackPressedCallba
         }
     };
 
-    public WeatherItemFragment(BottomSheetController bottomSheetController, OnBackPressedCallbackController onBackPressedCallbackController)
+    public WeatherItemFragment(int VIEW_HEIGHT)
     {
-        this.bottomSheetController = bottomSheetController;
-        this.mainFragmentOnBackPressedCallbackController = onBackPressedCallbackController;
+        this.VIEW_HEIGHT = VIEW_HEIGHT;
+    }
+
+    @Override
+    public void dismiss()
+    {
+        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+    }
+
+    @Override
+    public void onDismiss(@NonNull DialogInterface dialog)
+    {
+        super.onDismiss(dialog);
     }
 
     @Override
@@ -202,6 +204,36 @@ public class WeatherItemFragment extends Fragment implements OnBackPressedCallba
         eventId = bundle.getLong(CalendarContract.Instances.EVENT_ID);
         instanceId = bundle.getLong(CalendarContract.Instances._ID);
         begin = bundle.getLong(CalendarContract.Instances.BEGIN);
+
+        /*
+         isEditing = savedInstanceState?.getBoolean(IS_EDITING_KEY, false)
+    randomGoodDeed = savedInstanceState?.getString(RANDOM_GOOD_DEED_KEY)
+            ?: viewModel.generateRandomGoodDeed()
+         */
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState)
+    {
+        super.onSaveInstanceState(outState);
+        /*
+            outState.putBoolean(IS_EDITING_KEY, isEditing)
+    outState.putString(RANDOM_GOOD_DEED_KEY, randomGoodDeed)
+         */
+    }
+
+    @NonNull
+    @Override
+    public Dialog onCreateDialog(@Nullable Bundle savedInstanceState)
+    {
+        Dialog dialog = super.onCreateDialog(savedInstanceState);
+
+        bottomSheetBehavior = ((BottomSheetDialog) dialog).getBehavior();
+        bottomSheetBehavior.setDraggable(false);
+        bottomSheetBehavior.setPeekHeight(0);
+        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+
+        return dialog;
     }
 
     @Nullable
@@ -216,6 +248,10 @@ public class WeatherItemFragment extends Fragment implements OnBackPressedCallba
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
+
+        View bottomSheet = getDialog().findViewById(R.id.design_bottom_sheet);
+        bottomSheet.getLayoutParams().height = VIEW_HEIGHT;
+
         binding.refreshWeatherFab.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -372,17 +408,6 @@ public class WeatherItemFragment extends Fragment implements OnBackPressedCallba
         }
     }
 
-    @Override
-    public void addOnBackPressedCallback()
-    {
-        requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
-    }
-
-    @Override
-    public void removeOnBackPressedCallback()
-    {
-        onBackPressedCallback.remove();
-    }
 
     static class LocationPoint
     {

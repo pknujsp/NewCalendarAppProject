@@ -1,6 +1,7 @@
 package com.zerodsoft.scheduleweather.event.event.fragments;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -20,7 +21,6 @@ import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
@@ -28,23 +28,21 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
-import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
-import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
 import com.zerodsoft.scheduleweather.databinding.EventFragmentBinding;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationHistoryViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationInfoViewModel;
 import com.zerodsoft.scheduleweather.event.main.InstanceMainActivity;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
-import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
-import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.utility.NetworkStatus;
 import com.zerodsoft.scheduleweather.utility.RecurrenceRule;
@@ -57,7 +55,7 @@ import java.util.TimeZone;
 
 import lombok.SneakyThrows;
 
-public class EventFragment extends Fragment implements OnBackPressedCallbackController
+public class EventFragment extends BottomSheetDialogFragment
 {
     public static final String TAG = "EventFragment";
     // 참석자가 있는 경우 참석 여부 표시
@@ -66,16 +64,17 @@ public class EventFragment extends Fragment implements OnBackPressedCallbackCont
     공휴일인 경우 : 제목, 날짜, 이벤트 색상, 캘린더 정보만 출력
      */
     private EventFragmentBinding binding;
-    private ContentValues instance;
+    private ContentValues instanceValues;
     private List<ContentValues> attendeeList;
     private CalendarViewModel viewModel;
+
+    private final int VIEW_HEIGHT;
 
     private final int CALENDAR_ID;
     private final long EVENT_ID;
     private final long INSTANCE_ID;
     private final long ORIGINAL_BEGIN;
     private final long ORIGINAL_END;
-    private final BottomSheetController bottomSheetController;
 
     private AlertDialog attendeeDialog;
 
@@ -85,50 +84,28 @@ public class EventFragment extends Fragment implements OnBackPressedCallbackCont
     private int resultCode = Activity.RESULT_CANCELED;
     private NetworkStatus networkStatus;
 
-    private final OnBackPressedCallbackController mainFragmentOnBackPressedCallbackController;
+    private static EventFragment instance;
 
-    private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
+    public static EventFragment newInstance(int VIEW_HEIGHT, int CALENDAR_ID, long EVENT_ID, long INSTANCE_ID, long ORIGINAL_BEGIN, long ORIGINAL_END)
     {
-        @Override
-        public void handleOnBackPressed()
-        {
-            getParentFragmentManager().popBackStack();
-        }
-    };
+        instance = new EventFragment(VIEW_HEIGHT, CALENDAR_ID, EVENT_ID, INSTANCE_ID, ORIGINAL_BEGIN, ORIGINAL_END);
+        return instance;
+    }
+
+    public static EventFragment getInstance()
+    {
+        return instance;
+    }
 
     private InstanceMainActivity.LocationAbstract locationAbstract = new InstanceMainActivity.LocationAbstract()
     {
 
     };
 
-    @Override
-    public void onHiddenChanged(boolean hidden)
-    {
-        super.onHiddenChanged(hidden);
-        if (hidden)
-        {
-            removeOnBackPressedCallback();
-            if (getParentFragmentManager().getBackStackEntryCount() == 0)
-            {
-                mainFragmentOnBackPressedCallbackController.addOnBackPressedCallback();
-            }
-            bottomSheetController.setStateOfBottomSheet(BottomSheetType.INSTANCE_INFO, BottomSheetBehavior.STATE_COLLAPSED);
-        } else
-        {
-            addOnBackPressedCallback();
-            if (getParentFragmentManager().getBackStackEntryCount() == 0)
-            {
-                mainFragmentOnBackPressedCallbackController.removeOnBackPressedCallback();
-            }
-            bottomSheetController.setStateOfBottomSheet(BottomSheetType.INSTANCE_INFO, BottomSheetBehavior.STATE_EXPANDED);
-        }
-    }
 
-    public EventFragment(BottomSheetController bottomSheetController, OnBackPressedCallbackController onBackPressedCallbackController
-            , int CALENDAR_ID, long EVENT_ID, long INSTANCE_ID, long ORIGINAL_BEGIN, long ORIGINAL_END)
+    public EventFragment(int VIEW_HEIGHT, int CALENDAR_ID, long EVENT_ID, long INSTANCE_ID, long ORIGINAL_BEGIN, long ORIGINAL_END)
     {
-        this.bottomSheetController = bottomSheetController;
-        this.mainFragmentOnBackPressedCallbackController = onBackPressedCallbackController;
+        this.VIEW_HEIGHT = VIEW_HEIGHT;
         this.CALENDAR_ID = CALENDAR_ID;
         this.EVENT_ID = EVENT_ID;
         this.INSTANCE_ID = INSTANCE_ID;
@@ -149,6 +126,22 @@ public class EventFragment extends Fragment implements OnBackPressedCallbackCont
         networkStatus = new NetworkStatus(getContext(), new ConnectivityManager.NetworkCallback());
     }
 
+
+    @NonNull
+    @Override
+    public Dialog onCreateDialog(@Nullable Bundle savedInstanceState)
+    {
+        Dialog dialog = super.onCreateDialog(savedInstanceState);
+
+        BottomSheetBehavior bottomSheetBehavior = ((BottomSheetDialog) dialog).getBehavior();
+        bottomSheetBehavior.setDraggable(false);
+        bottomSheetBehavior.setPeekHeight(0);
+        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+
+        return dialog;
+    }
+
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
@@ -162,6 +155,9 @@ public class EventFragment extends Fragment implements OnBackPressedCallbackCont
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
+
+        View bottomSheet = getDialog().findViewById(R.id.design_bottom_sheet);
+        bottomSheet.getLayoutParams().height = VIEW_HEIGHT;
 
         locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
         foodCriteriaLocationHistoryViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationHistoryViewModel.class);
@@ -227,7 +223,7 @@ public class EventFragment extends Fragment implements OnBackPressedCallbackCont
                                     }
                                 } else
                                 {
-                                    locationAbstract.showSetLocationDialog(getActivity(), setLocationActivityResultLauncher, instance);
+                                    locationAbstract.showSetLocationDialog(getActivity(), setLocationActivityResultLauncher, instanceValues);
                                 }
                             }
                         });
@@ -265,7 +261,7 @@ public class EventFragment extends Fragment implements OnBackPressedCallbackCont
                 반복없는 이벤트 인 경우 : 일정 삭제
                 반복있는 이벤트 인 경우 : 이번 일정만 삭제, 향후 모든 일정 삭제, 모든 일정 삭제
                  */
-                if (instance.getAsString(CalendarContract.Instances.RRULE) != null)
+                if (instanceValues.getAsString(CalendarContract.Instances.RRULE) != null)
                 {
                     items = new String[]{getString(R.string.remove_this_instance), getString(R.string.remove_all_future_instance_including_current_instance)
                             , getString(R.string.remove_event)};
@@ -280,7 +276,7 @@ public class EventFragment extends Fragment implements OnBackPressedCallbackCont
                             @Override
                             public void onClick(DialogInterface dialogInterface, int index)
                             {
-                                if (instance.getAsString(CalendarContract.Instances.RRULE) != null)
+                                if (instanceValues.getAsString(CalendarContract.Instances.RRULE) != null)
                                 {
                                     switch (index)
                                     {
@@ -315,7 +311,7 @@ public class EventFragment extends Fragment implements OnBackPressedCallbackCont
 
         viewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
 
-        instance = viewModel.getInstance(CALENDAR_ID, INSTANCE_ID, ORIGINAL_BEGIN, ORIGINAL_END);
+        instanceValues = viewModel.getInstance(CALENDAR_ID, INSTANCE_ID, ORIGINAL_BEGIN, ORIGINAL_END);
         setInstanceData();
     }
 
@@ -350,7 +346,7 @@ public class EventFragment extends Fragment implements OnBackPressedCallbackCont
         });
         // 삭제 완료 후 캘린더 화면으로 나가고, 새로고침한다.
         resultCode = InstanceMainActivity.RESULT_REMOVED_EVENT;
-        onBackPressedCallback.handleOnBackPressed();
+        dismiss();
     }
 
     private void deleteSubsequentIncludingThis()
@@ -377,10 +373,10 @@ public class EventFragment extends Fragment implements OnBackPressedCallbackCont
 
     private void exceptThisInstance()
     {
-        viewModel.deleteInstance(instance.getAsLong(CalendarContract.Instances.BEGIN), EVENT_ID);
+        viewModel.deleteInstance(instanceValues.getAsLong(CalendarContract.Instances.BEGIN), EVENT_ID);
 
         resultCode = InstanceMainActivity.RESULT_EXCEPTED_INSTANCE;
-        onBackPressedCallback.handleOnBackPressed();
+        dismiss();
     }
 
 
@@ -484,11 +480,11 @@ public class EventFragment extends Fragment implements OnBackPressedCallbackCont
         // 제목, 캘린더, 시간, 시간대, 반복, 알림, 설명, 위치, 공개범위, 유효성, 참석자
         // 캘린더, 시간대, 참석자 정보는 따로 불러온다.
         //제목
-        if (instance.getAsString(CalendarContract.Instances.TITLE) != null)
+        if (instanceValues.getAsString(CalendarContract.Instances.TITLE) != null)
         {
-            if (!instance.getAsString(CalendarContract.Instances.TITLE).isEmpty())
+            if (!instanceValues.getAsString(CalendarContract.Instances.TITLE).isEmpty())
             {
-                binding.eventTitle.setText(instance.getAsString(CalendarContract.Instances.TITLE));
+                binding.eventTitle.setText(instanceValues.getAsString(CalendarContract.Instances.TITLE));
             } else
             {
                 binding.eventTitle.setText(getString(R.string.empty_title));
@@ -501,12 +497,12 @@ public class EventFragment extends Fragment implements OnBackPressedCallbackCont
         setCalendarText();
 
         //시간 , allday구분
-        setDateTimeText(instance.getAsLong(CalendarContract.Instances.BEGIN), instance.getAsLong(CalendarContract.Instances.END));
+        setDateTimeText(instanceValues.getAsLong(CalendarContract.Instances.BEGIN), instanceValues.getAsLong(CalendarContract.Instances.END));
 
         // 시간대
-        if (!instance.getAsBoolean(CalendarContract.Instances.ALL_DAY))
+        if (!instanceValues.getAsBoolean(CalendarContract.Instances.ALL_DAY))
         {
-            String timeZoneStr = instance.getAsString(CalendarContract.Instances.EVENT_TIMEZONE);
+            String timeZoneStr = instanceValues.getAsString(CalendarContract.Instances.EVENT_TIMEZONE);
             TimeZone timeZone = TimeZone.getTimeZone(timeZoneStr);
             setTimeZoneText(timeZone);
             binding.eventDatetimeView.eventTimezoneLayout.setVisibility(View.VISIBLE);
@@ -517,9 +513,9 @@ public class EventFragment extends Fragment implements OnBackPressedCallbackCont
         }
 
         // 반복
-        if (instance.getAsString(CalendarContract.Instances.RRULE) != null)
+        if (instanceValues.getAsString(CalendarContract.Instances.RRULE) != null)
         {
-            setRecurrenceText(instance.getAsString(CalendarContract.Instances.RRULE));
+            setRecurrenceText(instanceValues.getAsString(CalendarContract.Instances.RRULE));
             binding.eventRecurrenceView.getRoot().setVisibility(View.VISIBLE);
         } else
         {
@@ -527,7 +523,7 @@ public class EventFragment extends Fragment implements OnBackPressedCallbackCont
         }
 
         // 알람
-        if (instance.getAsBoolean(CalendarContract.Instances.HAS_ALARM))
+        if (instanceValues.getAsBoolean(CalendarContract.Instances.HAS_ALARM))
         {
             List<ContentValues> reminderList = viewModel.getReminders(CALENDAR_ID, EVENT_ID);
             setReminderText(reminderList);
@@ -544,11 +540,11 @@ public class EventFragment extends Fragment implements OnBackPressedCallbackCont
 
         // 설명
         binding.eventDescriptionView.descriptionEdittext.setVisibility(View.GONE);
-        if (instance.getAsString(CalendarContract.Instances.DESCRIPTION) != null)
+        if (instanceValues.getAsString(CalendarContract.Instances.DESCRIPTION) != null)
         {
-            if (!instance.getAsString(CalendarContract.Instances.DESCRIPTION).isEmpty())
+            if (!instanceValues.getAsString(CalendarContract.Instances.DESCRIPTION).isEmpty())
             {
-                binding.eventDescriptionView.descriptionTextview.setText(instance.getAsString(CalendarContract.Instances.DESCRIPTION));
+                binding.eventDescriptionView.descriptionTextview.setText(instanceValues.getAsString(CalendarContract.Instances.DESCRIPTION));
                 binding.eventDescriptionView.getRoot().setVisibility(View.VISIBLE);
             } else
             {
@@ -560,11 +556,11 @@ public class EventFragment extends Fragment implements OnBackPressedCallbackCont
         }
 
         // 위치
-        if (instance.getAsString(CalendarContract.Instances.EVENT_LOCATION) != null)
+        if (instanceValues.getAsString(CalendarContract.Instances.EVENT_LOCATION) != null)
         {
-            if (!instance.getAsString(CalendarContract.Instances.EVENT_LOCATION).isEmpty())
+            if (!instanceValues.getAsString(CalendarContract.Instances.EVENT_LOCATION).isEmpty())
             {
-                binding.eventLocationView.eventLocation.setText(instance.getAsString(CalendarContract.Instances.EVENT_LOCATION));
+                binding.eventLocationView.eventLocation.setText(instanceValues.getAsString(CalendarContract.Instances.EVENT_LOCATION));
                 binding.eventLocationView.getRoot().setVisibility(View.VISIBLE);
                 binding.selectDetailLocationFab.setVisibility(View.VISIBLE);
             } else
@@ -596,7 +592,7 @@ public class EventFragment extends Fragment implements OnBackPressedCallbackCont
         }
 
         // 공개 범위 표시
-        if (instance.getAsInteger(CalendarContract.Instances.ACCESS_LEVEL) != null)
+        if (instanceValues.getAsInteger(CalendarContract.Instances.ACCESS_LEVEL) != null)
         {
             setAccessLevelText();
             binding.eventAccessLevelView.getRoot().setVisibility(View.VISIBLE);
@@ -606,7 +602,7 @@ public class EventFragment extends Fragment implements OnBackPressedCallbackCont
         }
 
         // 유효성 표시
-        if (instance.getAsInteger(CalendarContract.Instances.AVAILABILITY) != null)
+        if (instanceValues.getAsInteger(CalendarContract.Instances.AVAILABILITY) != null)
         {
             setAvailabilityText();
             binding.eventAvailabilityView.getRoot().setVisibility(View.VISIBLE);
@@ -618,18 +614,18 @@ public class EventFragment extends Fragment implements OnBackPressedCallbackCont
 
     private void setAvailabilityText()
     {
-        binding.eventAvailabilityView.eventAvailability.setText(EventUtil.convertAvailability(instance.getAsInteger(CalendarContract.Instances.AVAILABILITY), getContext()));
+        binding.eventAvailabilityView.eventAvailability.setText(EventUtil.convertAvailability(instanceValues.getAsInteger(CalendarContract.Instances.AVAILABILITY), getContext()));
     }
 
     private void setAccessLevelText()
     {
-        binding.eventAccessLevelView.eventAccessLevel.setText(EventUtil.convertAccessLevel(instance.getAsInteger(CalendarContract.Instances.ACCESS_LEVEL), getContext()));
+        binding.eventAccessLevelView.eventAccessLevel.setText(EventUtil.convertAccessLevel(instanceValues.getAsInteger(CalendarContract.Instances.ACCESS_LEVEL), getContext()));
     }
 
 
     private void setDateTimeText(long begin, long end)
     {
-        final boolean allDay = instance.getAsBoolean(CalendarContract.Instances.ALL_DAY);
+        final boolean allDay = instanceValues.getAsBoolean(CalendarContract.Instances.ALL_DAY);
         if (allDay)
         {
             Calendar calendar = Calendar.getInstance();
@@ -690,14 +686,14 @@ public class EventFragment extends Fragment implements OnBackPressedCallbackCont
 
     private void setCalendarText()
     {
-        binding.eventCalendarView.calendarColor.setBackgroundColor(EventUtil.getColor(instance.getAsInteger(CalendarContract.Instances.CALENDAR_COLOR)));
-        binding.eventCalendarView.calendarDisplayName.setText(instance.getAsString(CalendarContract.Instances.CALENDAR_DISPLAY_NAME));
-        binding.eventCalendarView.calendarAccountName.setText(instance.getAsString(CalendarContract.Instances.OWNER_ACCOUNT));
+        binding.eventCalendarView.calendarColor.setBackgroundColor(EventUtil.getColor(instanceValues.getAsInteger(CalendarContract.Instances.CALENDAR_COLOR)));
+        binding.eventCalendarView.calendarDisplayName.setText(instanceValues.getAsString(CalendarContract.Instances.CALENDAR_DISPLAY_NAME));
+        binding.eventCalendarView.calendarAccountName.setText(instanceValues.getAsString(CalendarContract.Instances.OWNER_ACCOUNT));
     }
 
-    public ContentValues getInstance()
+    public ContentValues getInstanceValues()
     {
-        return instance;
+        return instanceValues;
     }
 
     public List<ContentValues> getAttendeeList()
@@ -760,15 +756,4 @@ public class EventFragment extends Fragment implements OnBackPressedCallbackCont
                 }
             });
 
-    @Override
-    public void addOnBackPressedCallback()
-    {
-        requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
-    }
-
-    @Override
-    public void removeOnBackPressedCallback()
-    {
-        onBackPressedCallback.remove();
-    }
 }

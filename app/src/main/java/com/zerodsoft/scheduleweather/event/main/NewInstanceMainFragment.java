@@ -159,75 +159,19 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
     {
         super.onViewCreated(view, savedInstanceState);
 
-
         calendarViewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
         locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
         createFunctionList();
 
-        Object[] results0 = createBottomSheet(R.id.instance_info_fragment_container);
-        LinearLayout instanceInfoBottomSheet = (LinearLayout) results0[0];
-        BottomSheetBehavior instanceInfoBottomSheetBehavior = (BottomSheetBehavior) results0[1];
-
-        Object[] results1 = createBottomSheet(R.id.weather_fragment_container);
-        LinearLayout weatherBottomSheet = (LinearLayout) results1[0];
-        BottomSheetBehavior weatherBottomSheetBehavior = (BottomSheetBehavior) results1[1];
+        functionButton.setVisibility(View.GONE);
 
         Object[] results2 = createBottomSheet(R.id.restaurant_fragment_container);
         LinearLayout restaurantsBottomSheet = (LinearLayout) results2[0];
         BottomSheetBehavior restaurantsBottomSheetBehavior = (BottomSheetBehavior) results2[1];
 
-        bottomSheetViewMap.put(BottomSheetType.INSTANCE_INFO, instanceInfoBottomSheet);
-        bottomSheetViewMap.put(BottomSheetType.WEATHER, weatherBottomSheet);
+
         bottomSheetViewMap.put(BottomSheetType.RESTAURANT, restaurantsBottomSheet);
-        bottomSheetBehaviorMap.put(BottomSheetType.INSTANCE_INFO, instanceInfoBottomSheetBehavior);
-        bottomSheetBehaviorMap.put(BottomSheetType.WEATHER, weatherBottomSheetBehavior);
         bottomSheetBehaviorMap.put(BottomSheetType.RESTAURANT, restaurantsBottomSheetBehavior);
-
-        instanceInfoBottomSheetBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback()
-        {
-            @Override
-            public void onStateChanged(@NonNull View bottomSheet, int newState)
-            {
-                switch (newState)
-                {
-                    case BottomSheetBehavior.STATE_EXPANDED:
-                        EventFragment eventFragment = (EventFragment) getChildFragmentManager().findFragmentByTag(EventFragment.TAG);
-                        getChildFragmentManager().beginTransaction().show(eventFragment).addToBackStack(EventFragment.TAG).commit();
-                        break;
-                    case BottomSheetBehavior.STATE_COLLAPSED:
-                        break;
-                }
-            }
-
-            @Override
-            public void onSlide(@NonNull View bottomSheet, float slideOffset)
-            {
-
-            }
-        });
-
-        weatherBottomSheetBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback()
-        {
-            @Override
-            public void onStateChanged(@NonNull View bottomSheet, int newState)
-            {
-                switch (newState)
-                {
-                    case BottomSheetBehavior.STATE_EXPANDED:
-                        WeatherItemFragment weatherItemFragment = (WeatherItemFragment) getChildFragmentManager().findFragmentByTag(WeatherItemFragment.TAG);
-                        getChildFragmentManager().beginTransaction().show(weatherItemFragment).addToBackStack(WeatherItemFragment.TAG).commit();
-                        break;
-                    case BottomSheetBehavior.STATE_COLLAPSED:
-                        break;
-                }
-            }
-
-            @Override
-            public void onSlide(@NonNull View bottomSheet, float slideOffset)
-            {
-
-            }
-        });
 
         restaurantsBottomSheetBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback()
         {
@@ -257,18 +201,20 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
             @Override
             public void onGlobalLayout()
             {
-                functionButton.callOnClick();
+                binding.naverMapFragmentRootLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
 
                 final int HEADERBAR_HEIGHT = (int) getResources().getDimension(R.dimen.map_header_bar_height);
                 final int HEADERBAR_TOP_MARGIN = (int) getResources().getDimension(R.dimen.map_header_bar_top_margin);
                 final int HEADERBAR_MARGIN = (int) (HEADERBAR_TOP_MARGIN * 1.5f);
                 final int DEFAULT_HEIGHT_OF_BOTTOMSHEET = binding.naverMapFragmentRootLayout.getHeight() - HEADERBAR_HEIGHT - HEADERBAR_MARGIN;
 
-                setHeightOfBottomSheet(DEFAULT_HEIGHT_OF_BOTTOMSHEET, instanceInfoBottomSheet, instanceInfoBottomSheetBehavior);
-                setHeightOfBottomSheet(DEFAULT_HEIGHT_OF_BOTTOMSHEET, weatherBottomSheet, weatherBottomSheetBehavior);
+                addEventFragmentIntoBottomSheet(DEFAULT_HEIGHT_OF_BOTTOMSHEET);
+                addWeatherFragmentIntoBottomSheet(DEFAULT_HEIGHT_OF_BOTTOMSHEET);
+
                 setHeightOfBottomSheet(DEFAULT_HEIGHT_OF_BOTTOMSHEET, restaurantsBottomSheet, restaurantsBottomSheetBehavior);
 
-                binding.naverMapFragmentRootLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                functionButton.setVisibility(View.VISIBLE);
+                functionButton.callOnClick();
             }
         });
     }
@@ -345,6 +291,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
             functionButtons[i].setElevation(3f);
             functionButtons[i].setClickable(true);
             functionButtons[i].setPadding(padding, padding, padding, padding);
+            functionButtons[i].setVisibility(View.GONE);
 
             RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
             params.addRule(RelativeLayout.ABOVE, binding.naverMapButtonsLayout.currentAddress.getId());
@@ -363,12 +310,9 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
             {
                 //이벤트 정보
                 functionButton.callOnClick();
-                if (getChildFragmentManager().findFragmentByTag(EventFragment.TAG) == null)
-                {
-                    addEventFragmentIntoBottomSheet();
-                }
-                onCalledBottomSheet(BottomSheetBehavior.STATE_EXPANDED, bottomSheetBehaviorMap.get(BottomSheetType.INSTANCE_INFO));
-                bottomSheetBehaviorMap.get(BottomSheetType.INSTANCE_INFO).setState(BottomSheetBehavior.STATE_EXPANDED);
+
+                EventFragment eventFragment = (EventFragment) bottomSheetFragmentMap.get(BottomSheetType.INSTANCE_INFO);
+                eventFragment.show(getParentFragmentManager(), EventFragment.TAG);
             }
         });
 
@@ -379,12 +323,9 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
             {
                 //날씨
                 functionButton.callOnClick();
-                if (getChildFragmentManager().findFragmentByTag(WeatherItemFragment.TAG) == null)
-                {
-                    addWeatherFragmentIntoBottomSheet();
-                }
-                onCalledBottomSheet(BottomSheetBehavior.STATE_EXPANDED, bottomSheetBehaviorMap.get(BottomSheetType.WEATHER));
-                bottomSheetBehaviorMap.get(BottomSheetType.WEATHER).setState(BottomSheetBehavior.STATE_EXPANDED);
+
+                WeatherItemFragment weatherItemFragment = (WeatherItemFragment) bottomSheetFragmentMap.get(BottomSheetType.WEATHER);
+                weatherItemFragment.show(getParentFragmentManager(), WeatherItemFragment.TAG);
             }
         });
 
@@ -616,17 +557,15 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
         return new Object[]{bottomSheetView, bottomSheetBehavior};
     }
 
-    private void addEventFragmentIntoBottomSheet()
+    private void addEventFragmentIntoBottomSheet(int viewHeight)
     {
-        EventFragment eventFragment = new EventFragment(this, this, CALENDAR_ID, EVENT_ID, INSTANCE_ID, ORIGINAL_BEGIN, ORIGINAL_END);
-        getChildFragmentManager().beginTransaction()
-                .add(bottomSheetViewMap.get(BottomSheetType.INSTANCE_INFO).getChildAt(0).getId(), eventFragment, EventFragment.TAG).hide(eventFragment).commitNow();
+        EventFragment eventFragment = EventFragment.newInstance(viewHeight, CALENDAR_ID, EVENT_ID, INSTANCE_ID, ORIGINAL_BEGIN, ORIGINAL_END);
         bottomSheetFragmentMap.put(BottomSheetType.INSTANCE_INFO, eventFragment);
     }
 
-    private void addWeatherFragmentIntoBottomSheet()
+    private void addWeatherFragmentIntoBottomSheet(int viewHeight)
     {
-        WeatherItemFragment weatherFragment = new WeatherItemFragment(this, this);
+        WeatherItemFragment weatherFragment = WeatherItemFragment.newInstance(viewHeight);
         Bundle bundle = new Bundle();
         bundle.putInt(CalendarContract.Instances.CALENDAR_ID, CALENDAR_ID);
         bundle.putLong(CalendarContract.Instances.EVENT_ID, EVENT_ID);
@@ -634,8 +573,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
         bundle.putLong(CalendarContract.Instances.BEGIN, ORIGINAL_BEGIN);
 
         weatherFragment.setArguments(bundle);
-        getChildFragmentManager().beginTransaction()
-                .add(bottomSheetViewMap.get(BottomSheetType.WEATHER).getChildAt(0).getId(), weatherFragment, WeatherItemFragment.TAG).hide(weatherFragment).commitNow();
         bottomSheetFragmentMap.put(BottomSheetType.WEATHER, weatherFragment);
     }
 

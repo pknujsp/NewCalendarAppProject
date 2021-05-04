@@ -69,4 +69,5 @@
 
 
     <dimen name="corner_radius">16dp</dimen>
+    <dimen name="padding_top_on_bottom_sheet">16dp</dimen>
 </resources>
