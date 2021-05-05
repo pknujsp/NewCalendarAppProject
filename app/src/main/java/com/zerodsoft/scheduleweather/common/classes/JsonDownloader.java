@@ -1,9 +1,5 @@
 package com.zerodsoft.scheduleweather.common.classes;
 
-import com.zerodsoft.scheduleweather.event.weather.repository.SgisTranscoord;
-import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.AirConditionRoot;
-
 import retrofit2.Response;
 
 public abstract class JsonDownloader<T>

@@ -36,9 +36,8 @@
                     android:textStyle="bold"
                     android:visibility="visible" />
 
-                <fragment
-                    android:id="@+id/ultra_srt_ncst_fragment"
-                    android:name="com.zerodsoft.scheduleweather.event.weather.fragment.UltraSrtNcstFragment"
+                <androidx.fragment.app.FragmentContainerView
+                    android:id="@+id/ultra_srt_ncst_fragment_container"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="8dp"
@@ -55,9 +54,8 @@
                     android:textStyle="bold"
                     android:visibility="visible" />
 
-                <fragment
-                    android:id="@+id/air_condition_fragment"
-                    android:name="com.zerodsoft.scheduleweather.event.weather.fragment.AirConditionFragment"
+                <androidx.fragment.app.FragmentContainerView
+                    android:id="@+id/air_condition_fragment_container"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="8dp"
@@ -73,9 +71,8 @@
                     android:textSize="17sp"
                     android:textStyle="bold" />
 
-                <fragment
-                    android:id="@+id/ultra_srt_fcst_fragment"
-                    android:name="com.zerodsoft.scheduleweather.event.weather.fragment.UltraSrtFcstFragment"
+                <androidx.fragment.app.FragmentContainerView
+                    android:id="@+id/ultra_srt_fcst_fragment_container"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="8dp"
@@ -91,9 +88,8 @@
                     android:textSize="17sp"
                     android:textStyle="bold" />
 
-                <fragment
-                    android:id="@+id/vilage_fcst_fragment"
-                    android:name="com.zerodsoft.scheduleweather.event.weather.fragment.VilageFcstFragment"
+                <androidx.fragment.app.FragmentContainerView
+                    android:id="@+id/vilage_fcst_fragment_container"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="8dp"
@@ -109,9 +105,8 @@
                     android:textSize="17sp"
                     android:textStyle="bold" />
 
-                <fragment
-                    android:id="@+id/mid_fcst_fragment"
-                    android:name="com.zerodsoft.scheduleweather.event.weather.fragment.MidFcstFragment"
+                <androidx.fragment.app.FragmentContainerView
+                    android:id="@+id/mid_fcst_fragment_container"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="8dp" />

@@ -25,7 +25,7 @@ import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.databinding.FragmentBuildingListBinding;
-import com.zerodsoft.scheduleweather.event.weather.repository.SgisTranscoord;
+import com.zerodsoft.scheduleweather.weather.repository.SgisTranscoord;
 import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.building.SgisBuildingDownloader;
 import com.zerodsoft.scheduleweather.navermap.building.adapter.BuildingListAdapter;
