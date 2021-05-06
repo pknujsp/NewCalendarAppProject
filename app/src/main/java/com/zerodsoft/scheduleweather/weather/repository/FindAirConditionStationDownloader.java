@@ -1,5 +1,6 @@
 package com.zerodsoft.scheduleweather.weather.repository;
 
+import com.google.gson.JsonObject;
 import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
 import com.zerodsoft.scheduleweather.retrofit.HttpCommunicationClient;
 import com.zerodsoft.scheduleweather.retrofit.Querys;
@@ -11,7 +12,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public abstract class FindAirConditionStationDownloader extends JsonDownloader<FindStationRoot>
+public abstract class FindAirConditionStationDownloader extends JsonDownloader<JsonObject>
 {
 
     /*
@@ -21,17 +22,17 @@ public abstract class FindAirConditionStationDownloader extends JsonDownloader<F
     {
         Querys querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.FIND_STATION_FOR_AIR_CONDITION);
 
-        Call<NearbyMsrstnListRoot> call = querys.getNearbyMsrstnList(parameter.getMap());
-        call.enqueue(new Callback<NearbyMsrstnListRoot>()
+        Call<JsonObject> call = querys.getNearbyMsrstnListStr(parameter.getMap());
+        call.enqueue(new Callback<JsonObject>()
         {
             @Override
-            public void onResponse(Call<NearbyMsrstnListRoot> call, Response<NearbyMsrstnListRoot> response)
+            public void onResponse(Call<JsonObject> call, Response<JsonObject> response)
             {
                 processResult(response);
             }
 
             @Override
-            public void onFailure(Call<NearbyMsrstnListRoot> call, Throwable t)
+            public void onFailure(Call<JsonObject> call, Throwable t)
             {
                 processResult(t);
             }

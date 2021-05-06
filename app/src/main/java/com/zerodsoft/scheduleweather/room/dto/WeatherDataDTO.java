@@ -24,6 +24,9 @@ public class WeatherDataDTO
     @ColumnInfo(name = "json")
     private String json;
 
+    @ColumnInfo(name = "downloaded_date")
+    private String downloadedDate;
+
     @Ignore
     public static final int ULTRA_SRT_NCST = 0;
     @Ignore
@@ -36,6 +39,8 @@ public class WeatherDataDTO
     public static final int MID_TA = 4;
     @Ignore
     public static final int AIR_CONDITION = 5;
+    @Ignore
+    public static final int NEAR_BY_MSRSTN_LIST = 6;
 
     public Integer getId()
     {
@@ -85,5 +90,15 @@ public class WeatherDataDTO
     public void setJson(String json)
     {
         this.json = json;
+    }
+
+    public void setDownloadedDate(String downloadedDate)
+    {
+        this.downloadedDate = downloadedDate;
+    }
+
+    public String getDownloadedDate()
+    {
+        return downloadedDate;
     }
 }

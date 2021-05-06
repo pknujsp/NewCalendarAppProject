@@ -1,5 +1,7 @@
 package com.zerodsoft.scheduleweather.retrofit;
 
+import com.google.api.client.json.Json;
+import com.google.gson.JsonObject;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.CtprvnRltmMesureDnsty.CtprvnRltmMesureDnstyResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.CtprvnRltmMesureDnsty.CtprvnRltmMesureDnstyRoot;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.MsrstnAcctoRltmMesureDnsty.MsrstnAcctoRltmMesureDnstyResponse;
@@ -55,32 +57,57 @@ public interface Querys
     @GET("getUltraSrtNcst")
     Call<UltraSrtNcstRoot> getUltraSrtNcstData(@QueryMap(encoded = true) Map<String, String> queryMap);
 
+    @GET("getUltraSrtNcst")
+    Call<JsonObject> getUltraSrtNcstDataStr(@QueryMap(encoded = true) Map<String, String> queryMap);
+
     //초단기 예보
     @GET("getUltraSrtFcst")
     Call<UltraSrtFcstRoot> getUltraSrtFcstData(@QueryMap(encoded = true) Map<String, String> queryMap);
+
+    @GET("getUltraSrtFcst")
+    Call<JsonObject> getUltraSrtFcstDataStr(@QueryMap(encoded = true) Map<String, String> queryMap);
 
     //동네 예보
     @GET("getVilageFcst")
     Call<VilageFcstRoot> getVilageFcstData(@QueryMap(encoded = true) Map<String, String> queryMap);
 
+    @GET("getVilageFcst")
+    Call<JsonObject> getVilageFcstDataStr(@QueryMap(encoded = true) Map<String, String> queryMap);
+
     //중기육상예보
     @GET("getMidLandFcst")
     Call<MidLandFcstRoot> getMidLandFcstData(@QueryMap(encoded = true) Map<String, String> queryMap);
+
+    @GET("getMidLandFcst")
+    Call<JsonObject> getMidLandFcstDataStr(@QueryMap(encoded = true) Map<String, String> queryMap);
 
     //중기기온조회
     @GET("getMidTa")
     Call<MidTaRoot> getMidTaData(@QueryMap(encoded = true) Map<String, String> queryMap);
 
+    @GET("getMidTa")
+    Call<JsonObject> getMidTaDataStr(@QueryMap(encoded = true) Map<String, String> queryMap);
+
     //미세먼지
     @GET("getMsrstnAcctoRltmMesureDnsty")
     Call<MsrstnAcctoRltmMesureDnstyRoot> getMsrstnAcctoRltmMesureDnsty(@QueryMap(encoded = true) Map<String, String> queryMap);
 
+    //string test
+    @GET("getMsrstnAcctoRltmMesureDnsty")
+    Call<JsonObject> getMsrstnAcctoRltmMesureDnstyStr(@QueryMap(encoded = true) Map<String, String> queryMap);
+
     @GET("getCtprvnRltmMesureDnsty")
     Call<CtprvnRltmMesureDnstyRoot> getCtprvnRltmMesureDnsty(@QueryMap(encoded = true) Map<String, String> queryMap);
+
+    @GET("getCtprvnRltmMesureDnsty")
+    Call<JsonObject> getCtprvnRltmMesureDnstyStr(@QueryMap(encoded = true) Map<String, String> queryMap);
 
     //공기 측정소
     @GET("getNearbyMsrstnList")
     Call<NearbyMsrstnListRoot> getNearbyMsrstnList(@QueryMap(encoded = true) Map<String, String> queryMap);
+
+    @GET("getNearbyMsrstnList")
+    Call<JsonObject> getNearbyMsrstnListStr(@QueryMap(encoded = true) Map<String, String> queryMap);
 
     //정부 SGIS 인증
     @GET("authentication.json")

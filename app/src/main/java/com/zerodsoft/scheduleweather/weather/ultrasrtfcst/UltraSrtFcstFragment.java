@@ -4,6 +4,8 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.RemoteException;
+import android.service.carrier.CarrierMessagingService;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -18,20 +20,28 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
 import com.zerodsoft.scheduleweather.databinding.UltraSrtFcstFragmentBinding;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.UltraSrtFcstParameter;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.UltraSrtNcstParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.WeatherItems;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.midlandfcstresponse.MidLandFcstRoot;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.midtaresponse.MidTaRoot;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.ultrasrtfcstresponse.UltraSrtFcstRoot;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.ultrasrtncstresponse.UltraSrtNcstRoot;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
+import com.zerodsoft.scheduleweather.room.dto.WeatherDataDTO;
+import com.zerodsoft.scheduleweather.weather.interfaces.OnDownloadedTimeListener;
 import com.zerodsoft.scheduleweather.weather.repository.WeatherDataDownloader;
 import com.zerodsoft.scheduleweather.weather.sunsetrise.SunSetRiseData;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.utility.WeatherDataConverter;
+import com.zerodsoft.scheduleweather.weather.viewmodel.WeatherDbViewModel;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -39,12 +49,15 @@ import java.util.List;
 
 public class UltraSrtFcstFragment extends Fragment
 {
+    private final OnDownloadedTimeListener onDownloadedTimeListener;
+
     private UltraSrtFcstFragmentBinding binding;
     private List<SunSetRiseData> sunSetRiseDataList;
 
     private UltraSrtFcst ultraSrtFcst = new UltraSrtFcst();
     private WeatherAreaCodeDTO weatherAreaCode;
-    private Date date;
+    private WeatherDbViewModel weatherDbViewModel;
+
     private final WeatherDataDownloader weatherDataDownloader = new WeatherDataDownloader()
     {
         @Override
@@ -60,11 +73,11 @@ public class UltraSrtFcstFragment extends Fragment
         }
     };
 
-    public UltraSrtFcstFragment(WeatherAreaCodeDTO weatherAreaCodeDTO, Date date, List<SunSetRiseData> sunSetRiseDataList)
+    public UltraSrtFcstFragment(WeatherAreaCodeDTO weatherAreaCodeDTO, List<SunSetRiseData> sunSetRiseDataList, OnDownloadedTimeListener onDownloadedTimeListener)
     {
         this.weatherAreaCode = weatherAreaCodeDTO;
-        this.date = date;
         this.sunSetRiseDataList = sunSetRiseDataList;
+        this.onDownloadedTimeListener = onDownloadedTimeListener;
     }
 
     @Nullable
@@ -80,14 +93,36 @@ public class UltraSrtFcstFragment extends Fragment
     {
         super.onViewCreated(view, savedInstanceState);
         clearViews();
-        getWeatherData();
+        weatherDbViewModel = new ViewModelProvider(this).get(WeatherDbViewModel.class);
+        weatherDbViewModel.getWeatherData(weatherAreaCode.getY(), weatherAreaCode.getX(), WeatherDataDTO.ULTRA_SRT_FCST, new CarrierMessagingService.ResultCallback<WeatherDataDTO>()
+        {
+            @Override
+            public void onReceiveResult(@NonNull WeatherDataDTO ultraSrtFcstWeatherDataDTO) throws RemoteException
+            {
+                if (ultraSrtFcstWeatherDataDTO == null)
+                {
+                    getWeatherData();
+                } else
+                {
+                    Gson gson = new Gson();
+                    UltraSrtFcstRoot ultraSrtFcstRoot = gson.fromJson(ultraSrtFcstWeatherDataDTO.getJson(), UltraSrtFcstRoot.class);
+                    Date downloadedDate = new Date(Long.parseLong(ultraSrtFcstWeatherDataDTO.getDownloadedDate()));
+
+                    ultraSrtFcst.setUltraSrtFcstFinalDataList(ultraSrtFcstRoot.getResponse().getBody().getItems(), downloadedDate);
+                    requireActivity().runOnUiThread(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            onDownloadedTimeListener.setDownloadedTime(downloadedDate, WeatherDataDTO.ULTRA_SRT_FCST);
+                            setTable();
+                        }
+                    });
+                }
+            }
+        });
     }
 
-    @Override
-    public void onSaveInstanceState(@NonNull Bundle outState)
-    {
-        super.onSaveInstanceState(outState);
-    }
 
     public void getWeatherData()
     {
@@ -95,13 +130,12 @@ public class UltraSrtFcstFragment extends Fragment
         ultraSrtFcstParameter.setNx(weatherAreaCode.getX()).setNy(weatherAreaCode.getY()).setNumOfRows("250").setPageNo("1");
 
         Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
-        weatherDataDownloader.getUltraSrtFcstData(ultraSrtFcstParameter, calendar, new JsonDownloader<UltraSrtFcstRoot>()
+        weatherDataDownloader.getUltraSrtFcstData(ultraSrtFcstParameter, calendar, new JsonDownloader<JsonObject>()
         {
             @Override
-            public void onResponseSuccessful(UltraSrtFcstRoot result)
+            public void onResponseSuccessful(JsonObject result)
             {
-                setWeatherData(result, date);
+                setWeatherData(result, calendar.getTime());
             }
 
             @Override
@@ -112,14 +146,34 @@ public class UltraSrtFcstFragment extends Fragment
         });
     }
 
-    public void setWeatherData(UltraSrtFcstRoot ultraSrtFcstRoot, Date downloadedDate)
+    public void setWeatherData(JsonObject result, Date downloadedDate)
     {
+        Gson gson = new Gson();
+        UltraSrtFcstRoot ultraSrtFcstRoot = gson.fromJson(result.toString(), UltraSrtFcstRoot.class);
+
+        WeatherDataDTO ultraSrtFcstWeatherDataDTO = new WeatherDataDTO();
+        ultraSrtFcstWeatherDataDTO.setLatitude(weatherAreaCode.getY());
+        ultraSrtFcstWeatherDataDTO.setLongitude(weatherAreaCode.getX());
+        ultraSrtFcstWeatherDataDTO.setDataType(WeatherDataDTO.ULTRA_SRT_FCST);
+        ultraSrtFcstWeatherDataDTO.setJson(result.toString());
+        ultraSrtFcstWeatherDataDTO.setDownloadedDate(String.valueOf(System.currentTimeMillis()));
+
+        weatherDbViewModel.insert(ultraSrtFcstWeatherDataDTO, new CarrierMessagingService.ResultCallback<WeatherDataDTO>()
+        {
+            @Override
+            public void onReceiveResult(@NonNull WeatherDataDTO weatherDataDTO) throws RemoteException
+            {
+
+            }
+        });
+
         ultraSrtFcst.setUltraSrtFcstFinalDataList(ultraSrtFcstRoot.getResponse().getBody().getItems(), downloadedDate);
         requireActivity().runOnUiThread(new Runnable()
         {
             @Override
             public void run()
             {
+                onDownloadedTimeListener.setDownloadedTime(downloadedDate, WeatherDataDTO.ULTRA_SRT_FCST);
                 setTable();
             }
         });

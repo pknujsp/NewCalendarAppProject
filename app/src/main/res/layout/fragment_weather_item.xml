@@ -111,14 +111,102 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="8dp" />
 
-                <TextView
-                    android:id="@+id/weather_updated_datetime"
-                    android:layout_width="match_parent"
+                <GridLayout
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="32dp"
-                    android:gravity="center"
-                    android:text="2020.01.01"
-                    android:textSize="13sp" />
+                    android:columnCount="2"
+                    android:padding="16dp"
+                    android:rowCount="6">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/ultra_srt_ncst"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:id="@+id/ultra_srt_ncst_downloaded_time"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="8dp"
+                        android:text="2020.01.01"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/ultra_srt_fcst"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:id="@+id/ultra_srt_fcst_downloaded_time"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="8dp"
+
+                        android:text="2020.01.01"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/vilage_fcst"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:id="@+id/vilage_fcst_downloaded_time"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="8dp"
+
+                        android:text="2020.01.01"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/air_condition"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:id="@+id/air_condition_downloaded_time"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="8dp"
+
+                        android:text="2020.01.01"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/mid_land_fcst"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:id="@+id/mid_land_fcst_downloaded_time"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="8dp"
+                        android:text="2020.01.01"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/mid_ta"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:id="@+id/mid_ta_downloaded_time"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+
+                        android:layout_marginLeft="8dp"
+                        android:text="2020.01.01"
+                        android:textSize="13sp" />
+
+                </GridLayout>
             </LinearLayout>
 
         </androidx.core.widget.NestedScrollView>

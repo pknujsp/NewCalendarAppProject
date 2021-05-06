@@ -1,36 +1,36 @@
 package com.zerodsoft.scheduleweather.weather.mid;
 
+import com.google.gson.JsonObject;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.midlandfcstresponse.MidLandFcstRoot;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.midtaresponse.MidTaRoot;
 
 public class MidFcstRoot
 {
     volatile int count = 0;
-    private volatile MidTaRoot midTaRoot;
-    private volatile MidLandFcstRoot midLandFcstRoot;
+    private volatile JsonObject midTa;
+    private volatile JsonObject midLandFcst;
     private volatile Exception exception;
 
-    public MidTaRoot getMidTaRoot()
+    public JsonObject getMidTa()
     {
-        return midTaRoot;
+        return midTa;
     }
 
-    public void setMidTaRoot(MidTaRoot midTaRoot)
+    public void setMidTa(JsonObject midTa)
     {
-        this.midTaRoot = midTaRoot;
         ++this.count;
+        this.midTa = midTa;
     }
 
-    public MidLandFcstRoot getMidLandFcstRoot()
+    public JsonObject getMidLandFcst()
     {
-        return midLandFcstRoot;
+        return midLandFcst;
     }
 
-    public void setMidLandFcstRoot(MidLandFcstRoot midLandFcstRoot)
+    public void setMidLandFcst(JsonObject midLandFcst)
     {
-        this.midLandFcstRoot = midLandFcstRoot;
         ++this.count;
-
+        this.midLandFcst = midLandFcst;
     }
 
     public void setException(Exception exception)

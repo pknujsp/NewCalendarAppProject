@@ -9,6 +9,8 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.RemoteException;
+import android.service.carrier.CarrierMessagingService;
 import android.text.TextPaint;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -23,7 +25,10 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
 import com.zerodsoft.scheduleweather.databinding.VilageFcstFragmentBinding;
@@ -33,9 +38,12 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.WeatherItems
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.ultrasrtfcstresponse.UltraSrtFcstRoot;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.vilagefcstresponse.VilageFcstRoot;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
+import com.zerodsoft.scheduleweather.room.dto.WeatherDataDTO;
+import com.zerodsoft.scheduleweather.weather.interfaces.OnDownloadedTimeListener;
 import com.zerodsoft.scheduleweather.weather.repository.WeatherDataDownloader;
 import com.zerodsoft.scheduleweather.weather.sunsetrise.SunSetRiseData;
 import com.zerodsoft.scheduleweather.weather.ultrasrtfcst.UltraSrtFcst;
+import com.zerodsoft.scheduleweather.weather.viewmodel.WeatherDbViewModel;
 import com.zerodsoft.scheduleweather.weather.vilagefcst.VilageFcstData;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.utility.WeatherDataConverter;
@@ -47,11 +55,14 @@ import java.util.List;
 
 public class VilageFcstFragment extends Fragment
 {
+    private final OnDownloadedTimeListener onDownloadedTimeListener;
+
     private VilageFcstFragmentBinding binding;
     private List<SunSetRiseData> sunSetRiseDataList;
     private VilageFcst vilageFcst = new VilageFcst();
     private WeatherAreaCodeDTO weatherAreaCode;
-    private Date date;
+    private WeatherDbViewModel weatherDbViewModel;
+
     private final WeatherDataDownloader weatherDataDownloader = new WeatherDataDownloader()
     {
         @Override
@@ -67,11 +78,11 @@ public class VilageFcstFragment extends Fragment
         }
     };
 
-    public VilageFcstFragment(WeatherAreaCodeDTO weatherAreaCodeDTO, Date date, List<SunSetRiseData> sunSetRiseDataList)
+    public VilageFcstFragment(WeatherAreaCodeDTO weatherAreaCodeDTO, List<SunSetRiseData> sunSetRiseDataList, OnDownloadedTimeListener onDownloadedTimeListener)
     {
         this.weatherAreaCode = weatherAreaCodeDTO;
-        this.date = date;
         this.sunSetRiseDataList = sunSetRiseDataList;
+        this.onDownloadedTimeListener = onDownloadedTimeListener;
     }
 
     @Nullable
@@ -87,7 +98,34 @@ public class VilageFcstFragment extends Fragment
     {
         super.onViewCreated(view, savedInstanceState);
         clearViews();
-        getWeatherData();
+        weatherDbViewModel = new ViewModelProvider(this).get(WeatherDbViewModel.class);
+        weatherDbViewModel.getWeatherData(weatherAreaCode.getY(), weatherAreaCode.getX(), WeatherDataDTO.VILAGE_FCST, new CarrierMessagingService.ResultCallback<WeatherDataDTO>()
+        {
+            @Override
+            public void onReceiveResult(@NonNull WeatherDataDTO vilageFcstWeatherDataDTO) throws RemoteException
+            {
+                if (vilageFcstWeatherDataDTO == null)
+                {
+                    getWeatherData();
+                } else
+                {
+                    Gson gson = new Gson();
+                    VilageFcstRoot vilageFcstRoot = gson.fromJson(vilageFcstWeatherDataDTO.getJson(), VilageFcstRoot.class);
+                    Date downloadedDate = new Date(Long.parseLong(vilageFcstWeatherDataDTO.getDownloadedDate()));
+
+                    vilageFcst.setVilageFcstDataList(vilageFcstRoot.getResponse().getBody().getItems(), downloadedDate);
+                    requireActivity().runOnUiThread(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            onDownloadedTimeListener.setDownloadedTime(downloadedDate, WeatherDataDTO.VILAGE_FCST);
+                            setTable();
+                        }
+                    });
+                }
+            }
+        });
     }
 
     public void getWeatherData()
@@ -96,13 +134,12 @@ public class VilageFcstFragment extends Fragment
         vilageFcstParameter.setNx(weatherAreaCode.getX()).setNy(weatherAreaCode.getY()).setNumOfRows("250").setPageNo("1");
 
         Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
-        weatherDataDownloader.getVilageFcstData(vilageFcstParameter, calendar, new JsonDownloader<VilageFcstRoot>()
+        weatherDataDownloader.getVilageFcstData(vilageFcstParameter, calendar, new JsonDownloader<JsonObject>()
         {
             @Override
-            public void onResponseSuccessful(VilageFcstRoot result)
+            public void onResponseSuccessful(JsonObject result)
             {
-                setWeatherData(result, date);
+                setWeatherData(result, calendar.getTime());
             }
 
             @Override
@@ -113,14 +150,34 @@ public class VilageFcstFragment extends Fragment
         });
     }
 
-    public void setWeatherData(VilageFcstRoot vilageFcstRoot, Date downloadedDate)
+    public void setWeatherData(JsonObject result, Date downloadedDate)
     {
+        Gson gson = new Gson();
+        VilageFcstRoot vilageFcstRoot = gson.fromJson(result.toString(), VilageFcstRoot.class);
+
+        WeatherDataDTO vilageFcstWeatherDataDTO = new WeatherDataDTO();
+        vilageFcstWeatherDataDTO.setLatitude(weatherAreaCode.getY());
+        vilageFcstWeatherDataDTO.setLongitude(weatherAreaCode.getX());
+        vilageFcstWeatherDataDTO.setDataType(WeatherDataDTO.VILAGE_FCST);
+        vilageFcstWeatherDataDTO.setJson(result.toString());
+        vilageFcstWeatherDataDTO.setDownloadedDate(String.valueOf(System.currentTimeMillis()));
+
+        weatherDbViewModel.insert(vilageFcstWeatherDataDTO, new CarrierMessagingService.ResultCallback<WeatherDataDTO>()
+        {
+            @Override
+            public void onReceiveResult(@NonNull WeatherDataDTO weatherDataDTO) throws RemoteException
+            {
+
+            }
+        });
+
         vilageFcst.setVilageFcstDataList(vilageFcstRoot.getResponse().getBody().getItems(), downloadedDate);
         requireActivity().runOnUiThread(new Runnable()
         {
             @Override
             public void run()
             {
+                onDownloadedTimeListener.setDownloadedTime(downloadedDate, WeatherDataDTO.VILAGE_FCST);
                 setTable();
             }
         });

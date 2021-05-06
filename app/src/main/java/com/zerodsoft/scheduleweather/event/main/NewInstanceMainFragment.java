@@ -214,7 +214,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
                 setHeightOfBottomSheet(DEFAULT_HEIGHT_OF_BOTTOMSHEET, restaurantsBottomSheet, restaurantsBottomSheetBehavior);
 
                 functionButton.setVisibility(View.VISIBLE);
-                functionButton.callOnClick();
             }
         });
     }

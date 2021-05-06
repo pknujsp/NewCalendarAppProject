@@ -505,5 +505,7 @@
     <string name="open_map_to_show_restaurants">지도로 보기</string>
     <string name="selected_location_in_event">선택된 위치/장소</string>
     <string name="show_favorite_locations_marker_on_map">지도에 즐겨찾기 표시</string>
+    <string name="mid_ta">중기기온</string>
+    <string name="mid_land_fcst">중기육상예보</string>
 
 </resources>

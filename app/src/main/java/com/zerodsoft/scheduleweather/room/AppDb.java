@@ -12,6 +12,7 @@ import com.zerodsoft.scheduleweather.room.dao.FavoriteLocationDAO;
 import com.zerodsoft.scheduleweather.room.dao.FoodCriteriaLocationInfoDAO;
 import com.zerodsoft.scheduleweather.room.dao.FoodCriteriaLocationSearchHistoryDAO;
 import com.zerodsoft.scheduleweather.room.dao.SearchHistoryDAO;
+import com.zerodsoft.scheduleweather.room.dao.WeatherDataDAO;
 import com.zerodsoft.scheduleweather.room.dto.CustomFoodMenuDTO;
 import com.zerodsoft.scheduleweather.room.dto.CustomPlaceCategoryDTO;
 import com.zerodsoft.scheduleweather.room.dao.FavoriteLocDAO;
@@ -25,9 +26,11 @@ import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.SearchHistoryDTO;
 import com.zerodsoft.scheduleweather.room.dto.SelectedPlaceCategoryDTO;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
+import com.zerodsoft.scheduleweather.room.dto.WeatherDataDTO;
 
 @Database(entities = {LocationDTO.class, WeatherAreaCodeDTO.class, SelectedPlaceCategoryDTO.class, CustomPlaceCategoryDTO.class, CustomFoodMenuDTO.class,
-        FoodCriteriaLocationInfoDTO.class, FoodCriteriaLocationSearchHistoryDTO.class, SearchHistoryDTO.class, FavoriteLocationDTO.class}, version = 1, exportSchema = false)
+        FoodCriteriaLocationInfoDTO.class, FoodCriteriaLocationSearchHistoryDTO.class, SearchHistoryDTO.class, FavoriteLocationDTO.class
+        , WeatherDataDTO.class}, version = 1, exportSchema = false)
 public abstract class AppDb extends RoomDatabase
 {
     private static volatile AppDb instance = null;
@@ -51,6 +54,8 @@ public abstract class AppDb extends RoomDatabase
     public abstract SearchHistoryDAO searchHistoryDAO();
 
     public abstract FavoriteLocationDAO favoriteRestaurantDAO();
+
+    public abstract WeatherDataDAO weatherDataDAO();
 
 
     public static synchronized AppDb getInstance(Context context)

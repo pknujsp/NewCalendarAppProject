@@ -23,7 +23,9 @@ import com.luckycatlabs.sunrisesunset.dto.Location;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.FragmentWeatherItemBinding;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
+import com.zerodsoft.scheduleweather.room.dto.WeatherDataDTO;
 import com.zerodsoft.scheduleweather.weather.aircondition.AirConditionFragment;
+import com.zerodsoft.scheduleweather.weather.interfaces.OnDownloadedTimeListener;
 import com.zerodsoft.scheduleweather.weather.mid.MidFcstFragment;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
@@ -42,7 +44,7 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
-public class WeatherItemFragment extends BottomSheetDialogFragment
+public class WeatherItemFragment extends BottomSheetDialogFragment implements OnDownloadedTimeListener
 {
     public static final String TAG = "WeatherItemFragment";
 
@@ -167,12 +169,11 @@ public class WeatherItemFragment extends BottomSheetDialogFragment
             @Override
             public void onClick(View view)
             {
-                /*
-                Calendar calendar = Calendar.getInstance();
-                Date date = calendar.getTime();
-                refreshWeatherData(date);
-
-                 */
+                ultraSrtNcstFragment.getWeatherData();
+                ultraSrtFcstFragment.getWeatherData();
+                vilageFcstFragment.getWeatherData();
+                midFcstFragment.getWeatherData();
+                airConditionFragment.refresh();
             }
         });
 
@@ -258,11 +259,11 @@ public class WeatherItemFragment extends BottomSheetDialogFragment
 
     private void createFragments(Date date)
     {
-        ultraSrtNcstFragment = new UltraSrtNcstFragment(weatherAreaCode, date);
-        ultraSrtFcstFragment = new UltraSrtFcstFragment(weatherAreaCode, date, sunSetRiseList);
-        vilageFcstFragment = new VilageFcstFragment(weatherAreaCode, date, sunSetRiseList);
-        midFcstFragment = new MidFcstFragment(weatherAreaCode, date);
-        airConditionFragment = new AirConditionFragment(locationDTO.getLatitude(), locationDTO.getLongitude());
+        ultraSrtNcstFragment = new UltraSrtNcstFragment(weatherAreaCode, this);
+        ultraSrtFcstFragment = new UltraSrtFcstFragment(weatherAreaCode, sunSetRiseList, this);
+        vilageFcstFragment = new VilageFcstFragment(weatherAreaCode, sunSetRiseList, this);
+        midFcstFragment = new MidFcstFragment(weatherAreaCode, this);
+        airConditionFragment = new AirConditionFragment(locationDTO.getLatitude(), locationDTO.getLongitude(), this);
 
         getChildFragmentManager().beginTransaction()
                 .add(binding.ultraSrtNcstFragmentContainer.getId(), ultraSrtNcstFragment, "0")
@@ -277,8 +278,6 @@ public class WeatherItemFragment extends BottomSheetDialogFragment
     {
         String addressName = weatherAreaCode.getPhase1() + " " + weatherAreaCode.getPhase2() + " " + weatherAreaCode.getPhase3();
         binding.addressName.setText(addressName);
-        String updatedDateTime = ClockUtil.DB_DATE_FORMAT.format(downloadedDate);
-        binding.weatherUpdatedDatetime.setText("Updated : " + updatedDateTime);
         init(downloadedDate);
     }
 
@@ -318,6 +317,34 @@ public class WeatherItemFragment extends BottomSheetDialogFragment
             sunRise = sunriseSunsetCalculator.getOfficialSunriseCalendarForDate(date);
             sunSet = sunriseSunsetCalculator.getOfficialSunsetCalendarForDate(date);
             sunSetRiseList.add(new SunSetRiseData(date.getTime(), sunRise.getTime(), sunSet.getTime()));
+        }
+    }
+
+    @Override
+    public void setDownloadedTime(Date downloadedTime, int dataType)
+    {
+        String dateTimeStr = ClockUtil.DB_DATE_FORMAT.format(downloadedTime);
+
+        switch (dataType)
+        {
+            case WeatherDataDTO.ULTRA_SRT_NCST:
+                binding.ultraSrtNcstDownloadedTime.setText(dateTimeStr);
+                break;
+            case WeatherDataDTO.ULTRA_SRT_FCST:
+                binding.ultraSrtFcstDownloadedTime.setText(dateTimeStr);
+                break;
+            case WeatherDataDTO.MID_LAND_FCST:
+                binding.midLandFcstDownloadedTime.setText(dateTimeStr);
+                break;
+            case WeatherDataDTO.MID_TA:
+                binding.midTaDownloadedTime.setText(dateTimeStr);
+                break;
+            case WeatherDataDTO.AIR_CONDITION:
+                binding.airConditionDownloadedTime.setText(dateTimeStr);
+                break;
+            case WeatherDataDTO.VILAGE_FCST:
+                binding.vilageFcstDownloadedTime.setText(dateTimeStr);
+                break;
         }
     }
 

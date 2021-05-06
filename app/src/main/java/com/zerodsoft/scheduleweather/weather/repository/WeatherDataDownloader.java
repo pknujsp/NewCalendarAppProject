@@ -1,5 +1,6 @@
 package com.zerodsoft.scheduleweather.weather.repository;
 
+import com.google.gson.JsonObject;
 import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.retrofit.HttpCommunicationClient;
@@ -49,7 +50,7 @@ public abstract class WeatherDataDownloader extends JsonDownloader<WeatherItems>
      *
      * @param parameter
      */
-    public void getUltraSrtNcstData(UltraSrtNcstParameter parameter, Calendar calendar, JsonDownloader<UltraSrtNcstRoot> callback)
+    public void getUltraSrtNcstData(UltraSrtNcstParameter parameter, Calendar calendar, JsonDownloader<JsonObject> callback)
     {
         Querys querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.VILAGE_FCST);
         //basetime설정
@@ -61,17 +62,17 @@ public abstract class WeatherDataDownloader extends JsonDownloader<WeatherItems>
         parameter.setBaseDate(ClockUtil.yyyyMMdd.format(calendar.getTime()));
         parameter.setBaseTime(ClockUtil.HH.format(calendar.getTime()) + "00");
 
-        Call<UltraSrtNcstRoot> call = querys.getUltraSrtNcstData(parameter.getMap());
-        call.enqueue(new Callback<UltraSrtNcstRoot>()
+        Call<JsonObject> call = querys.getUltraSrtNcstDataStr(parameter.getMap());
+        call.enqueue(new Callback<JsonObject>()
         {
             @Override
-            public void onResponse(Call<UltraSrtNcstRoot> call, Response<UltraSrtNcstRoot> response)
+            public void onResponse(Call<JsonObject> call, Response<JsonObject> response)
             {
                 callback.processResult(response);
             }
 
             @Override
-            public void onFailure(Call<UltraSrtNcstRoot> call, Throwable t)
+            public void onFailure(Call<JsonObject> call, Throwable t)
             {
                 callback.processResult(t);
             }
@@ -84,7 +85,7 @@ public abstract class WeatherDataDownloader extends JsonDownloader<WeatherItems>
      *
      * @param parameter
      */
-    public void getUltraSrtFcstData(UltraSrtFcstParameter parameter, Calendar calendar, JsonDownloader<UltraSrtFcstRoot> callback)
+    public void getUltraSrtFcstData(UltraSrtFcstParameter parameter, Calendar calendar, JsonDownloader<JsonObject> callback)
     {
         Querys querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.VILAGE_FCST);
         //basetime설정
@@ -95,17 +96,17 @@ public abstract class WeatherDataDownloader extends JsonDownloader<WeatherItems>
         parameter.setBaseDate(ClockUtil.yyyyMMdd.format(calendar.getTime()));
         parameter.setBaseTime(ClockUtil.HH.format(calendar.getTime()) + "30");
 
-        Call<UltraSrtFcstRoot> call = querys.getUltraSrtFcstData(parameter.getMap());
-        call.enqueue(new Callback<UltraSrtFcstRoot>()
+        Call<JsonObject> call = querys.getUltraSrtFcstDataStr(parameter.getMap());
+        call.enqueue(new Callback<JsonObject>()
         {
             @Override
-            public void onResponse(Call<UltraSrtFcstRoot> call, Response<UltraSrtFcstRoot> response)
+            public void onResponse(Call<JsonObject> call, Response<JsonObject> response)
             {
                 callback.processResult(response);
             }
 
             @Override
-            public void onFailure(Call<UltraSrtFcstRoot> call, Throwable t)
+            public void onFailure(Call<JsonObject> call, Throwable t)
             {
                 callback.processResult(t);
             }
@@ -117,7 +118,7 @@ public abstract class WeatherDataDownloader extends JsonDownloader<WeatherItems>
      *
      * @param parameter
      */
-    public void getVilageFcstData(VilageFcstParameter parameter, Calendar calendar, JsonDownloader<VilageFcstRoot> callback)
+    public void getVilageFcstData(VilageFcstParameter parameter, Calendar calendar, JsonDownloader<JsonObject> callback)
     {
         Querys querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.VILAGE_FCST);
         //basetime설정
@@ -147,18 +148,18 @@ public abstract class WeatherDataDownloader extends JsonDownloader<WeatherItems>
         parameter.setBaseDate(ClockUtil.yyyyMMdd.format(calendar.getTime()));
         parameter.setBaseTime(ClockUtil.HH.format(calendar.getTime()) + "00");
 
-        Call<VilageFcstRoot> call = querys.getVilageFcstData(parameter.getMap());
+        Call<JsonObject> call = querys.getVilageFcstDataStr(parameter.getMap());
 
-        call.enqueue(new Callback<VilageFcstRoot>()
+        call.enqueue(new Callback<JsonObject>()
         {
             @Override
-            public void onResponse(Call<VilageFcstRoot> call, Response<VilageFcstRoot> response)
+            public void onResponse(Call<JsonObject> call, Response<JsonObject> response)
             {
                 callback.processResult(response);
             }
 
             @Override
-            public void onFailure(Call<VilageFcstRoot> call, Throwable t)
+            public void onFailure(Call<JsonObject> call, Throwable t)
             {
                 callback.processResult(t);
             }
@@ -171,7 +172,7 @@ public abstract class WeatherDataDownloader extends JsonDownloader<WeatherItems>
      *
      * @param parameter
      */
-    public void getMidLandFcstData(MidLandFcstParameter parameter, Calendar calendar, JsonDownloader<MidLandFcstRoot> callback)
+    public void getMidLandFcstData(MidLandFcstParameter parameter, Calendar calendar, JsonDownloader<JsonObject> callback)
     {
         Querys querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.MID_FCST);
 
@@ -190,18 +191,18 @@ public abstract class WeatherDataDownloader extends JsonDownloader<WeatherItems>
             parameter.setTmFc(ClockUtil.yyyyMMdd.format(calendar.getTime()) + "1800");
         }
 
-        Call<MidLandFcstRoot> call = querys.getMidLandFcstData(parameter.getMap());
+        Call<JsonObject> call = querys.getMidLandFcstDataStr(parameter.getMap());
 
-        call.enqueue(new Callback<MidLandFcstRoot>()
+        call.enqueue(new Callback<JsonObject>()
         {
             @Override
-            public void onResponse(Call<MidLandFcstRoot> call, Response<MidLandFcstRoot> response)
+            public void onResponse(Call<JsonObject> call, Response<JsonObject> response)
             {
                 callback.processResult(response);
             }
 
             @Override
-            public void onFailure(Call<MidLandFcstRoot> call, Throwable t)
+            public void onFailure(Call<JsonObject> call, Throwable t)
             {
                 callback.processResult(t);
             }
@@ -214,7 +215,7 @@ public abstract class WeatherDataDownloader extends JsonDownloader<WeatherItems>
      *
      * @param parameter
      */
-    public void getMidTaData(MidTaParameter parameter, Calendar calendar, JsonDownloader<MidTaRoot> callback)
+    public void getMidTaData(MidTaParameter parameter, Calendar calendar, JsonDownloader<JsonObject> callback)
     {
         Querys querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.MID_FCST);
 
@@ -233,17 +234,17 @@ public abstract class WeatherDataDownloader extends JsonDownloader<WeatherItems>
             parameter.setTmFc(ClockUtil.yyyyMMdd.format(calendar.getTime()) + "1800");
         }
 
-        Call<MidTaRoot> call = querys.getMidTaData(parameter.getMap());
-        call.enqueue(new Callback<MidTaRoot>()
+        Call<JsonObject> call = querys.getMidTaDataStr(parameter.getMap());
+        call.enqueue(new Callback<JsonObject>()
         {
             @Override
-            public void onResponse(Call<MidTaRoot> call, Response<MidTaRoot> response)
+            public void onResponse(Call<JsonObject> call, Response<JsonObject> response)
             {
                 callback.processResult(response);
             }
 
             @Override
-            public void onFailure(Call<MidTaRoot> call, Throwable t)
+            public void onFailure(Call<JsonObject> call, Throwable t)
             {
                 callback.processResult(t);
             }
@@ -254,12 +255,12 @@ public abstract class WeatherDataDownloader extends JsonDownloader<WeatherItems>
     {
         MidFcstRoot midFcstRoot = new MidFcstRoot();
 
-        getMidLandFcstData(midLandFcstParameter, (Calendar) calendar.clone(), new JsonDownloader<MidLandFcstRoot>()
+        getMidLandFcstData(midLandFcstParameter, (Calendar) calendar.clone(), new JsonDownloader<JsonObject>()
         {
             @Override
-            public void onResponseSuccessful(MidLandFcstRoot result)
+            public void onResponseSuccessful(JsonObject result)
             {
-                midFcstRoot.setMidLandFcstRoot(result);
+                midFcstRoot.setMidLandFcst(result);
                 checkMidFcstDataDownload(midFcstRoot, callback);
             }
 
@@ -271,12 +272,12 @@ public abstract class WeatherDataDownloader extends JsonDownloader<WeatherItems>
             }
         });
 
-        getMidTaData(midTaParameter, (Calendar) calendar.clone(), new JsonDownloader<MidTaRoot>()
+        getMidTaData(midTaParameter, (Calendar) calendar.clone(), new JsonDownloader<JsonObject>()
         {
             @Override
-            public void onResponseSuccessful(MidTaRoot result)
+            public void onResponseSuccessful(JsonObject result)
             {
-                midFcstRoot.setMidTaRoot(result);
+                midFcstRoot.setMidTa(result);
                 checkMidFcstDataDownload(midFcstRoot, callback);
             }
 

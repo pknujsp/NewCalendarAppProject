@@ -7,6 +7,8 @@ import android.graphics.Paint;
 import android.graphics.PointF;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.RemoteException;
+import android.service.carrier.CarrierMessagingService;
 import android.text.TextPaint;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -22,7 +24,9 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
+import com.google.gson.Gson;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
 import com.zerodsoft.scheduleweather.databinding.MidFcstFragmentBinding;
@@ -30,13 +34,19 @@ import com.zerodsoft.scheduleweather.retrofit.paremeters.MidFcstParameter;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.MidLandFcstParameter;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.MidTaParameter;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.VilageFcstParameter;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.MsrstnAcctoRltmMesureDnsty.MsrstnAcctoRltmMesureDnstyRoot;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.WeatherItems;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.midlandfcstresponse.MidLandFcstRoot;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.midtaresponse.MidTaRoot;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.vilagefcstresponse.VilageFcstRoot;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
+import com.zerodsoft.scheduleweather.room.dto.WeatherDataDTO;
+import com.zerodsoft.scheduleweather.weather.interfaces.OnDownloadedTimeListener;
 import com.zerodsoft.scheduleweather.weather.mid.MidFcstData;
 import com.zerodsoft.scheduleweather.utility.WeatherDataConverter;
 import com.zerodsoft.scheduleweather.weather.repository.WeatherDataDownloader;
 import com.zerodsoft.scheduleweather.weather.sunsetrise.SunSetRiseData;
+import com.zerodsoft.scheduleweather.weather.viewmodel.WeatherDbViewModel;
 import com.zerodsoft.scheduleweather.weather.vilagefcst.VilageFcst;
 
 import java.util.Calendar;
@@ -49,7 +59,10 @@ public class MidFcstFragment extends Fragment
     private MidFcstFragmentBinding binding;
     private MidFcst midFcst = new MidFcst();
     private WeatherAreaCodeDTO weatherAreaCode;
-    private Date date;
+    private final OnDownloadedTimeListener onDownloadedTimeListener;
+
+
+    private WeatherDbViewModel weatherDbViewModel;
     private final WeatherDataDownloader weatherDataDownloader = new WeatherDataDownloader()
     {
         @Override
@@ -65,10 +78,10 @@ public class MidFcstFragment extends Fragment
         }
     };
 
-    public MidFcstFragment(WeatherAreaCodeDTO weatherAreaCodeDTO, Date date)
+    public MidFcstFragment(WeatherAreaCodeDTO weatherAreaCodeDTO, OnDownloadedTimeListener onDownloadedTimeListener)
     {
         this.weatherAreaCode = weatherAreaCodeDTO;
-        this.date = date;
+        this.onDownloadedTimeListener = onDownloadedTimeListener;
     }
 
     @Nullable
@@ -84,7 +97,47 @@ public class MidFcstFragment extends Fragment
     {
         super.onViewCreated(view, savedInstanceState);
         clearViews();
-        getWeatherData();
+
+        weatherDbViewModel = new ViewModelProvider(this).get(WeatherDbViewModel.class);
+        weatherDbViewModel.getWeatherData(weatherAreaCode.getY(), weatherAreaCode.getX(), WeatherDataDTO.MID_LAND_FCST, new CarrierMessagingService.ResultCallback<WeatherDataDTO>()
+        {
+            @Override
+            public void onReceiveResult(@NonNull WeatherDataDTO midLandFcstWeatherDataDTO) throws RemoteException
+            {
+                if (midLandFcstWeatherDataDTO == null)
+                {
+                    getWeatherData();
+                } else
+                {
+                    weatherDbViewModel.getWeatherData(weatherAreaCode.getY(), weatherAreaCode.getX(), WeatherDataDTO.MID_TA, new CarrierMessagingService.ResultCallback<WeatherDataDTO>()
+                    {
+                        @Override
+                        public void onReceiveResult(@NonNull WeatherDataDTO midTaWeatherDataDTO) throws RemoteException
+                        {
+                            Gson gson = new Gson();
+                            MidLandFcstRoot midLandFcstRoot = gson.fromJson(midLandFcstWeatherDataDTO.getJson(), MidLandFcstRoot.class);
+                            MidTaRoot midTaRoot = gson.fromJson(midTaWeatherDataDTO.getJson(), MidTaRoot.class);
+                            Date downloadedDate = new Date(Long.parseLong(midTaWeatherDataDTO.getDownloadedDate()));
+
+                            midFcst.setMidFcstDataList(midLandFcstRoot.getResponse().getBody().getItems()
+                                    , midTaRoot.getResponse().getBody().getItems(), downloadedDate);
+                            requireActivity().runOnUiThread(new Runnable()
+                            {
+                                @Override
+                                public void run()
+                                {
+                                    onDownloadedTimeListener.setDownloadedTime(downloadedDate, WeatherDataDTO.MID_LAND_FCST);
+                                    onDownloadedTimeListener.setDownloadedTime(downloadedDate, WeatherDataDTO.MID_TA);
+                                    setTable();
+                                }
+                            });
+                        }
+                    });
+                }
+            }
+        });
+
+
     }
 
     public void getWeatherData()
@@ -96,13 +149,12 @@ public class MidFcstFragment extends Fragment
         midTaParameter.setNumOfRows("250").setPageNo("1").setRegId(weatherAreaCode.getMidTaCode());
 
         Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
         weatherDataDownloader.getMidFcstData(midLandFcstParameter, midTaParameter, calendar, new JsonDownloader<MidFcstRoot>()
         {
             @Override
             public void onResponseSuccessful(MidFcstRoot result)
             {
-                setWeatherData(result, date);
+                setWeatherData(result, calendar.getTime());
             }
 
             @Override
@@ -115,13 +167,51 @@ public class MidFcstFragment extends Fragment
 
     public void setWeatherData(MidFcstRoot midFcstRoot, Date downloadedDate)
     {
-        midFcst.setMidFcstDataList(midFcstRoot.getMidLandFcstRoot().getResponse().getBody().getItems()
-                , midFcstRoot.getMidTaRoot().getResponse().getBody().getItems(), downloadedDate);
+        Gson gson = new Gson();
+        MidLandFcstRoot midLandFcstRoot = gson.fromJson(midFcstRoot.getMidLandFcst().toString(), MidLandFcstRoot.class);
+        MidTaRoot midTaRoot = gson.fromJson(midFcstRoot.getMidTa().toString(), MidTaRoot.class);
+
+        WeatherDataDTO midLandFcstWeatherDataDTO = new WeatherDataDTO();
+        midLandFcstWeatherDataDTO.setLatitude(weatherAreaCode.getY());
+        midLandFcstWeatherDataDTO.setLongitude(weatherAreaCode.getX());
+        midLandFcstWeatherDataDTO.setDataType(WeatherDataDTO.MID_LAND_FCST);
+        midLandFcstWeatherDataDTO.setJson(midFcstRoot.getMidLandFcst().toString());
+        midLandFcstWeatherDataDTO.setDownloadedDate(String.valueOf(System.currentTimeMillis()));
+
+        WeatherDataDTO midTaWeatherDataDTO = new WeatherDataDTO();
+        midTaWeatherDataDTO.setLatitude(weatherAreaCode.getY());
+        midTaWeatherDataDTO.setLongitude(weatherAreaCode.getX());
+        midTaWeatherDataDTO.setDataType(WeatherDataDTO.MID_TA);
+        midTaWeatherDataDTO.setJson(midFcstRoot.getMidTa().toString());
+        midTaWeatherDataDTO.setDownloadedDate(String.valueOf(System.currentTimeMillis()));
+
+        weatherDbViewModel.insert(midLandFcstWeatherDataDTO, new CarrierMessagingService.ResultCallback<WeatherDataDTO>()
+        {
+            @Override
+            public void onReceiveResult(@NonNull WeatherDataDTO weatherDataDTO) throws RemoteException
+            {
+
+            }
+        });
+
+        weatherDbViewModel.insert(midTaWeatherDataDTO, new CarrierMessagingService.ResultCallback<WeatherDataDTO>()
+        {
+            @Override
+            public void onReceiveResult(@NonNull WeatherDataDTO weatherDataDTO) throws RemoteException
+            {
+
+            }
+        });
+
+        midFcst.setMidFcstDataList(midLandFcstRoot.getResponse().getBody().getItems()
+                , midTaRoot.getResponse().getBody().getItems(), downloadedDate);
         requireActivity().runOnUiThread(new Runnable()
         {
             @Override
             public void run()
             {
+                onDownloadedTimeListener.setDownloadedTime(downloadedDate, WeatherDataDTO.MID_LAND_FCST);
+                onDownloadedTimeListener.setDownloadedTime(downloadedDate, WeatherDataDTO.MID_TA);
                 setTable();
             }
         });

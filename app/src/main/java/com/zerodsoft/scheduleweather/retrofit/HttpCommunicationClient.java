@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.converter.scalars.ScalarsConverterFactory;
 
 public class HttpCommunicationClient
 {
@@ -88,7 +89,8 @@ public class HttpCommunicationClient
                     OkHttpClient client = new OkHttpClient.Builder().connectTimeout(10, TimeUnit.SECONDS).build();
                     Gson gson = new GsonBuilder().setLenient().create();
 
-                    midFcstInstance = new Retrofit.Builder().client(client).addConverterFactory(GsonConverterFactory.create(gson))
+                    midFcstInstance = new Retrofit.Builder().client(client).addConverterFactory(GsonConverterFactory.create())
+                            .addConverterFactory(ScalarsConverterFactory.create())
                             .baseUrl(MID_FCST_INFO_SERVICE_URL).build();
                 }
                 return midFcstInstance.create(Querys.class);
@@ -101,7 +103,8 @@ public class HttpCommunicationClient
                     OkHttpClient client = new OkHttpClient.Builder().connectTimeout(10, TimeUnit.SECONDS).build();
                     Gson gson = new GsonBuilder().setLenient().create();
 
-                    vilageFcstInstance = new Retrofit.Builder().client(client).addConverterFactory(GsonConverterFactory.create(gson))
+                    vilageFcstInstance = new Retrofit.Builder().client(client).addConverterFactory(GsonConverterFactory.create())
+                            .addConverterFactory(ScalarsConverterFactory.create())
                             .baseUrl(VILAGE_FCST_INFO_SERVICE_URL).build();
                 }
                 return vilageFcstInstance.create(Querys.class);
@@ -114,7 +117,8 @@ public class HttpCommunicationClient
                     OkHttpClient client = new OkHttpClient.Builder().connectTimeout(10, TimeUnit.SECONDS).build();
                     Gson gson = new GsonBuilder().setLenient().create();
 
-                    airConditionInstance = new Retrofit.Builder().client(client).addConverterFactory(GsonConverterFactory.create(gson))
+                    airConditionInstance = new Retrofit.Builder().client(client).addConverterFactory(GsonConverterFactory.create())
+                            .addConverterFactory(ScalarsConverterFactory.create())
                             .baseUrl(AIR_CONDITION_SERVICE_URL).build();
                 }
                 return airConditionInstance.create(Querys.class);
@@ -127,7 +131,8 @@ public class HttpCommunicationClient
                     OkHttpClient client = new OkHttpClient.Builder().connectTimeout(10, TimeUnit.SECONDS).build();
                     Gson gson = new GsonBuilder().setLenient().create();
 
-                    findStationInstance = new Retrofit.Builder().client(client).addConverterFactory(GsonConverterFactory.create(gson))
+                    findStationInstance = new Retrofit.Builder().client(client).addConverterFactory(GsonConverterFactory.create())
+                            .addConverterFactory(ScalarsConverterFactory.create())
                             .baseUrl(FIND_STATION_FOR_AIR_CONDITION_SERVICE_URL).build();
                 }
                 return findStationInstance.create(Querys.class);
