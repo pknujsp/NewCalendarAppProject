@@ -6,7 +6,9 @@ import android.os.Parcelable;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class MsrstnAcctoRltmMesureDnstyItem implements Parcelable
+import java.io.Serializable;
+
+public class MsrstnAcctoRltmMesureDnstyItem implements Parcelable, Serializable
 {
     @Expose
     @SerializedName("dataTime")

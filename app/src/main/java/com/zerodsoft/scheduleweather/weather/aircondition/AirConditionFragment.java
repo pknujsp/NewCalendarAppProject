@@ -30,22 +30,21 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.transcoord.Tran
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.transcoord.TransCoordResult;
 import com.zerodsoft.scheduleweather.sgis.SgisAuth;
 
-import org.jetbrains.annotations.Contract;
-
 public class AirConditionFragment extends Fragment
 {
     private FragmentAirConditionBinding binding;
 
-    private double latitude;
-    private double longitude;
+    private final double LATITUDE;
+    private final double LONGITUDE;
+
     private MsrstnAcctoRltmMesureDnstyParameter msrstnAcctoRltmMesureDnstyParameter;
     private MsrstnAcctoRltmMesureDnstyBody msrstnAcctoRltmMesureDnstyBody;
     private NearbyMsrstnListBody nearbyMsrstnListBody;
 
-    public AirConditionFragment(double latitude, double longitude)
+    public AirConditionFragment(double LATITUDE, double LONGITUDE)
     {
-        this.latitude = latitude;
-        this.longitude = longitude;
+        this.LATITUDE = LATITUDE;
+        this.LONGITUDE = LONGITUDE;
     }
 
     private final AirConditionDownloader airConditionDownloader = new AirConditionDownloader()
@@ -105,8 +104,8 @@ public class AirConditionFragment extends Fragment
             parameter.setAccessToken(result.getResult().getAccessToken());
             parameter.setSrc(TransCoordParameter.WGS84);
             parameter.setDst(TransCoordParameter.JUNGBU_ORIGIN);
-            parameter.setPosX(String.valueOf(longitude));
-            parameter.setPosY(String.valueOf(latitude));
+            parameter.setPosX(String.valueOf(LONGITUDE));
+            parameter.setPosY(String.valueOf(LATITUDE));
 
             sgisTranscoord.transcoord(parameter);
         }
@@ -162,8 +161,10 @@ public class AirConditionFragment extends Fragment
         binding.ultraFinedustStatus.setText("");
 
         binding.showDetailDialogButton.setOnClickListener(onClickListener);
+
         refresh();
     }
+
 
     private void setData(MsrstnAcctoRltmMesureDnstyBody msrstnAcctoRltmMesureDnstyBody)
     {
@@ -210,8 +211,8 @@ public class AirConditionFragment extends Fragment
             parameter.setAccessToken(SgisAuth.getSgisAuthResponse().getResult().getAccessToken());
             parameter.setSrc(TransCoordParameter.WGS84);
             parameter.setDst(TransCoordParameter.JUNGBU_ORIGIN);
-            parameter.setPosX(String.valueOf(longitude));
-            parameter.setPosY(String.valueOf(latitude));
+            parameter.setPosX(String.valueOf(LONGITUDE));
+            parameter.setPosY(String.valueOf(LATITUDE));
 
             sgisTranscoord.transcoord(parameter);
         }

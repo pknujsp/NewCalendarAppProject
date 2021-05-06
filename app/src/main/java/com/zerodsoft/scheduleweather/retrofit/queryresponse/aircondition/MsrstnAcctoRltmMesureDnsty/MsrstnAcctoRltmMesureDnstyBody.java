@@ -7,9 +7,10 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.AirConditionRoot;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class MsrstnAcctoRltmMesureDnstyBody extends AirConditionRoot implements Parcelable
+public class MsrstnAcctoRltmMesureDnstyBody extends AirConditionRoot implements Parcelable, Serializable
 {
     @Expose
     @SerializedName("items")
