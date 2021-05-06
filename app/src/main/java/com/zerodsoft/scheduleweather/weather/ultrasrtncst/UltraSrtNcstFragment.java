@@ -6,6 +6,7 @@ import android.service.carrier.CarrierMessagingService;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -14,6 +15,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
 import com.zerodsoft.scheduleweather.databinding.UltraSrtNcstFragmentBinding;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.UltraSrtNcstParameter;
@@ -154,38 +156,67 @@ public class UltraSrtNcstFragment extends Fragment
             @Override
             public void onResponseSuccessful(JsonObject result)
             {
-                setWeatherData(result, calendar.getTime());
+                setWeatherData(result);
             }
 
             @Override
             public void onResponseFailed(Exception e)
             {
-
+                requireActivity().runOnUiThread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        clearViews();
+                        Toast.makeText(getContext(), R.string.error, Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
         });
     }
 
-    public void setWeatherData(JsonObject result, Date downloadedDate)
+    public void setWeatherData(JsonObject result)
     {
         Gson gson = new Gson();
         UltraSrtNcstRoot ultraSrtNcstRoot = gson.fromJson(result.toString(), UltraSrtNcstRoot.class);
+
+        Date downloadedDate = new Date(System.currentTimeMillis());
 
         WeatherDataDTO ultraSrtNcstWeatherDataDTO = new WeatherDataDTO();
         ultraSrtNcstWeatherDataDTO.setLatitude(weatherAreaCode.getY());
         ultraSrtNcstWeatherDataDTO.setLongitude(weatherAreaCode.getX());
         ultraSrtNcstWeatherDataDTO.setDataType(WeatherDataDTO.ULTRA_SRT_NCST);
         ultraSrtNcstWeatherDataDTO.setJson(result.toString());
-        ultraSrtNcstWeatherDataDTO.setDownloadedDate(String.valueOf(System.currentTimeMillis()));
+        ultraSrtNcstWeatherDataDTO.setDownloadedDate(String.valueOf(downloadedDate.getTime()));
 
-        weatherDbViewModel.insert(ultraSrtNcstWeatherDataDTO, new CarrierMessagingService.ResultCallback<WeatherDataDTO>()
+        weatherDbViewModel.contains(weatherAreaCode.getY(), weatherAreaCode.getX(), WeatherDataDTO.ULTRA_SRT_NCST, new CarrierMessagingService.ResultCallback<Boolean>()
         {
             @Override
-            public void onReceiveResult(@NonNull WeatherDataDTO weatherDataDTO) throws RemoteException
+            public void onReceiveResult(@NonNull Boolean isContains) throws RemoteException
             {
+                if (isContains)
+                {
+                    weatherDbViewModel.update(weatherAreaCode.getY(), weatherAreaCode.getX(), WeatherDataDTO.ULTRA_SRT_NCST, result.toString(), new CarrierMessagingService.ResultCallback<Boolean>()
+                    {
+                        @Override
+                        public void onReceiveResult(@NonNull Boolean isUpdated) throws RemoteException
+                        {
 
+                        }
+                    });
+                } else
+                {
+                    weatherDbViewModel.insert(ultraSrtNcstWeatherDataDTO, new CarrierMessagingService.ResultCallback<WeatherDataDTO>()
+                    {
+                        @Override
+                        public void onReceiveResult(@NonNull WeatherDataDTO weatherDataDTO) throws RemoteException
+                        {
+
+                        }
+                    });
+                }
             }
         });
-
 
         ultraSrtNcst.setUltraSrtNcstFinalData(ultraSrtNcstRoot.getResponse().getBody().getItems(), downloadedDate);
         requireActivity().runOnUiThread(new Runnable()

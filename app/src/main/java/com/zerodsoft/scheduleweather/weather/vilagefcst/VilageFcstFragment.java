@@ -21,6 +21,7 @@ import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -139,37 +140,68 @@ public class VilageFcstFragment extends Fragment
             @Override
             public void onResponseSuccessful(JsonObject result)
             {
-                setWeatherData(result, calendar.getTime());
+                setWeatherData(result);
             }
 
             @Override
             public void onResponseFailed(Exception e)
             {
-
+                requireActivity().runOnUiThread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        clearViews();
+                        Toast.makeText(getContext(), R.string.error, Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
         });
     }
 
-    public void setWeatherData(JsonObject result, Date downloadedDate)
+    public void setWeatherData(JsonObject result)
     {
         Gson gson = new Gson();
         VilageFcstRoot vilageFcstRoot = gson.fromJson(result.toString(), VilageFcstRoot.class);
+
+        Date downloadedDate = new Date(System.currentTimeMillis());
 
         WeatherDataDTO vilageFcstWeatherDataDTO = new WeatherDataDTO();
         vilageFcstWeatherDataDTO.setLatitude(weatherAreaCode.getY());
         vilageFcstWeatherDataDTO.setLongitude(weatherAreaCode.getX());
         vilageFcstWeatherDataDTO.setDataType(WeatherDataDTO.VILAGE_FCST);
         vilageFcstWeatherDataDTO.setJson(result.toString());
-        vilageFcstWeatherDataDTO.setDownloadedDate(String.valueOf(System.currentTimeMillis()));
+        vilageFcstWeatherDataDTO.setDownloadedDate(String.valueOf(downloadedDate.getTime()));
 
-        weatherDbViewModel.insert(vilageFcstWeatherDataDTO, new CarrierMessagingService.ResultCallback<WeatherDataDTO>()
+        weatherDbViewModel.contains(weatherAreaCode.getY(), weatherAreaCode.getX(), WeatherDataDTO.VILAGE_FCST, new CarrierMessagingService.ResultCallback<Boolean>()
         {
             @Override
-            public void onReceiveResult(@NonNull WeatherDataDTO weatherDataDTO) throws RemoteException
+            public void onReceiveResult(@NonNull Boolean isContains) throws RemoteException
             {
+                if (isContains)
+                {
+                    weatherDbViewModel.update(weatherAreaCode.getY(), weatherAreaCode.getX(), WeatherDataDTO.VILAGE_FCST, result.toString(), new CarrierMessagingService.ResultCallback<Boolean>()
+                    {
+                        @Override
+                        public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
+                        {
 
+                        }
+                    });
+                } else
+                {
+                    weatherDbViewModel.insert(vilageFcstWeatherDataDTO, new CarrierMessagingService.ResultCallback<WeatherDataDTO>()
+                    {
+                        @Override
+                        public void onReceiveResult(@NonNull WeatherDataDTO weatherDataDTO) throws RemoteException
+                        {
+
+                        }
+                    });
+                }
             }
         });
+
 
         vilageFcst.setVilageFcstDataList(vilageFcstRoot.getResponse().getBody().getItems(), downloadedDate);
         requireActivity().runOnUiThread(new Runnable()

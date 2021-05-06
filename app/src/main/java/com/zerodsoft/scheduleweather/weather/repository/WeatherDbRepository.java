@@ -126,4 +126,19 @@ public class WeatherDbRepository implements WeatherDataQuery
             }
         }).start();
     }
+
+    @Override
+    public void contains(String latitude, String longitude, Integer dataType, CarrierMessagingService.ResultCallback<Boolean> callback)
+    {
+        new Thread(new Runnable()
+        {
+            @SneakyThrows
+            @Override
+            public void run()
+            {
+                boolean result = dao.contains(latitude, longitude, dataType) == 1;
+                callback.onReceiveResult(result);
+            }
+        }).start();
+    }
 }

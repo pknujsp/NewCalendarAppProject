@@ -6,6 +6,7 @@ import android.service.carrier.CarrierMessagingService;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -79,12 +80,33 @@ public class AirConditionFragment extends Fragment
             weatherDataDTO.setJson(result.toString());
             weatherDataDTO.setDownloadedDate(String.valueOf(System.currentTimeMillis()));
 
-            weatherDbViewModel.insert(weatherDataDTO, new CarrierMessagingService.ResultCallback<WeatherDataDTO>()
+            weatherDbViewModel.contains(String.valueOf(LATITUDE), String.valueOf(LONGITUDE), WeatherDataDTO.AIR_CONDITION, new CarrierMessagingService.ResultCallback<Boolean>()
             {
                 @Override
-                public void onReceiveResult(@NonNull WeatherDataDTO weatherDataDTO) throws RemoteException
+                public void onReceiveResult(@NonNull Boolean isContains) throws RemoteException
                 {
+                    if (isContains)
+                    {
+                        weatherDbViewModel.update(String.valueOf(LATITUDE), String.valueOf(LONGITUDE), WeatherDataDTO.AIR_CONDITION, result.toString(), new CarrierMessagingService.ResultCallback<Boolean>()
+                        {
+                            @Override
+                            public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
+                            {
 
+                            }
+                        });
+                    } else
+                    {
+                        weatherDbViewModel.insert(weatherDataDTO, new CarrierMessagingService.ResultCallback<WeatherDataDTO>()
+                        {
+                            @Override
+                            public void onReceiveResult(@NonNull WeatherDataDTO weatherDataDTO) throws RemoteException
+                            {
+
+                            }
+                        });
+
+                    }
                 }
             });
 
@@ -94,7 +116,14 @@ public class AirConditionFragment extends Fragment
         @Override
         public void onResponseFailed(Exception e)
         {
-
+            requireActivity().runOnUiThread(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    Toast.makeText(getContext(), R.string.error, Toast.LENGTH_SHORT).show();
+                }
+            });
         }
     };
 
@@ -114,12 +143,32 @@ public class AirConditionFragment extends Fragment
             weatherDataDTO.setJson(result.toString());
             weatherDataDTO.setDownloadedDate(String.valueOf(System.currentTimeMillis()));
 
-            weatherDbViewModel.insert(weatherDataDTO, new CarrierMessagingService.ResultCallback<WeatherDataDTO>()
+            weatherDbViewModel.contains(String.valueOf(LATITUDE), String.valueOf(LONGITUDE), WeatherDataDTO.NEAR_BY_MSRSTN_LIST, new CarrierMessagingService.ResultCallback<Boolean>()
             {
                 @Override
-                public void onReceiveResult(@NonNull WeatherDataDTO weatherDataDTO) throws RemoteException
+                public void onReceiveResult(@NonNull Boolean isContains) throws RemoteException
                 {
+                    if (isContains)
+                    {
+                        weatherDbViewModel.update(String.valueOf(LATITUDE), String.valueOf(LONGITUDE), WeatherDataDTO.NEAR_BY_MSRSTN_LIST, result.toString(), new CarrierMessagingService.ResultCallback<Boolean>()
+                        {
+                            @Override
+                            public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
+                            {
 
+                            }
+                        });
+                    } else
+                    {
+                        weatherDbViewModel.insert(weatherDataDTO, new CarrierMessagingService.ResultCallback<WeatherDataDTO>()
+                        {
+                            @Override
+                            public void onReceiveResult(@NonNull WeatherDataDTO weatherDataDTO) throws RemoteException
+                            {
+
+                            }
+                        });
+                    }
                 }
             });
 
@@ -127,12 +176,20 @@ public class AirConditionFragment extends Fragment
             msrstnAcctoRltmMesureDnstyParameter.setDataTerm(MsrstnAcctoRltmMesureDnstyParameter.DATATERM_DAILY);
             msrstnAcctoRltmMesureDnstyParameter.setStationName(nearbyMsrstnListBody.getItems().get(0).getStationName());
 
-            airConditionDownloader.getMsrstnAcctoRltmMesureDnsty(msrstnAcctoRltmMesureDnstyParameter); }
+            airConditionDownloader.getMsrstnAcctoRltmMesureDnsty(msrstnAcctoRltmMesureDnstyParameter);
+        }
 
         @Override
         public void onResponseFailed(Exception e)
         {
-
+            requireActivity().runOnUiThread(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    Toast.makeText(getContext(), R.string.error, Toast.LENGTH_SHORT).show();
+                }
+            });
         }
     };
 
@@ -156,7 +213,14 @@ public class AirConditionFragment extends Fragment
         @Override
         public void onResponseFailed(Exception e)
         {
-
+            requireActivity().runOnUiThread(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    Toast.makeText(getContext(), R.string.error, Toast.LENGTH_SHORT).show();
+                }
+            });
         }
     };
 

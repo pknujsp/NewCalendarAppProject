@@ -23,4 +23,6 @@ public interface WeatherDataQuery
     void delete(String latitude, String longitude, Integer dataType, CarrierMessagingService.ResultCallback<Boolean> callback);
 
     void delete(String latitude, String longitude, CarrierMessagingService.ResultCallback<Boolean> callback);
+
+    void contains(String latitude, String longitude, Integer dataType, CarrierMessagingService.ResultCallback<Boolean> callback);
 }

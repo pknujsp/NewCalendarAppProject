@@ -16,6 +16,7 @@ import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -135,35 +136,65 @@ public class UltraSrtFcstFragment extends Fragment
             @Override
             public void onResponseSuccessful(JsonObject result)
             {
-                setWeatherData(result, calendar.getTime());
+                setWeatherData(result);
             }
 
             @Override
             public void onResponseFailed(Exception e)
             {
-
+                requireActivity().runOnUiThread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        clearViews();
+                        Toast.makeText(getContext(), R.string.error, Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
         });
     }
 
-    public void setWeatherData(JsonObject result, Date downloadedDate)
+    public void setWeatherData(JsonObject result)
     {
         Gson gson = new Gson();
         UltraSrtFcstRoot ultraSrtFcstRoot = gson.fromJson(result.toString(), UltraSrtFcstRoot.class);
+
+        Date downloadedDate = new Date(System.currentTimeMillis());
 
         WeatherDataDTO ultraSrtFcstWeatherDataDTO = new WeatherDataDTO();
         ultraSrtFcstWeatherDataDTO.setLatitude(weatherAreaCode.getY());
         ultraSrtFcstWeatherDataDTO.setLongitude(weatherAreaCode.getX());
         ultraSrtFcstWeatherDataDTO.setDataType(WeatherDataDTO.ULTRA_SRT_FCST);
         ultraSrtFcstWeatherDataDTO.setJson(result.toString());
-        ultraSrtFcstWeatherDataDTO.setDownloadedDate(String.valueOf(System.currentTimeMillis()));
+        ultraSrtFcstWeatherDataDTO.setDownloadedDate(String.valueOf(downloadedDate.getTime()));
 
-        weatherDbViewModel.insert(ultraSrtFcstWeatherDataDTO, new CarrierMessagingService.ResultCallback<WeatherDataDTO>()
+        weatherDbViewModel.contains(weatherAreaCode.getY(), weatherAreaCode.getX(), WeatherDataDTO.ULTRA_SRT_FCST, new CarrierMessagingService.ResultCallback<Boolean>()
         {
             @Override
-            public void onReceiveResult(@NonNull WeatherDataDTO weatherDataDTO) throws RemoteException
+            public void onReceiveResult(@NonNull Boolean isContains) throws RemoteException
             {
+                if (isContains)
+                {
+                    weatherDbViewModel.update(weatherAreaCode.getY(), weatherAreaCode.getX(), WeatherDataDTO.ULTRA_SRT_FCST, result.toString(), new CarrierMessagingService.ResultCallback<Boolean>()
+                    {
+                        @Override
+                        public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
+                        {
 
+                        }
+                    });
+                } else
+                {
+                    weatherDbViewModel.insert(ultraSrtFcstWeatherDataDTO, new CarrierMessagingService.ResultCallback<WeatherDataDTO>()
+                    {
+                        @Override
+                        public void onReceiveResult(@NonNull WeatherDataDTO weatherDataDTO) throws RemoteException
+                        {
+
+                        }
+                    });
+                }
             }
         });
 
