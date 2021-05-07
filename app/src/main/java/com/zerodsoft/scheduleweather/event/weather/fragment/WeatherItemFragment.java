@@ -240,11 +240,8 @@ public class WeatherItemFragment extends BottomSheetDialogFragment implements On
                                     // regId설정하는 코드 작성
                                     weatherAreaCode = weatherAreaCodes.get(index);
 
-                                    Calendar calendar = Calendar.getInstance(ClockUtil.TIME_ZONE);
-                                    Date date = calendar.getTime();
-
-                                    refreshWeatherData(date);
-                                    createFragments(date);
+                                    refreshWeatherData();
+                                    createFragments();
                                 }
                             }
                         });
@@ -257,7 +254,7 @@ public class WeatherItemFragment extends BottomSheetDialogFragment implements On
 
     }
 
-    private void createFragments(Date date)
+    private void createFragments()
     {
         ultraSrtNcstFragment = new UltraSrtNcstFragment(weatherAreaCode, this);
         ultraSrtFcstFragment = new UltraSrtFcstFragment(weatherAreaCode, sunSetRiseList, this);
@@ -274,14 +271,14 @@ public class WeatherItemFragment extends BottomSheetDialogFragment implements On
                 .commit();
     }
 
-    private void refreshWeatherData(Date downloadedDate)
+    private void refreshWeatherData()
     {
         String addressName = weatherAreaCode.getPhase1() + " " + weatherAreaCode.getPhase2() + " " + weatherAreaCode.getPhase3();
         binding.addressName.setText(addressName);
-        init(downloadedDate);
+        init();
     }
 
-    private void init(Date downloadedDate)
+    private void init()
     {
         //동네예보 마지막 날 까지의 일몰/일출 시간 데이터를 구성
         sunSetRiseList.clear();
@@ -289,11 +286,11 @@ public class WeatherItemFragment extends BottomSheetDialogFragment implements On
         List<Calendar> dates = new ArrayList<>();
 
         Calendar endDate = Calendar.getInstance();
-        endDate.setTime(downloadedDate);
-        endDate.add(Calendar.DAY_OF_YEAR, 2);
 
         Calendar calendar = Calendar.getInstance();
-        calendar.setTime(downloadedDate);
+        calendar.setTime(endDate.getTime());
+        endDate.add(Calendar.DAY_OF_YEAR, 2);
+
 
         boolean finished = false;
 

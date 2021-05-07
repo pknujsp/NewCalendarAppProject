@@ -1,83 +1,93 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <RelativeLayout
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <LinearLayout
-            android:id="@+id/finedust_layout"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentTop="true"
-            android:orientation="vertical"
-            android:padding="8dp">
+        <RelativeLayout
+            android:id="@+id/air_condition_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
-            <TextView
+            <LinearLayout
+                android:id="@+id/finedust_layout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="@string/pm10"
-                android:textSize="15sp" />
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentTop="true"
+                android:orientation="vertical"
+                android:padding="8dp">
 
-            <TextView
-                android:id="@+id/finedust_status"
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="@string/pm10"
+                    android:textSize="15sp" />
+
+                <TextView
+                    android:id="@+id/finedust_status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:shadowColor="@color/black"
+                    android:shadowDx="0.5"
+                    android:shadowDy="0.5"
+                    android:shadowRadius="1.5"
+                    android:text="50"
+                    android:textColor="@color/white"
+                    android:textSize="15sp" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/ultra_finedust_layout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:gravity="center"
-                android:shadowColor="@color/black"
-                android:shadowDx="0.5"
-                android:shadowDy="0.5"
-                android:shadowRadius="1.5"
-                android:text="50"
-                android:textColor="@color/white"
-                android:textSize="15sp" />
 
-        </LinearLayout>
+                android:layout_toRightOf="@id/finedust_layout"
+                android:orientation="vertical"
+                android:padding="8dp">
 
-        <LinearLayout
-            android:id="@+id/ultra_finedust_layout"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="@string/pm2.5"
+                    android:textSize="15sp" />
 
-            android:layout_toRightOf="@id/finedust_layout"
-            android:orientation="vertical"
-            android:padding="8dp">
+                <TextView
+                    android:id="@+id/ultra_finedust_status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:shadowColor="@color/black"
+                    android:shadowDx="0.5"
+                    android:shadowDy="0.5"
+                    android:shadowRadius="1.7"
+                    android:text="50"
+                    android:textColor="@color/white"
+                    android:textSize="15sp" />
 
-            <TextView
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/show_detail_dialog_button"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="@string/pm2.5"
-                android:textSize="15sp" />
+                android:layout_centerHorizontal="true"
+                android:layout_centerVertical="true"
+                android:layout_toRightOf="@id/ultra_finedust_layout"
+                android:text="@string/detail" />
 
-            <TextView
-                android:id="@+id/ultra_finedust_status"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:gravity="center"
-                android:shadowColor="@color/black"
-                android:shadowDx="0.5"
-                android:shadowDy="0.5"
-                android:shadowRadius="1.7"
-                android:text="50"
-                android:textColor="@color/white"
-                android:textSize="15sp" />
+        </RelativeLayout>
 
-        </LinearLayout>
-
-        <Button
-            android:id="@+id/show_detail_dialog_button"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:layout_centerVertical="true"
-            android:layout_toRightOf="@id/ultra_finedust_layout"
-            android:text="@string/detail" />
-
-    </RelativeLayout>
+        <include
+            android:id="@+id/weather_progress_layout"
+            layout="@layout/weather_progress_view" />
+    </FrameLayout>
 </layout>

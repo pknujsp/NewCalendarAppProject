@@ -1,25 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android">
-<LinearLayout
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:orientation="horizontal">
 
-    <LinearLayout
-        android:id="@+id/ultra_srt_fcst_header_col"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical" />
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
-    <HorizontalScrollView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:nestedScrollingEnabled="false">
+        <LinearLayout
+            android:id="@+id/ultra_srt_fcst_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
 
-        <TableLayout
-            android:id="@+id/ultra_srt_fcst_table"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-    </HorizontalScrollView>
-</LinearLayout>
+            <LinearLayout
+                android:id="@+id/ultra_srt_fcst_header_col"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+
+            <HorizontalScrollView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false">
+
+                <TableLayout
+                    android:id="@+id/ultra_srt_fcst_table"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+            </HorizontalScrollView>
+        </LinearLayout>
+
+        <include
+            android:id="@+id/weather_progress_layout"
+            layout="@layout/weather_progress_view" />
+
+    </FrameLayout>
 </layout>

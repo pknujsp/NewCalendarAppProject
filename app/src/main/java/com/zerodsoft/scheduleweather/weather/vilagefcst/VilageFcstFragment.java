@@ -40,6 +40,7 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.ultrasrtfcst
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.vilagefcstresponse.VilageFcstRoot;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
 import com.zerodsoft.scheduleweather.room.dto.WeatherDataDTO;
+import com.zerodsoft.scheduleweather.weather.common.ViewProgress;
 import com.zerodsoft.scheduleweather.weather.interfaces.OnDownloadedTimeListener;
 import com.zerodsoft.scheduleweather.weather.repository.WeatherDataDownloader;
 import com.zerodsoft.scheduleweather.weather.sunsetrise.SunSetRiseData;
@@ -63,6 +64,7 @@ public class VilageFcstFragment extends Fragment
     private VilageFcst vilageFcst = new VilageFcst();
     private WeatherAreaCodeDTO weatherAreaCode;
     private WeatherDbViewModel weatherDbViewModel;
+    private ViewProgress viewProgress;
 
     private final WeatherDataDownloader weatherDataDownloader = new WeatherDataDownloader()
     {
@@ -99,6 +101,9 @@ public class VilageFcstFragment extends Fragment
     {
         super.onViewCreated(view, savedInstanceState);
         clearViews();
+        viewProgress = new ViewProgress(binding.vilageFcstLayout, binding.weatherProgressLayout.progressBar, binding.weatherProgressLayout.errorTextview);
+        viewProgress.onStartedProcessingData();
+
         weatherDbViewModel = new ViewModelProvider(this).get(WeatherDbViewModel.class);
         weatherDbViewModel.getWeatherData(weatherAreaCode.getY(), weatherAreaCode.getX(), WeatherDataDTO.VILAGE_FCST, new CarrierMessagingService.ResultCallback<WeatherDataDTO>()
         {
@@ -121,6 +126,7 @@ public class VilageFcstFragment extends Fragment
                         public void run()
                         {
                             onDownloadedTimeListener.setDownloadedTime(downloadedDate, WeatherDataDTO.VILAGE_FCST);
+                            viewProgress.onCompletedProcessingData(true);
                             setTable();
                         }
                     });
@@ -131,6 +137,14 @@ public class VilageFcstFragment extends Fragment
 
     public void getWeatherData()
     {
+        requireActivity().runOnUiThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                viewProgress.onStartedProcessingData();
+            }
+        });
         VilageFcstParameter vilageFcstParameter = new VilageFcstParameter();
         vilageFcstParameter.setNx(weatherAreaCode.getX()).setNy(weatherAreaCode.getY()).setNumOfRows("250").setPageNo("1");
 
@@ -152,6 +166,7 @@ public class VilageFcstFragment extends Fragment
                     public void run()
                     {
                         clearViews();
+                        viewProgress.onCompletedProcessingData(false);
                         Toast.makeText(getContext(), R.string.error, Toast.LENGTH_SHORT).show();
                     }
                 });
@@ -210,6 +225,7 @@ public class VilageFcstFragment extends Fragment
             public void run()
             {
                 onDownloadedTimeListener.setDownloadedTime(downloadedDate, WeatherDataDTO.VILAGE_FCST);
+                viewProgress.onCompletedProcessingData(true);
                 setTable();
             }
         });

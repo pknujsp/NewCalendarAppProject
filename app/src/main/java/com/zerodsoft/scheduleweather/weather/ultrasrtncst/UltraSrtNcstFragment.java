@@ -20,10 +20,10 @@ import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
 import com.zerodsoft.scheduleweather.databinding.UltraSrtNcstFragmentBinding;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.UltraSrtNcstParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.WeatherItems;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.ultrasrtfcstresponse.UltraSrtFcstRoot;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.ultrasrtncstresponse.UltraSrtNcstRoot;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
 import com.zerodsoft.scheduleweather.room.dto.WeatherDataDTO;
+import com.zerodsoft.scheduleweather.weather.common.ViewProgress;
 import com.zerodsoft.scheduleweather.weather.interfaces.OnDownloadedTimeListener;
 import com.zerodsoft.scheduleweather.weather.repository.WeatherDataDownloader;
 import com.zerodsoft.scheduleweather.utility.WeatherDataConverter;
@@ -52,6 +52,7 @@ public class UltraSrtNcstFragment extends Fragment
     private UltraSrtNcst ultraSrtNcst = new UltraSrtNcst();
     private WeatherAreaCodeDTO weatherAreaCode;
     private WeatherDbViewModel weatherDbViewModel;
+    private ViewProgress viewProgress;
 
     private final WeatherDataDownloader weatherDataDownloader = new WeatherDataDownloader()
     {
@@ -92,6 +93,10 @@ public class UltraSrtNcstFragment extends Fragment
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
+
+        viewProgress = new ViewProgress(binding.ultraSrtNcstLayout, binding.weatherProgressLayout.progressBar, binding.weatherProgressLayout.errorTextview);
+        viewProgress.onStartedProcessingData();
+
         clearViews();
         weatherDbViewModel = new ViewModelProvider(this).get(WeatherDbViewModel.class);
         weatherDbViewModel.getWeatherData(weatherAreaCode.getY(), weatherAreaCode.getX(), WeatherDataDTO.ULTRA_SRT_NCST, new CarrierMessagingService.ResultCallback<WeatherDataDTO>()
@@ -115,6 +120,7 @@ public class UltraSrtNcstFragment extends Fragment
                         public void run()
                         {
                             onDownloadedTimeListener.setDownloadedTime(downloadedDate, WeatherDataDTO.ULTRA_SRT_NCST);
+                            viewProgress.onCompletedProcessingData(true);
                             setValue();
                         }
                     });
@@ -147,6 +153,15 @@ public class UltraSrtNcstFragment extends Fragment
 
     public void getWeatherData()
     {
+        requireActivity().runOnUiThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                viewProgress.onStartedProcessingData();
+            }
+        });
+
         UltraSrtNcstParameter ultraSrtNcstParameter = new UltraSrtNcstParameter();
         ultraSrtNcstParameter.setNx(weatherAreaCode.getX()).setNy(weatherAreaCode.getY()).setNumOfRows("250").setPageNo("1");
 
@@ -168,6 +183,7 @@ public class UltraSrtNcstFragment extends Fragment
                     public void run()
                     {
                         clearViews();
+                        viewProgress.onCompletedProcessingData(false);
                         Toast.makeText(getContext(), R.string.error, Toast.LENGTH_SHORT).show();
                     }
                 });
@@ -225,6 +241,7 @@ public class UltraSrtNcstFragment extends Fragment
             public void run()
             {
                 onDownloadedTimeListener.setDownloadedTime(downloadedDate, WeatherDataDTO.ULTRA_SRT_NCST);
+                viewProgress.onCompletedProcessingData(true);
                 setValue();
             }
         });

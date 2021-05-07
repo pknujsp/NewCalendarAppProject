@@ -18,6 +18,7 @@ import com.google.gson.JsonObject;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.FragmentAirConditionBinding;
 import com.zerodsoft.scheduleweather.room.dto.WeatherDataDTO;
+import com.zerodsoft.scheduleweather.weather.common.ViewProgress;
 import com.zerodsoft.scheduleweather.weather.interfaces.OnDownloadedTimeListener;
 import com.zerodsoft.scheduleweather.weather.repository.AirConditionDownloader;
 import com.zerodsoft.scheduleweather.weather.repository.FindAirConditionStationDownloader;
@@ -54,7 +55,7 @@ public class AirConditionFragment extends Fragment
     private NearbyMsrstnListBody nearbyMsrstnListBody;
 
     private WeatherDbViewModel weatherDbViewModel;
-
+    private ViewProgress viewProgress;
 
     public AirConditionFragment(double LATITUDE, double LONGITUDE, OnDownloadedTimeListener onDownloadedTimeListener)
     {
@@ -111,6 +112,7 @@ public class AirConditionFragment extends Fragment
             });
 
             onDownloadedTimeListener.setDownloadedTime(new Date(Long.parseLong(weatherDataDTO.getDownloadedDate())), WeatherDataDTO.AIR_CONDITION);
+            viewProgress.onCompletedProcessingData(true);
         }
 
         @Override
@@ -121,6 +123,7 @@ public class AirConditionFragment extends Fragment
                 @Override
                 public void run()
                 {
+                    viewProgress.onCompletedProcessingData(false);
                     Toast.makeText(getContext(), R.string.error, Toast.LENGTH_SHORT).show();
                 }
             });
@@ -187,6 +190,7 @@ public class AirConditionFragment extends Fragment
                 @Override
                 public void run()
                 {
+                    viewProgress.onCompletedProcessingData(false);
                     Toast.makeText(getContext(), R.string.error, Toast.LENGTH_SHORT).show();
                 }
             });
@@ -267,6 +271,8 @@ public class AirConditionFragment extends Fragment
         binding.finedustStatus.setText("");
         binding.ultraFinedustStatus.setText("");
         binding.showDetailDialogButton.setOnClickListener(onClickListener);
+        viewProgress = new ViewProgress(binding.airConditionLayout, binding.weatherProgressLayout.progressBar, binding.weatherProgressLayout.errorTextview);
+        viewProgress.onStartedProcessingData();
 
         weatherDbViewModel = new ViewModelProvider(this).get(WeatherDbViewModel.class);
 
@@ -306,8 +312,8 @@ public class AirConditionFragment extends Fragment
                             MsrstnAcctoRltmMesureDnstyRoot root = gson.fromJson(weatherDataDTO.getJson(), MsrstnAcctoRltmMesureDnstyRoot.class);
                             msrstnAcctoRltmMesureDnstyBody = root.getResponse().getBody();
                             setData(msrstnAcctoRltmMesureDnstyBody);
-
                             onDownloadedTimeListener.setDownloadedTime(new Date(Long.parseLong(weatherDataDTO.getDownloadedDate())), WeatherDataDTO.AIR_CONDITION);
+                            viewProgress.onCompletedProcessingData(true);
                         }
                     }
                 });
@@ -352,6 +358,7 @@ public class AirConditionFragment extends Fragment
 
     public void refresh()
     {
+        viewProgress.onStartedProcessingData();
         if (SgisAuth.getSgisAuthResponse() == null)
         {
             sgisAuth.auth();

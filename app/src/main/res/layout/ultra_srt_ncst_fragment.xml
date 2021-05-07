@@ -2,123 +2,133 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <LinearLayout
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:orientation="vertical"
         android:padding="16dp">
 
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:id="@+id/ultra_srt_ncst_layout"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical"
+            android:gravity="center"
             android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/ultra_srt_ncst_temp"
-                style="@style/TextAppearance.MaterialComponents.Headline4"
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="25도"
-                android:textColor="@color/black" />
+                android:gravity="center_vertical"
+                android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/ultra_srt_ncst_pty"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="비"
-                android:textColor="@android:color/black"
-                android:textSize="14sp" />
+                <TextView
+                    android:id="@+id/ultra_srt_ncst_temp"
+                    style="@style/TextAppearance.MaterialComponents.Headline4"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="25도"
+                    android:textColor="@color/black" />
 
+                <TextView
+                    android:id="@+id/ultra_srt_ncst_pty"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="비"
+                    android:textColor="@android:color/black"
+                    android:textSize="14sp" />
+
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="100dp">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/humidity_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="36dp"
+                        android:layout_gravity="center"
+                        android:layout_marginBottom="8dp"
+                        android:gravity="center"
+                        android:text="@string/humidity_not_n"
+                        android:textColor="@color/gray_600" />
+
+                    <TextView
+                        android:id="@+id/ultra_srt_ncst_humidity"
+                        style="@style/TextAppearance.MaterialComponents.Subtitle1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:gravity="center"
+                        android:text="50" />
+
+                </LinearLayout>
+
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/wind_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="36dp"
+                        android:layout_gravity="center"
+                        android:layout_marginBottom="8dp"
+                        android:gravity="center"
+                        android:text="@string/wind_not_n"
+                        android:textColor="@color/gray_600" />
+
+                    <TextView
+                        android:id="@+id/ultra_srt_ncst_wind"
+                        style="@style/TextAppearance.MaterialComponents.Subtitle1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:gravity="center"
+                        android:text="5" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/rain_1_hour_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="36dp"
+                        android:layout_gravity="center"
+                        android:layout_marginBottom="8dp"
+                        android:gravity="center"
+                        android:text="@string/rain_1_hour"
+                        android:textColor="@color/gray_600" />
+
+                    <TextView
+                        android:id="@+id/ultra_srt_ncst_rn1"
+                        style="@style/TextAppearance.MaterialComponents.Subtitle1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:gravity="center"
+                        android:text="-" />
+                </LinearLayout>
+
+            </LinearLayout>
         </LinearLayout>
 
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="100dp">
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/humidity_label"
-                    android:layout_width="wrap_content"
-                    android:layout_height="36dp"
-                    android:layout_gravity="center"
-                    android:layout_marginBottom="8dp"
-                    android:gravity="center"
-                    android:text="@string/humidity_not_n"
-                    android:textColor="@color/gray_600" />
-
-                <TextView
-                    android:id="@+id/ultra_srt_ncst_humidity"
-                    style="@style/TextAppearance.MaterialComponents.Subtitle1"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:gravity="center"
-                    android:text="50" />
-
-            </LinearLayout>
-
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/wind_label"
-                    android:layout_width="wrap_content"
-                    android:layout_height="36dp"
-                    android:layout_gravity="center"
-                    android:layout_marginBottom="8dp"
-                    android:gravity="center"
-                    android:text="@string/wind_not_n"
-                    android:textColor="@color/gray_600" />
-
-                <TextView
-                    android:id="@+id/ultra_srt_ncst_wind"
-                    style="@style/TextAppearance.MaterialComponents.Subtitle1"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:gravity="center"
-                    android:text="5" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/rain_1_hour_label"
-                    android:layout_width="wrap_content"
-                    android:layout_height="36dp"
-                    android:layout_gravity="center"
-                    android:layout_marginBottom="8dp"
-                    android:gravity="center"
-                    android:text="@string/rain_1_hour"
-                    android:textColor="@color/gray_600" />
-
-                <TextView
-                    android:id="@+id/ultra_srt_ncst_rn1"
-                    style="@style/TextAppearance.MaterialComponents.Subtitle1"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:gravity="center"
-                    android:text="-" />
-            </LinearLayout>
-
-        </LinearLayout>
-    </LinearLayout>
+        <include
+            android:id="@+id/weather_progress_layout"
+            layout="@layout/weather_progress_view" />
+    </FrameLayout>
 </layout>

@@ -42,6 +42,7 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.midtarespons
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.vilagefcstresponse.VilageFcstRoot;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
 import com.zerodsoft.scheduleweather.room.dto.WeatherDataDTO;
+import com.zerodsoft.scheduleweather.weather.common.ViewProgress;
 import com.zerodsoft.scheduleweather.weather.interfaces.OnDownloadedTimeListener;
 import com.zerodsoft.scheduleweather.weather.mid.MidFcstData;
 import com.zerodsoft.scheduleweather.utility.WeatherDataConverter;
@@ -61,7 +62,7 @@ public class MidFcstFragment extends Fragment
     private MidFcst midFcst = new MidFcst();
     private WeatherAreaCodeDTO weatherAreaCode;
     private final OnDownloadedTimeListener onDownloadedTimeListener;
-
+    private ViewProgress viewProgress;
 
     private WeatherDbViewModel weatherDbViewModel;
     private final WeatherDataDownloader weatherDataDownloader = new WeatherDataDownloader()
@@ -98,6 +99,8 @@ public class MidFcstFragment extends Fragment
     {
         super.onViewCreated(view, savedInstanceState);
         clearViews();
+        viewProgress = new ViewProgress(binding.midFcstLayout, binding.weatherProgressLayout.progressBar, binding.weatherProgressLayout.errorTextview);
+        viewProgress.onStartedProcessingData();
 
         weatherDbViewModel = new ViewModelProvider(this).get(WeatherDbViewModel.class);
         weatherDbViewModel.getWeatherData(weatherAreaCode.getY(), weatherAreaCode.getX(), WeatherDataDTO.MID_LAND_FCST, new CarrierMessagingService.ResultCallback<WeatherDataDTO>()
@@ -129,6 +132,7 @@ public class MidFcstFragment extends Fragment
                                 {
                                     onDownloadedTimeListener.setDownloadedTime(downloadedDate, WeatherDataDTO.MID_LAND_FCST);
                                     onDownloadedTimeListener.setDownloadedTime(downloadedDate, WeatherDataDTO.MID_TA);
+                                    viewProgress.onCompletedProcessingData(true);
                                     setTable();
                                 }
                             });
@@ -142,6 +146,14 @@ public class MidFcstFragment extends Fragment
 
     public void getWeatherData()
     {
+        requireActivity().runOnUiThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                viewProgress.onStartedProcessingData();
+            }
+        });
         MidLandFcstParameter midLandFcstParameter = new MidLandFcstParameter();
         MidTaParameter midTaParameter = new MidTaParameter();
 
@@ -166,6 +178,7 @@ public class MidFcstFragment extends Fragment
                     public void run()
                     {
                         clearViews();
+                        viewProgress.onCompletedProcessingData(false);
                         Toast.makeText(getContext(), R.string.error, Toast.LENGTH_SHORT).show();
                     }
                 });
@@ -231,7 +244,7 @@ public class MidFcstFragment extends Fragment
             {
                 if (isContains)
                 {
-                    weatherDbViewModel.update(weatherAreaCode.getY(), weatherAreaCode.getX(), WeatherDataDTO.MID_LAND_FCST, midTaWeatherDataDTO.getJson(), new CarrierMessagingService.ResultCallback<Boolean>()
+                    weatherDbViewModel.update(weatherAreaCode.getY(), weatherAreaCode.getX(), WeatherDataDTO.MID_TA, midTaWeatherDataDTO.getJson(), new CarrierMessagingService.ResultCallback<Boolean>()
                     {
                         @Override
                         public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
@@ -262,6 +275,7 @@ public class MidFcstFragment extends Fragment
             {
                 onDownloadedTimeListener.setDownloadedTime(downloadedDate, WeatherDataDTO.MID_LAND_FCST);
                 onDownloadedTimeListener.setDownloadedTime(downloadedDate, WeatherDataDTO.MID_TA);
+                viewProgress.onCompletedProcessingData(true);
                 setTable();
             }
         });
