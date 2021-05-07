@@ -15,7 +15,7 @@ import java.util.Set;
 public class VilageFcst
 {
     //동네예보 최종 데이터
-    private List<VilageFcstData> vilageFcstFinalDataList;
+    private List<VilageFcstFinalData> vilageFcstFinalDataList;
     //동네예보 응답 데이터
     private VilageFcstItems vilageFcstItems;
     private Date downloadedDate;
@@ -48,15 +48,15 @@ public class VilageFcst
         Set set = map.keySet();
         Iterator iterator = set.iterator();
 
-        List<VilageFcstData> vilageFcstDataList = new ArrayList<>();
+        List<VilageFcstFinalData> vilageFcstFinalDataList = new ArrayList<>();
 
         while (iterator.hasNext())
         {
-            vilageFcstDataList.add(new VilageFcstData(map.get(iterator.next())));
+            vilageFcstFinalDataList.add(new VilageFcstFinalData(map.get(iterator.next())));
         }
 
         //동네예보 데이터 리스트를 날짜 오름차순으로 정렬
-        Collections.sort(vilageFcstDataList, (t1, t2) ->
+        Collections.sort(vilageFcstFinalDataList, (t1, t2) ->
         {
             if (t1.getDateTime().after(t2.getDateTime()))
             {
@@ -67,7 +67,7 @@ public class VilageFcst
             }
         });
 
-        vilageFcstFinalDataList = vilageFcstDataList;
+        this.vilageFcstFinalDataList = vilageFcstFinalDataList;
     }
 
 
@@ -76,7 +76,7 @@ public class VilageFcst
         return downloadedDate;
     }
 
-    public List<VilageFcstData> getVilageFcstFinalDataList()
+    public List<VilageFcstFinalData> getVilageFcstFinalDataList()
     {
         return vilageFcstFinalDataList;
     }

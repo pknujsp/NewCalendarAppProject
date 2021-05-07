@@ -8,7 +8,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-public class VilageFcstData
+public class VilageFcstFinalData
 {
     //nx
     private String nx;
@@ -40,7 +40,7 @@ public class VilageFcstData
     //풍속 WSD
     private String windSpeed;
 
-    public VilageFcstData(List<VilageFcstItem> items)
+    public VilageFcstFinalData(List<VilageFcstItem> items)
     {
         nx = items.get(0).getNx();
         ny = items.get(0).getNy();

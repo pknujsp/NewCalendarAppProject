@@ -29,12 +29,8 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
 import com.zerodsoft.scheduleweather.databinding.UltraSrtFcstFragmentBinding;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.UltraSrtFcstParameter;
-import com.zerodsoft.scheduleweather.retrofit.paremeters.UltraSrtNcstParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.WeatherItems;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.midlandfcstresponse.MidLandFcstRoot;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.midtaresponse.MidTaRoot;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.ultrasrtfcstresponse.UltraSrtFcstRoot;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.ultrasrtncstresponse.UltraSrtNcstRoot;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
 import com.zerodsoft.scheduleweather.room.dto.WeatherDataDTO;
 import com.zerodsoft.scheduleweather.weather.common.ViewProgress;
@@ -192,7 +188,8 @@ public class UltraSrtFcstFragment extends Fragment
             {
                 if (isContains)
                 {
-                    weatherDbViewModel.update(weatherAreaCode.getY(), weatherAreaCode.getX(), WeatherDataDTO.ULTRA_SRT_FCST, result.toString(), new CarrierMessagingService.ResultCallback<Boolean>()
+                    weatherDbViewModel.update(weatherAreaCode.getY(), weatherAreaCode.getX(), WeatherDataDTO.ULTRA_SRT_FCST, result.toString()
+                            ,ultraSrtFcstWeatherDataDTO.getDownloadedDate() , new CarrierMessagingService.ResultCallback<Boolean>()
                     {
                         @Override
                         public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException

@@ -38,7 +38,7 @@ public class WeatherDbRepository implements WeatherDataQuery
     }
 
     @Override
-    public void update(String latitude, String longitude, Integer dataType, String json, CarrierMessagingService.ResultCallback<Boolean> callback)
+    public void update(String latitude, String longitude, Integer dataType, String json, String downloadedDate, CarrierMessagingService.ResultCallback<Boolean> callback)
     {
         new Thread(new Runnable()
         {
@@ -46,7 +46,7 @@ public class WeatherDbRepository implements WeatherDataQuery
             @Override
             public void run()
             {
-                dao.update(latitude, longitude, dataType, json);
+                dao.update(latitude, longitude, dataType, json, downloadedDate);
                 callback.onReceiveResult(true);
             }
         }).start();

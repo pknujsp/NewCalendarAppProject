@@ -31,25 +31,18 @@ import com.google.gson.Gson;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
 import com.zerodsoft.scheduleweather.databinding.MidFcstFragmentBinding;
-import com.zerodsoft.scheduleweather.retrofit.paremeters.MidFcstParameter;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.MidLandFcstParameter;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.MidTaParameter;
-import com.zerodsoft.scheduleweather.retrofit.paremeters.VilageFcstParameter;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.MsrstnAcctoRltmMesureDnsty.MsrstnAcctoRltmMesureDnstyRoot;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.WeatherItems;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.midlandfcstresponse.MidLandFcstRoot;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.midtaresponse.MidTaRoot;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.vilagefcstresponse.VilageFcstRoot;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
 import com.zerodsoft.scheduleweather.room.dto.WeatherDataDTO;
 import com.zerodsoft.scheduleweather.weather.common.ViewProgress;
 import com.zerodsoft.scheduleweather.weather.interfaces.OnDownloadedTimeListener;
-import com.zerodsoft.scheduleweather.weather.mid.MidFcstData;
 import com.zerodsoft.scheduleweather.utility.WeatherDataConverter;
 import com.zerodsoft.scheduleweather.weather.repository.WeatherDataDownloader;
-import com.zerodsoft.scheduleweather.weather.sunsetrise.SunSetRiseData;
 import com.zerodsoft.scheduleweather.weather.viewmodel.WeatherDbViewModel;
-import com.zerodsoft.scheduleweather.weather.vilagefcst.VilageFcst;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -215,14 +208,15 @@ public class MidFcstFragment extends Fragment
             {
                 if (isContains)
                 {
-                    weatherDbViewModel.update(weatherAreaCode.getY(), weatherAreaCode.getX(), WeatherDataDTO.MID_LAND_FCST, midLandFcstWeatherDataDTO.getJson(), new CarrierMessagingService.ResultCallback<Boolean>()
-                    {
-                        @Override
-                        public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
-                        {
+                    weatherDbViewModel.update(weatherAreaCode.getY(), weatherAreaCode.getX(), WeatherDataDTO.MID_LAND_FCST
+                            , midLandFcstWeatherDataDTO.getJson(), midLandFcstWeatherDataDTO.getDownloadedDate(), new CarrierMessagingService.ResultCallback<Boolean>()
+                            {
+                                @Override
+                                public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
+                                {
 
-                        }
-                    });
+                                }
+                            });
                 } else
                 {
                     weatherDbViewModel.insert(midLandFcstWeatherDataDTO, new CarrierMessagingService.ResultCallback<WeatherDataDTO>()
@@ -244,7 +238,8 @@ public class MidFcstFragment extends Fragment
             {
                 if (isContains)
                 {
-                    weatherDbViewModel.update(weatherAreaCode.getY(), weatherAreaCode.getX(), WeatherDataDTO.MID_TA, midTaWeatherDataDTO.getJson(), new CarrierMessagingService.ResultCallback<Boolean>()
+                    weatherDbViewModel.update(weatherAreaCode.getY(), weatherAreaCode.getX(), WeatherDataDTO.MID_TA
+                            , midTaWeatherDataDTO.getJson(), midTaWeatherDataDTO.getDownloadedDate(), new CarrierMessagingService.ResultCallback<Boolean>()
                     {
                         @Override
                         public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException

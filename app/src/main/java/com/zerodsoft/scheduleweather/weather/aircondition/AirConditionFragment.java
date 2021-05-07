@@ -27,9 +27,6 @@ import com.zerodsoft.scheduleweather.weather.view.airconditionbar.BarInitDataCre
 import com.zerodsoft.scheduleweather.retrofit.paremeters.MsrstnAcctoRltmMesureDnstyParameter;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.NearbyMsrstnListParameter;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.sgis.TransCoordParameter;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.AirConditionRoot;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.CtprvnRltmMesureDnsty.CtprvnRltmMesureDnstyBody;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.FindStationRoot;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.MsrstnAcctoRltmMesureDnsty.MsrstnAcctoRltmMesureDnstyBody;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.MsrstnAcctoRltmMesureDnsty.MsrstnAcctoRltmMesureDnstyRoot;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.NearbyMsrstnList.NearbyMsrstnListBody;
@@ -81,21 +78,22 @@ public class AirConditionFragment extends Fragment
             weatherDataDTO.setJson(result.toString());
             weatherDataDTO.setDownloadedDate(String.valueOf(System.currentTimeMillis()));
 
-            weatherDbViewModel.contains(String.valueOf(LATITUDE), String.valueOf(LONGITUDE), WeatherDataDTO.AIR_CONDITION, new CarrierMessagingService.ResultCallback<Boolean>()
+            weatherDbViewModel.contains(weatherDataDTO.getLatitude(), weatherDataDTO.getLongitude(), WeatherDataDTO.AIR_CONDITION, new CarrierMessagingService.ResultCallback<Boolean>()
             {
                 @Override
                 public void onReceiveResult(@NonNull Boolean isContains) throws RemoteException
                 {
                     if (isContains)
                     {
-                        weatherDbViewModel.update(String.valueOf(LATITUDE), String.valueOf(LONGITUDE), WeatherDataDTO.AIR_CONDITION, result.toString(), new CarrierMessagingService.ResultCallback<Boolean>()
-                        {
-                            @Override
-                            public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
-                            {
+                        weatherDbViewModel.update(weatherDataDTO.getLatitude(), weatherDataDTO.getLongitude(), WeatherDataDTO.AIR_CONDITION
+                                , weatherDataDTO.getJson(), weatherDataDTO.getDownloadedDate(), new CarrierMessagingService.ResultCallback<Boolean>()
+                                {
+                                    @Override
+                                    public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
+                                    {
 
-                            }
-                        });
+                                    }
+                                });
                     } else
                     {
                         weatherDbViewModel.insert(weatherDataDTO, new CarrierMessagingService.ResultCallback<WeatherDataDTO>()
@@ -153,14 +151,15 @@ public class AirConditionFragment extends Fragment
                 {
                     if (isContains)
                     {
-                        weatherDbViewModel.update(String.valueOf(LATITUDE), String.valueOf(LONGITUDE), WeatherDataDTO.NEAR_BY_MSRSTN_LIST, result.toString(), new CarrierMessagingService.ResultCallback<Boolean>()
-                        {
-                            @Override
-                            public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
-                            {
+                        weatherDbViewModel.update(String.valueOf(LATITUDE), String.valueOf(LONGITUDE), WeatherDataDTO.NEAR_BY_MSRSTN_LIST
+                                , result.toString(), weatherDataDTO.getDownloadedDate(), new CarrierMessagingService.ResultCallback<Boolean>()
+                                {
+                                    @Override
+                                    public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
+                                    {
 
-                            }
-                        });
+                                    }
+                                });
                     } else
                     {
                         weatherDbViewModel.insert(weatherDataDTO, new CarrierMessagingService.ResultCallback<WeatherDataDTO>()

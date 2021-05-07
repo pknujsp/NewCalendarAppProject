@@ -17,8 +17,8 @@ public interface WeatherDataDAO
     @Insert(entity = WeatherDataDTO.class, onConflict = OnConflictStrategy.REPLACE)
     long insert(WeatherDataDTO weatherDataDTO);
 
-    @Query("UPDATE weather_data_table SET json = :json WHERE latitude = :latitude AND longitude = :longitude AND data_type = :dataType")
-    void update(String latitude, String longitude, Integer dataType, String json);
+    @Query("UPDATE weather_data_table SET json = :json, downloaded_date = :downloadedDate WHERE latitude = :latitude AND longitude = :longitude AND data_type = :dataType")
+    void update(String latitude, String longitude, Integer dataType, String json, String downloadedDate);
 
     @Query("SELECT * FROM weather_data_table WHERE latitude = :latitude AND longitude = :longitude")
     List<WeatherDataDTO> getWeatherDataList(String latitude, String longitude);

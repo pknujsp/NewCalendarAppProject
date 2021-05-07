@@ -33,10 +33,8 @@ import com.google.gson.JsonObject;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
 import com.zerodsoft.scheduleweather.databinding.VilageFcstFragmentBinding;
-import com.zerodsoft.scheduleweather.retrofit.paremeters.UltraSrtFcstParameter;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.VilageFcstParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.WeatherItems;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.ultrasrtfcstresponse.UltraSrtFcstRoot;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.vilagefcstresponse.VilageFcstRoot;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
 import com.zerodsoft.scheduleweather.room.dto.WeatherDataDTO;
@@ -44,9 +42,7 @@ import com.zerodsoft.scheduleweather.weather.common.ViewProgress;
 import com.zerodsoft.scheduleweather.weather.interfaces.OnDownloadedTimeListener;
 import com.zerodsoft.scheduleweather.weather.repository.WeatherDataDownloader;
 import com.zerodsoft.scheduleweather.weather.sunsetrise.SunSetRiseData;
-import com.zerodsoft.scheduleweather.weather.ultrasrtfcst.UltraSrtFcst;
 import com.zerodsoft.scheduleweather.weather.viewmodel.WeatherDbViewModel;
-import com.zerodsoft.scheduleweather.weather.vilagefcst.VilageFcstData;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.utility.WeatherDataConverter;
 
@@ -195,14 +191,15 @@ public class VilageFcstFragment extends Fragment
             {
                 if (isContains)
                 {
-                    weatherDbViewModel.update(weatherAreaCode.getY(), weatherAreaCode.getX(), WeatherDataDTO.VILAGE_FCST, result.toString(), new CarrierMessagingService.ResultCallback<Boolean>()
-                    {
-                        @Override
-                        public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
-                        {
+                    weatherDbViewModel.update(weatherAreaCode.getY(), weatherAreaCode.getX(), WeatherDataDTO.VILAGE_FCST, result.toString()
+                            , vilageFcstWeatherDataDTO.getDownloadedDate(), new CarrierMessagingService.ResultCallback<Boolean>()
+                            {
+                                @Override
+                                public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
+                                {
 
-                        }
-                    });
+                                }
+                            });
                 } else
                 {
                     weatherDbViewModel.insert(vilageFcstWeatherDataDTO, new CarrierMessagingService.ResultCallback<WeatherDataDTO>()
@@ -246,7 +243,7 @@ public class VilageFcstFragment extends Fragment
         final int DP80 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 80f, getResources().getDisplayMetrics());
 
         clearViews();
-        List<VilageFcstData> dataList = vilageFcst.getVilageFcstFinalDataList();
+        List<VilageFcstFinalData> dataList = vilageFcst.getVilageFcstFinalDataList();
 
         final int DATA_SIZE = dataList.size();
         final int VIEW_WIDTH = DATA_SIZE * ITEM_WIDTH;
@@ -429,7 +426,7 @@ public class VilageFcstFragment extends Fragment
         textView.setText(value);
     }
 
-    private Drawable getSkyImage(VilageFcstData data)
+    private Drawable getSkyImage(VilageFcstFinalData data)
     {
         Calendar sunSetRiseCalendar = Calendar.getInstance();
         Calendar calendar = Calendar.getInstance();
@@ -455,7 +452,7 @@ public class VilageFcstFragment extends Fragment
     {
         private List<Drawable> skyImageList;
 
-        public SkyView(Context context, List<VilageFcstData> dataList)
+        public SkyView(Context context, List<VilageFcstFinalData> dataList)
         {
             super(context);
 
@@ -518,7 +515,7 @@ public class VilageFcstFragment extends Fragment
         private final Paint LINE_PAINT;
         private final Paint CIRCLE_PAINT;
 
-        public TempView(Context context, List<VilageFcstData> dataList)
+        public TempView(Context context, List<VilageFcstFinalData> dataList)
         {
             super(context);
             TEMP_PAINT = new TextPaint();
@@ -543,7 +540,7 @@ public class VilageFcstFragment extends Fragment
             float min = Float.MAX_VALUE;
             float temp = 0f;
 
-            for (VilageFcstData data : dataList)
+            for (VilageFcstFinalData data : dataList)
             {
                 temp = Float.parseFloat(data.getTemp3Hour());
                 tempList.add(data.getTemp3Hour());
@@ -628,13 +625,13 @@ public class VilageFcstFragment extends Fragment
         final TextPaint VALUE_PAINT;
         final Paint RECT_PAINT;
 
-        public RainfallView(Context context, List<VilageFcstData> dataList)
+        public RainfallView(Context context, List<VilageFcstFinalData> dataList)
         {
             super(context);
 
             COLUMN_SIZE = dataList.size();
             rainfallList = new LinkedList<>();
-            for (VilageFcstData data : dataList)
+            for (VilageFcstFinalData data : dataList)
             {
                 if (data.getRainPrecipitation6Hour() != null)
                 {

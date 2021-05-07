@@ -212,14 +212,15 @@ public class UltraSrtNcstFragment extends Fragment
             {
                 if (isContains)
                 {
-                    weatherDbViewModel.update(weatherAreaCode.getY(), weatherAreaCode.getX(), WeatherDataDTO.ULTRA_SRT_NCST, result.toString(), new CarrierMessagingService.ResultCallback<Boolean>()
-                    {
-                        @Override
-                        public void onReceiveResult(@NonNull Boolean isUpdated) throws RemoteException
-                        {
+                    weatherDbViewModel.update(weatherAreaCode.getY(), weatherAreaCode.getX(), WeatherDataDTO.ULTRA_SRT_NCST, result.toString()
+                            , ultraSrtNcstWeatherDataDTO.getDownloadedDate(), new CarrierMessagingService.ResultCallback<Boolean>()
+                            {
+                                @Override
+                                public void onReceiveResult(@NonNull Boolean isUpdated) throws RemoteException
+                                {
 
-                        }
-                    });
+                                }
+                            });
                 } else
                 {
                     weatherDbViewModel.insert(ultraSrtNcstWeatherDataDTO, new CarrierMessagingService.ResultCallback<WeatherDataDTO>()
