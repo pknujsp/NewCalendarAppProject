@@ -32,6 +32,7 @@ import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
 import com.zerodsoft.scheduleweather.weather.sunsetrise.SunSetRiseData;
 import com.zerodsoft.scheduleweather.weather.ultrasrtfcst.UltraSrtFcstFragment;
 import com.zerodsoft.scheduleweather.weather.ultrasrtncst.UltraSrtNcstFragment;
+import com.zerodsoft.scheduleweather.weather.viewmodel.WeatherDbViewModel;
 import com.zerodsoft.scheduleweather.weather.viewmodel.WeatherViewModel;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.utility.LonLat;
@@ -66,6 +67,7 @@ public class WeatherItemFragment extends BottomSheetDialogFragment implements On
     private LocationViewModel locationViewModel;
     private List<SunSetRiseData> sunSetRiseList = new ArrayList<>();
     private WeatherAreaCodeDTO weatherAreaCode;
+    private WeatherDbViewModel weatherDbViewModel;
 
     private Integer calendarId;
     private Long eventId;
@@ -160,6 +162,8 @@ public class WeatherItemFragment extends BottomSheetDialogFragment implements On
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
+
+        weatherDbViewModel = new ViewModelProvider(this).get(WeatherDbViewModel.class);
 
         View bottomSheet = getDialog().findViewById(R.id.design_bottom_sheet);
         bottomSheet.getLayoutParams().height = VIEW_HEIGHT;
@@ -269,6 +273,32 @@ public class WeatherItemFragment extends BottomSheetDialogFragment implements On
                 .add(binding.midFcstFragmentContainer.getId(), midFcstFragment, "3")
                 .add(binding.airConditionFragmentContainer.getId(), airConditionFragment, "4")
                 .commit();
+    }
+
+    private void checkOldData()
+    {
+        Calendar calendar = Calendar.getInstance();
+
+        weatherDbViewModel.getDownloadedDateList(weatherAreaCode.getY(), weatherAreaCode.getX(), new CarrierMessagingService.ResultCallback<List<WeatherDataDTO>>()
+        {
+            @Override
+            public void onReceiveResult(@NonNull List<WeatherDataDTO> weatherDataDTOS) throws RemoteException
+            {
+
+            }
+        });
+
+        weatherDbViewModel.getDownloadedDateList(String.valueOf(locationDTO.getLatitude())
+                , String.valueOf(locationDTO.getLongitude()), new CarrierMessagingService.ResultCallback<List<WeatherDataDTO>>()
+                {
+                    @Override
+                    public void onReceiveResult(@NonNull List<WeatherDataDTO> weatherDataDTOS) throws RemoteException
+                    {
+                        Calendar downloadedCalendar = Calendar.getInstance();
+                        downloadedCalendar.setTimeInMillis(Long.parseLong(weatherDataDTOS.get(0).getDownloadedDate()));
+                      
+                    }
+                });
     }
 
     private void refreshWeatherData()

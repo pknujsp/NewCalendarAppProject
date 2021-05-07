@@ -83,7 +83,7 @@ public class WeatherDbRepository implements WeatherDataQuery
     }
 
     @Override
-    public void getDownloadedDataList(String latitude, String longitude, CarrierMessagingService.ResultCallback<List<WeatherDataDTO>> callback)
+    public void getDownloadedDateList(String latitude, String longitude, CarrierMessagingService.ResultCallback<List<WeatherDataDTO>> callback)
     {
         new Thread(new Runnable()
         {
@@ -91,7 +91,7 @@ public class WeatherDbRepository implements WeatherDataQuery
             @Override
             public void run()
             {
-                List<WeatherDataDTO> list = dao.getDownloadedDataList(latitude, longitude);
+                List<WeatherDataDTO> list = dao.getDownloadedDateList(latitude, longitude);
                 callback.onReceiveResult(list);
             }
         }).start();

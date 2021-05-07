@@ -282,6 +282,7 @@ public class LocationItemViewPagerAdapter extends RecyclerView.Adapter<LocationI
                             favoriteLocationDTO.setLatitude(coordToAddressDocuments.getCoordToAddressAddress().getLatitude());
                             favoriteLocationDTO.setLongitude(coordToAddressDocuments.getCoordToAddressAddress().getLongitude());
                         }
+                        favoriteLocationDTO.setAddedDateTime(String.valueOf(System.currentTimeMillis()));
 
                         favoriteLocationQuery.contains(favoriteLocationDTO.getType(), favoriteLocationDTO.getPlaceId()
                                 , favoriteLocationDTO.getAddress(), favoriteLocationDTO.getLatitude(), favoriteLocationDTO.getLongitude()

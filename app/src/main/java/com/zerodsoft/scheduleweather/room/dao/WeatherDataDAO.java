@@ -27,7 +27,7 @@ public interface WeatherDataDAO
     WeatherDataDTO getWeatherData(String latitude, String longitude, Integer dataType);
 
     @Query("SELECT downloaded_date, data_type FROM weather_data_table WHERE latitude = :latitude AND longitude = :longitude")
-    List<WeatherDataDTO> getDownloadedDataList(String latitude, String longitude);
+    List<WeatherDataDTO> getDownloadedDateList(String latitude, String longitude);
 
     @Query("DELETE FROM weather_data_table WHERE latitude = :latitude AND longitude = :longitude AND data_type = :dataType")
     void delete(String latitude, String longitude, Integer dataType);

@@ -18,9 +18,12 @@ import android.service.carrier.CarrierMessagingService;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.naver.maps.geometry.LatLng;
 import com.naver.maps.map.overlay.Marker;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
@@ -39,10 +42,14 @@ import com.zerodsoft.scheduleweather.navermap.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint;
 import com.zerodsoft.scheduleweather.navermap.interfaces.SearchBarController;
 import com.zerodsoft.scheduleweather.navermap.interfaces.SearchFragmentController;
+import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
+import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
 import com.zerodsoft.scheduleweather.room.interfaces.FavoriteLocationQuery;
 
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -60,10 +67,13 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
     private final BottomSheetController bottomSheetController;
     private final IMapData iMapData;
 
+    private LatLng latLngOnCurrentLocation;
+
     private FavoriteLocationViewModel favoriteLocationViewModel;
     private FavoriteLocationAdapter favoriteLocationAdapter;
 
     private SharedPreferences sharedPreferences;
+    private ArrayAdapter<CharSequence> spinnerAdapter;
 
     public FavoriteLocationFragment(FavoriteLocationsListener favoriteLocationsListener, OnBackPressedCallbackController onBackPressedCallbackController
             , BottomSheetController bottomSheetController
@@ -74,6 +84,11 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
         this.favoriteLocationsListener = favoriteLocationsListener;
         this.poiItemOnClickListener = poiItemOnClickListener;
         this.iMapData = iMapData;
+    }
+
+    public void setLatLngOnCurrentLocation(LatLng latLngOnCurrentLocation)
+    {
+        this.latLngOnCurrentLocation = latLngOnCurrentLocation;
     }
 
     public FavoriteLocationViewModel getFavoriteLocationViewModel()
@@ -137,6 +152,15 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
     {
         super.onViewCreated(view, savedInstanceState);
 
+        binding.errorText.setVisibility(View.GONE);
+
+        spinnerAdapter = ArrayAdapter.createFromResource(getContext(),
+                R.array.favorite_locations_sort_spinner, android.R.layout.simple_spinner_item);
+        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        binding.sortSpinner.setAdapter(spinnerAdapter);
+        binding.sortSpinner.setSelection(1);
+        binding.sortSpinner.setOnItemSelectedListener(onItemSelectedListener);
+
         boolean showFavoriteLocationsMarkersOnMap = App.isPreference_key_show_favorite_locations_markers_on_map();
         binding.switchShowFavoriteLocationsMarkerOnMap.setChecked(showFavoriteLocationsMarkersOnMap);
 
@@ -161,6 +185,29 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
         favoriteLocationAdapter = new FavoriteLocationAdapter(this);
         binding.favoriteLocationRecyclerView.setAdapter(favoriteLocationAdapter);
 
+        favoriteLocationAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver()
+        {
+            @Override
+            public void onItemRangeInserted(int positionStart, int itemCount)
+            {
+                super.onItemRangeInserted(positionStart, itemCount);
+                if (binding.errorText.getVisibility() == View.VISIBLE)
+                {
+                    binding.errorText.setVisibility(View.GONE);
+                }
+            }
+
+            @Override
+            public void onItemRangeRemoved(int positionStart, int itemCount)
+            {
+                super.onItemRangeRemoved(positionStart, itemCount);
+                if (favoriteLocationAdapter.getItemCount() == 0)
+                {
+                    binding.errorText.setVisibility(View.VISIBLE);
+                }
+            }
+        });
+
         setFavoriteLocationList();
     }
 
@@ -171,12 +218,22 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
             @Override
             public void onReceiveResult(@NonNull List<FavoriteLocationDTO> list) throws RemoteException
             {
+                calcDistance(list);
+                sort(list);
                 favoriteLocationAdapter.setList(list);
+
                 requireActivity().runOnUiThread(new Runnable()
                 {
                     @Override
                     public void run()
                     {
+                        if (list.isEmpty())
+                        {
+                            binding.errorText.setVisibility(View.VISIBLE);
+                        } else
+                        {
+                            binding.errorText.setVisibility(View.GONE);
+                        }
                         favoriteLocationsListener.createFavoriteLocationsPoiItems(list);
                         iMapData.showPoiItems(PoiItemType.FAVORITE, App.isPreference_key_show_favorite_locations_markers_on_map());
                         favoriteLocationAdapter.notifyDataSetChanged();
@@ -184,6 +241,19 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
                 });
             }
         });
+    }
+
+    private void calcDistance(List<FavoriteLocationDTO> list)
+    {
+        LatLng latLng = null;
+
+        for (FavoriteLocationDTO data : list)
+        {
+            latLng = new LatLng(Double.parseDouble(data.getLatitude()), Double.parseDouble(data.getLongitude()));
+
+            double distance = latLngOnCurrentLocation.distanceTo(latLng);
+            data.setDistance((int) distance);
+        }
     }
 
     public void refresh()
@@ -215,6 +285,28 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
                         favoriteLocationAdapter.getList().removeAll(removedSet);
                     }
 
+                    calcDistance(favoriteLocationAdapter.getList());
+                    sort(favoriteLocationAdapter.getList());
+
+                    requireActivity().runOnUiThread(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            if (favoriteLocationAdapter.getItemCount() == 0)
+                            {
+                                binding.errorText.setVisibility(View.VISIBLE);
+                            } else
+                            {
+                                binding.errorText.setVisibility(View.GONE);
+                            }
+                            favoriteLocationAdapter.notifyDataSetChanged();
+                        }
+                    });
+                } else
+                {
+                    calcDistance(favoriteLocationAdapter.getList());
+                    sort(favoriteLocationAdapter.getList());
                     requireActivity().runOnUiThread(new Runnable()
                     {
                         @Override
@@ -262,6 +354,19 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
     public void onClickedShareButton(FavoriteLocationDTO e)
     {
 
+    }
+
+    private void sort(List<FavoriteLocationDTO> list)
+    {
+        if (binding.sortSpinner.getSelectedItemPosition() == 0)
+        {
+            //distance
+            list.sort(distanceComparator);
+        } else if (binding.sortSpinner.getSelectedItemPosition() == 1)
+        {
+            //datetime
+            list.sort(addedDateTimeComparator);
+        }
     }
 
     @Override
@@ -406,4 +511,38 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
     {
 
     }
+
+    private final AdapterView.OnItemSelectedListener onItemSelectedListener = new AdapterView.OnItemSelectedListener()
+    {
+        @Override
+        public void onItemSelected(AdapterView<?> adapterView, View view, int index, long l)
+        {
+            sort(favoriteLocationAdapter.getList());
+            favoriteLocationAdapter.notifyDataSetChanged();
+        }
+
+        @Override
+        public void onNothingSelected(AdapterView<?> adapterView)
+        {
+
+        }
+    };
+
+    private final Comparator<FavoriteLocationDTO> addedDateTimeComparator = new Comparator<FavoriteLocationDTO>()
+    {
+        @Override
+        public int compare(FavoriteLocationDTO t1, FavoriteLocationDTO t2)
+        {
+            return Long.compare(Long.parseLong(t1.getAddedDateTime()), Long.parseLong(t2.getAddedDateTime()));
+        }
+    };
+
+    private final Comparator<FavoriteLocationDTO> distanceComparator = new Comparator<FavoriteLocationDTO>()
+    {
+        @Override
+        public int compare(FavoriteLocationDTO t1, FavoriteLocationDTO t2)
+        {
+            return Integer.compare(t1.getDistance(), t2.getDistance());
+        }
+    };
 }

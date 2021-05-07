@@ -40,7 +40,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:switchMinWidth="60dp"
-                        android:text="@string/show_favorite_locations_marker_on_map"/>
+                        android:text="@string/show_favorite_locations_marker_on_map" />
 
                 </LinearLayout>
 
@@ -76,6 +76,15 @@
                 android:orientation="vertical"
                 tools:listitem="@layout/favorite_location_item" />
 
+            <TextView
+                android:id="@+id/error_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/favorite_location_header_layout"
+                android:layout_centerHorizontal="true"
+                android:gravity="center"
+                android:padding="24dp"
+                android:text="@string/empty_favorite_locations_list" />
         </RelativeLayout>
 
     </FrameLayout>

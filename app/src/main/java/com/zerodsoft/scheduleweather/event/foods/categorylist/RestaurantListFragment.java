@@ -224,6 +224,7 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
                             newFavoriteLocationDTO.setLongitude(String.valueOf(placeDocuments.getX()));
                             newFavoriteLocationDTO.setType(FavoriteLocationDTO.RESTAURANT);
                             newFavoriteLocationDTO.setAddress(placeDocuments.getAddressName());
+                            newFavoriteLocationDTO.setAddedDateTime(String.valueOf(System.currentTimeMillis()));
 
                             favoriteRestaurantDbQuery.insert(newFavoriteLocationDTO, new CarrierMessagingService.ResultCallback<FavoriteLocationDTO>()
                             {

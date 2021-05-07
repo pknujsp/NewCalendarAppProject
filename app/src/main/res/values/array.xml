@@ -5,6 +5,11 @@
         <item>정확도 순서</item>
     </string-array>
 
+    <string-array name="favorite_locations_sort_spinner">
+        <item>거리 순서</item>
+        <item>등록 순서</item>
+    </string-array>
+
     <string-array name="day_list">
         <item>일</item>
         <item>월</item>

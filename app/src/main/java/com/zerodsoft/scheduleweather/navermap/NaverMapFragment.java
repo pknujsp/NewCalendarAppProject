@@ -642,6 +642,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
         FavoriteLocationFragment favoriteLocationFragment
                 = new FavoriteLocationFragment
                 (this, this, this, this, this);
+        favoriteLocationFragment.setLatLngOnCurrentLocation(naverMap.getCameraPosition().target);
 
         getChildFragmentManager().beginTransaction()
                 .add(binding.favoriteLocationsBottomSheet.fragmentContainerView.getId()
@@ -1678,6 +1679,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
     public void showFavoriteLocationsBottomSheet()
     {
         FavoriteLocationFragment favoriteLocationFragment = (FavoriteLocationFragment) bottomSheetFragmentMap.get(BottomSheetType.FAVORITE_LOCATIONS);
+        favoriteLocationFragment.setLatLngOnCurrentLocation(naverMap.getCameraPosition().target);
 
         onCalledBottomSheet(BottomSheetBehavior.STATE_EXPANDED, bottomSheetBehaviorMap.get(BottomSheetType.FAVORITE_LOCATIONS));
         getChildFragmentManager().beginTransaction().show(favoriteLocationFragment).addToBackStack(FavoriteLocationFragment.TAG).commit();

@@ -86,7 +86,7 @@ public class FavoriteLocationAdapter extends RecyclerView.Adapter<FavoriteLocati
                 }
             });
 
-            String distance = "";
+            String distance = String.valueOf(favoriteLocationDTO.getDistance())+"m";
 
             if (favoriteLocationDTO.getType() == FavoriteLocationDTO.PLACE)
             {

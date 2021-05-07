@@ -32,6 +32,12 @@ public class FavoriteLocationDTO
     @ColumnInfo(name = "type")
     private Integer type;
 
+    @ColumnInfo(name = "added_datetime")
+    private String addedDateTime;
+
+    @Ignore
+    private int distance;
+
     @Ignore
     public static final int RESTAURANT = 0;
     @Ignore
@@ -111,6 +117,26 @@ public class FavoriteLocationDTO
         return address;
     }
 
+    public void setAddedDateTime(String addedDateTime)
+    {
+        this.addedDateTime = addedDateTime;
+    }
+
+    public String getAddedDateTime()
+    {
+        return addedDateTime;
+    }
+
+    public void setDistance(int distance)
+    {
+        this.distance = distance;
+    }
+
+    public int getDistance()
+    {
+        return distance;
+    }
+
     @Override
     public boolean equals(Object o)
     {
@@ -125,12 +151,13 @@ public class FavoriteLocationDTO
                 Objects.equals(placeId, that.placeId) &&
                 Objects.equals(latitude, that.latitude) &&
                 Objects.equals(longitude, that.longitude) &&
-                Objects.equals(type, that.type);
+                Objects.equals(type, that.type) &&
+                Objects.equals(addedDateTime, that.addedDateTime);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(id, placeName, address, placeId, latitude, longitude, type);
+        return Objects.hash(id, placeName, address, placeId, latitude, longitude, type, addedDateTime);
     }
 }
