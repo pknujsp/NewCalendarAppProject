@@ -790,16 +790,16 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
     {
         this.naverMap = naverMap;
 
-        addFavoriteLocationsFragment();
-
-        LocationOverlay locationOverlay = naverMap.getLocationOverlay();
-        locationOverlay.setVisible(false);
-
         naverMap.addOnLocationChangeListener(this);
         naverMap.addOnCameraIdleListener(this);
         naverMap.setOnMapClickListener(this);
         naverMap.setOnMapLongClickListener(this);
         naverMap.getUiSettings().setZoomControlEnabled(false);
+
+        addFavoriteLocationsFragment();
+
+        LocationOverlay locationOverlay = naverMap.getLocationOverlay();
+        locationOverlay.setVisible(false);
 
         //바텀 시트의 상태에 따라서 카메라를 이동시킬 Y값
         final int bottomSheetTopY = binding.naverMapViewLayout.getHeight() - bottomSheetViewMap.get(BottomSheetType.BUILDING).getHeight();
@@ -898,6 +898,9 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
             parameter.setyCoor(String.valueOf(utmk.y));
 
             sgisAddress.reverseGeoCoding(parameter);
+        } else
+        {
+            sgisAuth.auth();
         }
     }
 

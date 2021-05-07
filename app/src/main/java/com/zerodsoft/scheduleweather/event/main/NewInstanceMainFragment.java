@@ -415,7 +415,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
                             {
                                 selectedLocationDtoInEvent = locationDTO;
 
-                                getActivity().runOnUiThread(new Runnable()
+                                requireActivity().runOnUiThread(new Runnable()
                                 {
                                     @Override
                                     public void run()
@@ -516,6 +516,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
         selectedLocationInEventMarker.performClick();
         CameraUpdate cameraUpdate = CameraUpdate.scrollAndZoomTo(latLng, 13);
         naverMap.moveCamera(cameraUpdate);
+        setCurrentAddress();
     }
 
     private Object[] createBottomSheet(int fragmentContainerViewId)

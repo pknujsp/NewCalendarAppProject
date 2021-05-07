@@ -265,7 +265,14 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
                     @Override
                     public void onReceiveResult(@NonNull FavoriteLocationDTO favoriteLocationDTO) throws RemoteException
                     {
-                        callback.onSuccessful(favoriteLocationDTO);
+                        requireActivity().runOnUiThread(new Runnable()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                callback.onSuccessful(favoriteLocationDTO);
+                            }
+                        });
                     }
                 });
     }

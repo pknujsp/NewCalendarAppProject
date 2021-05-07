@@ -240,13 +240,13 @@ public class MidFcstFragment extends Fragment
                 {
                     weatherDbViewModel.update(weatherAreaCode.getY(), weatherAreaCode.getX(), WeatherDataDTO.MID_TA
                             , midTaWeatherDataDTO.getJson(), midTaWeatherDataDTO.getDownloadedDate(), new CarrierMessagingService.ResultCallback<Boolean>()
-                    {
-                        @Override
-                        public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
-                        {
+                            {
+                                @Override
+                                public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
+                                {
 
-                        }
-                    });
+                                }
+                            });
                 } else
                 {
                     weatherDbViewModel.insert(midTaWeatherDataDTO, new CarrierMessagingService.ResultCallback<WeatherDataDTO>()
@@ -509,6 +509,7 @@ public class MidFcstFragment extends Fragment
         private final float MIN_TEMP;
         private final TextPaint TEMP_PAINT;
         private final Paint LINE_PAINT;
+        private final Paint MIN_MAX_TEMP_LINE_PAINT;
         private final Paint CIRCLE_PAINT;
 
         public TempView(Context context, List<MidFcstData> dataList)
@@ -523,7 +524,14 @@ public class MidFcstFragment extends Fragment
             LINE_PAINT.setAntiAlias(true);
             LINE_PAINT.setColor(Color.GRAY);
             LINE_PAINT.setStyle(Paint.Style.FILL);
-            LINE_PAINT.setStrokeWidth(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1f, getResources().getDisplayMetrics()));
+            LINE_PAINT.setStrokeWidth(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1.3f, getResources().getDisplayMetrics()));
+
+            MIN_MAX_TEMP_LINE_PAINT = new Paint();
+            MIN_MAX_TEMP_LINE_PAINT.setAntiAlias(true);
+            MIN_MAX_TEMP_LINE_PAINT.setColor(Color.LTGRAY);
+            MIN_MAX_TEMP_LINE_PAINT.setStyle(Paint.Style.FILL);
+            MIN_MAX_TEMP_LINE_PAINT.setStrokeWidth(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1f, getResources().getDisplayMetrics()));
+
 
             CIRCLE_PAINT = new Paint();
             CIRCLE_PAINT.setAntiAlias(true);
@@ -626,6 +634,27 @@ public class MidFcstFragment extends Fragment
                 lastMinColumnPoint.set(x, minY);
                 lastMaxColumnPoint.set(x, maxY);
             }
+
+            drawMinMaxTempLine(canvas, MIN_TEMP);
+            drawMinMaxTempLine(canvas, MAX_TEMP);
         }
+
+        private void drawMinMaxTempLine(Canvas canvas, float temp)
+        {
+            final float TEXT_HEIGHT = TEMP_PAINT.descent() - TEMP_PAINT.ascent();
+            final float RADIUS = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 2f, getResources().getDisplayMetrics());
+
+            final float VIEW_WIDTH = getWidth();
+            final float VIEW_HEIGHT = getHeight() - ((TEXT_HEIGHT + RADIUS) * 2);
+            final float COLUMN_WIDTH = VIEW_WIDTH / maxTempList.size();
+            final float SPACING = ((VIEW_HEIGHT) / (MAX_TEMP - MIN_TEMP)) / 10f;
+
+            float startX = COLUMN_WIDTH / 2f + COLUMN_WIDTH * 0;
+            float stopX = COLUMN_WIDTH / 2f + COLUMN_WIDTH * (maxTempList.size() - 1);
+            float y = (10f * (MAX_TEMP - temp)) * SPACING + TEXT_HEIGHT + RADIUS;
+
+            canvas.drawLine(startX, y, stopX, y, MIN_MAX_TEMP_LINE_PAINT);
+        }
+
     }
 }

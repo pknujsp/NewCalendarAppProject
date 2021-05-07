@@ -241,6 +241,7 @@ public class VilageFcstFragment extends Fragment
         final int DP22 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 22f, getResources().getDisplayMetrics());
         final int DP34 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 34f, getResources().getDisplayMetrics());
         final int DP80 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 80f, getResources().getDisplayMetrics());
+        final int TEMP_ROW_HEIGHT = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 90f, getResources().getDisplayMetrics());
 
         clearViews();
         List<VilageFcstFinalData> dataList = vilageFcst.getVilageFcstFinalDataList();
@@ -282,7 +283,7 @@ public class VilageFcstFragment extends Fragment
         LinearLayout.LayoutParams skyLabelParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, DP22);
         skyLabelParams.topMargin = MARGIN;
         skyLabelParams.bottomMargin = MARGIN;
-        LinearLayout.LayoutParams tempLabelParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, DP80);
+        LinearLayout.LayoutParams tempLabelParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, TEMP_ROW_HEIGHT);
         tempLabelParams.topMargin = MARGIN;
         tempLabelParams.bottomMargin = MARGIN;
         LinearLayout.LayoutParams rainfallLabelParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, DP34);
@@ -339,7 +340,7 @@ public class VilageFcstFragment extends Fragment
         skyRow.measure(VIEW_WIDTH, DP22);
 
         //기온 ------------------------------------------------------------------------------
-        tempRow.measure(VIEW_WIDTH, DP80);
+        tempRow.measure(VIEW_WIDTH, TEMP_ROW_HEIGHT);
 
         //강수량 ------------------------------------------------------------------------------
         rainfallRow.measure(VIEW_WIDTH, DP34);
@@ -383,7 +384,7 @@ public class VilageFcstFragment extends Fragment
         TableLayout.LayoutParams skyRowParams = new TableLayout.LayoutParams(VIEW_WIDTH, DP22);
         skyRowParams.topMargin = MARGIN;
         skyRowParams.bottomMargin = MARGIN;
-        TableLayout.LayoutParams tempRowParams = new TableLayout.LayoutParams(VIEW_WIDTH, DP80);
+        TableLayout.LayoutParams tempRowParams = new TableLayout.LayoutParams(VIEW_WIDTH, TEMP_ROW_HEIGHT);
         tempRowParams.topMargin = MARGIN;
         tempRowParams.bottomMargin = MARGIN;
         TableLayout.LayoutParams rainfallRowParams = new TableLayout.LayoutParams(VIEW_WIDTH, DP34);
@@ -514,6 +515,7 @@ public class VilageFcstFragment extends Fragment
         private final TextPaint TEMP_PAINT;
         private final Paint LINE_PAINT;
         private final Paint CIRCLE_PAINT;
+        private final Paint MIN_MAX_TEMP_LINE_PAINT;
 
         public TempView(Context context, List<VilageFcstFinalData> dataList)
         {
@@ -527,7 +529,13 @@ public class VilageFcstFragment extends Fragment
             LINE_PAINT.setAntiAlias(true);
             LINE_PAINT.setColor(Color.GRAY);
             LINE_PAINT.setStyle(Paint.Style.FILL);
-            LINE_PAINT.setStrokeWidth(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1f, getResources().getDisplayMetrics()));
+            LINE_PAINT.setStrokeWidth(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1.3f, getResources().getDisplayMetrics()));
+
+            MIN_MAX_TEMP_LINE_PAINT = new Paint();
+            MIN_MAX_TEMP_LINE_PAINT.setAntiAlias(true);
+            MIN_MAX_TEMP_LINE_PAINT.setColor(Color.LTGRAY);
+            MIN_MAX_TEMP_LINE_PAINT.setStyle(Paint.Style.FILL);
+            MIN_MAX_TEMP_LINE_PAINT.setStrokeWidth(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1f, getResources().getDisplayMetrics()));
 
             CIRCLE_PAINT = new Paint();
             CIRCLE_PAINT.setAntiAlias(true);
@@ -613,6 +621,31 @@ public class VilageFcstFragment extends Fragment
                 lastColumnPoint.set(x, y);
                 index++;
             }
+
+            //draw min max temp line
+            drawMinMaxTempLine(canvas, MIN_TEMP);
+            drawMinMaxTempLine(canvas, MAX_TEMP);
+        }
+
+        private void drawMinMaxTempLine(Canvas canvas, float temp)
+        {
+            final float TEXT_HEIGHT = TEMP_PAINT.descent() - TEMP_PAINT.ascent();
+            final float RADIUS = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 2f, getResources().getDisplayMetrics());
+
+            final float VIEW_WIDTH = getWidth();
+            final float VIEW_HEIGHT = getHeight() - ((TEXT_HEIGHT + RADIUS) * 2);
+            final float COLUMN_WIDTH = VIEW_WIDTH / tempList.size();
+            final float SPACING = ((VIEW_HEIGHT) / (MAX_TEMP - MIN_TEMP)) / 10f;
+
+            float startX = 0f;
+            float stopX = 0f;
+            float y = 0f;
+
+            startX = COLUMN_WIDTH / 2f + COLUMN_WIDTH * 0;
+            stopX = COLUMN_WIDTH / 2f + COLUMN_WIDTH * (tempList.size() - 1);
+            y = (10f * (MAX_TEMP - temp)) * SPACING + TEXT_HEIGHT + RADIUS;
+
+            canvas.drawLine(startX, y, stopX, y, MIN_MAX_TEMP_LINE_PAINT);
         }
 
 
