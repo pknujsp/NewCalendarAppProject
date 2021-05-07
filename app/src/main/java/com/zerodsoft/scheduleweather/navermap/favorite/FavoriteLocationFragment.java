@@ -1,11 +1,15 @@
 package com.zerodsoft.scheduleweather.navermap.favorite;
 
+import android.annotation.SuppressLint;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.PopupMenu;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.preference.PreferenceManager;
@@ -15,12 +19,16 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.RemoteException;
 import android.service.carrier.CarrierMessagingService;
+import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
+import android.widget.Toast;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.naver.maps.geometry.LatLng;
@@ -29,27 +37,20 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
 import com.zerodsoft.scheduleweather.databinding.FragmentFavoriteLocationBinding;
-import com.zerodsoft.scheduleweather.etc.FragmentStateCallback;
 import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteLocationViewModel;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PoiItemOnClickListener;
 import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.PoiItemType;
-import com.zerodsoft.scheduleweather.navermap.fragment.search.LocationSearchFragment;
-import com.zerodsoft.scheduleweather.navermap.fragment.searchresult.LocationSearchResultFragment;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapData;
-import com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint;
-import com.zerodsoft.scheduleweather.navermap.interfaces.SearchBarController;
-import com.zerodsoft.scheduleweather.navermap.interfaces.SearchFragmentController;
-import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
-import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
 import com.zerodsoft.scheduleweather.room.interfaces.FavoriteLocationQuery;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -74,6 +75,8 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
 
     private SharedPreferences sharedPreferences;
     private ArrayAdapter<CharSequence> spinnerAdapter;
+
+    private Set<FavoriteLocationDTO> checkedFavoriteLocationSet = new HashSet<>();
 
     public FavoriteLocationFragment(FavoriteLocationsListener favoriteLocationsListener, OnBackPressedCallbackController onBackPressedCallbackController
             , BottomSheetController bottomSheetController
@@ -153,6 +156,7 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
         super.onViewCreated(view, savedInstanceState);
 
         binding.errorText.setVisibility(View.GONE);
+        binding.deleteFavoriteLocations.setVisibility(View.GONE);
 
         spinnerAdapter = ArrayAdapter.createFromResource(getContext(),
                 R.array.favorite_locations_sort_spinner, android.R.layout.simple_spinner_item);
@@ -182,7 +186,7 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
         binding.favoriteLocationRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false));
         binding.favoriteLocationRecyclerView.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
 
-        favoriteLocationAdapter = new FavoriteLocationAdapter(this);
+        favoriteLocationAdapter = new FavoriteLocationAdapter(this, checkBoxOnCheckedChangeListener);
         binding.favoriteLocationRecyclerView.setAdapter(favoriteLocationAdapter);
 
         favoriteLocationAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver()
@@ -204,6 +208,71 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
                 if (favoriteLocationAdapter.getItemCount() == 0)
                 {
                     binding.errorText.setVisibility(View.VISIBLE);
+                }
+            }
+        });
+
+        binding.editButton.setOnClickListener(new View.OnClickListener()
+        {
+            boolean isChecked = false;
+
+            @Override
+            public void onClick(View view)
+            {
+                isChecked = !isChecked;
+
+                if (isChecked)
+                {
+                    binding.editButton.setTextColor(Color.BLUE);
+                    binding.deleteFavoriteLocations.setVisibility(View.VISIBLE);
+                    favoriteLocationAdapter.setCheckBoxVisibility(View.VISIBLE);
+                } else
+                {
+                    binding.editButton.setTextColor(ContextCompat.getColor(getContext(), R.color.gray_500));
+                    binding.deleteFavoriteLocations.setVisibility(View.GONE);
+                    favoriteLocationAdapter.setCheckBoxVisibility(View.GONE);
+                }
+                checkedFavoriteLocationSet.clear();
+                favoriteLocationAdapter.notifyDataSetChanged();
+            }
+        });
+
+        binding.deleteFavoriteLocations.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                if (checkedFavoriteLocationSet.isEmpty())
+                {
+                    Toast.makeText(getContext(), R.string.not_checked_favorite_locations, Toast.LENGTH_SHORT).show();
+                } else
+                {
+                    List<Integer> indexInListList = new ArrayList<>();
+                    List<FavoriteLocationDTO> currentList = favoriteLocationAdapter.getList();
+
+                    for (FavoriteLocationDTO favoriteLocationDTO : checkedFavoriteLocationSet)
+                    {
+                        indexInListList.add(currentList.indexOf(favoriteLocationDTO));
+
+                        delete(favoriteLocationDTO.getId(), new CarrierMessagingService.ResultCallback<Boolean>()
+                        {
+                            @Override
+                            public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
+                            {
+
+                            }
+                        });
+                    }
+
+                    Collections.sort(indexInListList, Comparator.reverseOrder());
+                    for (int index : indexInListList)
+                    {
+                        currentList.remove(index);
+                    }
+
+                    favoriteLocationAdapter.setList(currentList);
+                    favoriteLocationAdapter.notifyDataSetChanged();
+                    binding.editButton.callOnClick();
                 }
             }
         });
@@ -345,9 +414,43 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
     }
 
     @Override
-    public void onClickedEditButton(FavoriteLocationDTO e)
+    public void onClickedEditButton(FavoriteLocationDTO e, View anchorView, int index)
     {
+        PopupMenu popupMenu = new PopupMenu(getContext(), anchorView, Gravity.LEFT);
 
+        popupMenu.getMenuInflater().inflate(R.menu.favorite_locations_menu, popupMenu.getMenu());
+        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener()
+        {
+            @SuppressLint("NonConstantResourceId")
+            @Override
+            public boolean onMenuItemClick(MenuItem menuItem)
+            {
+                switch (menuItem.getItemId())
+                {
+                    case R.id.delete_favorite_location:
+                        delete(e.getId(), new CarrierMessagingService.ResultCallback<Boolean>()
+                        {
+                            @Override
+                            public void onReceiveResult(@NonNull Boolean isDeleted) throws RemoteException
+                            {
+                                requireActivity().runOnUiThread(new Runnable()
+                                {
+                                    @Override
+                                    public void run()
+                                    {
+                                        favoriteLocationAdapter.getList().remove(index);
+                                        favoriteLocationAdapter.notifyItemRemoved(index);
+                                    }
+                                });
+                            }
+                        });
+                        break;
+                }
+                return true;
+            }
+        });
+
+        popupMenu.show();
     }
 
     @Override
@@ -511,6 +614,24 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
     {
 
     }
+
+    private final CompoundButton.OnCheckedChangeListener checkBoxOnCheckedChangeListener = new CompoundButton.OnCheckedChangeListener()
+    {
+
+        @Override
+        public void onCheckedChanged(CompoundButton compoundButton, boolean b)
+        {
+            FavoriteLocationDTO favoriteLocationDTO = (FavoriteLocationDTO) compoundButton.getTag();
+
+            if (b)
+            {
+                checkedFavoriteLocationSet.add(favoriteLocationDTO);
+            } else
+            {
+                checkedFavoriteLocationSet.remove(favoriteLocationDTO);
+            }
+        }
+    };
 
     private final AdapterView.OnItemSelectedListener onItemSelectedListener = new AdapterView.OnItemSelectedListener()
     {

@@ -3,6 +3,7 @@ package com.zerodsoft.scheduleweather.navermap.favorite;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CompoundButton;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -18,15 +19,23 @@ public class FavoriteLocationAdapter extends RecyclerView.Adapter<FavoriteLocati
 {
     private List<FavoriteLocationDTO> list = new ArrayList<>();
     private final OnClickedFavoriteItem onClickedFavoriteItem;
+    private final CompoundButton.OnCheckedChangeListener onCheckedChangeListener;
+    private int checkBoxVisibility = View.GONE;
 
-    public FavoriteLocationAdapter(OnClickedFavoriteItem onClickedFavoriteItem)
+    public FavoriteLocationAdapter(OnClickedFavoriteItem onClickedFavoriteItem, CompoundButton.OnCheckedChangeListener onCheckedChangeListener)
     {
         this.onClickedFavoriteItem = onClickedFavoriteItem;
+        this.onCheckedChangeListener = onCheckedChangeListener;
     }
 
     public void setList(List<FavoriteLocationDTO> list)
     {
         this.list = list;
+    }
+
+    public void setCheckBoxVisibility(int checkBoxVisibility)
+    {
+        this.checkBoxVisibility = checkBoxVisibility;
     }
 
     public List<FavoriteLocationDTO> getList()
@@ -68,6 +77,11 @@ public class FavoriteLocationAdapter extends RecyclerView.Adapter<FavoriteLocati
             final int position = getBindingAdapterPosition();
             FavoriteLocationDTO favoriteLocationDTO = list.get(position);
 
+            binding.checkbox.setChecked(false);
+            binding.checkbox.setVisibility(checkBoxVisibility);
+            binding.checkbox.setTag(favoriteLocationDTO);
+            binding.checkbox.setOnCheckedChangeListener(onCheckedChangeListener);
+
             binding.getRoot().setOnClickListener(new View.OnClickListener()
             {
                 @Override
@@ -82,11 +96,11 @@ public class FavoriteLocationAdapter extends RecyclerView.Adapter<FavoriteLocati
                 @Override
                 public void onClick(View view)
                 {
-                    onClickedFavoriteItem.onClickedEditButton(favoriteLocationDTO);
+                    onClickedFavoriteItem.onClickedEditButton(favoriteLocationDTO, binding.moreButton, position);
                 }
             });
 
-            String distance = String.valueOf(favoriteLocationDTO.getDistance())+"m";
+            String distance = String.valueOf(favoriteLocationDTO.getDistance()) + "m";
 
             if (favoriteLocationDTO.getType() == FavoriteLocationDTO.PLACE)
             {

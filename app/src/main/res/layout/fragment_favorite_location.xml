@@ -56,13 +56,15 @@
                         android:layout_centerInParent="true" />
 
                     <TextView
+                        android:id="@+id/edit_button"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentRight="true"
                         android:background="@drawable/secondary_button"
                         android:clickable="true"
                         android:padding="8dp"
-                        android:text="@string/edit_button" />
+                        android:text="@string/edit_button"
+                        android:textColor="@color/gray_500" />
 
                 </RelativeLayout>
 
@@ -86,6 +88,15 @@
                 android:padding="24dp"
                 android:text="@string/empty_favorite_locations_list" />
         </RelativeLayout>
+
+        <Button
+            android:id="@+id/delete_favorite_locations"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right|bottom"
+            android:layout_marginRight="24dp"
+            android:layout_marginBottom="32dp"
+            android:text="@string/delete_button" />
 
     </FrameLayout>
 </layout>
