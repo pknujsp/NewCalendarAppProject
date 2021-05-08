@@ -31,7 +31,9 @@ import androidx.viewpager2.widget.CompositePageTransformer;
 import androidx.viewpager2.widget.MarginPageTransformer;
 import androidx.viewpager2.widget.ViewPager2;
 
+import android.os.RemoteException;
 import android.provider.Settings;
+import android.service.carrier.CarrierMessagingService;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -56,6 +58,7 @@ import com.naver.maps.map.NaverMapOptions;
 import com.naver.maps.map.OnMapReadyCallback;
 import com.naver.maps.map.Projection;
 import com.naver.maps.map.overlay.CircleOverlay;
+import com.naver.maps.map.overlay.InfoWindow;
 import com.naver.maps.map.overlay.LocationOverlay;
 import com.naver.maps.map.overlay.Marker;
 import com.naver.maps.map.overlay.Overlay;
@@ -105,6 +108,7 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.auth.SgisAuthRe
 import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
+import com.zerodsoft.scheduleweather.room.interfaces.FavoriteLocationQuery;
 import com.zerodsoft.scheduleweather.sgis.SgisAddress;
 import com.zerodsoft.scheduleweather.sgis.SgisAuth;
 import com.zerodsoft.scheduleweather.utility.NetworkStatus;
@@ -1601,23 +1605,21 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
         showAddressOfSelectedLocation(latLng);
     }
 
+
     private void showAddressOfSelectedLocation(LatLng latLng)
     {
         //주소 표시
         CameraUpdate cameraUpdate = CameraUpdate.scrollTo(latLng);
+        cameraUpdate.animate(CameraAnimation.Linear, 150);
         naverMap.moveCamera(cameraUpdate);
 
         if (markerOfSelectedLocation == null)
         {
             markerOfSelectedLocation = new Marker();
-            markerOfSelectedLocation.setSubCaptionText(getString(R.string.message_click_marker_to_delete));
-            markerOfSelectedLocation.setSubCaptionColor(Color.BLUE);
-            markerOfSelectedLocation.setSubCaptionHaloColor(Color.rgb(200, 255, 200));
-            markerOfSelectedLocation.setSubCaptionTextSize(14f);
-
             markerOfSelectedLocation.setCaptionColor(Color.BLUE);
             markerOfSelectedLocation.setCaptionHaloColor(Color.rgb(200, 255, 200));
-            markerOfSelectedLocation.setCaptionTextSize(17f);
+            markerOfSelectedLocation.setCaptionTextSize(14f);
+            markerOfSelectedLocation.setCaptionText(getString(R.string.message_click_marker_to_delete));
 
             markerOfSelectedLocation.setOnClickListener(new Overlay.OnClickListener()
             {
@@ -1630,39 +1632,15 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
             });
         }
 
-        markerOfSelectedLocation.setCaptionText("");
         markerOfSelectedLocation.setPosition(latLng);
         markerOfSelectedLocation.setMap(naverMap);
 
-        LocalApiPlaceParameter parameter = LocalParameterUtil.getCoordToAddressParameter(latLng.latitude, latLng.longitude);
-        CoordToAddressUtil.coordToAddress(parameter, new JsonDownloader<CoordToAddress>()
-        {
-            @Override
-            public void onResponseSuccessful(CoordToAddress result)
-            {
-                getActivity().runOnUiThread(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        markerOfSelectedLocation.setCaptionText(result.getCoordToAddressDocuments().get(0).getCoordToAddressAddress().getAddressName());
-                    }
-                });
-            }
-
-            @Override
-            public void onResponseFailed(Exception e)
-            {
-                getActivity().runOnUiThread(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        markerOfSelectedLocation.setCaptionText(getString(R.string.error_downloading_address));
-                    }
-                });
-            }
-        });
+        InfoWindow infoWindow = new InfoWindow();
+        infoWindow.setAlpha(0.85f);
+        FavoriteLocationQuery favoriteLocationQuery = (FavoriteLocationQuery) bottomSheetFragmentMap.get(BottomSheetType.FAVORITE_LOCATIONS);
+        InfoWindowOnMarkerAdapter infoWindowOnMarkerAdapter = new InfoWindowOnMarkerAdapter(requireContext(), requireActivity(), favoriteLocationQuery, latLng);
+        infoWindow.setAdapter(infoWindowOnMarkerAdapter);
+        infoWindow.open(markerOfSelectedLocation);
     }
 
     @Override
