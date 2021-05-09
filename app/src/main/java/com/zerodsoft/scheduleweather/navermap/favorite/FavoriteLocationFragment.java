@@ -22,7 +22,6 @@ import android.service.carrier.CarrierMessagingService;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -40,7 +39,7 @@ import com.zerodsoft.scheduleweather.databinding.FragmentFavoriteLocationBinding
 import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteLocationViewModel;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PoiItemOnClickListener;
 import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
-import com.zerodsoft.scheduleweather.navermap.PoiItemType;
+import com.zerodsoft.scheduleweather.navermap.MarkerType;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapData;
@@ -178,7 +177,7 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
                 App.setPreference_key_show_favorite_locations_markers_on_map(isChecked);
                 editor.commit();
 
-                iMapData.showPoiItems(PoiItemType.FAVORITE, isChecked);
+                iMapData.showPoiItems(MarkerType.FAVORITE, isChecked);
             }
         });
 
@@ -304,7 +303,7 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
                             binding.errorText.setVisibility(View.GONE);
                         }
                         favoriteLocationsListener.createFavoriteLocationsPoiItems(list);
-                        iMapData.showPoiItems(PoiItemType.FAVORITE, App.isPreference_key_show_favorite_locations_markers_on_map());
+                        iMapData.showPoiItems(MarkerType.FAVORITE, App.isPreference_key_show_favorite_locations_markers_on_map());
                         favoriteLocationAdapter.notifyDataSetChanged();
                     }
                 });

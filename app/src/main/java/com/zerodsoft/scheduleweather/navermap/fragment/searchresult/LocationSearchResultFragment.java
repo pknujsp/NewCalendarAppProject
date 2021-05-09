@@ -20,7 +20,7 @@ import com.zerodsoft.scheduleweather.databinding.FragmentSearchResultListBinding
 import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PoiItemOnClickListener;
 import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
-import com.zerodsoft.scheduleweather.navermap.PoiItemType;
+import com.zerodsoft.scheduleweather.navermap.MarkerType;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.navermap.interfaces.OnClickedLocListItem;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapData;
@@ -237,7 +237,7 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
     @Override
     public void onClickedLocItem(int index)
     {
-        poiItemOnClickListener.onPOIItemSelectedByList(index, PoiItemType.SEARCH_RESULT);
+        poiItemOnClickListener.onPOIItemSelectedByList(index, MarkerType.SEARCH_RESULT);
         searchBarController.changeViewTypeImg(SearchBarController.LIST);
         bottomSheetController.setStateOfBottomSheet(BottomSheetType.SEARCH_LOCATION, BottomSheetBehavior.STATE_COLLAPSED);
     }

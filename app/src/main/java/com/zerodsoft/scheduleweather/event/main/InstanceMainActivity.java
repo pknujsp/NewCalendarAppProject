@@ -35,7 +35,7 @@ import com.zerodsoft.scheduleweather.common.interfaces.OnChangedVisibilityListen
 import com.zerodsoft.scheduleweather.databinding.InstanceMainActivityBinding;
 import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.common.MLocActivityNaver;
-import com.zerodsoft.scheduleweather.event.common.ReselectDetailLocationNaver;
+import com.zerodsoft.scheduleweather.event.common.SelectionDetailLocationNaver;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.event.activity.InstanceActivity;
 import com.zerodsoft.scheduleweather.event.foods.activity.FoodsActivity;
@@ -735,9 +735,9 @@ public class InstanceMainActivity extends AppCompatActivity implements OnMapRead
              */
 
             //naver
-            Intent intent = new Intent(activity, ReselectDetailLocationNaver.class);
+            Intent intent = new Intent(activity, SelectionDetailLocationNaver.class);
             Bundle bundle = new Bundle();
-            bundle.putParcelable("savedLocationDto", locationDTO);
+            bundle.putParcelable("selectedLocationDTO", locationDTO);
 
             intent.putExtras(bundle);
             activityResultLauncher.launch(intent);

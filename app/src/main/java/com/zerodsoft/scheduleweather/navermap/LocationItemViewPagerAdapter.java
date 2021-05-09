@@ -18,7 +18,6 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
 import com.zerodsoft.scheduleweather.navermap.interfaces.OnClickedBottomSheetListener;
 import com.zerodsoft.scheduleweather.navermap.interfaces.PlacesItemBottomSheetButtonOnClickListener;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalDocument;
@@ -72,14 +71,17 @@ public class LocationItemViewPagerAdapter extends RecyclerView.Adapter<LocationI
         this.isVisibleFavoriteBtn = isVisibleFavoriteBtn;
     }
 
-    public void setVisibleSelectBtn(int visibleSelectBtn)
+    public LocationItemViewPagerAdapter setVisibleSelectBtn(int visibleSelectBtn)
     {
         isVisibleSelectBtn = visibleSelectBtn;
+        return this;
     }
 
-    public void setVisibleUnSelectBtn(int visibleUnSelectBtn)
+    public LocationItemViewPagerAdapter setVisibleUnSelectBtn(int visibleUnSelectBtn)
     {
         isVisibleUnSelectBtn = visibleUnSelectBtn;
+        return this;
+
     }
 
     public void setPlaceDocumentsList(List<? extends KakaoLocalDocument> placeDocumentsList)
@@ -102,7 +104,7 @@ public class LocationItemViewPagerAdapter extends RecyclerView.Adapter<LocationI
     @Override
     public void onBindViewHolder(@NonNull PlaceItemInMapViewHolder holder, int position)
     {
-        holder.bind(placeDocumentsList.get(position));
+        holder.bind();
     }
 
     public List<KakaoLocalDocument> getPlaceDocumentsList()
@@ -169,10 +171,11 @@ public class LocationItemViewPagerAdapter extends RecyclerView.Adapter<LocationI
             cardView.setOnClickListener(onClickListener);
         }
 
-        public void bind(KakaoLocalDocument data)
+        public void bind()
         {
             itemPosition = (getBindingAdapterPosition() + 1) + " / " + getItemCount();
             itemPositionTextView.setText(itemPosition);
+            KakaoLocalDocument data = placeDocumentsList.get(getBindingAdapterPosition());
 
             if (data instanceof PlaceDocuments)
             {
@@ -233,7 +236,7 @@ public class LocationItemViewPagerAdapter extends RecyclerView.Adapter<LocationI
                 @Override
                 public void onClick(View view)
                 {
-                    placesItemBottomSheetButtonOnClickListener.onSelectedLocation();
+                    placesItemBottomSheetButtonOnClickListener.onSelectedLocation(data);
                 }
             });
 

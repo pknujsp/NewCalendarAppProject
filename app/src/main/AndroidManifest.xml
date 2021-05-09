@@ -35,7 +35,8 @@
             android:name=".event.common.MLocActivityNaver"
             android:windowSoftInputMode="adjustNothing" />
         <activity
-            android:name=".event.common.ReselectDetailLocationNaver"
+            android:name=".event.common.SelectionDetailLocationNaver"
+            android:theme="@style/AppTheme"
             android:windowSoftInputMode="adjustNothing" />
         <activity android:name=".event.foods.activity.LocationSettingsActivity" />
         <activity android:name=".event.places.activity.PlacesActivity" />
@@ -50,9 +51,7 @@
         <activity android:name=".activity.placecategory.activity.CategorySettingsActivity" />
         <activity android:name=".activity.placecategory.activity.PlaceCategoryActivity" />
         <activity android:name=".activity.editevent.activity.AttendeesActivity" />
-        <activity
-            android:name=".kakaomap.activity.KakaoMapActivity"
-            android:windowSoftInputMode="adjustNothing" />
+
         <activity android:name=".activity.editevent.activity.ReminderActivity" />
         <activity android:name=".activity.editevent.activity.TimeZoneActivity" />
         <activity android:name=".activity.editevent.activity.RecurrenceActivity" />

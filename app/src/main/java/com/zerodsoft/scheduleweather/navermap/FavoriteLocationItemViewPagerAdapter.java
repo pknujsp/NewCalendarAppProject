@@ -171,10 +171,10 @@ public class FavoriteLocationItemViewPagerAdapter extends LocationItemViewPagerA
             {
                 if (favoriteLocationDTO.getType() == FavoriteLocationDTO.ADDRESS)
                 {
-                    FavoriteLocationItemInMapViewHolder.super.bind(kakaoLocalDocumentMap.get(favoriteLocationDTO.getId()));
+                    FavoriteLocationItemInMapViewHolder.super.bind();
                 } else if (favoriteLocationDTO.getType() == FavoriteLocationDTO.PLACE)
                 {
-                    FavoriteLocationItemInMapViewHolder.super.bind(kakaoLocalDocumentMap.get(favoriteLocationDTO.getId()));
+                    FavoriteLocationItemInMapViewHolder.super.bind();
                 }
             } else
             {
@@ -193,7 +193,8 @@ public class FavoriteLocationItemViewPagerAdapter extends LocationItemViewPagerA
                             coordToAddressDocuments.getCoordToAddressAddress().setLongitude(favoriteLocationDTO.getLongitude());
 
                             kakaoLocalDocumentMap.put(favoriteLocationDTO.getId(), coordToAddressDocuments);
-                            FavoriteLocationItemInMapViewHolder.super.bind(coordToAddressDocuments);
+                            placeDocumentsList.add(coordToAddressDocuments);
+                            FavoriteLocationItemInMapViewHolder.super.bind();
                         }
 
                         @Override
@@ -218,7 +219,9 @@ public class FavoriteLocationItemViewPagerAdapter extends LocationItemViewPagerA
                         {
                             PlaceDocuments placeDocuments = result.getPlaceDocuments().get(0);
                             kakaoLocalDocumentMap.put(favoriteLocationDTO.getId(), placeDocuments);
-                            FavoriteLocationItemInMapViewHolder.super.bind(placeDocuments);
+                            placeDocumentsList.add(placeDocuments);
+
+                            FavoriteLocationItemInMapViewHolder.super.bind();
                         }
 
                         @Override

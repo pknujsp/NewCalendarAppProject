@@ -9,6 +9,8 @@ import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
+import com.zerodsoft.scheduleweather.etc.LocationType;
+
 import java.util.Objects;
 
 @Entity(tableName = "location_table")
@@ -44,7 +46,7 @@ public class LocationDTO implements Parcelable, Cloneable
     private String placeName;
 
     @ColumnInfo(name = "location_type")
-    private int locationType;
+    private Integer locationType = LocationType.PLACE;
 
     @Ignore
     public LocationDTO()
@@ -123,23 +125,23 @@ public class LocationDTO implements Parcelable, Cloneable
         if (o == null || getClass() != o.getClass())
             return false;
         LocationDTO that = (LocationDTO) o;
-        return calendarId == that.calendarId &&
+        return id == that.id &&
+                calendarId == that.calendarId &&
                 eventId == that.eventId &&
                 Double.compare(that.latitude, latitude) == 0 &&
                 Double.compare(that.longitude, longitude) == 0 &&
-                locationType == that.locationType &&
                 Objects.equals(addressName, that.addressName) &&
                 Objects.equals(roadAddressName, that.roadAddressName) &&
                 Objects.equals(placeId, that.placeId) &&
-                Objects.equals(placeName, that.placeName);
+                Objects.equals(placeName, that.placeName) &&
+                Objects.equals(locationType, that.locationType);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(calendarId, eventId, latitude, longitude, addressName, roadAddressName, placeId, placeName, locationType);
+        return Objects.hash(id, calendarId, eventId, latitude, longitude, addressName, roadAddressName, placeId, placeName, locationType);
     }
-
 
     @NonNull
     @Override
@@ -238,14 +240,14 @@ public class LocationDTO implements Parcelable, Cloneable
         this.placeName = placeName;
     }
 
-    public int getLocationType()
-    {
-        return locationType;
-    }
-
-    public void setLocationType(int locationType)
+    public void setLocationType(Integer locationType)
     {
         this.locationType = locationType;
+    }
+
+    public Integer getLocationType()
+    {
+        return locationType;
     }
 
     public boolean isEmpty()

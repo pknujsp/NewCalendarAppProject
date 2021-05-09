@@ -221,6 +221,7 @@ public class AirConditionFragment extends Fragment
                 @Override
                 public void run()
                 {
+                    viewProgress.onCompletedProcessingData(false);
                     Toast.makeText(getContext(), R.string.error, Toast.LENGTH_SHORT).show();
                 }
             });
@@ -243,7 +244,15 @@ public class AirConditionFragment extends Fragment
         @Override
         public void onResponseFailed(Exception e)
         {
-
+            requireActivity().runOnUiThread(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    viewProgress.onCompletedProcessingData(false);
+                    Toast.makeText(getContext(), R.string.error, Toast.LENGTH_SHORT).show();
+                }
+            });
         }
     };
 

@@ -38,11 +38,14 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.databinding.EventFragmentBinding;
+import com.zerodsoft.scheduleweather.etc.LocationType;
+import com.zerodsoft.scheduleweather.event.common.SelectionDetailLocationNaver;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationHistoryViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationInfoViewModel;
 import com.zerodsoft.scheduleweather.event.main.InstanceMainActivity;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
+import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.utility.NetworkStatus;
 import com.zerodsoft.scheduleweather.utility.RecurrenceRule;
@@ -67,6 +70,7 @@ public class EventFragment extends BottomSheetDialogFragment
     private ContentValues instanceValues;
     private List<ContentValues> attendeeList;
     private CalendarViewModel viewModel;
+    private LocationViewModel locationViewModel;
 
     private final int VIEW_HEIGHT;
 
@@ -78,7 +82,6 @@ public class EventFragment extends BottomSheetDialogFragment
 
     private AlertDialog attendeeDialog;
 
-    private LocationViewModel locationViewModel;
     private FoodCriteriaLocationInfoViewModel foodCriteriaLocationInfoViewModel;
     private FoodCriteriaLocationHistoryViewModel foodCriteriaLocationHistoryViewModel;
     private int resultCode = Activity.RESULT_CANCELED;
@@ -727,12 +730,12 @@ public class EventFragment extends BottomSheetDialogFragment
                     switch (result.getResultCode())
                     {
                         case InstanceMainActivity.RESULT_RESELECTED_LOCATION:
-                            String newLocation = result.getData().getStringExtra("selectedLocationName");
-                            Toast.makeText(getActivity(), newLocation + " 변경완료", Toast.LENGTH_SHORT).show();
+                            LocationDTO locationDTO = result.getData().getExtras().getParcelable("selectedLocationDTO");
+                            changedDetailLocation(locationDTO);
                             resultCode = InstanceMainActivity.RESULT_UPDATED_VALUE;
                             break;
                         case InstanceMainActivity.RESULT_REMOVED_LOCATION:
-                            Toast.makeText(getActivity(), "위치 삭제완료", Toast.LENGTH_SHORT).show();
+                            deletedDetailLocation();
                             resultCode = InstanceMainActivity.RESULT_UPDATED_VALUE;
                             break;
                     }
@@ -756,4 +759,43 @@ public class EventFragment extends BottomSheetDialogFragment
                 }
             });
 
+    private void changedDetailLocation(LocationDTO locationDTO)
+    {
+        // 지정이 완료된 경우 - DB에 등록하고 이벤트 액티비티로 넘어가서 날씨 또는 주변 정보 프래그먼트를 실행한다.
+        // 선택된 위치를 DB에 등록
+        locationDTO.setCalendarId(CALENDAR_ID);
+        locationDTO.setEventId(EVENT_ID);
+        locationViewModel.addLocation(locationDTO, new CarrierMessagingService.ResultCallback<Boolean>()
+        {
+            @Override
+            public void onReceiveResult(@NonNull Boolean isAdded) throws RemoteException
+            {
+                if (isAdded)
+                {
+                    Toast.makeText(getContext(), "위치 변경완료", Toast.LENGTH_SHORT).show();
+                } else
+                {
+
+                }
+            }
+        });
+    }
+
+    private void deletedDetailLocation()
+    {
+        locationViewModel.removeLocation(CALENDAR_ID, EVENT_ID, new CarrierMessagingService.ResultCallback<Boolean>()
+        {
+            @Override
+            public void onReceiveResult(@NonNull Boolean isRemoved) throws RemoteException
+            {
+                if (isRemoved)
+                {
+                    Toast.makeText(getContext(), "위치 삭제완료", Toast.LENGTH_SHORT).show();
+                } else
+                {
+
+                }
+            }
+        });
+    }
 }

@@ -1,6 +1,0 @@
-package com.zerodsoft.scheduleweather.navermap;
-
-public enum PoiItemType
-{
-    SEARCH_RESULT, BUILDING, RESTAURANT, SELECTED_PLACE_CATEGORY, COORD_TO_ADDRESS, SELECTED_ADDRESS_IN_EVENT, SELECTED_PLACE_IN_EVENT, FAVORITE
-}

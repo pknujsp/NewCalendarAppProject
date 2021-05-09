@@ -26,7 +26,7 @@ import com.zerodsoft.scheduleweather.navermap.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.navermap.fragment.searchresult.adapter.AddressesAdapter;
 import com.zerodsoft.scheduleweather.navermap.util.LocalParameterUtil;
 import com.zerodsoft.scheduleweather.navermap.viewmodel.AddressViewModel;
-import com.zerodsoft.scheduleweather.navermap.PoiItemType;
+import com.zerodsoft.scheduleweather.navermap.MarkerType;
 import com.zerodsoft.scheduleweather.navermap.interfaces.OnExtraListDataListener;
 import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
@@ -98,10 +98,10 @@ public class SearchResultAddressListFragment extends Fragment implements IViewPa
                     super.onItemRangeInserted(positionStart, itemCount);
                     if (positionStart > 0)
                     {
-                        iMapData.addPoiItems(adapter.getCurrentList().snapshot(), PoiItemType.SEARCH_RESULT);
+                        iMapData.addPoiItems(adapter.getCurrentList().snapshot(), MarkerType.SEARCH_RESULT);
                     } else
                     {
-                        iMapData.createPoiItems(adapter.getCurrentList().snapshot(), PoiItemType.SEARCH_RESULT);
+                        iMapData.createPoiItems(adapter.getCurrentList().snapshot(), MarkerType.SEARCH_RESULT);
                     }
                 }
             });
@@ -125,15 +125,15 @@ public class SearchResultAddressListFragment extends Fragment implements IViewPa
     @Override
     public void onChangedPage()
     {
-        int poiItemSize = iMapData.getPoiItemSize(PoiItemType.SEARCH_RESULT);
-        iMapData.setLocationItemViewPagerAdapter(new LocationItemViewPagerAdapter(getContext()), PoiItemType.SEARCH_RESULT);
+        int poiItemSize = iMapData.getPoiItemSize(MarkerType.SEARCH_RESULT);
+        iMapData.setLocationItemViewPagerAdapter(new LocationItemViewPagerAdapter(getContext()), MarkerType.SEARCH_RESULT);
 
         if (poiItemSize > 0 && adapter != null)
         {
             if (adapter.getItemCount() > 0)
             {
-                iMapData.removePoiItems(PoiItemType.SEARCH_RESULT);
-                iMapData.createPoiItems(adapter.getCurrentList().snapshot(), PoiItemType.SEARCH_RESULT);
+                iMapData.removePoiItems(MarkerType.SEARCH_RESULT);
+                iMapData.createPoiItems(adapter.getCurrentList().snapshot(), MarkerType.SEARCH_RESULT);
             }
         }
     }

@@ -8,6 +8,7 @@ import android.os.Bundle;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.ActivityNaverMapBinding;
 import com.zerodsoft.scheduleweather.navermap.interfaces.PlacesItemBottomSheetButtonOnClickListener;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalDocument;
 
 public class NaverMapActivity extends AppCompatActivity implements PlacesItemBottomSheetButtonOnClickListener
 {
@@ -26,7 +27,7 @@ public class NaverMapActivity extends AppCompatActivity implements PlacesItemBot
     }
 
     @Override
-    public void onSelectedLocation()
+    public void onSelectedLocation(KakaoLocalDocument kakaoLocalDocument)
     {
 
     }

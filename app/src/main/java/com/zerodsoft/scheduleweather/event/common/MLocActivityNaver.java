@@ -15,6 +15,7 @@ import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.main.InstanceMainActivity;
 import com.zerodsoft.scheduleweather.navermap.fragment.searchheader.MapHeaderSearchFragment;
 import com.zerodsoft.scheduleweather.navermap.NaverMapActivity;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalDocument;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
 public class MLocActivityNaver extends NaverMapActivity
@@ -98,10 +99,12 @@ public class MLocActivityNaver extends NaverMapActivity
     }
 
     @Override
-    public void onSelectedLocation()
+    public void onSelectedLocation(KakaoLocalDocument kakaoLocalDocument)
     {
         // 지정이 완료된 경우 - DB에 등록하고 이벤트 액티비티로 넘어가서 날씨 또는 주변 정보 프래그먼트를 실행한다.
-        LocationDTO location = naverMapFragment.getSelectedLocationDto(calendarId, eventId);
+        LocationDTO location = naverMapFragment.getSelectedLocationDto();
+        location.setCalendarId(calendarId);
+        location.setEventId(eventId);
 
         //선택된 위치를 DB에 등록
         viewModel.addLocation(location, new CarrierMessagingService.ResultCallback<Boolean>()

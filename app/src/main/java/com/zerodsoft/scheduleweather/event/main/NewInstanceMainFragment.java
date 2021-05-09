@@ -53,7 +53,7 @@ import com.zerodsoft.scheduleweather.event.weather.fragment.WeatherItemFragment;
 import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.LocationItemViewPagerAdapter;
 import com.zerodsoft.scheduleweather.navermap.NaverMapFragment;
-import com.zerodsoft.scheduleweather.navermap.PoiItemType;
+import com.zerodsoft.scheduleweather.navermap.MarkerType;
 import com.zerodsoft.scheduleweather.navermap.interfaces.OnExtraListDataListener;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
@@ -433,7 +433,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
                                     selectedLocationInEventMarker.setMap(null);
                                     selectedLocationInEventMarker = null;
 
-                                    getActivity().runOnUiThread(new Runnable()
+                                    requireActivity().runOnUiThread(new Runnable()
                                     {
                                         @Override
                                         public void run()
@@ -465,7 +465,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
         selectedLocationInEventMarker.setForceShowIcon(true);
         selectedLocationInEventMarker.setCaptionColor(Color.BLUE);
         selectedLocationInEventMarker.setCaptionHaloColor(Color.rgb(200, 255, 200));
-        selectedLocationInEventMarker.setCaptionTextSize(13f);
+        selectedLocationInEventMarker.setCaptionTextSize(12f);
         selectedLocationInEventMarker.setOnClickListener(new Overlay.OnClickListener()
         {
             @Override
@@ -609,7 +609,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
 
         foodMenuChipGroup = null;
         foodMenuListChip = null;
-        removePoiItems(PoiItemType.RESTAURANT);
+        removePoiItems(MarkerType.RESTAURANT);
     }
 
     @Override
@@ -681,7 +681,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
             {
                 LocationItemViewPagerAdapter locationItemViewPagerAdapter = new LocationItemViewPagerAdapter(getContext());
                 locationItemViewPagerAdapter.setIsVisibleFavoriteBtn(View.GONE);
-                setLocationItemViewPagerAdapter(locationItemViewPagerAdapter, PoiItemType.RESTAURANT);
+                setLocationItemViewPagerAdapter(locationItemViewPagerAdapter, MarkerType.RESTAURANT);
 
                 selectedFoodMenu = ((ChipViewHolder) compoundButton.getTag()).foodMenuName;
                 restaurantItemGetter.getRestaurants(selectedFoodMenu, new CarrierMessagingService.ResultCallback<List<PlaceDocuments>>()
@@ -694,8 +694,8 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
                             @Override
                             public void run()
                             {
-                                createPoiItems(placeDocuments, PoiItemType.RESTAURANT);
-                                showPoiItems(PoiItemType.RESTAURANT);
+                                createPoiItems(placeDocuments, MarkerType.RESTAURANT);
+                                showPoiItems(MarkerType.RESTAURANT);
                             }
                         });
 
@@ -703,7 +703,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
                 });
             } else if (foodMenuChipGroup.getCheckedChipIds().isEmpty())
             {
-                removePoiItems(PoiItemType.RESTAURANT);
+                removePoiItems(MarkerType.RESTAURANT);
                 selectedFoodMenu = null;
             }
             setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_COLLAPSED);
@@ -739,11 +739,11 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
     }
 
     @Override
-    public void onPageSelectedLocationItemBottomSheetViewPager(int position, PoiItemType poiItemType)
+    public void onPageSelectedLocationItemBottomSheetViewPager(int position, MarkerType markerType)
     {
-        super.onPageSelectedLocationItemBottomSheetViewPager(position, poiItemType);
+        super.onPageSelectedLocationItemBottomSheetViewPager(position, markerType);
 
-        switch (poiItemType)
+        switch (markerType)
         {
             case SELECTED_PLACE_CATEGORY:
             {
@@ -758,7 +758,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
                         public void onItemRangeInserted(int positionStart, int itemCount)
                         {
                             super.onItemRangeInserted(positionStart, itemCount);
-                            addPoiItems(placeItemsGetter.getPlaceItems(selectedPlaceCategory), poiItemType);
+                            addPoiItems(placeItemsGetter.getPlaceItems(selectedPlaceCategory), markerType);
                         }
                     });
                     return;
@@ -785,7 +785,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
                                         @Override
                                         public void run()
                                         {
-                                            addPoiItems(placeDocuments, poiItemType);
+                                            addPoiItems(placeDocuments, markerType);
                                         }
                                     });
                                 }

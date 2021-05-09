@@ -17,7 +17,7 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.interfaces.SearchHistoryDataController;
 import com.zerodsoft.scheduleweather.databinding.FragmentLocationSearchBarBinding;
 import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
-import com.zerodsoft.scheduleweather.navermap.PoiItemType;
+import com.zerodsoft.scheduleweather.navermap.MarkerType;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.navermap.interfaces.SearchBarController;
@@ -161,7 +161,7 @@ public class MapHeaderSearchFragment extends Fragment implements SearchBarContro
         {
             // to map
             // 버튼 이미지, 프래그먼트 숨김/보이기 설정
-            iMapData.showPoiItems(PoiItemType.SEARCH_RESULT);
+            iMapData.showPoiItems(MarkerType.SEARCH_RESULT);
             bottomSheetController.setStateOfBottomSheet(BottomSheetType.SEARCH_LOCATION, BottomSheetBehavior.STATE_COLLAPSED);
         } else
         {

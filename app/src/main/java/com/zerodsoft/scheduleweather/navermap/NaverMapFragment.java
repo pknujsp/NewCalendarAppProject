@@ -31,9 +31,7 @@ import androidx.viewpager2.widget.CompositePageTransformer;
 import androidx.viewpager2.widget.MarginPageTransformer;
 import androidx.viewpager2.widget.ViewPager2;
 
-import android.os.RemoteException;
 import android.provider.Settings;
-import android.service.carrier.CarrierMessagingService;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -58,7 +56,6 @@ import com.naver.maps.map.NaverMapOptions;
 import com.naver.maps.map.OnMapReadyCallback;
 import com.naver.maps.map.Projection;
 import com.naver.maps.map.overlay.CircleOverlay;
-import com.naver.maps.map.overlay.InfoWindow;
 import com.naver.maps.map.overlay.LocationOverlay;
 import com.naver.maps.map.overlay.Marker;
 import com.naver.maps.map.overlay.Overlay;
@@ -77,7 +74,6 @@ import com.zerodsoft.scheduleweather.event.places.interfaces.OnClickedPlacesList
 import com.zerodsoft.scheduleweather.event.places.interfaces.PoiItemOnClickListener;
 import com.zerodsoft.scheduleweather.navermap.building.fragment.BuildingFragment;
 import com.zerodsoft.scheduleweather.navermap.building.fragment.BuildingListFragment;
-import com.zerodsoft.scheduleweather.navermap.favorite.FavoriteLocationAdapter;
 import com.zerodsoft.scheduleweather.navermap.favorite.FavoriteLocationFragment;
 import com.zerodsoft.scheduleweather.navermap.fragment.search.LocationSearchFragment;
 import com.zerodsoft.scheduleweather.navermap.fragment.searchheader.MapHeaderMainFragment;
@@ -91,6 +87,7 @@ import com.zerodsoft.scheduleweather.navermap.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint;
 import com.zerodsoft.scheduleweather.navermap.interfaces.INetwork;
 import com.zerodsoft.scheduleweather.navermap.interfaces.OnClickedBottomSheetListener;
+import com.zerodsoft.scheduleweather.navermap.interfaces.OnCoordToAddressListener;
 import com.zerodsoft.scheduleweather.navermap.interfaces.PlacesItemBottomSheetButtonOnClickListener;
 import com.zerodsoft.scheduleweather.navermap.interfaces.SearchFragmentController;
 import com.zerodsoft.scheduleweather.navermap.model.CoordToAddressUtil;
@@ -108,13 +105,11 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.auth.SgisAuthRe
 import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
-import com.zerodsoft.scheduleweather.room.interfaces.FavoriteLocationQuery;
 import com.zerodsoft.scheduleweather.sgis.SgisAddress;
 import com.zerodsoft.scheduleweather.sgis.SgisAuth;
 import com.zerodsoft.scheduleweather.utility.NetworkStatus;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -126,7 +121,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
         BuildingFragmentController, BuildingListFragment.OnSearchRadiusChangeListener, NaverMap.OnMapClickListener,
         NaverMap.OnCameraIdleListener, CameraUpdate.FinishCallback, NaverMap.OnLocationChangeListener, OnBackPressedCallbackController,
         FragmentManager.OnBackStackChangedListener, BottomSheetController, NaverMap.OnMapLongClickListener,
-        OnClickedFavoriteButtonListener, FavoriteLocationsListener
+        OnClickedFavoriteButtonListener, FavoriteLocationsListener, OnCoordToAddressListener
 {
     public static final int PERMISSION_REQUEST_CODE = 100;
     public static final int REQUEST_CODE_LOCATION = 10000;
@@ -170,15 +165,14 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
     private Integer markerHeight;
     private Integer favoriteMarkerSize;
 
-    public Marker markerOfSelectedLocation;
     public ViewPager2 locationItemBottomSheetViewPager;
 
     final public Map<BottomSheetType, BottomSheetBehavior> bottomSheetBehaviorMap = new HashMap<>();
     final public Map<BottomSheetType, Fragment> bottomSheetFragmentMap = new HashMap<>();
     final public Map<BottomSheetType, LinearLayout> bottomSheetViewMap = new HashMap<>();
 
-    final public Map<PoiItemType, List<Marker>> markerMap = new HashMap<>();
-    final public Map<PoiItemType, LocationItemViewPagerAdapter> viewPagerAdapterMap = new HashMap<>();
+    final public Map<MarkerType, List<Marker>> markerMap = new HashMap<>();
+    final public Map<MarkerType, LocationItemViewPagerAdapter> viewPagerAdapterMap = new HashMap<>();
 
     private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
     {
@@ -657,9 +651,9 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
         bottomSheetFragmentMap.put(BottomSheetType.FAVORITE_LOCATIONS, favoriteLocationFragment);
     }
 
-    public void onPageSelectedLocationItemBottomSheetViewPager(int position, PoiItemType poiItemType)
+    public void onPageSelectedLocationItemBottomSheetViewPager(int position, MarkerType markerType)
     {
-        switch (poiItemType)
+        switch (markerType)
         {
             case SEARCH_RESULT:
             {
@@ -700,11 +694,11 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
                 super.onPageSelected(position);
                 if (bottomSheetBehaviorMap.get(BottomSheetType.LOCATION_ITEM).getState() == BottomSheetBehavior.STATE_EXPANDED)
                 {
-                    onPOIItemSelectedByBottomSheet(position, (PoiItemType) locationItemBottomSheetViewPager.getTag());
+                    onPOIItemSelectedByBottomSheet(position, (MarkerType) locationItemBottomSheetViewPager.getTag());
                 }
-                if (position == viewPagerAdapterMap.get((PoiItemType) locationItemBottomSheetViewPager.getTag()).getItemCount() - 1)
+                if (position == viewPagerAdapterMap.get((MarkerType) locationItemBottomSheetViewPager.getTag()).getItemCount() - 1)
                 {
-                    onPageSelectedLocationItemBottomSheetViewPager(position, (PoiItemType) locationItemBottomSheetViewPager.getTag());
+                    onPageSelectedLocationItemBottomSheetViewPager(position, (MarkerType) locationItemBottomSheetViewPager.getTag());
                 }
             }
         });
@@ -934,37 +928,37 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
         binding.naverMapViewLayout.setVisibility(visibility);
     }
 
-    private void onClickedMarkerByTouch(PoiItemType poiItemType, Marker marker)
+    private void onClickedMarkerByTouch(MarkerType markerType, Marker marker)
     {
         //poiitem을 직접 선택한 경우 호출
         setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_COLLAPSED);
-        selectedPoiItemIndex = markerMap.get(poiItemType).indexOf(marker);
+        selectedPoiItemIndex = markerMap.get(markerType).indexOf(marker);
 
         CameraUpdate cameraUpdate = CameraUpdate.scrollTo(marker.getPosition());
         cameraUpdate.animate(CameraAnimation.Easing, 200);
         naverMap.moveCamera(cameraUpdate);
         //open bottomsheet and show selected item data
 
-        LocationItemViewPagerAdapter adapter = viewPagerAdapterMap.get(poiItemType);
-        locationItemBottomSheetViewPager.setTag(poiItemType);
+        LocationItemViewPagerAdapter adapter = viewPagerAdapterMap.get(markerType);
+        locationItemBottomSheetViewPager.setTag(markerType);
         locationItemBottomSheetViewPager.setAdapter(adapter);
         locationItemBottomSheetViewPager.setCurrentItem(selectedPoiItemIndex, false);
         setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_EXPANDED);
     }
 
     @Override
-    public void createPoiItems(List<? extends KakaoLocalDocument> kakaoLocalDocuments, PoiItemType poiItemType)
+    public void createPoiItems(List<? extends KakaoLocalDocument> kakaoLocalDocuments, MarkerType markerType)
     {
-        if (!markerMap.containsKey(poiItemType))
+        if (!markerMap.containsKey(markerType))
         {
-            markerMap.put(poiItemType, new ArrayList<>());
+            markerMap.put(markerType, new ArrayList<>());
         } else
         {
-            removePoiItems(poiItemType);
+            removePoiItems(markerType);
         }
 
-        viewPagerAdapterMap.get(poiItemType).setPlaceDocumentsList(kakaoLocalDocuments);
-        viewPagerAdapterMap.get(poiItemType).notifyDataSetChanged();
+        viewPagerAdapterMap.get(markerType).setPlaceDocumentsList(kakaoLocalDocuments);
+        viewPagerAdapterMap.get(markerType).notifyDataSetChanged();
 
         if (kakaoLocalDocuments.isEmpty())
         {
@@ -977,7 +971,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
             for (PlaceDocuments document : placeDocuments)
             {
-                createPoiItems(poiItemType, document, document.getPlaceName(), document.getY(), document.getX());
+                createPoiItems(markerType, document, document.getPlaceName(), document.getY(), document.getX());
             }
         } else if (kakaoLocalDocuments.get(0) instanceof AddressResponseDocuments)
         {
@@ -985,7 +979,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
             for (AddressResponseDocuments document : addressDocuments)
             {
-                createPoiItems(poiItemType, document, document.getAddressName(), document.getY(), document.getX());
+                createPoiItems(markerType, document, document.getAddressName(), document.getY(), document.getX());
             }
         } else if (kakaoLocalDocuments.get(0) instanceof CoordToAddressDocuments)
         {
@@ -993,7 +987,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
             for (CoordToAddressDocuments document : coordToAddressDocuments)
             {
-                createPoiItems(poiItemType, document, document.getCoordToAddressAddress().getAddressName()
+                createPoiItems(markerType, document, document.getCoordToAddressAddress().getAddressName()
                         , Double.parseDouble(document.getCoordToAddressAddress().getLatitude())
                         , Double.parseDouble(document.getCoordToAddressAddress().getLongitude()));
             }
@@ -1001,7 +995,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
     }
 
-    public void createPoiItems(PoiItemType poiItemType, KakaoLocalDocument kakaoLocalDocument, String captionText, double latitude, double longitude)
+    public void createPoiItems(MarkerType markerType, KakaoLocalDocument kakaoLocalDocument, String captionText, double latitude, double longitude)
     {
         Marker marker = new Marker();
         marker.setWidth(markerWidth);
@@ -1011,8 +1005,8 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
         marker.setCaptionText(captionText);
         marker.setOnClickListener(markerOnClickListener);
 
-        marker.setTag(poiItemType);
-        markerMap.get(poiItemType).add(marker);
+        marker.setTag(markerType);
+        markerMap.get(markerType).add(marker);
     }
 
 
@@ -1022,22 +1016,22 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
         public boolean onClick(@NonNull Overlay overlay)
         {
             Marker marker = (Marker) overlay;
-            onClickedMarkerByTouch((PoiItemType) marker.getTag(), marker);
+            onClickedMarkerByTouch((MarkerType) marker.getTag(), marker);
             return true;
         }
     };
 
     @Override
-    public void addPoiItems(List<? extends KakaoLocalDocument> kakaoLocalDocuments, PoiItemType poiItemType)
+    public void addPoiItems(List<? extends KakaoLocalDocument> kakaoLocalDocuments, MarkerType markerType)
     {
         if (!kakaoLocalDocuments.isEmpty())
         {
-            final int LAST_INDEX = viewPagerAdapterMap.get(poiItemType).getItemCount() - 1;
-            List<KakaoLocalDocument> currentList = viewPagerAdapterMap.get(poiItemType).getPlaceDocumentsList();
+            final int LAST_INDEX = viewPagerAdapterMap.get(markerType).getItemCount() - 1;
+            List<KakaoLocalDocument> currentList = viewPagerAdapterMap.get(markerType).getPlaceDocumentsList();
             List<? extends KakaoLocalDocument> subList = (List<? extends KakaoLocalDocument>) kakaoLocalDocuments.subList(LAST_INDEX + 1, kakaoLocalDocuments.size());
             currentList.addAll(subList);
 
-            viewPagerAdapterMap.get(poiItemType).notifyDataSetChanged();
+            viewPagerAdapterMap.get(markerType).notifyDataSetChanged();
 
             if (kakaoLocalDocuments.get(0) instanceof PlaceDocuments)
             {
@@ -1045,7 +1039,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
                 for (PlaceDocuments document : placeDocuments)
                 {
-                    createPoiItems(poiItemType, document, document.getPlaceName(), document.getY(), document.getX());
+                    createPoiItems(markerType, document, document.getPlaceName(), document.getY(), document.getX());
                 }
             } else if (kakaoLocalDocuments.get(0) instanceof AddressResponseDocuments)
             {
@@ -1053,7 +1047,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
                 for (AddressResponseDocuments document : addressDocuments)
                 {
-                    createPoiItems(poiItemType, document, document.getAddressName(), document.getY(), document.getX());
+                    createPoiItems(markerType, document, document.getAddressName(), document.getY(), document.getX());
                 }
             } else if (kakaoLocalDocuments.get(0) instanceof CoordToAddressDocuments)
             {
@@ -1061,7 +1055,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
                 for (CoordToAddressDocuments document : coordToAddressDocuments)
                 {
-                    createPoiItems(poiItemType, document, document.getCoordToAddressAddress().getAddressName()
+                    createPoiItems(markerType, document, document.getCoordToAddressAddress().getAddressName()
                             , Double.parseDouble(document.getCoordToAddressAddress().getLatitude())
                             , Double.parseDouble(document.getCoordToAddressAddress().getLongitude()));
                 }
@@ -1071,23 +1065,23 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
     }
 
     @Override
-    public void removePoiItem(PoiItemType poiItemType, int index)
+    public void removePoiItem(MarkerType markerType, int index)
     {
-        if (markerMap.containsKey(poiItemType))
+        if (markerMap.containsKey(markerType))
         {
-            markerMap.get(poiItemType).get(index).setMap(null);
-            markerMap.get(poiItemType).remove(index);
+            markerMap.get(markerType).get(index).setMap(null);
+            markerMap.get(markerType).remove(index);
         }
     }
 
     @Override
-    public void removePoiItems(PoiItemType... poiItemTypes)
+    public void removePoiItems(MarkerType... markerTypes)
     {
-        for (PoiItemType poiItemType : poiItemTypes)
+        for (MarkerType markerType : markerTypes)
         {
-            if (markerMap.containsKey(poiItemType))
+            if (markerMap.containsKey(markerType))
             {
-                List<Marker> markerList = markerMap.get(poiItemType);
+                List<Marker> markerList = markerMap.get(markerType);
                 for (Marker marker : markerList)
                 {
                     marker.setMap(null);
@@ -1102,10 +1096,10 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
     @Override
     public void removeAllPoiItems()
     {
-        Set<PoiItemType> keySet = markerMap.keySet();
-        for (PoiItemType poiItemType : keySet)
+        Set<MarkerType> keySet = markerMap.keySet();
+        for (MarkerType markerType : keySet)
         {
-            List<Marker> markerList = markerMap.get(poiItemType);
+            List<Marker> markerList = markerMap.get(markerType);
             for (Marker marker : markerList)
             {
                 marker.setMap(null);
@@ -1117,9 +1111,9 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
 
     @Override
-    public void showPoiItems(PoiItemType... poiItemTypes)
+    public void showPoiItems(MarkerType... markerTypes)
     {
-        List<Marker> markerList = markerMap.get(poiItemTypes[0]);
+        List<Marker> markerList = markerMap.get(markerTypes[0]);
 
         if (!markerList.isEmpty())
         {
@@ -1143,17 +1137,17 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
     }
 
     @Override
-    public int getPoiItemSize(PoiItemType... poiItemTypes)
+    public int getPoiItemSize(MarkerType... markerTypes)
     {
-        return markerMap.get(poiItemTypes[0]).size();
+        return markerMap.get(markerTypes[0]).size();
     }
 
     @Override
-    public void setLocationItemViewPagerAdapter(LocationItemViewPagerAdapter adapter, PoiItemType poiItemType)
+    public void setLocationItemViewPagerAdapter(LocationItemViewPagerAdapter adapter, MarkerType markerType)
     {
-        viewPagerAdapterMap.put(poiItemType, adapter);
+        viewPagerAdapterMap.put(markerType, adapter);
         locationItemBottomSheetViewPager.setAdapter(adapter);
-        locationItemBottomSheetViewPager.setTag(poiItemType);
+        locationItemBottomSheetViewPager.setTag(markerType);
 
         adapter.setFavoriteLocationQuery(((FavoriteLocationFragment) bottomSheetFragmentMap.get(BottomSheetType.FAVORITE_LOCATIONS)));
         adapter.setPlacesItemBottomSheetButtonOnClickListener(placesItemBottomSheetButtonOnClickListener);
@@ -1162,15 +1156,12 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
         adapter.setVisibleUnSelectBtn(placeBottomSheetUnSelectBtnVisibility);
     }
 
-    public LocationDTO getSelectedLocationDto(int calendarId, long eventId)
+    public LocationDTO getSelectedLocationDto()
     {
         // 선택된 poiitem의 리스트내 인덱스를 가져온다.
         // 인덱스로 아이템을 가져온다.
         LocationDTO location = new LocationDTO();
-        location.setCalendarId(calendarId);
-        location.setEventId(eventId);
-
-        KakaoLocalDocument kakaoLocalDocument = viewPagerAdapterMap.get(PoiItemType.SEARCH_RESULT).getPlaceDocumentsList().get(selectedPoiItemIndex);
+        KakaoLocalDocument kakaoLocalDocument = viewPagerAdapterMap.get(MarkerType.SEARCH_RESULT).getPlaceDocumentsList().get(selectedPoiItemIndex);
 
         // 주소인지 장소인지를 구분한다.
         if (kakaoLocalDocument instanceof PlaceDocuments)
@@ -1207,19 +1198,19 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
     }
 
     @Override
-    public void onPOIItemSelectedByList(int index, PoiItemType poiItemType)
+    public void onPOIItemSelectedByList(int index, MarkerType markerType)
     {
         //bottomsheet가 아닌 list에서 아이템을 선택한 경우 호출
         //adapter -> poiitem생성 -> select poiitem -> bottomsheet열고 정보 표시
         setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_COLLAPSED);
-        markerMap.get(poiItemType).get(index).performClick();
+        markerMap.get(markerType).get(index).performClick();
     }
 
     @Override
-    public void onPOIItemSelectedByBottomSheet(int index, PoiItemType poiItemType)
+    public void onPOIItemSelectedByBottomSheet(int index, MarkerType markerType)
     {
         //bottomsheet에서 스크롤 하는 경우 호출
-        Marker marker = markerMap.get(poiItemType).get(index);
+        Marker marker = markerMap.get(markerType).get(index);
         selectedPoiItemIndex = index;
 
         CameraUpdate cameraUpdate = CameraUpdate.scrollTo(marker.getPosition());
@@ -1240,7 +1231,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
     }
 
     @Override
-    public void onSelectedLocation()
+    public void onSelectedLocation(KakaoLocalDocument kakaoLocalDocument)
     {
 
     }
@@ -1286,16 +1277,16 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
             {
                 bottomSheetBehaviorMap.get(BottomSheetType.LOCATION_ITEM).setState(BottomSheetBehavior.STATE_COLLAPSED);
             }
-            removePoiItems(PoiItemType.SEARCH_RESULT);
+            removePoiItems(MarkerType.SEARCH_RESULT);
 
             LocationSearchResultFragment locationSearchResultFragment =
                     (LocationSearchResultFragment) fragmentManager.findFragmentByTag(LocationSearchResultFragment.TAG);
             locationSearchResultFragment.searchLocation(query);
         } else
         {
-            if (!markerMap.containsKey(PoiItemType.SEARCH_RESULT))
+            if (!markerMap.containsKey(MarkerType.SEARCH_RESULT))
             {
-                markerMap.put(PoiItemType.SEARCH_RESULT, new ArrayList<>());
+                markerMap.put(MarkerType.SEARCH_RESULT, new ArrayList<>());
             }
 
             MapHeaderSearchFragment mapHeaderSearchFragment = (MapHeaderSearchFragment) fragmentManager.findFragmentByTag(MapHeaderSearchFragment.TAG);
@@ -1342,7 +1333,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
             binding.naverMapHeaderBar.getRoot().setClickable(true);
         } else if (currentFragmentTag.equals(LocationSearchResultFragment.TAG))
         {
-            removePoiItems(PoiItemType.SEARCH_RESULT);
+            removePoiItems(MarkerType.SEARCH_RESULT);
             mapHeaderSearchFragment.resetState();
 
             if (bottomSheetBehaviorMap.get(BottomSheetType.LOCATION_ITEM).getState() != BottomSheetBehavior.STATE_COLLAPSED)
@@ -1507,7 +1498,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
     public void onMapClick(@NonNull PointF pointF, @NonNull LatLng latLng)
     {
         deselectPoiItem();
-        setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_COLLAPSED);
     }
 
     @Override
@@ -1609,38 +1599,40 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
     private void showAddressOfSelectedLocation(LatLng latLng)
     {
         //주소 표시
-        CameraUpdate cameraUpdate = CameraUpdate.scrollTo(latLng);
-        cameraUpdate.animate(CameraAnimation.Linear, 150);
-        naverMap.moveCamera(cameraUpdate);
+        Marker markerOfSelectedLocation = new Marker(latLng);
 
-        if (markerOfSelectedLocation == null)
+        if (!viewPagerAdapterMap.containsKey(MarkerType.LONG_CLICKED_MAP))
         {
-            markerOfSelectedLocation = new Marker();
-            markerOfSelectedLocation.setCaptionColor(Color.BLUE);
-            markerOfSelectedLocation.setCaptionHaloColor(Color.rgb(200, 255, 200));
-            markerOfSelectedLocation.setCaptionTextSize(14f);
-            markerOfSelectedLocation.setCaptionText(getString(R.string.message_click_marker_to_delete));
-
-            markerOfSelectedLocation.setOnClickListener(new Overlay.OnClickListener()
-            {
-                @Override
-                public boolean onClick(@NonNull Overlay overlay)
-                {
-                    markerOfSelectedLocation.setMap(null);
-                    return true;
-                }
-            });
+            setLocationItemViewPagerAdapter(new OnLongClickMapLocationItemAdapter(getContext(), NaverMapFragment.this), MarkerType.LONG_CLICKED_MAP);
         }
-
-        markerOfSelectedLocation.setPosition(latLng);
+        markerOfSelectedLocation.setCaptionColor(Color.BLUE);
+        markerOfSelectedLocation.setCaptionHaloColor(Color.rgb(200, 255, 200));
+        markerOfSelectedLocation.setCaptionTextSize(14f);
+        markerOfSelectedLocation.setCaptionText(getString(R.string.message_click_marker_to_delete));
+        markerOfSelectedLocation.setTag(MarkerType.LONG_CLICKED_MAP);
         markerOfSelectedLocation.setMap(naverMap);
 
-        InfoWindow infoWindow = new InfoWindow();
-        infoWindow.setAlpha(0.85f);
-        FavoriteLocationQuery favoriteLocationQuery = (FavoriteLocationQuery) bottomSheetFragmentMap.get(BottomSheetType.FAVORITE_LOCATIONS);
-        InfoWindowOnMarkerAdapter infoWindowOnMarkerAdapter = new InfoWindowOnMarkerAdapter(requireContext(), requireActivity(), favoriteLocationQuery, latLng);
-        infoWindow.setAdapter(infoWindowOnMarkerAdapter);
-        infoWindow.open(markerOfSelectedLocation);
+        List<Marker> list = new ArrayList<>();
+        list.add(markerOfSelectedLocation);
+        markerMap.put(MarkerType.LONG_CLICKED_MAP, list);
+
+        markerOfSelectedLocation.setOnClickListener(new Overlay.OnClickListener()
+        {
+            @Override
+            public boolean onClick(@NonNull Overlay overlay)
+            {
+                removePoiItems(MarkerType.LONG_CLICKED_MAP);
+                setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_COLLAPSED);
+                return true;
+            }
+        });
+        OnLongClickMapLocationItemAdapter adapter = (OnLongClickMapLocationItemAdapter) viewPagerAdapterMap.get(MarkerType.LONG_CLICKED_MAP);
+        adapter.setLatitude(String.valueOf(latLng.latitude));
+        adapter.setLongitude(String.valueOf(latLng.longitude));
+        adapter.notifyDataSetChanged();
+
+        onClickedMarkerByTouch(MarkerType.LONG_CLICKED_MAP, markerMap.get(MarkerType.LONG_CLICKED_MAP).get(0));
+
     }
 
     @Override
@@ -1668,14 +1660,14 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
     {
         FavoriteLocationItemViewPagerAdapter adapter = new FavoriteLocationItemViewPagerAdapter(getContext(), locationViewModel);
         adapter.setFavoriteLocationList(favoriteLocationList);
-        setLocationItemViewPagerAdapter(adapter, PoiItemType.FAVORITE);
+        setLocationItemViewPagerAdapter(adapter, MarkerType.FAVORITE);
 
-        if (!markerMap.containsKey(PoiItemType.FAVORITE))
+        if (!markerMap.containsKey(MarkerType.FAVORITE))
         {
-            markerMap.put(PoiItemType.FAVORITE, new ArrayList<>());
+            markerMap.put(MarkerType.FAVORITE, new ArrayList<>());
         } else
         {
-            removePoiItems(PoiItemType.FAVORITE);
+            removePoiItems(MarkerType.FAVORITE);
         }
 
         if (favoriteLocationList.isEmpty())
@@ -1692,7 +1684,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
     @Override
     public void addFavoriteLocationsPoiItem(FavoriteLocationDTO favoriteLocationDTO)
     {
-        FavoriteLocationItemViewPagerAdapter adapter = (FavoriteLocationItemViewPagerAdapter) viewPagerAdapterMap.get(PoiItemType.FAVORITE);
+        FavoriteLocationItemViewPagerAdapter adapter = (FavoriteLocationItemViewPagerAdapter) viewPagerAdapterMap.get(MarkerType.FAVORITE);
         adapter.getFavoriteLocationList().add(favoriteLocationDTO);
         adapter.notifyDataSetChanged();
         createFavoriteLocationsPoiItem(favoriteLocationDTO, Double.parseDouble(favoriteLocationDTO.getLatitude()), Double.parseDouble(favoriteLocationDTO.getLongitude()));
@@ -1701,7 +1693,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
     @Override
     public void removeFavoriteLocationsPoiItem(FavoriteLocationDTO favoriteLocationDTO)
     {
-        FavoriteLocationItemViewPagerAdapter adapter = (FavoriteLocationItemViewPagerAdapter) viewPagerAdapterMap.get(PoiItemType.FAVORITE);
+        FavoriteLocationItemViewPagerAdapter adapter = (FavoriteLocationItemViewPagerAdapter) viewPagerAdapterMap.get(MarkerType.FAVORITE);
         int indexOfList = 0;
         List<FavoriteLocationDTO> favoriteLocationDTOListInAdapter = adapter.getFavoriteLocationList();
 
@@ -1714,7 +1706,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
         }
 
         setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_COLLAPSED);
-        removePoiItem(PoiItemType.FAVORITE, indexOfList);
+        removePoiItem(MarkerType.FAVORITE, indexOfList);
 
         adapter.getFavoriteLocationList().remove(indexOfList);
         adapter.notifyDataSetChanged();
@@ -1732,21 +1724,55 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
         marker.setOnClickListener(markerOnClickListener);
         marker.setForceShowIcon(true);
 
-        marker.setTag(PoiItemType.FAVORITE);
-        markerMap.get(PoiItemType.FAVORITE).add(marker);
+        marker.setTag(MarkerType.FAVORITE);
+        markerMap.get(MarkerType.FAVORITE).add(marker);
     }
 
     @Override
-    public void showPoiItems(PoiItemType poiItemType, boolean isShow)
+    public void showPoiItems(MarkerType markerType, boolean isShow)
     {
-        if (markerMap.containsKey(poiItemType))
+        if (markerMap.containsKey(markerType))
         {
-            List<Marker> markers = markerMap.get(poiItemType);
+            List<Marker> markers = markerMap.get(markerType);
             for (Marker marker : markers)
             {
                 marker.setMap(isShow ? naverMap : null);
             }
         }
+    }
+
+    @Override
+    public void coordToAddress(String latitude, String longitude, JsonDownloader<CoordToAddressDocuments> jsonDownloader)
+    {
+        LocalApiPlaceParameter parameter = LocalParameterUtil.getCoordToAddressParameter(Double.parseDouble(latitude), Double.parseDouble(longitude));
+        CoordToAddressUtil.coordToAddress(parameter, new JsonDownloader<CoordToAddress>()
+        {
+            @Override
+            public void onResponseSuccessful(CoordToAddress result)
+            {
+                requireActivity().runOnUiThread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        jsonDownloader.onResponseSuccessful(result.getCoordToAddressDocuments().get(0));
+                    }
+                });
+            }
+
+            @Override
+            public void onResponseFailed(Exception e)
+            {
+                requireActivity().runOnUiThread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+
+                    }
+                });
+            }
+        });
     }
 
     static class BuildingBottomSheetHeightViewHolder
