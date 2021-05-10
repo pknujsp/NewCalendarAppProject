@@ -26,10 +26,13 @@ import android.service.carrier.CarrierMessagingService;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.ArraySet;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.GridView;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
@@ -47,6 +50,8 @@ import com.zerodsoft.scheduleweather.activity.editevent.adapter.CalendarListAdap
 import com.zerodsoft.scheduleweather.activity.editevent.value.EventData;
 import com.zerodsoft.scheduleweather.activity.editevent.value.EventDataController;
 import com.zerodsoft.scheduleweather.activity.editevent.interfaces.IEventRepeat;
+import com.zerodsoft.scheduleweather.activity.preferences.ColorListAdapter;
+import com.zerodsoft.scheduleweather.activity.preferences.custom.ColorPreference;
 import com.zerodsoft.scheduleweather.databinding.ActivityEditEventBinding;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
@@ -209,6 +214,8 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                         defaultCalendar.getAsString(CalendarContract.Calendars.CALENDAR_DISPLAY_NAME),
                         defaultCalendar.getAsString(CalendarContract.Calendars.ACCOUNT_NAME));
 
+                setDefaultEventColor(defaultCalendar.getAsString(CalendarContract.Calendars.ACCOUNT_NAME));
+
                 // 기기 시각으로 설정
                 Date[] defaultDateTimes = dataController.getEventDefaultValue().getDefaultDateTime();
                 dataController.putEventValue(CalendarContract.Events.DTSTART, defaultDateTimes[0].getTime());
@@ -260,6 +267,8 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
 
                 EventData savedEventData = dataController.getSavedEventData();
                 ContentValues savedEvent = savedEventData.getEVENT();
+
+                setDefaultEventColor(savedEvent.getAsString(CalendarContract.Events.ACCOUNT_NAME));
 
                 //제목
                 binding.titleLayout.title.setText(savedEvent.getAsString(CalendarContract.Events.TITLE));
@@ -360,6 +369,48 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
 
     private void setOnClickListener()
     {
+        /*
+        event color
+         */
+        binding.titleLayout.eventColor.setOnClickListener(new View.OnClickListener()
+        {
+            AlertDialog dialog;
+
+            @Override
+            public void onClick(View view)
+            {
+                String accountName = dataController.getEventDefaultValue().getDefaultCalendar().getAsString(CalendarContract.Calendars.ACCOUNT_NAME);
+                List<ContentValues> colors = calendarViewModel.getEventColors(accountName);
+
+                GridView gridView = new GridView(getApplicationContext());
+                gridView.setAdapter(new ColorListAdapter(dataController.getEventValueAsString(CalendarContract.Events.EVENT_COLOR_KEY), colors, getApplicationContext()));
+                gridView.setNumColumns(5);
+                gridView.setGravity(Gravity.CENTER);
+                gridView.setOnItemClickListener(new AdapterView.OnItemClickListener()
+                {
+                    @Override
+                    public void onItemClick(AdapterView<?> parent, View view, int position, long id)
+                    {
+                        final int color = colors.get(position).getAsInteger(CalendarContract.Colors.COLOR);
+                        final String colorKey = colors.get(position).getAsString(CalendarContract.Colors.COLOR_KEY);
+
+                        dataController.putEventValue(CalendarContract.Events.EVENT_COLOR, color);
+                        dataController.putEventValue(CalendarContract.Events.EVENT_COLOR_KEY, colorKey);
+                        binding.titleLayout.eventColor.setBackgroundColor(EventUtil.getColor(color));
+
+                        dialog.dismiss();
+                    }
+                });
+
+                MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(EditEventActivity.this);
+                builder.setView(gridView);
+                builder.setCancelable(false);
+                builder.setTitle(R.string.title_select_event_color);
+                dialog = builder.create();
+                dialog.show();
+            }
+        });
+
         /*
         시간 allday 스위치
          */
@@ -493,6 +544,8 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                                 setCalendarText(calendar.getAsInteger(CalendarContract.Calendars.CALENDAR_COLOR),
                                         calendar.getAsString(CalendarContract.Calendars.CALENDAR_DISPLAY_NAME),
                                         calendar.getAsString(CalendarContract.Calendars.ACCOUNT_NAME));
+
+                                setDefaultEventColor(calendar.getAsString(CalendarContract.Calendars.ACCOUNT_NAME));
                             });
             calendarDialog = dialogBuilder.create();
             calendarDialog.show();
@@ -586,6 +639,15 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                 startActivityForResult(intent, AttendeesActivity.SHOW_DETAILS_FOR_ATTENDEES);
             }
         });
+    }
+
+    private void setDefaultEventColor(String accountName)
+    {
+        List<ContentValues> colors = calendarViewModel.getEventColors(accountName);
+
+        dataController.putEventValue(CalendarContract.Events.EVENT_COLOR, colors.get(0).getAsInteger(CalendarContract.Colors.COLOR));
+        dataController.putEventValue(CalendarContract.Events.EVENT_COLOR_KEY, colors.get(0).getAsInteger(CalendarContract.Colors.COLOR_KEY));
+        binding.titleLayout.eventColor.setBackgroundColor(EventUtil.getColor(dataController.getEventValueAsInt(CalendarContract.Events.EVENT_COLOR)));
     }
 
 

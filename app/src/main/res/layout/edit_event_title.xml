@@ -7,6 +7,15 @@
         style="@style/Event.Label"
         android:src="@drawable/title_black" />
 
+    <View
+        android:id="@+id/event_color"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_gravity="center"
+        android:layout_marginRight="8dp"
+        android:background="@color/gray_500"
+        android:clickable="true" />
+
     <EditText
         android:id="@+id/title"
         style="@style/Event.Value"

@@ -23,7 +23,6 @@ import com.zerodsoft.scheduleweather.utility.RecurrenceRule;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -1144,6 +1143,34 @@ public class CalendarProvider implements ICalendarProvider
                     + CalendarContract.Colors.COLOR_TYPE + "=?";
             String[] selectionArgs = {accountName, accountType, String.valueOf(CalendarContract.Colors.TYPE_CALENDAR)};
 
+            Cursor cursor = context.getContentResolver().query(CalendarContract.Colors.CONTENT_URI, projection, selection, selectionArgs, null);
+            List<ContentValues> colors = new ArrayList<>();
+
+            while (cursor.moveToNext())
+            {
+                ContentValues color = new ContentValues();
+                color.put(CalendarContract.Colors.COLOR, cursor.getInt(0));
+                color.put(CalendarContract.Colors.COLOR_KEY, cursor.getString(1));
+
+                colors.add(color);
+            }
+            cursor.close();
+            return colors;
+        } else
+        {
+            return new ArrayList<>();
+        }
+    }
+
+    @Override
+    public List<ContentValues> getEventColors(String accountName)
+    {
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED)
+        {
+            String[] projection = {CalendarContract.Colors.COLOR, CalendarContract.Colors.COLOR_KEY};
+            String selection = CalendarContract.Colors.ACCOUNT_NAME + "=? AND "
+                    + CalendarContract.Colors.COLOR_TYPE + "=?";
+            String[] selectionArgs = {accountName, String.valueOf(CalendarContract.Colors.TYPE_EVENT)};
             Cursor cursor = context.getContentResolver().query(CalendarContract.Colors.CONTENT_URI, projection, selection, selectionArgs, null);
             List<ContentValues> colors = new ArrayList<>();
 

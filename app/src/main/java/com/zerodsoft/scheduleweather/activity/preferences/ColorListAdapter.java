@@ -24,14 +24,14 @@ import java.util.List;
 public class ColorListAdapter extends BaseAdapter
 {
     private List<ContentValues> colorList;
-    private ContentValues currentColor;
+    private final String currentColorKey;
     private Context context;
     private LayoutInflater layoutInflater;
     private final int VIEW_SIZE;
 
-    public ColorListAdapter(ContentValues currentColor, List<ContentValues> colorList, Context context)
+    public ColorListAdapter(String currentColorKey, List<ContentValues> colorList, Context context)
     {
-        this.currentColor = currentColor;
+        this.currentColorKey = currentColorKey;
         this.colorList = colorList;
         this.context = context;
         this.layoutInflater = LayoutInflater.from(context);
@@ -78,9 +78,9 @@ public class ColorListAdapter extends BaseAdapter
         }
 
         viewHolder.colorView.setBackgroundColor(EventUtil.getColor(colorList.get(index).getAsInteger(CalendarContract.Colors.COLOR)));
-        if (currentColor.getAsString(CalendarContract.Calendars.CALENDAR_COLOR_KEY) != null)
+        if (currentColorKey != null)
         {
-            if (currentColor.getAsString(CalendarContract.Calendars.CALENDAR_COLOR_KEY).equals(colorList.get(index).getAsString(CalendarContract.Colors.COLOR_KEY)))
+            if (currentColorKey.equals(colorList.get(index).getAsString(CalendarContract.Colors.COLOR_KEY)))
             {
                 //현재 색상
                 viewHolder.checkImage.setVisibility(View.VISIBLE);

@@ -516,4 +516,6 @@
     <string name="selected_location">주소/장소 선택됨</string>
     <string name="message_existing_selected_location">이미 선택된 위치가 있습니다. 변경하시겠습니까?</string>
 
+
+    <string name="title_select_event_color">이벤트의 표시 색상 선택</string>
 </resources>

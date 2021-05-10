@@ -133,7 +133,7 @@ public class CalendarColorFragment extends PreferenceFragmentCompat implements P
 
 
                         GridView gridView = new GridView(getContext());
-                        gridView.setAdapter(new ColorListAdapter(currentColor, colors, getContext()));
+                        gridView.setAdapter(new ColorListAdapter(currentColor.getAsString(CalendarContract.Calendars.CALENDAR_COLOR_KEY), colors, getContext()));
                         gridView.setNumColumns(5);
                         gridView.setGravity(Gravity.CENTER);
                         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener()

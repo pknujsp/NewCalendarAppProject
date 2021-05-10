@@ -76,5 +76,7 @@ public interface ICalendarProvider
 
     public List<ContentValues> getCalendarColors(String accountName, String accountType);
 
+    public List<ContentValues> getEventColors(String accountName);
+
     public int updateCalendarColor(int calendarId, int color, String colorKey);
 }
