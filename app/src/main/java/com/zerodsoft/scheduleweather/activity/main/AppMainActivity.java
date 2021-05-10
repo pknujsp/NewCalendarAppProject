@@ -46,11 +46,8 @@ import com.zerodsoft.scheduleweather.databinding.ActivityAppMainBinding;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendar.dto.AccountDto;
 import com.zerodsoft.scheduleweather.etc.AppPermission;
-import com.zerodsoft.scheduleweather.event.main.InstanceMainActivity;
-import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
+import com.zerodsoft.scheduleweather.event.main.NewInstanceMainFragment;
 import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
-import com.zerodsoft.scheduleweather.retrofit.paremeters.sgis.SgisAuthParameter;
-import com.zerodsoft.scheduleweather.retrofit.paremeters.sgis.TransCoordParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.auth.SgisAuthResponse;
 import com.zerodsoft.scheduleweather.sgis.SgisAuth;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
@@ -540,8 +537,8 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
                 {
                     switch (result.getResultCode())
                     {
-                        case InstanceMainActivity.RESULT_REMOVED_EVENT:
-                        case InstanceMainActivity.RESULT_EXCEPTED_INSTANCE:
+                        case NewInstanceMainFragment.RESULT_REMOVED_EVENT:
+                        case NewInstanceMainFragment.RESULT_EXCEPTED_INSTANCE:
                             break;
                     }
                     calendarTransactionFragment.refreshView();

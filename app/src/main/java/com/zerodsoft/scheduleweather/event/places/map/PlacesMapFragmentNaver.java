@@ -46,7 +46,7 @@ import com.zerodsoft.scheduleweather.activity.placecategory.activity.PlaceCatego
 import com.zerodsoft.scheduleweather.activity.placecategory.viewmodel.PlaceCategoryViewModel;
 import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
-import com.zerodsoft.scheduleweather.event.main.InstanceMainActivity;
+import com.zerodsoft.scheduleweather.event.main.NewInstanceMainFragment;
 import com.zerodsoft.scheduleweather.event.places.interfaces.OnClickedPlacesListListener;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PlaceCategory;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PlaceItemsGetter;
@@ -455,7 +455,7 @@ public class PlacesMapFragmentNaver extends NaverMapFragment implements OnClicke
                 @Override
                 public void onActivityResult(ActivityResult result)
                 {
-                    if (result.getResultCode() == InstanceMainActivity.RESULT_EDITED_PLACE_CATEGORY)
+                    if (result.getResultCode() == 0)
                     {
                         if (categoryChipGroup.getCheckedChipIds().size() > 0)
                         {

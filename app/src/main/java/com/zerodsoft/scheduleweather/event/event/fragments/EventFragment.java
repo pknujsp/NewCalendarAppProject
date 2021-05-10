@@ -38,14 +38,14 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.databinding.EventFragmentBinding;
-import com.zerodsoft.scheduleweather.etc.LocationType;
+import com.zerodsoft.scheduleweather.event.common.LocationSelectorKey;
 import com.zerodsoft.scheduleweather.event.common.SelectionDetailLocationNaver;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationHistoryViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationInfoViewModel;
-import com.zerodsoft.scheduleweather.event.main.InstanceMainActivity;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
+import com.zerodsoft.scheduleweather.event.main.NewInstanceMainActivity;
+import com.zerodsoft.scheduleweather.event.main.NewInstanceMainFragment;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
-import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.utility.NetworkStatus;
 import com.zerodsoft.scheduleweather.utility.RecurrenceRule;
@@ -100,10 +100,55 @@ public class EventFragment extends BottomSheetDialogFragment
         return instance;
     }
 
-    private InstanceMainActivity.LocationAbstract locationAbstract = new InstanceMainActivity.LocationAbstract()
-    {
+    private final LocationAbstract locationAbstract = new LocationAbstract();
 
-    };
+    public static class LocationAbstract
+    {
+        public void showSetLocationDialog(Activity activity, ActivityResultLauncher<Intent> activityResultLauncher, ContentValues instance)
+        {
+            MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(activity)
+                    .setTitle(activity.getString(R.string.request_select_location_title))
+                    .setMessage(activity.getString(R.string.request_select_location_description))
+                    .setNegativeButton(activity.getString(R.string.cancel), new DialogInterface.OnClickListener()
+                    {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i)
+                        {
+                            dialogInterface.cancel();
+                        }
+                    })
+                    .setPositiveButton(activity.getString(R.string.check), new DialogInterface.OnClickListener()
+                    {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i)
+                        {
+                            Intent intent = new Intent(activity, SelectionDetailLocationNaver.class);
+                            Bundle bundle = new Bundle();
+                            bundle.putString(LocationSelectorKey.LOCATION_NAME_IN_EVENT.name(), instance.getAsString(CalendarContract.Instances.EVENT_LOCATION));
+                            bundle.putInt(LocationSelectorKey.REQUEST_CODE.name(), SelectionDetailLocationNaver.REQUEST_CODE_SELECT_LOCATION_BY_QUERY);
+
+                            intent.putExtras(bundle);
+                            activityResultLauncher.launch(intent);
+                            dialogInterface.dismiss();
+                        }
+                    });
+
+            AlertDialog dialog = builder.create();
+            dialog.show();
+        }
+
+        public void startEditLocationActivity(Activity activity, ActivityResultLauncher<Intent> activityResultLauncher, LocationDTO locationDTO)
+        {
+            //naver
+            Intent intent = new Intent(activity, SelectionDetailLocationNaver.class);
+            Bundle bundle = new Bundle();
+            bundle.putParcelable(LocationSelectorKey.SELECTED_LOCATION_DTO_IN_EVENT.name(), locationDTO);
+            bundle.putInt(LocationSelectorKey.REQUEST_CODE.name(), SelectionDetailLocationNaver.REQUEST_CODE_CHANGE_LOCATION);
+
+            intent.putExtras(bundle);
+            activityResultLauncher.launch(intent);
+        }
+    }
 
 
     public EventFragment(int VIEW_HEIGHT, int CALENDAR_ID, long EVENT_ID, long INSTANCE_ID, long ORIGINAL_BEGIN, long ORIGINAL_END)
@@ -348,7 +393,7 @@ public class EventFragment extends BottomSheetDialogFragment
             }
         });
         // 삭제 완료 후 캘린더 화면으로 나가고, 새로고침한다.
-        resultCode = InstanceMainActivity.RESULT_REMOVED_EVENT;
+        resultCode = NewInstanceMainFragment.RESULT_REMOVED_EVENT;
         dismiss();
     }
 
@@ -378,7 +423,7 @@ public class EventFragment extends BottomSheetDialogFragment
     {
         viewModel.deleteInstance(instanceValues.getAsLong(CalendarContract.Instances.BEGIN), EVENT_ID);
 
-        resultCode = InstanceMainActivity.RESULT_EXCEPTED_INSTANCE;
+        resultCode = NewInstanceMainFragment.RESULT_EXCEPTED_INSTANCE;
         dismiss();
     }
 
@@ -710,10 +755,10 @@ public class EventFragment extends BottomSheetDialogFragment
                 @Override
                 public void onActivityResult(ActivityResult result)
                 {
-                    if (result.getResultCode() == InstanceMainActivity.RESULT_SELECTED_LOCATION)
+                    if (result.getResultCode() == SelectionDetailLocationNaver.RESULT_CODE_SELECTED_LOCATION)
                     {
-                        Toast.makeText(getActivity(), result.getData().getStringExtra("selectedLocationName"), Toast.LENGTH_SHORT).show();
-                        resultCode = InstanceMainActivity.RESULT_UPDATED_VALUE;
+                        LocationDTO locationDTO = result.getData().getExtras().getParcelable(LocationSelectorKey.SELECTED_LOCATION_DTO_IN_MAP.name());
+                        saveDetailLocation(locationDTO);
                     } else
                     {
                         // 취소, 이벤트 정보 프래그먼트로 돌아감
@@ -729,14 +774,12 @@ public class EventFragment extends BottomSheetDialogFragment
                 {
                     switch (result.getResultCode())
                     {
-                        case InstanceMainActivity.RESULT_RESELECTED_LOCATION:
-                            LocationDTO locationDTO = result.getData().getExtras().getParcelable("selectedLocationDTO");
+                        case SelectionDetailLocationNaver.RESULT_CODE_CHANGED_LOCATION:
+                            LocationDTO locationDTO = result.getData().getExtras().getParcelable(LocationSelectorKey.SELECTED_LOCATION_DTO_IN_MAP.name());
                             changedDetailLocation(locationDTO);
-                            resultCode = InstanceMainActivity.RESULT_UPDATED_VALUE;
                             break;
-                        case InstanceMainActivity.RESULT_REMOVED_LOCATION:
+                        case SelectionDetailLocationNaver.RESULT_CODE_REMOVED_LOCATION:
                             deletedDetailLocation();
-                            resultCode = InstanceMainActivity.RESULT_UPDATED_VALUE;
                             break;
                     }
                 }
@@ -750,14 +793,38 @@ public class EventFragment extends BottomSheetDialogFragment
                 {
                     switch (result.getResultCode())
                     {
-                        case InstanceMainActivity.RESULT_UPDATED_INSTANCE:
+                        case NewInstanceMainFragment.RESULT_UPDATED_INSTANCE:
                             //데이터 갱신
                             setInstanceData();
-                            resultCode = InstanceMainActivity.RESULT_UPDATED_VALUE;
+                            resultCode = NewInstanceMainFragment.RESULT_UPDATED_VALUE;
                             break;
                     }
                 }
             });
+
+    private void saveDetailLocation(LocationDTO locationDTO)
+    {
+        // 지정이 완료된 경우 - DB에 등록하고 이벤트 액티비티로 넘어가서 날씨 또는 주변 정보 프래그먼트를 실행한다.
+        locationDTO.setCalendarId(CALENDAR_ID);
+        locationDTO.setEventId(EVENT_ID);
+
+        //선택된 위치를 DB에 등록
+        locationViewModel.addLocation(locationDTO, new CarrierMessagingService.ResultCallback<Boolean>()
+        {
+            @Override
+            public void onReceiveResult(@NonNull Boolean isInserted) throws RemoteException
+            {
+                if (isInserted)
+                {
+
+                } else
+                {
+
+                }
+
+            }
+        });
+    }
 
     private void changedDetailLocation(LocationDTO locationDTO)
     {
@@ -772,7 +839,7 @@ public class EventFragment extends BottomSheetDialogFragment
             {
                 if (isAdded)
                 {
-                    Toast.makeText(getContext(), "위치 변경완료", Toast.LENGTH_SHORT).show();
+                    // Toast.makeText(getContext(), "위치 변경완료", Toast.LENGTH_SHORT).show();
                 } else
                 {
 
@@ -790,7 +857,7 @@ public class EventFragment extends BottomSheetDialogFragment
             {
                 if (isRemoved)
                 {
-                    Toast.makeText(getContext(), "위치 삭제완료", Toast.LENGTH_SHORT).show();
+                    // Toast.makeText(getContext(), "위치 삭제완료", Toast.LENGTH_SHORT).show();
                 } else
                 {
 

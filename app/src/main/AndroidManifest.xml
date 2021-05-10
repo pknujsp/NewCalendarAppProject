@@ -32,9 +32,6 @@
             android:name=".navermap.NaverMapActivity"
             android:windowSoftInputMode="adjustNothing" />
         <activity
-            android:name=".event.common.MLocActivityNaver"
-            android:windowSoftInputMode="adjustNothing" />
-        <activity
             android:name=".event.common.SelectionDetailLocationNaver"
             android:theme="@style/AppTheme"
             android:windowSoftInputMode="adjustNothing" />
@@ -55,7 +52,6 @@
         <activity android:name=".activity.editevent.activity.ReminderActivity" />
         <activity android:name=".activity.editevent.activity.TimeZoneActivity" />
         <activity android:name=".activity.editevent.activity.RecurrenceActivity" />
-        <activity android:name=".event.main.InstanceMainActivity" />
         <activity
             android:name=".activity.editevent.activity.EditEventActivity"
             android:windowSoftInputMode="adjustNothing" />

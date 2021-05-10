@@ -1,13 +1,14 @@
 package com.zerodsoft.scheduleweather.event.common;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.service.carrier.CarrierMessagingService;
 import android.view.Menu;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
@@ -16,6 +17,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.naver.maps.geometry.LatLng;
 import com.naver.maps.map.NaverMap;
 import com.naver.maps.map.OnMapReadyCallback;
 import com.naver.maps.map.overlay.Marker;
@@ -23,9 +25,9 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
 import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
-import com.zerodsoft.scheduleweather.event.main.InstanceMainActivity;
 import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.LocationItemViewPagerAdapter;
+import com.zerodsoft.scheduleweather.navermap.fragment.searchheader.MapHeaderSearchFragment;
 import com.zerodsoft.scheduleweather.navermap.model.CoordToAddressUtil;
 import com.zerodsoft.scheduleweather.navermap.util.LocalParameterUtil;
 import com.zerodsoft.scheduleweather.navermap.NaverMapActivity;
@@ -43,13 +45,23 @@ import java.util.Collections;
 
 public class SelectionDetailLocationNaver extends NaverMapActivity implements OnMapReadyCallback
 {
+    public static final int REQUEST_CODE_SELECT_LOCATION_EMPTY_QUERY = 1000;
+    public static final int REQUEST_CODE_SELECT_LOCATION_BY_QUERY = 2000;
+    public static final int REQUEST_CODE_CHANGE_LOCATION = 3000;
+
+    public static final int RESULT_CODE_CHANGED_LOCATION = 10000;
+    public static final int RESULT_CODE_REMOVED_LOCATION = 20000;
+    public static final int RESULT_CODE_SELECTED_LOCATION = 30000;
+
     private LocationDTO selectedLocationDTOInEvent;
     private LocationViewModel viewModel;
     private OnBackPressedCallback onBackPressedCallback;
     private int resultCode = Activity.RESULT_CANCELED;
+    private int requestCode;
 
     private LocationDTO selectedLocationDTOInMap;
-    private Marker selectedLocationMarker = new Marker();
+    private String locationNameInEvent;
+    private final Marker selectedLocationMarker = new Marker();
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -69,17 +81,67 @@ public class SelectionDetailLocationNaver extends NaverMapActivity implements On
         viewModel = new ViewModelProvider(this).get(LocationViewModel.class);
 
         Bundle arguments = getIntent().getExtras();
-        selectedLocationDTOInEvent = (LocationDTO) arguments.getParcelable("selectedLocationDTO");
-        arguments.remove("selectedLocationDTO");
+        selectedLocationDTOInEvent = (LocationDTO) arguments.getParcelable(LocationSelectorKey.SELECTED_LOCATION_DTO_IN_EVENT.name());
+        locationNameInEvent = arguments.getString(LocationSelectorKey.LOCATION_NAME_IN_EVENT.name());
+        requestCode = arguments.getInt(LocationSelectorKey.REQUEST_CODE.name());
 
-        if (selectedLocationDTOInEvent == null)
+        arguments.remove(LocationSelectorKey.SELECTED_LOCATION_DTO_IN_EVENT.name());
+
+        selectedLocationMarker.setCaptionColor(Color.BLUE);
+        selectedLocationMarker.setCaptionTextSize(14f);
+
+        switch (requestCode)
         {
-            naverMapFragment.setPlaceBottomSheetSelectBtnVisibility(View.VISIBLE);
-            naverMapFragment.setPlaceBottomSheetUnSelectBtnVisibility(View.GONE);
+            case REQUEST_CODE_SELECT_LOCATION_EMPTY_QUERY:
+            {
+                // 아무것도 하지 않음
+                naverMapFragment.setPlaceBottomSheetSelectBtnVisibility(View.VISIBLE);
+                naverMapFragment.setPlaceBottomSheetUnSelectBtnVisibility(View.GONE);
+                break;
+            }
+            case REQUEST_CODE_SELECT_LOCATION_BY_QUERY:
+            {
+                naverMapFragment.setPlaceBottomSheetSelectBtnVisibility(View.VISIBLE);
+                naverMapFragment.setPlaceBottomSheetUnSelectBtnVisibility(View.GONE);
+                binding.naverMapActivityRootLayout.getViewTreeObserver().addOnGlobalLayoutListener(acitivityRootOnGlobalLayoutListener);
+                break;
+            }
+            case REQUEST_CODE_CHANGE_LOCATION:
+            {
+                naverMapFragment.setPlaceBottomSheetSelectBtnVisibility(View.GONE);
+                naverMapFragment.setPlaceBottomSheetUnSelectBtnVisibility(View.VISIBLE);
+                naverMapFragment.mapFragment.getMapAsync(this::onMapReady);
+                break;
+            }
         }
-
-        naverMapFragment.mapFragment.getMapAsync(this::onMapReady);
     }
+
+
+    private ViewTreeObserver.OnGlobalLayoutListener acitivityRootOnGlobalLayoutListener =
+            new ViewTreeObserver.OnGlobalLayoutListener()
+            {
+                @Override
+                public void onGlobalLayout()
+                {
+                    naverMapFragment.binding.locationSearchBottomSheet.searchFragmentContainer.getViewTreeObserver()
+                            .addOnGlobalLayoutListener(searchBottomSheetFragmentOnGlobalLayoutListener);
+
+                    naverMapFragment.binding.naverMapHeaderBar.getRoot().performClick();
+
+                    binding.naverMapActivityRootLayout.getViewTreeObserver().removeOnGlobalLayoutListener(acitivityRootOnGlobalLayoutListener);
+                }
+            };
+
+    private ViewTreeObserver.OnGlobalLayoutListener searchBottomSheetFragmentOnGlobalLayoutListener =
+            new ViewTreeObserver.OnGlobalLayoutListener()
+            {
+                @Override
+                public void onGlobalLayout()
+                {
+                    ((MapHeaderSearchFragment) naverMapFragment.getChildFragmentManager().findFragmentByTag(MapHeaderSearchFragment.TAG)).setQuery(locationNameInEvent, true);
+                    naverMapFragment.binding.locationSearchBottomSheet.searchFragmentContainer.getViewTreeObserver().removeOnGlobalLayoutListener(searchBottomSheetFragmentOnGlobalLayoutListener);
+                }
+            };
 
 
     private void showLocationItem()
@@ -89,9 +151,6 @@ public class SelectionDetailLocationNaver extends NaverMapActivity implements On
         {
             if (selectedLocationDTOInEvent.getLocationType() == LocationType.ADDRESS)
             {
-                naverMapFragment.setPlaceBottomSheetSelectBtnVisibility(View.GONE);
-                naverMapFragment.setPlaceBottomSheetUnSelectBtnVisibility(View.VISIBLE);
-
                 // 주소 검색 순서 : 좌표로 주소 변환
                 LocalApiPlaceParameter parameter = LocalParameterUtil.getCoordToAddressParameter(selectedLocationDTOInEvent.getLatitude(), selectedLocationDTOInEvent.getLongitude());
                 CoordToAddressUtil.coordToAddress(parameter, new CarrierMessagingService.ResultCallback<DataWrapper<CoordToAddress>>()
@@ -118,9 +177,6 @@ public class SelectionDetailLocationNaver extends NaverMapActivity implements On
 
             } else if (selectedLocationDTOInEvent.getLocationType() == LocationType.PLACE)
             {
-                naverMapFragment.setPlaceBottomSheetSelectBtnVisibility(View.GONE);
-                naverMapFragment.setPlaceBottomSheetUnSelectBtnVisibility(View.VISIBLE);
-
                 // 장소 검색 순서 : 장소의 위경도 내 10M 반경에서 장소 이름 검색(여러개 나올 경우 장소ID와 일치하는 장소를 선택)
                 LocalApiPlaceParameter parameter = LocalParameterUtil.getPlaceParameter(selectedLocationDTOInEvent.getPlaceName(),
                         String.valueOf(selectedLocationDTOInEvent.getLatitude()), String.valueOf(selectedLocationDTOInEvent.getLongitude()), LocalApiPlaceParameter.DEFAULT_SIZE,
@@ -161,7 +217,6 @@ public class SelectionDetailLocationNaver extends NaverMapActivity implements On
         return super.onCreateOptionsMenu(menu);
     }
 
-
     @Override
     protected void onDestroy()
     {
@@ -191,31 +246,47 @@ public class SelectionDetailLocationNaver extends NaverMapActivity implements On
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i)
                         {
-                            saveLocation(kakaoLocalDocument);
+                            saveLocation();
                         }
                     }).create().show();
         } else
         {
-            saveLocation(kakaoLocalDocument);
+            saveLocation();
         }
-
-
     }
 
-    private void saveLocation(KakaoLocalDocument kakaoLocalDocument)
+    private void saveLocation()
     {
         LocationDTO location = naverMapFragment.getSelectedLocationDto();
         selectedLocationDTOInMap = location;
         Bundle bundle = new Bundle();
-        bundle.putParcelable("selectedLocationDTO", location);
+        bundle.putParcelable(LocationSelectorKey.SELECTED_LOCATION_DTO_IN_MAP.name(), location);
         getIntent().putExtras(bundle);
 
+        removeMarker();
+        createMarker();
         naverMapFragment.getBottomSheetBehavior(BottomSheetType.LOCATION_ITEM).setState(BottomSheetBehavior.STATE_COLLAPSED);
 
-        resultCode = selectedLocationDTOInEvent == null ? InstanceMainActivity.RESULT_SELECTED_LOCATION : InstanceMainActivity.RESULT_RESELECTED_LOCATION;
+        resultCode = (requestCode == REQUEST_CODE_CHANGE_LOCATION)
+                ? RESULT_CODE_CHANGED_LOCATION : RESULT_CODE_SELECTED_LOCATION;
 
         String locationName = location.getLocationType() == LocationType.PLACE ? location.getPlaceName() : location.getAddressName();
         Toast.makeText(this, locationName + " - " + getString(R.string.selected_location), Toast.LENGTH_SHORT).show();
+    }
+
+    private void createMarker()
+    {
+        selectedLocationMarker.setPosition(new LatLng(selectedLocationDTOInMap.getLatitude(), selectedLocationDTOInMap.getLongitude()));
+        selectedLocationMarker.setCaptionText(selectedLocationDTOInMap.getLocationType() == LocationType.PLACE ? selectedLocationDTOInMap.getPlaceName() : selectedLocationDTOInMap.getAddressName());
+        selectedLocationMarker.setMap(naverMapFragment.naverMap);
+    }
+
+    private void removeMarker()
+    {
+        if (selectedLocationMarker.getMap() != null)
+        {
+            selectedLocationMarker.setMap(null);
+        }
     }
 
     @Override
@@ -223,10 +294,11 @@ public class SelectionDetailLocationNaver extends NaverMapActivity implements On
     {
         naverMapFragment.deselectPoiItem();
         naverMapFragment.removeAllPoiItems();
+        removeMarker();
 
         naverMapFragment.getBottomSheetBehavior(BottomSheetType.LOCATION_ITEM).setState(BottomSheetBehavior.STATE_COLLAPSED);
 
-        resultCode = InstanceMainActivity.RESULT_REMOVED_LOCATION;
+        resultCode = RESULT_CODE_REMOVED_LOCATION;
 
         Toast.makeText(getApplicationContext(), R.string.canceled_location, Toast.LENGTH_SHORT).show();
     }

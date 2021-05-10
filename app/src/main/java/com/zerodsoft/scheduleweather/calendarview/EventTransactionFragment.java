@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.net.ConnectivityManager;
-import android.net.Network;
 import android.os.Bundle;
 import android.provider.CalendarContract;
 import android.view.LayoutInflater;
@@ -33,7 +32,6 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickLis
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
 import com.zerodsoft.scheduleweather.calendarview.month.MonthFragment;
 import com.zerodsoft.scheduleweather.calendarview.week.WeekFragment;
-import com.zerodsoft.scheduleweather.event.main.InstanceMainActivity;
 import com.zerodsoft.scheduleweather.event.main.NewInstanceMainActivity;
 import com.zerodsoft.scheduleweather.utility.NetworkStatus;
 

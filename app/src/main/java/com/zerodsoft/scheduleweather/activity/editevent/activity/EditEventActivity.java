@@ -1,5 +1,6 @@
 package com.zerodsoft.scheduleweather.activity.editevent.activity;
 
+import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -50,9 +51,9 @@ import com.zerodsoft.scheduleweather.databinding.ActivityEditEventBinding;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.etc.LocationType;
+import com.zerodsoft.scheduleweather.event.common.LocationSelectorKey;
 import com.zerodsoft.scheduleweather.event.common.SelectionDetailLocationNaver;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
-import com.zerodsoft.scheduleweather.event.main.InstanceMainActivity;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.utility.NetworkStatus;
@@ -542,11 +543,15 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
 
                 if (locationDTO != null)
                 {
-                    bundle.putParcelable("selectedLocationDTO", locationDTO);
+                    bundle.putParcelable(LocationSelectorKey.SELECTED_LOCATION_DTO_IN_EVENT.name(), locationDTO);
+                    bundle.putInt(LocationSelectorKey.REQUEST_CODE.name(), SelectionDetailLocationNaver.REQUEST_CODE_CHANGE_LOCATION);
+                } else
+                {
+                    bundle.putInt(LocationSelectorKey.REQUEST_CODE.name(), SelectionDetailLocationNaver.REQUEST_CODE_SELECT_LOCATION_EMPTY_QUERY);
                 }
 
                 intent.putExtras(bundle);
-                startActivityForResult(intent, REQUEST_LOCATION);
+                selectLocationActivityResultLauncher.launch(intent);
             } else
             {
                 networkStatus.showToastDisconnected();
@@ -618,38 +623,6 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                 break;
             }
 
-            case REQUEST_LOCATION:
-            {
-                if (resultCode == InstanceMainActivity.RESULT_SELECTED_LOCATION)
-                {
-                    Bundle bundle = data.getExtras();
-                    locationDTO = (LocationDTO) bundle.getParcelable("selectedLocationDTO");
-
-                    // parcelable object는 형변환을 해줘야 한다.
-                    String resultLocation = null;
-
-                    if (locationDTO.getLocationType() == LocationType.ADDRESS)
-                    {
-                        resultLocation = locationDTO.getAddressName();
-                    } else
-                    {
-                        resultLocation = locationDTO.getPlaceName();
-                    }
-
-                    dataController.putEventValue(CalendarContract.Events.EVENT_LOCATION, resultLocation);
-                    binding.locationLayout.eventLocation.setText(resultLocation);
-                } else if (resultCode == RESULT_CANCELED)
-                {
-
-                } else if (resultCode == InstanceMainActivity.RESULT_REMOVED_LOCATION)
-                {
-                    dataController.removeEventValue(CalendarContract.Events.EVENT_LOCATION);
-                    locationDTO = null;
-                    binding.locationLayout.eventLocation.setText("");
-
-                }
-                break;
-            }
 
             case AttendeesActivity.SHOW_DETAILS_FOR_ATTENDEES:
             {
@@ -1510,7 +1483,50 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
 
     }
 
-    class AttendeeSet extends HashSet<ContentValues>
+    private final ActivityResultLauncher<Intent> selectLocationActivityResultLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>()
+            {
+                @Override
+                public void onActivityResult(ActivityResult result)
+                {
+                    switch (result.getResultCode())
+                    {
+                        case SelectionDetailLocationNaver.RESULT_CODE_CHANGED_LOCATION:
+                        case SelectionDetailLocationNaver.RESULT_CODE_SELECTED_LOCATION:
+                        {
+                            Bundle bundle = result.getData().getExtras();
+                            locationDTO = (LocationDTO) bundle.getParcelable(LocationSelectorKey.SELECTED_LOCATION_DTO_IN_MAP.name());
+                            // parcelable object는 형변환을 해줘야 한다.
+                            String resultLocation = null;
+
+                            if (locationDTO.getLocationType() == LocationType.ADDRESS)
+                            {
+                                resultLocation = locationDTO.getAddressName();
+                            } else
+                            {
+                                resultLocation = locationDTO.getPlaceName();
+                            }
+
+                            dataController.putEventValue(CalendarContract.Events.EVENT_LOCATION, resultLocation);
+                            binding.locationLayout.eventLocation.setText(resultLocation);
+
+                            break;
+                        }
+
+                        case SelectionDetailLocationNaver.RESULT_CODE_REMOVED_LOCATION:
+                        {
+                            dataController.removeEventValue(CalendarContract.Events.EVENT_LOCATION);
+                            locationDTO = null;
+                            binding.locationLayout.eventLocation.setText("");
+
+                            break;
+                        }
+                    }
+
+                }
+            });
+
+    static class AttendeeSet extends HashSet<ContentValues>
     {
         public boolean removeAll(Set<ContentValues> collection)
         {
