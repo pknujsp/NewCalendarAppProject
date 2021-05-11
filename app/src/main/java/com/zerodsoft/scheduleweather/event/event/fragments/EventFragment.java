@@ -331,7 +331,7 @@ public class EventFragment extends BottomSheetDialogFragment
                                         case 0:
                                             // 이번 일정만 삭제
                                             // 완성
-                                            exceptThisInstance();
+                                            showExceptThisInstanceDialog();
                                             break;
                                         case 1:
                                             // 향후 모든 일정만 삭제
@@ -339,7 +339,7 @@ public class EventFragment extends BottomSheetDialogFragment
                                             break;
                                         case 2:
                                             // 모든 일정 삭제
-                                            deleteEvent();
+                                            showDeleteEventDialog();
                                             break;
                                     }
                                 } else
@@ -348,7 +348,8 @@ public class EventFragment extends BottomSheetDialogFragment
                                     {
                                         case 0:
                                             // 모든 일정 삭제
-                                            deleteEvent();
+                                            showDeleteEventDialog();
+
                                             break;
                                     }
                                 }
@@ -361,6 +362,29 @@ public class EventFragment extends BottomSheetDialogFragment
 
         instanceValues = viewModel.getInstance(CALENDAR_ID, INSTANCE_ID, ORIGINAL_BEGIN, ORIGINAL_END);
         setInstanceData();
+    }
+
+    private void showDeleteEventDialog()
+    {
+        new MaterialAlertDialogBuilder(requireActivity())
+                .setTitle(R.string.remove_event)
+                .setPositiveButton(R.string.check, new DialogInterface.OnClickListener()
+                {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which)
+                    {
+                        deleteEvent();
+                        dialog.dismiss();
+                    }
+                })
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener()
+                {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which)
+                    {
+                        dialog.dismiss();
+                    }
+                }).create().show();
     }
 
     private void deleteEvent()
@@ -417,6 +441,29 @@ public class EventFragment extends BottomSheetDialogFragment
 
          */
         Toast.makeText(getActivity(), "작성 중", Toast.LENGTH_SHORT).show();
+    }
+
+    private void showExceptThisInstanceDialog()
+    {
+        new MaterialAlertDialogBuilder(requireActivity())
+                .setTitle(R.string.remove_this_instance)
+                .setPositiveButton(R.string.check, new DialogInterface.OnClickListener()
+                {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which)
+                    {
+                        exceptThisInstance();
+                        dialog.dismiss();
+                    }
+                })
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener()
+                {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which)
+                    {
+                        dialog.dismiss();
+                    }
+                }).create().show();
     }
 
     private void exceptThisInstance()
