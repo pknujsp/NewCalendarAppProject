@@ -190,9 +190,9 @@ public class FoodRestaurantSearchHistoryFragment extends Fragment implements OnC
 
 
     @Override
-    public void onClickedListItem(SearchHistoryDTO e)
+    public void onClickedListItem(SearchHistoryDTO e, int position)
     {
-        onClickedListItem.onClickedListItem(e);
+        onClickedListItem.onClickedListItem(e, position);
     }
 
     @Override

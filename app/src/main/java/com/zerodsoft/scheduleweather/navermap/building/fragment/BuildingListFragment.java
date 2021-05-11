@@ -392,7 +392,7 @@ public class BuildingListFragment extends Fragment implements OnClickedListItem<
     }
 
     @Override
-    public void onClickedListItem(BuildingAreaItem e)
+    public void onClickedListItem(BuildingAreaItem e, int position)
     {
         //change fragment
         buildingFragmentController.setBuildingBottomSheetHeight(BuildingFragment.TAG);

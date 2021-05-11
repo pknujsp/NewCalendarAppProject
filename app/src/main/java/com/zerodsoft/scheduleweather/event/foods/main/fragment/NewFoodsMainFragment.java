@@ -87,7 +87,6 @@ public class NewFoodsMainFragment extends Fragment implements INetwork, BottomNa
                 mainFragmentOnBackPressedCallbackController.removeOnBackPressedCallback();
             }
             bottomSheetController.setStateOfBottomSheet(BottomSheetType.RESTAURANT, BottomSheetBehavior.STATE_EXPANDED);
-
         }
     }
 
@@ -163,6 +162,7 @@ public class NewFoodsMainFragment extends Fragment implements INetwork, BottomNa
                 .add(binding.fragmentContainer.getId(), searchRestaurantFragment, SearchRestaurantFragment.TAG)
                 .add(binding.fragmentContainer.getId(), foodsSettingsFragment, FoodsSettingsFragment.TAG)
                 .add(binding.fragmentContainer.getId(), favoritesMainFragment, FavoritesMainFragment.TAG)
+                .setPrimaryNavigationFragment(foodsHomeFragment)
                 .hide(foodsSettingsFragment)
                 .hide(searchRestaurantFragment)
                 .hide(favoritesMainFragment)
@@ -230,8 +230,7 @@ public class NewFoodsMainFragment extends Fragment implements INetwork, BottomNa
     public void addOnBackPressedCallback()
     {
         //bottomsheet가 확장될때 호출되고, 현재 표시중인 프래그먼트의 onbackpressed를 활성화한다.
-        FragmentManager fragmentManager = getChildFragmentManager();
-        Fragment fragment = fragmentManager.getPrimaryNavigationFragment();
+        Fragment fragment = getChildFragmentManager().getPrimaryNavigationFragment();
 
         if (fragment instanceof FoodsHomeFragment)
         {

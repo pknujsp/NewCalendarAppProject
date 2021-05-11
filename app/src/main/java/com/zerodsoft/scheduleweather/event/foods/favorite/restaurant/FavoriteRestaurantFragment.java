@@ -210,7 +210,7 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
     }
 
     @Override
-    public void onClickedListItem(PlaceDocuments e)
+    public void onClickedListItem(PlaceDocuments e, int position)
     {
         if (e instanceof PlaceDocuments)
         {

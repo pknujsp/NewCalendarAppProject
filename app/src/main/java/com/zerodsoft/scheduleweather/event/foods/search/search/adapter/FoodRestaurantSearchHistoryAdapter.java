@@ -3,7 +3,6 @@ package com.zerodsoft.scheduleweather.event.foods.search.search.adapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -78,7 +77,7 @@ public class FoodRestaurantSearchHistoryAdapter extends RecyclerView.Adapter<Foo
                 @Override
                 public void onClick(View view)
                 {
-                    onClickedListItem.onClickedListItem(historyList.get(getAdapterPosition()));
+                    onClickedListItem.onClickedListItem(historyList.get(getBindingAdapterPosition()), getBindingAdapterPosition());
                 }
             });
             deleteButton.setOnClickListener(new View.OnClickListener()

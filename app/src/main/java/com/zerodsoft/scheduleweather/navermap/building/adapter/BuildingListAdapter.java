@@ -63,7 +63,7 @@ public class BuildingListAdapter extends RecyclerView.Adapter<BuildingListAdapte
 
         public void onBind()
         {
-            BuildingAreaItem building = buildingList.get(getAdapterPosition());
+            BuildingAreaItem building = buildingList.get(getBindingAdapterPosition());
 
             buildingName.setText(building.getBdName() == null ? itemView.getContext().getString(R.string.not_data) : building.getBdName());
             buildingAddress.setText(building.getBdNewAddress() == null ? itemView.getContext().getString(R.string.not_data) : building.getBdNewAddress());
@@ -75,7 +75,7 @@ public class BuildingListAdapter extends RecyclerView.Adapter<BuildingListAdapte
                 @Override
                 public void onClick(View view)
                 {
-                    onClickedListItem.onClickedListItem(building);
+                    onClickedListItem.onClickedListItem(building, getBindingAdapterPosition());
                 }
             });
 

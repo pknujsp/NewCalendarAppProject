@@ -1,11 +1,9 @@
 package com.zerodsoft.scheduleweather.activity.preferences.customfoodmenu.fragment;
 
-import android.app.Dialog;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.DividerItemDecoration;
@@ -171,7 +169,7 @@ public class CustomFoodMenuSettingsFragment extends Fragment implements OnClicke
     }
 
     @Override
-    public void onClickedListItem(CustomFoodMenuDTO e)
+    public void onClickedListItem(CustomFoodMenuDTO e, int position)
     {
 
     }

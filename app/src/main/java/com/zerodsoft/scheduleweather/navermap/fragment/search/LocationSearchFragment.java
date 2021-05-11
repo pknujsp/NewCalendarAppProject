@@ -203,7 +203,7 @@ public class LocationSearchFragment extends Fragment implements OnSelectedMapCat
 
 
     @Override
-    public void onClickedListItem(SearchHistoryDTO e)
+    public void onClickedListItem(SearchHistoryDTO e, int position)
     {
         searchBarController.setQuery(e.getValue(), true);
     }

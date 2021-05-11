@@ -186,13 +186,13 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
     @Override
     public void addOnBackPressedCallback()
     {
-        // requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
+        requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
     }
 
     @Override
     public void removeOnBackPressedCallback()
     {
-        // onBackPressedCallback.remove();
+        onBackPressedCallback.remove();
     }
 
 

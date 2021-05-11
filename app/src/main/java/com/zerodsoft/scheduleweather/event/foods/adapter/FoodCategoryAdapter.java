@@ -1,23 +1,19 @@
 package com.zerodsoft.scheduleweather.event.foods.adapter;
 
-import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.event.foods.dto.FoodCategoryItem;
-import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedCategoryItem;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -107,7 +103,7 @@ public class FoodCategoryAdapter extends RecyclerView.Adapter<FoodCategoryAdapte
                 @Override
                 public void onClick(View view)
                 {
-                    onClickedCategoryItem.onClickedListItem(foodCategoryItem);
+                    onClickedCategoryItem.onClickedListItem(foodCategoryItem, getBindingAdapterPosition());
                 }
             });
         }

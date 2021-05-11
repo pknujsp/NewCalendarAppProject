@@ -583,7 +583,7 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 
 
     @Override
-    public void onClickedListItem(FoodCategoryItem e)
+    public void onClickedListItem(FoodCategoryItem e, int position)
     {
         if (!e.isDefault() && e.getCategoryName().equals(getString(R.string.add_custom_food_menu)))
         {

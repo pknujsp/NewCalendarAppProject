@@ -5,4 +5,7 @@
     <item name="weather_fragment_container" type="id" />
     <item name="restaurant_fragment_container" type="id" />
     <item name="chip_scroll_view" type="id" />
+    <item name="place_category_fragment_container" type="id" />
+    <item name="place_category_chips_scroll_layout" type="id" />
+    <item name="food_menu_chips_scroll_layout" type="id" />
 </resources>

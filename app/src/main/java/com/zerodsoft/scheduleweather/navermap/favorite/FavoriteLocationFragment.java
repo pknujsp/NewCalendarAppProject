@@ -401,9 +401,11 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
     }
 
     @Override
-    public void onClickedListItem(FavoriteLocationDTO e)
+    public void onClickedListItem(FavoriteLocationDTO e, int position)
     {
-
+        //맵에서 마커 클릭 후, 아이템 정보 바텀시트 보여주고 프래그먼트 바텀 시트 닫음
+        poiItemOnClickListener.onPOIItemSelectedByList(position, MarkerType.FAVORITE);
+        onBackPressedCallback.handleOnBackPressed();
     }
 
     @Override

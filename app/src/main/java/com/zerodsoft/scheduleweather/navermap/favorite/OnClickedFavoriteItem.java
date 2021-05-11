@@ -8,7 +8,7 @@ import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
 public interface OnClickedFavoriteItem extends OnClickedListItem<FavoriteLocationDTO>
 {
     @Override
-    void onClickedListItem(FavoriteLocationDTO e);
+    void onClickedListItem(FavoriteLocationDTO e, int position);
 
     @Override
     void deleteListItem(FavoriteLocationDTO e, int position);

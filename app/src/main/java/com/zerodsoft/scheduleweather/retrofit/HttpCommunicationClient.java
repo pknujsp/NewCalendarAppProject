@@ -128,7 +128,7 @@ public class HttpCommunicationClient
             {
                 if (findStationInstance == null)
                 {
-                    OkHttpClient client = new OkHttpClient.Builder().connectTimeout(10, TimeUnit.SECONDS).build();
+                    OkHttpClient client = new OkHttpClient.Builder().connectTimeout(5, TimeUnit.SECONDS).build();
                     Gson gson = new GsonBuilder().setLenient().create();
 
                     findStationInstance = new Retrofit.Builder().client(client).addConverterFactory(GsonConverterFactory.create())

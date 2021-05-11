@@ -23,7 +23,6 @@ import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackCont
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.databinding.FragmentSearchRestaurantBinding;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedRestaurantItem;
-import com.zerodsoft.scheduleweather.event.foods.main.fragment.NewFoodsMainFragment;
 import com.zerodsoft.scheduleweather.event.foods.search.searchresult.fragment.FoodRestaurantSearchResultFragment;
 import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
@@ -198,7 +197,7 @@ public class SearchRestaurantFragment extends Fragment implements OnClickedListI
     }
 
     @Override
-    public void onClickedListItem(SearchHistoryDTO e)
+    public void onClickedListItem(SearchHistoryDTO e, int position)
     {
         binding.editTextSearch.setText(e.getValue());
         search(e.getValue());

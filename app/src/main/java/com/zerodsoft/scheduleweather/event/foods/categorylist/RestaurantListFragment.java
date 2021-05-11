@@ -152,7 +152,7 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 
 
     @Override
-    public void onClickedListItem(PlaceDocuments e)
+    public void onClickedListItem(PlaceDocuments e, int position)
     {
         if (e instanceof PlaceDocuments)
         {

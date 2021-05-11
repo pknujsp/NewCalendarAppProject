@@ -1,10 +1,8 @@
 package com.zerodsoft.scheduleweather.event.places.map;
 
-import android.content.ContentValues;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.RemoteException;
-import android.provider.CalendarContract;
 import android.service.carrier.CarrierMessagingService;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -14,6 +12,7 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -24,9 +23,11 @@ import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.activity.placecategory.viewmodel.PlaceCategoryViewModel;
+import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
 import com.zerodsoft.scheduleweather.common.interfaces.OnProgressBarListener;
 import com.zerodsoft.scheduleweather.databinding.PlacelistFragmentBinding;
 import com.zerodsoft.scheduleweather.etc.CustomRecyclerViewItemDecoration;
@@ -34,6 +35,8 @@ import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.places.adapter.PlaceItemsAdapters;
 import com.zerodsoft.scheduleweather.event.places.interfaces.OnClickedPlacesListListener;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PlaceItemsGetter;
+import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
+import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.navermap.util.LocalParameterUtil;
 import com.zerodsoft.scheduleweather.navermap.viewmodel.PlacesViewModel;
 import com.zerodsoft.scheduleweather.navermap.interfaces.OnExtraListDataListener;
@@ -48,9 +51,14 @@ import java.util.List;
 import java.util.Map;
 
 public class PlacesOfSelectedCategoriesFragment extends Fragment implements PlaceItemsGetter, OnProgressBarListener, OnExtraListDataListener<PlaceCategoryDTO>
+        , OnBackPressedCallbackController
 {
-    public static final String TAG = "PlaceListFragment";
+    public static final String TAG = "PlacesOfSelectedCategoriesFragment";
     private DecimalFormat decimalFormat = new DecimalFormat("#.#");
+
+    private final BottomSheetController bottomSheetController;
+    private final OnBackPressedCallbackController mainFragmentOnBackPressedCallbackController;
+    private final PlaceCategoryChipsViewController placeCategoryChipsViewController;
 
     private PlacelistFragmentBinding binding;
     private List<PlaceCategoryDTO> placeCategoryList;
@@ -59,22 +67,63 @@ public class PlacesOfSelectedCategoriesFragment extends Fragment implements Plac
     private PlaceCategoryViewModel placeCategoryViewModel;
     private LocationViewModel locationViewModel;
 
-    private final ContentValues INSTANCE_VALUES;
+    private final int CALENDAR_ID;
+    private final long EVENT_ID;
     private final OnClickedPlacesListListener onClickedPlacesListListener;
 
     private Map<String, PlaceItemsAdapters> adaptersMap = new HashMap<>();
     private Map<String, RecyclerView> listMap = new HashMap<>();
 
-    public PlacesOfSelectedCategoriesFragment(ContentValues instanceValues, Fragment fragment)
+    private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
     {
-        this.INSTANCE_VALUES = instanceValues;
-        this.onClickedPlacesListListener = (OnClickedPlacesListListener) fragment;
+        @Override
+        public void handleOnBackPressed()
+        {
+            getParentFragmentManager().popBackStackImmediate();
+        }
+    };
+
+    public PlacesOfSelectedCategoriesFragment(int CALENDAR_ID, long EVENT_ID, OnClickedPlacesListListener onClickedPlacesListListener, BottomSheetController bottomSheetController,
+                                              OnBackPressedCallbackController mainFragmentOnBackPressedCallbackController,
+                                              PlaceCategoryChipsViewController placeCategoryChipsViewController)
+    {
+        this.CALENDAR_ID = CALENDAR_ID;
+        this.EVENT_ID = EVENT_ID;
+        this.onClickedPlacesListListener = onClickedPlacesListListener;
+        this.bottomSheetController = bottomSheetController;
+        this.mainFragmentOnBackPressedCallbackController = mainFragmentOnBackPressedCallbackController;
+        this.placeCategoryChipsViewController = placeCategoryChipsViewController;
+    }
+
+    @Override
+    public void onHiddenChanged(boolean hidden)
+    {
+        super.onHiddenChanged(hidden);
+        if (hidden)
+        {
+            removeOnBackPressedCallback();
+            if (getParentFragmentManager().getBackStackEntryCount() == 0)
+            {
+                mainFragmentOnBackPressedCallbackController.addOnBackPressedCallback();
+            }
+            bottomSheetController.setStateOfBottomSheet(BottomSheetType.SELECTED_PLACE_CATEGORY, BottomSheetBehavior.STATE_COLLAPSED);
+        } else
+        {
+            addOnBackPressedCallback();
+            if (getParentFragmentManager().getBackStackEntryCount() == 0)
+            {
+                mainFragmentOnBackPressedCallbackController.removeOnBackPressedCallback();
+            }
+            bottomSheetController.setStateOfBottomSheet(BottomSheetType.SELECTED_PLACE_CATEGORY, BottomSheetBehavior.STATE_EXPANDED);
+        }
     }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+
+        placeCategoryChipsViewController.createPlaceCategoryListChips();
     }
 
     @Nullable
@@ -138,26 +187,25 @@ public class PlacesOfSelectedCategoriesFragment extends Fragment implements Plac
 
     private void initLocation()
     {
-        locationViewModel.getLocation(INSTANCE_VALUES.getAsInteger(CalendarContract.Instances.CALENDAR_ID)
-                , INSTANCE_VALUES.getAsLong(CalendarContract.Instances.EVENT_ID), new CarrierMessagingService.ResultCallback<LocationDTO>()
+        locationViewModel.getLocation(CALENDAR_ID, EVENT_ID, new CarrierMessagingService.ResultCallback<LocationDTO>()
+        {
+            @Override
+            public void onReceiveResult(@NonNull LocationDTO location) throws RemoteException
+            {
+                if (!location.isEmpty())
                 {
-                    @Override
-                    public void onReceiveResult(@NonNull LocationDTO location) throws RemoteException
+                    selectedLocationDto = location;
+                    requireActivity().runOnUiThread(new Runnable()
                     {
-                        if (!location.isEmpty())
+                        @Override
+                        public void run()
                         {
-                            selectedLocationDto = location;
-                            getActivity().runOnUiThread(new Runnable()
-                            {
-                                @Override
-                                public void run()
-                                {
-                                    binding.addressName.setText(selectedLocationDto.getAddressName());
-                                }
-                            });
+                            binding.addressName.setText(selectedLocationDto.getAddressName());
                         }
-                    }
-                });
+                    });
+                }
+            }
+        });
     }
 
     private void setSearchRadius()
@@ -174,7 +222,7 @@ public class PlacesOfSelectedCategoriesFragment extends Fragment implements Plac
             public void onReceiveResult(@NonNull List<PlaceCategoryDTO> placeCategoryDTOS) throws RemoteException
             {
                 placeCategoryList = placeCategoryDTOS;
-                getActivity().runOnUiThread(new Runnable()
+                requireActivity().runOnUiThread(new Runnable()
                 {
                     @Override
                     public void run()
@@ -234,6 +282,7 @@ public class PlacesOfSelectedCategoriesFragment extends Fragment implements Plac
                                 }
                             });
 
+                            placeCategoryChipsViewController.setPlaceCategoryChips(placeCategoryList);
                             adaptersMap.put(placeCategory.getCode(), adapter);
                             listMap.put(placeCategory.getCode(), itemRecyclerView);
                             binding.categoryViewlist.addView(categoryView);
@@ -242,8 +291,6 @@ public class PlacesOfSelectedCategoriesFragment extends Fragment implements Plac
                 });
             }
         });
-
-
     }
 
     @Override
@@ -271,6 +318,7 @@ public class PlacesOfSelectedCategoriesFragment extends Fragment implements Plac
                 adaptersMap.get(e.getCode()).unregisterAdapterDataObserver(this);
             }
         });
+
         RecyclerView recyclerView = listMap.get(e.getCode());
         recyclerView.scrollBy(100000, 0);
     }
@@ -279,5 +327,30 @@ public class PlacesOfSelectedCategoriesFragment extends Fragment implements Plac
     public void loadExtraListData(RecyclerView.AdapterDataObserver adapterDataObserver)
     {
 
+    }
+
+    @Override
+    public void addOnBackPressedCallback()
+    {
+        requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
+    }
+
+    @Override
+    public void removeOnBackPressedCallback()
+    {
+        onBackPressedCallback.remove();
+    }
+
+    public interface PlaceCategoryChipsViewController
+    {
+        void createPlaceCategoryListChips();
+
+        void addPlaceCategoryListFragmentIntoBottomSheet();
+
+        void setPlaceCategoryChips(List<PlaceCategoryDTO> placeCategoryList);
+
+        void addListChip();
+
+        void addSettingsChip();
     }
 }

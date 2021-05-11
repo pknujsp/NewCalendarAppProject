@@ -118,7 +118,7 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
                 @Override
                 public void onClick(View view)
                 {
-                    onClickedListItem.onClickedListItem(getItem(getBindingAdapterPosition()));
+                    onClickedListItem.onClickedListItem(getItem(getBindingAdapterPosition()), getBindingAdapterPosition());
                 }
             });
 

@@ -70,14 +70,14 @@ public class SearchLocationHistoryAdapter extends RecyclerView.Adapter<SearchLoc
 
         public void onBind()
         {
-            valueTextView.setText(historyList.get(getAdapterPosition()).getValue());
+            valueTextView.setText(historyList.get(getBindingAdapterPosition()).getValue());
 
             itemView.getRootView().setOnClickListener(new View.OnClickListener()
             {
                 @Override
                 public void onClick(View v)
                 {
-                    onClickedListItem.onClickedListItem(historyList.get(getAdapterPosition()));
+                    onClickedListItem.onClickedListItem(historyList.get(getBindingAdapterPosition()), getBindingAdapterPosition());
                 }
             });
 
@@ -86,7 +86,7 @@ public class SearchLocationHistoryAdapter extends RecyclerView.Adapter<SearchLoc
                 @Override
                 public void onClick(View view)
                 {
-                    onClickedListItem.deleteListItem(historyList.get(getAdapterPosition()), getAdapterPosition());
+                    onClickedListItem.deleteListItem(historyList.get(getBindingAdapterPosition()), getBindingAdapterPosition());
                 }
             });
         }

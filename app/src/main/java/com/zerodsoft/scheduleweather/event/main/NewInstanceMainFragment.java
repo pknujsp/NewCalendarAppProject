@@ -2,9 +2,14 @@ package com.zerodsoft.scheduleweather.event.main;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
@@ -42,6 +47,7 @@ import com.naver.maps.map.overlay.Marker;
 import com.naver.maps.map.overlay.Overlay;
 import com.naver.maps.map.overlay.OverlayImage;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.activity.placecategory.activity.PlaceCategoryActivity;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
@@ -54,6 +60,9 @@ import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.LocationItemViewPagerAdapter;
 import com.zerodsoft.scheduleweather.navermap.NaverMapFragment;
 import com.zerodsoft.scheduleweather.navermap.MarkerType;
+import com.zerodsoft.scheduleweather.navermap.fragment.search.LocationSearchFragment;
+import com.zerodsoft.scheduleweather.navermap.fragment.searchheader.MapHeaderMainFragment;
+import com.zerodsoft.scheduleweather.navermap.fragment.searchheader.MapHeaderSearchFragment;
 import com.zerodsoft.scheduleweather.navermap.interfaces.OnExtraListDataListener;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
@@ -65,7 +74,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class NewInstanceMainFragment extends NaverMapFragment implements NewFoodsMainFragment.FoodMenuChipsViewController
+public class NewInstanceMainFragment extends NaverMapFragment implements NewFoodsMainFragment.FoodMenuChipsViewController, PlacesOfSelectedCategoriesFragment.PlaceCategoryChipsViewController
 {
     public static final String TAG = "NewInstanceMainFragment";
 
@@ -114,10 +123,12 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
     private PlaceItemsGetter placeItemsGetter;
 
     private ChipGroup placeCategoryChipGroup;
-    private Map<String, Chip> placeCategoryChipMap = new HashMap<>();
+    private final Map<String, Chip> placeCategoryChipMap = new HashMap<>();
     private Chip placeCategoryListChip;
     private Chip placeCategorySettingsChip;
     private PlaceCategoryDTO selectedPlaceCategory;
+
+    private LinearLayout chipsLayout;
 
     @Override
     public void onAttach(@NonNull Context context)
@@ -165,10 +176,50 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
 
         functionButton.setVisibility(View.GONE);
 
+        chipsLayout = new LinearLayout(getContext());
+        chipsLayout.setOrientation(LinearLayout.VERTICAL);
+
+        RelativeLayout.LayoutParams chipLayoutsParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        chipLayoutsParams.addRule(RelativeLayout.BELOW, binding.naverMapHeaderBar.getRoot().getId());
+        chipLayoutsParams.topMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, getResources().getDisplayMetrics());
+
+        binding.naverMapViewLayout.addView(chipsLayout, chipLayoutsParams);
+
+        //place category
+        Object[] placeCategoryResult = createBottomSheet(R.id.place_category_fragment_container);
+        LinearLayout placeCategoryBottomSheet = (LinearLayout) placeCategoryResult[0];
+        BottomSheetBehavior placeCategoryBottomSheetBehavior = (BottomSheetBehavior) placeCategoryResult[1];
+
+        bottomSheetViewMap.put(BottomSheetType.SELECTED_PLACE_CATEGORY, placeCategoryBottomSheet);
+        bottomSheetBehaviorMap.put(BottomSheetType.SELECTED_PLACE_CATEGORY, placeCategoryBottomSheetBehavior);
+
+        addPlaceCategoryListFragmentIntoBottomSheet();
+
+        placeCategoryBottomSheetBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback()
+        {
+            @Override
+            public void onStateChanged(@NonNull View bottomSheet, int newState)
+            {
+                if (newState == BottomSheetBehavior.STATE_EXPANDED)
+                {
+                    placeCategoryListChip.setText(R.string.close_list);
+                } else if (newState == BottomSheetBehavior.STATE_COLLAPSED)
+                {
+                    placeCategoryListChip.setText(R.string.open_list);
+                }
+            }
+
+            @Override
+            public void onSlide(@NonNull View bottomSheet, float slideOffset)
+            {
+
+            }
+        });
+
+        //restaurant
         Object[] results2 = createBottomSheet(R.id.restaurant_fragment_container);
         LinearLayout restaurantsBottomSheet = (LinearLayout) results2[0];
         BottomSheetBehavior restaurantsBottomSheetBehavior = (BottomSheetBehavior) results2[1];
-
 
         bottomSheetViewMap.put(BottomSheetType.RESTAURANT, restaurantsBottomSheet);
         bottomSheetBehaviorMap.put(BottomSheetType.RESTAURANT, restaurantsBottomSheetBehavior);
@@ -212,6 +263,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
                 addWeatherFragmentIntoBottomSheet(DEFAULT_HEIGHT_OF_BOTTOMSHEET);
 
                 setHeightOfBottomSheet(DEFAULT_HEIGHT_OF_BOTTOMSHEET, restaurantsBottomSheet, restaurantsBottomSheetBehavior);
+                setHeightOfBottomSheet(DEFAULT_HEIGHT_OF_BOTTOMSHEET, placeCategoryBottomSheet, placeCategoryBottomSheetBehavior);
 
                 functionButton.setVisibility(View.VISIBLE);
             }
@@ -340,7 +392,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
                     addRestaurantFragmentIntoBottomSheet();
                 }
                 onCalledBottomSheet(BottomSheetBehavior.STATE_EXPANDED, bottomSheetBehaviorMap.get(BottomSheetType.RESTAURANT));
-                bottomSheetBehaviorMap.get(BottomSheetType.RESTAURANT).setState(BottomSheetBehavior.STATE_EXPANDED);
+                setStateOfBottomSheet(BottomSheetType.RESTAURANT, BottomSheetBehavior.STATE_EXPANDED);
             }
         });
 
@@ -585,6 +637,200 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
         bottomSheetFragmentMap.put(BottomSheetType.RESTAURANT, newFoodsMainFragment);
     }
 
+    public void createPlaceCategoryListChips()
+    {
+        //-----------chip group
+        HorizontalScrollView chipScrollView = new HorizontalScrollView(getContext());
+        chipScrollView.setHorizontalScrollBarEnabled(false);
+        chipScrollView.setId(R.id.place_category_chips_scroll_layout);
+
+        LinearLayout.LayoutParams chipLayoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        chipsLayout.addView(chipScrollView, chipLayoutParams);
+
+        placeCategoryChipGroup = new ChipGroup(getContext(), null, R.style.Widget_MaterialComponents_ChipGroup);
+        placeCategoryChipGroup.setSingleSelection(true);
+        placeCategoryChipGroup.setSingleLine(true);
+        placeCategoryChipGroup.setId(R.id.chip_group);
+        placeCategoryChipGroup.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+        chipScrollView.addView(placeCategoryChipGroup);
+
+        addListChip();
+        addSettingsChip();
+    }
+
+    @Override
+    public void addPlaceCategoryListFragmentIntoBottomSheet()
+    {
+        PlacesOfSelectedCategoriesFragment placesOfSelectedCategoriesFragment = new PlacesOfSelectedCategoriesFragment(CALENDAR_ID, EVENT_ID, this, this, this, this);
+        placeItemsGetter = placesOfSelectedCategoriesFragment;
+
+        getChildFragmentManager().beginTransaction()
+                .add(bottomSheetViewMap.get(BottomSheetType.SELECTED_PLACE_CATEGORY).getChildAt(0).getId()
+                        , placesOfSelectedCategoriesFragment, PlacesOfSelectedCategoriesFragment.TAG).hide(placesOfSelectedCategoriesFragment).commitNow();
+        bottomSheetFragmentMap.put(BottomSheetType.SELECTED_PLACE_CATEGORY, placesOfSelectedCategoriesFragment);
+    }
+
+    @Override
+    public void setPlaceCategoryChips(List<PlaceCategoryDTO> placeCategoryList)
+    {
+        if (placeCategoryChipGroup.getChildCount() >= 3)
+        {
+            placeCategoryChipGroup.removeViews(2, placeCategoryChipGroup.getChildCount() - 2);
+        }
+        placeCategoryChipMap.clear();
+
+        //카테고리를 chip으로 표시
+        int index = 0;
+
+        for (PlaceCategoryDTO placeCategory : placeCategoryList)
+        {
+            Chip chip = new Chip(getContext(), null, R.style.Widget_MaterialComponents_Chip_Filter);
+            chip.setChecked(false);
+            chip.setText(placeCategory.getDescription());
+            chip.setClickable(true);
+            chip.setCheckable(true);
+            chip.setVisibility(View.VISIBLE);
+            chip.setOnCheckedChangeListener(placeCategoryChipOnCheckedChangeListener);
+
+            final PlaceCategoryChipViewHolder chipViewHolder = new PlaceCategoryChipViewHolder(placeCategory, index++);
+            chip.setTag(chipViewHolder);
+
+            placeCategoryChipMap.put(placeCategory.getCode(), chip);
+            placeCategoryChipGroup.addView(chip, new ChipGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        }
+
+
+    }
+
+    @Override
+    public void addListChip()
+    {
+        placeCategoryListChip = new Chip(getContext());
+        placeCategoryListChip.setChecked(false);
+        placeCategoryListChip.setText(R.string.open_list);
+        placeCategoryListChip.setClickable(true);
+        placeCategoryListChip.setCheckable(false);
+        placeCategoryListChip.setTextColor(Color.BLACK);
+        placeCategoryListChip.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                if (bottomSheetBehaviorMap.get(BottomSheetType.SELECTED_PLACE_CATEGORY).getState() != BottomSheetBehavior.STATE_EXPANDED)
+                {
+                    onCalledBottomSheet(BottomSheetBehavior.STATE_EXPANDED, bottomSheetBehaviorMap.get(BottomSheetType.SELECTED_PLACE_CATEGORY));
+                    PlacesOfSelectedCategoriesFragment placesOfSelectedCategoriesFragment = (PlacesOfSelectedCategoriesFragment) bottomSheetFragmentMap.get(BottomSheetType.SELECTED_PLACE_CATEGORY);
+
+                    getChildFragmentManager().beginTransaction()
+                            .show(placesOfSelectedCategoriesFragment)
+                            .addToBackStack(PlacesOfSelectedCategoriesFragment.TAG)
+                            .commit();
+                } else
+                {
+                    getChildFragmentManager().popBackStackImmediate();
+                }
+            }
+        });
+
+        placeCategoryChipGroup.addView(placeCategoryListChip, 0);
+    }
+
+    @Override
+    public void addSettingsChip()
+    {
+        placeCategorySettingsChip = new Chip(getContext());
+        placeCategorySettingsChip.setChecked(false);
+        placeCategorySettingsChip.setText(R.string.app_settings);
+        placeCategorySettingsChip.setClickable(true);
+        placeCategorySettingsChip.setCheckable(false);
+        placeCategorySettingsChip.setTextColor(Color.BLACK);
+        placeCategorySettingsChip.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                placeCategoryActivityResultLauncher.launch(new Intent(getActivity(), PlaceCategoryActivity.class));
+            }
+        });
+
+        placeCategoryChipGroup.addView(placeCategorySettingsChip, 1);
+    }
+
+    private final ActivityResultLauncher<Intent> placeCategoryActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
+            new ActivityResultCallback<ActivityResult>()
+            {
+                @Override
+                public void onActivityResult(ActivityResult result)
+                {
+                    if (result.getResultCode() == 0)
+                    {
+                        if (placeCategoryChipGroup.getCheckedChipIds().size() > 0)
+                        {
+                            placeCategoryChipMap.get(selectedPlaceCategory.getCode()).setChecked(false);
+                        }
+                        ((PlacesOfSelectedCategoriesFragment) bottomSheetFragmentMap.get(BottomSheetType.SELECTED_PLACE_CATEGORY)).makeCategoryListView();
+                    }
+                }
+            });
+
+    private final CompoundButton.OnCheckedChangeListener placeCategoryChipOnCheckedChangeListener = new CompoundButton.OnCheckedChangeListener()
+    {
+        @Override
+        public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked)
+        {
+            /*
+           - chip이 이미 선택되어 있는 경우
+           같은 chip인 경우 : 선택해제, poiitem모두 삭제하고 bottomsheet를 숨긴다
+           다른 chip인 경우 : 새로운 chip이 선택되고 난 뒤에 기존 chip이 선택해제 된다
+           poiitem이 선택된 경우 해제하고, poiitem을 새로 생성한 뒤 poiitem전체가 보이도록 설정
+             */
+            if (isChecked)
+            {
+                if (getChildFragmentManager().findFragmentByTag(MapHeaderSearchFragment.TAG) != null)
+                {
+                    if (getChildFragmentManager().findFragmentByTag(MapHeaderSearchFragment.TAG).isVisible())
+                    {
+                        closeSearchFragments();
+                    }
+                }
+
+                setLocationItemViewPagerAdapter(new LocationItemViewPagerAdapter(getContext()), MarkerType.SELECTED_PLACE_CATEGORY);
+
+                PlaceCategoryDTO placeCategory = ((PlaceCategoryChipViewHolder) compoundButton.getTag()).placeCategory;
+                List<PlaceDocuments> placeDocumentsList = placeItemsGetter.getPlaceItems(placeCategory);
+                selectedPlaceCategory = placeCategory;
+
+                createPoiItems(placeDocumentsList, MarkerType.SELECTED_PLACE_CATEGORY);
+                showPoiItems(MarkerType.SELECTED_PLACE_CATEGORY);
+            } else if (placeCategoryChipGroup.getCheckedChipIds().isEmpty()
+                    && !markerMap.get((MarkerType) locationItemBottomSheetViewPager.getTag())
+                    .isEmpty())
+            {
+                removePoiItems(MarkerType.SELECTED_PLACE_CATEGORY);
+                selectedPlaceCategory = null;
+            }
+            setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_COLLAPSED);
+        }
+    };
+
+    @Override
+    public void onClickedItemInList(PlaceCategoryDTO placeCategory, int index)
+    {
+        placeCategoryListChip.callOnClick();
+        //create poi items
+        placeCategoryChipMap.get(placeCategory.getCode()).setChecked(true);
+        //select poi item
+        onPOIItemSelectedByList(index, MarkerType.SELECTED_PLACE_CATEGORY);
+    }
+
+    @Override
+    public void onClickedMoreInList(PlaceCategoryDTO placeCategory)
+    {
+        placeCategoryListChip.callOnClick();
+        placeCategoryChipMap.get(placeCategory.getCode()).setChecked(true);
+    }
+
     @Override
     public void createRestaurantListView(List<String> foodMenuList, RestaurantsGetter restaurantsGetter, OnExtraListDataListener<String> onExtraListDataListener)
     {
@@ -602,10 +848,10 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
         selectedFoodMenu = null;
         foodMenuChipMap.clear();
 
-        HorizontalScrollView scrollView = binding.naverMapViewLayout.findViewById(R.id.chip_scroll_view);
+        HorizontalScrollView scrollView = chipsLayout.findViewById(R.id.food_menu_chips_scroll_layout);
         foodMenuChipGroup.removeAllViews();
         scrollView.removeAllViews();
-        binding.naverMapViewLayout.removeView(scrollView);
+        chipsLayout.removeView(scrollView);
 
         foodMenuChipGroup = null;
         foodMenuListChip = null;
@@ -617,14 +863,11 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
     {
         //-----------chip group
         HorizontalScrollView chipScrollView = new HorizontalScrollView(getContext());
-        chipScrollView.setId(R.id.chip_scroll_view);
+        chipScrollView.setId(R.id.food_menu_chips_scroll_layout);
         chipScrollView.setHorizontalScrollBarEnabled(false);
 
-        RelativeLayout.LayoutParams chipLayoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        chipLayoutParams.addRule(RelativeLayout.BELOW, binding.naverMapHeaderBar.getRoot().getId());
-        chipLayoutParams.topMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, getResources().getDisplayMetrics());
-
-        binding.naverMapViewLayout.addView(chipScrollView, chipLayoutParams);
+        LinearLayout.LayoutParams chipLayoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        chipsLayout.addView(chipScrollView, chipLayoutParams);
 
         foodMenuChipGroup = new ChipGroup(getContext(), null, R.style.Widget_MaterialComponents_ChipGroup);
         foodMenuChipGroup.setSingleSelection(true);
@@ -657,8 +900,8 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
             chip.setVisibility(View.VISIBLE);
             chip.setOnCheckedChangeListener(foodMenuOnCheckedChangeListener);
 
-            final ChipViewHolder chipViewHolder = new ChipViewHolder(menu, index++);
-            chip.setTag(chipViewHolder);
+            final FoodChipViewHolder foodChipViewHolder = new FoodChipViewHolder(menu, index++);
+            chip.setTag(foodChipViewHolder);
 
             foodMenuChipMap.put(menu, chip);
             foodMenuChipGroup.addView(chip, new ChipGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
@@ -683,7 +926,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
                 locationItemViewPagerAdapter.setIsVisibleFavoriteBtn(View.GONE);
                 setLocationItemViewPagerAdapter(locationItemViewPagerAdapter, MarkerType.RESTAURANT);
 
-                selectedFoodMenu = ((ChipViewHolder) compoundButton.getTag()).foodMenuName;
+                selectedFoodMenu = ((FoodChipViewHolder) compoundButton.getTag()).foodMenuName;
                 restaurantItemGetter.getRestaurants(selectedFoodMenu, new CarrierMessagingService.ResultCallback<List<PlaceDocuments>>()
                 {
                     @Override
@@ -800,14 +1043,26 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
     }
 
 
-    static final class ChipViewHolder
+    static final class FoodChipViewHolder
     {
         String foodMenuName;
         int index;
 
-        public ChipViewHolder(String foodMenuName, int index)
+        public FoodChipViewHolder(String foodMenuName, int index)
         {
             this.foodMenuName = foodMenuName;
+            this.index = index;
+        }
+    }
+
+    static final class PlaceCategoryChipViewHolder
+    {
+        PlaceCategoryDTO placeCategory;
+        int index;
+
+        public PlaceCategoryChipViewHolder(PlaceCategoryDTO placeCategory, int index)
+        {
+            this.placeCategory = placeCategory;
             this.index = index;
         }
     }

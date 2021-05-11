@@ -87,7 +87,7 @@ public class FavoriteLocationAdapter extends RecyclerView.Adapter<FavoriteLocati
                 @Override
                 public void onClick(View view)
                 {
-                    onClickedFavoriteItem.onClickedListItem(favoriteLocationDTO);
+                    onClickedFavoriteItem.onClickedListItem(favoriteLocationDTO, getBindingAdapterPosition());
                 }
             });
 
