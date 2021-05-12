@@ -67,7 +67,7 @@ public class WeatherDbViewModel extends AndroidViewModel implements WeatherDataQ
     @Override
     public void deleteAll(CarrierMessagingService.ResultCallback<Boolean> callback)
     {
-
+        repository.deleteAll(callback);
     }
 
     @Override
