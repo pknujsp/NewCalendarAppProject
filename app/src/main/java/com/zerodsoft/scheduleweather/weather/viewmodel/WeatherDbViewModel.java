@@ -65,6 +65,12 @@ public class WeatherDbViewModel extends AndroidViewModel implements WeatherDataQ
     }
 
     @Override
+    public void deleteAll(CarrierMessagingService.ResultCallback<Boolean> callback)
+    {
+
+    }
+
+    @Override
     public void contains(String latitude, String longitude, Integer dataType, CarrierMessagingService.ResultCallback<Boolean> callback)
     {
         repository.contains(latitude, longitude, dataType, callback);

@@ -100,6 +100,21 @@ class FavoriteLocationRepository implements FavoriteLocationQuery
     }
 
     @Override
+    public void deleteAll(CarrierMessagingService.ResultCallback<Boolean> callback)
+    {
+        new Thread(new Runnable()
+        {
+            @SneakyThrows
+            @Override
+            public void run()
+            {
+                dao.deleteAll();
+                callback.onReceiveResult(true);
+            }
+        }).start();
+    }
+
+    @Override
     public void contains(Integer type, String placeId, String address, String latitude, String longitude, CarrierMessagingService.ResultCallback<FavoriteLocationDTO> callback)
     {
         new Thread(new Runnable()

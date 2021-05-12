@@ -667,7 +667,8 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
 
         getChildFragmentManager().beginTransaction()
                 .add(bottomSheetViewMap.get(BottomSheetType.SELECTED_PLACE_CATEGORY).getChildAt(0).getId()
-                        , placesOfSelectedCategoriesFragment, PlacesOfSelectedCategoriesFragment.TAG).hide(placesOfSelectedCategoriesFragment).commitNow();
+                        , placesOfSelectedCategoriesFragment, PlacesOfSelectedCategoriesFragment.TAG).commitNow();
+
         bottomSheetFragmentMap.put(BottomSheetType.SELECTED_PLACE_CATEGORY, placesOfSelectedCategoriesFragment);
     }
 
@@ -721,6 +722,9 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
                 {
                     onCalledBottomSheet(BottomSheetBehavior.STATE_EXPANDED, bottomSheetBehaviorMap.get(BottomSheetType.SELECTED_PLACE_CATEGORY));
                     PlacesOfSelectedCategoriesFragment placesOfSelectedCategoriesFragment = (PlacesOfSelectedCategoriesFragment) bottomSheetFragmentMap.get(BottomSheetType.SELECTED_PLACE_CATEGORY);
+
+                    getChildFragmentManager().beginTransaction()
+                            .hide(placesOfSelectedCategoriesFragment).commitNow();
 
                     getChildFragmentManager().beginTransaction()
                             .show(placesOfSelectedCategoriesFragment)
@@ -993,7 +997,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
                 PlacesOfSelectedCategoriesFragment placesOfSelectedCategoriesFragment
                         = (PlacesOfSelectedCategoriesFragment) bottomSheetFragmentMap.get(BottomSheetType.SELECTED_PLACE_CATEGORY);
 
-                if (placesOfSelectedCategoriesFragment.isVisible() && placeCategoryChipGroup.getCheckedChipIds().size() >= 1)
+                if (placeCategoryChipGroup.getCheckedChipIds().size() >= 1)
                 {
                     placesOfSelectedCategoriesFragment.loadExtraListData(selectedPlaceCategory, new RecyclerView.AdapterDataObserver()
                     {

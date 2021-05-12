@@ -52,6 +52,12 @@ public class FavoriteLocationViewModel extends AndroidViewModel implements Favor
     }
 
     @Override
+    public void deleteAll(CarrierMessagingService.ResultCallback<Boolean> callback)
+    {
+        restaurantRepository.deleteAll(callback);
+    }
+
+    @Override
     public void contains(Integer type, String placeId, String address, String latitude, String longitude, CarrierMessagingService.ResultCallback<FavoriteLocationDTO> callback)
     {
         restaurantRepository.contains(type, placeId, address, latitude, longitude, callback);

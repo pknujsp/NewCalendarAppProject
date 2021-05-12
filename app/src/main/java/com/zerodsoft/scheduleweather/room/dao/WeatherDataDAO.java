@@ -35,6 +35,9 @@ public interface WeatherDataDAO
     @Query("DELETE FROM weather_data_table WHERE latitude = :latitude AND longitude = :longitude")
     void delete(String latitude, String longitude);
 
+    @Query("DELETE FROM weather_data_table")
+    void deleteAll();
+
     @Query("SELECT EXISTS (SELECT * FROM weather_data_table WHERE latitude = :latitude AND longitude = :longitude AND data_type = :dataType) AS SUCCESS")
     int contains(String latitude, String longitude, Integer dataType);
 }

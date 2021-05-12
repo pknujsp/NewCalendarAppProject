@@ -371,10 +371,17 @@
     <string name="preference_title_custom_food_menu">나만의 음식 메뉴 설정</string>
     <string name="preference_summary_custom_food_menu">기본 음식 메뉴에 추가로 표시할 나만의 메뉴를 설정합니다</string>
 
+    <!-- 앱 DB 데이터 초기화 관련 -->
+    <string name="preference_key_reset_app_db_data" translatable="false">preference_key_reset_app_db_data</string>
+    <string name="preference_title_reset_app_db_data">앱 데이터 초기화</string>
+    <string name="preference_summary_reset_app_db_data">앱의 데이터를 초기화합니다</string>
+
+
     <!-- 설정화면 카테고리 이름 설정 관련 -->
     <string name="preference_calendar_category_title">캘린더</string>
     <string name="preference_place_category_title">주변 장소</string>
     <string name="preference_weather_category_title">날씨</string>
+    <string name="preference_app_settings_title">앱 설정</string>
 
     <!-- 지도에 즐겨찾기 마커 표시 설정 관련 -->
     <string name="preference_key_show_favorite_locations_markers_on_map" translatable="false">preference_key_show_favorite_locations_markers_on_map</string>
@@ -518,4 +525,11 @@
 
 
     <string name="title_select_event_color">이벤트의 표시 색상 선택</string>
+
+    <string name="reset_weather_data">날씨 데이터 초기화</string>
+    <string name="reset_favorite_locations">주소/장소 즐겨찾기 초기화</string>
+    <string name="reset_favorite_restaurants">음식점 즐겨찾기 초기화</string>
+    <string name="deleted_all_favorite_locations">주소/장소 즐겨찾기 목록 초기화됨</string>
+    <string name="deleted_all_favorite_restaurants">음식점 즐겨찾기 목록 초기화됨</string>
+    <string name="deleted_all_weather_data">날씨 데이터 초기화됨</string>
 </resources>

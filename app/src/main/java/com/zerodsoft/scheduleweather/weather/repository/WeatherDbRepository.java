@@ -128,6 +128,21 @@ public class WeatherDbRepository implements WeatherDataQuery
     }
 
     @Override
+    public void deleteAll(CarrierMessagingService.ResultCallback<Boolean> callback)
+    {
+        new Thread(new Runnable()
+        {
+            @SneakyThrows
+            @Override
+            public void run()
+            {
+                dao.deleteAll();
+                callback.onReceiveResult(true);
+            }
+        }).start();
+    }
+
+    @Override
     public void contains(String latitude, String longitude, Integer dataType, CarrierMessagingService.ResultCallback<Boolean> callback)
     {
         new Thread(new Runnable()

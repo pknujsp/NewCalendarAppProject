@@ -590,6 +590,12 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
     }
 
     @Override
+    public void deleteAll(CarrierMessagingService.ResultCallback<Boolean> callback)
+    {
+
+    }
+
+    @Override
     public void contains(Integer type, String placeId, String address, String latitude, String longitude, CarrierMessagingService.ResultCallback<FavoriteLocationDTO> callback)
     {
         favoriteLocationViewModel.contains(type, placeId, address, latitude, longitude, new CarrierMessagingService.ResultCallback<FavoriteLocationDTO>()

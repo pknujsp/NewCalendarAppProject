@@ -17,6 +17,8 @@ public interface FavoriteLocationQuery
     void delete(Integer id, CarrierMessagingService.ResultCallback<Boolean> callback);
 
     void deleteAll(Integer type, CarrierMessagingService.ResultCallback<Boolean> callback);
+    
+    void deleteAll(CarrierMessagingService.ResultCallback<Boolean> callback);
 
     void contains(Integer type, String placeId, String address, String latitude, String longitude, CarrierMessagingService.ResultCallback<FavoriteLocationDTO> callback);
 }

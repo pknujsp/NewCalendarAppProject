@@ -5,6 +5,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.RemoteException;
+import android.service.carrier.CarrierMessagingService;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
@@ -15,6 +17,7 @@ import android.widget.Toast;
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceCategory;
 import androidx.preference.PreferenceFragmentCompat;
@@ -32,6 +35,9 @@ import com.zerodsoft.scheduleweather.activity.preferences.custom.SearchBuildingR
 import com.zerodsoft.scheduleweather.activity.preferences.custom.TimeZonePreference;
 import com.zerodsoft.scheduleweather.activity.preferences.interfaces.IPreferenceFragment;
 import com.zerodsoft.scheduleweather.activity.preferences.interfaces.PreferenceListener;
+import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteLocationViewModel;
+import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
+import com.zerodsoft.scheduleweather.weather.viewmodel.WeatherDbViewModel;
 
 import java.text.DecimalFormat;
 import java.util.TimeZone;
@@ -52,6 +58,10 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
     private SearchBuildingRangeRadiusPreference searchBuildingRangeRadiusPreference;
     private Preference placesCategoryPreference;
     private Preference customFoodPreference;
+    private Preference resetAppDbPreference;
+
+    private FavoriteLocationViewModel favoriteLocationViewModel;
+    private WeatherDbViewModel weatherDbViewModel;
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey)
@@ -68,6 +78,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
         calendarColorListPreference = findPreference(getString(R.string.preference_key_calendar_color));
         placesCategoryPreference = findPreference(getString(R.string.preference_key_places_category));
         customFoodPreference = findPreference(getString(R.string.preference_key_custom_food_menu));
+        resetAppDbPreference = findPreference(getString(R.string.preference_key_reset_app_db_data));
 
         initPreference();
         initValue();
@@ -94,6 +105,97 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
         });
 
         placesCategoryPreference.setIntent(new Intent(getActivity(), PlaceCategoryActivity.class));
+
+        resetAppDbPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener()
+        {
+            @Override
+            public boolean onPreferenceClick(Preference preference)
+            {
+                CharSequence[] resetArr = getResources().getTextArray(R.array.reset_app_db_arr);
+                //날씨, 주소/장소 즐겨찾기, 음식점 즐겨찾기
+
+                new MaterialAlertDialogBuilder(requireActivity())
+                        .setTitle(R.string.preference_title_reset_app_db_data)
+                        .setItems(resetArr, new DialogInterface.OnClickListener()
+                        {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which)
+                            {
+                                switch (which)
+                                {
+                                    case 0:
+                                    {
+                                        weatherDbViewModel.deleteAll(new CarrierMessagingService.ResultCallback<Boolean>()
+                                        {
+                                            @Override
+                                            public void onReceiveResult(@NonNull Boolean result) throws RemoteException
+                                            {
+                                                requireActivity().runOnUiThread(new Runnable()
+                                                {
+                                                    @Override
+                                                    public void run()
+                                                    {
+                                                        Toast.makeText(getContext(), R.string.deleted_all_weather_data, Toast.LENGTH_SHORT).show();
+                                                    }
+                                                });
+                                            }
+                                        });
+                                        break;
+                                    }
+
+                                    case 1:
+                                    {
+                                        favoriteLocationViewModel.deleteAll(FavoriteLocationDTO.ADDRESS, new CarrierMessagingService.ResultCallback<Boolean>()
+                                        {
+                                            @Override
+                                            public void onReceiveResult(@NonNull Boolean result) throws RemoteException
+                                            {
+                                                favoriteLocationViewModel.deleteAll(FavoriteLocationDTO.PLACE, new CarrierMessagingService.ResultCallback<Boolean>()
+                                                {
+                                                    @Override
+                                                    public void onReceiveResult(@NonNull Boolean result) throws RemoteException
+                                                    {
+                                                        requireActivity().runOnUiThread(new Runnable()
+                                                        {
+                                                            @Override
+                                                            public void run()
+                                                            {
+                                                                Toast.makeText(getContext(), R.string.deleted_all_favorite_locations, Toast.LENGTH_SHORT).show();
+                                                            }
+                                                        });
+                                                    }
+                                                });
+                                            }
+                                        });
+                                        break;
+                                    }
+
+                                    case 2:
+                                    {
+                                        favoriteLocationViewModel.deleteAll(FavoriteLocationDTO.RESTAURANT, new CarrierMessagingService.ResultCallback<Boolean>()
+                                        {
+                                            @Override
+                                            public void onReceiveResult(@NonNull Boolean result) throws RemoteException
+                                            {
+                                                requireActivity().runOnUiThread(new Runnable()
+                                                {
+                                                    @Override
+                                                    public void run()
+                                                    {
+                                                        Toast.makeText(getContext(), R.string.deleted_all_favorite_restaurants, Toast.LENGTH_SHORT).show();
+                                                    }
+                                                });
+                                            }
+                                        });
+                                        break;
+                                    }
+                                }
+                                
+                            }
+                        }).create().show();
+                return true;
+            }
+        });
     }
 
     @Override
@@ -389,6 +491,9 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
+
+        favoriteLocationViewModel = new ViewModelProvider(this).get(FavoriteLocationViewModel.class);
+        weatherDbViewModel = new ViewModelProvider(this).get(WeatherDbViewModel.class);
     }
 
     @Override

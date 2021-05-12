@@ -52,6 +52,9 @@ public interface FavoriteLocationDAO
     @Query("DELETE FROM favorite_location_table WHERE type = :type")
     void deleteAll(Integer type);
 
+    @Query("DELETE FROM favorite_location_table")
+    void deleteAll();
+
     @Query("SELECT * FROM favorite_location_table " +
             "WHERE (CASE " +
             "WHEN :type = 0 THEN type = :type AND place_id = :placeId " +
