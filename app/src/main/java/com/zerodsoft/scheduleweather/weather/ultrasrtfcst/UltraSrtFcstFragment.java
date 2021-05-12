@@ -159,7 +159,8 @@ public class UltraSrtFcstFragment extends Fragment
                     public void run()
                     {
                         clearViews();
-                        viewProgress.onCompletedProcessingData(false);
+                        onDownloadedTimeListener.setDownloadedTime(new Date(System.currentTimeMillis()), WeatherDataDTO.ULTRA_SRT_FCST);
+                        viewProgress.onCompletedProcessingData(false, getString(R.string.not_data));
                         Toast.makeText(getContext(), R.string.error, Toast.LENGTH_SHORT).show();
                     }
                 });

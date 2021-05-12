@@ -943,6 +943,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
         locationItemBottomSheetViewPager.setTag(markerType);
         locationItemBottomSheetViewPager.setAdapter(adapter);
         locationItemBottomSheetViewPager.setCurrentItem(selectedPoiItemIndex, false);
+        adapter.notifyDataSetChanged();
         setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_EXPANDED);
     }
 
@@ -1599,6 +1600,14 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
     private void showAddressOfSelectedLocation(LatLng latLng)
     {
         //주소 표시
+        //removePoiItems(MarkerType.LONG_CLICKED_MAP);
+        if (markerMap.containsKey(MarkerType.LONG_CLICKED_MAP))
+        {
+            if (markerMap.get(MarkerType.LONG_CLICKED_MAP).size() > 0)
+            {
+                markerMap.get(MarkerType.LONG_CLICKED_MAP).get(0).performClick();
+            }
+        }
         Marker markerOfSelectedLocation = new Marker(latLng);
 
         if (!viewPagerAdapterMap.containsKey(MarkerType.LONG_CLICKED_MAP))
@@ -1612,10 +1621,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
         markerOfSelectedLocation.setTag(MarkerType.LONG_CLICKED_MAP);
         markerOfSelectedLocation.setMap(naverMap);
 
-        List<Marker> list = new ArrayList<>();
-        list.add(markerOfSelectedLocation);
-        markerMap.put(MarkerType.LONG_CLICKED_MAP, list);
-
         markerOfSelectedLocation.setOnClickListener(new Overlay.OnClickListener()
         {
             @Override
@@ -1626,13 +1631,19 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
                 return true;
             }
         });
+
+        if (!markerMap.containsKey(MarkerType.LONG_CLICKED_MAP))
+        {
+            markerMap.put(MarkerType.LONG_CLICKED_MAP, new ArrayList<>());
+        }
+        markerMap.get(MarkerType.LONG_CLICKED_MAP).add(markerOfSelectedLocation);
+
         OnLongClickMapLocationItemAdapter adapter = (OnLongClickMapLocationItemAdapter) viewPagerAdapterMap.get(MarkerType.LONG_CLICKED_MAP);
         adapter.setLatitude(String.valueOf(latLng.latitude));
         adapter.setLongitude(String.valueOf(latLng.longitude));
         adapter.notifyDataSetChanged();
 
         onClickedMarkerByTouch(MarkerType.LONG_CLICKED_MAP, markerMap.get(MarkerType.LONG_CLICKED_MAP).get(0));
-
     }
 
     @Override

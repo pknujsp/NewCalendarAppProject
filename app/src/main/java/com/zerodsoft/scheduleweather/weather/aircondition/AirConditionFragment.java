@@ -121,7 +121,8 @@ public class AirConditionFragment extends Fragment
                 @Override
                 public void run()
                 {
-                    viewProgress.onCompletedProcessingData(false);
+                    onDownloadedTimeListener.setDownloadedTime(new Date(System.currentTimeMillis()), WeatherDataDTO.AIR_CONDITION);
+                    viewProgress.onCompletedProcessingData(false, getString(R.string.not_data));
                     Toast.makeText(getContext(), R.string.error, Toast.LENGTH_SHORT).show();
                 }
             });
@@ -189,7 +190,8 @@ public class AirConditionFragment extends Fragment
                 @Override
                 public void run()
                 {
-                    viewProgress.onCompletedProcessingData(false);
+                    onDownloadedTimeListener.setDownloadedTime(new Date(System.currentTimeMillis()), WeatherDataDTO.AIR_CONDITION);
+                    viewProgress.onCompletedProcessingData(false, getString(R.string.not_data));
                     Toast.makeText(getContext(), R.string.error, Toast.LENGTH_SHORT).show();
                 }
             });
@@ -221,7 +223,8 @@ public class AirConditionFragment extends Fragment
                 @Override
                 public void run()
                 {
-                    viewProgress.onCompletedProcessingData(false);
+                    onDownloadedTimeListener.setDownloadedTime(new Date(System.currentTimeMillis()), WeatherDataDTO.AIR_CONDITION);
+                    viewProgress.onCompletedProcessingData(false, getString(R.string.not_data));
                     Toast.makeText(getContext(), R.string.error, Toast.LENGTH_SHORT).show();
                 }
             });
@@ -249,7 +252,8 @@ public class AirConditionFragment extends Fragment
                 @Override
                 public void run()
                 {
-                    viewProgress.onCompletedProcessingData(false);
+                    onDownloadedTimeListener.setDownloadedTime(new Date(System.currentTimeMillis()), WeatherDataDTO.AIR_CONDITION);
+                    viewProgress.onCompletedProcessingData(false, getString(R.string.not_data));
                     Toast.makeText(getContext(), R.string.error, Toast.LENGTH_SHORT).show();
                 }
             });
@@ -287,46 +291,51 @@ public class AirConditionFragment extends Fragment
         weatherDbViewModel.getWeatherData(String.valueOf(LATITUDE), String.valueOf(LONGITUDE), WeatherDataDTO.NEAR_BY_MSRSTN_LIST, new CarrierMessagingService.ResultCallback<WeatherDataDTO>()
         {
             @Override
-            public void onReceiveResult(@NonNull WeatherDataDTO weatherDataDTO) throws RemoteException
+            public void onReceiveResult(@NonNull WeatherDataDTO nearByMsrstn) throws RemoteException
             {
-                if (weatherDataDTO == null)
+                if (nearByMsrstn == null)
                 {
-
+                    onDownloadedTimeListener.setDownloadedTime(new Date(System.currentTimeMillis()), WeatherDataDTO.AIR_CONDITION);
+                    viewProgress.onCompletedProcessingData(false, getString(R.string.not_data));
                 } else
                 {
                     Gson gson = new Gson();
-                    NearbyMsrstnListRoot root = gson.fromJson(weatherDataDTO.getJson(), NearbyMsrstnListRoot.class);
+                    NearbyMsrstnListRoot root = gson.fromJson(nearByMsrstn.getJson(), NearbyMsrstnListRoot.class);
                     nearbyMsrstnListBody = root.getResponse().getBody();
                 }
+
+                weatherDbViewModel.getWeatherData(String.valueOf(LATITUDE), String.valueOf(LONGITUDE), WeatherDataDTO.AIR_CONDITION, new CarrierMessagingService.ResultCallback<WeatherDataDTO>()
+                {
+                    @Override
+                    public void onReceiveResult(@NonNull WeatherDataDTO weatherDataDTO) throws RemoteException
+                    {
+                        requireActivity().runOnUiThread(new Runnable()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                if (weatherDataDTO == null || nearByMsrstn == null)
+                                {
+                                    refresh();
+                                } else
+                                {
+                                    Gson gson = new Gson();
+                                    MsrstnAcctoRltmMesureDnstyRoot root = gson.fromJson(weatherDataDTO.getJson(), MsrstnAcctoRltmMesureDnstyRoot.class);
+                                    msrstnAcctoRltmMesureDnstyBody = root.getResponse().getBody();
+                                    setData(msrstnAcctoRltmMesureDnstyBody);
+                                    onDownloadedTimeListener.setDownloadedTime(new Date(Long.parseLong(weatherDataDTO.getDownloadedDate())), WeatherDataDTO.AIR_CONDITION);
+                                    viewProgress.onCompletedProcessingData(true);
+                                }
+                            }
+                        });
+                    }
+                });
+
+
             }
         });
 
-        weatherDbViewModel.getWeatherData(String.valueOf(LATITUDE), String.valueOf(LONGITUDE), WeatherDataDTO.AIR_CONDITION, new CarrierMessagingService.ResultCallback<WeatherDataDTO>()
-        {
-            @Override
-            public void onReceiveResult(@NonNull WeatherDataDTO weatherDataDTO) throws RemoteException
-            {
-                requireActivity().runOnUiThread(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        if (weatherDataDTO == null)
-                        {
-                            refresh();
-                        } else
-                        {
-                            Gson gson = new Gson();
-                            MsrstnAcctoRltmMesureDnstyRoot root = gson.fromJson(weatherDataDTO.getJson(), MsrstnAcctoRltmMesureDnstyRoot.class);
-                            msrstnAcctoRltmMesureDnstyBody = root.getResponse().getBody();
-                            setData(msrstnAcctoRltmMesureDnstyBody);
-                            onDownloadedTimeListener.setDownloadedTime(new Date(Long.parseLong(weatherDataDTO.getDownloadedDate())), WeatherDataDTO.AIR_CONDITION);
-                            viewProgress.onCompletedProcessingData(true);
-                        }
-                    }
-                });
-            }
-        });
+
     }
 
 

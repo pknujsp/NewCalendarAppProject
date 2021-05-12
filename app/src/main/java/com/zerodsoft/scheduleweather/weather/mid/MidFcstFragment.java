@@ -171,7 +171,10 @@ public class MidFcstFragment extends Fragment
                     public void run()
                     {
                         clearViews();
-                        viewProgress.onCompletedProcessingData(false);
+                        Date date = new Date(System.currentTimeMillis());
+                        onDownloadedTimeListener.setDownloadedTime(date, WeatherDataDTO.MID_LAND_FCST);
+                        onDownloadedTimeListener.setDownloadedTime(date, WeatherDataDTO.MID_TA);
+                        viewProgress.onCompletedProcessingData(false, getString(R.string.not_data));
                         Toast.makeText(getContext(), R.string.error, Toast.LENGTH_SHORT).show();
                     }
                 });
