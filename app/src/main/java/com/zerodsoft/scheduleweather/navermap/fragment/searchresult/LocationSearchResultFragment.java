@@ -211,10 +211,11 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
 
                     searchResultListAdapter = new SearchResultListAdapter(LocationSearchResultFragment.this);
                     searchResultListAdapter.setFragments(fragments);
-                    binding.listViewpager.setAdapter(searchResultListAdapter);
 
                     onPageCallback = new OnPageCallback();
                     binding.listViewpager.registerOnPageChangeCallback(onPageCallback);
+                    binding.listViewpager.setAdapter(searchResultListAdapter);
+
                     binding.viewpagerIndicator.createDot(0, fragments.size());
                 }
             }
@@ -265,23 +266,26 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
 
     class OnPageCallback extends ViewPager2.OnPageChangeCallback
     {
-        public int lastPosition;
+        public int lastPosition = 0;
 
         @Override
         public void onPageSelected(int position)
         {
             super.onPageSelected(position);
-            lastPosition = position;
-            binding.viewpagerIndicator.selectDot(position);
-
-            Fragment curFragment = searchResultListAdapter.getFragment(position);
-
-            if (curFragment instanceof SearchResultAddressListFragment)
+            if (lastPosition != position)
             {
-                ((SearchResultAddressListFragment) curFragment).onChangedPage();
-            } else if (curFragment instanceof SearchResultPlaceListFragment)
-            {
-                ((SearchResultPlaceListFragment) curFragment).onChangedPage();
+                lastPosition = position;
+                binding.viewpagerIndicator.selectDot(position);
+
+                Fragment curFragment = searchResultListAdapter.getFragment(position);
+
+                if (curFragment instanceof SearchResultAddressListFragment)
+                {
+                    ((SearchResultAddressListFragment) curFragment).onChangedPage();
+                } else if (curFragment instanceof SearchResultPlaceListFragment)
+                {
+                    ((SearchResultPlaceListFragment) curFragment).onChangedPage();
+                }
             }
         }
     }

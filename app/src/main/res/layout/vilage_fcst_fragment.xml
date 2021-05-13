@@ -31,6 +31,6 @@
 
         <include
             android:id="@+id/weather_progress_layout"
-            layout="@layout/weather_progress_view" />
+            layout="@layout/data_progress_view" />
     </FrameLayout>
 </layout>

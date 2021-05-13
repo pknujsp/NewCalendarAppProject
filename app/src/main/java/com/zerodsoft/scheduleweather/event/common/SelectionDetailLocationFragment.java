@@ -6,7 +6,9 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.service.carrier.CarrierMessagingService;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.Toast;
 
@@ -73,6 +75,15 @@ public class SelectionDetailLocationFragment extends NaverMapFragment
         requestCode = arguments.getInt(LocationSelectorKey.REQUEST_CODE.name());
 
         arguments.remove(LocationSelectorKey.SELECTED_LOCATION_DTO_IN_EVENT.name());
+
+        selectedLocationMarker.setCaptionColor(Color.BLUE);
+        selectedLocationMarker.setCaptionTextSize(14f);
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+    {
+        return super.onCreateView(inflater, container, savedInstanceState);
     }
 
     @Override
@@ -81,10 +92,6 @@ public class SelectionDetailLocationFragment extends NaverMapFragment
         super.onViewCreated(view, savedInstanceState);
 
         viewModel = new ViewModelProvider(this).get(LocationViewModel.class);
-
-
-        selectedLocationMarker.setCaptionColor(Color.BLUE);
-        selectedLocationMarker.setCaptionTextSize(14f);
 
         switch (requestCode)
         {
@@ -99,7 +106,18 @@ public class SelectionDetailLocationFragment extends NaverMapFragment
             {
                 setPlaceBottomSheetSelectBtnVisibility(View.VISIBLE);
                 setPlaceBottomSheetUnSelectBtnVisibility(View.GONE);
-                binding.naverMapFragmentRootLayout.getViewTreeObserver().addOnGlobalLayoutListener(acitivityRootOnGlobalLayoutListener);
+                binding.naverMapFragmentRootLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener()
+                {
+                    @Override
+                    public void onGlobalLayout()
+                    {
+                        binding.naverMapFragmentRootLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                        binding.naverMapHeaderBar.getRoot().performClick();
+
+                        binding.locationSearchBottomSheet.searchFragmentContainer.getViewTreeObserver()
+                                .addOnGlobalLayoutListener(searchBottomSheetFragmentOnGlobalLayoutListener);
+                    }
+                });
                 break;
             }
             case SelectionDetailLocationActivity.REQUEST_CODE_CHANGE_LOCATION:
@@ -111,20 +129,6 @@ public class SelectionDetailLocationFragment extends NaverMapFragment
         }
     }
 
-    private ViewTreeObserver.OnGlobalLayoutListener acitivityRootOnGlobalLayoutListener =
-            new ViewTreeObserver.OnGlobalLayoutListener()
-            {
-                @Override
-                public void onGlobalLayout()
-                {
-                    binding.locationSearchBottomSheet.searchFragmentContainer.getViewTreeObserver()
-                            .addOnGlobalLayoutListener(searchBottomSheetFragmentOnGlobalLayoutListener);
-
-                    binding.naverMapHeaderBar.getRoot().performClick();
-
-                    binding.naverMapFragmentRootLayout.getViewTreeObserver().removeOnGlobalLayoutListener(acitivityRootOnGlobalLayoutListener);
-                }
-            };
 
     private ViewTreeObserver.OnGlobalLayoutListener searchBottomSheetFragmentOnGlobalLayoutListener =
             new ViewTreeObserver.OnGlobalLayoutListener()
@@ -132,8 +136,8 @@ public class SelectionDetailLocationFragment extends NaverMapFragment
                 @Override
                 public void onGlobalLayout()
                 {
-                    ((MapHeaderSearchFragment) getChildFragmentManager().findFragmentByTag(MapHeaderSearchFragment.TAG)).setQuery(locationNameInEvent, true);
                     binding.locationSearchBottomSheet.searchFragmentContainer.getViewTreeObserver().removeOnGlobalLayoutListener(searchBottomSheetFragmentOnGlobalLayoutListener);
+                    ((MapHeaderSearchFragment) getChildFragmentManager().findFragmentByTag(MapHeaderSearchFragment.TAG)).setQuery(locationNameInEvent, true);
                 }
             };
 

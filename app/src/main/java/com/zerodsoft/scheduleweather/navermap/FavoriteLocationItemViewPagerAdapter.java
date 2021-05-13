@@ -49,7 +49,7 @@ public class FavoriteLocationItemViewPagerAdapter extends LocationItemViewPagerA
     public void setFavoriteLocationList(List<FavoriteLocationDTO> favoriteLocationList)
     {
         this.favoriteLocationList.addAll(favoriteLocationList);
-        super.placeDocumentsList.clear();
+        placeDocumentsList.clear();
     }
 
     @Override
@@ -87,75 +87,6 @@ public class FavoriteLocationItemViewPagerAdapter extends LocationItemViewPagerA
     {
         return favoriteLocationList.size();
     }
-
-    /*
-     private void showLocationItem()
-    {
-        // 위치가 이미 선택되어 있는 경우 해당 위치 정보를 표시함 (삭제 버튼 추가)
-        if (naverMapFragment.networkAvailable())
-        {
-            if (savedLocationDto.getAddressName() != null)
-            {
-                naverMapFragment.setPlaceBottomSheetSelectBtnVisibility(View.INVISIBLE);
-                naverMapFragment.setPlaceBottomSheetUnSelectBtnVisibility(View.VISIBLE);
-
-                // 주소 검색 순서 : 좌표로 주소 변환
-                LocalApiPlaceParameter parameter = LocalParameterUtil.getCoordToAddressParameter(savedLocationDto.getLatitude(), savedLocationDto.getLongitude());
-                CoordToAddressUtil.coordToAddress(parameter, new CarrierMessagingService.ResultCallback<DataWrapper<CoordToAddress>>()
-                {
-                    @Override
-                    public void onReceiveResult(@NonNull DataWrapper<CoordToAddress> coordToAddressDataWrapper) throws RemoteException
-                    {
-                        if (coordToAddressDataWrapper.getException() == null)
-                        {
-                            CoordToAddress coordToAddress = coordToAddressDataWrapper.getData();
-                            CoordToAddressDocuments coordToAddressDocuments = coordToAddress.getCoordToAddressDocuments().get(0);
-                            coordToAddressDocuments.getCoordToAddressAddress().setLatitude(String.valueOf(savedLocationDto.getLatitude()));
-                            coordToAddressDocuments.getCoordToAddressAddress().setLongitude(String.valueOf(savedLocationDto.getLongitude()));
-
-                            naverMapFragment.setLocationItemViewPagerAdapter(new LocationItemViewPagerAdapter(), PoiItemType.SELECTED_ADDRESS_IN_EVENT);
-                            naverMapFragment.createPoiItems(Collections.singletonList(coordToAddressDocuments), PoiItemType.SELECTED_ADDRESS_IN_EVENT);
-                            naverMapFragment.onPOIItemSelectedByList(0, PoiItemType.SELECTED_ADDRESS_IN_EVENT);
-                        } else
-                        {
-                            // exception(error)
-                        }
-                    }
-                });
-
-            } else
-            {
-                naverMapFragment.setPlaceBottomSheetSelectBtnVisibility(View.INVISIBLE);
-                naverMapFragment.setPlaceBottomSheetUnSelectBtnVisibility(View.VISIBLE);
-
-                // 장소 검색 순서 : 장소의 위경도 내 10M 반경에서 장소 이름 검색(여러개 나올 경우 장소ID와 일치하는 장소를 선택)
-                LocalApiPlaceParameter parameter = LocalParameterUtil.getPlaceParameter(savedLocationDto.getPlaceName(),
-                        String.valueOf(savedLocationDto.getLatitude()), String.valueOf(savedLocationDto.getLongitude()), LocalApiPlaceParameter.DEFAULT_SIZE,
-                        LocalApiPlaceParameter.DEFAULT_PAGE, LocalApiPlaceParameter.SEARCH_CRITERIA_SORT_TYPE_ACCURACY);
-                parameter.setRadius("100");
-
-                viewModel.getPlaceItem(parameter, savedLocationDto.getPlaceId(), new CarrierMessagingService.ResultCallback<DataWrapper<PlaceDocuments>>()
-                {
-                    @Override
-                    public void onReceiveResult(@NonNull DataWrapper<PlaceDocuments> result) throws RemoteException
-                    {
-                        if (result.getException() == null)
-                        {
-                            PlaceDocuments document = result.getData();
-                            naverMapFragment.setLocationItemViewPagerAdapter(new LocationItemViewPagerAdapter(), PoiItemType.SELECTED_PLACE_IN_EVENT);
-                            naverMapFragment.createPoiItems(Collections.singletonList(document), PoiItemType.SELECTED_PLACE_IN_EVENT);
-                            naverMapFragment.onPOIItemSelectedByList(0, PoiItemType.SELECTED_PLACE_IN_EVENT);
-                        } else
-                        {
-                            // exception(error)
-                        }
-                    }
-                });
-            }
-        }
-
-    }
-     */
 
     class FavoriteLocationItemInMapViewHolder extends PlaceItemInMapViewHolder
     {

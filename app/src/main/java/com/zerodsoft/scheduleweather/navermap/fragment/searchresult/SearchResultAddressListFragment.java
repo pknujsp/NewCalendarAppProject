@@ -76,6 +76,7 @@ public class SearchResultAddressListFragment extends Fragment implements IViewPa
         binding.searchResultRecyclerview.addItemDecoration(new DividerItemDecoration(view.getContext(), DividerItemDecoration.VERTICAL));
         viewModel = new ViewModelProvider(this).get(AddressViewModel.class);
 
+        onChangedPage();
         requestAddresses(SEARCH_WORD);
     }
 
@@ -84,39 +85,39 @@ public class SearchResultAddressListFragment extends Fragment implements IViewPa
         LocalApiPlaceParameter parameter = LocalParameterUtil.getAddressParameter(searchWord, LocalApiPlaceParameter.DEFAULT_SIZE
                 , LocalApiPlaceParameter.DEFAULT_PAGE);
 
-        if (KakaoLocalApiCategoryUtil.isCategory(SEARCH_WORD))
+        adapter = new AddressesAdapter(getContext(), iMapData, onClickedLocListItem);
+        adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver()
         {
-            binding.progressBar.setVisibility(View.GONE);
-        } else
-        {
-            adapter = new AddressesAdapter(getContext(), iMapData, onClickedLocListItem);
-            adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver()
+            @Override
+            public void onItemRangeInserted(int positionStart, int itemCount)
             {
-                @Override
-                public void onItemRangeInserted(int positionStart, int itemCount)
+                super.onItemRangeInserted(positionStart, itemCount);
+
+                if (positionStart > 0)
                 {
-                    super.onItemRangeInserted(positionStart, itemCount);
-                    if (positionStart > 0)
-                    {
-                        iMapData.addPoiItems(adapter.getCurrentList().snapshot(), MarkerType.SEARCH_RESULT);
-                    } else
+                    iMapData.addPoiItems(adapter.getCurrentList().snapshot(), MarkerType.SEARCH_RESULT);
+                } else
+                {
+                    if (itemCount > 0)
                     {
                         iMapData.createPoiItems(adapter.getCurrentList().snapshot(), MarkerType.SEARCH_RESULT);
                     }
                 }
-            });
+            }
+        });
 
-            binding.searchResultRecyclerview.setAdapter(adapter);
-            viewModel.init(parameter, this);
-            viewModel.getPagedListMutableLiveData().observe(getViewLifecycleOwner(), new Observer<PagedList<AddressResponseDocuments>>()
+        binding.searchResultRecyclerview.setAdapter(adapter);
+
+        viewModel.init(parameter, this);
+        viewModel.getPagedListMutableLiveData().observe(getViewLifecycleOwner(), new Observer<PagedList<AddressResponseDocuments>>()
+        {
+            @Override
+            public void onChanged(PagedList<AddressResponseDocuments> addressResponseDocuments)
             {
-                @Override
-                public void onChanged(PagedList<AddressResponseDocuments> addressResponseDocuments)
-                {
-                    adapter.submitList(addressResponseDocuments);
-                }
-            });
-        }
+                adapter.submitList(addressResponseDocuments);
+            }
+        });
+
     }
 
     /*
@@ -125,9 +126,9 @@ public class SearchResultAddressListFragment extends Fragment implements IViewPa
     @Override
     public void onChangedPage()
     {
-        int poiItemSize = iMapData.getPoiItemSize(MarkerType.SEARCH_RESULT);
         iMapData.setLocationItemViewPagerAdapter(new LocationItemViewPagerAdapter(getContext()), MarkerType.SEARCH_RESULT);
 
+        int poiItemSize = iMapData.getPoiItemSize(MarkerType.SEARCH_RESULT);
         if (poiItemSize > 0 && adapter != null)
         {
             if (adapter.getItemCount() > 0)
@@ -141,7 +142,7 @@ public class SearchResultAddressListFragment extends Fragment implements IViewPa
     @Override
     public void setProgressBarVisibility(int visibility)
     {
-        getActivity().runOnUiThread(new Runnable()
+        requireActivity().runOnUiThread(new Runnable()
         {
             @Override
             public void run()

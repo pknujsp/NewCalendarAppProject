@@ -154,8 +154,8 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
     public NetworkStatus networkStatus;
 
-    public int placeBottomSheetSelectBtnVisibility;
-    public int placeBottomSheetUnSelectBtnVisibility;
+    public int placeBottomSheetSelectBtnVisibility = View.GONE;
+    public int placeBottomSheetUnSelectBtnVisibility = View.GONE;
 
     public Double mapTranslationYByBuildingBottomSheet;
 
@@ -942,6 +942,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
         locationItemBottomSheetViewPager.setTag(markerType);
         locationItemBottomSheetViewPager.setAdapter(adapter);
         locationItemBottomSheetViewPager.setCurrentItem(selectedPoiItemIndex, false);
+
         adapter.notifyDataSetChanged();
         setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_EXPANDED);
     }

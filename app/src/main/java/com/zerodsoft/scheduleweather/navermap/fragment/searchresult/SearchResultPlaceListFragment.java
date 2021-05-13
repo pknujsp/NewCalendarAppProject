@@ -166,7 +166,7 @@ public class SearchResultPlaceListFragment extends Fragment implements IViewPage
             }
         });
 
-
+        onChangedPage();
         requestPlaces(SEARCH_WORD);
     }
 
@@ -349,7 +349,10 @@ public class SearchResultPlaceListFragment extends Fragment implements IViewPage
                 iMapData.addPoiItems(adapter.getCurrentList().snapshot(), MarkerType.SEARCH_RESULT);
             } else
             {
-                iMapData.createPoiItems(adapter.getCurrentList().snapshot(), MarkerType.SEARCH_RESULT);
+                if (itemCount > 0)
+                {
+                    iMapData.createPoiItems(adapter.getCurrentList().snapshot(), MarkerType.SEARCH_RESULT);
+                }
             }
         }
 

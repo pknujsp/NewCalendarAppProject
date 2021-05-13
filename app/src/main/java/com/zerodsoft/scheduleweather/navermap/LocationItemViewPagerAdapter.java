@@ -18,6 +18,7 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.databinding.CardviewPlacesItemBinding;
 import com.zerodsoft.scheduleweather.navermap.interfaces.OnClickedBottomSheetListener;
 import com.zerodsoft.scheduleweather.navermap.interfaces.PlacesItemBottomSheetButtonOnClickListener;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalDocument;
@@ -120,127 +121,26 @@ public class LocationItemViewPagerAdapter extends RecyclerView.Adapter<LocationI
 
     public class PlaceItemInMapViewHolder extends RecyclerView.ViewHolder
     {
-        private CardView cardView;
-
-        private TextView placeNameTextView;
-        private TextView placeAddressTextView;
-        private TextView placeCategoryTextView;
-        private TextView placeDistanceTextView;
-
-        private TextView itemPositionTextView;
-
-        private TextView addressIndex;
-        private TextView addressName;
-        private TextView anotherAddressType;
-        private TextView anotherAddressName;
-
-        private LinearLayout placeLayout;
-        private LinearLayout addressLayout;
-
-        private ImageButton favoriteButton;
-        private Button selectButton;
-        private Button unselectButton;
-
+        private CardviewPlacesItemBinding binding;
         private Integer favoriteLocationId;
-
 
         public PlaceItemInMapViewHolder(@NonNull View view)
         {
             super(view);
-            placeLayout = (LinearLayout) view.findViewById(R.id.place_layout);
-            addressLayout = (LinearLayout) view.findViewById(R.id.address_layout);
+            binding = CardviewPlacesItemBinding.bind(view);
+            binding.addressLayout.addressIndex.setVisibility(View.GONE);
+            binding.placeItemCardviewInBottomsheet.setOnClickListener(onClickListener);
 
-            placeNameTextView = (TextView) view.findViewById(R.id.place_item_name);
-            placeAddressTextView = (TextView) view.findViewById(R.id.place_item_address);
-            placeCategoryTextView = (TextView) view.findViewById(R.id.place_item_category);
-            placeDistanceTextView = (TextView) view.findViewById(R.id.place_item_distance);
-            itemPositionTextView = (TextView) view.findViewById(R.id.item_position);
-
-            addressIndex = (TextView) addressLayout.findViewById(R.id.address_index);
-            addressName = (TextView) addressLayout.findViewById(R.id.address_name);
-            anotherAddressType = (TextView) addressLayout.findViewById(R.id.another_address_type);
-            anotherAddressName = (TextView) addressLayout.findViewById(R.id.another_address_name);
-
-            favoriteButton = (ImageButton) view.findViewById(R.id.add_to_favorite_placeitem_button);
-            selectButton = (Button) view.findViewById(R.id.select_this_place_button);
-            unselectButton = (Button) view.findViewById(R.id.unselect_this_place_button);
-
-            addressIndex.setVisibility(View.GONE);
-
-            cardView = itemView.findViewById(R.id.place_item_cardview_in_bottomsheet);
-            cardView.setOnClickListener(onClickListener);
-        }
-
-        public void bind()
-        {
-            itemPosition = (getBindingAdapterPosition() + 1) + " / " + getItemCount();
-            itemPositionTextView.setText(itemPosition);
-            KakaoLocalDocument data = placeDocumentsList.get(getBindingAdapterPosition());
-
-            if (data instanceof PlaceDocuments)
-            {
-                placeDocuments = (PlaceDocuments) data;
-
-                placeNameTextView.setText(placeDocuments.getPlaceName());
-                placeAddressTextView.setText(placeDocuments.getAddressName());
-                placeCategoryTextView.setText(placeDocuments.getCategoryName());
-                placeDistanceTextView.setText(placeDocuments.getDistance() + "m");
-
-                placeLayout.setVisibility(View.VISIBLE);
-                addressLayout.setVisibility(View.GONE);
-                placeDistanceTextView.setVisibility(View.VISIBLE);
-            } else if (data instanceof AddressResponseDocuments)
-            {
-                addressDocuments = (AddressResponseDocuments) data;
-
-                addressName.setText(addressDocuments.getAddressName());
-                if (addressDocuments.getAddressResponseRoadAddress() != null)
-                {
-                    anotherAddressType.setText(itemView.getContext().getString(R.string.road_addr));
-                    anotherAddressName.setText(addressDocuments.getAddressResponseRoadAddress().getAddressName());
-                } else if (addressDocuments.getAddressResponseAddress() != null)
-                {
-                    anotherAddressType.setText(itemView.getContext().getString(R.string.region_addr));
-                    anotherAddressName.setText(addressDocuments.getAddressResponseAddress().getAddressName());
-                }
-
-                placeLayout.setVisibility(View.GONE);
-                addressLayout.setVisibility(View.VISIBLE);
-                placeDistanceTextView.setVisibility(View.GONE);
-            } else if (data instanceof CoordToAddressDocuments)
-            {
-                coordToAddressDocuments = (CoordToAddressDocuments) data;
-
-                addressName.setText(coordToAddressDocuments.getCoordToAddressAddress().getAddressName());
-                if (coordToAddressDocuments.getCoordToAddressRoadAddress() != null)
-                {
-                    anotherAddressType.setText(itemView.getContext().getString(R.string.road_addr));
-                    anotherAddressName.setText(coordToAddressDocuments.getCoordToAddressRoadAddress().getAddressName());
-                } else if (coordToAddressDocuments.getCoordToAddressAddress() != null)
-                {
-                    anotherAddressType.setText(itemView.getContext().getString(R.string.region_addr));
-                    anotherAddressName.setText(coordToAddressDocuments.getCoordToAddressAddress().getAddressName());
-                }
-
-                placeLayout.setVisibility(View.GONE);
-                addressLayout.setVisibility(View.VISIBLE);
-                placeDistanceTextView.setVisibility(View.GONE);
-            }
-
-            selectButton.setVisibility(isVisibleSelectBtn);
-            unselectButton.setVisibility(isVisibleUnSelectBtn);
-            favoriteButton.setVisibility(isVisibleFavoriteBtn);
-
-            selectButton.setOnClickListener(new View.OnClickListener()
+            binding.selectThisPlaceButton.setOnClickListener(new View.OnClickListener()
             {
                 @Override
                 public void onClick(View view)
                 {
-                    placesItemBottomSheetButtonOnClickListener.onSelectedLocation(data);
+                    placesItemBottomSheetButtonOnClickListener.onSelectedLocation(placeDocumentsList.get(getBindingAdapterPosition()));
                 }
             });
 
-            unselectButton.setOnClickListener(new View.OnClickListener()
+            binding.unselectThisPlaceButton.setOnClickListener(new View.OnClickListener()
             {
                 @Override
                 public void onClick(View view)
@@ -249,80 +149,146 @@ public class LocationItemViewPagerAdapter extends RecyclerView.Adapter<LocationI
                 }
             });
 
+            binding.addToFavoritePlaceitemButton.setOnClickListener(new View.OnClickListener()
+            {
+                @Override
+                public void onClick(View view)
+                {
+                    FavoriteLocationDTO favoriteLocationDTO = new FavoriteLocationDTO();
+                    KakaoLocalDocument data = placeDocumentsList.get(getBindingAdapterPosition());
+
+                    if (data instanceof PlaceDocuments)
+                    {
+                        favoriteLocationDTO.setType(FavoriteLocationDTO.PLACE);
+
+                        placeDocuments = (PlaceDocuments) data;
+                        favoriteLocationDTO.setAddress(placeDocuments.getAddressName());
+                        favoriteLocationDTO.setLongitude(String.valueOf(placeDocuments.getX()));
+                        favoriteLocationDTO.setLatitude(String.valueOf(placeDocuments.getY()));
+                        favoriteLocationDTO.setPlaceName(placeDocuments.getPlaceName());
+                        favoriteLocationDTO.setPlaceId(placeDocuments.getId());
+                    } else if (data instanceof AddressResponseDocuments)
+                    {
+                        favoriteLocationDTO.setType(FavoriteLocationDTO.ADDRESS);
+
+                        addressDocuments = (AddressResponseDocuments) data;
+                        favoriteLocationDTO.setAddress(addressDocuments.getAddressName());
+                        favoriteLocationDTO.setLatitude(String.valueOf(addressDocuments.getY()));
+                        favoriteLocationDTO.setLongitude(String.valueOf(addressDocuments.getX()));
+                    } else if (data instanceof CoordToAddressDocuments)
+                    {
+                        favoriteLocationDTO.setType(FavoriteLocationDTO.ADDRESS);
+
+                        coordToAddressDocuments = (CoordToAddressDocuments) data;
+                        favoriteLocationDTO.setAddress(coordToAddressDocuments.getCoordToAddressAddress().getAddressName());
+                        favoriteLocationDTO.setLatitude(coordToAddressDocuments.getCoordToAddressAddress().getLatitude());
+                        favoriteLocationDTO.setLongitude(coordToAddressDocuments.getCoordToAddressAddress().getLongitude());
+                    }
+                    favoriteLocationDTO.setAddedDateTime(String.valueOf(System.currentTimeMillis()));
+
+                    favoriteLocationQuery.contains(favoriteLocationDTO.getType(), favoriteLocationDTO.getPlaceId()
+                            , favoriteLocationDTO.getAddress(), favoriteLocationDTO.getLatitude(), favoriteLocationDTO.getLongitude()
+                            , new CarrierMessagingService.ResultCallback<FavoriteLocationDTO>()
+                            {
+                                @Override
+                                public void onReceiveResult(@NonNull FavoriteLocationDTO resultFavoriteLocationDTO) throws RemoteException
+                                {
+                                    if (resultFavoriteLocationDTO == null)
+                                    {
+                                        favoriteLocationQuery.insert(favoriteLocationDTO, new CarrierMessagingService.ResultCallback<FavoriteLocationDTO>()
+                                        {
+                                            @Override
+                                            public void onReceiveResult(@NonNull FavoriteLocationDTO insertedFavoriteLocationDTO) throws RemoteException
+                                            {
+                                                favoriteLocationId = insertedFavoriteLocationDTO.getId();
+                                                binding.addToFavoritePlaceitemButton.setImageDrawable(favoriteEnabledDrawable);
+                                            }
+                                        });
+                                    } else
+                                    {
+                                        favoriteLocationQuery.delete(favoriteLocationId, new CarrierMessagingService.ResultCallback<Boolean>()
+                                        {
+                                            @Override
+                                            public void onReceiveResult(@NonNull Boolean isDeleted) throws RemoteException
+                                            {
+                                                binding.addToFavoritePlaceitemButton.setImageDrawable(favoriteDisabledDrawable);
+                                            }
+                                        });
+                                    }
+                                }
+                            });
+
+
+                }
+            });
+        }
+
+        public void bind()
+        {
+            final int position = getBindingAdapterPosition();
+            itemPosition = (position + 1) + " / " + getItemCount();
+            binding.itemPosition.setText(itemPosition);
+            KakaoLocalDocument data = placeDocumentsList.get(position);
+
+            final ViewHolderData viewHolderData = new ViewHolderData(data);
+            binding.placeItemCardviewInBottomsheet.setTag(viewHolderData);
+
+            if (data instanceof PlaceDocuments)
+            {
+                placeDocuments = (PlaceDocuments) data;
+
+                binding.placeLayout.placeItemName.setText(placeDocuments.getPlaceName());
+                binding.placeLayout.placeItemAddress.setText(placeDocuments.getAddressName());
+                binding.placeLayout.placeItemCategory.setText(placeDocuments.getCategoryName());
+                binding.placeItemDistance.setText(placeDocuments.getDistance() + "m");
+
+                binding.placeLayout.getRoot().setVisibility(View.VISIBLE);
+                binding.addressLayout.getRoot().setVisibility(View.GONE);
+                binding.placeItemDistance.setVisibility(View.VISIBLE);
+            } else if (data instanceof AddressResponseDocuments)
+            {
+                addressDocuments = (AddressResponseDocuments) data;
+
+                binding.addressLayout.addressName.setText(addressDocuments.getAddressName());
+                if (addressDocuments.getAddressResponseRoadAddress() != null)
+                {
+                    binding.addressLayout.anotherAddressType.setText(itemView.getContext().getString(R.string.road_addr));
+                    binding.addressLayout.anotherAddressName.setText(addressDocuments.getAddressResponseRoadAddress().getAddressName());
+                } else if (addressDocuments.getAddressResponseAddress() != null)
+                {
+                    binding.addressLayout.anotherAddressType.setText(itemView.getContext().getString(R.string.region_addr));
+                    binding.addressLayout.anotherAddressName.setText(addressDocuments.getAddressResponseAddress().getAddressName());
+                }
+
+                binding.placeLayout.getRoot().setVisibility(View.GONE);
+                binding.addressLayout.getRoot().setVisibility(View.VISIBLE);
+                binding.placeItemDistance.setVisibility(View.GONE);
+            } else if (data instanceof CoordToAddressDocuments)
+            {
+                coordToAddressDocuments = (CoordToAddressDocuments) data;
+
+                binding.addressLayout.addressName.setText(coordToAddressDocuments.getCoordToAddressAddress().getAddressName());
+                if (coordToAddressDocuments.getCoordToAddressRoadAddress() != null)
+                {
+                    binding.addressLayout.anotherAddressType.setText(itemView.getContext().getString(R.string.road_addr));
+                    binding.addressLayout.anotherAddressName.setText(coordToAddressDocuments.getCoordToAddressRoadAddress().getAddressName());
+                } else if (coordToAddressDocuments.getCoordToAddressAddress() != null)
+                {
+                    binding.addressLayout.anotherAddressType.setText(itemView.getContext().getString(R.string.region_addr));
+                    binding.addressLayout.anotherAddressName.setText(coordToAddressDocuments.getCoordToAddressAddress().getAddressName());
+                }
+
+                binding.placeLayout.getRoot().setVisibility(View.GONE);
+                binding.addressLayout.getRoot().setVisibility(View.VISIBLE);
+                binding.placeItemDistance.setVisibility(View.GONE);
+            }
+
+            binding.selectThisPlaceButton.setVisibility(isVisibleSelectBtn);
+            binding.unselectThisPlaceButton.setVisibility(isVisibleUnSelectBtn);
+            binding.addToFavoritePlaceitemButton.setVisibility(isVisibleFavoriteBtn);
+
             if (isVisibleFavoriteBtn == View.VISIBLE)
             {
-                favoriteButton.setOnClickListener(new View.OnClickListener()
-                {
-                    @Override
-                    public void onClick(View view)
-                    {
-                        FavoriteLocationDTO favoriteLocationDTO = new FavoriteLocationDTO();
-
-                        if (data instanceof PlaceDocuments)
-                        {
-                            favoriteLocationDTO.setType(FavoriteLocationDTO.PLACE);
-
-                            placeDocuments = (PlaceDocuments) data;
-                            favoriteLocationDTO.setAddress(placeDocuments.getAddressName());
-                            favoriteLocationDTO.setLongitude(String.valueOf(placeDocuments.getX()));
-                            favoriteLocationDTO.setLatitude(String.valueOf(placeDocuments.getY()));
-                            favoriteLocationDTO.setPlaceName(placeDocuments.getPlaceName());
-                            favoriteLocationDTO.setPlaceId(placeDocuments.getId());
-                        } else if (data instanceof AddressResponseDocuments)
-                        {
-                            favoriteLocationDTO.setType(FavoriteLocationDTO.ADDRESS);
-
-                            addressDocuments = (AddressResponseDocuments) data;
-                            favoriteLocationDTO.setAddress(addressDocuments.getAddressName());
-                            favoriteLocationDTO.setLatitude(String.valueOf(addressDocuments.getY()));
-                            favoriteLocationDTO.setLongitude(String.valueOf(addressDocuments.getX()));
-                        } else if (data instanceof CoordToAddressDocuments)
-                        {
-                            favoriteLocationDTO.setType(FavoriteLocationDTO.ADDRESS);
-
-                            coordToAddressDocuments = (CoordToAddressDocuments) data;
-                            favoriteLocationDTO.setAddress(coordToAddressDocuments.getCoordToAddressAddress().getAddressName());
-                            favoriteLocationDTO.setLatitude(coordToAddressDocuments.getCoordToAddressAddress().getLatitude());
-                            favoriteLocationDTO.setLongitude(coordToAddressDocuments.getCoordToAddressAddress().getLongitude());
-                        }
-                        favoriteLocationDTO.setAddedDateTime(String.valueOf(System.currentTimeMillis()));
-
-                        favoriteLocationQuery.contains(favoriteLocationDTO.getType(), favoriteLocationDTO.getPlaceId()
-                                , favoriteLocationDTO.getAddress(), favoriteLocationDTO.getLatitude(), favoriteLocationDTO.getLongitude()
-                                , new CarrierMessagingService.ResultCallback<FavoriteLocationDTO>()
-                                {
-                                    @Override
-                                    public void onReceiveResult(@NonNull FavoriteLocationDTO resultFavoriteLocationDTO) throws RemoteException
-                                    {
-                                        if (resultFavoriteLocationDTO == null)
-                                        {
-                                            favoriteLocationQuery.insert(favoriteLocationDTO, new CarrierMessagingService.ResultCallback<FavoriteLocationDTO>()
-                                            {
-                                                @Override
-                                                public void onReceiveResult(@NonNull FavoriteLocationDTO insertedFavoriteLocationDTO) throws RemoteException
-                                                {
-                                                    favoriteLocationId = insertedFavoriteLocationDTO.getId();
-                                                    favoriteButton.setImageDrawable(favoriteEnabledDrawable);
-                                                }
-                                            });
-                                        } else
-                                        {
-                                            favoriteLocationQuery.delete(favoriteLocationId, new CarrierMessagingService.ResultCallback<Boolean>()
-                                            {
-                                                @Override
-                                                public void onReceiveResult(@NonNull Boolean isDeleted) throws RemoteException
-                                                {
-                                                    favoriteButton.setImageDrawable(favoriteDisabledDrawable);
-                                                }
-                                            });
-                                        }
-                                    }
-                                });
-
-
-                    }
-                });
-
                 FavoriteLocationDTO favoriteLocationDTO = new FavoriteLocationDTO();
 
                 if (data instanceof PlaceDocuments)
@@ -364,13 +330,12 @@ public class LocationItemViewPagerAdapter extends RecyclerView.Adapter<LocationI
                                 {
                                     favoriteLocationId = favoriteLocationDTO.getId();
                                 }
-                                favoriteButton.setImageDrawable(favoriteLocationDTO == null ? favoriteDisabledDrawable : favoriteEnabledDrawable);
+                                binding.addToFavoritePlaceitemButton.setImageDrawable(favoriteLocationDTO == null ? favoriteDisabledDrawable : favoriteEnabledDrawable);
                             }
                         });
             }
 
-            final ViewHolderData viewHolderData = new ViewHolderData(data);
-            cardView.setTag(viewHolderData);
+
         }
 
     }
