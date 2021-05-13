@@ -51,13 +51,12 @@ import com.zerodsoft.scheduleweather.activity.editevent.value.EventData;
 import com.zerodsoft.scheduleweather.activity.editevent.value.EventDataController;
 import com.zerodsoft.scheduleweather.activity.editevent.interfaces.IEventRepeat;
 import com.zerodsoft.scheduleweather.activity.preferences.ColorListAdapter;
-import com.zerodsoft.scheduleweather.activity.preferences.custom.ColorPreference;
 import com.zerodsoft.scheduleweather.databinding.ActivityEditEventBinding;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.common.LocationSelectorKey;
-import com.zerodsoft.scheduleweather.event.common.SelectionDetailLocationNaver;
+import com.zerodsoft.scheduleweather.event.common.SelectionDetailLocationActivity;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
@@ -591,16 +590,16 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
             //위치를 설정하는 액티비티 표시
             if (networkStatus.networkAvailable())
             {
-                Intent intent = new Intent(EditEventActivity.this, SelectionDetailLocationNaver.class);
+                Intent intent = new Intent(EditEventActivity.this, SelectionDetailLocationActivity.class);
                 Bundle bundle = new Bundle();
 
                 if (locationDTO != null)
                 {
                     bundle.putParcelable(LocationSelectorKey.SELECTED_LOCATION_DTO_IN_EVENT.name(), locationDTO);
-                    bundle.putInt(LocationSelectorKey.REQUEST_CODE.name(), SelectionDetailLocationNaver.REQUEST_CODE_CHANGE_LOCATION);
+                    bundle.putInt(LocationSelectorKey.REQUEST_CODE.name(), SelectionDetailLocationActivity.REQUEST_CODE_CHANGE_LOCATION);
                 } else
                 {
-                    bundle.putInt(LocationSelectorKey.REQUEST_CODE.name(), SelectionDetailLocationNaver.REQUEST_CODE_SELECT_LOCATION_EMPTY_QUERY);
+                    bundle.putInt(LocationSelectorKey.REQUEST_CODE.name(), SelectionDetailLocationActivity.REQUEST_CODE_SELECT_LOCATION_EMPTY_QUERY);
                 }
 
                 intent.putExtras(bundle);
@@ -1553,8 +1552,8 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                 {
                     switch (result.getResultCode())
                     {
-                        case SelectionDetailLocationNaver.RESULT_CODE_CHANGED_LOCATION:
-                        case SelectionDetailLocationNaver.RESULT_CODE_SELECTED_LOCATION:
+                        case SelectionDetailLocationActivity.RESULT_CODE_CHANGED_LOCATION:
+                        case SelectionDetailLocationActivity.RESULT_CODE_SELECTED_LOCATION:
                         {
                             Bundle bundle = result.getData().getExtras();
                             locationDTO = (LocationDTO) bundle.getParcelable(LocationSelectorKey.SELECTED_LOCATION_DTO_IN_MAP.name());
@@ -1575,7 +1574,7 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                             break;
                         }
 
-                        case SelectionDetailLocationNaver.RESULT_CODE_REMOVED_LOCATION:
+                        case SelectionDetailLocationActivity.RESULT_CODE_REMOVED_LOCATION:
                         {
                             dataController.removeEventValue(CalendarContract.Events.EVENT_LOCATION);
                             locationDTO = null;

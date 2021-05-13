@@ -39,11 +39,10 @@ import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.databinding.EventFragmentBinding;
 import com.zerodsoft.scheduleweather.event.common.LocationSelectorKey;
-import com.zerodsoft.scheduleweather.event.common.SelectionDetailLocationNaver;
+import com.zerodsoft.scheduleweather.event.common.SelectionDetailLocationActivity;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationHistoryViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationInfoViewModel;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
-import com.zerodsoft.scheduleweather.event.main.NewInstanceMainActivity;
 import com.zerodsoft.scheduleweather.event.main.NewInstanceMainFragment;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
@@ -122,10 +121,10 @@ public class EventFragment extends BottomSheetDialogFragment
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i)
                         {
-                            Intent intent = new Intent(activity, SelectionDetailLocationNaver.class);
+                            Intent intent = new Intent(activity, SelectionDetailLocationActivity.class);
                             Bundle bundle = new Bundle();
                             bundle.putString(LocationSelectorKey.LOCATION_NAME_IN_EVENT.name(), instance.getAsString(CalendarContract.Instances.EVENT_LOCATION));
-                            bundle.putInt(LocationSelectorKey.REQUEST_CODE.name(), SelectionDetailLocationNaver.REQUEST_CODE_SELECT_LOCATION_BY_QUERY);
+                            bundle.putInt(LocationSelectorKey.REQUEST_CODE.name(), SelectionDetailLocationActivity.REQUEST_CODE_SELECT_LOCATION_BY_QUERY);
 
                             intent.putExtras(bundle);
                             activityResultLauncher.launch(intent);
@@ -140,10 +139,10 @@ public class EventFragment extends BottomSheetDialogFragment
         public void startEditLocationActivity(Activity activity, ActivityResultLauncher<Intent> activityResultLauncher, LocationDTO locationDTO)
         {
             //naver
-            Intent intent = new Intent(activity, SelectionDetailLocationNaver.class);
+            Intent intent = new Intent(activity, SelectionDetailLocationActivity.class);
             Bundle bundle = new Bundle();
             bundle.putParcelable(LocationSelectorKey.SELECTED_LOCATION_DTO_IN_EVENT.name(), locationDTO);
-            bundle.putInt(LocationSelectorKey.REQUEST_CODE.name(), SelectionDetailLocationNaver.REQUEST_CODE_CHANGE_LOCATION);
+            bundle.putInt(LocationSelectorKey.REQUEST_CODE.name(), SelectionDetailLocationActivity.REQUEST_CODE_CHANGE_LOCATION);
 
             intent.putExtras(bundle);
             activityResultLauncher.launch(intent);
@@ -802,7 +801,7 @@ public class EventFragment extends BottomSheetDialogFragment
                 @Override
                 public void onActivityResult(ActivityResult result)
                 {
-                    if (result.getResultCode() == SelectionDetailLocationNaver.RESULT_CODE_SELECTED_LOCATION)
+                    if (result.getResultCode() == SelectionDetailLocationActivity.RESULT_CODE_SELECTED_LOCATION)
                     {
                         LocationDTO locationDTO = result.getData().getExtras().getParcelable(LocationSelectorKey.SELECTED_LOCATION_DTO_IN_MAP.name());
                         saveDetailLocation(locationDTO);
@@ -821,11 +820,11 @@ public class EventFragment extends BottomSheetDialogFragment
                 {
                     switch (result.getResultCode())
                     {
-                        case SelectionDetailLocationNaver.RESULT_CODE_CHANGED_LOCATION:
+                        case SelectionDetailLocationActivity.RESULT_CODE_CHANGED_LOCATION:
                             LocationDTO locationDTO = result.getData().getExtras().getParcelable(LocationSelectorKey.SELECTED_LOCATION_DTO_IN_MAP.name());
                             changedDetailLocation(locationDTO);
                             break;
-                        case SelectionDetailLocationNaver.RESULT_CODE_REMOVED_LOCATION:
+                        case SelectionDetailLocationActivity.RESULT_CODE_REMOVED_LOCATION:
                             deletedDetailLocation();
                             break;
                     }

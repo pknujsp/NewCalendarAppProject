@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.weather.view.airconditionbar;
+package com.zerodsoft.scheduleweather.weather.aircondition.airconditionbar;
 
 public class BarInitData
 {

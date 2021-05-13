@@ -144,8 +144,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
     public LocationViewModel locationViewModel;
 
-    public PlacesItemBottomSheetButtonOnClickListener placesItemBottomSheetButtonOnClickListener;
-
     public ImageButton zoomInButton;
     public ImageButton zoomOutButton;
     public ImageButton gpsButton;
@@ -179,9 +177,14 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
         @Override
         public void handleOnBackPressed()
         {
-            requireActivity().finish();
+            onBackPressedCallback();
         }
     };
+
+    public void onBackPressedCallback()
+    {
+        requireActivity().finish();
+    }
 
     @Override
     public void addOnBackPressedCallback()
@@ -219,10 +222,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
         }
     };
 
-    public void setPlacesItemBottomSheetButtonOnClickListener(PlacesItemBottomSheetButtonOnClickListener placesItemBottomSheetButtonOnClickListener)
-    {
-        this.placesItemBottomSheetButtonOnClickListener = placesItemBottomSheetButtonOnClickListener;
-    }
 
     public final LocationListener locationListener = new LocationListener()
     {
@@ -1151,7 +1150,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
         locationItemBottomSheetViewPager.setTag(markerType);
 
         adapter.setFavoriteLocationQuery(((FavoriteLocationFragment) bottomSheetFragmentMap.get(BottomSheetType.FAVORITE_LOCATIONS)));
-        adapter.setPlacesItemBottomSheetButtonOnClickListener(placesItemBottomSheetButtonOnClickListener);
+        adapter.setPlacesItemBottomSheetButtonOnClickListener(this);
         adapter.setOnClickedBottomSheetListener(this);
         adapter.setVisibleSelectBtn(placeBottomSheetSelectBtnVisibility);
         adapter.setVisibleUnSelectBtn(placeBottomSheetUnSelectBtnVisibility);

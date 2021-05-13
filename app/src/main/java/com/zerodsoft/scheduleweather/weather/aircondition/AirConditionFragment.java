@@ -23,7 +23,7 @@ import com.zerodsoft.scheduleweather.weather.interfaces.OnDownloadedTimeListener
 import com.zerodsoft.scheduleweather.weather.repository.AirConditionDownloader;
 import com.zerodsoft.scheduleweather.weather.repository.FindAirConditionStationDownloader;
 import com.zerodsoft.scheduleweather.weather.repository.SgisTranscoord;
-import com.zerodsoft.scheduleweather.weather.view.airconditionbar.BarInitDataCreater;
+import com.zerodsoft.scheduleweather.weather.aircondition.airconditionbar.BarInitDataCreater;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.MsrstnAcctoRltmMesureDnstyParameter;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.NearbyMsrstnListParameter;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.sgis.TransCoordParameter;
@@ -295,8 +295,16 @@ public class AirConditionFragment extends Fragment
             {
                 if (nearByMsrstn == null)
                 {
-                    onDownloadedTimeListener.setDownloadedTime(new Date(System.currentTimeMillis()), WeatherDataDTO.AIR_CONDITION);
-                    viewProgress.onCompletedProcessingData(false, getString(R.string.not_data));
+                    requireActivity().runOnUiThread(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            onDownloadedTimeListener.setDownloadedTime(new Date(System.currentTimeMillis()), WeatherDataDTO.AIR_CONDITION);
+                            viewProgress.onCompletedProcessingData(false, getString(R.string.not_data));
+                        }
+                    });
+
                 } else
                 {
                     Gson gson = new Gson();

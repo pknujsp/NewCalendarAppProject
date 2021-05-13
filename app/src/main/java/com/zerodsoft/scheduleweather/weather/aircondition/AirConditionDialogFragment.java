@@ -13,7 +13,7 @@ import android.view.WindowManager;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.DialogFragmentAirConditionBinding;
-import com.zerodsoft.scheduleweather.weather.view.airconditionbar.BarInitDataCreater;
+import com.zerodsoft.scheduleweather.weather.aircondition.airconditionbar.BarInitDataCreater;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.MsrstnAcctoRltmMesureDnsty.MsrstnAcctoRltmMesureDnstyBody;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.NearbyMsrstnList.NearbyMsrstnListBody;
 

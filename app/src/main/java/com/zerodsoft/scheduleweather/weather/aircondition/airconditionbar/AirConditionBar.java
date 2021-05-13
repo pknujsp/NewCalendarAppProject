@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.weather.view;
+package com.zerodsoft.scheduleweather.weather.aircondition.airconditionbar;
 
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -15,8 +15,8 @@ import android.view.View;
 import androidx.annotation.Nullable;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.weather.view.airconditionbar.BarInitData;
-import com.zerodsoft.scheduleweather.weather.view.airconditionbar.BarInitDataCreater;
+import com.zerodsoft.scheduleweather.weather.aircondition.airconditionbar.BarInitData;
+import com.zerodsoft.scheduleweather.weather.aircondition.airconditionbar.BarInitDataCreater;
 
 import java.util.List;
 
@@ -133,7 +133,7 @@ public class AirConditionBar extends View
         }
 
         //데이터 값 표시
-        int size = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 6f, getResources().getDisplayMetrics());
+        int size = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, getResources().getDisplayMetrics());
 
         float arrowLeft = (int) (barWidth * (dataValue / maxRef)) - (ARROW_WIDTH / 2);
 

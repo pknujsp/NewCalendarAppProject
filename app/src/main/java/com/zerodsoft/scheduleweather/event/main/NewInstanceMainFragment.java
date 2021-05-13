@@ -193,7 +193,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
         bottomSheetViewMap.put(BottomSheetType.SELECTED_PLACE_CATEGORY, placeCategoryBottomSheet);
         bottomSheetBehaviorMap.put(BottomSheetType.SELECTED_PLACE_CATEGORY, placeCategoryBottomSheetBehavior);
 
-        addPlaceCategoryListFragmentIntoBottomSheet();
 
         placeCategoryBottomSheetBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback()
         {
@@ -490,6 +489,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
                                         @Override
                                         public void run()
                                         {
+                                            addPlaceCategoryListFragmentIntoBottomSheet();
                                             createSelectedLocationMarker();
                                         }
                                     });

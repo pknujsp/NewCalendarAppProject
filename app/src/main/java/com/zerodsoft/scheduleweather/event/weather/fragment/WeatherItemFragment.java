@@ -296,7 +296,7 @@ public class WeatherItemFragment extends BottomSheetDialogFragment implements On
                     {
                         Calendar downloadedCalendar = Calendar.getInstance();
                         downloadedCalendar.setTimeInMillis(Long.parseLong(weatherDataDTOS.get(0).getDownloadedDate()));
-                      
+
                     }
                 });
     }
@@ -351,7 +351,6 @@ public class WeatherItemFragment extends BottomSheetDialogFragment implements On
     public void setDownloadedTime(Date downloadedTime, int dataType)
     {
         String dateTimeStr = ClockUtil.DB_DATE_FORMAT.format(downloadedTime);
-
         switch (dataType)
         {
             case WeatherDataDTO.ULTRA_SRT_NCST:
