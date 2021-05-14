@@ -7,13 +7,8 @@ import android.service.carrier.CarrierMessagingService;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.ImageButton;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -105,7 +100,7 @@ public class LocationItemViewPagerAdapter extends RecyclerView.Adapter<LocationI
     @Override
     public void onBindViewHolder(@NonNull PlaceItemInMapViewHolder holder, int position)
     {
-        holder.bind();
+        holder.bind(placeDocumentsList.get(position));
     }
 
     public List<KakaoLocalDocument> getPlaceDocumentsList()
@@ -121,8 +116,8 @@ public class LocationItemViewPagerAdapter extends RecyclerView.Adapter<LocationI
 
     public class PlaceItemInMapViewHolder extends RecyclerView.ViewHolder
     {
-        private CardviewPlacesItemBinding binding;
-        private Integer favoriteLocationId;
+        protected CardviewPlacesItemBinding binding;
+        protected Integer favoriteLocationId;
 
         public PlaceItemInMapViewHolder(@NonNull View view)
         {
@@ -223,19 +218,24 @@ public class LocationItemViewPagerAdapter extends RecyclerView.Adapter<LocationI
             });
         }
 
-        public void bind()
+        public void bind(KakaoLocalDocument kakaoLocalDocument)
+        {
+            setDataView(kakaoLocalDocument);
+        }
+
+
+        public void setDataView(KakaoLocalDocument kakaoLocalDocument)
         {
             final int position = getBindingAdapterPosition();
             itemPosition = (position + 1) + " / " + getItemCount();
             binding.itemPosition.setText(itemPosition);
-            KakaoLocalDocument data = placeDocumentsList.get(position);
 
-            final ViewHolderData viewHolderData = new ViewHolderData(data);
+            final ViewHolderData viewHolderData = new ViewHolderData(kakaoLocalDocument);
             binding.placeItemCardviewInBottomsheet.setTag(viewHolderData);
 
-            if (data instanceof PlaceDocuments)
+            if (kakaoLocalDocument instanceof PlaceDocuments)
             {
-                placeDocuments = (PlaceDocuments) data;
+                placeDocuments = (PlaceDocuments) kakaoLocalDocument;
 
                 binding.placeLayout.placeItemName.setText(placeDocuments.getPlaceName());
                 binding.placeLayout.placeItemAddress.setText(placeDocuments.getAddressName());
@@ -245,9 +245,9 @@ public class LocationItemViewPagerAdapter extends RecyclerView.Adapter<LocationI
                 binding.placeLayout.getRoot().setVisibility(View.VISIBLE);
                 binding.addressLayout.getRoot().setVisibility(View.GONE);
                 binding.placeItemDistance.setVisibility(View.VISIBLE);
-            } else if (data instanceof AddressResponseDocuments)
+            } else if (kakaoLocalDocument instanceof AddressResponseDocuments)
             {
-                addressDocuments = (AddressResponseDocuments) data;
+                addressDocuments = (AddressResponseDocuments) kakaoLocalDocument;
 
                 binding.addressLayout.addressName.setText(addressDocuments.getAddressName());
                 if (addressDocuments.getAddressResponseRoadAddress() != null)
@@ -263,9 +263,9 @@ public class LocationItemViewPagerAdapter extends RecyclerView.Adapter<LocationI
                 binding.placeLayout.getRoot().setVisibility(View.GONE);
                 binding.addressLayout.getRoot().setVisibility(View.VISIBLE);
                 binding.placeItemDistance.setVisibility(View.GONE);
-            } else if (data instanceof CoordToAddressDocuments)
+            } else if (kakaoLocalDocument instanceof CoordToAddressDocuments)
             {
-                coordToAddressDocuments = (CoordToAddressDocuments) data;
+                coordToAddressDocuments = (CoordToAddressDocuments) kakaoLocalDocument;
 
                 binding.addressLayout.addressName.setText(coordToAddressDocuments.getCoordToAddressAddress().getAddressName());
                 if (coordToAddressDocuments.getCoordToAddressRoadAddress() != null)
@@ -291,29 +291,29 @@ public class LocationItemViewPagerAdapter extends RecyclerView.Adapter<LocationI
             {
                 FavoriteLocationDTO favoriteLocationDTO = new FavoriteLocationDTO();
 
-                if (data instanceof PlaceDocuments)
+                if (kakaoLocalDocument instanceof PlaceDocuments)
                 {
                     favoriteLocationDTO.setType(FavoriteLocationDTO.PLACE);
 
-                    placeDocuments = (PlaceDocuments) data;
+                    placeDocuments = (PlaceDocuments) kakaoLocalDocument;
                     favoriteLocationDTO.setAddress(placeDocuments.getAddressName());
                     favoriteLocationDTO.setLongitude(String.valueOf(placeDocuments.getX()));
                     favoriteLocationDTO.setLatitude(String.valueOf(placeDocuments.getY()));
                     favoriteLocationDTO.setPlaceName(placeDocuments.getPlaceName());
                     favoriteLocationDTO.setPlaceId(placeDocuments.getId());
-                } else if (data instanceof AddressResponseDocuments)
+                } else if (kakaoLocalDocument instanceof AddressResponseDocuments)
                 {
                     favoriteLocationDTO.setType(FavoriteLocationDTO.ADDRESS);
 
-                    addressDocuments = (AddressResponseDocuments) data;
+                    addressDocuments = (AddressResponseDocuments) kakaoLocalDocument;
                     favoriteLocationDTO.setAddress(addressDocuments.getAddressName());
                     favoriteLocationDTO.setLatitude(String.valueOf(addressDocuments.getY()));
                     favoriteLocationDTO.setLongitude(String.valueOf(addressDocuments.getX()));
-                } else if (data instanceof CoordToAddressDocuments)
+                } else if (kakaoLocalDocument instanceof CoordToAddressDocuments)
                 {
                     favoriteLocationDTO.setType(FavoriteLocationDTO.ADDRESS);
 
-                    coordToAddressDocuments = (CoordToAddressDocuments) data;
+                    coordToAddressDocuments = (CoordToAddressDocuments) kakaoLocalDocument;
                     favoriteLocationDTO.setAddress(coordToAddressDocuments.getCoordToAddressAddress().getAddressName());
                     favoriteLocationDTO.setLatitude(coordToAddressDocuments.getCoordToAddressAddress().getLatitude());
                     favoriteLocationDTO.setLongitude(coordToAddressDocuments.getCoordToAddressAddress().getLongitude());

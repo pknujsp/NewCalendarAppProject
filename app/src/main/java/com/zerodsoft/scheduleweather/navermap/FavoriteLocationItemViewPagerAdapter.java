@@ -1,9 +1,6 @@
 package com.zerodsoft.scheduleweather.navermap;
 
-import android.app.Activity;
 import android.content.Context;
-import android.os.RemoteException;
-import android.service.carrier.CarrierMessagingService;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,13 +9,11 @@ import androidx.annotation.NonNull;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
-import com.zerodsoft.scheduleweather.event.common.interfaces.ILocation;
 import com.zerodsoft.scheduleweather.event.common.interfaces.ILocationDao;
 import com.zerodsoft.scheduleweather.navermap.interfaces.OnClickedBottomSheetListener;
 import com.zerodsoft.scheduleweather.navermap.interfaces.PlacesItemBottomSheetButtonOnClickListener;
 import com.zerodsoft.scheduleweather.navermap.model.CoordToAddressUtil;
 import com.zerodsoft.scheduleweather.navermap.util.LocalParameterUtil;
-import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalDocument;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddress;
@@ -26,9 +21,11 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressre
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceKakaoLocalResponse;
 import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
+import com.zerodsoft.scheduleweather.weather.common.ViewProgress;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,9 +69,9 @@ public class FavoriteLocationItemViewPagerAdapter extends LocationItemViewPagerA
     }
 
     @Override
-    public void onBindViewHolder(@NonNull PlaceItemInMapViewHolder holder, int position, @NonNull List<Object> payloads)
+    public void onBindViewHolder(@NonNull @NotNull PlaceItemInMapViewHolder holder, int position)
     {
-        ((FavoriteLocationItemInMapViewHolder) holder).bind();
+        ((FavoriteLocationItemInMapViewHolder) holder).bind(favoriteLocationList.get(position));
     }
 
     public List<FavoriteLocationDTO> getFavoriteLocationList()
@@ -90,22 +87,29 @@ public class FavoriteLocationItemViewPagerAdapter extends LocationItemViewPagerA
 
     class FavoriteLocationItemInMapViewHolder extends PlaceItemInMapViewHolder
     {
+        private ViewProgress viewProgress;
+
         public FavoriteLocationItemInMapViewHolder(@NonNull View view)
         {
             super(view);
+            viewProgress = new ViewProgress(binding.placeItemCardviewInBottomsheet, binding.locationItemProgressLayout.progressBar
+                    , binding.locationItemProgressLayout.errorTextview);
+
+            viewProgress.onStartedProcessingData();
         }
 
-        public void bind()
+        public void bind(FavoriteLocationDTO favoriteLocationDTO)
         {
-            final FavoriteLocationDTO favoriteLocationDTO = favoriteLocationList.get(getBindingAdapterPosition());
+            final int position = getBindingAdapterPosition();
+
             if (kakaoLocalDocumentMap.containsKey(favoriteLocationDTO.getId()))
             {
                 if (favoriteLocationDTO.getType() == FavoriteLocationDTO.ADDRESS)
                 {
-                    FavoriteLocationItemInMapViewHolder.super.bind();
+                    setDataView(placeDocumentsList.get(position));
                 } else if (favoriteLocationDTO.getType() == FavoriteLocationDTO.PLACE)
                 {
-                    FavoriteLocationItemInMapViewHolder.super.bind();
+                    setDataView(placeDocumentsList.get(position));
                 }
             } else
             {
@@ -125,7 +129,8 @@ public class FavoriteLocationItemViewPagerAdapter extends LocationItemViewPagerA
 
                             kakaoLocalDocumentMap.put(favoriteLocationDTO.getId(), coordToAddressDocuments);
                             placeDocumentsList.add(coordToAddressDocuments);
-                            FavoriteLocationItemInMapViewHolder.super.bind();
+                            setDataView(coordToAddressDocuments);
+
                         }
 
                         @Override
@@ -152,7 +157,7 @@ public class FavoriteLocationItemViewPagerAdapter extends LocationItemViewPagerA
                             kakaoLocalDocumentMap.put(favoriteLocationDTO.getId(), placeDocuments);
                             placeDocumentsList.add(placeDocuments);
 
-                            FavoriteLocationItemInMapViewHolder.super.bind();
+                            setDataView(placeDocuments);
                         }
 
                         @Override
@@ -164,6 +169,13 @@ public class FavoriteLocationItemViewPagerAdapter extends LocationItemViewPagerA
                 }
             }
 
+        }
+
+        @Override
+        public void setDataView(KakaoLocalDocument kakaoLocalDocument)
+        {
+            super.setDataView(kakaoLocalDocument);
+            viewProgress.onCompletedProcessingData(true);
         }
     }
 }

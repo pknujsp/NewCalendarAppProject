@@ -15,9 +15,6 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressre
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class OnLongClickMapLocationItemAdapter extends LocationItemViewPagerAdapter
 {
     private final OnCoordToAddressListener onCoordToAddressListener;
@@ -54,10 +51,11 @@ public class OnLongClickMapLocationItemAdapter extends LocationItemViewPagerAdap
         return new OnLongClickMapLocationItemViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.cardview_places_item, parent, false));
     }
 
+
     @Override
     public void onBindViewHolder(@NonNull @NotNull PlaceItemInMapViewHolder holder, int position)
     {
-        super.onBindViewHolder(holder, position);
+        ((OnLongClickMapLocationItemViewHolder) holder).bind(null);
     }
 
     class OnLongClickMapLocationItemViewHolder extends PlaceItemInMapViewHolder
@@ -69,7 +67,7 @@ public class OnLongClickMapLocationItemAdapter extends LocationItemViewPagerAdap
         }
 
         @Override
-        public void bind()
+        public void bind(KakaoLocalDocument kakaoLocalDocument)
         {
             onCoordToAddressListener.coordToAddress(latitude, longitude, new JsonDownloader<CoordToAddressDocuments>()
             {
@@ -80,7 +78,7 @@ public class OnLongClickMapLocationItemAdapter extends LocationItemViewPagerAdap
                     result.getCoordToAddressAddress().setLongitude(longitude);
                     placeDocumentsList.clear();
                     placeDocumentsList.add(result);
-                    OnLongClickMapLocationItemViewHolder.super.bind();
+                    OnLongClickMapLocationItemViewHolder.super.bind(placeDocumentsList.get(0));
                 }
 
                 @Override

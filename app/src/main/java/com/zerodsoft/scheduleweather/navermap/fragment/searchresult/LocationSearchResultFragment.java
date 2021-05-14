@@ -238,9 +238,9 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
     @Override
     public void onClickedLocItem(int index)
     {
+        bottomSheetController.setStateOfBottomSheet(BottomSheetType.SEARCH_LOCATION, BottomSheetBehavior.STATE_COLLAPSED);
         poiItemOnClickListener.onPOIItemSelectedByList(index, MarkerType.SEARCH_RESULT);
         searchBarController.changeViewTypeImg(SearchBarController.LIST);
-        bottomSheetController.setStateOfBottomSheet(BottomSheetType.SEARCH_LOCATION, BottomSheetBehavior.STATE_COLLAPSED);
     }
 
     @Override

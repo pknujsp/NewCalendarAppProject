@@ -193,7 +193,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
         bottomSheetViewMap.put(BottomSheetType.SELECTED_PLACE_CATEGORY, placeCategoryBottomSheet);
         bottomSheetBehaviorMap.put(BottomSheetType.SELECTED_PLACE_CATEGORY, placeCategoryBottomSheetBehavior);
 
-
         placeCategoryBottomSheetBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback()
         {
             @Override
@@ -471,6 +470,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
                                     @Override
                                     public void run()
                                     {
+                                        addPlaceCategoryListFragmentIntoBottomSheet();
                                         createSelectedLocationMarker();
                                     }
                                 });
@@ -489,7 +489,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
                                         @Override
                                         public void run()
                                         {
-                                            addPlaceCategoryListFragmentIntoBottomSheet();
                                             createSelectedLocationMarker();
                                         }
                                     });
@@ -808,7 +807,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
                 createPoiItems(placeDocumentsList, MarkerType.SELECTED_PLACE_CATEGORY);
                 showPoiItems(MarkerType.SELECTED_PLACE_CATEGORY);
             } else if (placeCategoryChipGroup.getCheckedChipIds().isEmpty()
-                    && !markerMap.get((MarkerType) locationItemBottomSheetViewPager.getTag())
+                    && !markerMap.get(MarkerType.SELECTED_PLACE_CATEGORY)
                     .isEmpty())
             {
                 removePoiItems(MarkerType.SELECTED_PLACE_CATEGORY);

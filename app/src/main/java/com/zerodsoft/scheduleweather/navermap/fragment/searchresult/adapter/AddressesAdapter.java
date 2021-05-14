@@ -43,7 +43,7 @@ public class AddressesAdapter extends PagedListAdapter<AddressResponseDocuments,
                 @Override
                 public void onClick(View view)
                 {
-                    onClickedLocListItem.onClickedLocItem(getAdapterPosition());
+                    onClickedLocListItem.onClickedLocItem(getBindingAdapterPosition());
                 }
             });
         }

@@ -105,7 +105,7 @@ public class CustomFoodMenuSettingsFragment extends Fragment implements OnClicke
             @Override
             public void onReceiveResult(@NonNull List<CustomFoodMenuDTO> customFoodMenuDTOS) throws RemoteException
             {
-                getActivity().runOnUiThread(new Runnable()
+                requireActivity().runOnUiThread(new Runnable()
                 {
                     @Override
                     public void run()

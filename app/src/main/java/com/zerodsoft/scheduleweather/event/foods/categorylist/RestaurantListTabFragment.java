@@ -32,6 +32,7 @@ import com.zerodsoft.scheduleweather.room.dto.CustomFoodMenuDTO;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import lombok.SneakyThrows;
@@ -106,7 +107,7 @@ public class RestaurantListTabFragment extends Fragment implements NewInstanceMa
             @Override
             public void onReceiveResult(@NonNull List<CustomFoodMenuDTO> resultList) throws RemoteException
             {
-                getActivity().runOnUiThread(new Runnable()
+                requireActivity().runOnUiThread(new Runnable()
                 {
                     @Override
                     public void run()
@@ -114,9 +115,9 @@ public class RestaurantListTabFragment extends Fragment implements NewInstanceMa
                         categoryList = new ArrayList<>();
 
                         final String[] DEFAULT_FOOD_MENU_NAME_ARR = getResources().getStringArray(R.array.food_menu_list);
-                        final List<String> foodMenuNameList = Arrays.asList(DEFAULT_FOOD_MENU_NAME_ARR);
-
-                        categoryList.addAll(Arrays.asList(DEFAULT_FOOD_MENU_NAME_ARR));
+                        List<String> foodMenuNameList = new ArrayList<>();
+                        foodMenuNameList.addAll(Arrays.asList(DEFAULT_FOOD_MENU_NAME_ARR));
+                        categoryList.addAll(foodMenuNameList);
 
                         if (!resultList.isEmpty())
                         {

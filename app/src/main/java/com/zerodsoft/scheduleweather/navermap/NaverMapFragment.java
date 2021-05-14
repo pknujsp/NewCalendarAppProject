@@ -939,11 +939,10 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
         //open bottomsheet and show selected item data
 
         LocationItemViewPagerAdapter adapter = viewPagerAdapterMap.get(markerType);
-        locationItemBottomSheetViewPager.setTag(markerType);
         locationItemBottomSheetViewPager.setAdapter(adapter);
+        locationItemBottomSheetViewPager.setTag(markerType);
         locationItemBottomSheetViewPager.setCurrentItem(selectedPoiItemIndex, false);
 
-        adapter.notifyDataSetChanged();
         setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_EXPANDED);
     }
 
@@ -1147,8 +1146,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
     public void setLocationItemViewPagerAdapter(LocationItemViewPagerAdapter adapter, MarkerType markerType)
     {
         viewPagerAdapterMap.put(markerType, adapter);
-        locationItemBottomSheetViewPager.setAdapter(adapter);
-        locationItemBottomSheetViewPager.setTag(markerType);
 
         adapter.setFavoriteLocationQuery(((FavoriteLocationFragment) bottomSheetFragmentMap.get(BottomSheetType.FAVORITE_LOCATIONS)));
         adapter.setPlacesItemBottomSheetButtonOnClickListener(this);
