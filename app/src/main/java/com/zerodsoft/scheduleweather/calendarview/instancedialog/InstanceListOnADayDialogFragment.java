@@ -3,9 +3,6 @@ package com.zerodsoft.scheduleweather.calendarview.instancedialog;
 import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.ContentValues;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.graphics.Rect;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -13,12 +10,10 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.CompositePageTransformer;
 import androidx.viewpager2.widget.MarginPageTransformer;
 import androidx.viewpager2.widget.ViewPager2;
 
-import android.provider.CalendarContract;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -28,11 +23,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.PopupMenu;
-import android.widget.Toast;
 
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.calendar.CalendarInstanceUtil;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendar.CommonPopupMenu;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
@@ -43,25 +35,30 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
-import com.zerodsoft.scheduleweather.databinding.FragmentMonthEventsInfoBinding;
+import com.zerodsoft.scheduleweather.databinding.FragmentInstanceListOnADayBinding;
+import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
+import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationHistoryViewModel;
+import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationInfoViewModel;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import java.util.Date;
 import java.util.Map;
 
 import lombok.SneakyThrows;
-import lombok.val;
 
-public class InstanceListOnDayFragment extends DialogFragment implements OnEventItemLongClickListener, IRefreshView, IControlEvent, InstancesOfDayView.InstanceDialogMenuListener
+public class InstanceListOnADayDialogFragment extends DialogFragment implements OnEventItemLongClickListener, IRefreshView, IControlEvent, InstancesOfDayView.InstanceDialogMenuListener
 {
-    public static final String TAG = "MonthEventsInfoFragment";
+    public static final String TAG = "InstanceListOnADayDialogFragment";
 
     private final IConnectedCalendars iConnectedCalendars;
     private final OnEventItemClickListener onEventItemClickListener;
     private final IRefreshView iRefreshView;
 
-    private CalendarViewModel viewModel;
-    private FragmentMonthEventsInfoBinding binding;
+    private CalendarViewModel calendarViewModel;
+    private LocationViewModel locationViewModel;
+    private FoodCriteriaLocationHistoryViewModel foodCriteriaLocationHistoryViewModel;
+    private FoodCriteriaLocationInfoViewModel foodCriteriaLocationInfoViewModel;
+    private FragmentInstanceListOnADayBinding binding;
     private InstancesOfDayAdapter adapter;
 
     private Long begin;
@@ -90,7 +87,7 @@ public class InstanceListOnDayFragment extends DialogFragment implements OnEvent
         }
     };
 
-    public InstanceListOnDayFragment(IConnectedCalendars iConnectedCalendars, Fragment fragment)
+    public InstanceListOnADayDialogFragment(IConnectedCalendars iConnectedCalendars, Fragment fragment)
     {
         this.onEventItemClickListener = (OnEventItemClickListener) fragment;
         this.iRefreshView = (IRefreshView) fragment;
@@ -111,14 +108,14 @@ public class InstanceListOnDayFragment extends DialogFragment implements OnEvent
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState)
     {
-        return new Dialog(getContext(), R.style.DialogTransparent);
+        return new Dialog(requireContext(), R.style.DialogTransparent);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState)
     {
-        binding = FragmentMonthEventsInfoBinding.inflate(inflater);
+        binding = FragmentInstanceListOnADayBinding.inflate(inflater);
         return binding.getRoot();
     }
 
@@ -128,9 +125,32 @@ public class InstanceListOnDayFragment extends DialogFragment implements OnEvent
     {
         super.onViewCreated(view, savedInstanceState);
 
-        final int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32f, getResources().getDisplayMetrics());
+        calendarViewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
+        locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
+        foodCriteriaLocationHistoryViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationHistoryViewModel.class);
+        foodCriteriaLocationInfoViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationInfoViewModel.class);
+
+        binding.goToTodayButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                goToToday();
+            }
+        });
+
+        binding.goToFirstSelectedDayButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                goToFirstSelectedDay();
+            }
+        });
+
+        // final int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32f, getResources().getDisplayMetrics());
         final int margin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, getResources().getDisplayMetrics());
-        binding.instancesDialogViewpager.setPadding(padding, 0, padding, 0);
+        // binding.instancesDialogViewpager.setPadding(padding, 0, padding, 0);
         binding.instancesDialogViewpager.setOffscreenPageLimit(3);
         binding.instancesDialogViewpager.getChildAt(0).setOverScrollMode(View.OVER_SCROLL_NEVER);
 
@@ -148,7 +168,6 @@ public class InstanceListOnDayFragment extends DialogFragment implements OnEvent
         });
         binding.instancesDialogViewpager.setPageTransformer(compositePageTransformer);
 
-        viewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
         adapter = new InstancesOfDayAdapter(begin, end, onEventItemClickListener, iConnectedCalendars, this);
         binding.instancesDialogViewpager.setAdapter(adapter);
         binding.instancesDialogViewpager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, false);
@@ -157,7 +176,8 @@ public class InstanceListOnDayFragment extends DialogFragment implements OnEvent
     @Override
     public void createInstancePopupMenu(ContentValues instance, View anchorView, int gravity)
     {
-        commonPopupMenu.createInstancePopupMenu(instance, getActivity(), anchorView, Gravity.CENTER);
+        commonPopupMenu.createInstancePopupMenu(instance, requireActivity(), anchorView, Gravity.CENTER
+                , calendarViewModel, locationViewModel, foodCriteriaLocationInfoViewModel, foodCriteriaLocationHistoryViewModel);
     }
 
 
@@ -167,7 +187,8 @@ public class InstanceListOnDayFragment extends DialogFragment implements OnEvent
         super.onResume();
 
         Window window = getDialog().getWindow();
-        window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 400f, getContext().getResources().getDisplayMetrics()));
+        //  window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 400f, getContext().getResources().getDisplayMetrics()));
+        window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
     }
 
     @Override
@@ -181,7 +202,7 @@ public class InstanceListOnDayFragment extends DialogFragment implements OnEvent
     @Override
     public Map<Integer, CalendarInstance> getInstances(long begin, long end)
     {
-        return viewModel.getInstances(begin, end);
+        return calendarViewModel.getInstances(begin, end);
     }
 
     @Override

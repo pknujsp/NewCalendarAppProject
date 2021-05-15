@@ -95,7 +95,7 @@ public class InstancesOfDayAdapter extends RecyclerView.Adapter<InstancesOfDayAd
         public void onBind()
         {
             Calendar copiedCalendar = (Calendar) beginCalendar.clone();
-            copiedCalendar.add(Calendar.DATE, getAdapterPosition() - EventTransactionFragment.FIRST_VIEW_POSITION);
+            copiedCalendar.add(Calendar.DATE, getBindingAdapterPosition() - EventTransactionFragment.FIRST_VIEW_POSITION);
             instancesOfDayView.init(copiedCalendar, onEventItemLongClickListener, onEventItemClickListener, iControlEvent, iConnectedCalendars,
                     instanceDialogMenuListener);
         }

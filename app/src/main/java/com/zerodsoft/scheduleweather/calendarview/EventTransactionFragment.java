@@ -22,7 +22,7 @@ import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendar.CommonPopupMenu;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendarview.day.DayFragment;
-import com.zerodsoft.scheduleweather.calendarview.instancedialog.InstanceListOnDayFragment;
+import com.zerodsoft.scheduleweather.calendarview.instancedialog.InstanceListOnADayDialogFragment;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
@@ -32,6 +32,9 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickLis
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
 import com.zerodsoft.scheduleweather.calendarview.month.MonthFragment;
 import com.zerodsoft.scheduleweather.calendarview.week.WeekFragment;
+import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
+import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationHistoryViewModel;
+import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationInfoViewModel;
 import com.zerodsoft.scheduleweather.event.main.NewInstanceMainActivity;
 import com.zerodsoft.scheduleweather.utility.NetworkStatus;
 
@@ -46,6 +49,9 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
     public static final int FIRST_VIEW_POSITION = Integer.MAX_VALUE / 2;
 
     private CalendarViewModel calendarViewModel;
+    private LocationViewModel locationViewModel;
+    private FoodCriteriaLocationHistoryViewModel foodCriteriaLocationHistoryViewModel;
+    private FoodCriteriaLocationInfoViewModel foodCriteriaLocationInfoViewModel;
     private Fragment currentFragment;
     private final IToolbar iToolbar;
     private final IConnectedCalendars iConnectedCalendars;
@@ -55,7 +61,6 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 
     private final CommonPopupMenu commonPopupMenu = new CommonPopupMenu()
     {
-
         @Override
         public void onExceptedInstance(boolean isSuccessful)
         {
@@ -106,6 +111,9 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
     {
         super.onViewCreated(view, savedInstanceState);
         calendarViewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
+        locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
+        foodCriteriaLocationHistoryViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationHistoryViewModel.class);
+        foodCriteriaLocationInfoViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationInfoViewModel.class);
         // 마지막으로 사용된 달력의 종류 가져오기
     }
 
@@ -180,11 +188,11 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
         bundle.putLong("begin", viewBegin);
         bundle.putLong("end", viewEnd);
 
-        InstanceListOnDayFragment fragment = new InstanceListOnDayFragment(iConnectedCalendars, this);
+        InstanceListOnADayDialogFragment fragment = new InstanceListOnADayDialogFragment(iConnectedCalendars, this);
         fragment.setArguments(bundle);
 
         //현재 표시중인 프래그먼트를 숨기고, 인스턴스 프래그먼트를 표시
-        fragment.show(getParentFragmentManager(), InstanceListOnDayFragment.TAG);
+        fragment.show(getParentFragmentManager(), InstanceListOnADayDialogFragment.TAG);
     }
 
     @Override
@@ -220,7 +228,7 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
     public void onClickedOnDialog(int calendarId, long instanceId, long eventId, long viewBegin, long viewEnd)
     {
         onClicked(calendarId, instanceId, eventId, viewBegin, viewEnd);
-        DialogFragment fragment = (DialogFragment) getParentFragmentManager().findFragmentByTag(InstanceListOnDayFragment.TAG);
+        DialogFragment fragment = (DialogFragment) getParentFragmentManager().findFragmentByTag(InstanceListOnADayDialogFragment.TAG);
         fragment.dismiss();
     }
 
@@ -256,7 +264,8 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
     @Override
     public void createInstancePopupMenu(ContentValues instance, View anchorView, int gravity)
     {
-        commonPopupMenu.createInstancePopupMenu(instance, getActivity(), anchorView, gravity);
+        commonPopupMenu.createInstancePopupMenu(instance, requireActivity(), anchorView, gravity
+                , calendarViewModel, locationViewModel, foodCriteriaLocationInfoViewModel, foodCriteriaLocationHistoryViewModel);
     }
 }
 

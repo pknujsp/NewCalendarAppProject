@@ -47,6 +47,10 @@ public class FavoriteLocationItemViewPagerAdapter extends LocationItemViewPagerA
     {
         this.favoriteLocationList.addAll(favoriteLocationList);
         placeDocumentsList.clear();
+        for (int i = 0; i < favoriteLocationList.size(); i++)
+        {
+            placeDocumentsList.add(new KakaoLocalDocument());
+        }
     }
 
     @Override
@@ -128,7 +132,8 @@ public class FavoriteLocationItemViewPagerAdapter extends LocationItemViewPagerA
                             coordToAddressDocuments.getCoordToAddressAddress().setLongitude(favoriteLocationDTO.getLongitude());
 
                             kakaoLocalDocumentMap.put(favoriteLocationDTO.getId(), coordToAddressDocuments);
-                            placeDocumentsList.add(coordToAddressDocuments);
+                            placeDocumentsList.remove(position);
+                            placeDocumentsList.add(position, coordToAddressDocuments);
                             setDataView(coordToAddressDocuments);
 
                         }
@@ -155,7 +160,8 @@ public class FavoriteLocationItemViewPagerAdapter extends LocationItemViewPagerA
                         {
                             PlaceDocuments placeDocuments = result.getPlaceDocuments().get(0);
                             kakaoLocalDocumentMap.put(favoriteLocationDTO.getId(), placeDocuments);
-                            placeDocumentsList.add(placeDocuments);
+                            placeDocumentsList.remove(position);
+                            placeDocumentsList.add(position, placeDocuments);
 
                             setDataView(placeDocuments);
                         }

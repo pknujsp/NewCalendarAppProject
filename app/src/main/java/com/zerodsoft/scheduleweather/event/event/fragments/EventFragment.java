@@ -36,6 +36,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
+import com.zerodsoft.scheduleweather.calendar.CalendarInstanceUtil;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.databinding.EventFragmentBinding;
 import com.zerodsoft.scheduleweather.event.common.LocationSelectorKey;
@@ -372,8 +373,11 @@ public class EventFragment extends BottomSheetDialogFragment
                     @Override
                     public void onClick(DialogInterface dialog, int which)
                     {
-                        deleteEvent();
+                        CalendarInstanceUtil.deleteEvent(viewModel, locationViewModel, foodCriteriaLocationInfoViewModel, foodCriteriaLocationHistoryViewModel,
+                                CALENDAR_ID, EVENT_ID);
+                        resultCode = NewInstanceMainFragment.RESULT_REMOVED_EVENT;
                         dialog.dismiss();
+                        dismiss();
                     }
                 })
                 .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener()
@@ -386,39 +390,6 @@ public class EventFragment extends BottomSheetDialogFragment
                 }).create().show();
     }
 
-    private void deleteEvent()
-    {
-        // 참석자 - 알림 - 이벤트 순으로 삭제 (외래키 때문)
-        // db column error
-        viewModel.deleteEvent(CALENDAR_ID, EVENT_ID);
-        locationViewModel.removeLocation(CALENDAR_ID, EVENT_ID, new CarrierMessagingService.ResultCallback<Boolean>()
-        {
-            @Override
-            public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
-            {
-
-            }
-        });
-        foodCriteriaLocationInfoViewModel.deleteByEventId(CALENDAR_ID, EVENT_ID, new CarrierMessagingService.ResultCallback<Boolean>()
-        {
-            @Override
-            public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
-            {
-
-            }
-        });
-        foodCriteriaLocationHistoryViewModel.deleteByEventId(CALENDAR_ID, EVENT_ID, new CarrierMessagingService.ResultCallback<Boolean>()
-        {
-            @Override
-            public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
-            {
-
-            }
-        });
-        // 삭제 완료 후 캘린더 화면으로 나가고, 새로고침한다.
-        resultCode = NewInstanceMainFragment.RESULT_REMOVED_EVENT;
-        dismiss();
-    }
 
     private void deleteSubsequentIncludingThis()
     {
@@ -439,7 +410,7 @@ public class EventFragment extends BottomSheetDialogFragment
         viewModel.updateEvent(recurrenceData);
 
          */
-        Toast.makeText(getActivity(), "작성 중", Toast.LENGTH_SHORT).show();
+        Toast.makeText(getContext(), "작성 중", Toast.LENGTH_SHORT).show();
     }
 
     private void showExceptThisInstanceDialog()
@@ -451,8 +422,10 @@ public class EventFragment extends BottomSheetDialogFragment
                     @Override
                     public void onClick(DialogInterface dialog, int which)
                     {
-                        exceptThisInstance();
+                        CalendarInstanceUtil.exceptThisInstance(viewModel, instanceValues.getAsLong(CalendarContract.Instances.BEGIN), EVENT_ID);
+                        resultCode = NewInstanceMainFragment.RESULT_EXCEPTED_INSTANCE;
                         dialog.dismiss();
+                        dismiss();
                     }
                 })
                 .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener()
@@ -463,14 +436,6 @@ public class EventFragment extends BottomSheetDialogFragment
                         dialog.dismiss();
                     }
                 }).create().show();
-    }
-
-    private void exceptThisInstance()
-    {
-        viewModel.deleteInstance(instanceValues.getAsLong(CalendarContract.Instances.BEGIN), EVENT_ID);
-
-        resultCode = NewInstanceMainFragment.RESULT_EXCEPTED_INSTANCE;
-        dismiss();
     }
 
 

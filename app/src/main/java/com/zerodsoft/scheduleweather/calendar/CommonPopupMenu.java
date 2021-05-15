@@ -14,6 +14,9 @@ import android.widget.Toast;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
+import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
+import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationHistoryViewModel;
+import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationInfoViewModel;
 
 import lombok.SneakyThrows;
 
@@ -24,7 +27,9 @@ public abstract class CommonPopupMenu
 
     }
 
-    public void createInstancePopupMenu(ContentValues instance, Activity activity, View anchorView, int gravity)
+    public void createInstancePopupMenu(ContentValues instance, Activity activity, View anchorView, int gravity,
+                                        CalendarViewModel calendarViewModel, LocationViewModel locationViewModel, FoodCriteriaLocationInfoViewModel foodCriteriaLocationInfoViewModel,
+                                        FoodCriteriaLocationHistoryViewModel foodCriteriaLocationHistoryViewModel)
     {
         Context context = activity.getApplicationContext();
         PopupMenu popupMenu = new PopupMenu(context, anchorView, gravity);
@@ -84,7 +89,8 @@ public abstract class CommonPopupMenu
                                                 case 0:
                                                     // 이번 일정만 삭제
                                                     // 완성
-                                                    onExceptedInstance(CalendarInstanceUtil.exceptThisInstance(instance));
+                                                    showExceptThisInstanceDialog(activity, calendarViewModel, instance.getAsLong(CalendarContract.Instances.BEGIN)
+                                                            , instance.getAsLong(CalendarContract.Instances.EVENT_ID));
                                                     break;
                                                 case 1:
                                                     // 향후 모든 일정만 삭제
@@ -93,7 +99,10 @@ public abstract class CommonPopupMenu
                                                     break;
                                                 case 2:
                                                     // 모든 일정 삭제
-                                                    onDeletedInstance(CalendarInstanceUtil.deleteEvent(instance));
+                                                    showDeleteEventDialog(activity, calendarViewModel, locationViewModel
+                                                            , foodCriteriaLocationInfoViewModel, foodCriteriaLocationHistoryViewModel
+                                                            , instance.getAsInteger(CalendarContract.Instances.CALENDAR_ID)
+                                                            , instance.getAsLong(CalendarContract.Instances.EVENT_ID));
                                                     break;
                                             }
                                         } else
@@ -102,7 +111,10 @@ public abstract class CommonPopupMenu
                                             {
                                                 case 0:
                                                     // 모든 일정 삭제
-                                                    onDeletedInstance(CalendarInstanceUtil.deleteEvent(instance));
+                                                    showDeleteEventDialog(activity, calendarViewModel, locationViewModel
+                                                            , foodCriteriaLocationInfoViewModel, foodCriteriaLocationHistoryViewModel
+                                                            , instance.getAsInteger(CalendarContract.Instances.CALENDAR_ID)
+                                                            , instance.getAsLong(CalendarContract.Instances.EVENT_ID));
                                                     break;
                                             }
                                         }
@@ -118,13 +130,60 @@ public abstract class CommonPopupMenu
         popupMenu.show();
     }
 
-    public void onExceptedInstance(boolean isSuccessful)
-    {
+    public abstract void onExceptedInstance(boolean isSuccessful);
 
+    public abstract void onDeletedInstance(boolean isSuccessful);
+
+
+    private void showDeleteEventDialog(Activity activity, CalendarViewModel calendarViewModel, LocationViewModel locationViewModel
+            , FoodCriteriaLocationInfoViewModel foodCriteriaLocationInfoViewModel
+            , FoodCriteriaLocationHistoryViewModel foodCriteriaLocationHistoryViewModel, final int CALENDAR_ID
+            , final long EVENT_ID)
+    {
+        new MaterialAlertDialogBuilder(activity)
+                .setTitle(R.string.remove_event)
+                .setPositiveButton(R.string.check, new DialogInterface.OnClickListener()
+                {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which)
+                    {
+                        CalendarInstanceUtil.deleteEvent(calendarViewModel, locationViewModel
+                                , foodCriteriaLocationInfoViewModel, foodCriteriaLocationHistoryViewModel, CALENDAR_ID, EVENT_ID);
+                        onExceptedInstance(true);
+                        dialog.dismiss();
+                    }
+                })
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener()
+                {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which)
+                    {
+                        dialog.dismiss();
+                    }
+                }).create().show();
     }
 
-    public void onDeletedInstance(boolean isSuccessful)
+    private void showExceptThisInstanceDialog(Activity activity, CalendarViewModel calendarViewModel, final long BEGIN, final long EVENT_ID)
     {
-
+        new MaterialAlertDialogBuilder(activity)
+                .setTitle(R.string.remove_this_instance)
+                .setPositiveButton(R.string.check, new DialogInterface.OnClickListener()
+                {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which)
+                    {
+                        CalendarInstanceUtil.exceptThisInstance(calendarViewModel, BEGIN, EVENT_ID);
+                        onExceptedInstance(true);
+                        dialog.dismiss();
+                    }
+                })
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener()
+                {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which)
+                    {
+                        dialog.dismiss();
+                    }
+                }).create().show();
     }
 }

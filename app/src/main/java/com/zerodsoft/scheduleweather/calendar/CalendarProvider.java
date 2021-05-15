@@ -718,6 +718,7 @@ public class CalendarProvider implements ICalendarProvider
                 instance.put(CalendarContract.Instances.CALENDAR_ID, cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.CALENDAR_ID)));
                 instance.put(CalendarContract.Instances.ALL_DAY, cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.ALL_DAY)));
                 instance.put(CalendarContract.Instances.STATUS, cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.STATUS)));
+                instance.put(CalendarContract.Instances.RRULE, cursor.getString(cursor.getColumnIndex(CalendarContract.Instances.RRULE)));
 
                 calendarId = cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.CALENDAR_ID));
                 if (!calendarInstanceMap.containsKey(calendarId))
@@ -904,7 +905,6 @@ public class CalendarProvider implements ICalendarProvider
     {
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_CALENDAR) == PackageManager.PERMISSION_GRANTED)
         {
-
             ContentValues exceptionEvent = new ContentValues();
             exceptionEvent.put(CalendarContract.Events.ORIGINAL_INSTANCE_TIME, begin);
             exceptionEvent.put(CalendarContract.Events.STATUS, CalendarContract.Events.STATUS_CANCELED);
