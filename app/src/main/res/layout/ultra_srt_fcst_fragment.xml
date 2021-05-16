@@ -24,7 +24,7 @@
 
                 <TableLayout
                     android:id="@+id/ultra_srt_fcst_table"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
             </HorizontalScrollView>
         </LinearLayout>

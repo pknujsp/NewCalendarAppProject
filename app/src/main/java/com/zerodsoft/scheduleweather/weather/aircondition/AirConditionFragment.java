@@ -237,6 +237,10 @@ public class AirConditionFragment extends Fragment
         public void onResponseSuccessful(TransCoordResponse result)
         {
             TransCoordResult transCoordResult = result.getResult();
+            if (transCoordResult.getPosX() == null)
+            {
+                onResponseFailed(new Exception());
+            }
             NearbyMsrstnListParameter parameter = new NearbyMsrstnListParameter();
             parameter.setTmX(transCoordResult.getPosX());
             parameter.setTmY(transCoordResult.getPosY());

@@ -241,7 +241,6 @@ public class VilageFcstFragment extends Fragment
         final int MARGIN = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, getResources().getDisplayMetrics());
         final int DP22 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 22f, getResources().getDisplayMetrics());
         final int DP34 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 34f, getResources().getDisplayMetrics());
-        final int DP80 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 80f, getResources().getDisplayMetrics());
         final int TEMP_ROW_HEIGHT = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 90f, getResources().getDisplayMetrics());
 
         clearViews();
@@ -340,8 +339,6 @@ public class VilageFcstFragment extends Fragment
         //하늘 ---------------------------------------------------------------------------
         skyRow.measure(VIEW_WIDTH, DP22);
 
-        //기온 ------------------------------------------------------------------------------
-        tempRow.measure(VIEW_WIDTH, TEMP_ROW_HEIGHT);
 
         //강수량 ------------------------------------------------------------------------------
         rainfallRow.measure(VIEW_WIDTH, DP34);
@@ -408,6 +405,9 @@ public class VilageFcstFragment extends Fragment
         binding.vilageFcstTable.addView(chanceOfShowerRow, chanceOfShowerRowParams);
         binding.vilageFcstTable.addView(windRow, windRowParams);
         binding.vilageFcstTable.addView(humidityRow, humidityRowParams);
+
+        //기온 ------------------------------------------------------------------------------
+        tempRow.measure(VIEW_WIDTH, TEMP_ROW_HEIGHT);
     }
 
     private void setLabelTextView(TextView textView, String labelText)

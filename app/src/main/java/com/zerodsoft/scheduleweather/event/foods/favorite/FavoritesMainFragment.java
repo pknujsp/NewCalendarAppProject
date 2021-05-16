@@ -40,7 +40,6 @@ public class FavoritesMainFragment extends Fragment implements OnBackPressedCall
                 if (fragmentManager.findFragmentByTag(FavoriteRestaurantFragment.TAG).isVisible())
                 {
                     getParentFragment().getParentFragmentManager().popBackStack();
-
                     bottomSheetController.setStateOfBottomSheet(BottomSheetType.RESTAURANT, BottomSheetBehavior.STATE_COLLAPSED);
                 }
             }
