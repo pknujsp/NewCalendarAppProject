@@ -12,15 +12,17 @@ import android.view.ViewGroup;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
 import com.zerodsoft.scheduleweather.databinding.FragmentFoodsSettingsBinding;
-import com.zerodsoft.scheduleweather.event.foods.main.fragment.NewFoodsMainFragment;
 import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
+import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
 
 public class FoodsSettingsFragment extends Fragment implements OnBackPressedCallbackController
 {
     public static final String TAG = "FoodsSettingsFragment";
     private FragmentFoodsSettingsBinding binding;
     private final BottomSheetController bottomSheetController;
+    private final FavoriteLocationsListener favoriteLocationsListener;
+
     private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
     {
         @Override
@@ -32,11 +34,12 @@ public class FoodsSettingsFragment extends Fragment implements OnBackPressedCall
         }
     };
 
-    public FoodsSettingsFragment(BottomSheetController bottomSheetController)
+    public FoodsSettingsFragment(BottomSheetController bottomSheetController, FavoriteLocationsListener favoriteLocationsListener)
     {
         this.bottomSheetController = bottomSheetController;
+        this.favoriteLocationsListener = favoriteLocationsListener;
     }
-    
+
     @Override
     public void onCreate(Bundle savedInstanceState)
     {

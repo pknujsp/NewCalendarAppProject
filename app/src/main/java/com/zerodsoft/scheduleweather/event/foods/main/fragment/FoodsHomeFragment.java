@@ -20,6 +20,7 @@ import com.zerodsoft.scheduleweather.event.foods.categorylist.RestaurantListTabF
 import com.zerodsoft.scheduleweather.event.foods.categorylist.FoodsMenuListFragment;
 import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
+import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
 import com.zerodsoft.scheduleweather.navermap.interfaces.INetwork;
 
 public class FoodsHomeFragment extends Fragment implements OnBackPressedCallbackController
@@ -29,6 +30,8 @@ public class FoodsHomeFragment extends Fragment implements OnBackPressedCallback
     private final NewFoodsMainFragment.FoodMenuChipsViewController foodMenuChipsViewController;
     private FragmentFoodsMainBinding binding;
     private final INetwork iNetwork;
+    private final FavoriteLocationsListener favoriteLocationsListener;
+
     private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
     {
         @Override
@@ -50,11 +53,12 @@ public class FoodsHomeFragment extends Fragment implements OnBackPressedCallback
         }
     };
 
-    public FoodsHomeFragment(INetwork iNetwork, BottomSheetController bottomSheetController, NewFoodsMainFragment.FoodMenuChipsViewController foodMenuChipsViewController)
+    public FoodsHomeFragment(INetwork iNetwork, BottomSheetController bottomSheetController, NewFoodsMainFragment.FoodMenuChipsViewController foodMenuChipsViewController, FavoriteLocationsListener favoriteLocationsListener)
     {
         this.iNetwork = iNetwork;
         this.bottomSheetController = bottomSheetController;
         this.foodMenuChipsViewController = foodMenuChipsViewController;
+        this.favoriteLocationsListener = favoriteLocationsListener;
     }
 
     @Override
@@ -84,7 +88,7 @@ public class FoodsHomeFragment extends Fragment implements OnBackPressedCallback
     {
         super.onViewCreated(view, savedInstanceState);
 
-        FoodsMenuListFragment foodsMenuListFragment = new FoodsMenuListFragment(iNetwork, foodMenuChipsViewController, bottomSheetController);
+        FoodsMenuListFragment foodsMenuListFragment = new FoodsMenuListFragment(iNetwork, foodMenuChipsViewController, bottomSheetController, favoriteLocationsListener);
         foodsMenuListFragment.setArguments(getArguments());
 
         getChildFragmentManager().beginTransaction().add(binding.foodsMainFragmentContainer.getId(), foodsMenuListFragment, FoodsMenuListFragment.TAG)

@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 
 import com.zerodsoft.scheduleweather.event.foods.categorylist.RestaurantListFragment;
 import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteLocationViewModel;
+import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
 
 public class FoodRestaurantSearchResultFragment extends RestaurantListFragment
 {
@@ -20,9 +21,9 @@ public class FoodRestaurantSearchResultFragment extends RestaurantListFragment
     private final OnDeleteSearchView onDeleteSearchView;
     private FavoriteLocationViewModel favoriteRestaurantViewModel;
 
-    public FoodRestaurantSearchResultFragment(String searchWord, Fragment fragment)
+    public FoodRestaurantSearchResultFragment(String searchWord, FavoriteLocationsListener favoriteLocationsListener, Fragment fragment)
     {
-        super(searchWord);
+        super(searchWord, favoriteLocationsListener);
         this.onDeleteSearchView = (OnDeleteSearchView) fragment;
     }
 

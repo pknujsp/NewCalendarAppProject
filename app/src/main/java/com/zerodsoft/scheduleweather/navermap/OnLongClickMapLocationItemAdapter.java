@@ -23,7 +23,7 @@ public class OnLongClickMapLocationItemAdapter extends LocationItemViewPagerAdap
 
     public OnLongClickMapLocationItemAdapter(Context context, OnCoordToAddressListener onCoordToAddressListener)
     {
-        super(context);
+        super(context, MarkerType.LONG_CLICKED_MAP);
         this.onCoordToAddressListener = onCoordToAddressListener;
     }
 
@@ -76,9 +76,9 @@ public class OnLongClickMapLocationItemAdapter extends LocationItemViewPagerAdap
                 {
                     result.getCoordToAddressAddress().setLatitude(latitude);
                     result.getCoordToAddressAddress().setLongitude(longitude);
-                    placeDocumentsList.clear();
-                    placeDocumentsList.add(result);
-                    OnLongClickMapLocationItemViewHolder.super.bind(placeDocumentsList.get(0));
+                    placeDocumentsSparseArr.clear();
+                    placeDocumentsSparseArr.put(0, result);
+                    OnLongClickMapLocationItemViewHolder.super.bind(placeDocumentsSparseArr.get(0));
                 }
 
                 @Override

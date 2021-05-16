@@ -56,8 +56,8 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
         this.onContainsRestaurantListener = onContainsRestaurantListener;
         this.onClickedListItem = onClickedListItem;
         this.onClickedFavoriteButtonListener = onClickedFavoriteButtonListener;
-        favoriteDisabledDrawable = ContextCompat.getDrawable(context, R.drawable.favorite_disabled_icon);
-        favoriteEnabledDrawable = ContextCompat.getDrawable(context, R.drawable.favorite_enabled_icon);
+        favoriteDisabledDrawable = ContextCompat.getDrawable(context, R.drawable.favorite_disabled);
+        favoriteEnabledDrawable = ContextCompat.getDrawable(context, R.drawable.favorite_enabled);
     }
 
     class ItemViewHolder extends RecyclerView.ViewHolder
@@ -130,7 +130,6 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
                     onClickedFavoriteButtonListener.onClickedFavoriteButton(item, favoriteLocationDTO, getBindingAdapterPosition());
                 }
             });
-
 
             onContainsRestaurantListener.contains(item.getId(), new OnDbQueryListener<FavoriteLocationDTO>()
             {
@@ -305,6 +304,6 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
 
     public interface OnContainsRestaurantListener
     {
-        void contains(String id, OnDbQueryListener<FavoriteLocationDTO> callback);
+        void contains(String placeId, OnDbQueryListener<FavoriteLocationDTO> callback);
     }
 }

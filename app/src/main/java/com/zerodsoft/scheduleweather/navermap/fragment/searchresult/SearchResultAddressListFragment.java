@@ -28,7 +28,6 @@ import com.zerodsoft.scheduleweather.navermap.util.LocalParameterUtil;
 import com.zerodsoft.scheduleweather.navermap.viewmodel.AddressViewModel;
 import com.zerodsoft.scheduleweather.navermap.MarkerType;
 import com.zerodsoft.scheduleweather.navermap.interfaces.OnExtraListDataListener;
-import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.addressresponse.AddressResponseDocuments;
 
@@ -126,7 +125,7 @@ public class SearchResultAddressListFragment extends Fragment implements IViewPa
     @Override
     public void onChangedPage()
     {
-        iMapData.setLocationItemViewPagerAdapter(new LocationItemViewPagerAdapter(getContext()), MarkerType.SEARCH_RESULT);
+        iMapData.setLocationItemViewPagerAdapter(new LocationItemViewPagerAdapter(getContext(), MarkerType.SEARCH_RESULT), MarkerType.SEARCH_RESULT);
 
         int poiItemSize = iMapData.getPoiItemSize(MarkerType.SEARCH_RESULT);
         if (poiItemSize > 0 && adapter != null)

@@ -26,6 +26,7 @@ import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedRestaurantI
 import com.zerodsoft.scheduleweather.event.foods.search.searchresult.fragment.FoodRestaurantSearchResultFragment;
 import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
+import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
 import com.zerodsoft.scheduleweather.navermap.viewmodel.SearchHistoryViewModel;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.SearchHistoryDTO;
@@ -39,6 +40,8 @@ public class SearchRestaurantFragment extends Fragment implements OnClickedListI
     private FoodRestaurantSearchHistoryFragment foodRestaurantSearchHistoryFragment;
     private FoodRestaurantSearchResultFragment searchResultFragment;
     private SearchHistoryViewModel searchHistoryViewModel;
+    private final FavoriteLocationsListener favoriteLocationsListener;
+
     private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
     {
         @Override
@@ -63,9 +66,10 @@ public class SearchRestaurantFragment extends Fragment implements OnClickedListI
         }
     };
 
-    public SearchRestaurantFragment(BottomSheetController bottomSheetController)
+    public SearchRestaurantFragment(BottomSheetController bottomSheetController, FavoriteLocationsListener favoriteLocationsListener)
     {
         this.bottomSheetController = bottomSheetController;
+        this.favoriteLocationsListener = favoriteLocationsListener;
     }
 
 
@@ -183,13 +187,11 @@ public class SearchRestaurantFragment extends Fragment implements OnClickedListI
 
         if (getChildFragmentManager().findFragmentByTag(FoodRestaurantSearchResultFragment.TAG) == null)
         {
-            searchResultFragment = new FoodRestaurantSearchResultFragment(value, this);
+            searchResultFragment = new FoodRestaurantSearchResultFragment(value, favoriteLocationsListener, this);
 
             getChildFragmentManager().beginTransaction().hide(foodRestaurantSearchHistoryFragment)
                     .add(binding.searchFoodRestaurantFragmentContainer.getId(),
                             searchResultFragment, FoodRestaurantSearchResultFragment.TAG).addToBackStack(null).commit();
-
-            // foodRestaurantSearchHistoryFragment.removeOnBackPressedCallback();
         } else
         {
             searchResultFragment.search(value);

@@ -58,8 +58,8 @@ public class FavoriteLocationViewModel extends AndroidViewModel implements Favor
     }
 
     @Override
-    public void contains(Integer type, String placeId, String address, String latitude, String longitude, CarrierMessagingService.ResultCallback<FavoriteLocationDTO> callback)
+    public void contains(String placeId, String address, String latitude, String longitude, CarrierMessagingService.ResultCallback<FavoriteLocationDTO> callback)
     {
-        restaurantRepository.contains(type, placeId, address, latitude, longitude, callback);
+        restaurantRepository.contains(placeId, address, latitude, longitude, callback);
     }
 }

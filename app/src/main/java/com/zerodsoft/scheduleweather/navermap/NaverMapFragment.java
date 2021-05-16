@@ -32,6 +32,7 @@ import androidx.viewpager2.widget.MarginPageTransformer;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.provider.Settings;
+import android.util.SparseArray;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -65,6 +66,7 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
 import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
+import com.zerodsoft.scheduleweather.common.interfaces.OnHiddenFragmentListener;
 import com.zerodsoft.scheduleweather.databinding.FragmentNaverMapBinding;
 import com.zerodsoft.scheduleweather.etc.FragmentStateCallback;
 import com.zerodsoft.scheduleweather.etc.LocationType;
@@ -168,6 +170,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
     final public Map<BottomSheetType, BottomSheetBehavior> bottomSheetBehaviorMap = new HashMap<>();
     final public Map<BottomSheetType, Fragment> bottomSheetFragmentMap = new HashMap<>();
     final public Map<BottomSheetType, LinearLayout> bottomSheetViewMap = new HashMap<>();
+    final public Map<BottomSheetType, OnHiddenFragmentListener> hiddenFragmentListenerMap = new HashMap<>();
 
     final public Map<MarkerType, List<Marker>> markerMap = new HashMap<>();
     final public Map<MarkerType, LocationItemViewPagerAdapter> viewPagerAdapterMap = new HashMap<>();
@@ -691,6 +694,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
             public void onPageSelected(int position)
             {
                 super.onPageSelected(position);
+
                 if (bottomSheetBehaviorMap.get(BottomSheetType.LOCATION_ITEM).getState() == BottomSheetBehavior.STATE_EXPANDED)
                 {
                     onPOIItemSelectedByBottomSheet(position, (MarkerType) locationItemBottomSheetViewPager.getTag());
@@ -957,7 +961,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
             removePoiItems(markerType);
         }
 
-        viewPagerAdapterMap.get(markerType).setPlaceDocumentsList(kakaoLocalDocuments);
+        viewPagerAdapterMap.get(markerType).setPlaceDocumentsSparseArr(kakaoLocalDocuments);
         viewPagerAdapterMap.get(markerType).notifyDataSetChanged();
 
         if (kakaoLocalDocuments.isEmpty())
@@ -1027,9 +1031,13 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
         if (!kakaoLocalDocuments.isEmpty())
         {
             final int LAST_INDEX = viewPagerAdapterMap.get(markerType).getItemCount() - 1;
-            List<KakaoLocalDocument> currentList = viewPagerAdapterMap.get(markerType).getPlaceDocumentsList();
+            SparseArray<KakaoLocalDocument> currentSparseArr = viewPagerAdapterMap.get(markerType).getPlaceDocumentsSparseArr();
             List<? extends KakaoLocalDocument> subList = (List<? extends KakaoLocalDocument>) kakaoLocalDocuments.subList(LAST_INDEX + 1, kakaoLocalDocuments.size());
-            currentList.addAll(subList);
+            int currentIndex = currentSparseArr.size();
+            for (KakaoLocalDocument ob : subList)
+            {
+                currentSparseArr.put(currentIndex++, ob);
+            }
 
             viewPagerAdapterMap.get(markerType).notifyDataSetChanged();
 
@@ -1159,7 +1167,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
         // 선택된 poiitem의 리스트내 인덱스를 가져온다.
         // 인덱스로 아이템을 가져온다.
         LocationDTO location = new LocationDTO();
-        KakaoLocalDocument kakaoLocalDocument = viewPagerAdapterMap.get(MarkerType.SEARCH_RESULT).getPlaceDocumentsList().get(selectedPoiItemIndex);
+        KakaoLocalDocument kakaoLocalDocument = viewPagerAdapterMap.get(MarkerType.SEARCH_RESULT).getPlaceDocumentsSparseArr().get(selectedPoiItemIndex);
 
         // 주소인지 장소인지를 구분한다.
         if (kakaoLocalDocument instanceof PlaceDocuments)
@@ -1208,8 +1216,8 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
     public void onPOIItemSelectedByBottomSheet(int index, MarkerType markerType)
     {
         //bottomsheet에서 스크롤 하는 경우 호출
-        Marker marker = markerMap.get(markerType).get(index);
         selectedPoiItemIndex = index;
+        Marker marker = markerMap.get(markerType).get(index);
 
         CameraUpdate cameraUpdate = CameraUpdate.scrollTo(marker.getPosition());
         cameraUpdate.animate(CameraAnimation.Easing, 150);

@@ -6,6 +6,7 @@ import androidx.viewpager2.adapter.FragmentStateAdapter;
 
 import com.zerodsoft.scheduleweather.event.foods.categorylist.RestaurantListTabFragment;
 import com.zerodsoft.scheduleweather.event.foods.categorylist.RestaurantListFragment;
+import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
 import com.zerodsoft.scheduleweather.room.interfaces.FavoriteLocationQuery;
 
 import java.util.ArrayList;
@@ -16,6 +17,7 @@ public class FoodCategoryFragmentListAdapter extends FragmentStateAdapter implem
     private List<RestaurantListFragment> fragments;
     private List<String> categoryList;
     private FavoriteLocationQuery favoriteLocationQuery;
+    private FavoriteLocationsListener favoriteLocationsListener;
 
     public FoodCategoryFragmentListAdapter(@NonNull Fragment fragment)
     {
@@ -27,7 +29,7 @@ public class FoodCategoryFragmentListAdapter extends FragmentStateAdapter implem
         return fragments;
     }
 
-    public void init(FavoriteLocationQuery favoriteLocationQuery, List<String> categoryList)
+    public void init(FavoriteLocationQuery favoriteLocationQuery, FavoriteLocationsListener favoriteLocationsListener, List<String> categoryList)
     {
         this.favoriteLocationQuery = favoriteLocationQuery;
         this.categoryList = categoryList;
@@ -35,7 +37,7 @@ public class FoodCategoryFragmentListAdapter extends FragmentStateAdapter implem
 
         for (String categoryName : categoryList)
         {
-            fragments.add(new RestaurantListFragment(favoriteLocationQuery, categoryName));
+            fragments.add(new RestaurantListFragment(favoriteLocationQuery, favoriteLocationsListener, categoryName));
         }
     }
 

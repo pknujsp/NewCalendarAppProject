@@ -51,6 +51,7 @@ import com.zerodsoft.scheduleweather.event.foods.viewmodel.CustomFoodMenuViewMod
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationInfoViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationHistoryViewModel;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
+import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
 import com.zerodsoft.scheduleweather.navermap.interfaces.INetwork;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.sgis.address.ReverseGeoCodingParameter;
@@ -76,6 +77,7 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
     private final INetwork iNetwork;
     private final NewFoodsMainFragment.FoodMenuChipsViewController foodMenuChipsViewController;
     private final BottomSheetController bottomSheetController;
+    private final FavoriteLocationsListener favoriteLocationsListener;
 
     private CustomFoodMenuViewModel customFoodCategoryViewModel;
     private LocationViewModel locationViewModel;
@@ -92,11 +94,12 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
     private boolean clickedGps = false;
     final int columnCount = 4;
 
-    public FoodsMenuListFragment(INetwork iNetwork, NewFoodsMainFragment.FoodMenuChipsViewController foodMenuChipsViewController, BottomSheetController bottomSheetController)
+    public FoodsMenuListFragment(INetwork iNetwork, NewFoodsMainFragment.FoodMenuChipsViewController foodMenuChipsViewController, BottomSheetController bottomSheetController, FavoriteLocationsListener favoriteLocationsListener)
     {
         this.iNetwork = iNetwork;
         this.foodMenuChipsViewController = foodMenuChipsViewController;
         this.bottomSheetController = bottomSheetController;
+        this.favoriteLocationsListener = favoriteLocationsListener;
     }
 
 
@@ -593,7 +596,7 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
             FragmentManager fragmentManager = getParentFragmentManager();
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction().hide(this);
 
-            RestaurantListTabFragment restaurantListTabFragment = new RestaurantListTabFragment(e.getCategoryName(), foodMenuChipsViewController, bottomSheetController);
+            RestaurantListTabFragment restaurantListTabFragment = new RestaurantListTabFragment(e.getCategoryName(), foodMenuChipsViewController, bottomSheetController, favoriteLocationsListener);
             fragmentTransaction.add(R.id.foods_main_fragment_container, restaurantListTabFragment, RestaurantListTabFragment.TAG).addToBackStack(null).commit();
         }
     }

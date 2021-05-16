@@ -9,11 +9,8 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.lifecycle.ViewModelProvider;
 
-import android.os.RemoteException;
 import android.provider.CalendarContract;
-import android.service.carrier.CarrierMessagingService;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -23,17 +20,17 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
+import com.zerodsoft.scheduleweather.common.interfaces.OnHiddenFragmentListener;
 import com.zerodsoft.scheduleweather.databinding.FragmentNewFoodsMainBinding;
 import com.zerodsoft.scheduleweather.event.foods.favorite.FavoritesMainFragment;
-import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteLocationViewModel;
 import com.zerodsoft.scheduleweather.event.foods.search.search.fragment.SearchRestaurantFragment;
 import com.zerodsoft.scheduleweather.event.foods.settings.FoodsSettingsFragment;
 import com.zerodsoft.scheduleweather.event.main.NewInstanceMainFragment;
 import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
+import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
 import com.zerodsoft.scheduleweather.navermap.interfaces.INetwork;
 import com.zerodsoft.scheduleweather.navermap.interfaces.OnExtraListDataListener;
-import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
 import com.zerodsoft.scheduleweather.utility.NetworkStatus;
 
 import java.util.List;
@@ -52,16 +49,18 @@ public class NewFoodsMainFragment extends Fragment implements INetwork, BottomNa
     private final long EVENT_ID;
     private final BottomSheetController bottomSheetController;
     private final FoodMenuChipsViewController foodMenuChipsViewController;
+    private final FavoriteLocationsListener favoriteLocationsListener;
 
     private final OnBackPressedCallbackController mainFragmentOnBackPressedCallbackController;
 
     public NewFoodsMainFragment(BottomSheetController bottomSheetController, OnBackPressedCallbackController onBackPressedCallbackController
             , FoodMenuChipsViewController foodMenuChipsViewController
-            , int CALENDAR_ID, long INSTANCE_ID, long EVENT_ID)
+            , FavoriteLocationsListener favoriteLocationsListener, int CALENDAR_ID, long INSTANCE_ID, long EVENT_ID)
     {
         this.bottomSheetController = bottomSheetController;
         this.mainFragmentOnBackPressedCallbackController = onBackPressedCallbackController;
         this.foodMenuChipsViewController = foodMenuChipsViewController;
+        this.favoriteLocationsListener = favoriteLocationsListener;
         this.CALENDAR_ID = CALENDAR_ID;
         this.INSTANCE_ID = INSTANCE_ID;
         this.EVENT_ID = EVENT_ID;
@@ -150,12 +149,12 @@ public class NewFoodsMainFragment extends Fragment implements INetwork, BottomNa
         fragmentBundle.putLong(CalendarContract.Instances._ID, INSTANCE_ID);
         fragmentBundle.putLong(CalendarContract.Instances.EVENT_ID, EVENT_ID);
 
-        FoodsHomeFragment foodsHomeFragment = new FoodsHomeFragment(this, bottomSheetController, foodMenuChipsViewController);
+        FoodsHomeFragment foodsHomeFragment = new FoodsHomeFragment(this, bottomSheetController, foodMenuChipsViewController, favoriteLocationsListener);
         foodsHomeFragment.setArguments(fragmentBundle);
 
-        SearchRestaurantFragment searchRestaurantFragment = new SearchRestaurantFragment(bottomSheetController);
-        FoodsSettingsFragment foodsSettingsFragment = new FoodsSettingsFragment(bottomSheetController);
-        FavoritesMainFragment favoritesMainFragment = new FavoritesMainFragment(bottomSheetController);
+        SearchRestaurantFragment searchRestaurantFragment = new SearchRestaurantFragment(bottomSheetController, favoriteLocationsListener);
+        FoodsSettingsFragment foodsSettingsFragment = new FoodsSettingsFragment(bottomSheetController, favoriteLocationsListener);
+        FavoritesMainFragment favoritesMainFragment = new FavoritesMainFragment(bottomSheetController, favoriteLocationsListener);
 
         getChildFragmentManager().beginTransaction()
                 .add(binding.fragmentContainer.getId(), foodsHomeFragment, FoodsHomeFragment.TAG)
@@ -270,7 +269,7 @@ public class NewFoodsMainFragment extends Fragment implements INetwork, BottomNa
 
     public interface FoodMenuChipsViewController
     {
-        void createRestaurantListView(List<String> foodMenuList, NewInstanceMainFragment.RestaurantsGetter restaurantsGetter, OnExtraListDataListener<String> onExtraListDataListener);
+        void createRestaurantListView(List<String> foodMenuList, NewInstanceMainFragment.RestaurantsGetter restaurantsGetter, OnExtraListDataListener<String> onExtraListDataListener, OnHiddenFragmentListener onHiddenFragmentListener);
 
         void removeRestaurantListView();
 

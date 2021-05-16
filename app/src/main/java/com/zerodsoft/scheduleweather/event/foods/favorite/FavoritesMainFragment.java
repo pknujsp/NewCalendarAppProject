@@ -19,6 +19,7 @@ import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteRes
 import com.zerodsoft.scheduleweather.event.foods.main.fragment.NewFoodsMainFragment;
 import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
+import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
 
 
 public class FavoritesMainFragment extends Fragment implements OnBackPressedCallbackController
@@ -26,6 +27,7 @@ public class FavoritesMainFragment extends Fragment implements OnBackPressedCall
     public static final String TAG = "FavoritesMainFragment";
     private FragmentFavoritesMainBinding binding;
     private final BottomSheetController bottomSheetController;
+    private final FavoriteLocationsListener favoriteLocationsListener;
     private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
     {
         @Override
@@ -45,9 +47,10 @@ public class FavoritesMainFragment extends Fragment implements OnBackPressedCall
         }
     };
 
-    public FavoritesMainFragment(BottomSheetController bottomSheetController)
+    public FavoritesMainFragment(BottomSheetController bottomSheetController, FavoriteLocationsListener favoriteLocationsListener)
     {
         this.bottomSheetController = bottomSheetController;
+        this.favoriteLocationsListener = favoriteLocationsListener;
     }
 
     @Override
@@ -69,7 +72,7 @@ public class FavoritesMainFragment extends Fragment implements OnBackPressedCall
     {
         super.onViewCreated(view, savedInstanceState);
 
-        FavoriteRestaurantFragment favoriteRestaurantFragment = new FavoriteRestaurantFragment();
+        FavoriteRestaurantFragment favoriteRestaurantFragment = new FavoriteRestaurantFragment(favoriteLocationsListener);
         getChildFragmentManager().beginTransaction().add(binding.favoritesFragmentContainer.getId(),
                 favoriteRestaurantFragment, FavoriteRestaurantFragment.TAG).commit();
     }

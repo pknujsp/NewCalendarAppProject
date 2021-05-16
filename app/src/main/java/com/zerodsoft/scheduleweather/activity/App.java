@@ -2,19 +2,10 @@ package com.zerodsoft.scheduleweather.activity;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.net.ConnectivityManager;
-import android.net.Network;
-import android.net.NetworkCapabilities;
-import android.net.NetworkRequest;
-import android.os.Handler;
-import android.os.Looper;
-import android.widget.Toast;
 
-import androidx.core.os.HandlerCompat;
 import androidx.preference.PreferenceManager;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.event.foods.activity.FoodsActivity;
 
 import java.util.TimeZone;
 import java.util.concurrent.ExecutorService;

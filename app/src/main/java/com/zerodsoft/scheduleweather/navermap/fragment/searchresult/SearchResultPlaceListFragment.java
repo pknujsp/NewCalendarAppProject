@@ -325,7 +325,7 @@ public class SearchResultPlaceListFragment extends Fragment implements IViewPage
     public void onChangedPage()
     {
         int poiItemSize = iMapData.getPoiItemSize(MarkerType.SEARCH_RESULT);
-        iMapData.setLocationItemViewPagerAdapter(new LocationItemViewPagerAdapter(getContext()), MarkerType.SEARCH_RESULT);
+        iMapData.setLocationItemViewPagerAdapter(new LocationItemViewPagerAdapter(getContext(), MarkerType.SEARCH_RESULT), MarkerType.SEARCH_RESULT);
 
         if (poiItemSize > 0 && adapter != null)
         {

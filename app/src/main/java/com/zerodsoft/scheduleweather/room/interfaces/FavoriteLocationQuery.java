@@ -20,5 +20,5 @@ public interface FavoriteLocationQuery
     
     void deleteAll(CarrierMessagingService.ResultCallback<Boolean> callback);
 
-    void contains(Integer type, String placeId, String address, String latitude, String longitude, CarrierMessagingService.ResultCallback<FavoriteLocationDTO> callback);
+    void contains(String placeId, String address, String latitude, String longitude, CarrierMessagingService.ResultCallback<FavoriteLocationDTO> callback);
 }

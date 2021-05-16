@@ -49,8 +49,10 @@ import com.zerodsoft.scheduleweather.room.interfaces.FavoriteLocationQuery;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import lombok.SneakyThrows;
@@ -91,11 +93,6 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
     public void setLatLngOnCurrentLocation(LatLng latLngOnCurrentLocation)
     {
         this.latLngOnCurrentLocation = latLngOnCurrentLocation;
-    }
-
-    public FavoriteLocationViewModel getFavoriteLocationViewModel()
-    {
-        return favoriteLocationViewModel;
     }
 
     public OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
@@ -162,7 +159,7 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         binding.sortSpinner.setAdapter(spinnerAdapter);
         binding.sortSpinner.setSelection(1);
-        binding.sortSpinner.setOnItemSelectedListener(onItemSelectedListener);
+        binding.sortSpinner.setOnItemSelectedListener(spinnerItemSelectedListener);
 
         boolean showFavoriteLocationsMarkersOnMap = App.isPreference_key_show_favorite_locations_markers_on_map();
         binding.switchShowFavoriteLocationsMarkerOnMap.setChecked(showFavoriteLocationsMarkersOnMap);
@@ -470,6 +467,33 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
         {
             //datetime
             list.sort(addedDateTimeComparator);
+        } else
+        {
+            //카테고리 유형 순서 - 음식점, 주소, 장소
+            //먼저 카테고리 분류를 시행
+            Set<Integer> categoryTypeSet = new HashSet<>();
+            Map<Integer, List<FavoriteLocationDTO>> sortedListMap = new HashMap<>();
+
+            for (FavoriteLocationDTO favoriteLocationDTO : list)
+            {
+                categoryTypeSet.add(favoriteLocationDTO.getType());
+            }
+
+            for (Integer type : categoryTypeSet)
+            {
+                sortedListMap.put(type, new ArrayList<>());
+            }
+
+            for (FavoriteLocationDTO favoriteLocationDTO : list)
+            {
+                sortedListMap.get(favoriteLocationDTO.getType()).add(favoriteLocationDTO);
+            }
+
+            list.clear();
+            for (Integer type : categoryTypeSet)
+            {
+                list.addAll(sortedListMap.get(type));
+            }
         }
     }
 
@@ -596,9 +620,9 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
     }
 
     @Override
-    public void contains(Integer type, String placeId, String address, String latitude, String longitude, CarrierMessagingService.ResultCallback<FavoriteLocationDTO> callback)
+    public void contains(String placeId, String address, String latitude, String longitude, CarrierMessagingService.ResultCallback<FavoriteLocationDTO> callback)
     {
-        favoriteLocationViewModel.contains(type, placeId, address, latitude, longitude, new CarrierMessagingService.ResultCallback<FavoriteLocationDTO>()
+        favoriteLocationViewModel.contains(placeId, address, latitude, longitude, new CarrierMessagingService.ResultCallback<FavoriteLocationDTO>()
         {
             @Override
             public void onReceiveResult(@NonNull FavoriteLocationDTO favoriteLocationDTO) throws RemoteException
@@ -640,7 +664,7 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
         }
     };
 
-    private final AdapterView.OnItemSelectedListener onItemSelectedListener = new AdapterView.OnItemSelectedListener()
+    private final AdapterView.OnItemSelectedListener spinnerItemSelectedListener = new AdapterView.OnItemSelectedListener()
     {
         @Override
         public void onItemSelected(AdapterView<?> adapterView, View view, int index, long l)

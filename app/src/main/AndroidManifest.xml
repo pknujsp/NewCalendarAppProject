@@ -39,9 +39,6 @@
         <activity android:name=".event.weather.activity.WeatherActivity" />
         <activity android:name=".event.event.activity.InstanceActivity" />
         <activity
-            android:name=".event.foods.activity.FoodsActivity"
-            android:windowSoftInputMode="adjustNothing" />
-        <activity
             android:name=".activity.preferences.SettingsActivity"
             android:label="@string/app_settings" />
         <activity android:name=".activity.placecategory.activity.CategorySettingsActivity" />

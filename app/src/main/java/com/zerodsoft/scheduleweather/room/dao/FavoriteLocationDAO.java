@@ -23,7 +23,6 @@ public interface FavoriteLocationDAO
     public static final int PLACE = 1;
     @Ignore
     public static final int ADDRESS = 2;
-
     ONLY_FOR_MAP = 3
      */
 
@@ -32,8 +31,7 @@ public interface FavoriteLocationDAO
 
     @Query("SELECT * FROM favorite_location_table " +
             "WHERE (CASE " +
-            "WHEN :type = 3 THEN type = 1 OR type = 2 " +
-            "ELSE type = 0 " +
+            "WHEN :type = 3 THEN type = 1 OR type = 2 OR type = 0 " +
             "END)")
     List<FavoriteLocationDTO> select(Integer type);
 
@@ -41,7 +39,7 @@ public interface FavoriteLocationDAO
     @Ignore()
     @Query("SELECT * FROM favorite_location_table " +
             "WHERE (CASE " +
-            "WHEN :type == null THEN id = :id " +
+            "WHEN :type = null THEN id = :id " +
             "ELSE id = :id " +
             "END)")
     FavoriteLocationDTO select(Integer type, Integer id);
@@ -57,9 +55,8 @@ public interface FavoriteLocationDAO
 
     @Query("SELECT * FROM favorite_location_table " +
             "WHERE (CASE " +
-            "WHEN :type = 0 THEN type = :type AND place_id = :placeId " +
-            "WHEN :type = 1 THEN type = :type AND place_id = :placeId " +
-            "WHEN :type = 2 THEN type = :type AND address = :address AND latitude = :latitude AND longitude = :longitude " +
+            "WHEN :placeId = null THEN address = :address AND latitude = :latitude AND longitude = :longitude " +
+            "ELSE place_id = :placeId " +
             "END)")
-    FavoriteLocationDTO contains(Integer type, String placeId, String address, String latitude, String longitude);
+    FavoriteLocationDTO contains(String placeId, String address, String latitude, String longitude);
 }

@@ -102,11 +102,12 @@ public class FavoriteLocationAdapter extends RecyclerView.Adapter<FavoriteLocati
 
             String distance = String.valueOf(favoriteLocationDTO.getDistance()) + "m";
 
-            if (favoriteLocationDTO.getType() == FavoriteLocationDTO.PLACE)
+            if (favoriteLocationDTO.getType() == FavoriteLocationDTO.PLACE || favoriteLocationDTO.getType() == FavoriteLocationDTO.RESTAURANT)
             {
                 binding.placeItemLayout.placeName.setText(favoriteLocationDTO.getPlaceName());
                 binding.placeItemLayout.addressName.setText(favoriteLocationDTO.getAddress());
                 binding.placeItemLayout.distance.setText(distance);
+                binding.placeItemLayout.type.setText(favoriteLocationDTO.getType() == FavoriteLocationDTO.RESTAURANT ? R.string.restaurant : R.string.place);
 
                 binding.addressItemLayout.getRoot().setVisibility(View.GONE);
                 binding.placeItemLayout.getRoot().setVisibility(View.VISIBLE);
@@ -114,6 +115,7 @@ public class FavoriteLocationAdapter extends RecyclerView.Adapter<FavoriteLocati
             {
                 binding.addressItemLayout.addressName.setText(favoriteLocationDTO.getAddress());
                 binding.addressItemLayout.distance.setText(distance);
+                binding.addressItemLayout.type.setText(R.string.address);
 
                 binding.addressItemLayout.getRoot().setVisibility(View.VISIBLE);
                 binding.placeItemLayout.getRoot().setVisibility(View.GONE);

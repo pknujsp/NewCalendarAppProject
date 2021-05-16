@@ -39,18 +39,14 @@ public class FavoriteLocationItemViewPagerAdapter extends LocationItemViewPagerA
 
     public FavoriteLocationItemViewPagerAdapter(Context context, ILocationDao iLocationDao)
     {
-        super(context);
+        super(context, MarkerType.FAVORITE);
         this.iLocationDao = iLocationDao;
     }
 
     public void setFavoriteLocationList(List<FavoriteLocationDTO> favoriteLocationList)
     {
         this.favoriteLocationList.addAll(favoriteLocationList);
-        placeDocumentsList.clear();
-        for (int i = 0; i < favoriteLocationList.size(); i++)
-        {
-            placeDocumentsList.add(new KakaoLocalDocument());
-        }
+        placeDocumentsSparseArr.clear();
     }
 
     @Override
@@ -108,13 +104,7 @@ public class FavoriteLocationItemViewPagerAdapter extends LocationItemViewPagerA
 
             if (kakaoLocalDocumentMap.containsKey(favoriteLocationDTO.getId()))
             {
-                if (favoriteLocationDTO.getType() == FavoriteLocationDTO.ADDRESS)
-                {
-                    setDataView(placeDocumentsList.get(position));
-                } else if (favoriteLocationDTO.getType() == FavoriteLocationDTO.PLACE)
-                {
-                    setDataView(placeDocumentsList.get(position));
-                }
+                setDataView(placeDocumentsSparseArr.get(position));
             } else
             {
                 if (favoriteLocationDTO.getType() == FavoriteLocationDTO.ADDRESS)
@@ -132,10 +122,8 @@ public class FavoriteLocationItemViewPagerAdapter extends LocationItemViewPagerA
                             coordToAddressDocuments.getCoordToAddressAddress().setLongitude(favoriteLocationDTO.getLongitude());
 
                             kakaoLocalDocumentMap.put(favoriteLocationDTO.getId(), coordToAddressDocuments);
-                            placeDocumentsList.remove(position);
-                            placeDocumentsList.add(position, coordToAddressDocuments);
+                            placeDocumentsSparseArr.put(position, coordToAddressDocuments);
                             setDataView(coordToAddressDocuments);
-
                         }
 
                         @Override
@@ -145,13 +133,13 @@ public class FavoriteLocationItemViewPagerAdapter extends LocationItemViewPagerA
                         }
                     });
 
-                } else if (favoriteLocationDTO.getType() == FavoriteLocationDTO.PLACE)
+                } else if (favoriteLocationDTO.getType() == FavoriteLocationDTO.PLACE || favoriteLocationDTO.getType() == FavoriteLocationDTO.RESTAURANT)
                 {
                     // 장소 검색 순서 : 장소의 위경도 내 10M 반경에서 장소 이름 검색(여러개 나올 경우 장소ID와 일치하는 장소를 선택)
                     LocalApiPlaceParameter parameter = LocalParameterUtil.getPlaceParameter(favoriteLocationDTO.getPlaceName(),
                             String.valueOf(favoriteLocationDTO.getLatitude()), String.valueOf(favoriteLocationDTO.getLongitude()), LocalApiPlaceParameter.DEFAULT_SIZE,
                             LocalApiPlaceParameter.DEFAULT_PAGE, LocalApiPlaceParameter.SEARCH_CRITERIA_SORT_TYPE_ACCURACY);
-                    parameter.setRadius("100");
+                    parameter.setRadius("50");
 
                     iLocationDao.getPlaceItem(parameter, favoriteLocationDTO.getPlaceId(), new JsonDownloader<PlaceKakaoLocalResponse>()
                     {
@@ -160,8 +148,7 @@ public class FavoriteLocationItemViewPagerAdapter extends LocationItemViewPagerA
                         {
                             PlaceDocuments placeDocuments = result.getPlaceDocuments().get(0);
                             kakaoLocalDocumentMap.put(favoriteLocationDTO.getId(), placeDocuments);
-                            placeDocumentsList.remove(position);
-                            placeDocumentsList.add(position, placeDocuments);
+                            placeDocumentsSparseArr.put(position, placeDocuments);
 
                             setDataView(placeDocuments);
                         }

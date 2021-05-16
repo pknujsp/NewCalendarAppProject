@@ -20,7 +20,6 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.naver.maps.geometry.LatLng;
 import com.naver.maps.map.NaverMap;
-import com.naver.maps.map.OnMapReadyCallback;
 import com.naver.maps.map.overlay.Marker;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
@@ -163,7 +162,7 @@ public class SelectionDetailLocationFragment extends NaverMapFragment
                             coordToAddressDocuments.getCoordToAddressAddress().setLatitude(String.valueOf(selectedLocationDTOInEvent.getLatitude()));
                             coordToAddressDocuments.getCoordToAddressAddress().setLongitude(String.valueOf(selectedLocationDTOInEvent.getLongitude()));
 
-                            setLocationItemViewPagerAdapter(new LocationItemViewPagerAdapter(getContext()), MarkerType.SELECTED_ADDRESS_IN_EVENT);
+                            setLocationItemViewPagerAdapter(new LocationItemViewPagerAdapter(getContext(), MarkerType.SELECTED_ADDRESS_IN_EVENT), MarkerType.SELECTED_ADDRESS_IN_EVENT);
                             createPoiItems(Collections.singletonList(coordToAddressDocuments), MarkerType.SELECTED_ADDRESS_IN_EVENT);
                             onPOIItemSelectedByList(0, MarkerType.SELECTED_ADDRESS_IN_EVENT);
                         } else
@@ -187,7 +186,7 @@ public class SelectionDetailLocationFragment extends NaverMapFragment
                     public void onResponseSuccessful(PlaceKakaoLocalResponse result)
                     {
                         PlaceDocuments document = result.getPlaceDocuments().get(0);
-                        setLocationItemViewPagerAdapter(new LocationItemViewPagerAdapter(getContext()), MarkerType.SELECTED_PLACE_IN_EVENT);
+                        setLocationItemViewPagerAdapter(new LocationItemViewPagerAdapter(getContext(), MarkerType.SELECTED_PLACE_IN_EVENT), MarkerType.SELECTED_PLACE_IN_EVENT);
                         createPoiItems(Collections.singletonList(document), MarkerType.SELECTED_PLACE_IN_EVENT);
                         onPOIItemSelectedByList(0, MarkerType.SELECTED_PLACE_IN_EVENT);
                     }

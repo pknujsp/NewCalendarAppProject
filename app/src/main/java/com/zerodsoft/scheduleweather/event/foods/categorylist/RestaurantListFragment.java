@@ -26,6 +26,7 @@ import com.zerodsoft.scheduleweather.databinding.FragmentRestaurantListBinding;
 import com.zerodsoft.scheduleweather.event.foods.adapter.RestaurantListAdapter;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedFavoriteButtonListener;
 import com.zerodsoft.scheduleweather.event.foods.share.CriteriaLocationRepository;
+import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
 import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoFragment;
 import com.zerodsoft.scheduleweather.navermap.util.LocalParameterUtil;
 import com.zerodsoft.scheduleweather.navermap.viewmodel.PlacesViewModel;
@@ -44,17 +45,20 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
     protected String CATEGORY_NAME;
     protected PlacesViewModel placesViewModel;
     protected RestaurantListAdapter adapter;
+    protected final FavoriteLocationsListener favoriteLocationsListener;
 
     protected RecyclerView.AdapterDataObserver adapterDataObserver;
 
-    public RestaurantListFragment(String CATEGORY_NAME)
+    public RestaurantListFragment(String CATEGORY_NAME, FavoriteLocationsListener favoriteLocationsListener)
     {
+        this.favoriteLocationsListener = favoriteLocationsListener;
         this.CATEGORY_NAME = CATEGORY_NAME;
     }
 
-    public RestaurantListFragment(FavoriteLocationQuery favoriteRestaurantDbQuery, String CATEGORY_NAME)
+    public RestaurantListFragment(FavoriteLocationQuery favoriteRestaurantDbQuery, FavoriteLocationsListener favoriteLocationsListener, String CATEGORY_NAME)
     {
         this.favoriteRestaurantDbQuery = favoriteRestaurantDbQuery;
+        this.favoriteLocationsListener = favoriteLocationsListener;
         this.CATEGORY_NAME = CATEGORY_NAME;
     }
 
@@ -189,7 +193,7 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
     @Override
     public void onClickedFavoriteButton(KakaoLocalDocument kakaoLocalDocument, FavoriteLocationDTO favoriteLocationDTO, int position)
     {
-        favoriteRestaurantDbQuery.contains(FavoriteLocationDTO.RESTAURANT, ((PlaceDocuments) kakaoLocalDocument).getId()
+        favoriteRestaurantDbQuery.contains(((PlaceDocuments) kakaoLocalDocument).getId()
                 , null, null, null, new CarrierMessagingService.ResultCallback<FavoriteLocationDTO>()
                 {
                     @Override
@@ -209,6 +213,7 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
                                                 public void run()
                                                 {
                                                     adapter.notifyItemChanged(position);
+                                                    favoriteLocationsListener.removeFavoriteLocationsPoiItem(favoriteLocationDTO);
                                                 }
                                             });
 
@@ -229,7 +234,7 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
                             favoriteRestaurantDbQuery.insert(newFavoriteLocationDTO, new CarrierMessagingService.ResultCallback<FavoriteLocationDTO>()
                             {
                                 @Override
-                                public void onReceiveResult(@NonNull FavoriteLocationDTO favoriteLocationDTO) throws RemoteException
+                                public void onReceiveResult(@NonNull FavoriteLocationDTO insertedFavoriteLocationDTO) throws RemoteException
                                 {
                                     requireActivity().runOnUiThread(new Runnable()
                                     {
@@ -237,6 +242,7 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
                                         public void run()
                                         {
                                             adapter.notifyItemChanged(position);
+                                            favoriteLocationsListener.addFavoriteLocationsPoiItem(insertedFavoriteLocationDTO);
                                         }
                                     });
                                 }
@@ -258,9 +264,9 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
     }
 
     @Override
-    public void contains(String id, OnDbQueryListener<FavoriteLocationDTO> callback)
+    public void contains(String placeId, OnDbQueryListener<FavoriteLocationDTO> callback)
     {
-        favoriteRestaurantDbQuery.contains(FavoriteLocationDTO.RESTAURANT, id, null, null
+        favoriteRestaurantDbQuery.contains(placeId, null, null
                 , null, new CarrierMessagingService.ResultCallback<FavoriteLocationDTO>()
                 {
                     @Override

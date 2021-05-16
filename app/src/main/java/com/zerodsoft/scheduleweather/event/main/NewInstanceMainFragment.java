@@ -49,6 +49,7 @@ import com.naver.maps.map.overlay.OverlayImage;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.placecategory.activity.PlaceCategoryActivity;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
+import com.zerodsoft.scheduleweather.common.interfaces.OnHiddenFragmentListener;
 import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.event.fragments.EventFragment;
@@ -60,8 +61,6 @@ import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.LocationItemViewPagerAdapter;
 import com.zerodsoft.scheduleweather.navermap.NaverMapFragment;
 import com.zerodsoft.scheduleweather.navermap.MarkerType;
-import com.zerodsoft.scheduleweather.navermap.fragment.search.LocationSearchFragment;
-import com.zerodsoft.scheduleweather.navermap.fragment.searchheader.MapHeaderMainFragment;
 import com.zerodsoft.scheduleweather.navermap.fragment.searchheader.MapHeaderSearchFragment;
 import com.zerodsoft.scheduleweather.navermap.interfaces.OnExtraListDataListener;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
@@ -116,7 +115,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
     private ChipGroup foodMenuChipGroup;
     private Map<String, Chip> foodMenuChipMap = new HashMap<>();
     private Chip foodMenuListChip;
-    private String selectedFoodMenu;
+    private String selectedFoodMenuName;
     private RestaurantsGetter restaurantItemGetter;
     private OnExtraListDataListener<String> restaurantOnExtraListDataListener;
 
@@ -630,7 +629,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
     private void addRestaurantFragmentIntoBottomSheet()
     {
         NewFoodsMainFragment newFoodsMainFragment = new NewFoodsMainFragment(this, this
-                , this, CALENDAR_ID, INSTANCE_ID, EVENT_ID);
+                , this, this, CALENDAR_ID, INSTANCE_ID, EVENT_ID);
         getChildFragmentManager().beginTransaction()
                 .add(bottomSheetViewMap.get(BottomSheetType.RESTAURANT).getChildAt(0).getId(), newFoodsMainFragment, NewFoodsMainFragment.TAG).hide(newFoodsMainFragment).commitNow();
         bottomSheetFragmentMap.put(BottomSheetType.RESTAURANT, newFoodsMainFragment);
@@ -798,7 +797,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
                     }
                 }
 
-                setLocationItemViewPagerAdapter(new LocationItemViewPagerAdapter(getContext()), MarkerType.SELECTED_PLACE_CATEGORY);
+                setLocationItemViewPagerAdapter(new LocationItemViewPagerAdapter(getContext(), MarkerType.SELECTED_PLACE_CATEGORY), MarkerType.SELECTED_PLACE_CATEGORY);
 
                 PlaceCategoryDTO placeCategory = ((PlaceCategoryChipViewHolder) compoundButton.getTag()).placeCategory;
                 List<PlaceDocuments> placeDocumentsList = placeItemsGetter.getPlaceItems(placeCategory);
@@ -835,10 +834,12 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
     }
 
     @Override
-    public void createRestaurantListView(List<String> foodMenuList, RestaurantsGetter restaurantsGetter, OnExtraListDataListener<String> onExtraListDataListener)
+    public void createRestaurantListView(List<String> foodMenuList, RestaurantsGetter restaurantsGetter, OnExtraListDataListener<String> onExtraListDataListener, OnHiddenFragmentListener onHiddenFragmentListener)
     {
         this.restaurantItemGetter = restaurantsGetter;
         this.restaurantOnExtraListDataListener = onExtraListDataListener;
+        hiddenFragmentListenerMap.remove(BottomSheetType.RESTAURANT);
+        hiddenFragmentListenerMap.put(BottomSheetType.RESTAURANT, onHiddenFragmentListener);
 
         createFoodMenuChips();
         addFoodMenuListChip();
@@ -848,7 +849,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
     @Override
     public void removeRestaurantListView()
     {
-        selectedFoodMenu = null;
+        selectedFoodMenuName = null;
         foodMenuChipMap.clear();
 
         HorizontalScrollView scrollView = chipsLayout.findViewById(R.id.food_menu_chips_scroll_layout);
@@ -925,12 +926,11 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
              */
             if (isChecked)
             {
-                LocationItemViewPagerAdapter locationItemViewPagerAdapter = new LocationItemViewPagerAdapter(getContext());
-                locationItemViewPagerAdapter.setIsVisibleFavoriteBtn(View.GONE);
+                LocationItemViewPagerAdapter locationItemViewPagerAdapter = new LocationItemViewPagerAdapter(getContext(), MarkerType.RESTAURANT);
                 setLocationItemViewPagerAdapter(locationItemViewPagerAdapter, MarkerType.RESTAURANT);
 
-                selectedFoodMenu = ((FoodChipViewHolder) compoundButton.getTag()).foodMenuName;
-                restaurantItemGetter.getRestaurants(selectedFoodMenu, new CarrierMessagingService.ResultCallback<List<PlaceDocuments>>()
+                selectedFoodMenuName = ((FoodChipViewHolder) compoundButton.getTag()).foodMenuName;
+                restaurantItemGetter.getRestaurants(selectedFoodMenuName, new CarrierMessagingService.ResultCallback<List<PlaceDocuments>>()
                 {
                     @Override
                     public void onReceiveResult(@NonNull List<PlaceDocuments> placeDocuments) throws RemoteException
@@ -950,7 +950,8 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
             } else if (foodMenuChipGroup.getCheckedChipIds().isEmpty())
             {
                 removePoiItems(MarkerType.RESTAURANT);
-                selectedFoodMenu = null;
+                selectedFoodMenuName = null;
+                viewPagerAdapterMap.remove(MarkerType.RESTAURANT);
             }
             setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_COLLAPSED);
         }
@@ -970,6 +971,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
             @Override
             public void onClick(View view)
             {
+                hiddenFragmentListenerMap.get(BottomSheetType.RESTAURANT).onHiddenChangedFragment(false);
                 setStateOfBottomSheet(BottomSheetType.RESTAURANT, BottomSheetBehavior.STATE_EXPANDED);
             }
         });
@@ -977,11 +979,16 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
         foodMenuChipGroup.addView(foodMenuListChip, 0);
     }
 
+    /**
+     * 음식점 리스트 탭에서 지도 열기 클릭시에 동작
+     *
+     * @param foodMenuName
+     */
     @Override
     public void setCurrentFoodMenuName(String foodMenuName)
     {
-        this.selectedFoodMenu = foodMenuName;
-        foodMenuChipMap.get(selectedFoodMenu).setChecked(true);
+        this.selectedFoodMenuName = foodMenuName;
+        foodMenuChipMap.get(selectedFoodMenuName).setChecked(true);
     }
 
     @Override
@@ -1016,12 +1023,12 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
             {
                 if (foodMenuChipGroup.getCheckedChipIds().size() >= 1)
                 {
-                    restaurantOnExtraListDataListener.loadExtraListData(selectedFoodMenu, new RecyclerView.AdapterDataObserver()
+                    restaurantOnExtraListDataListener.loadExtraListData(selectedFoodMenuName, new RecyclerView.AdapterDataObserver()
                     {
                         @Override
                         public void onItemRangeInserted(int positionStart, int itemCount)
                         {
-                            restaurantItemGetter.getRestaurants(selectedFoodMenu, new CarrierMessagingService.ResultCallback<List<PlaceDocuments>>()
+                            restaurantItemGetter.getRestaurants(selectedFoodMenuName, new CarrierMessagingService.ResultCallback<List<PlaceDocuments>>()
                             {
                                 @Override
                                 public void onReceiveResult(@NonNull List<PlaceDocuments> placeDocuments) throws RemoteException
