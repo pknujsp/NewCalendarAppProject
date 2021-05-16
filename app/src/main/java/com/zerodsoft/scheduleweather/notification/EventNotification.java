@@ -79,7 +79,6 @@ public class EventNotification
             alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(),
                     alarmIntent);
         }
-        
          */
     }
 
