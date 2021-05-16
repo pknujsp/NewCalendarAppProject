@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import androidx.preference.PreferenceManager;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.notification.EventNotification;
 
 import java.util.TimeZone;
 import java.util.concurrent.ExecutorService;
@@ -24,9 +25,15 @@ public class App extends android.app.Application
     private static String preference_key_range_meter_for_search_buildings = "";
     private static boolean preference_key_show_favorite_locations_markers_on_map = true;
 
+    public static void initNotifications(Context context)
+    {
+        EventNotification eventNotification = EventNotification.newInstance();
+        eventNotification.setEventNotifications(context);
+    }
 
     public static void setAppSettings(Context context)
     {
+        initNotifications(context);
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
         if (preferences.getAll().isEmpty())
         {
