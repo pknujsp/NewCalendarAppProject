@@ -511,8 +511,8 @@ public class VilageFcstFragment extends Fragment
     class TempView extends View
     {
         private List<String> tempList;
-        private final float MAX_TEMP;
-        private final float MIN_TEMP;
+        private final int MAX_TEMP;
+        private final int MIN_TEMP;
         private final TextPaint TEMP_PAINT;
         private final Paint LINE_PAINT;
         private final Paint CIRCLE_PAINT;
@@ -545,13 +545,13 @@ public class VilageFcstFragment extends Fragment
 
             tempList = new LinkedList<>();
 
-            float max = Float.MIN_VALUE;
-            float min = Float.MAX_VALUE;
-            float temp = 0f;
+            int max = Integer.MIN_VALUE;
+            int min = Integer.MAX_VALUE;
+            int temp = 0;
 
             for (VilageFcstFinalData data : dataList)
             {
-                temp = Float.parseFloat(data.getTemp3Hour());
+                temp = Integer.parseInt(data.getTemp3Hour());
                 tempList.add(data.getTemp3Hour());
 
                 // 최대,최소 기온 구하기
@@ -599,7 +599,7 @@ public class VilageFcstFragment extends Fragment
             final float COLUMN_WIDTH = VIEW_WIDTH / tempList.size();
             final float SPACING = ((VIEW_HEIGHT) / (MAX_TEMP - MIN_TEMP)) / 10f;
 
-            float temp = 0f;
+            int temp = 0;
             float x = 0f;
             float y = 0f;
 
@@ -608,7 +608,7 @@ public class VilageFcstFragment extends Fragment
             int index = 0;
             for (String value : tempList)
             {
-                temp = Float.parseFloat(value);
+                temp = Integer.parseInt(value);
                 x = COLUMN_WIDTH / 2f + COLUMN_WIDTH * index;
                 y = (10f * (MAX_TEMP - temp)) * SPACING + TEXT_HEIGHT + RADIUS;
                 canvas.drawCircle(x, y, RADIUS, CIRCLE_PAINT);
@@ -628,7 +628,7 @@ public class VilageFcstFragment extends Fragment
             drawMinMaxTempLine(canvas, MAX_TEMP);
         }
 
-        private void drawMinMaxTempLine(Canvas canvas, float temp)
+        private void drawMinMaxTempLine(Canvas canvas, int temp)
         {
             final float TEXT_HEIGHT = TEMP_PAINT.descent() - TEMP_PAINT.ascent();
             final float RADIUS = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 2f, getResources().getDisplayMetrics());

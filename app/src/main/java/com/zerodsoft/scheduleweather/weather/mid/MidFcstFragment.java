@@ -508,8 +508,8 @@ public class MidFcstFragment extends Fragment
     {
         private List<String> maxTempList;
         private List<String> minTempList;
-        private final float MAX_TEMP;
-        private final float MIN_TEMP;
+        private final int MAX_TEMP;
+        private final int MIN_TEMP;
         private final TextPaint TEMP_PAINT;
         private final Paint LINE_PAINT;
         private final Paint MIN_MAX_TEMP_LINE_PAINT;
@@ -544,15 +544,15 @@ public class MidFcstFragment extends Fragment
             maxTempList = new LinkedList<>();
             minTempList = new LinkedList<>();
 
-            float max = Float.MIN_VALUE;
-            float min = Float.MAX_VALUE;
-            float maxTemp = 0f;
-            float minTemp = 0f;
+            int max = Integer.MIN_VALUE;
+            int min = Integer.MAX_VALUE;
+            int maxTemp = 0;
+            int minTemp = 0;
 
             for (MidFcstData data : dataList)
             {
-                maxTemp = Float.parseFloat(data.getTempMax());
-                minTemp = Float.parseFloat(data.getTempMin());
+                maxTemp = Integer.parseInt(data.getTempMax());
+                minTemp = Integer.parseInt(data.getTempMin());
                 maxTempList.add(data.getTempMax());
                 minTempList.add(data.getTempMin());
 
@@ -604,8 +604,8 @@ public class MidFcstFragment extends Fragment
             final float COLUMN_WIDTH = VIEW_WIDTH / maxTempList.size();
             final float SPACING = ((VIEW_HEIGHT) / (MAX_TEMP - MIN_TEMP)) / 10f;
 
-            float min = 0f;
-            float max = 0f;
+            int min = 0;
+            int max = 0;
             float x = 0f;
             float minY = 0f;
             float maxY = 0f;
@@ -615,8 +615,8 @@ public class MidFcstFragment extends Fragment
 
             for (int index = 0; index < maxTempList.size(); index++)
             {
-                min = Float.parseFloat(minTempList.get(index));
-                max = Float.parseFloat(maxTempList.get(index));
+                min = Integer.parseInt(minTempList.get(index));
+                max = Integer.parseInt(maxTempList.get(index));
 
                 x = COLUMN_WIDTH / 2f + COLUMN_WIDTH * index;
                 minY = (10f * (MAX_TEMP - min)) * SPACING + TEXT_HEIGHT + RADIUS;
@@ -642,7 +642,7 @@ public class MidFcstFragment extends Fragment
             drawMinMaxTempLine(canvas, MAX_TEMP);
         }
 
-        private void drawMinMaxTempLine(Canvas canvas, float temp)
+        private void drawMinMaxTempLine(Canvas canvas, int temp)
         {
             final float TEXT_HEIGHT = TEMP_PAINT.descent() - TEMP_PAINT.ascent();
             final float RADIUS = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 2f, getResources().getDisplayMetrics());
