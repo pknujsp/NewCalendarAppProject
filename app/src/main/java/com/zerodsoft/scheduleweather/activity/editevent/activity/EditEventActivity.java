@@ -1104,8 +1104,6 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                 reminder.put(CalendarContract.Reminders.EVENT_ID, NEW_EVENT_ID);
             }
             calendarViewModel.addReminders(reminderList);
-            EventNotificationHelper eventNotificationHelper = EventNotificationHelper.getInstance();
-            eventNotificationHelper.setEventNotifications(getApplicationContext(), NEW_EVENT_ID);
         }
 
         if (!attendeeList.isEmpty())

@@ -29,8 +29,11 @@ public class App extends android.app.Application
     public static void initNotifications(Context context)
     {
         EventAlarmReceiver.createNotificationChannel(context);
+        /*
         EventNotificationHelper eventNotificationHelper = EventNotificationHelper.newInstance();
         eventNotificationHelper.setEventNotifications(context);
+
+         */
     }
 
     public static void setAppSettings(Context context)

@@ -94,9 +94,14 @@
             android:directBootAware="true"
             android:exported="true">
             <intent-filter>
+
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.EVENT_REMINDER" />
                 <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
                 <action android:name="com.zerodsoft.scheduleweather.EVENT_ALARM" />
+
+                <data android:host="com.android.calendar" />
+                <data android:scheme="content" />
             </intent-filter>
         </receiver>
     </application>
