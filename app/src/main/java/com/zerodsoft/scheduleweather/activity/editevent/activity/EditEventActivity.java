@@ -59,6 +59,7 @@ import com.zerodsoft.scheduleweather.event.common.LocationSelectorKey;
 import com.zerodsoft.scheduleweather.event.common.SelectionDetailLocationActivity;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
+import com.zerodsoft.scheduleweather.notification.EventNotificationHelper;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.utility.NetworkStatus;
 import com.zerodsoft.scheduleweather.utility.RecurrenceRule;
@@ -1103,6 +1104,8 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
                 reminder.put(CalendarContract.Reminders.EVENT_ID, NEW_EVENT_ID);
             }
             calendarViewModel.addReminders(reminderList);
+            EventNotificationHelper eventNotificationHelper = EventNotificationHelper.getInstance();
+            eventNotificationHelper.setEventNotifications(getApplicationContext(), NEW_EVENT_ID);
         }
 
         if (!attendeeList.isEmpty())

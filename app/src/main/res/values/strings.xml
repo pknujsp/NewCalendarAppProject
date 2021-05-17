@@ -532,4 +532,10 @@
     <string name="deleted_all_favorite_locations">주소/장소 즐겨찾기 목록 초기화됨</string>
     <string name="deleted_all_favorite_restaurants">음식점 즐겨찾기 목록 초기화됨</string>
     <string name="deleted_all_weather_data">날씨 데이터 초기화됨</string>
+
+
+    <string name="notification_channel_name">test_calendar_event_channel_name</string>
+    <string name="notification_channel_description">test_calendar_event_channel_description</string>
+    <string name="event_notification_title">이벤트 알림</string>
+    <string name="event_notification_text">이벤트가 곧 있습니다</string>
 </resources>

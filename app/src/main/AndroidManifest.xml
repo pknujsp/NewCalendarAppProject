@@ -90,16 +90,13 @@
         </service>
 
         <receiver
-            android:name=".notification.receiver.AppBootReceiver"
-            android:enabled="false">
+            android:name=".notification.receiver.EventAlarmReceiver"
+            android:directBootAware="true"
+            android:exported="true">
             <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED"></action>
-            </intent-filter>
-        </receiver>
-
-        <receiver android:name=".notification.receiver.EventAlarmReceiver">
-            <intent-filter>
-                <action android:name="com.zerodsoft.scheduleweather.EVENT_ALARM"></action>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
+                <action android:name="com.zerodsoft.scheduleweather.EVENT_ALARM" />
             </intent-filter>
         </receiver>
     </application>
