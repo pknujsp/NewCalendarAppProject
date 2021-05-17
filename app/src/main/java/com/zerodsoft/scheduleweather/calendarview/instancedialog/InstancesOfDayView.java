@@ -136,7 +136,6 @@ public class InstancesOfDayView implements CalendarViewInitializer
                 instances.addAll(resultMap.get(calendarIdKey).getInstanceList());
             }
         }
-
         // 데이터를 일정 길이의 내림차순으로 정렬
         List<Integer> removeIndexList = new ArrayList<>();
 

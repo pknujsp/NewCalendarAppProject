@@ -196,7 +196,6 @@ public class InstanceListOnADayDialogFragment extends DialogFragment implements 
     {
         int currentItem = binding.instancesDialogViewpager.getCurrentItem();
         adapter.refresh(currentItem);
-        adapter.notifyDataSetChanged();
     }
 
     @Override

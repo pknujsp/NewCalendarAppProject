@@ -165,13 +165,13 @@ public class EventAlarmReceiver extends BroadcastReceiver
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.READ_CALENDAR) != PackageManager.PERMISSION_GRANTED)
         {
         }
-        String[] projection = {CalendarContract.Instances._ID, CalendarContract.Instances.EVENT_ID};
+        String[] projection = {CalendarContract.Instances._ID, CalendarContract.Instances.EVENT_ID, CalendarContract.Instances.BEGIN};
 
         Cursor cursor = CalendarContract.Instances.query(context.getContentResolver(), projection, begin, end);
         long instanceId = 0L;
         while (cursor.moveToNext())
         {
-            if (cursor.getLong(1) == eventId)
+            if (cursor.getLong(2) == begin && cursor.getLong(1) == eventId)
             {
                 instanceId = cursor.getLong(0);
             }
