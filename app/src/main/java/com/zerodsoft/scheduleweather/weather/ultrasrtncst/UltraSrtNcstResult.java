@@ -6,7 +6,7 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.ultrasrtncst
 import java.util.Date;
 import java.util.List;
 
-public class UltraSrtNcst
+public class UltraSrtNcstResult
 {
     //초단기실황 최종 데이터
     private UltraSrtNcstFinalData ultraSrtNcstFinalData;

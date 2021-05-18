@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class UltraSrtFcst
+public class UltraSrtFcstResult
 {
     //초단기예보 최종 데이터
     private List<UltraSrtFcstFinalData> ultraSrtFcstFinalDataList;

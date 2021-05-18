@@ -49,7 +49,7 @@ public class UltraSrtNcstFragment extends Fragment
     private final OnDownloadedTimeListener onDownloadedTimeListener;
 
     private UltraSrtNcstFragmentBinding binding;
-    private UltraSrtNcst ultraSrtNcst = new UltraSrtNcst();
+    private UltraSrtNcstResult ultraSrtNcstResult = new UltraSrtNcstResult();
     private WeatherAreaCodeDTO weatherAreaCode;
     private WeatherDbViewModel weatherDbViewModel;
     private ViewProgress viewProgress;
@@ -113,7 +113,7 @@ public class UltraSrtNcstFragment extends Fragment
                     UltraSrtNcstRoot ultraSrtNcstRoot = gson.fromJson(ultraSrtNcstWeatherDataDTO.getJson(), UltraSrtNcstRoot.class);
                     Date downloadedDate = new Date(Long.parseLong(ultraSrtNcstWeatherDataDTO.getDownloadedDate()));
 
-                    ultraSrtNcst.setUltraSrtNcstFinalData(ultraSrtNcstRoot.getResponse().getBody().getItems(), downloadedDate);
+                    ultraSrtNcstResult.setUltraSrtNcstFinalData(ultraSrtNcstRoot.getResponse().getBody().getItems(), downloadedDate);
                     requireActivity().runOnUiThread(new Runnable()
                     {
                         @Override
@@ -137,7 +137,7 @@ public class UltraSrtNcstFragment extends Fragment
 
     private void setValue()
     {
-        UltraSrtNcstFinalData ultraSrtNcstFinalData = ultraSrtNcst.getUltraSrtNcstFinalData();
+        UltraSrtNcstFinalData ultraSrtNcstFinalData = ultraSrtNcstResult.getUltraSrtNcstFinalData();
         //기온
         binding.ultraSrtNcstTemp.setText(ultraSrtNcstFinalData.getTemperature() + "ºC");
         //강수형태
@@ -236,7 +236,7 @@ public class UltraSrtNcstFragment extends Fragment
             }
         });
 
-        ultraSrtNcst.setUltraSrtNcstFinalData(ultraSrtNcstRoot.getResponse().getBody().getItems(), downloadedDate);
+        ultraSrtNcstResult.setUltraSrtNcstFinalData(ultraSrtNcstRoot.getResponse().getBody().getItems(), downloadedDate);
         requireActivity().runOnUiThread(new Runnable()
         {
             @Override

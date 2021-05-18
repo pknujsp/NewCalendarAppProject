@@ -52,7 +52,7 @@ import java.util.List;
 public class MidFcstFragment extends Fragment
 {
     private MidFcstFragmentBinding binding;
-    private MidFcst midFcst = new MidFcst();
+    private MidFcstResult midFcstResult = new MidFcstResult();
     private WeatherAreaCodeDTO weatherAreaCode;
     private final OnDownloadedTimeListener onDownloadedTimeListener;
     private ViewProgress viewProgress;
@@ -116,7 +116,7 @@ public class MidFcstFragment extends Fragment
                             MidTaRoot midTaRoot = gson.fromJson(midTaWeatherDataDTO.getJson(), MidTaRoot.class);
                             Date downloadedDate = new Date(Long.parseLong(midTaWeatherDataDTO.getDownloadedDate()));
 
-                            midFcst.setMidFcstDataList(midLandFcstRoot.getResponse().getBody().getItems()
+                            midFcstResult.setMidFcstDataList(midLandFcstRoot.getResponse().getBody().getItems()
                                     , midTaRoot.getResponse().getBody().getItems(), downloadedDate);
                             requireActivity().runOnUiThread(new Runnable()
                             {
@@ -264,7 +264,7 @@ public class MidFcstFragment extends Fragment
             }
         });
 
-        midFcst.setMidFcstDataList(midLandFcstRoot.getResponse().getBody().getItems()
+        midFcstResult.setMidFcstDataList(midLandFcstRoot.getResponse().getBody().getItems()
                 , midTaRoot.getResponse().getBody().getItems(), downloadedDate);
         requireActivity().runOnUiThread(new Runnable()
         {
@@ -299,7 +299,7 @@ public class MidFcstFragment extends Fragment
         final int CHANCE_OF_SHOWER_HEIGHT = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 30f, getResources().getDisplayMetrics());
         final int TEMP_HEIGHT = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 90f, getResources().getDisplayMetrics());
 
-        List<MidFcstData> dataList = midFcst.getMidFcstFinalDataList();
+        List<MidFcstData> dataList = midFcstResult.getMidFcstFinalDataList();
 
         final int DATA_SIZE = dataList.size();
         final int VIEW_WIDTH = DATA_SIZE * COLUMN_WIDTH;

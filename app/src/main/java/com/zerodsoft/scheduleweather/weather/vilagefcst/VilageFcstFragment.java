@@ -57,7 +57,7 @@ public class VilageFcstFragment extends Fragment
 
     private VilageFcstFragmentBinding binding;
     private List<SunSetRiseData> sunSetRiseDataList;
-    private VilageFcst vilageFcst = new VilageFcst();
+    private VilageFcstResult vilageFcstResult = new VilageFcstResult();
     private WeatherAreaCodeDTO weatherAreaCode;
     private WeatherDbViewModel weatherDbViewModel;
     private ViewProgress viewProgress;
@@ -115,7 +115,7 @@ public class VilageFcstFragment extends Fragment
                     VilageFcstRoot vilageFcstRoot = gson.fromJson(vilageFcstWeatherDataDTO.getJson(), VilageFcstRoot.class);
                     Date downloadedDate = new Date(Long.parseLong(vilageFcstWeatherDataDTO.getDownloadedDate()));
 
-                    vilageFcst.setVilageFcstDataList(vilageFcstRoot.getResponse().getBody().getItems(), downloadedDate);
+                    vilageFcstResult.setVilageFcstDataList(vilageFcstRoot.getResponse().getBody().getItems(), downloadedDate);
                     requireActivity().runOnUiThread(new Runnable()
                     {
                         @Override
@@ -216,7 +216,7 @@ public class VilageFcstFragment extends Fragment
         });
 
 
-        vilageFcst.setVilageFcstDataList(vilageFcstRoot.getResponse().getBody().getItems(), downloadedDate);
+        vilageFcstResult.setVilageFcstDataList(vilageFcstRoot.getResponse().getBody().getItems(), downloadedDate);
         requireActivity().runOnUiThread(new Runnable()
         {
             @Override
@@ -244,7 +244,7 @@ public class VilageFcstFragment extends Fragment
         final int TEMP_ROW_HEIGHT = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 90f, getResources().getDisplayMetrics());
 
         clearViews();
-        List<VilageFcstFinalData> dataList = vilageFcst.getVilageFcstFinalDataList();
+        List<VilageFcstFinalData> dataList = vilageFcstResult.getVilageFcstFinalDataList();
 
         final int DATA_SIZE = dataList.size();
         final int VIEW_WIDTH = DATA_SIZE * ITEM_WIDTH;

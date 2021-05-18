@@ -44,8 +44,6 @@ import com.zerodsoft.scheduleweather.weather.sunsetrise.SunSetRiseData;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.utility.WeatherDataConverter;
 import com.zerodsoft.scheduleweather.weather.viewmodel.WeatherDbViewModel;
-import com.zerodsoft.scheduleweather.weather.vilagefcst.VilageFcstFinalData;
-import com.zerodsoft.scheduleweather.weather.vilagefcst.VilageFcstFragment;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -59,7 +57,7 @@ public class UltraSrtFcstFragment extends Fragment
     private UltraSrtFcstFragmentBinding binding;
     private List<SunSetRiseData> sunSetRiseDataList;
 
-    private UltraSrtFcst ultraSrtFcst = new UltraSrtFcst();
+    private UltraSrtFcstResult ultraSrtFcstResult = new UltraSrtFcstResult();
     private WeatherAreaCodeDTO weatherAreaCode;
     private WeatherDbViewModel weatherDbViewModel;
     private ViewProgress viewProgress;
@@ -118,7 +116,7 @@ public class UltraSrtFcstFragment extends Fragment
                     UltraSrtFcstRoot ultraSrtFcstRoot = gson.fromJson(ultraSrtFcstWeatherDataDTO.getJson(), UltraSrtFcstRoot.class);
                     Date downloadedDate = new Date(Long.parseLong(ultraSrtFcstWeatherDataDTO.getDownloadedDate()));
 
-                    ultraSrtFcst.setUltraSrtFcstFinalDataList(ultraSrtFcstRoot.getResponse().getBody().getItems(), downloadedDate);
+                    ultraSrtFcstResult.setUltraSrtFcstFinalDataList(ultraSrtFcstRoot.getResponse().getBody().getItems(), downloadedDate);
                     requireActivity().runOnUiThread(new Runnable()
                     {
                         @Override
@@ -219,7 +217,7 @@ public class UltraSrtFcstFragment extends Fragment
             }
         });
 
-        ultraSrtFcst.setUltraSrtFcstFinalDataList(ultraSrtFcstRoot.getResponse().getBody().getItems(), downloadedDate);
+        ultraSrtFcstResult.setUltraSrtFcstFinalDataList(ultraSrtFcstRoot.getResponse().getBody().getItems(), downloadedDate);
         requireActivity().runOnUiThread(new Runnable()
         {
             @Override
@@ -247,7 +245,7 @@ public class UltraSrtFcstFragment extends Fragment
         final int DP34 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 34f, getResources().getDisplayMetrics());
         final int TEMP_ROW_HEIGHT = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 55f, getResources().getDisplayMetrics());
 
-        List<UltraSrtFcstFinalData> dataList = ultraSrtFcst.getUltraSrtFcstFinalDataList();
+        List<UltraSrtFcstFinalData> dataList = ultraSrtFcstResult.getUltraSrtFcstFinalDataList();
 
         final int DATA_SIZE = dataList.size();
         final int VIEW_WIDTH = DATA_SIZE * ITEM_WIDTH;

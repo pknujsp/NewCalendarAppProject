@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class VilageFcst
+public class VilageFcstResult
 {
     //동네예보 최종 데이터
     private List<VilageFcstFinalData> vilageFcstFinalDataList;
