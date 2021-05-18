@@ -24,6 +24,8 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.ultrasrtncst
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
 import com.zerodsoft.scheduleweather.room.dto.WeatherDataDTO;
 import com.zerodsoft.scheduleweather.weather.common.ViewProgress;
+import com.zerodsoft.scheduleweather.weather.common.WeatherDataCallback;
+import com.zerodsoft.scheduleweather.weather.dataprocessing.UltraSrtNcstProcessing;
 import com.zerodsoft.scheduleweather.weather.interfaces.OnDownloadedTimeListener;
 import com.zerodsoft.scheduleweather.weather.repository.WeatherDataDownloader;
 import com.zerodsoft.scheduleweather.utility.WeatherDataConverter;
@@ -33,228 +35,133 @@ import java.util.Calendar;
 import java.util.Date;
 
 
-public class UltraSrtNcstFragment extends Fragment
-{
-    /*
-    - 초단기 실황 -
-    기온
-    1시간 강수량
-    동서바람성분(미 표시)
-    남북바람성분(미 표시)
-    습도
-    강수형태
-    풍향
-    풍속
-     */
-    private final OnDownloadedTimeListener onDownloadedTimeListener;
+public class UltraSrtNcstFragment extends Fragment {
+	/*
+	- 초단기 실황 -
+	기온
+	1시간 강수량
+	동서바람성분(미 표시)
+	남북바람성분(미 표시)
+	습도
+	강수형태
+	풍향
+	풍속
+	 */
+	private final OnDownloadedTimeListener onDownloadedTimeListener;
 
-    private UltraSrtNcstFragmentBinding binding;
-    private UltraSrtNcstResult ultraSrtNcstResult = new UltraSrtNcstResult();
-    private WeatherAreaCodeDTO weatherAreaCode;
-    private WeatherDbViewModel weatherDbViewModel;
-    private ViewProgress viewProgress;
+	private UltraSrtNcstFragmentBinding binding;
+	private WeatherAreaCodeDTO weatherAreaCode;
+	private ViewProgress viewProgress;
+	private UltraSrtNcstProcessing ultraSrtNcstProcessing;
 
-    private final WeatherDataDownloader weatherDataDownloader = new WeatherDataDownloader()
-    {
-        @Override
-        public void onResponseSuccessful(WeatherItems result)
-        {
 
-        }
+	public UltraSrtNcstFragment(WeatherAreaCodeDTO weatherAreaCodeDTO, OnDownloadedTimeListener onDownloadedTimeListener) {
+		this.weatherAreaCode = weatherAreaCodeDTO;
+		this.onDownloadedTimeListener = onDownloadedTimeListener;
+	}
 
-        @Override
-        public void onResponseFailed(Exception e)
-        {
+	@Override
+	public void onCreate(@Nullable Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+	}
 
-        }
-    };
+	@Nullable
+	@Override
+	public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+		binding = UltraSrtNcstFragmentBinding.inflate(inflater);
+		return binding.getRoot();
+	}
 
-    public UltraSrtNcstFragment(WeatherAreaCodeDTO weatherAreaCodeDTO, OnDownloadedTimeListener onDownloadedTimeListener)
-    {
-        this.weatherAreaCode = weatherAreaCodeDTO;
-        this.onDownloadedTimeListener = onDownloadedTimeListener;
-    }
+	@Override
+	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
+		clearViews();
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState)
-    {
-        super.onCreate(savedInstanceState);
-    }
+		ultraSrtNcstProcessing = new UltraSrtNcstProcessing(getContext(), weatherAreaCode.getY(), weatherAreaCode.getX());
+		viewProgress = new ViewProgress(binding.ultraSrtNcstLayout, binding.weatherProgressLayout.progressBar, binding.weatherProgressLayout.errorTextview);
+		viewProgress.onStartedProcessingData();
 
-    @Nullable
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
-    {
-        binding = UltraSrtNcstFragmentBinding.inflate(inflater);
-        return binding.getRoot();
-    }
+		ultraSrtNcstProcessing.getWeatherData(new WeatherDataCallback<UltraSrtNcstResult>() {
+			@Override
+			public void isSuccessful(UltraSrtNcstResult e) {
+				requireActivity().runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						onDownloadedTimeListener.setDownloadedTime(e.getDownloadedDate(), WeatherDataDTO.ULTRA_SRT_NCST);
+						viewProgress.onCompletedProcessingData(true);
+						setValue(e);
+					}
+				});
+			}
 
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
-    {
-        super.onViewCreated(view, savedInstanceState);
+			@Override
+			public void isFailure(Exception e) {
+				requireActivity().runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						clearViews();
+						onDownloadedTimeListener.setDownloadedTime(null, WeatherDataDTO.ULTRA_SRT_NCST);
+						viewProgress.onCompletedProcessingData(false, getString(R.string.not_data));
+						Toast.makeText(getContext(), R.string.error, Toast.LENGTH_SHORT).show();
+					}
+				});
 
-        viewProgress = new ViewProgress(binding.ultraSrtNcstLayout, binding.weatherProgressLayout.progressBar, binding.weatherProgressLayout.errorTextview);
-        viewProgress.onStartedProcessingData();
+			}
+		});
+	}
 
-        clearViews();
-        weatherDbViewModel = new ViewModelProvider(this).get(WeatherDbViewModel.class);
-        weatherDbViewModel.getWeatherData(weatherAreaCode.getY(), weatherAreaCode.getX(), WeatherDataDTO.ULTRA_SRT_NCST, new CarrierMessagingService.ResultCallback<WeatherDataDTO>()
-        {
-            @Override
-            public void onReceiveResult(@NonNull WeatherDataDTO ultraSrtNcstWeatherDataDTO) throws RemoteException
-            {
-                if (ultraSrtNcstWeatherDataDTO == null)
-                {
-                    getWeatherData();
-                } else
-                {
-                    Gson gson = new Gson();
-                    UltraSrtNcstRoot ultraSrtNcstRoot = gson.fromJson(ultraSrtNcstWeatherDataDTO.getJson(), UltraSrtNcstRoot.class);
-                    Date downloadedDate = new Date(Long.parseLong(ultraSrtNcstWeatherDataDTO.getDownloadedDate()));
+	private void setValue(UltraSrtNcstResult ultraSrtNcstResult) {
+		UltraSrtNcstFinalData ultraSrtNcstFinalData = ultraSrtNcstResult.getUltraSrtNcstFinalData();
+		//기온
+		binding.ultraSrtNcstTemp.setText(ultraSrtNcstFinalData.getTemperature() + "ºC");
+		//강수형태
+		binding.ultraSrtNcstPty.setText(WeatherDataConverter.convertPrecipitationForm(ultraSrtNcstFinalData.getPrecipitationForm()));
+		//습도
+		binding.ultraSrtNcstHumidity.setText(ultraSrtNcstFinalData.getHumidity());
+		//바람
+		binding.ultraSrtNcstWind.setText(ultraSrtNcstFinalData.getWindSpeed() + "m/s, " + ultraSrtNcstFinalData.getWindDirection() + "\n" +
+				WeatherDataConverter.getWindSpeedDescription(ultraSrtNcstFinalData.getWindSpeed()));
+		//시간 강수량
+		binding.ultraSrtNcstRn1.setText(ultraSrtNcstFinalData.getPrecipitation1Hour());
+	}
 
-                    ultraSrtNcstResult.setUltraSrtNcstFinalData(ultraSrtNcstRoot.getResponse().getBody().getItems(), downloadedDate);
-                    requireActivity().runOnUiThread(new Runnable()
-                    {
-                        @Override
-                        public void run()
-                        {
-                            onDownloadedTimeListener.setDownloadedTime(downloadedDate, WeatherDataDTO.ULTRA_SRT_NCST);
-                            viewProgress.onCompletedProcessingData(true);
-                            setValue();
-                        }
-                    });
-                }
-            }
-        });
-    }
+	public void refresh() {
+		viewProgress.onStartedProcessingData();
 
-    @Override
-    public void onSaveInstanceState(@NonNull Bundle outState)
-    {
-        super.onSaveInstanceState(outState);
-    }
+		ultraSrtNcstProcessing.refresh(new WeatherDataCallback<UltraSrtNcstResult>() {
+			@Override
+			public void isSuccessful(UltraSrtNcstResult e) {
+				requireActivity().runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						onDownloadedTimeListener.setDownloadedTime(e.getDownloadedDate(), WeatherDataDTO.ULTRA_SRT_NCST);
+						viewProgress.onCompletedProcessingData(true);
+						setValue(e);
+					}
+				});
 
-    private void setValue()
-    {
-        UltraSrtNcstFinalData ultraSrtNcstFinalData = ultraSrtNcstResult.getUltraSrtNcstFinalData();
-        //기온
-        binding.ultraSrtNcstTemp.setText(ultraSrtNcstFinalData.getTemperature() + "ºC");
-        //강수형태
-        binding.ultraSrtNcstPty.setText(WeatherDataConverter.convertPrecipitationForm(ultraSrtNcstFinalData.getPrecipitationForm()));
-        //습도
-        binding.ultraSrtNcstHumidity.setText(ultraSrtNcstFinalData.getHumidity());
-        //바람
-        binding.ultraSrtNcstWind.setText(ultraSrtNcstFinalData.getWindSpeed() + "m/s, " + ultraSrtNcstFinalData.getWindDirection() + "\n" +
-                WeatherDataConverter.getWindSpeedDescription(ultraSrtNcstFinalData.getWindSpeed()));
-        //시간 강수량
-        binding.ultraSrtNcstRn1.setText(ultraSrtNcstFinalData.getPrecipitation1Hour());
-    }
+			}
 
-    public void getWeatherData()
-    {
-        requireActivity().runOnUiThread(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                viewProgress.onStartedProcessingData();
-            }
-        });
+			@Override
+			public void isFailure(Exception e) {
+				requireActivity().runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						clearViews();
+						onDownloadedTimeListener.setDownloadedTime(null, WeatherDataDTO.ULTRA_SRT_NCST);
+						viewProgress.onCompletedProcessingData(false, getString(R.string.not_data));
+						Toast.makeText(getContext(), R.string.error, Toast.LENGTH_SHORT).show();
+					}
+				});
+			}
+		});
+	}
 
-        UltraSrtNcstParameter ultraSrtNcstParameter = new UltraSrtNcstParameter();
-        ultraSrtNcstParameter.setNx(weatherAreaCode.getX()).setNy(weatherAreaCode.getY()).setNumOfRows("250").setPageNo("1");
-
-        Calendar calendar = Calendar.getInstance();
-        weatherDataDownloader.getUltraSrtNcstData(ultraSrtNcstParameter, calendar, new JsonDownloader<JsonObject>()
-        {
-            @Override
-            public void onResponseSuccessful(JsonObject result)
-            {
-                setWeatherData(result);
-            }
-
-            @Override
-            public void onResponseFailed(Exception e)
-            {
-                requireActivity().runOnUiThread(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        clearViews();
-                        onDownloadedTimeListener.setDownloadedTime(new Date(System.currentTimeMillis()), WeatherDataDTO.ULTRA_SRT_NCST);
-                        viewProgress.onCompletedProcessingData(false, getString(R.string.not_data));
-                        Toast.makeText(getContext(), R.string.error, Toast.LENGTH_SHORT).show();
-                    }
-                });
-            }
-        });
-    }
-
-    public void setWeatherData(JsonObject result)
-    {
-        Gson gson = new Gson();
-        UltraSrtNcstRoot ultraSrtNcstRoot = gson.fromJson(result.toString(), UltraSrtNcstRoot.class);
-
-        Date downloadedDate = new Date(System.currentTimeMillis());
-
-        WeatherDataDTO ultraSrtNcstWeatherDataDTO = new WeatherDataDTO();
-        ultraSrtNcstWeatherDataDTO.setLatitude(weatherAreaCode.getY());
-        ultraSrtNcstWeatherDataDTO.setLongitude(weatherAreaCode.getX());
-        ultraSrtNcstWeatherDataDTO.setDataType(WeatherDataDTO.ULTRA_SRT_NCST);
-        ultraSrtNcstWeatherDataDTO.setJson(result.toString());
-        ultraSrtNcstWeatherDataDTO.setDownloadedDate(String.valueOf(downloadedDate.getTime()));
-
-        weatherDbViewModel.contains(weatherAreaCode.getY(), weatherAreaCode.getX(), WeatherDataDTO.ULTRA_SRT_NCST, new CarrierMessagingService.ResultCallback<Boolean>()
-        {
-            @Override
-            public void onReceiveResult(@NonNull Boolean isContains) throws RemoteException
-            {
-                if (isContains)
-                {
-                    weatherDbViewModel.update(weatherAreaCode.getY(), weatherAreaCode.getX(), WeatherDataDTO.ULTRA_SRT_NCST, result.toString()
-                            , ultraSrtNcstWeatherDataDTO.getDownloadedDate(), new CarrierMessagingService.ResultCallback<Boolean>()
-                            {
-                                @Override
-                                public void onReceiveResult(@NonNull Boolean isUpdated) throws RemoteException
-                                {
-
-                                }
-                            });
-                } else
-                {
-                    weatherDbViewModel.insert(ultraSrtNcstWeatherDataDTO, new CarrierMessagingService.ResultCallback<WeatherDataDTO>()
-                    {
-                        @Override
-                        public void onReceiveResult(@NonNull WeatherDataDTO weatherDataDTO) throws RemoteException
-                        {
-
-                        }
-                    });
-                }
-            }
-        });
-
-        ultraSrtNcstResult.setUltraSrtNcstFinalData(ultraSrtNcstRoot.getResponse().getBody().getItems(), downloadedDate);
-        requireActivity().runOnUiThread(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                onDownloadedTimeListener.setDownloadedTime(downloadedDate, WeatherDataDTO.ULTRA_SRT_NCST);
-                viewProgress.onCompletedProcessingData(true);
-                setValue();
-            }
-        });
-    }
-
-    public void clearViews()
-    {
-        binding.ultraSrtNcstTemp.setText("");
-        binding.ultraSrtNcstPty.setText("");
-        binding.ultraSrtNcstHumidity.setText("");
-        binding.ultraSrtNcstWind.setText("");
-        binding.ultraSrtNcstRn1.setText("");
-    }
+	public void clearViews() {
+		binding.ultraSrtNcstTemp.setText("");
+		binding.ultraSrtNcstPty.setText("");
+		binding.ultraSrtNcstHumidity.setText("");
+		binding.ultraSrtNcstWind.setText("");
+		binding.ultraSrtNcstRn1.setText("");
+	}
 }

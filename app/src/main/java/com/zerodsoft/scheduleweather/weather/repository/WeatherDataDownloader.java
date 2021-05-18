@@ -32,276 +32,231 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public abstract class WeatherDataDownloader extends JsonDownloader<WeatherItems>
-{
-    public static final String ULTRA_SRT_NCST = "ULTRA_SRT_NCST";
-    public static final String ULTRA_SRT_FCST = "ULTRA_SRT_FCST";
-    public static final String VILAGE_FCST = "VILAGE_FCST";
-    public static final String MID_LAND_FCST = "MID_LAND_FCST";
-    public static final String MID_TA_FCST = "MID_TA_FCST";
+public class WeatherDataDownloader {
+	public static final String ULTRA_SRT_NCST = "ULTRA_SRT_NCST";
+	public static final String ULTRA_SRT_FCST = "ULTRA_SRT_FCST";
+	public static final String VILAGE_FCST = "VILAGE_FCST";
+	public static final String MID_LAND_FCST = "MID_LAND_FCST";
+	public static final String MID_TA_FCST = "MID_TA_FCST";
 
-    public WeatherDataDownloader()
-    {
+	public WeatherDataDownloader() {
 
-    }
+	}
 
-    /**
-     * 초단기 실황
-     *
-     * @param parameter
-     */
-    public void getUltraSrtNcstData(UltraSrtNcstParameter parameter, Calendar calendar, JsonDownloader<JsonObject> callback)
-    {
-        Querys querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.VILAGE_FCST);
-        //basetime설정
+	/**
+	 * 초단기 실황
+	 *
+	 * @param parameter
+	 */
+	public void getUltraSrtNcstData(UltraSrtNcstParameter parameter, Calendar calendar, JsonDownloader<JsonObject> callback) {
+		Querys querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.VILAGE_FCST);
+		//basetime설정
 
-        if (calendar.get(Calendar.MINUTE) < 40)
-        {
-            calendar.add(Calendar.HOUR_OF_DAY, -1);
-        }
-        parameter.setBaseDate(ClockUtil.yyyyMMdd.format(calendar.getTime()));
-        parameter.setBaseTime(ClockUtil.HH.format(calendar.getTime()) + "00");
+		if (calendar.get(Calendar.MINUTE) < 40) {
+			calendar.add(Calendar.HOUR_OF_DAY, -1);
+		}
+		parameter.setBaseDate(ClockUtil.yyyyMMdd.format(calendar.getTime()));
+		parameter.setBaseTime(ClockUtil.HH.format(calendar.getTime()) + "00");
 
-        Call<JsonObject> call = querys.getUltraSrtNcstDataStr(parameter.getMap());
-        call.enqueue(new Callback<JsonObject>()
-        {
-            @Override
-            public void onResponse(Call<JsonObject> call, Response<JsonObject> response)
-            {
-                callback.processResult(response);
-            }
+		Call<JsonObject> call = querys.getUltraSrtNcstDataStr(parameter.getMap());
+		call.enqueue(new Callback<JsonObject>() {
+			@Override
+			public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+				callback.processResult(response);
+			}
 
-            @Override
-            public void onFailure(Call<JsonObject> call, Throwable t)
-            {
-                callback.processResult(t);
-            }
-        });
+			@Override
+			public void onFailure(Call<JsonObject> call, Throwable t) {
+				callback.processResult(t);
+			}
+		});
 
-    }
+	}
 
-    /**
-     * 초단기예보
-     *
-     * @param parameter
-     */
-    public void getUltraSrtFcstData(UltraSrtFcstParameter parameter, Calendar calendar, JsonDownloader<JsonObject> callback)
-    {
-        Querys querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.VILAGE_FCST);
-        //basetime설정
-        if (calendar.get(Calendar.MINUTE) < 45)
-        {
-            calendar.add(Calendar.HOUR_OF_DAY, -1);
-        }
-        parameter.setBaseDate(ClockUtil.yyyyMMdd.format(calendar.getTime()));
-        parameter.setBaseTime(ClockUtil.HH.format(calendar.getTime()) + "30");
+	/**
+	 * 초단기예보
+	 *
+	 * @param parameter
+	 */
+	public void getUltraSrtFcstData(UltraSrtFcstParameter parameter, Calendar calendar, JsonDownloader<JsonObject> callback) {
+		Querys querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.VILAGE_FCST);
+		//basetime설정
+		if (calendar.get(Calendar.MINUTE) < 45) {
+			calendar.add(Calendar.HOUR_OF_DAY, -1);
+		}
+		parameter.setBaseDate(ClockUtil.yyyyMMdd.format(calendar.getTime()));
+		parameter.setBaseTime(ClockUtil.HH.format(calendar.getTime()) + "30");
 
-        Call<JsonObject> call = querys.getUltraSrtFcstDataStr(parameter.getMap());
-        call.enqueue(new Callback<JsonObject>()
-        {
-            @Override
-            public void onResponse(Call<JsonObject> call, Response<JsonObject> response)
-            {
-                callback.processResult(response);
-            }
+		Call<JsonObject> call = querys.getUltraSrtFcstDataStr(parameter.getMap());
+		call.enqueue(new Callback<JsonObject>() {
+			@Override
+			public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+				callback.processResult(response);
+			}
 
-            @Override
-            public void onFailure(Call<JsonObject> call, Throwable t)
-            {
-                callback.processResult(t);
-            }
-        });
-    }
+			@Override
+			public void onFailure(Call<JsonObject> call, Throwable t) {
+				callback.processResult(t);
+			}
+		});
+	}
 
-    /**
-     * 동네예보
-     *
-     * @param parameter
-     */
-    public void getVilageFcstData(VilageFcstParameter parameter, Calendar calendar, JsonDownloader<JsonObject> callback)
-    {
-        Querys querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.VILAGE_FCST);
-        //basetime설정
-        int hour = calendar.get(Calendar.HOUR_OF_DAY);
-        int i = hour >= 0 && hour <= 2 ? 7 : hour / 3 - 1;
-        int baseHour = 0;
+	/**
+	 * 동네예보
+	 *
+	 * @param parameter
+	 */
+	public void getVilageFcstData(VilageFcstParameter parameter, Calendar calendar, JsonDownloader<JsonObject> callback) {
+		Querys querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.VILAGE_FCST);
+		//basetime설정
+		int hour = calendar.get(Calendar.HOUR_OF_DAY);
+		int i = hour >= 0 && hour <= 2 ? 7 : hour / 3 - 1;
+		int baseHour = 0;
 
-        if (calendar.get(Calendar.MINUTE) > 10 && (hour - 2) % 3 == 0)
-        {
-            // ex)1411인 경우
-            baseHour = 3 * ((hour - 2) / 3) + 2;
-            i = 0;
-        } else
-        {
-            baseHour = 3 * i + 2;
-        }
+		if (calendar.get(Calendar.MINUTE) > 10 && (hour - 2) % 3 == 0) {
+			// ex)1411인 경우
+			baseHour = 3 * ((hour - 2) / 3) + 2;
+			i = 0;
+		} else {
+			baseHour = 3 * i + 2;
+		}
 
-        if (i == 7)
-        {
-            calendar.add(Calendar.DAY_OF_YEAR, -1);
-            calendar.set(Calendar.HOUR_OF_DAY, 23);
-        } else
-        {
-            calendar.set(Calendar.HOUR_OF_DAY, baseHour);
-        }
+		if (i == 7) {
+			calendar.add(Calendar.DAY_OF_YEAR, -1);
+			calendar.set(Calendar.HOUR_OF_DAY, 23);
+		} else {
+			calendar.set(Calendar.HOUR_OF_DAY, baseHour);
+		}
 
-        parameter.setBaseDate(ClockUtil.yyyyMMdd.format(calendar.getTime()));
-        parameter.setBaseTime(ClockUtil.HH.format(calendar.getTime()) + "00");
+		parameter.setBaseDate(ClockUtil.yyyyMMdd.format(calendar.getTime()));
+		parameter.setBaseTime(ClockUtil.HH.format(calendar.getTime()) + "00");
 
-        Call<JsonObject> call = querys.getVilageFcstDataStr(parameter.getMap());
+		Call<JsonObject> call = querys.getVilageFcstDataStr(parameter.getMap());
 
-        call.enqueue(new Callback<JsonObject>()
-        {
-            @Override
-            public void onResponse(Call<JsonObject> call, Response<JsonObject> response)
-            {
-                callback.processResult(response);
-            }
+		call.enqueue(new Callback<JsonObject>() {
+			@Override
+			public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+				callback.processResult(response);
+			}
 
-            @Override
-            public void onFailure(Call<JsonObject> call, Throwable t)
-            {
-                callback.processResult(t);
-            }
-        });
+			@Override
+			public void onFailure(Call<JsonObject> call, Throwable t) {
+				callback.processResult(t);
+			}
+		});
 
-    }
+	}
 
-    /**
-     * 중기육상예보
-     *
-     * @param parameter
-     */
-    public void getMidLandFcstData(MidLandFcstParameter parameter, Calendar calendar, JsonDownloader<JsonObject> callback)
-    {
-        Querys querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.MID_FCST);
+	/**
+	 * 중기육상예보
+	 *
+	 * @param parameter
+	 */
+	public void getMidLandFcstData(MidLandFcstParameter parameter, Calendar calendar, JsonDownloader<JsonObject> callback) {
+		Querys querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.MID_FCST);
 
-        int hour = calendar.get(Calendar.HOUR_OF_DAY);
-        int minute = calendar.get(Calendar.MINUTE);
+		int hour = calendar.get(Calendar.HOUR_OF_DAY);
+		int minute = calendar.get(Calendar.MINUTE);
 
-        if (hour >= 18 && minute >= 1)
-        {
-            parameter.setTmFc(ClockUtil.yyyyMMdd.format(calendar.getTime()) + "1800");
-        } else if (hour >= 6 && minute >= 1)
-        {
-            parameter.setTmFc(ClockUtil.yyyyMMdd.format(calendar.getTime()) + "0600");
-        } else
-        {
-            calendar.add(Calendar.DAY_OF_YEAR, -1);
-            parameter.setTmFc(ClockUtil.yyyyMMdd.format(calendar.getTime()) + "1800");
-        }
+		if (hour >= 18 && minute >= 1) {
+			parameter.setTmFc(ClockUtil.yyyyMMdd.format(calendar.getTime()) + "1800");
+		} else if (hour >= 6 && minute >= 1) {
+			parameter.setTmFc(ClockUtil.yyyyMMdd.format(calendar.getTime()) + "0600");
+		} else {
+			calendar.add(Calendar.DAY_OF_YEAR, -1);
+			parameter.setTmFc(ClockUtil.yyyyMMdd.format(calendar.getTime()) + "1800");
+		}
 
-        Call<JsonObject> call = querys.getMidLandFcstDataStr(parameter.getMap());
+		Call<JsonObject> call = querys.getMidLandFcstDataStr(parameter.getMap());
 
-        call.enqueue(new Callback<JsonObject>()
-        {
-            @Override
-            public void onResponse(Call<JsonObject> call, Response<JsonObject> response)
-            {
-                callback.processResult(response);
-            }
+		call.enqueue(new Callback<JsonObject>() {
+			@Override
+			public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+				callback.processResult(response);
+			}
 
-            @Override
-            public void onFailure(Call<JsonObject> call, Throwable t)
-            {
-                callback.processResult(t);
-            }
-        });
+			@Override
+			public void onFailure(Call<JsonObject> call, Throwable t) {
+				callback.processResult(t);
+			}
+		});
 
-    }
+	}
 
-    /**
-     * 중기기온조회
-     *
-     * @param parameter
-     */
-    public void getMidTaData(MidTaParameter parameter, Calendar calendar, JsonDownloader<JsonObject> callback)
-    {
-        Querys querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.MID_FCST);
+	/**
+	 * 중기기온조회
+	 *
+	 * @param parameter
+	 */
+	public void getMidTaData(MidTaParameter parameter, Calendar calendar, JsonDownloader<JsonObject> callback) {
+		Querys querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.MID_FCST);
 
-        int hour = calendar.get(Calendar.HOUR_OF_DAY);
-        int minute = calendar.get(Calendar.MINUTE);
+		int hour = calendar.get(Calendar.HOUR_OF_DAY);
+		int minute = calendar.get(Calendar.MINUTE);
 
-        if (hour >= 18 && minute >= 1)
-        {
-            parameter.setTmFc(ClockUtil.yyyyMMdd.format(calendar.getTime()) + "1800");
-        } else if (hour >= 6 && minute >= 1)
-        {
-            parameter.setTmFc(ClockUtil.yyyyMMdd.format(calendar.getTime()) + "0600");
-        } else
-        {
-            calendar.add(Calendar.DAY_OF_YEAR, -1);
-            parameter.setTmFc(ClockUtil.yyyyMMdd.format(calendar.getTime()) + "1800");
-        }
+		if (hour >= 18 && minute >= 1) {
+			parameter.setTmFc(ClockUtil.yyyyMMdd.format(calendar.getTime()) + "1800");
+		} else if (hour >= 6 && minute >= 1) {
+			parameter.setTmFc(ClockUtil.yyyyMMdd.format(calendar.getTime()) + "0600");
+		} else {
+			calendar.add(Calendar.DAY_OF_YEAR, -1);
+			parameter.setTmFc(ClockUtil.yyyyMMdd.format(calendar.getTime()) + "1800");
+		}
 
-        Call<JsonObject> call = querys.getMidTaDataStr(parameter.getMap());
-        call.enqueue(new Callback<JsonObject>()
-        {
-            @Override
-            public void onResponse(Call<JsonObject> call, Response<JsonObject> response)
-            {
-                callback.processResult(response);
-            }
+		Call<JsonObject> call = querys.getMidTaDataStr(parameter.getMap());
+		call.enqueue(new Callback<JsonObject>() {
+			@Override
+			public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+				callback.processResult(response);
+			}
 
-            @Override
-            public void onFailure(Call<JsonObject> call, Throwable t)
-            {
-                callback.processResult(t);
-            }
-        });
-    }
+			@Override
+			public void onFailure(Call<JsonObject> call, Throwable t) {
+				callback.processResult(t);
+			}
+		});
+	}
 
-    public void getMidFcstData(MidLandFcstParameter midLandFcstParameter, MidTaParameter midTaParameter, Calendar calendar, JsonDownloader<MidFcstRoot> callback)
-    {
-        MidFcstRoot midFcstRoot = new MidFcstRoot();
+	public void getMidFcstData(MidLandFcstParameter midLandFcstParameter, MidTaParameter midTaParameter, Calendar calendar, JsonDownloader<MidFcstRoot> callback) {
+		MidFcstRoot midFcstRoot = new MidFcstRoot();
 
-        getMidLandFcstData(midLandFcstParameter, (Calendar) calendar.clone(), new JsonDownloader<JsonObject>()
-        {
-            @Override
-            public void onResponseSuccessful(JsonObject result)
-            {
-                midFcstRoot.setMidLandFcst(result);
-                checkMidFcstDataDownload(midFcstRoot, callback);
-            }
+		getMidLandFcstData(midLandFcstParameter, (Calendar) calendar.clone(), new JsonDownloader<JsonObject>() {
+			@Override
+			public void onResponseSuccessful(JsonObject result) {
+				midFcstRoot.setMidLandFcst(result);
+				checkMidFcstDataDownload(midFcstRoot, callback);
+			}
 
-            @Override
-            public void onResponseFailed(Exception e)
-            {
-                midFcstRoot.setException(e);
-                checkMidFcstDataDownload(midFcstRoot, callback);
-            }
-        });
+			@Override
+			public void onResponseFailed(Exception e) {
+				midFcstRoot.setException(e);
+				checkMidFcstDataDownload(midFcstRoot, callback);
+			}
+		});
 
-        getMidTaData(midTaParameter, (Calendar) calendar.clone(), new JsonDownloader<JsonObject>()
-        {
-            @Override
-            public void onResponseSuccessful(JsonObject result)
-            {
-                midFcstRoot.setMidTa(result);
-                checkMidFcstDataDownload(midFcstRoot, callback);
-            }
+		getMidTaData(midTaParameter, (Calendar) calendar.clone(), new JsonDownloader<JsonObject>() {
+			@Override
+			public void onResponseSuccessful(JsonObject result) {
+				midFcstRoot.setMidTa(result);
+				checkMidFcstDataDownload(midFcstRoot, callback);
+			}
 
-            @Override
-            public void onResponseFailed(Exception e)
-            {
-                midFcstRoot.setException(e);
-                checkMidFcstDataDownload(midFcstRoot, callback);
-            }
-        });
-    }
+			@Override
+			public void onResponseFailed(Exception e) {
+				midFcstRoot.setException(e);
+				checkMidFcstDataDownload(midFcstRoot, callback);
+			}
+		});
+	}
 
-    synchronized private void checkMidFcstDataDownload(MidFcstRoot midFcstRoot, JsonDownloader<MidFcstRoot> callback)
-    {
-        if (midFcstRoot.getCount() == 2)
-        {
-            if (midFcstRoot.getException() == null)
-            {
-                callback.onResponseSuccessful(midFcstRoot);
-            } else
-            {
-                callback.onResponseFailed(midFcstRoot.getException());
-            }
-        }
-    }
+	synchronized private void checkMidFcstDataDownload(MidFcstRoot midFcstRoot, JsonDownloader<MidFcstRoot> callback) {
+		if (midFcstRoot.getCount() == 2) {
+			if (midFcstRoot.getException() == null) {
+				callback.onResponseSuccessful(midFcstRoot);
+			} else {
+				callback.onResponseFailed(midFcstRoot.getException());
+			}
+		}
+	}
 
 }

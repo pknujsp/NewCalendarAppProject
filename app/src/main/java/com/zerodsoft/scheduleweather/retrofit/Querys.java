@@ -106,8 +106,6 @@ public interface Querys
     @GET("getNearbyMsrstnList")
     Call<NearbyMsrstnListRoot> getNearbyMsrstnList(@QueryMap(encoded = true) Map<String, String> queryMap);
 
-    @GET("getNearbyMsrstnList")
-    Call<JsonObject> getNearbyMsrstnListStr(@QueryMap(encoded = true) Map<String, String> queryMap);
 
     //정부 SGIS 인증
     @GET("authentication.json")

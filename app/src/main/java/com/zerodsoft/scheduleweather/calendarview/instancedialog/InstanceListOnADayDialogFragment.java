@@ -46,8 +46,7 @@ import java.util.Map;
 
 import lombok.SneakyThrows;
 
-public class InstanceListOnADayDialogFragment extends DialogFragment implements OnEventItemLongClickListener, IRefreshView, IControlEvent, InstancesOfDayView.InstanceDialogMenuListener
-{
+public class InstanceListOnADayDialogFragment extends DialogFragment implements OnEventItemLongClickListener, IRefreshView, IControlEvent, InstancesOfDayView.InstanceDialogMenuListener {
     public static final String TAG = "InstanceListOnADayDialogFragment";
 
     private final IConnectedCalendars iConnectedCalendars;
@@ -64,39 +63,32 @@ public class InstanceListOnADayDialogFragment extends DialogFragment implements 
     private Long begin;
     private Long end;
 
-    private final CommonPopupMenu commonPopupMenu = new CommonPopupMenu()
-    {
+    private final CommonPopupMenu commonPopupMenu = new CommonPopupMenu() {
         @Override
-        public void onExceptedInstance(boolean isSuccessful)
-        {
-            if (isSuccessful)
-            {
+        public void onExceptedInstance(boolean isSuccessful) {
+            if (isSuccessful) {
                 iRefreshView.refreshView();
                 refreshView();
             }
         }
 
         @Override
-        public void onDeletedInstance(boolean isSuccessful)
-        {
-            if (isSuccessful)
-            {
+        public void onDeletedInstance(boolean isSuccessful) {
+            if (isSuccessful) {
                 iRefreshView.refreshView();
                 refreshView();
             }
         }
     };
 
-    public InstanceListOnADayDialogFragment(IConnectedCalendars iConnectedCalendars, Fragment fragment)
-    {
+    public InstanceListOnADayDialogFragment(IConnectedCalendars iConnectedCalendars, Fragment fragment) {
         this.onEventItemClickListener = (OnEventItemClickListener) fragment;
         this.iRefreshView = (IRefreshView) fragment;
         this.iConnectedCalendars = iConnectedCalendars;
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState)
-    {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Bundle bundle = getArguments();
 
@@ -106,23 +98,20 @@ public class InstanceListOnADayDialogFragment extends DialogFragment implements 
 
     @NonNull
     @Override
-    public Dialog onCreateDialog(@Nullable Bundle savedInstanceState)
-    {
+    public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
         return new Dialog(requireContext(), R.style.DialogTransparent);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState)
-    {
+                             Bundle savedInstanceState) {
         binding = FragmentInstanceListOnADayBinding.inflate(inflater);
         return binding.getRoot();
     }
 
     @SneakyThrows
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
-    {
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
         calendarViewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
@@ -130,20 +119,16 @@ public class InstanceListOnADayDialogFragment extends DialogFragment implements 
         foodCriteriaLocationHistoryViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationHistoryViewModel.class);
         foodCriteriaLocationInfoViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationInfoViewModel.class);
 
-        binding.goToTodayButton.setOnClickListener(new View.OnClickListener()
-        {
+        binding.goToTodayButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view)
-            {
+            public void onClick(View view) {
                 goToToday();
             }
         });
 
-        binding.goToFirstSelectedDayButton.setOnClickListener(new View.OnClickListener()
-        {
+        binding.goToFirstSelectedDayButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view)
-            {
+            public void onClick(View view) {
                 goToFirstSelectedDay();
             }
         });
@@ -156,11 +141,9 @@ public class InstanceListOnADayDialogFragment extends DialogFragment implements 
 
         CompositePageTransformer compositePageTransformer = new CompositePageTransformer();
         compositePageTransformer.addTransformer(new MarginPageTransformer(margin));
-        compositePageTransformer.addTransformer(new ViewPager2.PageTransformer()
-        {
+        compositePageTransformer.addTransformer(new ViewPager2.PageTransformer() {
             @Override
-            public void transformPage(@NonNull View page, float position)
-            {
+            public void transformPage(@NonNull View page, float position) {
                 float r = 1 - Math.abs(position);
                 page.setScaleY(0.8f + r * 0.2f);
                 Log.e(TAG, String.valueOf(page.getScaleY()));
@@ -174,16 +157,14 @@ public class InstanceListOnADayDialogFragment extends DialogFragment implements 
     }
 
     @Override
-    public void createInstancePopupMenu(ContentValues instance, View anchorView, int gravity)
-    {
+    public void createInstancePopupMenu(ContentValues instance, View anchorView, int gravity) {
         commonPopupMenu.createInstancePopupMenu(instance, requireActivity(), anchorView, Gravity.CENTER
                 , calendarViewModel, locationViewModel, foodCriteriaLocationInfoViewModel, foodCriteriaLocationHistoryViewModel);
     }
 
 
     @Override
-    public void onResume()
-    {
+    public void onResume() {
         super.onResume();
 
         Window window = getDialog().getWindow();
@@ -192,32 +173,26 @@ public class InstanceListOnADayDialogFragment extends DialogFragment implements 
     }
 
     @Override
-    public void refreshView()
-    {
+    public void refreshView() {
         int currentItem = binding.instancesDialogViewpager.getCurrentItem();
         adapter.refresh(currentItem);
     }
 
     @Override
-    public Map<Integer, CalendarInstance> getInstances(long begin, long end)
-    {
+    public Map<Integer, CalendarInstance> getInstances(long begin, long end) {
         return calendarViewModel.getInstances(begin, end);
     }
 
     @Override
-    public void showPopupMenu(ContentValues instance, View anchorView, int gravity)
-    {
+    public void showPopupMenu(ContentValues instance, View anchorView, int gravity) {
         PopupMenu popupMenu = new PopupMenu(getContext(), anchorView, gravity);
 
         popupMenu.getMenuInflater().inflate(R.menu.instance_dialog_menu, popupMenu.getMenu());
-        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener()
-        {
+        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             @SuppressLint("NonConstantResourceId")
             @Override
-            public boolean onMenuItemClick(MenuItem menuItem)
-            {
-                switch (menuItem.getItemId())
-                {
+            public boolean onMenuItemClick(MenuItem menuItem) {
+                switch (menuItem.getItemId()) {
                     case R.id.go_to_today_menu:
                         goToToday();
                         break;
@@ -232,25 +207,21 @@ public class InstanceListOnADayDialogFragment extends DialogFragment implements 
         popupMenu.show();
     }
 
-    private void goToFirstSelectedDay()
-    {
-        if (binding.instancesDialogViewpager.getCurrentItem() != EventTransactionFragment.FIRST_VIEW_POSITION)
-        {
+    private void goToFirstSelectedDay() {
+        if (binding.instancesDialogViewpager.getCurrentItem() != EventTransactionFragment.FIRST_VIEW_POSITION) {
             binding.instancesDialogViewpager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, true);
             refreshView();
         }
     }
 
-    public void goToToday()
-    {
+    public void goToToday() {
         Date today = new Date(System.currentTimeMillis());
         Date firstSelectedDay = new Date(begin);
 
         int dayDifference = ClockUtil.calcDayDifference(today, firstSelectedDay);
         binding.instancesDialogViewpager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION + dayDifference
                 , true);
-        if (adapter.containsPosition(EventTransactionFragment.FIRST_VIEW_POSITION + dayDifference))
-        {
+        if (adapter.containsPosition(EventTransactionFragment.FIRST_VIEW_POSITION + dayDifference)) {
             refreshView();
         }
     }

@@ -18,7 +18,11 @@ import com.google.gson.JsonObject;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.FragmentAirConditionBinding;
 import com.zerodsoft.scheduleweather.room.dto.WeatherDataDTO;
+import com.zerodsoft.scheduleweather.weather.aircondition.airconditionbar.AirConditionFinalData;
+import com.zerodsoft.scheduleweather.weather.aircondition.airconditionbar.AirConditionResult;
 import com.zerodsoft.scheduleweather.weather.common.ViewProgress;
+import com.zerodsoft.scheduleweather.weather.common.WeatherDataCallback;
+import com.zerodsoft.scheduleweather.weather.dataprocessing.AirConditionProcessing;
 import com.zerodsoft.scheduleweather.weather.interfaces.OnDownloadedTimeListener;
 import com.zerodsoft.scheduleweather.weather.repository.AirConditionDownloader;
 import com.zerodsoft.scheduleweather.weather.repository.FindAirConditionStationDownloader;
@@ -39,384 +43,146 @@ import com.zerodsoft.scheduleweather.weather.viewmodel.WeatherDbViewModel;
 
 import java.util.Date;
 
-public class AirConditionFragment extends Fragment
-{
-    private FragmentAirConditionBinding binding;
+public class AirConditionFragment extends Fragment {
+	private FragmentAirConditionBinding binding;
 
-    private final double LATITUDE;
-    private final double LONGITUDE;
-    private final OnDownloadedTimeListener onDownloadedTimeListener;
+	private final String LATITUDE;
+	private final String LONGITUDE;
+	private final OnDownloadedTimeListener onDownloadedTimeListener;
 
-    private MsrstnAcctoRltmMesureDnstyParameter msrstnAcctoRltmMesureDnstyParameter;
-    private MsrstnAcctoRltmMesureDnstyBody msrstnAcctoRltmMesureDnstyBody;
-    private NearbyMsrstnListBody nearbyMsrstnListBody;
+	private ViewProgress viewProgress;
+	private AirConditionProcessing airConditionProcessing;
 
-    private WeatherDbViewModel weatherDbViewModel;
-    private ViewProgress viewProgress;
+	public AirConditionFragment(String LATITUDE, String LONGITUDE, OnDownloadedTimeListener onDownloadedTimeListener) {
+		this.LATITUDE = LATITUDE;
+		this.LONGITUDE = LONGITUDE;
+		this.onDownloadedTimeListener = onDownloadedTimeListener;
+	}
 
-    public AirConditionFragment(double LATITUDE, double LONGITUDE, OnDownloadedTimeListener onDownloadedTimeListener)
-    {
-        this.LATITUDE = LATITUDE;
-        this.LONGITUDE = LONGITUDE;
-        this.onDownloadedTimeListener = onDownloadedTimeListener;
-    }
-
-    private final AirConditionDownloader airConditionDownloader = new AirConditionDownloader()
-    {
-        @Override
-        public void onResponseSuccessful(JsonObject result)
-        {
-            Gson gson = new Gson();
-            MsrstnAcctoRltmMesureDnstyRoot root = gson.fromJson(result.toString(), MsrstnAcctoRltmMesureDnstyRoot.class);
-            msrstnAcctoRltmMesureDnstyBody = root.getResponse().getBody();
-            setData(msrstnAcctoRltmMesureDnstyBody);
-
-            WeatherDataDTO weatherDataDTO = new WeatherDataDTO();
-            weatherDataDTO.setLatitude(String.valueOf(LATITUDE));
-            weatherDataDTO.setLongitude(String.valueOf(LONGITUDE));
-            weatherDataDTO.setDataType(WeatherDataDTO.AIR_CONDITION);
-            weatherDataDTO.setJson(result.toString());
-            weatherDataDTO.setDownloadedDate(String.valueOf(System.currentTimeMillis()));
-
-            weatherDbViewModel.contains(weatherDataDTO.getLatitude(), weatherDataDTO.getLongitude(), WeatherDataDTO.AIR_CONDITION, new CarrierMessagingService.ResultCallback<Boolean>()
-            {
-                @Override
-                public void onReceiveResult(@NonNull Boolean isContains) throws RemoteException
-                {
-                    if (isContains)
-                    {
-                        weatherDbViewModel.update(weatherDataDTO.getLatitude(), weatherDataDTO.getLongitude(), WeatherDataDTO.AIR_CONDITION
-                                , weatherDataDTO.getJson(), weatherDataDTO.getDownloadedDate(), new CarrierMessagingService.ResultCallback<Boolean>()
-                                {
-                                    @Override
-                                    public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
-                                    {
-
-                                    }
-                                });
-                    } else
-                    {
-                        weatherDbViewModel.insert(weatherDataDTO, new CarrierMessagingService.ResultCallback<WeatherDataDTO>()
-                        {
-                            @Override
-                            public void onReceiveResult(@NonNull WeatherDataDTO weatherDataDTO) throws RemoteException
-                            {
-
-                            }
-                        });
-
-                    }
-                }
-            });
-
-            onDownloadedTimeListener.setDownloadedTime(new Date(Long.parseLong(weatherDataDTO.getDownloadedDate())), WeatherDataDTO.AIR_CONDITION);
-            viewProgress.onCompletedProcessingData(true);
-        }
-
-        @Override
-        public void onResponseFailed(Exception e)
-        {
-            requireActivity().runOnUiThread(new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    onDownloadedTimeListener.setDownloadedTime(new Date(System.currentTimeMillis()), WeatherDataDTO.AIR_CONDITION);
-                    viewProgress.onCompletedProcessingData(false, getString(R.string.not_data));
-                    Toast.makeText(getContext(), R.string.error, Toast.LENGTH_SHORT).show();
-                }
-            });
-        }
-    };
-
-    private final FindAirConditionStationDownloader findAirConditionStationDownloader = new FindAirConditionStationDownloader()
-    {
-        @Override
-        public void onResponseSuccessful(JsonObject result)
-        {
-            Gson gson = new Gson();
-            NearbyMsrstnListRoot root = gson.fromJson(result.toString(), NearbyMsrstnListRoot.class);
-            nearbyMsrstnListBody = root.getResponse().getBody();
-
-            WeatherDataDTO weatherDataDTO = new WeatherDataDTO();
-            weatherDataDTO.setLatitude(String.valueOf(LATITUDE));
-            weatherDataDTO.setLongitude(String.valueOf(LONGITUDE));
-            weatherDataDTO.setDataType(WeatherDataDTO.NEAR_BY_MSRSTN_LIST);
-            weatherDataDTO.setJson(result.toString());
-            weatherDataDTO.setDownloadedDate(String.valueOf(System.currentTimeMillis()));
-
-            weatherDbViewModel.contains(String.valueOf(LATITUDE), String.valueOf(LONGITUDE), WeatherDataDTO.NEAR_BY_MSRSTN_LIST, new CarrierMessagingService.ResultCallback<Boolean>()
-            {
-                @Override
-                public void onReceiveResult(@NonNull Boolean isContains) throws RemoteException
-                {
-                    if (isContains)
-                    {
-                        weatherDbViewModel.update(String.valueOf(LATITUDE), String.valueOf(LONGITUDE), WeatherDataDTO.NEAR_BY_MSRSTN_LIST
-                                , result.toString(), weatherDataDTO.getDownloadedDate(), new CarrierMessagingService.ResultCallback<Boolean>()
-                                {
-                                    @Override
-                                    public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
-                                    {
-
-                                    }
-                                });
-                    } else
-                    {
-                        weatherDbViewModel.insert(weatherDataDTO, new CarrierMessagingService.ResultCallback<WeatherDataDTO>()
-                        {
-                            @Override
-                            public void onReceiveResult(@NonNull WeatherDataDTO weatherDataDTO) throws RemoteException
-                            {
-
-                            }
-                        });
-                    }
-                }
-            });
-
-            msrstnAcctoRltmMesureDnstyParameter = new MsrstnAcctoRltmMesureDnstyParameter();
-            msrstnAcctoRltmMesureDnstyParameter.setDataTerm(MsrstnAcctoRltmMesureDnstyParameter.DATATERM_DAILY);
-            msrstnAcctoRltmMesureDnstyParameter.setStationName(nearbyMsrstnListBody.getItems().get(0).getStationName());
-
-            airConditionDownloader.getMsrstnAcctoRltmMesureDnsty(msrstnAcctoRltmMesureDnstyParameter);
-        }
-
-        @Override
-        public void onResponseFailed(Exception e)
-        {
-            requireActivity().runOnUiThread(new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    onDownloadedTimeListener.setDownloadedTime(new Date(System.currentTimeMillis()), WeatherDataDTO.AIR_CONDITION);
-                    viewProgress.onCompletedProcessingData(false, getString(R.string.not_data));
-                    Toast.makeText(getContext(), R.string.error, Toast.LENGTH_SHORT).show();
-                }
-            });
-        }
-    };
-
-    private final SgisAuth sgisAuth = new SgisAuth()
-    {
-        @Override
-        public void onResponseSuccessful(SgisAuthResponse result)
-        {
-            SgisAuth.setSgisAuthResponse(result);
-
-            TransCoordParameter parameter = new TransCoordParameter();
-            parameter.setAccessToken(result.getResult().getAccessToken());
-            parameter.setSrc(TransCoordParameter.WGS84);
-            parameter.setDst(TransCoordParameter.JUNGBU_ORIGIN);
-            parameter.setPosX(String.valueOf(LONGITUDE));
-            parameter.setPosY(String.valueOf(LATITUDE));
-
-            sgisTranscoord.transcoord(parameter);
-        }
-
-        @Override
-        public void onResponseFailed(Exception e)
-        {
-            requireActivity().runOnUiThread(new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    onDownloadedTimeListener.setDownloadedTime(new Date(System.currentTimeMillis()), WeatherDataDTO.AIR_CONDITION);
-                    viewProgress.onCompletedProcessingData(false, getString(R.string.not_data));
-                    Toast.makeText(getContext(), R.string.error, Toast.LENGTH_SHORT).show();
-                }
-            });
-        }
-    };
-
-    private final SgisTranscoord sgisTranscoord = new SgisTranscoord()
-    {
-        @Override
-        public void onResponseSuccessful(TransCoordResponse result)
-        {
-            TransCoordResult transCoordResult = result.getResult();
-            if (transCoordResult.getPosX() == null)
-            {
-                onResponseFailed(new Exception());
-            }
-            NearbyMsrstnListParameter parameter = new NearbyMsrstnListParameter();
-            parameter.setTmX(transCoordResult.getPosX());
-            parameter.setTmY(transCoordResult.getPosY());
-
-            findAirConditionStationDownloader.getNearbyMsrstnList(parameter);
-        }
-
-        @Override
-        public void onResponseFailed(Exception e)
-        {
-            requireActivity().runOnUiThread(new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    onDownloadedTimeListener.setDownloadedTime(new Date(System.currentTimeMillis()), WeatherDataDTO.AIR_CONDITION);
-                    viewProgress.onCompletedProcessingData(false, getString(R.string.not_data));
-                    Toast.makeText(getContext(), R.string.error, Toast.LENGTH_SHORT).show();
-                }
-            });
-        }
-    };
-
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState)
-    {
-        super.onCreate(savedInstanceState);
-    }
+	@Override
+	public void onCreate(@Nullable Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+	}
 
 
-    @Nullable
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
-    {
-        binding = FragmentAirConditionBinding.inflate(inflater);
-        return binding.getRoot();
-    }
+	@Nullable
+	@Override
+	public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+		binding = FragmentAirConditionBinding.inflate(inflater);
+		return binding.getRoot();
+	}
 
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
-    {
-        super.onViewCreated(view, savedInstanceState);
+	@Override
+	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
 
-        binding.finedustStatus.setText("");
-        binding.ultraFinedustStatus.setText("");
-        binding.showDetailDialogButton.setOnClickListener(onClickListener);
-        viewProgress = new ViewProgress(binding.airConditionLayout, binding.weatherProgressLayout.progressBar, binding.weatherProgressLayout.errorTextview);
-        viewProgress.onStartedProcessingData();
+		binding.finedustStatus.setText("");
+		binding.ultraFinedustStatus.setText("");
+		binding.showDetailDialogButton.setOnClickListener(onClickListener);
 
-        weatherDbViewModel = new ViewModelProvider(this).get(WeatherDbViewModel.class);
+		airConditionProcessing = new AirConditionProcessing(getContext(), LATITUDE, LONGITUDE);
+		viewProgress = new ViewProgress(binding.airConditionLayout, binding.weatherProgressLayout.progressBar, binding.weatherProgressLayout.errorTextview);
+		viewProgress.onStartedProcessingData();
 
-        weatherDbViewModel.getWeatherData(String.valueOf(LATITUDE), String.valueOf(LONGITUDE), WeatherDataDTO.NEAR_BY_MSRSTN_LIST, new CarrierMessagingService.ResultCallback<WeatherDataDTO>()
-        {
-            @Override
-            public void onReceiveResult(@NonNull WeatherDataDTO nearByMsrstn) throws RemoteException
-            {
-                if (nearByMsrstn == null)
-                {
-                    requireActivity().runOnUiThread(new Runnable()
-                    {
-                        @Override
-                        public void run()
-                        {
-                            onDownloadedTimeListener.setDownloadedTime(new Date(System.currentTimeMillis()), WeatherDataDTO.AIR_CONDITION);
-                            viewProgress.onCompletedProcessingData(false, getString(R.string.not_data));
-                        }
-                    });
+		airConditionProcessing.getWeatherData(new WeatherDataCallback<AirConditionResult>() {
+			@Override
+			public void isSuccessful(AirConditionResult e) {
+				requireActivity().runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						onDownloadedTimeListener.setDownloadedTime(e.getDownloadedDate(), WeatherDataDTO.AIR_CONDITION);
+						viewProgress.onCompletedProcessingData(true);
+						setData(e);
+					}
+				});
+			}
 
-                } else
-                {
-                    Gson gson = new Gson();
-                    NearbyMsrstnListRoot root = gson.fromJson(nearByMsrstn.getJson(), NearbyMsrstnListRoot.class);
-                    nearbyMsrstnListBody = root.getResponse().getBody();
-                }
-
-                weatherDbViewModel.getWeatherData(String.valueOf(LATITUDE), String.valueOf(LONGITUDE), WeatherDataDTO.AIR_CONDITION, new CarrierMessagingService.ResultCallback<WeatherDataDTO>()
-                {
-                    @Override
-                    public void onReceiveResult(@NonNull WeatherDataDTO weatherDataDTO) throws RemoteException
-                    {
-                        requireActivity().runOnUiThread(new Runnable()
-                        {
-                            @Override
-                            public void run()
-                            {
-                                if (weatherDataDTO == null || nearByMsrstn == null)
-                                {
-                                    refresh();
-                                } else
-                                {
-                                    Gson gson = new Gson();
-                                    MsrstnAcctoRltmMesureDnstyRoot root = gson.fromJson(weatherDataDTO.getJson(), MsrstnAcctoRltmMesureDnstyRoot.class);
-                                    msrstnAcctoRltmMesureDnstyBody = root.getResponse().getBody();
-                                    setData(msrstnAcctoRltmMesureDnstyBody);
-                                    onDownloadedTimeListener.setDownloadedTime(new Date(Long.parseLong(weatherDataDTO.getDownloadedDate())), WeatherDataDTO.AIR_CONDITION);
-                                    viewProgress.onCompletedProcessingData(true);
-                                }
-                            }
-                        });
-                    }
-                });
+			@Override
+			public void isFailure(Exception e) {
+				requireActivity().runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						onDownloadedTimeListener.setDownloadedTime(null, WeatherDataDTO.AIR_CONDITION);
+						viewProgress.onCompletedProcessingData(false, getString(R.string.error));
+					}
+				});
+			}
+		});
 
 
-            }
-        });
+	}
 
 
-    }
+	private void setData(AirConditionResult airConditionResult) {
+		binding.finedustStatus.setText("");
+		binding.ultraFinedustStatus.setText("");
 
+		String pm10 = "";
+		String pm25 = "";
 
-    private void setData(MsrstnAcctoRltmMesureDnstyBody msrstnAcctoRltmMesureDnstyBody)
-    {
-        binding.finedustStatus.setText("");
-        binding.ultraFinedustStatus.setText("");
+		AirConditionFinalData airConditionFinalData = airConditionResult.getAirConditionFinalData();
 
-        String pm10 = "";
-        String pm25 = "";
+		//pm10
+		if (airConditionFinalData.getPm10Flag() == null) {
+			pm10 = BarInitDataCreater.getGrade(airConditionFinalData.getPm10Grade1h(), getContext()) + ", " + airConditionFinalData.getPm10Value()
+					+ getString(R.string.finedust_unit);
+			binding.finedustStatus.setTextColor(BarInitDataCreater.getGradeColor(airConditionFinalData.getPm10Grade1h(), getContext()));
+		} else {
+			pm10 = airConditionFinalData.getPm10Flag();
+		}
 
-        //pm10
-        if (msrstnAcctoRltmMesureDnstyBody.getItem().get(0).getPm10Flag() == null)
-        {
-            pm10 = BarInitDataCreater.getGrade(msrstnAcctoRltmMesureDnstyBody.getItem().get(0).getPm10Grade1h(), getContext()) + ", " + msrstnAcctoRltmMesureDnstyBody.getItem().get(0).getPm10Value()
-                    + getString(R.string.finedust_unit);
-            binding.finedustStatus.setTextColor(BarInitDataCreater.getGradeColor(msrstnAcctoRltmMesureDnstyBody.getItem().get(0).getPm10Grade1h(), getContext()));
-        } else
-        {
-            pm10 = msrstnAcctoRltmMesureDnstyBody.getItem().get(0).getPm10Flag();
-        }
+		//pm2.5
+		if (airConditionFinalData.getPm25Flag() == null) {
+			pm25 = BarInitDataCreater.getGrade(airConditionFinalData.getPm25Grade1h(), getContext()) + ", " + airConditionFinalData.getPm25Value()
+					+ getString(R.string.finedust_unit);
+			binding.ultraFinedustStatus.setTextColor(BarInitDataCreater.getGradeColor(airConditionFinalData.getPm25Grade1h(), getContext()));
+		} else {
+			pm25 = airConditionFinalData.getPm25Flag();
+		}
 
-        //pm2.5
-        if (msrstnAcctoRltmMesureDnstyBody.getItem().get(0).getPm25Flag() == null)
-        {
-            pm25 = BarInitDataCreater.getGrade(msrstnAcctoRltmMesureDnstyBody.getItem().get(0).getPm25Grade1h(), getContext()) + ", " + msrstnAcctoRltmMesureDnstyBody.getItem().get(0).getPm25Value()
-                    + getString(R.string.finedust_unit);
-            binding.ultraFinedustStatus.setTextColor(BarInitDataCreater.getGradeColor(msrstnAcctoRltmMesureDnstyBody.getItem().get(0).getPm25Grade1h(), getContext()));
-        } else
-        {
-            pm25 = msrstnAcctoRltmMesureDnstyBody.getItem().get(0).getPm25Flag();
-        }
+		binding.finedustStatus.setText(pm10);
+		binding.ultraFinedustStatus.setText(pm25);
+	}
 
-        binding.finedustStatus.setText(pm10);
-        binding.ultraFinedustStatus.setText(pm25);
-    }
+	public void refresh() {
+		viewProgress.onStartedProcessingData();
+		airConditionProcessing.refresh(new WeatherDataCallback<AirConditionResult>() {
+			@Override
+			public void isSuccessful(AirConditionResult e) {
+				requireActivity().runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						onDownloadedTimeListener.setDownloadedTime(e.getDownloadedDate(), WeatherDataDTO.AIR_CONDITION);
+						viewProgress.onCompletedProcessingData(true);
+						setData(e);
+					}
+				});
+			}
 
-    public void refresh()
-    {
-        viewProgress.onStartedProcessingData();
-        if (SgisAuth.getSgisAuthResponse() == null)
-        {
-            sgisAuth.auth();
-        } else
-        {
-            TransCoordParameter parameter = new TransCoordParameter();
-            parameter.setAccessToken(SgisAuth.getSgisAuthResponse().getResult().getAccessToken());
-            parameter.setSrc(TransCoordParameter.WGS84);
-            parameter.setDst(TransCoordParameter.JUNGBU_ORIGIN);
-            parameter.setPosX(String.valueOf(LONGITUDE));
-            parameter.setPosY(String.valueOf(LATITUDE));
+			@Override
+			public void isFailure(Exception e) {
+				requireActivity().runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						onDownloadedTimeListener.setDownloadedTime(null, WeatherDataDTO.AIR_CONDITION);
+						viewProgress.onCompletedProcessingData(false, getString(R.string.error));
+					}
+				});
+			}
+		});
 
-            sgisTranscoord.transcoord(parameter);
-        }
-    }
+	}
 
-    private final View.OnClickListener onClickListener = new View.OnClickListener()
-    {
-        @Override
-        public void onClick(View view)
-        {
-            AirConditionDialogFragment airConditionDialogFragment = new AirConditionDialogFragment();
+	private final View.OnClickListener onClickListener = new View.OnClickListener() {
+		@Override
+		public void onClick(View view) {
+			AirConditionDialogFragment airConditionDialogFragment = new AirConditionDialogFragment();
 
-            Bundle bundle = new Bundle();
-            bundle.putParcelable("msrstnAcctoRltmMesureDnstyBody", msrstnAcctoRltmMesureDnstyBody);
-            bundle.putParcelable("nearbyMsrstnListBody", nearbyMsrstnListBody);
-            airConditionDialogFragment.setArguments(bundle);
-
-            airConditionDialogFragment.show(getChildFragmentManager(), "TAG");
-        }
-    };
+			Bundle bundle = new Bundle();
+			bundle.putString("latitude", LATITUDE);
+			bundle.putString("longitude", LONGITUDE);
+			airConditionDialogFragment.setArguments(bundle);
+			airConditionDialogFragment.show(getChildFragmentManager(), AirConditionDialogFragment.TAG);
+		}
+	};
 }

@@ -15,7 +15,7 @@ public class AirConditionResult {
 	//대기상태 응답 데이터
 	private MsrstnAcctoRltmMesureDnstyItem msrstnAcctoRltmMesureDnstyItem;
 	private Date downloadedDate;
-	
+
 	/*
 	초단기실황 최종 데이터 생성
 	 */
@@ -24,15 +24,15 @@ public class AirConditionResult {
 		this.msrstnAcctoRltmMesureDnstyItem = msrstnAcctoRltmMesureDnstyItem;
 		this.airConditionFinalData = (AirConditionFinalData) msrstnAcctoRltmMesureDnstyItem;
 	}
-	
+
 	public AirConditionFinalData getAirConditionFinalData() {
 		return airConditionFinalData;
 	}
-	
+
 	public MsrstnAcctoRltmMesureDnstyItem getMsrstnAcctoRltmMesureDnstyItem() {
 		return msrstnAcctoRltmMesureDnstyItem;
 	}
-	
+
 	public Date getDownloadedDate() {
 		return downloadedDate;
 	}
