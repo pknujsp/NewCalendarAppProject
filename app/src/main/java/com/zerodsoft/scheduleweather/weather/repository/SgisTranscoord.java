@@ -16,7 +16,7 @@ public class SgisTranscoord {
 
 	public void transcoord(TransCoordParameter parameter, JsonDownloader<TransCoordResponse> callback) {
 		if (SgisAuth.hasAccessToken()) {
-			parameter.setAccessToken(SgisAuth.getSgisAuthResponse().getResult().getAccessToken());
+			parameter.setAccessToken(SgisAuth.getAccessToken());
 		} else {
 			SgisAuth.auth(new JsonDownloader<SgisAuthResponse>() {
 				@Override

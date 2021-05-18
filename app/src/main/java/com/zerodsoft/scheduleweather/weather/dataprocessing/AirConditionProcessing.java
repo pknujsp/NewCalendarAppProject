@@ -41,25 +41,42 @@ public class AirConditionProcessing extends WeatherDataProcessing<AirConditionRe
 
 	@Override
 	public void getWeatherData(WeatherDataCallback<AirConditionResult> weatherDataCallback) {
-		weatherDbRepository.getWeatherData(LATITUDE, LONGITUDE, WeatherDataDTO.AIR_CONDITION,
-				new CarrierMessagingService.ResultCallback<WeatherDataDTO>() {
+		weatherDbRepository.getWeatherData(LATITUDE, LONGITUDE, WeatherDataDTO.NEAR_BY_MSRSTN_LIST
+				, new CarrierMessagingService.ResultCallback<WeatherDataDTO>() {
 					@Override
-					public void onReceiveResult(@NonNull WeatherDataDTO savedWeatherDataDTO) throws RemoteException {
-						if (savedWeatherDataDTO == null) {
+					public void onReceiveResult(@NonNull WeatherDataDTO nearByMsrstnListWeatherDataDTO) throws RemoteException {
+						if (nearByMsrstnListWeatherDataDTO == null) {
 							refresh(weatherDataCallback);
 						} else {
-							Gson gson = new Gson();
-							MsrstnAcctoRltmMesureDnstyRoot root = gson.fromJson(savedWeatherDataDTO.getJson(),
-									MsrstnAcctoRltmMesureDnstyRoot.class);
+							weatherDbRepository.getWeatherData(LATITUDE, LONGITUDE, WeatherDataDTO.AIR_CONDITION,
+									new CarrierMessagingService.ResultCallback<WeatherDataDTO>() {
+										@Override
+										public void onReceiveResult(@NonNull WeatherDataDTO airConditionWeatherDataDTO) throws RemoteException {
+											if (airConditionWeatherDataDTO == null) {
+												refresh(weatherDataCallback);
+											} else {
+												Gson gson = new Gson();
+												MsrstnAcctoRltmMesureDnstyRoot root = gson.fromJson(airConditionWeatherDataDTO.getJson(),
+														MsrstnAcctoRltmMesureDnstyRoot.class);
 
-							AirConditionResult airConditionResult = new AirConditionResult();
-							airConditionResult.setAirConditionFinalData(root.getResponse().getBody().getItem().get(0),
-									new Date(Long.parseLong(savedWeatherDataDTO.getDownloadedDate())));
+												NearbyMsrstnListRoot nearbyMsrstnListRoot = gson.fromJson(nearByMsrstnListWeatherDataDTO.getJson(),
+														NearbyMsrstnListRoot.class);
 
-							weatherDataCallback.isSuccessful(airConditionResult);
+												AirConditionResult airConditionResult = new AirConditionResult();
+												airConditionResult.setAirConditionFinalData(root.getResponse().getBody().getItem().get(0),
+														nearbyMsrstnListRoot, new Date(Long.parseLong(airConditionWeatherDataDTO.getDownloadedDate())));
+
+												weatherDataCallback.isSuccessful(airConditionResult);
+											}
+										}
+									});
+
+
 						}
 					}
 				});
+
+
 	}
 
 	@Override
@@ -82,51 +99,85 @@ public class AirConditionProcessing extends WeatherDataProcessing<AirConditionRe
 				parameter.setTmX(transCoordResult.getPosX());
 				parameter.setTmY(transCoordResult.getPosY());
 
-				findAirConditionStationDownloader.getNearbyMsrstnList(parameter, new JsonDownloader<NearbyMsrstnListRoot>() {
+				findAirConditionStationDownloader.getNearbyMsrstnList(parameter, new JsonDownloader<JsonObject>() {
 					@Override
-					public void onResponseSuccessful(NearbyMsrstnListRoot result) {
+					public void onResponseSuccessful(JsonObject nearbyMsrstnJsonObject) {
+						Gson gson = new Gson();
+						NearbyMsrstnListRoot nearbyMsrstnListRoot = gson.fromJson(nearbyMsrstnJsonObject.toString(),
+								NearbyMsrstnListRoot.class);
+
+						WeatherDataDTO nearbyMsrstnListDTO = new WeatherDataDTO();
+						nearbyMsrstnListDTO.setLatitude(LATITUDE);
+						nearbyMsrstnListDTO.setLongitude(LONGITUDE);
+						nearbyMsrstnListDTO.setDataType(WeatherDataDTO.NEAR_BY_MSRSTN_LIST);
+						nearbyMsrstnListDTO.setJson(nearbyMsrstnJsonObject.toString());
+						nearbyMsrstnListDTO.setDownloadedDate(String.valueOf(System.currentTimeMillis()));
+
+						weatherDbRepository.contains(LATITUDE, LONGITUDE, WeatherDataDTO.NEAR_BY_MSRSTN_LIST
+								, new CarrierMessagingService.ResultCallback<Boolean>() {
+									@Override
+									public void onReceiveResult(@NonNull Boolean isContains) throws RemoteException {
+										if (isContains) {
+											weatherDbRepository.update(LATITUDE, LONGITUDE, WeatherDataDTO.NEAR_BY_MSRSTN_LIST
+													, nearbyMsrstnJsonObject.toString(), nearbyMsrstnListDTO.getDownloadedDate(),
+													new CarrierMessagingService.ResultCallback<Boolean>() {
+														@Override
+														public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException {
+
+														}
+													});
+										} else {
+											weatherDbRepository.insert(nearbyMsrstnListDTO, new CarrierMessagingService.ResultCallback<WeatherDataDTO>() {
+												@Override
+												public void onReceiveResult(@NonNull WeatherDataDTO weatherDataDTO) throws RemoteException {
+
+												}
+											});
+										}
+									}
+								});
+
 						MsrstnAcctoRltmMesureDnstyParameter msrstnAcctoRltmMesureDnstyParameter = new MsrstnAcctoRltmMesureDnstyParameter();
 						msrstnAcctoRltmMesureDnstyParameter.setDataTerm(MsrstnAcctoRltmMesureDnstyParameter.DATATERM_DAILY);
-						msrstnAcctoRltmMesureDnstyParameter.setStationName(result.getResponse().getBody().getItems().get(0).getStationName());
+						msrstnAcctoRltmMesureDnstyParameter.setStationName(nearbyMsrstnListRoot.getResponse().getBody().getItems().get(0).getStationName());
 
 						airConditionDownloader.getMsrstnAcctoRltmMesureDnsty(msrstnAcctoRltmMesureDnstyParameter, new JsonDownloader<JsonObject>() {
 							@Override
-							public void onResponseSuccessful(JsonObject result) {
-								Gson gson = new Gson();
-								MsrstnAcctoRltmMesureDnstyRoot root = gson.fromJson(result.toString(), MsrstnAcctoRltmMesureDnstyRoot.class);
+							public void onResponseSuccessful(JsonObject msrstnAcctoRltmMesureDnstyResult) {
+								MsrstnAcctoRltmMesureDnstyRoot root = gson.fromJson(msrstnAcctoRltmMesureDnstyResult.toString(), MsrstnAcctoRltmMesureDnstyRoot.class);
 
-								WeatherDataDTO weatherDataDTO = new WeatherDataDTO();
-								weatherDataDTO.setLatitude(LATITUDE);
-								weatherDataDTO.setLongitude(LONGITUDE);
-								weatherDataDTO.setDataType(WeatherDataDTO.AIR_CONDITION);
-								weatherDataDTO.setJson(result.toString());
-								weatherDataDTO.setDownloadedDate(String.valueOf(System.currentTimeMillis()));
+								WeatherDataDTO msrstnAcctoRltmMesureDnstyWeatherDataDTO = new WeatherDataDTO();
+								msrstnAcctoRltmMesureDnstyWeatherDataDTO.setLatitude(LATITUDE);
+								msrstnAcctoRltmMesureDnstyWeatherDataDTO.setLongitude(LONGITUDE);
+								msrstnAcctoRltmMesureDnstyWeatherDataDTO.setDataType(WeatherDataDTO.AIR_CONDITION);
+								msrstnAcctoRltmMesureDnstyWeatherDataDTO.setJson(msrstnAcctoRltmMesureDnstyResult.toString());
+								msrstnAcctoRltmMesureDnstyWeatherDataDTO.setDownloadedDate(String.valueOf(System.currentTimeMillis()));
 
 								//db 삽입, 갱신
-								weatherDbRepository.contains(weatherDataDTO.getLatitude(), weatherDataDTO.getLongitude(), WeatherDataDTO.AIR_CONDITION,
+								weatherDbRepository.contains(msrstnAcctoRltmMesureDnstyWeatherDataDTO.getLatitude(), msrstnAcctoRltmMesureDnstyWeatherDataDTO.getLongitude(), WeatherDataDTO.AIR_CONDITION,
 										new CarrierMessagingService.ResultCallback<Boolean>() {
 											@Override
 											public void onReceiveResult(@NonNull Boolean isContains) throws RemoteException {
 												if (isContains) {
-													weatherDbRepository.update(weatherDataDTO.getLatitude(), weatherDataDTO.getLongitude(),
-															WeatherDataDTO.AIR_CONDITION, weatherDataDTO.getJson(), weatherDataDTO.getDownloadedDate(),
+													weatherDbRepository.update(msrstnAcctoRltmMesureDnstyWeatherDataDTO.getLatitude(), msrstnAcctoRltmMesureDnstyWeatherDataDTO.getLongitude(),
+															WeatherDataDTO.AIR_CONDITION, msrstnAcctoRltmMesureDnstyWeatherDataDTO.getJson(), msrstnAcctoRltmMesureDnstyWeatherDataDTO.getDownloadedDate(),
 															new CarrierMessagingService.ResultCallback<Boolean>() {
 																@Override
 																public void onReceiveResult(@NonNull Boolean isUpdated) throws RemoteException {
 																	AirConditionResult airConditionResult = new AirConditionResult();
 																	airConditionResult.setAirConditionFinalData(root.getResponse().getBody().getItem().get(0),
-																			new Date(Long.parseLong(weatherDataDTO.getDownloadedDate())));
+																			nearbyMsrstnListRoot, new Date(Long.parseLong(msrstnAcctoRltmMesureDnstyWeatherDataDTO.getDownloadedDate())));
 
 																	weatherDataCallback.isSuccessful(airConditionResult);
 																}
 															});
 												} else {
-													weatherDbRepository.insert(weatherDataDTO, new CarrierMessagingService.ResultCallback<WeatherDataDTO>() {
+													weatherDbRepository.insert(msrstnAcctoRltmMesureDnstyWeatherDataDTO, new CarrierMessagingService.ResultCallback<WeatherDataDTO>() {
 														@Override
 														public void onReceiveResult(@NonNull WeatherDataDTO weatherDataDTO) throws RemoteException {
 															AirConditionResult airConditionResult = new AirConditionResult();
 															airConditionResult.setAirConditionFinalData(root.getResponse().getBody().getItem().get(0),
-																	new Date(Long.parseLong(weatherDataDTO.getDownloadedDate())));
+																	nearbyMsrstnListRoot, new Date(Long.parseLong(weatherDataDTO.getDownloadedDate())));
 
 															weatherDataCallback.isSuccessful(airConditionResult);
 														}

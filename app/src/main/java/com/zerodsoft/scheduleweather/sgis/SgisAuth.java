@@ -47,12 +47,9 @@ public class SgisAuth {
 		return sgisAuthResponse;
 	}
 
+
 	public static String getAccessToken() {
-		if (sgisAuthResponse == null) {
-			return null;
-		} else {
-			return sgisAuthResponse.getResult().getAccessToken();
-		}
+		return sgisAuthResponse.getResult().getAccessToken();
 	}
 
 	public static boolean hasAccessToken() {
@@ -62,5 +59,4 @@ public class SgisAuth {
 			return true;
 		}
 	}
-
 }

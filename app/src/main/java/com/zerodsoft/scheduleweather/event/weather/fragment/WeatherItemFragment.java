@@ -312,7 +312,7 @@ public class WeatherItemFragment extends BottomSheetDialogFragment implements On
 
 	@Override
 	public void setDownloadedTime(Date downloadedTime, int dataType) {
-		String dateTimeStr = ClockUtil.DB_DATE_FORMAT.format(downloadedTime);
+		String dateTimeStr = downloadedTime == null ? getString(R.string.error) : ClockUtil.DB_DATE_FORMAT.format(downloadedTime);
 		switch (dataType) {
 			case WeatherDataDTO.ULTRA_SRT_NCST:
 				binding.ultraSrtNcstDownloadedTime.setText(dateTimeStr);

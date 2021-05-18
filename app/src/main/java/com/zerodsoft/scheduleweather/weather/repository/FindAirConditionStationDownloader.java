@@ -18,18 +18,18 @@ public class FindAirConditionStationDownloader {
 	/*
 	가장 가까운 관측소 검색
 	 */
-	public void getNearbyMsrstnList(NearbyMsrstnListParameter parameter, JsonDownloader<NearbyMsrstnListRoot> callback) {
+	public void getNearbyMsrstnList(NearbyMsrstnListParameter parameter, JsonDownloader<JsonObject> callback) {
 		Querys querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.FIND_STATION_FOR_AIR_CONDITION);
 
-		Call<NearbyMsrstnListRoot> call = querys.getNearbyMsrstnList(parameter.getMap());
-		call.enqueue(new Callback<NearbyMsrstnListRoot>() {
+		Call<JsonObject> call = querys.getNearbyMsrstnListStr(parameter.getMap());
+		call.enqueue(new Callback<JsonObject>() {
 			@Override
-			public void onResponse(Call<NearbyMsrstnListRoot> call, Response<NearbyMsrstnListRoot> response) {
+			public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
 				callback.processResult(response);
 			}
 
 			@Override
-			public void onFailure(Call<NearbyMsrstnListRoot> call, Throwable t) {
+			public void onFailure(Call<JsonObject> call, Throwable t) {
 				callback.processResult(t);
 			}
 		});

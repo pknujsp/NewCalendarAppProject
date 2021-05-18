@@ -18,6 +18,7 @@ import android.view.ViewGroup;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendarview.callback.EventCallback;
+import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
 import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
 import com.zerodsoft.scheduleweather.databinding.FragmentBuildingBinding;
 import com.zerodsoft.scheduleweather.navermap.building.SgisBuildingDownloader;
@@ -44,271 +45,224 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class BuildingFragment extends Fragment implements OnBackPressedCallbackController, BuildingFloorListAdapter.OnClickDownloadListener
-{
-    public static final String TAG = "BuildingFragment";
-    private FragmentBuildingBinding binding;
-    private BuildingAreaItem buildingAreaItem;
-    private BuildingFloorListAdapter buildingFloorListAdapter;
-    private static final int SCROLLING_TOP = -1;
-    private static final int SCROLLING_BOTTOM = 1;
-    private final BuildingFragmentController buildingFragmentController;
-    private final SgisBuildingDownloader sgisBuildingDownloader = new SgisBuildingDownloader()
-    {
-        @Override
-        public void onResponseSuccessful(SgisBuildingRoot result)
-        {
+public class BuildingFragment extends Fragment implements OnBackPressedCallbackController, BuildingFloorListAdapter.OnClickDownloadListener {
+	public static final String TAG = "BuildingFragment";
+	private FragmentBuildingBinding binding;
+	private BuildingAreaItem buildingAreaItem;
+	private BuildingFloorListAdapter buildingFloorListAdapter;
+	private static final int SCROLLING_TOP = -1;
+	private static final int SCROLLING_BOTTOM = 1;
+	private final BuildingFragmentController buildingFragmentController;
+	private final SgisBuildingDownloader sgisBuildingDownloader = new SgisBuildingDownloader();
 
-        }
+	private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
+		@Override
+		public void handleOnBackPressed() {
+			getParentFragmentManager().popBackStack();
+			buildingFragmentController.closeBuildingFragments(TAG);
+		}
+	};
 
-        @Override
-        public void onResponseFailed(Exception e)
-        {
+	public BuildingFragment(BuildingFragmentController buildingFragmentController) {
+		this.buildingFragmentController = buildingFragmentController;
+	}
 
-        }
-    };
+	@Override
+	public void onAttach(@NonNull Context context) {
+		super.onAttach(context);
+		addOnBackPressedCallback();
+	}
 
-    private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
-    {
-        @Override
-        public void handleOnBackPressed()
-        {
-            getParentFragmentManager().popBackStack();
-            buildingFragmentController.closeBuildingFragments(TAG);
-        }
-    };
+	@Override
+	public void onDetach() {
+		super.onDetach();
+		removeOnBackPressedCallback();
+	}
 
-    public BuildingFragment(BuildingFragmentController buildingFragmentController)
-    {
-        this.buildingFragmentController = buildingFragmentController;
-    }
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
 
-    @Override
-    public void onAttach(@NonNull Context context)
-    {
-        super.onAttach(context);
-        addOnBackPressedCallback();
-    }
+		buildingAreaItem = getArguments().getParcelable("building");
+	}
 
-    @Override
-    public void onDetach()
-    {
-        super.onDetach();
-        removeOnBackPressedCallback();
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState)
-    {
-        super.onCreate(savedInstanceState);
-
-        buildingAreaItem = getArguments().getParcelable("building");
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState)
-    {
-        binding = FragmentBuildingBinding.inflate(inflater);
-        return binding.getRoot();
-    }
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+	                         Bundle savedInstanceState) {
+		binding = FragmentBuildingBinding.inflate(inflater);
+		return binding.getRoot();
+	}
 
 
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
-    {
-        super.onViewCreated(view, savedInstanceState);
+	@Override
+	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
 
-        binding.errorText.setVisibility(View.GONE);
-        binding.progressBar.setVisibility(View.VISIBLE);
-        binding.buildingInfoLayout.getRoot().setVisibility(View.GONE);
-        binding.buildingFloorInfoLayout.getRoot().setVisibility(View.GONE);
+		binding.errorText.setVisibility(View.GONE);
+		binding.progressBar.setVisibility(View.VISIBLE);
+		binding.buildingInfoLayout.getRoot().setVisibility(View.GONE);
+		binding.buildingFloorInfoLayout.getRoot().setVisibility(View.GONE);
 
-        clearText();
+		clearText();
 
-        BuildingAttributeParameter buildingAttributeParameter = new BuildingAttributeParameter();
-        buildingAttributeParameter.setAccessToken(SgisAuth.getSgisAuthResponse().getResult().getAccessToken());
-        buildingAttributeParameter.setSufId(buildingAreaItem.getSufId());
+		BuildingAttributeParameter buildingAttributeParameter = new BuildingAttributeParameter();
+		buildingAttributeParameter.setSufId(buildingAreaItem.getSufId());
 
-        sgisBuildingDownloader.getBuildingAttribute(buildingAttributeParameter, new CarrierMessagingService.ResultCallback<DataWrapper<BuildingAttributeResponse>>()
-        {
-            @Override
-            public void onReceiveResult(@NonNull DataWrapper<BuildingAttributeResponse> buildingAttributeResponseDataWrapper) throws RemoteException
-            {
-                getActivity().runOnUiThread(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        binding.progressBar.setVisibility(View.GONE);
+		sgisBuildingDownloader.getBuildingAttribute(buildingAttributeParameter, new JsonDownloader<BuildingAttributeResponse>() {
+			@Override
+			public void onResponseSuccessful(BuildingAttributeResponse result) {
+				requireActivity().runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						binding.progressBar.setVisibility(View.GONE);
 
-                        if (buildingAttributeResponseDataWrapper.getException() == null)
-                        {
-                            setBuildingInfo(buildingAttributeResponseDataWrapper.getData());
-                            binding.buildingInfoLayout.getRoot().setVisibility(View.VISIBLE);
-                            binding.buildingFloorInfoLayout.getRoot().setVisibility(View.VISIBLE);
-                        } else
-                        {
-                            binding.errorText.setVisibility(View.VISIBLE);
-                        }
-                    }
-                });
-            }
-        });
+						setBuildingInfo(result);
+						binding.buildingInfoLayout.getRoot().setVisibility(View.VISIBLE);
+						binding.buildingFloorInfoLayout.getRoot().setVisibility(View.VISIBLE);
 
-        binding.buildingFloorInfoLayout.buildingFloorRecyclerview.addOnScrollListener(new RecyclerView.OnScrollListener()
-        {
-            @Override
-            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState)
-            {
-                super.onScrollStateChanged(recyclerView, newState);
-            }
+					}
+				});
+			}
 
-            @Override
-            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy)
-            {
-                super.onScrolled(recyclerView, dx, dy);
+			@Override
+			public void onResponseFailed(Exception e) {
+				requireActivity().runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						binding.progressBar.setVisibility(View.GONE);
+						binding.errorText.setVisibility(View.VISIBLE);
+					}
+				});
+			}
+		});
 
-                if (!recyclerView.canScrollVertically(SCROLLING_TOP))
-                {
-                    if (buildingFloorListAdapter.getUnderGroundCount() < BuildingFloorListAdapter.UNDERGROUND_COUNT_MAX)
-                    {
-                        buildingFloorListAdapter.addFloors(BuildingFloorListAdapter.FloorClassification.UNDERGROUND);
-                    }
-                    return;
-                }
+		binding.buildingFloorInfoLayout.buildingFloorRecyclerview.addOnScrollListener(new RecyclerView.OnScrollListener() {
+			@Override
+			public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+				super.onScrollStateChanged(recyclerView, newState);
+			}
 
-                if (!recyclerView.canScrollVertically(SCROLLING_BOTTOM))
-                {
-                    if (buildingFloorListAdapter.getAboveGroundCount() < BuildingFloorListAdapter.ABOVEGROUND_COUNT_MAX)
-                    {
-                        buildingFloorListAdapter.addFloors(BuildingFloorListAdapter.FloorClassification.ABOVEGROUND);
-                    }
-                    return;
-                }
-            }
-        });
+			@Override
+			public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+				super.onScrolled(recyclerView, dx, dy);
 
-        binding.buildingFloorInfoLayout.buildingFloorRecyclerview.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false));
-        buildingFloorListAdapter = new BuildingFloorListAdapter(this);
-        binding.buildingFloorInfoLayout.buildingFloorRecyclerview.setAdapter(buildingFloorListAdapter);
-    }
+				if (!recyclerView.canScrollVertically(SCROLLING_TOP)) {
+					if (buildingFloorListAdapter.getUnderGroundCount() < BuildingFloorListAdapter.UNDERGROUND_COUNT_MAX) {
+						buildingFloorListAdapter.addFloors(BuildingFloorListAdapter.FloorClassification.UNDERGROUND);
+					}
+					return;
+				}
 
-    private void setBuildingInfo(BuildingAttributeResponse buildingAttributeResponse)
-    {
-        String notData = getString(R.string.not_data);
+				if (!recyclerView.canScrollVertically(SCROLLING_BOTTOM)) {
+					if (buildingFloorListAdapter.getAboveGroundCount() < BuildingFloorListAdapter.ABOVEGROUND_COUNT_MAX) {
+						buildingFloorListAdapter.addFloors(BuildingFloorListAdapter.FloorClassification.ABOVEGROUND);
+					}
+					return;
+				}
+			}
+		});
 
-        binding.buildingInfoLayout.buildingName.setText(buildingAttributeResponse.getResult().getBdName() == null ? notData : buildingAttributeResponse.getResult().getBdName());
-        binding.buildingInfoLayout.buildingNewAddress.setText(buildingAttributeResponse.getResult().getBdNewAddress() == null ? notData : buildingAttributeResponse.getResult().getBdNewAddress());
-        binding.buildingInfoLayout.buildingAdmAddress.setText(buildingAttributeResponse.getResult().getBdAdmAddr() == null ? notData : buildingAttributeResponse.getResult().getBdAdmAddr());
-        binding.buildingInfoLayout.buildingHighestFloor.setText(buildingAttributeResponse.getResult().getHighestFloor() == null ? notData : buildingAttributeResponse.getResult().getHighestFloor());
-        binding.buildingInfoLayout.buildingLowestFloor.setText(buildingAttributeResponse.getResult().getLowestFloor() == null ? notData : buildingAttributeResponse.getResult().getLowestFloor());
-    }
+		binding.buildingFloorInfoLayout.buildingFloorRecyclerview.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false));
+		buildingFloorListAdapter = new BuildingFloorListAdapter(this);
+		binding.buildingFloorInfoLayout.buildingFloorRecyclerview.setAdapter(buildingFloorListAdapter);
+	}
 
-    private void clearText()
-    {
-        binding.buildingInfoLayout.buildingName.setText("");
-        binding.buildingInfoLayout.buildingNewAddress.setText("");
-        binding.buildingInfoLayout.buildingAdmAddress.setText("");
-        binding.buildingInfoLayout.buildingHighestFloor.setText("");
-        binding.buildingInfoLayout.buildingLowestFloor.setText("");
+	private void setBuildingInfo(BuildingAttributeResponse buildingAttributeResponse) {
+		String notData = getString(R.string.not_data);
 
-    }
+		binding.buildingInfoLayout.buildingName.setText(buildingAttributeResponse.getResult().getBdName() == null ? notData : buildingAttributeResponse.getResult().getBdName());
+		binding.buildingInfoLayout.buildingNewAddress.setText(buildingAttributeResponse.getResult().getBdNewAddress() == null ? notData : buildingAttributeResponse.getResult().getBdNewAddress());
+		binding.buildingInfoLayout.buildingAdmAddress.setText(buildingAttributeResponse.getResult().getBdAdmAddr() == null ? notData : buildingAttributeResponse.getResult().getBdAdmAddr());
+		binding.buildingInfoLayout.buildingHighestFloor.setText(buildingAttributeResponse.getResult().getHighestFloor() == null ? notData : buildingAttributeResponse.getResult().getHighestFloor());
+		binding.buildingInfoLayout.buildingLowestFloor.setText(buildingAttributeResponse.getResult().getLowestFloor() == null ? notData : buildingAttributeResponse.getResult().getLowestFloor());
+	}
 
-    @Override
-    public void addOnBackPressedCallback()
-    {
-        getActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
-    }
+	private void clearText() {
+		binding.buildingInfoLayout.buildingName.setText("");
+		binding.buildingInfoLayout.buildingNewAddress.setText("");
+		binding.buildingInfoLayout.buildingAdmAddress.setText("");
+		binding.buildingInfoLayout.buildingHighestFloor.setText("");
+		binding.buildingInfoLayout.buildingLowestFloor.setText("");
 
-    @Override
-    public void removeOnBackPressedCallback()
-    {
-        onBackPressedCallback.remove();
-    }
+	}
 
-    @Override
-    public void getFloorInfo(String floor, EventCallback<DataWrapper<BuildingFloorData>> callback)
-    {
-        FloorCompanyInfoParameter parameter = new FloorCompanyInfoParameter();
-        parameter.setAccessToken(SgisAuth.getSgisAuthResponse().getResult().getAccessToken());
-        parameter.setFloorNo(floor);
-        parameter.setSufId(buildingAreaItem.getSufId());
+	@Override
+	public void addOnBackPressedCallback() {
+		getActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
+	}
 
-        sgisBuildingDownloader.getFloorCompanyInfo(parameter, new CarrierMessagingService.ResultCallback<DataWrapper<FloorCompanyInfoResponse>>()
-        {
-            @Override
-            public void onReceiveResult(@NonNull DataWrapper<FloorCompanyInfoResponse> floorCompanyInfoResponseDataWrapper) throws RemoteException
-            {
-                //처리 후 리스트 갱신
-                if (floorCompanyInfoResponseDataWrapper.getException() == null)
-                {
-                    FloorCompanyInfoResult floorCompanyInfoResult = floorCompanyInfoResponseDataWrapper.getData().getResult();
+	@Override
+	public void removeOnBackPressedCallback() {
+		onBackPressedCallback.remove();
+	}
 
-                    Map<String, String> themesMap = new HashMap<>();
-                    List<FloorCompanyInfoThemeCdListItem> themeCdListItemList = floorCompanyInfoResult.getThemeCdList();
+	@Override
+	public void getFloorInfo(String floor, EventCallback<DataWrapper<BuildingFloorData>> callback) {
+		FloorCompanyInfoParameter parameter = new FloorCompanyInfoParameter();
+		parameter.setFloorNo(floor);
+		parameter.setSufId(buildingAreaItem.getSufId());
 
-                    for (FloorCompanyInfoThemeCdListItem theme : themeCdListItemList)
-                    {
-                        themesMap.put(theme.getThemeCd(), theme.getThemeCdNm());
-                    }
-                    //company theme값 지정
-                    List<FloorCompanyInfoCompanyListItem> companyInfoResultList = floorCompanyInfoResult.getCompanyList();
-                    List<CompanyData> companyDataList = new ArrayList<>();
+		sgisBuildingDownloader.getFloorCompanyInfo(parameter, new JsonDownloader<FloorCompanyInfoResponse>() {
+			@Override
+			public void onResponseSuccessful(FloorCompanyInfoResponse result) {
+				//처리 후 리스트 갱신
 
-                    for (FloorCompanyInfoCompanyListItem company : companyInfoResultList)
-                    {
-                        CompanyData companyData = new CompanyData(company.getCorpName(), themesMap.get(company.getThemeCd()));
-                        companyDataList.add(companyData);
-                    }
+				FloorCompanyInfoResult floorCompanyInfoResult = result.getResult();
 
-                    //시설물 개수 정리
-                    List<FloorCompanyInfoFacilityListItem> facilityListItemList = floorCompanyInfoResult.getFacilityList();
+				Map<String, String> themesMap = new HashMap<>();
+				List<FloorCompanyInfoThemeCdListItem> themeCdListItemList = floorCompanyInfoResult.getThemeCdList();
 
-                    Map<String, Integer> facilityMap = new HashMap<>();
-                    for (FloorCompanyInfoFacilityListItem facility : facilityListItemList)
-                    {
-                        if (facilityMap.containsKey(facility.getFacType()))
-                        {
-                            int count = facilityMap.get(facility.getFacType());
-                            facilityMap.put(facility.getFacType(), ++count);
-                        } else
-                        {
-                            facilityMap.put(facility.getFacType(), 1);
-                        }
-                    }
+				for (FloorCompanyInfoThemeCdListItem theme : themeCdListItemList) {
+					themesMap.put(theme.getThemeCd(), theme.getThemeCdNm());
+				}
+				//company theme값 지정
+				List<FloorCompanyInfoCompanyListItem> companyInfoResultList = floorCompanyInfoResult.getCompanyList();
+				List<CompanyData> companyDataList = new ArrayList<>();
 
-                    FacilityData facilityData = new FacilityData();
-                    facilityData.setElevatorCount(facilityMap.containsKey("0002") ? facilityMap.get("0002").toString() : "0");
-                    facilityData.setEntranceCount(facilityMap.containsKey("0004") ? facilityMap.get("0004").toString() : "0");
-                    facilityData.setMovingWorkCount(facilityMap.containsKey("0005") ? facilityMap.get("0005").toString() : "0");
-                    facilityData.setStairsCount(facilityMap.containsKey("0001") ? facilityMap.get("0001").toString() : "0");
-                    facilityData.setToiletCount(facilityMap.containsKey("0003") ? facilityMap.get("0003").toString() : "0");
-                    facilityData.setVacantRoomCount(facilityMap.containsKey("0000") ? facilityMap.get("0000").toString() : "0");
+				for (FloorCompanyInfoCompanyListItem company : companyInfoResultList) {
+					CompanyData companyData = new CompanyData(company.getCorpName(), themesMap.get(company.getThemeCd()));
+					companyDataList.add(companyData);
+				}
 
-                    getActivity().runOnUiThread(new Runnable()
-                    {
-                        @Override
-                        public void run()
-                        {
-                            callback.onResult(new DataWrapper<>(new BuildingFloorData(companyDataList, facilityData)));
+				//시설물 개수 정리
+				List<FloorCompanyInfoFacilityListItem> facilityListItemList = floorCompanyInfoResult.getFacilityList();
 
-                        }
-                    });
-                } else
-                {
-                    getActivity().runOnUiThread(new Runnable()
-                    {
-                        @Override
-                        public void run()
-                        {
-                            callback.onResult(new DataWrapper<>(floorCompanyInfoResponseDataWrapper.getException()));
+				Map<String, Integer> facilityMap = new HashMap<>();
+				for (FloorCompanyInfoFacilityListItem facility : facilityListItemList) {
+					if (facilityMap.containsKey(facility.getFacType())) {
+						int count = facilityMap.get(facility.getFacType());
+						facilityMap.put(facility.getFacType(), ++count);
+					} else {
+						facilityMap.put(facility.getFacType(), 1);
+					}
+				}
 
-                        }
-                    });
-                }
+				FacilityData facilityData = new FacilityData();
+				facilityData.setElevatorCount(facilityMap.containsKey("0002") ? facilityMap.get("0002").toString() : "0");
+				facilityData.setEntranceCount(facilityMap.containsKey("0004") ? facilityMap.get("0004").toString() : "0");
+				facilityData.setMovingWorkCount(facilityMap.containsKey("0005") ? facilityMap.get("0005").toString() : "0");
+				facilityData.setStairsCount(facilityMap.containsKey("0001") ? facilityMap.get("0001").toString() : "0");
+				facilityData.setToiletCount(facilityMap.containsKey("0003") ? facilityMap.get("0003").toString() : "0");
+				facilityData.setVacantRoomCount(facilityMap.containsKey("0000") ? facilityMap.get("0000").toString() : "0");
 
-            }
-        });
-    }
+				requireActivity().runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						callback.onResult(new DataWrapper<>(new BuildingFloorData(companyDataList, facilityData)));
+					}
+				});
+
+			}
+
+			@Override
+			public void onResponseFailed(Exception e) {
+				requireActivity().runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						callback.onResult(new DataWrapper<>(e));
+					}
+				});
+			}
+		});
+	}
 }

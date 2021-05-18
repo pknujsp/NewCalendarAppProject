@@ -13,13 +13,9 @@ import android.view.WindowManager;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.DialogFragmentAirConditionBinding;
-import com.zerodsoft.scheduleweather.room.dto.WeatherDataDTO;
-import com.zerodsoft.scheduleweather.weather.aircondition.airconditionbar.AirConditionFinalData;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.MsrstnAcctoRltmMesureDnsty.MsrstnAcctoRltmMesureDnstyItem;
 import com.zerodsoft.scheduleweather.weather.aircondition.airconditionbar.AirConditionResult;
 import com.zerodsoft.scheduleweather.weather.aircondition.airconditionbar.BarInitDataCreater;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.MsrstnAcctoRltmMesureDnsty.MsrstnAcctoRltmMesureDnstyBody;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.NearbyMsrstnList.NearbyMsrstnListBody;
-import com.zerodsoft.scheduleweather.weather.common.ViewProgress;
 import com.zerodsoft.scheduleweather.weather.common.WeatherDataCallback;
 import com.zerodsoft.scheduleweather.weather.dataprocessing.AirConditionProcessing;
 
@@ -110,11 +106,11 @@ public class AirConditionDialogFragment extends DialogFragment {
 		String co = "";
 		String no2 = "";
 
-		AirConditionFinalData airConditionFinalData = airConditionResult.getAirConditionFinalData();
+		MsrstnAcctoRltmMesureDnstyItem airConditionFinalData = airConditionResult.getAirConditionFinalData();
 
 		//측정소
-		//	binding.stationName.setText(airConditionFinalData.getA() + " " + getString(R.string.station_name));
-
+		binding.stationName.setText(airConditionResult.getNearbyMsrstnListRoot().getResponse().getBody()
+				.getItems().get(0).getStationName() + " " + getString(R.string.station_name));
 		//pm10
 		if (airConditionFinalData.getPm10Flag() == null) {
 			binding.finedustBar.setDataValue(Double.parseDouble(airConditionFinalData.getPm10Value()));

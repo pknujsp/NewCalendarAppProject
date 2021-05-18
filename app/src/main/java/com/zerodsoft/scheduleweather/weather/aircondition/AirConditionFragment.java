@@ -1,47 +1,24 @@
 package com.zerodsoft.scheduleweather.weather.aircondition;
 
 import android.os.Bundle;
-import android.os.RemoteException;
-import android.service.carrier.CarrierMessagingService;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.FragmentAirConditionBinding;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.MsrstnAcctoRltmMesureDnsty.MsrstnAcctoRltmMesureDnstyItem;
 import com.zerodsoft.scheduleweather.room.dto.WeatherDataDTO;
-import com.zerodsoft.scheduleweather.weather.aircondition.airconditionbar.AirConditionFinalData;
 import com.zerodsoft.scheduleweather.weather.aircondition.airconditionbar.AirConditionResult;
 import com.zerodsoft.scheduleweather.weather.common.ViewProgress;
 import com.zerodsoft.scheduleweather.weather.common.WeatherDataCallback;
 import com.zerodsoft.scheduleweather.weather.dataprocessing.AirConditionProcessing;
 import com.zerodsoft.scheduleweather.weather.interfaces.OnDownloadedTimeListener;
-import com.zerodsoft.scheduleweather.weather.repository.AirConditionDownloader;
-import com.zerodsoft.scheduleweather.weather.repository.FindAirConditionStationDownloader;
-import com.zerodsoft.scheduleweather.weather.repository.SgisTranscoord;
 import com.zerodsoft.scheduleweather.weather.aircondition.airconditionbar.BarInitDataCreater;
-import com.zerodsoft.scheduleweather.retrofit.paremeters.MsrstnAcctoRltmMesureDnstyParameter;
-import com.zerodsoft.scheduleweather.retrofit.paremeters.NearbyMsrstnListParameter;
-import com.zerodsoft.scheduleweather.retrofit.paremeters.sgis.TransCoordParameter;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.MsrstnAcctoRltmMesureDnsty.MsrstnAcctoRltmMesureDnstyBody;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.MsrstnAcctoRltmMesureDnsty.MsrstnAcctoRltmMesureDnstyRoot;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.NearbyMsrstnList.NearbyMsrstnListBody;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.NearbyMsrstnList.NearbyMsrstnListRoot;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.auth.SgisAuthResponse;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.transcoord.TransCoordResponse;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.transcoord.TransCoordResult;
-import com.zerodsoft.scheduleweather.sgis.SgisAuth;
-import com.zerodsoft.scheduleweather.weather.viewmodel.WeatherDbViewModel;
-
-import java.util.Date;
 
 public class AirConditionFragment extends Fragment {
 	private FragmentAirConditionBinding binding;
@@ -120,7 +97,7 @@ public class AirConditionFragment extends Fragment {
 		String pm10 = "";
 		String pm25 = "";
 
-		AirConditionFinalData airConditionFinalData = airConditionResult.getAirConditionFinalData();
+		MsrstnAcctoRltmMesureDnstyItem airConditionFinalData = airConditionResult.getAirConditionFinalData();
 
 		//pm10
 		if (airConditionFinalData.getPm10Flag() == null) {
