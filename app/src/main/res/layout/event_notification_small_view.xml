@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout style="@style/CustomNotificationViewPadding"
+    android:id="@+id/notification_small_root_layout"
+    android:layout_height="64dp"
+    android:layout_width="match_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <LinearLayout
+        android:layout_gravity="center"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:orientation="vertical">
+
+        <TextView
+            style="@style/CustomNotificationTitle"
+            android:id="@+id/instance_title"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            android:layout_width="match_parent"
+            android:text="Title" />
+
+        <TextView
+            style="@style/CustomNotificationDateTime"
+            android:id="@+id/instance_datetime"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:text="dateTime" />
+
+    </LinearLayout>
+
+</FrameLayout>

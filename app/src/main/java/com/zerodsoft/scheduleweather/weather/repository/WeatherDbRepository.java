@@ -1,6 +1,7 @@
 package com.zerodsoft.scheduleweather.weather.repository;
 
 import android.app.Application;
+import android.content.Context;
 import android.service.carrier.CarrierMessagingService;
 
 import com.zerodsoft.scheduleweather.room.AppDb;
@@ -19,6 +20,11 @@ public class WeatherDbRepository implements WeatherDataQuery
     public WeatherDbRepository(Application application)
     {
         dao = AppDb.getInstance(application.getApplicationContext()).weatherDataDAO();
+    }
+    
+    public WeatherDbRepository(Context context)
+    {
+        dao = AppDb.getInstance(context).weatherDataDAO();
     }
 
     @Override
