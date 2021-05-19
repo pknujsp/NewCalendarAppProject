@@ -4,10 +4,10 @@ import android.content.Context;
 
 import com.zerodsoft.scheduleweather.weather.common.WeatherDataCallback;
 import com.zerodsoft.scheduleweather.weather.repository.WeatherDbRepository;
-import com.zerodsoft.scheduleweather.weather.repository.WeatherRepository;
+import com.zerodsoft.scheduleweather.weather.repository.AreaCodeRepository;
 
 public abstract class WeatherDataProcessing<T> {
-	protected WeatherRepository weatherRepository;
+	protected AreaCodeRepository areaCodeRepository;
 	protected WeatherDbRepository weatherDbRepository;
 	protected Context context;
 	protected final String LATITUDE;
@@ -17,7 +17,7 @@ public abstract class WeatherDataProcessing<T> {
 		this.context = context;
 		this.LATITUDE = LATITUDE;
 		this.LONGITUDE = LONGITUDE;
-		this.weatherRepository = new WeatherRepository(context);
+		this.areaCodeRepository = new AreaCodeRepository(context);
 		this.weatherDbRepository = new WeatherDbRepository(context);
 	}
 

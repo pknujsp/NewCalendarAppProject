@@ -13,7 +13,6 @@ import com.zerodsoft.scheduleweather.retrofit.paremeters.MsrstnAcctoRltmMesureDn
 import com.zerodsoft.scheduleweather.retrofit.paremeters.NearbyMsrstnListParameter;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.sgis.TransCoordParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.MsrstnAcctoRltmMesureDnsty.MsrstnAcctoRltmMesureDnstyRoot;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.NearbyMsrstnList.NearbyMsrstnListBody;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.NearbyMsrstnList.NearbyMsrstnListRoot;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.transcoord.TransCoordResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.transcoord.TransCoordResult;
@@ -23,8 +22,6 @@ import com.zerodsoft.scheduleweather.weather.common.WeatherDataCallback;
 import com.zerodsoft.scheduleweather.weather.repository.AirConditionDownloader;
 import com.zerodsoft.scheduleweather.weather.repository.FindAirConditionStationDownloader;
 import com.zerodsoft.scheduleweather.weather.repository.SgisTranscoord;
-import com.zerodsoft.scheduleweather.weather.repository.WeatherDbRepository;
-import com.zerodsoft.scheduleweather.weather.repository.WeatherRepository;
 
 import java.util.Date;
 

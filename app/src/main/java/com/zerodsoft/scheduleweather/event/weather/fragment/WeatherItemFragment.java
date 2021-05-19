@@ -33,7 +33,7 @@ import com.zerodsoft.scheduleweather.weather.sunsetrise.SunSetRiseData;
 import com.zerodsoft.scheduleweather.weather.ultrasrtfcst.UltraSrtFcstFragment;
 import com.zerodsoft.scheduleweather.weather.ultrasrtncst.UltraSrtNcstFragment;
 import com.zerodsoft.scheduleweather.weather.viewmodel.WeatherDbViewModel;
-import com.zerodsoft.scheduleweather.weather.viewmodel.WeatherViewModel;
+import com.zerodsoft.scheduleweather.weather.viewmodel.AreaCodeViewModel;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.utility.LonLat;
 import com.zerodsoft.scheduleweather.utility.LonLatConverter;
@@ -62,7 +62,7 @@ public class WeatherItemFragment extends BottomSheetDialogFragment implements On
 	//대기 상태
 	private AirConditionFragment airConditionFragment;
 
-	private WeatherViewModel weatherViewModel;
+	private AreaCodeViewModel areaCodeViewModel;
 	private LocationViewModel locationViewModel;
 	private List<SunSetRiseData> sunSetRiseList = new ArrayList<>();
 	private WeatherAreaCodeDTO weatherAreaCode;
@@ -181,7 +181,7 @@ public class WeatherItemFragment extends BottomSheetDialogFragment implements On
 			}
 		});
 
-		weatherViewModel = new ViewModelProvider(this).get(WeatherViewModel.class);
+		areaCodeViewModel = new ViewModelProvider(this).get(AreaCodeViewModel.class);
 		locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
 
 		locationViewModel.getLocation(calendarId, eventId, new CarrierMessagingService.ResultCallback<LocationDTO>() {
@@ -193,10 +193,9 @@ public class WeatherItemFragment extends BottomSheetDialogFragment implements On
 						locationDTO = selectedLocationDTO;
 						final LonLat lonLat = LonLatConverter.convertGrid(selectedLocationDTO.getLongitude(), selectedLocationDTO.getLatitude());
 
-						weatherViewModel.init(getContext(), lonLat);
-						weatherViewModel.getAreaCodeLiveData().observe(getViewLifecycleOwner(), new Observer<List<WeatherAreaCodeDTO>>() {
+						areaCodeViewModel.getAreaCodes(lonLat, new CarrierMessagingService.ResultCallback<List<WeatherAreaCodeDTO>>() {
 							@Override
-							public void onChanged(List<WeatherAreaCodeDTO> weatherAreaCodes) {
+							public void onReceiveResult(@NonNull List<WeatherAreaCodeDTO> weatherAreaCodes) throws RemoteException {
 								if (weatherAreaCodes != null) {
 									List<LocationPoint> locationPoints = new LinkedList<>();
 									for (WeatherAreaCodeDTO weatherAreaCodeDTO : weatherAreaCodes) {
@@ -218,7 +217,12 @@ public class WeatherItemFragment extends BottomSheetDialogFragment implements On
 									weatherAreaCode = weatherAreaCodes.get(index);
 
 									refreshWeatherData();
-									createFragments();
+									requireActivity().runOnUiThread(new Runnable() {
+										@Override
+										public void run() {
+											createFragments();
+										}
+									});
 								}
 							}
 						});
@@ -287,7 +291,6 @@ public class WeatherItemFragment extends BottomSheetDialogFragment implements On
 		calendar.setTime(endDate.getTime());
 		endDate.add(Calendar.DAY_OF_YEAR, 2);
 
-
 		boolean finished = false;
 
 		while (!finished) {
@@ -336,7 +339,7 @@ public class WeatherItemFragment extends BottomSheetDialogFragment implements On
 	}
 
 
-	static class LocationPoint {
+	static public class LocationPoint {
 		private double latitude;
 		private double longitude;
 

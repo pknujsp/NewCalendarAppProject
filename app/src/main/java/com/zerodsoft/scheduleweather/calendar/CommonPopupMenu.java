@@ -20,32 +20,25 @@ import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationI
 
 import lombok.SneakyThrows;
 
-public abstract class CommonPopupMenu
-{
-    public CommonPopupMenu()
-    {
+public abstract class CommonPopupMenu {
+	public CommonPopupMenu() {
 
-    }
+	}
 
-    public void createInstancePopupMenu(ContentValues instance, Activity activity, View anchorView, int gravity,
-                                        CalendarViewModel calendarViewModel, LocationViewModel locationViewModel, FoodCriteriaLocationInfoViewModel foodCriteriaLocationInfoViewModel,
-                                        FoodCriteriaLocationHistoryViewModel foodCriteriaLocationHistoryViewModel)
-    {
-        Context context = activity.getApplicationContext();
-        PopupMenu popupMenu = new PopupMenu(context, anchorView, gravity);
+	public void createInstancePopupMenu(ContentValues instance, Activity activity, View anchorView, int gravity,
+	                                    CalendarViewModel calendarViewModel, LocationViewModel locationViewModel, FoodCriteriaLocationInfoViewModel foodCriteriaLocationInfoViewModel,
+	                                    FoodCriteriaLocationHistoryViewModel foodCriteriaLocationHistoryViewModel) {
+		Context context = activity.getApplicationContext();
+		PopupMenu popupMenu = new PopupMenu(context, anchorView, gravity);
 
-        popupMenu.getMenuInflater().inflate(R.menu.edit_instance_menu, popupMenu.getMenu());
-        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener()
-        {
-            @SuppressLint("NonConstantResourceId")
-            @Override
-            public boolean onMenuItemClick(MenuItem menuItem)
-            {
-                switch (menuItem.getItemId())
-                {
-                    case R.id.edit_instance:
-                    {
-                        //인스턴스 수정 액티비티 실행
+		popupMenu.getMenuInflater().inflate(R.menu.edit_instance_menu, popupMenu.getMenu());
+		popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+			@SuppressLint("NonConstantResourceId")
+			@Override
+			public boolean onMenuItemClick(MenuItem menuItem) {
+				switch (menuItem.getItemId()) {
+					case R.id.edit_instance: {
+						//인스턴스 수정 액티비티 실행
                         /*
                         Intent intent = new Intent(EventActivity.this, EditEventActivity.class);
                         intent.putExtra("requestCode", EventDataController.MODIFY_EVENT);
@@ -53,137 +46,118 @@ public abstract class CommonPopupMenu
                         intent.putExtra("eventId", eventId.longValue());
                         startActivity(intent);
                          */
-                        Toast.makeText(activity, "작성 중", Toast.LENGTH_SHORT).show();
-                        break;
-                    }
-                    case R.id.delete_instance:
-                    {
-                        //인스턴스 수정 다이얼로그 표시
-                        //이번 일정만 삭제, 향후 모든 일정 삭제, 모든 일정 삭제
+						Toast.makeText(activity, "작성 중", Toast.LENGTH_SHORT).show();
+						break;
+					}
+					case R.id.delete_instance: {
+						//인스턴스 수정 다이얼로그 표시
+						//이번 일정만 삭제, 향후 모든 일정 삭제, 모든 일정 삭제
                         /*
                         반복없는 이벤트 인 경우 : 일정 삭제
                        반복있는 이벤트 인 경우 : 이번 일정만 삭제, 향후 모든 일정 삭제, 모든 일정 삭제
                           */
 
-                        String[] items = null;
+						String[] items = null;
 
-                        if (instance.getAsString(CalendarContract.Instances.RRULE) != null)
-                        {
-                            items = new String[]{context.getString(R.string.remove_this_instance), context.getString(R.string.remove_all_future_instance_including_current_instance)
-                                    , context.getString(R.string.remove_event)};
-                        } else
-                        {
-                            items = new String[]{context.getString(R.string.remove_event)};
-                        }
-                        new MaterialAlertDialogBuilder(activity).setTitle(context.getString(R.string.remove_event))
-                                .setItems(items, new DialogInterface.OnClickListener()
-                                {
-                                    @SneakyThrows
-                                    @Override
-                                    public void onClick(DialogInterface dialogInterface, int index)
-                                    {
-                                        if (instance.getAsString(CalendarContract.Instances.RRULE) != null)
-                                        {
-                                            switch (index)
-                                            {
-                                                case 0:
-                                                    // 이번 일정만 삭제
-                                                    // 완성
-                                                    showExceptThisInstanceDialog(activity, calendarViewModel, instance.getAsLong(CalendarContract.Instances.BEGIN)
-                                                            , instance.getAsLong(CalendarContract.Instances.EVENT_ID));
-                                                    break;
-                                                case 1:
-                                                    // 향후 모든 일정만 삭제
-                                                    // deleteSubsequentIncludingThis();
-                                                    Toast.makeText(activity, "작성 중", Toast.LENGTH_SHORT).show();
-                                                    break;
-                                                case 2:
-                                                    // 모든 일정 삭제
-                                                    showDeleteEventDialog(activity, calendarViewModel, locationViewModel
-                                                            , foodCriteriaLocationInfoViewModel, foodCriteriaLocationHistoryViewModel
-                                                            , instance.getAsInteger(CalendarContract.Instances.CALENDAR_ID)
-                                                            , instance.getAsLong(CalendarContract.Instances.EVENT_ID));
-                                                    break;
-                                            }
-                                        } else
-                                        {
-                                            switch (index)
-                                            {
-                                                case 0:
-                                                    // 모든 일정 삭제
-                                                    showDeleteEventDialog(activity, calendarViewModel, locationViewModel
-                                                            , foodCriteriaLocationInfoViewModel, foodCriteriaLocationHistoryViewModel
-                                                            , instance.getAsInteger(CalendarContract.Instances.CALENDAR_ID)
-                                                            , instance.getAsLong(CalendarContract.Instances.EVENT_ID));
-                                                    break;
-                                            }
-                                        }
-                                    }
-                                }).create().show();
-                        break;
-                    }
-                }
-                return true;
-            }
-        });
+						if (instance.getAsString(CalendarContract.Instances.RRULE) != null) {
+							items = new String[]{context.getString(R.string.remove_this_instance), context.getString(R.string.remove_all_future_instance_including_current_instance)
+									, context.getString(R.string.remove_event)};
+						} else {
+							items = new String[]{context.getString(R.string.remove_event)};
+						}
+						new MaterialAlertDialogBuilder(activity).setTitle(context.getString(R.string.remove_event))
+								.setItems(items, new DialogInterface.OnClickListener() {
+									@SneakyThrows
+									@Override
+									public void onClick(DialogInterface dialogInterface, int index) {
+										if (instance.getAsString(CalendarContract.Instances.RRULE) != null) {
+											switch (index) {
+												case 0:
+													// 이번 일정만 삭제
+													// 완성
+													showExceptThisInstanceDialog(activity, calendarViewModel, instance.getAsLong(CalendarContract.Instances.BEGIN)
+															, instance.getAsLong(CalendarContract.Instances.EVENT_ID));
+													break;
+												case 1:
+													// 향후 모든 일정만 삭제
+													// deleteSubsequentIncludingThis();
+													Toast.makeText(activity, "작성 중", Toast.LENGTH_SHORT).show();
+													break;
+												case 2:
+													// 모든 일정 삭제
+													showDeleteEventDialog(activity, calendarViewModel, locationViewModel
+															, foodCriteriaLocationInfoViewModel, foodCriteriaLocationHistoryViewModel
+															, instance.getAsInteger(CalendarContract.Instances.CALENDAR_ID)
+															, instance.getAsLong(CalendarContract.Instances.EVENT_ID));
+													break;
+											}
+										} else {
+											switch (index) {
+												case 0:
+													// 모든 일정 삭제
+													showDeleteEventDialog(activity, calendarViewModel, locationViewModel
+															, foodCriteriaLocationInfoViewModel, foodCriteriaLocationHistoryViewModel
+															, instance.getAsInteger(CalendarContract.Instances.CALENDAR_ID)
+															, instance.getAsLong(CalendarContract.Instances.EVENT_ID));
+													break;
+											}
+										}
+									}
+								}).create().show();
+						break;
+					}
+				}
+				return true;
+			}
+		});
 
-        popupMenu.show();
-    }
+		popupMenu.show();
+	}
 
-    public abstract void onExceptedInstance(boolean isSuccessful);
+	public abstract void onExceptedInstance(boolean isSuccessful);
 
-    public abstract void onDeletedInstance(boolean isSuccessful);
+	public abstract void onDeletedEvent(boolean isSuccessful);
 
 
-    private void showDeleteEventDialog(Activity activity, CalendarViewModel calendarViewModel, LocationViewModel locationViewModel
-            , FoodCriteriaLocationInfoViewModel foodCriteriaLocationInfoViewModel
-            , FoodCriteriaLocationHistoryViewModel foodCriteriaLocationHistoryViewModel, final int CALENDAR_ID
-            , final long EVENT_ID)
-    {
-        new MaterialAlertDialogBuilder(activity)
-                .setTitle(R.string.remove_event)
-                .setPositiveButton(R.string.check, new DialogInterface.OnClickListener()
-                {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which)
-                    {
-                        CalendarInstanceUtil.deleteEvent(calendarViewModel, locationViewModel
-                                , foodCriteriaLocationInfoViewModel, foodCriteriaLocationHistoryViewModel, CALENDAR_ID, EVENT_ID);
-                        onExceptedInstance(true);
-                        dialog.dismiss();
-                    }
-                })
-                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener()
-                {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which)
-                    {
-                        dialog.dismiss();
-                    }
-                }).create().show();
-    }
+	private void showDeleteEventDialog(Activity activity, CalendarViewModel calendarViewModel, LocationViewModel locationViewModel
+			, FoodCriteriaLocationInfoViewModel foodCriteriaLocationInfoViewModel
+			, FoodCriteriaLocationHistoryViewModel foodCriteriaLocationHistoryViewModel, final int CALENDAR_ID
+			, final long EVENT_ID) {
+		new MaterialAlertDialogBuilder(activity)
+				.setTitle(R.string.remove_event)
+				.setPositiveButton(R.string.check, new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						CalendarInstanceUtil.deleteEvent(calendarViewModel, locationViewModel
+								, foodCriteriaLocationInfoViewModel, foodCriteriaLocationHistoryViewModel, CALENDAR_ID, EVENT_ID);
+						onDeletedEvent(true);
+						dialog.dismiss();
+					}
+				})
+				.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						dialog.dismiss();
+					}
+				}).create().show();
+	}
 
-    private void showExceptThisInstanceDialog(Activity activity, CalendarViewModel calendarViewModel, final long BEGIN, final long EVENT_ID)
-    {
-        new MaterialAlertDialogBuilder(activity)
-                .setTitle(R.string.remove_this_instance)
-                .setPositiveButton(R.string.check, new DialogInterface.OnClickListener()
-                {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which)
-                    {
-                        CalendarInstanceUtil.exceptThisInstance(calendarViewModel, BEGIN, EVENT_ID);
-                        onExceptedInstance(true);
-                        dialog.dismiss();
-                    }
-                })
-                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener()
-                {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which)
-                    {
-                        dialog.dismiss();
-                    }
-                }).create().show();
-    }
+	private void showExceptThisInstanceDialog(Activity activity, CalendarViewModel calendarViewModel, final long BEGIN, final long EVENT_ID) {
+		new MaterialAlertDialogBuilder(activity)
+				.setTitle(R.string.remove_this_instance)
+				.setPositiveButton(R.string.check, new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						CalendarInstanceUtil.exceptThisInstance(calendarViewModel, BEGIN, EVENT_ID);
+						onExceptedInstance(true);
+						dialog.dismiss();
+					}
+				})
+				.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						dialog.dismiss();
+					}
+				}).create().show();
+	}
 }

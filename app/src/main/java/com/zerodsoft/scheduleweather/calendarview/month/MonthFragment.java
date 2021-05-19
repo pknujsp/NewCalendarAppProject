@@ -21,119 +21,106 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClic
 
 import java.util.Calendar;
 
-public class MonthFragment extends Fragment implements IRefreshView
-{
-    public static final String TAG = "MonthFragment";
+public class MonthFragment extends Fragment implements IRefreshView {
+	public static final String TAG = "MonthFragment";
 
-    private final IControlEvent iControlEvent;
-    private final IToolbar iToolbar;
-    private final OnEventItemClickListener onEventItemClickListener;
-    private final IConnectedCalendars iConnectedCalendars;
-    private final OnEventItemLongClickListener onEventItemLongClickListener;
+	private final IControlEvent iControlEvent;
+	private final IToolbar iToolbar;
+	private final OnEventItemClickListener onEventItemClickListener;
+	private final IConnectedCalendars iConnectedCalendars;
+	private final OnEventItemLongClickListener onEventItemLongClickListener;
 
-    private ViewPager2 viewPager;
-    private MonthViewPagerAdapter viewPagerAdapter;
-    private OnPageChangeCallback onPageChangeCallback;
+	private ViewPager2 viewPager;
+	private MonthViewPagerAdapter viewPagerAdapter;
+	private OnPageChangeCallback onPageChangeCallback;
 
-    private int currentPosition = EventTransactionFragment.FIRST_VIEW_POSITION;
+	private int currentPosition = EventTransactionFragment.FIRST_VIEW_POSITION;
 
-    public MonthFragment(Fragment fragment, IToolbar iToolbar, IConnectedCalendars iConnectedCalendars)
-    {
-        this.onEventItemLongClickListener = (OnEventItemLongClickListener) fragment;
-        this.iControlEvent = (IControlEvent) fragment;
-        this.onEventItemClickListener = (OnEventItemClickListener) fragment;
-        this.iToolbar = iToolbar;
-        this.iConnectedCalendars = iConnectedCalendars;
-    }
+	public MonthFragment(Fragment fragment, IToolbar iToolbar, IConnectedCalendars iConnectedCalendars) {
+		this.onEventItemLongClickListener = (OnEventItemLongClickListener) fragment;
+		this.iControlEvent = (IControlEvent) fragment;
+		this.onEventItemClickListener = (OnEventItemClickListener) fragment;
+		this.iToolbar = iToolbar;
+		this.iConnectedCalendars = iConnectedCalendars;
+	}
 
-    @Nullable
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
-    {
-        return inflater.inflate(R.layout.fragment_month, container, false);
-    }
+	@Nullable
+	@Override
+	public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+		return inflater.inflate(R.layout.fragment_month, container, false);
+	}
 
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
-    {
-        super.onViewCreated(view, savedInstanceState);
+	@Override
+	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
 
-        viewPager = (ViewPager2) view.findViewById(R.id.month_viewpager);
+		viewPager = (ViewPager2) view.findViewById(R.id.month_viewpager);
 
-        viewPagerAdapter = new MonthViewPagerAdapter(iControlEvent, onEventItemLongClickListener, onEventItemClickListener, iToolbar, iConnectedCalendars);
-        viewPager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
-        viewPager.setAdapter(viewPagerAdapter);
-        viewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, false);
+		viewPagerAdapter = new MonthViewPagerAdapter(iControlEvent, onEventItemLongClickListener, onEventItemClickListener, iToolbar, iConnectedCalendars);
+		viewPager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
+		viewPager.setAdapter(viewPagerAdapter);
+		viewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, false);
 
-        onPageChangeCallback = new OnPageChangeCallback(viewPagerAdapter.getCALENDAR());
-        viewPager.registerOnPageChangeCallback(onPageChangeCallback);
-    }
+		onPageChangeCallback = new OnPageChangeCallback(viewPagerAdapter.getCALENDAR());
+		viewPager.registerOnPageChangeCallback(onPageChangeCallback);
+	}
 
 
-    @Override
-    public void onStart()
-    {
-        super.onStart();
-        // 인스턴스 그리기
-    }
+	@Override
+	public void onStart() {
+		super.onStart();
+		// 인스턴스 그리기
+	}
 
 
-    @Override
-    public void refreshView()
-    {
-        int currentItem = viewPager.getCurrentItem();
-        viewPagerAdapter.refresh(currentItem);
-        viewPagerAdapter.notifyDataSetChanged();
-    }
+	@Override
+	public void refreshView() {
+		int currentItem = viewPager.getCurrentItem();
+		viewPagerAdapter.refresh(currentItem);
+		viewPagerAdapter.notifyDataSetChanged();
+	}
 
-    public void goToToday()
-    {
-        if (currentPosition != EventTransactionFragment.FIRST_VIEW_POSITION)
-        {
-            viewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, true);
-            refreshView();
-        }
-    }
+	public void goToToday() {
+		if (currentPosition != EventTransactionFragment.FIRST_VIEW_POSITION) {
+			viewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, true);
+			refreshView();
+		}
+	}
 
 
-    class OnPageChangeCallback extends ViewPager2.OnPageChangeCallback
-    {
-        private final Calendar calendar;
-        private Calendar copiedCalendar;
+	class OnPageChangeCallback extends ViewPager2.OnPageChangeCallback {
+		private final Calendar calendar;
+		private Calendar copiedCalendar;
 
-        public OnPageChangeCallback(Calendar calendar)
-        {
-            this.calendar = calendar;
-        }
+		public OnPageChangeCallback(Calendar calendar) {
+			this.calendar = calendar;
+		}
 
-        @Override
-        public void onPageScrollStateChanged(int state)
-        {
-            super.onPageScrollStateChanged(state);
-        }
+		@Override
+		public void onPageScrollStateChanged(int state) {
+			super.onPageScrollStateChanged(state);
+		}
 
 
-        @Override
-        public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels)
-        {
-            // 오른쪽(이전 주)으로 드래그시 positionOffset의 값이 작아짐 0.99999 -> 0.0
-            // 왼쪽(다음 주)으로 드래그시 positionOffset의 값이 커짐 0.00001 -> 1.0
-            super.onPageScrolled(position, positionOffset, positionOffsetPixels);
-        }
+		@Override
+		public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+			// 오른쪽(이전 주)으로 드래그시 positionOffset의 값이 작아짐 0.99999 -> 0.0
+			// 왼쪽(다음 주)으로 드래그시 positionOffset의 값이 커짐 0.00001 -> 1.0
+			super.onPageScrolled(position, positionOffset, positionOffsetPixels);
+		}
 
-        @Override
-        public void onPageSelected(int position)
-        {
-            // drag 성공 시에만 SETTLING 직후 호출
-            currentPosition = position;
+		@Override
+		public void onPageSelected(int position) {
+			// drag 성공 시에만 SETTLING 직후 호출
+			currentPosition = position;
 
-            copiedCalendar = (Calendar) calendar.clone();
-            copiedCalendar.add(Calendar.MONTH, currentPosition - EventTransactionFragment.FIRST_VIEW_POSITION);
+			copiedCalendar = (Calendar) calendar.clone();
+			copiedCalendar.add(Calendar.MONTH, currentPosition - EventTransactionFragment.FIRST_VIEW_POSITION);
 
-            //error point-------------------------------------------------------------------------
-            iToolbar.setMonth(copiedCalendar.getTime());
-            super.onPageSelected(position);
-        }
-    }
+			//error point-------------------------------------------------------------------------
+			iToolbar.setMonth(copiedCalendar.getTime());
+			super.onPageSelected(position);
+		}
+	}
 }
 

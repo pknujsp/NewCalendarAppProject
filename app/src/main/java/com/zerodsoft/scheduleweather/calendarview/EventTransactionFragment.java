@@ -42,230 +42,188 @@ import java.util.Date;
 import java.util.Map;
 
 
-public class EventTransactionFragment extends Fragment implements IControlEvent, OnEventItemClickListener, IRefreshView, OnEventItemLongClickListener
-{
-    // 달력 프래그먼트를 관리하는 프래그먼트
-    public static final String TAG = "CalendarTransactionFragment";
-    public static final int FIRST_VIEW_POSITION = Integer.MAX_VALUE / 2;
+public class EventTransactionFragment extends Fragment implements IControlEvent, OnEventItemClickListener, IRefreshView, OnEventItemLongClickListener {
+	// 달력 프래그먼트를 관리하는 프래그먼트
+	public static final String TAG = "CalendarTransactionFragment";
+	public static final int FIRST_VIEW_POSITION = Integer.MAX_VALUE / 2;
 
-    private CalendarViewModel calendarViewModel;
-    private LocationViewModel locationViewModel;
-    private FoodCriteriaLocationHistoryViewModel foodCriteriaLocationHistoryViewModel;
-    private FoodCriteriaLocationInfoViewModel foodCriteriaLocationInfoViewModel;
-    private Fragment currentFragment;
-    private final IToolbar iToolbar;
-    private final IConnectedCalendars iConnectedCalendars;
-    private final IstartActivity istartActivity;
-    private final IRefreshView monthAssistantViewRefresher;
-    private NetworkStatus networkStatus;
+	private CalendarViewModel calendarViewModel;
+	private LocationViewModel locationViewModel;
+	private FoodCriteriaLocationHistoryViewModel foodCriteriaLocationHistoryViewModel;
+	private FoodCriteriaLocationInfoViewModel foodCriteriaLocationInfoViewModel;
+	private Fragment currentFragment;
+	private final IToolbar iToolbar;
+	private final IConnectedCalendars iConnectedCalendars;
+	private final IstartActivity istartActivity;
+	private final IRefreshView monthAssistantViewRefresher;
+	private NetworkStatus networkStatus;
 
-    private final CommonPopupMenu commonPopupMenu = new CommonPopupMenu()
-    {
-        @Override
-        public void onExceptedInstance(boolean isSuccessful)
-        {
-            if (isSuccessful)
-            {
-                refreshView();
-            }
-        }
+	private final CommonPopupMenu commonPopupMenu = new CommonPopupMenu() {
+		@Override
+		public void onExceptedInstance(boolean isSuccessful) {
+			if (isSuccessful) {
+				refreshView();
+			}
+		}
 
-        @Override
-        public void onDeletedInstance(boolean isSuccessful)
-        {
-            if (isSuccessful)
-            {
-                refreshView();
-            }
-        }
-    };
+		@Override
+		public void onDeletedEvent(boolean isSuccessful) {
+			if (isSuccessful) {
+				refreshView();
+			}
+		}
+	};
 
-    public EventTransactionFragment(Activity activity, IRefreshView monthAssistantViewRefresher)
-    {
-        this.iToolbar = (IToolbar) activity;
-        this.iConnectedCalendars = (IConnectedCalendars) activity;
-        this.istartActivity = (IstartActivity) activity;
-        this.monthAssistantViewRefresher = monthAssistantViewRefresher;
-    }
+	public EventTransactionFragment(Activity activity, IRefreshView monthAssistantViewRefresher) {
+		this.iToolbar = (IToolbar) activity;
+		this.iConnectedCalendars = (IConnectedCalendars) activity;
+		this.istartActivity = (IstartActivity) activity;
+		this.monthAssistantViewRefresher = monthAssistantViewRefresher;
+	}
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState)
-    {
-        super.onCreate(savedInstanceState);
-        networkStatus = new NetworkStatus(getContext(), new ConnectivityManager.NetworkCallback()
-        {
+	@Override
+	public void onCreate(@Nullable Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		networkStatus = new NetworkStatus(getContext(), new ConnectivityManager.NetworkCallback() {
 
-        });
-    }
+		});
+	}
 
-    @Nullable
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
-    {
-        return inflater.inflate(R.layout.fragment_calendar, container, false);
-    }
+	@Nullable
+	@Override
+	public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+		return inflater.inflate(R.layout.fragment_calendar, container, false);
+	}
 
 
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
-    {
-        super.onViewCreated(view, savedInstanceState);
-        calendarViewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
-        locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
-        foodCriteriaLocationHistoryViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationHistoryViewModel.class);
-        foodCriteriaLocationInfoViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationInfoViewModel.class);
-        // 마지막으로 사용된 달력의 종류 가져오기
-    }
+	@Override
+	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
+		calendarViewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
+		locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
+		foodCriteriaLocationHistoryViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationHistoryViewModel.class);
+		foodCriteriaLocationInfoViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationInfoViewModel.class);
+		// 마지막으로 사용된 달력의 종류 가져오기
+	}
 
-    @Override
-    public void onStop()
-    {
-        super.onStop();
-    }
+	@Override
+	public void onStop() {
+		super.onStop();
+	}
 
-    @Override
-    public void onStart()
-    {
-        super.onStart();
-    }
+	@Override
+	public void onStart() {
+		super.onStart();
+	}
 
-    @Override
-    public void onDestroy()
-    {
-        super.onDestroy();
-        networkStatus.unregisterNetworkCallback();
-    }
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		networkStatus.unregisterNetworkCallback();
+	}
 
-    public void replaceFragment(String fragmentTag)
-    {
-        FragmentTransaction fragmentTransaction = getParentFragmentManager().beginTransaction();
+	public void replaceFragment(String fragmentTag) {
+		FragmentTransaction fragmentTransaction = getParentFragmentManager().beginTransaction();
 
-        switch (fragmentTag)
-        {
-            case MonthFragment.TAG:
-                currentFragment = new MonthFragment(this, iToolbar, iConnectedCalendars);
-                fragmentTransaction.replace(R.id.calendar_container_layout, (MonthFragment) currentFragment, MonthFragment.TAG);
-                break;
-            case WeekFragment.TAG:
-                currentFragment = new WeekFragment(this, iToolbar, iConnectedCalendars);
-                fragmentTransaction.replace(R.id.calendar_container_layout, (WeekFragment) currentFragment, WeekFragment.TAG);
-                break;
-            case DayFragment.TAG:
-                currentFragment = new DayFragment(this, iToolbar, iConnectedCalendars);
-                fragmentTransaction.replace(R.id.calendar_container_layout, (DayFragment) currentFragment, DayFragment.TAG);
-                break;
-        }
-        fragmentTransaction.commit();
-    }
+		switch (fragmentTag) {
+			case MonthFragment.TAG:
+				currentFragment = new MonthFragment(this, iToolbar, iConnectedCalendars);
+				fragmentTransaction.replace(R.id.calendar_container_layout, (MonthFragment) currentFragment, MonthFragment.TAG);
+				break;
+			case WeekFragment.TAG:
+				currentFragment = new WeekFragment(this, iToolbar, iConnectedCalendars);
+				fragmentTransaction.replace(R.id.calendar_container_layout, (WeekFragment) currentFragment, WeekFragment.TAG);
+				break;
+			case DayFragment.TAG:
+				currentFragment = new DayFragment(this, iToolbar, iConnectedCalendars);
+				fragmentTransaction.replace(R.id.calendar_container_layout, (DayFragment) currentFragment, DayFragment.TAG);
+				break;
+		}
+		fragmentTransaction.commit();
+	}
 
-    @Override
-    public Map<Integer, CalendarInstance> getInstances(long begin, long end)
-    {
-        // 선택된 캘린더 목록
-        return calendarViewModel.getInstances(begin, end);
-    }
+	@Override
+	public Map<Integer, CalendarInstance> getInstances(long begin, long end) {
+		// 선택된 캘린더 목록
+		return calendarViewModel.getInstances(begin, end);
+	}
 
-    public void goToToday()
-    {
-        if (currentFragment instanceof MonthFragment)
-        {
-            ((MonthFragment) currentFragment).goToToday();
-        } else if (currentFragment instanceof WeekFragment)
-        {
-            ((WeekFragment) currentFragment).goToToday();
-        } else if (currentFragment instanceof DayFragment)
-        {
-            ((DayFragment) currentFragment).goToToday();
-        }
-    }
+	public void goToToday() {
+		if (currentFragment instanceof MonthFragment) {
+			((MonthFragment) currentFragment).goToToday();
+		} else if (currentFragment instanceof WeekFragment) {
+			((WeekFragment) currentFragment).goToToday();
+		} else if (currentFragment instanceof DayFragment) {
+			((DayFragment) currentFragment).goToToday();
+		}
+	}
 
 
-    @Override
-    public void onClicked(long viewBegin, long viewEnd)
-    {
-        // 이벤트 리스트 프래그먼트 다이얼로그 표시
-        Bundle bundle = new Bundle();
-        bundle.putLong("begin", viewBegin);
-        bundle.putLong("end", viewEnd);
+	@Override
+	public void onClicked(long viewBegin, long viewEnd) {
+		// 이벤트 리스트 프래그먼트 다이얼로그 표시
+		Bundle bundle = new Bundle();
+		bundle.putLong("begin", viewBegin);
+		bundle.putLong("end", viewEnd);
 
-        InstanceListOnADayDialogFragment fragment = new InstanceListOnADayDialogFragment(iConnectedCalendars, this);
-        fragment.setArguments(bundle);
+		InstanceListOnADayDialogFragment fragment = new InstanceListOnADayDialogFragment(iConnectedCalendars, this);
+		fragment.setArguments(bundle);
 
-        //현재 표시중인 프래그먼트를 숨기고, 인스턴스 프래그먼트를 표시
-        fragment.show(getParentFragmentManager(), InstanceListOnADayDialogFragment.TAG);
-    }
+		//현재 표시중인 프래그먼트를 숨기고, 인스턴스 프래그먼트를 표시
+		fragment.show(getParentFragmentManager(), InstanceListOnADayDialogFragment.TAG);
+	}
 
-    @Override
-    public void onClicked(int calendarId, long instanceId, long eventId, long viewBegin, long viewEnd)
-    {
-        // 이벤트 정보 액티비티로 전환
-        if (networkStatus.networkAvailable())
-        {
-            /*
-            Intent intent = new Intent(getActivity(), InstanceMainActivity.class);
-            intent.putExtra("calendarId", calendarId);
-            intent.putExtra("instanceId", instanceId);
-            intent.putExtra("eventId", eventId);
-            intent.putExtra("begin", viewBegin);
-            intent.putExtra("end", viewEnd);
+	@Override
+	public void onClicked(int calendarId, long instanceId, long eventId, long viewBegin, long viewEnd) {
+		// 이벤트 정보 액티비티로 전환
+		if (networkStatus.networkAvailable()) {
+			Intent intent = new Intent(getActivity(), NewInstanceMainActivity.class);
+			Bundle bundle = new Bundle();
 
-             */
-            Intent intent = new Intent(getActivity(), NewInstanceMainActivity.class);
-            Bundle bundle = new Bundle();
+			bundle.putInt(CalendarContract.Instances.CALENDAR_ID, calendarId);
+			bundle.putLong(CalendarContract.Instances._ID, instanceId);
+			bundle.putLong(CalendarContract.Instances.EVENT_ID, eventId);
+			bundle.putLong(CalendarContract.Instances.BEGIN, viewBegin);
+			bundle.putLong(CalendarContract.Instances.END, viewEnd);
+			intent.putExtras(bundle);
 
-            bundle.putInt(CalendarContract.Instances.CALENDAR_ID, calendarId);
-            bundle.putLong(CalendarContract.Instances._ID, instanceId);
-            bundle.putLong(CalendarContract.Instances.EVENT_ID, eventId);
-            bundle.putLong(CalendarContract.Instances.BEGIN, viewBegin);
-            bundle.putLong(CalendarContract.Instances.END, viewEnd);
-            intent.putExtras(bundle);
+			istartActivity.startActivityResult(intent, 0);
+		}
+	}
 
-            istartActivity.startActivityResult(intent, 0);
-        }
-    }
+	@Override
+	public void onClickedOnDialog(int calendarId, long instanceId, long eventId, long viewBegin, long viewEnd) {
+		onClicked(calendarId, instanceId, eventId, viewBegin, viewEnd);
+		DialogFragment fragment = (DialogFragment) getParentFragmentManager().findFragmentByTag(InstanceListOnADayDialogFragment.TAG);
+		fragment.dismiss();
+	}
 
-    @Override
-    public void onClickedOnDialog(int calendarId, long instanceId, long eventId, long viewBegin, long viewEnd)
-    {
-        onClicked(calendarId, instanceId, eventId, viewBegin, viewEnd);
-        DialogFragment fragment = (DialogFragment) getParentFragmentManager().findFragmentByTag(InstanceListOnADayDialogFragment.TAG);
-        fragment.dismiss();
-    }
+	public void changeDate(Date date) {
+		if (currentFragment instanceof WeekFragment) {
+			((WeekFragment) currentFragment).goToWeek(date);
+			//선택된 날짜에 해당 하는 주로 이동 (parameter : 2020년 2주차 -> 2020년 2주차로 이동)
+		} else if (currentFragment instanceof DayFragment) {
+			((DayFragment) currentFragment).goToDay(date);
+		}
+	}
 
-    public void changeDate(Date date)
-    {
-        if (currentFragment instanceof WeekFragment)
-        {
-            ((WeekFragment) currentFragment).goToWeek(date);
-            //선택된 날짜에 해당 하는 주로 이동 (parameter : 2020년 2주차 -> 2020년 2주차로 이동)
-        } else if (currentFragment instanceof DayFragment)
-        {
-            ((DayFragment) currentFragment).goToDay(date);
-        }
-    }
+	@Override
+	public void refreshView() {
+		//일정이 추가/삭제되면 영향을 받은 일정의 시작날짜에 해당하는 달력의 위치로 이동한다.
+		if (currentFragment instanceof MonthFragment) {
+			((MonthFragment) currentFragment).refreshView();
+		} else if (currentFragment instanceof WeekFragment) {
+			((WeekFragment) currentFragment).refreshView();
+		} else if (currentFragment instanceof DayFragment) {
+			((DayFragment) currentFragment).refreshView();
+		}
+		monthAssistantViewRefresher.refreshView();
+	}
 
-    @Override
-    public void refreshView()
-    {
-        //일정이 추가/삭제되면 영향을 받은 일정의 시작날짜에 해당하는 달력의 위치로 이동한다.
-        if (currentFragment instanceof MonthFragment)
-        {
-            ((MonthFragment) currentFragment).refreshView();
-        } else if (currentFragment instanceof WeekFragment)
-        {
-            ((WeekFragment) currentFragment).refreshView();
-        } else if (currentFragment instanceof DayFragment)
-        {
-            ((DayFragment) currentFragment).refreshView();
-        }
-        monthAssistantViewRefresher.refreshView();
-    }
-
-    @Override
-    public void createInstancePopupMenu(ContentValues instance, View anchorView, int gravity)
-    {
-        commonPopupMenu.createInstancePopupMenu(instance, requireActivity(), anchorView, gravity
-                , calendarViewModel, locationViewModel, foodCriteriaLocationInfoViewModel, foodCriteriaLocationHistoryViewModel);
-    }
+	@Override
+	public void createInstancePopupMenu(ContentValues instance, View anchorView, int gravity) {
+		commonPopupMenu.createInstancePopupMenu(instance, requireActivity(), anchorView, gravity
+				, calendarViewModel, locationViewModel, foodCriteriaLocationInfoViewModel, foodCriteriaLocationHistoryViewModel);
+	}
 }
 
