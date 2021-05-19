@@ -75,8 +75,6 @@ public class MonthFragment extends Fragment implements IRefreshView {
 
 	@Override
 	public void refreshView() {
-		int currentItem = viewPager.getCurrentItem();
-		viewPagerAdapter.refresh(currentItem);
 		viewPagerAdapter.notifyDataSetChanged();
 	}
 
