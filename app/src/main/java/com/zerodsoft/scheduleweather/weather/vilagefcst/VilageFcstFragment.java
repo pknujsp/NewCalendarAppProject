@@ -437,9 +437,11 @@ public class VilageFcstFragment extends Fragment {
 				tempList.add(data.getTemp3Hour());
 
 				// 최대,최소 기온 구하기
-				if (temp > max) {
+				if (temp >= max) {
 					max = temp;
-				} else if (temp < min) {
+				}
+
+				if (temp <= min) {
 					min = temp;
 				}
 			}

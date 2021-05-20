@@ -113,9 +113,9 @@ public class UltraSrtNcstFragment extends Fragment {
 	private void setValue(UltraSrtNcstResult ultraSrtNcstResult) {
 		UltraSrtNcstFinalData ultraSrtNcstFinalData = ultraSrtNcstResult.getUltraSrtNcstFinalData();
 		//기온
-		binding.ultraSrtNcstTemp.setText(ultraSrtNcstFinalData.getTemperature() + "ºC");
+		binding.ultraSrtNcstTemp.setText(ultraSrtNcstFinalData.getTemperature() + getString(R.string.celcius));
 		//강수형태
-		binding.ultraSrtNcstPty.setText(WeatherDataConverter.convertPrecipitationForm(ultraSrtNcstFinalData.getPrecipitationForm()));
+		binding.ultraSrtNcstPty.setText(ultraSrtNcstFinalData.getPrecipitationForm());
 		//습도
 		binding.ultraSrtNcstHumidity.setText(ultraSrtNcstFinalData.getHumidity());
 		//바람

@@ -216,10 +216,10 @@ public class WeatherItemFragment extends BottomSheetDialogFragment implements On
 									// regId설정하는 코드 작성
 									weatherAreaCode = weatherAreaCodes.get(index);
 
-									refreshWeatherData();
 									requireActivity().runOnUiThread(new Runnable() {
 										@Override
 										public void run() {
+											refreshWeatherData();
 											createFragments();
 										}
 									});

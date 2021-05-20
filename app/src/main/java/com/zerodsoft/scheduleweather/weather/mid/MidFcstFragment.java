@@ -403,10 +403,10 @@ public class MidFcstFragment extends Fragment {
 				minTempList.add(data.getTempMin());
 
 				// 최대,최소 기온 구하기
-				if (maxTemp > max) {
+				if (maxTemp >= max) {
 					max = maxTemp;
 				}
-				if (minTemp < min) {
+				if (minTemp <= min) {
 					min = minTemp;
 				}
 			}

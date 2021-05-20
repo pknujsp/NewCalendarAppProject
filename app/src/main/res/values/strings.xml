@@ -28,11 +28,14 @@
     <string name="vilage_fcst">3일 예보</string>
     <string name="mid_fcst">주간 예보</string>
     <string name="rain">비</string>
-    <string name="sleet">진눈깨비</string>
-
-    <!-- 16방위표 -->
+    <string name="sleet">비와 눈</string>
     <string name="snow">눈</string>
     <string name="shower">소나기</string>
+    <string name="raindrop">빗방울</string>
+    <string name="raindrop_snowdrifting">빗방울과 눈 날림</string>
+    <string name="snowdrifting">눈 날림</string>
+    <!-- 16방위표 -->
+
     <string name="nne">북북동</string>
     <string name="ne">북동</string>
     <string name="ene">동북동</string>
@@ -538,4 +541,5 @@
     <string name="notification_channel_description">test_calendar_event_channel_description</string>
     <string name="event_notification_title">이벤트 알림</string>
     <string name="event_notification_text">이벤트가 곧 있습니다</string>
+    <string name="celcius">ºC</string>
 </resources>
