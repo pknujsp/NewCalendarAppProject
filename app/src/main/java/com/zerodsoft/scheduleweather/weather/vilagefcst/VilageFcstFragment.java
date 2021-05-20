@@ -100,7 +100,8 @@ public class VilageFcstFragment extends Fragment {
 			public void isFailure(Exception e) {
 				clearViews();
 				onDownloadedTimeListener.setDownloadedTime(null, WeatherDataDTO.VILAGE_FCST);
-				viewProgress.onCompletedProcessingData(false, getString(R.string.error));
+				viewProgress.onCompletedProcessingData(false, e.getMessage());
+
 			}
 		});
 	}
@@ -127,7 +128,8 @@ public class VilageFcstFragment extends Fragment {
 					public void run() {
 						clearViews();
 						onDownloadedTimeListener.setDownloadedTime(null, WeatherDataDTO.VILAGE_FCST);
-						viewProgress.onCompletedProcessingData(false, getString(R.string.error));
+						viewProgress.onCompletedProcessingData(false, e.getMessage());
+
 					}
 				});
 

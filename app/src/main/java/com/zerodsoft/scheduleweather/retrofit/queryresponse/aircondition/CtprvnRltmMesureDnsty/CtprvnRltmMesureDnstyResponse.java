@@ -5,52 +5,58 @@ import android.os.Parcelable;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.commons.Header;
 
-public class CtprvnRltmMesureDnstyResponse implements Parcelable
-{
-    @Expose
-    @SerializedName("body")
-    private CtprvnRltmMesureDnstyBody body;
+public class CtprvnRltmMesureDnstyResponse implements Parcelable {
+	@Expose
+	@SerializedName("header")
+	private Header header;
 
-    protected CtprvnRltmMesureDnstyResponse(Parcel in)
-    {
-        body = in.readParcelable(CtprvnRltmMesureDnstyBody.class.getClassLoader());
-    }
+	@Expose
+	@SerializedName("body")
+	private CtprvnRltmMesureDnstyBody body;
 
-    public static final Creator<CtprvnRltmMesureDnstyResponse> CREATOR = new Creator<CtprvnRltmMesureDnstyResponse>()
-    {
-        @Override
-        public CtprvnRltmMesureDnstyResponse createFromParcel(Parcel in)
-        {
-            return new CtprvnRltmMesureDnstyResponse(in);
-        }
+	protected CtprvnRltmMesureDnstyResponse(Parcel in) {
+		header = in.readParcelable(Header.class.getClassLoader());
+		body = in.readParcelable(CtprvnRltmMesureDnstyBody.class.getClassLoader());
+	}
 
-        @Override
-        public CtprvnRltmMesureDnstyResponse[] newArray(int size)
-        {
-            return new CtprvnRltmMesureDnstyResponse[size];
-        }
-    };
+	public static final Creator<CtprvnRltmMesureDnstyResponse> CREATOR = new Creator<CtprvnRltmMesureDnstyResponse>() {
+		@Override
+		public CtprvnRltmMesureDnstyResponse createFromParcel(Parcel in) {
+			return new CtprvnRltmMesureDnstyResponse(in);
+		}
 
-    @Override
-    public int describeContents()
-    {
-        return 0;
-    }
+		@Override
+		public CtprvnRltmMesureDnstyResponse[] newArray(int size) {
+			return new CtprvnRltmMesureDnstyResponse[size];
+		}
+	};
 
-    @Override
-    public void writeToParcel(Parcel parcel, int i)
-    {
-        parcel.writeParcelable(body, i);
-    }
+	@Override
+	public int describeContents() {
+		return 0;
+	}
 
-    public void setBody(CtprvnRltmMesureDnstyBody body)
-    {
-        this.body = body;
-    }
+	@Override
+	public void writeToParcel(Parcel dest, int flags) {
+		dest.writeParcelable(header, flags);
+		dest.writeParcelable(body, flags);
+	}
 
-    public CtprvnRltmMesureDnstyBody getBody()
-    {
-        return body;
-    }
+	public Header getHeader() {
+		return header;
+	}
+
+	public void setHeader(Header header) {
+		this.header = header;
+	}
+
+	public CtprvnRltmMesureDnstyBody getBody() {
+		return body;
+	}
+
+	public void setBody(CtprvnRltmMesureDnstyBody body) {
+		this.body = body;
+	}
 }

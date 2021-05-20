@@ -101,8 +101,7 @@ public class UltraSrtNcstFragment extends Fragment {
 					public void run() {
 						clearViews();
 						onDownloadedTimeListener.setDownloadedTime(null, WeatherDataDTO.ULTRA_SRT_NCST);
-						viewProgress.onCompletedProcessingData(false, getString(R.string.not_data));
-						Toast.makeText(getContext(), R.string.error, Toast.LENGTH_SHORT).show();
+						viewProgress.onCompletedProcessingData(false, e.getMessage());
 					}
 				});
 
@@ -149,8 +148,7 @@ public class UltraSrtNcstFragment extends Fragment {
 					public void run() {
 						clearViews();
 						onDownloadedTimeListener.setDownloadedTime(null, WeatherDataDTO.ULTRA_SRT_NCST);
-						viewProgress.onCompletedProcessingData(false, getString(R.string.not_data));
-						Toast.makeText(getContext(), R.string.error, Toast.LENGTH_SHORT).show();
+						viewProgress.onCompletedProcessingData(false, e.getMessage());
 					}
 				});
 			}

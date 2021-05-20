@@ -3,22 +3,19 @@ package com.zerodsoft.scheduleweather.weather.dataprocessing;
 import android.content.Context;
 import android.os.RemoteException;
 import android.service.carrier.CarrierMessagingService;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.lifecycle.ViewModelProvider;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.UltraSrtFcstParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.ultrasrtfcstresponse.UltraSrtFcstRoot;
 import com.zerodsoft.scheduleweather.room.dto.WeatherDataDTO;
 import com.zerodsoft.scheduleweather.weather.common.WeatherDataCallback;
+import com.zerodsoft.scheduleweather.weather.common.WeatherDataHeaderChecker;
 import com.zerodsoft.scheduleweather.weather.repository.WeatherDataDownloader;
 import com.zerodsoft.scheduleweather.weather.ultrasrtfcst.UltraSrtFcstResult;
-import com.zerodsoft.scheduleweather.weather.viewmodel.WeatherDbViewModel;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -63,43 +60,54 @@ public class UltraSrtFcstProcessing extends WeatherDataProcessing<UltraSrtFcstRe
 				Gson gson = new Gson();
 				UltraSrtFcstRoot ultraSrtFcstRoot = gson.fromJson(result.toString(), UltraSrtFcstRoot.class);
 
-				Date downloadedDate = new Date(System.currentTimeMillis());
+				new WeatherDataHeaderChecker() {
+					@Override
+					public void isSuccessful() {
+						Date downloadedDate = new Date(System.currentTimeMillis());
 
-				WeatherDataDTO ultraSrtFcstWeatherDataDTO = new WeatherDataDTO();
-				ultraSrtFcstWeatherDataDTO.setLatitude(LATITUDE);
-				ultraSrtFcstWeatherDataDTO.setLongitude(LONGITUDE);
-				ultraSrtFcstWeatherDataDTO.setDataType(WeatherDataDTO.ULTRA_SRT_FCST);
-				ultraSrtFcstWeatherDataDTO.setJson(result.toString());
-				ultraSrtFcstWeatherDataDTO.setDownloadedDate(String.valueOf(downloadedDate.getTime()));
+						WeatherDataDTO ultraSrtFcstWeatherDataDTO = new WeatherDataDTO();
+						ultraSrtFcstWeatherDataDTO.setLatitude(LATITUDE);
+						ultraSrtFcstWeatherDataDTO.setLongitude(LONGITUDE);
+						ultraSrtFcstWeatherDataDTO.setDataType(WeatherDataDTO.ULTRA_SRT_FCST);
+						ultraSrtFcstWeatherDataDTO.setJson(result.toString());
+						ultraSrtFcstWeatherDataDTO.setDownloadedDate(String.valueOf(downloadedDate.getTime()));
 
-				weatherDbRepository.contains(LATITUDE, LONGITUDE, WeatherDataDTO.ULTRA_SRT_FCST,
-						new CarrierMessagingService.ResultCallback<Boolean>() {
-							@Override
-							public void onReceiveResult(@NonNull Boolean isContains) throws RemoteException {
-								if (isContains) {
-									weatherDbRepository.update(LATITUDE, LONGITUDE, WeatherDataDTO.ULTRA_SRT_FCST, result.toString()
-											, ultraSrtFcstWeatherDataDTO.getDownloadedDate(), new CarrierMessagingService.ResultCallback<Boolean>() {
+						weatherDbRepository.contains(LATITUDE, LONGITUDE, WeatherDataDTO.ULTRA_SRT_FCST,
+								new CarrierMessagingService.ResultCallback<Boolean>() {
+									@Override
+									public void onReceiveResult(@NonNull Boolean isContains) throws RemoteException {
+										if (isContains) {
+											weatherDbRepository.update(LATITUDE, LONGITUDE, WeatherDataDTO.ULTRA_SRT_FCST, result.toString()
+													, ultraSrtFcstWeatherDataDTO.getDownloadedDate(), new CarrierMessagingService.ResultCallback<Boolean>() {
+														@Override
+														public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException {
+															UltraSrtFcstResult ultraSrtFcstResult = new UltraSrtFcstResult();
+															ultraSrtFcstResult.setUltraSrtFcstFinalDataList(ultraSrtFcstRoot.getResponse().getBody().getItems(), new Date(Long.parseLong(ultraSrtFcstWeatherDataDTO.getDownloadedDate())));
+
+															weatherDataCallback.isSuccessful(ultraSrtFcstResult);
+														}
+													});
+										} else {
+											weatherDbRepository.insert(ultraSrtFcstWeatherDataDTO, new CarrierMessagingService.ResultCallback<WeatherDataDTO>() {
 												@Override
-												public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException {
+												public void onReceiveResult(@NonNull WeatherDataDTO weatherDataDTO) throws RemoteException {
 													UltraSrtFcstResult ultraSrtFcstResult = new UltraSrtFcstResult();
 													ultraSrtFcstResult.setUltraSrtFcstFinalDataList(ultraSrtFcstRoot.getResponse().getBody().getItems(), new Date(Long.parseLong(ultraSrtFcstWeatherDataDTO.getDownloadedDate())));
 
 													weatherDataCallback.isSuccessful(ultraSrtFcstResult);
 												}
 											});
-								} else {
-									weatherDbRepository.insert(ultraSrtFcstWeatherDataDTO, new CarrierMessagingService.ResultCallback<WeatherDataDTO>() {
-										@Override
-										public void onReceiveResult(@NonNull WeatherDataDTO weatherDataDTO) throws RemoteException {
-											UltraSrtFcstResult ultraSrtFcstResult = new UltraSrtFcstResult();
-											ultraSrtFcstResult.setUltraSrtFcstFinalDataList(ultraSrtFcstRoot.getResponse().getBody().getItems(), new Date(Long.parseLong(ultraSrtFcstWeatherDataDTO.getDownloadedDate())));
-
-											weatherDataCallback.isSuccessful(ultraSrtFcstResult);
 										}
-									});
-								}
-							}
-						});
+									}
+								});
+					}
+
+					@Override
+					public void isFailure(Exception e) {
+						weatherDataCallback.isFailure(e);
+					}
+				}.processResult(ultraSrtFcstRoot.getResponse().getHeader());
+
 			}
 
 			@Override

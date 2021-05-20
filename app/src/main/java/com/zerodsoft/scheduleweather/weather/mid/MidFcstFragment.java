@@ -101,7 +101,8 @@ public class MidFcstFragment extends Fragment {
 						clearViews();
 						onDownloadedTimeListener.setDownloadedTime(null, WeatherDataDTO.MID_LAND_FCST);
 						onDownloadedTimeListener.setDownloadedTime(null, WeatherDataDTO.MID_TA);
-						viewProgress.onCompletedProcessingData(false, getString(R.string.error));
+						viewProgress.onCompletedProcessingData(false, e.getMessage());
+
 					}
 				});
 			}
@@ -132,7 +133,8 @@ public class MidFcstFragment extends Fragment {
 						clearViews();
 						onDownloadedTimeListener.setDownloadedTime(null, WeatherDataDTO.MID_LAND_FCST);
 						onDownloadedTimeListener.setDownloadedTime(null, WeatherDataDTO.MID_TA);
-						viewProgress.onCompletedProcessingData(false, getString(R.string.error));
+						viewProgress.onCompletedProcessingData(false, e.getMessage());
+
 					}
 				});
 			}

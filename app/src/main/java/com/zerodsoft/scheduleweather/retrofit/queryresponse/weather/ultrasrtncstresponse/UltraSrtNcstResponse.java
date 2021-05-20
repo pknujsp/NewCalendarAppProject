@@ -5,52 +5,59 @@ import android.os.Parcelable;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.commons.Header;
 
-public class UltraSrtNcstResponse implements Parcelable
-{
-    @Expose
-    @SerializedName("body")
-    private UltraSrtNcstBody body;
+public class UltraSrtNcstResponse implements Parcelable {
+	@Expose
+	@SerializedName("header")
+	private Header header;
 
-    protected UltraSrtNcstResponse(Parcel in)
-    {
-        body = in.readParcelable(UltraSrtNcstBody.class.getClassLoader());
-    }
+	@Expose
+	@SerializedName("body")
+	private UltraSrtNcstBody body;
 
-    public static final Creator<UltraSrtNcstResponse> CREATOR = new Creator<UltraSrtNcstResponse>()
-    {
-        @Override
-        public UltraSrtNcstResponse createFromParcel(Parcel in)
-        {
-            return new UltraSrtNcstResponse(in);
-        }
 
-        @Override
-        public UltraSrtNcstResponse[] newArray(int size)
-        {
-            return new UltraSrtNcstResponse[size];
-        }
-    };
+	protected UltraSrtNcstResponse(Parcel in) {
+		header = in.readParcelable(Header.class.getClassLoader());
+		body = in.readParcelable(UltraSrtNcstBody.class.getClassLoader());
+	}
 
-    @Override
-    public int describeContents()
-    {
-        return 0;
-    }
+	public static final Creator<UltraSrtNcstResponse> CREATOR = new Creator<UltraSrtNcstResponse>() {
+		@Override
+		public UltraSrtNcstResponse createFromParcel(Parcel in) {
+			return new UltraSrtNcstResponse(in);
+		}
 
-    @Override
-    public void writeToParcel(Parcel parcel, int i)
-    {
-        parcel.writeParcelable(body, i);
-    }
+		@Override
+		public UltraSrtNcstResponse[] newArray(int size) {
+			return new UltraSrtNcstResponse[size];
+		}
+	};
 
-    public void setBody(UltraSrtNcstBody body)
-    {
-        this.body = body;
-    }
+	@Override
+	public int describeContents() {
+		return 0;
+	}
 
-    public UltraSrtNcstBody getBody()
-    {
-        return body;
-    }
+	@Override
+	public void writeToParcel(Parcel dest, int flags) {
+		dest.writeParcelable(header, flags);
+		dest.writeParcelable(body, flags);
+	}
+
+	public Header getHeader() {
+		return header;
+	}
+
+	public void setHeader(Header header) {
+		this.header = header;
+	}
+
+	public UltraSrtNcstBody getBody() {
+		return body;
+	}
+
+	public void setBody(UltraSrtNcstBody body) {
+		this.body = body;
+	}
 }

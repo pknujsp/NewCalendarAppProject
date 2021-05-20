@@ -104,7 +104,8 @@ public class UltraSrtFcstFragment extends Fragment {
 					public void run() {
 						clearViews();
 						onDownloadedTimeListener.setDownloadedTime(null, WeatherDataDTO.ULTRA_SRT_FCST);
-						viewProgress.onCompletedProcessingData(false, getString(R.string.error));
+						viewProgress.onCompletedProcessingData(false, e.getMessage());
+
 					}
 				});
 
@@ -135,7 +136,8 @@ public class UltraSrtFcstFragment extends Fragment {
 					public void run() {
 						clearViews();
 						onDownloadedTimeListener.setDownloadedTime(null, WeatherDataDTO.ULTRA_SRT_FCST);
-						viewProgress.onCompletedProcessingData(false, getString(R.string.error));
+						viewProgress.onCompletedProcessingData(false, e.getMessage());
+
 					}
 				});
 
@@ -149,6 +151,7 @@ public class UltraSrtFcstFragment extends Fragment {
 	}
 
 	private void setTable(UltraSrtFcstResult ultraSrtFcstResult) {
+		//1시간 강수량 추가(습도와 높이 동일하게)
 		final int ITEM_WIDTH = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 45f, getResources().getDisplayMetrics());
 		final int MARGIN = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4f, getResources().getDisplayMetrics());
 		final int DP22 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 22f, getResources().getDisplayMetrics());
@@ -169,12 +172,14 @@ public class UltraSrtFcstFragment extends Fragment {
 		TextView clockLabel = new TextView(context);
 		TextView skyLabel = new TextView(context);
 		TextView tempLabel = new TextView(context);
+		TextView rain1HourLabel = new TextView(context);
 		TextView windLabel = new TextView(context);
 		TextView humidityLabel = new TextView(context);
 
 		setLabelTextView(clockLabel, getString(R.string.clock));
 		setLabelTextView(skyLabel, getString(R.string.sky));
 		setLabelTextView(tempLabel, getString(R.string.temperature));
+		setLabelTextView(rain1HourLabel, getString(R.string.rainfall));
 		setLabelTextView(windLabel, getString(R.string.wind));
 		setLabelTextView(humidityLabel, getString(R.string.humidity));
 
@@ -187,6 +192,9 @@ public class UltraSrtFcstFragment extends Fragment {
 		LinearLayout.LayoutParams tempLabelParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, TEMP_ROW_HEIGHT);
 		tempLabelParams.topMargin = MARGIN;
 		tempLabelParams.bottomMargin = MARGIN;
+		LinearLayout.LayoutParams rain1HourLabelParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, DP34);
+		rain1HourLabelParams.topMargin = MARGIN;
+		rain1HourLabelParams.bottomMargin = MARGIN;
 		LinearLayout.LayoutParams windLabelParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, DP34);
 		windLabelParams.topMargin = MARGIN;
 		windLabelParams.bottomMargin = MARGIN;
@@ -197,18 +205,21 @@ public class UltraSrtFcstFragment extends Fragment {
 		clockLabelParams.gravity = Gravity.CENTER;
 		skyLabelParams.gravity = Gravity.CENTER;
 		tempLabelParams.gravity = Gravity.CENTER;
+		rain1HourLabelParams.gravity = Gravity.CENTER;
 		windLabelParams.gravity = Gravity.CENTER;
 		humidityLabelParams.gravity = Gravity.CENTER;
 
 		binding.ultraSrtFcstHeaderCol.addView(clockLabel, clockLabelParams);
 		binding.ultraSrtFcstHeaderCol.addView(skyLabel, skyLabelParams);
 		binding.ultraSrtFcstHeaderCol.addView(tempLabel, tempLabelParams);
+		binding.ultraSrtFcstHeaderCol.addView(rain1HourLabel, rain1HourLabelParams);
 		binding.ultraSrtFcstHeaderCol.addView(windLabel, windLabelParams);
 		binding.ultraSrtFcstHeaderCol.addView(humidityLabel, humidityLabelParams);
 
 		TableRow clockRow = new TableRow(context);
 		TableRow skyRow = new TableRow(context);
 		TempView tempRow = new TempView(context, VIEW_WIDTH, dataList);
+		TableRow rain1HourRow = new TableRow(context);
 		TableRow windRow = new TableRow(context);
 		TableRow humidityRow = new TableRow(context);
 
@@ -232,6 +243,16 @@ public class UltraSrtFcstFragment extends Fragment {
 			TableRow.LayoutParams params = new TableRow.LayoutParams(ITEM_WIDTH, DP22);
 			params.gravity = Gravity.CENTER;
 			skyRow.addView(sky, params);
+		}
+
+		//습도 ------------------------------------------------------------------------------
+		for (int col = 0; col < DATA_SIZE; col++) {
+			TextView textView = new TextView(context);
+			setValueTextView(textView, dataList.get(col).getRain1Hour());
+
+			TableRow.LayoutParams textParams = new TableRow.LayoutParams(ITEM_WIDTH, DP34);
+			textParams.gravity = Gravity.CENTER;
+			rain1HourRow.addView(textView, textParams);
 		}
 
 
@@ -264,6 +285,9 @@ public class UltraSrtFcstFragment extends Fragment {
 		TableLayout.LayoutParams tempRowParams = new TableLayout.LayoutParams(VIEW_WIDTH, TEMP_ROW_HEIGHT);
 		tempRowParams.topMargin = MARGIN;
 		tempRowParams.bottomMargin = MARGIN;
+		TableLayout.LayoutParams rain1HourRowParams = new TableLayout.LayoutParams(VIEW_WIDTH, ViewGroup.LayoutParams.WRAP_CONTENT);
+		rain1HourRowParams.topMargin = MARGIN;
+		rain1HourRowParams.bottomMargin = MARGIN;
 		TableLayout.LayoutParams windRowParams = new TableLayout.LayoutParams(VIEW_WIDTH, ViewGroup.LayoutParams.WRAP_CONTENT);
 		windRowParams.topMargin = MARGIN;
 		windRowParams.bottomMargin = MARGIN;
@@ -274,6 +298,7 @@ public class UltraSrtFcstFragment extends Fragment {
 		binding.ultraSrtFcstTable.addView(clockRow, clockRowParams);
 		binding.ultraSrtFcstTable.addView(skyRow, skyRowParams);
 		binding.ultraSrtFcstTable.addView(tempRow, tempRowParams);
+		binding.ultraSrtFcstTable.addView(rain1HourRow, rain1HourRowParams);
 		binding.ultraSrtFcstTable.addView(windRow, windRowParams);
 		binding.ultraSrtFcstTable.addView(humidityRow, humidityRowParams);
 

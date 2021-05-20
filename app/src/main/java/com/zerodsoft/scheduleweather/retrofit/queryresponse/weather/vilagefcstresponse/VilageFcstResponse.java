@@ -5,52 +5,59 @@ import android.os.Parcelable;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.commons.Header;
 
-public class VilageFcstResponse implements Parcelable
-{
-    @Expose
-    @SerializedName("body")
-    private VilageFcstBody body;
+public class VilageFcstResponse implements Parcelable {
+	@Expose
+	@SerializedName("header")
+	private Header header;
 
-    protected VilageFcstResponse(Parcel in)
-    {
-        body = in.readParcelable(VilageFcstBody.class.getClassLoader());
-    }
+	@Expose
+	@SerializedName("body")
+	private VilageFcstBody body;
 
-    public static final Creator<VilageFcstResponse> CREATOR = new Creator<VilageFcstResponse>()
-    {
-        @Override
-        public VilageFcstResponse createFromParcel(Parcel in)
-        {
-            return new VilageFcstResponse(in);
-        }
 
-        @Override
-        public VilageFcstResponse[] newArray(int size)
-        {
-            return new VilageFcstResponse[size];
-        }
-    };
+	protected VilageFcstResponse(Parcel in) {
+		header = in.readParcelable(Header.class.getClassLoader());
+		body = in.readParcelable(VilageFcstBody.class.getClassLoader());
+	}
 
-    @Override
-    public int describeContents()
-    {
-        return 0;
-    }
+	public static final Creator<VilageFcstResponse> CREATOR = new Creator<VilageFcstResponse>() {
+		@Override
+		public VilageFcstResponse createFromParcel(Parcel in) {
+			return new VilageFcstResponse(in);
+		}
 
-    @Override
-    public void writeToParcel(Parcel parcel, int i)
-    {
-        parcel.writeParcelable(body, i);
-    }
+		@Override
+		public VilageFcstResponse[] newArray(int size) {
+			return new VilageFcstResponse[size];
+		}
+	};
 
-    public void setBody(VilageFcstBody body)
-    {
-        this.body = body;
-    }
+	@Override
+	public int describeContents() {
+		return 0;
+	}
 
-    public VilageFcstBody getBody()
-    {
-        return body;
-    }
+	@Override
+	public void writeToParcel(Parcel dest, int flags) {
+		dest.writeParcelable(header, flags);
+		dest.writeParcelable(body, flags);
+	}
+
+	public Header getHeader() {
+		return header;
+	}
+
+	public void setHeader(Header header) {
+		this.header = header;
+	}
+
+	public VilageFcstBody getBody() {
+		return body;
+	}
+
+	public void setBody(VilageFcstBody body) {
+		this.body = body;
+	}
 }
