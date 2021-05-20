@@ -10,6 +10,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.naver.maps.geometry.LatLng;
 import com.naver.maps.geometry.Tm128;
+import com.naver.maps.geometry.Utmk;
 import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.MsrstnAcctoRltmMesureDnstyParameter;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.NearbyMsrstnListParameter;
@@ -57,11 +58,12 @@ public class AirConditionProcessing extends WeatherDataProcessing<AirConditionRe
 												refresh(weatherDataCallback);
 											} else {
 												Gson gson = new Gson();
-												MsrstnAcctoRltmMesureDnstyRoot root = gson.fromJson(airConditionWeatherDataDTO.getJson(),
-														MsrstnAcctoRltmMesureDnstyRoot.class);
 
 												NearbyMsrstnListRoot nearbyMsrstnListRoot = gson.fromJson(
 														nearByMsrstnListWeatherDataDTO.getJson(), NearbyMsrstnListRoot.class);
+
+												MsrstnAcctoRltmMesureDnstyRoot root = gson.fromJson(airConditionWeatherDataDTO.getJson(),
+														MsrstnAcctoRltmMesureDnstyRoot.class);
 
 												AirConditionResult airConditionResult = new AirConditionResult();
 												airConditionResult.setAirConditionFinalData(root.getResponse().getBody().getItem().get(0),
@@ -83,11 +85,11 @@ public class AirConditionProcessing extends WeatherDataProcessing<AirConditionRe
 
 	@Override
 	public void refresh(WeatherDataCallback<AirConditionResult> weatherDataCallback) {
-		Tm128 tm128 = Tm128.valueOf(new LatLng(Double.parseDouble(LATITUDE), Double.parseDouble(LONGITUDE)));
+		Utmk utmk = Utmk.valueOf(new LatLng(Double.parseDouble(LATITUDE), Double.parseDouble(LONGITUDE)));
 
 		NearbyMsrstnListParameter parameter = new NearbyMsrstnListParameter();
-		parameter.setTmX(String.valueOf(tm128.x));
-		parameter.setTmY(String.valueOf(tm128.y));
+		parameter.setTmX(String.valueOf(utmk.x));
+		parameter.setTmY(String.valueOf(utmk.y));
 
 		findAirConditionStationDownloader.getNearbyMsrstnList(parameter, new JsonDownloader<JsonObject>() {
 			@Override

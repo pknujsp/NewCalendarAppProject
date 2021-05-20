@@ -13,104 +13,80 @@ import android.view.View;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
 
-public class InstanceView extends View
-{
-    private IInstanceView iInstanceView;
-    private ContentValues instance;
+public class InstanceView extends View {
+	private ContentValues instance;
 
-    private Paint instanceViewPaint;
-    private TextPaint instanceTextPaint;
+	private Paint instanceViewPaint;
+	private TextPaint instanceTextPaint;
 
-    //spacing, margin
-    public final int TEXT_LEFT_MARGIN;
-    public final int TEXT_TOP_BOTTOM_MARGIN;
-    //textsize
-    public final int TEXT_SIZE;
+	//spacing, margin
+	public final int TEXT_LEFT_MARGIN;
+	public final int TEXT_TOP_BOTTOM_MARGIN;
+	//textsize
+	public final int TEXT_SIZE;
 
-    private Integer TEXT_HEIGHT;
+	private Integer TEXT_HEIGHT;
 
 
-    public InstanceView(Context context)
-    {
-        super(context);
+	public InstanceView(Context context) {
+		super(context);
 
-        TEXT_LEFT_MARGIN = (int) context.getResources().getDimension(R.dimen.text_left_margin);
-        TEXT_TOP_BOTTOM_MARGIN = (int) context.getResources().getDimension(R.dimen.text_top_bottom_margin);
-        TEXT_SIZE = (int) context.getResources().getDimension(R.dimen.text_size);
-    }
+		TEXT_LEFT_MARGIN = (int) context.getResources().getDimension(R.dimen.text_left_margin);
+		TEXT_TOP_BOTTOM_MARGIN = (int) context.getResources().getDimension(R.dimen.text_top_bottom_margin);
+		TEXT_SIZE = (int) context.getResources().getDimension(R.dimen.text_size);
+	}
 
 
-    public void init(ContentValues instance)
-    {
-        this.instance = instance;
+	public void init(ContentValues instance) {
+		this.instance = instance;
 
-        if (instance.size() > 0)
-        {
-            instanceViewPaint = EventUtil.getEventColorPaint(instance.getAsInteger(CalendarContract.Instances.EVENT_COLOR));
-            instanceTextPaint = EventUtil.getEventTextPaint(TEXT_SIZE);
+		if (instance.size() > 0) {
 
-            Rect rect = new Rect();
-            instanceTextPaint.getTextBounds("0", 0, 1, rect);
+		}
+		instanceViewPaint = EventUtil.getEventColorPaint(instance == null ?
+				Color.RED : instance.getAsInteger(CalendarContract.Instances.EVENT_COLOR));
+		instanceTextPaint = EventUtil.getEventTextPaint(TEXT_SIZE);
 
-            TEXT_HEIGHT = new Integer(rect.height());
-        }
-    }
+		Rect rect = new Rect();
+		instanceTextPaint.getTextBounds("0", 0, 1, rect);
 
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
-    {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-    }
+		TEXT_HEIGHT = new Integer(rect.height());
+	}
 
-    @Override
-    protected void onLayout(boolean changed, int left, int top, int right, int bottom)
-    {
-        super.onLayout(changed, left, top, right, bottom);
-    }
+	@Override
+	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+		super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+	}
 
-    @Override
-    protected void onDraw(Canvas canvas)
-    {
-        super.onDraw(canvas);
+	@Override
+	protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+		super.onLayout(changed, left, top, right, bottom);
+	}
 
-        if (instance.size() > 0)
-        {
-            canvas.drawRect(0, 0, getWidth(), getHeight(), instanceViewPaint);
+	@Override
+	protected void onDraw(Canvas canvas) {
+		super.onDraw(canvas);
+		canvas.drawRect(0, 0, getWidth(), getHeight(), instanceViewPaint);
 
-            final float titleX = TEXT_LEFT_MARGIN;
-            final float titleY = getHeight() / 2f + TEXT_HEIGHT.floatValue() / 2f;
+		final float titleX = TEXT_LEFT_MARGIN;
+		final float titleY = getHeight() / 2f + TEXT_HEIGHT.floatValue() / 2f;
 
-            if (instance.getAsString(CalendarContract.Instances.TITLE) != null)
-            {
-                if (!instance.getAsString(CalendarContract.Instances.TITLE).isEmpty())
-                {
-                    canvas.drawText(instance.getAsString(CalendarContract.Instances.TITLE), titleX, titleY, instanceTextPaint);
-                } else
-                {
-                    canvas.drawText(getContext().getString(R.string.empty_title), titleX, titleY, instanceTextPaint);
-                }
-            } else
-            {
-                canvas.drawText(getContext().getString(R.string.empty_title), titleX, titleY, instanceTextPaint);
-            }
-        } else
-        {
-            final Paint MORE_VIEW_PAINT = new Paint();
-            MORE_VIEW_PAINT.setColor(Color.LTGRAY);
+		if (instance != null) {
+			if (instance.getAsString(CalendarContract.Instances.TITLE) != null) {
+				if (!instance.getAsString(CalendarContract.Instances.TITLE).isEmpty()) {
+					canvas.drawText(instance.getAsString(CalendarContract.Instances.TITLE), titleX, titleY, instanceTextPaint);
+				} else {
+					canvas.drawText(getContext().getString(R.string.empty_title), titleX, titleY, instanceTextPaint);
+				}
+			} else {
+				canvas.drawText(getContext().getString(R.string.empty_title), titleX, titleY, instanceTextPaint);
+			}
+		} else {
+			canvas.drawText("More", titleX, titleY, instanceTextPaint);
+		}
+	}
 
-            final TextPaint MORE_VIEW_TEXT_PAINT = new TextPaint();
-            MORE_VIEW_TEXT_PAINT.setColor(Color.WHITE);
-            MORE_VIEW_TEXT_PAINT.setTextSize(TEXT_SIZE);
-            MORE_VIEW_TEXT_PAINT.setTextAlign(Paint.Align.LEFT);
-
-            canvas.drawRect(0, 0, getWidth(), getHeight(), MORE_VIEW_PAINT);
-            canvas.drawText("MORE"
-                    , TEXT_LEFT_MARGIN, getHeight() / 2f + TEXT_HEIGHT.floatValue() / 2f, MORE_VIEW_TEXT_PAINT);
-        }
-    }
-
-    public ContentValues getInstance()
-    {
-        return instance;
-    }
+	public ContentValues getInstance() {
+		return instance;
+	}
 }

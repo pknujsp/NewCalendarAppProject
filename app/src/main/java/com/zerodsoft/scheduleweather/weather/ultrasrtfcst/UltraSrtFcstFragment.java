@@ -7,8 +7,6 @@ import android.graphics.Paint;
 import android.graphics.PointF;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.os.RemoteException;
-import android.service.carrier.CarrierMessagingService;
 import android.text.TextPaint;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -20,32 +18,22 @@ import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
 import com.zerodsoft.scheduleweather.databinding.UltraSrtFcstFragmentBinding;
-import com.zerodsoft.scheduleweather.retrofit.paremeters.UltraSrtFcstParameter;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.WeatherItems;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.ultrasrtfcstresponse.UltraSrtFcstRoot;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
 import com.zerodsoft.scheduleweather.room.dto.WeatherDataDTO;
 import com.zerodsoft.scheduleweather.weather.common.ViewProgress;
 import com.zerodsoft.scheduleweather.weather.common.WeatherDataCallback;
 import com.zerodsoft.scheduleweather.weather.dataprocessing.UltraSrtFcstProcessing;
 import com.zerodsoft.scheduleweather.weather.interfaces.OnDownloadedTimeListener;
-import com.zerodsoft.scheduleweather.weather.repository.WeatherDataDownloader;
 import com.zerodsoft.scheduleweather.weather.sunsetrise.SunSetRiseData;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.utility.WeatherDataConverter;
-import com.zerodsoft.scheduleweather.weather.viewmodel.WeatherDbViewModel;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -81,7 +69,8 @@ public class UltraSrtFcstFragment extends Fragment {
 
 		clearViews();
 		ultraSrtFcstProcessing = new UltraSrtFcstProcessing(getContext(), weatherAreaCode.getY(), weatherAreaCode.getX());
-		viewProgress = new ViewProgress(binding.ultraSrtFcstLayout, binding.weatherProgressLayout.progressBar, binding.weatherProgressLayout.errorTextview);
+		viewProgress = new ViewProgress(binding.ultraSrtFcstLayout, binding.weatherProgressLayout.progressBar,
+				binding.weatherProgressLayout.errorTextview, binding.weatherProgressLayout.getRoot());
 		viewProgress.onStartedProcessingData();
 
 		ultraSrtFcstProcessing.getWeatherData(new WeatherDataCallback<UltraSrtFcstResult>() {

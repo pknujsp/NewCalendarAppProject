@@ -20,105 +20,91 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class WeekCalendarView implements CalendarViewInitializer
-{
-    private WeekHeaderView weekHeaderView;
-    private WeekView weekView;
-    private IControlEvent iControlEvent;
-    private IConnectedCalendars iConnectedCalendars;
-    private Map<Integer, CalendarInstance> resultMap;
-    private Date[] daysOfWeek = new Date[8];
+public class WeekCalendarView implements CalendarViewInitializer {
+	private WeekHeaderView weekHeaderView;
+	private WeekView weekView;
+	private IControlEvent iControlEvent;
+	private IConnectedCalendars iConnectedCalendars;
+	private Map<Integer, CalendarInstance> resultMap;
+	private Date[] daysOfWeek = new Date[8];
 
-    public WeekCalendarView(WeekHeaderView weekHeaderView, WeekView weekView)
-    {
-        this.weekHeaderView = weekHeaderView;
-        this.weekView = weekView;
-    }
+	public WeekCalendarView(WeekHeaderView weekHeaderView, WeekView weekView) {
+		this.weekHeaderView = weekHeaderView;
+		this.weekView = weekView;
+	}
 
-    public WeekHeaderView getWeekHeaderView()
-    {
-        return weekHeaderView;
-    }
+	public WeekHeaderView getWeekHeaderView() {
+		return weekHeaderView;
+	}
 
-    public WeekView getWeekView()
-    {
-        return weekView;
-    }
+	public WeekView getWeekView() {
+		return weekView;
+	}
 
-    public Date[] getDaysOfWeek()
-    {
-        return daysOfWeek;
-    }
+	public Date[] getDaysOfWeek() {
+		return daysOfWeek;
+	}
 
 
-    @Override
-    public void init(Calendar copiedCalendar, OnEventItemLongClickListener onEventItemLongClickListener, OnEventItemClickListener onEventItemClickListener, IControlEvent iControlEvent, IConnectedCalendars iConnectedCalendars)
-    {
-        this.iConnectedCalendars = iConnectedCalendars;
-        this.iControlEvent = iControlEvent;
+	@Override
+	public void init(Calendar copiedCalendar, OnEventItemLongClickListener onEventItemLongClickListener, OnEventItemClickListener onEventItemClickListener, IControlEvent iControlEvent, IConnectedCalendars iConnectedCalendars) {
+		this.iConnectedCalendars = iConnectedCalendars;
+		this.iControlEvent = iControlEvent;
 
-        weekView.init(null, onEventItemLongClickListener, onEventItemClickListener, iControlEvent, null);
-        weekHeaderView.init(null, onEventItemLongClickListener, onEventItemClickListener, iControlEvent, null);
+		weekView.init(null, onEventItemLongClickListener, onEventItemClickListener, iControlEvent, null);
+		weekHeaderView.init(null, onEventItemLongClickListener, onEventItemClickListener, iControlEvent, null);
 
-        for (int i = 0; i < 8; i++)
-        {
-            daysOfWeek[i] = copiedCalendar.getTime();
-            copiedCalendar.add(Calendar.DATE, 1);
-        }
+		for (int i = 0; i < 8; i++) {
+			daysOfWeek[i] = copiedCalendar.getTime();
+			copiedCalendar.add(Calendar.DATE, 1);
+		}
 
-        weekView.setDaysOfWeek(daysOfWeek);
-        weekHeaderView.setDaysOfWeek(daysOfWeek);
+		weekView.setDaysOfWeek(daysOfWeek);
+		weekHeaderView.setDaysOfWeek(daysOfWeek);
 
-        setInstances(iControlEvent.getInstances(daysOfWeek[0].getTime(), daysOfWeek[7].getTime()));
-        setEventTable();
-    }
+		setInstances(iControlEvent.getInstances(daysOfWeek[0].getTime(), daysOfWeek[7].getTime()));
+		setEventTable();
+	}
 
-    @Override
-    public void setInstances(Map<Integer, CalendarInstance> resultMap)
-    {
-        //선택되지 않은 캘린더는 제외
-        this.resultMap = resultMap;
-        List<ContentValues> connectedCalendars = iConnectedCalendars.getConnectedCalendars();
-        Set<Integer> connectedCalendarIdSet = new HashSet<>();
+	@Override
+	public void setInstances(Map<Integer, CalendarInstance> resultMap) {
+		//선택되지 않은 캘린더는 제외
+		this.resultMap = resultMap;
+		List<ContentValues> connectedCalendars = iConnectedCalendars.getConnectedCalendars();
+		Set<Integer> connectedCalendarIdSet = new HashSet<>();
 
-        for (ContentValues calendar : connectedCalendars)
-        {
-            connectedCalendarIdSet.add(calendar.getAsInteger(CalendarContract.Calendars._ID));
-        }
+		for (ContentValues calendar : connectedCalendars) {
+			connectedCalendarIdSet.add(calendar.getAsInteger(CalendarContract.Calendars._ID));
+		}
 
-        List<ContentValues> instances = new ArrayList<>();
-        for (Integer calendarIdKey : connectedCalendarIdSet)
-        {
-            if (resultMap.containsKey(calendarIdKey))
-            {
-                instances.addAll(resultMap.get(calendarIdKey).getInstanceList());
-            }
-        }
+		List<ContentValues> instances = new ArrayList<>();
+		for (Integer calendarIdKey : connectedCalendarIdSet) {
+			if (resultMap.containsKey(calendarIdKey)) {
+				instances.addAll(resultMap.get(calendarIdKey).getInstanceList());
+			}
+		}
 
-        // 데이터를 일정 길이의 내림차순으로 정렬
-        instances.sort(EventUtil.INSTANCE_COMPARATOR);
+		// 데이터를 일정 길이의 내림차순으로 정렬
+		instances.sort(EventUtil.INSTANCE_COMPARATOR);
 
-        weekView.setInstances(instances);
-        weekHeaderView.setInstances(instances);
-    }
+		weekView.setInstances(instances);
+		weekHeaderView.setInstances(instances);
+	}
 
-    @Override
-    public void setInstances(List<ContentValues> instances)
-    {
+	@Override
+	public void setInstances(List<ContentValues> instances) {
 
-    }
+	}
 
-    @Override
-    public void setEventTable()
-    {
-        weekView.setEventTable();
-        weekHeaderView.setEventTable();
-    }
+	@Override
+	public void setEventTable() {
+		weekView.setEventTable();
+		weekHeaderView.setEventTable();
+	}
 
-    public void refresh()
-    {
-        setInstances(iControlEvent.getInstances(daysOfWeek[0].getTime(), daysOfWeek[7].getTime()));
-        setEventTable();
-    }
+	public void refresh() {
+		setInstances(iControlEvent.getInstances(daysOfWeek[0].getTime(), daysOfWeek[7].getTime()));
+		setEventTable();
+	}
 
 }

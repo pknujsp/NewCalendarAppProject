@@ -14,8 +14,11 @@ import android.view.WindowManager;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.DialogFragmentAirConditionBinding;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.MsrstnAcctoRltmMesureDnsty.MsrstnAcctoRltmMesureDnstyItem;
+import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.weather.aircondition.airconditionbar.AirConditionResult;
 import com.zerodsoft.scheduleweather.weather.aircondition.airconditionbar.BarInitDataCreater;
+import com.zerodsoft.scheduleweather.weather.common.OnUpdateListener;
+import com.zerodsoft.scheduleweather.weather.common.ViewProgress;
 import com.zerodsoft.scheduleweather.weather.common.WeatherDataCallback;
 import com.zerodsoft.scheduleweather.weather.dataprocessing.AirConditionProcessing;
 
@@ -25,9 +28,12 @@ public class AirConditionDialogFragment extends DialogFragment {
 	private AirConditionProcessing airConditionProcessing;
 	private String latitude;
 	private String longitude;
+	private ViewProgress viewProgress;
 
-	public AirConditionDialogFragment() {
+	private final OnUpdateListener onUpdateListener;
 
+	public AirConditionDialogFragment(OnUpdateListener onUpdateListener) {
+		this.onUpdateListener = onUpdateListener;
 	}
 
 	@Override
@@ -37,6 +43,8 @@ public class AirConditionDialogFragment extends DialogFragment {
 		Bundle bundle = getArguments();
 		latitude = bundle.getString("latitude");
 		longitude = bundle.getString("longitude");
+
+		airConditionProcessing = new AirConditionProcessing(getContext(), latitude, longitude);
 	}
 
 	@Override
@@ -49,6 +57,11 @@ public class AirConditionDialogFragment extends DialogFragment {
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
+
+		viewProgress = new ViewProgress(binding.valueLayout, binding.weatherProgressLayout.progressBar,
+				binding.weatherProgressLayout.errorTextview, binding.weatherProgressLayout.getRoot());
+		viewProgress.onStartedProcessingData();
+
 		binding.stationName.setText("");
 		binding.pm25Status.setText("");
 		binding.pm10Status.setText("");
@@ -57,7 +70,37 @@ public class AirConditionDialogFragment extends DialogFragment {
 		binding.o3Status.setText("");
 		binding.so2Status.setText("");
 
-		airConditionProcessing = new AirConditionProcessing(getContext(), latitude, longitude);
+		binding.refresh.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				viewProgress.onStartedProcessingData();
+				airConditionProcessing.refresh(new WeatherDataCallback<AirConditionResult>() {
+					@Override
+					public void isSuccessful(AirConditionResult e) {
+						requireActivity().runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								setData(e);
+								viewProgress.onCompletedProcessingData(true);
+								onUpdateListener.onUpdatedData();
+							}
+						});
+					}
+
+					@Override
+					public void isFailure(Exception e) {
+						requireActivity().runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								viewProgress.onCompletedProcessingData(false, e.getMessage());
+								binding.updatedTime.setText(R.string.error);
+								onUpdateListener.onUpdatedData();
+							}
+						});
+					}
+				});
+			}
+		});
 
 
 		airConditionProcessing.getWeatherData(new WeatherDataCallback<AirConditionResult>() {
@@ -67,13 +110,20 @@ public class AirConditionDialogFragment extends DialogFragment {
 					@Override
 					public void run() {
 						setData(e);
+						viewProgress.onCompletedProcessingData(true);
 					}
 				});
 			}
 
 			@Override
 			public void isFailure(Exception e) {
-
+				requireActivity().runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						viewProgress.onCompletedProcessingData(false, e.getMessage());
+						binding.updatedTime.setText(R.string.error);
+					}
+				});
 			}
 		});
 
@@ -110,7 +160,7 @@ public class AirConditionDialogFragment extends DialogFragment {
 
 		//측정소
 		binding.stationName.setText(airConditionResult.getNearbyMsrstnListRoot().getResponse().getBody()
-				.getItems().get(0).getStationName() + " " + getString(R.string.station_name));
+				.getItems().get(0).getAddr() + " " + getString(R.string.station_name));
 		//pm10
 		if (airConditionFinalData.getPm10Flag() == null) {
 			binding.finedustBar.setDataValue(Double.parseDouble(airConditionFinalData.getPm10Value()));
@@ -177,5 +227,6 @@ public class AirConditionDialogFragment extends DialogFragment {
 		binding.so2Status.setText(so2);
 		binding.coStatus.setText(co);
 		binding.o3Status.setText(o3);
+		binding.updatedTime.setText(ClockUtil.DB_DATE_FORMAT.format(airConditionResult.getDownloadedDate()));
 	}
 }

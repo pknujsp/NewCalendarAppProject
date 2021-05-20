@@ -14,13 +14,14 @@ import com.zerodsoft.scheduleweather.databinding.FragmentAirConditionBinding;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.MsrstnAcctoRltmMesureDnsty.MsrstnAcctoRltmMesureDnstyItem;
 import com.zerodsoft.scheduleweather.room.dto.WeatherDataDTO;
 import com.zerodsoft.scheduleweather.weather.aircondition.airconditionbar.AirConditionResult;
+import com.zerodsoft.scheduleweather.weather.common.OnUpdateListener;
 import com.zerodsoft.scheduleweather.weather.common.ViewProgress;
 import com.zerodsoft.scheduleweather.weather.common.WeatherDataCallback;
 import com.zerodsoft.scheduleweather.weather.dataprocessing.AirConditionProcessing;
 import com.zerodsoft.scheduleweather.weather.interfaces.OnDownloadedTimeListener;
 import com.zerodsoft.scheduleweather.weather.aircondition.airconditionbar.BarInitDataCreater;
 
-public class AirConditionFragment extends Fragment {
+public class AirConditionFragment extends Fragment implements OnUpdateListener {
 	private FragmentAirConditionBinding binding;
 
 	private final String LATITUDE;
@@ -39,6 +40,7 @@ public class AirConditionFragment extends Fragment {
 	@Override
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		airConditionProcessing = new AirConditionProcessing(getContext(), LATITUDE, LONGITUDE);
 	}
 
 
@@ -57,8 +59,13 @@ public class AirConditionFragment extends Fragment {
 		binding.ultraFinedustStatus.setText("");
 		binding.showDetailDialogButton.setOnClickListener(onClickListener);
 
-		airConditionProcessing = new AirConditionProcessing(getContext(), LATITUDE, LONGITUDE);
-		viewProgress = new ViewProgress(binding.airConditionLayout, binding.weatherProgressLayout.progressBar, binding.weatherProgressLayout.errorTextview);
+		viewProgress = new ViewProgress(binding.airConditionLayout, binding.weatherProgressLayout.progressBar,
+				binding.weatherProgressLayout.errorTextview, binding.weatherProgressLayout.getRoot());
+
+		init();
+	}
+
+	private void init() {
 		viewProgress.onStartedProcessingData();
 
 		airConditionProcessing.getWeatherData(new WeatherDataCallback<AirConditionResult>() {
@@ -80,13 +87,11 @@ public class AirConditionFragment extends Fragment {
 					@Override
 					public void run() {
 						onDownloadedTimeListener.setDownloadedTime(null, WeatherDataDTO.AIR_CONDITION);
-						viewProgress.onCompletedProcessingData(false, getString(R.string.error));
+						viewProgress.onCompletedProcessingData(false, e.getMessage());
 					}
 				});
 			}
 		});
-
-
 	}
 
 
@@ -142,7 +147,7 @@ public class AirConditionFragment extends Fragment {
 					@Override
 					public void run() {
 						onDownloadedTimeListener.setDownloadedTime(null, WeatherDataDTO.AIR_CONDITION);
-						viewProgress.onCompletedProcessingData(false, getString(R.string.error));
+						viewProgress.onCompletedProcessingData(false, e.getMessage());
 					}
 				});
 			}
@@ -153,7 +158,7 @@ public class AirConditionFragment extends Fragment {
 	private final View.OnClickListener onClickListener = new View.OnClickListener() {
 		@Override
 		public void onClick(View view) {
-			AirConditionDialogFragment airConditionDialogFragment = new AirConditionDialogFragment();
+			AirConditionDialogFragment airConditionDialogFragment = new AirConditionDialogFragment(AirConditionFragment.this);
 
 			Bundle bundle = new Bundle();
 			bundle.putString("latitude", LATITUDE);
@@ -162,4 +167,9 @@ public class AirConditionFragment extends Fragment {
 			airConditionDialogFragment.show(getChildFragmentManager(), AirConditionDialogFragment.TAG);
 		}
 	};
+
+	@Override
+	public void onUpdatedData() {
+		init();
+	}
 }

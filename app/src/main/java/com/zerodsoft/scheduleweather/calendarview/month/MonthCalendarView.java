@@ -6,6 +6,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.Typeface;
 import android.provider.CalendarContract;
 import android.text.TextPaint;
 import android.util.ArraySet;
@@ -428,6 +429,7 @@ public class MonthCalendarView extends ViewGroup implements CalendarViewInitiali
 			DAY_TEXT_PAINT = new TextPaint(Paint.ANTI_ALIAS_FLAG);
 			DAY_TEXT_PAINT.setTextAlign(Paint.Align.CENTER);
 			DAY_TEXT_PAINT.setTextSize(DAY_TEXTSIZE);
+			DAY_TEXT_PAINT.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
 			DAY_TEXT_PAINT.setColor(dayTextColor);
 			y = DAY_SPACE_HEIGHT / 2f + (DAY_SPACE_HEIGHT - (2 * DAY_PADDING)) / 2f;
 

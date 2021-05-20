@@ -29,105 +29,92 @@ import java.util.List;
 import java.util.Map;
 
 
-public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdapter.WeekViewPagerHolder> implements DateGetter
-{
-    private SparseArray<WeekViewPagerHolder> holderSparseArray = new SparseArray<>();
-    private final Calendar CALENDAR;
-    private final IToolbar iToolbar;
-    private final IControlEvent iControlEvent;
-    private final OnEventItemClickListener onEventItemClickListener;
-    private final IConnectedCalendars iConnectedCalendars;
-    private final OnEventItemLongClickListener onEventItemLongClickListener;
+public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdapter.WeekViewPagerHolder> implements DateGetter {
+	private SparseArray<WeekViewPagerHolder> holderSparseArray = new SparseArray<>();
+	private final Calendar CALENDAR;
+	private final IToolbar iToolbar;
+	private final IControlEvent iControlEvent;
+	private final OnEventItemClickListener onEventItemClickListener;
+	private final IConnectedCalendars iConnectedCalendars;
+	private final OnEventItemLongClickListener onEventItemLongClickListener;
 
-    public WeekViewPagerAdapter(IControlEvent iControlEvent, OnEventItemLongClickListener onEventItemLongClickListener, OnEventItemClickListener onEventItemClickListener, IToolbar iToolbar, IConnectedCalendars iConnectedCalendars)
-    {
-        this.onEventItemLongClickListener = onEventItemLongClickListener;
-        this.iControlEvent = iControlEvent;
-        this.iToolbar = iToolbar;
-        this.onEventItemClickListener = onEventItemClickListener;
-        this.iConnectedCalendars = iConnectedCalendars;
-        CALENDAR = Calendar.getInstance(ClockUtil.TIME_ZONE);
+	public WeekViewPagerAdapter(IControlEvent iControlEvent, OnEventItemLongClickListener onEventItemLongClickListener, OnEventItemClickListener onEventItemClickListener, IToolbar iToolbar, IConnectedCalendars iConnectedCalendars) {
+		this.onEventItemLongClickListener = onEventItemLongClickListener;
+		this.iControlEvent = iControlEvent;
+		this.iToolbar = iToolbar;
+		this.onEventItemClickListener = onEventItemClickListener;
+		this.iConnectedCalendars = iConnectedCalendars;
+		CALENDAR = Calendar.getInstance(ClockUtil.TIME_ZONE);
 
-        // 날짜를 이번 주 일요일 0시 0분으로 설정
-        int amount = -(CALENDAR.get(Calendar.DAY_OF_WEEK) - 1);
+		// 날짜를 이번 주 일요일 0시 0분으로 설정
+		int amount = -(CALENDAR.get(Calendar.DAY_OF_WEEK) - 1);
 
-        CALENDAR.add(Calendar.DAY_OF_YEAR, amount);
-        CALENDAR.set(Calendar.HOUR_OF_DAY, 0);
-        CALENDAR.set(Calendar.MINUTE, 0);
-        CALENDAR.set(Calendar.SECOND, 0);
+		CALENDAR.add(Calendar.DAY_OF_YEAR, amount);
+		CALENDAR.set(Calendar.HOUR_OF_DAY, 0);
+		CALENDAR.set(Calendar.MINUTE, 0);
+		CALENDAR.set(Calendar.SECOND, 0);
 
-        iToolbar.setMonth(CALENDAR.getTime());
-    }
+		iToolbar.setMonth(CALENDAR.getTime());
+	}
 
-    public Calendar getCALENDAR()
-    {
-        return (Calendar) CALENDAR.clone();
-    }
+	public Calendar getCALENDAR() {
+		return (Calendar) CALENDAR.clone();
+	}
 
-    @NonNull
-    @Override
-    public WeekViewPagerHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType)
-    {
-        return new WeekViewPagerHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.weekview_viewpager_item, parent, false));
-    }
+	@NonNull
+	@Override
+	public WeekViewPagerHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+		return new WeekViewPagerHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.weekview_viewpager_item, parent, false));
+	}
 
-    @Override
-    public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView)
-    {
-        super.onAttachedToRecyclerView(recyclerView);
-    }
+	@Override
+	public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
+		super.onAttachedToRecyclerView(recyclerView);
+	}
 
-    @Override
-    public void onBindViewHolder(@NonNull WeekViewPagerHolder holder, int position)
-    {
-        holder.onBind();
-        holderSparseArray.put(holder.getAdapterPosition(), holder);
-    }
+	@Override
+	public void onBindViewHolder(@NonNull WeekViewPagerHolder holder, int position) {
+		holder.onBind();
+		holderSparseArray.put(holder.getAdapterPosition(), holder);
+	}
 
-    @Override
-    public void onViewRecycled(@NonNull WeekViewPagerHolder holder)
-    {
-        holderSparseArray.remove(holder.getOldPosition());
-        super.onViewRecycled(holder);
-    }
+	@Override
+	public void onViewRecycled(@NonNull WeekViewPagerHolder holder) {
+		holderSparseArray.remove(holder.getOldPosition());
+		super.onViewRecycled(holder);
+	}
 
-    @Override
-    public int getItemCount()
-    {
-        return Integer.MAX_VALUE;
-    }
+	@Override
+	public int getItemCount() {
+		return Integer.MAX_VALUE;
+	}
 
-    @Override
-    public Date getDate(int position, int index)
-    {
-        return holderSparseArray.get(position).weekCalendarView.getDaysOfWeek()[index];
-    }
+	@Override
+	public Date getDate(int position, int index) {
+		return holderSparseArray.get(position).weekCalendarView.getDaysOfWeek()[index];
+	}
 
-    public void refresh(int position)
-    {
-        holderSparseArray.get(position).weekCalendarView.refresh();
-    }
+	public void refresh(int position) {
+		holderSparseArray.get(position).weekCalendarView.refresh();
+	}
 
-    class WeekViewPagerHolder extends RecyclerView.ViewHolder
-    {
-        private WeekCalendarView weekCalendarView;
+	class WeekViewPagerHolder extends RecyclerView.ViewHolder {
+		private WeekCalendarView weekCalendarView;
 
-        public WeekViewPagerHolder(View view)
-        {
-            super(view);
-            WeekView weekView = (WeekView) view.findViewById(R.id.week_view);
-            WeekHeaderView weekHeaderView = (WeekHeaderView) view.findViewById(R.id.week_header);
-            weekCalendarView = new WeekCalendarView(weekHeaderView, weekView);
-        }
+		public WeekViewPagerHolder(View view) {
+			super(view);
+			WeekView weekView = (WeekView) view.findViewById(R.id.week_view);
+			WeekHeaderView weekHeaderView = (WeekHeaderView) view.findViewById(R.id.week_header);
+			weekCalendarView = new WeekCalendarView(weekHeaderView, weekView);
+		}
 
-        public void onBind()
-        {
+		public void onBind() {
 
-            Calendar copiedCalendar = (Calendar) CALENDAR.clone();
-            copiedCalendar.add(Calendar.WEEK_OF_YEAR, getAdapterPosition() - EventTransactionFragment.FIRST_VIEW_POSITION);
-            weekCalendarView.init(copiedCalendar, onEventItemLongClickListener, onEventItemClickListener, iControlEvent, iConnectedCalendars);
-        }
+			Calendar copiedCalendar = (Calendar) CALENDAR.clone();
+			copiedCalendar.add(Calendar.WEEK_OF_YEAR, getBindingAdapterPosition() - EventTransactionFragment.FIRST_VIEW_POSITION);
+			weekCalendarView.init(copiedCalendar, onEventItemLongClickListener, onEventItemClickListener, iControlEvent, iConnectedCalendars);
+		}
 
-    }
+	}
 
 }

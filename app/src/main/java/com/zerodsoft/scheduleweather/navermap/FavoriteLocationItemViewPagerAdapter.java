@@ -30,145 +30,122 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class FavoriteLocationItemViewPagerAdapter extends LocationItemViewPagerAdapter
-{
-    private List<FavoriteLocationDTO> favoriteLocationList = new ArrayList<>();
-    private final ILocationDao iLocationDao;
+public class FavoriteLocationItemViewPagerAdapter extends LocationItemViewPagerAdapter {
+	private List<FavoriteLocationDTO> favoriteLocationList = new ArrayList<>();
+	private final ILocationDao iLocationDao;
 
-    private final Map<Integer, KakaoLocalDocument> kakaoLocalDocumentMap = new HashMap<>();
+	private final Map<Integer, KakaoLocalDocument> kakaoLocalDocumentMap = new HashMap<>();
 
-    public FavoriteLocationItemViewPagerAdapter(Context context, ILocationDao iLocationDao)
-    {
-        super(context, MarkerType.FAVORITE);
-        this.iLocationDao = iLocationDao;
-    }
+	public FavoriteLocationItemViewPagerAdapter(Context context, ILocationDao iLocationDao) {
+		super(context, MarkerType.FAVORITE);
+		this.iLocationDao = iLocationDao;
+	}
 
-    public void setFavoriteLocationList(List<FavoriteLocationDTO> favoriteLocationList)
-    {
-        this.favoriteLocationList.addAll(favoriteLocationList);
-        placeDocumentsSparseArr.clear();
-    }
+	public void setFavoriteLocationList(List<FavoriteLocationDTO> favoriteLocationList) {
+		this.favoriteLocationList.addAll(favoriteLocationList);
+		placeDocumentsSparseArr.clear();
+	}
 
-    @Override
-    public void setPlacesItemBottomSheetButtonOnClickListener(PlacesItemBottomSheetButtonOnClickListener placesItemBottomSheetButtonOnClickListener)
-    {
-        super.setPlacesItemBottomSheetButtonOnClickListener(placesItemBottomSheetButtonOnClickListener);
-    }
+	@Override
+	public void setPlacesItemBottomSheetButtonOnClickListener(PlacesItemBottomSheetButtonOnClickListener placesItemBottomSheetButtonOnClickListener) {
+		super.setPlacesItemBottomSheetButtonOnClickListener(placesItemBottomSheetButtonOnClickListener);
+	}
 
-    @Override
-    public void setOnClickedBottomSheetListener(OnClickedBottomSheetListener onClickedBottomSheetListener)
-    {
-        super.setOnClickedBottomSheetListener(onClickedBottomSheetListener);
-    }
+	@Override
+	public void setOnClickedBottomSheetListener(OnClickedBottomSheetListener onClickedBottomSheetListener) {
+		super.setOnClickedBottomSheetListener(onClickedBottomSheetListener);
+	}
 
-    @NonNull
-    @Override
-    public FavoriteLocationItemInMapViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType)
-    {
-        return new FavoriteLocationItemInMapViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.cardview_places_item, parent, false));
-    }
+	@NonNull
+	@Override
+	public FavoriteLocationItemInMapViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+		return new FavoriteLocationItemInMapViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.cardview_places_item, parent, false));
+	}
 
-    @Override
-    public void onBindViewHolder(@NonNull @NotNull PlaceItemInMapViewHolder holder, int position)
-    {
-        ((FavoriteLocationItemInMapViewHolder) holder).bind(favoriteLocationList.get(position));
-    }
+	@Override
+	public void onBindViewHolder(@NonNull @NotNull PlaceItemInMapViewHolder holder, int position) {
+		((FavoriteLocationItemInMapViewHolder) holder).bind(favoriteLocationList.get(position));
+	}
 
-    public List<FavoriteLocationDTO> getFavoriteLocationList()
-    {
-        return favoriteLocationList;
-    }
+	public List<FavoriteLocationDTO> getFavoriteLocationList() {
+		return favoriteLocationList;
+	}
 
-    @Override
-    public int getItemCount()
-    {
-        return favoriteLocationList.size();
-    }
+	@Override
+	public int getItemCount() {
+		return favoriteLocationList.size();
+	}
 
-    class FavoriteLocationItemInMapViewHolder extends PlaceItemInMapViewHolder
-    {
-        private ViewProgress viewProgress;
+	class FavoriteLocationItemInMapViewHolder extends PlaceItemInMapViewHolder {
+		private ViewProgress viewProgress;
 
-        public FavoriteLocationItemInMapViewHolder(@NonNull View view)
-        {
-            super(view);
-            viewProgress = new ViewProgress(binding.placeItemCardviewInBottomsheet, binding.locationItemProgressLayout.progressBar
-                    , binding.locationItemProgressLayout.errorTextview);
+		public FavoriteLocationItemInMapViewHolder(@NonNull View view) {
+			super(view);
+			viewProgress = new ViewProgress(binding.placeItemCardviewInBottomsheet, binding.locationItemProgressLayout.progressBar
+					, binding.locationItemProgressLayout.errorTextview, binding.locationItemProgressLayout.getRoot());
 
-            viewProgress.onStartedProcessingData();
-        }
+			viewProgress.onStartedProcessingData();
+		}
 
-        public void bind(FavoriteLocationDTO favoriteLocationDTO)
-        {
-            final int position = getBindingAdapterPosition();
+		public void bind(FavoriteLocationDTO favoriteLocationDTO) {
+			final int position = getBindingAdapterPosition();
 
-            if (kakaoLocalDocumentMap.containsKey(favoriteLocationDTO.getId()))
-            {
-                setDataView(placeDocumentsSparseArr.get(position));
-            } else
-            {
-                if (favoriteLocationDTO.getType() == FavoriteLocationDTO.ADDRESS)
-                {
-                    // 주소 검색 순서 : 좌표로 주소 변환
-                    LocalApiPlaceParameter parameter = LocalParameterUtil.getCoordToAddressParameter
-                            (Double.parseDouble(favoriteLocationDTO.getLatitude()), Double.parseDouble(favoriteLocationDTO.getLongitude()));
-                    CoordToAddressUtil.coordToAddress(parameter, new JsonDownloader<CoordToAddress>()
-                    {
-                        @Override
-                        public void onResponseSuccessful(CoordToAddress result)
-                        {
-                            CoordToAddressDocuments coordToAddressDocuments = result.getCoordToAddressDocuments().get(0);
-                            coordToAddressDocuments.getCoordToAddressAddress().setLatitude(favoriteLocationDTO.getLatitude());
-                            coordToAddressDocuments.getCoordToAddressAddress().setLongitude(favoriteLocationDTO.getLongitude());
+			if (kakaoLocalDocumentMap.containsKey(favoriteLocationDTO.getId())) {
+				setDataView(placeDocumentsSparseArr.get(position));
+			} else {
+				if (favoriteLocationDTO.getType() == FavoriteLocationDTO.ADDRESS) {
+					// 주소 검색 순서 : 좌표로 주소 변환
+					LocalApiPlaceParameter parameter = LocalParameterUtil.getCoordToAddressParameter
+							(Double.parseDouble(favoriteLocationDTO.getLatitude()), Double.parseDouble(favoriteLocationDTO.getLongitude()));
+					CoordToAddressUtil.coordToAddress(parameter, new JsonDownloader<CoordToAddress>() {
+						@Override
+						public void onResponseSuccessful(CoordToAddress result) {
+							CoordToAddressDocuments coordToAddressDocuments = result.getCoordToAddressDocuments().get(0);
+							coordToAddressDocuments.getCoordToAddressAddress().setLatitude(favoriteLocationDTO.getLatitude());
+							coordToAddressDocuments.getCoordToAddressAddress().setLongitude(favoriteLocationDTO.getLongitude());
 
-                            kakaoLocalDocumentMap.put(favoriteLocationDTO.getId(), coordToAddressDocuments);
-                            placeDocumentsSparseArr.put(position, coordToAddressDocuments);
-                            setDataView(coordToAddressDocuments);
-                        }
+							kakaoLocalDocumentMap.put(favoriteLocationDTO.getId(), coordToAddressDocuments);
+							placeDocumentsSparseArr.put(position, coordToAddressDocuments);
+							setDataView(coordToAddressDocuments);
+						}
 
-                        @Override
-                        public void onResponseFailed(Exception e)
-                        {
+						@Override
+						public void onResponseFailed(Exception e) {
 
-                        }
-                    });
+						}
+					});
 
-                } else if (favoriteLocationDTO.getType() == FavoriteLocationDTO.PLACE || favoriteLocationDTO.getType() == FavoriteLocationDTO.RESTAURANT)
-                {
-                    // 장소 검색 순서 : 장소의 위경도 내 10M 반경에서 장소 이름 검색(여러개 나올 경우 장소ID와 일치하는 장소를 선택)
-                    LocalApiPlaceParameter parameter = LocalParameterUtil.getPlaceParameter(favoriteLocationDTO.getPlaceName(),
-                            String.valueOf(favoriteLocationDTO.getLatitude()), String.valueOf(favoriteLocationDTO.getLongitude()), LocalApiPlaceParameter.DEFAULT_SIZE,
-                            LocalApiPlaceParameter.DEFAULT_PAGE, LocalApiPlaceParameter.SEARCH_CRITERIA_SORT_TYPE_ACCURACY);
-                    parameter.setRadius("50");
+				} else if (favoriteLocationDTO.getType() == FavoriteLocationDTO.PLACE || favoriteLocationDTO.getType() == FavoriteLocationDTO.RESTAURANT) {
+					// 장소 검색 순서 : 장소의 위경도 내 10M 반경에서 장소 이름 검색(여러개 나올 경우 장소ID와 일치하는 장소를 선택)
+					LocalApiPlaceParameter parameter = LocalParameterUtil.getPlaceParameter(favoriteLocationDTO.getPlaceName(),
+							String.valueOf(favoriteLocationDTO.getLatitude()), String.valueOf(favoriteLocationDTO.getLongitude()), LocalApiPlaceParameter.DEFAULT_SIZE,
+							LocalApiPlaceParameter.DEFAULT_PAGE, LocalApiPlaceParameter.SEARCH_CRITERIA_SORT_TYPE_ACCURACY);
+					parameter.setRadius("50");
 
-                    iLocationDao.getPlaceItem(parameter, favoriteLocationDTO.getPlaceId(), new JsonDownloader<PlaceKakaoLocalResponse>()
-                    {
-                        @Override
-                        public void onResponseSuccessful(PlaceKakaoLocalResponse result)
-                        {
-                            PlaceDocuments placeDocuments = result.getPlaceDocuments().get(0);
-                            kakaoLocalDocumentMap.put(favoriteLocationDTO.getId(), placeDocuments);
-                            placeDocumentsSparseArr.put(position, placeDocuments);
+					iLocationDao.getPlaceItem(parameter, favoriteLocationDTO.getPlaceId(), new JsonDownloader<PlaceKakaoLocalResponse>() {
+						@Override
+						public void onResponseSuccessful(PlaceKakaoLocalResponse result) {
+							PlaceDocuments placeDocuments = result.getPlaceDocuments().get(0);
+							kakaoLocalDocumentMap.put(favoriteLocationDTO.getId(), placeDocuments);
+							placeDocumentsSparseArr.put(position, placeDocuments);
 
-                            setDataView(placeDocuments);
-                        }
+							setDataView(placeDocuments);
+						}
 
-                        @Override
-                        public void onResponseFailed(Exception e)
-                        {
+						@Override
+						public void onResponseFailed(Exception e) {
 
-                        }
-                    });
-                }
-            }
+						}
+					});
+				}
+			}
 
-        }
+		}
 
-        @Override
-        public void setDataView(KakaoLocalDocument kakaoLocalDocument)
-        {
-            super.setDataView(kakaoLocalDocument);
-            viewProgress.onCompletedProcessingData(true);
-        }
-    }
+		@Override
+		public void setDataView(KakaoLocalDocument kakaoLocalDocument) {
+			super.setDataView(kakaoLocalDocument);
+			viewProgress.onCompletedProcessingData(true);
+		}
+	}
 }

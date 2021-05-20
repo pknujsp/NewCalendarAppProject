@@ -21,217 +21,259 @@
                 android:gravity="center"
                 android:text="@string/air_condition" />
 
-            <TextView
-                android:id="@+id/station_name"
-                style="@style/TextAppearance.MaterialComponents.Subtitle1"
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+
+                <LinearLayout
+                    android:id="@+id/value_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/station_name"
+                        style="@style/TextAppearance.MaterialComponents.Subtitle1"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp"
+                        android:gravity="center"
+                        android:text="측정소 명"
+                        android:textSize="15sp" />
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="100dp">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentLeft="true"
+                            android:layout_alignParentTop="true"
+                            android:layout_toLeftOf="@id/pm10_status"
+                            android:text="@string/pm10" />
+
+                        <TextView
+                            android:id="@+id/pm10_status"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentTop="true"
+                            android:layout_alignParentRight="true"
+                            android:text="보통 50"
+                            android:textColor="@color/black" />
+
+                        <com.zerodsoft.scheduleweather.weather.aircondition.airconditionbar.AirConditionBar
+                            android:id="@+id/finedust_bar"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_below="@id/pm10_status"
+                            app:arrow_color="@color/gray_600"
+                            app:arrow_width="3dp"
+                            app:data_type="finedust"
+                            app:padding="4dp" />
+                    </RelativeLayout>
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="100dp">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentLeft="true"
+                            android:layout_alignParentTop="true"
+                            android:layout_toLeftOf="@id/pm2.5_status"
+                            android:text="@string/pm2.5" />
+
+                        <TextView
+                            android:id="@+id/pm2.5_status"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentTop="true"
+                            android:layout_alignParentRight="true"
+                            android:text="보통 50"
+                            android:textColor="@color/black" />
+
+
+                        <com.zerodsoft.scheduleweather.weather.aircondition.airconditionbar.AirConditionBar
+                            android:id="@+id/ultra_finedust_bar"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_below="@id/pm2.5_status"
+                            app:arrow_color="@color/gray_600"
+                            app:arrow_width="3dp"
+                            app:data_type="ultra_finedust"
+                            app:padding="4dp" />
+
+                    </RelativeLayout>
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="100dp">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentLeft="true"
+                            android:layout_alignParentTop="true"
+                            android:layout_toLeftOf="@id/no2_status"
+                            android:text="@string/no2" />
+
+                        <TextView
+                            android:id="@+id/no2_status"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentTop="true"
+                            android:layout_alignParentRight="true"
+                            android:text="보통 50"
+                            android:textColor="@color/black" />
+
+
+                        <com.zerodsoft.scheduleweather.weather.aircondition.airconditionbar.AirConditionBar
+                            android:id="@+id/no2_bar"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_below="@id/no2_status"
+                            app:arrow_color="@color/gray_600"
+                            app:arrow_width="3dp"
+                            app:data_type="no2"
+                            app:padding="4dp" />
+
+                    </RelativeLayout>
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="100dp">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentLeft="true"
+                            android:layout_alignParentTop="true"
+                            android:layout_toLeftOf="@id/co_status"
+                            android:text="@string/co" />
+
+                        <TextView
+                            android:id="@+id/co_status"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentTop="true"
+                            android:layout_alignParentRight="true"
+                            android:text="보통 50"
+                            android:textColor="@color/black" />
+
+
+                        <com.zerodsoft.scheduleweather.weather.aircondition.airconditionbar.AirConditionBar
+                            android:id="@+id/co_bar"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_below="@id/co_status"
+                            app:arrow_color="@color/gray_600"
+                            app:arrow_width="3dp"
+                            app:data_type="co"
+                            app:padding="4dp" />
+
+                    </RelativeLayout>
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="100dp">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentLeft="true"
+                            android:layout_alignParentTop="true"
+                            android:layout_toLeftOf="@id/o3_status"
+                            android:text="@string/o3" />
+
+                        <TextView
+                            android:id="@+id/o3_status"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentTop="true"
+                            android:layout_alignParentRight="true"
+                            android:text="보통 50"
+                            android:textColor="@color/black" />
+
+
+                        <com.zerodsoft.scheduleweather.weather.aircondition.airconditionbar.AirConditionBar
+                            android:id="@+id/o3_bar"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_below="@id/o3_status"
+                            app:arrow_color="@color/gray_600"
+                            app:arrow_width="3dp"
+                            app:data_type="o3"
+                            app:padding="4dp" />
+
+                    </RelativeLayout>
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="100dp">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentLeft="true"
+                            android:layout_alignParentTop="true"
+                            android:layout_toLeftOf="@id/so2_status"
+                            android:text="@string/so2" />
+
+                        <TextView
+                            android:id="@+id/so2_status"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentTop="true"
+                            android:layout_alignParentRight="true"
+                            android:text="보통 50"
+                            android:textColor="@color/black" />
+
+
+                        <com.zerodsoft.scheduleweather.weather.aircondition.airconditionbar.AirConditionBar
+                            android:id="@+id/so2_bar"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_below="@id/so2_status"
+                            app:arrow_color="@color/gray_600"
+                            app:arrow_width="3dp"
+                            app:data_type="so2"
+                            app:padding="4dp" />
+
+                    </RelativeLayout>
+                </LinearLayout>
+
+                <include
+                    android:id="@+id/weather_progress_layout"
+                    layout="@layout/data_progress_view" />
+
+            </FrameLayout>
+
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:gravity="center"
-                android:text="측정소 명"
-                android:textSize="15sp" />
-
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="100dp">
+                android:orientation="horizontal">
 
                 <TextView
-                    android:layout_width="match_parent"
+                    android:id="@+id/updated_time"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentLeft="true"
-                    android:layout_alignParentTop="true"
-                    android:layout_toLeftOf="@id/pm10_status"
-                    android:text="@string/pm10" />
+                    android:layout_gravity="center"
+                    android:layout_weight="1"
+                    android:gravity="right"
+                    android:text="updatedTime" />
 
-                <TextView
-                    android:id="@+id/pm10_status"
+                <ImageView
+                    android:id="@+id/refresh"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentTop="true"
-                    android:layout_alignParentRight="true"
-                    android:text="보통 50"
-                    android:textColor="@color/black" />
+                    android:layout_marginLeft="8dp"
+                    android:layout_toRightOf="@id/updated_time"
+                    android:src="@drawable/refresh_icon" />
 
-                <com.zerodsoft.scheduleweather.weather.aircondition.airconditionbar.AirConditionBar
-                    android:id="@+id/finedust_bar"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_below="@id/pm10_status"
-                    app:arrow_color="@color/gray_600"
-                    app:arrow_width="3dp"
-                    app:data_type="finedust"
-                    app:padding="4dp" />
-            </RelativeLayout>
-
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="100dp">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentLeft="true"
-                    android:layout_alignParentTop="true"
-                    android:layout_toLeftOf="@id/pm2.5_status"
-                    android:text="@string/pm2.5" />
-
-                <TextView
-                    android:id="@+id/pm2.5_status"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentTop="true"
-                    android:layout_alignParentRight="true"
-                    android:text="보통 50"
-                    android:textColor="@color/black" />
-
-
-                <com.zerodsoft.scheduleweather.weather.aircondition.airconditionbar.AirConditionBar
-                    android:id="@+id/ultra_finedust_bar"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_below="@id/pm2.5_status"
-                    app:arrow_color="@color/gray_600"
-                    app:arrow_width="3dp"
-                    app:data_type="ultra_finedust"
-                    app:padding="4dp" />
-
-            </RelativeLayout>
-
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="100dp">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentLeft="true"
-                    android:layout_alignParentTop="true"
-                    android:layout_toLeftOf="@id/no2_status"
-                    android:text="@string/no2" />
-
-                <TextView
-                    android:id="@+id/no2_status"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentTop="true"
-                    android:layout_alignParentRight="true"
-                    android:text="보통 50"
-                    android:textColor="@color/black" />
-
-
-                <com.zerodsoft.scheduleweather.weather.aircondition.airconditionbar.AirConditionBar
-                    android:id="@+id/no2_bar"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_below="@id/no2_status"
-                    app:arrow_color="@color/gray_600"
-                    app:arrow_width="3dp"
-                    app:data_type="no2"
-                    app:padding="4dp" />
-
-            </RelativeLayout>
-
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="100dp">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentLeft="true"
-                    android:layout_alignParentTop="true"
-                    android:layout_toLeftOf="@id/co_status"
-                    android:text="@string/co" />
-
-                <TextView
-                    android:id="@+id/co_status"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentTop="true"
-                    android:layout_alignParentRight="true"
-                    android:text="보통 50"
-                    android:textColor="@color/black" />
-
-
-                <com.zerodsoft.scheduleweather.weather.aircondition.airconditionbar.AirConditionBar
-                    android:id="@+id/co_bar"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_below="@id/co_status"
-                    app:arrow_color="@color/gray_600"
-                    app:arrow_width="3dp"
-                    app:data_type="co"
-                    app:padding="4dp" />
-
-            </RelativeLayout>
-
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="100dp">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentLeft="true"
-                    android:layout_alignParentTop="true"
-                    android:layout_toLeftOf="@id/o3_status"
-                    android:text="@string/o3" />
-
-                <TextView
-                    android:id="@+id/o3_status"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentTop="true"
-                    android:layout_alignParentRight="true"
-                    android:text="보통 50"
-                    android:textColor="@color/black" />
-
-
-                <com.zerodsoft.scheduleweather.weather.aircondition.airconditionbar.AirConditionBar
-                    android:id="@+id/o3_bar"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_below="@id/o3_status"
-                    app:arrow_color="@color/gray_600"
-                    app:arrow_width="3dp"
-                    app:data_type="o3"
-                    app:padding="4dp" />
-
-            </RelativeLayout>
-
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="100dp">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentLeft="true"
-                    android:layout_alignParentTop="true"
-                    android:layout_toLeftOf="@id/so2_status"
-                    android:text="@string/so2" />
-
-                <TextView
-                    android:id="@+id/so2_status"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentTop="true"
-                    android:layout_alignParentRight="true"
-                    android:text="보통 50"
-                    android:textColor="@color/black" />
-
-
-                <com.zerodsoft.scheduleweather.weather.aircondition.airconditionbar.AirConditionBar
-                    android:id="@+id/so2_bar"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_below="@id/so2_status"
-                    app:arrow_color="@color/gray_600"
-                    app:arrow_width="3dp"
-                    app:data_type="so2"
-                    app:padding="4dp" />
-
-            </RelativeLayout>
+            </LinearLayout>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 </layout>

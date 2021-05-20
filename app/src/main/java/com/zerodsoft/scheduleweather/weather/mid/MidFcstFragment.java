@@ -7,8 +7,6 @@ import android.graphics.Paint;
 import android.graphics.PointF;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.os.RemoteException;
-import android.service.carrier.CarrierMessagingService;
 import android.text.TextPaint;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -20,22 +18,13 @@ import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
 
-import com.google.gson.Gson;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
 import com.zerodsoft.scheduleweather.databinding.MidFcstFragmentBinding;
-import com.zerodsoft.scheduleweather.retrofit.paremeters.MidLandFcstParameter;
-import com.zerodsoft.scheduleweather.retrofit.paremeters.MidTaParameter;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.WeatherItems;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.midlandfcstresponse.MidLandFcstRoot;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.midtaresponse.MidTaRoot;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
 import com.zerodsoft.scheduleweather.room.dto.WeatherDataDTO;
 import com.zerodsoft.scheduleweather.weather.common.ViewProgress;
@@ -43,11 +32,7 @@ import com.zerodsoft.scheduleweather.weather.common.WeatherDataCallback;
 import com.zerodsoft.scheduleweather.weather.dataprocessing.MidFcstProcessing;
 import com.zerodsoft.scheduleweather.weather.interfaces.OnDownloadedTimeListener;
 import com.zerodsoft.scheduleweather.utility.WeatherDataConverter;
-import com.zerodsoft.scheduleweather.weather.repository.WeatherDataDownloader;
-import com.zerodsoft.scheduleweather.weather.viewmodel.WeatherDbViewModel;
 
-import java.util.Calendar;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -76,7 +61,8 @@ public class MidFcstFragment extends Fragment {
 		clearViews();
 
 		midFcstProcessing = new MidFcstProcessing(getContext(), weatherAreaCode.getY(), weatherAreaCode.getX(), weatherAreaCode);
-		viewProgress = new ViewProgress(binding.midFcstLayout, binding.weatherProgressLayout.progressBar, binding.weatherProgressLayout.errorTextview);
+		viewProgress = new ViewProgress(binding.midFcstLayout, binding.weatherProgressLayout.progressBar,
+				binding.weatherProgressLayout.errorTextview, binding.weatherProgressLayout.getRoot());
 		viewProgress.onStartedProcessingData();
 
 		midFcstProcessing.getWeatherData(new WeatherDataCallback<MidFcstResult>() {

@@ -1,38 +1,23 @@
 package com.zerodsoft.scheduleweather.weather.ultrasrtncst;
 
 import android.os.Bundle;
-import android.os.RemoteException;
-import android.service.carrier.CarrierMessagingService;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
 import com.zerodsoft.scheduleweather.databinding.UltraSrtNcstFragmentBinding;
-import com.zerodsoft.scheduleweather.retrofit.paremeters.UltraSrtNcstParameter;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.WeatherItems;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.ultrasrtncstresponse.UltraSrtNcstRoot;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
 import com.zerodsoft.scheduleweather.room.dto.WeatherDataDTO;
 import com.zerodsoft.scheduleweather.weather.common.ViewProgress;
 import com.zerodsoft.scheduleweather.weather.common.WeatherDataCallback;
 import com.zerodsoft.scheduleweather.weather.dataprocessing.UltraSrtNcstProcessing;
 import com.zerodsoft.scheduleweather.weather.interfaces.OnDownloadedTimeListener;
-import com.zerodsoft.scheduleweather.weather.repository.WeatherDataDownloader;
 import com.zerodsoft.scheduleweather.utility.WeatherDataConverter;
-import com.zerodsoft.scheduleweather.weather.viewmodel.WeatherDbViewModel;
-
-import java.util.Calendar;
-import java.util.Date;
 
 
 public class UltraSrtNcstFragment extends Fragment {
@@ -78,7 +63,8 @@ public class UltraSrtNcstFragment extends Fragment {
 		clearViews();
 
 		ultraSrtNcstProcessing = new UltraSrtNcstProcessing(getContext(), weatherAreaCode.getY(), weatherAreaCode.getX());
-		viewProgress = new ViewProgress(binding.ultraSrtNcstLayout, binding.weatherProgressLayout.progressBar, binding.weatherProgressLayout.errorTextview);
+		viewProgress = new ViewProgress(binding.ultraSrtNcstLayout, binding.weatherProgressLayout.progressBar,
+				binding.weatherProgressLayout.errorTextview, binding.weatherProgressLayout.getRoot());
 		viewProgress.onStartedProcessingData();
 
 		ultraSrtNcstProcessing.getWeatherData(new WeatherDataCallback<UltraSrtNcstResult>() {
