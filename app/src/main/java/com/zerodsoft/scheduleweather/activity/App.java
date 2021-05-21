@@ -6,7 +6,6 @@ import android.content.SharedPreferences;
 import androidx.preference.PreferenceManager;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.notification.EventNotificationHelper;
 import com.zerodsoft.scheduleweather.notification.receiver.EventAlarmReceiver;
 
 import java.util.TimeZone;

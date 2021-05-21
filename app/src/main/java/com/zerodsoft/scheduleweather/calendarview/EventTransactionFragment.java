@@ -1,6 +1,7 @@
 package com.zerodsoft.scheduleweather.calendarview;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.net.ConnectivityManager;
@@ -86,6 +87,8 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 		super.onCreate(savedInstanceState);
 		networkStatus = new NetworkStatus(getContext(), new ConnectivityManager.NetworkCallback() {
 		});
+
+		getContext().broadcast
 	}
 
 	@Nullable

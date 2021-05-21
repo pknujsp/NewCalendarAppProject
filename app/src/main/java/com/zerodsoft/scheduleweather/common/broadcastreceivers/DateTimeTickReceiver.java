@@ -4,6 +4,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
+import com.zerodsoft.scheduleweather.activity.main.AppMainActivity;
+
 public class DateTimeTickReceiver extends BroadcastReceiver {
 	@Override
 	public void onReceive(Context context, Intent intent) {
@@ -20,7 +22,7 @@ public class DateTimeTickReceiver extends BroadcastReceiver {
 	}
 
 	private void receivedTimeTick(Context context, Intent intent) {
-
+		Intent updateCurrentTimeIt = new Intent(context, AppMainActivity.class);
 	}
 
 	private void receivedDateChanged(Context context, Intent intent) {
