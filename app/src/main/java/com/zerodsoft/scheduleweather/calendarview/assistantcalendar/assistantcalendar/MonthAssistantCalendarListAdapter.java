@@ -33,93 +33,69 @@ import java.util.Set;
 
 import lombok.SneakyThrows;
 
-public class MonthAssistantCalendarListAdapter extends RecyclerView.Adapter<MonthAssistantCalendarListAdapter.MonthAssistantViewHolder>
-{
-    private final SparseArray<MonthAssistantViewHolder> holderSparseArray = new SparseArray<>();
-    private final IControlEvent iControlEvent;
-    private final CalendarDateOnClickListener calendarDateOnClickListener;
-    private final Calendar CALENDAR;
-    private final IConnectedCalendars iConnectedCalendars;
+public class MonthAssistantCalendarListAdapter extends RecyclerView.Adapter<MonthAssistantCalendarListAdapter.MonthAssistantViewHolder> {
+	private final IControlEvent iControlEvent;
+	private final CalendarDateOnClickListener calendarDateOnClickListener;
+	private final Calendar CALENDAR;
+	private final IConnectedCalendars iConnectedCalendars;
 
-    public MonthAssistantCalendarListAdapter(IControlEvent iControlEvent, CalendarDateOnClickListener calendarDateOnClickListener, IConnectedCalendars iConnectedCalendars)
-    {
-        this.iControlEvent = iControlEvent;
-        this.calendarDateOnClickListener = calendarDateOnClickListener;
-        this.iConnectedCalendars = iConnectedCalendars;
-        CALENDAR = Calendar.getInstance(ClockUtil.TIME_ZONE);
+	public MonthAssistantCalendarListAdapter(IControlEvent iControlEvent, CalendarDateOnClickListener calendarDateOnClickListener, IConnectedCalendars iConnectedCalendars) {
+		this.iControlEvent = iControlEvent;
+		this.calendarDateOnClickListener = calendarDateOnClickListener;
+		this.iConnectedCalendars = iConnectedCalendars;
+		CALENDAR = Calendar.getInstance(ClockUtil.TIME_ZONE);
 
-        // 날짜를 이번 달 1일 0시 0분으로 설정
-        CALENDAR.set(Calendar.DAY_OF_MONTH, 1);
-        CALENDAR.set(Calendar.HOUR_OF_DAY, 0);
-        CALENDAR.set(Calendar.MINUTE, 0);
-        CALENDAR.set(Calendar.SECOND, 0);
-    }
+		// 날짜를 이번 달 1일 0시 0분으로 설정
+		CALENDAR.set(Calendar.DAY_OF_MONTH, 1);
+		CALENDAR.set(Calendar.HOUR_OF_DAY, 0);
+		CALENDAR.set(Calendar.MINUTE, 0);
+		CALENDAR.set(Calendar.SECOND, 0);
+	}
 
-    public Date getAsOfDate()
-    {
-        return CALENDAR.getTime();
-    }
+	public Date getAsOfDate() {
+		return CALENDAR.getTime();
+	}
 
-    public boolean holderEmpty()
-    {
-        return holderSparseArray.size() == 0;
-    }
+	@Override
+	public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
+		super.onAttachedToRecyclerView(recyclerView);
+	}
 
-    public void refresh(int position)
-    {
-        holderSparseArray.get(position).monthCalendarView.refresh();
-    }
+	@NonNull
+	@Override
+	public MonthAssistantViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+		return new MonthAssistantViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.month_assistant_itemview, parent, false));
+	}
 
-    @Override
-    public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView)
-    {
-        super.onAttachedToRecyclerView(recyclerView);
-    }
+	@Override
+	public void onBindViewHolder(@NonNull MonthAssistantViewHolder holder, int position) {
+		holder.onBind();
+	}
 
-    @NonNull
-    @Override
-    public MonthAssistantViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType)
-    {
-        return new MonthAssistantViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.month_assistant_itemview, parent, false));
-    }
+	@Override
+	public void onViewRecycled(@NonNull MonthAssistantViewHolder holder) {
+		super.onViewRecycled(holder);
+	}
 
-    @Override
-    public void onBindViewHolder(@NonNull MonthAssistantViewHolder holder, int position)
-    {
-        holder.onBind();
-        holderSparseArray.put(holder.getAdapterPosition(), holder);
-    }
-
-    @Override
-    public void onViewRecycled(@NonNull MonthAssistantViewHolder holder)
-    {
-        holderSparseArray.remove(holder.getOldPosition());
-        super.onViewRecycled(holder);
-    }
-
-    @Override
-    public int getItemCount()
-    {
-        return Integer.MAX_VALUE;
-    }
+	@Override
+	public int getItemCount() {
+		return Integer.MAX_VALUE;
+	}
 
 
-    class MonthAssistantViewHolder extends RecyclerView.ViewHolder
-    {
-        private MonthAssistantCalendarView monthCalendarView;
+	class MonthAssistantViewHolder extends RecyclerView.ViewHolder {
+		private MonthAssistantCalendarView monthCalendarView;
 
-        public MonthAssistantViewHolder(View view)
-        {
-            super(view);
-            monthCalendarView = (MonthAssistantCalendarView) view.findViewById(R.id.month_assistant_calendar_view);
-        }
+		public MonthAssistantViewHolder(View view) {
+			super(view);
+			monthCalendarView = (MonthAssistantCalendarView) view.findViewById(R.id.month_assistant_calendar_view);
+		}
 
-        public void onBind()
-        {
-            Calendar copiedCalendar = (Calendar) CALENDAR.clone();
-            copiedCalendar.add(Calendar.MONTH, getAdapterPosition() - EventTransactionFragment.FIRST_VIEW_POSITION);
-            monthCalendarView.init(copiedCalendar, calendarDateOnClickListener, iControlEvent, iConnectedCalendars);
-        }
+		public void onBind() {
+			Calendar copiedCalendar = (Calendar) CALENDAR.clone();
+			copiedCalendar.add(Calendar.MONTH, getBindingAdapterPosition() - EventTransactionFragment.FIRST_VIEW_POSITION);
+			monthCalendarView.init(copiedCalendar, calendarDateOnClickListener, iControlEvent, iConnectedCalendars);
+		}
 
-    }
+	}
 }

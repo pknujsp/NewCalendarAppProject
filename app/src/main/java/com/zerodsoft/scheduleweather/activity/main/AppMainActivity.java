@@ -62,6 +62,7 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 
 import java.security.MessageDigest;
@@ -108,11 +109,14 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 			if (fragmentManager.findFragmentByTag(WeekFragment.TAG) != null ||
 					fragmentManager.findFragmentByTag(DayFragment.TAG) != null) {
 				monthAssistantCalendarFragment.setCurrentMonth(currentCalendarDate);
+				FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
-				if (mainBinding.assistantCalendarContainer.getVisibility() != View.VISIBLE) {
+				if (monthAssistantCalendarFragment.isHidden()) {
 					mainBinding.assistantCalendarContainer.setVisibility(View.VISIBLE);
+					fragmentTransaction.show(monthAssistantCalendarFragment).commitNow();
 				} else {
 					mainBinding.assistantCalendarContainer.setVisibility(View.GONE);
+					fragmentTransaction.hide(monthAssistantCalendarFragment).commitNow();
 				}
 			}
 		}
@@ -189,7 +193,8 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 		calendarTransactionFragment = new EventTransactionFragment(this, monthAssistantCalendarFragment);
 
 		getSupportFragmentManager().beginTransaction().add(R.id.calendar_layout, calendarTransactionFragment, EventTransactionFragment.TAG)
-				.add(R.id.assistant_calendar_container, monthAssistantCalendarFragment, MonthAssistantCalendarFragment.TAG).commit();
+				.add(R.id.assistant_calendar_container, monthAssistantCalendarFragment, MonthAssistantCalendarFragment.TAG)
+				.hide(monthAssistantCalendarFragment).commit();
 
 		SharedPreferences preferences = getSharedPreferences(getString(R.string.preferences_selected_calendar_type_key), Context.MODE_PRIVATE);
 		int type = preferences.getInt(getString(R.string.preferences_selected_calendar_type_key), TYPE_MONTH);

@@ -104,6 +104,15 @@
                 <data android:scheme="content" />
             </intent-filter>
         </receiver>
+
+        <receiver
+            android:name=".common.broadcastreceivers.DateTimeTickReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.TIME_TICK" />
+                <action android:name="android.intent.action.DATE_CHANGED" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

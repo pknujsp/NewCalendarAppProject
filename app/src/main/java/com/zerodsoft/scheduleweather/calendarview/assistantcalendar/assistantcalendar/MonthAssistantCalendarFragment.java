@@ -27,133 +27,111 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-public class MonthAssistantCalendarFragment extends Fragment implements IControlEvent, IRefreshView
-{
-    public static final String TAG = "MonthAssistantCalendarFragment";
-    private final IConnectedCalendars iConnectedCalendars;
-    private final CalendarDateOnClickListener calendarDateOnClickListener;
+public class MonthAssistantCalendarFragment extends Fragment implements IControlEvent, IRefreshView {
+	public static final String TAG = "MonthAssistantCalendarFragment";
+	private final IConnectedCalendars iConnectedCalendars;
+	private final CalendarDateOnClickListener calendarDateOnClickListener;
 
-    private FragmentMonthAssistantBinding binding;
-    private MonthAssistantCalendarListAdapter adapter;
+	private FragmentMonthAssistantBinding binding;
+	private MonthAssistantCalendarListAdapter adapter;
 
-    private CalendarViewModel calendarViewModel;
+	private CalendarViewModel calendarViewModel;
 
-    public MonthAssistantCalendarFragment(Activity activity)
-    {
-        this.iConnectedCalendars = (IConnectedCalendars) activity;
-        this.calendarDateOnClickListener = (CalendarDateOnClickListener) activity;
-    }
+	public MonthAssistantCalendarFragment(Activity activity) {
+		this.iConnectedCalendars = (IConnectedCalendars) activity;
+		this.calendarDateOnClickListener = (CalendarDateOnClickListener) activity;
+	}
 
-    @Nullable
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
-    {
-        binding = FragmentMonthAssistantBinding.inflate(inflater);
-        return binding.getRoot();
-    }
+	@Nullable
+	@Override
+	public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+		binding = FragmentMonthAssistantBinding.inflate(inflater);
+		return binding.getRoot();
+	}
 
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
-    {
-        super.onViewCreated(view, savedInstanceState);
-        calendarViewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
+	@Override
+	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
+		calendarViewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
 
-        binding.monthAssistantCalendarViewpager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
-        adapter = new MonthAssistantCalendarListAdapter(this, calendarDateOnClickListener, iConnectedCalendars);
-        binding.monthAssistantCalendarViewpager.setAdapter(adapter);
-        binding.monthAssistantCalendarViewpager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, false);
-        binding.monthAssistantCalendarViewpager.registerOnPageChangeCallback(onPageChangeCallback);
+		binding.monthAssistantCalendarViewpager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
+		adapter = new MonthAssistantCalendarListAdapter(this, calendarDateOnClickListener, iConnectedCalendars);
+		binding.monthAssistantCalendarViewpager.setAdapter(adapter);
+		binding.monthAssistantCalendarViewpager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, false);
+		binding.monthAssistantCalendarViewpager.registerOnPageChangeCallback(onPageChangeCallback);
 
-        binding.currentMonth.setText(ClockUtil.YEAR_MONTH_FORMAT.format(adapter.getAsOfDate()));
+		binding.currentMonth.setText(ClockUtil.YEAR_MONTH_FORMAT.format(adapter.getAsOfDate()));
 
-        binding.currentMonthButton.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                //오늘 날짜로 이동
-                goToToday();
-            }
-        });
+		binding.currentMonthButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				//오늘 날짜로 이동
+				goToToday();
+			}
+		});
 
-        binding.previousMonthButton.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                binding.monthAssistantCalendarViewpager.setCurrentItem(binding.monthAssistantCalendarViewpager.getCurrentItem() - 1, true);
-            }
-        });
+		binding.previousMonthButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				binding.monthAssistantCalendarViewpager.setCurrentItem(binding.monthAssistantCalendarViewpager.getCurrentItem() - 1, true);
+			}
+		});
 
-        binding.nextMonthButton.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                binding.monthAssistantCalendarViewpager.setCurrentItem(binding.monthAssistantCalendarViewpager.getCurrentItem() + 1, true);
-            }
-        });
+		binding.nextMonthButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				binding.monthAssistantCalendarViewpager.setCurrentItem(binding.monthAssistantCalendarViewpager.getCurrentItem() + 1, true);
+			}
+		});
 
-    }
+	}
 
-    @Override
-    public void onStart()
-    {
-        super.onStart();
-    }
+	@Override
+	public void onStart() {
+		super.onStart();
+	}
 
 
-    /**
-     * 현재 년월 텍스트를 클릭하면 보조 캘린더의 날짜를 현재 month로 설정하고 표시
-     **/
-    public void setCurrentMonth(Date date)
-    {
-        // 개월 수 차이 계산
-        int monthDifference = ClockUtil.calcMonthDifference(date, adapter.getAsOfDate());
-        if (monthDifference != 0)
-        {
-            binding.monthAssistantCalendarViewpager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION + monthDifference, false);
-        }
-    }
+	/**
+	 * 현재 년월 텍스트를 클릭하면 보조 캘린더의 날짜를 현재 month로 설정하고 표시
+	 **/
+	public void setCurrentMonth(Date date) {
+		// 개월 수 차이 계산
+		int monthDifference = ClockUtil.calcMonthDifference(date, adapter.getAsOfDate());
+		if (monthDifference != 0) {
+			binding.monthAssistantCalendarViewpager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION + monthDifference, false);
+		}
+	}
 
-    private final ViewPager2.OnPageChangeCallback onPageChangeCallback = new ViewPager2.OnPageChangeCallback()
-    {
-        private Calendar calendar = Calendar.getInstance();
+	private final ViewPager2.OnPageChangeCallback onPageChangeCallback = new ViewPager2.OnPageChangeCallback() {
+		private Calendar calendar = Calendar.getInstance();
 
-        @Override
-        public void onPageSelected(int position)
-        {
-            super.onPageSelected(position);
-            calendar.setTime(adapter.getAsOfDate());
-            calendar.add(Calendar.MONTH, position - EventTransactionFragment.FIRST_VIEW_POSITION);
+		@Override
+		public void onPageSelected(int position) {
+			super.onPageSelected(position);
+			calendar.setTime(adapter.getAsOfDate());
+			calendar.add(Calendar.MONTH, position - EventTransactionFragment.FIRST_VIEW_POSITION);
 
-            binding.currentMonth.setText(ClockUtil.YEAR_MONTH_FORMAT.format(calendar.getTime()));
-        }
-    };
+			binding.currentMonth.setText(ClockUtil.YEAR_MONTH_FORMAT.format(calendar.getTime()));
+		}
+	};
 
-    @Override
-    public Map<Integer, CalendarInstance> getInstances(long begin, long end)
-    {
-        return calendarViewModel.getInstances(begin, end);
-    }
+	@Override
+	public Map<Integer, CalendarInstance> getInstances(long begin, long end) {
+		return calendarViewModel.getInstances(begin, end);
+	}
 
-    @Override
-    public void refreshView()
-    {
-        if (!adapter.holderEmpty())
-        {
-            int currentItem = binding.monthAssistantCalendarViewpager.getCurrentItem();
-            adapter.refresh(currentItem);
-            adapter.notifyDataSetChanged();
-        }
-    }
+	@Override
+	public void refreshView() {
+		if (isVisible()) {
+			adapter.notifyDataSetChanged();
+		}
+	}
 
-    public void goToToday()
-    {
-        if (binding.monthAssistantCalendarViewpager.getCurrentItem() != EventTransactionFragment.FIRST_VIEW_POSITION)
-        {
-            binding.monthAssistantCalendarViewpager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, true);
-            refreshView();
-        }
-    }
+	public void goToToday() {
+		if (binding.monthAssistantCalendarViewpager.getCurrentItem() != EventTransactionFragment.FIRST_VIEW_POSITION) {
+			binding.monthAssistantCalendarViewpager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, true);
+			refreshView();
+		}
+	}
 }

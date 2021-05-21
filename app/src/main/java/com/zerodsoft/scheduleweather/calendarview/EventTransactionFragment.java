@@ -85,7 +85,6 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		networkStatus = new NetworkStatus(getContext(), new ConnectivityManager.NetworkCallback() {
-
 		});
 	}
 

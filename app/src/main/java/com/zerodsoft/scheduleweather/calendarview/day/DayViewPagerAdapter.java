@@ -112,11 +112,6 @@ public class DayViewPagerAdapter extends RecyclerView.Adapter<DayViewPagerAdapte
         }
     }
 
-    public void refresh(int position)
-    {
-        holderSparseArray.get(position).dayCalendarView.refresh();
-    }
-
     class DayViewPagerHolder extends RecyclerView.ViewHolder
     {
         private DayCalendarView dayCalendarView;
