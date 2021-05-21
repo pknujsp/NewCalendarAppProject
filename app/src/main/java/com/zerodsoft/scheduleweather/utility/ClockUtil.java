@@ -28,7 +28,7 @@ public class ClockUtil
     public static final SimpleDateFormat D = new SimpleDateFormat("d", Locale.KOREAN);
     public static final SimpleDateFormat YEAR_MONTH_FORMAT = new SimpleDateFormat("yyyy/MM", Locale.KOREAN);
     public static final SimpleDateFormat E = new SimpleDateFormat("E", Locale.KOREAN);
-    public static final SimpleDateFormat M_D = new SimpleDateFormat("M월 d일", Locale.KOREAN);
+    public static final SimpleDateFormat HHmm = new SimpleDateFormat("HHmm", Locale.KOREAN);
     public static final SimpleDateFormat HOURS_12 = new SimpleDateFormat("a h:mm", Locale.KOREAN);
     public static final SimpleDateFormat HOURS_24 = new SimpleDateFormat("H:mm", Locale.KOREAN);
     public static final SimpleDateFormat yyyyMd = new SimpleDateFormat("yyyy/M/d", Locale.KOREAN);

@@ -16,12 +16,15 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.OnDateTimeChangedListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
+import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import java.util.Calendar;
+import java.util.Date;
 
-public class MonthFragment extends Fragment implements IRefreshView {
+public class MonthFragment extends Fragment implements IRefreshView, OnDateTimeChangedListener {
 	public static final String TAG = "MonthFragment";
 
 	private final IControlEvent iControlEvent;
@@ -86,6 +89,17 @@ public class MonthFragment extends Fragment implements IRefreshView {
 	}
 
 
+	@Override
+	public void receivedTimeTick(Date date) {
+		//month에서는 불필요
+	}
+
+	@Override
+	public void receivedDateChanged(Date date) {
+		refreshView();
+	}
+
+
 	class OnPageChangeCallback extends ViewPager2.OnPageChangeCallback {
 		private final Calendar calendar;
 		private Calendar copiedCalendar;
@@ -120,5 +134,7 @@ public class MonthFragment extends Fragment implements IRefreshView {
 			super.onPageSelected(position);
 		}
 	}
+
+
 }
 

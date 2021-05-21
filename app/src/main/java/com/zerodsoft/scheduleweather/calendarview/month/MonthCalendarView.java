@@ -23,6 +23,7 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.CalendarViewInitial
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IEvent;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.OnDateTimeChangedListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
@@ -39,7 +40,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-public class MonthCalendarView extends ViewGroup implements CalendarViewInitializer {
+public class MonthCalendarView extends ViewGroup implements CalendarViewInitializer, OnDateTimeChangedListener {
 	/*인스턴스 데이터를 모두 가져온 상태에서 설정 값에 따라
 	뷰를 다시 그린다
 	 */
@@ -58,7 +59,7 @@ public class MonthCalendarView extends ViewGroup implements CalendarViewInitiali
 
 	private static Integer DAY_PADDING;
 	private static Integer DAY_TEXTSIZE;
-	private static Paint TODAY_PAINT = new Paint();
+	private Paint TODAY_PAINT = new Paint();
 
 	private final int SPACING_BETWEEN_INSTANCE;
 	private static Integer DAY_SPACE_HEIGHT;
@@ -79,6 +80,7 @@ public class MonthCalendarView extends ViewGroup implements CalendarViewInitiali
 	private List<InstanceBar> instanceBarList = new ArrayList<>();
 	private List<MonthCalendarItemView> monthCalendarItemViewList;
 	private SparseArray<ItemCell> ITEM_LAYOUT_CELLS = new SparseArray<>(42);
+	private TodayView todayView;
 
 	public MonthCalendarView(Context context, AttributeSet attrs) {
 		super(context, attrs);
@@ -127,6 +129,23 @@ public class MonthCalendarView extends ViewGroup implements CalendarViewInitiali
 		int right = 0;
 		int top = 0;
 		int bottom = 0;
+
+		if (todayView != null) {
+			int index = (Integer) todayView.getTag();
+			if (index % 7 == 0) {
+				// 마지막 열 인경우 다음 행으로 넘어감
+				left = 0;
+				right = ITEM_WIDTH;
+			} else {
+				left = ITEM_WIDTH * (index % 7);
+				right = ITEM_WIDTH * ((index % 7) + 1);
+			}
+			top = ITEM_HEIGHT * (index / 7);
+			bottom = ITEM_HEIGHT * ((index / 7) + 1);
+
+			todayView.measure(ITEM_WIDTH, ITEM_HEIGHT);
+			todayView.layout(left, top, right, bottom);
+		}
 
 		//monthcalendarviewitem 크기,위치 설정
 		for (int index = 0; index < monthCalendarItemViewList.size(); index++) {
@@ -307,6 +326,7 @@ public class MonthCalendarView extends ViewGroup implements CalendarViewInitiali
 
 			}
 		}
+		drawTodayView(null);
 		requestLayout();
 		invalidate();
 	}
@@ -386,6 +406,36 @@ public class MonthCalendarView extends ViewGroup implements CalendarViewInitiali
 		setEventTable();
 	}
 
+	@Override
+	public void receivedTimeTick(Date date) {
+
+	}
+
+	@Override
+	public void receivedDateChanged(Date date) {
+		drawTodayView(date);
+	}
+
+	private void drawTodayView(Date date) {
+		Date today = date;
+		if (today == null) {
+			today = new Date(System.currentTimeMillis());
+		}
+
+		if (todayView != null) {
+			removeView(todayView);
+			invalidate();
+		}
+
+		if (today.compareTo(viewFirstDateTime) >= 0 && today.before(viewLastDateTime)) {
+			final int index = ClockUtil.calcBeginDayDifference(today.getTime(), viewFirstDateTime.getTime());
+
+			todayView = new TodayView(getContext());
+			todayView.setTag(new Integer(index));
+			addView(todayView);
+		}
+	}
+
 	static class ItemCell {
 		boolean[] row;
 		int eventsNum;
@@ -420,7 +470,6 @@ public class MonthCalendarView extends ViewGroup implements CalendarViewInitiali
 		private float x;
 		private final float y;
 		private final TextPaint DAY_TEXT_PAINT;
-		private boolean isToday;
 		private Date startDate;
 		private Date endDate;
 
@@ -454,10 +503,6 @@ public class MonthCalendarView extends ViewGroup implements CalendarViewInitiali
 		protected void onDraw(Canvas canvas) {
 			super.onDraw(canvas);
 			canvas.drawText(ClockUtil.D.format(startDate), x, y, DAY_TEXT_PAINT);
-
-			if (isToday) {
-				canvas.drawRect(0, 0, getWidth(), getHeight(), TODAY_PAINT);
-			}
 		}
 
 		public Date getStartDate() {
@@ -466,6 +511,29 @@ public class MonthCalendarView extends ViewGroup implements CalendarViewInitiali
 
 		public Date getEndDate() {
 			return endDate;
+		}
+	}
+
+	class TodayView extends View {
+
+		public TodayView(Context context) {
+			super(context);
+		}
+
+		@Override
+		protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+			setMeasuredDimension(widthMeasureSpec, heightMeasureSpec);
+		}
+
+		@Override
+		protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+			super.onLayout(changed, left, top, right, bottom);
+		}
+
+		@Override
+		protected void onDraw(Canvas canvas) {
+			super.onDraw(canvas);
+			canvas.drawRect(0, 0, getWidth(), getHeight(), TODAY_PAINT);
 		}
 	}
 }

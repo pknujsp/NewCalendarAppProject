@@ -1,64 +1,62 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="?attr/actionBarSize">
 
+    <RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/white">
 
-    <ImageButton
-        android:id="@+id/open_navigation_drawer"
-        android:layout_width="@dimen/toolbar_image_size"
-        android:layout_height="@dimen/toolbar_image_size"
-        android:layout_alignParentLeft="true"
-        android:layout_centerVertical="true"
-        android:layout_marginStart="@dimen/toolbar_start_end_margin"
-        android:background="?attr/selectableItemBackground"
-        android:onClick="onClickToolbar"
-        android:src="@drawable/toolbar_menu_icon" />
+        <ImageButton
+            android:id="@+id/open_navigation_drawer"
+            android:layout_width="@dimen/toolbar_image_size"
+            android:layout_height="@dimen/toolbar_image_size"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="@dimen/toolbar_start_end_margin"
+            android:background="?attr/selectableItemBackground"
+            android:src="@drawable/toolbar_menu_icon" />
 
-    <TextView
-        android:id="@+id/calendar_month"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerVertical="true"
-        android:layout_marginLeft="@dimen/toolbar_page_title_margin"
-        android:layout_toRightOf="@id/open_navigation_drawer"
-        android:background="?attr/selectableItemBackground"
-        android:gravity="left"
-        android:onClick="onClickToolbar"
-        android:textStyle="bold" />
+        <TextView
+            android:id="@+id/calendar_month"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="@dimen/toolbar_page_title_margin"
+            android:layout_toRightOf="@id/open_navigation_drawer"
+            android:background="?attr/selectableItemBackground"
+            android:gravity="left"
+            android:textStyle="bold" />
 
-    <ImageButton
-        android:id="@+id/add_schedule"
-        android:layout_width="@dimen/toolbar_image_size"
-        android:layout_height="@dimen/toolbar_image_size"
-        android:layout_centerVertical="true"
-        android:layout_marginRight="@dimen/toolbar_left_right_margin"
-        android:layout_toLeftOf="@id/go_to_today"
-        android:background="?attr/selectableItemBackground"
-        android:onClick="onClickToolbar"
-        android:src="@drawable/add_schedule" />
+        <ImageButton
+            android:id="@+id/add_schedule"
+            android:layout_width="@dimen/toolbar_image_size"
+            android:layout_height="@dimen/toolbar_image_size"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="@dimen/toolbar_left_right_margin"
+            android:layout_toLeftOf="@id/go_to_today"
+            android:background="?attr/selectableItemBackground"
+            android:src="@drawable/add_schedule" />
 
-    <ImageButton
-        android:id="@+id/go_to_today"
-        android:layout_width="@dimen/toolbar_image_size"
-        android:layout_height="@dimen/toolbar_image_size"
-        android:layout_centerVertical="true"
-        android:layout_marginRight="@dimen/toolbar_left_right_margin"
-        android:layout_toLeftOf="@id/refresh_calendar"
-        android:background="?attr/selectableItemBackground"
-        android:onClick="onClickToolbar"
-        android:src="@drawable/today_icon" />
+        <ImageButton
+            android:id="@+id/go_to_today"
+            android:layout_width="@dimen/toolbar_image_size"
+            android:layout_height="@dimen/toolbar_image_size"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="@dimen/toolbar_left_right_margin"
+            android:layout_toLeftOf="@id/refresh_calendar"
+            android:background="?attr/selectableItemBackground"
+            android:src="@drawable/today_icon" />
 
-    <ImageButton
-        android:id="@+id/refresh_calendar"
-        android:layout_width="@dimen/toolbar_image_size"
-        android:layout_height="@dimen/toolbar_image_size"
-        android:layout_alignParentRight="true"
-        android:layout_centerVertical="true"
-        android:layout_marginEnd="@dimen/toolbar_start_end_margin"
-        android:background="?attr/selectableItemBackground"
-        android:onClick="onClickToolbar"
-        android:src="@drawable/refresh_icon" />
+        <ImageButton
+            android:id="@+id/refresh_calendar"
+            android:layout_width="@dimen/toolbar_image_size"
+            android:layout_height="@dimen/toolbar_image_size"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="@dimen/toolbar_start_end_margin"
+            android:background="?attr/selectableItemBackground"
+            android:src="@drawable/refresh_icon" />
 
-</RelativeLayout>
+    </RelativeLayout>

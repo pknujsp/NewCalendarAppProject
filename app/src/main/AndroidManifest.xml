@@ -28,7 +28,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".event.main.NewInstanceMainActivity"></activity>
+        <activity android:name=".event.main.NewInstanceMainActivity" />
         <activity android:name=".event.foods.settings.CustomFoodMenuSettingsActivity" />
         <activity
             android:name=".navermap.NaverMapActivity"
@@ -105,14 +105,7 @@
             </intent-filter>
         </receiver>
 
-        <receiver
-            android:name=".common.broadcastreceivers.DateTimeTickReceiver"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.TIME_TICK" />
-                <action android:name="android.intent.action.DATE_CHANGED" />
-            </intent-filter>
-        </receiver>
+
     </application>
 
 </manifest>

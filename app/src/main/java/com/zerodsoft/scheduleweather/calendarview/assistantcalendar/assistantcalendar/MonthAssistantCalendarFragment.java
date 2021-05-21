@@ -37,9 +37,9 @@ public class MonthAssistantCalendarFragment extends Fragment implements IControl
 
 	private CalendarViewModel calendarViewModel;
 
-	public MonthAssistantCalendarFragment(Activity activity) {
-		this.iConnectedCalendars = (IConnectedCalendars) activity;
-		this.calendarDateOnClickListener = (CalendarDateOnClickListener) activity;
+	public MonthAssistantCalendarFragment(IConnectedCalendars iConnectedCalendars,CalendarDateOnClickListener calendarDateOnClickListener) {
+		this.iConnectedCalendars = iConnectedCalendars;
+		this.calendarDateOnClickListener = calendarDateOnClickListener;
 	}
 
 	@Nullable
