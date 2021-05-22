@@ -36,7 +36,6 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.editevent.activity.EditEventActivity;
-import com.zerodsoft.scheduleweather.activity.editevent.value.EventDataController;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendar.CommonPopupMenu;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
@@ -51,17 +50,18 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnDateTimeChangedListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEditedEventListener;
 import com.zerodsoft.scheduleweather.calendarview.month.MonthFragment;
 import com.zerodsoft.scheduleweather.calendarview.week.WeekFragment;
 import com.zerodsoft.scheduleweather.common.broadcastreceivers.DateTimeTickReceiver;
 import com.zerodsoft.scheduleweather.common.enums.CalendarViewType;
+import com.zerodsoft.scheduleweather.common.enums.EventIntentCode;
 import com.zerodsoft.scheduleweather.databinding.FragmentCalendarBinding;
 import com.zerodsoft.scheduleweather.etc.AppPermission;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationHistoryViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationInfoViewModel;
 import com.zerodsoft.scheduleweather.event.main.NewInstanceMainActivity;
-import com.zerodsoft.scheduleweather.event.main.NewInstanceMainFragment;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.utility.NetworkStatus;
 
@@ -70,12 +70,10 @@ import java.util.Map;
 
 import lombok.SneakyThrows;
 
-import static android.app.Activity.RESULT_OK;
-
 
 public class EventTransactionFragment extends Fragment implements IControlEvent, OnEventItemClickListener, IRefreshView, IToolbar,
 		CalendarDateOnClickListener,
-		OnEventItemLongClickListener, OnDateTimeChangedListener {
+		OnEventItemLongClickListener, OnDateTimeChangedListener, OnEditedEventListener {
 	// 달력 프래그먼트를 관리하는 프래그먼트
 	public static final String TAG = "CalendarTransactionFragment";
 	public static final int FIRST_VIEW_POSITION = Integer.MAX_VALUE / 2;
@@ -261,7 +259,7 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 
 		switch (fragmentTag) {
 			case MonthFragment.TAG:
-				currentFragment = new MonthFragment(this, this, iConnectedCalendars);
+				currentFragment = new MonthFragment(this, this, iConnectedCalendars, calendarViewModel);
 				fragmentTransaction.replace(R.id.calendar_container_view, currentFragment, MonthFragment.TAG);
 				break;
 			case WeekFragment.TAG:
@@ -323,6 +321,11 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 			intent.putExtras(bundle);
 
 			instanceActivityResultLauncher.launch(intent);
+
+			DialogFragment instanceListOnADayDialogFragment = (DialogFragment) getParentFragmentManager().findFragmentByTag(InstanceListOnADayDialogFragment.TAG);
+			if (instanceListOnADayDialogFragment != null) {
+				instanceListOnADayDialogFragment.dismiss();
+			}
 		}
 	}
 
@@ -409,7 +412,7 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 				break;
 			case R.id.add_schedule:
 				Intent intent = new Intent(requireActivity(), EditEventActivity.class);
-				intent.putExtra("requestCode", EventDataController.NEW_EVENT);
+				intent.putExtra("requestCode", EventIntentCode.REQUEST_NEW_EVENT.value());
 				newEventActivityResultLauncher.launch(intent);
 				break;
 			case R.id.go_to_today:
@@ -433,12 +436,25 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 			new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
 				@Override
 				public void onActivityResult(ActivityResult result) {
-					switch (result.getResultCode()) {
-						case NewInstanceMainFragment.RESULT_REMOVED_EVENT:
-						case NewInstanceMainFragment.RESULT_EXCEPTED_INSTANCE:
-							break;
+					try {
+						EventIntentCode resultCode = EventIntentCode.enumOf(result.getResultCode());
+						switch (resultCode) {
+							case RESULT_DELETED:
+								refreshView();
+							case RESULT_EXCEPTED_INSTANCE:
+								refreshView();
+								break;
+							case RESULT_MODIFIED_AFTER_INSTANCE_INCLUDING_THIS_INSTANCE:
+							case RESULT_MODIFIED_THIS_INSTANCE:
+							case RESULT_MODIFIED_EVENT:
+								onEditingEventResult(result);
+								break;
+						}
+					} catch (IllegalArgumentException e) {
+
 					}
-					refreshView();
+
+
 				}
 			}
 	);
@@ -447,10 +463,10 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 			registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
 				@Override
 				public void onActivityResult(ActivityResult result) {
-					switch (result.getResultCode()) {
-						case RESULT_OK:
-							//새로운 일정이 추가됨 -> 달력 이벤트 갱신
-							refreshView();
+					switch (EventIntentCode.enumOf(result.getResultCode())) {
+						case RESULT_SAVED:
+							//새로운 일정이 추가됨 -> 달력 이벤트 갱신 -> 추가한 이벤트의 첫번째 인스턴스가 있는 날짜로 달력을 이동
+							onEditingEventResult(result);
 							break;
 					}
 				}
@@ -484,5 +500,17 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 		}
 	};
 
+
+	@Override
+	public void onEditingEventResult(ActivityResult activityResult) {
+		Fragment fragment = getChildFragmentManager().getPrimaryNavigationFragment();
+		if (fragment instanceof MonthFragment) {
+			((MonthFragment) fragment).processEditingEventResult(activityResult);
+		} else if (fragment instanceof WeekFragment) {
+			((WeekFragment) fragment).processEditingEventResult(activityResult);
+		} else if (fragment instanceof DayFragment) {
+			((DayFragment) fragment).processEditingEventResult(activityResult);
+		}
+	}
 }
 

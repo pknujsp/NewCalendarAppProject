@@ -18,6 +18,7 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnDateTimeChangedListener;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEditedEventListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
@@ -27,7 +28,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 
-public class WeekFragment extends Fragment implements IRefreshView, OnDateTimeChangedListener {
+public class WeekFragment extends Fragment implements IRefreshView, OnDateTimeChangedListener, OnEditedEventListener {
 	public static final String TAG = "WEEK_FRAGMENT";
 	private ViewPager2 weekViewPager;
 	private WeekViewPagerAdapter weekViewPagerAdapter;
@@ -71,17 +72,23 @@ public class WeekFragment extends Fragment implements IRefreshView, OnDateTimeCh
 		super.onViewCreated(view, savedInstanceState);
 
 		weekViewPager = (ViewPager2) view.findViewById(R.id.week_viewpager);
+		weekViewPager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
+
+		setViewPager();
+	}
+
+	@Override
+	public void onStart() {
+		super.onStart();
+	}
+
+	private void setViewPager() {
 		weekViewPagerAdapter = new WeekViewPagerAdapter(iControlEvent, onEventItemLongClickListener, onEventItemClickListener, iToolbar, iConnectedCalendars);
 		weekViewPager.setAdapter(weekViewPagerAdapter);
 		weekViewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, false);
 
 		onPageChangeCallback = new OnPageChangeCallback(weekViewPagerAdapter.getCALENDAR());
 		weekViewPager.registerOnPageChangeCallback(onPageChangeCallback);
-	}
-
-	@Override
-	public void onStart() {
-		super.onStart();
 	}
 
 	@Override
@@ -92,6 +99,30 @@ public class WeekFragment extends Fragment implements IRefreshView, OnDateTimeCh
 	@Override
 	public void receivedDateChanged(Date date) {
 		refreshView();
+	}
+
+	@Override
+	public void onSavedNewEvent(long eventId, long begin) {
+		moveCurrentView(begin);
+	}
+
+	@Override
+	public void onModifiedEvent(long eventId, long begin) {
+		moveCurrentView(begin);
+	}
+
+	@Override
+	public void onModifiedInstance(long instanceId, long begin) {
+		moveCurrentView(begin);
+	}
+
+	@Override
+	public void moveCurrentView(long begin) {
+		refreshView();
+		int movePosition = ClockUtil.calcWeekDifference(new Date(begin), weekViewPagerAdapter.getCALENDAR().getTime());
+		if (movePosition != 0) {
+			weekViewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION + movePosition, true);
+		}
 	}
 
 	class OnPageChangeCallback extends ViewPager2.OnPageChangeCallback {
@@ -132,17 +163,12 @@ public class WeekFragment extends Fragment implements IRefreshView, OnDateTimeCh
 	}
 
 	public void goToToday() {
-		if (!ClockUtil.areSameDate(System.currentTimeMillis(), weekViewPagerAdapter.getCALENDAR().getTimeInMillis())) {
-			weekViewPagerAdapter = new WeekViewPagerAdapter(iControlEvent, onEventItemLongClickListener, onEventItemClickListener, iToolbar, iConnectedCalendars);
-			weekViewPager.setAdapter(weekViewPagerAdapter);
-			weekViewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, true);
-
-			onPageChangeCallback = new OnPageChangeCallback(weekViewPagerAdapter.getCALENDAR());
-			weekViewPager.registerOnPageChangeCallback(onPageChangeCallback);
+		if (!ClockUtil.areSameDate(System.currentTimeMillis(), weekViewPagerAdapter.getCurrentDateTime().getTime())) {
+			setViewPager();
 		} else {
-			if (currentPosition != EventTransactionFragment.FIRST_VIEW_POSITION) {
+			if (weekViewPager.getCurrentItem() != EventTransactionFragment.FIRST_VIEW_POSITION) {
+				weekViewPagerAdapter.notifyDataSetChanged();
 				weekViewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, true);
-				refreshView();
 			}
 		}
 	}
@@ -155,6 +181,10 @@ public class WeekFragment extends Fragment implements IRefreshView, OnDateTimeCh
 
 	@Override
 	public void refreshView() {
-		weekViewPagerAdapter.notifyDataSetChanged();
+		if (!ClockUtil.areSameDate(System.currentTimeMillis(), weekViewPagerAdapter.getCurrentDateTime().getTime())) {
+			setViewPager();
+		} else {
+			weekViewPagerAdapter.notifyDataSetChanged();
+		}
 	}
 }

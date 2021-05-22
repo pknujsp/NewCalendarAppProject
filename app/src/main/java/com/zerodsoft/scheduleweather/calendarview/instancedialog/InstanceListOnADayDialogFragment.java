@@ -137,7 +137,7 @@ public class InstanceListOnADayDialogFragment extends DialogFragment implements 
 			}
 		});
 
-// final int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32f, getResources().getDisplayMetrics());
+		// final int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32f, getResources().getDisplayMetrics());
 		final int margin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, getResources().getDisplayMetrics());
 		// binding.instancesDialogViewpager.setPadding(padding, 0, padding, 0);
 		binding.instancesDialogViewpager.setOffscreenPageLimit(3);

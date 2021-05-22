@@ -31,6 +31,7 @@ public class DayViewPagerAdapter extends RecyclerView.Adapter<DayViewPagerAdapte
     private final IControlEvent iControlEvent;
     private final IToolbar iToolbar;
     private final IConnectedCalendars iConnectedCalendars;
+    private final Date currentDateTime;
 
     private SparseArray<DayViewPagerHolder> holderSparseArray = new SparseArray<>();
     private final Calendar CALENDAR;
@@ -47,6 +48,7 @@ public class DayViewPagerAdapter extends RecyclerView.Adapter<DayViewPagerAdapte
         this.onEventItemLongClickListener = onEventItemLongClickListener;
 
         CALENDAR = Calendar.getInstance(ClockUtil.TIME_ZONE);
+        currentDateTime = CALENDAR.getTime();
         // 날짜를 오늘 0시0분0초로 설정
         CALENDAR.set(Calendar.HOUR_OF_DAY, 0);
         CALENDAR.set(Calendar.MINUTE, 0);
@@ -58,6 +60,10 @@ public class DayViewPagerAdapter extends RecyclerView.Adapter<DayViewPagerAdapte
     public Calendar getCALENDAR()
     {
         return (Calendar) CALENDAR.clone();
+    }
+
+    public Date getCurrentDateTime() {
+        return currentDateTime;
     }
 
     @NonNull

@@ -11,12 +11,14 @@ import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.calendar.interfaces.ICalendarProvider;
 import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnDateTimeChangedListener;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEditedEventListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
@@ -24,7 +26,7 @@ import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import java.util.Calendar;
 import java.util.Date;
 
-public class MonthFragment extends Fragment implements IRefreshView, OnDateTimeChangedListener {
+public class MonthFragment extends Fragment implements IRefreshView, OnDateTimeChangedListener, OnEditedEventListener {
 	public static final String TAG = "MonthFragment";
 
 	private final IControlEvent iControlEvent;
@@ -32,6 +34,7 @@ public class MonthFragment extends Fragment implements IRefreshView, OnDateTimeC
 	private final OnEventItemClickListener onEventItemClickListener;
 	private final IConnectedCalendars iConnectedCalendars;
 	private final OnEventItemLongClickListener onEventItemLongClickListener;
+	private final ICalendarProvider iCalendarProvider;
 
 	private ViewPager2 viewPager;
 	private MonthViewPagerAdapter viewPagerAdapter;
@@ -39,10 +42,11 @@ public class MonthFragment extends Fragment implements IRefreshView, OnDateTimeC
 
 	private int currentPosition = EventTransactionFragment.FIRST_VIEW_POSITION;
 
-	public MonthFragment(Fragment fragment, IToolbar iToolbar, IConnectedCalendars iConnectedCalendars) {
+	public MonthFragment(Fragment fragment, IToolbar iToolbar, IConnectedCalendars iConnectedCalendars, ICalendarProvider iCalendarProvider) {
 		this.onEventItemLongClickListener = (OnEventItemLongClickListener) fragment;
 		this.iControlEvent = (IControlEvent) fragment;
 		this.onEventItemClickListener = (OnEventItemClickListener) fragment;
+		this.iCalendarProvider = iCalendarProvider;
 		this.iToolbar = iToolbar;
 		this.iConnectedCalendars = iConnectedCalendars;
 	}
@@ -56,16 +60,10 @@ public class MonthFragment extends Fragment implements IRefreshView, OnDateTimeC
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
-
 		viewPager = (ViewPager2) view.findViewById(R.id.month_viewpager);
-
-		viewPagerAdapter = new MonthViewPagerAdapter(iControlEvent, onEventItemLongClickListener, onEventItemClickListener, iToolbar, iConnectedCalendars);
 		viewPager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
-		viewPager.setAdapter(viewPagerAdapter);
-		viewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, false);
 
-		onPageChangeCallback = new OnPageChangeCallback(viewPagerAdapter.getCALENDAR());
-		viewPager.registerOnPageChangeCallback(onPageChangeCallback);
+		setViewPager();
 	}
 
 
@@ -75,24 +73,32 @@ public class MonthFragment extends Fragment implements IRefreshView, OnDateTimeC
 		// 인스턴스 그리기
 	}
 
+	private void setViewPager() {
+		viewPagerAdapter = new MonthViewPagerAdapter(iControlEvent, onEventItemLongClickListener, onEventItemClickListener, iToolbar, iConnectedCalendars);
+		viewPager.setAdapter(viewPagerAdapter);
+		viewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, false);
+
+		onPageChangeCallback = new OnPageChangeCallback(viewPagerAdapter.getCALENDAR());
+		viewPager.registerOnPageChangeCallback(onPageChangeCallback);
+	}
+
 
 	@Override
 	public void refreshView() {
-		viewPagerAdapter.notifyDataSetChanged();
+		if (!ClockUtil.areSameDate(System.currentTimeMillis(), viewPagerAdapter.getCurrentDateTime().getTime())) {
+			setViewPager();
+		} else {
+			viewPagerAdapter.notifyDataSetChanged();
+		}
 	}
 
 	public void goToToday() {
-		if (!ClockUtil.areSameDate(System.currentTimeMillis(), viewPagerAdapter.getCALENDAR().getTimeInMillis())) {
-			viewPagerAdapter = new MonthViewPagerAdapter(iControlEvent, onEventItemLongClickListener, onEventItemClickListener, iToolbar, iConnectedCalendars);
-			viewPager.setAdapter(viewPagerAdapter);
-			viewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, true);
-
-			onPageChangeCallback = new OnPageChangeCallback(viewPagerAdapter.getCALENDAR());
-			viewPager.registerOnPageChangeCallback(onPageChangeCallback);
+		if (!ClockUtil.areSameDate(System.currentTimeMillis(), viewPagerAdapter.getCurrentDateTime().getTime())) {
+			setViewPager();
 		} else {
-			if (currentPosition != EventTransactionFragment.FIRST_VIEW_POSITION) {
+			if (viewPager.getCurrentItem() != EventTransactionFragment.FIRST_VIEW_POSITION) {
+				viewPagerAdapter.notifyDataSetChanged();
 				viewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, true);
-				refreshView();
 			}
 		}
 	}
@@ -108,6 +114,29 @@ public class MonthFragment extends Fragment implements IRefreshView, OnDateTimeC
 		refreshView();
 	}
 
+	@Override
+	public void onSavedNewEvent(long eventId, long begin) {
+		moveCurrentView(begin);
+	}
+
+	@Override
+	public void onModifiedEvent(long eventId, long begin) {
+		moveCurrentView(begin);
+	}
+
+	@Override
+	public void onModifiedInstance(long instanceId, long begin) {
+		moveCurrentView(begin);
+	}
+
+	@Override
+	public void moveCurrentView(long begin) {
+		refreshView();
+		int movePosition = ClockUtil.calcMonthDifference(new Date(begin), viewPagerAdapter.getCALENDAR().getTime());
+		if (movePosition != 0) {
+			viewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION + movePosition, true);
+		}
+	}
 
 	class OnPageChangeCallback extends ViewPager2.OnPageChangeCallback {
 		private final Calendar calendar;

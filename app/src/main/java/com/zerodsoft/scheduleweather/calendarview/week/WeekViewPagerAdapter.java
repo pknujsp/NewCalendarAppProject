@@ -32,6 +32,7 @@ import java.util.Map;
 public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdapter.WeekViewPagerHolder> implements DateGetter {
 	private SparseArray<WeekViewPagerHolder> holderSparseArray = new SparseArray<>();
 	private final Calendar CALENDAR;
+	private final Date currentDateTime;
 	private final IToolbar iToolbar;
 	private final IControlEvent iControlEvent;
 	private final OnEventItemClickListener onEventItemClickListener;
@@ -45,6 +46,7 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
 		this.onEventItemClickListener = onEventItemClickListener;
 		this.iConnectedCalendars = iConnectedCalendars;
 		CALENDAR = Calendar.getInstance(ClockUtil.TIME_ZONE);
+		currentDateTime = CALENDAR.getTime();
 
 		// 날짜를 이번 주 일요일 0시 0분으로 설정
 		int amount = -(CALENDAR.get(Calendar.DAY_OF_WEEK) - 1);
@@ -59,6 +61,10 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
 
 	public Calendar getCALENDAR() {
 		return (Calendar) CALENDAR.clone();
+	}
+
+	public Date getCurrentDateTime() {
+		return currentDateTime;
 	}
 
 	@NonNull

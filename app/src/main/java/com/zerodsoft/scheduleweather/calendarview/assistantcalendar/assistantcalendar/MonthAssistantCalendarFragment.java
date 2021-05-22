@@ -22,6 +22,7 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.databinding.FragmentMonthAssistantBinding;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
+import java.time.Clock;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -37,7 +38,7 @@ public class MonthAssistantCalendarFragment extends Fragment implements IControl
 
 	private CalendarViewModel calendarViewModel;
 
-	public MonthAssistantCalendarFragment(IConnectedCalendars iConnectedCalendars,CalendarDateOnClickListener calendarDateOnClickListener) {
+	public MonthAssistantCalendarFragment(IConnectedCalendars iConnectedCalendars, CalendarDateOnClickListener calendarDateOnClickListener) {
 		this.iConnectedCalendars = iConnectedCalendars;
 		this.calendarDateOnClickListener = calendarDateOnClickListener;
 	}
@@ -55,10 +56,7 @@ public class MonthAssistantCalendarFragment extends Fragment implements IControl
 		calendarViewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
 
 		binding.monthAssistantCalendarViewpager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
-		adapter = new MonthAssistantCalendarListAdapter(this, calendarDateOnClickListener, iConnectedCalendars);
-		binding.monthAssistantCalendarViewpager.setAdapter(adapter);
-		binding.monthAssistantCalendarViewpager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, false);
-		binding.monthAssistantCalendarViewpager.registerOnPageChangeCallback(onPageChangeCallback);
+		setViewPager();
 
 		binding.currentMonth.setText(ClockUtil.YEAR_MONTH_FORMAT.format(adapter.getAsOfDate()));
 
@@ -91,6 +89,23 @@ public class MonthAssistantCalendarFragment extends Fragment implements IControl
 		super.onStart();
 	}
 
+	private void setViewPager() {
+		adapter = new MonthAssistantCalendarListAdapter(this, calendarDateOnClickListener, iConnectedCalendars);
+		binding.monthAssistantCalendarViewpager.setAdapter(adapter);
+		binding.monthAssistantCalendarViewpager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, false);
+		binding.monthAssistantCalendarViewpager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+			private final Calendar calendar = Calendar.getInstance();
+
+			@Override
+			public void onPageSelected(int position) {
+				super.onPageSelected(position);
+				calendar.setTime(adapter.getAsOfDate());
+				calendar.add(Calendar.MONTH, position - EventTransactionFragment.FIRST_VIEW_POSITION);
+
+				binding.currentMonth.setText(ClockUtil.YEAR_MONTH_FORMAT.format(calendar.getTime()));
+			}
+		});
+	}
 
 	/**
 	 * 현재 년월 텍스트를 클릭하면 보조 캘린더의 날짜를 현재 month로 설정하고 표시
@@ -103,19 +118,6 @@ public class MonthAssistantCalendarFragment extends Fragment implements IControl
 		}
 	}
 
-	private final ViewPager2.OnPageChangeCallback onPageChangeCallback = new ViewPager2.OnPageChangeCallback() {
-		private Calendar calendar = Calendar.getInstance();
-
-		@Override
-		public void onPageSelected(int position) {
-			super.onPageSelected(position);
-			calendar.setTime(adapter.getAsOfDate());
-			calendar.add(Calendar.MONTH, position - EventTransactionFragment.FIRST_VIEW_POSITION);
-
-			binding.currentMonth.setText(ClockUtil.YEAR_MONTH_FORMAT.format(calendar.getTime()));
-		}
-	};
-
 	@Override
 	public Map<Integer, CalendarInstance> getInstances(long begin, long end) {
 		return calendarViewModel.getInstances(begin, end);
@@ -124,14 +126,22 @@ public class MonthAssistantCalendarFragment extends Fragment implements IControl
 	@Override
 	public void refreshView() {
 		if (isVisible()) {
-			adapter.notifyDataSetChanged();
+			if (!ClockUtil.areSameDate(System.currentTimeMillis(), adapter.getCurrentDateTime().getTime())) {
+				setViewPager();
+			} else {
+				adapter.notifyDataSetChanged();
+			}
 		}
 	}
 
 	public void goToToday() {
-		if (binding.monthAssistantCalendarViewpager.getCurrentItem() != EventTransactionFragment.FIRST_VIEW_POSITION) {
-			binding.monthAssistantCalendarViewpager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, true);
-			refreshView();
+		if (!ClockUtil.areSameDate(System.currentTimeMillis(), adapter.getCurrentDateTime().getTime())) {
+			setViewPager();
+		} else {
+			if (binding.monthAssistantCalendarViewpager.getCurrentItem() != EventTransactionFragment.FIRST_VIEW_POSITION) {
+				adapter.notifyDataSetChanged();
+				binding.monthAssistantCalendarViewpager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, true);
+			}
 		}
 	}
 }

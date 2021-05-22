@@ -17,6 +17,7 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnDateTimeChangedListener;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEditedEventListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
@@ -24,7 +25,7 @@ import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import java.util.Calendar;
 import java.util.Date;
 
-public class DayFragment extends Fragment implements IRefreshView, OnDateTimeChangedListener {
+public class DayFragment extends Fragment implements IRefreshView, OnDateTimeChangedListener, OnEditedEventListener {
 	public static final String TAG = "DAY_FRAGMENT";
 
 	private final IControlEvent iControlEvent;
@@ -61,17 +62,21 @@ public class DayFragment extends Fragment implements IRefreshView, OnDateTimeCha
 
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-		dayViewPager = (ViewPager2) view.findViewById(R.id.day_viewpager);
+		super.onViewCreated(view, savedInstanceState);
 
-		dayViewPagerAdapter = new DayViewPagerAdapter(iControlEvent, onEventItemLongClickListener, onEventItemClickListener, iToolbar, iConnectedCalendars);
+		dayViewPager = (ViewPager2) view.findViewById(R.id.day_viewpager);
 		dayViewPager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
+
+		setViewPager();
+	}
+
+	private void setViewPager() {
+		dayViewPagerAdapter = new DayViewPagerAdapter(iControlEvent, onEventItemLongClickListener, onEventItemClickListener, iToolbar, iConnectedCalendars);
 		dayViewPager.setAdapter(dayViewPagerAdapter);
 		dayViewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, false);
 
 		onPageChangeCallback = new OnPageChangeCallback(dayViewPagerAdapter.getCALENDAR());
 		dayViewPager.registerOnPageChangeCallback(onPageChangeCallback);
-
-		super.onViewCreated(view, savedInstanceState);
 	}
 
 	@Override
@@ -97,6 +102,30 @@ public class DayFragment extends Fragment implements IRefreshView, OnDateTimeCha
 	@Override
 	public void receivedDateChanged(Date date) {
 		refreshView();
+	}
+
+	@Override
+	public void onSavedNewEvent(long eventId, long begin) {
+		moveCurrentView(begin);
+	}
+
+	@Override
+	public void onModifiedEvent(long eventId, long begin) {
+		moveCurrentView(begin);
+	}
+
+	@Override
+	public void onModifiedInstance(long instanceId, long begin) {
+		moveCurrentView(begin);
+	}
+
+	@Override
+	public void moveCurrentView(long begin) {
+		refreshView();
+		int movePosition = ClockUtil.calcDayDifference(new Date(begin), dayViewPagerAdapter.getCALENDAR().getTime());
+		if (movePosition != 0) {
+			dayViewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION + movePosition, true);
+		}
 	}
 
 	class OnPageChangeCallback extends ViewPager2.OnPageChangeCallback {
@@ -136,22 +165,23 @@ public class DayFragment extends Fragment implements IRefreshView, OnDateTimeCha
 
 	@Override
 	public void refreshView() {
-		dayViewPagerAdapter.notifyDataSetChanged();
+		if (!ClockUtil.areSameDate(System.currentTimeMillis(), dayViewPagerAdapter.getCurrentDateTime().getTime())) {
+			setViewPager();
+		} else {
+			dayViewPagerAdapter.notifyDataSetChanged();
+		}
 	}
 
-	public void goToToday() {
-		if (!ClockUtil.areSameDate(System.currentTimeMillis(), dayViewPagerAdapter.getCALENDAR().getTimeInMillis())) {
-			dayViewPagerAdapter = new DayViewPagerAdapter(iControlEvent, onEventItemLongClickListener, onEventItemClickListener, iToolbar, iConnectedCalendars);
-			dayViewPager.setAdapter(dayViewPagerAdapter);
-			dayViewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, true);
 
-			onPageChangeCallback = new OnPageChangeCallback(dayViewPagerAdapter.getCALENDAR());
-			dayViewPager.registerOnPageChangeCallback(onPageChangeCallback);
+	public void goToToday() {
+		if (!ClockUtil.areSameDate(System.currentTimeMillis(), dayViewPagerAdapter.getCurrentDateTime().getTime())) {
+			setViewPager();
 		} else {
-			if (currentPosition != EventTransactionFragment.FIRST_VIEW_POSITION) {
+			if (dayViewPager.getCurrentItem() != EventTransactionFragment.FIRST_VIEW_POSITION) {
+				dayViewPagerAdapter.notifyDataSetChanged();
 				dayViewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, true);
-				refreshView();
 			}
 		}
 	}
+
 }

@@ -38,6 +38,7 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.calendar.CalendarInstanceUtil;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
+import com.zerodsoft.scheduleweather.common.enums.EventIntentCode;
 import com.zerodsoft.scheduleweather.databinding.EventFragmentBinding;
 import com.zerodsoft.scheduleweather.event.common.LocationSelectorKey;
 import com.zerodsoft.scheduleweather.event.common.SelectionDetailLocationActivity;
@@ -58,235 +59,200 @@ import java.util.TimeZone;
 
 import lombok.SneakyThrows;
 
-public class EventFragment extends BottomSheetDialogFragment
-{
-    public static final String TAG = "EventFragment";
-    // 참석자가 있는 경우 참석 여부 표시
-    // 알림 값을 클릭하면 알림표시를 하는 시각을 보여준다
+public class EventFragment extends BottomSheetDialogFragment {
+	public static final String TAG = "EventFragment";
+	// 참석자가 있는 경우 참석 여부 표시
+	// 알림 값을 클릭하면 알림표시를 하는 시각을 보여준다
     /*
     공휴일인 경우 : 제목, 날짜, 이벤트 색상, 캘린더 정보만 출력
      */
-    private EventFragmentBinding binding;
-    private ContentValues instanceValues;
-    private List<ContentValues> attendeeList;
-    private CalendarViewModel viewModel;
-    private LocationViewModel locationViewModel;
+	private EventFragmentBinding binding;
+	private ContentValues instanceValues;
+	private List<ContentValues> attendeeList;
+	private CalendarViewModel viewModel;
+	private LocationViewModel locationViewModel;
 
-    private final int VIEW_HEIGHT;
+	private final int VIEW_HEIGHT;
 
-    private final int CALENDAR_ID;
-    private final long EVENT_ID;
-    private final long INSTANCE_ID;
-    private final long ORIGINAL_BEGIN;
-    private final long ORIGINAL_END;
+	private final int CALENDAR_ID;
+	private final long EVENT_ID;
+	private final long INSTANCE_ID;
+	private final long ORIGINAL_BEGIN;
+	private final long ORIGINAL_END;
 
-    private AlertDialog attendeeDialog;
+	private AlertDialog attendeeDialog;
 
-    private FoodCriteriaLocationInfoViewModel foodCriteriaLocationInfoViewModel;
-    private FoodCriteriaLocationHistoryViewModel foodCriteriaLocationHistoryViewModel;
-    private int resultCode = Activity.RESULT_CANCELED;
-    private NetworkStatus networkStatus;
+	private FoodCriteriaLocationInfoViewModel foodCriteriaLocationInfoViewModel;
+	private FoodCriteriaLocationHistoryViewModel foodCriteriaLocationHistoryViewModel;
+	private int resultCode = Activity.RESULT_CANCELED;
+	private NetworkStatus networkStatus;
 
-    private static EventFragment instance;
+	private static EventFragment instance;
 
-    public static EventFragment newInstance(int VIEW_HEIGHT, int CALENDAR_ID, long EVENT_ID, long INSTANCE_ID, long ORIGINAL_BEGIN, long ORIGINAL_END)
-    {
-        instance = new EventFragment(VIEW_HEIGHT, CALENDAR_ID, EVENT_ID, INSTANCE_ID, ORIGINAL_BEGIN, ORIGINAL_END);
-        return instance;
-    }
+	public static EventFragment newInstance(int VIEW_HEIGHT, int CALENDAR_ID, long EVENT_ID, long INSTANCE_ID, long ORIGINAL_BEGIN, long ORIGINAL_END) {
+		instance = new EventFragment(VIEW_HEIGHT, CALENDAR_ID, EVENT_ID, INSTANCE_ID, ORIGINAL_BEGIN, ORIGINAL_END);
+		return instance;
+	}
 
-    public static EventFragment getInstance()
-    {
-        return instance;
-    }
+	public static EventFragment getInstance() {
+		return instance;
+	}
 
-    private final LocationAbstract locationAbstract = new LocationAbstract();
+	private final LocationAbstract locationAbstract = new LocationAbstract();
 
-    public static class LocationAbstract
-    {
-        public void showSetLocationDialog(Activity activity, ActivityResultLauncher<Intent> activityResultLauncher, ContentValues instance)
-        {
-            MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(activity)
-                    .setTitle(activity.getString(R.string.request_select_location_title))
-                    .setMessage(activity.getString(R.string.request_select_location_description))
-                    .setNegativeButton(activity.getString(R.string.cancel), new DialogInterface.OnClickListener()
-                    {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i)
-                        {
-                            dialogInterface.cancel();
-                        }
-                    })
-                    .setPositiveButton(activity.getString(R.string.check), new DialogInterface.OnClickListener()
-                    {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i)
-                        {
-                            Intent intent = new Intent(activity, SelectionDetailLocationActivity.class);
-                            Bundle bundle = new Bundle();
-                            bundle.putString(LocationSelectorKey.LOCATION_NAME_IN_EVENT.name(), instance.getAsString(CalendarContract.Instances.EVENT_LOCATION));
-                            bundle.putInt(LocationSelectorKey.REQUEST_CODE.name(), SelectionDetailLocationActivity.REQUEST_CODE_SELECT_LOCATION_BY_QUERY);
+	public static class LocationAbstract {
+		public void showSetLocationDialog(Activity activity, ActivityResultLauncher<Intent> activityResultLauncher, ContentValues instance) {
+			MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(activity)
+					.setTitle(activity.getString(R.string.request_select_location_title))
+					.setMessage(activity.getString(R.string.request_select_location_description))
+					.setNegativeButton(activity.getString(R.string.cancel), new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialogInterface, int i) {
+							dialogInterface.cancel();
+						}
+					})
+					.setPositiveButton(activity.getString(R.string.check), new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialogInterface, int i) {
+							Intent intent = new Intent(activity, SelectionDetailLocationActivity.class);
+							Bundle bundle = new Bundle();
+							bundle.putString(LocationSelectorKey.LOCATION_NAME_IN_EVENT.name(), instance.getAsString(CalendarContract.Instances.EVENT_LOCATION));
+							bundle.putInt(LocationSelectorKey.REQUEST_CODE.name(), SelectionDetailLocationActivity.REQUEST_CODE_SELECT_LOCATION_BY_QUERY);
 
-                            intent.putExtras(bundle);
-                            activityResultLauncher.launch(intent);
-                            dialogInterface.dismiss();
-                        }
-                    });
+							intent.putExtras(bundle);
+							activityResultLauncher.launch(intent);
+							dialogInterface.dismiss();
+						}
+					});
 
-            AlertDialog dialog = builder.create();
-            dialog.show();
-        }
+			AlertDialog dialog = builder.create();
+			dialog.show();
+		}
 
-        public void startEditLocationActivity(Activity activity, ActivityResultLauncher<Intent> activityResultLauncher, LocationDTO locationDTO)
-        {
-            //naver
-            Intent intent = new Intent(activity, SelectionDetailLocationActivity.class);
-            Bundle bundle = new Bundle();
-            bundle.putParcelable(LocationSelectorKey.SELECTED_LOCATION_DTO_IN_EVENT.name(), locationDTO);
-            bundle.putInt(LocationSelectorKey.REQUEST_CODE.name(), SelectionDetailLocationActivity.REQUEST_CODE_CHANGE_LOCATION);
+		public void startEditLocationActivity(Activity activity, ActivityResultLauncher<Intent> activityResultLauncher, LocationDTO locationDTO) {
+			//naver
+			Intent intent = new Intent(activity, SelectionDetailLocationActivity.class);
+			Bundle bundle = new Bundle();
+			bundle.putParcelable(LocationSelectorKey.SELECTED_LOCATION_DTO_IN_EVENT.name(), locationDTO);
+			bundle.putInt(LocationSelectorKey.REQUEST_CODE.name(), SelectionDetailLocationActivity.REQUEST_CODE_CHANGE_LOCATION);
 
-            intent.putExtras(bundle);
-            activityResultLauncher.launch(intent);
-        }
-    }
+			intent.putExtras(bundle);
+			activityResultLauncher.launch(intent);
+		}
+	}
 
 
-    public EventFragment(int VIEW_HEIGHT, int CALENDAR_ID, long EVENT_ID, long INSTANCE_ID, long ORIGINAL_BEGIN, long ORIGINAL_END)
-    {
-        this.VIEW_HEIGHT = VIEW_HEIGHT;
-        this.CALENDAR_ID = CALENDAR_ID;
-        this.EVENT_ID = EVENT_ID;
-        this.INSTANCE_ID = INSTANCE_ID;
-        this.ORIGINAL_BEGIN = ORIGINAL_BEGIN;
-        this.ORIGINAL_END = ORIGINAL_END;
-    }
+	public EventFragment(int VIEW_HEIGHT, int CALENDAR_ID, long EVENT_ID, long INSTANCE_ID, long ORIGINAL_BEGIN, long ORIGINAL_END) {
+		this.VIEW_HEIGHT = VIEW_HEIGHT;
+		this.CALENDAR_ID = CALENDAR_ID;
+		this.EVENT_ID = EVENT_ID;
+		this.INSTANCE_ID = INSTANCE_ID;
+		this.ORIGINAL_BEGIN = ORIGINAL_BEGIN;
+		this.ORIGINAL_END = ORIGINAL_END;
+	}
 
-    @Override
-    public void onAttach(@NonNull Context context)
-    {
-        super.onAttach(context);
-    }
+	@Override
+	public void onAttach(@NonNull Context context) {
+		super.onAttach(context);
+	}
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState)
-    {
-        super.onCreate(savedInstanceState);
-        networkStatus = new NetworkStatus(getContext(), new ConnectivityManager.NetworkCallback());
-    }
+	@Override
+	public void onCreate(@Nullable Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		networkStatus = new NetworkStatus(getContext(), new ConnectivityManager.NetworkCallback());
+	}
 
 
-    @NonNull
-    @Override
-    public Dialog onCreateDialog(@Nullable Bundle savedInstanceState)
-    {
-        Dialog dialog = super.onCreateDialog(savedInstanceState);
+	@NonNull
+	@Override
+	public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
+		Dialog dialog = super.onCreateDialog(savedInstanceState);
 
-        BottomSheetBehavior bottomSheetBehavior = ((BottomSheetDialog) dialog).getBehavior();
-        bottomSheetBehavior.setDraggable(false);
-        bottomSheetBehavior.setPeekHeight(0);
-        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+		BottomSheetBehavior bottomSheetBehavior = ((BottomSheetDialog) dialog).getBehavior();
+		bottomSheetBehavior.setDraggable(false);
+		bottomSheetBehavior.setPeekHeight(0);
+		bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
 
-        return dialog;
-    }
-
-
-    @Nullable
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
-    {
-        binding = EventFragmentBinding.inflate(inflater, container, false);
-        return binding.getRoot();
-    }
-
-    @SneakyThrows
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
-    {
-        super.onViewCreated(view, savedInstanceState);
-
-        View bottomSheet = getDialog().findViewById(R.id.design_bottom_sheet);
-        bottomSheet.getLayoutParams().height = VIEW_HEIGHT;
-
-        locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
-        foodCriteriaLocationHistoryViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationHistoryViewModel.class);
-        foodCriteriaLocationInfoViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationInfoViewModel.class);
-
-        binding.eventRemindersView.addReminderButton.setVisibility(View.GONE);
-        binding.eventAttendeesView.showAttendeesDetail.setVisibility(View.GONE);
-        binding.eventDatetimeView.allDaySwitchLayout.setVisibility(View.GONE);
-        binding.eventDatetimeView.startTime.setVisibility(View.GONE);
-        binding.eventDatetimeView.endTime.setVisibility(View.GONE);
-
-        binding.eventFab.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                if (binding.eventFab.isExpanded())
-                {
-                    binding.eventFab.setExpanded(false);
-                    collapseFabs();
-                } else
-                {
-                    binding.eventFab.setExpanded(true);
-                    expandFabs();
-                }
-            }
-        });
-
-        binding.selectDetailLocationFab.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                locationViewModel.hasDetailLocation(CALENDAR_ID, EVENT_ID, new CarrierMessagingService.ResultCallback<Boolean>()
-                {
-                    @Override
-                    public void onReceiveResult(@NonNull Boolean hasDetailLocation) throws RemoteException
-                    {
-                        getActivity().runOnUiThread(new Runnable()
-                        {
-                            @Override
-                            public void run()
-                            {
-                                if (hasDetailLocation)
-                                {
-                                    if (networkStatus.networkAvailable())
-                                    {
-                                        locationViewModel.getLocation(CALENDAR_ID, EVENT_ID, new CarrierMessagingService.ResultCallback<LocationDTO>()
-                                        {
-                                            @Override
-                                            public void onReceiveResult(@NonNull LocationDTO locationDTO) throws RemoteException
-                                            {
-                                                if (!locationDTO.isEmpty())
-                                                {
-                                                    locationAbstract.startEditLocationActivity(getActivity(), editLocationActivityResultLauncher,
-                                                            locationDTO);
-                                                }
-                                            }
-                                        });
-                                    } else
-                                    {
-                                        networkStatus.showToastDisconnected();
-                                    }
-                                } else
-                                {
-                                    locationAbstract.showSetLocationDialog(getActivity(), setLocationActivityResultLauncher, instanceValues);
-                                }
-                            }
-                        });
-                    }
-                });
+		return dialog;
+	}
 
 
-            }
-        });
+	@Nullable
+	@Override
+	public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+		binding = EventFragmentBinding.inflate(inflater, container, false);
+		return binding.getRoot();
+	}
 
-        binding.modifyEventFab.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
+	@SneakyThrows
+	@Override
+	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
+
+		View bottomSheet = getDialog().findViewById(R.id.design_bottom_sheet);
+		bottomSheet.getLayoutParams().height = VIEW_HEIGHT;
+
+		locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
+		foodCriteriaLocationHistoryViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationHistoryViewModel.class);
+		foodCriteriaLocationInfoViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationInfoViewModel.class);
+
+		binding.eventRemindersView.addReminderButton.setVisibility(View.GONE);
+		binding.eventAttendeesView.showAttendeesDetail.setVisibility(View.GONE);
+		binding.eventDatetimeView.allDaySwitchLayout.setVisibility(View.GONE);
+		binding.eventDatetimeView.startTime.setVisibility(View.GONE);
+		binding.eventDatetimeView.endTime.setVisibility(View.GONE);
+
+		binding.eventFab.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				if (binding.eventFab.isExpanded()) {
+					binding.eventFab.setExpanded(false);
+					collapseFabs();
+				} else {
+					binding.eventFab.setExpanded(true);
+					expandFabs();
+				}
+			}
+		});
+
+		binding.selectDetailLocationFab.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				locationViewModel.hasDetailLocation(CALENDAR_ID, EVENT_ID, new CarrierMessagingService.ResultCallback<Boolean>() {
+					@Override
+					public void onReceiveResult(@NonNull Boolean hasDetailLocation) throws RemoteException {
+						getActivity().runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								if (hasDetailLocation) {
+									if (networkStatus.networkAvailable()) {
+										locationViewModel.getLocation(CALENDAR_ID, EVENT_ID, new CarrierMessagingService.ResultCallback<LocationDTO>() {
+											@Override
+											public void onReceiveResult(@NonNull LocationDTO locationDTO) throws RemoteException {
+												if (!locationDTO.isEmpty()) {
+													locationAbstract.startEditLocationActivity(getActivity(), editLocationActivityResultLauncher,
+															locationDTO);
+												}
+											}
+										});
+									} else {
+										networkStatus.showToastDisconnected();
+									}
+								} else {
+									locationAbstract.showSetLocationDialog(getActivity(), setLocationActivityResultLauncher, instanceValues);
+								}
+							}
+						});
+					}
+				});
+
+
+			}
+		});
+
+		binding.modifyEventFab.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
           /*
                 Intent intent = new Intent(EventActivity.this, EditEventActivity.class);
                 intent.putExtra("requestCode", EventDataController.MODIFY_EVENT);
@@ -294,105 +260,89 @@ public class EventFragment extends BottomSheetDialogFragment
                 intent.putExtra("eventId", eventId.longValue());
                 editInstanceActivityResultLauncher.launch(intent);
           */
-                Toast.makeText(getActivity(), "작성 중", Toast.LENGTH_SHORT).show();
-            }
-        });
+				Toast.makeText(getActivity(), "작성 중", Toast.LENGTH_SHORT).show();
+			}
+		});
 
-        binding.removeEventFab.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                String[] items = null;
-                //이번 일정만 삭제, 향후 모든 일정 삭제, 모든 일정 삭제
+		binding.removeEventFab.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				String[] items = null;
+				//이번 일정만 삭제, 향후 모든 일정 삭제, 모든 일정 삭제
                 /*
                 반복없는 이벤트 인 경우 : 일정 삭제
                 반복있는 이벤트 인 경우 : 이번 일정만 삭제, 향후 모든 일정 삭제, 모든 일정 삭제
                  */
-                if (instanceValues.getAsString(CalendarContract.Instances.RRULE) != null)
-                {
-                    items = new String[]{getString(R.string.remove_this_instance), getString(R.string.remove_all_future_instance_including_current_instance)
-                            , getString(R.string.remove_event)};
-                } else
-                {
-                    items = new String[]{getString(R.string.remove_event)};
-                }
-                new MaterialAlertDialogBuilder(getActivity()).setTitle(getString(R.string.remove_event))
-                        .setItems(items, new DialogInterface.OnClickListener()
-                        {
-                            @SneakyThrows
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int index)
-                            {
-                                if (instanceValues.getAsString(CalendarContract.Instances.RRULE) != null)
-                                {
-                                    switch (index)
-                                    {
-                                        case 0:
-                                            // 이번 일정만 삭제
-                                            // 완성
-                                            showExceptThisInstanceDialog();
-                                            break;
-                                        case 1:
-                                            // 향후 모든 일정만 삭제
-                                            deleteSubsequentIncludingThis();
-                                            break;
-                                        case 2:
-                                            // 모든 일정 삭제
-                                            showDeleteEventDialog();
-                                            break;
-                                    }
-                                } else
-                                {
-                                    switch (index)
-                                    {
-                                        case 0:
-                                            // 모든 일정 삭제
-                                            showDeleteEventDialog();
+				if (instanceValues.getAsString(CalendarContract.Instances.RRULE) != null) {
+					items = new String[]{getString(R.string.remove_this_instance), getString(R.string.remove_all_future_instance_including_current_instance)
+							, getString(R.string.remove_event)};
+				} else {
+					items = new String[]{getString(R.string.remove_event)};
+				}
+				new MaterialAlertDialogBuilder(getActivity()).setTitle(getString(R.string.remove_event))
+						.setItems(items, new DialogInterface.OnClickListener() {
+							@SneakyThrows
+							@Override
+							public void onClick(DialogInterface dialogInterface, int index) {
+								if (instanceValues.getAsString(CalendarContract.Instances.RRULE) != null) {
+									switch (index) {
+										case 0:
+											// 이번 일정만 삭제
+											// 완성
+											showExceptThisInstanceDialog();
+											break;
+										case 1:
+											// 향후 모든 일정만 삭제
+											deleteSubsequentIncludingThis();
+											break;
+										case 2:
+											// 모든 일정 삭제
+											showDeleteEventDialog();
+											break;
+									}
+								} else {
+									switch (index) {
+										case 0:
+											// 모든 일정 삭제
+											showDeleteEventDialog();
 
-                                            break;
-                                    }
-                                }
-                            }
-                        }).create().show();
-            }
-        });
+											break;
+									}
+								}
+							}
+						}).create().show();
+			}
+		});
 
-        viewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
+		viewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
 
-        instanceValues = viewModel.getInstance(CALENDAR_ID, INSTANCE_ID, ORIGINAL_BEGIN, ORIGINAL_END);
-        setInstanceData();
-    }
+		instanceValues = viewModel.getInstance(CALENDAR_ID, INSTANCE_ID, ORIGINAL_BEGIN, ORIGINAL_END);
+		setInstanceData();
+	}
 
-    private void showDeleteEventDialog()
-    {
-        new MaterialAlertDialogBuilder(requireActivity())
-                .setTitle(R.string.remove_event)
-                .setPositiveButton(R.string.check, new DialogInterface.OnClickListener()
-                {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which)
-                    {
-                        CalendarInstanceUtil.deleteEvent(viewModel, locationViewModel, foodCriteriaLocationInfoViewModel, foodCriteriaLocationHistoryViewModel,
-                                CALENDAR_ID, EVENT_ID);
-                        resultCode = NewInstanceMainFragment.RESULT_REMOVED_EVENT;
-                        dialog.dismiss();
-                        dismiss();
-                    }
-                })
-                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener()
-                {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which)
-                    {
-                        dialog.dismiss();
-                    }
-                }).create().show();
-    }
+	private void showDeleteEventDialog() {
+		new MaterialAlertDialogBuilder(requireActivity())
+				.setTitle(R.string.remove_event)
+				.setPositiveButton(R.string.check, new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						CalendarInstanceUtil.deleteEvent(viewModel, locationViewModel, foodCriteriaLocationInfoViewModel, foodCriteriaLocationHistoryViewModel,
+								CALENDAR_ID, EVENT_ID);
+						resultCode = EventIntentCode.RESULT_DELETED.value();
+						dialog.dismiss();
+						dismiss();
+					}
+				})
+				.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						dialog.dismiss();
+					}
+				}).create().show();
+	}
 
 
-    private void deleteSubsequentIncludingThis()
-    {
+	private void deleteSubsequentIncludingThis() {
         /*
         // 이벤트의 반복 UNTIL을 현재 인스턴스의 시작날짜로 수정
         ContentValues recurrenceData = viewModel.getRecurrence(calendarId, eventId);
@@ -410,470 +360,393 @@ public class EventFragment extends BottomSheetDialogFragment
         viewModel.updateEvent(recurrenceData);
 
          */
-        Toast.makeText(getContext(), "작성 중", Toast.LENGTH_SHORT).show();
-    }
+		Toast.makeText(getContext(), "작성 중", Toast.LENGTH_SHORT).show();
+	}
 
-    private void showExceptThisInstanceDialog()
-    {
-        new MaterialAlertDialogBuilder(requireActivity())
-                .setTitle(R.string.remove_this_instance)
-                .setPositiveButton(R.string.check, new DialogInterface.OnClickListener()
-                {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which)
-                    {
-                        CalendarInstanceUtil.exceptThisInstance(viewModel, instanceValues.getAsLong(CalendarContract.Instances.BEGIN), EVENT_ID);
-                        resultCode = NewInstanceMainFragment.RESULT_EXCEPTED_INSTANCE;
-                        dialog.dismiss();
-                        dismiss();
-                    }
-                })
-                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener()
-                {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which)
-                    {
-                        dialog.dismiss();
-                    }
-                }).create().show();
-    }
+	private void showExceptThisInstanceDialog() {
+		new MaterialAlertDialogBuilder(requireActivity())
+				.setTitle(R.string.remove_this_instance)
+				.setPositiveButton(R.string.check, new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						CalendarInstanceUtil.exceptThisInstance(viewModel, instanceValues.getAsLong(CalendarContract.Instances.BEGIN), EVENT_ID);
+						resultCode = EventIntentCode.RESULT_EXCEPTED_INSTANCE.value();
+						dialog.dismiss();
+						dismiss();
+					}
+				})
+				.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						dialog.dismiss();
+					}
+				}).create().show();
+	}
 
 
-    private void collapseFabs()
-    {
-        binding.eventFab.setImageDrawable(getContext().getDrawable(R.drawable.more_icon));
+	private void collapseFabs() {
+		binding.eventFab.setImageDrawable(getContext().getDrawable(R.drawable.more_icon));
 
-        binding.removeEventFab.animate().translationY(0);
-        binding.modifyEventFab.animate().translationY(0);
-        binding.selectDetailLocationFab.animate().translationY(0);
+		binding.removeEventFab.animate().translationY(0);
+		binding.modifyEventFab.animate().translationY(0);
+		binding.selectDetailLocationFab.animate().translationY(0);
 
-    }
-
-
-    private void expandFabs()
-    {
-        binding.eventFab.setImageDrawable(getContext().getDrawable(R.drawable.close_icon));
-
-        final float y = binding.eventFab.getTranslationY();
-        final float margin = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16f, getResources().getDisplayMetrics());
-        final float fabHeight = binding.eventFab.getHeight();
-
-        binding.removeEventFab.animate().translationY(y - (fabHeight + margin));
-        binding.modifyEventFab.animate().translationY(y - (fabHeight + margin) * 2);
-        binding.selectDetailLocationFab.animate().translationY(y - (fabHeight + margin) * 3);
-    }
-
-    private void setAttendeesText(List<ContentValues> attendees)
-    {
-        // 참석자 수, 참석 여부
-        LayoutInflater layoutInflater = getLayoutInflater();
-        if (binding.eventAttendeesView.eventAttendeesTable.getChildCount() > 0)
-        {
-            binding.eventAttendeesView.eventAttendeesTable.removeAllViews();
-        }
-
-        for (ContentValues attendee : attendees)
-        {
-            TableRow tableRow = new TableRow(getContext());
-            View row = layoutInflater.inflate(R.layout.event_attendee_item, null);
-            // add row to table
-            // 이름, 메일 주소, 상태
-            // 조직자 - attendeeName, 그 외 - email
-            final String attendeeName = attendee.getAsString(CalendarContract.Attendees.ATTENDEE_EMAIL);
-            final int attendeeStatus = attendee.getAsInteger(CalendarContract.Attendees.ATTENDEE_STATUS);
-            final int attendeeRelationship = attendee.getAsInteger(CalendarContract.Attendees.ATTENDEE_RELATIONSHIP);
-
-            final String attendeeStatusStr = EventUtil.convertAttendeeStatus(attendeeStatus, getContext());
-            final String attendeeRelationshipStr = EventUtil.convertAttendeeRelationship(attendeeRelationship, getContext());
-
-            LinearLayout attendeeInfoLayout = (LinearLayout) row.findViewById(R.id.attendee_info_layout);
-
-            TextView attendeeEmailView = (TextView) row.findViewById(R.id.attendee_name);
-            TextView attendeeRelationshipView = (TextView) row.findViewById(R.id.attendee_relationship);
-            TextView attendeeStatusView = (TextView) row.findViewById(R.id.attendee_status);
-            // 삭제버튼 숨기기
-            row.findViewById(R.id.remove_attendee_button).setVisibility(View.GONE);
-
-            attendeeInfoLayout.setClickable(true);
-            attendeeInfoLayout.setOnClickListener(new View.OnClickListener()
-            {
-                @Override
-                public void onClick(View view)
-                {
-                    // logic for communications with attendee
-                    if (attendeeDialog == null)
-                    {
-                        final String[] itemList = {"기능 구성중"};
-                        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(getContext())
-                                .setTitle(attendeeName + "(" + attendeeRelationshipStr + ", " + attendeeStatusStr + ")")
-                                .setItems(itemList, new DialogInterface.OnClickListener()
-                                {
-                                    @Override
-                                    public void onClick(DialogInterface dialogInterface, int i)
-                                    {
-
-                                    }
-                                });
-                        attendeeDialog = builder.create();
-                    }
-                    attendeeDialog.setTitle(attendeeName + "(" + attendeeRelationshipStr + ", " + attendeeStatusStr + ")");
-                    attendeeDialog.show();
-                    // 기능목록 파악중
-                }
-            });
-
-            attendeeEmailView.setText(attendeeName);
-            attendeeRelationshipView.setText(attendeeRelationshipStr);
-            attendeeStatusView.setText(attendeeStatusStr);
-
-            tableRow.addView(row);
-            binding.eventAttendeesView.eventAttendeesTable.addView(tableRow,
-                    new TableLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-        }
-
-    }
+	}
 
 
-    private void setInstanceData()
-    {
-        // 제목, 캘린더, 시간, 시간대, 반복, 알림, 설명, 위치, 공개범위, 유효성, 참석자
-        // 캘린더, 시간대, 참석자 정보는 따로 불러온다.
-        //제목
-        if (instanceValues.getAsString(CalendarContract.Instances.TITLE) != null)
-        {
-            if (!instanceValues.getAsString(CalendarContract.Instances.TITLE).isEmpty())
-            {
-                binding.eventTitle.setText(instanceValues.getAsString(CalendarContract.Instances.TITLE));
-            } else
-            {
-                binding.eventTitle.setText(getString(R.string.empty_title));
-            }
-        } else
-        {
-            binding.eventTitle.setText(getString(R.string.empty_title));
-        }
-        //캘린더
-        setCalendarText();
+	private void expandFabs() {
+		binding.eventFab.setImageDrawable(getContext().getDrawable(R.drawable.close_icon));
 
-        //시간 , allday구분
-        setDateTimeText(instanceValues.getAsLong(CalendarContract.Instances.BEGIN), instanceValues.getAsLong(CalendarContract.Instances.END));
+		final float y = binding.eventFab.getTranslationY();
+		final float margin = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16f, getResources().getDisplayMetrics());
+		final float fabHeight = binding.eventFab.getHeight();
 
-        // 시간대
-        if (!instanceValues.getAsBoolean(CalendarContract.Instances.ALL_DAY))
-        {
-            String timeZoneStr = instanceValues.getAsString(CalendarContract.Instances.EVENT_TIMEZONE);
-            TimeZone timeZone = TimeZone.getTimeZone(timeZoneStr);
-            setTimeZoneText(timeZone);
-            binding.eventDatetimeView.eventTimezoneLayout.setVisibility(View.VISIBLE);
-        } else
-        {
-            // allday이면 시간대 뷰를 숨긴다
-            binding.eventDatetimeView.eventTimezoneLayout.setVisibility(View.GONE);
-        }
+		binding.removeEventFab.animate().translationY(y - (fabHeight + margin));
+		binding.modifyEventFab.animate().translationY(y - (fabHeight + margin) * 2);
+		binding.selectDetailLocationFab.animate().translationY(y - (fabHeight + margin) * 3);
+	}
 
-        // 반복
-        if (instanceValues.getAsString(CalendarContract.Instances.RRULE) != null)
-        {
-            setRecurrenceText(instanceValues.getAsString(CalendarContract.Instances.RRULE));
-            binding.eventRecurrenceView.getRoot().setVisibility(View.VISIBLE);
-        } else
-        {
-            binding.eventRecurrenceView.getRoot().setVisibility(View.GONE);
-        }
+	private void setAttendeesText(List<ContentValues> attendees) {
+		// 참석자 수, 참석 여부
+		LayoutInflater layoutInflater = getLayoutInflater();
+		if (binding.eventAttendeesView.eventAttendeesTable.getChildCount() > 0) {
+			binding.eventAttendeesView.eventAttendeesTable.removeAllViews();
+		}
 
-        // 알람
-        if (instanceValues.getAsBoolean(CalendarContract.Instances.HAS_ALARM))
-        {
-            List<ContentValues> reminderList = viewModel.getReminders(CALENDAR_ID, EVENT_ID);
-            setReminderText(reminderList);
-            binding.eventRemindersView.notReminder.setVisibility(View.GONE);
-            binding.eventRemindersView.remindersTable.setVisibility(View.VISIBLE);
-            binding.eventRemindersView.getRoot().setVisibility(View.VISIBLE);
-        } else
-        {
-            // 알람이 없으면 알람 테이블을 숨기고, 알람 없음 텍스트를 표시한다.
-            binding.eventRemindersView.notReminder.setVisibility(View.VISIBLE);
-            binding.eventRemindersView.remindersTable.setVisibility(View.GONE);
-            binding.eventRemindersView.getRoot().setVisibility(View.GONE);
-        }
+		for (ContentValues attendee : attendees) {
+			TableRow tableRow = new TableRow(getContext());
+			View row = layoutInflater.inflate(R.layout.event_attendee_item, null);
+			// add row to table
+			// 이름, 메일 주소, 상태
+			// 조직자 - attendeeName, 그 외 - email
+			final String attendeeName = attendee.getAsString(CalendarContract.Attendees.ATTENDEE_EMAIL);
+			final int attendeeStatus = attendee.getAsInteger(CalendarContract.Attendees.ATTENDEE_STATUS);
+			final int attendeeRelationship = attendee.getAsInteger(CalendarContract.Attendees.ATTENDEE_RELATIONSHIP);
 
-        // 설명
-        binding.eventDescriptionView.descriptionEdittext.setVisibility(View.GONE);
-        if (instanceValues.getAsString(CalendarContract.Instances.DESCRIPTION) != null)
-        {
-            if (!instanceValues.getAsString(CalendarContract.Instances.DESCRIPTION).isEmpty())
-            {
-                binding.eventDescriptionView.descriptionTextview.setText(instanceValues.getAsString(CalendarContract.Instances.DESCRIPTION));
-                binding.eventDescriptionView.getRoot().setVisibility(View.VISIBLE);
-            } else
-            {
-                binding.eventDescriptionView.getRoot().setVisibility(View.GONE);
-            }
-        } else
-        {
-            binding.eventDescriptionView.getRoot().setVisibility(View.GONE);
-        }
+			final String attendeeStatusStr = EventUtil.convertAttendeeStatus(attendeeStatus, getContext());
+			final String attendeeRelationshipStr = EventUtil.convertAttendeeRelationship(attendeeRelationship, getContext());
 
-        // 위치
-        if (instanceValues.getAsString(CalendarContract.Instances.EVENT_LOCATION) != null)
-        {
-            if (!instanceValues.getAsString(CalendarContract.Instances.EVENT_LOCATION).isEmpty())
-            {
-                binding.eventLocationView.eventLocation.setText(instanceValues.getAsString(CalendarContract.Instances.EVENT_LOCATION));
-                binding.eventLocationView.getRoot().setVisibility(View.VISIBLE);
-                binding.selectDetailLocationFab.setVisibility(View.VISIBLE);
-            } else
-            {
-                binding.eventLocationView.getRoot().setVisibility(View.GONE);
-                binding.selectDetailLocationFab.setVisibility(View.GONE);
-            }
-        } else
-        {
-            binding.eventLocationView.getRoot().setVisibility(View.GONE);
-            binding.selectDetailLocationFab.setVisibility(View.GONE);
-        }
+			LinearLayout attendeeInfoLayout = (LinearLayout) row.findViewById(R.id.attendee_info_layout);
 
-        // 참석자
-        attendeeList = viewModel.getAttendees(CALENDAR_ID, EVENT_ID);
+			TextView attendeeEmailView = (TextView) row.findViewById(R.id.attendee_name);
+			TextView attendeeRelationshipView = (TextView) row.findViewById(R.id.attendee_relationship);
+			TextView attendeeStatusView = (TextView) row.findViewById(R.id.attendee_status);
+			// 삭제버튼 숨기기
+			row.findViewById(R.id.remove_attendee_button).setVisibility(View.GONE);
 
-        // 참석자가 없는 경우 - 테이블 숨김, 참석자 없음 텍스트 표시
-        if (attendeeList.isEmpty())
-        {
-            binding.eventAttendeesView.notAttendees.setVisibility(View.VISIBLE);
-            binding.eventAttendeesView.eventAttendeesTable.setVisibility(View.GONE);
-            binding.eventAttendeesView.getRoot().setVisibility(View.GONE);
-        } else
-        {
-            binding.eventAttendeesView.notAttendees.setVisibility(View.GONE);
-            binding.eventAttendeesView.eventAttendeesTable.setVisibility(View.VISIBLE);
-            binding.eventAttendeesView.getRoot().setVisibility(View.VISIBLE);
-            setAttendeesText(attendeeList);
-        }
+			attendeeInfoLayout.setClickable(true);
+			attendeeInfoLayout.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View view) {
+					// logic for communications with attendee
+					if (attendeeDialog == null) {
+						final String[] itemList = {"기능 구성중"};
+						MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(getContext())
+								.setTitle(attendeeName + "(" + attendeeRelationshipStr + ", " + attendeeStatusStr + ")")
+								.setItems(itemList, new DialogInterface.OnClickListener() {
+									@Override
+									public void onClick(DialogInterface dialogInterface, int i) {
 
-        // 공개 범위 표시
-        if (instanceValues.getAsInteger(CalendarContract.Instances.ACCESS_LEVEL) != null)
-        {
-            setAccessLevelText();
-            binding.eventAccessLevelView.getRoot().setVisibility(View.VISIBLE);
-        } else
-        {
-            binding.eventAccessLevelView.getRoot().setVisibility(View.GONE);
-        }
+									}
+								});
+						attendeeDialog = builder.create();
+					}
+					attendeeDialog.setTitle(attendeeName + "(" + attendeeRelationshipStr + ", " + attendeeStatusStr + ")");
+					attendeeDialog.show();
+					// 기능목록 파악중
+				}
+			});
 
-        // 유효성 표시
-        if (instanceValues.getAsInteger(CalendarContract.Instances.AVAILABILITY) != null)
-        {
-            setAvailabilityText();
-            binding.eventAvailabilityView.getRoot().setVisibility(View.VISIBLE);
-        } else
-        {
-            binding.eventAvailabilityView.getRoot().setVisibility(View.GONE);
-        }
-    }
+			attendeeEmailView.setText(attendeeName);
+			attendeeRelationshipView.setText(attendeeRelationshipStr);
+			attendeeStatusView.setText(attendeeStatusStr);
 
-    private void setAvailabilityText()
-    {
-        binding.eventAvailabilityView.eventAvailability.setText(EventUtil.convertAvailability(instanceValues.getAsInteger(CalendarContract.Instances.AVAILABILITY), getContext()));
-    }
+			tableRow.addView(row);
+			binding.eventAttendeesView.eventAttendeesTable.addView(tableRow,
+					new TableLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+		}
 
-    private void setAccessLevelText()
-    {
-        binding.eventAccessLevelView.eventAccessLevel.setText(EventUtil.convertAccessLevel(instanceValues.getAsInteger(CalendarContract.Instances.ACCESS_LEVEL), getContext()));
-    }
+	}
 
 
-    private void setDateTimeText(long begin, long end)
-    {
-        final boolean allDay = instanceValues.getAsBoolean(CalendarContract.Instances.ALL_DAY);
-        if (allDay)
-        {
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTimeInMillis(begin);
-            calendar.add(Calendar.HOUR_OF_DAY, -9);
-            begin = calendar.getTimeInMillis();
+	private void setInstanceData() {
+		// 제목, 캘린더, 시간, 시간대, 반복, 알림, 설명, 위치, 공개범위, 유효성, 참석자
+		// 캘린더, 시간대, 참석자 정보는 따로 불러온다.
+		//제목
+		if (instanceValues.getAsString(CalendarContract.Instances.TITLE) != null) {
+			if (!instanceValues.getAsString(CalendarContract.Instances.TITLE).isEmpty()) {
+				binding.eventTitle.setText(instanceValues.getAsString(CalendarContract.Instances.TITLE));
+			} else {
+				binding.eventTitle.setText(getString(R.string.empty_title));
+			}
+		} else {
+			binding.eventTitle.setText(getString(R.string.empty_title));
+		}
+		//캘린더
+		setCalendarText();
 
-            calendar.setTimeInMillis(end);
-            calendar.add(Calendar.HOUR_OF_DAY, -9);
-            calendar.add(Calendar.DAY_OF_MONTH, -1);
-            end = calendar.getTimeInMillis();
-        }
-        String beginStr = EventUtil.convertDateTime(begin, allDay, App.isPreference_key_using_24_hour_system());
-        String endStr = EventUtil.convertDateTime(end, allDay, App.isPreference_key_using_24_hour_system());
+		//시간 , allday구분
+		setDateTimeText(instanceValues.getAsLong(CalendarContract.Instances.BEGIN), instanceValues.getAsLong(CalendarContract.Instances.END));
 
-        binding.eventDatetimeView.startDate.setText(beginStr);
-        binding.eventDatetimeView.endDate.setText(endStr);
-    }
+		// 시간대
+		if (!instanceValues.getAsBoolean(CalendarContract.Instances.ALL_DAY)) {
+			String timeZoneStr = instanceValues.getAsString(CalendarContract.Instances.EVENT_TIMEZONE);
+			TimeZone timeZone = TimeZone.getTimeZone(timeZoneStr);
+			setTimeZoneText(timeZone);
+			binding.eventDatetimeView.eventTimezoneLayout.setVisibility(View.VISIBLE);
+		} else {
+			// allday이면 시간대 뷰를 숨긴다
+			binding.eventDatetimeView.eventTimezoneLayout.setVisibility(View.GONE);
+		}
 
-    private void setTimeZoneText(TimeZone timeZone)
-    {
-        binding.eventDatetimeView.eventTimezone.setText(timeZone.getDisplayName(Locale.KOREAN));
-    }
+		// 반복
+		if (instanceValues.getAsString(CalendarContract.Instances.RRULE) != null) {
+			setRecurrenceText(instanceValues.getAsString(CalendarContract.Instances.RRULE));
+			binding.eventRecurrenceView.getRoot().setVisibility(View.VISIBLE);
+		} else {
+			binding.eventRecurrenceView.getRoot().setVisibility(View.GONE);
+		}
 
-    private void setReminderText(List<ContentValues> reminders)
-    {
-        LayoutInflater layoutInflater = getLayoutInflater();
-        if (binding.eventRemindersView.remindersTable.getChildCount() > 0)
-        {
-            binding.eventRemindersView.remindersTable.removeAllViews();
-        }
+		// 알람
+		if (instanceValues.getAsBoolean(CalendarContract.Instances.HAS_ALARM)) {
+			List<ContentValues> reminderList = viewModel.getReminders(CALENDAR_ID, EVENT_ID);
+			setReminderText(reminderList);
+			binding.eventRemindersView.notReminder.setVisibility(View.GONE);
+			binding.eventRemindersView.remindersTable.setVisibility(View.VISIBLE);
+			binding.eventRemindersView.getRoot().setVisibility(View.VISIBLE);
+		} else {
+			// 알람이 없으면 알람 테이블을 숨기고, 알람 없음 텍스트를 표시한다.
+			binding.eventRemindersView.notReminder.setVisibility(View.VISIBLE);
+			binding.eventRemindersView.remindersTable.setVisibility(View.GONE);
+			binding.eventRemindersView.getRoot().setVisibility(View.GONE);
+		}
 
-        for (ContentValues reminder : reminders)
-        {
-            ReminderDto reminderDto = EventUtil.convertAlarmMinutes(reminder.getAsInteger(CalendarContract.Reminders.MINUTES));
-            String alarmValueText = EventUtil.makeAlarmText(reminderDto, getContext());
+		// 설명
+		binding.eventDescriptionView.descriptionEdittext.setVisibility(View.GONE);
+		if (instanceValues.getAsString(CalendarContract.Instances.DESCRIPTION) != null) {
+			if (!instanceValues.getAsString(CalendarContract.Instances.DESCRIPTION).isEmpty()) {
+				binding.eventDescriptionView.descriptionTextview.setText(instanceValues.getAsString(CalendarContract.Instances.DESCRIPTION));
+				binding.eventDescriptionView.getRoot().setVisibility(View.VISIBLE);
+			} else {
+				binding.eventDescriptionView.getRoot().setVisibility(View.GONE);
+			}
+		} else {
+			binding.eventDescriptionView.getRoot().setVisibility(View.GONE);
+		}
 
-            TableRow tableRow = new TableRow(getContext());
-            View row = layoutInflater.inflate(R.layout.event_reminder_item, null);
+		// 위치
+		if (instanceValues.getAsString(CalendarContract.Instances.EVENT_LOCATION) != null) {
+			if (!instanceValues.getAsString(CalendarContract.Instances.EVENT_LOCATION).isEmpty()) {
+				binding.eventLocationView.eventLocation.setText(instanceValues.getAsString(CalendarContract.Instances.EVENT_LOCATION));
+				binding.eventLocationView.getRoot().setVisibility(View.VISIBLE);
+				binding.selectDetailLocationFab.setVisibility(View.VISIBLE);
+			} else {
+				binding.eventLocationView.getRoot().setVisibility(View.GONE);
+				binding.selectDetailLocationFab.setVisibility(View.GONE);
+			}
+		} else {
+			binding.eventLocationView.getRoot().setVisibility(View.GONE);
+			binding.selectDetailLocationFab.setVisibility(View.GONE);
+		}
 
-            // 삭제 버튼 숨기기
-            row.findViewById(R.id.remove_reminder_button).setVisibility(View.GONE);
-            ((TextView) row.findViewById(R.id.reminder_value)).setText(alarmValueText);
-            row.findViewById(R.id.reminder_value).setClickable(false);
+		// 참석자
+		attendeeList = viewModel.getAttendees(CALENDAR_ID, EVENT_ID);
 
-            tableRow.addView(row);
-            binding.eventRemindersView.remindersTable.addView(tableRow, new TableLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT));
-        }
-    }
+		// 참석자가 없는 경우 - 테이블 숨김, 참석자 없음 텍스트 표시
+		if (attendeeList.isEmpty()) {
+			binding.eventAttendeesView.notAttendees.setVisibility(View.VISIBLE);
+			binding.eventAttendeesView.eventAttendeesTable.setVisibility(View.GONE);
+			binding.eventAttendeesView.getRoot().setVisibility(View.GONE);
+		} else {
+			binding.eventAttendeesView.notAttendees.setVisibility(View.GONE);
+			binding.eventAttendeesView.eventAttendeesTable.setVisibility(View.VISIBLE);
+			binding.eventAttendeesView.getRoot().setVisibility(View.VISIBLE);
+			setAttendeesText(attendeeList);
+		}
 
-    private void setRecurrenceText(String rRule)
-    {
-        RecurrenceRule recurrenceRule = new RecurrenceRule();
-        recurrenceRule.separateValues(rRule);
-        binding.eventRecurrenceView.eventRecurrence.setText(recurrenceRule.interpret(getContext()));
-    }
+		// 공개 범위 표시
+		if (instanceValues.getAsInteger(CalendarContract.Instances.ACCESS_LEVEL) != null) {
+			setAccessLevelText();
+			binding.eventAccessLevelView.getRoot().setVisibility(View.VISIBLE);
+		} else {
+			binding.eventAccessLevelView.getRoot().setVisibility(View.GONE);
+		}
 
-    private void setCalendarText()
-    {
-        binding.eventCalendarView.calendarColor.setBackgroundColor(EventUtil.getColor(instanceValues.getAsInteger(CalendarContract.Instances.CALENDAR_COLOR)));
-        binding.eventCalendarView.calendarDisplayName.setText(instanceValues.getAsString(CalendarContract.Instances.CALENDAR_DISPLAY_NAME));
-        binding.eventCalendarView.calendarAccountName.setText(instanceValues.getAsString(CalendarContract.Instances.OWNER_ACCOUNT));
-    }
+		// 유효성 표시
+		if (instanceValues.getAsInteger(CalendarContract.Instances.AVAILABILITY) != null) {
+			setAvailabilityText();
+			binding.eventAvailabilityView.getRoot().setVisibility(View.VISIBLE);
+		} else {
+			binding.eventAvailabilityView.getRoot().setVisibility(View.GONE);
+		}
+	}
 
-    public ContentValues getInstanceValues()
-    {
-        return instanceValues;
-    }
+	private void setAvailabilityText() {
+		binding.eventAvailabilityView.eventAvailability.setText(EventUtil.convertAvailability(instanceValues.getAsInteger(CalendarContract.Instances.AVAILABILITY), getContext()));
+	}
 
-    public List<ContentValues> getAttendeeList()
-    {
-        return attendeeList;
-    }
+	private void setAccessLevelText() {
+		binding.eventAccessLevelView.eventAccessLevel.setText(EventUtil.convertAccessLevel(instanceValues.getAsInteger(CalendarContract.Instances.ACCESS_LEVEL), getContext()));
+	}
 
-    private final ActivityResultLauncher<Intent> setLocationActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
-            new ActivityResultCallback<ActivityResult>()
-            {
-                @Override
-                public void onActivityResult(ActivityResult result)
-                {
-                    if (result.getResultCode() == SelectionDetailLocationActivity.RESULT_CODE_SELECTED_LOCATION)
-                    {
-                        LocationDTO locationDTO = result.getData().getExtras().getParcelable(LocationSelectorKey.SELECTED_LOCATION_DTO_IN_MAP.name());
-                        saveDetailLocation(locationDTO);
-                    } else
-                    {
-                        // 취소, 이벤트 정보 프래그먼트로 돌아감
-                    }
-                }
-            });
 
-    private final ActivityResultLauncher<Intent> editLocationActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
-            new ActivityResultCallback<ActivityResult>()
-            {
-                @Override
-                public void onActivityResult(ActivityResult result)
-                {
-                    switch (result.getResultCode())
-                    {
-                        case SelectionDetailLocationActivity.RESULT_CODE_CHANGED_LOCATION:
-                            LocationDTO locationDTO = result.getData().getExtras().getParcelable(LocationSelectorKey.SELECTED_LOCATION_DTO_IN_MAP.name());
-                            changedDetailLocation(locationDTO);
-                            break;
-                        case SelectionDetailLocationActivity.RESULT_CODE_REMOVED_LOCATION:
-                            deletedDetailLocation();
-                            break;
-                    }
-                }
-            });
+	private void setDateTimeText(long begin, long end) {
+		final boolean allDay = instanceValues.getAsBoolean(CalendarContract.Instances.ALL_DAY);
+		if (allDay) {
+			Calendar calendar = Calendar.getInstance();
+			calendar.setTimeInMillis(begin);
+			calendar.add(Calendar.HOUR_OF_DAY, -9);
+			begin = calendar.getTimeInMillis();
 
-    private final ActivityResultLauncher<Intent> editInstanceActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
-            new ActivityResultCallback<ActivityResult>()
-            {
-                @Override
-                public void onActivityResult(ActivityResult result)
-                {
-                    switch (result.getResultCode())
-                    {
-                        case NewInstanceMainFragment.RESULT_UPDATED_INSTANCE:
-                            //데이터 갱신
-                            setInstanceData();
-                            resultCode = NewInstanceMainFragment.RESULT_UPDATED_VALUE;
-                            break;
-                    }
-                }
-            });
+			calendar.setTimeInMillis(end);
+			calendar.add(Calendar.HOUR_OF_DAY, -9);
+			calendar.add(Calendar.DAY_OF_MONTH, -1);
+			end = calendar.getTimeInMillis();
+		}
+		String beginStr = EventUtil.convertDateTime(begin, allDay, App.isPreference_key_using_24_hour_system());
+		String endStr = EventUtil.convertDateTime(end, allDay, App.isPreference_key_using_24_hour_system());
 
-    private void saveDetailLocation(LocationDTO locationDTO)
-    {
-        // 지정이 완료된 경우 - DB에 등록하고 이벤트 액티비티로 넘어가서 날씨 또는 주변 정보 프래그먼트를 실행한다.
-        locationDTO.setCalendarId(CALENDAR_ID);
-        locationDTO.setEventId(EVENT_ID);
+		binding.eventDatetimeView.startDate.setText(beginStr);
+		binding.eventDatetimeView.endDate.setText(endStr);
+	}
 
-        //선택된 위치를 DB에 등록
-        locationViewModel.addLocation(locationDTO, new CarrierMessagingService.ResultCallback<Boolean>()
-        {
-            @Override
-            public void onReceiveResult(@NonNull Boolean isInserted) throws RemoteException
-            {
-                if (isInserted)
-                {
+	private void setTimeZoneText(TimeZone timeZone) {
+		binding.eventDatetimeView.eventTimezone.setText(timeZone.getDisplayName(Locale.KOREAN));
+	}
 
-                } else
-                {
+	private void setReminderText(List<ContentValues> reminders) {
+		LayoutInflater layoutInflater = getLayoutInflater();
+		if (binding.eventRemindersView.remindersTable.getChildCount() > 0) {
+			binding.eventRemindersView.remindersTable.removeAllViews();
+		}
 
-                }
+		for (ContentValues reminder : reminders) {
+			ReminderDto reminderDto = EventUtil.convertAlarmMinutes(reminder.getAsInteger(CalendarContract.Reminders.MINUTES));
+			String alarmValueText = EventUtil.makeAlarmText(reminderDto, getContext());
 
-            }
-        });
-    }
+			TableRow tableRow = new TableRow(getContext());
+			View row = layoutInflater.inflate(R.layout.event_reminder_item, null);
 
-    private void changedDetailLocation(LocationDTO locationDTO)
-    {
-        // 지정이 완료된 경우 - DB에 등록하고 이벤트 액티비티로 넘어가서 날씨 또는 주변 정보 프래그먼트를 실행한다.
-        // 선택된 위치를 DB에 등록
-        locationDTO.setCalendarId(CALENDAR_ID);
-        locationDTO.setEventId(EVENT_ID);
-        locationViewModel.addLocation(locationDTO, new CarrierMessagingService.ResultCallback<Boolean>()
-        {
-            @Override
-            public void onReceiveResult(@NonNull Boolean isAdded) throws RemoteException
-            {
-                if (isAdded)
-                {
-                    // Toast.makeText(getContext(), "위치 변경완료", Toast.LENGTH_SHORT).show();
-                } else
-                {
+			// 삭제 버튼 숨기기
+			row.findViewById(R.id.remove_reminder_button).setVisibility(View.GONE);
+			((TextView) row.findViewById(R.id.reminder_value)).setText(alarmValueText);
+			row.findViewById(R.id.reminder_value).setClickable(false);
 
-                }
-            }
-        });
-    }
+			tableRow.addView(row);
+			binding.eventRemindersView.remindersTable.addView(tableRow, new TableLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+					ViewGroup.LayoutParams.WRAP_CONTENT));
+		}
+	}
 
-    private void deletedDetailLocation()
-    {
-        locationViewModel.removeLocation(CALENDAR_ID, EVENT_ID, new CarrierMessagingService.ResultCallback<Boolean>()
-        {
-            @Override
-            public void onReceiveResult(@NonNull Boolean isRemoved) throws RemoteException
-            {
-                if (isRemoved)
-                {
-                    // Toast.makeText(getContext(), "위치 삭제완료", Toast.LENGTH_SHORT).show();
-                } else
-                {
+	private void setRecurrenceText(String rRule) {
+		RecurrenceRule recurrenceRule = new RecurrenceRule();
+		recurrenceRule.separateValues(rRule);
+		binding.eventRecurrenceView.eventRecurrence.setText(recurrenceRule.interpret(getContext()));
+	}
 
-                }
-            }
-        });
-    }
+	private void setCalendarText() {
+		binding.eventCalendarView.calendarColor.setBackgroundColor(EventUtil.getColor(instanceValues.getAsInteger(CalendarContract.Instances.CALENDAR_COLOR)));
+		binding.eventCalendarView.calendarDisplayName.setText(instanceValues.getAsString(CalendarContract.Instances.CALENDAR_DISPLAY_NAME));
+		binding.eventCalendarView.calendarAccountName.setText(instanceValues.getAsString(CalendarContract.Instances.OWNER_ACCOUNT));
+	}
+
+	public ContentValues getInstanceValues() {
+		return instanceValues;
+	}
+
+	public List<ContentValues> getAttendeeList() {
+		return attendeeList;
+	}
+
+	private final ActivityResultLauncher<Intent> setLocationActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
+			new ActivityResultCallback<ActivityResult>() {
+				@Override
+				public void onActivityResult(ActivityResult result) {
+					if (result.getResultCode() == SelectionDetailLocationActivity.RESULT_CODE_SELECTED_LOCATION) {
+						LocationDTO locationDTO = result.getData().getExtras().getParcelable(LocationSelectorKey.SELECTED_LOCATION_DTO_IN_MAP.name());
+						saveDetailLocation(locationDTO);
+					} else {
+						// 취소, 이벤트 정보 프래그먼트로 돌아감
+					}
+				}
+			});
+
+	private final ActivityResultLauncher<Intent> editLocationActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
+			new ActivityResultCallback<ActivityResult>() {
+				@Override
+				public void onActivityResult(ActivityResult result) {
+					switch (result.getResultCode()) {
+						case SelectionDetailLocationActivity.RESULT_CODE_CHANGED_LOCATION:
+							LocationDTO locationDTO = result.getData().getExtras().getParcelable(LocationSelectorKey.SELECTED_LOCATION_DTO_IN_MAP.name());
+							changedDetailLocation(locationDTO);
+							break;
+						case SelectionDetailLocationActivity.RESULT_CODE_REMOVED_LOCATION:
+							deletedDetailLocation();
+							break;
+					}
+				}
+			});
+
+	private final ActivityResultLauncher<Intent> editInstanceActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
+			new ActivityResultCallback<ActivityResult>() {
+				@Override
+				public void onActivityResult(ActivityResult result) {
+					switch (EventIntentCode.enumOf(result.getResultCode())) {
+						case RESULT_MODIFIED_THIS_INSTANCE:
+							//데이터 갱신
+							setInstanceData();
+							resultCode = result.getResultCode();
+							break;
+					}
+				}
+			});
+
+	private void saveDetailLocation(LocationDTO locationDTO) {
+		// 지정이 완료된 경우 - DB에 등록하고 이벤트 액티비티로 넘어가서 날씨 또는 주변 정보 프래그먼트를 실행한다.
+		locationDTO.setCalendarId(CALENDAR_ID);
+		locationDTO.setEventId(EVENT_ID);
+
+		//선택된 위치를 DB에 등록
+		locationViewModel.addLocation(locationDTO, new CarrierMessagingService.ResultCallback<Boolean>() {
+			@Override
+			public void onReceiveResult(@NonNull Boolean isInserted) throws RemoteException {
+				if (isInserted) {
+
+				} else {
+
+				}
+
+			}
+		});
+	}
+
+	private void changedDetailLocation(LocationDTO locationDTO) {
+		// 지정이 완료된 경우 - DB에 등록하고 이벤트 액티비티로 넘어가서 날씨 또는 주변 정보 프래그먼트를 실행한다.
+		// 선택된 위치를 DB에 등록
+		locationDTO.setCalendarId(CALENDAR_ID);
+		locationDTO.setEventId(EVENT_ID);
+		locationViewModel.addLocation(locationDTO, new CarrierMessagingService.ResultCallback<Boolean>() {
+			@Override
+			public void onReceiveResult(@NonNull Boolean isAdded) throws RemoteException {
+				if (isAdded) {
+					// Toast.makeText(getContext(), "위치 변경완료", Toast.LENGTH_SHORT).show();
+				} else {
+
+				}
+			}
+		});
+	}
+
+	private void deletedDetailLocation() {
+		locationViewModel.removeLocation(CALENDAR_ID, EVENT_ID, new CarrierMessagingService.ResultCallback<Boolean>() {
+			@Override
+			public void onReceiveResult(@NonNull Boolean isRemoved) throws RemoteException {
+				if (isRemoved) {
+					// Toast.makeText(getContext(), "위치 삭제완료", Toast.LENGTH_SHORT).show();
+				} else {
+
+				}
+			}
+		});
+	}
 }

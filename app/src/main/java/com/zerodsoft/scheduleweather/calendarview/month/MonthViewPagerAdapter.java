@@ -31,6 +31,7 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
 	private final IControlEvent iControlEvent;
 	private final IToolbar iToolbar;
 	private final IConnectedCalendars iConnectedCalendars;
+	private final Date currentDateTime;
 	private final OnEventItemLongClickListener onEventItemLongClickListener;
 
 	public MonthViewPagerAdapter(IControlEvent iControlEvent, OnEventItemLongClickListener onEventItemLongClickListener, OnEventItemClickListener onEventItemClickListener, IToolbar iToolbar, IConnectedCalendars iConnectedCalendars) {
@@ -40,6 +41,7 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
 		this.iToolbar = iToolbar;
 		this.iConnectedCalendars = iConnectedCalendars;
 		CALENDAR = Calendar.getInstance(ClockUtil.TIME_ZONE);
+		currentDateTime = CALENDAR.getTime();
 
 		// 날짜를 이번 달 1일 0시 0분으로 설정
 		CALENDAR.set(Calendar.DAY_OF_MONTH, 1);
@@ -52,6 +54,10 @@ public class MonthViewPagerAdapter extends RecyclerView.Adapter<MonthViewPagerAd
 
 	public Calendar getCALENDAR() {
 		return (Calendar) CALENDAR.clone();
+	}
+
+	public Date getCurrentDateTime() {
+		return currentDateTime;
 	}
 
 	public void refresh(int position) {

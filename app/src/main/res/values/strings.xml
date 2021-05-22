@@ -542,4 +542,6 @@
     <string name="event_notification_title">이벤트 알림</string>
     <string name="event_notification_text">이벤트가 곧 있습니다</string>
     <string name="celcius">ºC</string>
+    <string name="plz_set_time_before_specific_time">이전으로 설정하십시오</string>
+    <string name="plz_set_time_after_specific_time">이후로 설정하십시오</string>
 </resources>
