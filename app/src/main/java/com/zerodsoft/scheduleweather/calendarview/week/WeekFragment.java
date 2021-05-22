@@ -17,6 +17,7 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.OnDateTimeChangedListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
@@ -26,7 +27,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 
-public class WeekFragment extends Fragment implements IRefreshView {
+public class WeekFragment extends Fragment implements IRefreshView, OnDateTimeChangedListener {
 	public static final String TAG = "WEEK_FRAGMENT";
 	private ViewPager2 weekViewPager;
 	private WeekViewPagerAdapter weekViewPagerAdapter;
@@ -83,6 +84,16 @@ public class WeekFragment extends Fragment implements IRefreshView {
 		super.onStart();
 	}
 
+	@Override
+	public void receivedTimeTick(Date date) {
+		refreshView();
+	}
+
+	@Override
+	public void receivedDateChanged(Date date) {
+		refreshView();
+	}
+
 	class OnPageChangeCallback extends ViewPager2.OnPageChangeCallback {
 		final Calendar calendar;
 		Calendar copiedCalendar;
@@ -121,9 +132,18 @@ public class WeekFragment extends Fragment implements IRefreshView {
 	}
 
 	public void goToToday() {
-		if (currentPosition != EventTransactionFragment.FIRST_VIEW_POSITION) {
+		if (!ClockUtil.areSameDate(System.currentTimeMillis(), weekViewPagerAdapter.getCALENDAR().getTimeInMillis())) {
+			weekViewPagerAdapter = new WeekViewPagerAdapter(iControlEvent, onEventItemLongClickListener, onEventItemClickListener, iToolbar, iConnectedCalendars);
+			weekViewPager.setAdapter(weekViewPagerAdapter);
 			weekViewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, true);
-			refreshView();
+
+			onPageChangeCallback = new OnPageChangeCallback(weekViewPagerAdapter.getCALENDAR());
+			weekViewPager.registerOnPageChangeCallback(onPageChangeCallback);
+		} else {
+			if (currentPosition != EventTransactionFragment.FIRST_VIEW_POSITION) {
+				weekViewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, true);
+				refreshView();
+			}
 		}
 	}
 

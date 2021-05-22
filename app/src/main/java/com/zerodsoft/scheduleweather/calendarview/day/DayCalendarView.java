@@ -19,99 +19,87 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class DayCalendarView implements CalendarViewInitializer
-{
-    private DayHeaderView dayHeaderView;
-    private DayView dayView;
-    private IControlEvent iControlEvent;
-    private IConnectedCalendars iConnectedCalendars;
-    private Map<Integer, CalendarInstance> resultMap;
+public class DayCalendarView implements CalendarViewInitializer {
+	private DayHeaderView dayHeaderView;
+	private DayView dayView;
+	private IControlEvent iControlEvent;
+	private IConnectedCalendars iConnectedCalendars;
+	private Map<Integer, CalendarInstance> resultMap;
 
-    private Date viewStartDate;
-    private Date viewEndDate;
+	private Date viewStartDate;
+	private Date viewEndDate;
 
-    public DayCalendarView(DayHeaderView dayHeaderView, DayView dayView)
-    {
-        this.dayHeaderView = dayHeaderView;
-        this.dayView = dayView;
-    }
+	public DayCalendarView(DayHeaderView dayHeaderView, DayView dayView) {
+		this.dayHeaderView = dayHeaderView;
+		this.dayView = dayView;
+	}
 
-    public Date getViewStartDate()
-    {
-        return viewStartDate;
-    }
+	public Date getViewStartDate() {
+		return viewStartDate;
+	}
 
-    public Date getViewEndDate()
-    {
-        return viewEndDate;
-    }
+	public Date getViewEndDate() {
+		return viewEndDate;
+	}
 
 
-    @Override
-    public void init(Calendar copiedCalendar, OnEventItemLongClickListener onEventItemLongClickListener, OnEventItemClickListener onEventItemClickListener, IControlEvent iControlEvent, IConnectedCalendars iConnectedCalendars)
-    {
-        this.iConnectedCalendars = iConnectedCalendars;
-        this.iControlEvent = iControlEvent;
+	@Override
+	public void init(Calendar copiedCalendar, OnEventItemLongClickListener onEventItemLongClickListener, OnEventItemClickListener onEventItemClickListener, IControlEvent iControlEvent, IConnectedCalendars iConnectedCalendars) {
+		this.iConnectedCalendars = iConnectedCalendars;
+		this.iControlEvent = iControlEvent;
 
-        dayHeaderView.init(null, null, onEventItemClickListener, null, null);
-        dayView.init(null, onEventItemLongClickListener, onEventItemClickListener, null, null);
+		dayHeaderView.init(null, null, onEventItemClickListener, null, null);
+		dayView.init(null, onEventItemLongClickListener, onEventItemClickListener, null, null);
 
-        viewStartDate = copiedCalendar.getTime();
-        copiedCalendar.add(Calendar.DATE, 1);
-        viewEndDate = copiedCalendar.getTime();
+		viewStartDate = copiedCalendar.getTime();
+		copiedCalendar.add(Calendar.DATE, 1);
+		viewEndDate = copiedCalendar.getTime();
 
-        dayHeaderView.setDates(viewStartDate, viewEndDate);
-        dayView.setDates(viewStartDate, viewEndDate);
+		dayHeaderView.setDates(viewStartDate, viewEndDate);
+		dayView.setDates(viewStartDate, viewEndDate);
 
-        setInstances(iControlEvent.getInstances(viewStartDate.getTime(), viewEndDate.getTime()));
-        setEventTable();
-    }
+		setInstances(iControlEvent.getInstances(viewStartDate.getTime(), viewEndDate.getTime()));
+		setEventTable();
+	}
 
-    @Override
-    public void setInstances(Map<Integer, CalendarInstance> resultMap)
-    {
-        //선택되지 않은 캘린더는 제외
-        this.resultMap = resultMap;
-        List<ContentValues> connectedCalendars = iConnectedCalendars.getConnectedCalendars();
-        Set<Integer> connectedCalendarIdSet = new HashSet<>();
+	@Override
+	public void setInstances(Map<Integer, CalendarInstance> resultMap) {
+		//선택되지 않은 캘린더는 제외
+		this.resultMap = resultMap;
+		List<ContentValues> connectedCalendars = iConnectedCalendars.getConnectedCalendars();
+		Set<Integer> connectedCalendarIdSet = new HashSet<>();
 
-        for (ContentValues calendar : connectedCalendars)
-        {
-            connectedCalendarIdSet.add(calendar.getAsInteger(CalendarContract.Calendars._ID));
-        }
+		for (ContentValues calendar : connectedCalendars) {
+			connectedCalendarIdSet.add(calendar.getAsInteger(CalendarContract.Calendars._ID));
+		}
 
-        List<ContentValues> instances = new ArrayList<>();
-        for (Integer calendarIdKey : connectedCalendarIdSet)
-        {
-            if (resultMap.containsKey(calendarIdKey))
-            {
-                instances.addAll(resultMap.get(calendarIdKey).getInstanceList());
-            }
-        }
+		List<ContentValues> instances = new ArrayList<>();
+		for (Integer calendarIdKey : connectedCalendarIdSet) {
+			if (resultMap.containsKey(calendarIdKey)) {
+				instances.addAll(resultMap.get(calendarIdKey).getInstanceList());
+			}
+		}
 
-        // 데이터를 일정 길이의 내림차순으로 정렬
-        instances.sort(EventUtil.INSTANCE_COMPARATOR);
+		// 데이터를 일정 길이의 내림차순으로 정렬
+		instances.sort(EventUtil.INSTANCE_COMPARATOR);
 
-        dayHeaderView.setInstances(instances);
-        dayView.setInstances(instances);
-    }
+		dayHeaderView.setInstances(instances);
+		dayView.setInstances(instances);
+	}
 
-    @Override
-    public void setInstances(List<ContentValues> instances)
-    {
+	@Override
+	public void setInstances(List<ContentValues> instances) {
 
-    }
+	}
 
-    @Override
-    public void setEventTable()
-    {
-        dayHeaderView.setEventTable();
-        dayView.setEventTable();
-    }
+	@Override
+	public void setEventTable() {
+		dayHeaderView.setEventTable();
+		dayView.setEventTable();
+	}
 
-    public void refresh()
-    {
-        setInstances(iControlEvent.getInstances(viewStartDate.getTime(), viewEndDate.getTime()));
-        setEventTable();
-    }
+	public void refresh() {
+		setInstances(iControlEvent.getInstances(viewStartDate.getTime(), viewEndDate.getTime()));
+		setEventTable();
+	}
 }

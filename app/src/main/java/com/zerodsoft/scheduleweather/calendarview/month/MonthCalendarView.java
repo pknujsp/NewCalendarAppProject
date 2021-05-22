@@ -424,7 +424,6 @@ public class MonthCalendarView extends ViewGroup implements CalendarViewInitiali
 
 		if (todayView != null) {
 			removeView(todayView);
-			invalidate();
 		}
 
 		if (today.compareTo(viewFirstDateTime) >= 0 && today.before(viewLastDateTime)) {

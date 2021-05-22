@@ -82,9 +82,18 @@ public class MonthFragment extends Fragment implements IRefreshView, OnDateTimeC
 	}
 
 	public void goToToday() {
-		if (currentPosition != EventTransactionFragment.FIRST_VIEW_POSITION) {
+		if (!ClockUtil.areSameDate(System.currentTimeMillis(), viewPagerAdapter.getCALENDAR().getTimeInMillis())) {
+			viewPagerAdapter = new MonthViewPagerAdapter(iControlEvent, onEventItemLongClickListener, onEventItemClickListener, iToolbar, iConnectedCalendars);
+			viewPager.setAdapter(viewPagerAdapter);
 			viewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, true);
-			refreshView();
+
+			onPageChangeCallback = new OnPageChangeCallback(viewPagerAdapter.getCALENDAR());
+			viewPager.registerOnPageChangeCallback(onPageChangeCallback);
+		} else {
+			if (currentPosition != EventTransactionFragment.FIRST_VIEW_POSITION) {
+				viewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, true);
+				refreshView();
+			}
 		}
 	}
 

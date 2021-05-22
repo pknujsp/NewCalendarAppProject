@@ -4,7 +4,6 @@ import android.Manifest;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.annotation.SuppressLint;
-import android.app.ActionBar;
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -29,7 +28,6 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -39,7 +37,6 @@ import androidx.lifecycle.ViewModelProvider;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.editevent.activity.EditEventActivity;
 import com.zerodsoft.scheduleweather.activity.editevent.value.EventDataController;
-import com.zerodsoft.scheduleweather.activity.main.AppMainActivity;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendar.CommonPopupMenu;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
@@ -51,7 +48,6 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
-import com.zerodsoft.scheduleweather.calendarview.interfaces.IstartActivity;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnDateTimeChangedListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
@@ -342,7 +338,7 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 			((WeekFragment) currentFragment).goToWeek(date);
 			//선택된 날짜에 해당 하는 주로 이동 (parameter : 2020년 2주차 -> 2020년 2주차로 이동)
 		} else if (currentFragment instanceof DayFragment) {
-			((DayFragment) currentFragment).goToDay(date);
+			((DayFragment) currentFragment).goToToday(date);
 		}
 	}
 
@@ -370,24 +366,20 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 	@Override
 	public void receivedTimeTick(Date date) {
 		Fragment fragment = getChildFragmentManager().getPrimaryNavigationFragment();
-		if (fragment instanceof MonthFragment) {
-
-		} else if (fragment instanceof WeekFragment) {
-
+		if (fragment instanceof WeekFragment) {
+			((WeekFragment) fragment).receivedTimeTick(date);
 		} else if (fragment instanceof DayFragment) {
-
+			((DayFragment) fragment).receivedTimeTick(date);
 		}
 	}
 
 	@Override
 	public void receivedDateChanged(Date date) {
 		Fragment fragment = getChildFragmentManager().getPrimaryNavigationFragment();
-		if (fragment instanceof MonthFragment) {
-			((MonthFragment) fragment).receivedDateChanged(date);
-		} else if (fragment instanceof WeekFragment) {
-
+		if (fragment instanceof WeekFragment) {
+			((WeekFragment) fragment).receivedDateChanged(date);
 		} else if (fragment instanceof DayFragment) {
-
+			((DayFragment) fragment).receivedDateChanged(date);
 		}
 	}
 

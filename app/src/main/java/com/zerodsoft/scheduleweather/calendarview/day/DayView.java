@@ -24,10 +24,12 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
+import com.zerodsoft.scheduleweather.calendarview.common.CurrentTimeLineView;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.CalendarViewInitializer;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IEvent;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.OnDateTimeChangedListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
 import com.zerodsoft.scheduleweather.calendarview.week.WeekFragment;
@@ -42,366 +44,351 @@ import java.util.Map;
 
 import lombok.SneakyThrows;
 
-public class DayView extends HourEventsView implements CalendarViewInitializer
-{
-    private boolean createdAddScheduleRect = false;
-    private boolean changingStartTime = false;
-    private boolean changingEndTime = false;
+public class DayView extends HourEventsView implements CalendarViewInitializer, OnDateTimeChangedListener {
+	private boolean createdAddScheduleRect = false;
+	private boolean changingStartTime = false;
+	private boolean changingEndTime = false;
 
-    private OverScroller overScroller;
-    private GestureDetectorCompat gestureDetector;
-    private Date viewStartDate;
-    private Date viewEndDate;
-    private List<ItemCell> itemCells = new ArrayList<>();
-    private final int SPACING_BETWEEN_EVENTS = 5;
+	private Date viewStartDate;
+	private Date viewEndDate;
+	private List<ItemCell> itemCells = new ArrayList<>();
+	private final int SPACING_BETWEEN_EVENTS = 5;
 
-    private List<ContentValues> instances;
-    private OnEventItemClickListener onEventItemClickListener;
-    private OnEventItemLongClickListener onEventItemLongClickListener;
-
-    public DayView(Context context, @Nullable AttributeSet attrs)
-    {
-        super(context, attrs);
-    }
-
-    @Override
-    protected void onLayout(boolean changed, int l, int t, int r, int b)
-    {
-        super.onLayout(changed, l, t, r, b);
-
-        if (!itemCells.isEmpty())
-        {
-            Calendar calendar = Calendar.getInstance();
-
-            float left = 0f;
-            float top = 0f;
-            float right = 0f;
-            float bottom = 0f;
-            float cellWidth = 0f;
-            int childCount = getChildCount();
-
-            for (int i = 0; i < childCount; i++)
-            {
-                DayItemView childView = (DayItemView) getChildAt(i);
-                ItemCell itemCell = childView.itemCell;
-
-                int column = itemCell.column;
-                int columnCount = itemCell.columnCount;
-
-                calendar.setTimeInMillis(itemCell.instance.getAsLong(CalendarContract.Instances.BEGIN));
-                PointF startPoint = getPoint(calendar);
-                calendar.setTimeInMillis(itemCell.instance.getAsLong(CalendarContract.Instances.END));
-                PointF endPoint = getPoint(calendar);
-
-                cellWidth = (getWidth() - WeekFragment.getColumnWidth() - (SPACING_BETWEEN_EVENTS * (columnCount - 1))) / columnCount;
-
-                top = startPoint.y;
-                bottom = endPoint.y;
-                if (column == ItemCell.NOT_OVERLAP)
-                {
-                    left = startPoint.x;
-                } else
-                {
-                    left = startPoint.x + ((cellWidth + SPACING_BETWEEN_EVENTS) * column);
-                }
-                right = left + cellWidth;
-
-                int width = (int) (right - left);
-                int height = (int) (bottom - top);
-
-                childView.measure(width, height);
-                childView.layout((int) left, (int) top, (int) right, (int) bottom);
-            }
-        }
-    }
-
-    @Override
-    protected void onDraw(Canvas canvas)
-    {
-        super.onDraw(canvas);
-        drawView(canvas);
-    }
-
-    private PointF getPoint(Calendar time)
-    {
-        // y
-        int hour = time.get(Calendar.HOUR_OF_DAY);
-        int minute = time.get(Calendar.MINUTE);
-
-        float hourY = SPACING_BETWEEN_HOURS * hour + TABLE_TB_MARGIN;
-        float heightPerMinute = SPACING_BETWEEN_HOURS / 60f;
-
-        return new PointF(WeekFragment.getColumnWidth(), hourY + heightPerMinute * minute);
-    }
+	private List<ContentValues> instances;
+	private OnEventItemClickListener onEventItemClickListener;
+	private OnEventItemLongClickListener onEventItemLongClickListener;
 
 
-    private void drawView(Canvas canvas)
-    {
-        if (createdAddScheduleRect)
-        {
-            // 일정 추가 사각형 코드
-            rectStartPoint = getTimePoint(TIME_CATEGORY.START);
-            rectEndPoint = getTimePoint(TIME_CATEGORY.END);
+	public DayView(Context context, @Nullable AttributeSet attrs) {
+		super(context, attrs);
+	}
 
-            NEW_SCHEDULE_RECT_DRAWABLE.draw(canvas);
-        }
-    }
+	@Override
+	protected void onLayout(boolean changed, int l, int t, int r, int b) {
+		super.onLayout(changed, l, t, r, b);
 
-    private PointF getTimePoint(TIME_CATEGORY timeCategory)
-    {
-        // START또는 END TIME에 해당하는 좌표값을 반환
-        Calendar time = null;
+		Calendar calendar = Calendar.getInstance();
+		if (!itemCells.isEmpty()) {
 
-        if (timeCategory == TIME_CATEGORY.START)
-        {
-            time = (Calendar) startTime.clone();
-        } else
-        {
-            time = (Calendar) endTime.clone();
-        }
+			float left = 0f;
+			float top = 0f;
+			float right = 0f;
+			float bottom = 0f;
+			float cellWidth = 0f;
+			int childCount = getChildCount();
+			if (currentTimeLineView != null) {
+				childCount--;
+			}
 
-        PointF point = new PointF(0f, 0f);
+			for (int i = 0; i < childCount; i++) {
+				DayItemView childView = (DayItemView) getChildAt(i);
+				ItemCell itemCell = childView.itemCell;
 
-        // y
-        float startHour = currentTouchedPoint.y + SPACING_BETWEEN_HOURS * time.get(Calendar.HOUR_OF_DAY);
-        float endHour = currentTouchedPoint.y + SPACING_BETWEEN_HOURS * (time.get(Calendar.HOUR_OF_DAY) + 1);
+				int column = itemCell.column;
+				int columnCount = itemCell.columnCount;
 
-        if (time.get(Calendar.HOUR_OF_DAY) == 0 && timeCategory == TIME_CATEGORY.END)
-        {
-            startHour = currentTouchedPoint.y + SPACING_BETWEEN_HOURS * 24;
-            // 다음 날 오전1시
-            endHour = currentTouchedPoint.y + SPACING_BETWEEN_HOURS * 25;
-        }
-        float minute15Height = (endHour - startHour) / 4f;
+				calendar.setTimeInMillis(itemCell.instance.getAsLong(CalendarContract.Instances.BEGIN));
+				PointF startPoint = getPoint(calendar);
+				calendar.setTimeInMillis(itemCell.instance.getAsLong(CalendarContract.Instances.END));
+				PointF endPoint = getPoint(calendar);
 
-        for (int j = 0; j <= 3; j++)
-        {
-            if (time.get(Calendar.MINUTE) == j * 15)
-            {
-                point.y = startHour + minute15Height * j;
-                break;
-            }
-        }
-        return point;
-    }
+				cellWidth = (getWidth() - WeekFragment.getColumnWidth() - (SPACING_BETWEEN_EVENTS * (columnCount - 1))) / columnCount;
 
-    private boolean isOverlapping(ContentValues i1, ContentValues i2)
-    {
-        long start1 = i1.getAsLong(CalendarContract.Instances.BEGIN);
-        long end1 = i1.getAsLong(CalendarContract.Instances.END);
+				top = startPoint.y;
+				bottom = endPoint.y;
+				if (column == ItemCell.NOT_OVERLAP) {
+					left = startPoint.x;
+				} else {
+					left = startPoint.x + ((cellWidth + SPACING_BETWEEN_EVENTS) * column);
+				}
+				right = left + cellWidth;
 
-        long start2 = i2.getAsLong(CalendarContract.Instances.BEGIN);
-        long end2 = i2.getAsLong(CalendarContract.Instances.END);
+				int width = (int) (right - left);
+				int height = (int) (bottom - top);
 
-        if ((start1 > start2 && start1 < end2) || (end1 > start2 && end1 < end2)
-                || (start1 < start2 && end1 > end2))
-        {
-            return true;
-        } else
-        {
-            return false;
-        }
-    }
+				childView.measure(width, height);
+				childView.layout((int) left, (int) top, (int) right, (int) bottom);
+			}
+		}
 
-    public void setInstances(List<ContentValues> instances)
-    {
-        // 이벤트 테이블에 데이터를 표시할 위치 설정
-        // 데이터가 없는 경우 진행하지 않음
-        this.instances = instances;
-        itemCells.clear();
-        setEventTable();
-        requestLayout();
-        invalidate();
-    }
+		if (currentTimeLineView != null) {
+			calendar.setTime((Date) currentTimeLineView.getTag());
+			PointF startPoint = getPoint(calendar);
+
+			final int lineViewHeight = context.getResources().getDimensionPixelSize(R.dimen.current_time_line_view_text_height);
+
+			currentTimeLineView.measure(getWidth(), lineViewHeight);
+			currentTimeLineView.layout(0, (int) startPoint.y - lineViewHeight / 2, getWidth(), (int) startPoint.y + lineViewHeight / 2);
+		}
+	}
+
+	@Override
+	protected void onDraw(Canvas canvas) {
+		super.onDraw(canvas);
+		drawView(canvas);
+	}
+
+	private PointF getPoint(Calendar time) {
+		// y
+		int hour = time.get(Calendar.HOUR_OF_DAY);
+		int minute = time.get(Calendar.MINUTE);
+
+		float hourY = SPACING_BETWEEN_HOURS * hour + TABLE_TB_MARGIN;
+		float heightPerMinute = SPACING_BETWEEN_HOURS / 60f;
+
+		return new PointF(WeekFragment.getColumnWidth(), hourY + heightPerMinute * minute);
+	}
 
 
-    @Override
-    public void init(Calendar copiedCalendar, OnEventItemLongClickListener onEventItemLongClickListener, OnEventItemClickListener onEventItemClickListener, IControlEvent iControlEvent, IConnectedCalendars iConnectedCalendars)
-    {
-        this.onEventItemClickListener = onEventItemClickListener;
-        this.onEventItemLongClickListener = onEventItemLongClickListener;
-    }
+	private void drawView(Canvas canvas) {
+		if (createdAddScheduleRect) {
+			// 일정 추가 사각형 코드
+			rectStartPoint = getTimePoint(TIME_CATEGORY.START);
+			rectEndPoint = getTimePoint(TIME_CATEGORY.END);
 
-    @Override
-    public void setInstances(Map<Integer, CalendarInstance> resultMap)
-    {
+			NEW_SCHEDULE_RECT_DRAWABLE.draw(canvas);
+		}
+	}
 
-    }
+	private PointF getTimePoint(TIME_CATEGORY timeCategory) {
+		// START또는 END TIME에 해당하는 좌표값을 반환
+		Calendar time = null;
 
-    @Override
-    public void setEventTable()
-    {
-        removeAllViews();
-        itemCells.clear();
+		if (timeCategory == TIME_CATEGORY.START) {
+			time = (Calendar) startTime.clone();
+		} else {
+			time = (Calendar) endTime.clone();
+		}
 
-        boolean showCanceledInstance = App.isPreference_key_show_canceled_instances();
+		PointF point = new PointF(0f, 0f);
 
-        // 저장된 데이터가 표시될 위치를 설정
-        for (ContentValues instance : instances)
-        {
-            if (!showCanceledInstance)
-            {
-                if (instance.getAsInteger(CalendarContract.Instances.STATUS) ==
-                        CalendarContract.Instances.STATUS_CANCELED)
-                {
-                    // 취소(초대 거부)된 인스턴스인 경우..
-                    continue;
-                }
-            }
+		// y
+		float startHour = currentTouchedPoint.y + SPACING_BETWEEN_HOURS * time.get(Calendar.HOUR_OF_DAY);
+		float endHour = currentTouchedPoint.y + SPACING_BETWEEN_HOURS * (time.get(Calendar.HOUR_OF_DAY) + 1);
 
-            ItemCell itemCell = new ItemCell(instance);
-            itemCells.add(itemCell);
-        }
+		if (time.get(Calendar.HOUR_OF_DAY) == 0 && timeCategory == TIME_CATEGORY.END) {
+			startHour = currentTouchedPoint.y + SPACING_BETWEEN_HOURS * 24;
+			// 다음 날 오전1시
+			endHour = currentTouchedPoint.y + SPACING_BETWEEN_HOURS * 25;
+		}
+		float minute15Height = (endHour - startHour) / 4f;
 
-        for (int i = 0; i < itemCells.size() - 1; i++)
-        {
-            if (itemCells.get(i).column != ItemCell.NOT_OVERLAP)
-            {
-                continue;
-            }
-            int col = 0;
-            int overlappingCount = 0;
-            List<ItemCell> overlappingList = null;
+		for (int j = 0; j <= 3; j++) {
+			if (time.get(Calendar.MINUTE) == j * 15) {
+				point.y = startHour + minute15Height * j;
+				break;
+			}
+		}
+		return point;
+	}
 
-            for (int j = i + 1; j < itemCells.size(); j++)
-            {
-                if (isOverlapping(itemCells.get(i).instance, itemCells.get(j).instance))
-                {
-                    // 시간이 겹치는 경우
-                    if (itemCells.get(i).column == ItemCell.NOT_OVERLAP)
-                    {
-                        itemCells.get(i).column = col++;
-                        overlappingList = new ArrayList<>();
-                        overlappingList.add(itemCells.get(i));
-                    }
-                    itemCells.get(j).column = col++;
-                    overlappingList.add(itemCells.get(j));
-                    overlappingCount++;
-                }
-            }
+	private boolean isOverlapping(ContentValues i1, ContentValues i2) {
+		long start1 = i1.getAsLong(CalendarContract.Instances.BEGIN);
+		long end1 = i1.getAsLong(CalendarContract.Instances.END);
 
-            if (overlappingCount == 0)
-            {
-                // 시간이 겹치지 않는 경우
-                itemCells.get(i).column = ItemCell.NOT_OVERLAP;
-            } else
-            {
-                for (ItemCell cell : overlappingList)
-                {
-                    cell.columnCount = overlappingCount + 1;
-                }
-            }
-        }
+		long start2 = i2.getAsLong(CalendarContract.Instances.BEGIN);
+		long end2 = i2.getAsLong(CalendarContract.Instances.END);
 
-        removeAllViews();
+		if ((start1 > start2 && start1 < end2) || (end1 > start2 && end1 < end2)
+				|| (start1 < start2 && end1 > end2)) {
+			return true;
+		} else {
+			return false;
+		}
+	}
 
-        for (int i = 0; i < itemCells.size(); i++)
-        {
-            DayItemView childView = new DayItemView(context, itemCells.get(i));
+	public void setInstances(List<ContentValues> instances) {
+		// 이벤트 테이블에 데이터를 표시할 위치 설정
+		// 데이터가 없는 경우 진행하지 않음
+		this.instances = instances;
+		itemCells.clear();
+		setEventTable();
+		requestLayout();
+		invalidate();
+	}
 
-            childView.setOnClickListener(itemOnClickListener);
-            childView.setOnLongClickListener(itemOnLongClickListener);
-            childView.setLongClickable(true);
-            childView.setClickable(true);
 
-            addView(childView);
-        }
+	@Override
+	public void init(Calendar copiedCalendar, OnEventItemLongClickListener onEventItemLongClickListener, OnEventItemClickListener onEventItemClickListener, IControlEvent iControlEvent, IConnectedCalendars iConnectedCalendars) {
+		this.onEventItemClickListener = onEventItemClickListener;
+		this.onEventItemLongClickListener = onEventItemLongClickListener;
+	}
 
-        requestLayout();
-        invalidate();
-    }
+	@Override
+	public void setInstances(Map<Integer, CalendarInstance> resultMap) {
 
-    @Override
-    public void refresh()
-    {
+	}
 
-    }
+	@Override
+	public void setEventTable() {
+		removeAllViews();
+		itemCells.clear();
 
-    private final View.OnLongClickListener itemOnLongClickListener = new OnLongClickListener()
-    {
-        @Override
-        public boolean onLongClick(View view)
-        {
-            ContentValues instance = ((DayItemView) view).itemCell.instance;
-            onEventItemLongClickListener.createInstancePopupMenu(instance, view, Gravity.CENTER);
-            return true;
-        }
-    };
+		boolean showCanceledInstance = App.isPreference_key_show_canceled_instances();
 
-    private final View.OnClickListener itemOnClickListener = new OnClickListener()
-    {
-        @Override
-        public void onClick(View view)
-        {
-            ContentValues instance = ((DayItemView) view).itemCell.instance;
+		// 저장된 데이터가 표시될 위치를 설정
+		for (ContentValues instance : instances) {
+			if (!showCanceledInstance) {
+				if (instance.getAsInteger(CalendarContract.Instances.STATUS) ==
+						CalendarContract.Instances.STATUS_CANCELED) {
+					// 취소(초대 거부)된 인스턴스인 경우..
+					continue;
+				}
+			}
 
-            onEventItemClickListener.onClicked(instance.getAsInteger(CalendarContract.Instances.CALENDAR_ID)
-                    , instance.getAsLong(CalendarContract.Instances._ID), instance.getAsLong(CalendarContract.Instances.EVENT_ID),
-                    instance.getAsLong(CalendarContract.Instances.BEGIN), instance.getAsLong(CalendarContract.Instances.END));
-        }
-    };
+			ItemCell itemCell = new ItemCell(instance);
+			itemCells.add(itemCell);
+		}
 
-    public void setDates(Date viewStartDate, Date viewEndDate)
-    {
-        this.viewStartDate = viewStartDate;
-        this.viewEndDate = viewEndDate;
-    }
+		for (int i = 0; i < itemCells.size() - 1; i++) {
+			if (itemCells.get(i).column != ItemCell.NOT_OVERLAP) {
+				continue;
+			}
+			int col = 0;
+			int overlappingCount = 0;
+			List<ItemCell> overlappingList = null;
 
-    static class ItemCell
-    {
-        public static final int NOT_OVERLAP = -1;
-        public int column;
-        public int columnCount;
-        public Paint eventColorPaint;
-        public TextPaint eventTextPaint;
-        public ContentValues instance;
+			for (int j = i + 1; j < itemCells.size(); j++) {
+				if (isOverlapping(itemCells.get(i).instance, itemCells.get(j).instance)) {
+					// 시간이 겹치는 경우
+					if (itemCells.get(i).column == ItemCell.NOT_OVERLAP) {
+						itemCells.get(i).column = col++;
+						overlappingList = new ArrayList<>();
+						overlappingList.add(itemCells.get(i));
+					}
+					itemCells.get(j).column = col++;
+					overlappingList.add(itemCells.get(j));
+					overlappingCount++;
+				}
+			}
 
-        public ItemCell(ContentValues instance)
-        {
-            this.column = NOT_OVERLAP;
-            this.columnCount = 1;
-            this.instance = instance;
-        }
-    }
+			if (overlappingCount == 0) {
+				// 시간이 겹치지 않는 경우
+				itemCells.get(i).column = ItemCell.NOT_OVERLAP;
+			} else {
+				for (ItemCell cell : overlappingList) {
+					cell.columnCount = overlappingCount + 1;
+				}
+			}
+		}
 
-    class DayItemView extends View
-    {
-        public ItemCell itemCell;
+		for (int i = 0; i < itemCells.size(); i++) {
+			DayItemView childView = new DayItemView(context, itemCells.get(i));
 
-        public DayItemView(Context context, ItemCell itemCell)
-        {
-            super(context);
-            this.itemCell = itemCell;
-        }
+			childView.setOnClickListener(itemOnClickListener);
+			childView.setOnLongClickListener(itemOnLongClickListener);
+			childView.setLongClickable(true);
+			childView.setClickable(true);
 
-        @Override
-        protected void onDraw(Canvas canvas)
-        {
-            super.onDraw(canvas);
+			addView(childView);
+		}
+		receivedTimeTick(null);
+		requestLayout();
+		invalidate();
+	}
 
-            itemCell.eventColorPaint = EventUtil.getEventColorPaint(itemCell.instance.getAsInteger(CalendarContract.Instances.EVENT_COLOR));
-            itemCell.eventTextPaint = EventUtil.getEventTextPaint(EVENT_TEXT_HEIGHT);
 
-            canvas.drawRect(0, 0, getWidth(), getHeight(), itemCell.eventColorPaint);
+	@Override
+	public void refresh() {
 
-            final float titleX = TEXT_MARGIN;
-            final float titleY = EVENT_TEXT_HEIGHT + TEXT_MARGIN;
+	}
 
-            if (itemCell.instance.getAsString(CalendarContract.Instances.TITLE) != null)
-            {
-                if (!itemCell.instance.getAsString(CalendarContract.Instances.TITLE).isEmpty())
-                {
-                    canvas.drawText(itemCell.instance.getAsString(CalendarContract.Instances.TITLE), titleX, titleY, itemCell.eventTextPaint);
-                } else
-                {
-                    canvas.drawText(getContext().getString(R.string.empty_title), titleX, titleY, itemCell.eventTextPaint);
-                }
-            } else
-            {
-                canvas.drawText(getContext().getString(R.string.empty_title), titleX, titleY, itemCell.eventTextPaint);
-            }
-        }
+	private final View.OnLongClickListener itemOnLongClickListener = new OnLongClickListener() {
+		@Override
+		public boolean onLongClick(View view) {
+			ContentValues instance = ((DayItemView) view).itemCell.instance;
+			onEventItemLongClickListener.createInstancePopupMenu(instance, view, Gravity.CENTER);
+			return true;
+		}
+	};
 
-    }
+	private final View.OnClickListener itemOnClickListener = new OnClickListener() {
+		@Override
+		public void onClick(View view) {
+			ContentValues instance = ((DayItemView) view).itemCell.instance;
+
+			onEventItemClickListener.onClicked(instance.getAsInteger(CalendarContract.Instances.CALENDAR_ID)
+					, instance.getAsLong(CalendarContract.Instances._ID), instance.getAsLong(CalendarContract.Instances.EVENT_ID),
+					instance.getAsLong(CalendarContract.Instances.BEGIN), instance.getAsLong(CalendarContract.Instances.END));
+		}
+	};
+
+	public void setDates(Date viewStartDate, Date viewEndDate) {
+		this.viewStartDate = viewStartDate;
+		this.viewEndDate = viewEndDate;
+	}
+
+	@Override
+	public void receivedTimeTick(Date date) {
+		Date currentTime = date;
+		if (currentTime == null) {
+			currentTime = new Date(System.currentTimeMillis());
+		}
+
+		if (currentTimeLineView != null) {
+			removeView(currentTimeLineView);
+			currentTimeLineView = null;
+		}
+
+		if (currentTime.compareTo(viewStartDate) >= 0 && currentTime.compareTo(viewEndDate) < 0) {
+			currentTimeLineView = new CurrentTimeLineView(getContext());
+			currentTimeLineView.setTime(currentTime);
+			currentTimeLineView.setTag(currentTime);
+			addView(currentTimeLineView);
+		}
+	}
+
+	@Override
+	public void receivedDateChanged(Date date) {
+		receivedTimeTick(date);
+	}
+
+	static class ItemCell {
+		public static final int NOT_OVERLAP = -1;
+		public int column;
+		public int columnCount;
+		public Paint eventColorPaint;
+		public TextPaint eventTextPaint;
+		public ContentValues instance;
+
+		public ItemCell(ContentValues instance) {
+			this.column = NOT_OVERLAP;
+			this.columnCount = 1;
+			this.instance = instance;
+		}
+	}
+
+	class DayItemView extends View {
+		public ItemCell itemCell;
+
+		public DayItemView(Context context, ItemCell itemCell) {
+			super(context);
+			this.itemCell = itemCell;
+		}
+
+		@Override
+		protected void onDraw(Canvas canvas) {
+			super.onDraw(canvas);
+
+			itemCell.eventColorPaint = EventUtil.getEventColorPaint(itemCell.instance.getAsInteger(CalendarContract.Instances.EVENT_COLOR));
+			itemCell.eventTextPaint = EventUtil.getEventTextPaint(EVENT_TEXT_HEIGHT);
+
+			canvas.drawRect(0, 0, getWidth(), getHeight(), itemCell.eventColorPaint);
+
+			final float titleX = TEXT_MARGIN;
+			final float titleY = EVENT_TEXT_HEIGHT + TEXT_MARGIN;
+
+			if (itemCell.instance.getAsString(CalendarContract.Instances.TITLE) != null) {
+				if (!itemCell.instance.getAsString(CalendarContract.Instances.TITLE).isEmpty()) {
+					canvas.drawText(itemCell.instance.getAsString(CalendarContract.Instances.TITLE), titleX, titleY, itemCell.eventTextPaint);
+				} else {
+					canvas.drawText(getContext().getString(R.string.empty_title), titleX, titleY, itemCell.eventTextPaint);
+				}
+			} else {
+				canvas.drawText(getContext().getString(R.string.empty_title), titleX, titleY, itemCell.eventTextPaint);
+			}
+		}
+
+	}
 
 }

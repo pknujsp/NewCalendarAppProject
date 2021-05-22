@@ -16,6 +16,7 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.OnDateTimeChangedListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
@@ -23,7 +24,7 @@ import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import java.util.Calendar;
 import java.util.Date;
 
-public class DayFragment extends Fragment implements IRefreshView {
+public class DayFragment extends Fragment implements IRefreshView, OnDateTimeChangedListener {
 	public static final String TAG = "DAY_FRAGMENT";
 
 	private final IControlEvent iControlEvent;
@@ -83,9 +84,19 @@ public class DayFragment extends Fragment implements IRefreshView {
 		super.onStop();
 	}
 
-	public void goToDay(Date date) {
+	public void goToToday(Date date) {
 		int dayDifference = ClockUtil.calcDayDifference(date, onPageChangeCallback.copiedCalendar.getTime());
 		dayViewPager.setCurrentItem(dayViewPager.getCurrentItem() + dayDifference, true);
+	}
+
+	@Override
+	public void receivedTimeTick(Date date) {
+		refreshView();
+	}
+
+	@Override
+	public void receivedDateChanged(Date date) {
+		refreshView();
 	}
 
 	class OnPageChangeCallback extends ViewPager2.OnPageChangeCallback {
@@ -129,9 +140,18 @@ public class DayFragment extends Fragment implements IRefreshView {
 	}
 
 	public void goToToday() {
-		if (currentPosition != EventTransactionFragment.FIRST_VIEW_POSITION) {
+		if (!ClockUtil.areSameDate(System.currentTimeMillis(), dayViewPagerAdapter.getCALENDAR().getTimeInMillis())) {
+			dayViewPagerAdapter = new DayViewPagerAdapter(iControlEvent, onEventItemLongClickListener, onEventItemClickListener, iToolbar, iConnectedCalendars);
+			dayViewPager.setAdapter(dayViewPagerAdapter);
 			dayViewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, true);
-			refreshView();
+
+			onPageChangeCallback = new OnPageChangeCallback(dayViewPagerAdapter.getCALENDAR());
+			dayViewPager.registerOnPageChangeCallback(onPageChangeCallback);
+		} else {
+			if (currentPosition != EventTransactionFragment.FIRST_VIEW_POSITION) {
+				dayViewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, true);
+				refreshView();
+			}
 		}
 	}
 }
