@@ -135,13 +135,13 @@ public class MidFcstFragment extends Fragment {
 
 	private void setTable(MidFcstResult midFcstResult) {
 		final int COLUMN_WIDTH = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 80f, getResources().getDisplayMetrics());
-		final int IMAGE_DIAMETER = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 22f, getResources().getDisplayMetrics());
 		final int MARGIN_TB = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4f, getResources().getDisplayMetrics());
 		final int DIVISION_LINE_WIDTH = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1f, getResources().getDisplayMetrics());
 		final int DP4 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4f, getResources().getDisplayMetrics());
 
 		final int DATE_ROW_HEIGHT = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 34f, getResources().getDisplayMetrics());
-		final int SKY_ROW_HEIGHT = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 30f, getResources().getDisplayMetrics());
+		final int SMALL_IMG_SIZE = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 26f, getResources().getDisplayMetrics());
+		final int BIG_SKY_IMG_SIZE = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32f, getResources().getDisplayMetrics());
 		final int CHANCE_OF_SHOWER_HEIGHT = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 30f, getResources().getDisplayMetrics());
 		final int TEMP_HEIGHT = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 90f, getResources().getDisplayMetrics());
 
@@ -191,7 +191,7 @@ public class MidFcstFragment extends Fragment {
 		LinearLayout.LayoutParams dateParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, DATE_ROW_HEIGHT);
 		dateParams.topMargin = MARGIN_TB;
 		dateParams.bottomMargin = MARGIN_TB;
-		LinearLayout.LayoutParams skyParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, SKY_ROW_HEIGHT);
+		LinearLayout.LayoutParams skyParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, BIG_SKY_IMG_SIZE);
 		skyParams.topMargin = MARGIN_TB;
 		skyParams.bottomMargin = MARGIN_TB;
 		LinearLayout.LayoutParams chanceOfShowerParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, CHANCE_OF_SHOWER_HEIGHT);
@@ -239,11 +239,12 @@ public class MidFcstFragment extends Fragment {
 			LinearLayout linearLayout = new LinearLayout(context);
 			linearLayout.setOrientation(LinearLayout.HORIZONTAL);
 
-			LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(IMAGE_DIAMETER, IMAGE_DIAMETER);
+			LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(0, SMALL_IMG_SIZE);
 			layoutParams.gravity = Gravity.CENTER;
+			layoutParams.weight = 1;
 
 			View divisionLine = new View(context);
-			LinearLayout.LayoutParams divisionLineParams = new LinearLayout.LayoutParams(DIVISION_LINE_WIDTH, IMAGE_DIAMETER);
+			LinearLayout.LayoutParams divisionLineParams = new LinearLayout.LayoutParams(DIVISION_LINE_WIDTH, SMALL_IMG_SIZE);
 			divisionLineParams.leftMargin = DP4;
 			divisionLineParams.rightMargin = DP4;
 			divisionLineParams.gravity = Gravity.CENTER;
@@ -255,7 +256,7 @@ public class MidFcstFragment extends Fragment {
 			linearLayout.addView(divisionLine);
 			linearLayout.addView(skyPm, layoutParams);
 
-			TableRow.LayoutParams params = new TableRow.LayoutParams(COLUMN_WIDTH, SKY_ROW_HEIGHT);
+			TableRow.LayoutParams params = new TableRow.LayoutParams(COLUMN_WIDTH, BIG_SKY_IMG_SIZE);
 			params.gravity = Gravity.CENTER;
 			skyRow.addView(linearLayout, params);
 		}
@@ -269,9 +270,16 @@ public class MidFcstFragment extends Fragment {
 			Drawable[] drawables = getSkyImage(dataList.get(col));
 			sky.setImageDrawable(drawables[0]);
 
-			TableRow.LayoutParams params = new TableRow.LayoutParams(COLUMN_WIDTH, SKY_ROW_HEIGHT);
-			params.gravity = Gravity.CENTER;
-			skyRow.addView(sky, params);
+			LinearLayout linearLayout = new LinearLayout(context);
+			linearLayout.setOrientation(LinearLayout.HORIZONTAL);
+
+			LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(COLUMN_WIDTH, BIG_SKY_IMG_SIZE);
+			layoutParams.gravity = Gravity.CENTER;
+			linearLayout.addView(sky, layoutParams);
+
+			TableRow.LayoutParams tableRowParams = new TableRow.LayoutParams(COLUMN_WIDTH, BIG_SKY_IMG_SIZE);
+			tableRowParams.gravity = Gravity.CENTER;
+			skyRow.addView(linearLayout, tableRowParams);
 		}
 
 		//강수확률 ---------------------------------------------------------------------------------

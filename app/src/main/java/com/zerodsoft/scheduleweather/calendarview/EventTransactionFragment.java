@@ -463,12 +463,20 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 			registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
 				@Override
 				public void onActivityResult(ActivityResult result) {
-					switch (EventIntentCode.enumOf(result.getResultCode())) {
-						case RESULT_SAVED:
-							//새로운 일정이 추가됨 -> 달력 이벤트 갱신 -> 추가한 이벤트의 첫번째 인스턴스가 있는 날짜로 달력을 이동
-							onEditingEventResult(result);
-							break;
+
+					try {
+						EventIntentCode resultCode = EventIntentCode.enumOf(result.getResultCode());
+						switch (resultCode) {
+							case RESULT_SAVED:
+								//새로운 일정이 추가됨 -> 달력 이벤트 갱신 -> 추가한 이벤트의 첫번째 인스턴스가 있는 날짜로 달력을 이동
+								onEditingEventResult(result);
+								break;
+						}
+					} catch (IllegalArgumentException e) {
+
 					}
+
+
 				}
 			});
 

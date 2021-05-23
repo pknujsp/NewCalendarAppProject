@@ -49,28 +49,18 @@ import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
 import java.util.Collections;
 
-public class SelectionDetailLocationActivity extends AppCompatActivity
-{
-    public static final int REQUEST_CODE_SELECT_LOCATION_EMPTY_QUERY = 1000;
-    public static final int REQUEST_CODE_SELECT_LOCATION_BY_QUERY = 2000;
-    public static final int REQUEST_CODE_CHANGE_LOCATION = 3000;
+public class SelectionDetailLocationActivity extends AppCompatActivity {
+	protected ActivityEmptyMapBinding binding;
+	protected SelectionDetailLocationFragment naverMapFragment;
 
-    public static final int RESULT_CODE_CHANGED_LOCATION = 10000;
-    public static final int RESULT_CODE_REMOVED_LOCATION = 20000;
-    public static final int RESULT_CODE_SELECTED_LOCATION = 30000;
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		binding = DataBindingUtil.setContentView(this, R.layout.activity_empty_map);
 
-    protected ActivityEmptyMapBinding binding;
-    protected SelectionDetailLocationFragment naverMapFragment;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
-        super.onCreate(savedInstanceState);
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_empty_map);
-
-        naverMapFragment = new SelectionDetailLocationFragment();
-        getSupportFragmentManager().beginTransaction().add(binding.mapFragmentContainer.getId(),
-                naverMapFragment, "").commit();
-    }
+		naverMapFragment = new SelectionDetailLocationFragment();
+		getSupportFragmentManager().beginTransaction().add(binding.mapFragmentContainer.getId(),
+				naverMapFragment, "").commit();
+	}
 
 }

@@ -36,31 +36,31 @@ SKY와 PTY는 별개의 데이터
 
 		if (sky.equals(SUNNY)) {
 			if (day) {
-				id = R.drawable.sunny_day_icon;
+				id = R.drawable.sunny_day_svg;
 			} else {
-				id = R.drawable.sunny_night_icon;
+				id = R.drawable.sunny_night_svg;
 			}
 		} else if (sky.equals(CLOUD)) {
 			if (day) {
-				id = R.drawable.cloud_day_icon;
+				id = R.drawable.cloud_day_svg;
 			} else {
-				id = R.drawable.cloud_night_icon;
+				id = R.drawable.cloud_night_svg;
 			}
 		} else if (sky.equals(CLOUDY)) {
-			id = R.drawable.cloudy_icon;
+			id = R.drawable.cloudy_svg;
 		}
 
 		if (precipitationForm.equals(RAIN)) {
-			id = R.drawable.rain_icon;
+			id = R.drawable.rain_svg;
 
 		} else if (precipitationForm.equals(SLEET)) {
-			id = R.drawable.sleet_icon;
+			id = R.drawable.sleet_svg;
 
 		} else if (precipitationForm.equals(SNOW)) {
-			id = R.drawable.snow_icon;
+			id = R.drawable.snow_svg;
 
 		} else if (precipitationForm.equals(SHOWER)) {
-			id = R.drawable.shower_icon;
+			id = R.drawable.shower_svg;
 		}
 
 		return id;
@@ -70,27 +70,27 @@ SKY와 PTY는 별개의 데이터
 		int id = 0;
 
 		if (sky.equals(SUNNY)) {
-			id = R.drawable.sunny_day_icon;
+			id = R.drawable.sunny_day_svg;
 		} else if (sky.equals(CLOUD)) {
-			id = R.drawable.cloud_day_icon;
+			id = R.drawable.cloud_day_svg;
 		} else if (sky.equals(CLOUD_RAIN)) {
-			id = R.drawable.rain_icon;
+			id = R.drawable.rain_svg;
 		} else if (sky.equals(CLOUD_SNOW)) {
-			id = R.drawable.snow_icon;
+			id = R.drawable.snow_svg;
 		} else if (sky.equals(CLOUD_RAIN_SNOW)) {
-			id = R.drawable.rain_icon;
+			id = R.drawable.rain_svg;
 		} else if (sky.equals(CLOUD_SNOW_RAIN)) {
-			id = R.drawable.snow_icon;
+			id = R.drawable.snow_svg;
 		} else if (sky.equals(CLOUDY)) {
-			id = R.drawable.cloudy_icon;
+			id = R.drawable.cloudy_svg;
 		} else if (sky.equals(CLOUDY_RAIN)) {
-			id = R.drawable.rain_icon;
+			id = R.drawable.rain_svg;
 		} else if (sky.equals(CLOUDY_SNOW)) {
-			id = R.drawable.snow_icon;
+			id = R.drawable.snow_svg;
 		} else if (sky.equals(CLOUDY_RAIN_SNOW)) {
-			id = R.drawable.rain_icon;
+			id = R.drawable.rain_svg;
 		} else if (sky.equals(CLOUDY_SNOW_RAIN)) {
-			id = R.drawable.snow_icon;
+			id = R.drawable.snow_svg;
 		}
 
 		return id;

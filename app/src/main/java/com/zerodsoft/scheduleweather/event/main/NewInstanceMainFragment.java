@@ -2,6 +2,7 @@ package com.zerodsoft.scheduleweather.event.main;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -49,6 +50,7 @@ import com.naver.maps.map.overlay.OverlayImage;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.placecategory.activity.PlaceCategoryActivity;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.common.interfaces.OnHiddenFragmentListener;
 import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
@@ -73,7 +75,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class NewInstanceMainFragment extends NaverMapFragment implements NewFoodsMainFragment.FoodMenuChipsViewController, PlacesOfSelectedCategoriesFragment.PlaceCategoryChipsViewController {
+public class NewInstanceMainFragment extends NaverMapFragment implements NewFoodsMainFragment.FoodMenuChipsViewController,
+		PlacesOfSelectedCategoriesFragment.PlaceCategoryChipsViewController, DialogInterface.OnDismissListener
+		, IRefreshView {
 	public static final String TAG = "NewInstanceMainFragment";
 
 	private final int CALENDAR_ID;
@@ -81,18 +85,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
 	private final long INSTANCE_ID;
 	private final long ORIGINAL_BEGIN;
 	private final long ORIGINAL_END;
-
-	//request
-	public static final int REQUEST_SELECT_LOCATION = 1000;
-	public static final int REQUEST_RESELECT_LOCATION = 1100;
-
-	//result
-	public static final int RESULT_SELECTED_LOCATION = 2000;
-	public static final int RESULT_RESELECTED_LOCATION = 2100;
-	public static final int RESULT_REMOVED_LOCATION = 2200;
-
-	public static final int RESULT_EDITED_PLACE_CATEGORY = 4000;
-	public static final int RESULT_UPDATED_VALUE = 5000;
 
 	private CalendarViewModel calendarViewModel;
 	private LocationViewModel locationViewModel;
@@ -120,6 +112,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
 	private PlaceCategoryDTO selectedPlaceCategory;
 
 	private LinearLayout chipsLayout;
+	private int DEFAULT_HEIGHT_OF_BOTTOMSHEET;
 
 	@Override
 	public void onAttach(@NonNull Context context) {
@@ -229,15 +222,28 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
 				final int HEADERBAR_HEIGHT = (int) getResources().getDimension(R.dimen.map_header_bar_height);
 				final int HEADERBAR_TOP_MARGIN = (int) getResources().getDimension(R.dimen.map_header_bar_top_margin);
 				final int HEADERBAR_MARGIN = (int) (HEADERBAR_TOP_MARGIN * 1.5f);
-				final int DEFAULT_HEIGHT_OF_BOTTOMSHEET = binding.naverMapFragmentRootLayout.getHeight() - HEADERBAR_HEIGHT - HEADERBAR_MARGIN;
+				DEFAULT_HEIGHT_OF_BOTTOMSHEET = binding.naverMapFragmentRootLayout.getHeight() - HEADERBAR_HEIGHT - HEADERBAR_MARGIN;
 
-				addEventFragmentIntoBottomSheet(DEFAULT_HEIGHT_OF_BOTTOMSHEET);
 				addWeatherFragmentIntoBottomSheet(DEFAULT_HEIGHT_OF_BOTTOMSHEET);
 
 				setHeightOfBottomSheet(DEFAULT_HEIGHT_OF_BOTTOMSHEET, restaurantsBottomSheet, restaurantsBottomSheetBehavior);
 				setHeightOfBottomSheet(DEFAULT_HEIGHT_OF_BOTTOMSHEET, placeCategoryBottomSheet, placeCategoryBottomSheetBehavior);
 
 				functionButton.setVisibility(View.VISIBLE);
+
+				locationViewModel.hasDetailLocation(CALENDAR_ID, EVENT_ID, new CarrierMessagingService.ResultCallback<Boolean>() {
+					@Override
+					public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException {
+						requireActivity().runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								if (!aBoolean) {
+									functionButtons[0].callOnClick();
+								}
+							}
+						});
+					}
+				});
 			}
 		});
 	}
@@ -324,7 +330,9 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
 				//이벤트 정보
 				functionButton.callOnClick();
 
-				EventFragment eventFragment = (EventFragment) bottomSheetFragmentMap.get(BottomSheetType.INSTANCE_INFO);
+				EventFragment eventFragment = new EventFragment(NewInstanceMainFragment.this, DEFAULT_HEIGHT_OF_BOTTOMSHEET, CALENDAR_ID,
+						EVENT_ID, INSTANCE_ID,
+						ORIGINAL_BEGIN, ORIGINAL_END);
 				eventFragment.show(getParentFragmentManager(), EventFragment.TAG);
 			}
 		});
@@ -404,36 +412,43 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
 			locationViewModel.hasDetailLocation(CALENDAR_ID, EVENT_ID, new CarrierMessagingService.ResultCallback<Boolean>() {
 				@Override
 				public void onReceiveResult(@NonNull Boolean hasDetailLocation) throws RemoteException {
-					locationViewModel.getLocation(CALENDAR_ID, EVENT_ID, new CarrierMessagingService.ResultCallback<LocationDTO>() {
-						@Override
-						public void onReceiveResult(@NonNull LocationDTO locationDTO) throws RemoteException {
-							if (selectedLocationDtoInEvent == null) {
-								selectedLocationDtoInEvent = locationDTO;
 
-								requireActivity().runOnUiThread(new Runnable() {
-									@Override
-									public void run() {
-										addPlaceCategoryListFragmentIntoBottomSheet();
-										createSelectedLocationMarker();
-									}
-								});
-							} else {
-								if (locationDTO.equals(selectedLocationDtoInEvent)) {
-								} else {
+					if (hasDetailLocation) {
+						locationViewModel.getLocation(CALENDAR_ID, EVENT_ID, new CarrierMessagingService.ResultCallback<LocationDTO>() {
+							@Override
+							public void onReceiveResult(@NonNull LocationDTO locationDTO) throws RemoteException {
+								if (selectedLocationDtoInEvent == null) {
 									selectedLocationDtoInEvent = locationDTO;
-									selectedLocationInEventMarker.setMap(null);
-									selectedLocationInEventMarker = null;
 
 									requireActivity().runOnUiThread(new Runnable() {
 										@Override
 										public void run() {
+											addPlaceCategoryListFragmentIntoBottomSheet();
 											createSelectedLocationMarker();
 										}
 									});
+								} else {
+									if (locationDTO.equals(selectedLocationDtoInEvent)) {
+									} else {
+										selectedLocationDtoInEvent = locationDTO;
+
+										requireActivity().runOnUiThread(new Runnable() {
+											@Override
+											public void run() {
+												selectedLocationInEventMarker.setMap(null);
+												selectedLocationInEventMarker = null;
+												createSelectedLocationMarker();
+											}
+										});
+									}
 								}
 							}
-						}
-					});
+						});
+					} else {
+
+					}
+
+
 				}
 			});
 		}
@@ -532,11 +547,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
 		bottomSheetBehavior.setPeekHeight(0);
 
 		return new Object[]{bottomSheetView, bottomSheetBehavior};
-	}
-
-	private void addEventFragmentIntoBottomSheet(int viewHeight) {
-		EventFragment eventFragment = EventFragment.newInstance(viewHeight, CALENDAR_ID, EVENT_ID, INSTANCE_ID, ORIGINAL_BEGIN, ORIGINAL_END);
-		bottomSheetFragmentMap.put(BottomSheetType.INSTANCE_INFO, eventFragment);
 	}
 
 	private void addWeatherFragmentIntoBottomSheet(int viewHeight) {
@@ -917,6 +927,22 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
 				break;
 			}
 		}
+	}
+
+	@Override
+	public void refreshView() {
+		removeAllPoiItems();
+		selectedLocationDtoInEvent = null;
+		if (selectedLocationInEventMarker != null) {
+			selectedLocationInEventMarker.setMap(null);
+			selectedLocationInEventMarker = null;
+		}
+		setInitInstanceData();
+	}
+
+	@Override
+	public void onDismiss(DialogInterface dialogInterface) {
+
 	}
 
 

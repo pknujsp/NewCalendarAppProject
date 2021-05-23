@@ -134,7 +134,7 @@ public class VilageFcstFragment extends Fragment {
 	private void setTable(VilageFcstResult vilageFcstResult) {
 		final int ITEM_WIDTH = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 50f, getResources().getDisplayMetrics());
 		final int MARGIN = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, getResources().getDisplayMetrics());
-		final int DP22 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 22f, getResources().getDisplayMetrics());
+		final int SKY_IMG_SIZE = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32f, getResources().getDisplayMetrics());
 		final int DP34 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 34f, getResources().getDisplayMetrics());
 		final int TEMP_ROW_HEIGHT = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 90f, getResources().getDisplayMetrics());
 
@@ -175,7 +175,7 @@ public class VilageFcstFragment extends Fragment {
 		LinearLayout.LayoutParams clockLabelParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, DP34);
 		clockLabelParams.topMargin = MARGIN;
 		clockLabelParams.bottomMargin = MARGIN;
-		LinearLayout.LayoutParams skyLabelParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, DP22);
+		LinearLayout.LayoutParams skyLabelParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, SKY_IMG_SIZE);
 		skyLabelParams.topMargin = MARGIN;
 		skyLabelParams.bottomMargin = MARGIN;
 		LinearLayout.LayoutParams tempLabelParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, TEMP_ROW_HEIGHT);
@@ -229,8 +229,7 @@ public class VilageFcstFragment extends Fragment {
 		}
 
 		//하늘 ---------------------------------------------------------------------------
-		skyRow.measure(VIEW_WIDTH, DP22);
-
+		skyRow.measure(VIEW_WIDTH, SKY_IMG_SIZE);
 
 		//강수량 ------------------------------------------------------------------------------
 		rainfallRow.measure(VIEW_WIDTH, DP34);
@@ -268,7 +267,7 @@ public class VilageFcstFragment extends Fragment {
 		TableLayout.LayoutParams clockRowParams = new TableLayout.LayoutParams(VIEW_WIDTH, ViewGroup.LayoutParams.WRAP_CONTENT);
 		clockRowParams.topMargin = MARGIN;
 		clockRowParams.bottomMargin = MARGIN;
-		TableLayout.LayoutParams skyRowParams = new TableLayout.LayoutParams(VIEW_WIDTH, DP22);
+		TableLayout.LayoutParams skyRowParams = new TableLayout.LayoutParams(VIEW_WIDTH, SKY_IMG_SIZE);
 		skyRowParams.topMargin = MARGIN;
 		skyRowParams.bottomMargin = MARGIN;
 		TableLayout.LayoutParams tempRowParams = new TableLayout.LayoutParams(VIEW_WIDTH, TEMP_ROW_HEIGHT);

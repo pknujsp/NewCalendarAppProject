@@ -139,9 +139,10 @@ public class UltraSrtFcstFragment extends Fragment {
 
 	private void setTable(UltraSrtFcstResult ultraSrtFcstResult) {
 		//1시간 강수량 추가(습도와 높이 동일하게)
-		final int ITEM_WIDTH = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 45f, getResources().getDisplayMetrics());
+		final int ITEM_WIDTH = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 46f, getResources().getDisplayMetrics());
 		final int MARGIN = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4f, getResources().getDisplayMetrics());
 		final int DP22 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 22f, getResources().getDisplayMetrics());
+		final int SKY_IMG_SIZE = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 30f, getResources().getDisplayMetrics());
 		final int DP34 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 34f, getResources().getDisplayMetrics());
 		final int TEMP_ROW_HEIGHT = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 55f, getResources().getDisplayMetrics());
 
@@ -173,7 +174,7 @@ public class UltraSrtFcstFragment extends Fragment {
 		LinearLayout.LayoutParams clockLabelParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, DP22);
 		clockLabelParams.topMargin = MARGIN;
 		clockLabelParams.bottomMargin = MARGIN;
-		LinearLayout.LayoutParams skyLabelParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, DP22);
+		LinearLayout.LayoutParams skyLabelParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, SKY_IMG_SIZE);
 		skyLabelParams.topMargin = MARGIN;
 		skyLabelParams.bottomMargin = MARGIN;
 		LinearLayout.LayoutParams tempLabelParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, TEMP_ROW_HEIGHT);
@@ -227,7 +228,7 @@ public class UltraSrtFcstFragment extends Fragment {
 			ImageView sky = new ImageView(context);
 			sky.setScaleType(ImageView.ScaleType.FIT_CENTER);
 			skyImgViewList.add(sky);
-			TableRow.LayoutParams params = new TableRow.LayoutParams(ITEM_WIDTH, DP22);
+			TableRow.LayoutParams params = new TableRow.LayoutParams(ITEM_WIDTH, SKY_IMG_SIZE);
 			params.gravity = Gravity.CENTER;
 			skyRow.addView(sky, params);
 		}

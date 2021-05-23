@@ -326,15 +326,12 @@ public class CalendarProvider implements ICalendarProvider {
 	@Override
 	public int deleteEvents(int calendarId, long[] eventIds) {
 		if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
-			Uri uri = CalendarContract.Events.CONTENT_URI;
-
 			ContentResolver contentResolver = context.getContentResolver();
 			int deletedRows = 0;
 
 			for (long eventId : eventIds) {
-				ContentUris.withAppendedId(uri, eventId);
+				Uri uri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, eventId);
 				deletedRows += contentResolver.delete(uri, null, null);
-				ContentUris.removeId(uri);
 			}
 			return deletedRows;
 		} else {
@@ -350,13 +347,8 @@ public class CalendarProvider implements ICalendarProvider {
 	@Override
 	public int updateEvent(ContentValues event) {
 		if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
-			ContentResolver contentResolver = context.getContentResolver();
-			String selection = "Events._id=? AND " + CalendarContract.Events.CALENDAR_ID + "=?";
-			String[] selectionArgs = {event.getAsString(CalendarContract.Events._ID), event.getAsString(CalendarContract.Events.CALENDAR_ID)};
-			event.remove(CalendarContract.Events._ID);
-			event.remove(CalendarContract.Events.CALENDAR_ID);
-
-			int result = contentResolver.update(CalendarContract.Events.CONTENT_URI, event, selection, selectionArgs);
+			Uri uri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, event.getAsLong(CalendarContract.Events._ID));
+			int result = context.getContentResolver().update(uri, event, null, null);
 			return result;
 		} else {
 			return -1;
