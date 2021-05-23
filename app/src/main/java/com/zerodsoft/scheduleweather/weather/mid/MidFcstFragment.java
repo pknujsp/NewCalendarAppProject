@@ -31,7 +31,7 @@ import com.zerodsoft.scheduleweather.weather.common.ViewProgress;
 import com.zerodsoft.scheduleweather.weather.common.WeatherDataCallback;
 import com.zerodsoft.scheduleweather.weather.dataprocessing.MidFcstProcessing;
 import com.zerodsoft.scheduleweather.weather.interfaces.OnDownloadedTimeListener;
-import com.zerodsoft.scheduleweather.utility.WeatherDataConverter;
+import com.zerodsoft.scheduleweather.weather.dataprocessing.WeatherDataConverter;
 
 import java.util.LinkedList;
 import java.util.List;

@@ -17,7 +17,7 @@ import com.zerodsoft.scheduleweather.weather.common.ViewProgress;
 import com.zerodsoft.scheduleweather.weather.common.WeatherDataCallback;
 import com.zerodsoft.scheduleweather.weather.dataprocessing.UltraSrtNcstProcessing;
 import com.zerodsoft.scheduleweather.weather.interfaces.OnDownloadedTimeListener;
-import com.zerodsoft.scheduleweather.utility.WeatherDataConverter;
+import com.zerodsoft.scheduleweather.weather.dataprocessing.WeatherDataConverter;
 
 
 public class UltraSrtNcstFragment extends Fragment {

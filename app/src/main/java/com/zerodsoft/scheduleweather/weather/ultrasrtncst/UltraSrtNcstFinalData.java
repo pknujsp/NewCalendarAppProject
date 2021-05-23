@@ -1,7 +1,7 @@
 package com.zerodsoft.scheduleweather.weather.ultrasrtncst;
 
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.ultrasrtncstresponse.UltraSrtNcstItem;
-import com.zerodsoft.scheduleweather.utility.WeatherDataConverter;
+import com.zerodsoft.scheduleweather.weather.dataprocessing.WeatherDataConverter;
 
 import java.util.List;
 

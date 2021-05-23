@@ -13,7 +13,6 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Build;
-import android.os.Bundle;
 import android.os.RemoteException;
 import android.provider.CalendarContract;
 import android.service.carrier.CarrierMessagingService;
@@ -22,7 +21,6 @@ import android.widget.RemoteViews;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
-import androidx.lifecycle.Observer;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.etc.LocationType;
@@ -35,7 +33,7 @@ import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.utility.LonLat;
 import com.zerodsoft.scheduleweather.utility.LonLatConverter;
-import com.zerodsoft.scheduleweather.utility.WeatherDataConverter;
+import com.zerodsoft.scheduleweather.weather.dataprocessing.WeatherDataConverter;
 import com.zerodsoft.scheduleweather.weather.aircondition.airconditionbar.AirConditionResult;
 import com.zerodsoft.scheduleweather.weather.aircondition.airconditionbar.BarInitDataCreater;
 import com.zerodsoft.scheduleweather.weather.common.WeatherDataCallback;
@@ -49,8 +47,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
-
-import static androidx.core.app.NotificationCompat.DEFAULT_SOUND;
 
 public class EventAlarmReceiver extends BroadcastReceiver {
 	public static final String CHANNEL_ID = "channel_id";

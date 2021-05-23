@@ -34,7 +34,7 @@ public class ViewProgress {
 	}
 
 	public void onCompletedProcessingData(boolean isSuccessful, String text) {
-		onCompletedProcessingData(true);
+		onCompletedProcessingData(isSuccessful);
 
 		if (!isSuccessful) {
 			if (text != null) {

@@ -2,7 +2,7 @@ package com.zerodsoft.scheduleweather.weather.vilagefcst;
 
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.vilagefcstresponse.VilageFcstItem;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
-import com.zerodsoft.scheduleweather.utility.WeatherDataConverter;
+import com.zerodsoft.scheduleweather.weather.dataprocessing.WeatherDataConverter;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -15,7 +15,7 @@ public class VilageFcstFinalData
     //ny
     private String ny;
 
-    private Date dateTime;
+    private Date fcstDateTime;
 
     //강수확률 POP
     private String chanceOfShower;
@@ -55,7 +55,7 @@ public class VilageFcstFinalData
         Calendar calendar = Calendar.getInstance(ClockUtil.TIME_ZONE);
         calendar.set(year, month - 1, day, hour, 0, 0);
 
-        dateTime = calendar.getTime();
+        fcstDateTime = calendar.getTime();
 
         for (VilageFcstItem item : items)
         {
@@ -106,9 +106,9 @@ public class VilageFcstFinalData
         return ny;
     }
 
-    public Date getDateTime()
+    public Date getFcstDateTime()
     {
-        return dateTime;
+        return fcstDateTime;
     }
 
     public String getChanceOfShower()

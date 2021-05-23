@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.utility;
+package com.zerodsoft.scheduleweather.weather.dataprocessing;
 
 import android.content.Context;
 

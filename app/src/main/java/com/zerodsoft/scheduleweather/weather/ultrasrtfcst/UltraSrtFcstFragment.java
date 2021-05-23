@@ -5,7 +5,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PointF;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.TextPaint;
 import android.util.TypedValue;
@@ -21,6 +20,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.zerodsoft.scheduleweather.R;
@@ -33,10 +33,10 @@ import com.zerodsoft.scheduleweather.weather.dataprocessing.UltraSrtFcstProcessi
 import com.zerodsoft.scheduleweather.weather.interfaces.OnDownloadedTimeListener;
 import com.zerodsoft.scheduleweather.weather.sunsetrise.SunSetRiseData;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
-import com.zerodsoft.scheduleweather.utility.WeatherDataConverter;
+import com.zerodsoft.scheduleweather.weather.dataprocessing.WeatherDataConverter;
+import com.zerodsoft.scheduleweather.weather.sunsetrise.SunsetRise;
 
-import java.util.Calendar;
-import java.util.Date;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -44,15 +44,13 @@ public class UltraSrtFcstFragment extends Fragment {
 	private final OnDownloadedTimeListener onDownloadedTimeListener;
 
 	private UltraSrtFcstFragmentBinding binding;
-	private List<SunSetRiseData> sunSetRiseDataList;
 
 	private WeatherAreaCodeDTO weatherAreaCode;
 	private ViewProgress viewProgress;
 	private UltraSrtFcstProcessing ultraSrtFcstProcessing;
 
-	public UltraSrtFcstFragment(WeatherAreaCodeDTO weatherAreaCodeDTO, List<SunSetRiseData> sunSetRiseDataList, OnDownloadedTimeListener onDownloadedTimeListener) {
+	public UltraSrtFcstFragment(WeatherAreaCodeDTO weatherAreaCodeDTO, OnDownloadedTimeListener onDownloadedTimeListener) {
 		this.weatherAreaCode = weatherAreaCodeDTO;
-		this.sunSetRiseDataList = sunSetRiseDataList;
 		this.onDownloadedTimeListener = onDownloadedTimeListener;
 	}
 
@@ -215,24 +213,26 @@ public class UltraSrtFcstFragment extends Fragment {
 		//시각 --------------------------------------------------------------------------
 		for (int col = 0; col < DATA_SIZE; col++) {
 			TextView textView = new TextView(context);
-			setValueTextView(textView, ClockUtil.H.format(dataList.get(col).getDateTime()));
+			setValueTextView(textView, ClockUtil.H.format(dataList.get(col).getFcstDateTime()));
 
 			TableRow.LayoutParams textParams = new TableRow.LayoutParams(ITEM_WIDTH, DP22);
 			textParams.gravity = Gravity.CENTER;
 			clockRow.addView(textView, textParams);
 		}
 
+		List<ImageView> skyImgViewList = new ArrayList<>();
+
 		//하늘 ---------------------------------------------------------------------------
 		for (int col = 0; col < DATA_SIZE; col++) {
 			ImageView sky = new ImageView(context);
 			sky.setScaleType(ImageView.ScaleType.FIT_CENTER);
-
-			sky.setImageDrawable(getSkyImage(dataList.get(col)));
-
+			skyImgViewList.add(sky);
 			TableRow.LayoutParams params = new TableRow.LayoutParams(ITEM_WIDTH, DP22);
 			params.gravity = Gravity.CENTER;
 			skyRow.addView(sky, params);
 		}
+
+		setSkyImgs(dataList, skyImgViewList);
 
 		//습도 ------------------------------------------------------------------------------
 		for (int col = 0; col < DATA_SIZE; col++) {
@@ -309,23 +309,23 @@ public class UltraSrtFcstFragment extends Fragment {
 		textView.setText(value);
 	}
 
-	private Drawable getSkyImage(UltraSrtFcstFinalData data) {
-		Calendar sunSetRiseCalendar = Calendar.getInstance();
-		Calendar calendar = Calendar.getInstance();
-		calendar.setTime(data.getDateTime());
+	private void setSkyImgs(List<UltraSrtFcstFinalData> dataList, List<ImageView> skyImgViewList) {
 
-		Drawable drawable = null;
+		List<SunSetRiseData> setRiseDataList = SunsetRise.getSunsetRiseList(dataList.get(0).getFcstDateTime(),
+				dataList.get(dataList.size() - 1).getFcstDateTime(), weatherAreaCode.getLatitudeSecondsDivide100()
+				, weatherAreaCode.getLongitudeSecondsDivide100());
+		for (int i = 0; i < dataList.size(); i++) {
 
-		for (SunSetRiseData sunSetRiseData : sunSetRiseDataList) {
-			sunSetRiseCalendar.setTime(sunSetRiseData.getDate());
-			if (sunSetRiseCalendar.get(Calendar.DAY_OF_YEAR) == calendar.get(Calendar.DAY_OF_YEAR) &&
-					sunSetRiseCalendar.get(Calendar.YEAR) == calendar.get(Calendar.YEAR)) {
-				Date calendarDate = calendar.getTime();
-				boolean day = calendarDate.after(sunSetRiseData.getSunrise()) && calendarDate.before(sunSetRiseData.getSunset()) ? true : false;
-				drawable = getContext().getDrawable(WeatherDataConverter.getSkyDrawableId(data.getSky(), data.getPrecipitationForm(), day));
+			for (SunSetRiseData sunSetRiseData : setRiseDataList) {
+				if (ClockUtil.areSameDate(sunSetRiseData.getDate().getTime(), dataList.get(i).getFcstDateTime().getTime())) {
+					boolean day = dataList.get(i).getFcstDateTime().after(sunSetRiseData.getSunrise()) && dataList.get(i).getFcstDateTime().before(sunSetRiseData.getSunset());
+					skyImgViewList.get(i).setImageDrawable(ContextCompat.getDrawable(requireContext(),
+							WeatherDataConverter.getSkyDrawableId(dataList.get(i).getSky(),
+									dataList.get(i).getPrecipitationForm(), day)));
+					break;
+				}
 			}
 		}
-		return drawable;
 	}
 
 

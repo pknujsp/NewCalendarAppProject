@@ -22,6 +22,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.zerodsoft.scheduleweather.R;
@@ -34,10 +35,11 @@ import com.zerodsoft.scheduleweather.weather.dataprocessing.VilageFcstProcessing
 import com.zerodsoft.scheduleweather.weather.interfaces.OnDownloadedTimeListener;
 import com.zerodsoft.scheduleweather.weather.sunsetrise.SunSetRiseData;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
-import com.zerodsoft.scheduleweather.utility.WeatherDataConverter;
+import com.zerodsoft.scheduleweather.weather.dataprocessing.WeatherDataConverter;
+import com.zerodsoft.scheduleweather.weather.sunsetrise.SunsetRise;
 
+import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -45,14 +47,12 @@ public class VilageFcstFragment extends Fragment {
 	private final OnDownloadedTimeListener onDownloadedTimeListener;
 
 	private VilageFcstFragmentBinding binding;
-	private List<SunSetRiseData> sunSetRiseDataList;
 	private WeatherAreaCodeDTO weatherAreaCode;
 	private ViewProgress viewProgress;
 	private VilageFcstProcessing vilageFcstProcessing;
 
-	public VilageFcstFragment(WeatherAreaCodeDTO weatherAreaCodeDTO, List<SunSetRiseData> sunSetRiseDataList, OnDownloadedTimeListener onDownloadedTimeListener) {
+	public VilageFcstFragment(WeatherAreaCodeDTO weatherAreaCodeDTO, OnDownloadedTimeListener onDownloadedTimeListener) {
 		this.weatherAreaCode = weatherAreaCodeDTO;
-		this.sunSetRiseDataList = sunSetRiseDataList;
 		this.onDownloadedTimeListener = onDownloadedTimeListener;
 	}
 
@@ -215,7 +215,7 @@ public class VilageFcstFragment extends Fragment {
 
 		for (int col = 0; col < DATA_SIZE; col++) {
 			TextView textView = new TextView(context);
-			date.setTime(dataList.get(col).getDateTime());
+			date.setTime(dataList.get(col).getFcstDateTime());
 
 			if (date.get(Calendar.HOUR_OF_DAY) == 0 || col == 0) {
 				setValueTextView(textView, ClockUtil.MdE_FORMAT.format(date.getTime()) + "\n" + Integer.toString(date.get(Calendar.HOUR_OF_DAY)));
@@ -315,37 +315,32 @@ public class VilageFcstFragment extends Fragment {
 		textView.setText(value);
 	}
 
-	private Drawable getSkyImage(VilageFcstFinalData data) {
-		Calendar sunSetRiseCalendar = Calendar.getInstance();
-		Calendar calendar = Calendar.getInstance();
-		calendar.setTime(data.getDateTime());
-
-		Drawable drawable = null;
-
-		for (SunSetRiseData sunSetRiseData : sunSetRiseDataList) {
-			sunSetRiseCalendar.setTime(sunSetRiseData.getDate());
-			if (sunSetRiseCalendar.get(Calendar.DAY_OF_YEAR) == calendar.get(Calendar.DAY_OF_YEAR) &&
-					sunSetRiseCalendar.get(Calendar.YEAR) == calendar.get(Calendar.YEAR)) {
-				Date calendarDate = calendar.getTime();
-				boolean day = calendarDate.after(sunSetRiseData.getSunrise()) && calendarDate.before(sunSetRiseData.getSunset()) ? true : false;
-				drawable = getContext().getDrawable(WeatherDataConverter.getSkyDrawableId(data.getSky(), data.getPrecipitationForm(), day));
-			}
-		}
-		return drawable;
-	}
 
 	class SkyView extends View {
-		private List<Drawable> skyImageList;
+		private List<Drawable> skyImageList = new ArrayList<>();
 
 		public SkyView(Context context, List<VilageFcstFinalData> dataList) {
 			super(context);
-
-			skyImageList = new LinkedList<>();
-			for (int i = 0; i < dataList.size() - 1; i++) {
-				skyImageList.add(getSkyImage(dataList.get(i)));
-			}
-
+			setSkyImgs(dataList);
 			setWillNotDraw(false);
+		}
+
+		private void setSkyImgs(List<VilageFcstFinalData> dataList) {
+
+			List<SunSetRiseData> setRiseDataList = SunsetRise.getSunsetRiseList(dataList.get(0).getFcstDateTime(),
+					dataList.get(dataList.size() - 2).getFcstDateTime(), weatherAreaCode.getLatitudeSecondsDivide100()
+					, weatherAreaCode.getLongitudeSecondsDivide100());
+			for (int i = 0; i < dataList.size() - 1; i++) {
+
+				for (SunSetRiseData sunSetRiseData : setRiseDataList) {
+					if (ClockUtil.areSameDate(sunSetRiseData.getDate().getTime(), dataList.get(i).getFcstDateTime().getTime())) {
+						boolean day = dataList.get(i).getFcstDateTime().after(sunSetRiseData.getSunrise()) && dataList.get(i).getFcstDateTime().before(sunSetRiseData.getSunset());
+						skyImageList.add(ContextCompat.getDrawable(getContext(), WeatherDataConverter.getSkyDrawableId(dataList.get(i).getSky(),
+								dataList.get(i).getPrecipitationForm(), day)));
+						break;
+					}
+				}
+			}
 		}
 
 		@Override

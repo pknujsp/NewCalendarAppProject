@@ -2,7 +2,7 @@ package com.zerodsoft.scheduleweather.weather.ultrasrtfcst;
 
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.ultrasrtfcstresponse.UltraSrtFcstItem;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
-import com.zerodsoft.scheduleweather.utility.WeatherDataConverter;
+import com.zerodsoft.scheduleweather.weather.dataprocessing.WeatherDataConverter;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -15,7 +15,7 @@ public class UltraSrtFcstFinalData {
 	private String ny;
 
 	//일자
-	private Date dateTime;
+	private Date fcstDateTime;
 
 	//구름상태 SKY
 	private String sky;
@@ -46,7 +46,7 @@ public class UltraSrtFcstFinalData {
 		Calendar calendar = Calendar.getInstance(ClockUtil.TIME_ZONE);
 		calendar.set(year, month - 1, day, hour, 0, 0);
 
-		dateTime = calendar.getTime();
+		fcstDateTime = calendar.getTime();
 
 		for (UltraSrtFcstItem item : items) {
 			if (item.getCategory().equals("T1H")) {
@@ -78,8 +78,8 @@ public class UltraSrtFcstFinalData {
 		return ny;
 	}
 
-	public Date getDateTime() {
-		return dateTime;
+	public Date getFcstDateTime() {
+		return fcstDateTime;
 	}
 
 	public String getSky() {

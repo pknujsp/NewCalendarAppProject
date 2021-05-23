@@ -58,7 +58,7 @@ public class VilageFcstResult
         //동네예보 데이터 리스트를 날짜 오름차순으로 정렬
         Collections.sort(vilageFcstFinalDataList, (t1, t2) ->
         {
-            if (t1.getDateTime().after(t2.getDateTime()))
+            if (t1.getFcstDateTime().after(t2.getFcstDateTime()))
             {
                 return 1;
             } else

@@ -12,14 +12,11 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
-import com.luckycatlabs.sunrisesunset.SunriseSunsetCalculator;
-import com.luckycatlabs.sunrisesunset.dto.Location;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.FragmentWeatherItemBinding;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
@@ -64,7 +61,6 @@ public class WeatherItemFragment extends BottomSheetDialogFragment implements On
 
 	private AreaCodeViewModel areaCodeViewModel;
 	private LocationViewModel locationViewModel;
-	private List<SunSetRiseData> sunSetRiseList = new ArrayList<>();
 	private WeatherAreaCodeDTO weatherAreaCode;
 	private WeatherDbViewModel weatherDbViewModel;
 
@@ -219,7 +215,7 @@ public class WeatherItemFragment extends BottomSheetDialogFragment implements On
 									requireActivity().runOnUiThread(new Runnable() {
 										@Override
 										public void run() {
-											refreshWeatherData();
+											setAddressName();
 											createFragments();
 										}
 									});
@@ -237,8 +233,8 @@ public class WeatherItemFragment extends BottomSheetDialogFragment implements On
 
 	private void createFragments() {
 		ultraSrtNcstFragment = new UltraSrtNcstFragment(weatherAreaCode, this);
-		ultraSrtFcstFragment = new UltraSrtFcstFragment(weatherAreaCode, sunSetRiseList, this);
-		vilageFcstFragment = new VilageFcstFragment(weatherAreaCode, sunSetRiseList, this);
+		ultraSrtFcstFragment = new UltraSrtFcstFragment(weatherAreaCode, this);
+		vilageFcstFragment = new VilageFcstFragment(weatherAreaCode, this);
 		midFcstFragment = new MidFcstFragment(weatherAreaCode, this);
 		airConditionFragment = new AirConditionFragment(String.valueOf(locationDTO.getLatitude())
 				, String.valueOf(locationDTO.getLongitude()), this);
@@ -252,65 +248,9 @@ public class WeatherItemFragment extends BottomSheetDialogFragment implements On
 				.commit();
 	}
 
-	private void checkOldData() {
-		Calendar calendar = Calendar.getInstance();
-
-		weatherDbViewModel.getDownloadedDateList(weatherAreaCode.getY(), weatherAreaCode.getX(), new CarrierMessagingService.ResultCallback<List<WeatherDataDTO>>() {
-			@Override
-			public void onReceiveResult(@NonNull List<WeatherDataDTO> weatherDataDTOS) throws RemoteException {
-
-			}
-		});
-
-		weatherDbViewModel.getDownloadedDateList(String.valueOf(locationDTO.getLatitude())
-				, String.valueOf(locationDTO.getLongitude()), new CarrierMessagingService.ResultCallback<List<WeatherDataDTO>>() {
-					@Override
-					public void onReceiveResult(@NonNull List<WeatherDataDTO> weatherDataDTOS) throws RemoteException {
-						Calendar downloadedCalendar = Calendar.getInstance();
-						downloadedCalendar.setTimeInMillis(Long.parseLong(weatherDataDTOS.get(0).getDownloadedDate()));
-
-					}
-				});
-	}
-
-	private void refreshWeatherData() {
+	private void setAddressName() {
 		String addressName = weatherAreaCode.getPhase1() + " " + weatherAreaCode.getPhase2() + " " + weatherAreaCode.getPhase3();
 		binding.addressName.setText(addressName);
-		init();
-	}
-
-	private void init() {
-		//동네예보 마지막 날 까지의 일몰/일출 시간 데이터를 구성
-		sunSetRiseList.clear();
-
-		List<Calendar> dates = new ArrayList<>();
-
-		Calendar endDate = Calendar.getInstance();
-
-		Calendar calendar = Calendar.getInstance();
-		calendar.setTime(endDate.getTime());
-		endDate.add(Calendar.DAY_OF_YEAR, 2);
-
-		boolean finished = false;
-
-		while (!finished) {
-			if (calendar.get(Calendar.YEAR) == endDate.get(Calendar.YEAR) && calendar.get(Calendar.DAY_OF_YEAR) == endDate.get(Calendar.DAY_OF_YEAR)) {
-				finished = true;
-			}
-			dates.add((Calendar) calendar.clone());
-			calendar.add(Calendar.DAY_OF_YEAR, 1);
-		}
-
-		SunriseSunsetCalculator sunriseSunsetCalculator = new SunriseSunsetCalculator(new Location(weatherAreaCode.getLatitudeSecondsDivide100(),
-				weatherAreaCode.getLongitudeSecondsDivide100()), ClockUtil.TIME_ZONE);
-		Calendar sunRise = null;
-		Calendar sunSet = null;
-
-		for (Calendar date : dates) {
-			sunRise = sunriseSunsetCalculator.getOfficialSunriseCalendarForDate(date);
-			sunSet = sunriseSunsetCalculator.getOfficialSunsetCalendarForDate(date);
-			sunSetRiseList.add(new SunSetRiseData(date.getTime(), sunRise.getTime(), sunSet.getTime()));
-		}
 	}
 
 	@Override
