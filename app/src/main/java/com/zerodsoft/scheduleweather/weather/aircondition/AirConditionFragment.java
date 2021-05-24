@@ -42,8 +42,7 @@ public class AirConditionFragment extends Fragment implements OnUpdateListener {
 		super.onCreate(savedInstanceState);
 		airConditionProcessing = new AirConditionProcessing(getContext(), LATITUDE, LONGITUDE);
 	}
-
-
+	
 	@Nullable
 	@Override
 	public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {

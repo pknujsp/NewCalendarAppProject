@@ -1,7 +1,10 @@
 package com.zerodsoft.scheduleweather.weather.repository;
 
+import android.os.Bundle;
+
 import com.google.gson.JsonObject;
 import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
+import com.zerodsoft.scheduleweather.common.classes.RetrofitCallListManager;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.retrofit.HttpCommunicationClient;
 import com.zerodsoft.scheduleweather.retrofit.Querys;
@@ -27,17 +30,29 @@ import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.weather.mid.MidFcstRoot;
 
 import java.util.Calendar;
+import java.util.Stack;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class WeatherDataDownloader {
+public class WeatherDataDownloader implements RetrofitCallListManager.CallManagerListener {
 	public static final String ULTRA_SRT_NCST = "ULTRA_SRT_NCST";
 	public static final String ULTRA_SRT_FCST = "ULTRA_SRT_FCST";
 	public static final String VILAGE_FCST = "VILAGE_FCST";
 	public static final String MID_LAND_FCST = "MID_LAND_FCST";
 	public static final String MID_TA_FCST = "MID_TA_FCST";
+
+	private static RetrofitCallListManager retrofitCallListManager = new RetrofitCallListManager();
+	private static WeatherDataDownloader instance = new WeatherDataDownloader();
+
+	public static WeatherDataDownloader getInstance() {
+		return instance;
+	}
+
+	public static void close() {
+		retrofitCallListManager.clear();
+	}
 
 	public WeatherDataDownloader() {
 
@@ -59,15 +74,20 @@ public class WeatherDataDownloader {
 		parameter.setBaseTime(ClockUtil.HH.format(calendar.getTime()) + "00");
 
 		Call<JsonObject> call = querys.getUltraSrtNcstDataStr(parameter.getMap());
+		retrofitCallListManager.add(call);
+
 		call.enqueue(new Callback<JsonObject>() {
 			@Override
 			public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
 				callback.processResult(response);
+				retrofitCallListManager.remove(call);
 			}
 
 			@Override
 			public void onFailure(Call<JsonObject> call, Throwable t) {
 				callback.processResult(t);
+				retrofitCallListManager.remove(call);
+
 			}
 		});
 
@@ -88,15 +108,20 @@ public class WeatherDataDownloader {
 		parameter.setBaseTime(ClockUtil.HH.format(calendar.getTime()) + "30");
 
 		Call<JsonObject> call = querys.getUltraSrtFcstDataStr(parameter.getMap());
+		retrofitCallListManager.add(call);
+
+
 		call.enqueue(new Callback<JsonObject>() {
 			@Override
 			public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
 				callback.processResult(response);
+				retrofitCallListManager.remove(call);
 			}
 
 			@Override
 			public void onFailure(Call<JsonObject> call, Throwable t) {
 				callback.processResult(t);
+				retrofitCallListManager.remove(call);
 			}
 		});
 	}
@@ -132,16 +157,19 @@ public class WeatherDataDownloader {
 		parameter.setBaseTime(ClockUtil.HH.format(calendar.getTime()) + "00");
 
 		Call<JsonObject> call = querys.getVilageFcstDataStr(parameter.getMap());
+		retrofitCallListManager.add(call);
 
 		call.enqueue(new Callback<JsonObject>() {
 			@Override
 			public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
 				callback.processResult(response);
+				retrofitCallListManager.remove(call);
 			}
 
 			@Override
 			public void onFailure(Call<JsonObject> call, Throwable t) {
 				callback.processResult(t);
+				retrofitCallListManager.remove(call);
 			}
 		});
 
@@ -168,16 +196,20 @@ public class WeatherDataDownloader {
 		}
 
 		Call<JsonObject> call = querys.getMidLandFcstDataStr(parameter.getMap());
+		retrofitCallListManager.add(call);
+
 
 		call.enqueue(new Callback<JsonObject>() {
 			@Override
 			public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
 				callback.processResult(response);
+				retrofitCallListManager.remove(call);
 			}
 
 			@Override
 			public void onFailure(Call<JsonObject> call, Throwable t) {
 				callback.processResult(t);
+				retrofitCallListManager.remove(call);
 			}
 		});
 
@@ -204,15 +236,19 @@ public class WeatherDataDownloader {
 		}
 
 		Call<JsonObject> call = querys.getMidTaDataStr(parameter.getMap());
+		retrofitCallListManager.add(call);
+
 		call.enqueue(new Callback<JsonObject>() {
 			@Override
 			public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
 				callback.processResult(response);
+				retrofitCallListManager.remove(call);
 			}
 
 			@Override
 			public void onFailure(Call<JsonObject> call, Throwable t) {
 				callback.processResult(t);
+				retrofitCallListManager.remove(call);
 			}
 		});
 	}
@@ -259,4 +295,8 @@ public class WeatherDataDownloader {
 		}
 	}
 
+	@Override
+	public void clear() {
+		retrofitCallListManager.clear();
+	}
 }

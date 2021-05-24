@@ -26,7 +26,8 @@ import com.zerodsoft.scheduleweather.weather.interfaces.OnDownloadedTimeListener
 import com.zerodsoft.scheduleweather.weather.mid.MidFcstFragment;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
-import com.zerodsoft.scheduleweather.weather.sunsetrise.SunSetRiseData;
+import com.zerodsoft.scheduleweather.weather.repository.AirConditionDownloader;
+import com.zerodsoft.scheduleweather.weather.repository.WeatherDataDownloader;
 import com.zerodsoft.scheduleweather.weather.ultrasrtfcst.UltraSrtFcstFragment;
 import com.zerodsoft.scheduleweather.weather.ultrasrtncst.UltraSrtNcstFragment;
 import com.zerodsoft.scheduleweather.weather.viewmodel.WeatherDbViewModel;
@@ -36,8 +37,6 @@ import com.zerodsoft.scheduleweather.utility.LonLat;
 import com.zerodsoft.scheduleweather.utility.LonLatConverter;
 import com.zerodsoft.scheduleweather.weather.vilagefcst.VilageFcstFragment;
 
-import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -94,6 +93,13 @@ public class WeatherItemFragment extends BottomSheetDialogFragment implements On
 	}
 
 	@Override
+	public void onDestroy() {
+		WeatherDataDownloader.close();
+		AirConditionDownloader.close();
+		super.onDestroy();
+	}
+
+	@Override
 	public void onDismiss(@NonNull DialogInterface dialog) {
 		super.onDismiss(dialog);
 	}
@@ -107,7 +113,6 @@ public class WeatherItemFragment extends BottomSheetDialogFragment implements On
 		eventId = bundle.getLong(CalendarContract.Instances.EVENT_ID);
 		instanceId = bundle.getLong(CalendarContract.Instances._ID);
 		begin = bundle.getLong(CalendarContract.Instances.BEGIN);
-
         /*
          isEditing = savedInstanceState?.getBoolean(IS_EDITING_KEY, false)
     randomGoodDeed = savedInstanceState?.getString(RANDOM_GOOD_DEED_KEY)

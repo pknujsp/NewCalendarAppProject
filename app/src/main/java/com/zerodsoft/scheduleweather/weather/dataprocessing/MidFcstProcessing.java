@@ -27,7 +27,7 @@ import java.util.Date;
 import java.util.List;
 
 public class MidFcstProcessing extends WeatherDataProcessing<MidFcstResult> {
-	private WeatherDataDownloader weatherDataDownloader = new WeatherDataDownloader();
+	private WeatherDataDownloader weatherDataDownloader = WeatherDataDownloader.getInstance();
 	private WeatherAreaCodeDTO weatherAreaCode;
 
 	public MidFcstProcessing(Context context, String LATITUDE, String LONGITUDE, WeatherAreaCodeDTO weatherAreaCodeDTO) {

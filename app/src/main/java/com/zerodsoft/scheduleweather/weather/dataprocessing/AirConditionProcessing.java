@@ -34,7 +34,7 @@ public class AirConditionProcessing extends WeatherDataProcessing<AirConditionRe
 		super(context, LATITUDE, LONGITUDE);
 	}
 
-	private final AirConditionDownloader airConditionDownloader = new AirConditionDownloader();
+	private final AirConditionDownloader airConditionDownloader = AirConditionDownloader.getInstance();
 
 	private final FindAirConditionStationDownloader findAirConditionStationDownloader = new FindAirConditionStationDownloader();
 

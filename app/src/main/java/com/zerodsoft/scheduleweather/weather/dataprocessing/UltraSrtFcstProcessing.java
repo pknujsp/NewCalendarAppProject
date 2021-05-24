@@ -21,7 +21,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 public class UltraSrtFcstProcessing extends WeatherDataProcessing<UltraSrtFcstResult> {
-	private final WeatherDataDownloader weatherDataDownloader = new WeatherDataDownloader();
+	private final WeatherDataDownloader weatherDataDownloader = WeatherDataDownloader.getInstance();
 
 	public UltraSrtFcstProcessing(Context context, String LATITUDE, String LONGITUDE) {
 		super(context, LATITUDE, LONGITUDE);

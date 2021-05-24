@@ -21,7 +21,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 public class VilageFcstProcessing extends WeatherDataProcessing<VilageFcstResult> {
-	private final WeatherDataDownloader weatherDataDownloader = new WeatherDataDownloader();
+	private final WeatherDataDownloader weatherDataDownloader = WeatherDataDownloader.getInstance();
 
 	public VilageFcstProcessing(Context context, String LATITUDE, String LONGITUDE) {
 		super(context, LATITUDE, LONGITUDE);
