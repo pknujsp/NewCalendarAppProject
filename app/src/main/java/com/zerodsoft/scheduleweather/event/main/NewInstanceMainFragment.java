@@ -85,6 +85,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
 	private final long INSTANCE_ID;
 	private final long ORIGINAL_BEGIN;
 	private final long ORIGINAL_END;
+	private Integer DEFAULT_HEIGHT_OF_BOTTOMSHEET;
 
 	private CalendarViewModel calendarViewModel;
 	private LocationViewModel locationViewModel;
@@ -112,7 +113,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
 	private PlaceCategoryDTO selectedPlaceCategory;
 
 	private LinearLayout chipsLayout;
-	private int DEFAULT_HEIGHT_OF_BOTTOMSHEET;
 
 	@Override
 	public void onAttach(@NonNull Context context) {
@@ -131,6 +131,8 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
 	@Override
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		calendarViewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
+		locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
 	}
 
 	@Override
@@ -148,11 +150,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 
-		calendarViewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
-		locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
 		createFunctionList();
-
-		functionButton.setVisibility(View.GONE);
 
 		chipsLayout = new LinearLayout(getContext());
 		chipsLayout.setOrientation(LinearLayout.VERTICAL);
@@ -224,12 +222,8 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
 				final int HEADERBAR_MARGIN = (int) (HEADERBAR_TOP_MARGIN * 1.5f);
 				DEFAULT_HEIGHT_OF_BOTTOMSHEET = binding.naverMapFragmentRootLayout.getHeight() - HEADERBAR_HEIGHT - HEADERBAR_MARGIN;
 
-				addWeatherFragmentIntoBottomSheet(DEFAULT_HEIGHT_OF_BOTTOMSHEET);
-
 				setHeightOfBottomSheet(DEFAULT_HEIGHT_OF_BOTTOMSHEET, restaurantsBottomSheet, restaurantsBottomSheetBehavior);
 				setHeightOfBottomSheet(DEFAULT_HEIGHT_OF_BOTTOMSHEET, placeCategoryBottomSheet, placeCategoryBottomSheetBehavior);
-
-				functionButton.setVisibility(View.VISIBLE);
 
 				locationViewModel.hasDetailLocation(CALENDAR_ID, EVENT_ID, new CarrierMessagingService.ResultCallback<Boolean>() {
 					@Override
@@ -343,7 +337,14 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
 				//날씨
 				functionButton.callOnClick();
 
-				WeatherItemFragment weatherItemFragment = (WeatherItemFragment) bottomSheetFragmentMap.get(BottomSheetType.WEATHER);
+				WeatherItemFragment weatherItemFragment = new WeatherItemFragment(DEFAULT_HEIGHT_OF_BOTTOMSHEET, CALENDAR_ID, EVENT_ID);
+				Bundle bundle = new Bundle();
+				LatLng latLng = naverMap.getContentBounds().getCenter();
+				bundle.putString("latitude", String.valueOf(latLng.latitude));
+				bundle.putString("longitude", String.valueOf(latLng.longitude));
+				bundle.putBoolean("hasSimpleLocation", hasSimpleLocation());
+
+				weatherItemFragment.setArguments(bundle);
 				weatherItemFragment.show(getParentFragmentManager(), WeatherItemFragment.TAG);
 			}
 		});
@@ -361,6 +362,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
 			}
 		});
 
+		functionButton.callOnClick();
 	}
 
 	private void collapseFunctions() {
@@ -549,17 +551,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
 		return new Object[]{bottomSheetView, bottomSheetBehavior};
 	}
 
-	private void addWeatherFragmentIntoBottomSheet(int viewHeight) {
-		WeatherItemFragment weatherFragment = WeatherItemFragment.newInstance(viewHeight);
-		Bundle bundle = new Bundle();
-		bundle.putInt(CalendarContract.Instances.CALENDAR_ID, CALENDAR_ID);
-		bundle.putLong(CalendarContract.Instances.EVENT_ID, EVENT_ID);
-		bundle.putLong(CalendarContract.Instances._ID, INSTANCE_ID);
-		bundle.putLong(CalendarContract.Instances.BEGIN, ORIGINAL_BEGIN);
-
-		weatherFragment.setArguments(bundle);
-		bottomSheetFragmentMap.put(BottomSheetType.WEATHER, weatherFragment);
-	}
 
 	private void addRestaurantFragmentIntoBottomSheet() {
 		NewFoodsMainFragment newFoodsMainFragment = new NewFoodsMainFragment(this, this

@@ -35,6 +35,7 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.databinding.FragmentFoodsCategoryListBinding;
@@ -81,6 +82,7 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 
 	private CustomFoodMenuViewModel customFoodCategoryViewModel;
 	private LocationViewModel locationViewModel;
+	private CalendarViewModel calendarViewModel;
 	private FoodCriteriaLocationInfoViewModel foodCriteriaLocationInfoViewModel;
 	private FoodCriteriaLocationHistoryViewModel foodCriteriaLocationSearchHistoryViewModel;
 
@@ -124,6 +126,7 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
+		calendarViewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
 		locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
 		foodCriteriaLocationInfoViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationInfoViewModel.class);
 		foodCriteriaLocationSearchHistoryViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationHistoryViewModel.class);
@@ -200,17 +203,24 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 
 
 	}
+	
+	private void initL
 
 	private void init() {
 		switch (foodCriteriaLocationInfoDTO.getUsingType()) {
 			case FoodCriteriaLocationInfoDTO.TYPE_SELECTED_LOCATION: {
 				LocationDTO criteriaLocationDTO = null;
-				try {
-					criteriaLocationDTO = selectedLocationDTO.clone();
-				} catch (CloneNotSupportedException e) {
-					e.printStackTrace();
+
+				if (selectedLocationDTO == null) {
+
+				} else {
+					try {
+						criteriaLocationDTO = selectedLocationDTO.clone();
+					} catch (CloneNotSupportedException e) {
+						e.printStackTrace();
+					}
+					CriteriaLocationRepository.setRestaurantCriteriaLocation(criteriaLocationDTO);
 				}
-				CriteriaLocationRepository.setRestaurantCriteriaLocation(criteriaLocationDTO);
 
 				if (criteriaLocationDTO.getLocationType() == LocationType.PLACE) {
 					binding.criteriaLocation.setText(criteriaLocationDTO.getPlaceName());

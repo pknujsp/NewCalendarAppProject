@@ -38,7 +38,6 @@
             android:theme="@style/AppTheme"
             android:windowSoftInputMode="adjustNothing" />
         <activity android:name=".event.foods.activity.LocationSettingsActivity" />
-        <activity android:name=".event.weather.activity.WeatherActivity" />
         <activity
             android:name=".activity.preferences.SettingsActivity"
             android:label="@string/app_settings" />

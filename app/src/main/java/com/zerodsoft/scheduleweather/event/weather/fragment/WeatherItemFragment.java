@@ -9,6 +9,7 @@ import android.service.carrier.CarrierMessagingService;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -40,6 +41,7 @@ import com.zerodsoft.scheduleweather.weather.vilagefcst.VilageFcstFragment;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.TooManyListenersException;
 
 public class WeatherItemFragment extends BottomSheetDialogFragment implements OnDownloadedTimeListener {
 	public static final String TAG = "WeatherItemFragment";
@@ -63,28 +65,20 @@ public class WeatherItemFragment extends BottomSheetDialogFragment implements On
 	private WeatherAreaCodeDTO weatherAreaCode;
 	private WeatherDbViewModel weatherDbViewModel;
 
-	private Integer calendarId;
-	private Long eventId;
-	private Long instanceId;
-	private Long begin;
-
+	private final int CALENDAR_ID;
+	private final long EVENT_ID;
 	private final int VIEW_HEIGHT;
 
-	private static WeatherItemFragment instance;
+	private String latitude;
+	private String longitude;
+	private boolean hasSimpleLocation;
 
 	private BottomSheetBehavior bottomSheetBehavior;
 
-	public static WeatherItemFragment newInstance(int viewHeight) {
-		instance = new WeatherItemFragment(viewHeight);
-		return instance;
-	}
-
-	public static WeatherItemFragment getInstance() {
-		return instance;
-	}
-
-	public WeatherItemFragment(int VIEW_HEIGHT) {
+	public WeatherItemFragment(int VIEW_HEIGHT, int CALENDAR_ID, long EVENT_ID) {
 		this.VIEW_HEIGHT = VIEW_HEIGHT;
+		this.CALENDAR_ID = CALENDAR_ID;
+		this.EVENT_ID = EVENT_ID;
 	}
 
 	@Override
@@ -108,25 +102,15 @@ public class WeatherItemFragment extends BottomSheetDialogFragment implements On
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		Bundle bundle = getArguments();
-		calendarId = bundle.getInt(CalendarContract.Instances.CALENDAR_ID);
-		eventId = bundle.getLong(CalendarContract.Instances.EVENT_ID);
-		instanceId = bundle.getLong(CalendarContract.Instances._ID);
-		begin = bundle.getLong(CalendarContract.Instances.BEGIN);
-        /*
-         isEditing = savedInstanceState?.getBoolean(IS_EDITING_KEY, false)
-    randomGoodDeed = savedInstanceState?.getString(RANDOM_GOOD_DEED_KEY)
-            ?: viewModel.generateRandomGoodDeed()
-         */
+		Bundle arguments = getArguments();
+		latitude = arguments.getString("latitude");
+		longitude = arguments.getString("longitude");
+		hasSimpleLocation = arguments.getBoolean("hasSimpleLocation");
 	}
 
 	@Override
 	public void onSaveInstanceState(@NonNull Bundle outState) {
 		super.onSaveInstanceState(outState);
-        /*
-            outState.putBoolean(IS_EDITING_KEY, isEditing)
-    outState.putString(RANDOM_GOOD_DEED_KEY, randomGoodDeed)
-         */
 	}
 
 	@NonNull
@@ -152,7 +136,8 @@ public class WeatherItemFragment extends BottomSheetDialogFragment implements On
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
-
+		areaCodeViewModel = new ViewModelProvider(this).get(AreaCodeViewModel.class);
+		locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
 		weatherDbViewModel = new ViewModelProvider(this).get(WeatherDbViewModel.class);
 
 		View bottomSheet = getDialog().findViewById(R.id.design_bottom_sheet);
@@ -182,17 +167,24 @@ public class WeatherItemFragment extends BottomSheetDialogFragment implements On
 			}
 		});
 
-		areaCodeViewModel = new ViewModelProvider(this).get(AreaCodeViewModel.class);
-		locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
-
-		locationViewModel.getLocation(calendarId, eventId, new CarrierMessagingService.ResultCallback<LocationDTO>() {
+		locationViewModel.getLocation(CALENDAR_ID, EVENT_ID, new CarrierMessagingService.ResultCallback<LocationDTO>() {
 			@Override
 			public void onReceiveResult(@NonNull LocationDTO selectedLocationDTO) throws RemoteException {
 				getActivity().runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						locationDTO = selectedLocationDTO;
-						final LonLat lonLat = LonLatConverter.convertGrid(selectedLocationDTO.getLongitude(), selectedLocationDTO.getLatitude());
+						LonLat lonLat = null;
+						double lat = 0, lon = 0;
+
+						if (selectedLocationDTO != null) {
+							locationDTO = selectedLocationDTO;
+							lat = selectedLocationDTO.getLongitude();
+							lon = selectedLocationDTO.getLatitude();
+						} else {
+							lat = Double.parseDouble(latitude);
+							lon = Double.parseDouble(longitude);
+						}
+						lonLat = LonLatConverter.convertGrid(lon, lat);
 
 						areaCodeViewModel.getAreaCodes(lonLat, new CarrierMessagingService.ResultCallback<List<WeatherAreaCodeDTO>>() {
 							@Override
@@ -220,6 +212,10 @@ public class WeatherItemFragment extends BottomSheetDialogFragment implements On
 									requireActivity().runOnUiThread(new Runnable() {
 										@Override
 										public void run() {
+											Toast.makeText(getContext(), hasSimpleLocation ?
+															R.string.msg_getting_weather_data_of_map_center_point_because_havnt_detail_location :
+															R.string.msg_getting_weather_data_of_map_center_point_because_havnt_simple_location,
+													Toast.LENGTH_SHORT).show();
 											setAddressName();
 											createFragments();
 										}
@@ -241,8 +237,16 @@ public class WeatherItemFragment extends BottomSheetDialogFragment implements On
 		ultraSrtFcstFragment = new UltraSrtFcstFragment(weatherAreaCode, this);
 		vilageFcstFragment = new VilageFcstFragment(weatherAreaCode, this);
 		midFcstFragment = new MidFcstFragment(weatherAreaCode, this);
-		airConditionFragment = new AirConditionFragment(String.valueOf(locationDTO.getLatitude())
-				, String.valueOf(locationDTO.getLongitude()), this);
+
+		String lat, lon = null;
+		if (locationDTO == null) {
+			lat = String.valueOf(locationDTO.getLatitude());
+			lon = String.valueOf(locationDTO.getLongitude());
+		} else {
+			lat = latitude;
+			lon = longitude;
+		}
+		airConditionFragment = new AirConditionFragment(lat, lon, this);
 
 		getChildFragmentManager().beginTransaction()
 				.add(binding.ultraSrtNcstFragmentContainer.getId(), ultraSrtNcstFragment, "0")
