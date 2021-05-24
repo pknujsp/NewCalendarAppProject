@@ -148,7 +148,8 @@ public class EventAlarmReceiver extends BroadcastReceiver {
 		builder.setCustomBigContentView(smallView);
 
 		AreaCodeRepository areaCodeRepository = new AreaCodeRepository(context);
-		final LonLat lonLat = LonLatConverter.convertGrid(locationDTO.getLongitude(), locationDTO.getLatitude());
+		final LonLat lonLat = LonLatConverter.convertGrid(Double.parseDouble(locationDTO.getLongitude()),
+				Double.parseDouble(locationDTO.getLatitude()));
 
 		areaCodeRepository.getAreaCodes(lonLat, new CarrierMessagingService.ResultCallback<List<WeatherAreaCodeDTO>>() {
 			@Override
@@ -165,7 +166,9 @@ public class EventAlarmReceiver extends BroadcastReceiver {
 					// 점 사이의 거리 계산
 					for (int i = 0; i < locationPoints.size(); i++) {
 						distance =
-								Math.sqrt(Math.pow(locationDTO.getLongitude() - locationPoints.get(i).getLatitude(), 2) + Math.pow(locationDTO.getLatitude() - locationPoints.get(i).getLatitude(), 2));
+								Math.sqrt(Math.pow(Double.parseDouble(locationDTO.getLongitude()) - locationPoints.get(i).getLatitude(),
+										2) + Math.pow(Double.parseDouble(locationDTO.getLatitude()) - locationPoints.get(i).getLatitude()
+										, 2));
 						if (distance < minDistance) {
 							minDistance = distance;
 							index = i;

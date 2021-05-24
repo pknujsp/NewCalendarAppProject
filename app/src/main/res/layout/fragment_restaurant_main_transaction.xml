@@ -6,7 +6,7 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".event.foods.main.fragment.NewFoodsMainFragment">
+        tools:context=".event.foods.main.fragment.RestaurantMainTransactionFragment">
 
         <androidx.fragment.app.FragmentContainerView
             android:id="@+id/fragment_container"

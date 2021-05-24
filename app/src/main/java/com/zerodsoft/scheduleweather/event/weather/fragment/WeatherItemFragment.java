@@ -178,8 +178,8 @@ public class WeatherItemFragment extends BottomSheetDialogFragment implements On
 
 						if (selectedLocationDTO != null) {
 							locationDTO = selectedLocationDTO;
-							lat = selectedLocationDTO.getLongitude();
-							lon = selectedLocationDTO.getLatitude();
+							lat = Double.parseDouble(selectedLocationDTO.getLongitude());
+							lon = Double.parseDouble(selectedLocationDTO.getLatitude());
 						} else {
 							lat = Double.parseDouble(latitude);
 							lon = Double.parseDouble(longitude);
@@ -200,7 +200,9 @@ public class WeatherItemFragment extends BottomSheetDialogFragment implements On
 									double distance = 0;
 									// 점 사이의 거리 계산
 									for (int i = 0; i < locationPoints.size(); i++) {
-										distance = Math.sqrt(Math.pow(selectedLocationDTO.getLongitude() - locationPoints.get(i).longitude, 2) + Math.pow(selectedLocationDTO.getLatitude() - locationPoints.get(i).latitude, 2));
+										distance =
+												Math.sqrt(Math.pow(Double.parseDouble(selectedLocationDTO.getLongitude()) - locationPoints.get(i).longitude, 2)
+														+ Math.pow(Double.parseDouble(selectedLocationDTO.getLatitude()) - locationPoints.get(i).latitude, 2));
 										if (distance < minDistance) {
 											minDistance = distance;
 											index = i;

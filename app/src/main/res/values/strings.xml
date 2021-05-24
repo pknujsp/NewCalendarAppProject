@@ -456,7 +456,7 @@
     <string name="bunsik">분식</string>
     <string name="juk">죽</string>
     <string name="search_criteria_location_settings">검색 기준 위치 설정</string>
-    <string name="current_location">현재 위치</string>
+    <string name="current_location">현재 위치(GPS)</string>
     <string name="search">검색</string>
     <string name="hint_request_input_address_or_place">검색할 주소 또는 장소를 입력</string>
     <string name="finding_current_location">현재 위치 파악중</string>
@@ -548,4 +548,5 @@
         가져옵니다</string>
     <string name="msg_getting_weather_data_of_map_center_point_because_havnt_simple_location">이벤트내에 위치가 미 지정되어있어, 지도 중심 좌표로 날씨 데이터를
         가져옵니다</string>
+    <string name="map_center_point">지도 중심 좌표</string>
 </resources>

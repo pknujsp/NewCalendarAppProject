@@ -138,15 +138,17 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 		if (networkAvailable()) {
 			if (selectedLocationDTOInEvent.getLocationType() == LocationType.ADDRESS) {
 				// 주소 검색 순서 : 좌표로 주소 변환
-				LocalApiPlaceParameter parameter = LocalParameterUtil.getCoordToAddressParameter(selectedLocationDTOInEvent.getLatitude(), selectedLocationDTOInEvent.getLongitude());
+				LocalApiPlaceParameter parameter =
+						LocalParameterUtil.getCoordToAddressParameter(Double.parseDouble(selectedLocationDTOInEvent.getLatitude()),
+								Double.parseDouble(selectedLocationDTOInEvent.getLongitude()));
 				CoordToAddressUtil.coordToAddress(parameter, new CarrierMessagingService.ResultCallback<DataWrapper<CoordToAddress>>() {
 					@Override
 					public void onReceiveResult(@NonNull DataWrapper<CoordToAddress> coordToAddressDataWrapper) throws RemoteException {
 						if (coordToAddressDataWrapper.getException() == null) {
 							CoordToAddress coordToAddress = coordToAddressDataWrapper.getData();
 							CoordToAddressDocuments coordToAddressDocuments = coordToAddress.getCoordToAddressDocuments().get(0);
-							coordToAddressDocuments.getCoordToAddressAddress().setLatitude(String.valueOf(selectedLocationDTOInEvent.getLatitude()));
-							coordToAddressDocuments.getCoordToAddressAddress().setLongitude(String.valueOf(selectedLocationDTOInEvent.getLongitude()));
+							coordToAddressDocuments.getCoordToAddressAddress().setLatitude(selectedLocationDTOInEvent.getLatitude());
+							coordToAddressDocuments.getCoordToAddressAddress().setLongitude(selectedLocationDTOInEvent.getLongitude());
 
 							setLocationItemViewPagerAdapter(new LocationItemViewPagerAdapter(getContext(), MarkerType.SELECTED_ADDRESS_IN_EVENT), MarkerType.SELECTED_ADDRESS_IN_EVENT);
 							createPoiItems(Collections.singletonList(coordToAddressDocuments), MarkerType.SELECTED_ADDRESS_IN_EVENT);
@@ -227,7 +229,8 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 	}
 
 	private void createMarker() {
-		selectedLocationMarker.setPosition(new LatLng(selectedLocationDTOInMap.getLatitude(), selectedLocationDTOInMap.getLongitude()));
+		selectedLocationMarker.setPosition(new LatLng(Double.parseDouble(selectedLocationDTOInMap.getLatitude()),
+				Double.parseDouble(selectedLocationDTOInMap.getLongitude())));
 		selectedLocationMarker.setCaptionText(selectedLocationDTOInMap.getLocationType() == LocationType.PLACE ? selectedLocationDTOInMap.getPlaceName() : selectedLocationDTOInMap.getAddressName());
 		selectedLocationMarker.setMap(naverMap);
 	}

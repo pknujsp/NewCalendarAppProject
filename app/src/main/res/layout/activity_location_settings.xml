@@ -31,6 +31,12 @@
                 android:text="지정한 위치" />
 
             <com.google.android.material.radiobutton.MaterialRadioButton
+                android:id="@+id/radio_current_map_center_point"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/map_center_point" />
+
+            <com.google.android.material.radiobutton.MaterialRadioButton
                 android:id="@+id/radio_current_location"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

@@ -179,6 +179,10 @@ public class CalendarViewModel extends AndroidViewModel implements ICalendarProv
 		return calendarProvider.updateCalendarColor(calendarId, color, colorKey);
 	}
 
+	@Override
+	public ContentValues getValuesOfEvent(long eventId, String... keys) {
+		return calendarProvider.getValuesOfEvent(eventId, keys);
+	}
 
 	public void syncCalendars() {
 		calendarProvider.syncCalendars();

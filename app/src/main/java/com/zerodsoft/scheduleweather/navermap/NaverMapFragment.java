@@ -789,6 +789,11 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 	}
 
 	@Override
+	public LatLng getMapCenterPoint() {
+		return naverMap.getContentBounds().getCenter();
+	}
+
+	@Override
 	public void setMapVisibility(int visibility) {
 		binding.naverMapViewLayout.setVisibility(visibility);
 	}
@@ -830,13 +835,15 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 			List<PlaceDocuments> placeDocuments = (List<PlaceDocuments>) kakaoLocalDocuments;
 
 			for (PlaceDocuments document : placeDocuments) {
-				createPoiItems(markerType, document, document.getPlaceName(), document.getY(), document.getX());
+				createPoiItems(markerType, document, document.getPlaceName(), Double.parseDouble(document.getY()),
+						Double.parseDouble(document.getX()));
 			}
 		} else if (kakaoLocalDocuments.get(0) instanceof AddressResponseDocuments) {
 			List<AddressResponseDocuments> addressDocuments = (List<AddressResponseDocuments>) kakaoLocalDocuments;
 
 			for (AddressResponseDocuments document : addressDocuments) {
-				createPoiItems(markerType, document, document.getAddressName(), document.getY(), document.getX());
+				createPoiItems(markerType, document, document.getAddressName(), Double.parseDouble(document.getY()),
+						Double.parseDouble(document.getX()));
 			}
 		} else if (kakaoLocalDocuments.get(0) instanceof CoordToAddressDocuments) {
 			List<CoordToAddressDocuments> coordToAddressDocuments = (List<CoordToAddressDocuments>) kakaoLocalDocuments;
@@ -890,13 +897,15 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 				List<PlaceDocuments> placeDocuments = (List<PlaceDocuments>) subList;
 
 				for (PlaceDocuments document : placeDocuments) {
-					createPoiItems(markerType, document, document.getPlaceName(), document.getY(), document.getX());
+					createPoiItems(markerType, document, document.getPlaceName(), Double.parseDouble(document.getY()),
+							Double.parseDouble(document.getX()));
 				}
 			} else if (kakaoLocalDocuments.get(0) instanceof AddressResponseDocuments) {
 				List<AddressResponseDocuments> addressDocuments = (List<AddressResponseDocuments>) kakaoLocalDocuments;
 
 				for (AddressResponseDocuments document : addressDocuments) {
-					createPoiItems(markerType, document, document.getAddressName(), document.getY(), document.getX());
+					createPoiItems(markerType, document, document.getAddressName(), Double.parseDouble(document.getY()),
+							Double.parseDouble(document.getX()));
 				}
 			} else if (kakaoLocalDocuments.get(0) instanceof CoordToAddressDocuments) {
 				List<CoordToAddressDocuments> coordToAddressDocuments = (List<CoordToAddressDocuments>) kakaoLocalDocuments;

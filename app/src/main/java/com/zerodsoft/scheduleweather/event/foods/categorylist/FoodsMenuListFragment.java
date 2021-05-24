@@ -34,6 +34,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.naver.maps.geometry.LatLng;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
@@ -42,28 +43,30 @@ import com.zerodsoft.scheduleweather.databinding.FragmentFoodsCategoryListBindin
 import com.zerodsoft.scheduleweather.etc.AppPermission;
 import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
-import com.zerodsoft.scheduleweather.event.foods.activity.LocationSettingsActivity;
 import com.zerodsoft.scheduleweather.event.foods.adapter.FoodCategoryAdapter;
 import com.zerodsoft.scheduleweather.event.foods.dto.FoodCategoryItem;
+import com.zerodsoft.scheduleweather.event.foods.enums.CriteriaLocationType;
+import com.zerodsoft.scheduleweather.event.foods.interfaces.IGetCriteriaLocation;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedCategoryItem;
-import com.zerodsoft.scheduleweather.event.foods.main.fragment.NewFoodsMainFragment;
+import com.zerodsoft.scheduleweather.event.foods.main.fragment.RestaurantMainFragment;
+import com.zerodsoft.scheduleweather.event.foods.main.fragment.RestaurantMainTransactionFragment;
 import com.zerodsoft.scheduleweather.event.foods.settings.CustomFoodMenuSettingsActivity;
-import com.zerodsoft.scheduleweather.event.foods.share.CriteriaLocationRepository;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.CustomFoodMenuViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationInfoViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationHistoryViewModel;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
+import com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint;
 import com.zerodsoft.scheduleweather.navermap.interfaces.INetwork;
-import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
-import com.zerodsoft.scheduleweather.retrofit.paremeters.sgis.address.ReverseGeoCodingParameter;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.address.reversegeocoding.ReverseGeoCodingResponse;
+import com.zerodsoft.scheduleweather.navermap.model.CoordToAddressUtil;
+import com.zerodsoft.scheduleweather.navermap.util.LocalParameterUtil;
+import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddress;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddressDocuments;
 import com.zerodsoft.scheduleweather.room.dto.CustomFoodMenuDTO;
 import com.zerodsoft.scheduleweather.room.dto.FoodCriteriaLocationInfoDTO;
 import com.zerodsoft.scheduleweather.room.dto.FoodCriteriaLocationSearchHistoryDTO;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
-import com.zerodsoft.scheduleweather.sgis.SgisAddress;
-import com.zerodsoft.scheduleweather.sgis.SgisAuth;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -72,13 +75,18 @@ import java.util.Map;
 import static android.app.Activity.RESULT_OK;
 import static androidx.core.content.ContextCompat.checkSelfPermission;
 
-public class FoodsMenuListFragment extends Fragment implements OnClickedCategoryItem, OnClickedListItem<FoodCategoryItem> {
+public class FoodsMenuListFragment extends Fragment implements OnClickedCategoryItem, OnClickedListItem<FoodCategoryItem>, IGetCriteriaLocation {
 	public static final String TAG = "FoodsMenuListFragment";
-	private FragmentFoodsCategoryListBinding binding;
+
 	private final INetwork iNetwork;
-	private final NewFoodsMainFragment.FoodMenuChipsViewController foodMenuChipsViewController;
+	private final RestaurantMainTransactionFragment.FoodMenuChipsViewController foodMenuChipsViewController;
 	private final BottomSheetController bottomSheetController;
 	private final FavoriteLocationsListener favoriteLocationsListener;
+	private final int COLUMN_COUNT = 4;
+	private final RestaurantMainFragment.IGetEventValue iGetEventValue;
+	private final IMapPoint iMapPoint;
+
+	private FragmentFoodsCategoryListBinding binding;
 
 	private CustomFoodMenuViewModel customFoodCategoryViewModel;
 	private LocationViewModel locationViewModel;
@@ -87,20 +95,22 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 	private FoodCriteriaLocationHistoryViewModel foodCriteriaLocationSearchHistoryViewModel;
 
 	private LocationManager locationManager;
-	private final ContentValues INSTANCE_VALUES = new ContentValues();
-
 	private LocationDTO selectedLocationDTO;
 	private FoodCriteriaLocationSearchHistoryDTO foodCriteriaLocationSearchHistoryDTO;
 	private FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO;
 
+	private LocationDTO criteriaLocationDTO;
 	private boolean clickedGps = false;
-	final int columnCount = 4;
 
-	public FoodsMenuListFragment(INetwork iNetwork, NewFoodsMainFragment.FoodMenuChipsViewController foodMenuChipsViewController, BottomSheetController bottomSheetController, FavoriteLocationsListener favoriteLocationsListener) {
+	public FoodsMenuListFragment(RestaurantMainFragment.IGetEventValue iGetEventValue, INetwork iNetwork,
+	                             RestaurantMainTransactionFragment.FoodMenuChipsViewController foodMenuChipsViewController,
+	                             BottomSheetController bottomSheetController, FavoriteLocationsListener favoriteLocationsListener, IMapPoint iMapPoint) {
+		this.iGetEventValue = iGetEventValue;
 		this.iNetwork = iNetwork;
 		this.foodMenuChipsViewController = foodMenuChipsViewController;
 		this.bottomSheetController = bottomSheetController;
 		this.favoriteLocationsListener = favoriteLocationsListener;
+		this.iMapPoint = iMapPoint;
 	}
 
 
@@ -108,12 +118,6 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
-
-		Bundle bundle = getArguments();
-
-		INSTANCE_VALUES.put(CalendarContract.Instances.CALENDAR_ID, bundle.getInt(CalendarContract.Instances.CALENDAR_ID));
-		INSTANCE_VALUES.put(CalendarContract.Instances._ID, bundle.getLong(CalendarContract.Instances._ID));
-		INSTANCE_VALUES.put(CalendarContract.Instances.EVENT_ID, bundle.getLong(CalendarContract.Instances.EVENT_ID));
 	}
 
 	@Override
@@ -132,127 +136,217 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 		foodCriteriaLocationSearchHistoryViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationHistoryViewModel.class);
 		customFoodCategoryViewModel = new ViewModelProvider(this).get(CustomFoodMenuViewModel.class);
 
-		GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(), columnCount);
+		GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(), COLUMN_COUNT);
 		binding.categoryGridview.setLayoutManager(gridLayoutManager);
+
 		//기준 주소 표시
-		setSelectedLocation();
+		loadSelectedDetailLocation();
 		setCategories();
 
 		binding.criteriaLocation.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
+				/*
 				Intent intent = new Intent(getActivity(), LocationSettingsActivity.class);
 				Bundle bundle = new Bundle();
 
 				ContentValues instanceValues = new ContentValues();
-				instanceValues.putAll(INSTANCE_VALUES);
-				bundle.putParcelable("INSTANCE_VALUES", instanceValues);
+
 
 				intent.putExtras(bundle);
 				locationSettingsActivityResultLauncher.launch(intent);
+
+				 */
 			}
 		});
 	}
 
-	private void setSelectedLocation() {
-		//지정한 위치정보를 가져온다
-		locationViewModel.getLocation(INSTANCE_VALUES.getAsInteger(CalendarContract.Instances.CALENDAR_ID)
-				, INSTANCE_VALUES.getAsLong(CalendarContract.Instances.EVENT_ID), new CarrierMessagingService.ResultCallback<LocationDTO>() {
+	@Override
+	public void onDestroy() {
+		customFoodSettingsActivityResultLauncher.unregister();
+		gpsOnResultLauncher.unregister();
+		locationSettingsActivityResultLauncher.unregister();
+		permissionsResultLauncher.unregister();
+		super.onDestroy();
+	}
+
+	private void init() {
+		ContentValues contentValues = calendarViewModel.getValuesOfEvent(iGetEventValue.getEventId(),
+				CalendarContract.Events.EVENT_LOCATION);
+
+		//이벤트내에 위치값이 지정되지 않은 경우에는 지도 중심 좌표를 기준으로 설정
+		if (contentValues.containsKey(CalendarContract.Events.EVENT_LOCATION)) {
+			String simpleLocationName = contentValues.getAsString(CalendarContract.Events.EVENT_LOCATION);
+			if (!simpleLocationName.isEmpty()) {
+				setCriteriaIfHavntLocation();
+			} else {
+				loadSelectedDetailLocation();
+			}
+		} else {
+			setCriteriaIfHavntLocation();
+		}
+	}
+
+	private void setCriteriaIfHavntLocation() {
+		//기본/상세 위치가 지정되어 있지 않으면, 맵의 중심 좌표를 기준으로 하도록 설정해준다
+		foodCriteriaLocationInfoViewModel.insertByEventId(iGetEventValue.getCalendarId(), iGetEventValue.getEventId()
+				, CriteriaLocationType.TYPE_MAP_CENTER_POINT.value(), null,
+				new CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO>() {
 					@Override
-					public void onReceiveResult(@NonNull LocationDTO locationDTO) throws RemoteException {
-						//가져온 위치 정보를 저장
-						selectedLocationDTO = locationDTO;
-						//지정한 위치 정보 데이터를 가져왔으면 기준 위치 선택정보를 가져온다.
-						setCriteriaLocation();
+					public void onReceiveResult(@NonNull FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO) throws RemoteException {
+
+						requireActivity().runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								setCriteria(CriteriaLocationType.TYPE_MAP_CENTER_POINT);
+							}
+						});
 					}
 				});
 	}
 
-	private void setCriteriaLocation() {
-		foodCriteriaLocationInfoViewModel.selectByEventId(INSTANCE_VALUES.getAsInteger(CalendarContract.Instances.CALENDAR_ID)
-				, INSTANCE_VALUES.getAsLong(CalendarContract.Instances.EVENT_ID), new CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO>() {
+	private void setCriteriaIfHavntCriteria() {
+		//기준 정보가 지정되어 있지 않으면, 지정한 장소/주소를 기준으로 하도록 설정해준다
+		foodCriteriaLocationInfoViewModel.insertByEventId(iGetEventValue.getCalendarId(), iGetEventValue.getEventId()
+				, CriteriaLocationType.TYPE_SELECTED_LOCATION.value(), null,
+				new CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO>() {
 					@Override
 					public void onReceiveResult(@NonNull FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO) throws RemoteException {
-						if (foodCriteriaLocationInfoDTO == null) {
-							//기준 정보가 지정되어 있지 않으면, 지정한 장소/주소를 기준으로 하도록 설정해준다
-							foodCriteriaLocationInfoViewModel.insertByEventId(INSTANCE_VALUES.getAsInteger(CalendarContract.Instances.CALENDAR_ID)
-									, INSTANCE_VALUES.getAsLong(CalendarContract.Instances.EVENT_ID)
-									, FoodCriteriaLocationInfoDTO.TYPE_SELECTED_LOCATION, null, new CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO>() {
-										@Override
-										public void onReceiveResult(@NonNull FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO) throws RemoteException {
-											FoodsMenuListFragment.this.foodCriteriaLocationInfoDTO = foodCriteriaLocationInfoDTO;
-											getActivity().runOnUiThread(new Runnable() {
-												@Override
-												public void run() {
-													init();
-												}
-											});
-										}
-									});
+
+						requireActivity().runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								setCriteria(CriteriaLocationType.TYPE_SELECTED_LOCATION);
+							}
+						});
+					}
+				});
+	}
+
+	private void loadSelectedDetailLocation() {
+		//지정한 위치정보를 가져온다
+		locationViewModel.getLocation(iGetEventValue.getCalendarId(), iGetEventValue.getEventId(),
+				new CarrierMessagingService.ResultCallback<LocationDTO>() {
+					@Override
+					public void onReceiveResult(@NonNull LocationDTO locationDTO) throws RemoteException {
+						selectedLocationDTO = locationDTO;
+						if (selectedLocationDTO.isEmpty()) {
+							setCriteriaIfHavntLocation();
 						} else {
-							FoodsMenuListFragment.this.foodCriteriaLocationInfoDTO = foodCriteriaLocationInfoDTO;
-							getActivity().runOnUiThread(new Runnable() {
+							loadCriteriaLocation();
+						}
+					}
+				});
+	}
+
+	private void loadCriteriaLocation() {
+		foodCriteriaLocationInfoViewModel.selectByEventId(iGetEventValue.getCalendarId(), iGetEventValue.getEventId()
+				, new CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO>() {
+					@Override
+					public void onReceiveResult(@NonNull FoodCriteriaLocationInfoDTO result) throws RemoteException {
+						foodCriteriaLocationInfoDTO = result;
+
+						if (foodCriteriaLocationInfoDTO.isEmpty()) {
+							setCriteriaIfHavntCriteria();
+						} else {
+							requireActivity().runOnUiThread(new Runnable() {
 								@Override
 								public void run() {
-									init();
+									setCriteria(CriteriaLocationType.enumOf(result.getUsingType()));
 								}
 							});
 						}
 					}
 				});
-
-
 	}
-	
-	private void initL
 
-	private void init() {
-		switch (foodCriteriaLocationInfoDTO.getUsingType()) {
-			case FoodCriteriaLocationInfoDTO.TYPE_SELECTED_LOCATION: {
-				LocationDTO criteriaLocationDTO = null;
 
-				if (selectedLocationDTO == null) {
+	private void setCriteria(CriteriaLocationType criteriaLocationType) {
+		switch (criteriaLocationType) {
+			case TYPE_SELECTED_LOCATION: {
 
-				} else {
-					try {
-						criteriaLocationDTO = selectedLocationDTO.clone();
-					} catch (CloneNotSupportedException e) {
-						e.printStackTrace();
+				try {
+					criteriaLocationDTO = selectedLocationDTO.clone();
+				} catch (CloneNotSupportedException e) {
+					e.printStackTrace();
+				}
+
+				requireActivity().runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						if (criteriaLocationDTO.getLocationType() == LocationType.PLACE) {
+							binding.criteriaLocation.setText(criteriaLocationDTO.getPlaceName());
+						} else {
+							binding.criteriaLocation.setText(criteriaLocationDTO.getAddressName());
+						}
+						binding.progressBar.setVisibility(View.GONE);
 					}
-					CriteriaLocationRepository.setRestaurantCriteriaLocation(criteriaLocationDTO);
-				}
+				});
 
-				if (criteriaLocationDTO.getLocationType() == LocationType.PLACE) {
-					binding.criteriaLocation.setText(criteriaLocationDTO.getPlaceName());
-				} else {
-					binding.criteriaLocation.setText(criteriaLocationDTO.getAddressName());
-				}
-				binding.progressBar.setVisibility(View.GONE);
 				break;
 			}
 
-			case FoodCriteriaLocationInfoDTO.TYPE_CURRENT_LOCATION: {
+			case TYPE_MAP_CENTER_POINT: {
 				//현재 위치 파악
-				gps();
+				LatLng mapCenterPoint = iMapPoint.getMapCenterPoint();
+				LocalApiPlaceParameter localApiPlaceParameter = LocalParameterUtil.getCoordToAddressParameter(mapCenterPoint.latitude,
+						mapCenterPoint.longitude);
+				CoordToAddressUtil.coordToAddress(localApiPlaceParameter, new JsonDownloader<CoordToAddress>() {
+					@Override
+					public void onResponseSuccessful(CoordToAddress result) {
+						LocationDTO locationDTO = new LocationDTO();
+						CoordToAddressDocuments coordToAddressDocument = result.getCoordToAddressDocuments().get(0);
+
+						locationDTO.setAddress(coordToAddressDocument.getCoordToAddressAddress().getAddressName(), null,
+								coordToAddressDocument.getCoordToAddressAddress().getLatitude(),
+								coordToAddressDocument.getCoordToAddressAddress().getLongitude());
+
+						try {
+							criteriaLocationDTO = locationDTO.clone();
+						} catch (CloneNotSupportedException e) {
+							e.printStackTrace();
+						}
+
+						requireActivity().runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								binding.criteriaLocation.setText(criteriaLocationDTO.getAddressName());
+								binding.progressBar.setVisibility(View.GONE);
+							}
+						});
+					}
+
+					@Override
+					public void onResponseFailed(Exception e) {
+
+					}
+				});
 				break;
 			}
 
-			case FoodCriteriaLocationInfoDTO.TYPE_CUSTOM_SELECTED_LOCATION: {
+			case TYPE_CURRENT_LOCATION_GPS: {
+				gps();
+			}
+			break;
+
+			case TYPE_CUSTOM_SELECTED_LOCATION: {
 				//지정 위치 파악
 				foodCriteriaLocationSearchHistoryViewModel.select(foodCriteriaLocationInfoDTO.getHistoryLocationId(), new CarrierMessagingService.ResultCallback<FoodCriteriaLocationSearchHistoryDTO>() {
 					@Override
-					public void onReceiveResult(@NonNull FoodCriteriaLocationSearchHistoryDTO foodCriteriaLocationSearchHistoryDTO) throws RemoteException {
-						FoodsMenuListFragment.this.foodCriteriaLocationSearchHistoryDTO = foodCriteriaLocationSearchHistoryDTO;
-						LocationDTO criteriaLocationDTO = new LocationDTO();
-						criteriaLocationDTO.setAddressName(foodCriteriaLocationSearchHistoryDTO.getAddressName());
-						criteriaLocationDTO.setPlaceName(foodCriteriaLocationSearchHistoryDTO.getPlaceName());
-						criteriaLocationDTO.setLatitude(Double.parseDouble(foodCriteriaLocationSearchHistoryDTO.getLatitude()));
-						criteriaLocationDTO.setLongitude(Double.parseDouble(foodCriteriaLocationSearchHistoryDTO.getLongitude()));
-						criteriaLocationDTO.setLocationType(foodCriteriaLocationSearchHistoryDTO.getLocationType());
+					public void onReceiveResult(@NonNull FoodCriteriaLocationSearchHistoryDTO result) throws RemoteException {
+						foodCriteriaLocationSearchHistoryDTO = result;
+						LocationDTO locationDTO = new LocationDTO();
 
-						CriteriaLocationRepository.setRestaurantCriteriaLocation(criteriaLocationDTO);
+						locationDTO.setAddress(result.getAddressName(), null,
+								result.getLatitude(), result.getLongitude());
 
-						getActivity().runOnUiThread(new Runnable() {
+						try {
+							criteriaLocationDTO = locationDTO.clone();
+						} catch (CloneNotSupportedException e) {
+							e.printStackTrace();
+						}
+
+						requireActivity().runOnUiThread(new Runnable() {
 							@Override
 							public void run() {
 								if (criteriaLocationDTO.getLocationType() == LocationType.PLACE) {
@@ -266,9 +360,11 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 
 					}
 				});
-
 			}
 			break;
+
+			default:
+				assert (false) : "Unknown";
 		}
 	}
 
@@ -393,16 +489,15 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 					} else {
 						// 권한 거부됨
 						Toast.makeText(getContext(), R.string.message_needs_location_permission, Toast.LENGTH_SHORT).show();
-						foodCriteriaLocationInfoViewModel.updateByEventId(INSTANCE_VALUES.getAsInteger(CalendarContract.Instances.CALENDAR_ID)
-								, INSTANCE_VALUES.getAsLong(CalendarContract.Instances.EVENT_ID)
-								, FoodCriteriaLocationInfoDTO.TYPE_SELECTED_LOCATION, null, new CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO>() {
+						foodCriteriaLocationInfoViewModel.updateByEventId(iGetEventValue.getCalendarId(), iGetEventValue.getEventId()
+								, CriteriaLocationType.TYPE_SELECTED_LOCATION.value(), null, new CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO>() {
 									@Override
 									public void onReceiveResult(@NonNull FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO) throws RemoteException {
 										getActivity().runOnUiThread(new Runnable() {
 											@Override
 											public void run() {
 												binding.progressBar.setVisibility(View.GONE);
-												setCriteriaLocation();
+												loadCriteriaLocation();
 											}
 										});
 									}
@@ -412,36 +507,39 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 			});
 
 	private void onCatchedGps(Location location) {
-		LocationDTO criteriaLocationDTO = new LocationDTO();
-
-		criteriaLocationDTO.setLatitude(location.getLatitude());
-		criteriaLocationDTO.setLongitude(location.getLongitude());
-		criteriaLocationDTO.setLocationType(LocationType.ADDRESS);
-		setCurrentLocationData(criteriaLocationDTO);
+		LocationDTO locationDtoByGps = new LocationDTO();
+		locationDtoByGps.setAddress(null, null, String.valueOf(location.getLatitude()), String.valueOf(location.getLongitude()));
+		setCurrentLocationData(locationDtoByGps);
 	}
 
 
-	private void setCurrentLocationData(LocationDTO criteriaLocationDTO) {
-		CriteriaLocationRepository.setRestaurantCriteriaLocation(criteriaLocationDTO);
-
+	private void setCurrentLocationData(LocationDTO locationDtoByGps) {
 		//주소 reverse geocoding
-		ReverseGeoCodingParameter parameter = new ReverseGeoCodingParameter();
-		parameter.setAddrType(ReverseGeoCodingParameter.AddressType.ADM_EUP_MYEON_DONG);
-		parameter.setCoord(criteriaLocationDTO.getLatitude(), criteriaLocationDTO.getLongitude());
-
-		SgisAddress.reverseGeoCoding(parameter, new JsonDownloader<ReverseGeoCodingResponse>() {
+		LocalApiPlaceParameter localApiPlaceParameter =
+				LocalParameterUtil.getCoordToAddressParameter(Double.parseDouble(locationDtoByGps.getLatitude()),
+						Double.parseDouble(locationDtoByGps.getLongitude()));
+		CoordToAddressUtil.coordToAddress(localApiPlaceParameter, new JsonDownloader<CoordToAddress>() {
 			@Override
-			public void onResponseSuccessful(ReverseGeoCodingResponse result) {
+			public void onResponseSuccessful(CoordToAddress result) {
+				LocationDTO locationDTO = new LocationDTO();
+				CoordToAddressDocuments coordToAddressDocument = result.getCoordToAddressDocuments().get(0);
+
+				locationDTO.setAddress(coordToAddressDocument.getCoordToAddressAddress().getAddressName(), null,
+						coordToAddressDocument.getCoordToAddressAddress().getLatitude(),
+						coordToAddressDocument.getCoordToAddressAddress().getLongitude());
+
+				try {
+					criteriaLocationDTO = locationDTO.clone();
+				} catch (CloneNotSupportedException e) {
+					e.printStackTrace();
+				}
+
 				requireActivity().runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						criteriaLocationDTO.setAddressName(result.getResult().get(0).getFullAddress());
-						CriteriaLocationRepository.setRestaurantCriteriaLocation(criteriaLocationDTO);
-
 						binding.criteriaLocation.setText(criteriaLocationDTO.getAddressName());
 						binding.progressBar.setVisibility(View.GONE);
 						binding.categoryGridview.setVisibility(View.VISIBLE);
-
 					}
 				});
 			}
@@ -458,9 +556,8 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 		customFoodCategoryViewModel.select(new CarrierMessagingService.ResultCallback<List<CustomFoodMenuDTO>>() {
 			@Override
 			public void onReceiveResult(@NonNull List<CustomFoodMenuDTO> resultList) throws RemoteException {
-				FoodCategoryAdapter foodCategoryAdapter = new FoodCategoryAdapter(FoodsMenuListFragment.this, columnCount);
+				FoodCategoryAdapter foodCategoryAdapter = new FoodCategoryAdapter(FoodsMenuListFragment.this, COLUMN_COUNT);
 
-				Context context = getContext();
 				final String[] DEFAULT_FOOD_MENU_NAME_ARR = getResources().getStringArray(R.array.food_menu_list);
 				List<FoodCategoryItem> itemsList = new ArrayList<>();
 
@@ -477,7 +574,6 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 					}
 				}
 				itemsList.add(new FoodCategoryItem(getString(R.string.add_custom_food_menu), null, false));
-
 				foodCategoryAdapter.setItems(itemsList);
 
 				getActivity().runOnUiThread(new Runnable() {
@@ -502,7 +598,7 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 				@Override
 				public void onActivityResult(ActivityResult result) {
 					if (result.getResultCode() == RESULT_OK) {
-						setCriteriaLocation();
+						loadCriteriaLocation();
 					}
 				}
 			});
@@ -516,7 +612,8 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 			FragmentManager fragmentManager = getParentFragmentManager();
 			FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction().hide(this);
 
-			RestaurantListTabFragment restaurantListTabFragment = new RestaurantListTabFragment(e.getCategoryName(), foodMenuChipsViewController, bottomSheetController, favoriteLocationsListener);
+			RestaurantListTabFragment restaurantListTabFragment = new RestaurantListTabFragment(e.getCategoryName(),
+					foodMenuChipsViewController, bottomSheetController, favoriteLocationsListener, this);
 			fragmentTransaction.add(R.id.foods_main_fragment_container, restaurantListTabFragment, RestaurantListTabFragment.TAG).addToBackStack(null).commit();
 		}
 	}
@@ -536,4 +633,8 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 				}
 			});
 
+	@Override
+	public LocationDTO getCriteriaLocation() {
+		return criteriaLocationDTO;
+	}
 }

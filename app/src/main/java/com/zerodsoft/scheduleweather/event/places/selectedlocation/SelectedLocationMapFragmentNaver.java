@@ -92,7 +92,8 @@ public class SelectedLocationMapFragmentNaver extends NaverMapFragment
     {
         super.onMapReady(naverMap);
 
-        Marker marker = new Marker(new LatLng(selectedLocation.getLatitude(), selectedLocation.getLongitude()));
+        Marker marker = new Marker(new LatLng(Double.parseDouble(selectedLocation.getLatitude()),
+                Double.parseDouble(selectedLocation.getLongitude())));
         marker.setMap(naverMap);
         marker.setIcon(OverlayImage.fromResource(R.drawable.current_location_icon));
         marker.setForceShowIcon(true);

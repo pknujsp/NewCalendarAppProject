@@ -55,7 +55,7 @@ import com.zerodsoft.scheduleweather.common.interfaces.OnHiddenFragmentListener;
 import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.event.fragments.EventFragment;
-import com.zerodsoft.scheduleweather.event.foods.main.fragment.NewFoodsMainFragment;
+import com.zerodsoft.scheduleweather.event.foods.main.fragment.RestaurantMainTransactionFragment;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PlaceItemsGetter;
 import com.zerodsoft.scheduleweather.event.places.map.PlacesOfSelectedCategoriesFragment;
 import com.zerodsoft.scheduleweather.event.weather.fragment.WeatherItemFragment;
@@ -75,7 +75,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class NewInstanceMainFragment extends NaverMapFragment implements NewFoodsMainFragment.FoodMenuChipsViewController,
+public class NewInstanceMainFragment extends NaverMapFragment implements RestaurantMainTransactionFragment.FoodMenuChipsViewController,
 		PlacesOfSelectedCategoriesFragment.PlaceCategoryChipsViewController, DialogInterface.OnDismissListener
 		, IRefreshView {
 	public static final String TAG = "NewInstanceMainFragment";
@@ -198,8 +198,8 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
 			public void onStateChanged(@NonNull View bottomSheet, int newState) {
 				switch (newState) {
 					case BottomSheetBehavior.STATE_EXPANDED:
-						NewFoodsMainFragment newFoodsMainFragment = (NewFoodsMainFragment) getChildFragmentManager().findFragmentByTag(NewFoodsMainFragment.TAG);
-						getChildFragmentManager().beginTransaction().show(newFoodsMainFragment).addToBackStack(NewFoodsMainFragment.TAG).commit();
+						RestaurantMainTransactionFragment restaurantMainTransactionFragment = (RestaurantMainTransactionFragment) getChildFragmentManager().findFragmentByTag(RestaurantMainTransactionFragment.TAG);
+						getChildFragmentManager().beginTransaction().show(restaurantMainTransactionFragment).addToBackStack(RestaurantMainTransactionFragment.TAG).commit();
 						break;
 					case BottomSheetBehavior.STATE_COLLAPSED:
 						break;
@@ -354,7 +354,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
 			public void onClick(View view) {
 				//음식점
 				functionButton.callOnClick();
-				if (getChildFragmentManager().findFragmentByTag(NewFoodsMainFragment.TAG) == null) {
+				if (getChildFragmentManager().findFragmentByTag(RestaurantMainTransactionFragment.TAG) == null) {
 					addRestaurantFragmentIntoBottomSheet();
 				}
 				onCalledBottomSheet(BottomSheetBehavior.STATE_EXPANDED, bottomSheetBehaviorMap.get(BottomSheetType.RESTAURANT));
@@ -458,7 +458,8 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
 	}
 
 	private void createSelectedLocationMarker() {
-		LatLng latLng = new LatLng(selectedLocationDtoInEvent.getLatitude(), selectedLocationDtoInEvent.getLongitude());
+		LatLng latLng = new LatLng(Double.parseDouble(selectedLocationDtoInEvent.getLatitude()),
+				Double.parseDouble(selectedLocationDtoInEvent.getLongitude()));
 
 		final int markerSize = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, getResources().getDisplayMetrics());
 
@@ -553,11 +554,11 @@ public class NewInstanceMainFragment extends NaverMapFragment implements NewFood
 
 
 	private void addRestaurantFragmentIntoBottomSheet() {
-		NewFoodsMainFragment newFoodsMainFragment = new NewFoodsMainFragment(this, this
+		RestaurantMainTransactionFragment restaurantMainTransactionFragment = new RestaurantMainTransactionFragment(this, this, this
 				, this, this, CALENDAR_ID, INSTANCE_ID, EVENT_ID);
 		getChildFragmentManager().beginTransaction()
-				.add(bottomSheetViewMap.get(BottomSheetType.RESTAURANT).getChildAt(0).getId(), newFoodsMainFragment, NewFoodsMainFragment.TAG).hide(newFoodsMainFragment).commitNow();
-		bottomSheetFragmentMap.put(BottomSheetType.RESTAURANT, newFoodsMainFragment);
+				.add(bottomSheetViewMap.get(BottomSheetType.RESTAURANT).getChildAt(0).getId(), restaurantMainTransactionFragment, RestaurantMainTransactionFragment.TAG).hide(restaurantMainTransactionFragment).commitNow();
+		bottomSheetFragmentMap.put(BottomSheetType.RESTAURANT, restaurantMainTransactionFragment);
 	}
 
 	public void createPlaceCategoryListChips() {

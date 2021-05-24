@@ -1088,4 +1088,26 @@ public class CalendarProvider implements ICalendarProvider {
 			return new ContentValues();
 		}
 	}
+
+	@Override
+	public ContentValues getValuesOfEvent(long eventId, String... keys) {
+		if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
+			String selection = CalendarContract.Events._ID + " = ?";
+			String[] selectionArgs = {String.valueOf(eventId)};
+			Cursor cursor = context.getContentResolver().query(CalendarContract.Events.CONTENT_URI, keys, selection, selectionArgs, null);
+			ContentValues contentValues = new ContentValues();
+
+			while (cursor.moveToNext()) {
+				int index = 0;
+				for (String key : keys) {
+					contentValues.put(key, cursor.getString(index++));
+				}
+			}
+
+			cursor.close();
+			return contentValues;
+		} else {
+			return new ContentValues();
+		}
+	}
 }
