@@ -21,7 +21,7 @@ import com.bumptech.glide.Glide;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
-import com.zerodsoft.scheduleweather.common.interfaces.OnDbQueryListener;
+import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedFavoriteButtonListener;
 import com.zerodsoft.scheduleweather.navermap.callback.PlaceItemCallback;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.kakaoplace.KakaoPlaceJsonRoot;
@@ -131,14 +131,14 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
                 }
             });
 
-            onContainsRestaurantListener.contains(item.getId(), new OnDbQueryListener<FavoriteLocationDTO>()
+            onContainsRestaurantListener.contains(item.getId(), new DbQueryCallback<FavoriteLocationDTO>()
             {
                 @Override
-                public void onSuccessful(FavoriteLocationDTO result)
+                public void onResultSuccessful(FavoriteLocationDTO resultDto)
                 {
-                    if (result != null)
+                    if (resultDto != null)
                     {
-                        favoriteLocationDTO = result;
+                        favoriteLocationDTO = resultDto;
                         favoriteButton.setImageDrawable(favoriteEnabledDrawable);
                     } else
                     {
@@ -148,7 +148,7 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
                 }
 
                 @Override
-                public void onFailed(Exception e)
+                public void onResultNoData()
                 {
 
                 }
@@ -304,6 +304,6 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
 
     public interface OnContainsRestaurantListener
     {
-        void contains(String placeId, OnDbQueryListener<FavoriteLocationDTO> callback);
+        void contains(String placeId, DbQueryCallback<FavoriteLocationDTO> callback);
     }
 }

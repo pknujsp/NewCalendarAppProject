@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
+import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.VilageFcstParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.vilagefcstresponse.VilageFcstRoot;
 import com.zerodsoft.scheduleweather.room.dto.WeatherDataDTO;
@@ -30,19 +31,20 @@ public class VilageFcstProcessing extends WeatherDataProcessing<VilageFcstResult
 	@Override
 	public void getWeatherData(WeatherDataCallback<VilageFcstResult> weatherDataCallback) {
 		weatherDbRepository.getWeatherData(LATITUDE, LONGITUDE, WeatherDataDTO.VILAGE_FCST,
-				new CarrierMessagingService.ResultCallback<WeatherDataDTO>() {
+				new DbQueryCallback<WeatherDataDTO>() {
 					@Override
-					public void onReceiveResult(@NonNull WeatherDataDTO vilageFcstWeatherDataDTO) throws RemoteException {
-						if (vilageFcstWeatherDataDTO == null) {
-							refresh(weatherDataCallback);
-						} else {
-							Gson gson = new Gson();
-							VilageFcstRoot vilageFcstRoot = gson.fromJson(vilageFcstWeatherDataDTO.getJson(), VilageFcstRoot.class);
-							VilageFcstResult vilageFcstResult = new VilageFcstResult();
-							vilageFcstResult.setVilageFcstDataList(vilageFcstRoot.getResponse().getBody().getItems(), new Date(Long.parseLong(vilageFcstWeatherDataDTO.getDownloadedDate())));
+					public void onResultSuccessful(WeatherDataDTO vilageFcstResultDto) {
+						Gson gson = new Gson();
+						VilageFcstRoot vilageFcstRoot = gson.fromJson(vilageFcstResultDto.getJson(), VilageFcstRoot.class);
+						VilageFcstResult vilageFcstResult = new VilageFcstResult();
+						vilageFcstResult.setVilageFcstDataList(vilageFcstRoot.getResponse().getBody().getItems(), new Date(Long.parseLong(vilageFcstResultDto.getDownloadedDate())));
 
-							weatherDataCallback.isSuccessful(vilageFcstResult);
-						}
+						weatherDataCallback.isSuccessful(vilageFcstResult);
+					}
+
+					@Override
+					public void onResultNoData() {
+						refresh(weatherDataCallback);
 					}
 				});
 	}
@@ -72,33 +74,46 @@ public class VilageFcstProcessing extends WeatherDataProcessing<VilageFcstResult
 						vilageFcstWeatherDataDTO.setDownloadedDate(String.valueOf(downloadedDate.getTime()));
 
 						weatherDbRepository.contains(LATITUDE, LONGITUDE, WeatherDataDTO.VILAGE_FCST,
-								new CarrierMessagingService.ResultCallback<Boolean>() {
+								new DbQueryCallback<Boolean>() {
 									@Override
-									public void onReceiveResult(@NonNull Boolean isContains) throws RemoteException {
+									public void onResultSuccessful(Boolean isContains) {
 										if (isContains) {
 											weatherDbRepository.update(LATITUDE, LONGITUDE, WeatherDataDTO.VILAGE_FCST, result.toString()
-													, vilageFcstWeatherDataDTO.getDownloadedDate(), new CarrierMessagingService.ResultCallback<Boolean>() {
+													, vilageFcstWeatherDataDTO.getDownloadedDate(), new DbQueryCallback<Boolean>() {
 														@Override
-														public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException {
-															VilageFcstResult vilageFcstResult = new VilageFcstResult();
-															vilageFcstResult.setVilageFcstDataList(vilageFcstRoot.getResponse().getBody().getItems(), downloadedDate);
+														public void onResultSuccessful(Boolean resultDto) {
 
-															weatherDataCallback.isSuccessful(vilageFcstResult);
+														}
+
+														@Override
+														public void onResultNoData() {
+
 														}
 													});
 										} else {
-											weatherDbRepository.insert(vilageFcstWeatherDataDTO, new CarrierMessagingService.ResultCallback<WeatherDataDTO>() {
+											weatherDbRepository.insert(vilageFcstWeatherDataDTO, new DbQueryCallback<WeatherDataDTO>() {
 												@Override
-												public void onReceiveResult(@NonNull WeatherDataDTO weatherDataDTO) throws RemoteException {
-													VilageFcstResult vilageFcstResult = new VilageFcstResult();
-													vilageFcstResult.setVilageFcstDataList(vilageFcstRoot.getResponse().getBody().getItems(), downloadedDate);
+												public void onResultSuccessful(WeatherDataDTO resultDto) {
 
-													weatherDataCallback.isSuccessful(vilageFcstResult);
+												}
+
+												@Override
+												public void onResultNoData() {
+
 												}
 											});
 										}
 									}
+
+									@Override
+									public void onResultNoData() {
+
+									}
 								});
+						VilageFcstResult vilageFcstResult = new VilageFcstResult();
+						vilageFcstResult.setVilageFcstDataList(vilageFcstRoot.getResponse().getBody().getItems(), downloadedDate);
+
+						weatherDataCallback.isSuccessful(vilageFcstResult);
 					}
 
 					@Override

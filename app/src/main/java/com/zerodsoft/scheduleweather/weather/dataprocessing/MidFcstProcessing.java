@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 
 import com.google.gson.Gson;
 import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
+import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.MidLandFcstParameter;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.MidTaParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.commons.Header;
@@ -38,28 +39,34 @@ public class MidFcstProcessing extends WeatherDataProcessing<MidFcstResult> {
 	@Override
 	public void getWeatherData(WeatherDataCallback<MidFcstResult> weatherDataCallback) {
 		weatherDbRepository.getWeatherData(LATITUDE, LONGITUDE, WeatherDataDTO.MID_LAND_FCST,
-				new CarrierMessagingService.ResultCallback<WeatherDataDTO>() {
+				new DbQueryCallback<WeatherDataDTO>() {
 					@Override
-					public void onReceiveResult(@NonNull WeatherDataDTO midLandFcstWeatherDataDTO) throws RemoteException {
-						if (midLandFcstWeatherDataDTO == null) {
-							refresh(weatherDataCallback);
-						} else {
-							weatherDbRepository.getWeatherData(LATITUDE, LONGITUDE, WeatherDataDTO.MID_TA,
-									new CarrierMessagingService.ResultCallback<WeatherDataDTO>() {
-										@Override
-										public void onReceiveResult(@NonNull WeatherDataDTO midTaWeatherDataDTO) throws RemoteException {
-											Gson gson = new Gson();
-											MidLandFcstRoot midLandFcstRoot = gson.fromJson(midLandFcstWeatherDataDTO.getJson(), MidLandFcstRoot.class);
-											MidTaRoot midTaRoot = gson.fromJson(midTaWeatherDataDTO.getJson(), MidTaRoot.class);
+					public void onResultSuccessful(WeatherDataDTO midLandFcstResultDto) {
+						weatherDbRepository.getWeatherData(LATITUDE, LONGITUDE, WeatherDataDTO.MID_TA,
+								new DbQueryCallback<WeatherDataDTO>() {
+									@Override
+									public void onResultSuccessful(WeatherDataDTO midTaResultDto) {
+										Gson gson = new Gson();
+										MidLandFcstRoot midLandFcstRoot = gson.fromJson(midLandFcstResultDto.getJson(), MidLandFcstRoot.class);
+										MidTaRoot midTaRoot = gson.fromJson(midTaResultDto.getJson(), MidTaRoot.class);
 
-											MidFcstResult midFcstResult = new MidFcstResult();
-											midFcstResult.setMidFcstDataList(midLandFcstRoot.getResponse().getBody().getItems()
-													, midTaRoot.getResponse().getBody().getItems(), new Date(Long.parseLong(midTaWeatherDataDTO.getDownloadedDate())));
+										MidFcstResult midFcstResult = new MidFcstResult();
+										midFcstResult.setMidFcstDataList(midLandFcstRoot.getResponse().getBody().getItems()
+												, midTaRoot.getResponse().getBody().getItems(), new Date(Long.parseLong(midTaResultDto.getDownloadedDate())));
 
-											weatherDataCallback.isSuccessful(midFcstResult);
-										}
-									});
-						}
+										weatherDataCallback.isSuccessful(midFcstResult);
+									}
+
+									@Override
+									public void onResultNoData() {
+
+									}
+								});
+					}
+
+					@Override
+					public void onResultNoData() {
+						refresh(weatherDataCallback);
 					}
 				});
 
@@ -115,48 +122,79 @@ public class MidFcstProcessing extends WeatherDataProcessing<MidFcstResult> {
 					midTaWeatherDataDTO.setDownloadedDate(String.valueOf(downloadedDate.getTime()));
 
 					weatherDbRepository.contains(LATITUDE, LONGITUDE, WeatherDataDTO.MID_LAND_FCST,
-							new CarrierMessagingService.ResultCallback<Boolean>() {
+							new DbQueryCallback<Boolean>() {
 								@Override
-								public void onReceiveResult(@NonNull Boolean isContains) throws RemoteException {
+								public void onResultSuccessful(Boolean isContains) {
 									if (isContains) {
 										weatherDbRepository.update(LATITUDE, LONGITUDE, WeatherDataDTO.MID_LAND_FCST
-												, midLandFcstWeatherDataDTO.getJson(), midLandFcstWeatherDataDTO.getDownloadedDate(), new CarrierMessagingService.ResultCallback<Boolean>() {
+												, midLandFcstWeatherDataDTO.getJson(), midLandFcstWeatherDataDTO.getDownloadedDate(),
+												new DbQueryCallback<Boolean>() {
 													@Override
-													public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException {
+													public void onResultSuccessful(Boolean resultDto) {
+
+													}
+
+													@Override
+													public void onResultNoData() {
 
 													}
 												});
 									} else {
-										weatherDbRepository.insert(midLandFcstWeatherDataDTO, new CarrierMessagingService.ResultCallback<WeatherDataDTO>() {
+										weatherDbRepository.insert(midLandFcstWeatherDataDTO, new DbQueryCallback<WeatherDataDTO>() {
 											@Override
-											public void onReceiveResult(@NonNull WeatherDataDTO weatherDataDTO) throws RemoteException {
+											public void onResultSuccessful(WeatherDataDTO resultDto) {
+
+											}
+
+											@Override
+											public void onResultNoData() {
 
 											}
 										});
 									}
 								}
+
+								@Override
+								public void onResultNoData() {
+
+								}
 							});
 
 					weatherDbRepository.contains(LATITUDE, LONGITUDE, WeatherDataDTO.MID_TA,
-							new CarrierMessagingService.ResultCallback<Boolean>() {
+							new DbQueryCallback<Boolean>() {
 								@Override
-								public void onReceiveResult(@NonNull Boolean isContains) throws RemoteException {
+								public void onResultSuccessful(Boolean isContains) {
 									if (isContains) {
 										weatherDbRepository.update(LATITUDE, LONGITUDE, WeatherDataDTO.MID_TA
-												, midTaWeatherDataDTO.getJson(), midTaWeatherDataDTO.getDownloadedDate(), new CarrierMessagingService.ResultCallback<Boolean>() {
+												, midTaWeatherDataDTO.getJson(), midTaWeatherDataDTO.getDownloadedDate(), new DbQueryCallback<Boolean>() {
 													@Override
-													public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException {
+													public void onResultSuccessful(Boolean resultDto) {
+
+													}
+
+													@Override
+													public void onResultNoData() {
 
 													}
 												});
 									} else {
-										weatherDbRepository.insert(midTaWeatherDataDTO, new CarrierMessagingService.ResultCallback<WeatherDataDTO>() {
+										weatherDbRepository.insert(midTaWeatherDataDTO, new DbQueryCallback<WeatherDataDTO>() {
 											@Override
-											public void onReceiveResult(@NonNull WeatherDataDTO weatherDataDTO) throws RemoteException {
+											public void onResultSuccessful(WeatherDataDTO resultDto) {
+												
+											}
+
+											@Override
+											public void onResultNoData() {
 
 											}
 										});
 									}
+								}
+
+								@Override
+								public void onResultNoData() {
+
 								}
 							});
 

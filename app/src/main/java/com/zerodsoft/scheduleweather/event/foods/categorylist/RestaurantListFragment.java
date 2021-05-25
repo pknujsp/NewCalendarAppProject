@@ -20,13 +20,12 @@ import android.view.ViewGroup;
 
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
-import com.zerodsoft.scheduleweather.common.interfaces.OnDbQueryListener;
+import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.common.interfaces.OnProgressBarListener;
 import com.zerodsoft.scheduleweather.databinding.FragmentRestaurantListBinding;
 import com.zerodsoft.scheduleweather.event.foods.adapter.RestaurantListAdapter;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.IGetCriteriaLocation;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedFavoriteButtonListener;
-import com.zerodsoft.scheduleweather.event.foods.share.CriteriaLocationRepository;
 import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
 import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoFragment;
 import com.zerodsoft.scheduleweather.navermap.util.LocalParameterUtil;
@@ -228,7 +227,7 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 	}
 
 	@Override
-	public void contains(String placeId, OnDbQueryListener<FavoriteLocationDTO> callback) {
+	public void contains(String placeId, DbQueryCallback<FavoriteLocationDTO> callback) {
 		favoriteRestaurantDbQuery.contains(placeId, null, null
 				, null, new CarrierMessagingService.ResultCallback<FavoriteLocationDTO>() {
 					@Override
@@ -236,7 +235,7 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 						requireActivity().runOnUiThread(new Runnable() {
 							@Override
 							public void run() {
-								callback.onSuccessful(favoriteLocationDTO);
+								callback.onResultSuccessful(favoriteLocationDTO);
 							}
 						});
 					}

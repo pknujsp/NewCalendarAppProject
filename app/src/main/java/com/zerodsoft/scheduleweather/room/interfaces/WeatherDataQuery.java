@@ -1,28 +1,26 @@
 package com.zerodsoft.scheduleweather.room.interfaces;
 
-import android.service.carrier.CarrierMessagingService;
-
+import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.room.dto.WeatherDataDTO;
 
 import java.util.List;
 
-public interface WeatherDataQuery
-{
-    void insert(WeatherDataDTO weatherDataDTO, CarrierMessagingService.ResultCallback<WeatherDataDTO> callback);
+public interface WeatherDataQuery {
+	void insert(WeatherDataDTO weatherDataDTO, DbQueryCallback<WeatherDataDTO> callback);
 
-    void update(String latitude, String longitude, Integer dataType, String json, String downloadedDate, CarrierMessagingService.ResultCallback<Boolean> callback);
+	void update(String latitude, String longitude, Integer dataType, String json, String downloadedDate, DbQueryCallback<Boolean> callback);
 
-    void getWeatherDataList(String latitude, String longitude, CarrierMessagingService.ResultCallback<List<WeatherDataDTO>> callback);
+	void getWeatherDataList(String latitude, String longitude, DbQueryCallback<List<WeatherDataDTO>> callback);
 
-    void getWeatherData(String latitude, String longitude, Integer dataType, CarrierMessagingService.ResultCallback<WeatherDataDTO> callback);
+	void getWeatherData(String latitude, String longitude, Integer dataType, DbQueryCallback<WeatherDataDTO> callback);
 
-    void getDownloadedDateList(String latitude, String longitude, CarrierMessagingService.ResultCallback<List<WeatherDataDTO>> callback);
+	void getDownloadedDateList(String latitude, String longitude, DbQueryCallback<List<WeatherDataDTO>> callback);
 
-    void delete(String latitude, String longitude, Integer dataType, CarrierMessagingService.ResultCallback<Boolean> callback);
+	void delete(String latitude, String longitude, Integer dataType, DbQueryCallback<Boolean> callback);
 
-    void delete(String latitude, String longitude, CarrierMessagingService.ResultCallback<Boolean> callback);
+	void delete(String latitude, String longitude, DbQueryCallback<Boolean> callback);
 
-    void deleteAll(CarrierMessagingService.ResultCallback<Boolean> callback);
+	void deleteAll(DbQueryCallback<Boolean> callback);
 
-    void contains(String latitude, String longitude, Integer dataType, CarrierMessagingService.ResultCallback<Boolean> callback);
+	void contains(String latitude, String longitude, Integer dataType, DbQueryCallback<Boolean> callback);
 }

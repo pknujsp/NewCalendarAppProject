@@ -4,7 +4,6 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.RemoteException;
-import android.provider.CalendarContract;
 import android.service.carrier.CarrierMessagingService;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,7 +30,6 @@ import com.zerodsoft.scheduleweather.weather.repository.AirConditionDownloader;
 import com.zerodsoft.scheduleweather.weather.repository.WeatherDataDownloader;
 import com.zerodsoft.scheduleweather.weather.ultrasrtfcst.UltraSrtFcstFragment;
 import com.zerodsoft.scheduleweather.weather.ultrasrtncst.UltraSrtNcstFragment;
-import com.zerodsoft.scheduleweather.weather.viewmodel.WeatherDbViewModel;
 import com.zerodsoft.scheduleweather.weather.viewmodel.AreaCodeViewModel;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.utility.LonLat;
@@ -41,13 +39,16 @@ import com.zerodsoft.scheduleweather.weather.vilagefcst.VilageFcstFragment;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.TooManyListenersException;
 
-public class WeatherItemFragment extends BottomSheetDialogFragment implements OnDownloadedTimeListener {
-	public static final String TAG = "WeatherItemFragment";
+public class WeatherMainFragment extends BottomSheetDialogFragment implements OnDownloadedTimeListener {
+	public static final String TAG = "WeatherMainFragment";
+
+	private final int CALENDAR_ID;
+	private final long EVENT_ID;
+	private final int VIEW_HEIGHT;
 
 	private FragmentWeatherItemBinding binding;
-	private LocationDTO locationDTO;
+	private LocationDTO selectedLocationDto;
 
 	//초단기 실황
 	private UltraSrtNcstFragment ultraSrtNcstFragment;
@@ -63,11 +64,6 @@ public class WeatherItemFragment extends BottomSheetDialogFragment implements On
 	private AreaCodeViewModel areaCodeViewModel;
 	private LocationViewModel locationViewModel;
 	private WeatherAreaCodeDTO weatherAreaCode;
-	private WeatherDbViewModel weatherDbViewModel;
-
-	private final int CALENDAR_ID;
-	private final long EVENT_ID;
-	private final int VIEW_HEIGHT;
 
 	private String latitude;
 	private String longitude;
@@ -75,7 +71,7 @@ public class WeatherItemFragment extends BottomSheetDialogFragment implements On
 
 	private BottomSheetBehavior bottomSheetBehavior;
 
-	public WeatherItemFragment(int VIEW_HEIGHT, int CALENDAR_ID, long EVENT_ID) {
+	public WeatherMainFragment(int VIEW_HEIGHT, int CALENDAR_ID, long EVENT_ID) {
 		this.VIEW_HEIGHT = VIEW_HEIGHT;
 		this.CALENDAR_ID = CALENDAR_ID;
 		this.EVENT_ID = EVENT_ID;
@@ -138,7 +134,14 @@ public class WeatherItemFragment extends BottomSheetDialogFragment implements On
 		super.onViewCreated(view, savedInstanceState);
 		areaCodeViewModel = new ViewModelProvider(this).get(AreaCodeViewModel.class);
 		locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
-		weatherDbViewModel = new ViewModelProvider(this).get(WeatherDbViewModel.class);
+
+		binding.ultraSrtNcstDownloadedTime.setText("");
+		binding.ultraSrtFcstDownloadedTime.setText("");
+		binding.midLandFcstDownloadedTime.setText("");
+		binding.midTaDownloadedTime.setText("");
+		binding.airConditionDownloadedTime.setText("");
+		binding.vilageFcstDownloadedTime.setText("");
+
 
 		View bottomSheet = getDialog().findViewById(R.id.design_bottom_sheet);
 		bottomSheet.getLayoutParams().height = VIEW_HEIGHT;
@@ -169,62 +172,62 @@ public class WeatherItemFragment extends BottomSheetDialogFragment implements On
 
 		locationViewModel.getLocation(CALENDAR_ID, EVENT_ID, new CarrierMessagingService.ResultCallback<LocationDTO>() {
 			@Override
-			public void onReceiveResult(@NonNull LocationDTO selectedLocationDTO) throws RemoteException {
+			public void onReceiveResult(@NonNull LocationDTO resultDto) throws RemoteException {
 				getActivity().runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						LonLat lonLat = null;
-						double lat = 0, lon = 0;
+						selectedLocationDto = resultDto;
 
-						if (selectedLocationDTO != null) {
-							locationDTO = selectedLocationDTO;
-							lat = Double.parseDouble(selectedLocationDTO.getLongitude());
-							lon = Double.parseDouble(selectedLocationDTO.getLatitude());
-						} else {
-							lat = Double.parseDouble(latitude);
-							lon = Double.parseDouble(longitude);
-						}
-						lonLat = LonLatConverter.convertGrid(lon, lat);
+						final double lat = resultDto.isEmpty() ? Double.parseDouble(latitude) :
+								Double.parseDouble(resultDto.getLatitude());
+						final double lon = resultDto.isEmpty() ? Double.parseDouble(longitude) :
+								Double.parseDouble(resultDto.getLongitude());
+						final LonLat lonLat = LonLatConverter.convertGrid(lon, lat);
 
 						areaCodeViewModel.getAreaCodes(lonLat, new CarrierMessagingService.ResultCallback<List<WeatherAreaCodeDTO>>() {
 							@Override
 							public void onReceiveResult(@NonNull List<WeatherAreaCodeDTO> weatherAreaCodes) throws RemoteException {
-								if (weatherAreaCodes != null) {
-									List<LocationPoint> locationPoints = new LinkedList<>();
-									for (WeatherAreaCodeDTO weatherAreaCodeDTO : weatherAreaCodes) {
-										locationPoints.add(new LocationPoint(Double.parseDouble(weatherAreaCodeDTO.getLatitudeSecondsDivide100()), Double.parseDouble(weatherAreaCodeDTO.getLongitudeSecondsDivide100())));
-									}
+								List<LocationPoint> locationPoints = new LinkedList<>();
+								int index = 0;
 
-									int index = 0;
+								for (WeatherAreaCodeDTO weatherAreaCodeDTO : weatherAreaCodes) {
+									locationPoints.add(new LocationPoint(Double.parseDouble(weatherAreaCodeDTO.getLatitudeSecondsDivide100()), Double.parseDouble(weatherAreaCodeDTO.getLongitudeSecondsDivide100())));
+
 									double minDistance = Double.MAX_VALUE;
 									double distance = 0;
 									// 점 사이의 거리 계산
 									for (int i = 0; i < locationPoints.size(); i++) {
 										distance =
-												Math.sqrt(Math.pow(Double.parseDouble(selectedLocationDTO.getLongitude()) - locationPoints.get(i).longitude, 2)
-														+ Math.pow(Double.parseDouble(selectedLocationDTO.getLatitude()) - locationPoints.get(i).latitude, 2));
+												Math.sqrt(Math.pow(lon - locationPoints.get(i).longitude, 2)
+														+ Math.pow(lat - locationPoints.get(i).latitude, 2));
 										if (distance < minDistance) {
 											minDistance = distance;
 											index = i;
 										}
 									}
-									// regId설정하는 코드 작성
-									weatherAreaCode = weatherAreaCodes.get(index);
 
-									requireActivity().runOnUiThread(new Runnable() {
-										@Override
-										public void run() {
+								}
+
+								// regId설정하는 코드 작성
+								weatherAreaCode = weatherAreaCodes.get(index);
+
+								requireActivity().runOnUiThread(new Runnable() {
+									@Override
+									public void run() {
+										if (resultDto.isEmpty()) {
 											Toast.makeText(getContext(), hasSimpleLocation ?
 															R.string.msg_getting_weather_data_of_map_center_point_because_havnt_detail_location :
 															R.string.msg_getting_weather_data_of_map_center_point_because_havnt_simple_location,
 													Toast.LENGTH_SHORT).show();
-											setAddressName();
-											createFragments();
 										}
-									});
-								}
+										setAddressName();
+										createFragments();
+									}
+								});
 							}
 						});
+
+
 					}
 				});
 
@@ -241,9 +244,9 @@ public class WeatherItemFragment extends BottomSheetDialogFragment implements On
 		midFcstFragment = new MidFcstFragment(weatherAreaCode, this);
 
 		String lat, lon = null;
-		if (locationDTO == null) {
-			lat = String.valueOf(locationDTO.getLatitude());
-			lon = String.valueOf(locationDTO.getLongitude());
+		if (!selectedLocationDto.isEmpty()) {
+			lat = selectedLocationDto.getLatitude();
+			lon = selectedLocationDto.getLongitude();
 		} else {
 			lat = latitude;
 			lon = longitude;

@@ -35,6 +35,7 @@ import com.zerodsoft.scheduleweather.activity.preferences.custom.SearchBuildingR
 import com.zerodsoft.scheduleweather.activity.preferences.custom.TimeZonePreference;
 import com.zerodsoft.scheduleweather.activity.preferences.interfaces.IPreferenceFragment;
 import com.zerodsoft.scheduleweather.activity.preferences.interfaces.PreferenceListener;
+import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteLocationViewModel;
 import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
 import com.zerodsoft.scheduleweather.weather.viewmodel.WeatherDbViewModel;
@@ -42,491 +43,417 @@ import com.zerodsoft.scheduleweather.weather.viewmodel.WeatherDbViewModel;
 import java.text.DecimalFormat;
 import java.util.TimeZone;
 
-public class SettingsFragment extends PreferenceFragmentCompat implements PreferenceListener, IPreferenceFragment
-{
-    private SharedPreferences preferences;
-    private OnBackPressedCallback onBackPressedCallback;
+public class SettingsFragment extends PreferenceFragmentCompat implements PreferenceListener, IPreferenceFragment {
+	private SharedPreferences preferences;
+	private OnBackPressedCallback onBackPressedCallback;
 
-    private SwitchPreference useDefaultTimeZoneSwitchPreference;
-    private TimeZonePreference customTimeZonePreference;
-    private SwitchPreference weekOfYearSwitchPreference;
-    private SwitchPreference showCanceledInstanceSwitchPreference;
-    private Preference calendarColorListPreference;
-    private SwitchPreference hourSystemSwitchPreference;
+	private SwitchPreference useDefaultTimeZoneSwitchPreference;
+	private TimeZonePreference customTimeZonePreference;
+	private SwitchPreference weekOfYearSwitchPreference;
+	private SwitchPreference showCanceledInstanceSwitchPreference;
+	private Preference calendarColorListPreference;
+	private SwitchPreference hourSystemSwitchPreference;
 
-    private RadiusPreference searchMapCategoryRangeRadiusPreference;
-    private SearchBuildingRangeRadiusPreference searchBuildingRangeRadiusPreference;
-    private Preference placesCategoryPreference;
-    private Preference customFoodPreference;
-    private Preference resetAppDbPreference;
+	private RadiusPreference searchMapCategoryRangeRadiusPreference;
+	private SearchBuildingRangeRadiusPreference searchBuildingRangeRadiusPreference;
+	private Preference placesCategoryPreference;
+	private Preference customFoodPreference;
+	private Preference resetAppDbPreference;
 
-    private FavoriteLocationViewModel favoriteLocationViewModel;
-    private WeatherDbViewModel weatherDbViewModel;
+	private FavoriteLocationViewModel favoriteLocationViewModel;
+	private WeatherDbViewModel weatherDbViewModel;
 
-    @Override
-    public void onCreatePreferences(Bundle savedInstanceState, String rootKey)
-    {
-        setPreferencesFromResource(R.xml.app_settings_main_preference, rootKey);
+	@Override
+	public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
+		setPreferencesFromResource(R.xml.app_settings_main_preference, rootKey);
 
-        preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
-        preferences.registerOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener);
+		preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+		preferences.registerOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener);
 
-        useDefaultTimeZoneSwitchPreference = findPreference(getString(R.string.preference_key_using_timezone_of_device));
-        weekOfYearSwitchPreference = findPreference(getString(R.string.preference_key_show_week_of_year));
-        showCanceledInstanceSwitchPreference = findPreference(getString(R.string.preference_key_show_canceled_instances));
-        hourSystemSwitchPreference = findPreference(getString(R.string.preference_key_using_24_hour_system));
-        calendarColorListPreference = findPreference(getString(R.string.preference_key_calendar_color));
-        placesCategoryPreference = findPreference(getString(R.string.preference_key_places_category));
-        customFoodPreference = findPreference(getString(R.string.preference_key_custom_food_menu));
-        resetAppDbPreference = findPreference(getString(R.string.preference_key_reset_app_db_data));
+		useDefaultTimeZoneSwitchPreference = findPreference(getString(R.string.preference_key_using_timezone_of_device));
+		weekOfYearSwitchPreference = findPreference(getString(R.string.preference_key_show_week_of_year));
+		showCanceledInstanceSwitchPreference = findPreference(getString(R.string.preference_key_show_canceled_instances));
+		hourSystemSwitchPreference = findPreference(getString(R.string.preference_key_using_24_hour_system));
+		calendarColorListPreference = findPreference(getString(R.string.preference_key_calendar_color));
+		placesCategoryPreference = findPreference(getString(R.string.preference_key_places_category));
+		customFoodPreference = findPreference(getString(R.string.preference_key_custom_food_menu));
+		resetAppDbPreference = findPreference(getString(R.string.preference_key_reset_app_db_data));
 
-        initPreference();
-        initValue();
+		initPreference();
+		initValue();
 
-        useDefaultTimeZoneSwitchPreference.setOnPreferenceChangeListener(preferenceChangeListener);
-        weekOfYearSwitchPreference.setOnPreferenceChangeListener(preferenceChangeListener);
-        showCanceledInstanceSwitchPreference.setOnPreferenceChangeListener(preferenceChangeListener);
-        hourSystemSwitchPreference.setOnPreferenceChangeListener(preferenceChangeListener);
+		useDefaultTimeZoneSwitchPreference.setOnPreferenceChangeListener(preferenceChangeListener);
+		weekOfYearSwitchPreference.setOnPreferenceChangeListener(preferenceChangeListener);
+		showCanceledInstanceSwitchPreference.setOnPreferenceChangeListener(preferenceChangeListener);
+		hourSystemSwitchPreference.setOnPreferenceChangeListener(preferenceChangeListener);
 
-        useDefaultTimeZoneSwitchPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener()
-        {
-            @Override
-            public boolean onPreferenceClick(Preference preference)
-            {
-                if (useDefaultTimeZoneSwitchPreference.isChecked())
-                {
-                    customTimeZonePreference.setEnabled(false);
-                } else
-                {
-                    customTimeZonePreference.setEnabled(true);
-                }
-                return true;
-            }
-        });
+		useDefaultTimeZoneSwitchPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+			@Override
+			public boolean onPreferenceClick(Preference preference) {
+				if (useDefaultTimeZoneSwitchPreference.isChecked()) {
+					customTimeZonePreference.setEnabled(false);
+				} else {
+					customTimeZonePreference.setEnabled(true);
+				}
+				return true;
+			}
+		});
 
-        placesCategoryPreference.setIntent(new Intent(getActivity(), PlaceCategoryActivity.class));
+		placesCategoryPreference.setIntent(new Intent(getActivity(), PlaceCategoryActivity.class));
 
-        resetAppDbPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener()
-        {
-            @Override
-            public boolean onPreferenceClick(Preference preference)
-            {
-                CharSequence[] resetArr = getResources().getTextArray(R.array.reset_app_db_arr);
-                //날씨, 주소/장소 즐겨찾기, 음식점 즐겨찾기
+		resetAppDbPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+			@Override
+			public boolean onPreferenceClick(Preference preference) {
+				CharSequence[] resetArr = getResources().getTextArray(R.array.reset_app_db_arr);
+				//날씨, 주소/장소 즐겨찾기, 음식점 즐겨찾기
 
-                new MaterialAlertDialogBuilder(requireActivity())
-                        .setTitle(R.string.preference_title_reset_app_db_data)
-                        .setItems(resetArr, new DialogInterface.OnClickListener()
-                        {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which)
-                            {
-                                switch (which)
-                                {
-                                    case 0:
-                                    {
-                                        weatherDbViewModel.deleteAll(new CarrierMessagingService.ResultCallback<Boolean>()
-                                        {
-                                            @Override
-                                            public void onReceiveResult(@NonNull Boolean result) throws RemoteException
-                                            {
-                                                requireActivity().runOnUiThread(new Runnable()
-                                                {
-                                                    @Override
-                                                    public void run()
-                                                    {
-                                                        Toast.makeText(getContext(), R.string.deleted_all_weather_data, Toast.LENGTH_SHORT).show();
-                                                    }
-                                                });
-                                            }
-                                        });
-                                        break;
-                                    }
+				new MaterialAlertDialogBuilder(requireActivity())
+						.setTitle(R.string.preference_title_reset_app_db_data)
+						.setItems(resetArr, new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog, int which) {
+								switch (which) {
+									case 0: {
+										weatherDbViewModel.deleteAll(new DbQueryCallback<Boolean>() {
+											@Override
+											public void onResultSuccessful(Boolean resultDto) {
+												requireActivity().runOnUiThread(new Runnable() {
+													@Override
+													public void run() {
+														Toast.makeText(getContext(), R.string.deleted_all_weather_data, Toast.LENGTH_SHORT).show();
+													}
+												});
+											}
 
-                                    case 1:
-                                    {
-                                        favoriteLocationViewModel.deleteAll(FavoriteLocationDTO.ADDRESS, new CarrierMessagingService.ResultCallback<Boolean>()
-                                        {
-                                            @Override
-                                            public void onReceiveResult(@NonNull Boolean result) throws RemoteException
-                                            {
-                                                favoriteLocationViewModel.deleteAll(FavoriteLocationDTO.PLACE, new CarrierMessagingService.ResultCallback<Boolean>()
-                                                {
-                                                    @Override
-                                                    public void onReceiveResult(@NonNull Boolean result) throws RemoteException
-                                                    {
-                                                        requireActivity().runOnUiThread(new Runnable()
-                                                        {
-                                                            @Override
-                                                            public void run()
-                                                            {
-                                                                Toast.makeText(getContext(), R.string.deleted_all_favorite_locations, Toast.LENGTH_SHORT).show();
-                                                            }
-                                                        });
-                                                    }
-                                                });
-                                            }
-                                        });
-                                        break;
-                                    }
+											@Override
+											public void onResultNoData() {
 
-                                    case 2:
-                                    {
-                                        favoriteLocationViewModel.deleteAll(FavoriteLocationDTO.RESTAURANT, new CarrierMessagingService.ResultCallback<Boolean>()
-                                        {
-                                            @Override
-                                            public void onReceiveResult(@NonNull Boolean result) throws RemoteException
-                                            {
-                                                requireActivity().runOnUiThread(new Runnable()
-                                                {
-                                                    @Override
-                                                    public void run()
-                                                    {
-                                                        Toast.makeText(getContext(), R.string.deleted_all_favorite_restaurants, Toast.LENGTH_SHORT).show();
-                                                    }
-                                                });
-                                            }
-                                        });
-                                        break;
-                                    }
-                                }
-                                
-                            }
-                        }).create().show();
-                return true;
-            }
-        });
-    }
+											}
+										});
+										break;
+									}
 
-    @Override
-    public void onAttach(@NonNull Context context)
-    {
-        super.onAttach(context);
-        onBackPressedCallback = new OnBackPressedCallback(true)
-        {
-            @Override
-            public void handleOnBackPressed()
-            {
-                getActivity().finish();
-                onBackPressedCallback.remove();
-            }
-        };
-        requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
-    }
+									case 1: {
+										favoriteLocationViewModel.deleteAll(FavoriteLocationDTO.ADDRESS, new CarrierMessagingService.ResultCallback<Boolean>() {
+											@Override
+											public void onReceiveResult(@NonNull Boolean result) throws RemoteException {
+												favoriteLocationViewModel.deleteAll(FavoriteLocationDTO.PLACE, new CarrierMessagingService.ResultCallback<Boolean>() {
+													@Override
+													public void onReceiveResult(@NonNull Boolean result) throws RemoteException {
+														requireActivity().runOnUiThread(new Runnable() {
+															@Override
+															public void run() {
+																Toast.makeText(getContext(), R.string.deleted_all_favorite_locations, Toast.LENGTH_SHORT).show();
+															}
+														});
+													}
+												});
+											}
+										});
+										break;
+									}
 
-    private final SharedPreferences.OnSharedPreferenceChangeListener onSharedPreferenceChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener()
-    {
-        @Override
-        public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key)
-        {
-            //값 변경완료시 호출됨
-            // 범위
+									case 2: {
+										favoriteLocationViewModel.deleteAll(FavoriteLocationDTO.RESTAURANT, new CarrierMessagingService.ResultCallback<Boolean>() {
+											@Override
+											public void onReceiveResult(@NonNull Boolean result) throws RemoteException {
+												requireActivity().runOnUiThread(new Runnable() {
+													@Override
+													public void run() {
+														Toast.makeText(getContext(), R.string.deleted_all_favorite_restaurants, Toast.LENGTH_SHORT).show();
+													}
+												});
+											}
+										});
+										break;
+									}
+								}
 
-        }
-    };
+							}
+						}).create().show();
+				return true;
+			}
+		});
+	}
 
-    private void initPreference()
-    {
-        //커스텀 시간대
-        customTimeZonePreference = new TimeZonePreference(getContext());
-        customTimeZonePreference.setKey(getString(R.string.preference_key_custom_timezone));
-        customTimeZonePreference.setSummary(R.string.preference_summary_custom_timezone);
-        customTimeZonePreference.setTitle(R.string.preference_title_custom_timezone);
-        customTimeZonePreference.setWidgetLayoutResource(R.layout.custom_preference_layout);
+	@Override
+	public void onAttach(@NonNull Context context) {
+		super.onAttach(context);
+		onBackPressedCallback = new OnBackPressedCallback(true) {
+			@Override
+			public void handleOnBackPressed() {
+				getActivity().finish();
+				onBackPressedCallback.remove();
+			}
+		};
+		requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
+	}
 
-        customTimeZonePreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener()
-        {
-            @Override
-            public boolean onPreferenceClick(Preference preference)
-            {
-                getParentFragmentManager().beginTransaction().replace(R.id.settings_fragment_container, new SettingsTimeZoneFragment(SettingsFragment.this))
-                        .addToBackStack(null).commit();
-                ((SettingsActivity) getActivity()).getSupportActionBar().setTitle(getString(R.string.preference_title_custom_timezone));
-                return true;
-            }
-        });
+	private final SharedPreferences.OnSharedPreferenceChangeListener onSharedPreferenceChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+		@Override
+		public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+			//값 변경완료시 호출됨
+			// 범위
 
-        ((PreferenceCategory) getPreferenceManager().findPreference(getString(R.string.preference_calendar_category_title)))
-                .addPreference(customTimeZonePreference);
+		}
+	};
 
-        //카테고리 검색범위 반지름
-        searchMapCategoryRangeRadiusPreference = new RadiusPreference(getContext());
-        searchMapCategoryRangeRadiusPreference.setKey(getString(R.string.preference_key_radius_range));
-        searchMapCategoryRangeRadiusPreference.setSummary(R.string.preference_summary_radius_range);
-        searchMapCategoryRangeRadiusPreference.setTitle(R.string.preference_title_radius_range);
-        searchMapCategoryRangeRadiusPreference.setWidgetLayoutResource(R.layout.custom_preference_layout);
-        searchMapCategoryRangeRadiusPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener()
-        {
-            @Override
-            public boolean onPreferenceClick(Preference preference)
-            {
-                LinearLayout linearLayout = new LinearLayout(getContext());
-                linearLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-                linearLayout.setOrientation(LinearLayout.HORIZONTAL);
+	private void initPreference() {
+		//커스텀 시간대
+		customTimeZonePreference = new TimeZonePreference(getContext());
+		customTimeZonePreference.setKey(getString(R.string.preference_key_custom_timezone));
+		customTimeZonePreference.setSummary(R.string.preference_summary_custom_timezone);
+		customTimeZonePreference.setTitle(R.string.preference_title_custom_timezone);
+		customTimeZonePreference.setWidgetLayoutResource(R.layout.custom_preference_layout);
 
-                Slider slider = new Slider(getContext());
-                LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT);
-                layoutParams.gravity = Gravity.CENTER_VERTICAL;
-                layoutParams.weight = 1;
+		customTimeZonePreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+			@Override
+			public boolean onPreferenceClick(Preference preference) {
+				getParentFragmentManager().beginTransaction().replace(R.id.settings_fragment_container, new SettingsTimeZoneFragment(SettingsFragment.this))
+						.addToBackStack(null).commit();
+				((SettingsActivity) getActivity()).getSupportActionBar().setTitle(getString(R.string.preference_title_custom_timezone));
+				return true;
+			}
+		});
 
-                int margin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32f, getResources().getDisplayMetrics());
+		((PreferenceCategory) getPreferenceManager().findPreference(getString(R.string.preference_calendar_category_title)))
+				.addPreference(customTimeZonePreference);
 
-                layoutParams.topMargin = margin;
-                layoutParams.bottomMargin = margin;
+		//카테고리 검색범위 반지름
+		searchMapCategoryRangeRadiusPreference = new RadiusPreference(getContext());
+		searchMapCategoryRangeRadiusPreference.setKey(getString(R.string.preference_key_radius_range));
+		searchMapCategoryRangeRadiusPreference.setSummary(R.string.preference_summary_radius_range);
+		searchMapCategoryRangeRadiusPreference.setTitle(R.string.preference_title_radius_range);
+		searchMapCategoryRangeRadiusPreference.setWidgetLayoutResource(R.layout.custom_preference_layout);
+		searchMapCategoryRangeRadiusPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+			@Override
+			public boolean onPreferenceClick(Preference preference) {
+				LinearLayout linearLayout = new LinearLayout(getContext());
+				linearLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+				linearLayout.setOrientation(LinearLayout.HORIZONTAL);
 
-                slider.setLayoutParams(layoutParams);
-                DecimalFormat decimalFormat = new DecimalFormat("#.#");
-                float value = Math.round((Float.parseFloat(App.getPreference_key_radius_range()) / 1000f) * 10) / 10f;
-                slider.setValue(Float.parseFloat(decimalFormat.format(value)));
-                slider.setValueFrom(0.1f);
-                slider.setValueTo(20.0f);
-                slider.setStepSize(0.1f);
+				Slider slider = new Slider(getContext());
+				LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT);
+				layoutParams.gravity = Gravity.CENTER_VERTICAL;
+				layoutParams.weight = 1;
 
-                linearLayout.addView(slider);
+				int margin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32f, getResources().getDisplayMetrics());
 
-                new MaterialAlertDialogBuilder(getActivity()).setView(linearLayout)
-                        .setPositiveButton(R.string.check, new DialogInterface.OnClickListener()
-                        {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i)
-                            {
-                                String value = String.valueOf((int) (slider.getValue() * 1000));
-                                searchMapCategoryRangeRadiusPreference.callChangeListener(value);
-                                dialogInterface.dismiss();
-                            }
-                        })
-                        .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener()
-                        {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i)
-                            {
-                                dialogInterface.dismiss();
-                            }
-                        }).create().show();
-                return true;
-            }
-        });
+				layoutParams.topMargin = margin;
+				layoutParams.bottomMargin = margin;
 
-        searchMapCategoryRangeRadiusPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener()
-        {
-            @Override
-            public boolean onPreferenceChange(Preference preference, Object newValue)
-            {
-                App.setPreference_key_radius_range((String) newValue);
-                searchMapCategoryRangeRadiusPreference.setValue();
-                return true;
-            }
-        });
+				slider.setLayoutParams(layoutParams);
+				DecimalFormat decimalFormat = new DecimalFormat("#.#");
+				float value = Math.round((Float.parseFloat(App.getPreference_key_radius_range()) / 1000f) * 10) / 10f;
+				slider.setValue(Float.parseFloat(decimalFormat.format(value)));
+				slider.setValueFrom(0.1f);
+				slider.setValueTo(20.0f);
+				slider.setStepSize(0.1f);
 
-        ((PreferenceCategory) getPreferenceManager().findPreference(getString(R.string.preference_place_category_title)))
-                .addPreference(searchMapCategoryRangeRadiusPreference);
+				linearLayout.addView(slider);
 
-        //빌딩 검색범위 반지름
-        searchBuildingRangeRadiusPreference = new SearchBuildingRangeRadiusPreference(getContext());
-        searchBuildingRangeRadiusPreference.setKey(getString(R.string.preference_key_range_meter_for_search_buildings));
-        searchBuildingRangeRadiusPreference.setSummary(R.string.preference_summary_range_meter_for_search_buildings);
-        searchBuildingRangeRadiusPreference.setTitle(R.string.preference_title_range_meter_for_search_buildings);
-        searchBuildingRangeRadiusPreference.setWidgetLayoutResource(R.layout.custom_preference_layout);
-        searchBuildingRangeRadiusPreference.setDialogTitle(R.string.preference_message_range_meter_for_search_buildings);
+				new MaterialAlertDialogBuilder(getActivity()).setView(linearLayout)
+						.setPositiveButton(R.string.check, new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialogInterface, int i) {
+								String value = String.valueOf((int) (slider.getValue() * 1000));
+								searchMapCategoryRangeRadiusPreference.callChangeListener(value);
+								dialogInterface.dismiss();
+							}
+						})
+						.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialogInterface, int i) {
+								dialogInterface.dismiss();
+							}
+						}).create().show();
+				return true;
+			}
+		});
 
-        ((PreferenceCategory) getPreferenceManager().findPreference(getString(R.string.preference_place_category_title)))
-                .addPreference(searchBuildingRangeRadiusPreference);
+		searchMapCategoryRangeRadiusPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+			@Override
+			public boolean onPreferenceChange(Preference preference, Object newValue) {
+				App.setPreference_key_radius_range((String) newValue);
+				searchMapCategoryRangeRadiusPreference.setValue();
+				return true;
+			}
+		});
 
-        searchBuildingRangeRadiusPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener()
-        {
-            @Override
-            public boolean onPreferenceChange(Preference preference, Object newValue)
-            {
-                int radius = 0;
-                try
-                {
-                    radius = Integer.parseInt((String) newValue);
-                } catch (NumberFormatException e)
-                {
-                    Toast.makeText(getActivity(), "50~500 사이의 숫자를 입력해주세요", Toast.LENGTH_SHORT).show();
-                    return false;
-                }
+		((PreferenceCategory) getPreferenceManager().findPreference(getString(R.string.preference_place_category_title)))
+				.addPreference(searchMapCategoryRangeRadiusPreference);
 
-                if (radius >= 50 && radius <= 500)
-                {
-                    App.setPreference_key_range_meter_for_search_buildings((String) newValue);
-                    searchBuildingRangeRadiusPreference.setValue();
-                    return true;
-                } else
-                {
-                    Toast.makeText(getActivity(), "50~500 사이로 입력하세요", Toast.LENGTH_SHORT).show();
-                    return false;
-                }
-            }
-        });
-    }
+		//빌딩 검색범위 반지름
+		searchBuildingRangeRadiusPreference = new SearchBuildingRangeRadiusPreference(getContext());
+		searchBuildingRangeRadiusPreference.setKey(getString(R.string.preference_key_range_meter_for_search_buildings));
+		searchBuildingRangeRadiusPreference.setSummary(R.string.preference_summary_range_meter_for_search_buildings);
+		searchBuildingRangeRadiusPreference.setTitle(R.string.preference_title_range_meter_for_search_buildings);
+		searchBuildingRangeRadiusPreference.setWidgetLayoutResource(R.layout.custom_preference_layout);
+		searchBuildingRangeRadiusPreference.setDialogTitle(R.string.preference_message_range_meter_for_search_buildings);
 
-    private final Preference.OnPreferenceChangeListener preferenceChangeListener = new Preference.OnPreferenceChangeListener()
-    {
-        @Override
-        public boolean onPreferenceChange(Preference preference, Object newValue)
-        {
-            //주차
-            if (preference.getKey().equals(weekOfYearSwitchPreference.getKey()))
-            {
-                boolean value = (Boolean) newValue;
-                if (value != weekOfYearSwitchPreference.isChecked())
-                {
-                    App.setPreference_key_show_week_of_year(value);
-                    return true;
-                } else
-                {
-                    return false;
-                }
-            }
+		((PreferenceCategory) getPreferenceManager().findPreference(getString(R.string.preference_place_category_title)))
+				.addPreference(searchBuildingRangeRadiusPreference);
 
-            // 기기 기본 시간 사용
-            else if (preference.getKey().equals(useDefaultTimeZoneSwitchPreference.getKey()))
-            {
-                boolean value = (Boolean) newValue;
+		searchBuildingRangeRadiusPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+			@Override
+			public boolean onPreferenceChange(Preference preference, Object newValue) {
+				int radius = 0;
+				try {
+					radius = Integer.parseInt((String) newValue);
+				} catch (NumberFormatException e) {
+					Toast.makeText(getActivity(), "50~500 사이의 숫자를 입력해주세요", Toast.LENGTH_SHORT).show();
+					return false;
+				}
 
-                if (value != useDefaultTimeZoneSwitchPreference.isChecked())
-                {
-                    App.setPreference_key_using_timezone_of_device(value);
-                    return true;
-                } else
-                {
-                    return false;
-                }
-            }
+				if (radius >= 50 && radius <= 500) {
+					App.setPreference_key_range_meter_for_search_buildings((String) newValue);
+					searchBuildingRangeRadiusPreference.setValue();
+					return true;
+				} else {
+					Toast.makeText(getActivity(), "50~500 사이로 입력하세요", Toast.LENGTH_SHORT).show();
+					return false;
+				}
+			}
+		});
+	}
 
-            // 거절한 일정 표시
-            else if (preference.getKey().equals(showCanceledInstanceSwitchPreference.getKey()))
-            {
-                boolean value = (Boolean) newValue;
+	private final Preference.OnPreferenceChangeListener preferenceChangeListener = new Preference.OnPreferenceChangeListener() {
+		@Override
+		public boolean onPreferenceChange(Preference preference, Object newValue) {
+			//주차
+			if (preference.getKey().equals(weekOfYearSwitchPreference.getKey())) {
+				boolean value = (Boolean) newValue;
+				if (value != weekOfYearSwitchPreference.isChecked()) {
+					App.setPreference_key_show_week_of_year(value);
+					return true;
+				} else {
+					return false;
+				}
+			}
 
-                if (value != showCanceledInstanceSwitchPreference.isChecked())
-                {
-                    App.setPreference_key_show_canceled_instances(value);
-                    return true;
-                } else
-                {
-                    return false;
-                }
-            }
+			// 기기 기본 시간 사용
+			else if (preference.getKey().equals(useDefaultTimeZoneSwitchPreference.getKey())) {
+				boolean value = (Boolean) newValue;
 
-            // 시간제
-            else if (preference.getKey().equals(hourSystemSwitchPreference.getKey()))
-            {
-                boolean value = (Boolean) newValue;
+				if (value != useDefaultTimeZoneSwitchPreference.isChecked()) {
+					App.setPreference_key_using_timezone_of_device(value);
+					return true;
+				} else {
+					return false;
+				}
+			}
 
-                if (value != hourSystemSwitchPreference.isChecked())
-                {
-                    App.setPreference_key_settings_hour_system(value);
-                    return true;
-                } else
-                {
-                    return false;
-                }
-            }
-            return false;
-        }
-    };
+			// 거절한 일정 표시
+			else if (preference.getKey().equals(showCanceledInstanceSwitchPreference.getKey())) {
+				boolean value = (Boolean) newValue;
 
-    private void initValue()
-    {
-        // 사용하지 않더라도 커스텀 시간대는 설정해놓는다.
-        String customTimeZoneId = preferences.getString(getString(R.string.preference_key_custom_timezone), "");
-        TimeZone timeZone = TimeZone.getTimeZone(customTimeZoneId);
-        customTimeZonePreference.setTimeZone(timeZone);
+				if (value != showCanceledInstanceSwitchPreference.isChecked()) {
+					App.setPreference_key_show_canceled_instances(value);
+					return true;
+				} else {
+					return false;
+				}
+			}
 
-        //기기 기본 시간대 사용 여부
-        boolean usingDeviceTimeZone = preferences.getBoolean(getString(R.string.preference_key_using_timezone_of_device), false);
-        if (usingDeviceTimeZone)
-        {
-            useDefaultTimeZoneSwitchPreference.setChecked(true);
-            customTimeZonePreference.setEnabled(false);
-        } else
-        {
-            useDefaultTimeZoneSwitchPreference.setChecked(false);
-            customTimeZonePreference.setEnabled(true);
-        }
+			// 시간제
+			else if (preference.getKey().equals(hourSystemSwitchPreference.getKey())) {
+				boolean value = (Boolean) newValue;
 
-        //주차 표시
-        boolean showingWeekOfYear = preferences.getBoolean(getString(R.string.preference_key_show_week_of_year), false);
-        if (showingWeekOfYear)
-        {
-            weekOfYearSwitchPreference.setChecked(true);
-        } else
-        {
-            weekOfYearSwitchPreference.setChecked(false);
-        }
+				if (value != hourSystemSwitchPreference.isChecked()) {
+					App.setPreference_key_settings_hour_system(value);
+					return true;
+				} else {
+					return false;
+				}
+			}
+			return false;
+		}
+	};
 
-        //거절한 일정 표시
-        boolean showingCanceledInstance = preferences.getBoolean(getString(R.string.preference_key_show_canceled_instances), false);
-        if (showingCanceledInstance)
-        {
-            showCanceledInstanceSwitchPreference.setChecked(true);
-        } else
-        {
-            showCanceledInstanceSwitchPreference.setChecked(false);
-        }
+	private void initValue() {
+		// 사용하지 않더라도 커스텀 시간대는 설정해놓는다.
+		String customTimeZoneId = preferences.getString(getString(R.string.preference_key_custom_timezone), "");
+		TimeZone timeZone = TimeZone.getTimeZone(customTimeZoneId);
+		customTimeZonePreference.setTimeZone(timeZone);
 
-        //24시간제 사용
-        boolean using24HourSystem = preferences.getBoolean(getString(R.string.preference_key_using_24_hour_system), false);
-        hourSystemSwitchPreference.setChecked(using24HourSystem);
+		//기기 기본 시간대 사용 여부
+		boolean usingDeviceTimeZone = preferences.getBoolean(getString(R.string.preference_key_using_timezone_of_device), false);
+		if (usingDeviceTimeZone) {
+			useDefaultTimeZoneSwitchPreference.setChecked(true);
+			customTimeZonePreference.setEnabled(false);
+		} else {
+			useDefaultTimeZoneSwitchPreference.setChecked(false);
+			customTimeZonePreference.setEnabled(true);
+		}
 
-        //지도 카테고리 검색 반지름 범위
-        String searchMapCategoryRadius = preferences.getString(getString(R.string.preference_key_radius_range), "");
-        float convertedRadius = Float.parseFloat(searchMapCategoryRadius) / 1000f;
-        searchMapCategoryRangeRadiusPreference.setDefaultValue(String.valueOf(convertedRadius));
+		//주차 표시
+		boolean showingWeekOfYear = preferences.getBoolean(getString(R.string.preference_key_show_week_of_year), false);
+		if (showingWeekOfYear) {
+			weekOfYearSwitchPreference.setChecked(true);
+		} else {
+			weekOfYearSwitchPreference.setChecked(false);
+		}
 
-        //지도 빌딩 검색 반지름 범위
-        String searchBuildingRangeRadius = preferences.getString(getString(R.string.preference_key_range_meter_for_search_buildings), "");
-        searchBuildingRangeRadiusPreference.setDefaultValue(searchBuildingRangeRadius);
-    }
+		//거절한 일정 표시
+		boolean showingCanceledInstance = preferences.getBoolean(getString(R.string.preference_key_show_canceled_instances), false);
+		if (showingCanceledInstance) {
+			showCanceledInstanceSwitchPreference.setChecked(true);
+		} else {
+			showCanceledInstanceSwitchPreference.setChecked(false);
+		}
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState)
-    {
-        super.onCreate(savedInstanceState);
-    }
+		//24시간제 사용
+		boolean using24HourSystem = preferences.getBoolean(getString(R.string.preference_key_using_24_hour_system), false);
+		hourSystemSwitchPreference.setChecked(using24HourSystem);
 
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
-    {
-        super.onViewCreated(view, savedInstanceState);
+		//지도 카테고리 검색 반지름 범위
+		String searchMapCategoryRadius = preferences.getString(getString(R.string.preference_key_radius_range), "");
+		float convertedRadius = Float.parseFloat(searchMapCategoryRadius) / 1000f;
+		searchMapCategoryRangeRadiusPreference.setDefaultValue(String.valueOf(convertedRadius));
 
-        favoriteLocationViewModel = new ViewModelProvider(this).get(FavoriteLocationViewModel.class);
-        weatherDbViewModel = new ViewModelProvider(this).get(WeatherDbViewModel.class);
-    }
+		//지도 빌딩 검색 반지름 범위
+		String searchBuildingRangeRadius = preferences.getString(getString(R.string.preference_key_range_meter_for_search_buildings), "");
+		searchBuildingRangeRadiusPreference.setDefaultValue(searchBuildingRangeRadius);
+	}
 
-    @Override
-    public void onStart()
-    {
-        super.onStart();
-    }
+	@Override
+	public void onCreate(@Nullable Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+	}
 
-    @Override
-    public void onCreatedPreferenceView()
-    {
-    }
+	@Override
+	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
+
+		favoriteLocationViewModel = new ViewModelProvider(this).get(FavoriteLocationViewModel.class);
+		weatherDbViewModel = new ViewModelProvider(this).get(WeatherDbViewModel.class);
+	}
+
+	@Override
+	public void onStart() {
+		super.onStart();
+	}
+
+	@Override
+	public void onCreatedPreferenceView() {
+	}
 
 
-    @Override
-    public void onFinished(Object result)
-    {
-        if (result instanceof TimeZone)
-        {
-            //수동 시간대 설정이 완료된 경우
-            TimeZone currentTimeZone = customTimeZonePreference.getTimeZone();
-            TimeZone newTimeZone = (TimeZone) result;
+	@Override
+	public void onFinished(Object result) {
+		if (result instanceof TimeZone) {
+			//수동 시간대 설정이 완료된 경우
+			TimeZone currentTimeZone = customTimeZonePreference.getTimeZone();
+			TimeZone newTimeZone = (TimeZone) result;
 
-            if (currentTimeZone.getID().equals(newTimeZone.getID()))
-            {
-                Toast.makeText(getActivity(), "이미 선택된 시간대 입니다", Toast.LENGTH_SHORT).show();
-            } else
-            {
-                customTimeZonePreference.setTimeZone(newTimeZone);
-                SharedPreferences.Editor editor = preferences.edit();
-                editor.putString(getString(R.string.preference_key_custom_timezone), newTimeZone.getID()).apply();
-                App.setPreference_key_custom_timezone(newTimeZone);
-            }
-        }
-    }
+			if (currentTimeZone.getID().equals(newTimeZone.getID())) {
+				Toast.makeText(getActivity(), "이미 선택된 시간대 입니다", Toast.LENGTH_SHORT).show();
+			} else {
+				customTimeZonePreference.setTimeZone(newTimeZone);
+				SharedPreferences.Editor editor = preferences.edit();
+				editor.putString(getString(R.string.preference_key_custom_timezone), newTimeZone.getID()).apply();
+				App.setPreference_key_custom_timezone(newTimeZone);
+			}
+		}
+	}
 }

@@ -58,7 +58,7 @@ import com.zerodsoft.scheduleweather.event.event.fragments.EventFragment;
 import com.zerodsoft.scheduleweather.event.foods.main.fragment.RestaurantMainTransactionFragment;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PlaceItemsGetter;
 import com.zerodsoft.scheduleweather.event.places.map.PlacesOfSelectedCategoriesFragment;
-import com.zerodsoft.scheduleweather.event.weather.fragment.WeatherItemFragment;
+import com.zerodsoft.scheduleweather.event.weather.fragment.WeatherMainFragment;
 import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.LocationItemViewPagerAdapter;
 import com.zerodsoft.scheduleweather.navermap.NaverMapFragment;
@@ -337,15 +337,15 @@ public class NewInstanceMainFragment extends NaverMapFragment implements Restaur
 				//날씨
 				functionButton.callOnClick();
 
-				WeatherItemFragment weatherItemFragment = new WeatherItemFragment(DEFAULT_HEIGHT_OF_BOTTOMSHEET, CALENDAR_ID, EVENT_ID);
+				WeatherMainFragment weatherMainFragment = new WeatherMainFragment(DEFAULT_HEIGHT_OF_BOTTOMSHEET, CALENDAR_ID, EVENT_ID);
 				Bundle bundle = new Bundle();
 				LatLng latLng = naverMap.getContentBounds().getCenter();
 				bundle.putString("latitude", String.valueOf(latLng.latitude));
 				bundle.putString("longitude", String.valueOf(latLng.longitude));
 				bundle.putBoolean("hasSimpleLocation", hasSimpleLocation());
 
-				weatherItemFragment.setArguments(bundle);
-				weatherItemFragment.show(getParentFragmentManager(), WeatherItemFragment.TAG);
+				weatherMainFragment.setArguments(bundle);
+				weatherMainFragment.show(getParentFragmentManager(), WeatherMainFragment.TAG);
 			}
 		});
 

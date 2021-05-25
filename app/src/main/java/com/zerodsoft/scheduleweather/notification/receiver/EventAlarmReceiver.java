@@ -26,7 +26,7 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.common.repository.LocationRepository;
 import com.zerodsoft.scheduleweather.event.main.NewInstanceMainActivity;
-import com.zerodsoft.scheduleweather.event.weather.fragment.WeatherItemFragment;
+import com.zerodsoft.scheduleweather.event.weather.fragment.WeatherMainFragment;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.MsrstnAcctoRltmMesureDnsty.MsrstnAcctoRltmMesureDnstyItem;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
@@ -155,9 +155,9 @@ public class EventAlarmReceiver extends BroadcastReceiver {
 			@Override
 			public void onReceiveResult(@NonNull List<WeatherAreaCodeDTO> weatherAreaCodes) throws RemoteException {
 				if (weatherAreaCodes != null) {
-					List<WeatherItemFragment.LocationPoint> locationPoints = new LinkedList<>();
+					List<WeatherMainFragment.LocationPoint> locationPoints = new LinkedList<>();
 					for (WeatherAreaCodeDTO weatherAreaCodeDTO : weatherAreaCodes) {
-						locationPoints.add(new WeatherItemFragment.LocationPoint(Double.parseDouble(weatherAreaCodeDTO.getLatitudeSecondsDivide100()), Double.parseDouble(weatherAreaCodeDTO.getLongitudeSecondsDivide100())));
+						locationPoints.add(new WeatherMainFragment.LocationPoint(Double.parseDouble(weatherAreaCodeDTO.getLatitudeSecondsDivide100()), Double.parseDouble(weatherAreaCodeDTO.getLongitudeSecondsDivide100())));
 					}
 
 					int index = 0;

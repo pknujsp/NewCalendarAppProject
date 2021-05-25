@@ -2,8 +2,8 @@ package com.zerodsoft.scheduleweather.weather.repository;
 
 import android.app.Application;
 import android.content.Context;
-import android.service.carrier.CarrierMessagingService;
 
+import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.room.AppDb;
 import com.zerodsoft.scheduleweather.room.dao.WeatherDataDAO;
 import com.zerodsoft.scheduleweather.room.dto.WeatherDataDTO;
@@ -13,153 +13,133 @@ import java.util.List;
 
 import lombok.SneakyThrows;
 
-public class WeatherDbRepository implements WeatherDataQuery
-{
-    private WeatherDataDAO dao;
 
-    public WeatherDbRepository(Application application)
-    {
-        dao = AppDb.getInstance(application.getApplicationContext()).weatherDataDAO();
-    }
-    
-    public WeatherDbRepository(Context context)
-    {
-        dao = AppDb.getInstance(context).weatherDataDAO();
-    }
+public class WeatherDbRepository implements WeatherDataQuery {
+	private WeatherDataDAO dao;
 
-    @Override
-    public void insert(WeatherDataDTO weatherDataDTO, CarrierMessagingService.ResultCallback<WeatherDataDTO> callback)
-    {
-        new Thread(new Runnable()
-        {
-            @SneakyThrows
-            @Override
-            public void run()
-            {
-                long id = dao.insert(weatherDataDTO);
-                WeatherDataDTO result = dao.getWeatherData(weatherDataDTO.getLatitude(), weatherDataDTO.getLongitude(), weatherDataDTO.getDataType());
-                callback.onReceiveResult(result);
-            }
-        }).start();
-    }
+	public WeatherDbRepository(Context context) {
+		dao = AppDb.getInstance(context).weatherDataDAO();
+	}
 
-    @Override
-    public void update(String latitude, String longitude, Integer dataType, String json, String downloadedDate, CarrierMessagingService.ResultCallback<Boolean> callback)
-    {
-        new Thread(new Runnable()
-        {
-            @SneakyThrows
-            @Override
-            public void run()
-            {
-                dao.update(latitude, longitude, dataType, json, downloadedDate);
-                callback.onReceiveResult(true);
-            }
-        }).start();
-    }
+	@Override
+	public void insert(WeatherDataDTO weatherDataDTO, DbQueryCallback<WeatherDataDTO> callback) {
+		new Thread(new Runnable() {
+			@SneakyThrows
+			@Override
+			public void run() {
+				long id = dao.insert(weatherDataDTO);
+				WeatherDataDTO result = dao.getWeatherData(weatherDataDTO.getLatitude(), weatherDataDTO.getLongitude(), weatherDataDTO.getDataType());
+				callback.onResultSuccessful(result);
+			}
+		}).start();
+	}
 
-    @Override
-    public void getWeatherDataList(String latitude, String longitude, CarrierMessagingService.ResultCallback<List<WeatherDataDTO>> callback)
-    {
-        new Thread(new Runnable()
-        {
-            @SneakyThrows
-            @Override
-            public void run()
-            {
-                List<WeatherDataDTO> list = dao.getWeatherDataList(latitude, longitude);
-                callback.onReceiveResult(list);
-            }
-        }).start();
-    }
+	@Override
+	public void update(String latitude, String longitude, Integer dataType, String json, String downloadedDate, DbQueryCallback<Boolean> callback) {
+		new Thread(new Runnable() {
+			@SneakyThrows
+			@Override
+			public void run() {
+				dao.update(latitude, longitude, dataType, json, downloadedDate);
+				callback.onResultSuccessful(true);
+			}
+		}).start();
+	}
 
-    @Override
-    public void getWeatherData(String latitude, String longitude, Integer dataType, CarrierMessagingService.ResultCallback<WeatherDataDTO> callback)
-    {
-        new Thread(new Runnable()
-        {
-            @SneakyThrows
-            @Override
-            public void run()
-            {
-                WeatherDataDTO result = dao.getWeatherData(latitude, longitude, dataType);
-                callback.onReceiveResult(result);
-            }
-        }).start();
-    }
+	@Override
+	public void getWeatherDataList(String latitude, String longitude, DbQueryCallback<List<WeatherDataDTO>> callback) {
+		new Thread(new Runnable() {
+			@SneakyThrows
+			@Override
+			public void run() {
+				List<WeatherDataDTO> list = dao.getWeatherDataList(latitude, longitude);
+				if (list == null) {
+					callback.onResultNoData();
+				} else {
+					callback.onResultSuccessful(list);
+				}
 
-    @Override
-    public void getDownloadedDateList(String latitude, String longitude, CarrierMessagingService.ResultCallback<List<WeatherDataDTO>> callback)
-    {
-        new Thread(new Runnable()
-        {
-            @SneakyThrows
-            @Override
-            public void run()
-            {
-                List<WeatherDataDTO> list = dao.getDownloadedDateList(latitude, longitude);
-                callback.onReceiveResult(list);
-            }
-        }).start();
-    }
+			}
+		}).start();
+	}
 
-    @Override
-    public void delete(String latitude, String longitude, Integer dataType, CarrierMessagingService.ResultCallback<Boolean> callback)
-    {
-        new Thread(new Runnable()
-        {
-            @SneakyThrows
-            @Override
-            public void run()
-            {
-                dao.delete(latitude, longitude, dataType);
-                callback.onReceiveResult(true);
-            }
-        }).start();
-    }
+	@Override
+	public void getWeatherData(String latitude, String longitude, Integer dataType, DbQueryCallback<WeatherDataDTO> callback) {
+		new Thread(new Runnable() {
+			@SneakyThrows
+			@Override
+			public void run() {
+				WeatherDataDTO result = dao.getWeatherData(latitude, longitude, dataType);
+				if (result == null) {
+					callback.onResultNoData();
+				} else {
+					callback.onResultSuccessful(result);
+				}
+			}
+		}).start();
+	}
 
-    @Override
-    public void delete(String latitude, String longitude, CarrierMessagingService.ResultCallback<Boolean> callback)
-    {
-        new Thread(new Runnable()
-        {
-            @SneakyThrows
-            @Override
-            public void run()
-            {
-                dao.delete(latitude, longitude);
-                callback.onReceiveResult(true);
-            }
-        }).start();
-    }
+	@Override
+	public void getDownloadedDateList(String latitude, String longitude, DbQueryCallback<List<WeatherDataDTO>> callback) {
+		new Thread(new Runnable() {
+			@SneakyThrows
+			@Override
+			public void run() {
+				List<WeatherDataDTO> list = dao.getDownloadedDateList(latitude, longitude);
+				if (list == null) {
+					callback.onResultNoData();
+				} else {
+					callback.onResultSuccessful(list);
+				}
+			}
+		}).start();
+	}
 
-    @Override
-    public void deleteAll(CarrierMessagingService.ResultCallback<Boolean> callback)
-    {
-        new Thread(new Runnable()
-        {
-            @SneakyThrows
-            @Override
-            public void run()
-            {
-                dao.deleteAll();
-                callback.onReceiveResult(true);
-            }
-        }).start();
-    }
+	@Override
+	public void delete(String latitude, String longitude, Integer dataType, DbQueryCallback<Boolean> callback) {
+		new Thread(new Runnable() {
+			@SneakyThrows
+			@Override
+			public void run() {
+				dao.delete(latitude, longitude, dataType);
+				callback.onResultSuccessful(true);
+			}
+		}).start();
+	}
 
-    @Override
-    public void contains(String latitude, String longitude, Integer dataType, CarrierMessagingService.ResultCallback<Boolean> callback)
-    {
-        new Thread(new Runnable()
-        {
-            @SneakyThrows
-            @Override
-            public void run()
-            {
-                boolean result = dao.contains(latitude, longitude, dataType) == 1;
-                callback.onReceiveResult(result);
-            }
-        }).start();
-    }
+	@Override
+	public void delete(String latitude, String longitude, DbQueryCallback<Boolean> callback) {
+		new Thread(new Runnable() {
+			@SneakyThrows
+			@Override
+			public void run() {
+				dao.delete(latitude, longitude);
+				callback.onResultSuccessful(true);
+			}
+		}).start();
+	}
+
+	@Override
+	public void deleteAll(DbQueryCallback<Boolean> callback) {
+		new Thread(new Runnable() {
+			@SneakyThrows
+			@Override
+			public void run() {
+				dao.deleteAll();
+				callback.onResultSuccessful(true);
+			}
+		}).start();
+	}
+
+	@Override
+	public void contains(String latitude, String longitude, Integer dataType, DbQueryCallback<Boolean> callback) {
+		new Thread(new Runnable() {
+			@SneakyThrows
+			@Override
+			public void run() {
+				boolean result = dao.contains(latitude, longitude, dataType) == 1;
+				callback.onResultSuccessful(result);
+			}
+		}).start();
+	}
 }

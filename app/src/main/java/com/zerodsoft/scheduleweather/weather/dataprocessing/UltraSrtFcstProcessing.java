@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
+import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.UltraSrtFcstParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.ultrasrtfcstresponse.UltraSrtFcstRoot;
 import com.zerodsoft.scheduleweather.room.dto.WeatherDataDTO;
@@ -30,20 +31,21 @@ public class UltraSrtFcstProcessing extends WeatherDataProcessing<UltraSrtFcstRe
 	@Override
 	public void getWeatherData(WeatherDataCallback<UltraSrtFcstResult> weatherDataCallback) {
 		weatherDbRepository.getWeatherData(LATITUDE, LONGITUDE, WeatherDataDTO.ULTRA_SRT_FCST,
-				new CarrierMessagingService.ResultCallback<WeatherDataDTO>() {
+				new DbQueryCallback<WeatherDataDTO>() {
 					@Override
-					public void onReceiveResult(@NonNull WeatherDataDTO ultraSrtFcstWeatherDataDTO) throws RemoteException {
-						if (ultraSrtFcstWeatherDataDTO == null) {
-							refresh(weatherDataCallback);
-						} else {
-							Gson gson = new Gson();
-							UltraSrtFcstRoot ultraSrtFcstRoot = gson.fromJson(ultraSrtFcstWeatherDataDTO.getJson(), UltraSrtFcstRoot.class);
+					public void onResultSuccessful(WeatherDataDTO ultraSrtFcstResultDto) {
+						Gson gson = new Gson();
+						UltraSrtFcstRoot ultraSrtFcstRoot = gson.fromJson(ultraSrtFcstResultDto.getJson(), UltraSrtFcstRoot.class);
 
-							UltraSrtFcstResult ultraSrtFcstResult = new UltraSrtFcstResult();
-							ultraSrtFcstResult.setUltraSrtFcstFinalDataList(ultraSrtFcstRoot.getResponse().getBody().getItems(), new Date(Long.parseLong(ultraSrtFcstWeatherDataDTO.getDownloadedDate())));
+						UltraSrtFcstResult ultraSrtFcstResult = new UltraSrtFcstResult();
+						ultraSrtFcstResult.setUltraSrtFcstFinalDataList(ultraSrtFcstRoot.getResponse().getBody().getItems(), new Date(Long.parseLong(ultraSrtFcstResultDto.getDownloadedDate())));
 
-							weatherDataCallback.isSuccessful(ultraSrtFcstResult);
-						}
+						weatherDataCallback.isSuccessful(ultraSrtFcstResult);
+					}
+
+					@Override
+					public void onResultNoData() {
+						refresh(weatherDataCallback);
 					}
 				});
 	}
@@ -73,33 +75,47 @@ public class UltraSrtFcstProcessing extends WeatherDataProcessing<UltraSrtFcstRe
 						ultraSrtFcstWeatherDataDTO.setDownloadedDate(String.valueOf(downloadedDate.getTime()));
 
 						weatherDbRepository.contains(LATITUDE, LONGITUDE, WeatherDataDTO.ULTRA_SRT_FCST,
-								new CarrierMessagingService.ResultCallback<Boolean>() {
+								new DbQueryCallback<Boolean>() {
 									@Override
-									public void onReceiveResult(@NonNull Boolean isContains) throws RemoteException {
+									public void onResultSuccessful(Boolean isContains) {
 										if (isContains) {
 											weatherDbRepository.update(LATITUDE, LONGITUDE, WeatherDataDTO.ULTRA_SRT_FCST, result.toString()
-													, ultraSrtFcstWeatherDataDTO.getDownloadedDate(), new CarrierMessagingService.ResultCallback<Boolean>() {
+													, ultraSrtFcstWeatherDataDTO.getDownloadedDate(), new DbQueryCallback<Boolean>() {
 														@Override
-														public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException {
-															UltraSrtFcstResult ultraSrtFcstResult = new UltraSrtFcstResult();
-															ultraSrtFcstResult.setUltraSrtFcstFinalDataList(ultraSrtFcstRoot.getResponse().getBody().getItems(), new Date(Long.parseLong(ultraSrtFcstWeatherDataDTO.getDownloadedDate())));
+														public void onResultSuccessful(Boolean resultDto) {
 
-															weatherDataCallback.isSuccessful(ultraSrtFcstResult);
+														}
+
+														@Override
+														public void onResultNoData() {
+
 														}
 													});
 										} else {
-											weatherDbRepository.insert(ultraSrtFcstWeatherDataDTO, new CarrierMessagingService.ResultCallback<WeatherDataDTO>() {
+											weatherDbRepository.insert(ultraSrtFcstWeatherDataDTO, new DbQueryCallback<WeatherDataDTO>() {
 												@Override
-												public void onReceiveResult(@NonNull WeatherDataDTO weatherDataDTO) throws RemoteException {
-													UltraSrtFcstResult ultraSrtFcstResult = new UltraSrtFcstResult();
-													ultraSrtFcstResult.setUltraSrtFcstFinalDataList(ultraSrtFcstRoot.getResponse().getBody().getItems(), new Date(Long.parseLong(ultraSrtFcstWeatherDataDTO.getDownloadedDate())));
+												public void onResultSuccessful(WeatherDataDTO resultDto) {
 
-													weatherDataCallback.isSuccessful(ultraSrtFcstResult);
+												}
+
+												@Override
+												public void onResultNoData() {
+
 												}
 											});
 										}
 									}
+
+									@Override
+									public void onResultNoData() {
+
+									}
 								});
+
+						UltraSrtFcstResult ultraSrtFcstResult = new UltraSrtFcstResult();
+						ultraSrtFcstResult.setUltraSrtFcstFinalDataList(ultraSrtFcstRoot.getResponse().getBody().getItems(), new Date(Long.parseLong(ultraSrtFcstWeatherDataDTO.getDownloadedDate())));
+
+						weatherDataCallback.isSuccessful(ultraSrtFcstResult);
 					}
 
 					@Override
