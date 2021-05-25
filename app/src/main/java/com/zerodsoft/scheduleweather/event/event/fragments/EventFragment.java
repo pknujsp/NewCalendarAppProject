@@ -54,8 +54,6 @@ import com.zerodsoft.scheduleweather.utility.NetworkStatus;
 import com.zerodsoft.scheduleweather.utility.RecurrenceRule;
 import com.zerodsoft.scheduleweather.utility.model.ReminderDto;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
@@ -216,7 +214,7 @@ public class EventFragment extends BottomSheetDialogFragment {
 							@Override
 							public void run() {
 								if (hasDetailLocation) {
-									locationViewModel.getLocation(CALENDAR_ID, EVENT_ID, new CarrierMessagingService.ResultCallback<LocationDTO>() {
+									locationViewModel.getLocation(, EVENT_ID, new CarrierMessagingService.ResultCallback<LocationDTO>() {
 										@Override
 										public void onReceiveResult(@NonNull LocationDTO locationDTO) throws RemoteException {
 											if (!locationDTO.isEmpty()) {

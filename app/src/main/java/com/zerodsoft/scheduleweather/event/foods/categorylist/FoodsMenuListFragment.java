@@ -44,6 +44,7 @@ import com.zerodsoft.scheduleweather.etc.AppPermission;
 import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.foods.adapter.FoodCategoryAdapter;
+import com.zerodsoft.scheduleweather.event.foods.criterialocation.RestaurantCriteriaLocationSettingsFragment;
 import com.zerodsoft.scheduleweather.event.foods.dto.FoodCategoryItem;
 import com.zerodsoft.scheduleweather.event.foods.enums.CriteriaLocationType;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.IGetCriteriaLocation;
@@ -146,17 +147,12 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 		binding.criteriaLocation.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				/*
-				Intent intent = new Intent(getActivity(), LocationSettingsActivity.class);
-				Bundle bundle = new Bundle();
+				RestaurantCriteriaLocationSettingsFragment restaurantCriteriaLocationSettingsFragment =
+						new RestaurantCriteriaLocationSettingsFragment(iGetEventValue);
 
-				ContentValues instanceValues = new ContentValues();
-
-
-				intent.putExtras(bundle);
-				locationSettingsActivityResultLauncher.launch(intent);
-
-				 */
+				getParentFragmentManager().beginTransaction().hide(FoodsMenuListFragment.this).add(R.id.foods_main_fragment_container,
+						restaurantCriteriaLocationSettingsFragment,
+						RestaurantCriteriaLocationSettingsFragment.TAG).addToBackStack(null).commit();
 			}
 		});
 	}
@@ -225,8 +221,8 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 
 	private void loadSelectedDetailLocation() {
 		//지정한 위치정보를 가져온다
-		locationViewModel.getLocation(iGetEventValue.getCalendarId(), iGetEventValue.getEventId(),
-				new CarrierMessagingService.ResultCallback<LocationDTO>() {
+		locationViewModel.getLocation(,
+				iGetEventValue.getEventId(), new CarrierMessagingService.ResultCallback<LocationDTO>() {
 					@Override
 					public void onReceiveResult(@NonNull LocationDTO locationDTO) throws RemoteException {
 						selectedLocationDTO = locationDTO;

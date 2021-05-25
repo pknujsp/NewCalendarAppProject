@@ -1,14 +1,11 @@
 package com.zerodsoft.scheduleweather.weather.repository;
 
 import android.content.Context;
-import android.service.carrier.CarrierMessagingService;
 
-import androidx.lifecycle.LiveData;
-
+import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.room.AppDb;
 import com.zerodsoft.scheduleweather.room.dao.WeatherAreaCodeDAO;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
-import com.zerodsoft.scheduleweather.utility.LonLat;
 import com.zerodsoft.scheduleweather.weather.interfaces.AreaCodeQuery;
 
 import java.util.List;
@@ -26,15 +23,24 @@ public class AreaCodeRepository implements AreaCodeQuery {
 	}
 
 	@Override
-	public void getAreaCodes(LonLat lonLat, CarrierMessagingService.ResultCallback<List<WeatherAreaCodeDTO>> callback) {
+	public void getAreaCodes(double latitude, double longitude, DbQueryCallback<List<WeatherAreaCodeDTO>> callback) {
 		new Thread(new Runnable() {
 			@SneakyThrows
 			@Override
 			public void run() {
-				List<WeatherAreaCodeDTO> list = weatherAreaCodeDAO.getAreaCodes(lonLat.getLatitude(), lonLat.getLongitude());
-				callback.onReceiveResult(list);
+				List<WeatherAreaCodeDTO> list = weatherAreaCodeDAO.getAreaCodes(latitude, longitude);
+				if (list == null) {
+					callback.onResultNoData();
+				} else {
+					callback.onResultSuccessful(list);
+				}
 			}
 		}).start();
+	}
+
+	@Override
+	public void getCodeOfProximateArea(double latitude, double longitude, DbQueryCallback<WeatherAreaCodeDTO> callback) {
+		
 	}
 
 }

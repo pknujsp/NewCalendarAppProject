@@ -1,10 +1,6 @@
 package com.zerodsoft.scheduleweather.weather.dataprocessing;
 
 import android.content.Context;
-import android.os.RemoteException;
-import android.service.carrier.CarrierMessagingService;
-
-import androidx.annotation.NonNull;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -82,7 +78,7 @@ public class UltraSrtFcstProcessing extends WeatherDataProcessing<UltraSrtFcstRe
 											weatherDbRepository.update(LATITUDE, LONGITUDE, WeatherDataDTO.ULTRA_SRT_FCST, result.toString()
 													, ultraSrtFcstWeatherDataDTO.getDownloadedDate(), new DbQueryCallback<Boolean>() {
 														@Override
-														public void onResultSuccessful(Boolean resultDto) {
+														public void onResultSuccessful(Boolean result) {
 
 														}
 
@@ -94,7 +90,7 @@ public class UltraSrtFcstProcessing extends WeatherDataProcessing<UltraSrtFcstRe
 										} else {
 											weatherDbRepository.insert(ultraSrtFcstWeatherDataDTO, new DbQueryCallback<WeatherDataDTO>() {
 												@Override
-												public void onResultSuccessful(WeatherDataDTO resultDto) {
+												public void onResultSuccessful(WeatherDataDTO result) {
 
 												}
 

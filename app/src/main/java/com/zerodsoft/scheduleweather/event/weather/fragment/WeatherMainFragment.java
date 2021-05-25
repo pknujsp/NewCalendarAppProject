@@ -18,6 +18,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.databinding.FragmentWeatherItemBinding;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.room.dto.WeatherDataDTO;
@@ -32,13 +33,9 @@ import com.zerodsoft.scheduleweather.weather.ultrasrtfcst.UltraSrtFcstFragment;
 import com.zerodsoft.scheduleweather.weather.ultrasrtncst.UltraSrtNcstFragment;
 import com.zerodsoft.scheduleweather.weather.viewmodel.AreaCodeViewModel;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
-import com.zerodsoft.scheduleweather.utility.LonLat;
-import com.zerodsoft.scheduleweather.utility.LonLatConverter;
 import com.zerodsoft.scheduleweather.weather.vilagefcst.VilageFcstFragment;
 
 import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
 
 public class WeatherMainFragment extends BottomSheetDialogFragment implements OnDownloadedTimeListener {
 	public static final String TAG = "WeatherMainFragment";
@@ -142,7 +139,6 @@ public class WeatherMainFragment extends BottomSheetDialogFragment implements On
 		binding.airConditionDownloadedTime.setText("");
 		binding.vilageFcstDownloadedTime.setText("");
 
-
 		View bottomSheet = getDialog().findViewById(R.id.design_bottom_sheet);
 		bottomSheet.getLayoutParams().height = VIEW_HEIGHT;
 
@@ -170,51 +166,28 @@ public class WeatherMainFragment extends BottomSheetDialogFragment implements On
 			}
 		});
 
-		locationViewModel.getLocation(CALENDAR_ID, EVENT_ID, new CarrierMessagingService.ResultCallback<LocationDTO>() {
+		locationViewModel.getLocation(, EVENT_ID, new CarrierMessagingService.ResultCallback<LocationDTO>() {
 			@Override
-			public void onReceiveResult(@NonNull LocationDTO resultDto) throws RemoteException {
-				getActivity().runOnUiThread(new Runnable() {
+			public void onReceiveResult(@NonNull LocationDTO selectedLocationResultDto) throws RemoteException {
+				requireActivity().runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						selectedLocationDto = resultDto;
+						selectedLocationDto = selectedLocationResultDto;
 
-						final double lat = resultDto.isEmpty() ? Double.parseDouble(latitude) :
-								Double.parseDouble(resultDto.getLatitude());
-						final double lon = resultDto.isEmpty() ? Double.parseDouble(longitude) :
-								Double.parseDouble(resultDto.getLongitude());
-						final LonLat lonLat = LonLatConverter.convertGrid(lon, lat);
+						final double lat = selectedLocationResultDto.isEmpty() ? Double.parseDouble(latitude) :
+								Double.parseDouble(selectedLocationResultDto.getLatitude());
+						final double lon = selectedLocationResultDto.isEmpty() ? Double.parseDouble(longitude) :
+								Double.parseDouble(selectedLocationResultDto.getLongitude());
 
-						areaCodeViewModel.getAreaCodes(lonLat, new CarrierMessagingService.ResultCallback<List<WeatherAreaCodeDTO>>() {
+						areaCodeViewModel.getCodeOfProximateArea(lat, lon, new DbQueryCallback<WeatherAreaCodeDTO>() {
 							@Override
-							public void onReceiveResult(@NonNull List<WeatherAreaCodeDTO> weatherAreaCodes) throws RemoteException {
-								List<LocationPoint> locationPoints = new LinkedList<>();
-								int index = 0;
-
-								for (WeatherAreaCodeDTO weatherAreaCodeDTO : weatherAreaCodes) {
-									locationPoints.add(new LocationPoint(Double.parseDouble(weatherAreaCodeDTO.getLatitudeSecondsDivide100()), Double.parseDouble(weatherAreaCodeDTO.getLongitudeSecondsDivide100())));
-
-									double minDistance = Double.MAX_VALUE;
-									double distance = 0;
-									// 점 사이의 거리 계산
-									for (int i = 0; i < locationPoints.size(); i++) {
-										distance =
-												Math.sqrt(Math.pow(lon - locationPoints.get(i).longitude, 2)
-														+ Math.pow(lat - locationPoints.get(i).latitude, 2));
-										if (distance < minDistance) {
-											minDistance = distance;
-											index = i;
-										}
-									}
-
-								}
-
-								// regId설정하는 코드 작성
-								weatherAreaCode = weatherAreaCodes.get(index);
+							public void onResultSuccessful(WeatherAreaCodeDTO weatherAreaCodeResultDto) {
+								weatherAreaCode = weatherAreaCodeResultDto;
 
 								requireActivity().runOnUiThread(new Runnable() {
 									@Override
 									public void run() {
-										if (resultDto.isEmpty()) {
+										if (selectedLocationResultDto.isEmpty()) {
 											Toast.makeText(getContext(), hasSimpleLocation ?
 															R.string.msg_getting_weather_data_of_map_center_point_because_havnt_detail_location :
 															R.string.msg_getting_weather_data_of_map_center_point_because_havnt_simple_location,
@@ -224,6 +197,11 @@ public class WeatherMainFragment extends BottomSheetDialogFragment implements On
 										createFragments();
 									}
 								});
+							}
+
+							@Override
+							public void onResultNoData() {
+
 							}
 						});
 
@@ -292,23 +270,5 @@ public class WeatherMainFragment extends BottomSheetDialogFragment implements On
 		}
 	}
 
-
-	static public class LocationPoint {
-		private double latitude;
-		private double longitude;
-
-		public LocationPoint(double latitude, double longitude) {
-			this.latitude = latitude;
-			this.longitude = longitude;
-		}
-
-		public double getLatitude() {
-			return latitude;
-		}
-
-		public double getLongitude() {
-			return longitude;
-		}
-	}
 
 }

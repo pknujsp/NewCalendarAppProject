@@ -116,7 +116,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
 									case 0: {
 										weatherDbViewModel.deleteAll(new DbQueryCallback<Boolean>() {
 											@Override
-											public void onResultSuccessful(Boolean resultDto) {
+											public void onResultSuccessful(Boolean result) {
 												requireActivity().runOnUiThread(new Runnable() {
 													@Override
 													public void run() {

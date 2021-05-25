@@ -6,6 +6,7 @@ import android.service.carrier.CarrierMessagingService;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 
+import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.FoodCriteriaLocationInfoQuery;
 import com.zerodsoft.scheduleweather.event.foods.repository.FoodCriteriaLocationInfoRepository;
 import com.zerodsoft.scheduleweather.room.dto.FoodCriteriaLocationInfoDTO;
@@ -21,7 +22,7 @@ public class FoodCriteriaLocationInfoViewModel extends AndroidViewModel implemen
     }
 
     @Override
-    public void selectByEventId(Integer calendarId, Long eventId, CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO> callback)
+    public void selectByEventId(Integer calendarId, Long eventId, DbQueryCallback<FoodCriteriaLocationInfoDTO> callback)
     {
         repository.selectByEventId(calendarId, eventId, callback);
     }
@@ -45,7 +46,7 @@ public class FoodCriteriaLocationInfoViewModel extends AndroidViewModel implemen
     }
 
     @Override
-    public void updateByEventId(Integer calendarId, Long eventId, Integer usingType, Integer historyLocationId, CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO> callback)
+    public void updateByEventId(Integer calendarId, Long eventId, Integer usingType, Integer historyLocationId, DbQueryCallback<FoodCriteriaLocationInfoDTO> callback)
     {
         repository.updateByEventId(calendarId, eventId, usingType, historyLocationId, callback);
     }

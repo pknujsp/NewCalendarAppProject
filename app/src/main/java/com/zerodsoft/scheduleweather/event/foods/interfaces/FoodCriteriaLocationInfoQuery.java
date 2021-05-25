@@ -2,11 +2,12 @@ package com.zerodsoft.scheduleweather.event.foods.interfaces;
 
 import android.service.carrier.CarrierMessagingService;
 
+import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.room.dto.FoodCriteriaLocationInfoDTO;
 
 public interface FoodCriteriaLocationInfoQuery
 {
-    void selectByEventId(Integer calendarId, Long eventId, CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO> callback);
+    void selectByEventId(Integer calendarId, Long eventId, DbQueryCallback<FoodCriteriaLocationInfoDTO> callback);
 
     void selectByInstanceId(Integer calendarId, Long instanceId, CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO> callback);
 
@@ -14,7 +15,7 @@ public interface FoodCriteriaLocationInfoQuery
 
     void insertByInstanceId(Integer calendarId, Long instanceId, Integer usingType, Integer historyLocationId, CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO> callback);
 
-    void updateByEventId(Integer calendarId, Long eventId, Integer usingType, Integer historyLocationId, CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO> callback);
+    void updateByEventId(Integer calendarId, Long eventId, Integer usingType, Integer historyLocationId, DbQueryCallback<FoodCriteriaLocationInfoDTO> callback);
 
     void updateByInstanceId(Integer calendarId, Long instanceId, Integer usingType, Integer historyLocationId, CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO> callback);
 

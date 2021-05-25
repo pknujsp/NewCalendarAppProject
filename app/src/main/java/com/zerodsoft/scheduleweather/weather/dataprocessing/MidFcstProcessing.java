@@ -1,10 +1,6 @@
 package com.zerodsoft.scheduleweather.weather.dataprocessing;
 
 import android.content.Context;
-import android.os.RemoteException;
-import android.service.carrier.CarrierMessagingService;
-
-import androidx.annotation.NonNull;
 
 import com.google.gson.Gson;
 import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
@@ -130,7 +126,7 @@ public class MidFcstProcessing extends WeatherDataProcessing<MidFcstResult> {
 												, midLandFcstWeatherDataDTO.getJson(), midLandFcstWeatherDataDTO.getDownloadedDate(),
 												new DbQueryCallback<Boolean>() {
 													@Override
-													public void onResultSuccessful(Boolean resultDto) {
+													public void onResultSuccessful(Boolean result) {
 
 													}
 
@@ -142,7 +138,7 @@ public class MidFcstProcessing extends WeatherDataProcessing<MidFcstResult> {
 									} else {
 										weatherDbRepository.insert(midLandFcstWeatherDataDTO, new DbQueryCallback<WeatherDataDTO>() {
 											@Override
-											public void onResultSuccessful(WeatherDataDTO resultDto) {
+											public void onResultSuccessful(WeatherDataDTO result) {
 
 											}
 
@@ -168,7 +164,7 @@ public class MidFcstProcessing extends WeatherDataProcessing<MidFcstResult> {
 										weatherDbRepository.update(LATITUDE, LONGITUDE, WeatherDataDTO.MID_TA
 												, midTaWeatherDataDTO.getJson(), midTaWeatherDataDTO.getDownloadedDate(), new DbQueryCallback<Boolean>() {
 													@Override
-													public void onResultSuccessful(Boolean resultDto) {
+													public void onResultSuccessful(Boolean result) {
 
 													}
 
@@ -180,7 +176,7 @@ public class MidFcstProcessing extends WeatherDataProcessing<MidFcstResult> {
 									} else {
 										weatherDbRepository.insert(midTaWeatherDataDTO, new DbQueryCallback<WeatherDataDTO>() {
 											@Override
-											public void onResultSuccessful(WeatherDataDTO resultDto) {
+											public void onResultSuccessful(WeatherDataDTO result) {
 												
 											}
 

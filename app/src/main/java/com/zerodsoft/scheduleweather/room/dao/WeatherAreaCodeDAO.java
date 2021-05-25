@@ -11,7 +11,8 @@ import java.util.List;
 
 @Dao
 public interface WeatherAreaCodeDAO {
-	@Query("SELECT * FROM weather_area_code_table WHERE latitude_seconds_divide_100 >= :latitude-0.2 AND latitude_seconds_divide_100 <= :latitude+0.2" +
-			" AND longitude_seconds_divide_100 >= :longitude-0.2 AND longitude_seconds_divide_100 <= :longitude+0.2")
+	@Query("SELECT * FROM weather_area_code_table WHERE latitude_seconds_divide_100 >= :latitude-0.19 AND latitude_seconds_divide_100 <= " +
+			":latitude+0.19" +
+			" AND longitude_seconds_divide_100 >= :longitude-0.19 AND longitude_seconds_divide_100 <= :longitude+0.19")
 	List<WeatherAreaCodeDTO> getAreaCodes(double latitude, double longitude);
 }

@@ -1,12 +1,13 @@
 package com.zerodsoft.scheduleweather.weather.interfaces;
 
-import android.service.carrier.CarrierMessagingService;
-
+import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
-import com.zerodsoft.scheduleweather.utility.LonLat;
 
 import java.util.List;
 
 public interface AreaCodeQuery {
-	void getAreaCodes(LonLat lonLat, CarrierMessagingService.ResultCallback<List<WeatherAreaCodeDTO>> callback);
+	void getAreaCodes(double latitude, double longitude, DbQueryCallback<List<WeatherAreaCodeDTO>> callback);
+
+	void getCodeOfProximateArea(double latitude, double longitude, DbQueryCallback<WeatherAreaCodeDTO> callback);
+
 }

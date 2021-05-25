@@ -1,32 +1,23 @@
 package com.zerodsoft.scheduleweather.weather.dataprocessing;
 
 import android.content.Context;
-import android.os.RemoteException;
-import android.service.carrier.CarrierMessagingService;
-
-import androidx.annotation.NonNull;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.naver.maps.geometry.LatLng;
-import com.naver.maps.geometry.Tm128;
 import com.naver.maps.geometry.Utmk;
 import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.MsrstnAcctoRltmMesureDnstyParameter;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.NearbyMsrstnListParameter;
-import com.zerodsoft.scheduleweather.retrofit.paremeters.sgis.TransCoordParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.MsrstnAcctoRltmMesureDnsty.MsrstnAcctoRltmMesureDnstyRoot;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.NearbyMsrstnList.NearbyMsrstnListRoot;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.transcoord.TransCoordResponse;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.transcoord.TransCoordResult;
 import com.zerodsoft.scheduleweather.room.dto.WeatherDataDTO;
 import com.zerodsoft.scheduleweather.weather.aircondition.airconditionbar.AirConditionResult;
 import com.zerodsoft.scheduleweather.weather.common.WeatherDataCallback;
 import com.zerodsoft.scheduleweather.weather.common.WeatherDataHeaderChecker;
 import com.zerodsoft.scheduleweather.weather.repository.AirConditionDownloader;
 import com.zerodsoft.scheduleweather.weather.repository.FindAirConditionStationDownloader;
-import com.zerodsoft.scheduleweather.weather.repository.SgisTranscoord;
 
 import java.util.Date;
 
@@ -114,7 +105,7 @@ public class AirConditionProcessing extends WeatherDataProcessing<AirConditionRe
 													nearbyMsrstnJsonObject.toString(), nearbyMsrstnListDTO.getDownloadedDate(),
 													new DbQueryCallback<Boolean>() {
 														@Override
-														public void onResultSuccessful(Boolean resultDto) {
+														public void onResultSuccessful(Boolean result) {
 
 														}
 
@@ -127,7 +118,7 @@ public class AirConditionProcessing extends WeatherDataProcessing<AirConditionRe
 											weatherDbRepository.insert(nearbyMsrstnListDTO,
 													new DbQueryCallback<WeatherDataDTO>() {
 														@Override
-														public void onResultSuccessful(WeatherDataDTO resultDto) {
+														public void onResultSuccessful(WeatherDataDTO result) {
 
 														}
 
@@ -183,7 +174,7 @@ public class AirConditionProcessing extends WeatherDataProcessing<AirConditionRe
 																			msrstnAcctoRltmMesureDnstyWeatherDataDTO.getDownloadedDate(),
 																			new DbQueryCallback<Boolean>() {
 																				@Override
-																				public void onResultSuccessful(Boolean resultDto) {
+																				public void onResultSuccessful(Boolean result) {
 
 																				}
 
@@ -196,7 +187,7 @@ public class AirConditionProcessing extends WeatherDataProcessing<AirConditionRe
 																	weatherDbRepository.insert(msrstnAcctoRltmMesureDnstyWeatherDataDTO,
 																			new DbQueryCallback<WeatherDataDTO>() {
 																				@Override
-																				public void onResultSuccessful(WeatherDataDTO resultDto) {
+																				public void onResultSuccessful(WeatherDataDTO result) {
 
 																				}
 

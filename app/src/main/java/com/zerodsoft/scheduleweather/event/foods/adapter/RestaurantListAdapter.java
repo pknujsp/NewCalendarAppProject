@@ -134,11 +134,11 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
             onContainsRestaurantListener.contains(item.getId(), new DbQueryCallback<FavoriteLocationDTO>()
             {
                 @Override
-                public void onResultSuccessful(FavoriteLocationDTO resultDto)
+                public void onResultSuccessful(FavoriteLocationDTO result)
                 {
-                    if (resultDto != null)
+                    if (result != null)
                     {
-                        favoriteLocationDTO = resultDto;
+                        favoriteLocationDTO = result;
                         favoriteButton.setImageDrawable(favoriteEnabledDrawable);
                     } else
                     {

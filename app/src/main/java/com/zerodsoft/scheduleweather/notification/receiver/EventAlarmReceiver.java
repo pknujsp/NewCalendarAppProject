@@ -23,16 +23,14 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.common.repository.LocationRepository;
 import com.zerodsoft.scheduleweather.event.main.NewInstanceMainActivity;
-import com.zerodsoft.scheduleweather.event.weather.fragment.WeatherMainFragment;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.MsrstnAcctoRltmMesureDnsty.MsrstnAcctoRltmMesureDnstyItem;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
-import com.zerodsoft.scheduleweather.utility.LonLat;
-import com.zerodsoft.scheduleweather.utility.LonLatConverter;
 import com.zerodsoft.scheduleweather.weather.dataprocessing.WeatherDataConverter;
 import com.zerodsoft.scheduleweather.weather.aircondition.airconditionbar.AirConditionResult;
 import com.zerodsoft.scheduleweather.weather.aircondition.airconditionbar.BarInitDataCreater;
@@ -45,7 +43,6 @@ import com.zerodsoft.scheduleweather.weather.ultrasrtncst.UltraSrtNcstResult;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
 
 public class EventAlarmReceiver extends BroadcastReceiver {
@@ -119,9 +116,8 @@ public class EventAlarmReceiver extends BroadcastReceiver {
 				notifyNotificationHasNotLocation(notificationManager, builder, context, instance);
 			} else {
 				LocationRepository locationRepository = new LocationRepository(context);
-				locationRepository.getLocation(instance.getAsInteger(CalendarContract.CalendarAlerts.CALENDAR_ID),
-						instance.getAsLong(CalendarContract.CalendarAlerts.EVENT_ID),
-						new CarrierMessagingService.ResultCallback<LocationDTO>() {
+				locationRepository.getLocation(,
+						instance.getAsLong(CalendarContract.CalendarAlerts.EVENT_ID), new CarrierMessagingService.ResultCallback<LocationDTO>() {
 							@Override
 							public void onReceiveResult(@NonNull LocationDTO locationDTO) throws RemoteException {
 								if (locationDTO.isEmpty()) {
@@ -148,43 +144,24 @@ public class EventAlarmReceiver extends BroadcastReceiver {
 		builder.setCustomBigContentView(smallView);
 
 		AreaCodeRepository areaCodeRepository = new AreaCodeRepository(context);
-		final LonLat lonLat = LonLatConverter.convertGrid(Double.parseDouble(locationDTO.getLongitude()),
-				Double.parseDouble(locationDTO.getLatitude()));
 
-		areaCodeRepository.getAreaCodes(lonLat, new CarrierMessagingService.ResultCallback<List<WeatherAreaCodeDTO>>() {
-			@Override
-			public void onReceiveResult(@NonNull List<WeatherAreaCodeDTO> weatherAreaCodes) throws RemoteException {
-				if (weatherAreaCodes != null) {
-					List<WeatherMainFragment.LocationPoint> locationPoints = new LinkedList<>();
-					for (WeatherAreaCodeDTO weatherAreaCodeDTO : weatherAreaCodes) {
-						locationPoints.add(new WeatherMainFragment.LocationPoint(Double.parseDouble(weatherAreaCodeDTO.getLatitudeSecondsDivide100()), Double.parseDouble(weatherAreaCodeDTO.getLongitudeSecondsDivide100())));
+		areaCodeRepository.getCodeOfProximateArea(Double.parseDouble(locationDTO.getLatitude()), Double.parseDouble(locationDTO.getLongitude())
+				, new DbQueryCallback<WeatherAreaCodeDTO>() {
+					@Override
+					public void onResultSuccessful(WeatherAreaCodeDTO weatherAreaCodeResultDto) {
+						UltraSrtNcstProcessing ultraSrtNcstProcessing = new UltraSrtNcstProcessing(context, weatherAreaCodeResultDto.getY(),
+								weatherAreaCodeResultDto.getX());
+						AirConditionProcessing airConditionProcessing = new AirConditionProcessing(context, weatherAreaCodeResultDto.getY(),
+								weatherAreaCodeResultDto.getX());
+
+						setWeatherData(airConditionProcessing, ultraSrtNcstProcessing, bigView, context, builder, notificationManager);
 					}
 
-					int index = 0;
-					double minDistance = Double.MAX_VALUE;
-					double distance = 0;
-					// 점 사이의 거리 계산
-					for (int i = 0; i < locationPoints.size(); i++) {
-						distance =
-								Math.sqrt(Math.pow(Double.parseDouble(locationDTO.getLongitude()) - locationPoints.get(i).getLatitude(),
-										2) + Math.pow(Double.parseDouble(locationDTO.getLatitude()) - locationPoints.get(i).getLatitude()
-										, 2));
-						if (distance < minDistance) {
-							minDistance = distance;
-							index = i;
-						}
-					}
-					// regId설정하는 코드 작성
-					WeatherAreaCodeDTO weatherAreaCode = weatherAreaCodes.get(index);
-					UltraSrtNcstProcessing ultraSrtNcstProcessing = new UltraSrtNcstProcessing(context, weatherAreaCode.getY(),
-							weatherAreaCode.getX());
-					AirConditionProcessing airConditionProcessing = new AirConditionProcessing(context, weatherAreaCode.getY(),
-							weatherAreaCode.getX());
+					@Override
+					public void onResultNoData() {
 
-					setWeatherData(airConditionProcessing, ultraSrtNcstProcessing, bigView, context, builder, notificationManager);
-				}
-			}
-		});
+					}
+				});
 
 
 	}

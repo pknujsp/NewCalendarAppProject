@@ -1,10 +1,6 @@
 package com.zerodsoft.scheduleweather.weather.dataprocessing;
 
 import android.content.Context;
-import android.os.RemoteException;
-import android.service.carrier.CarrierMessagingService;
-
-import androidx.annotation.NonNull;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -81,7 +77,7 @@ public class VilageFcstProcessing extends WeatherDataProcessing<VilageFcstResult
 											weatherDbRepository.update(LATITUDE, LONGITUDE, WeatherDataDTO.VILAGE_FCST, result.toString()
 													, vilageFcstWeatherDataDTO.getDownloadedDate(), new DbQueryCallback<Boolean>() {
 														@Override
-														public void onResultSuccessful(Boolean resultDto) {
+														public void onResultSuccessful(Boolean result) {
 
 														}
 
@@ -93,7 +89,7 @@ public class VilageFcstProcessing extends WeatherDataProcessing<VilageFcstResult
 										} else {
 											weatherDbRepository.insert(vilageFcstWeatherDataDTO, new DbQueryCallback<WeatherDataDTO>() {
 												@Override
-												public void onResultSuccessful(WeatherDataDTO resultDto) {
+												public void onResultSuccessful(WeatherDataDTO result) {
 
 												}
 

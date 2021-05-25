@@ -416,7 +416,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements Restaur
 				public void onReceiveResult(@NonNull Boolean hasDetailLocation) throws RemoteException {
 
 					if (hasDetailLocation) {
-						locationViewModel.getLocation(CALENDAR_ID, EVENT_ID, new CarrierMessagingService.ResultCallback<LocationDTO>() {
+						locationViewModel.getLocation(, EVENT_ID, new CarrierMessagingService.ResultCallback<LocationDTO>() {
 							@Override
 							public void onReceiveResult(@NonNull LocationDTO locationDTO) throws RemoteException {
 								if (selectedLocationDtoInEvent == null) {
