@@ -33,202 +33,169 @@ import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LocationSearchDialogFragment extends DialogFragment implements IndicatorCreater, OnClickedLocationItem, OnSelectedNewLocation
-{
-    public static final String TAG = "LocationSearchDialogFragment";
+public class LocationSearchDialogFragment extends DialogFragment implements IndicatorCreater, OnClickedLocationItem, OnSelectedNewLocation {
+	public static final String TAG = "LocationSearchDialogFragment";
 
-    private final OnSelectedNewLocation onSelectedNewLocation;
+	private final OnSelectedNewLocation onSelectedNewLocation;
 
-    private FragmentLocationSearchDialogBinding binding;
-    private SearchResultListAdapter searchResultListAdapter;
-    private OnPageCallback onPageCallback;
-    private String searchWord;
+	private FragmentLocationSearchDialogBinding binding;
+	private SearchResultListAdapter searchResultListAdapter;
+	private OnPageCallback onPageCallback;
+	private String searchWord;
 
-    public LocationSearchDialogFragment(OnSelectedNewLocation onSelectedNewLocation)
-    {
-        this.onSelectedNewLocation = onSelectedNewLocation;
-    }
+	public LocationSearchDialogFragment(OnSelectedNewLocation onSelectedNewLocation) {
+		this.onSelectedNewLocation = onSelectedNewLocation;
+	}
 
-    @Override
-    public void onCreate(Bundle savedInstanceState)
-    {
-        super.onCreate(savedInstanceState);
-        setStyle(STYLE_NO_TITLE, R.style.AppTheme_FullScreenDialog);
-    }
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setStyle(STYLE_NO_TITLE, R.style.AppTheme_FullScreenDialog);
+	}
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState)
-    {
-        binding = FragmentLocationSearchDialogBinding.inflate(inflater);
-        return binding.getRoot();
-    }
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+	                         Bundle savedInstanceState) {
+		binding = FragmentLocationSearchDialogBinding.inflate(inflater);
+		return binding.getRoot();
+	}
 
-    @Override
-    public void setIndicator(int fragmentSize)
-    {
-        binding.viewpagerIndicator.createDot(0, fragmentSize);
-    }
+	@Override
+	public void setIndicator(int fragmentSize) {
+		binding.viewpagerIndicator.createDot(0, fragmentSize);
+	}
 
 
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
-    {
-        super.onViewCreated(view, savedInstanceState);
+	@Override
+	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
 
-        Bundle bundle = getArguments();
-        searchWord = bundle.getString("searchWord");
+		Bundle bundle = getArguments();
+		searchWord = bundle.getString("searchWord");
 
-        setSearchView();
-    }
+		setSearchView();
+	}
 
-    @Override
-    public void onStart()
-    {
-        super.onStart();
-    }
+	@Override
+	public void onStart() {
+		super.onStart();
+	}
 
-    @Override
-    public void onDetach()
-    {
-        super.onDetach();
-    }
+	@Override
+	public void onDetach() {
+		super.onDetach();
+	}
 
-    private void setSearchView()
-    {
-        binding.searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener()
-        {
-            @Override
-            public boolean onQueryTextSubmit(String query)
-            {
-                if (!query.isEmpty())
-                {
-                    search(query);
-                    return true;
-                } else
-                {
-                    return false;
-                }
-            }
+	private void setSearchView() {
+		binding.searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+			@Override
+			public boolean onQueryTextSubmit(String query) {
+				if (!query.isEmpty()) {
+					search(query);
+					return true;
+				} else {
+					return false;
+				}
+			}
 
-            @Override
-            public boolean onQueryTextChange(String query)
-            {
-                return false;
-            }
-        });
+			@Override
+			public boolean onQueryTextChange(String query) {
+				return false;
+			}
+		});
 
-        binding.searchView.setQuery(searchWord, true);
-    }
+		binding.searchView.setQuery(searchWord, true);
+	}
 
-    private void search(String searchWord)
-    {
-        final LocalApiPlaceParameter addressParameter = LocalParameterUtil.getAddressParameter(searchWord, LocalApiPlaceParameter.DEFAULT_SIZE
-                , LocalApiPlaceParameter.DEFAULT_PAGE);
-        final LocalApiPlaceParameter placeParameter = LocalParameterUtil.getPlaceParameter(searchWord, null, null,
-                LocalApiPlaceParameter.DEFAULT_SIZE, LocalApiPlaceParameter.DEFAULT_PAGE, LocalApiPlaceParameter.SEARCH_CRITERIA_SORT_TYPE_ACCURACY);
+	private void search(String searchWord) {
+		final LocalApiPlaceParameter addressParameter = LocalParameterUtil.getAddressParameter(searchWord, LocalApiPlaceParameter.DEFAULT_SIZE
+				, LocalApiPlaceParameter.DEFAULT_PAGE);
+		final LocalApiPlaceParameter placeParameter = LocalParameterUtil.getPlaceParameter(searchWord, null, null,
+				LocalApiPlaceParameter.DEFAULT_SIZE, LocalApiPlaceParameter.DEFAULT_PAGE, LocalApiPlaceParameter.SEARCH_CRITERIA_SORT_TYPE_ACCURACY);
 
-        // 주소, 주소 & 장소, 장소, 검색 결과없음 인 경우
-        SearchResultChecker.checkExisting(addressParameter, placeParameter, new CheckerCallback<DataWrapper<KakaoLocalResponse>>()
-        {
-            @Override
-            public void onResult()
-            {
-                // 오류 여부 확인
-                for (DataWrapper<KakaoLocalResponse> response : list)
-                {
-                    if (response.getException() != null)
-                    {
-                        // error, exception
-                        binding.errorText.setText(getContext().getString(R.string.error) + ", (" + response.getException().getMessage() + ")");
-                        binding.errorText.setVisibility(View.VISIBLE);
-                        return;
-                    }
-                }
+		// 주소, 주소 & 장소, 장소, 검색 결과없음 인 경우
+		SearchResultChecker.checkExisting(addressParameter, placeParameter, new CheckerCallback<DataWrapper<KakaoLocalResponse>>() {
+			@Override
+			public void onResult() {
+				// 오류 여부 확인
+				for (DataWrapper<KakaoLocalResponse> response : list) {
+					if (response.getException() != null) {
+						// error, exception
+						binding.errorText.setText(getContext().getString(R.string.error) + ", (" + response.getException().getMessage() + ")");
+						binding.errorText.setVisibility(View.VISIBLE);
+						return;
+					}
+				}
 
-                // 오류 없으면 진행
-                int totalResultCount = 0;
+				// 오류 없으면 진행
+				int totalResultCount = 0;
 
-                for (DataWrapper<KakaoLocalResponse> response : list)
-                {
-                    if (response.getData() instanceof AddressKakaoLocalResponse)
-                    {
-                        totalResultCount += response.getData().size();
-                    } else if (response.getData() instanceof PlaceKakaoLocalResponse)
-                    {
-                        totalResultCount += response.getData().size();
-                    }
-                }
+				for (DataWrapper<KakaoLocalResponse> response : list) {
+					if (response.getData() instanceof AddressKakaoLocalResponse) {
+						totalResultCount += response.getData().size();
+					} else if (response.getData() instanceof PlaceKakaoLocalResponse) {
+						totalResultCount += response.getData().size();
+					}
+				}
 
-                if (totalResultCount == 0)
-                {
-                    // 검색 결과 없음
-                    binding.errorText.setText(getContext().getString(R.string.not_founded_search_result));
-                    binding.errorText.setVisibility(View.VISIBLE);
-                    // searchview클릭 후 재검색 시 search fragment로 이동
-                } else
-                {
-                    List<Fragment> fragments = new ArrayList<>();
+				if (totalResultCount == 0) {
+					// 검색 결과 없음
+					binding.errorText.setText(getContext().getString(R.string.not_founded_search_result));
+					binding.errorText.setVisibility(View.VISIBLE);
+					// searchview클릭 후 재검색 시 search fragment로 이동
+				} else {
+					List<Fragment> fragments = new ArrayList<>();
 
-                    for (DataWrapper<KakaoLocalResponse> response : list)
-                    {
-                        if (response.getData() instanceof PlaceKakaoLocalResponse)
-                        {
-                            PlaceKakaoLocalResponse placeKakaoLocalResponse = (PlaceKakaoLocalResponse) response.getData();
+					for (DataWrapper<KakaoLocalResponse> response : list) {
+						if (response.getData() instanceof PlaceKakaoLocalResponse) {
+							PlaceKakaoLocalResponse placeKakaoLocalResponse = (PlaceKakaoLocalResponse) response.getData();
 
-                            if (!placeKakaoLocalResponse.getPlaceDocuments().isEmpty())
-                            {
-                                fragments.add(new PlacesListFragment(LocationSearchDialogFragment.this, searchWord));
-                            }
-                        } else if (response.getData() instanceof AddressKakaoLocalResponse)
-                        {
-                            AddressKakaoLocalResponse addressKakaoLocalResponse = (AddressKakaoLocalResponse) response.getData();
+							if (!placeKakaoLocalResponse.getPlaceDocuments().isEmpty()) {
+								fragments.add(new PlacesListFragment(LocationSearchDialogFragment.this, searchWord));
+							}
+						} else if (response.getData() instanceof AddressKakaoLocalResponse) {
+							AddressKakaoLocalResponse addressKakaoLocalResponse = (AddressKakaoLocalResponse) response.getData();
 
-                            if (!addressKakaoLocalResponse.getAddressResponseDocumentsList().isEmpty())
-                            {
-                                fragments.add(new AddressesListFragment(LocationSearchDialogFragment.this, searchWord));
-                            }
-                        }
-                    }
+							if (!addressKakaoLocalResponse.getAddressResponseDocumentsList().isEmpty()) {
+								fragments.add(new AddressesListFragment(LocationSearchDialogFragment.this, searchWord));
+							}
+						}
+					}
 
-                    searchResultListAdapter = new SearchResultListAdapter(LocationSearchDialogFragment.this);
-                    searchResultListAdapter.setFragments(fragments);
-                    binding.listViewpager.setAdapter(searchResultListAdapter);
+					searchResultListAdapter = new SearchResultListAdapter(LocationSearchDialogFragment.this);
+					searchResultListAdapter.setFragments(fragments);
+					binding.listViewpager.setAdapter(searchResultListAdapter);
 
-                    onPageCallback = new OnPageCallback();
-                    binding.listViewpager.registerOnPageChangeCallback(onPageCallback);
-                    binding.viewpagerIndicator.createDot(0, fragments.size());
-                }
-            }
-        });
-    }
+					onPageCallback = new OnPageCallback();
+					binding.listViewpager.registerOnPageChangeCallback(onPageCallback);
+					binding.viewpagerIndicator.createDot(0, fragments.size());
+				}
+			}
+		});
+	}
 
-    @Override
-    public void onClickedLocationItem(KakaoLocalDocument kakaoLocalDocument)
-    {
-        //map으로 표시
-        LocationItemDetailDialogFragment locationItemDetailDialogFragment = new LocationItemDetailDialogFragment(this::onSelectedNewLocation, kakaoLocalDocument);
-        locationItemDetailDialogFragment.show(getParentFragmentManager(), "");
-    }
+	@Override
+	public void onClickedLocationItem(KakaoLocalDocument kakaoLocalDocument) {
+		//map으로 표시
+		LocationItemDetailDialogFragment locationItemDetailDialogFragment = new LocationItemDetailDialogFragment(this, kakaoLocalDocument);
+		locationItemDetailDialogFragment.show(getParentFragmentManager(), "");
+	}
 
-    @Override
-    public void onSelectedNewLocation(LocationDTO locationDTO)
-    {
-        dismiss();
-        onSelectedNewLocation.onSelectedNewLocation(locationDTO);
-    }
+	@Override
+	public void onSelectedNewLocation(LocationDTO locationDTO) {
+		dismiss();
+		onSelectedNewLocation.onSelectedNewLocation(locationDTO);
+	}
 
 
-    class OnPageCallback extends ViewPager2.OnPageChangeCallback
-    {
-        public int lastPosition;
+	class OnPageCallback extends ViewPager2.OnPageChangeCallback {
+		public int lastPosition;
 
-        @Override
-        public void onPageSelected(int position)
-        {
-            super.onPageSelected(position);
-            lastPosition = position;
-            binding.viewpagerIndicator.selectDot(position);
-        }
-    }
+		@Override
+		public void onPageSelected(int position) {
+			super.onPageSelected(position);
+			lastPosition = position;
+			binding.viewpagerIndicator.selectDot(position);
+		}
+	}
 }

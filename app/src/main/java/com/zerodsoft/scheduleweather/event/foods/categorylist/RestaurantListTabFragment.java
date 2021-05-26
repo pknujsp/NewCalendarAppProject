@@ -18,6 +18,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.common.interfaces.OnHiddenFragmentListener;
 import com.zerodsoft.scheduleweather.databinding.FragmentFoodCategoryTabBinding;
 import com.zerodsoft.scheduleweather.event.foods.adapter.FoodCategoryFragmentListAdapter;
@@ -101,9 +102,9 @@ public class RestaurantListTabFragment extends Fragment implements NewInstanceMa
 
 		favoriteRestaurantViewModel = new ViewModelProvider(this).get(FavoriteLocationViewModel.class);
 		customFoodCategoryViewModel = new ViewModelProvider(this).get(CustomFoodMenuViewModel.class);
-		customFoodCategoryViewModel.select(new CarrierMessagingService.ResultCallback<List<CustomFoodMenuDTO>>() {
+		customFoodCategoryViewModel.select(new DbQueryCallback<List<CustomFoodMenuDTO>>() {
 			@Override
-			public void onReceiveResult(@NonNull List<CustomFoodMenuDTO> resultList) throws RemoteException {
+			public void onResultSuccessful(List<CustomFoodMenuDTO> resultList) {
 				requireActivity().runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
@@ -141,6 +142,11 @@ public class RestaurantListTabFragment extends Fragment implements NewInstanceMa
 						binding.tabs.selectTab(binding.tabs.getTabAt(selectedIndex));
 					}
 				});
+			}
+
+			@Override
+			public void onResultNoData() {
+
 			}
 		});
 

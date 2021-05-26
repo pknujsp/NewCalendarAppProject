@@ -378,7 +378,6 @@ public class MidFcstFragment extends Fragment {
 			MIN_MAX_TEMP_LINE_PAINT.setStyle(Paint.Style.FILL);
 			MIN_MAX_TEMP_LINE_PAINT.setStrokeWidth(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1f, getResources().getDisplayMetrics()));
 
-
 			CIRCLE_PAINT = new Paint();
 			CIRCLE_PAINT.setAntiAlias(true);
 			CIRCLE_PAINT.setColor(Color.GRAY);

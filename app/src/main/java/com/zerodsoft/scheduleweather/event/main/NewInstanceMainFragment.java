@@ -95,6 +95,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements Restaur
 	private LocationDTO selectedLocationDtoInEvent;
 	private TextView[] functionButtons;
 	private ImageView functionButton;
+	LinearLayout functionBtnsRootLayout;
 	private Marker selectedLocationInEventMarker;
 	private InfoWindow selectedLocationInEventInfoWindow;
 
@@ -226,22 +227,20 @@ public class NewInstanceMainFragment extends NaverMapFragment implements Restaur
 				setHeightOfBottomSheet(DEFAULT_HEIGHT_OF_BOTTOMSHEET, restaurantsBottomSheet, restaurantsBottomSheetBehavior);
 				setHeightOfBottomSheet(DEFAULT_HEIGHT_OF_BOTTOMSHEET, placeCategoryBottomSheet, placeCategoryBottomSheetBehavior);
 
-				locationViewModel.hasDetailLocation(CALENDAR_ID, EVENT_ID, new DbQueryCallback<Boolean>() {
+				locationViewModel.getLocation(CALENDAR_ID, EVENT_ID, new DbQueryCallback<LocationDTO>() {
 					@Override
-					public void onResultSuccessful(Boolean result) {
-						requireActivity().runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								if (!result) {
-									functionButtons[0].callOnClick();
-								}
-							}
-						});
+					public void onResultSuccessful(LocationDTO result) {
+
 					}
 
 					@Override
 					public void onResultNoData() {
-
+						requireActivity().runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								functionButtons[0].callOnClick();
+							}
+						});
 					}
 				});
 			}
@@ -267,6 +266,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements Restaur
 		functionButton.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.expand_less_icon));
 		functionButton.setElevation(3f);
 		functionButton.setClickable(true);
+		functionButton.setId(R.id.function_btn_in_instance_main_fragment);
 
 		final int btnPadding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4f, getResources().getDisplayMetrics());
 		final int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, getResources().getDisplayMetrics());
@@ -283,7 +283,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements Restaur
 
 		binding.naverMapButtonsLayout.getRoot().addView(functionButton, layoutParams);
 		functionButton.setOnClickListener(new View.OnClickListener() {
-			boolean isExpanded = false;
+			boolean isExpanded = true;
 
 			@Override
 			public void onClick(View view) {
@@ -303,6 +303,12 @@ public class NewInstanceMainFragment extends NaverMapFragment implements Restaur
 		functionButtons = new TextView[3];
 		String[] functionNameList = {getString(R.string.instance_info), getString(R.string.weather), getString(R.string.restaurant)};
 
+		functionBtnsRootLayout = new LinearLayout(getContext());
+		functionBtnsRootLayout.setOrientation(LinearLayout.VERTICAL);
+
+		final int functionBtnBottomMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 12f,
+				getResources().getDisplayMetrics());
+
 		for (int i = 0; i < functionButtons.length; i++) {
 			functionButtons[i] = new TextView(getContext());
 			functionButtons[i].setBackground(ContextCompat.getDrawable(getContext(), R.drawable.map_button_rect));
@@ -312,17 +318,23 @@ public class NewInstanceMainFragment extends NaverMapFragment implements Restaur
 			functionButtons[i].setElevation(3f);
 			functionButtons[i].setClickable(true);
 			functionButtons[i].setPadding(padding, padding, padding, padding);
-			functionButtons[i].setVisibility(View.GONE);
 
-			RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-			params.addRule(RelativeLayout.ABOVE, binding.naverMapButtonsLayout.currentAddress.getId());
-			params.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
-			params.bottomMargin = marginBottom;
-			params.leftMargin = marginLeft;
+			LinearLayout.LayoutParams functionBtnsLayout = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+					ViewGroup.LayoutParams.WRAP_CONTENT);
+			functionBtnsLayout.setMargins(0, 0, 0, functionBtnBottomMargin);
 
-			functionButtons[i].setLayoutParams(params);
-			binding.naverMapButtonsLayout.getRoot().addView(functionButtons[i]);
+			functionButtons[i].setLayoutParams(functionBtnsLayout);
+			functionBtnsRootLayout.addView(functionButtons[i]);
 		}
+
+		RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+		params.addRule(RelativeLayout.ABOVE, functionButton.getId());
+		params.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+		params.bottomMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4f, getResources().getDisplayMetrics());
+		params.leftMargin = marginLeft;
+
+		functionBtnsRootLayout.setLayoutParams(params);
+		binding.naverMapButtonsLayout.getRoot().addView(functionBtnsRootLayout);
 
 		functionButtons[0].setOnClickListener(new View.OnClickListener() {
 			@Override
@@ -367,33 +379,15 @@ public class NewInstanceMainFragment extends NaverMapFragment implements Restaur
 				setStateOfBottomSheet(BottomSheetType.RESTAURANT, BottomSheetBehavior.STATE_EXPANDED);
 			}
 		});
-
-		functionButton.callOnClick();
 	}
 
 	private void collapseFunctions() {
-		functionButtons[0].animate().translationY(0);
-		functionButtons[1].animate().translationY(0);
-		functionButtons[2].animate().translationY(0);
-
-		functionButtons[0].setVisibility(View.GONE);
-		functionButtons[1].setVisibility(View.GONE);
-		functionButtons[2].setVisibility(View.GONE);
+		functionBtnsRootLayout.setVisibility(View.GONE);
 	}
 
 
 	private void expandFunctions() {
-		final float y = functionButton.getTranslationY();
-		final float margin = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16f, getResources().getDisplayMetrics());
-		final float fabHeight = functionButton.getHeight();
-
-		functionButtons[2].setVisibility(View.VISIBLE);
-		functionButtons[1].setVisibility(View.VISIBLE);
-		functionButtons[0].setVisibility(View.VISIBLE);
-
-		functionButtons[2].animate().translationY(y - (fabHeight + margin));
-		functionButtons[1].animate().translationY(y - (fabHeight + margin) * 2);
-		functionButtons[0].animate().translationY(y - (fabHeight + margin) * 3);
+		functionBtnsRootLayout.setVisibility(View.VISIBLE);
 	}
 
 	private void setInitInstanceData() {
@@ -417,47 +411,33 @@ public class NewInstanceMainFragment extends NaverMapFragment implements Restaur
 
 	private void setDetailLocationData() {
 		if (hasSimpleLocation()) {
-			locationViewModel.hasDetailLocation(CALENDAR_ID, EVENT_ID, new DbQueryCallback<Boolean>() {
+			locationViewModel.getLocation(CALENDAR_ID, EVENT_ID, new DbQueryCallback<LocationDTO>() {
 				@Override
-				public void onResultSuccessful(Boolean hasDetailLocation) {
-					if (hasDetailLocation) {
-						locationViewModel.getLocation(CALENDAR_ID, EVENT_ID, new DbQueryCallback<LocationDTO>() {
+				public void onResultSuccessful(LocationDTO locationResultDto) {
+					if (selectedLocationDtoInEvent == null) {
+						selectedLocationDtoInEvent = locationResultDto;
+
+						requireActivity().runOnUiThread(new Runnable() {
 							@Override
-							public void onResultSuccessful(LocationDTO locationResultDto) {
-								if (selectedLocationDtoInEvent == null) {
-									selectedLocationDtoInEvent = locationResultDto;
-
-									requireActivity().runOnUiThread(new Runnable() {
-										@Override
-										public void run() {
-											addPlaceCategoryListFragmentIntoBottomSheet();
-											createSelectedLocationMarker();
-										}
-									});
-								} else {
-									if (locationResultDto.equals(selectedLocationDtoInEvent)) {
-									} else {
-										selectedLocationDtoInEvent = locationResultDto;
-
-										requireActivity().runOnUiThread(new Runnable() {
-											@Override
-											public void run() {
-												selectedLocationInEventMarker.setMap(null);
-												selectedLocationInEventMarker = null;
-												createSelectedLocationMarker();
-											}
-										});
-									}
-								}
-							}
-
-							@Override
-							public void onResultNoData() {
-
+							public void run() {
+								addPlaceCategoryListFragmentIntoBottomSheet();
+								createSelectedLocationMarker();
 							}
 						});
 					} else {
+						if (locationResultDto.equals(selectedLocationDtoInEvent)) {
+						} else {
+							selectedLocationDtoInEvent = locationResultDto;
 
+							requireActivity().runOnUiThread(new Runnable() {
+								@Override
+								public void run() {
+									selectedLocationInEventMarker.setMap(null);
+									selectedLocationInEventMarker = null;
+									createSelectedLocationMarker();
+								}
+							});
+						}
 					}
 				}
 
@@ -466,6 +446,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements Restaur
 
 				}
 			});
+
 		}
 
 	}

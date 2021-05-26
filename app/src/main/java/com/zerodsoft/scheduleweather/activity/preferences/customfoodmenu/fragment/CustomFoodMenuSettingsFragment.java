@@ -19,6 +19,7 @@ import android.widget.Toast;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.preferences.customfoodmenu.adapter.CustomFoodMenuAdapter;
+import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.databinding.FragmentCustomFoodMenuSettingsBinding;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.CustomFoodMenuViewModel;
@@ -100,20 +101,22 @@ public class CustomFoodMenuSettingsFragment extends Fragment implements OnClicke
         binding.customFoodMenuRecyclerview.setAdapter(adapter);
 
         viewModel = new ViewModelProvider(this).get(CustomFoodMenuViewModel.class);
-        viewModel.select(new CarrierMessagingService.ResultCallback<List<CustomFoodMenuDTO>>()
-        {
+        viewModel.select(new DbQueryCallback<List<CustomFoodMenuDTO>>() {
             @Override
-            public void onReceiveResult(@NonNull List<CustomFoodMenuDTO> customFoodMenuDTOS) throws RemoteException
-            {
+            public void onResultSuccessful(List<CustomFoodMenuDTO> customFoodMenuResultDto) {
                 requireActivity().runOnUiThread(new Runnable()
                 {
                     @Override
                     public void run()
                     {
-                        adapter.setList(customFoodMenuDTOS);
+                        adapter.setList(customFoodMenuResultDto);
                         adapter.notifyDataSetChanged();
                     }
                 });
+            }
+
+            @Override
+            public void onResultNoData() {
 
             }
         });

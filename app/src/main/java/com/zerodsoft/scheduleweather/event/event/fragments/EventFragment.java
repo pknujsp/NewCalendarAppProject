@@ -250,8 +250,11 @@ public class EventFragment extends BottomSheetDialogFragment {
 			public void onClick(View view) {
 				Intent intent = new Intent(getContext(), EditEventActivity.class);
 				intent.putExtra("requestCode", EventIntentCode.REQUEST_MODIFY_EVENT.value());
-				intent.putExtra(CalendarContract.Events.CALENDAR_ID, CALENDAR_ID);
-				intent.putExtra(CalendarContract.Events._ID, EVENT_ID);
+				intent.putExtra(CalendarContract.Instances.CALENDAR_ID, CALENDAR_ID);
+				intent.putExtra(CalendarContract.Instances.EVENT_ID, EVENT_ID);
+				intent.putExtra(CalendarContract.Instances._ID, INSTANCE_ID);
+				intent.putExtra(CalendarContract.Instances.BEGIN, instanceValues.getAsLong(CalendarContract.Instances.BEGIN));
+				intent.putExtra(CalendarContract.Instances.END, instanceValues.getAsLong(CalendarContract.Instances.END));
 				editInstanceActivityResultLauncher.launch(intent);
 			}
 		});

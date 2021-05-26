@@ -427,7 +427,7 @@ public class UltraSrtFcstFragment extends Fragment {
 			for (String value : tempList) {
 				temp = Integer.parseInt(value);
 				x = COLUMN_WIDTH / 2f + (COLUMN_WIDTH * index);
-				y = (10f * (MAX_TEMP - temp)) * VERTICAL_SPACING + TEXT_HEIGHT + RADIUS;
+				y = MIN_TEMP == MAX_TEMP ? getHeight() / 2f : (10f * (MAX_TEMP - temp)) * VERTICAL_SPACING + TEXT_HEIGHT + RADIUS;
 
 				canvas.drawCircle(x, y, RADIUS, CIRCLE_PAINT);
 				canvas.drawText(value, x, y + RADIUS + TEXT_HEIGHT, TEMP_PAINT);

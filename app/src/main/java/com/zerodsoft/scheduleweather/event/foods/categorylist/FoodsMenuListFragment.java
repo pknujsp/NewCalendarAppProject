@@ -196,6 +196,7 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 						requireActivity().runOnUiThread(new Runnable() {
 							@Override
 							public void run() {
+								foodCriteriaLocationInfoDTO = result;
 								setCriteria(CriteriaLocationType.enumOf(result.getUsingType()));
 							}
 						});
@@ -299,12 +300,7 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 	private void setCriteria(CriteriaLocationType criteriaLocationType) {
 		switch (criteriaLocationType) {
 			case TYPE_SELECTED_LOCATION: {
-
-				try {
-					criteriaLocationDTO = selectedLocationDTO.clone();
-				} catch (CloneNotSupportedException e) {
-					e.printStackTrace();
-				}
+				criteriaLocationDTO = selectedLocationDTO;
 
 				requireActivity().runOnUiThread(new Runnable() {
 					@Override
@@ -336,11 +332,7 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 								coordToAddressDocument.getCoordToAddressAddress().getLatitude(),
 								coordToAddressDocument.getCoordToAddressAddress().getLongitude());
 
-						try {
-							criteriaLocationDTO = locationDTO.clone();
-						} catch (CloneNotSupportedException e) {
-							e.printStackTrace();
-						}
+						criteriaLocationDTO = locationDTO;
 
 						requireActivity().runOnUiThread(new Runnable() {
 							@Override
@@ -572,11 +564,7 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 						coordToAddressDocument.getCoordToAddressAddress().getLatitude(),
 						coordToAddressDocument.getCoordToAddressAddress().getLongitude());
 
-				try {
-					criteriaLocationDTO = locationDTO.clone();
-				} catch (CloneNotSupportedException e) {
-					e.printStackTrace();
-				}
+				criteriaLocationDTO = locationDTO;
 
 				requireActivity().runOnUiThread(new Runnable() {
 					@Override
@@ -597,9 +585,9 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 
 
 	private void setCategories() {
-		customFoodCategoryViewModel.select(new CarrierMessagingService.ResultCallback<List<CustomFoodMenuDTO>>() {
+		customFoodCategoryViewModel.select(new DbQueryCallback<List<CustomFoodMenuDTO>>() {
 			@Override
-			public void onReceiveResult(@NonNull List<CustomFoodMenuDTO> resultList) throws RemoteException {
+			public void onResultSuccessful(List<CustomFoodMenuDTO> resultList) {
 				FoodCategoryAdapter foodCategoryAdapter = new FoodCategoryAdapter(FoodsMenuListFragment.this, COLUMN_COUNT);
 
 				final String[] DEFAULT_FOOD_MENU_NAME_ARR = getResources().getStringArray(R.array.food_menu_list);
@@ -626,6 +614,11 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 						binding.categoryGridview.setAdapter(foodCategoryAdapter);
 					}
 				});
+			}
+
+			@Override
+			public void onResultNoData() {
+
 			}
 		});
 

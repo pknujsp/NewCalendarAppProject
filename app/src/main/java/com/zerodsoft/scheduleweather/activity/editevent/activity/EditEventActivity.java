@@ -230,52 +230,56 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
 				actionBar.setTitle(R.string.modify_event);
 
 				Intent intent = getIntent();
-				final int CALENDAR_ID = intent.getIntExtra(CalendarContract.Events.CALENDAR_ID, 0);
-				final long EVENT_ID = intent.getLongExtra(CalendarContract.Events._ID, 0);
+				final int CALENDAR_ID = intent.getIntExtra(CalendarContract.Instances.CALENDAR_ID, 0);
+				final long EVENT_ID = intent.getLongExtra(CalendarContract.Instances.EVENT_ID, 0);
+				final long INSTANCE_ID = intent.getLongExtra(CalendarContract.Instances._ID, 0);
+				final long BEGIN = intent.getLongExtra(CalendarContract.Instances.BEGIN, 0);
+				final long END = intent.getLongExtra(CalendarContract.Instances.END, 0);
 
-				dataController.putEventValue(CalendarContract.Events._ID, EVENT_ID);
+				dataController.putEventValue(CalendarContract.Instances._ID, EVENT_ID);
 
 				// 이벤트, 알림을 가져온다
+				ContentValues instance = calendarViewModel.getInstance(CALENDAR_ID, INSTANCE_ID, BEGIN, END);
 				ContentValues event = calendarViewModel.getEvent(CALENDAR_ID, EVENT_ID);
 				List<ContentValues> attendeeList = calendarViewModel.getAttendees(CALENDAR_ID, EVENT_ID);
 				// 이벤트, 알림을 가져온다
 
-				dataController.getSavedEventData().getEVENT().putAll(event);
+				dataController.getSavedEventData().getEVENT().putAll(instance);
 				// 제목, 캘린더, 시간, 시간대, 반복, 알림, 설명, 위치, 공개범위, 유효성, 참석자
 				// 알림, 참석자 정보는 따로 불러온다.
 
 				EventData savedEventData = dataController.getSavedEventData();
 				ContentValues savedEvent = savedEventData.getEVENT();
 
-				setDefaultEventColor(savedEvent.getAsString(CalendarContract.Events.ACCOUNT_NAME));
+				setDefaultEventColor(event.getAsString(CalendarContract.Events.ACCOUNT_NAME));
 				//제목
-				binding.titleLayout.title.setText(savedEvent.getAsString(CalendarContract.Events.TITLE));
+				binding.titleLayout.title.setText(savedEvent.getAsString(CalendarContract.Instances.TITLE));
 
 				//캘린더 수정 불가
 				binding.calendarLayout.getRoot().setVisibility(View.GONE);
 
 				// allday switch
-				binding.timeLayout.timeAlldaySwitch.setChecked(savedEvent.getAsBoolean(CalendarContract.Events.ALL_DAY));
+				binding.timeLayout.timeAlldaySwitch.setChecked(savedEvent.getAsBoolean(CalendarContract.Instances.ALL_DAY));
 
-				final long dtStart = savedEvent.getAsLong(CalendarContract.Events.DTSTART);
-				final long dtEnd = savedEvent.getAsLong(CalendarContract.Events.DTEND);
-				dataController.putEventValue(CalendarContract.Events.DTSTART, dtStart);
-				dataController.putEventValue(CalendarContract.Events.DTEND, dtEnd);
+				final long begin = savedEvent.getAsLong(CalendarContract.Instances.BEGIN);
+				final long end = savedEvent.getAsLong(CalendarContract.Instances.END);
+				dataController.putEventValue(CalendarContract.Instances.BEGIN, begin);
+				dataController.putEventValue(CalendarContract.Instances.END, end);
 
 				//시각
-				setDateText(START_DATETIME, dtStart);
-				setDateText(END_DATETIME, dtEnd);
-				setTimeText(START_DATETIME, dtStart);
-				setTimeText(END_DATETIME, dtEnd);
+				setDateText(START_DATETIME, begin);
+				setDateText(END_DATETIME, end);
+				setTimeText(START_DATETIME, begin);
+				setTimeText(END_DATETIME, end);
 
 				// 시간대
-				setTimeZoneText(savedEvent.getAsString(CalendarContract.Events.EVENT_TIMEZONE));
+				setTimeZoneText(savedEvent.getAsString(CalendarContract.Instances.EVENT_TIMEZONE));
 
 				// 반복
-				setRecurrenceText(savedEvent.getAsString(CalendarContract.Events.RRULE));
+				setRecurrenceText(savedEvent.getAsString(CalendarContract.Instances.RRULE));
 
 				// 알림
-				if (savedEvent.getAsBoolean(CalendarContract.Events.HAS_ALARM)) {
+				if (savedEvent.getAsBoolean(CalendarContract.Instances.HAS_ALARM)) {
 					List<ContentValues> reminderList = calendarViewModel.getReminders(CALENDAR_ID, EVENT_ID);
 					dataController.getSavedEventData().getREMINDERS().addAll(reminderList);
 					dataController.getModifiedEventData().getREMINDERS().addAll(reminderList);
@@ -283,16 +287,16 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
 				}
 
 				// 설명
-				binding.descriptionLayout.descriptionEdittext.setText(savedEvent.getAsString(CalendarContract.Events.DESCRIPTION));
+				binding.descriptionLayout.descriptionEdittext.setText(savedEvent.getAsString(CalendarContract.Instances.DESCRIPTION));
 
 				// 위치
-				binding.locationLayout.eventLocation.setText(savedEvent.getAsString(CalendarContract.Events.EVENT_LOCATION));
+				binding.locationLayout.eventLocation.setText(savedEvent.getAsString(CalendarContract.Instances.EVENT_LOCATION));
 
 				// 접근 범위
-				setAccessLevelText(savedEvent.getAsInteger(CalendarContract.Events.ACCESS_LEVEL));
+				setAccessLevelText(savedEvent.getAsInteger(CalendarContract.Instances.ACCESS_LEVEL));
 
 				// 유효성
-				setAvailabilityText(savedEvent.getAsInteger(CalendarContract.Events.AVAILABILITY));
+				setAvailabilityText(savedEvent.getAsInteger(CalendarContract.Instances.AVAILABILITY));
 
 				if (!attendeeList.isEmpty()) {
 					dataController.getSavedEventData().getATTENDEES().addAll(attendeeList);

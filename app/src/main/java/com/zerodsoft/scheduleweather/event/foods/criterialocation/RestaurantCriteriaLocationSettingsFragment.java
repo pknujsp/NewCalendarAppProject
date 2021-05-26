@@ -346,10 +346,10 @@ public class RestaurantCriteriaLocationSettingsFragment extends Fragment impleme
 	}
 
 	@Override
-	public void onSelectedNewLocation(LocationDTO locationDTO) {
-		foodCriteriaLocationSearchHistoryViewModel.insertByEventId(iGetEventValue.getCalendarId(), iGetEventValue.getEventId(), locationDTO.getPlaceName(), locationDTO.getAddressName(),
-				locationDTO.getRoadAddressName()
-				, String.valueOf(locationDTO.getLatitude()), String.valueOf(locationDTO.getLongitude()), locationDTO.getLocationType(),
+	public void onSelectedNewLocation(LocationDTO newLocationDto) {
+		foodCriteriaLocationSearchHistoryViewModel.insertByEventId(iGetEventValue.getCalendarId(), iGetEventValue.getEventId(), newLocationDto.getPlaceName(), newLocationDto.getAddressName(),
+				newLocationDto.getRoadAddressName()
+				, String.valueOf(newLocationDto.getLatitude()), String.valueOf(newLocationDto.getLongitude()), newLocationDto.getLocationType(),
 				new DbQueryCallback<List<FoodCriteriaLocationSearchHistoryDTO>>() {
 					@Override
 					public void onResultSuccessful(List<FoodCriteriaLocationSearchHistoryDTO> foodCriteriaLocationSearchHistoryResultDtos) {

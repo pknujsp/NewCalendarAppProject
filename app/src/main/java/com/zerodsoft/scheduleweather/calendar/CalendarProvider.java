@@ -195,9 +195,7 @@ public class CalendarProvider implements ICalendarProvider {
 		if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
 			String[] selectionArgs = {String.valueOf(eventId), String.valueOf(calendarId)};
 
-			ContentResolver contentResolver = context.getContentResolver();
-
-			Cursor cursor = contentResolver.query(CalendarContract.Events.CONTENT_URI, null, EVENT_QUERY, selectionArgs, null);
+			Cursor cursor = context.getContentResolver().query(CalendarContract.Events.CONTENT_URI, null, EVENT_QUERY, selectionArgs, null);
 			ContentValues event = new ContentValues();
 
 			if (cursor != null) {

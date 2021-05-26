@@ -8,4 +8,5 @@
     <item name="place_category_fragment_container" type="id" />
     <item name="place_category_chips_scroll_layout" type="id" />
     <item name="food_menu_chips_scroll_layout" type="id" />
+    <item name="function_btn_in_instance_main_fragment" type="id" />
 </resources>
