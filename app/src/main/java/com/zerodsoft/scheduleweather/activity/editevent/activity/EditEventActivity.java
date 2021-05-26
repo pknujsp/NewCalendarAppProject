@@ -54,6 +54,7 @@ import com.zerodsoft.scheduleweather.activity.editevent.interfaces.IEventRepeat;
 import com.zerodsoft.scheduleweather.activity.preferences.ColorListAdapter;
 import com.zerodsoft.scheduleweather.common.enums.EventIntentCode;
 import com.zerodsoft.scheduleweather.common.enums.LocationIntentCode;
+import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.databinding.ActivityEditEventBinding;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
@@ -1036,10 +1037,15 @@ public class EditEventActivity extends AppCompatActivity implements IEventRepeat
 		if (event.containsKey(CalendarContract.Events.EVENT_LOCATION)) {
 			locationDTO.setCalendarId(CALENDAR_ID);
 			locationDTO.setEventId(NEW_EVENT_ID);
-			locationViewModel.addLocation(locationDTO, new CarrierMessagingService.ResultCallback<Boolean>() {
+			locationViewModel.addLocation(locationDTO, new DbQueryCallback<LocationDTO>() {
 				@Override
-				public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException {
+				public void onResultSuccessful(LocationDTO result) {
 					finish();
+				}
+
+				@Override
+				public void onResultNoData() {
+
 				}
 			});
 		} else {

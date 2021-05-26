@@ -42,6 +42,7 @@ import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.common.enums.EventIntentCode;
 import com.zerodsoft.scheduleweather.common.enums.LocationIntentCode;
+import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.databinding.EventFragmentBinding;
 import com.zerodsoft.scheduleweather.event.common.DetailLocationSelectorKey;
 import com.zerodsoft.scheduleweather.event.common.SelectionDetailLocationActivity;
@@ -207,19 +208,24 @@ public class EventFragment extends BottomSheetDialogFragment {
 		binding.selectDetailLocationFab.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				locationViewModel.hasDetailLocation(CALENDAR_ID, EVENT_ID, new CarrierMessagingService.ResultCallback<Boolean>() {
+				locationViewModel.hasDetailLocation(CALENDAR_ID, EVENT_ID, new DbQueryCallback<Boolean>() {
 					@Override
-					public void onReceiveResult(@NonNull Boolean hasDetailLocation) throws RemoteException {
-						getActivity().runOnUiThread(new Runnable() {
+					public void onResultSuccessful(Boolean hasDetailLocation) {
+						requireActivity().runOnUiThread(new Runnable() {
 							@Override
 							public void run() {
 								if (hasDetailLocation) {
-									locationViewModel.getLocation(, EVENT_ID, new CarrierMessagingService.ResultCallback<LocationDTO>() {
+									locationViewModel.getLocation(CALENDAR_ID, EVENT_ID, new DbQueryCallback<LocationDTO>() {
 										@Override
-										public void onReceiveResult(@NonNull LocationDTO locationDTO) throws RemoteException {
-											if (!locationDTO.isEmpty()) {
-												startEditLocationActivity(locationDTO);
+										public void onResultSuccessful(LocationDTO locationResultDto) {
+											if (!locationResultDto.isEmpty()) {
+												startEditLocationActivity(locationResultDto);
 											}
+										}
+
+										@Override
+										public void onResultNoData() {
+
 										}
 									});
 								} else {
@@ -227,6 +233,11 @@ public class EventFragment extends BottomSheetDialogFragment {
 								}
 							}
 						});
+					}
+
+					@Override
+					public void onResultNoData() {
+
 					}
 				});
 
@@ -717,21 +728,21 @@ public class EventFragment extends BottomSheetDialogFragment {
 		locationDTO.setEventId(EVENT_ID);
 
 		//선택된 위치를 DB에 등록
-		locationViewModel.addLocation(locationDTO, new CarrierMessagingService.ResultCallback<Boolean>() {
+		locationViewModel.addLocation(locationDTO, new DbQueryCallback<LocationDTO>() {
 			@Override
-			public void onReceiveResult(@NonNull Boolean isInserted) throws RemoteException {
-				if (isInserted) {
-					requireActivity().runOnUiThread(new Runnable() {
-						@Override
-						public void run() {
-							iRefreshView.refreshView();
-							dismiss();
+			public void onResultSuccessful(LocationDTO result) {
+				requireActivity().runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						iRefreshView.refreshView();
+						dismiss();
+					}
+				});
 
-						}
-					});
-				} else {
+			}
 
-				}
+			@Override
+			public void onResultNoData() {
 
 			}
 		});
@@ -742,40 +753,43 @@ public class EventFragment extends BottomSheetDialogFragment {
 		// 선택된 위치를 DB에 등록
 		locationDTO.setCalendarId(CALENDAR_ID);
 		locationDTO.setEventId(EVENT_ID);
-		locationViewModel.addLocation(locationDTO, new CarrierMessagingService.ResultCallback<Boolean>() {
+		locationViewModel.addLocation(locationDTO, new DbQueryCallback<LocationDTO>() {
 			@Override
-			public void onReceiveResult(@NonNull Boolean isAdded) throws RemoteException {
-				if (isAdded) {
-					requireActivity().runOnUiThread(new Runnable() {
-						@Override
-						public void run() {
-							iRefreshView.refreshView();
-							dismiss();
+			public void onResultSuccessful(LocationDTO result) {
+				requireActivity().runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						iRefreshView.refreshView();
+						dismiss();
 
-						}
-					});
-				} else {
+					}
+				});
+			}
 
-				}
+			@Override
+			public void onResultNoData() {
+
 			}
 		});
 	}
 
 	private void deletedDetailLocation() {
-		locationViewModel.removeLocation(CALENDAR_ID, EVENT_ID, new CarrierMessagingService.ResultCallback<Boolean>() {
+		locationViewModel.removeLocation(CALENDAR_ID, EVENT_ID, new DbQueryCallback<Boolean>() {
 			@Override
-			public void onReceiveResult(@NonNull Boolean isRemoved) throws RemoteException {
-				if (isRemoved) {
-					requireActivity().runOnUiThread(new Runnable() {
-						@Override
-						public void run() {
-							iRefreshView.refreshView();
-							dismiss();
-						}
-					});
-				} else {
+			public void onResultSuccessful(Boolean result) {
+				requireActivity().runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						iRefreshView.refreshView();
+						dismiss();
+					}
+				});
 
-				}
+			}
+
+			@Override
+			public void onResultNoData() {
+
 			}
 		});
 	}

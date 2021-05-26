@@ -11,54 +11,50 @@ import androidx.annotation.NonNull;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationHistoryViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationInfoViewModel;
 import com.zerodsoft.scheduleweather.event.main.NewInstanceMainFragment;
 
-public class CalendarInstanceUtil
-{
-    private CalendarInstanceUtil()
-    {
-    }
+public class CalendarInstanceUtil {
+	private CalendarInstanceUtil() {
+	}
 
 
-    public static boolean deleteEvent(CalendarViewModel calendarViewModel, LocationViewModel locationViewModel, FoodCriteriaLocationInfoViewModel foodCriteriaLocationInfoViewModel,
-                                      FoodCriteriaLocationHistoryViewModel foodCriteriaLocationHistoryViewModel, final int CALENDAR_ID, final long EVENT_ID)
-    {
-        // 참석자 - 알림 - 이벤트 순으로 삭제 (외래키 때문)
-        // db column error
-        calendarViewModel.deleteEvent(CALENDAR_ID, EVENT_ID);
-        locationViewModel.removeLocation(CALENDAR_ID, EVENT_ID, new CarrierMessagingService.ResultCallback<Boolean>()
-        {
-            @Override
-            public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
-            {
+	public static boolean deleteEvent(CalendarViewModel calendarViewModel, LocationViewModel locationViewModel, FoodCriteriaLocationInfoViewModel foodCriteriaLocationInfoViewModel,
+	                                  FoodCriteriaLocationHistoryViewModel foodCriteriaLocationHistoryViewModel, final int CALENDAR_ID, final long EVENT_ID) {
+		// 참석자 - 알림 - 이벤트 순으로 삭제 (외래키 때문)
+		// db column error
+		calendarViewModel.deleteEvent(CALENDAR_ID, EVENT_ID);
+		locationViewModel.removeLocation(CALENDAR_ID, EVENT_ID, new DbQueryCallback<Boolean>() {
+			@Override
+			public void onResultSuccessful(Boolean result) {
 
-            }
-        });
-        foodCriteriaLocationInfoViewModel.deleteByEventId(CALENDAR_ID, EVENT_ID, new CarrierMessagingService.ResultCallback<Boolean>()
-        {
-            @Override
-            public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
-            {
+			}
 
-            }
-        });
-        foodCriteriaLocationHistoryViewModel.deleteByEventId(CALENDAR_ID, EVENT_ID, new CarrierMessagingService.ResultCallback<Boolean>()
-        {
-            @Override
-            public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException
-            {
+			@Override
+			public void onResultNoData() {
 
-            }
-        });
-        // 삭제 완료 후 캘린더 화면으로 나가고, 새로고침한다.
-        return true;
-    }
+			}
+		});
+		foodCriteriaLocationInfoViewModel.deleteByEventId(CALENDAR_ID, EVENT_ID, new CarrierMessagingService.ResultCallback<Boolean>() {
+			@Override
+			public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException {
 
-    private void deleteSubsequentIncludingThis()
-    {
+			}
+		});
+		foodCriteriaLocationHistoryViewModel.deleteByEventId(CALENDAR_ID, EVENT_ID, new CarrierMessagingService.ResultCallback<Boolean>() {
+			@Override
+			public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException {
+
+			}
+		});
+		// 삭제 완료 후 캘린더 화면으로 나가고, 새로고침한다.
+		return true;
+	}
+
+	private void deleteSubsequentIncludingThis() {
         /*
         // 이벤트의 반복 UNTIL을 현재 인스턴스의 시작날짜로 수정
         ContentValues recurrenceData = viewModel.getRecurrence(calendarId, eventId);
@@ -76,13 +72,12 @@ public class CalendarInstanceUtil
         viewModel.updateEvent(recurrenceData);
 
          */
-        // Toast.makeText(getActivity(), "작성 중", Toast.LENGTH_SHORT).show();
-    }
+		// Toast.makeText(getActivity(), "작성 중", Toast.LENGTH_SHORT).show();
+	}
 
 
-    public static boolean exceptThisInstance(CalendarViewModel calendarViewModel, final long BEGIN, final long EVENT_ID)
-    {
-        calendarViewModel.deleteInstance(BEGIN, EVENT_ID);
-        return true;
-    }
+	public static boolean exceptThisInstance(CalendarViewModel calendarViewModel, final long BEGIN, final long EVENT_ID) {
+		calendarViewModel.deleteInstance(BEGIN, EVENT_ID);
+		return true;
+	}
 }

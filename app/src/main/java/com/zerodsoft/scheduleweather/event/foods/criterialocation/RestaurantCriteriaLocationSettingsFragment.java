@@ -2,7 +2,6 @@ package com.zerodsoft.scheduleweather.event.foods.criterialocation;
 
 import android.os.Bundle;
 
-import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
@@ -15,9 +14,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RadioGroup;
+import android.widget.Toast;
 
+import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
-import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
 import com.zerodsoft.scheduleweather.databinding.FragmentRestaurantCriteriaLocationSettingsBinding;
 import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
@@ -37,9 +38,10 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public class RestaurantCriteriaLocationSettingsFragment extends Fragment implements LocationHistoryController, OnSelectedNewLocation, OnBackPressedCallbackController {
+public class RestaurantCriteriaLocationSettingsFragment extends Fragment implements LocationHistoryController, OnSelectedNewLocation {
 	public static final String TAG = "RestaurantCriteriaLocationSettingsFragment";
 	private final RestaurantMainFragment.IGetEventValue iGetEventValue;
+	private final IRefreshView iRefreshView;
 
 	private FragmentRestaurantCriteriaLocationSettingsBinding binding;
 
@@ -49,19 +51,13 @@ public class RestaurantCriteriaLocationSettingsFragment extends Fragment impleme
 
 	private LocationDTO locationDTO;
 	private FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO;
-	private List<FoodCriteriaLocationSearchHistoryDTO> foodCriteriaLocationHistoryList;
-	private FoodCriteriaLocationSearchHistoryDTO selectedFoodCriteriaLocationSearchHistoryDTO;
+	private FoodCriteriaLocationInfoDTO finalFoodCriteriaLocationInfoDTO;
+
 	private FoodCriteriaLocationHistoryAdapter foodCriteriaLocationHistoryAdapter;
 
-	private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
-		@Override
-		public void handleOnBackPressed() {
-			onBackPressed();
-		}
-	};
-
-	public RestaurantCriteriaLocationSettingsFragment(RestaurantMainFragment.IGetEventValue iGetEventValue) {
+	public RestaurantCriteriaLocationSettingsFragment(RestaurantMainFragment.IGetEventValue iGetEventValue, IRefreshView iRefreshView) {
 		this.iGetEventValue = iGetEventValue;
+		this.iRefreshView = iRefreshView;
 	}
 
 	@Override
@@ -104,17 +100,21 @@ public class RestaurantCriteriaLocationSettingsFragment extends Fragment impleme
 							public void run() {
 								foodCriteriaLocationHistoryAdapter.setFoodCriteriaLocationHistoryList(result);
 								foodCriteriaLocationHistoryAdapter.notifyDataSetChanged();
-								initData();
 							}
 						});
 					}
 
 					@Override
 					public void onResultNoData() {
-						initData();
 					}
 				});
 
+		initData();
+	}
+
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
 	}
 
 	private void initData() {
@@ -192,19 +192,6 @@ public class RestaurantCriteriaLocationSettingsFragment extends Fragment impleme
 				break;
 			case TYPE_CUSTOM_SELECTED_LOCATION:
 				binding.radioCustomSelection.setChecked(true);
-				foodCriteriaLocationSearchHistoryViewModel.select(foodCriteriaLocationInfoDTO.getId(),
-						new DbQueryCallback<FoodCriteriaLocationSearchHistoryDTO>() {
-							@Override
-							public void onResultSuccessful(FoodCriteriaLocationSearchHistoryDTO foodCriteriaLocationSearchHistoryResultDto) {
-								selectedFoodCriteriaLocationSearchHistoryDTO =
-										foodCriteriaLocationSearchHistoryResultDto;
-							}
-
-							@Override
-							public void onResultNoData() {
-
-							}
-						});
 				break;
 			default:
 				assert (false) : "Unknown";
@@ -212,19 +199,47 @@ public class RestaurantCriteriaLocationSettingsFragment extends Fragment impleme
 	}
 
 	private RadioGroup.OnCheckedChangeListener radioOnCheckedChangeListener = new RadioGroup.OnCheckedChangeListener() {
+		boolean initializing = true;
+
 		@Override
 		public void onCheckedChanged(RadioGroup radioGroup, int checkedId) {
 			if (checkedId == binding.radioUseSelectedLocation.getId()) {
-				//지정한 위치사용
 				binding.addressHistoryRecyclerview.setVisibility(View.GONE);
 				binding.searchView.setVisibility(View.GONE);
+
+				if (!initializing) {
+					foodCriteriaLocationInfoViewModel.updateByEventId(iGetEventValue.getCalendarId(), iGetEventValue.getEventId(),
+							CriteriaLocationType.TYPE_SELECTED_LOCATION.value(), null, finishCallback);
+				}
+			} else if (checkedId == binding.radioCurrentMapCenterPoint.getId()) {
+				binding.addressHistoryRecyclerview.setVisibility(View.GONE);
+				binding.searchView.setVisibility(View.GONE);
+
+				if (!initializing) {
+					foodCriteriaLocationInfoViewModel.updateByEventId(iGetEventValue.getCalendarId(), iGetEventValue.getEventId(),
+							CriteriaLocationType.TYPE_MAP_CENTER_POINT.value(), null, finishCallback);
+				}
 			} else if (checkedId == binding.radioCurrentLocation.getId()) {
 				binding.addressHistoryRecyclerview.setVisibility(View.GONE);
 				binding.searchView.setVisibility(View.GONE);
+
+				if (!initializing) {
+					foodCriteriaLocationInfoViewModel.updateByEventId(iGetEventValue.getCalendarId(),
+							iGetEventValue.getEventId(),
+							CriteriaLocationType.TYPE_CURRENT_LOCATION_GPS.value(), null, finishCallback);
+				}
 			} else if (checkedId == binding.radioCustomSelection.getId()) {
 				binding.addressHistoryRecyclerview.setVisibility(View.VISIBLE);
 				binding.searchView.setVisibility(View.VISIBLE);
+
+				if (!initializing) {
+					foodCriteriaLocationInfoViewModel.updateByEventId(iGetEventValue.getCalendarId(),
+							iGetEventValue.getEventId(),
+							CriteriaLocationType.TYPE_CUSTOM_SELECTED_LOCATION.value(), null, finishCallback);
+				}
 			}
+
+			initializing = false;
 		}
 	};
 
@@ -255,34 +270,11 @@ public class RestaurantCriteriaLocationSettingsFragment extends Fragment impleme
 
 	}
 
-	public void onBackPressed() {
-        /*
-        지정한 위치인 경우 : 해당 이벤트 인스턴스가 지정된 위치를 기준으로 검색한다고 DB에 입력
-        현재 위치인 경우 : 해당 이벤트 인스턴스가 현재 위치를 기준으로 검색한다고 DB에 입력
-        직접 검색 후 지정한 위치인 경우 : 해당 이벤트 인스턴스가 커스텀 위치를 기준으로 검색한다고 DB에 입력하고,
-        커스텀 위치 정보를 DB에 입력
-         */
-		if (binding.radioGroup.getCheckedRadioButtonId() == binding.radioUseSelectedLocation.getId()) {
-			//변경 타입 업데이트
-			foodCriteriaLocationInfoViewModel.updateByEventId(iGetEventValue.getCalendarId(), iGetEventValue.getEventId(),
-					CriteriaLocationType.TYPE_SELECTED_LOCATION.value(), null, finishCallback);
-
-		} else if (binding.radioGroup.getCheckedRadioButtonId() == binding.radioCurrentLocation.getId()) {
-			//변경 타입 업데이트
-			foodCriteriaLocationInfoViewModel.updateByEventId(iGetEventValue.getCalendarId(), iGetEventValue.getEventId(),
-					CriteriaLocationType.TYPE_CURRENT_LOCATION_GPS.value(), null, finishCallback);
-
-		} else if (binding.radioGroup.getCheckedRadioButtonId() == binding.radioCustomSelection.getId()) {
-			return;
-		}
-
-		getParentFragmentManager().popBackStack();
-	}
-
 
 	private final DbQueryCallback<FoodCriteriaLocationInfoDTO> finishCallback = new DbQueryCallback<FoodCriteriaLocationInfoDTO>() {
 		@Override
-		public void onResultSuccessful(FoodCriteriaLocationInfoDTO result) {
+		public void onResultSuccessful(FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoResultDto) {
+			finalFoodCriteriaLocationInfoDTO = foodCriteriaLocationInfoResultDto;
 		}
 
 		@Override
@@ -300,7 +292,8 @@ public class RestaurantCriteriaLocationSettingsFragment extends Fragment impleme
 						requireActivity().runOnUiThread(new Runnable() {
 							@Override
 							public void run() {
-								getParentFragmentManager().popBackStack();
+								iRefreshView.refreshView();
+								getParentFragmentManager().popBackStackImmediate();
 							}
 						});
 					}
@@ -310,35 +303,24 @@ public class RestaurantCriteriaLocationSettingsFragment extends Fragment impleme
 
 					}
 				});
-
 	}
 
 	@Override
 	public void delete(int id) {
+		List<FoodCriteriaLocationSearchHistoryDTO> list = foodCriteriaLocationHistoryAdapter.getFoodCriteriaLocationHistoryList();
+		for (int i = list.size() - 1; i >= 0; i--) {
+			if (list.get(i).getId() == id) {
+				list.remove(i);
+				foodCriteriaLocationHistoryAdapter.notifyItemRemoved(i);
+				break;
+			}
+		}
+
 		foodCriteriaLocationSearchHistoryViewModel.delete(id, new DbQueryCallback<Boolean>() {
 			@Override
 			public void onResultSuccessful(Boolean isDeleted) {
 				if (isDeleted) {
-					foodCriteriaLocationSearchHistoryViewModel.selectByEventId(iGetEventValue.getCalendarId(), iGetEventValue.getEventId(), new DbQueryCallback<List<FoodCriteriaLocationSearchHistoryDTO>>() {
-						@Override
-						public void onResultSuccessful(List<FoodCriteriaLocationSearchHistoryDTO> foodCriteriaLocationSearchHistoryResultDtos) {
-							requireActivity().runOnUiThread(new Runnable() {
-								@Override
-								public void run() {
-									foodCriteriaLocationHistoryList = foodCriteriaLocationSearchHistoryResultDtos;
 
-									foodCriteriaLocationHistoryAdapter.setFoodCriteriaLocationHistoryList(foodCriteriaLocationHistoryList);
-									foodCriteriaLocationHistoryAdapter.notifyDataSetChanged();
-								}
-							});
-
-						}
-
-						@Override
-						public void onResultNoData() {
-
-						}
-					});
 				}
 			}
 
@@ -347,6 +329,19 @@ public class RestaurantCriteriaLocationSettingsFragment extends Fragment impleme
 
 			}
 		});
+
+		foodCriteriaLocationInfoViewModel.updateByEventId(iGetEventValue.getCalendarId(), iGetEventValue.getEventId(),
+				foodCriteriaLocationInfoDTO.getUsingType(), null, new DbQueryCallback<FoodCriteriaLocationInfoDTO>() {
+					@Override
+					public void onResultSuccessful(FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoResultDto) {
+						finalFoodCriteriaLocationInfoDTO = foodCriteriaLocationInfoResultDto;
+					}
+
+					@Override
+					public void onResultNoData() {
+
+					}
+				});
 
 	}
 
@@ -369,6 +364,7 @@ public class RestaurantCriteriaLocationSettingsFragment extends Fragment impleme
 										requireActivity().runOnUiThread(new Runnable() {
 											@Override
 											public void run() {
+												iRefreshView.refreshView();
 												getParentFragmentManager().popBackStack();
 											}
 										});
@@ -390,13 +386,21 @@ public class RestaurantCriteriaLocationSettingsFragment extends Fragment impleme
 
 	}
 
-	@Override
-	public void addOnBackPressedCallback() {
-		requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
-	}
+	public boolean checkChangeBeforeClose() {
+		if (finalFoodCriteriaLocationInfoDTO == null) {
+			return true;
+		}
 
-	@Override
-	public void removeOnBackPressedCallback() {
-		onBackPressedCallback.remove();
+		switch (CriteriaLocationType.enumOf(finalFoodCriteriaLocationInfoDTO.getUsingType())) {
+			case TYPE_CUSTOM_SELECTED_LOCATION:
+				if (finalFoodCriteriaLocationInfoDTO.getHistoryLocationId() == null) {
+					Toast.makeText(getContext(), R.string.not_selected_criteria_location, Toast.LENGTH_SHORT).show();
+					return false;
+				}
+			default:
+				break;
+		}
+		iRefreshView.refreshView();
+		return true;
 	}
 }

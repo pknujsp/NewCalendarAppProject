@@ -51,6 +51,7 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.placecategory.activity.PlaceCategoryActivity;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
+import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.common.interfaces.OnHiddenFragmentListener;
 import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
@@ -225,17 +226,22 @@ public class NewInstanceMainFragment extends NaverMapFragment implements Restaur
 				setHeightOfBottomSheet(DEFAULT_HEIGHT_OF_BOTTOMSHEET, restaurantsBottomSheet, restaurantsBottomSheetBehavior);
 				setHeightOfBottomSheet(DEFAULT_HEIGHT_OF_BOTTOMSHEET, placeCategoryBottomSheet, placeCategoryBottomSheetBehavior);
 
-				locationViewModel.hasDetailLocation(CALENDAR_ID, EVENT_ID, new CarrierMessagingService.ResultCallback<Boolean>() {
+				locationViewModel.hasDetailLocation(CALENDAR_ID, EVENT_ID, new DbQueryCallback<Boolean>() {
 					@Override
-					public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException {
+					public void onResultSuccessful(Boolean result) {
 						requireActivity().runOnUiThread(new Runnable() {
 							@Override
 							public void run() {
-								if (!aBoolean) {
+								if (!result) {
 									functionButtons[0].callOnClick();
 								}
 							}
 						});
+					}
+
+					@Override
+					public void onResultNoData() {
+
 					}
 				});
 			}
@@ -411,16 +417,15 @@ public class NewInstanceMainFragment extends NaverMapFragment implements Restaur
 
 	private void setDetailLocationData() {
 		if (hasSimpleLocation()) {
-			locationViewModel.hasDetailLocation(CALENDAR_ID, EVENT_ID, new CarrierMessagingService.ResultCallback<Boolean>() {
+			locationViewModel.hasDetailLocation(CALENDAR_ID, EVENT_ID, new DbQueryCallback<Boolean>() {
 				@Override
-				public void onReceiveResult(@NonNull Boolean hasDetailLocation) throws RemoteException {
-
+				public void onResultSuccessful(Boolean hasDetailLocation) {
 					if (hasDetailLocation) {
-						locationViewModel.getLocation(, EVENT_ID, new CarrierMessagingService.ResultCallback<LocationDTO>() {
+						locationViewModel.getLocation(CALENDAR_ID, EVENT_ID, new DbQueryCallback<LocationDTO>() {
 							@Override
-							public void onReceiveResult(@NonNull LocationDTO locationDTO) throws RemoteException {
+							public void onResultSuccessful(LocationDTO locationResultDto) {
 								if (selectedLocationDtoInEvent == null) {
-									selectedLocationDtoInEvent = locationDTO;
+									selectedLocationDtoInEvent = locationResultDto;
 
 									requireActivity().runOnUiThread(new Runnable() {
 										@Override
@@ -430,9 +435,9 @@ public class NewInstanceMainFragment extends NaverMapFragment implements Restaur
 										}
 									});
 								} else {
-									if (locationDTO.equals(selectedLocationDtoInEvent)) {
+									if (locationResultDto.equals(selectedLocationDtoInEvent)) {
 									} else {
-										selectedLocationDtoInEvent = locationDTO;
+										selectedLocationDtoInEvent = locationResultDto;
 
 										requireActivity().runOnUiThread(new Runnable() {
 											@Override
@@ -445,11 +450,19 @@ public class NewInstanceMainFragment extends NaverMapFragment implements Restaur
 									}
 								}
 							}
+
+							@Override
+							public void onResultNoData() {
+
+							}
 						});
 					} else {
 
 					}
+				}
 
+				@Override
+				public void onResultNoData() {
 
 				}
 			});

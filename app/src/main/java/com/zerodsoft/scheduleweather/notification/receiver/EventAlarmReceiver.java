@@ -116,21 +116,23 @@ public class EventAlarmReceiver extends BroadcastReceiver {
 				notifyNotificationHasNotLocation(notificationManager, builder, context, instance);
 			} else {
 				LocationRepository locationRepository = new LocationRepository(context);
-				locationRepository.getLocation(,
-						instance.getAsLong(CalendarContract.CalendarAlerts.EVENT_ID), new CarrierMessagingService.ResultCallback<LocationDTO>() {
+				locationRepository.getLocation(instance.getAsInteger(CalendarContract.CalendarAlerts.CALENDAR_ID),
+						instance.getAsLong(CalendarContract.CalendarAlerts.EVENT_ID), new DbQueryCallback<LocationDTO>() {
 							@Override
-							public void onReceiveResult(@NonNull LocationDTO locationDTO) throws RemoteException {
-								if (locationDTO.isEmpty()) {
-									notifyNotificationHasNotLocation(notificationManager, builder, context, instance);
-								} else {
-									RemoteViews collapsedView = new RemoteViews(context.getPackageName(),
-											R.layout.event_notification_small_view);
-									RemoteViews expandedView = new RemoteViews(context.getPackageName(),
-											R.layout.event_notification_big_view);
+							public void onResultSuccessful(LocationDTO result) {
+								RemoteViews collapsedView = new RemoteViews(context.getPackageName(),
+										R.layout.event_notification_small_view);
+								RemoteViews expandedView = new RemoteViews(context.getPackageName(),
+										R.layout.event_notification_big_view);
 
-									notifyNotificationHasLocation(notificationManager, builder, context, collapsedView, expandedView,
-											locationDTO, instance);
-								}
+								notifyNotificationHasLocation(notificationManager, builder, context, collapsedView, expandedView,
+										result, instance);
+							}
+
+							@Override
+							public void onResultNoData() {
+								notifyNotificationHasNotLocation(notificationManager, builder, context, instance);
+
 							}
 						});
 			}

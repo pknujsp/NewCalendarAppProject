@@ -22,4 +22,6 @@ public interface FoodCriteriaLocationInfoQuery
     void deleteByEventId(Integer calendarId, Long eventId, CarrierMessagingService.ResultCallback<Boolean> callback);
 
     void deleteByInstanceId(Integer calendarId, Long instanceId, CarrierMessagingService.ResultCallback<Boolean> callback);
+
+    void contains(Long eventId, DbQueryCallback<FoodCriteriaLocationInfoDTO> callback);
 }

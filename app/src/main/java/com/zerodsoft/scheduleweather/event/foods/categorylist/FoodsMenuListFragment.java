@@ -37,7 +37,9 @@ import android.widget.Toast;
 import com.naver.maps.geometry.LatLng;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
+import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.databinding.FragmentFoodsCategoryListBinding;
 import com.zerodsoft.scheduleweather.etc.AppPermission;
@@ -76,7 +78,9 @@ import java.util.Map;
 import static android.app.Activity.RESULT_OK;
 import static androidx.core.content.ContextCompat.checkSelfPermission;
 
-public class FoodsMenuListFragment extends Fragment implements OnClickedCategoryItem, OnClickedListItem<FoodCategoryItem>, IGetCriteriaLocation {
+public class FoodsMenuListFragment extends Fragment implements OnClickedCategoryItem, OnClickedListItem<FoodCategoryItem>,
+		IGetCriteriaLocation,
+		IRefreshView {
 	public static final String TAG = "FoodsMenuListFragment";
 
 	private final INetwork iNetwork;
@@ -148,11 +152,11 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 			@Override
 			public void onClick(View view) {
 				RestaurantCriteriaLocationSettingsFragment restaurantCriteriaLocationSettingsFragment =
-						new RestaurantCriteriaLocationSettingsFragment(iGetEventValue);
+						new RestaurantCriteriaLocationSettingsFragment(iGetEventValue, FoodsMenuListFragment.this);
 
 				getParentFragmentManager().beginTransaction().hide(FoodsMenuListFragment.this).add(R.id.foods_main_fragment_container,
 						restaurantCriteriaLocationSettingsFragment,
-						RestaurantCriteriaLocationSettingsFragment.TAG).addToBackStack(null).commit();
+						RestaurantCriteriaLocationSettingsFragment.TAG).addToBackStack(RestaurantCriteriaLocationSettingsFragment.TAG).commit();
 			}
 		});
 	}
@@ -185,73 +189,108 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 
 	private void setCriteriaIfHavntLocation() {
 		//기본/상세 위치가 지정되어 있지 않으면, 맵의 중심 좌표를 기준으로 하도록 설정해준다
-		foodCriteriaLocationInfoViewModel.insertByEventId(iGetEventValue.getCalendarId(), iGetEventValue.getEventId()
-				, CriteriaLocationType.TYPE_MAP_CENTER_POINT.value(), null,
-				new CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO>() {
+		foodCriteriaLocationInfoViewModel.contains(iGetEventValue.getEventId()
+				, new DbQueryCallback<FoodCriteriaLocationInfoDTO>() {
 					@Override
-					public void onReceiveResult(@NonNull FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO) throws RemoteException {
-
+					public void onResultSuccessful(FoodCriteriaLocationInfoDTO result) {
 						requireActivity().runOnUiThread(new Runnable() {
 							@Override
 							public void run() {
-								setCriteria(CriteriaLocationType.TYPE_MAP_CENTER_POINT);
+								setCriteria(CriteriaLocationType.enumOf(result.getUsingType()));
 							}
 						});
 					}
+
+					@Override
+					public void onResultNoData() {
+						foodCriteriaLocationInfoViewModel.insertByEventId(iGetEventValue.getCalendarId(), iGetEventValue.getEventId()
+								, CriteriaLocationType.TYPE_MAP_CENTER_POINT.value(), null,
+								new CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO>() {
+									@Override
+									public void onReceiveResult(@NonNull FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO) throws RemoteException {
+
+										requireActivity().runOnUiThread(new Runnable() {
+											@Override
+											public void run() {
+												setCriteria(CriteriaLocationType.TYPE_MAP_CENTER_POINT);
+											}
+										});
+									}
+								});
+					}
 				});
+
 	}
 
 	private void setCriteriaIfHavntCriteria() {
 		//기준 정보가 지정되어 있지 않으면, 지정한 장소/주소를 기준으로 하도록 설정해준다
-		foodCriteriaLocationInfoViewModel.insertByEventId(iGetEventValue.getCalendarId(), iGetEventValue.getEventId()
-				, CriteriaLocationType.TYPE_SELECTED_LOCATION.value(), null,
-				new CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO>() {
+		foodCriteriaLocationInfoViewModel.contains(iGetEventValue.getEventId(), new DbQueryCallback<FoodCriteriaLocationInfoDTO>() {
+			@Override
+			public void onResultSuccessful(FoodCriteriaLocationInfoDTO result) {
+				requireActivity().runOnUiThread(new Runnable() {
 					@Override
-					public void onReceiveResult(@NonNull FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO) throws RemoteException {
-
-						requireActivity().runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								setCriteria(CriteriaLocationType.TYPE_SELECTED_LOCATION);
-							}
-						});
+					public void run() {
+						setCriteria(CriteriaLocationType.enumOf(result.getUsingType()));
 					}
 				});
+			}
+
+			@Override
+			public void onResultNoData() {
+				foodCriteriaLocationInfoViewModel.insertByEventId(iGetEventValue.getCalendarId(), iGetEventValue.getEventId()
+						, CriteriaLocationType.TYPE_SELECTED_LOCATION.value(), null,
+						new CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO>() {
+							@Override
+							public void onReceiveResult(@NonNull FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO) throws RemoteException {
+
+								requireActivity().runOnUiThread(new Runnable() {
+									@Override
+									public void run() {
+										setCriteria(CriteriaLocationType.TYPE_SELECTED_LOCATION);
+									}
+								});
+							}
+						});
+			}
+		});
+
 	}
 
 	private void loadSelectedDetailLocation() {
 		//지정한 위치정보를 가져온다
-		locationViewModel.getLocation(,
-				iGetEventValue.getEventId(), new CarrierMessagingService.ResultCallback<LocationDTO>() {
+		locationViewModel.getLocation(iGetEventValue.getCalendarId(),
+				iGetEventValue.getEventId(), new DbQueryCallback<LocationDTO>() {
 					@Override
-					public void onReceiveResult(@NonNull LocationDTO locationDTO) throws RemoteException {
-						selectedLocationDTO = locationDTO;
-						if (selectedLocationDTO.isEmpty()) {
-							setCriteriaIfHavntLocation();
-						} else {
-							loadCriteriaLocation();
-						}
+					public void onResultSuccessful(LocationDTO locationResultDto) {
+						selectedLocationDTO = locationResultDto;
+						loadCriteriaLocation();
+					}
+
+					@Override
+					public void onResultNoData() {
+						setCriteriaIfHavntLocation();
 					}
 				});
 	}
 
 	private void loadCriteriaLocation() {
 		foodCriteriaLocationInfoViewModel.selectByEventId(iGetEventValue.getCalendarId(), iGetEventValue.getEventId()
-				, new CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO>() {
+				, new DbQueryCallback<FoodCriteriaLocationInfoDTO>() {
 					@Override
-					public void onReceiveResult(@NonNull FoodCriteriaLocationInfoDTO result) throws RemoteException {
+					public void onResultSuccessful(FoodCriteriaLocationInfoDTO result) {
 						foodCriteriaLocationInfoDTO = result;
 
-						if (foodCriteriaLocationInfoDTO.isEmpty()) {
-							setCriteriaIfHavntCriteria();
-						} else {
-							requireActivity().runOnUiThread(new Runnable() {
-								@Override
-								public void run() {
-									setCriteria(CriteriaLocationType.enumOf(result.getUsingType()));
-								}
-							});
-						}
+						requireActivity().runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								setCriteria(CriteriaLocationType.enumOf(result.getUsingType()));
+							}
+						});
+					}
+
+					@Override
+					public void onResultNoData() {
+						setCriteriaIfHavntCriteria();
 					}
 				});
 	}
@@ -327,14 +366,14 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 
 			case TYPE_CUSTOM_SELECTED_LOCATION: {
 				//지정 위치 파악
-				foodCriteriaLocationSearchHistoryViewModel.select(foodCriteriaLocationInfoDTO.getHistoryLocationId(), new CarrierMessagingService.ResultCallback<FoodCriteriaLocationSearchHistoryDTO>() {
+				foodCriteriaLocationSearchHistoryViewModel.select(foodCriteriaLocationInfoDTO.getHistoryLocationId(), new DbQueryCallback<FoodCriteriaLocationSearchHistoryDTO>() {
 					@Override
-					public void onReceiveResult(@NonNull FoodCriteriaLocationSearchHistoryDTO result) throws RemoteException {
-						foodCriteriaLocationSearchHistoryDTO = result;
+					public void onResultSuccessful(FoodCriteriaLocationSearchHistoryDTO foodCriteriaLocationSearchHistoryResultDto) {
+						foodCriteriaLocationSearchHistoryDTO = foodCriteriaLocationSearchHistoryResultDto;
 						LocationDTO locationDTO = new LocationDTO();
 
-						locationDTO.setAddress(result.getAddressName(), null,
-								result.getLatitude(), result.getLongitude());
+						locationDTO.setAddress(foodCriteriaLocationSearchHistoryResultDto.getAddressName(), null,
+								foodCriteriaLocationSearchHistoryResultDto.getLatitude(), foodCriteriaLocationSearchHistoryResultDto.getLongitude());
 
 						try {
 							criteriaLocationDTO = locationDTO.clone();
@@ -353,6 +392,10 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 								binding.progressBar.setVisibility(View.GONE);
 							}
 						});
+					}
+
+					@Override
+					public void onResultNoData() {
 
 					}
 				});
@@ -486,16 +529,21 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 						// 권한 거부됨
 						Toast.makeText(getContext(), R.string.message_needs_location_permission, Toast.LENGTH_SHORT).show();
 						foodCriteriaLocationInfoViewModel.updateByEventId(iGetEventValue.getCalendarId(), iGetEventValue.getEventId()
-								, CriteriaLocationType.TYPE_SELECTED_LOCATION.value(), null, new CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO>() {
+								, CriteriaLocationType.TYPE_SELECTED_LOCATION.value(), null, new DbQueryCallback<FoodCriteriaLocationInfoDTO>() {
 									@Override
-									public void onReceiveResult(@NonNull FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO) throws RemoteException {
-										getActivity().runOnUiThread(new Runnable() {
+									public void onResultSuccessful(FoodCriteriaLocationInfoDTO result) {
+										requireActivity().runOnUiThread(new Runnable() {
 											@Override
 											public void run() {
 												binding.progressBar.setVisibility(View.GONE);
 												loadCriteriaLocation();
 											}
 										});
+									}
+
+									@Override
+									public void onResultNoData() {
+
 									}
 								});
 					}
@@ -632,5 +680,10 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 	@Override
 	public LocationDTO getCriteriaLocation() {
 		return criteriaLocationDTO;
+	}
+
+	@Override
+	public void refreshView() {
+		loadSelectedDetailLocation();
 	}
 }

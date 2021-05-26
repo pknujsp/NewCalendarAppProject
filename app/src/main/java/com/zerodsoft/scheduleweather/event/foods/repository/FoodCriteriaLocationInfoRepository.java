@@ -77,7 +77,7 @@ public class FoodCriteriaLocationInfoRepository implements FoodCriteriaLocationI
 			public void run() {
 				dao.updateByEventId(calendarId, eventId, usingType, historyLocationId);
 				FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO = dao.selectByEventId(calendarId, eventId);
-				callback.onReceiveResult(foodCriteriaLocationInfoDTO);
+				callback.processResult(foodCriteriaLocationInfoDTO);
 			}
 		});
 	}
@@ -117,5 +117,15 @@ public class FoodCriteriaLocationInfoRepository implements FoodCriteriaLocationI
 				callback.onReceiveResult(true);
 			}
 		});
+	}
+
+	@Override
+	public void contains(Long eventId, DbQueryCallback<FoodCriteriaLocationInfoDTO> callback) {
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				callback.processResult(dao.contains(eventId));
+			}
+		}).start();
 	}
 }

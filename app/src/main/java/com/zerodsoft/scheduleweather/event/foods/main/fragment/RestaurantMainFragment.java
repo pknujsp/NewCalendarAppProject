@@ -18,6 +18,7 @@ import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackCont
 import com.zerodsoft.scheduleweather.databinding.FragmentRestaurantMainBinding;
 import com.zerodsoft.scheduleweather.event.foods.categorylist.RestaurantListTabFragment;
 import com.zerodsoft.scheduleweather.event.foods.categorylist.FoodsMenuListFragment;
+import com.zerodsoft.scheduleweather.event.foods.criterialocation.RestaurantCriteriaLocationSettingsFragment;
 import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
@@ -45,6 +46,10 @@ public class RestaurantMainFragment extends Fragment implements OnBackPressedCal
 					bottomSheetController.setStateOfBottomSheet(BottomSheetType.RESTAURANT, BottomSheetBehavior.STATE_COLLAPSED);
 				} else if (fragmentManager.findFragmentByTag(RestaurantListTabFragment.TAG) != null) {
 					fragmentManager.popBackStackImmediate();
+				} else if (fragmentManager.findFragmentByTag(RestaurantCriteriaLocationSettingsFragment.TAG) != null) {
+					if (((RestaurantCriteriaLocationSettingsFragment) fragmentManager.findFragmentByTag(RestaurantCriteriaLocationSettingsFragment.TAG)).checkChangeBeforeClose()) {
+						fragmentManager.popBackStackImmediate();
+					}
 				}
 			}
 		}

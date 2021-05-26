@@ -3,8 +3,6 @@ package com.zerodsoft.scheduleweather.event.weather.fragment;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.os.RemoteException;
-import android.service.carrier.CarrierMessagingService;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -166,53 +164,61 @@ public class WeatherMainFragment extends BottomSheetDialogFragment implements On
 			}
 		});
 
-		locationViewModel.getLocation(, EVENT_ID, new CarrierMessagingService.ResultCallback<LocationDTO>() {
+		locationViewModel.getLocation(CALENDAR_ID, EVENT_ID, new DbQueryCallback<LocationDTO>() {
 			@Override
-			public void onReceiveResult(@NonNull LocationDTO selectedLocationResultDto) throws RemoteException {
+			public void onResultSuccessful(LocationDTO selectedLocationResultDto) {
 				requireActivity().runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
 						selectedLocationDto = selectedLocationResultDto;
 
-						final double lat = selectedLocationResultDto.isEmpty() ? Double.parseDouble(latitude) :
-								Double.parseDouble(selectedLocationResultDto.getLatitude());
-						final double lon = selectedLocationResultDto.isEmpty() ? Double.parseDouble(longitude) :
-								Double.parseDouble(selectedLocationResultDto.getLongitude());
+						final double lat = Double.parseDouble(selectedLocationResultDto.getLatitude());
+						final double lon = Double.parseDouble(selectedLocationResultDto.getLongitude());
 
-						areaCodeViewModel.getCodeOfProximateArea(lat, lon, new DbQueryCallback<WeatherAreaCodeDTO>() {
-							@Override
-							public void onResultSuccessful(WeatherAreaCodeDTO weatherAreaCodeResultDto) {
-								weatherAreaCode = weatherAreaCodeResultDto;
-
-								requireActivity().runOnUiThread(new Runnable() {
-									@Override
-									public void run() {
-										if (selectedLocationResultDto.isEmpty()) {
-											Toast.makeText(getContext(), hasSimpleLocation ?
-															R.string.msg_getting_weather_data_of_map_center_point_because_havnt_detail_location :
-															R.string.msg_getting_weather_data_of_map_center_point_because_havnt_simple_location,
-													Toast.LENGTH_SHORT).show();
-										}
-										setAddressName();
-										createFragments();
-									}
-								});
-							}
-
-							@Override
-							public void onResultNoData() {
-
-							}
-						});
-
-
+						loadInitialData(lat, lon);
 					}
 				});
 
 			}
+
+			@Override
+			public void onResultNoData() {
+				final double lat = Double.parseDouble(latitude);
+				final double lon = Double.parseDouble(longitude);
+
+				loadInitialData(lat, lon);
+			}
 		});
 
 
+	}
+
+	private void loadInitialData(double latitude, double longitude) {
+		areaCodeViewModel.getCodeOfProximateArea(latitude, longitude, new DbQueryCallback<WeatherAreaCodeDTO>() {
+			@Override
+			public void onResultSuccessful(WeatherAreaCodeDTO weatherAreaCodeResultDto) {
+				weatherAreaCode = weatherAreaCodeResultDto;
+
+				requireActivity().runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						if (selectedLocationDto == null) {
+							Toast.makeText(getContext(), hasSimpleLocation ?
+											R.string.msg_getting_weather_data_of_map_center_point_because_havnt_detail_location :
+											R.string.msg_getting_weather_data_of_map_center_point_because_havnt_simple_location,
+									Toast.LENGTH_SHORT).show();
+						}
+						setAddressName();
+						createFragments();
+					}
+				});
+			}
+
+			@Override
+			public void onResultNoData() {
+
+			}
+		});
 	}
 
 	private void createFragments() {
@@ -222,7 +228,7 @@ public class WeatherMainFragment extends BottomSheetDialogFragment implements On
 		midFcstFragment = new MidFcstFragment(weatherAreaCode, this);
 
 		String lat, lon = null;
-		if (!selectedLocationDto.isEmpty()) {
+		if (selectedLocationDto != null) {
 			lat = selectedLocationDto.getLatitude();
 			lon = selectedLocationDto.getLongitude();
 		} else {
