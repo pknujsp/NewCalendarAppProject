@@ -28,7 +28,7 @@ public class FoodCriteriaLocationHistoryRepository implements FoodCriteriaLocati
 			@Override
 			public void run() {
 				List<FoodCriteriaLocationSearchHistoryDTO> list = dao.selectByEventId(calendarId, eventId);
-				callback.onReceiveResult(list);
+				callback.processResult(list);
 			}
 		});
 	}
@@ -77,7 +77,7 @@ public class FoodCriteriaLocationHistoryRepository implements FoodCriteriaLocati
 			public void run() {
 				dao.insertByEventId(calendarId, eventId, placeName, addressName, roadAddressName, latitude, longitude, locationType);
 				List<FoodCriteriaLocationSearchHistoryDTO> list = dao.selectByEventId(calendarId, eventId);
-				callback.onReceiveResult(list);
+				callback.processResult(list);
 			}
 		});
 	}
@@ -165,7 +165,7 @@ public class FoodCriteriaLocationHistoryRepository implements FoodCriteriaLocati
 			@Override
 			public void run() {
 				dao.delete(id);
-				callback.onReceiveResult(true);
+				callback.processResult(true);
 			}
 		});
 	}
@@ -188,7 +188,7 @@ public class FoodCriteriaLocationHistoryRepository implements FoodCriteriaLocati
 			@SneakyThrows
 			@Override
 			public void run() {
-				callback.onReceiveResult(dao.containsData(id) == 1);
+				callback.processResult(dao.containsData(id) == 1);
 			}
 		});
 	}

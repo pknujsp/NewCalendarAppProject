@@ -14,106 +14,95 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.LocationHistoryController;
 import com.zerodsoft.scheduleweather.room.dto.FoodCriteriaLocationSearchHistoryDTO;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class FoodCriteriaLocationHistoryAdapter extends RecyclerView.Adapter<FoodCriteriaLocationHistoryAdapter.HistoryViewHolder>
-{
-    private final LocationHistoryController locationHistoryController;
+public class FoodCriteriaLocationHistoryAdapter extends RecyclerView.Adapter<FoodCriteriaLocationHistoryAdapter.HistoryViewHolder> {
+	private final LocationHistoryController locationHistoryController;
+	private List<FoodCriteriaLocationSearchHistoryDTO> foodCriteriaLocationHistoryList = new ArrayList<>();
 
-    public FoodCriteriaLocationHistoryAdapter(LocationHistoryController locationHistoryController)
-    {
-        this.locationHistoryController = locationHistoryController;
-    }
+	public FoodCriteriaLocationHistoryAdapter(LocationHistoryController locationHistoryController) {
+		this.locationHistoryController = locationHistoryController;
+	}
 
-    private List<FoodCriteriaLocationSearchHistoryDTO> foodCriteriaLocationHistoryList;
+	public List<FoodCriteriaLocationSearchHistoryDTO> getFoodCriteriaLocationHistoryList() {
+		return foodCriteriaLocationHistoryList;
+	}
 
-    public void setFoodCriteriaLocationHistoryList(List<FoodCriteriaLocationSearchHistoryDTO> foodCriteriaLocationHistoryList)
-    {
-        this.foodCriteriaLocationHistoryList = foodCriteriaLocationHistoryList;
-    }
+	public void setFoodCriteriaLocationHistoryList(List<FoodCriteriaLocationSearchHistoryDTO> foodCriteriaLocationHistoryList) {
+		this.foodCriteriaLocationHistoryList = foodCriteriaLocationHistoryList;
+	}
 
-    @NonNull
-    @Override
-    public HistoryViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType)
-    {
-        return new HistoryViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.search_location_history_item, parent, false));
-    }
+	@NonNull
+	@Override
+	public HistoryViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+		return new HistoryViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.search_location_history_item, parent, false));
+	}
 
-    @Override
-    public void onBindViewHolder(@NonNull HistoryViewHolder holder, int position)
-    {
-        holder.onBind();
-    }
+	@Override
+	public void onBindViewHolder(@NonNull HistoryViewHolder holder, int position) {
+		holder.onBind();
+	}
 
-    @Override
-    public int getItemCount()
-    {
-        return foodCriteriaLocationHistoryList.size();
-    }
+	@Override
+	public int getItemCount() {
+		return foodCriteriaLocationHistoryList.size();
+	}
 
-    class HistoryViewHolder extends RecyclerView.ViewHolder
-    {
-        private LinearLayout rootLayout;
-        private TextView placeNameTextView;
-        private TextView addressNameTextView;
-        private TextView anotherAddressTypeTextView;
-        private TextView anotherAddressNameTextView;
-        private ImageButton deleteButton;
+	class HistoryViewHolder extends RecyclerView.ViewHolder {
+		private LinearLayout rootLayout;
+		private TextView placeNameTextView;
+		private TextView addressNameTextView;
+		private TextView anotherAddressTypeTextView;
+		private TextView anotherAddressNameTextView;
+		private ImageButton deleteButton;
 
-        public HistoryViewHolder(@NonNull View itemView)
-        {
-            super(itemView);
+		public HistoryViewHolder(@NonNull View itemView) {
+			super(itemView);
 
-            rootLayout = (LinearLayout) itemView.findViewById(R.id.root_layout);
-            placeNameTextView = (TextView) itemView.findViewById(R.id.place_name);
-            addressNameTextView = (TextView) itemView.findViewById(R.id.address_name);
-            anotherAddressTypeTextView = (TextView) itemView.findViewById(R.id.another_address_type);
-            anotherAddressNameTextView = (TextView) itemView.findViewById(R.id.another_address_name);
-            deleteButton = (ImageButton) itemView.findViewById(R.id.delete_button);
-        }
+			rootLayout = (LinearLayout) itemView.findViewById(R.id.root_layout);
+			placeNameTextView = (TextView) itemView.findViewById(R.id.place_name);
+			addressNameTextView = (TextView) itemView.findViewById(R.id.address_name);
+			anotherAddressTypeTextView = (TextView) itemView.findViewById(R.id.another_address_type);
+			anotherAddressNameTextView = (TextView) itemView.findViewById(R.id.another_address_name);
+			deleteButton = (ImageButton) itemView.findViewById(R.id.delete_button);
+		}
 
-        public void onBind()
-        {
-            FoodCriteriaLocationSearchHistoryDTO history = foodCriteriaLocationHistoryList.get(getAdapterPosition());
+		public void onBind() {
+			FoodCriteriaLocationSearchHistoryDTO history = foodCriteriaLocationHistoryList.get(getAdapterPosition());
 
-            if (history.getPlaceName() != null)
-            {
-                placeNameTextView.setText(history.getPlaceName());
-                addressNameTextView.setText(history.getAddressName());
+			if (history.getPlaceName() != null) {
+				placeNameTextView.setText(history.getPlaceName());
+				addressNameTextView.setText(history.getAddressName());
 
-                placeNameTextView.setVisibility(View.VISIBLE);
-                addressNameTextView.setVisibility(View.VISIBLE);
-                anotherAddressTypeTextView.setVisibility(View.GONE);
-                anotherAddressNameTextView.setVisibility(View.GONE);
-            } else
-            {
-                addressNameTextView.setText(history.getAddressName());
-                anotherAddressNameTextView.setText(history.getRoadAddressName());
+				placeNameTextView.setVisibility(View.VISIBLE);
+				addressNameTextView.setVisibility(View.VISIBLE);
+				anotherAddressTypeTextView.setVisibility(View.GONE);
+				anotherAddressNameTextView.setVisibility(View.GONE);
+			} else {
+				addressNameTextView.setText(history.getAddressName());
+				anotherAddressNameTextView.setText(history.getRoadAddressName());
 
-                placeNameTextView.setVisibility(View.GONE);
-                addressNameTextView.setVisibility(View.VISIBLE);
-                anotherAddressTypeTextView.setVisibility(View.GONE);
-                anotherAddressNameTextView.setVisibility(View.GONE);
-            }
+				placeNameTextView.setVisibility(View.GONE);
+				addressNameTextView.setVisibility(View.VISIBLE);
+				anotherAddressTypeTextView.setVisibility(View.GONE);
+				anotherAddressNameTextView.setVisibility(View.GONE);
+			}
 
-            rootLayout.setOnClickListener(new View.OnClickListener()
-            {
-                @Override
-                public void onClick(View v)
-                {
-                    //해당 위치를 선택
-                    locationHistoryController.onClickedLocationHistoryItem(history);
-                }
-            });
+			rootLayout.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					//해당 위치를 선택
+					locationHistoryController.onClickedLocationHistoryItem(history);
+				}
+			});
 
-            deleteButton.setOnClickListener(new View.OnClickListener()
-            {
-                @Override
-                public void onClick(View v)
-                {
-                    locationHistoryController.delete(history.getId());
-                }
-            });
-        }
-    }
+			deleteButton.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					locationHistoryController.delete(history.getId());
+				}
+			});
+		}
+	}
 }
