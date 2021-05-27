@@ -11,17 +11,13 @@ import java.util.Calendar;
 import java.util.List;
 
 public class EventDataController {
+	public final EventIntentCode REQUEST_CODE;
+
 	private EventData newEventData;
 	private EventData modifiedEventData;
 	private EventData savedEventData;
 	private EventDefaultValue eventDefaultValue;
-
 	private ContentValues selectedCalendar = new ContentValues();
-
-	public static final int NEW_EVENT = 0;
-	public static final int MODIFY_EVENT = 1;
-
-	public final EventIntentCode REQUEST_CODE;
 
 	public EventDataController(Context context, EventIntentCode requestCode) {
 		this.REQUEST_CODE = requestCode;
@@ -89,7 +85,6 @@ public class EventDataController {
 	}
 
 	public List<ContentValues> getReminders() {
-
 		if (REQUEST_CODE == EventIntentCode.REQUEST_NEW_EVENT) {
 			return newEventData.getREMINDERS();
 		} else {
@@ -110,6 +105,7 @@ public class EventDataController {
 			newEventData.getEVENT().put(key, value);
 		} else if (REQUEST_CODE == EventIntentCode.REQUEST_MODIFY_EVENT) {
 			modifiedEventData.getEVENT().put(key, value);
+
 		}
 	}
 

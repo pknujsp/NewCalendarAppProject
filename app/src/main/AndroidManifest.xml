@@ -28,7 +28,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".event.main.NewInstanceMainActivity" />
+        <activity
+            android:name=".event.main.NewInstanceMainActivity"
+            android:windowSoftInputMode="adjustNothing" />
         <activity android:name=".event.foods.settings.CustomFoodMenuSettingsActivity" />
         <activity
             android:name=".navermap.NaverMapActivity"
@@ -47,6 +49,8 @@
         <activity android:name=".activity.editevent.activity.ReminderActivity" />
         <activity android:name=".activity.editevent.activity.TimeZoneActivity" />
         <activity android:name=".activity.editevent.activity.RecurrenceActivity" />
+        <activity android:name=".activity.editevent.activity.NewEventActivity" />
+        <activity android:name=".activity.editevent.activity.ModifyInstanceActivity" />
         <activity
             android:name=".activity.editevent.activity.EditEventActivity"
             android:windowSoftInputMode="adjustNothing" />
