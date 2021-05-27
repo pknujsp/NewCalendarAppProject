@@ -33,7 +33,6 @@ public class NewEventActivity extends EditEventActivity {
 	protected void loadInitData() {
 		calendarList = calendarViewModel.getCalendars();
 		ActionBar actionBar = getSupportActionBar();
-
 		actionBar.setTitle(R.string.new_event);
 
 		//캘린더도 기본 값 설정

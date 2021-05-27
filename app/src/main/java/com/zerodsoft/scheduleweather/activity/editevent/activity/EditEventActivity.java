@@ -20,8 +20,6 @@ import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.provider.CalendarContract;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.ArraySet;
 import android.view.Gravity;
 import android.view.Menu;
@@ -45,7 +43,6 @@ import com.google.android.material.timepicker.TimeFormat;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.activity.editevent.adapter.CalendarListAdapter;
 import com.zerodsoft.scheduleweather.activity.editevent.value.EventData;
-import com.zerodsoft.scheduleweather.activity.editevent.value.EventDataController;
 import com.zerodsoft.scheduleweather.activity.editevent.interfaces.IEventRepeat;
 import com.zerodsoft.scheduleweather.activity.preferences.ColorListAdapter;
 import com.zerodsoft.scheduleweather.common.enums.EventIntentCode;
@@ -66,7 +63,6 @@ import com.zerodsoft.scheduleweather.utility.model.ReminderDto;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -79,6 +75,7 @@ public abstract class EditEventActivity extends AppCompatActivity implements IEv
 	protected CalendarViewModel calendarViewModel;
 	protected EventDataController dataController;
 	protected LocationViewModel locationViewModel;
+	protected EventDataViewModel eventDataViewModel;
 
 	protected AlertDialog accessLevelDialog;
 	protected AlertDialog availabilityDialog;
@@ -91,6 +88,8 @@ public abstract class EditEventActivity extends AppCompatActivity implements IEv
 	protected List<ContentValues> calendarList;
 	protected LocationDTO locationDTO;
 	protected NetworkStatus networkStatus;
+
+	protected ContentValues contentValues = new ContentValues();
 
 	protected enum DateTimeType {
 		START, END
@@ -121,10 +120,10 @@ public abstract class EditEventActivity extends AppCompatActivity implements IEv
 
 		locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
 		calendarViewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
+		eventDataViewModel = new ViewModelProvider(this).get(EventDataViewModel.class);
 		requestCode = EventIntentCode.enumOf(getIntent().getIntExtra("requestCode", 0));
 		networkStatus = new NetworkStatus(getApplicationContext(), new ConnectivityManager.NetworkCallback());
 
-		setOnClickListeners();
 		dataController = new EventDataController(getApplicationContext(), requestCode);
 
 		Toolbar toolbar = binding.eventToolbar;
@@ -132,61 +131,9 @@ public abstract class EditEventActivity extends AppCompatActivity implements IEv
 		ActionBar actionBar = getSupportActionBar();
 		actionBar.setDisplayHomeAsUpEnabled(true);
 
-		binding.titleLayout.title.addTextChangedListener(new TextWatcher() {
-			@Override
-			public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-			}
-
-			@Override
-			public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-			}
-
-			@Override
-			public void afterTextChanged(Editable editable) {
-				if (editable.length() == 0) {
-					dataController.removeEventValue(CalendarContract.Events.TITLE);
-				} else {
-					dataController.putEventValue(CalendarContract.Events.TITLE, editable.toString());
-				}
-			}
-		});
-
-		binding.descriptionLayout.descriptionEdittext.addTextChangedListener(new TextWatcher() {
-			@Override
-			public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-			}
-
-			@Override
-			public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-			}
-
-			@Override
-			public void afterTextChanged(Editable editable) {
-				if (editable.length() == 0) {
-					dataController.removeEventValue(CalendarContract.Events.DESCRIPTION);
-				} else {
-					dataController.putEventValue(CalendarContract.Events.DESCRIPTION, editable.toString());
-				}
-			}
-		});
-
-		binding.timeLayout.startDate.setClickable(true);
-		binding.timeLayout.startTime.setClickable(true);
-		binding.timeLayout.endDate.setClickable(true);
-		binding.timeLayout.endTime.setClickable(true);
-		binding.timeLayout.eventTimezone.setClickable(true);
-
-		binding.recurrenceLayout.eventRecurrence.setClickable(true);
 		binding.reminderLayout.notReminder.setVisibility(View.GONE);
 		binding.descriptionLayout.descriptionTextview.setVisibility(View.GONE);
-		binding.locationLayout.eventLocation.setClickable(true);
 		binding.attendeeLayout.notAttendees.setVisibility(View.GONE);
-		binding.accesslevelLayout.eventAccessLevel.setClickable(true);
-		binding.availabilityLayout.eventAvailability.setClickable(true);
 	}
 
 	@Override
