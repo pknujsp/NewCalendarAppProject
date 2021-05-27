@@ -14,6 +14,7 @@ import androidx.appcompat.app.ActionBar;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.editevent.value.EventData;
+import com.zerodsoft.scheduleweather.common.enums.EventIntentCode;
 
 import java.util.List;
 
@@ -152,5 +153,218 @@ public class ModifyInstanceActivity extends EditEventActivity {
 				}
 		}
 		return super.onOptionsItemSelected(item);
+	}
+
+	protected void updateThisInstance() {
+		calendarViewModel.updateOneInstance(dataController.getModifiedEventData().getEVENT(),
+				dataController.getSavedEventData().getEVENT());
+        /*
+
+        // 알람 갱신
+        // 알람 데이터가 수정된 경우 이벤트ID를 넣는다
+        if (!modifiedEventData.getREMINDERS().isEmpty())
+        {
+            List<ContentValues> reminders = modifiedEventData.getREMINDERS();
+
+            for (ContentValues reminder : reminders)
+            {
+                reminder.put(CalendarContract.Reminders.EVENT_ID, action == UPDATE_AFTER_INSTANCE_INCLUDING_THIS_INSTANCE
+                        ? newEventId : ORIGINAL_EVENT_ID);
+            }
+        }
+
+        if (modifiedEventData.getEVENT().getAsBoolean(CalendarContract.Events.HAS_ALARM))
+        {
+            if (action != UPDATE_AFTER_INSTANCE_INCLUDING_THIS_INSTANCE)
+            {
+                if (savedEventData.getEVENT().getAsBoolean(CalendarContract.Events.HAS_ALARM))
+                {
+                    //기존의 알람데이터가 수정된 경우
+                    //기존 값 모두 지우고, 새로운 값 저장
+                    viewModel.deleteAllReminders(CALENDAR_ID, ORIGINAL_EVENT_ID);
+                }
+                viewModel.addReminders(modifiedEventData.getREMINDERS());
+            }
+        } else
+        {
+            if (savedEventData.getEVENT().getAsBoolean(CalendarContract.Events.HAS_ALARM))
+            {
+                //원래 알림을 가졌으나, 수정하면서 알림을 모두 삭제함
+                viewModel.deleteAllReminders(CALENDAR_ID, ORIGINAL_EVENT_ID);
+            }
+        }
+
+
+        // 참석자
+        if (!modifiedEventData.getATTENDEES().isEmpty())
+        {
+            if (!savedEventData.getATTENDEES().isEmpty())
+            {
+                //참석자 리스트가 수정된 경우
+                // 수정된 부분만 변경
+                Set<ContentValues> savedAttendees = new ArraySet<>();
+                Set<ContentValues> modifiedAttendees = new ArraySet<>();
+
+                savedAttendees.addAll(dataController.getSavedEventData().getATTENDEES());
+                modifiedAttendees.addAll(dataController.getModifiedEventData().getATTENDEES());
+
+                AttendeeSet addedAttendees = new AttendeeSet();
+                AttendeeSet removedAttendees = new AttendeeSet();
+
+                // 추가된 참석자들만 남긴다.
+                addedAttendees.addAll(modifiedAttendees);
+                addedAttendees.removeAll(savedAttendees);
+
+                // 삭제된 참석자들만 남긴다.
+                removedAttendees.addAll(savedAttendees);
+                removedAttendees.removeAll(modifiedAttendees);
+
+                if (!addedAttendees.isEmpty())
+                {
+                    // 추가된 참석자들을 DB에 모두 추가한다.
+                    for (ContentValues addedAttendee : addedAttendees)
+                    {
+                        addedAttendee.put(CalendarContract.Attendees.EVENT_ID, ORIGINAL_EVENT_ID);
+                    }
+                    viewModel.addAttendees(new ArrayList<>(addedAttendees));
+                }
+                if (!removedAttendees.isEmpty())
+                {
+                    // 삭제된 참석자들을 DB에서 모두 제거한다.
+                    long[] ids = new long[removedAttendees.size()];
+                    int i = 0;
+
+                    for (ContentValues removedAttendee : removedAttendees)
+                    {
+                        ids[i] = removedAttendee.getAsLong(CalendarContract.Attendees._ID);
+                        i++;
+                    }
+                    viewModel.deleteAttendees(CALENDAR_ID, ORIGINAL_EVENT_ID, ids);
+                }
+            } else
+            {
+                //참석자가 없었다가 새롭게 추가된 경우
+                List<ContentValues> addedAttendees = modifiedEventData.getATTENDEES();
+
+                for (ContentValues addedAttendee : addedAttendees)
+                {
+                    addedAttendee.put(CalendarContract.Attendees.EVENT_ID, ORIGINAL_EVENT_ID);
+                }
+                viewModel.addAttendees(new ArrayList<>(addedAttendees));
+            }
+        } else
+        {
+            if (!savedEventData.getATTENDEES().isEmpty())
+            {
+                //참석자를 모두 제거한 경우
+                viewModel.deleteAllAttendees(CALENDAR_ID, ORIGINAL_EVENT_ID);
+            }
+        }
+
+         */
+	}
+
+	protected void updateAfterInstanceIncludingThisInstance() {
+        /*
+        final long NEW_EVENT_ID = viewModel.updateAllFutureInstances(dataController.getModifiedEventData().getEVENT(),
+                dataController.getSavedEventData().getEVENT());
+
+         */
+	}
+
+	protected void updateEvent() {
+		calendarViewModel.updateEvent(dataController.getModifiedEventData().getEVENT());
+		getIntent().putExtra(CalendarContract.Events._ID,
+				dataController.getModifiedEventData().getEVENT().getAsLong(CalendarContract.Events._ID));
+		getIntent().putExtra(CalendarContract.Instances.BEGIN,
+				dataController.getModifiedEventData().getEVENT().getAsLong(CalendarContract.Events.DTSTART));
+		setResult(EventIntentCode.RESULT_MODIFIED_EVENT.value());
+		finish();
+	}
+
+
+	protected void modifyEvent(int action) {
+
+/*
+        if (modifiedEventData.getEVENT().getAsString(CalendarContract.Events.EVENT_LOCATION) != null)
+        {
+            // 위치가 추가 | 변경된 경우
+            locationDTO.setCalendarId(CALENDAR_ID);
+            locationDTO.setEventId(ORIGINAL_EVENT_ID);
+
+            //상세 위치가 지정되어 있는지 확인
+            locationViewModel.hasDetailLocation(CALENDAR_ID, ORIGINAL_EVENT_ID, new CarrierMessagingService.ResultCallback<Boolean>()
+            {
+                @Override
+                public void onReceiveResult(@NonNull Boolean aBoolean)
+                {
+                    if (aBoolean)
+                    {
+                        // 상세위치가 지정되어 있고, 현재 위치를 변경하려는 상태
+                        locationViewModel.modifyLocation(locationDTO, new CarrierMessagingService.ResultCallback<Boolean>()
+                        {
+                            @Override
+                            public void onReceiveResult(@NonNull Boolean aBoolean)
+                            {
+                                setResult(RESULT_OK);
+                                finish();
+                            }
+                        });
+                    } else
+                    {
+                        // 상세위치를 추가하는 경우
+                        locationViewModel.addLocation(locationDTO, new CarrierMessagingService.ResultCallback<Boolean>()
+                        {
+                            @Override
+                            public void onReceiveResult(@NonNull Boolean aBoolean)
+                            {
+                                setResult(RESULT_OK);
+                                finish();
+                            }
+                        });
+                    }
+                }
+            });
+
+        } else
+        {
+            if (savedEventData.getEVENT().getAsString(CalendarContract.Events.EVENT_LOCATION) != null)
+            {
+                // 현재 위치를 삭제하려고 하는 상태
+                locationViewModel.hasDetailLocation(CALENDAR_ID, ORIGINAL_EVENT_ID, new CarrierMessagingService.ResultCallback<Boolean>()
+                {
+                    @Override
+                    public void onReceiveResult(@NonNull Boolean aBoolean)
+                    {
+                        if (aBoolean)
+                        {
+                            // 기존의 상세 위치를 제거
+                            locationViewModel.removeLocation(CALENDAR_ID, ORIGINAL_EVENT_ID, new CarrierMessagingService.ResultCallback<Boolean>()
+                            {
+                                @Override
+                                public void onReceiveResult(@NonNull Boolean aBoolean)
+                                {
+                                    setResult(RESULT_OK);
+                                    finish();
+                                }
+                            });
+                        } else
+                        {
+                            // 상세 위치가 지정되어 있지 않음
+                            setResult(RESULT_OK);
+                            finish();
+                        }
+                    }
+                });
+
+            } else
+            {
+                //위치를 원래 설정하지 않은 경우
+                setResult(RESULT_OK);
+                finish();
+            }
+        }
+
+ */
 	}
 }

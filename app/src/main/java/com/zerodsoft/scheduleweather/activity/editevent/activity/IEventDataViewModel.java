@@ -14,13 +14,9 @@ public interface IEventDataViewModel {
 
 	void setIsAllDay(Boolean isAllDay);
 
-	void setStartDate(Date date);
+	void setDtStart(Date date);
 
-	void setEndDate(Date date);
-
-	void setStartTime(Date date);
-
-	void setEndTime(Date date);
+	void setDtEnd(Date date);
 
 	void setTimezone(String timezone);
 

@@ -56,22 +56,12 @@ public class EventDataViewModel extends AndroidViewModel implements IEventDataVi
 	}
 
 	@Override
-	public void setStartDate(Date date) {
+	public void setDtStart(Date date) {
 		EVENT.put(CalendarContract.Events.DTSTART, date.getTime());
 	}
 
 	@Override
-	public void setEndDate(Date date) {
-		EVENT.put(CalendarContract.Events.DTEND, date.getTime());
-	}
-
-	@Override
-	public void setStartTime(Date date) {
-		EVENT.put(CalendarContract.Events.DTSTART, date.getTime());
-	}
-
-	@Override
-	public void setEndTime(Date date) {
+	public void setDtEnd(Date date) {
 		EVENT.put(CalendarContract.Events.DTEND, date.getTime());
 	}
 
