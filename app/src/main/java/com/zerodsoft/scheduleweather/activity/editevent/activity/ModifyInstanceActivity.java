@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.CalendarContract;
+import android.service.carrier.CarrierMessagingService;
 import android.view.MenuItem;
 import android.view.View;
 
@@ -20,6 +21,7 @@ import java.util.List;
 
 public class ModifyInstanceActivity extends EditEventActivity {
 
+	/*
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -30,6 +32,7 @@ public class ModifyInstanceActivity extends EditEventActivity {
 	protected void onDestroy() {
 		super.onDestroy();
 	}
+
 
 	@Override
 	protected void loadInitData() {
@@ -42,6 +45,7 @@ public class ModifyInstanceActivity extends EditEventActivity {
 		final long INSTANCE_ID = intent.getLongExtra(CalendarContract.Instances._ID, 0);
 		final long BEGIN = intent.getLongExtra(CalendarContract.Instances.BEGIN, 0);
 		final long END = intent.getLongExtra(CalendarContract.Instances.END, 0);
+
 
 		dataController.putEventValue(CalendarContract.Instances._ID, EVENT_ID);
 
@@ -158,7 +162,6 @@ public class ModifyInstanceActivity extends EditEventActivity {
 	protected void updateThisInstance() {
 		calendarViewModel.updateOneInstance(dataController.getModifiedEventData().getEVENT(),
 				dataController.getSavedEventData().getEVENT());
-        /*
 
         // 알람 갱신
         // 알람 데이터가 수정된 경우 이벤트ID를 넣는다
@@ -261,15 +264,15 @@ public class ModifyInstanceActivity extends EditEventActivity {
             }
         }
 
-         */
+
 	}
 
 	protected void updateAfterInstanceIncludingThisInstance() {
-        /*
+
         final long NEW_EVENT_ID = viewModel.updateAllFutureInstances(dataController.getModifiedEventData().getEVENT(),
                 dataController.getSavedEventData().getEVENT());
 
-         */
+
 	}
 
 	protected void updateEvent() {
@@ -285,7 +288,7 @@ public class ModifyInstanceActivity extends EditEventActivity {
 
 	protected void modifyEvent(int action) {
 
-/*
+
         if (modifiedEventData.getEVENT().getAsString(CalendarContract.Events.EVENT_LOCATION) != null)
         {
             // 위치가 추가 | 변경된 경우
@@ -365,6 +368,11 @@ public class ModifyInstanceActivity extends EditEventActivity {
             }
         }
 
- */
+
+	}
+*/
+	@Override
+	protected void loadInitData() {
+
 	}
 }

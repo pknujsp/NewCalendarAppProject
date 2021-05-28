@@ -30,6 +30,7 @@ public class NewEventActivity extends EditEventActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		loadInitData();
+		initializing = false;
 	}
 
 	@Override

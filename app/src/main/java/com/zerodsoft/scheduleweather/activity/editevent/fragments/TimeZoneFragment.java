@@ -19,87 +19,74 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.editevent.adapter.TimeZoneRecyclerViewAdapter;
 import com.zerodsoft.scheduleweather.activity.editevent.interfaces.ITimeZone;
+import com.zerodsoft.scheduleweather.databinding.TimezoneFragmentBinding;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
-public class TimeZoneFragment extends Fragment
-{
-    public TimeZoneRecyclerViewAdapter adapter;
-    public RecyclerView recyclerView;
-    public EditText searchEditText;
-    public ITimeZone iTimeZone;
-    public Long startTime;
+public class TimeZoneFragment extends Fragment {
+	private TimezoneFragmentBinding binding;
+	private TimeZoneRecyclerViewAdapter adapter;
+	private ITimeZone iTimeZone;
+	private final long startTime = System.currentTimeMillis();
 
-    public TimeZoneFragment()
-    {
+	public TimeZoneFragment() {
 
-    }
+	}
 
-    public void setiTimeZone(ITimeZone iTimeZone)
-    {
-        this.iTimeZone = iTimeZone;
-    }
+	public void setiTimeZone(ITimeZone iTimeZone) {
+		this.iTimeZone = iTimeZone;
+	}
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState)
-    {
-        super.onCreate(savedInstanceState);
-        startTime = System.currentTimeMillis();
-    }
+	@Override
+	public void onCreate(@Nullable Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+	}
 
-    @Nullable
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
-    {
-        return inflater.inflate(R.layout.timezone_fragment, container, false);
-    }
+	@Nullable
+	@Override
+	public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+		binding = TimezoneFragmentBinding.inflate(inflater);
+		return binding.getRoot();
+	}
 
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
-    {
-        super.onViewCreated(view, savedInstanceState);
-        recyclerView = (RecyclerView) view.findViewById(R.id.timezone_list);
-        searchEditText = (EditText) view.findViewById(R.id.search_timezone);
+	@Override
+	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
 
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
-        recyclerView.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
+		binding.timezoneList.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
+		binding.timezoneList.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
 
-        final String[] timeZones = TimeZone.getAvailableIDs();
-        final List<TimeZone> timeZoneList = new ArrayList<>();
+		final String[] timeZones = TimeZone.getAvailableIDs();
+		final List<TimeZone> timeZoneList = new ArrayList<>();
 
-        for (String v : timeZones)
-        {
-            timeZoneList.add(TimeZone.getTimeZone(v));
-        }
+		for (String v : timeZones) {
+			timeZoneList.add(TimeZone.getTimeZone(v));
+		}
 
-        Date startDate = new Date(startTime);
+		Date startDate = new Date(startTime);
 
-        adapter = new TimeZoneRecyclerViewAdapter(iTimeZone, timeZoneList, startDate);
-        recyclerView.setAdapter(adapter);
+		adapter = new TimeZoneRecyclerViewAdapter(iTimeZone, timeZoneList, startDate);
+		binding.timezoneList.setAdapter(adapter);
 
-        searchEditText.addTextChangedListener(new TextWatcher()
-        {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2)
-            {
+		binding.searchTimezone.addTextChangedListener(new TextWatcher() {
+			@Override
+			public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
 
-            }
+			}
 
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2)
-            {
-                // 실시간 검색
-                adapter.getFilter().filter(charSequence);
-            }
+			@Override
+			public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+				// 실시간 검색
+				adapter.getFilter().filter(charSequence);
+			}
 
-            @Override
-            public void afterTextChanged(Editable editable)
-            {
+			@Override
+			public void afterTextChanged(Editable editable) {
 
-            }
-        });
-    }
+			}
+		});
+	}
 }

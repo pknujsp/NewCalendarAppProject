@@ -36,6 +36,8 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.editevent.activity.EditEventActivity;
+import com.zerodsoft.scheduleweather.activity.editevent.activity.ModifyInstanceActivity;
+import com.zerodsoft.scheduleweather.activity.editevent.activity.NewEventActivity;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendar.CommonPopupMenu;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
@@ -411,7 +413,7 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 				drawerLayoutOnClickListener.onClick(view);
 				break;
 			case R.id.add_schedule:
-				Intent intent = new Intent(requireActivity(), EditEventActivity.class);
+				Intent intent = new Intent(requireActivity(), NewEventActivity.class);
 				intent.putExtra("requestCode", EventIntentCode.REQUEST_NEW_EVENT.value());
 				newEventActivityResultLauncher.launch(intent);
 				break;

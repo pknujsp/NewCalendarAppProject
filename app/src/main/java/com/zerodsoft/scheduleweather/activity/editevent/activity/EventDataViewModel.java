@@ -36,43 +36,43 @@ public class EventDataViewModel extends AndroidViewModel implements IEventDataVi
 
 	@Override
 	public void setTitle(String title) {
-		EVENT.put(CalendarContract.Events.TITLE, title);
+		putOrRemoveValue(CalendarContract.Events.TITLE, title);
 	}
 
 	@Override
 	public void setEventColor(Integer color, String colorKey) {
-		EVENT.put(CalendarContract.Events.EVENT_COLOR, color);
-		EVENT.put(CalendarContract.Events.EVENT_COLOR_KEY, colorKey);
+		putOrRemoveValue(CalendarContract.Events.EVENT_COLOR, color);
+		putOrRemoveValue(CalendarContract.Events.EVENT_COLOR_KEY, colorKey);
 	}
 
 	@Override
 	public void setCalendar(Integer calendarId) {
-		EVENT.put(CalendarContract.Events.CALENDAR_ID, calendarId);
+		putOrRemoveValue(CalendarContract.Events.CALENDAR_ID, calendarId);
 	}
 
 	@Override
 	public void setIsAllDay(Boolean isAllDay) {
-		EVENT.put(CalendarContract.Events.ALL_DAY, isAllDay ? 1 : 0);
+		putOrRemoveValue(CalendarContract.Events.ALL_DAY, isAllDay);
 	}
 
 	@Override
 	public void setDtStart(Date date) {
-		EVENT.put(CalendarContract.Events.DTSTART, date.getTime());
+		putOrRemoveValue(CalendarContract.Events.DTSTART, date.getTime());
 	}
 
 	@Override
 	public void setDtEnd(Date date) {
-		EVENT.put(CalendarContract.Events.DTEND, date.getTime());
+		putOrRemoveValue(CalendarContract.Events.DTEND, date.getTime());
 	}
 
 	@Override
 	public void setTimezone(String timezone) {
-		EVENT.put(CalendarContract.Events.EVENT_TIMEZONE, timezone);
+		putOrRemoveValue(CalendarContract.Events.EVENT_TIMEZONE, timezone);
 	}
 
 	@Override
 	public void setRecurrence(String rRule) {
-		EVENT.put(CalendarContract.Events.RRULE, rRule);
+		putOrRemoveValue(CalendarContract.Events.RRULE, rRule);
 	}
 
 	@Override
@@ -113,19 +113,20 @@ public class EventDataViewModel extends AndroidViewModel implements IEventDataVi
 
 	@Override
 	public void setDescription(String description) {
-		EVENT.put(CalendarContract.Events.DESCRIPTION, description);
+		putOrRemoveValue(CalendarContract.Events.DESCRIPTION, description);
 	}
 
 	@Override
 	public void setEventLocation(String eventLocation) {
-		EVENT.put(CalendarContract.Events.EVENT_LOCATION, eventLocation);
+		putOrRemoveValue(CalendarContract.Events.EVENT_LOCATION, eventLocation);
 	}
 
 	@Override
 	public void setAttendees(List<ContentValues> attendeeList, Boolean guestsCanModify, Boolean guestsCanInviteOthers, Boolean guestsCanSeeGuests) {
-		EVENT.put(CalendarContract.Events.GUESTS_CAN_MODIFY, guestsCanModify ? 1 : 0);
-		EVENT.put(CalendarContract.Events.GUESTS_CAN_INVITE_OTHERS, guestsCanInviteOthers ? 1 : 0);
-		EVENT.put(CalendarContract.Events.GUESTS_CAN_SEE_GUESTS, guestsCanSeeGuests ? 1 : 0);
+		putOrRemoveValue(CalendarContract.Events.GUESTS_CAN_MODIFY, guestsCanModify);
+		putOrRemoveValue(CalendarContract.Events.GUESTS_CAN_INVITE_OTHERS, guestsCanInviteOthers);
+		putOrRemoveValue(CalendarContract.Events.GUESTS_CAN_SEE_GUESTS, guestsCanSeeGuests);
+
 		ATTENDEES.clear();
 		ATTENDEES.addAll(attendeeList);
 	}
@@ -142,11 +143,43 @@ public class EventDataViewModel extends AndroidViewModel implements IEventDataVi
 
 	@Override
 	public void setAccessLevel(Integer accessLevel) {
-		EVENT.put(CalendarContract.Events.ACCESS_LEVEL, accessLevel);
+		putOrRemoveValue(CalendarContract.Events.ACCESS_LEVEL, accessLevel);
 	}
 
 	@Override
 	public void setAvailability(Integer availability) {
-		EVENT.put(CalendarContract.Events.AVAILABILITY, availability);
+		putOrRemoveValue(CalendarContract.Events.AVAILABILITY, availability);
+	}
+
+	private void putOrRemoveValue(String key, String value) {
+		if (value == null) {
+			EVENT.remove(key);
+		} else {
+			EVENT.put(key, value);
+		}
+	}
+
+	private void putOrRemoveValue(String key, Long value) {
+		if (value == null) {
+			EVENT.remove(key);
+		} else {
+			EVENT.put(key, value);
+		}
+	}
+
+	private void putOrRemoveValue(String key, Integer value) {
+		if (value == null) {
+			EVENT.remove(key);
+		} else {
+			EVENT.put(key, value);
+		}
+	}
+
+	private void putOrRemoveValue(String key, Boolean value) {
+		if (value == null) {
+			EVENT.remove(key);
+		} else {
+			EVENT.put(key, value ? 1 : 0);
+		}
 	}
 }

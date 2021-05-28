@@ -4,7 +4,6 @@ import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -20,6 +19,8 @@ import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.provider.CalendarContract;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.ArraySet;
 import android.view.Gravity;
 import android.view.Menu;
@@ -86,10 +87,13 @@ public abstract class EditEventActivity extends AppCompatActivity implements IEv
 	protected LocationDTO locationDTO;
 	protected NetworkStatus networkStatus;
 
+	protected boolean initializing = true;
+
 	protected ContentValues selectedCalendarValues;
 
 	protected enum DateTimeType {
-		START, END
+		START,
+		END
 	}
 
 	@Override
@@ -125,6 +129,9 @@ public abstract class EditEventActivity extends AppCompatActivity implements IEv
 		setSupportActionBar(toolbar);
 		ActionBar actionBar = getSupportActionBar();
 		actionBar.setDisplayHomeAsUpEnabled(true);
+
+		setViewListeners();
+		setViewOnClickListeners();
 	}
 
 	@Override
@@ -133,13 +140,57 @@ public abstract class EditEventActivity extends AppCompatActivity implements IEv
 		recurrenceActivityResultLauncher.unregister();
 		remindersActivityResultLauncher.unregister();
 		timeZoneActivityResultLauncher.unregister();
+		selectLocationActivityResultLauncher.unregister();
+		permissionResultLauncher.unregister();
 
 		super.onDestroy();
 	}
 
 	protected abstract void loadInitData();
 
-	protected void setOnClickListeners() {
+	protected void setViewListeners() {
+		binding.titleLayout.title.addTextChangedListener(new TextWatcher() {
+			@Override
+			public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+			}
+
+			@Override
+			public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+			}
+
+			@Override
+			public void afterTextChanged(Editable s) {
+				if (!initializing) {
+					binding.titleLayout.title.setText(s.toString());
+					eventDataViewModel.setTitle(s.toString());
+				}
+			}
+		});
+
+		binding.descriptionLayout.descriptionEdittext.addTextChangedListener(new TextWatcher() {
+			@Override
+			public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+			}
+
+			@Override
+			public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+			}
+
+			@Override
+			public void afterTextChanged(Editable s) {
+				if (!initializing) {
+					binding.descriptionLayout.descriptionEdittext.setText(s.toString());
+					eventDataViewModel.setDescription(s.toString());
+				}
+			}
+		});
+	}
+
+	protected void setViewOnClickListeners() {
         /*
         event color
          */
@@ -192,7 +243,10 @@ public abstract class EditEventActivity extends AppCompatActivity implements IEv
 				binding.timeLayout.endTime.setVisibility(View.VISIBLE);
 				binding.timeLayout.eventTimezoneLayout.setVisibility(View.VISIBLE);
 			}
-			eventDataViewModel.setIsAllDay(isChecked);
+
+			if (!initializing) {
+				eventDataViewModel.setIsAllDay(isChecked);
+			}
 		});
 
         /*
@@ -201,7 +255,7 @@ public abstract class EditEventActivity extends AppCompatActivity implements IEv
 		binding.timeLayout.eventTimezone.setOnClickListener(view ->
 		{
 			Intent intent = new Intent(EditEventActivity.this, TimeZoneActivity.class);
-			intent.putExtra(CalendarContract.Events.DTSTART, eventDataViewModel.getEVENT().getAsLong(CalendarContract.Events.DTSTART));
+			timeZoneActivityResultLauncher.launch(intent);
 		});
 
         /*
@@ -216,6 +270,8 @@ public abstract class EditEventActivity extends AppCompatActivity implements IEv
 
 			intent.putExtra(CalendarContract.Events.RRULE, rRule);
 			intent.putExtra(CalendarContract.Events.DTSTART, eventDataViewModel.getEVENT().getAsLong(CalendarContract.Events.DTSTART));
+
+			recurrenceActivityResultLauncher.launch(intent);
 		});
 
         /*
@@ -321,7 +377,8 @@ public abstract class EditEventActivity extends AppCompatActivity implements IEv
 		binding.reminderLayout.addReminderButton.setOnClickListener(view ->
 		{
 			Intent intent = new Intent(EditEventActivity.this, ReminderActivity.class);
-			intent.putExtra("requestCode", ReminderActivity.ADD_REMINDER);
+			intent.putExtra("requestCode", EventIntentCode.REQUEST_ADD_REMINDER.value());
+			remindersActivityResultLauncher.launch(intent);
 		});
 
 		@SuppressLint("NonConstantResourceId") View.OnClickListener dateTimeOnClickListener = view ->
@@ -389,6 +446,8 @@ public abstract class EditEventActivity extends AppCompatActivity implements IEv
 						eventDataViewModel.getEVENT().getAsBoolean(CalendarContract.Events.GUESTS_CAN_MODIFY));
 				intent.putExtra(CalendarContract.Events.GUESTS_CAN_INVITE_OTHERS, eventDataViewModel.getEVENT().getAsBoolean(CalendarContract.Events.GUESTS_CAN_INVITE_OTHERS));
 				intent.putExtra(CalendarContract.Events.GUESTS_CAN_SEE_GUESTS, eventDataViewModel.getEVENT().getAsBoolean(CalendarContract.Events.GUESTS_CAN_SEE_GUESTS));
+
+				attendeesActivityResultLauncher.launch(intent);
 			}
 		});
 	}
@@ -413,7 +472,7 @@ public abstract class EditEventActivity extends AppCompatActivity implements IEv
 			Intent intent = new Intent(EditEventActivity.this, ReminderActivity.class);
 			intent.putExtra("previousMinutes", holder.minutes);
 			intent.putExtra("previousMethod", holder.method);
-			intent.putExtra("requestCode", ReminderActivity.MODIFY_REMINDER);
+			intent.putExtra("requestCode", EventIntentCode.REQUEST_MODIFY_REMINDER.value());
 			remindersActivityResultLauncher.launch(intent);
 		}
 	};
@@ -480,8 +539,8 @@ public abstract class EditEventActivity extends AppCompatActivity implements IEv
 		}
 	}
 
-	protected void modifyReminder(ContentValues reminder, int previousMinutes) {
-		eventDataViewModel.modifyReminder(previousMinutes, reminder.getAsInteger(CalendarContract.Reminders.MINUTES), reminder.getAsInteger(CalendarContract.Reminders.METHOD));
+	protected void modifyReminder(ContentValues modifiedReminder, int previousMinutes) {
+		eventDataViewModel.modifyReminder(previousMinutes, modifiedReminder.getAsInteger(CalendarContract.Reminders.MINUTES), modifiedReminder.getAsInteger(CalendarContract.Reminders.METHOD));
 		final int rowCount = binding.reminderLayout.remindersTable.getChildCount();
 
 		// 아이템 수정
@@ -489,8 +548,8 @@ public abstract class EditEventActivity extends AppCompatActivity implements IEv
 			ReminderItemHolder holder = (ReminderItemHolder) binding.reminderLayout.remindersTable.getChildAt(rowIndex).getTag();
 
 			if (holder.minutes == previousMinutes) {
-				final int newMinutes = reminder.getAsInteger(CalendarContract.Reminders.MINUTES);
-				final int newMethod = reminder.getAsInteger(CalendarContract.Reminders.METHOD);
+				final int newMinutes = modifiedReminder.getAsInteger(CalendarContract.Reminders.MINUTES);
+				final int newMethod = modifiedReminder.getAsInteger(CalendarContract.Reminders.METHOD);
 
 				holder.minutes = newMinutes;
 				holder.method = newMethod;
@@ -829,13 +888,13 @@ public abstract class EditEventActivity extends AppCompatActivity implements IEv
 					, new ActivityResultCallback<ActivityResult>() {
 						@Override
 						public void onActivityResult(ActivityResult result) {
-							Bundle bundle = result.getData().getExtras();
-							List<ContentValues> resultAttendeeList = bundle.getParcelableArrayList("attendeeList");
+							Intent intent = result.getData();
+							List<ContentValues> resultAttendeeList = intent.getParcelableArrayListExtra("attendeeList");
 
 							eventDataViewModel.setAttendees(resultAttendeeList,
-									bundle.getBoolean(CalendarContract.Events.GUESTS_CAN_MODIFY),
-									bundle.getBoolean(CalendarContract.Events.GUESTS_CAN_INVITE_OTHERS)
-									, bundle.getBoolean(CalendarContract.Events.GUESTS_CAN_SEE_GUESTS));
+									intent.getBooleanExtra(CalendarContract.Events.GUESTS_CAN_MODIFY, false),
+									intent.getBooleanExtra(CalendarContract.Events.GUESTS_CAN_INVITE_OTHERS, false)
+									, intent.getBooleanExtra(CalendarContract.Events.GUESTS_CAN_SEE_GUESTS, false));
 							setAttendeesText(resultAttendeeList);
 						}
 					});
@@ -860,31 +919,34 @@ public abstract class EditEventActivity extends AppCompatActivity implements IEv
 					, new ActivityResultCallback<ActivityResult>() {
 						@Override
 						public void onActivityResult(ActivityResult result) {
-							if (result.getResultCode() == ReminderActivity.RESULT_ADDED_REMINDER) {
-								ContentValues reminder = (ContentValues) result.getData().getParcelableExtra("reminder");
+							ContentValues reminder = (ContentValues) result.getData().getParcelableExtra("reminder");
+							final int previousMinutes = result.getData().getIntExtra("previousMinutes", 0);
 
-								// reminder values는 분, 메소드값을 담고 있어야 한다
-								// 수정된 minutes, method가 기존 값과 중복되는 경우 진행하지 않음
-								if (eventDataViewModel.addReminder(reminder.getAsInteger(CalendarContract.Reminders.MINUTES),
-										reminder.getAsInteger(CalendarContract.Reminders.METHOD))) {
-									addReminder(reminder);
-								} else {
-									Toast.makeText(EditEventActivity.this, R.string.duplicate_value, Toast.LENGTH_SHORT).show();
-								}
+							switch (EventIntentCode.enumOf(result.getResultCode())) {
+								case RESULT_ADDED_REMINDER:
+									// reminder values는 분, 메소드값을 담고 있어야 한다
+									// 수정된 minutes, method가 기존 값과 중복되는 경우 진행하지 않음
+									if (eventDataViewModel.addReminder(reminder.getAsInteger(CalendarContract.Reminders.MINUTES),
+											reminder.getAsInteger(CalendarContract.Reminders.METHOD))) {
+										addReminder(reminder);
+									} else {
+										Toast.makeText(EditEventActivity.this, R.string.duplicate_value, Toast.LENGTH_SHORT).show();
+									}
+									break;
 
-							} else if (result.getResultCode() == ReminderActivity.RESULT_MODIFIED_REMINDER) {
-								ContentValues reminder = result.getData().getParcelableExtra("reminder");
+								case RESULT_MODIFIED_REMINDER:
+									int newMinutes = reminder.getAsInteger(CalendarContract.Reminders.MINUTES);
+									int method = reminder.getAsInteger(CalendarContract.Reminders.METHOD);
 
-								final int previousMinutes = result.getData().getIntExtra("previousMinutes", 0);
-								int newMinutes = reminder.getAsInteger(CalendarContract.Reminders.MINUTES);
-								int method = reminder.getAsInteger(CalendarContract.Reminders.METHOD);
+									// 수정된 minutes, method가 기존 값과 중복되는 경우 진행하지 않음
+									eventDataViewModel.modifyReminder(previousMinutes, newMinutes, method);
+									break;
 
-								// 수정된 minutes, method가 기존 값과 중복되는 경우 진행하지 않음
-								eventDataViewModel.modifyReminder(previousMinutes, newMinutes, method);
-							} else if (result.getResultCode() == ReminderActivity.RESULT_REMOVED_REMINDER) {
-								final int previousMinutes = result.getData().getIntExtra("previousMinutes", 0);
-								removeReminder(previousMinutes);
+								case RESULT_REMOVED_REMINDER:
+									removeReminder(previousMinutes);
+									break;
 							}
+
 						}
 					});
 
