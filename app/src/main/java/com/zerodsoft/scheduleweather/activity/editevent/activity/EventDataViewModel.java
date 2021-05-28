@@ -123,12 +123,18 @@ public class EventDataViewModel extends AndroidViewModel implements IEventDataVi
 
 	@Override
 	public void setAttendees(List<ContentValues> attendeeList, Boolean guestsCanModify, Boolean guestsCanInviteOthers, Boolean guestsCanSeeGuests) {
-		putOrRemoveValue(CalendarContract.Events.GUESTS_CAN_MODIFY, guestsCanModify);
-		putOrRemoveValue(CalendarContract.Events.GUESTS_CAN_INVITE_OTHERS, guestsCanInviteOthers);
-		putOrRemoveValue(CalendarContract.Events.GUESTS_CAN_SEE_GUESTS, guestsCanSeeGuests);
-
 		ATTENDEES.clear();
 		ATTENDEES.addAll(attendeeList);
+
+		if (ATTENDEES.isEmpty()) {
+			EVENT.remove(CalendarContract.Events.GUESTS_CAN_MODIFY);
+			EVENT.remove(CalendarContract.Events.GUESTS_CAN_INVITE_OTHERS);
+			EVENT.remove(CalendarContract.Events.GUESTS_CAN_SEE_GUESTS);
+		} else {
+			putOrRemoveValue(CalendarContract.Events.GUESTS_CAN_MODIFY, guestsCanModify);
+			putOrRemoveValue(CalendarContract.Events.GUESTS_CAN_INVITE_OTHERS, guestsCanInviteOthers);
+			putOrRemoveValue(CalendarContract.Events.GUESTS_CAN_SEE_GUESTS, guestsCanSeeGuests);
+		}
 	}
 
 	@Override
@@ -138,6 +144,12 @@ public class EventDataViewModel extends AndroidViewModel implements IEventDataVi
 				ATTENDEES.remove(i);
 				break;
 			}
+		}
+
+		if (ATTENDEES.isEmpty()) {
+			EVENT.remove(CalendarContract.Events.GUESTS_CAN_MODIFY);
+			EVENT.remove(CalendarContract.Events.GUESTS_CAN_INVITE_OTHERS);
+			EVENT.remove(CalendarContract.Events.GUESTS_CAN_SEE_GUESTS);
 		}
 	}
 

@@ -156,7 +156,7 @@ public class RecurrenceActivity extends AppCompatActivity {
 
 			@Override
 			public void afterTextChanged(Editable editable) {
-				modifyValueIfAbnormalValue(editable, binding.recurrenceCustomRule.recurrenceInterval);
+				modifyValueIfAbnormalValue(editable);
 			}
 		});
 
@@ -171,7 +171,7 @@ public class RecurrenceActivity extends AppCompatActivity {
 
 			@Override
 			public void afterTextChanged(Editable editable) {
-				modifyValueIfAbnormalValue(editable, binding.recurrenceDetailRule.recurrenceCount);
+				modifyValueIfAbnormalValue(editable);
 			}
 		});
 
@@ -485,13 +485,10 @@ public class RecurrenceActivity extends AppCompatActivity {
 		}
 	};
 
-	private void modifyValueIfAbnormalValue(Editable editable, EditText editText) {
-		if (editable.toString().isEmpty()) {
-			editText.setText("1");
-		} else if (Integer.parseInt(editable.toString()) <= 0) {
-			editText.setText("1");
-		} else {
-			editText.setText(editable.toString());
+	private void modifyValueIfAbnormalValue(Editable editable) {
+		if (editable.toString().isEmpty() || Integer.parseInt(editable.toString()) <= 0) {
+			editable.clear();
+			editable.append("1");
 		}
 	}
 

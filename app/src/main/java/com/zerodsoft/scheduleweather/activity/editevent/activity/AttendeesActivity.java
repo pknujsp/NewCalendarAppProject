@@ -21,7 +21,6 @@ import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.Toast;
 
-import com.google.android.material.chip.ChipGroup;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.editevent.adapter.AttendeeListAdapter;
 import com.zerodsoft.scheduleweather.databinding.ActivityAttendeesBinding;
@@ -37,7 +36,7 @@ public class AttendeesActivity extends AppCompatActivity {
 	private SearchView searchView;
 	private AttendeeListAdapter adapter;
 	private List<ContentValues> attendeeList = new ArrayList<>();
-	private ContentValues selectedCalendar;
+	private ContentValues organizer;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -70,7 +69,7 @@ public class AttendeesActivity extends AppCompatActivity {
 
 		Intent intent = getIntent();
 		attendeeList = intent.getParcelableArrayListExtra("attendeeList");
-		selectedCalendar = intent.getParcelableExtra("selectedCalendar");
+		organizer = intent.getParcelableExtra("organizer");
 
 		// 권한 값을 받아서 설정
 		if (!attendeeList.isEmpty()) {
@@ -83,7 +82,7 @@ public class AttendeesActivity extends AppCompatActivity {
 			binding.authorityModifyEvent.setChecked(guestsModify);
 		}
 
-		adapter = new AttendeeListAdapter(attendeeList, selectedCalendar);
+		adapter = new AttendeeListAdapter(attendeeList, organizer);
 		adapter.registerAdapterDataObserver(adapterDataObserver);
 		binding.attendeeList.setAdapter(adapter);
 
@@ -126,8 +125,8 @@ public class AttendeesActivity extends AppCompatActivity {
                     이메일이 아니면 검색 완료클릭시 이메일 주소가 아닙니다라는 내용의 메시지를 표시
                     */
 					if (query.matches(EMAIL_REGRESSION)) {
-						final String selectedCalendarOwnerAccount = selectedCalendar.getAsString(CalendarContract.Attendees.ATTENDEE_EMAIL);
-						final String selectedCalendarCalendarName = selectedCalendar.getAsString(CalendarContract.Attendees.ATTENDEE_NAME);
+						final String selectedCalendarOwnerAccount = organizer.getAsString(CalendarContract.Attendees.ATTENDEE_EMAIL);
+						final String selectedCalendarCalendarName = organizer.getAsString(CalendarContract.Attendees.ATTENDEE_NAME);
 						// 중복 여부 확인
 						// 리스트내에 이미 존재하는지 확인
 						for (ContentValues value : attendeeList) {
@@ -146,7 +145,7 @@ public class AttendeesActivity extends AppCompatActivity {
 
 						if (attendeeList.isEmpty()) {
 							// 리스트가 비어있는 경우에는 이벤트에서 선택된 캘린더를 리스트의 맨 앞에 위치시킨다.
-							attendeeList.add(selectedCalendar);
+							attendeeList.add(organizer);
 						}
 						ContentValues attendee = new ContentValues();
 						attendee.put(CalendarContract.Attendees.ATTENDEE_EMAIL, query);

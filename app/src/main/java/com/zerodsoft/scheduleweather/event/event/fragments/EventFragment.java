@@ -527,7 +527,7 @@ public class EventFragment extends BottomSheetDialogFragment {
 		binding.eventDescriptionView.descriptionEdittext.setVisibility(View.GONE);
 		if (instanceValues.getAsString(CalendarContract.Instances.DESCRIPTION) != null) {
 			if (!instanceValues.getAsString(CalendarContract.Instances.DESCRIPTION).isEmpty()) {
-				binding.eventDescriptionView.descriptionTextview.setText(instanceValues.getAsString(CalendarContract.Instances.DESCRIPTION));
+				binding.eventDescriptionView.notDescription.setText(instanceValues.getAsString(CalendarContract.Instances.DESCRIPTION));
 				binding.eventDescriptionView.getRoot().setVisibility(View.VISIBLE);
 			} else {
 				binding.eventDescriptionView.getRoot().setVisibility(View.GONE);

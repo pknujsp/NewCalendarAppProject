@@ -125,6 +125,10 @@ public abstract class EditEventActivity extends AppCompatActivity implements IEv
 		requestCode = EventIntentCode.enumOf(getIntent().getIntExtra("requestCode", 0));
 		networkStatus = new NetworkStatus(getApplicationContext(), new ConnectivityManager.NetworkCallback());
 
+		binding.reminderLayout.notReminder.setVisibility(View.GONE);
+		binding.descriptionLayout.notDescription.setVisibility(View.GONE);
+		binding.attendeeLayout.notAttendees.setVisibility(View.GONE);
+
 		Toolbar toolbar = binding.eventToolbar;
 		setSupportActionBar(toolbar);
 		ActionBar actionBar = getSupportActionBar();
@@ -163,7 +167,6 @@ public abstract class EditEventActivity extends AppCompatActivity implements IEv
 			@Override
 			public void afterTextChanged(Editable s) {
 				if (!initializing) {
-					binding.titleLayout.title.setText(s.toString());
 					eventDataViewModel.setTitle(s.toString());
 				}
 			}
@@ -183,7 +186,6 @@ public abstract class EditEventActivity extends AppCompatActivity implements IEv
 			@Override
 			public void afterTextChanged(Editable s) {
 				if (!initializing) {
-					binding.descriptionLayout.descriptionEdittext.setText(s.toString());
 					eventDataViewModel.setDescription(s.toString());
 				}
 			}
@@ -481,7 +483,8 @@ public abstract class EditEventActivity extends AppCompatActivity implements IEv
 		@Override
 		public void onClick(View view) {
 			ReminderItemHolder holder = (ReminderItemHolder) view.getTag();
-			removeReminder(holder.minutes);
+			eventDataViewModel.removeReminder(holder.minutes);
+			removeReminderItemView(holder.minutes);
 		}
 	};
 
@@ -496,7 +499,7 @@ public abstract class EditEventActivity extends AppCompatActivity implements IEv
 	}
 
 
-	protected void addReminder(ContentValues reminder) {
+	protected void addReminderItemView(ContentValues reminder) {
 		final int minutes = reminder.getAsInteger(CalendarContract.Reminders.MINUTES);
 		final int method = reminder.getAsInteger(CalendarContract.Reminders.METHOD);
 
@@ -525,8 +528,7 @@ public abstract class EditEventActivity extends AppCompatActivity implements IEv
 	}
 
 
-	protected void removeReminder(int minutes) {
-		eventDataViewModel.removeReminder(minutes);
+	protected void removeReminderItemView(int minutes) {
 		final int rowCount = binding.reminderLayout.remindersTable.getChildCount();
 
 		// 아이템 삭제
@@ -539,8 +541,7 @@ public abstract class EditEventActivity extends AppCompatActivity implements IEv
 		}
 	}
 
-	protected void modifyReminder(ContentValues modifiedReminder, int previousMinutes) {
-		eventDataViewModel.modifyReminder(previousMinutes, modifiedReminder.getAsInteger(CalendarContract.Reminders.MINUTES), modifiedReminder.getAsInteger(CalendarContract.Reminders.METHOD));
+	protected void modifyReminderItemView(int previousMinutes, int newMinutes, int newMethod) {
 		final int rowCount = binding.reminderLayout.remindersTable.getChildCount();
 
 		// 아이템 수정
@@ -548,9 +549,6 @@ public abstract class EditEventActivity extends AppCompatActivity implements IEv
 			ReminderItemHolder holder = (ReminderItemHolder) binding.reminderLayout.remindersTable.getChildAt(rowIndex).getTag();
 
 			if (holder.minutes == previousMinutes) {
-				final int newMinutes = modifiedReminder.getAsInteger(CalendarContract.Reminders.MINUTES);
-				final int newMethod = modifiedReminder.getAsInteger(CalendarContract.Reminders.METHOD);
-
 				holder.minutes = newMinutes;
 				holder.method = newMethod;
 
@@ -564,13 +562,6 @@ public abstract class EditEventActivity extends AppCompatActivity implements IEv
 
 				break;
 			}
-		}
-	}
-
-
-	protected void setReminderText(List<ContentValues> reminders) {
-		for (ContentValues reminder : reminders) {
-			addReminder(reminder);
 		}
 	}
 
@@ -922,29 +913,36 @@ public abstract class EditEventActivity extends AppCompatActivity implements IEv
 							ContentValues reminder = (ContentValues) result.getData().getParcelableExtra("reminder");
 							final int previousMinutes = result.getData().getIntExtra("previousMinutes", 0);
 
-							switch (EventIntentCode.enumOf(result.getResultCode())) {
-								case RESULT_ADDED_REMINDER:
-									// reminder values는 분, 메소드값을 담고 있어야 한다
-									// 수정된 minutes, method가 기존 값과 중복되는 경우 진행하지 않음
-									if (eventDataViewModel.addReminder(reminder.getAsInteger(CalendarContract.Reminders.MINUTES),
-											reminder.getAsInteger(CalendarContract.Reminders.METHOD))) {
-										addReminder(reminder);
-									} else {
-										Toast.makeText(EditEventActivity.this, R.string.duplicate_value, Toast.LENGTH_SHORT).show();
-									}
-									break;
+							try {
+								switch (EventIntentCode.enumOf(result.getResultCode())) {
+									case RESULT_ADDED_REMINDER:
+										// reminder values는 분, 메소드값을 담고 있어야 한다
+										// 수정된 minutes, method가 기존 값과 중복되는 경우 진행하지 않음
+										if (eventDataViewModel.addReminder(reminder.getAsInteger(CalendarContract.Reminders.MINUTES),
+												reminder.getAsInteger(CalendarContract.Reminders.METHOD))) {
+											addReminderItemView(reminder);
+										} else {
+											Toast.makeText(EditEventActivity.this, R.string.duplicate_value, Toast.LENGTH_SHORT).show();
+										}
+										break;
 
-								case RESULT_MODIFIED_REMINDER:
-									int newMinutes = reminder.getAsInteger(CalendarContract.Reminders.MINUTES);
-									int method = reminder.getAsInteger(CalendarContract.Reminders.METHOD);
+									case RESULT_MODIFIED_REMINDER:
+										// 수정된 minutes, method가 기존 값과 중복되는 경우 진행하지 않음
+										int newMinutes = reminder.getAsInteger(CalendarContract.Reminders.MINUTES);
+										int newMethod = reminder.getAsInteger(CalendarContract.Reminders.METHOD);
 
-									// 수정된 minutes, method가 기존 값과 중복되는 경우 진행하지 않음
-									eventDataViewModel.modifyReminder(previousMinutes, newMinutes, method);
-									break;
+										eventDataViewModel.modifyReminder(previousMinutes, newMinutes, newMethod);
+										modifyReminderItemView(previousMinutes, newMinutes, newMethod);
+										break;
 
-								case RESULT_REMOVED_REMINDER:
-									removeReminder(previousMinutes);
-									break;
+									case RESULT_REMOVED_REMINDER:
+										eventDataViewModel.removeReminder(previousMinutes);
+										removeReminderItemView(previousMinutes);
+										break;
+								}
+
+							} catch (IllegalArgumentException e) {
+
 							}
 
 						}

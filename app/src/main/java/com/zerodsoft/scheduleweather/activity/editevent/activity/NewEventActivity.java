@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.provider.CalendarContract;
 import android.view.MenuItem;
+import android.view.View;
 
 import androidx.appcompat.app.ActionBar;
 
@@ -31,6 +32,8 @@ public class NewEventActivity extends EditEventActivity {
 		super.onCreate(savedInstanceState);
 		loadInitData();
 		initializing = false;
+
+
 	}
 
 	@Override
