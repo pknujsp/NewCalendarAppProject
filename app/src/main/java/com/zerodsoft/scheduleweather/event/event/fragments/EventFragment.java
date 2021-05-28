@@ -51,11 +51,15 @@ import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationI
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
+import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.utility.NetworkStatus;
 import com.zerodsoft.scheduleweather.utility.RecurrenceRule;
 import com.zerodsoft.scheduleweather.utility.model.ReminderDto;
 
+import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -189,8 +193,6 @@ public class EventFragment extends BottomSheetDialogFragment {
 		binding.eventRemindersView.addReminderButton.setVisibility(View.GONE);
 		binding.eventAttendeesView.showAttendeesDetail.setVisibility(View.GONE);
 		binding.eventDatetimeView.allDaySwitchLayout.setVisibility(View.GONE);
-		binding.eventDatetimeView.startTime.setVisibility(View.GONE);
-		binding.eventDatetimeView.endTime.setVisibility(View.GONE);
 
 		binding.eventFab.setOnClickListener(new View.OnClickListener() {
 			@Override
@@ -475,6 +477,7 @@ public class EventFragment extends BottomSheetDialogFragment {
 		// 캘린더, 시간대, 참석자 정보는 따로 불러온다.
 		//제목
 		instanceValues = calendarViewModel.getInstance(CALENDAR_ID, INSTANCE_ID, ORIGINAL_BEGIN, ORIGINAL_END);
+
 		if (instanceValues.getAsString(CalendarContract.Instances.TITLE) != null) {
 			if (!instanceValues.getAsString(CalendarContract.Instances.TITLE).isEmpty()) {
 				binding.eventTitle.setText(instanceValues.getAsString(CalendarContract.Instances.TITLE));
@@ -484,21 +487,40 @@ public class EventFragment extends BottomSheetDialogFragment {
 		} else {
 			binding.eventTitle.setText(getString(R.string.empty_title));
 		}
+
 		//캘린더
 		setCalendarText();
 
-		//시간 , allday구분
-		setDateTimeText(instanceValues.getAsLong(CalendarContract.Instances.BEGIN), instanceValues.getAsLong(CalendarContract.Instances.END));
-
 		// 시간대
-		if (!instanceValues.getAsBoolean(CalendarContract.Instances.ALL_DAY)) {
+		boolean isAllDay = instanceValues.getAsInteger(CalendarContract.Instances.ALL_DAY) == 1;
+		if (isAllDay) {
+			// allday이면 시간대 뷰를 숨긴다
+			binding.eventDatetimeView.eventTimezoneLayout.setVisibility(View.GONE);
+			int startDay = instanceValues.getAsInteger(CalendarContract.Instances.START_DAY);
+			int endDay = instanceValues.getAsInteger(CalendarContract.Instances.END_DAY);
+			int dayDifference = endDay - startDay;
+
+			Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+			calendar.setTimeInMillis(instanceValues.getAsLong(CalendarContract.Instances.BEGIN));
+			binding.eventDatetimeView.startDate.setText(EventUtil.convertDate(calendar.getTime().getTime()));
+			calendar.add(Calendar.DAY_OF_YEAR, dayDifference);
+			binding.eventDatetimeView.endDate.setText(EventUtil.convertDate(calendar.getTime().getTime()));
+
+			binding.eventDatetimeView.startTime.setVisibility(View.GONE);
+			binding.eventDatetimeView.endTime.setVisibility(View.GONE);
+			binding.eventDatetimeView.eventTimezoneLayout.setVisibility(View.GONE);
+		} else {
 			String timeZoneStr = instanceValues.getAsString(CalendarContract.Instances.EVENT_TIMEZONE);
 			TimeZone timeZone = TimeZone.getTimeZone(timeZoneStr);
 			setTimeZoneText(timeZone);
-			binding.eventDatetimeView.eventTimezoneLayout.setVisibility(View.VISIBLE);
-		} else {
-			// allday이면 시간대 뷰를 숨긴다
-			binding.eventDatetimeView.eventTimezoneLayout.setVisibility(View.GONE);
+
+			Date beginDate = new Date(instanceValues.getAsLong(CalendarContract.Instances.BEGIN));
+			Date endDate = new Date(instanceValues.getAsLong(CalendarContract.Instances.END));
+
+			binding.eventDatetimeView.startDate.setText(EventUtil.convertDate(beginDate.getTime()));
+			binding.eventDatetimeView.startTime.setText(EventUtil.convertTime(beginDate.getTime(), App.isPreference_key_using_24_hour_system()));
+			binding.eventDatetimeView.endDate.setText(EventUtil.convertDate(endDate.getTime()));
+			binding.eventDatetimeView.endTime.setText(EventUtil.convertTime(endDate.getTime(), App.isPreference_key_using_24_hour_system()));
 		}
 
 		// 반복
@@ -589,16 +611,6 @@ public class EventFragment extends BottomSheetDialogFragment {
 
 	private void setAccessLevelText() {
 		binding.eventAccessLevelView.eventAccessLevel.setText(EventUtil.convertAccessLevel(instanceValues.getAsInteger(CalendarContract.Instances.ACCESS_LEVEL), getContext()));
-	}
-
-
-	private void setDateTimeText(long begin, long end) {
-		final boolean allDay = instanceValues.getAsBoolean(CalendarContract.Instances.ALL_DAY);
-		String beginStr = EventUtil.convertDateTime(begin, allDay, App.isPreference_key_using_24_hour_system());
-		String endStr = EventUtil.convertDateTime(end, allDay, App.isPreference_key_using_24_hour_system());
-
-		binding.eventDatetimeView.startDate.setText(beginStr);
-		binding.eventDatetimeView.endDate.setText(endStr);
 	}
 
 	private void setTimeZoneText(TimeZone timeZone) {

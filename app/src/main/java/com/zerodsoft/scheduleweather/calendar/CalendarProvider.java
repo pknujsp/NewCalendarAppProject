@@ -666,6 +666,11 @@ public class CalendarProvider implements ICalendarProvider {
 
 			if (cursor != null) {
 				while (cursor.moveToNext()) {
+					String[] keys = cursor.getColumnNames();
+					for (String key : keys) {
+						instance.put(key, cursor.getString(cursor.getColumnIndex(key)));
+					}
+					/*
 					instance.put(CalendarContract.Instances.TITLE, cursor.getString(cursor.getColumnIndex(CalendarContract.Instances.TITLE)));
 					instance.put(CalendarContract.Instances.CALENDAR_ID, cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.CALENDAR_ID)));
 					instance.put(CalendarContract.Instances._ID, cursor.getLong(cursor.getColumnIndex(CalendarContract.Instances._ID)));
@@ -692,6 +697,8 @@ public class CalendarProvider implements ICalendarProvider {
 					instance.put(CalendarContract.Instances.CALENDAR_COLOR, cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.CALENDAR_COLOR)));
 					instance.put(CalendarContract.Instances.CALENDAR_DISPLAY_NAME, cursor.getString(cursor.getColumnIndex(CalendarContract.Instances.CALENDAR_DISPLAY_NAME)));
 					instance.put(CalendarContract.Instances.EVENT_COLOR, cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.EVENT_COLOR)));
+
+					 */
 				}
 				cursor.close();
 			}
