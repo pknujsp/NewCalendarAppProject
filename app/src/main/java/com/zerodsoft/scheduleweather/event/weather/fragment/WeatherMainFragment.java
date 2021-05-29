@@ -164,7 +164,7 @@ public class WeatherMainFragment extends BottomSheetDialogFragment implements On
 			}
 		});
 
-		locationViewModel.getLocation(CALENDAR_ID, EVENT_ID, new DbQueryCallback<LocationDTO>() {
+		locationViewModel.getLocation(EVENT_ID, new DbQueryCallback<LocationDTO>() {
 			@Override
 			public void onResultSuccessful(LocationDTO selectedLocationResultDto) {
 				requireActivity().runOnUiThread(new Runnable() {

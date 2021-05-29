@@ -118,7 +118,7 @@ public class RestaurantCriteriaLocationSettingsFragment extends Fragment impleme
 	}
 
 	private void initData() {
-		locationViewModel.getLocation(iGetEventValue.getCalendarId(),
+		locationViewModel.getLocation(
 				iGetEventValue.getEventId(), new DbQueryCallback<LocationDTO>() {
 					@Override
 					public void onResultSuccessful(LocationDTO locationResultDto) {

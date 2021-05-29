@@ -13,15 +13,15 @@ public interface ICalendarProvider {
 	public List<AccountDto> getGoogleAccounts();
 
 	// event - crud
-	public ContentValues getEvent(int calendarId, long eventId);
+	public ContentValues getEvent(Long eventId);
 
-	public List<ContentValues> getEvents(int calendarId);
+	public List<ContentValues> getEvents(Integer calendarId);
 
 	public long addEvent(ContentValues event);
 
-	public int deleteEvent(int calendarId, long eventId);
+	public int deleteEvent(Long eventId);
 
-	public int deleteEvents(int calendarId, long[] eventIds);
+	public int deleteEvents(Long[] eventIds);
 
 	public int updateEvent(ContentValues event);
 
@@ -30,54 +30,54 @@ public interface ICalendarProvider {
 
 	public List<ContentValues> getCalendars();
 
-	public ContentValues getCalendar(int calendarId);
+	public ContentValues getCalendar(Integer calendarId);
 
 	// reminder - crud
-	public List<ContentValues> getReminders(int calendarId, long eventId);
+	public List<ContentValues> getReminders(Long eventId);
 
 	public int updateReminder(ContentValues reminder);
 
-	public int deleteReminders(int calendarId, long eventId, long[] reminderIds);
+	public int deleteReminders(Long eventId, Long[] reminderIds);
 
-	public int deleteAllReminders(int calendarId, long eventId);
+	public int deleteAllReminders(Long eventId);
 
 	public int addReminders(List<ContentValues> reminders);
 
 	// instance - read, update, delete
-	public Map<Integer, CalendarInstance> getInstances(long begin, long end);
+	public Map<Integer, CalendarInstance> getInstances(Long begin, Long end);
 
-	public ContentValues getInstance(int calendarId, long instanceId, long begin, long end);
+	public ContentValues getInstance(Long instanceId, Long begin, Long end);
 
 	public long updateAllFutureInstances(ContentValues modifiedInstance, ContentValues previousInstance);
 
 	public int updateOneInstance(ContentValues modifiedInstance, ContentValues previousInstance);
 
-	public int deleteInstance(long begin, long eventId);
+	public int deleteInstance(Long begin, Long eventId);
 
 	// attendee - crud
 	public int addAttendees(List<ContentValues> attendeeList);
 
-	public List<ContentValues> getAttendees(int calendarId, long eventId);
+	public List<ContentValues> getAttendees(Long eventId);
 
 	public int updateAttendees(List<ContentValues> attendeeList);
 
-	public int deleteAllAttendees(int calendarId, long eventId);
+	public int deleteAllAttendees(Long eventId);
 
-	public int deleteAttendees(int calendarId, long eventId, long[] attendeeIds);
+	public int deleteAttendees(Long eventId, Long[] attendeeIds);
 
 	// recurrence
-	public ContentValues getRecurrence(int calendarId, long eventId);
+	public ContentValues getRecurrence(Long eventId);
 
 	// calendar color
 	public int getCalendarColor(String accountName, String accountType);
 
-	public ContentValues getCalendarColor(int calendarId);
+	public ContentValues getCalendarColor(Integer calendarId);
 
 	public List<ContentValues> getCalendarColors(String accountName, String accountType);
 
 	public List<ContentValues> getEventColors(String accountName);
 
-	public int updateCalendarColor(int calendarId, int color, String colorKey);
+	public int updateCalendarColor(Integer calendarId, Integer color, String colorKey);
 
-	public ContentValues getValuesOfEvent(long eventId, String... keys);
+	public ContentValues getValuesOfEvent(Long eventId, String... keys);
 }

@@ -32,8 +32,6 @@ public class NewEventActivity extends EditEventActivity {
 		super.onCreate(savedInstanceState);
 		loadInitData();
 		initializing = false;
-
-
 	}
 
 	@Override
@@ -43,7 +41,6 @@ public class NewEventActivity extends EditEventActivity {
 
 	@Override
 	protected void loadInitData() {
-		calendarList = calendarViewModel.getCalendars();
 		ActionBar actionBar = getSupportActionBar();
 		actionBar.setTitle(R.string.new_event);
 
@@ -159,7 +156,6 @@ public class NewEventActivity extends EditEventActivity {
 		}
 
 		if (event.containsKey(CalendarContract.Events.EVENT_LOCATION)) {
-			locationDTO.setCalendarId(CALENDAR_ID);
 			locationDTO.setEventId(NEW_EVENT_ID);
 			locationViewModel.addLocation(locationDTO, new DbQueryCallback<LocationDTO>() {
 				@Override
@@ -175,5 +171,17 @@ public class NewEventActivity extends EditEventActivity {
 		} else {
 			finish();
 		}
+	}
+
+	@Override
+	protected void removeAttendee(String email) {
+		super.removeAttendee(email);
+		eventDataViewModel.removeAttendee(email);
+	}
+
+	@Override
+	protected void removeReminderItemView(int minutes) {
+		super.removeReminderItemView(minutes);
+		eventDataViewModel.removeReminder(minutes);
 	}
 }

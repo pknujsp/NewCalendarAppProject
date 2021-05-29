@@ -30,12 +30,12 @@ public class CalendarViewModel extends AndroidViewModel implements ICalendarProv
 	}
 
 	@Override
-	public ContentValues getEvent(int calendarId, long eventId) {
-		return calendarProvider.getEvent(calendarId, eventId);
+	public ContentValues getEvent(Long eventId) {
+		return calendarProvider.getEvent(eventId);
 	}
 
 	@Override
-	public List<ContentValues> getEvents(int calendarId) {
+	public List<ContentValues> getEvents(Integer calendarId) {
 		return calendarProvider.getEvents(calendarId);
 	}
 
@@ -45,13 +45,13 @@ public class CalendarViewModel extends AndroidViewModel implements ICalendarProv
 	}
 
 	@Override
-	public int deleteEvent(int calendarId, long eventId) {
-		return calendarProvider.deleteEvent(calendarId, eventId);
+	public int deleteEvent(Long eventId) {
+		return calendarProvider.deleteEvent(eventId);
 	}
 
 	@Override
-	public int deleteEvents(int calendarId, long[] eventIds) {
-		return calendarProvider.deleteEvents(calendarId, eventIds);
+	public int deleteEvents(Long[] eventIds) {
+		return calendarProvider.deleteEvents(eventIds);
 	}
 
 	@Override
@@ -70,13 +70,13 @@ public class CalendarViewModel extends AndroidViewModel implements ICalendarProv
 	}
 
 	@Override
-	public ContentValues getCalendar(int calendarId) {
+	public ContentValues getCalendar(Integer calendarId) {
 		return calendarProvider.getCalendar(calendarId);
 	}
 
 	@Override
-	public List<ContentValues> getReminders(int calendarId, long eventId) {
-		return calendarProvider.getReminders(calendarId, eventId);
+	public List<ContentValues> getReminders(Long eventId) {
+		return calendarProvider.getReminders(eventId);
 	}
 
 	@Override
@@ -85,13 +85,13 @@ public class CalendarViewModel extends AndroidViewModel implements ICalendarProv
 	}
 
 	@Override
-	public int deleteReminders(int calendarId, long eventId, long[] reminderIds) {
-		return calendarProvider.deleteReminders(calendarId, eventId, reminderIds);
+	public int deleteReminders(Long eventId, Long[] reminderIds) {
+		return calendarProvider.deleteReminders(eventId, reminderIds);
 	}
 
 	@Override
-	public int deleteAllReminders(int calendarId, long eventId) {
-		return calendarProvider.deleteAllReminders(calendarId, eventId);
+	public int deleteAllReminders(Long eventId) {
+		return calendarProvider.deleteAllReminders(eventId);
 	}
 
 	@Override
@@ -100,13 +100,13 @@ public class CalendarViewModel extends AndroidViewModel implements ICalendarProv
 	}
 
 	@Override
-	public Map<Integer, CalendarInstance> getInstances(long begin, long end) {
+	public Map<Integer, CalendarInstance> getInstances(Long begin, Long end) {
 		return calendarProvider.getInstances(begin, end);
 	}
 
 	@Override
-	public ContentValues getInstance(int calendarId, long instanceId, long begin, long end) {
-		return calendarProvider.getInstance(calendarId, instanceId, begin, end);
+	public ContentValues getInstance(Long instanceId, Long begin, Long end) {
+		return calendarProvider.getInstance(instanceId, begin, end);
 	}
 
 	@Override
@@ -120,7 +120,7 @@ public class CalendarViewModel extends AndroidViewModel implements ICalendarProv
 	}
 
 	@Override
-	public int deleteInstance(long begin, long eventId) {
+	public int deleteInstance(Long begin, Long eventId) {
 		return calendarProvider.deleteInstance(begin, eventId);
 	}
 
@@ -130,8 +130,8 @@ public class CalendarViewModel extends AndroidViewModel implements ICalendarProv
 	}
 
 	@Override
-	public List<ContentValues> getAttendees(int calendarId, long eventId) {
-		return calendarProvider.getAttendees(calendarId, eventId);
+	public List<ContentValues> getAttendees(Long eventId) {
+		return calendarProvider.getAttendees(eventId);
 	}
 
 	@Override
@@ -140,18 +140,18 @@ public class CalendarViewModel extends AndroidViewModel implements ICalendarProv
 	}
 
 	@Override
-	public int deleteAllAttendees(int calendarId, long eventId) {
-		return calendarProvider.deleteAllAttendees(calendarId, eventId);
+	public int deleteAllAttendees(Long eventId) {
+		return calendarProvider.deleteAllAttendees(eventId);
 	}
 
 	@Override
-	public int deleteAttendees(int calendarId, long eventId, long[] attendeeIds) {
-		return calendarProvider.deleteAttendees(calendarId, eventId, attendeeIds);
+	public int deleteAttendees(Long eventId, Long[] attendeeIds) {
+		return calendarProvider.deleteAttendees(eventId, attendeeIds);
 	}
 
 	@Override
-	public ContentValues getRecurrence(int calendarId, long eventId) {
-		return calendarProvider.getRecurrence(calendarId, eventId);
+	public ContentValues getRecurrence(Long eventId) {
+		return calendarProvider.getRecurrence(eventId);
 	}
 
 	@Override
@@ -160,7 +160,7 @@ public class CalendarViewModel extends AndroidViewModel implements ICalendarProv
 	}
 
 	@Override
-	public ContentValues getCalendarColor(int calendarId) {
+	public ContentValues getCalendarColor(Integer calendarId) {
 		return calendarProvider.getCalendarColor(calendarId);
 	}
 
@@ -175,12 +175,12 @@ public class CalendarViewModel extends AndroidViewModel implements ICalendarProv
 	}
 
 	@Override
-	public int updateCalendarColor(int calendarId, int color, String colorKey) {
+	public int updateCalendarColor(Integer calendarId, Integer color, String colorKey) {
 		return calendarProvider.updateCalendarColor(calendarId, color, colorKey);
 	}
 
 	@Override
-	public ContentValues getValuesOfEvent(long eventId, String... keys) {
+	public ContentValues getValuesOfEvent(Long eventId, String... keys) {
 		return calendarProvider.getValuesOfEvent(eventId, keys);
 	}
 

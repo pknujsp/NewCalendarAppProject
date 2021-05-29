@@ -2,8 +2,6 @@ package com.zerodsoft.scheduleweather.event.common.repository;
 
 import android.content.Context;
 
-import androidx.lifecycle.MutableLiveData;
-
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
@@ -79,11 +77,11 @@ public class LocationRepository implements ILocationDao {
 
 
 	@Override
-	public void getLocation(int calendarId, long eventId, DbQueryCallback<LocationDTO> resultCallback) {
+	public void getLocation(long eventId, DbQueryCallback<LocationDTO> resultCallback) {
 		App.executorService.execute(new Runnable() {
 			@Override
 			public void run() {
-				LocationDTO locationDTO = locationDAO.select(calendarId, eventId);
+				LocationDTO locationDTO = locationDAO.select(eventId);
 				resultCallback.processResult(locationDTO);
 			}
 		});
@@ -101,11 +99,11 @@ public class LocationRepository implements ILocationDao {
 	}
 
 	@Override
-	public void hasDetailLocation(int calendarId, long eventId, DbQueryCallback<Boolean> resultCallback) {
+	public void hasDetailLocation(long eventId, DbQueryCallback<Boolean> resultCallback) {
 		App.executorService.execute(new Runnable() {
 			@Override
 			public void run() {
-				int result = locationDAO.hasLocation(calendarId, eventId);
+				int result = locationDAO.hasLocation(eventId);
 				resultCallback.processResult(result == 1);
 			}
 		});
@@ -124,12 +122,12 @@ public class LocationRepository implements ILocationDao {
 	}
 
 	@Override
-	public void removeLocation(int calendarId, long eventId, DbQueryCallback<Boolean> resultCallback) {
+	public void removeLocation(long eventId, DbQueryCallback<Boolean> resultCallback) {
 		App.executorService.execute(new Runnable() {
 			@SneakyThrows
 			@Override
 			public void run() {
-				locationDAO.delete(calendarId, eventId);
+				locationDAO.delete(eventId);
 				resultCallback.processResult(true);
 			}
 		});

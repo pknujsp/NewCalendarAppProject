@@ -8,10 +8,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
-import android.os.RemoteException;
 import android.provider.CalendarContract;
-import android.service.carrier.CarrierMessagingService;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,7 +34,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
-import com.zerodsoft.scheduleweather.activity.editevent.activity.EditEventActivity;
+import com.zerodsoft.scheduleweather.activity.editevent.activity.ModifyInstanceActivity;
 import com.zerodsoft.scheduleweather.calendar.CalendarInstanceUtil;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
@@ -52,15 +49,12 @@ import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationI
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
-import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.utility.NetworkStatus;
 import com.zerodsoft.scheduleweather.utility.RecurrenceRule;
 import com.zerodsoft.scheduleweather.utility.model.ReminderDto;
 
-import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -215,14 +209,14 @@ public class EventFragment extends BottomSheetDialogFragment {
 		binding.selectDetailLocationFab.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				locationViewModel.hasDetailLocation(CALENDAR_ID, EVENT_ID, new DbQueryCallback<Boolean>() {
+				locationViewModel.hasDetailLocation(EVENT_ID, new DbQueryCallback<Boolean>() {
 					@Override
 					public void onResultSuccessful(Boolean hasDetailLocation) {
 						requireActivity().runOnUiThread(new Runnable() {
 							@Override
 							public void run() {
 								if (hasDetailLocation) {
-									locationViewModel.getLocation(CALENDAR_ID, EVENT_ID, new DbQueryCallback<LocationDTO>() {
+									locationViewModel.getLocation(EVENT_ID, new DbQueryCallback<LocationDTO>() {
 										@Override
 										public void onResultSuccessful(LocationDTO locationResultDto) {
 											if (!locationResultDto.isEmpty()) {
@@ -248,20 +242,20 @@ public class EventFragment extends BottomSheetDialogFragment {
 					}
 				});
 
-
 			}
 		});
 
 		binding.modifyEventFab.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				Intent intent = new Intent(getContext(), EditEventActivity.class);
+				Intent intent = new Intent(getContext(), ModifyInstanceActivity.class);
 				intent.putExtra("requestCode", EventIntentCode.REQUEST_MODIFY_EVENT.value());
 				intent.putExtra(CalendarContract.Instances.CALENDAR_ID, CALENDAR_ID);
 				intent.putExtra(CalendarContract.Instances.EVENT_ID, EVENT_ID);
 				intent.putExtra(CalendarContract.Instances._ID, INSTANCE_ID);
 				intent.putExtra(CalendarContract.Instances.BEGIN, instanceValues.getAsLong(CalendarContract.Instances.BEGIN));
 				intent.putExtra(CalendarContract.Instances.END, instanceValues.getAsLong(CalendarContract.Instances.END));
+
 				editInstanceActivityResultLauncher.launch(intent);
 			}
 		});
@@ -458,7 +452,7 @@ public class EventFragment extends BottomSheetDialogFragment {
 		// 제목, 캘린더, 시간, 시간대, 반복, 알림, 설명, 위치, 공개범위, 유효성, 참석자
 		// 캘린더, 시간대, 참석자 정보는 따로 불러온다.
 		//제목
-		instanceValues = calendarViewModel.getInstance(CALENDAR_ID, INSTANCE_ID, ORIGINAL_BEGIN, ORIGINAL_END);
+		instanceValues = calendarViewModel.getInstance(INSTANCE_ID, ORIGINAL_BEGIN, ORIGINAL_END);
 
 		if (instanceValues.getAsInteger(CalendarContract.Instances.CALENDAR_ACCESS_LEVEL) == CalendarContract.Instances.CAL_ACCESS_READ) {
 			binding.fabsLayout.setVisibility(View.GONE);
@@ -525,7 +519,7 @@ public class EventFragment extends BottomSheetDialogFragment {
 
 		// 알람
 		if (instanceValues.getAsBoolean(CalendarContract.Instances.HAS_ALARM)) {
-			List<ContentValues> reminderList = calendarViewModel.getReminders(CALENDAR_ID, EVENT_ID);
+			List<ContentValues> reminderList = calendarViewModel.getReminders(EVENT_ID);
 			setReminderText(reminderList);
 			binding.eventRemindersView.notReminder.setVisibility(View.GONE);
 			binding.eventRemindersView.remindersTable.setVisibility(View.VISIBLE);
@@ -566,7 +560,7 @@ public class EventFragment extends BottomSheetDialogFragment {
 		}
 
 		// 참석자
-		attendeeList = calendarViewModel.getAttendees(CALENDAR_ID, EVENT_ID);
+		attendeeList = calendarViewModel.getAttendees(EVENT_ID);
 
 		// 참석자가 없는 경우 - 테이블 숨김, 참석자 없음 텍스트 표시
 		if (attendeeList.isEmpty()) {
@@ -720,7 +714,6 @@ public class EventFragment extends BottomSheetDialogFragment {
 
 	private void saveDetailLocation(LocationDTO locationDTO) {
 		// 지정이 완료된 경우 - DB에 등록하고 이벤트 액티비티로 넘어가서 날씨 또는 주변 정보 프래그먼트를 실행한다.
-		locationDTO.setCalendarId(CALENDAR_ID);
 		locationDTO.setEventId(EVENT_ID);
 
 		//선택된 위치를 DB에 등록
@@ -747,7 +740,6 @@ public class EventFragment extends BottomSheetDialogFragment {
 	private void changedDetailLocation(LocationDTO locationDTO) {
 		// 지정이 완료된 경우 - DB에 등록하고 이벤트 액티비티로 넘어가서 날씨 또는 주변 정보 프래그먼트를 실행한다.
 		// 선택된 위치를 DB에 등록
-		locationDTO.setCalendarId(CALENDAR_ID);
 		locationDTO.setEventId(EVENT_ID);
 		locationViewModel.addLocation(locationDTO, new DbQueryCallback<LocationDTO>() {
 			@Override
@@ -770,7 +762,7 @@ public class EventFragment extends BottomSheetDialogFragment {
 	}
 
 	private void deletedDetailLocation() {
-		locationViewModel.removeLocation(CALENDAR_ID, EVENT_ID, new DbQueryCallback<Boolean>() {
+		locationViewModel.removeLocation(EVENT_ID, new DbQueryCallback<Boolean>() {
 			@Override
 			public void onResultSuccessful(Boolean result) {
 				requireActivity().runOnUiThread(new Runnable() {

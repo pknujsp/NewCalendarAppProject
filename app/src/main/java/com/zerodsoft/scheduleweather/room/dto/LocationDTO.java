@@ -20,9 +20,6 @@ public class LocationDTO implements Parcelable, Cloneable {
 	@ColumnInfo(name = "id")
 	private int id;
 
-	@ColumnInfo(name = "calendar_id")
-	private int calendarId;
-
 	@ColumnInfo(name = "event_id")
 	private long eventId;
 
@@ -51,9 +48,8 @@ public class LocationDTO implements Parcelable, Cloneable {
 	public LocationDTO() {
 	}
 
-	public LocationDTO(int id, int calendarId, long eventId, String latitude, String longitude, String addressName, String roadAddressName, String placeId, String placeName, int locationType) {
+	public LocationDTO(int id, long eventId, String latitude, String longitude, String addressName, String roadAddressName, String placeId, String placeName, int locationType) {
 		this.id = id;
-		this.calendarId = calendarId;
 		this.eventId = eventId;
 		this.latitude = latitude;
 		this.longitude = longitude;
@@ -66,7 +62,6 @@ public class LocationDTO implements Parcelable, Cloneable {
 
 	protected LocationDTO(Parcel in) {
 		id = in.readInt();
-		calendarId = in.readInt();
 		eventId = in.readLong();
 		latitude = in.readString();
 		longitude = in.readString();
@@ -97,7 +92,6 @@ public class LocationDTO implements Parcelable, Cloneable {
 	@Override
 	public void writeToParcel(Parcel parcel, int i) {
 		parcel.writeInt(id);
-		parcel.writeInt(calendarId);
 		parcel.writeLong(eventId);
 		parcel.writeString(latitude);
 		parcel.writeString(longitude);
@@ -116,7 +110,6 @@ public class LocationDTO implements Parcelable, Cloneable {
 			return false;
 		LocationDTO that = (LocationDTO) o;
 		return id == that.id &&
-				calendarId == that.calendarId &&
 				eventId == that.eventId &&
 				Objects.equals(latitude, that.latitude) &&
 				Objects.equals(longitude, that.longitude) &&
@@ -129,7 +122,7 @@ public class LocationDTO implements Parcelable, Cloneable {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(id, calendarId, eventId, latitude, longitude, addressName, roadAddressName, placeId, placeName, locationType);
+		return Objects.hash(id, eventId, latitude, longitude, addressName, roadAddressName, placeId, placeName, locationType);
 	}
 
 	@NonNull
@@ -144,14 +137,6 @@ public class LocationDTO implements Parcelable, Cloneable {
 
 	public void setId(int id) {
 		this.id = id;
-	}
-
-	public int getCalendarId() {
-		return calendarId;
-	}
-
-	public void setCalendarId(int calendarId) {
-		this.calendarId = calendarId;
 	}
 
 	public long getEventId() {

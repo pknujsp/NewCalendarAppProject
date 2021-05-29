@@ -136,6 +136,8 @@ public abstract class EditEventActivity extends AppCompatActivity implements IEv
 
 		setViewListeners();
 		setViewOnClickListeners();
+
+		calendarList = calendarViewModel.getCalendars();
 	}
 
 	@Override
@@ -483,7 +485,6 @@ public abstract class EditEventActivity extends AppCompatActivity implements IEv
 		@Override
 		public void onClick(View view) {
 			ReminderItemHolder holder = (ReminderItemHolder) view.getTag();
-			eventDataViewModel.removeReminder(holder.minutes);
 			removeReminderItemView(holder.minutes);
 		}
 	};
@@ -646,8 +647,6 @@ public abstract class EditEventActivity extends AppCompatActivity implements IEv
 
 
 	protected void removeAttendee(String email) {
-		eventDataViewModel.removeAttendee(email);
-
 		// 아이템 삭제
 		final int rowCount = binding.attendeeLayout.eventAttendeesTable.getChildCount();
 
@@ -748,7 +747,7 @@ public abstract class EditEventActivity extends AppCompatActivity implements IEv
 					calendar.setTimeInMillis(selection.second);
 					calendar.set(Calendar.HOUR_OF_DAY, previousHour);
 					calendar.set(Calendar.MINUTE, previousMinute);
-					
+
 					eventDataViewModel.setDtEnd(calendar.getTime());
 					setDateText(DateTimeType.END, calendar.getTimeInMillis());
 				}

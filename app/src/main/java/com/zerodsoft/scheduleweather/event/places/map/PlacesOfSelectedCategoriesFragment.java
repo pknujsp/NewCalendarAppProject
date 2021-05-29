@@ -171,7 +171,7 @@ public class PlacesOfSelectedCategoriesFragment extends Fragment implements Plac
 
 
 	private void initLocation() {
-		locationViewModel.getLocation(CALENDAR_ID, EVENT_ID, new DbQueryCallback<LocationDTO>() {
+		locationViewModel.getLocation(EVENT_ID, new DbQueryCallback<LocationDTO>() {
 			@Override
 			public void onResultSuccessful(LocationDTO locationResultDto) {
 				if (!locationResultDto.isEmpty()) {

@@ -32,10 +32,11 @@ import java.util.Set;
 
 public class CalendarProvider implements ICalendarProvider {
 	private static CalendarProvider instance;
+	private static Context context;
+
 	public static final int REQUEST_READ_CALENDAR = 200;
 	public static final int REQUEST_WRITE_CALENDAR = 300;
 
-	private static Context context;
 	private final String[] EVENTS_PROJECTION =
 			{
 					CalendarContract.Events.TITLE,
@@ -188,12 +189,12 @@ public class CalendarProvider implements ICalendarProvider {
 	 * @return
 	 */
 	@Override
-	public ContentValues getEvent(int calendarId, long eventId) {
+	public ContentValues getEvent(Long eventId) {
 		// 화면에 이벤트 정보를 표시하기 위해 기본적인 데이터만 가져온다.
 		// 요청 매개변수 : ID, 캘린더 ID, 오너 계정, 조직자
 		// 표시할 데이터 : 제목, 일정 기간, 반복, 위치, 알림, 설명, 소유 계정, 참석자, 바쁨/한가함, 공개 범위 참석 여부 확인 창, 색상
 		if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
-			String[] selectionArgs = {String.valueOf(eventId), String.valueOf(calendarId)};
+			String[] selectionArgs = {eventId.toString()};
 
 			Cursor cursor = context.getContentResolver().query(CalendarContract.Events.CONTENT_URI, null, EVENT_QUERY, selectionArgs, null);
 			ContentValues event = new ContentValues();
@@ -216,13 +217,14 @@ public class CalendarProvider implements ICalendarProvider {
 	/**
 	 * 특정 캘린더의 모든 이벤트를 가져온다.
 	 *
+	 * @param calendarId
 	 * @return
 	 */
 	@Override
-	public List<ContentValues> getEvents(int calendarId) {
+	public List<ContentValues> getEvents(Integer calendarId) {
 		// 필요한 데이터 : 제목, 색상, 오너 관련, 일정 길이, 반복 관련
 		if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
-			String[] selectionArgs = {Integer.toString(calendarId)};
+			String[] selectionArgs = {calendarId.toString()};
 
 			ContentResolver contentResolver = context.getContentResolver();
 			Cursor cursor = contentResolver.query(CalendarContract.Events.CONTENT_URI, EVENTS_PROJECTION, EVENTS_QUERY, selectionArgs, null);
@@ -287,7 +289,7 @@ public class CalendarProvider implements ICalendarProvider {
 	 * @return
 	 */
 	@Override
-	public int deleteEvent(int calendarId, long eventId) {
+	public int deleteEvent(Long eventId) {
 		if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
 			Uri uri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, eventId);
 			int result = context.getContentResolver().delete(uri, null, null);
@@ -303,12 +305,12 @@ public class CalendarProvider implements ICalendarProvider {
 	 * @return
 	 */
 	@Override
-	public int deleteEvents(int calendarId, long[] eventIds) {
+	public int deleteEvents(Long[] eventIds) {
 		if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
 			ContentResolver contentResolver = context.getContentResolver();
 			int deletedRows = 0;
 
-			for (long eventId : eventIds) {
+			for (Long eventId : eventIds) {
 				Uri uri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, eventId);
 				deletedRows += contentResolver.delete(uri, null, null);
 			}
@@ -430,13 +432,14 @@ public class CalendarProvider implements ICalendarProvider {
 	/**
 	 * 하나의 캘린더에 대한 정보를 가져온다.
 	 *
+	 * @param calendarId
 	 * @return
 	 */
 	@Override
-	public ContentValues getCalendar(int calendarId) {
+	public ContentValues getCalendar(Integer calendarId) {
 		if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
 			ContentResolver contentResolver = context.getContentResolver();
-			String[] selectionArgs = {String.valueOf(calendarId)};
+			String[] selectionArgs = {calendarId.toString()};
 			Cursor cursor = contentResolver.query(CalendarContract.Calendars.CONTENT_URI, null, CALENDARS_QUERY, selectionArgs, null);
 
 			ContentValues calendar = null;
@@ -447,7 +450,8 @@ public class CalendarProvider implements ICalendarProvider {
 					calendar.put(CalendarContract.Calendars._ID, cursor.getLong(cursor.getColumnIndex(CalendarContract.Calendars._ID)));
 					calendar.put(CalendarContract.Calendars.NAME, cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.NAME)));
 					calendar.put(CalendarContract.Calendars.ACCOUNT_NAME, cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ACCOUNT_NAME)));
-					calendar.put(CalendarContract.Calendars.CALENDAR_DISPLAY_NAME, cursor.getInt(cursor.getColumnIndex(CalendarContract.Calendars.CALENDAR_DISPLAY_NAME)));
+					calendar.put(CalendarContract.Calendars.CALENDAR_DISPLAY_NAME,
+							cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.CALENDAR_DISPLAY_NAME)));
 					calendar.put(CalendarContract.Calendars.OWNER_ACCOUNT, cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.OWNER_ACCOUNT)));
 					calendar.put(CalendarContract.Calendars.CALENDAR_COLOR, cursor.getInt(cursor.getColumnIndex(CalendarContract.Calendars.CALENDAR_COLOR)));
 				}
@@ -467,7 +471,7 @@ public class CalendarProvider implements ICalendarProvider {
 	 * @return
 	 */
 	@Override
-	public List<ContentValues> getReminders(int calendarId, long eventId) {
+	public List<ContentValues> getReminders(Long eventId) {
 		if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
 			ContentResolver contentResolver = context.getContentResolver();
 			Cursor cursor = CalendarContract.Reminders.query(contentResolver, eventId, null);
@@ -524,20 +528,18 @@ public class CalendarProvider implements ICalendarProvider {
 	 * @return
 	 */
 	@Override
-	public int deleteReminders(int calendarId, long eventId, long[] reminderIds) {
+	public int deleteReminders(Long eventId, Long[] reminderIds) {
 		if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
-			String where = "(" + CalendarContract.Reminders.CALENDAR_ID + "=? AND "
-					+ CalendarContract.Reminders.EVENT_ID + "=? AND "
-					+ CalendarContract.Reminders._ID + "=?)";
-			String[] selectionArgs = new String[3];
-			selectionArgs[0] = String.valueOf(calendarId);
-			selectionArgs[1] = String.valueOf(eventId);
+			String where = CalendarContract.Reminders.EVENT_ID + "=? AND "
+					+ CalendarContract.Reminders._ID + "=?";
+			String[] selectionArgs = new String[2];
+			selectionArgs[0] = eventId.toString();
 
 			ContentResolver contentResolver = context.getContentResolver();
 			int deletedRows = 0;
 
-			for (long reminderId : reminderIds) {
-				selectionArgs[2] = String.valueOf(reminderId);
+			for (Long reminderId : reminderIds) {
+				selectionArgs[1] = String.valueOf(reminderId);
 				deletedRows += contentResolver.delete(CalendarContract.Reminders.CONTENT_URI, where, selectionArgs);
 			}
 			return deletedRows;
@@ -547,10 +549,10 @@ public class CalendarProvider implements ICalendarProvider {
 	}
 
 	@Override
-	public int deleteAllReminders(int calendarId, long eventId) {
+	public int deleteAllReminders(Long eventId) {
 		if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
-			String where = CalendarContract.Reminders.CALENDAR_ID + "=? AND " + CalendarContract.Reminders.EVENT_ID + "=?";
-			String[] selectionArgs = {String.valueOf(calendarId), String.valueOf(eventId)};
+			String where = CalendarContract.Reminders.EVENT_ID + "=?";
+			String[] selectionArgs = {eventId.toString()};
 			int result = context.getContentResolver().delete(CalendarContract.Reminders.CONTENT_URI, where, selectionArgs);
 			return result;
 		} else {
@@ -584,10 +586,12 @@ public class CalendarProvider implements ICalendarProvider {
 	/**
 	 * 각각의 캘린더들 내에 특정한 기간 사이에 있는 인스턴스들을 가져온다.
 	 *
+	 * @param begin
+	 * @param end
 	 * @return
 	 */
 	@Override
-	public Map<Integer, CalendarInstance> getInstances(long begin, long end) {
+	public Map<Integer, CalendarInstance> getInstances(Long begin, Long end) {
 		if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
 			Uri.Builder builder = CalendarContract.Instances.CONTENT_URI.buildUpon();
 			ContentUris.appendId(builder, begin);
@@ -631,13 +635,13 @@ public class CalendarProvider implements ICalendarProvider {
 	}
 
 	@Override
-	public ContentValues getInstance(int calendarId, long instanceId, long begin, long end) {
+	public ContentValues getInstance(Long instanceId, Long begin, Long end) {
 		if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
 
 			// 화면에 이벤트 정보를 표시하기 위해 기본적인 데이터만 가져온다.
 			// 요청 매개변수 : ID, 캘린더 ID, 오너 계정, 조직자
 			// 표시할 데이터 : 제목, 일정 기간, 반복, 위치, 알림, 설명, 소유 계정, 참석자, 바쁨/한가함, 공개 범위 참석 여부 확인 창, 색상
-			String[] selectionArgs = {String.valueOf(instanceId), String.valueOf(calendarId)};
+			String[] selectionArgs = {instanceId.toString()};
 
 			Uri.Builder builder = CalendarContract.Instances.CONTENT_URI.buildUpon();
 			ContentUris.appendId(builder, begin);
@@ -653,35 +657,7 @@ public class CalendarProvider implements ICalendarProvider {
 					for (String key : keys) {
 						instance.put(key, cursor.getString(cursor.getColumnIndex(key)));
 					}
-					/*
-					instance.put(CalendarContract.Instances.TITLE, cursor.getString(cursor.getColumnIndex(CalendarContract.Instances.TITLE)));
-					instance.put(CalendarContract.Instances.CALENDAR_ID, cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.CALENDAR_ID)));
-					instance.put(CalendarContract.Instances._ID, cursor.getLong(cursor.getColumnIndex(CalendarContract.Instances._ID)));
-					instance.put(CalendarContract.Instances.EVENT_ID, cursor.getLong(cursor.getColumnIndex(CalendarContract.Instances.EVENT_ID)));
-					instance.put(CalendarContract.Instances.DTSTART, cursor.getLong(cursor.getColumnIndex(CalendarContract.Instances.DTSTART)));
-					instance.put(CalendarContract.Instances.DTEND, cursor.getLong(cursor.getColumnIndex(CalendarContract.Instances.DTEND)));
-					instance.put(CalendarContract.Instances.BEGIN, cursor.getLong(cursor.getColumnIndex(CalendarContract.Instances.BEGIN)));
-					instance.put(CalendarContract.Instances.END, cursor.getLong(cursor.getColumnIndex(CalendarContract.Instances.END)));
-					instance.put(CalendarContract.Instances.ALL_DAY, cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.ALL_DAY)));
-					instance.put(CalendarContract.Instances.EVENT_TIMEZONE, cursor.getString(cursor.getColumnIndex(CalendarContract.Instances.EVENT_TIMEZONE)));
-					instance.put(CalendarContract.Instances.EVENT_END_TIMEZONE, cursor.getString(cursor.getColumnIndex(CalendarContract.Instances.EVENT_END_TIMEZONE)));
-					instance.put(CalendarContract.Instances.CALENDAR_TIME_ZONE, cursor.getString(cursor.getColumnIndex(CalendarContract.Instances.CALENDAR_TIME_ZONE)));
-					instance.put(CalendarContract.Instances.RDATE, cursor.getString(cursor.getColumnIndex(CalendarContract.Instances.RDATE)));
-					instance.put(CalendarContract.Instances.RRULE, cursor.getString(cursor.getColumnIndex(CalendarContract.Instances.RRULE)));
-					instance.put(CalendarContract.Instances.EXDATE, cursor.getString(cursor.getColumnIndex(CalendarContract.Instances.EXDATE)));
-					instance.put(CalendarContract.Instances.EXRULE, cursor.getString(cursor.getColumnIndex(CalendarContract.Instances.EXRULE)));
-					instance.put(CalendarContract.Instances.HAS_ATTENDEE_DATA, cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.HAS_ATTENDEE_DATA)));
-					instance.put(CalendarContract.Instances.EVENT_LOCATION, cursor.getString(cursor.getColumnIndex(CalendarContract.Instances.EVENT_LOCATION)));
-					instance.put(CalendarContract.Instances.DESCRIPTION, cursor.getString(cursor.getColumnIndex(CalendarContract.Instances.DESCRIPTION)));
-					instance.put(CalendarContract.Instances.ACCESS_LEVEL, cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.ACCESS_LEVEL)));
-					instance.put(CalendarContract.Instances.AVAILABILITY, cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.AVAILABILITY)));
-					instance.put(CalendarContract.Instances.HAS_ALARM, cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.HAS_ALARM)));
-					instance.put(CalendarContract.Instances.OWNER_ACCOUNT, cursor.getString(cursor.getColumnIndex(CalendarContract.Instances.OWNER_ACCOUNT)));
-					instance.put(CalendarContract.Instances.CALENDAR_COLOR, cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.CALENDAR_COLOR)));
-					instance.put(CalendarContract.Instances.CALENDAR_DISPLAY_NAME, cursor.getString(cursor.getColumnIndex(CalendarContract.Instances.CALENDAR_DISPLAY_NAME)));
-					instance.put(CalendarContract.Instances.EVENT_COLOR, cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.EVENT_COLOR)));
 
-					 */
 				}
 				cursor.close();
 			}
@@ -764,16 +740,7 @@ public class CalendarProvider implements ICalendarProvider {
 	@Override
 	public int updateOneInstance(ContentValues modifiedInstance, ContentValues previousInstance) {
 		if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
-			Uri.Builder builder = CalendarContract.Instances.CONTENT_URI.buildUpon();
-			ContentUris.appendId(builder, previousInstance.getAsLong(CalendarContract.Instances.BEGIN));
-			ContentUris.appendId(builder, previousInstance.getAsLong(CalendarContract.Instances.END));
-
-			ContentResolver contentResolver = context.getContentResolver();
-			String where = "Instances._id=?";
-
-			int result = contentResolver.update(builder.build(), modifiedInstance, where, new String[]{
-					String.valueOf(previousInstance.getAsLong(CalendarContract.Instances._ID))});
-			return result;
+			return 1;
 		} else {
 			return -1;
 		}
@@ -785,10 +752,12 @@ public class CalendarProvider implements ICalendarProvider {
 	 * Create ContentValues. Put your instance's BEGIN value as ...Events.ORIGINAL_INSTANCE_TIME. Put STATUS_CANCELED as ...Events.STATUS
 	 * Now only insert(yourURI, yourValues) and that's it!
 	 *
+	 * @param begin
+	 * @param eventId
 	 * @return
 	 */
 	@Override
-	public int deleteInstance(long begin, long eventId) {
+	public int deleteInstance(Long begin, Long eventId) {
 		if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
 			ContentValues exceptionEvent = new ContentValues();
 			exceptionEvent.put(CalendarContract.Events.ORIGINAL_INSTANCE_TIME, begin);
@@ -832,7 +801,7 @@ public class CalendarProvider implements ICalendarProvider {
 	 * @return
 	 */
 	@Override
-	public List<ContentValues> getAttendees(int calendarId, long eventId) {
+	public List<ContentValues> getAttendees(Long eventId) {
 		if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
 			ContentResolver contentResolver = context.getContentResolver();
 
@@ -900,13 +869,13 @@ public class CalendarProvider implements ICalendarProvider {
 	 * @return
 	 */
 	@Override
-	public int deleteAllAttendees(int calendarId, long eventId) {
+	public int deleteAllAttendees(Long eventId) {
 		if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
 			ContentResolver contentResolver = context.getContentResolver();
-			String where = CalendarContract.Attendees.CALENDAR_ID + "=? AND " + CalendarContract.Attendees.EVENT_ID + "=?";
-			String[] selectionArgs = {String.valueOf(calendarId), String.valueOf(eventId)};
+			String where = CalendarContract.Attendees.EVENT_ID + "=?";
+			String[] selectionArgs = {eventId.toString()};
 
-			int updatedRows = contentResolver.delete(CalendarContract.Instances.CONTENT_URI, where, selectionArgs);
+			int updatedRows = contentResolver.delete(CalendarContract.Attendees.CONTENT_URI, where, selectionArgs);
 			return updatedRows;
 		} else {
 			return -1;
@@ -919,21 +888,20 @@ public class CalendarProvider implements ICalendarProvider {
 	 * @return
 	 */
 	@Override
-	public int deleteAttendees(int calendarId, long eventId, long[] attendeeIds) {
+	public int deleteAttendees(Long eventId, Long[] attendeeIds) {
 		if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
-			final String where = CalendarContract.Attendees.CALENDAR_ID + "=? AND " +
+			final String where =
 					CalendarContract.Attendees.EVENT_ID + "=? AND " + "Attendees._id=?";
 
-			String[] selectionArgs = new String[3];
-			selectionArgs[0] = String.valueOf(calendarId);
-			selectionArgs[1] = String.valueOf(eventId);
+			String[] selectionArgs = new String[2];
+			selectionArgs[0] = eventId.toString();
 
 			ContentResolver contentResolver = context.getContentResolver();
 			int updatedRows = 0;
 
 			for (long attendeeId : attendeeIds) {
-				selectionArgs[2] = String.valueOf(attendeeId);
-				updatedRows += contentResolver.delete(CalendarContract.Events.CONTENT_URI, where, selectionArgs);
+				selectionArgs[1] = String.valueOf(attendeeId);
+				updatedRows += contentResolver.delete(CalendarContract.Attendees.CONTENT_URI, where, selectionArgs);
 			}
 			return updatedRows;
 		} else {
@@ -958,14 +926,14 @@ public class CalendarProvider implements ICalendarProvider {
 	}
 
 	@Override
-	public ContentValues getRecurrence(int calendarId, long eventId) {
+	public ContentValues getRecurrence(Long eventId) {
 		if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
 			ContentResolver contentResolver = context.getContentResolver();
 
 			final String[] projection = {CalendarContract.Events._ID, CalendarContract.Events.CALENDAR_ID,
 					CalendarContract.Events.RRULE, CalendarContract.Events.RDATE, CalendarContract.Events.EXDATE,
 					CalendarContract.Events.EXRULE};
-			final String[] selectionArgs = {String.valueOf(eventId), String.valueOf(calendarId)};
+			final String[] selectionArgs = {eventId.toString()};
 
 			Cursor cursor = contentResolver.query(CalendarContract.Events.CONTENT_URI, projection, EVENT_QUERY, selectionArgs, null);
 			ContentValues result = new ContentValues();
@@ -1040,14 +1008,14 @@ public class CalendarProvider implements ICalendarProvider {
 	}
 
 	@Override
-	public int updateCalendarColor(int calendarId, int color, String colorKey) {
+	public int updateCalendarColor(Integer calendarId, Integer color, String colorKey) {
 		if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
 			ContentValues calendar = new ContentValues();
 			calendar.put(CalendarContract.Calendars.CALENDAR_COLOR, color);
 			calendar.put(CalendarContract.Calendars.CALENDAR_COLOR_KEY, colorKey);
 
 			String where = CalendarContract.Calendars._ID + "=?";
-			String[] selectionArgs = {String.valueOf(calendarId)};
+			String[] selectionArgs = {calendarId.toString()};
 			int result = context.getContentResolver().update(CalendarContract.Calendars.CONTENT_URI, calendar, where, selectionArgs);
 
 			return result;
@@ -1057,11 +1025,11 @@ public class CalendarProvider implements ICalendarProvider {
 	}
 
 	@Override
-	public ContentValues getCalendarColor(int calendarId) {
+	public ContentValues getCalendarColor(Integer calendarId) {
 		if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
 			String[] projection = {CalendarContract.Calendars.CALENDAR_COLOR, CalendarContract.Calendars.CALENDAR_COLOR_KEY};
 			String selection = CalendarContract.Calendars._ID + "=?";
-			String[] selectionArgs = {String.valueOf(calendarId)};
+			String[] selectionArgs = {calendarId.toString()};
 
 			Cursor cursor = context.getContentResolver().query(CalendarContract.Calendars.CONTENT_URI, projection, selection, selectionArgs, null);
 			ContentValues color = new ContentValues();
@@ -1078,10 +1046,10 @@ public class CalendarProvider implements ICalendarProvider {
 	}
 
 	@Override
-	public ContentValues getValuesOfEvent(long eventId, String... keys) {
+	public ContentValues getValuesOfEvent(Long eventId, String... keys) {
 		if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
 			String selection = CalendarContract.Events._ID + " = ?";
-			String[] selectionArgs = {String.valueOf(eventId)};
+			String[] selectionArgs = {eventId.toString()};
 			Cursor cursor = context.getContentResolver().query(CalendarContract.Events.CONTENT_URI, keys, selection, selectionArgs, null);
 			ContentValues contentValues = new ContentValues();
 

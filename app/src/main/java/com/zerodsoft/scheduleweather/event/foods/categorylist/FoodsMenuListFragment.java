@@ -1,7 +1,6 @@
 package com.zerodsoft.scheduleweather.event.foods.categorylist;
 
 import android.Manifest;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -26,7 +25,6 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 
 import android.os.RemoteException;
-import android.provider.CalendarContract;
 import android.provider.Settings;
 import android.service.carrier.CarrierMessagingService;
 import android.view.LayoutInflater;
@@ -242,7 +240,7 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 
 	private void loadSelectedDetailLocation() {
 		//지정한 위치정보를 가져온다
-		locationViewModel.getLocation(iGetEventValue.getCalendarId(),
+		locationViewModel.getLocation(
 				iGetEventValue.getEventId(), new DbQueryCallback<LocationDTO>() {
 					@Override
 					public void onResultSuccessful(LocationDTO locationResultDto) {

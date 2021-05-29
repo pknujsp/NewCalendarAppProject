@@ -23,8 +23,8 @@ public class LocationViewModel extends AndroidViewModel implements ILocationDao 
 	}
 
 	@Override
-	public void getLocation(int calendarId, long eventId, DbQueryCallback<LocationDTO> resultCallback) {
-		locationRepository.getLocation(calendarId, eventId, resultCallback);
+	public void getLocation(long eventId, DbQueryCallback<LocationDTO> resultCallback) {
+		locationRepository.getLocation(eventId, resultCallback);
 	}
 
 	@Override
@@ -33,8 +33,8 @@ public class LocationViewModel extends AndroidViewModel implements ILocationDao 
 	}
 
 	@Override
-	public void hasDetailLocation(int calendarId, long eventId, DbQueryCallback<Boolean> resultCallback) {
-		locationRepository.hasDetailLocation(calendarId, eventId, resultCallback);
+	public void hasDetailLocation(long eventId, DbQueryCallback<Boolean> resultCallback) {
+		locationRepository.hasDetailLocation(eventId, resultCallback);
 	}
 
 	@Override
@@ -43,8 +43,8 @@ public class LocationViewModel extends AndroidViewModel implements ILocationDao 
 	}
 
 	@Override
-	public void removeLocation(int calendarId, long eventId, DbQueryCallback<Boolean> resultCallback) {
-		locationRepository.removeLocation(calendarId, eventId, resultCallback);
+	public void removeLocation(long eventId, DbQueryCallback<Boolean> resultCallback) {
+		locationRepository.removeLocation(eventId, resultCallback);
 	}
 
 	@Override

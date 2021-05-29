@@ -1,21 +1,14 @@
 package com.zerodsoft.scheduleweather.calendar;
 
-import android.content.ContentValues;
-import android.content.DialogInterface;
 import android.os.RemoteException;
-import android.provider.CalendarContract;
 import android.service.carrier.CarrierMessagingService;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationHistoryViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationInfoViewModel;
-import com.zerodsoft.scheduleweather.event.main.NewInstanceMainFragment;
 
 public class CalendarInstanceUtil {
 	private CalendarInstanceUtil() {
@@ -26,8 +19,8 @@ public class CalendarInstanceUtil {
 	                                  FoodCriteriaLocationHistoryViewModel foodCriteriaLocationHistoryViewModel, final int CALENDAR_ID, final long EVENT_ID) {
 		// 참석자 - 알림 - 이벤트 순으로 삭제 (외래키 때문)
 		// db column error
-		calendarViewModel.deleteEvent(CALENDAR_ID, EVENT_ID);
-		locationViewModel.removeLocation(CALENDAR_ID, EVENT_ID, new DbQueryCallback<Boolean>() {
+		calendarViewModel.deleteEvent(EVENT_ID);
+		locationViewModel.removeLocation(EVENT_ID, new DbQueryCallback<Boolean>() {
 			@Override
 			public void onResultSuccessful(Boolean result) {
 

@@ -227,7 +227,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements Restaur
 				setHeightOfBottomSheet(DEFAULT_HEIGHT_OF_BOTTOMSHEET, restaurantsBottomSheet, restaurantsBottomSheetBehavior);
 				setHeightOfBottomSheet(DEFAULT_HEIGHT_OF_BOTTOMSHEET, placeCategoryBottomSheet, placeCategoryBottomSheetBehavior);
 
-				locationViewModel.getLocation(CALENDAR_ID, EVENT_ID, new DbQueryCallback<LocationDTO>() {
+				locationViewModel.getLocation(EVENT_ID, new DbQueryCallback<LocationDTO>() {
 					@Override
 					public void onResultSuccessful(LocationDTO result) {
 
@@ -391,7 +391,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements Restaur
 	}
 
 	private void setInitInstanceData() {
-		instance = calendarViewModel.getInstance(CALENDAR_ID, INSTANCE_ID, ORIGINAL_BEGIN, ORIGINAL_END);
+		instance = calendarViewModel.getInstance(INSTANCE_ID, ORIGINAL_BEGIN, ORIGINAL_END);
 		//location
 		if (hasSimpleLocation()) {
 			setDetailLocationData();
@@ -411,7 +411,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements Restaur
 
 	private void setDetailLocationData() {
 		if (hasSimpleLocation()) {
-			locationViewModel.getLocation(CALENDAR_ID, EVENT_ID, new DbQueryCallback<LocationDTO>() {
+			locationViewModel.getLocation(EVENT_ID, new DbQueryCallback<LocationDTO>() {
 				@Override
 				public void onResultSuccessful(LocationDTO locationResultDto) {
 					if (selectedLocationDtoInEvent == null) {

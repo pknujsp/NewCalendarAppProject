@@ -13,12 +13,9 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Build;
-import android.os.RemoteException;
 import android.provider.CalendarContract;
-import android.service.carrier.CarrierMessagingService;
 import android.widget.RemoteViews;
 
-import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 
@@ -116,7 +113,7 @@ public class EventAlarmReceiver extends BroadcastReceiver {
 				notifyNotificationHasNotLocation(notificationManager, builder, context, instance);
 			} else {
 				LocationRepository locationRepository = new LocationRepository(context);
-				locationRepository.getLocation(instance.getAsInteger(CalendarContract.CalendarAlerts.CALENDAR_ID),
+				locationRepository.getLocation(
 						instance.getAsLong(CalendarContract.CalendarAlerts.EVENT_ID), new DbQueryCallback<LocationDTO>() {
 							@Override
 							public void onResultSuccessful(LocationDTO result) {
