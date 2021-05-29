@@ -748,7 +748,7 @@ public abstract class EditEventActivity extends AppCompatActivity implements IEv
 					calendar.setTimeInMillis(selection.second);
 					calendar.set(Calendar.HOUR_OF_DAY, previousHour);
 					calendar.set(Calendar.MINUTE, previousMinute);
-
+					
 					eventDataViewModel.setDtEnd(calendar.getTime());
 					setDateText(DateTimeType.END, calendar.getTimeInMillis());
 				}

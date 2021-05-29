@@ -200,29 +200,10 @@ public class CalendarProvider implements ICalendarProvider {
 
 			if (cursor != null) {
 				while (cursor.moveToNext()) {
-					event.put(CalendarContract.Events.TITLE, cursor.getString(cursor.getColumnIndex(CalendarContract.Events.TITLE)));
-					event.put(CalendarContract.Events.CALENDAR_ID, cursor.getInt(cursor.getColumnIndex(CalendarContract.Events.CALENDAR_ID)));
-					event.put(CalendarContract.Events._ID, cursor.getLong(cursor.getColumnIndex(CalendarContract.Events._ID)));
-					event.put(CalendarContract.Events.DTSTART, cursor.getLong(cursor.getColumnIndex(CalendarContract.Events.DTSTART)));
-					event.put(CalendarContract.Events.DTEND, cursor.getLong(cursor.getColumnIndex(CalendarContract.Events.DTEND)));
-					event.put(CalendarContract.Events.ALL_DAY, cursor.getInt(cursor.getColumnIndex(CalendarContract.Events.ALL_DAY)));
-					event.put(CalendarContract.Events.EVENT_TIMEZONE, cursor.getString(cursor.getColumnIndex(CalendarContract.Events.EVENT_TIMEZONE)));
-					event.put(CalendarContract.Events.EVENT_END_TIMEZONE, cursor.getString(cursor.getColumnIndex(CalendarContract.Events.EVENT_END_TIMEZONE)));
-					event.put(CalendarContract.Events.CALENDAR_TIME_ZONE, cursor.getString(cursor.getColumnIndex(CalendarContract.Events.CALENDAR_TIME_ZONE)));
-					event.put(CalendarContract.Events.RDATE, cursor.getString(cursor.getColumnIndex(CalendarContract.Events.RDATE)));
-					event.put(CalendarContract.Events.RRULE, cursor.getString(cursor.getColumnIndex(CalendarContract.Events.RRULE)));
-					event.put(CalendarContract.Events.EXDATE, cursor.getString(cursor.getColumnIndex(CalendarContract.Events.EXDATE)));
-					event.put(CalendarContract.Events.EXRULE, cursor.getString(cursor.getColumnIndex(CalendarContract.Events.EXRULE)));
-					event.put(CalendarContract.Events.HAS_ATTENDEE_DATA, cursor.getInt(cursor.getColumnIndex(CalendarContract.Events.HAS_ATTENDEE_DATA)));
-					event.put(CalendarContract.Events.EVENT_LOCATION, cursor.getString(cursor.getColumnIndex(CalendarContract.Events.EVENT_LOCATION)));
-					event.put(CalendarContract.Events.DESCRIPTION, cursor.getString(cursor.getColumnIndex(CalendarContract.Events.DESCRIPTION)));
-					event.put(CalendarContract.Events.ACCESS_LEVEL, cursor.getInt(cursor.getColumnIndex(CalendarContract.Events.ACCESS_LEVEL)));
-					event.put(CalendarContract.Events.AVAILABILITY, cursor.getInt(cursor.getColumnIndex(CalendarContract.Events.AVAILABILITY)));
-					event.put(CalendarContract.Events.HAS_ALARM, cursor.getInt(cursor.getColumnIndex(CalendarContract.Events.HAS_ALARM)));
-					event.put(CalendarContract.Events.ACCOUNT_NAME, cursor.getString(cursor.getColumnIndex(CalendarContract.Events.ACCOUNT_NAME)));
-					event.put(CalendarContract.Events.CALENDAR_COLOR, cursor.getInt(cursor.getColumnIndex(CalendarContract.Events.CALENDAR_COLOR)));
-					event.put(CalendarContract.Events.CALENDAR_DISPLAY_NAME, cursor.getString(cursor.getColumnIndex(CalendarContract.Events.CALENDAR_DISPLAY_NAME)));
-					event.put(CalendarContract.Events.EVENT_COLOR, cursor.getInt(cursor.getColumnIndex(CalendarContract.Events.EVENT_COLOR)));
+					String[] keys = cursor.getColumnNames();
+					for (String key : keys) {
+						event.put(key, cursor.getString(cursor.getColumnIndex(key)));
+					}
 				}
 				cursor.close();
 			}
@@ -633,6 +614,8 @@ public class CalendarProvider implements ICalendarProvider {
 				instance.put(CalendarContract.Instances.ALL_DAY, cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.ALL_DAY)));
 				instance.put(CalendarContract.Instances.STATUS, cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.STATUS)));
 				instance.put(CalendarContract.Instances.RRULE, cursor.getString(cursor.getColumnIndex(CalendarContract.Instances.RRULE)));
+				instance.put(CalendarContract.Instances.CALENDAR_ACCESS_LEVEL,
+						cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.CALENDAR_ACCESS_LEVEL)));
 
 				calendarId = cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.CALENDAR_ID));
 				if (!calendarInstanceMap.containsKey(calendarId)) {

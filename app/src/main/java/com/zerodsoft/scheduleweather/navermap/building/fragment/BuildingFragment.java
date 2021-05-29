@@ -103,6 +103,11 @@ public class BuildingFragment extends Fragment implements OnBackPressedCallbackC
 		binding.buildingInfoLayout.getRoot().setVisibility(View.GONE);
 		binding.buildingFloorInfoLayout.getRoot().setVisibility(View.GONE);
 
+		binding.buildingFloorInfoLayout.buildingFloorRecyclerview.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false));
+		buildingFloorListAdapter = new BuildingFloorListAdapter(this);
+		buildingFloorListAdapter.registerAdapterDataObserver(adapterDataObserver);
+		binding.buildingFloorInfoLayout.buildingFloorRecyclerview.setAdapter(buildingFloorListAdapter);
+
 		clearText();
 
 		BuildingAttributeParameter buildingAttributeParameter = new BuildingAttributeParameter();
@@ -119,7 +124,6 @@ public class BuildingFragment extends Fragment implements OnBackPressedCallbackC
 						setBuildingInfo(result);
 						binding.buildingInfoLayout.getRoot().setVisibility(View.VISIBLE);
 						binding.buildingFloorInfoLayout.getRoot().setVisibility(View.VISIBLE);
-
 					}
 				});
 			}
@@ -146,26 +150,40 @@ public class BuildingFragment extends Fragment implements OnBackPressedCallbackC
 			public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
 				super.onScrolled(recyclerView, dx, dy);
 
-				if (!recyclerView.canScrollVertically(SCROLLING_TOP)) {
-					if (buildingFloorListAdapter.getUnderGroundCount() < BuildingFloorListAdapter.UNDERGROUND_COUNT_MAX) {
-						buildingFloorListAdapter.addFloors(BuildingFloorListAdapter.FloorClassification.UNDERGROUND);
+				if (dy < 0) {
+					if (!recyclerView.canScrollVertically(SCROLLING_TOP)) {
+						if (buildingFloorListAdapter.getAboveGroundCount() < BuildingFloorListAdapter.ABOVEGROUND_COUNT_MAX) {
+							buildingFloorListAdapter.addFloors(BuildingFloorListAdapter.FloorClassification.ABOVEGROUND);
+						}
+						return;
 					}
-					return;
-				}
+				} else {
 
-				if (!recyclerView.canScrollVertically(SCROLLING_BOTTOM)) {
-					if (buildingFloorListAdapter.getAboveGroundCount() < BuildingFloorListAdapter.ABOVEGROUND_COUNT_MAX) {
-						buildingFloorListAdapter.addFloors(BuildingFloorListAdapter.FloorClassification.ABOVEGROUND);
+					if (!recyclerView.canScrollVertically(SCROLLING_BOTTOM)) {
+						if (buildingFloorListAdapter.getUnderGroundCount() < BuildingFloorListAdapter.UNDERGROUND_COUNT_MAX) {
+							buildingFloorListAdapter.addFloors(BuildingFloorListAdapter.FloorClassification.UNDERGROUND);
+						}
+						return;
 					}
-					return;
 				}
 			}
 		});
 
-		binding.buildingFloorInfoLayout.buildingFloorRecyclerview.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false));
-		buildingFloorListAdapter = new BuildingFloorListAdapter(this);
-		binding.buildingFloorInfoLayout.buildingFloorRecyclerview.setAdapter(buildingFloorListAdapter);
+
 	}
+
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		buildingFloorListAdapter.unregisterAdapterDataObserver(adapterDataObserver);
+	}
+
+	private final RecyclerView.AdapterDataObserver adapterDataObserver = new RecyclerView.AdapterDataObserver() {
+		@Override
+		public void onChanged() {
+			super.onChanged();
+		}
+	};
 
 	private void setBuildingInfo(BuildingAttributeResponse buildingAttributeResponse) {
 		String notData = getString(R.string.not_data);

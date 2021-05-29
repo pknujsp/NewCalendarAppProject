@@ -28,6 +28,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
@@ -195,15 +196,19 @@ public class EventFragment extends BottomSheetDialogFragment {
 		binding.eventDatetimeView.allDaySwitchLayout.setVisibility(View.GONE);
 
 		binding.eventFab.setOnClickListener(new View.OnClickListener() {
+			boolean isExpanded = true;
+
 			@Override
 			public void onClick(View view) {
-				if (binding.eventFab.isExpanded()) {
-					binding.eventFab.setExpanded(false);
-					collapseFabs();
+				if (isExpanded) {
+					binding.eventFab.setImageDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.more_icon));
+					binding.fabsContainer.setVisibility(View.GONE);
 				} else {
-					binding.eventFab.setExpanded(true);
-					expandFabs();
+					binding.eventFab.setImageDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.close_icon));
+					binding.fabsContainer.setVisibility(View.VISIBLE);
 				}
+
+				isExpanded = !isExpanded;
 			}
 		});
 
@@ -386,29 +391,6 @@ public class EventFragment extends BottomSheetDialogFragment {
 				}).create().show();
 	}
 
-
-	private void collapseFabs() {
-		binding.eventFab.setImageDrawable(getContext().getDrawable(R.drawable.more_icon));
-
-		binding.removeEventFab.animate().translationY(0);
-		binding.modifyEventFab.animate().translationY(0);
-		binding.selectDetailLocationFab.animate().translationY(0);
-
-	}
-
-
-	private void expandFabs() {
-		binding.eventFab.setImageDrawable(getContext().getDrawable(R.drawable.close_icon));
-
-		final float y = binding.eventFab.getTranslationY();
-		final float margin = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16f, getResources().getDisplayMetrics());
-		final float fabHeight = binding.eventFab.getHeight();
-
-		binding.removeEventFab.animate().translationY(y - (fabHeight + margin));
-		binding.modifyEventFab.animate().translationY(y - (fabHeight + margin) * 2);
-		binding.selectDetailLocationFab.animate().translationY(y - (fabHeight + margin) * 3);
-	}
-
 	private void setAttendeesText(List<ContentValues> attendees) {
 		// 참석자 수, 참석 여부
 		LayoutInflater layoutInflater = getLayoutInflater();
@@ -478,6 +460,10 @@ public class EventFragment extends BottomSheetDialogFragment {
 		//제목
 		instanceValues = calendarViewModel.getInstance(CALENDAR_ID, INSTANCE_ID, ORIGINAL_BEGIN, ORIGINAL_END);
 
+		if (instanceValues.getAsInteger(CalendarContract.Instances.CALENDAR_ACCESS_LEVEL) == CalendarContract.Instances.CAL_ACCESS_READ) {
+			binding.fabsLayout.setVisibility(View.GONE);
+		}
+
 		if (instanceValues.getAsString(CalendarContract.Instances.TITLE) != null) {
 			if (!instanceValues.getAsString(CalendarContract.Instances.TITLE).isEmpty()) {
 				binding.eventTitle.setText(instanceValues.getAsString(CalendarContract.Instances.TITLE));
@@ -487,7 +473,6 @@ public class EventFragment extends BottomSheetDialogFragment {
 		} else {
 			binding.eventTitle.setText(getString(R.string.empty_title));
 		}
-
 		//캘린더
 		setCalendarText();
 
@@ -496,19 +481,26 @@ public class EventFragment extends BottomSheetDialogFragment {
 		if (isAllDay) {
 			// allday이면 시간대 뷰를 숨긴다
 			binding.eventDatetimeView.eventTimezoneLayout.setVisibility(View.GONE);
+			binding.eventDatetimeView.startTime.setVisibility(View.GONE);
+			binding.eventDatetimeView.endTime.setVisibility(View.GONE);
+
+			binding.eventDatetimeView.eventTimezoneLayout.setVisibility(View.GONE);
 			int startDay = instanceValues.getAsInteger(CalendarContract.Instances.START_DAY);
 			int endDay = instanceValues.getAsInteger(CalendarContract.Instances.END_DAY);
 			int dayDifference = endDay - startDay;
 
-			Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-			calendar.setTimeInMillis(instanceValues.getAsLong(CalendarContract.Instances.BEGIN));
-			binding.eventDatetimeView.startDate.setText(EventUtil.convertDate(calendar.getTime().getTime()));
-			calendar.add(Calendar.DAY_OF_YEAR, dayDifference);
-			binding.eventDatetimeView.endDate.setText(EventUtil.convertDate(calendar.getTime().getTime()));
+			if (startDay == endDay) {
+				binding.eventDatetimeView.eventStartdatetimeLabel.setText(R.string.date);
+				binding.eventDatetimeView.enddatetimeLayout.setVisibility(View.GONE);
 
-			binding.eventDatetimeView.startTime.setVisibility(View.GONE);
-			binding.eventDatetimeView.endTime.setVisibility(View.GONE);
-			binding.eventDatetimeView.eventTimezoneLayout.setVisibility(View.GONE);
+				binding.eventDatetimeView.startDate.setText(EventUtil.convertDate(instanceValues.getAsLong(CalendarContract.Instances.BEGIN)));
+			} else {
+				Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+				calendar.setTimeInMillis(instanceValues.getAsLong(CalendarContract.Instances.BEGIN));
+				binding.eventDatetimeView.startDate.setText(EventUtil.convertDate(calendar.getTime().getTime()));
+				calendar.add(Calendar.DAY_OF_YEAR, dayDifference);
+				binding.eventDatetimeView.endDate.setText(EventUtil.convertDate(calendar.getTime().getTime()));
+			}
 		} else {
 			String timeZoneStr = instanceValues.getAsString(CalendarContract.Instances.EVENT_TIMEZONE);
 			TimeZone timeZone = TimeZone.getTimeZone(timeZoneStr);

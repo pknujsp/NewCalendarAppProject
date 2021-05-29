@@ -57,3 +57,13 @@
 
 
 
+- 빌딩 층 계산
+a : 지상 층수
+i : 리스트내 position
+
+if i>=a : floor = i -(a+1) - (i-a)*2
+else : floor = a-i
+
+
+
+

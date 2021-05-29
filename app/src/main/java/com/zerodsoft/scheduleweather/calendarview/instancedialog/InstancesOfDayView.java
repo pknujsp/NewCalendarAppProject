@@ -62,6 +62,9 @@ public class InstancesOfDayView implements CalendarViewInitializer {
 		recyclerView = (RecyclerView) view.findViewById(R.id.events_info_events_list);
 		deleteInstancesBtn = (TextView) view.findViewById(R.id.delete_instances);
 
+		recyclerView.addItemDecoration(new RecyclerViewItemDecoration(context));
+		recyclerView.setLayoutManager(new LinearLayoutManager(context, RecyclerView.VERTICAL, false));
+
 		deleteInstancesBtn.setVisibility(View.GONE);
 
 		moreButton.setOnClickListener(new View.OnClickListener() {
@@ -101,12 +104,7 @@ public class InstancesOfDayView implements CalendarViewInitializer {
 
 	}
 
-	@Override
-	public void init(Calendar copiedCalendar, OnEventItemLongClickListener onEventItemLongClickListener, OnEventItemClickListener onEventItemClickListener, IControlEvent iControlEvent, IConnectedCalendars iConnectedCalendars) {
-
-	}
-
-	public void init(Calendar copiedCalendar, OnEventItemLongClickListener onEventItemLongClickListener, OnEventItemClickListener onEventItemClickListener
+	public void init(OnEventItemLongClickListener onEventItemLongClickListener, OnEventItemClickListener onEventItemClickListener
 			, IControlEvent iControlEvent, IConnectedCalendars iConnectedCalendars, InstanceDialogMenuListener instanceDialogMenuListener, IRefreshView iRefreshView, DeleteEventsListener deleteEventsListener) {
 		this.onEventItemClickListener = onEventItemClickListener;
 		this.onEventItemLongClickListener = onEventItemLongClickListener;
@@ -115,19 +113,24 @@ public class InstancesOfDayView implements CalendarViewInitializer {
 		this.instanceDialogMenuListener = instanceDialogMenuListener;
 		this.iRefreshView = iRefreshView;
 		this.deleteEventsListener = deleteEventsListener;
+	}
 
+	@Override
+	public void init(Calendar copiedCalendar, OnEventItemLongClickListener onEventItemLongClickListener, OnEventItemClickListener onEventItemClickListener, IControlEvent iControlEvent, IConnectedCalendars iConnectedCalendars) {
+
+	}
+
+	public void init(Calendar copiedCalendar) {
 		begin = copiedCalendar.getTimeInMillis();
 		copiedCalendar.add(Calendar.DATE, 1);
 		end = copiedCalendar.getTimeInMillis();
 
 		dayTextView.setText(ClockUtil.YYYY_M_D_E.format(begin));
-
-		recyclerView.addItemDecoration(new RecyclerViewItemDecoration(context));
-		recyclerView.setLayoutManager(new LinearLayoutManager(context, RecyclerView.VERTICAL, false));
 		adapter = new EventsInfoRecyclerViewAdapter(onEventItemLongClickListener, onEventItemClickListener, checkBoxOnCheckedChangeListener, begin, end);
 		recyclerView.setAdapter(adapter);
 
 		setData(iControlEvent.getInstances(begin, end));
+		checkedInstanceSet.clear();
 	}
 
 	private final CompoundButton.OnCheckedChangeListener checkBoxOnCheckedChangeListener = new CompoundButton.OnCheckedChangeListener() {
@@ -206,7 +209,6 @@ public class InstancesOfDayView implements CalendarViewInitializer {
 
 	@Override
 	public void refresh() {
-		setData(iControlEvent.getInstances(begin, end));
 	}
 
 

@@ -129,6 +129,14 @@ public class NewEventActivity extends EditEventActivity {
 		List<ContentValues> reminderList = eventDataViewModel.getREMINDERS();
 		List<ContentValues> attendeeList = eventDataViewModel.getATTENDEES();
 
+		if (event.getAsInteger(CalendarContract.Events.ALL_DAY) == 1) {
+			Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+			calendar.setTimeInMillis(event.getAsLong(CalendarContract.Events.DTEND));
+			calendar.add(Calendar.DAY_OF_YEAR, 1);
+
+			event.put(CalendarContract.Events.DTEND, calendar.getTimeInMillis());
+		}
+
 		final int CALENDAR_ID = event.getAsInteger(CalendarContract.Events.CALENDAR_ID);
 		final long NEW_EVENT_ID = calendarViewModel.addEvent(event);
 

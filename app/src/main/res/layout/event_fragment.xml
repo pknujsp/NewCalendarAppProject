@@ -71,49 +71,62 @@
 
         </ScrollView>
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/select_detail_location_fab"
-            style="@style/Widget.MaterialComponents.FloatingActionButton"
+        <LinearLayout
+            android:id="@+id/fabs_layout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|right"
-            android:layout_margin="16dp"
-            android:backgroundTint="@color/light_blue_600"
-            android:contentDescription="@string/edit_location"
-            android:src="@drawable/edit_location_black" />
+            android:layout_marginRight="16dp"
+            android:layout_marginBottom="12dp"
+            android:orientation="vertical">
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/modify_event_fab"
-            style="@style/Widget.MaterialComponents.FloatingActionButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|right"
-            android:layout_margin="16dp"
-            android:backgroundTint="@color/light_blue_600"
-            android:contentDescription="@string/modify_event"
-            android:src="@drawable/modify_black" />
+            <LinearLayout
+                android:id="@+id/fabs_container"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/remove_event_fab"
-            style="@style/Widget.MaterialComponents.FloatingActionButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|right"
-            android:layout_margin="16dp"
-            android:backgroundTint="@color/light_blue_600"
-            android:contentDescription="@string/remove_event"
-            android:src="@drawable/remove_schedule" />
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/select_detail_location_fab"
+                    style="@style/Widget.MaterialComponents.FloatingActionButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="12dp"
+                    android:backgroundTint="@color/light_blue_600"
+                    android:contentDescription="@string/edit_location"
+                    android:src="@drawable/edit_location_black" />
 
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/modify_event_fab"
+                    style="@style/Widget.MaterialComponents.FloatingActionButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="12dp"
+                    android:backgroundTint="@color/light_blue_600"
+                    android:contentDescription="@string/modify_event"
+                    android:src="@drawable/modify_black" />
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/event_fab"
-            style="@style/Widget.MaterialComponents.FloatingActionButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|right"
-            android:layout_margin="16dp"
-            android:contentDescription="@string/modify_event"
-            android:src="@drawable/more_icon" />
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/remove_event_fab"
+                    style="@style/Widget.MaterialComponents.FloatingActionButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="12dp"
+                    android:backgroundTint="@color/light_blue_600"
+                    android:contentDescription="@string/remove_event"
+                    android:src="@drawable/remove_schedule" />
 
+            </LinearLayout>
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/event_fab"
+                style="@style/Widget.MaterialComponents.FloatingActionButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="12dp"
+                android:contentDescription="@string/modify_event"
+                android:src="@drawable/close_icon" />
+
+        </LinearLayout>
     </FrameLayout>
 </layout>

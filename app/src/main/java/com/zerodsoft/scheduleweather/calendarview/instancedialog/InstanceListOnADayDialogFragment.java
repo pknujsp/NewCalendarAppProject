@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.CompositePageTransformer;
 import androidx.viewpager2.widget.MarginPageTransformer;
 import androidx.viewpager2.widget.ViewPager2;
@@ -63,6 +64,7 @@ public class InstanceListOnADayDialogFragment extends DialogFragment implements 
 	private FoodCriteriaLocationInfoViewModel foodCriteriaLocationInfoViewModel;
 	private FragmentInstanceListOnADayBinding binding;
 	private InstancesOfDayAdapter adapter;
+	private CompositePageTransformer compositePageTransformer;
 
 	private Long begin;
 	private Long end;
@@ -137,20 +139,17 @@ public class InstanceListOnADayDialogFragment extends DialogFragment implements 
 			}
 		});
 
-		// final int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32f, getResources().getDisplayMetrics());
-		final int margin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, getResources().getDisplayMetrics());
-		// binding.instancesDialogViewpager.setPadding(padding, 0, padding, 0);
-		binding.instancesDialogViewpager.setOffscreenPageLimit(3);
+		binding.instancesDialogViewpager.setOffscreenPageLimit(1);
 		binding.instancesDialogViewpager.getChildAt(0).setOverScrollMode(View.OVER_SCROLL_NEVER);
 
-		CompositePageTransformer compositePageTransformer = new CompositePageTransformer();
+		compositePageTransformer = new CompositePageTransformer();
+		final int margin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, getResources().getDisplayMetrics());
 		compositePageTransformer.addTransformer(new MarginPageTransformer(margin));
 		compositePageTransformer.addTransformer(new ViewPager2.PageTransformer() {
 			@Override
 			public void transformPage(@NonNull View page, float position) {
 				float r = 1 - Math.abs(position);
 				page.setScaleY(0.8f + r * 0.2f);
-				Log.e(TAG, String.valueOf(page.getScaleY()));
 			}
 		});
 		binding.instancesDialogViewpager.setPageTransformer(compositePageTransformer);
@@ -179,7 +178,7 @@ public class InstanceListOnADayDialogFragment extends DialogFragment implements 
 	@Override
 	public void refreshView() {
 		int currentItem = binding.instancesDialogViewpager.getCurrentItem();
-		adapter.refresh(currentItem);
+		binding.instancesDialogViewpager.getAdapter().notifyItemRangeChanged(currentItem - 3, 6);
 	}
 
 	@Override
@@ -212,21 +211,25 @@ public class InstanceListOnADayDialogFragment extends DialogFragment implements 
 	}
 
 	private void goToFirstSelectedDay() {
+		refreshView();
+
 		if (binding.instancesDialogViewpager.getCurrentItem() != EventTransactionFragment.FIRST_VIEW_POSITION) {
 			binding.instancesDialogViewpager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, true);
-			refreshView();
+		} else {
 		}
 	}
 
 	public void goToToday() {
 		Date today = new Date(System.currentTimeMillis());
 		Date firstSelectedDay = new Date(begin);
-
 		int dayDifference = ClockUtil.calcDayDifference(today, firstSelectedDay);
-		binding.instancesDialogViewpager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION + dayDifference
-				, true);
-		if (adapter.containsPosition(EventTransactionFragment.FIRST_VIEW_POSITION + dayDifference)) {
-			refreshView();
+
+		refreshView();
+		if (binding.instancesDialogViewpager.getCurrentItem() != EventTransactionFragment.FIRST_VIEW_POSITION + dayDifference) {
+			binding.instancesDialogViewpager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION + dayDifference
+					, true);
+		} else {
+
 		}
 	}
 

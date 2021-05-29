@@ -118,10 +118,15 @@ public class EventsInfoRecyclerViewAdapter extends RecyclerView.Adapter<EventsIn
 			this.eventId = instances.get(position).getAsLong(CalendarContract.Instances.EVENT_ID);
 
 			final InstanceTagHolder holder = new InstanceTagHolder(instances.get(position));
-			itemView.setTag(holder);
+			instanceTitleTextView.setTag(holder);
 
 			checkBox.setChecked(false);
-			checkBox.setVisibility(checkBoxVisibility);
+			if (instances.get(position).getAsInteger(CalendarContract.Instances.CALENDAR_ACCESS_LEVEL) == CalendarContract.Instances.CAL_ACCESS_READ) {
+				checkBox.setVisibility(View.GONE);
+				instanceTitleTextView.setOnLongClickListener(null);
+			} else {
+				checkBox.setVisibility(checkBoxVisibility);
+			}
 			checkBox.setTag(holder);
 			checkBox.setOnCheckedChangeListener(onCheckedChangeListener);
 

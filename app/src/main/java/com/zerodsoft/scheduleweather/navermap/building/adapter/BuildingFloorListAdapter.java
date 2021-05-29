@@ -1,5 +1,6 @@
 package com.zerodsoft.scheduleweather.navermap.building.adapter;
 
+import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,207 +18,147 @@ import com.zerodsoft.scheduleweather.navermap.building.model.BuildingFloorData;
 import com.zerodsoft.scheduleweather.navermap.building.model.FacilityData;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 
-public class BuildingFloorListAdapter extends RecyclerView.Adapter<BuildingFloorListAdapter.ViewHolder>
-{
-    private ArrayMap<String, BuildingFloorData> buildingFloorDataArrayMap = new ArrayMap<>();
-    private final OnClickDownloadListener onClickDownloadListener;
-    private int aboveGroundCount = 10;
-    private int underGroundCount = 1;
-    public static final int UNDERGROUND_COUNT_MAX = 8;
-    public static final int ABOVEGROUND_COUNT_MAX = 130;
+public class BuildingFloorListAdapter extends RecyclerView.Adapter<BuildingFloorListAdapter.ViewHolder> {
+	private SparseArray<BuildingFloorData> buildingFloorDataSparseArray = new SparseArray<>();
+	private final OnClickDownloadListener onClickDownloadListener;
+	private int aboveGroundCount = 2;
+	private int underGroundCount = 1;
+	public static final int UNDERGROUND_COUNT_MAX = 3;
+	public static final int ABOVEGROUND_COUNT_MAX = 20;
 
-    public enum FloorClassification
-    {
-        UNDERGROUND, ABOVEGROUND
-    }
+	public enum FloorClassification {
+		UNDERGROUND,
+		ABOVEGROUND
+	}
 
-    public BuildingFloorListAdapter(Fragment fragment)
-    {
-        this.onClickDownloadListener = (OnClickDownloadListener) fragment;
-    }
+	public BuildingFloorListAdapter(Fragment fragment) {
+		this.onClickDownloadListener = (OnClickDownloadListener) fragment;
+	}
 
-    @NonNull
-    @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType)
-    {
-        return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.building_floor_list_item, parent, false));
-    }
+	@NonNull
+	@Override
+	public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+		return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.building_floor_list_item, parent, false));
+	}
 
-    @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position)
-    {
-        holder.onBind();
-    }
+	@Override
+	public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+		holder.onBind();
+	}
 
-    @Override
-    public int getItemCount()
-    {
-        return aboveGroundCount + underGroundCount;
-    }
-
-    private int getArrIndex(String floor)
-    {
-        int index = 0;
-        final int FLOOR = Integer.parseInt(floor);
-
-        if (underGroundCount < 0)
-        {
-            //지하 있음
-            index = FLOOR >= 1 ? FLOOR + underGroundCount - 1 : FLOOR + underGroundCount;
-        } else
-        {
-            //지하 없음
-            index = FLOOR - 1;
-        }
-
-        return index;
-    }
-
-    public String getFloor(int position)
-    {
-        int floor = 0;
-
-        if (underGroundCount > 0)
-        {
-            //지하 있음
-            floor = (position - underGroundCount) >= 0 ? position - underGroundCount + 1 : position - underGroundCount;
-        } else
-        {
-            //지하 없음
-            floor = position + 1;
-        }
-
-        return String.valueOf(floor);
-    }
-
-    public void addFloors(FloorClassification floorClassification)
-    {
-        if (floorClassification == FloorClassification.ABOVEGROUND)
-        {
-            if (aboveGroundCount == ABOVEGROUND_COUNT_MAX)
-            {
-                return;
-            } else
-            {
-                aboveGroundCount += 10;
-
-                if (aboveGroundCount >= ABOVEGROUND_COUNT_MAX)
-                {
-                    aboveGroundCount = ABOVEGROUND_COUNT_MAX;
-                }
-            }
-
-        } else if (floorClassification == FloorClassification.UNDERGROUND)
-        {
-            if (underGroundCount == UNDERGROUND_COUNT_MAX)
-            {
-                return;
-            } else
-            {
-                underGroundCount += 2;
-
-                if (underGroundCount >= UNDERGROUND_COUNT_MAX)
-                {
-                    underGroundCount = UNDERGROUND_COUNT_MAX;
-                }
-            }
-        }
-
-        notifyDataSetChanged();
-    }
-
-    public int getAboveGroundCount()
-    {
-        return aboveGroundCount;
-    }
-
-    public int getUnderGroundCount()
-    {
-        return underGroundCount;
-    }
+	@Override
+	public int getItemCount() {
+		return aboveGroundCount + underGroundCount;
+	}
 
 
-    class ViewHolder extends RecyclerView.ViewHolder
-    {
-        BuildingFloorListItemBinding binding;
-        CompanyListAdapter companyListAdapter;
+	public int getFloor(int position) {
+		int floor = position >= aboveGroundCount ? aboveGroundCount - position - 1 : aboveGroundCount - position;
+		return floor;
+	}
 
-        public ViewHolder(@NonNull View itemView)
-        {
-            super(itemView);
+	public void addFloors(FloorClassification floorClassification) {
+		if (floorClassification == FloorClassification.ABOVEGROUND) {
+			if (aboveGroundCount == ABOVEGROUND_COUNT_MAX) {
+				return;
+			} else {
+				aboveGroundCount += 3;
 
-            binding = BuildingFloorListItemBinding.bind(itemView);
+				if (aboveGroundCount >= ABOVEGROUND_COUNT_MAX) {
+					aboveGroundCount = ABOVEGROUND_COUNT_MAX;
+				}
+			}
 
-            binding.companyRecyclerView.setLayoutManager(new LinearLayoutManager(itemView.getContext(), LinearLayoutManager.HORIZONTAL, false));
+		} else if (floorClassification == FloorClassification.UNDERGROUND) {
+			if (underGroundCount == UNDERGROUND_COUNT_MAX) {
+				return;
+			} else {
+				underGroundCount += 2;
 
-            binding.layoutForSearchFloorInfo.setVisibility(View.VISIBLE);
-            binding.floorInfoLayout.setVisibility(View.GONE);
-        }
+				if (underGroundCount >= UNDERGROUND_COUNT_MAX) {
+					underGroundCount = UNDERGROUND_COUNT_MAX;
+				}
+			}
+		}
+		notifyDataSetChanged();
+	}
 
-        public void onBind()
-        {
-            final String FLOOR = getFloor(getAdapterPosition());
+	public int getAboveGroundCount() {
+		return aboveGroundCount;
+	}
 
-            binding.layoutForSearchFloorInfo.setOnClickListener(new View.OnClickListener()
-            {
-                @Override
-                public void onClick(View view)
-                {
-                    //해당 층 데이터 가져온다
-                    onClickDownloadListener.getFloorInfo(FLOOR, new EventCallback<DataWrapper<BuildingFloorData>>()
-                    {
-                        @Override
-                        public void onResult(DataWrapper<BuildingFloorData> e)
-                        {
-                            if (e.getException() == null)
-                            {
-                                buildingFloorDataArrayMap.put(FLOOR, e.getData());
-                                setResultData();
-                            } else
-                            {
+	public int getUnderGroundCount() {
+		return underGroundCount;
+	}
 
-                            }
-                        }
-                    });
-                }
-            });
 
-            setResultData();
-        }
+	class ViewHolder extends RecyclerView.ViewHolder {
+		BuildingFloorListItemBinding binding;
+		CompanyListAdapter companyListAdapter;
 
-        public void setResultData()
-        {
-            final String FLOOR = getFloor(getAdapterPosition());
-            String noFloor = Integer.parseInt(FLOOR) < 0 ? "지하 " + Math.abs(Integer.parseInt(FLOOR)) : FLOOR;
+		public ViewHolder(@NonNull View itemView) {
+			super(itemView);
 
-            if (buildingFloorDataArrayMap.get(FLOOR) == null)
-            {
-                binding.noFloorForSearch.setText(noFloor);
+			binding = BuildingFloorListItemBinding.bind(itemView);
+			binding.companyRecyclerView.setLayoutManager(new LinearLayoutManager(itemView.getContext(), LinearLayoutManager.HORIZONTAL, false));
 
-                binding.layoutForSearchFloorInfo.setVisibility(View.VISIBLE);
-                binding.floorInfoLayout.setVisibility(View.GONE);
-            } else
-            {
-                binding.noFloor.setText(noFloor + "층");
-                companyListAdapter = new CompanyListAdapter(buildingFloorDataArrayMap.get(FLOOR).getCompanyDataList());
-                binding.companyRecyclerView.setAdapter(companyListAdapter);
+			binding.layoutForSearchFloorInfo.setVisibility(View.VISIBLE);
+			binding.floorInfoLayout.setVisibility(View.GONE);
+		}
 
-                FacilityData facilityData = buildingFloorDataArrayMap.get(FLOOR).getFacilityData();
-                binding.buildingFloorFacilityLayout.elevatorCount.setText(facilityData.getElevatorCount());
-                binding.buildingFloorFacilityLayout.entranceCount.setText(facilityData.getEntranceCount());
-                binding.buildingFloorFacilityLayout.movingWorkCount.setText(facilityData.getMovingWorkCount());
-                binding.buildingFloorFacilityLayout.stairsCount.setText(facilityData.getStairsCount());
-                binding.buildingFloorFacilityLayout.vacantRoomCount.setText(facilityData.getVacantRoomCount());
-                binding.buildingFloorFacilityLayout.toiletCount.setText(facilityData.getToiletCount());
+		public void onBind() {
+			final int floor = getFloor(getBindingAdapterPosition());
 
-                binding.layoutForSearchFloorInfo.setVisibility(View.GONE);
-                binding.floorInfoLayout.setVisibility(View.VISIBLE);
-            }
-        }
-    }
+			binding.layoutForSearchFloorInfo.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View view) {
+					//해당 층 데이터 가져온다
+					onClickDownloadListener.getFloorInfo(String.valueOf(floor), new EventCallback<DataWrapper<BuildingFloorData>>() {
+						@Override
+						public void onResult(DataWrapper<BuildingFloorData> e) {
+							if (e.getException() == null) {
+								buildingFloorDataSparseArray.put(floor, e.getData());
+								setResultData();
+							} else {
 
-    public interface OnClickDownloadListener
-    {
-        void getFloorInfo(String floor, EventCallback<DataWrapper<BuildingFloorData>> callback);
-    }
+							}
+						}
+					});
+				}
+			});
+
+			setResultData();
+		}
+
+		public void setResultData() {
+			final int floor = getFloor(getBindingAdapterPosition());
+			String noFloor = floor < 0 ? "지하 " + Math.abs(floor) : String.valueOf(floor);
+
+			if (buildingFloorDataSparseArray.get(floor) == null) {
+				binding.noFloorForSearch.setText(noFloor);
+
+				binding.layoutForSearchFloorInfo.setVisibility(View.VISIBLE);
+				binding.floorInfoLayout.setVisibility(View.GONE);
+			} else {
+				binding.noFloor.setText(noFloor + "층");
+				companyListAdapter = new CompanyListAdapter(buildingFloorDataSparseArray.get(floor).getCompanyDataList());
+				binding.companyRecyclerView.setAdapter(companyListAdapter);
+
+				FacilityData facilityData = buildingFloorDataSparseArray.get(floor).getFacilityData();
+				binding.buildingFloorFacilityLayout.elevatorCount.setText(facilityData.getElevatorCount());
+				binding.buildingFloorFacilityLayout.entranceCount.setText(facilityData.getEntranceCount());
+				binding.buildingFloorFacilityLayout.movingWorkCount.setText(facilityData.getMovingWorkCount());
+				binding.buildingFloorFacilityLayout.stairsCount.setText(facilityData.getStairsCount());
+				binding.buildingFloorFacilityLayout.vacantRoomCount.setText(facilityData.getVacantRoomCount());
+				binding.buildingFloorFacilityLayout.toiletCount.setText(facilityData.getToiletCount());
+
+				binding.layoutForSearchFloorInfo.setVisibility(View.GONE);
+				binding.floorInfoLayout.setVisibility(View.VISIBLE);
+			}
+		}
+	}
+
+	public interface OnClickDownloadListener {
+		void getFloorInfo(String floor, EventCallback<DataWrapper<BuildingFloorData>> callback);
+	}
 }

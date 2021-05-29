@@ -21,7 +21,6 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClic
 import java.util.Calendar;
 
 public class InstancesOfDayAdapter extends RecyclerView.Adapter<InstancesOfDayAdapter.InstancesViewHolder> {
-	private final SparseArray<InstancesViewHolder> viewHolderSparseArray = new SparseArray<>();
 	private final OnEventItemClickListener onEventItemClickListener;
 	private final OnEventItemLongClickListener onEventItemLongClickListener;
 	private final IConnectedCalendars iConnectedCalendars;
@@ -57,26 +56,16 @@ public class InstancesOfDayAdapter extends RecyclerView.Adapter<InstancesOfDayAd
 	@Override
 	public void onBindViewHolder(@NonNull InstancesViewHolder holder, int position) {
 		holder.onBind();
-		viewHolderSparseArray.put(position, holder);
 	}
 
 	@Override
 	public void onViewRecycled(@NonNull InstancesViewHolder holder) {
-		viewHolderSparseArray.remove(holder.getOldPosition());
 		super.onViewRecycled(holder);
-	}
-
-	public boolean containsPosition(int position) {
-		return viewHolderSparseArray.get(position) != null;
 	}
 
 	@Override
 	public int getItemCount() {
 		return Integer.MAX_VALUE;
-	}
-
-	public void refresh(int position) {
-		viewHolderSparseArray.get(position).instancesOfDayView.refresh();
 	}
 
 	class InstancesViewHolder extends RecyclerView.ViewHolder {
@@ -85,13 +74,14 @@ public class InstancesOfDayAdapter extends RecyclerView.Adapter<InstancesOfDayAd
 		public InstancesViewHolder(@NonNull View itemView) {
 			super(itemView);
 			instancesOfDayView = new InstancesOfDayView(itemView);
+			instancesOfDayView.init(onEventItemLongClickListener, onEventItemClickListener, iControlEvent, iConnectedCalendars,
+					instanceDialogMenuListener, iRefreshView, deleteEventsListener);
 		}
 
 		public void onBind() {
 			Calendar copiedCalendar = (Calendar) beginCalendar.clone();
 			copiedCalendar.add(Calendar.DATE, getBindingAdapterPosition() - EventTransactionFragment.FIRST_VIEW_POSITION);
-			instancesOfDayView.init(copiedCalendar, onEventItemLongClickListener, onEventItemClickListener, iControlEvent, iConnectedCalendars,
-					instanceDialogMenuListener, iRefreshView, deleteEventsListener);
+			instancesOfDayView.init(copiedCalendar);
 		}
 	}
 }

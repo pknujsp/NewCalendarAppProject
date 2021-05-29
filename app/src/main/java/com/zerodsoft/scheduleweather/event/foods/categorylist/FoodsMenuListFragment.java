@@ -170,23 +170,6 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 		super.onDestroy();
 	}
 
-	private void init() {
-		ContentValues contentValues = calendarViewModel.getValuesOfEvent(iGetEventValue.getEventId(),
-				CalendarContract.Events.EVENT_LOCATION);
-
-		//이벤트내에 위치값이 지정되지 않은 경우에는 지도 중심 좌표를 기준으로 설정
-		if (contentValues.containsKey(CalendarContract.Events.EVENT_LOCATION)) {
-			String simpleLocationName = contentValues.getAsString(CalendarContract.Events.EVENT_LOCATION);
-			if (!simpleLocationName.isEmpty()) {
-				setCriteriaIfHavntLocation();
-			} else {
-				loadSelectedDetailLocation();
-			}
-		} else {
-			setCriteriaIfHavntLocation();
-		}
-	}
-
 	private void setCriteriaIfHavntLocation() {
 		//기본/상세 위치가 지정되어 있지 않으면, 맵의 중심 좌표를 기준으로 하도록 설정해준다
 		foodCriteriaLocationInfoViewModel.contains(iGetEventValue.getEventId()
@@ -329,8 +312,8 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 						CoordToAddressDocuments coordToAddressDocument = result.getCoordToAddressDocuments().get(0);
 
 						locationDTO.setAddress(coordToAddressDocument.getCoordToAddressAddress().getAddressName(), null,
-								coordToAddressDocument.getCoordToAddressAddress().getLatitude(),
-								coordToAddressDocument.getCoordToAddressAddress().getLongitude());
+								String.valueOf(mapCenterPoint.latitude),
+								String.valueOf(mapCenterPoint.longitude));
 
 						criteriaLocationDTO = locationDTO;
 
@@ -561,8 +544,8 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 				CoordToAddressDocuments coordToAddressDocument = result.getCoordToAddressDocuments().get(0);
 
 				locationDTO.setAddress(coordToAddressDocument.getCoordToAddressAddress().getAddressName(), null,
-						coordToAddressDocument.getCoordToAddressAddress().getLatitude(),
-						coordToAddressDocument.getCoordToAddressAddress().getLongitude());
+						locationDtoByGps.getLatitude(),
+						locationDtoByGps.getLongitude());
 
 				criteriaLocationDTO = locationDTO;
 
