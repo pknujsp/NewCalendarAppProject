@@ -71,10 +71,6 @@ public class CalendarProvider implements ICalendarProvider {
 	private final String EVENTS_QUERY;
 	private final String EVENT_QUERY;
 	private final String CALENDARS_QUERY;
-	private final String INSTANCES_QUERY;
-	private final String INSTANCE_QUERY;
-	private final String ATTENDEE_QUERY;
-	private final String REMINDER_QUERY;
 
 	public static CalendarProvider newInstance(Context context) {
 		instance = new CalendarProvider(context);
@@ -89,22 +85,6 @@ public class CalendarProvider implements ICalendarProvider {
 		this.context = context;
 		StringBuilder stringBuilder = new StringBuilder();
 
-		INSTANCES_QUERY = stringBuilder.append("(((").append(CalendarContract.Instances.BEGIN).append(">=?")
-				.append(" AND ").append(CalendarContract.Instances.BEGIN).append("<?")
-				.append(") OR (").append(CalendarContract.Instances.END).append(">=?")
-				.append(" AND ").append(CalendarContract.Instances.END).append("<?")
-				.append(") OR (").append(CalendarContract.Instances.BEGIN).append("<?")
-				.append(" AND ").append(CalendarContract.Instances.END).append(">?")
-				.append(")) AND ").append(CalendarContract.Instances.CALENDAR_ID).append("=?")
-				.append(")").toString();
-
-		stringBuilder.delete(0, stringBuilder.length());
-
-		INSTANCE_QUERY = stringBuilder.append("Instances._id").append("=? AND ")
-				.append(CalendarContract.Instances.CALENDAR_ID).append("=?").toString();
-
-		stringBuilder.delete(0, stringBuilder.length());
-
 		CALENDARS_QUERY = stringBuilder.append(CalendarContract.Calendars._ID).append("=?").toString();
 
 		stringBuilder.delete(0, stringBuilder.length());
@@ -113,20 +93,7 @@ public class CalendarProvider implements ICalendarProvider {
 
 		stringBuilder.delete(0, stringBuilder.length());
 
-		EVENT_QUERY = stringBuilder.append(CalendarContract.Events._ID).append("=? AND ")
-				.append(CalendarContract.Events.CALENDAR_ID).append("=?").toString();
-
-		stringBuilder.delete(0, stringBuilder.length());
-
-		ATTENDEE_QUERY = stringBuilder.append(CalendarContract.Attendees.CALENDAR_ID).append("=? AND ")
-				.append(CalendarContract.Attendees.EVENT_ID).append("=?").toString();
-
-		stringBuilder.delete(0, stringBuilder.length());
-
-		REMINDER_QUERY = stringBuilder.append(CalendarContract.Reminders.CALENDAR_ID).append("=? AND ")
-				.append(CalendarContract.Reminders.EVENT_ID).append("=?").toString();
-
-		stringBuilder.delete(0, stringBuilder.length());
+		EVENT_QUERY = stringBuilder.append(CalendarContract.Events._ID).append("=?").toString();
 	}
 
 
@@ -641,6 +608,7 @@ public class CalendarProvider implements ICalendarProvider {
 			// 화면에 이벤트 정보를 표시하기 위해 기본적인 데이터만 가져온다.
 			// 요청 매개변수 : ID, 캘린더 ID, 오너 계정, 조직자
 			// 표시할 데이터 : 제목, 일정 기간, 반복, 위치, 알림, 설명, 소유 계정, 참석자, 바쁨/한가함, 공개 범위 참석 여부 확인 창, 색상
+			String selection = "Instances._id = ?";
 			String[] selectionArgs = {instanceId.toString()};
 
 			Uri.Builder builder = CalendarContract.Instances.CONTENT_URI.buildUpon();
@@ -648,7 +616,7 @@ public class CalendarProvider implements ICalendarProvider {
 			ContentUris.appendId(builder, end);
 
 			ContentResolver contentResolver = context.getContentResolver();
-			Cursor cursor = contentResolver.query(builder.build(), null, INSTANCE_QUERY, selectionArgs, null);
+			Cursor cursor = contentResolver.query(builder.build(), null, selection, selectionArgs, null);
 			ContentValues instance = new ContentValues();
 
 			if (cursor != null) {

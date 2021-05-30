@@ -43,15 +43,19 @@ public class ModifyInstanceActivity extends EditEventActivity {
 		actionBar.setTitle(R.string.modify_event);
 
 		Intent intent = getIntent();
-		final long EVENT_ID = intent.getLongExtra(CalendarContract.Instances.EVENT_ID, 0);
-		final long INSTANCE_ID = intent.getLongExtra(CalendarContract.Instances._ID, 0);
-		final long BEGIN = intent.getLongExtra(CalendarContract.Instances.BEGIN, 0);
-		final long END = intent.getLongExtra(CalendarContract.Instances.END, 0);
+		final long eventId = intent.getLongExtra(CalendarContract.Instances.EVENT_ID, 0);
+		final long instanceId = intent.getLongExtra(CalendarContract.Instances._ID, 0);
+		final long begin = intent.getLongExtra(CalendarContract.Instances.BEGIN, 0);
+		final long end = intent.getLongExtra(CalendarContract.Instances.END, 0);
+		final String rrule = intent.getStringExtra(CalendarContract.Instances.RRULE);
+
+		//이벤트와 인스턴스를 구분해서 데이터를 가져온다
 
 		// 이벤트, 알림을 가져온다
-		originalInstance = calendarViewModel.getInstance(INSTANCE_ID, BEGIN, END);
+		originalInstance = calendarViewModel.getInstance(instanceId, begin, end);
+		ContentValues originalEventValues = calendarViewModel.getEvent(eventId);
 		selectedCalendarValues = calendarViewModel.getCalendar(originalInstance.getAsInteger(CalendarContract.Instances.CALENDAR_ID));
-		eventDataViewModel.getATTENDEES().addAll(calendarViewModel.getAttendees(EVENT_ID));
+		eventDataViewModel.getATTENDEES().addAll(calendarViewModel.getAttendees(eventId));
 
 		if (!eventDataViewModel.getATTENDEES().isEmpty()) {
 			originalHasAttendeeList = true;
@@ -61,8 +65,8 @@ public class ModifyInstanceActivity extends EditEventActivity {
 			binding.attendeeLayout.showAttendeesDetail.setText(getString(R.string.add_attendee));
 		}
 
-		// 제목, 캘린더, 시간, 시간대, 반복, 알림, 설명, 위치, 공개범위, 유효성, 참석자
-		// 알림, 참석자 정보는 따로 불러온다.
+		//제목, 캘린더, 시간, 시간대, 반복, 알림, 설명, 위치, 공개범위, 유효성, 참석자
+		//알림, 참석자 정보는 따로 불러온다.
 		binding.titleLayout.eventColor.setBackgroundColor(EventUtil.getColor(originalInstance.getAsInteger(CalendarContract.Instances.EVENT_COLOR)));
 
 		//제목
@@ -77,9 +81,6 @@ public class ModifyInstanceActivity extends EditEventActivity {
 		} else {
 			binding.timeLayout.eventTimezone.setText(originalInstance.getAsString(CalendarContract.Events.EVENT_TIMEZONE));
 		}
-
-		final long begin = originalInstance.getAsLong(CalendarContract.Instances.BEGIN);
-		final long end = originalInstance.getAsLong(CalendarContract.Instances.END);
 
 		eventDataViewModel.setDtStart(new Date(begin));
 		eventDataViewModel.setDtEnd(new Date(end));
@@ -103,7 +104,7 @@ public class ModifyInstanceActivity extends EditEventActivity {
 		// 알림
 		if (originalInstance.getAsBoolean(CalendarContract.Instances.HAS_ALARM)) {
 			originalHasReminderList = true;
-			List<ContentValues> originalReminderList = calendarViewModel.getReminders(EVENT_ID);
+			List<ContentValues> originalReminderList = calendarViewModel.getReminders(eventId);
 			eventDataViewModel.getREMINDERS().addAll(originalReminderList);
 
 			for (ContentValues reminder : originalReminderList) {
@@ -116,7 +117,7 @@ public class ModifyInstanceActivity extends EditEventActivity {
 
 		// 위치
 		binding.locationLayout.eventLocation.setText(originalInstance.getAsString(CalendarContract.Instances.EVENT_LOCATION));
-		locationViewModel.getLocation(EVENT_ID, new DbQueryCallback<LocationDTO>() {
+		locationViewModel.getLocation(eventId, new DbQueryCallback<LocationDTO>() {
 			@Override
 			public void onResultSuccessful(LocationDTO result) {
 				locationDTO = result;
@@ -176,7 +177,6 @@ public class ModifyInstanceActivity extends EditEventActivity {
 	}
 
 	protected void updateThisInstance() {
-		final int originalCalendarId = originalInstance.getAsInteger(CalendarContract.Instances.CALENDAR_ID);
 		final long originalEventId = originalInstance.getAsLong(CalendarContract.Instances.EVENT_ID);
 
 		ContentValues modifiedInstance = eventDataViewModel.getEVENT();

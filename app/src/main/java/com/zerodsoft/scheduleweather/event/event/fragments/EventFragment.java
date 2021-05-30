@@ -248,6 +248,7 @@ public class EventFragment extends BottomSheetDialogFragment {
 		binding.modifyEventFab.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
+				/*
 				Intent intent = new Intent(getContext(), ModifyInstanceActivity.class);
 				intent.putExtra("requestCode", EventIntentCode.REQUEST_MODIFY_EVENT.value());
 				intent.putExtra(CalendarContract.Instances.CALENDAR_ID, CALENDAR_ID);
@@ -255,8 +256,11 @@ public class EventFragment extends BottomSheetDialogFragment {
 				intent.putExtra(CalendarContract.Instances._ID, INSTANCE_ID);
 				intent.putExtra(CalendarContract.Instances.BEGIN, instanceValues.getAsLong(CalendarContract.Instances.BEGIN));
 				intent.putExtra(CalendarContract.Instances.END, instanceValues.getAsLong(CalendarContract.Instances.END));
+				intent.putExtra(CalendarContract.Instances.RRULE, instanceValues.getAsString(CalendarContract.Instances.RRULE));
 
 				editInstanceActivityResultLauncher.launch(intent);
+				 */
+				Toast.makeText(getContext(), "Working", Toast.LENGTH_SHORT).show();
 			}
 		});
 
@@ -301,7 +305,6 @@ public class EventFragment extends BottomSheetDialogFragment {
 										case 0:
 											// 모든 일정 삭제
 											showDeleteEventDialog();
-
 											break;
 									}
 								}
