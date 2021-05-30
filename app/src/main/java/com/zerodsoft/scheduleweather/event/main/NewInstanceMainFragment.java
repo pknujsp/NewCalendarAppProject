@@ -56,7 +56,7 @@ import com.zerodsoft.scheduleweather.common.interfaces.OnHiddenFragmentListener;
 import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.event.fragments.EventFragment;
-import com.zerodsoft.scheduleweather.event.foods.main.fragment.RestaurantMainTransactionFragment;
+import com.zerodsoft.scheduleweather.event.foods.RestaurantDialogFragment;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PlaceItemsGetter;
 import com.zerodsoft.scheduleweather.event.places.map.PlacesOfSelectedCategoriesFragment;
 import com.zerodsoft.scheduleweather.event.weather.fragment.WeatherMainFragment;
@@ -76,7 +76,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class NewInstanceMainFragment extends NaverMapFragment implements RestaurantMainTransactionFragment.FoodMenuChipsViewController,
+public class NewInstanceMainFragment extends NaverMapFragment implements RestaurantDialogFragment.FoodMenuChipsViewController,
 		PlacesOfSelectedCategoriesFragment.PlaceCategoryChipsViewController, DialogInterface.OnDismissListener
 		, IRefreshView {
 	public static final String TAG = "NewInstanceMainFragment";
@@ -200,8 +200,8 @@ public class NewInstanceMainFragment extends NaverMapFragment implements Restaur
 			public void onStateChanged(@NonNull View bottomSheet, int newState) {
 				switch (newState) {
 					case BottomSheetBehavior.STATE_EXPANDED:
-						RestaurantMainTransactionFragment restaurantMainTransactionFragment = (RestaurantMainTransactionFragment) getChildFragmentManager().findFragmentByTag(RestaurantMainTransactionFragment.TAG);
-						getChildFragmentManager().beginTransaction().show(restaurantMainTransactionFragment).addToBackStack(RestaurantMainTransactionFragment.TAG).commit();
+						RestaurantDialogFragment restaurantDialogFragment = (RestaurantDialogFragment) getChildFragmentManager().findFragmentByTag(RestaurantDialogFragment.TAG);
+						getChildFragmentManager().beginTransaction().show(restaurantDialogFragment).addToBackStack(RestaurantDialogFragment.TAG).commit();
 						break;
 					case BottomSheetBehavior.STATE_COLLAPSED:
 						break;
@@ -224,25 +224,9 @@ public class NewInstanceMainFragment extends NaverMapFragment implements Restaur
 				final int HEADERBAR_MARGIN = (int) (HEADERBAR_TOP_MARGIN * 1.5f);
 				DEFAULT_HEIGHT_OF_BOTTOMSHEET = binding.naverMapFragmentRootLayout.getHeight() - HEADERBAR_HEIGHT - HEADERBAR_MARGIN;
 
-				setHeightOfBottomSheet(DEFAULT_HEIGHT_OF_BOTTOMSHEET, restaurantsBottomSheet, restaurantsBottomSheetBehavior);
 				setHeightOfBottomSheet(DEFAULT_HEIGHT_OF_BOTTOMSHEET, placeCategoryBottomSheet, placeCategoryBottomSheetBehavior);
 
-				locationViewModel.getLocation(EVENT_ID, new DbQueryCallback<LocationDTO>() {
-					@Override
-					public void onResultSuccessful(LocationDTO result) {
-
-					}
-
-					@Override
-					public void onResultNoData() {
-						requireActivity().runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								functionButtons[0].callOnClick();
-							}
-						});
-					}
-				});
+				functionButtons[0].callOnClick();
 			}
 		});
 	}
@@ -372,11 +356,12 @@ public class NewInstanceMainFragment extends NaverMapFragment implements Restaur
 			public void onClick(View view) {
 				//음식점
 				functionButton.callOnClick();
-				if (getChildFragmentManager().findFragmentByTag(RestaurantMainTransactionFragment.TAG) == null) {
-					addRestaurantFragmentIntoBottomSheet();
-				}
-				onCalledBottomSheet(BottomSheetBehavior.STATE_EXPANDED, bottomSheetBehaviorMap.get(BottomSheetType.RESTAURANT));
-				setStateOfBottomSheet(BottomSheetType.RESTAURANT, BottomSheetBehavior.STATE_EXPANDED);
+
+				RestaurantDialogFragment restaurantDialogFragment =
+						new RestaurantDialogFragment(NewInstanceMainFragment.this,
+								NewInstanceMainFragment.this, NewInstanceMainFragment.this
+								, NewInstanceMainFragment.this, CALENDAR_ID, INSTANCE_ID, EVENT_ID, DEFAULT_HEIGHT_OF_BOTTOMSHEET);
+				restaurantDialogFragment.show(getParentFragmentManager(), RestaurantDialogFragment.TAG);
 			}
 		});
 	}
@@ -547,14 +532,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements Restaur
 	}
 
 
-	private void addRestaurantFragmentIntoBottomSheet() {
-		RestaurantMainTransactionFragment restaurantMainTransactionFragment = new RestaurantMainTransactionFragment(this, this, this
-				, this, this, CALENDAR_ID, INSTANCE_ID, EVENT_ID);
-		getChildFragmentManager().beginTransaction()
-				.add(bottomSheetViewMap.get(BottomSheetType.RESTAURANT).getChildAt(0).getId(), restaurantMainTransactionFragment, RestaurantMainTransactionFragment.TAG).hide(restaurantMainTransactionFragment).commitNow();
-		bottomSheetFragmentMap.put(BottomSheetType.RESTAURANT, restaurantMainTransactionFragment);
-	}
-
 	public void createPlaceCategoryListChips() {
 		//-----------chip group
 		HorizontalScrollView chipScrollView = new HorizontalScrollView(getContext());
@@ -613,7 +590,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements Restaur
 			placeCategoryChipMap.put(placeCategory.getCode(), chip);
 			placeCategoryChipGroup.addView(chip, new ChipGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 		}
-
 
 	}
 

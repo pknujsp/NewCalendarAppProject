@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.event.foods.categorylist;
+package com.zerodsoft.scheduleweather.event.foods.main;
 
 import android.os.Bundle;
 
@@ -24,8 +24,8 @@ import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.common.interfaces.OnProgressBarListener;
 import com.zerodsoft.scheduleweather.databinding.FragmentRestaurantListBinding;
 import com.zerodsoft.scheduleweather.event.foods.adapter.RestaurantListAdapter;
-import com.zerodsoft.scheduleweather.event.foods.interfaces.IGetCriteriaLocation;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedFavoriteButtonListener;
+import com.zerodsoft.scheduleweather.event.foods.share.CriteriaLocationCloud;
 import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
 import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoFragment;
 import com.zerodsoft.scheduleweather.navermap.util.LocalParameterUtil;
@@ -34,7 +34,6 @@ import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalDocument;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
-import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.interfaces.FavoriteLocationQuery;
 
 public class RestaurantListFragment extends Fragment implements OnClickedListItem<PlaceDocuments>, OnClickedFavoriteButtonListener
@@ -45,7 +44,6 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 	protected PlacesViewModel placesViewModel;
 	protected RestaurantListAdapter adapter;
 	protected final FavoriteLocationsListener favoriteLocationsListener;
-	protected IGetCriteriaLocation iGetCriteriaLocation;
 
 	protected RecyclerView.AdapterDataObserver adapterDataObserver;
 
@@ -54,11 +52,10 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 		this.CATEGORY_NAME = CATEGORY_NAME;
 	}
 
-	public RestaurantListFragment(FavoriteLocationQuery favoriteRestaurantDbQuery, FavoriteLocationsListener favoriteLocationsListener, IGetCriteriaLocation iGetCriteriaLocation, String CATEGORY_NAME) {
+	public RestaurantListFragment(FavoriteLocationQuery favoriteRestaurantDbQuery, FavoriteLocationsListener favoriteLocationsListener, String CATEGORY_NAME) {
 		this.favoriteRestaurantDbQuery = favoriteRestaurantDbQuery;
 		this.favoriteLocationsListener = favoriteLocationsListener;
 		this.CATEGORY_NAME = CATEGORY_NAME;
-		this.iGetCriteriaLocation = iGetCriteriaLocation;
 	}
 
 	public void setAdapterDataObserver(RecyclerView.AdapterDataObserver adapterDataObserver) {
@@ -94,10 +91,9 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 
 
 	protected void requestRestaurantList(String categoryName) {
-		LocationDTO criteriaLocation = iGetCriteriaLocation.getCriteriaLocation();
-
-		final LocalApiPlaceParameter placeParameter = LocalParameterUtil.getPlaceParameter(categoryName, String.valueOf(criteriaLocation.getLatitude()),
-				String.valueOf(criteriaLocation.getLongitude()), LocalApiPlaceParameter.DEFAULT_SIZE, LocalApiPlaceParameter.DEFAULT_PAGE,
+		final LocalApiPlaceParameter placeParameter = LocalParameterUtil.getPlaceParameter(categoryName,
+				CriteriaLocationCloud.getLatitude(), CriteriaLocationCloud.getLongitude(),
+				LocalApiPlaceParameter.DEFAULT_SIZE, LocalApiPlaceParameter.DEFAULT_PAGE,
 				LocalApiPlaceParameter.SEARCH_CRITERIA_SORT_TYPE_ACCURACY);
 		placeParameter.setRadius(App.getPreference_key_radius_range());
 
@@ -221,9 +217,7 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 
 	@Override
 	public void refreshFavorites() {
-		if (adapter != null) {
-			adapter.notifyDataSetChanged();
-		}
+		adapter.notifyDataSetChanged();
 	}
 
 	@Override

@@ -1,7 +1,7 @@
-package com.zerodsoft.scheduleweather.event.foods.main.fragment;
+package com.zerodsoft.scheduleweather.event.foods;
 
-import android.net.ConnectivityManager;
-import android.net.Network;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -17,95 +18,91 @@ import android.view.ViewGroup;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
 import com.zerodsoft.scheduleweather.common.interfaces.OnHiddenFragmentListener;
 import com.zerodsoft.scheduleweather.databinding.FragmentRestaurantMainTransactionBinding;
 import com.zerodsoft.scheduleweather.event.foods.favorite.FavoritesMainFragment;
+import com.zerodsoft.scheduleweather.event.foods.main.RestaurantMainNavHostFragment;
 import com.zerodsoft.scheduleweather.event.foods.search.search.fragment.SearchRestaurantFragment;
 import com.zerodsoft.scheduleweather.event.foods.settings.FoodsSettingsFragment;
 import com.zerodsoft.scheduleweather.event.main.NewInstanceMainFragment;
-import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint;
-import com.zerodsoft.scheduleweather.navermap.interfaces.INetwork;
 import com.zerodsoft.scheduleweather.navermap.interfaces.OnExtraListDataListener;
-import com.zerodsoft.scheduleweather.utility.NetworkStatus;
 
 import java.util.List;
 
 
-public class RestaurantMainTransactionFragment extends Fragment implements INetwork,
-		BottomNavigationView.OnNavigationItemSelectedListener, OnBackPressedCallbackController, RestaurantMainFragment.IGetEventValue {
+public class RestaurantDialogFragment extends BottomSheetDialogFragment implements
+		BottomNavigationView.OnNavigationItemSelectedListener, RestaurantMainNavHostFragment.IGetEventValue {
 	public static final String TAG = "RestaurantMainTransactionFragment";
 	private FragmentRestaurantMainTransactionBinding binding;
 
-	private NetworkStatus networkStatus;
 	private Fragment currentShowingFragment;
 
 	private final int CALENDAR_ID;
 	private final long INSTANCE_ID;
 	private final long EVENT_ID;
+	private final int VIEW_HEIGHT;
+
 	private final BottomSheetController bottomSheetController;
 	private final FoodMenuChipsViewController foodMenuChipsViewController;
 	private final FavoriteLocationsListener favoriteLocationsListener;
 	private final IMapPoint iMapPoint;
 
-	private final OnBackPressedCallbackController mainFragmentOnBackPressedCallbackController;
+	private BottomSheetBehavior bottomSheetBehavior;
 
-	public RestaurantMainTransactionFragment(IMapPoint iMapPoint, BottomSheetController bottomSheetController,
-	                                         OnBackPressedCallbackController onBackPressedCallbackController
+	public RestaurantDialogFragment(IMapPoint iMapPoint, BottomSheetController bottomSheetController
 			, FoodMenuChipsViewController foodMenuChipsViewController
-			, FavoriteLocationsListener favoriteLocationsListener, int CALENDAR_ID, long INSTANCE_ID, long EVENT_ID) {
+			, FavoriteLocationsListener favoriteLocationsListener, int CALENDAR_ID, long INSTANCE_ID, long EVENT_ID, int VIEW_HEIGHT) {
 		this.iMapPoint = iMapPoint;
 		this.bottomSheetController = bottomSheetController;
-		this.mainFragmentOnBackPressedCallbackController = onBackPressedCallbackController;
 		this.foodMenuChipsViewController = foodMenuChipsViewController;
 		this.favoriteLocationsListener = favoriteLocationsListener;
 		this.CALENDAR_ID = CALENDAR_ID;
 		this.INSTANCE_ID = INSTANCE_ID;
 		this.EVENT_ID = EVENT_ID;
+		this.VIEW_HEIGHT = VIEW_HEIGHT;
 	}
 
+	@NonNull
 	@Override
-	public void onHiddenChanged(boolean hidden) {
-		super.onHiddenChanged(hidden);
-		if (hidden) {
-			removeOnBackPressedCallback();
-			if (getParentFragmentManager().getBackStackEntryCount() == 0) {
-				mainFragmentOnBackPressedCallbackController.addOnBackPressedCallback();
+	public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
+		Dialog dialog = super.onCreateDialog(savedInstanceState);
+		/*
+		dialog.setOnKeyListener(new DialogInterface.OnKeyListener() {
+			@Override
+			public boolean onKey(DialogInterface dialogInterface, int keyCode, KeyEvent event) {
+				if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_UP) {
+					Fragment primaryNavigationFragment = getChildFragmentManager().getPrimaryNavigationFragment();
+					FragmentManager childFragmentManagerInPrimaryNavigationFragment = primaryNavigationFragment.getChildFragmentManager();
+
+					if (childFragmentManagerInPrimaryNavigationFragment.getBackStackEntryCount() == 0) {
+						dismiss();
+					} else {
+						childFragmentManagerInPrimaryNavigationFragment.popBackStack();
+					}
+				}
+				return true;
 			}
-			bottomSheetController.setStateOfBottomSheet(BottomSheetType.RESTAURANT, BottomSheetBehavior.STATE_COLLAPSED);
-		} else {
-			addOnBackPressedCallback();
-			if (getParentFragmentManager().getBackStackEntryCount() == 0) {
-				mainFragmentOnBackPressedCallbackController.removeOnBackPressedCallback();
-			}
-			bottomSheetController.setStateOfBottomSheet(BottomSheetType.RESTAURANT, BottomSheetBehavior.STATE_EXPANDED);
-		}
+		});
+
+		 */
+
+		bottomSheetBehavior = ((BottomSheetDialog) dialog).getBehavior();
+		bottomSheetBehavior.setDraggable(false);
+		bottomSheetBehavior.setPeekHeight(0);
+		bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+
+		return dialog;
 	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		networkStatus = new NetworkStatus(getContext(), new ConnectivityManager.NetworkCallback() {
-			@Override
-			public void onAvailable(@NonNull Network network) {
-				super.onAvailable(network);
-			}
-
-			@Override
-			public void onLost(@NonNull Network network) {
-				super.onLost(network);
-				getActivity().runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						requireActivity().finish();
-					}
-				});
-			}
-		});
 	}
 
 	@Override
@@ -119,18 +116,22 @@ public class RestaurantMainTransactionFragment extends Fragment implements INetw
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 
-		binding.bottomNavigation.setOnNavigationItemSelectedListener(this::onNavigationItemSelected);
+		View bottomSheet = getDialog().findViewById(R.id.design_bottom_sheet);
+		bottomSheet.getLayoutParams().height = VIEW_HEIGHT;
+
+		binding.bottomNavigation.setOnNavigationItemSelectedListener(this);
 		binding.bottomNavigation.setOnNavigationItemReselectedListener(new BottomNavigationView.OnNavigationItemReselectedListener() {
 			@Override
 			public void onNavigationItemReselected(@NonNull MenuItem item) {
 
 			}
 		});
+
 		setInitFragments();
 	}
 
 	private void setInitFragments() {
-		RestaurantMainFragment restaurantMainFragment = new RestaurantMainFragment(this, this, bottomSheetController,
+		RestaurantMainNavHostFragment restaurantMainNavHostFragment = new RestaurantMainNavHostFragment(this, bottomSheetController,
 				foodMenuChipsViewController, favoriteLocationsListener, iMapPoint);
 
 		SearchRestaurantFragment searchRestaurantFragment = new SearchRestaurantFragment(bottomSheetController, favoriteLocationsListener);
@@ -138,30 +139,23 @@ public class RestaurantMainTransactionFragment extends Fragment implements INetw
 		FavoritesMainFragment favoritesMainFragment = new FavoritesMainFragment(bottomSheetController, favoriteLocationsListener);
 
 		getChildFragmentManager().beginTransaction()
-				.add(binding.fragmentContainer.getId(), restaurantMainFragment, RestaurantMainFragment.TAG)
+				.add(binding.fragmentContainer.getId(), restaurantMainNavHostFragment, RestaurantMainNavHostFragment.TAG)
 				.add(binding.fragmentContainer.getId(), searchRestaurantFragment, SearchRestaurantFragment.TAG)
 				.add(binding.fragmentContainer.getId(), foodsSettingsFragment, FoodsSettingsFragment.TAG)
 				.add(binding.fragmentContainer.getId(), favoritesMainFragment, FavoritesMainFragment.TAG)
-				.setPrimaryNavigationFragment(restaurantMainFragment)
+				.setPrimaryNavigationFragment(restaurantMainNavHostFragment)
 				.hide(foodsSettingsFragment)
 				.hide(searchRestaurantFragment)
 				.hide(favoritesMainFragment)
 				.commitNow();
 
-		currentShowingFragment = restaurantMainFragment;
+		currentShowingFragment = restaurantMainNavHostFragment;
 	}
 
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		networkStatus.unregisterNetworkCallback();
 	}
-
-	@Override
-	public boolean networkAvailable() {
-		return networkStatus.networkAvailable();
-	}
-
 
 	@Override
 	public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -170,20 +164,17 @@ public class RestaurantMainTransactionFragment extends Fragment implements INetw
 
 		switch (item.getItemId()) {
 			case R.id.food_main: {
-				newFragment = fragmentManager.findFragmentByTag(RestaurantMainFragment.TAG);
+				newFragment = fragmentManager.findFragmentByTag(RestaurantMainNavHostFragment.TAG);
 				break;
 			}
-
 			case R.id.food_favorite_restaurant: {
 				newFragment = fragmentManager.findFragmentByTag(FavoritesMainFragment.TAG);
 				break;
 			}
-
 			case R.id.food_search: {
 				newFragment = fragmentManager.findFragmentByTag(SearchRestaurantFragment.TAG);
 				break;
 			}
-
 			case R.id.food_settings: {
 				newFragment = fragmentManager.findFragmentByTag(FoodsSettingsFragment.TAG);
 				break;
@@ -196,38 +187,6 @@ public class RestaurantMainTransactionFragment extends Fragment implements INetw
 
 		currentShowingFragment = newFragment;
 		return true;
-	}
-
-	@Override
-	public void addOnBackPressedCallback() {
-		//bottomsheet가 확장될때 호출되고, 현재 표시중인 프래그먼트의 onbackpressed를 활성화한다.
-		Fragment fragment = getChildFragmentManager().getPrimaryNavigationFragment();
-
-		if (fragment instanceof RestaurantMainFragment) {
-			((RestaurantMainFragment) fragment).addOnBackPressedCallback();
-		} else if (fragment instanceof FavoritesMainFragment) {
-			((FavoritesMainFragment) fragment).addOnBackPressedCallback();
-		} else if (fragment instanceof SearchRestaurantFragment) {
-			((SearchRestaurantFragment) fragment).addOnBackPressedCallback();
-		} else if (fragment instanceof FoodsSettingsFragment) {
-			((FoodsSettingsFragment) fragment).addOnBackPressedCallback();
-		}
-	}
-
-	@Override
-	public void removeOnBackPressedCallback() {
-		FragmentManager fragmentManager = getChildFragmentManager();
-		Fragment fragment = fragmentManager.getPrimaryNavigationFragment();
-
-		if (fragment instanceof RestaurantMainFragment) {
-			((RestaurantMainFragment) fragment).removeOnBackPressedCallback();
-		} else if (fragment instanceof FavoritesMainFragment) {
-			((FavoritesMainFragment) fragment).removeOnBackPressedCallback();
-		} else if (fragment instanceof SearchRestaurantFragment) {
-			((SearchRestaurantFragment) fragment).removeOnBackPressedCallback();
-		} else if (fragment instanceof FoodsSettingsFragment) {
-			((FoodsSettingsFragment) fragment).removeOnBackPressedCallback();
-		}
 	}
 
 	@Override

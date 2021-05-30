@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/restaurant_main_nav_graph">
+
+    <fragment
+        android:id="@+id/foodsMenuListFragment"
+        android:name="com.zerodsoft.scheduleweather.event.foods.main.FoodsMenuListFragment"
+        android:label="FoodsMenuListFragment">
+        <action
+            android:id="@+id/action_foodsMenuListFragment_to_restaurantListTabFragment"
+            app:destination="@id/restaurantListTabFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/restaurantListTabFragment"
+        android:name="com.zerodsoft.scheduleweather.event.foods.main.RestaurantListTabFragment"
+        android:label="RestaurantListTabFragment">
+        <action
+            android:id="@+id/action_restaurantListTabFragment_to_restaurantListFragment"
+            app:destination="@id/restaurantListFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/restaurantListFragment"
+        android:name="com.zerodsoft.scheduleweather.event.foods.main.RestaurantListFragment"
+        android:label="RestaurantListFragment" />
+
+</navigation>

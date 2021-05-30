@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.event.foods.categorylist;
+package com.zerodsoft.scheduleweather.event.foods.main;
 
 import android.os.Bundle;
 
@@ -8,7 +8,6 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.os.RemoteException;
 import android.service.carrier.CarrierMessagingService;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,11 +19,11 @@ import com.google.android.material.tabs.TabLayoutMediator;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.common.interfaces.OnHiddenFragmentListener;
+import com.zerodsoft.scheduleweather.common.interfaces.OnPopBackStackFragmentCallback;
 import com.zerodsoft.scheduleweather.databinding.FragmentFoodCategoryTabBinding;
 import com.zerodsoft.scheduleweather.event.foods.adapter.FoodCategoryFragmentListAdapter;
 import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteLocationViewModel;
-import com.zerodsoft.scheduleweather.event.foods.interfaces.IGetCriteriaLocation;
-import com.zerodsoft.scheduleweather.event.foods.main.fragment.RestaurantMainTransactionFragment;
+import com.zerodsoft.scheduleweather.event.foods.RestaurantDialogFragment;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.CustomFoodMenuViewModel;
 import com.zerodsoft.scheduleweather.event.main.NewInstanceMainFragment;
 import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
@@ -50,20 +49,22 @@ public class RestaurantListTabFragment extends Fragment implements NewInstanceMa
 	private List<String> categoryList;
 	private FoodCategoryFragmentListAdapter adapter;
 	private final String selectedCategoryName;
-	private final RestaurantMainTransactionFragment.FoodMenuChipsViewController foodMenuChipsViewController;
+	private final RestaurantDialogFragment.FoodMenuChipsViewController foodMenuChipsViewController;
 	private final BottomSheetController bottomSheetController;
 	private final FavoriteLocationsListener favoriteLocationsListener;
-	private final IGetCriteriaLocation iGetCriteriaLocation;
+	private final OnPopBackStackFragmentCallback onPopBackStackFragmentCallback;
 
 	private int lastFoodMenuIndex;
-	private float lastRecyclerViewY;
 
-	public RestaurantListTabFragment(String selectedCategoryName, RestaurantMainTransactionFragment.FoodMenuChipsViewController foodMenuChipsViewController, BottomSheetController bottomSheetController, FavoriteLocationsListener favoriteLocationsListener, IGetCriteriaLocation iGetCriteriaLocation) {
+	public RestaurantListTabFragment(String selectedCategoryName,
+	                                 RestaurantDialogFragment.FoodMenuChipsViewController foodMenuChipsViewController,
+	                                 BottomSheetController bottomSheetController, FavoriteLocationsListener favoriteLocationsListener,
+	                                 OnPopBackStackFragmentCallback onPopBackStackFragmentCallback) {
 		this.selectedCategoryName = selectedCategoryName;
 		this.foodMenuChipsViewController = foodMenuChipsViewController;
 		this.bottomSheetController = bottomSheetController;
 		this.favoriteLocationsListener = favoriteLocationsListener;
-		this.iGetCriteriaLocation = iGetCriteriaLocation;
+		this.onPopBackStackFragmentCallback = onPopBackStackFragmentCallback;
 	}
 
 
@@ -75,6 +76,7 @@ public class RestaurantListTabFragment extends Fragment implements NewInstanceMa
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
+		onPopBackStackFragmentCallback.pop();
 		foodMenuChipsViewController.removeRestaurantListView();
 	}
 
@@ -93,7 +95,6 @@ public class RestaurantListTabFragment extends Fragment implements NewInstanceMa
 			@Override
 			public void onClick(View v) {
 				lastFoodMenuIndex = binding.viewpager.getCurrentItem();
-				lastRecyclerViewY = adapter.getFragments().get(lastFoodMenuIndex).binding.recyclerView.getScrollY();
 				foodMenuChipsViewController.setCurrentFoodMenuName(categoryList.get(binding.viewpager.getCurrentItem()));
 				bottomSheetController.setStateOfBottomSheet(BottomSheetType.RESTAURANT, BottomSheetBehavior.STATE_COLLAPSED);
 				getParentFragmentManager().beginTransaction().hide(RestaurantListTabFragment.this).commit();
@@ -125,7 +126,7 @@ public class RestaurantListTabFragment extends Fragment implements NewInstanceMa
 						int selectedIndex = categoryList.indexOf(selectedCategoryName);
 
 						adapter = new FoodCategoryFragmentListAdapter(RestaurantListTabFragment.this);
-						adapter.init(favoriteRestaurantViewModel, favoriteLocationsListener, categoryList, iGetCriteriaLocation);
+						adapter.init(favoriteRestaurantViewModel, favoriteLocationsListener, categoryList);
 						binding.viewpager.setAdapter(adapter);
 
 						new TabLayoutMediator(binding.tabs, binding.viewpager,

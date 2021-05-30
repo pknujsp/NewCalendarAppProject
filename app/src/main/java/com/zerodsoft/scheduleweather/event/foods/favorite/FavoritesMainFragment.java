@@ -21,84 +21,46 @@ import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
 
 
-public class FavoritesMainFragment extends Fragment implements OnBackPressedCallbackController
-{
-    public static final String TAG = "FavoritesMainFragment";
-    private FragmentFavoritesMainBinding binding;
-    private final BottomSheetController bottomSheetController;
-    private final FavoriteLocationsListener favoriteLocationsListener;
-    private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
-    {
-        @Override
-        public void handleOnBackPressed()
-        {
-            FragmentManager fragmentManager = getChildFragmentManager();
+public class FavoritesMainFragment extends Fragment {
+	public static final String TAG = "FavoritesMainFragment";
+	private FragmentFavoritesMainBinding binding;
+	private final BottomSheetController bottomSheetController;
+	private final FavoriteLocationsListener favoriteLocationsListener;
 
-            if (fragmentManager.findFragmentByTag(FavoriteRestaurantFragment.TAG) != null)
-            {
-                if (fragmentManager.findFragmentByTag(FavoriteRestaurantFragment.TAG).isVisible())
-                {
-                    getParentFragment().getParentFragmentManager().popBackStack();
-                    bottomSheetController.setStateOfBottomSheet(BottomSheetType.RESTAURANT, BottomSheetBehavior.STATE_COLLAPSED);
-                }
-            }
-        }
-    };
+	public FavoritesMainFragment(BottomSheetController bottomSheetController, FavoriteLocationsListener favoriteLocationsListener) {
+		this.bottomSheetController = bottomSheetController;
+		this.favoriteLocationsListener = favoriteLocationsListener;
+	}
 
-    public FavoritesMainFragment(BottomSheetController bottomSheetController, FavoriteLocationsListener favoriteLocationsListener)
-    {
-        this.bottomSheetController = bottomSheetController;
-        this.favoriteLocationsListener = favoriteLocationsListener;
-    }
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+	}
 
-    @Override
-    public void onCreate(Bundle savedInstanceState)
-    {
-        super.onCreate(savedInstanceState);
-    }
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+	                         Bundle savedInstanceState) {
+		binding = FragmentFavoritesMainBinding.inflate(inflater);
+		return binding.getRoot();
+	}
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState)
-    {
-        binding = FragmentFavoritesMainBinding.inflate(inflater);
-        return binding.getRoot();
-    }
+	@Override
+	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
 
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
-    {
-        super.onViewCreated(view, savedInstanceState);
+		FavoriteRestaurantFragment favoriteRestaurantFragment = new FavoriteRestaurantFragment(favoriteLocationsListener);
+		getChildFragmentManager().beginTransaction().add(binding.favoritesFragmentContainer.getId(),
+				favoriteRestaurantFragment, FavoriteRestaurantFragment.TAG).commit();
+	}
 
-        FavoriteRestaurantFragment favoriteRestaurantFragment = new FavoriteRestaurantFragment(favoriteLocationsListener);
-        getChildFragmentManager().beginTransaction().add(binding.favoritesFragmentContainer.getId(),
-                favoriteRestaurantFragment, FavoriteRestaurantFragment.TAG).commit();
-    }
+	@Override
+	public void onHiddenChanged(boolean hidden) {
+		super.onHiddenChanged(hidden);
+		if (hidden) {
 
-    @Override
-    public void onHiddenChanged(boolean hidden)
-    {
-        super.onHiddenChanged(hidden);
-        if (hidden)
-        {
-            removeOnBackPressedCallback();
-        } else
-        {
-            addOnBackPressedCallback();
-            //데이터 리스트 갱신
-            ((FavoriteRestaurantFragment) getChildFragmentManager().findFragmentByTag(FavoriteRestaurantFragment.TAG)).refreshList();
-        }
-    }
-
-    @Override
-    public void addOnBackPressedCallback()
-    {
-        requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
-    }
-
-    @Override
-    public void removeOnBackPressedCallback()
-    {
-        onBackPressedCallback.remove();
-    }
+		} else {
+			//데이터 리스트 갱신
+			((FavoriteRestaurantFragment) getChildFragmentManager().findFragmentByTag(FavoriteRestaurantFragment.TAG)).refreshList();
+		}
+	}
 }

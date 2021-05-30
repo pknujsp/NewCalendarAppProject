@@ -16,23 +16,12 @@ import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
 
-public class FoodsSettingsFragment extends Fragment implements OnBackPressedCallbackController
+public class FoodsSettingsFragment extends Fragment
 {
     public static final String TAG = "FoodsSettingsFragment";
     private FragmentFoodsSettingsBinding binding;
     private final BottomSheetController bottomSheetController;
     private final FavoriteLocationsListener favoriteLocationsListener;
-
-    private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
-    {
-        @Override
-        public void handleOnBackPressed()
-        {
-            getParentFragment().getParentFragmentManager().popBackStack();
-
-            bottomSheetController.setStateOfBottomSheet(BottomSheetType.RESTAURANT, BottomSheetBehavior.STATE_COLLAPSED);
-        }
-    };
 
     public FoodsSettingsFragment(BottomSheetController bottomSheetController, FavoriteLocationsListener favoriteLocationsListener)
     {
@@ -60,22 +49,11 @@ public class FoodsSettingsFragment extends Fragment implements OnBackPressedCall
         super.onHiddenChanged(hidden);
         if (hidden)
         {
-            removeOnBackPressedCallback();
+
         } else
         {
-            addOnBackPressedCallback();
+
         }
     }
 
-    @Override
-    public void addOnBackPressedCallback()
-    {
-        requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
-    }
-
-    @Override
-    public void removeOnBackPressedCallback()
-    {
-        onBackPressedCallback.remove();
-    }
 }

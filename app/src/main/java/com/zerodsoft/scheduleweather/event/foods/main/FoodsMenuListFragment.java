@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.event.foods.categorylist;
+package com.zerodsoft.scheduleweather.event.foods.main;
 
 import android.Manifest;
 import android.content.Context;
@@ -39,6 +39,7 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
+import com.zerodsoft.scheduleweather.common.interfaces.OnPopBackStackFragmentCallback;
 import com.zerodsoft.scheduleweather.databinding.FragmentFoodsCategoryListBinding;
 import com.zerodsoft.scheduleweather.etc.AppPermission;
 import com.zerodsoft.scheduleweather.etc.LocationType;
@@ -47,18 +48,16 @@ import com.zerodsoft.scheduleweather.event.foods.adapter.FoodCategoryAdapter;
 import com.zerodsoft.scheduleweather.event.foods.criterialocation.RestaurantCriteriaLocationSettingsFragment;
 import com.zerodsoft.scheduleweather.event.foods.dto.FoodCategoryItem;
 import com.zerodsoft.scheduleweather.event.foods.enums.CriteriaLocationType;
-import com.zerodsoft.scheduleweather.event.foods.interfaces.IGetCriteriaLocation;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedCategoryItem;
-import com.zerodsoft.scheduleweather.event.foods.main.fragment.RestaurantMainFragment;
-import com.zerodsoft.scheduleweather.event.foods.main.fragment.RestaurantMainTransactionFragment;
+import com.zerodsoft.scheduleweather.event.foods.RestaurantDialogFragment;
 import com.zerodsoft.scheduleweather.event.foods.settings.CustomFoodMenuSettingsActivity;
+import com.zerodsoft.scheduleweather.event.foods.share.CriteriaLocationCloud;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.CustomFoodMenuViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationInfoViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationHistoryViewModel;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint;
-import com.zerodsoft.scheduleweather.navermap.interfaces.INetwork;
 import com.zerodsoft.scheduleweather.navermap.model.CoordToAddressUtil;
 import com.zerodsoft.scheduleweather.navermap.util.LocalParameterUtil;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
@@ -77,16 +76,14 @@ import static android.app.Activity.RESULT_OK;
 import static androidx.core.content.ContextCompat.checkSelfPermission;
 
 public class FoodsMenuListFragment extends Fragment implements OnClickedCategoryItem, OnClickedListItem<FoodCategoryItem>,
-		IGetCriteriaLocation,
 		IRefreshView {
 	public static final String TAG = "FoodsMenuListFragment";
 
-	private final INetwork iNetwork;
-	private final RestaurantMainTransactionFragment.FoodMenuChipsViewController foodMenuChipsViewController;
+	private final RestaurantDialogFragment.FoodMenuChipsViewController foodMenuChipsViewController;
 	private final BottomSheetController bottomSheetController;
 	private final FavoriteLocationsListener favoriteLocationsListener;
 	private final int COLUMN_COUNT = 4;
-	private final RestaurantMainFragment.IGetEventValue iGetEventValue;
+	private final RestaurantMainNavHostFragment.IGetEventValue iGetEventValue;
 	private final IMapPoint iMapPoint;
 
 	private FragmentFoodsCategoryListBinding binding;
@@ -105,11 +102,10 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 	private LocationDTO criteriaLocationDTO;
 	private boolean clickedGps = false;
 
-	public FoodsMenuListFragment(RestaurantMainFragment.IGetEventValue iGetEventValue, INetwork iNetwork,
-	                             RestaurantMainTransactionFragment.FoodMenuChipsViewController foodMenuChipsViewController,
+	public FoodsMenuListFragment(RestaurantMainNavHostFragment.IGetEventValue iGetEventValue,
+	                             RestaurantDialogFragment.FoodMenuChipsViewController foodMenuChipsViewController,
 	                             BottomSheetController bottomSheetController, FavoriteLocationsListener favoriteLocationsListener, IMapPoint iMapPoint) {
 		this.iGetEventValue = iGetEventValue;
-		this.iNetwork = iNetwork;
 		this.foodMenuChipsViewController = foodMenuChipsViewController;
 		this.bottomSheetController = bottomSheetController;
 		this.favoriteLocationsListener = favoriteLocationsListener;
@@ -133,11 +129,14 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
+
 		calendarViewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
 		locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
 		foodCriteriaLocationInfoViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationInfoViewModel.class);
 		foodCriteriaLocationSearchHistoryViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationHistoryViewModel.class);
 		customFoodCategoryViewModel = new ViewModelProvider(this).get(CustomFoodMenuViewModel.class);
+
+		getParentFragmentManager().addOnBackStackChangedListener(onBackStackChangedListener);
 
 		GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(), COLUMN_COUNT);
 		binding.categoryGridview.setLayoutManager(gridLayoutManager);
@@ -165,6 +164,7 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 		gpsOnResultLauncher.unregister();
 		locationSettingsActivityResultLauncher.unregister();
 		permissionsResultLauncher.unregister();
+		getParentFragmentManager().removeOnBackStackChangedListener(onBackStackChangedListener);
 		super.onDestroy();
 	}
 
@@ -282,6 +282,7 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 		switch (criteriaLocationType) {
 			case TYPE_SELECTED_LOCATION: {
 				criteriaLocationDTO = selectedLocationDTO;
+				CriteriaLocationCloud.setCoordinate(criteriaLocationDTO.getLatitude(), criteriaLocationDTO.getLongitude());
 
 				requireActivity().runOnUiThread(new Runnable() {
 					@Override
@@ -314,6 +315,7 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 								String.valueOf(mapCenterPoint.longitude));
 
 						criteriaLocationDTO = locationDTO;
+						CriteriaLocationCloud.setCoordinate(criteriaLocationDTO.getLatitude(), criteriaLocationDTO.getLongitude());
 
 						requireActivity().runOnUiThread(new Runnable() {
 							@Override
@@ -348,11 +350,8 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 						locationDTO.setAddress(foodCriteriaLocationSearchHistoryResultDto.getAddressName(), null,
 								foodCriteriaLocationSearchHistoryResultDto.getLatitude(), foodCriteriaLocationSearchHistoryResultDto.getLongitude());
 
-						try {
-							criteriaLocationDTO = locationDTO.clone();
-						} catch (CloneNotSupportedException e) {
-							e.printStackTrace();
-						}
+						criteriaLocationDTO = locationDTO;
+						CriteriaLocationCloud.setCoordinate(criteriaLocationDTO.getLatitude(), criteriaLocationDTO.getLongitude());
 
 						requireActivity().runOnUiThread(new Runnable() {
 							@Override
@@ -392,68 +391,64 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 
 		if (checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
 				checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-			if (iNetwork.networkAvailable()) {
-				if (isGpsEnabled) {
-					locationManager.requestSingleUpdate(LocationManager.GPS_PROVIDER, new LocationListener() {
-						@Override
-						public void onLocationChanged(Location location) {
-							locationManager.removeUpdates(this);
+			if (isGpsEnabled) {
+				locationManager.requestSingleUpdate(LocationManager.GPS_PROVIDER, new LocationListener() {
+					@Override
+					public void onLocationChanged(Location location) {
+						locationManager.removeUpdates(this);
 
-							if (clickedGps) {
-								clickedGps = false;
-								onCatchedGps(location);
-							}
+						if (clickedGps) {
+							clickedGps = false;
+							onCatchedGps(location);
 						}
+					}
 
-						@Override
-						public void onStatusChanged(String s, int i, Bundle bundle) {
+					@Override
+					public void onStatusChanged(String s, int i, Bundle bundle) {
 
+					}
+
+					@Override
+					public void onProviderEnabled(String s) {
+
+					}
+
+					@Override
+					public void onProviderDisabled(String s) {
+
+					}
+				}, null);
+
+				locationManager.requestSingleUpdate(LocationManager.NETWORK_PROVIDER, new LocationListener() {
+					@Override
+					public void onLocationChanged(Location location) {
+						locationManager.removeUpdates(this);
+
+						if (clickedGps) {
+							clickedGps = false;
+							onCatchedGps(location);
 						}
+					}
 
-						@Override
-						public void onProviderEnabled(String s) {
+					@Override
+					public void onStatusChanged(String s, int i, Bundle bundle) {
 
-						}
+					}
 
-						@Override
-						public void onProviderDisabled(String s) {
+					@Override
+					public void onProviderEnabled(String s) {
 
-						}
-					}, null);
+					}
 
-					locationManager.requestSingleUpdate(LocationManager.NETWORK_PROVIDER, new LocationListener() {
-						@Override
-						public void onLocationChanged(Location location) {
-							locationManager.removeUpdates(this);
+					@Override
+					public void onProviderDisabled(String s) {
 
-							if (clickedGps) {
-								clickedGps = false;
-								onCatchedGps(location);
-							}
-						}
-
-						@Override
-						public void onStatusChanged(String s, int i, Bundle bundle) {
-
-						}
-
-						@Override
-						public void onProviderEnabled(String s) {
-
-						}
-
-						@Override
-						public void onProviderDisabled(String s) {
-
-						}
-					}, null);
-				} else {
-					binding.progressBar.setVisibility(View.GONE);
-					showRequestGpsDialog();
-				}
+					}
+				}, null);
+			} else {
+				binding.progressBar.setVisibility(View.GONE);
+				showRequestGpsDialog();
 			}
-		} else {
-			permissionsResultLauncher.launch(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION});
 		}
 
 	}
@@ -546,6 +541,7 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 						locationDtoByGps.getLongitude());
 
 				criteriaLocationDTO = locationDTO;
+				CriteriaLocationCloud.setCoordinate(criteriaLocationDTO.getLatitude(), criteriaLocationDTO.getLongitude());
 
 				requireActivity().runOnUiThread(new Runnable() {
 					@Override
@@ -627,18 +623,32 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 		if (!e.isDefault() && e.getCategoryName().equals(getString(R.string.add_custom_food_menu))) {
 			customFoodSettingsActivityResultLauncher.launch(new Intent(getActivity(), CustomFoodMenuSettingsActivity.class));
 		} else {
-			FragmentManager fragmentManager = getParentFragmentManager();
-			FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction().hide(this);
 
 			RestaurantListTabFragment restaurantListTabFragment = new RestaurantListTabFragment(e.getCategoryName(),
-					foodMenuChipsViewController, bottomSheetController, favoriteLocationsListener, this);
-			fragmentTransaction.add(R.id.foods_main_fragment_container, restaurantListTabFragment, RestaurantListTabFragment.TAG).addToBackStack(null).commit();
+					foodMenuChipsViewController, bottomSheetController, favoriteLocationsListener, new OnPopBackStackFragmentCallback() {
+				@Override
+				public void onPopped() {
+				}
+			});
+			FragmentTransaction fragmentTransaction = getParentFragmentManager().beginTransaction();
+			fragmentTransaction.hide(this).add(R.id.foods_main_fragment_container, restaurantListTabFragment,
+					RestaurantListTabFragment.TAG).addToBackStack(RestaurantListTabFragment.TAG).setPrimaryNavigationFragment(restaurantListTabFragment).commit();
 		}
 	}
 
 	@Override
 	public void deleteListItem(FoodCategoryItem e, int position) {
 
+	}
+
+	@Override
+	public void onHiddenChanged(boolean hidden) {
+		super.onHiddenChanged(hidden);
+		if (hidden) {
+
+		} else {
+
+		}
 	}
 
 	private final ActivityResultLauncher<Intent> customFoodSettingsActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
@@ -651,10 +661,11 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 				}
 			});
 
-	@Override
-	public LocationDTO getCriteriaLocation() {
-		return criteriaLocationDTO;
-	}
+	private final FragmentManager.OnBackStackChangedListener onBackStackChangedListener = new FragmentManager.OnBackStackChangedListener() {
+		@Override
+		public void onBackStackChanged() {
+		}
+	};
 
 	@Override
 	public void refreshView() {

@@ -11,54 +11,56 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.zerodsoft.scheduleweather.event.foods.categorylist.RestaurantListFragment;
+import com.zerodsoft.scheduleweather.common.interfaces.OnPopBackStackFragmentCallback;
+import com.zerodsoft.scheduleweather.event.foods.main.RestaurantListFragment;
 import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteLocationViewModel;
 import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
 
-public class FoodRestaurantSearchResultFragment extends RestaurantListFragment
-{
-    public static final String TAG = "FoodRestaurantSearchResultFragment";
-    private final OnDeleteSearchView onDeleteSearchView;
-    private FavoriteLocationViewModel favoriteRestaurantViewModel;
+public class FoodRestaurantSearchResultFragment extends RestaurantListFragment {
+	public static final String TAG = "FoodRestaurantSearchResultFragment";
+	private final OnDeleteSearchView onDeleteSearchView;
+	private FavoriteLocationViewModel favoriteRestaurantViewModel;
+	private final OnPopBackStackFragmentCallback onPopBackStackFragmentCallback;
 
-    public FoodRestaurantSearchResultFragment(String searchWord, FavoriteLocationsListener favoriteLocationsListener, Fragment fragment)
-    {
-        super(searchWord, favoriteLocationsListener);
-        this.onDeleteSearchView = (OnDeleteSearchView) fragment;
-    }
-
-
-    @Override
-    public void onCreate(Bundle savedInstanceState)
-    {
-        super.onCreate(savedInstanceState);
-    }
-
-    public void search(String searchWord)
-    {
-        this.CATEGORY_NAME = searchWord;
-        requestRestaurantList(CATEGORY_NAME);
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState)
-    {
-        return super.onCreateView(inflater, container, savedInstanceState);
-    }
-
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
-    {
-        favoriteRestaurantViewModel = new ViewModelProvider(this).get(FavoriteLocationViewModel.class);
-        favoriteRestaurantDbQuery = favoriteRestaurantViewModel;
-
-        super.onViewCreated(view, savedInstanceState);
-    }
+	public FoodRestaurantSearchResultFragment(String searchWord, FavoriteLocationsListener favoriteLocationsListener, Fragment fragment,
+	                                          OnPopBackStackFragmentCallback onPopBackStackFragmentCallback) {
+		super(searchWord, favoriteLocationsListener);
+		this.onDeleteSearchView = (OnDeleteSearchView) fragment;
+		this.onPopBackStackFragmentCallback = onPopBackStackFragmentCallback;
+	}
 
 
-    public interface OnDeleteSearchView
-    {
-        void deleteQuery();
-    }
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+	}
+
+	public void search(String searchWord) {
+		this.CATEGORY_NAME = searchWord;
+		requestRestaurantList(CATEGORY_NAME);
+	}
+
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+	                         Bundle savedInstanceState) {
+		return super.onCreateView(inflater, container, savedInstanceState);
+	}
+
+	@Override
+	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+		favoriteRestaurantViewModel = new ViewModelProvider(this).get(FavoriteLocationViewModel.class);
+		favoriteRestaurantDbQuery = favoriteRestaurantViewModel;
+		super.onViewCreated(view, savedInstanceState);
+	}
+
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		onPopBackStackFragmentCallback.pop();
+	}
+
+
+	public interface OnDeleteSearchView {
+		void deleteQuery();
+	}
 }

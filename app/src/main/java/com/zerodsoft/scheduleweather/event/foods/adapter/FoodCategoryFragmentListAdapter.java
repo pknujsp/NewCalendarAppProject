@@ -4,9 +4,8 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
-import com.zerodsoft.scheduleweather.event.foods.categorylist.RestaurantListTabFragment;
-import com.zerodsoft.scheduleweather.event.foods.categorylist.RestaurantListFragment;
-import com.zerodsoft.scheduleweather.event.foods.interfaces.IGetCriteriaLocation;
+import com.zerodsoft.scheduleweather.event.foods.main.RestaurantListTabFragment;
+import com.zerodsoft.scheduleweather.event.foods.main.RestaurantListFragment;
 import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
 import com.zerodsoft.scheduleweather.room.interfaces.FavoriteLocationQuery;
 
@@ -18,7 +17,6 @@ public class FoodCategoryFragmentListAdapter extends FragmentStateAdapter implem
 	private List<String> categoryList;
 	private FavoriteLocationQuery favoriteLocationQuery;
 	private FavoriteLocationsListener favoriteLocationsListener;
-	private IGetCriteriaLocation iGetCriteriaLocation;
 
 	public FoodCategoryFragmentListAdapter(@NonNull Fragment fragment) {
 		super(fragment);
@@ -28,14 +26,13 @@ public class FoodCategoryFragmentListAdapter extends FragmentStateAdapter implem
 		return fragments;
 	}
 
-	public void init(FavoriteLocationQuery favoriteLocationQuery, FavoriteLocationsListener favoriteLocationsListener, List<String> categoryList, IGetCriteriaLocation iGetCriteriaLocation) {
+	public void init(FavoriteLocationQuery favoriteLocationQuery, FavoriteLocationsListener favoriteLocationsListener, List<String> categoryList) {
 		this.favoriteLocationQuery = favoriteLocationQuery;
 		this.categoryList = categoryList;
 		this.fragments = new ArrayList<>();
-		this.iGetCriteriaLocation = iGetCriteriaLocation;
 
 		for (String categoryName : categoryList) {
-			fragments.add(new RestaurantListFragment(favoriteLocationQuery, favoriteLocationsListener, iGetCriteriaLocation, categoryName));
+			fragments.add(new RestaurantListFragment(favoriteLocationQuery, favoriteLocationsListener, categoryName));
 		}
 	}
 

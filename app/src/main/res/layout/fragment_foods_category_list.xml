@@ -6,7 +6,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        tools:context=".event.foods.categorylist.FoodsMenuListFragment">
+        tools:context=".event.foods.main.FoodsMenuListFragment">
 
         <RelativeLayout
             android:id="@+id/toolbar"
