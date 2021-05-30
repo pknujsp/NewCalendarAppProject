@@ -22,6 +22,10 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavController;
+import androidx.navigation.NavDirections;
+import androidx.navigation.Navigation;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 
 import android.os.RemoteException;
@@ -630,9 +634,9 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 				public void onPopped() {
 				}
 			});
-			FragmentTransaction fragmentTransaction = getParentFragmentManager().beginTransaction();
-			fragmentTransaction.hide(this).add(R.id.foods_main_fragment_container, restaurantListTabFragment,
-					RestaurantListTabFragment.TAG).addToBackStack(RestaurantListTabFragment.TAG).setPrimaryNavigationFragment(restaurantListTabFragment).commit();
+
+			NavController navController = NavHostFragment.findNavController(this);
+			navController.navigate(FoodsMenuListFragmentDirections.actionFoodsMenuListFragmentToRestaurantListTabFragment(e.getCategoryName()));
 		}
 	}
 

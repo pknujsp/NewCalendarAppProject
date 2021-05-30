@@ -8,6 +8,8 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.lifecycle.ViewModelStoreOwner;
+import androidx.navigation.fragment.NavHostFragment;
 
 import android.os.RemoteException;
 import android.service.carrier.CarrierMessagingService;
@@ -65,7 +67,8 @@ public class SearchRestaurantFragment extends Fragment implements OnClickedListI
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 
-		searchHistoryViewModel = new ViewModelProvider(this).get(SearchHistoryViewModel.class);
+		ViewModelStoreOwner owner = NavHostFragment.findNavController(this).getViewModelStoreOwner(R.id.restaurant_search_nav_graph);
+		searchHistoryViewModel = new ViewModelProvider(owner).get(SearchHistoryViewModel.class);
 		//검색 기록 프래그먼트 표시
 		foodRestaurantSearchHistoryFragment = new FoodRestaurantSearchHistoryFragment(this);
 		getChildFragmentManager().beginTransaction().add(binding.searchFoodRestaurantFragmentContainer.getId(),

@@ -1,29 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/restaurant_main_nav_graph">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/restaurant_main_nav_graph"
+    app:startDestination="@id/foodsMenuListFragment">
 
     <fragment
         android:id="@+id/foodsMenuListFragment"
         android:name="com.zerodsoft.scheduleweather.event.foods.main.FoodsMenuListFragment"
-        android:label="FoodsMenuListFragment">
+        android:label="FoodsMenuListFragment"
+        tools:layout="@layout/fragment_foods_category_list">
         <action
             android:id="@+id/action_foodsMenuListFragment_to_restaurantListTabFragment"
             app:destination="@id/restaurantListTabFragment" />
+
     </fragment>
 
     <fragment
         android:id="@+id/restaurantListTabFragment"
         android:name="com.zerodsoft.scheduleweather.event.foods.main.RestaurantListTabFragment"
-        android:label="RestaurantListTabFragment">
-        <action
-            android:id="@+id/action_restaurantListTabFragment_to_restaurantListFragment"
-            app:destination="@id/restaurantListFragment" />
+        android:label="RestaurantListTabFragment"
+        tools:layout="@layout/fragment_food_category_tab">
+
+        <argument
+            android:name="foodMenuName"
+            app:argType="string"
+            app:nullable="false" />
     </fragment>
 
-    <fragment
-        android:id="@+id/restaurantListFragment"
-        android:name="com.zerodsoft.scheduleweather.event.foods.main.RestaurantListFragment"
-        android:label="RestaurantListFragment" />
 
 </navigation>

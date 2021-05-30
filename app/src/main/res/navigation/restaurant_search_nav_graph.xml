@@ -1,6 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/restaurant_search_nav_graph">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/restaurant_search_nav_graph"
+    app:startDestination="@id/searchRestaurantFragment">
 
+    <fragment
+        android:id="@+id/searchRestaurantFragment"
+        android:name="com.zerodsoft.scheduleweather.event.foods.search.search.fragment.SearchRestaurantFragment"
+        android:label="SearchRestaurantFragment"
+        tools:layout="@layout/fragment_search_restaurant">
+        <action
+            android:id="@+id/action_searchRestaurantFragment_to_foodRestaurantSearchResultFragment"
+            app:destination="@id/foodRestaurantSearchResultFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/foodRestaurantSearchResultFragment"
+        android:name="com.zerodsoft.scheduleweather.event.foods.search.searchresult.fragment.FoodRestaurantSearchResultFragment"
+        android:label="fragment_search_result_restaurant"
+        tools:layout="@layout/fragment_restaurant_list" />
 </navigation>

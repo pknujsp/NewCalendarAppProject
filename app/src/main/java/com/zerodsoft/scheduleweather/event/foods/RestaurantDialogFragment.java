@@ -9,6 +9,10 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
+import androidx.navigation.fragment.NavHostFragment;
+import androidx.navigation.ui.NavigationUI;
 
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -34,6 +38,8 @@ import com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint;
 import com.zerodsoft.scheduleweather.navermap.interfaces.OnExtraListDataListener;
 
 import java.util.List;
+
+import lombok.val;
 
 
 public class RestaurantDialogFragment extends BottomSheetDialogFragment implements
@@ -119,13 +125,9 @@ public class RestaurantDialogFragment extends BottomSheetDialogFragment implemen
 		View bottomSheet = getDialog().findViewById(R.id.design_bottom_sheet);
 		bottomSheet.getLayoutParams().height = VIEW_HEIGHT;
 
-		binding.bottomNavigation.setOnNavigationItemSelectedListener(this);
-		binding.bottomNavigation.setOnNavigationItemReselectedListener(new BottomNavigationView.OnNavigationItemReselectedListener() {
-			@Override
-			public void onNavigationItemReselected(@NonNull MenuItem item) {
-
-			}
-		});
+		NavHostFragment navHostFragment = (NavHostFragment) getChildFragmentManager().findFragmentById(binding.navHostFragment.getId());
+		NavController navController = navHostFragment.getNavController();
+		NavigationUI.setupWithNavController(binding.bottomNavigation, navController);
 
 		setInitFragments();
 	}

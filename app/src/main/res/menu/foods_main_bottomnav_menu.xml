@@ -3,28 +3,28 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/food_main"
+        android:id="@+id/foodsMenuListFragment"
         android:enabled="true"
         android:icon="@drawable/home"
         android:title="@string/main"
         app:showAsAction="always" />
 
     <item
-        android:id="@+id/food_favorite_restaurant"
+        android:id="@+id/favoritesMainFragment"
         android:enabled="true"
         android:icon="@drawable/favorite_enabled_icon"
         android:title="@string/favorites"
         app:showAsAction="always" />
 
     <item
-        android:id="@+id/food_search"
+        android:id="@+id/searchRestaurantFragment"
         android:enabled="true"
         android:icon="@drawable/search_icon"
         android:title="@string/search"
         app:showAsAction="always" />
 
     <item
-        android:id="@+id/food_settings"
+        android:id="@+id/foodsSettingsFragment"
         android:enabled="true"
         android:icon="@drawable/settings_black"
         android:title="@string/settings"
