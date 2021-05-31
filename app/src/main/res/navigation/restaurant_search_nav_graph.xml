@@ -13,11 +13,31 @@
         <action
             android:id="@+id/action_searchRestaurantFragment_to_foodRestaurantSearchResultFragment"
             app:destination="@id/foodRestaurantSearchResultFragment" />
+        <argument
+            android:name="iMapPoint"
+            app:argType="com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint" />
+        <argument
+            android:name="foodMenuChipsViewController"
+            app:argType="com.zerodsoft.scheduleweather.event.foods.interfaces.FoodMenuChipsViewController" />
+        <argument
+            android:name="favoriteLocationsListener"
+            app:argType="com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener" />
+
+
     </fragment>
 
     <fragment
         android:id="@+id/foodRestaurantSearchResultFragment"
         android:name="com.zerodsoft.scheduleweather.event.foods.search.searchresult.fragment.FoodRestaurantSearchResultFragment"
         android:label="fragment_search_result_restaurant"
-        tools:layout="@layout/fragment_restaurant_list" />
+        tools:layout="@layout/fragment_restaurant_list">
+
+        <argument
+            android:name="foodMenuName"
+            app:argType="string"
+            app:nullable="false" />
+        <action
+            android:id="@+id/action_foodRestaurantSearchResultFragment_to_searchRestaurantFragment"
+            app:destination="@id/searchRestaurantFragment" />
+    </fragment>
 </navigation>

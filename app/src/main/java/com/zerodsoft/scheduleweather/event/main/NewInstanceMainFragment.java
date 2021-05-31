@@ -57,6 +57,7 @@ import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.event.fragments.EventFragment;
 import com.zerodsoft.scheduleweather.event.foods.RestaurantDialogFragment;
+import com.zerodsoft.scheduleweather.event.foods.interfaces.FoodMenuChipsViewController;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PlaceItemsGetter;
 import com.zerodsoft.scheduleweather.event.places.map.PlacesOfSelectedCategoriesFragment;
 import com.zerodsoft.scheduleweather.event.weather.fragment.WeatherMainFragment;
@@ -76,7 +77,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class NewInstanceMainFragment extends NaverMapFragment implements RestaurantDialogFragment.FoodMenuChipsViewController,
+public class NewInstanceMainFragment extends NaverMapFragment implements FoodMenuChipsViewController,
 		PlacesOfSelectedCategoriesFragment.PlaceCategoryChipsViewController, DialogInterface.OnDismissListener
 		, IRefreshView {
 	public static final String TAG = "NewInstanceMainFragment";
@@ -358,8 +359,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements Restaur
 				functionButton.callOnClick();
 
 				RestaurantDialogFragment restaurantDialogFragment =
-						new RestaurantDialogFragment(NewInstanceMainFragment.this,
-								NewInstanceMainFragment.this, NewInstanceMainFragment.this
+						new RestaurantDialogFragment(NewInstanceMainFragment.this, NewInstanceMainFragment.this
 								, NewInstanceMainFragment.this, CALENDAR_ID, INSTANCE_ID, EVENT_ID, DEFAULT_HEIGHT_OF_BOTTOMSHEET);
 				restaurantDialogFragment.show(getParentFragmentManager(), RestaurantDialogFragment.TAG);
 			}

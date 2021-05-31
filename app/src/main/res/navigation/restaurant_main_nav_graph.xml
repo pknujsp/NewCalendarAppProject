@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/restaurant_main_nav_graph"
     app:startDestination="@id/foodsMenuListFragment">
-
+    
     <fragment
         android:id="@+id/foodsMenuListFragment"
         android:name="com.zerodsoft.scheduleweather.event.foods.main.FoodsMenuListFragment"
@@ -13,6 +13,17 @@
         <action
             android:id="@+id/action_foodsMenuListFragment_to_restaurantListTabFragment"
             app:destination="@id/restaurantListTabFragment" />
+        <argument
+            android:name="iMapPoint"
+            app:argType="com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint" />
+
+        <argument
+            android:name="favoriteLocationsListener"
+            app:argType="com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener" />
+        <argument
+            android:name="foodMenuChipsViewController"
+            app:argType="com.zerodsoft.scheduleweather.event.foods.interfaces.FoodMenuChipsViewController" />
+
 
     </fragment>
 
@@ -26,6 +37,9 @@
             android:name="foodMenuName"
             app:argType="string"
             app:nullable="false" />
+        <action
+            android:id="@+id/action_restaurantListTabFragment_to_foodsMenuListFragment"
+            app:destination="@id/foodsMenuListFragment" />
     </fragment>
 
 

@@ -12,31 +12,22 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.zerodsoft.scheduleweather.databinding.FragmentRestaurantMainBinding;
 import com.zerodsoft.scheduleweather.databinding.FragmentRestaurantMainNavHostBinding;
 import com.zerodsoft.scheduleweather.event.foods.RestaurantDialogFragment;
+import com.zerodsoft.scheduleweather.event.foods.interfaces.FoodMenuChipsViewController;
+import com.zerodsoft.scheduleweather.event.foods.interfaces.IGetEventValue;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint;
 
-public class RestaurantMainNavHostFragment extends NavHostFragment {
-	public static final String TAG = "FoodsHomeFragment";
-	private final BottomSheetController bottomSheetController;
-	private final RestaurantDialogFragment.FoodMenuChipsViewController foodMenuChipsViewController;
+public class RestaurantMainNavHostFragment extends Fragment {
+	public static final String TAG = "RestaurantMainNavHostFragment";
+	private FoodMenuChipsViewController foodMenuChipsViewController;
+	private FavoriteLocationsListener favoriteLocationsListener;
+	private IGetEventValue iGetEventValue;
+	private IMapPoint iMapPoint;
+
 	private FragmentRestaurantMainNavHostBinding binding;
-	private final FavoriteLocationsListener favoriteLocationsListener;
-	private final IGetEventValue iGetEventValue;
-	private final IMapPoint iMapPoint;
-
-	public RestaurantMainNavHostFragment(IGetEventValue iGetEventValue, BottomSheetController bottomSheetController,
-	                                     RestaurantDialogFragment.FoodMenuChipsViewController foodMenuChipsViewController, FavoriteLocationsListener favoriteLocationsListener, IMapPoint iMapPoint) {
-		this.iGetEventValue = iGetEventValue;
-		this.bottomSheetController = bottomSheetController;
-		this.foodMenuChipsViewController = foodMenuChipsViewController;
-		this.favoriteLocationsListener = favoriteLocationsListener;
-		this.iMapPoint = iMapPoint;
-	}
-
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -75,11 +66,5 @@ public class RestaurantMainNavHostFragment extends NavHostFragment {
 				.setPrimaryNavigationFragment(foodsMenuListFragment)
 				.commitNow();
 	}
-
-
-	public interface IGetEventValue {
-		long getEventId();
-
-		int getCalendarId();
-	}
+	
 }

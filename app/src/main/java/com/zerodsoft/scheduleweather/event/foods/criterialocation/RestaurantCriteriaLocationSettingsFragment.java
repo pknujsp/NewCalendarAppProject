@@ -24,6 +24,7 @@ import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.foods.adapter.FoodCriteriaLocationHistoryAdapter;
 import com.zerodsoft.scheduleweather.event.foods.enums.CriteriaLocationType;
+import com.zerodsoft.scheduleweather.event.foods.interfaces.IGetEventValue;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.LocationHistoryController;
 import com.zerodsoft.scheduleweather.event.foods.main.RestaurantMainNavHostFragment;
 import com.zerodsoft.scheduleweather.event.foods.searchlocation.fragment.LocationSearchDialogFragment;
@@ -40,7 +41,7 @@ import java.util.List;
 
 public class RestaurantCriteriaLocationSettingsFragment extends Fragment implements LocationHistoryController, OnSelectedNewLocation {
 	public static final String TAG = "RestaurantCriteriaLocationSettingsFragment";
-	private final RestaurantMainNavHostFragment.IGetEventValue iGetEventValue;
+	private final IGetEventValue iGetEventValue;
 	private final IRefreshView iRefreshView;
 
 	private FragmentRestaurantCriteriaLocationSettingsBinding binding;
@@ -55,7 +56,7 @@ public class RestaurantCriteriaLocationSettingsFragment extends Fragment impleme
 
 	private FoodCriteriaLocationHistoryAdapter foodCriteriaLocationHistoryAdapter;
 
-	public RestaurantCriteriaLocationSettingsFragment(RestaurantMainNavHostFragment.IGetEventValue iGetEventValue, IRefreshView iRefreshView) {
+	public RestaurantCriteriaLocationSettingsFragment(IGetEventValue iGetEventValue, IRefreshView iRefreshView) {
 		this.iGetEventValue = iGetEventValue;
 		this.iRefreshView = iRefreshView;
 	}

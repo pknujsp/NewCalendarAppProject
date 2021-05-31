@@ -7,5 +7,18 @@
     <fragment
         android:id="@+id/foodsSettingsFragment"
         android:name="com.zerodsoft.scheduleweather.event.foods.settings.FoodsSettingsFragment"
-        android:label="FoodsSettingsFragment" />
+        android:label="FoodsSettingsFragment">
+
+        <argument
+            android:name="iMapPoint"
+            app:argType="com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint" />
+        <argument
+            android:name="foodMenuChipsViewController"
+            app:argType="com.zerodsoft.scheduleweather.event.foods.interfaces.FoodMenuChipsViewController" />
+        <argument
+            android:name="favoriteLocationsListener"
+            app:argType="com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener" />
+
+
+    </fragment>
 </navigation>

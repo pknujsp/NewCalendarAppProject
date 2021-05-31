@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -8,6 +9,18 @@
     <fragment
         android:id="@+id/favoritesMainFragment"
         android:name="com.zerodsoft.scheduleweather.event.foods.favorite.FavoritesMainFragment"
-        tools:layout="@layout/fragment_favorites_main"
-        android:label="FavoritesMainFragment" />
+        android:label="FavoritesMainFragment"
+        tools:layout="@layout/fragment_favorites_main">
+        <argument
+            android:name="iMapPoint"
+            app:argType="com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint" />
+        <argument
+            android:name="foodMenuChipsViewController"
+            app:argType="com.zerodsoft.scheduleweather.event.foods.interfaces.FoodMenuChipsViewController" />
+        <argument
+            android:name="favoriteLocationsListener"
+            app:argType="com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener" />
+
+
+    </fragment>
 </navigation>

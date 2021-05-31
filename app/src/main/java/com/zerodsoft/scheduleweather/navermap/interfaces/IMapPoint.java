@@ -2,13 +2,14 @@ package com.zerodsoft.scheduleweather.navermap.interfaces;
 
 import com.naver.maps.geometry.LatLng;
 
-public interface IMapPoint
-{
-    double getLatitude();
+import java.io.Serializable;
 
-    double getLongitude();
+public interface IMapPoint extends Serializable {
+	double getLatitude();
 
-    LatLng getMapCenterPoint();
+	double getLongitude();
 
-    void setMapVisibility(int visibility);
+	LatLng getMapCenterPoint();
+
+	void setMapVisibility(int visibility);
 }

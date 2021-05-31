@@ -12,7 +12,7 @@ import android.view.ViewGroup;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.FragmentRestaurantSettingsNavHostBinding;
 
-public class RestaurantSettingsNavHostFragment extends NavHostFragment {
+public class RestaurantSettingsNavHostFragment extends Fragment {
 	private FragmentRestaurantSettingsNavHostBinding binding;
 
 	@Override

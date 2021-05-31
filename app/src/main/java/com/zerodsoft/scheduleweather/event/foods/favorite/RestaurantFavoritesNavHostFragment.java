@@ -13,7 +13,7 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.FragmentRestaurantFavoritesNavHostBinding;
 
 
-public class RestaurantFavoritesNavHostFragment extends NavHostFragment {
+public class RestaurantFavoritesNavHostFragment extends Fragment {
 	private FragmentRestaurantFavoritesNavHostBinding binding;
 
 	@Override

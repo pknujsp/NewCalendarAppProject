@@ -52,6 +52,8 @@ import com.zerodsoft.scheduleweather.event.foods.adapter.FoodCategoryAdapter;
 import com.zerodsoft.scheduleweather.event.foods.criterialocation.RestaurantCriteriaLocationSettingsFragment;
 import com.zerodsoft.scheduleweather.event.foods.dto.FoodCategoryItem;
 import com.zerodsoft.scheduleweather.event.foods.enums.CriteriaLocationType;
+import com.zerodsoft.scheduleweather.event.foods.interfaces.FoodMenuChipsViewController;
+import com.zerodsoft.scheduleweather.event.foods.interfaces.IGetEventValue;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedCategoryItem;
 import com.zerodsoft.scheduleweather.event.foods.RestaurantDialogFragment;
 import com.zerodsoft.scheduleweather.event.foods.settings.CustomFoodMenuSettingsActivity;
@@ -83,11 +85,11 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 		IRefreshView {
 	public static final String TAG = "FoodsMenuListFragment";
 
-	private final RestaurantDialogFragment.FoodMenuChipsViewController foodMenuChipsViewController;
+	private final FoodMenuChipsViewController foodMenuChipsViewController;
 	private final BottomSheetController bottomSheetController;
 	private final FavoriteLocationsListener favoriteLocationsListener;
 	private final int COLUMN_COUNT = 4;
-	private final RestaurantMainNavHostFragment.IGetEventValue iGetEventValue;
+	private final IGetEventValue iGetEventValue;
 	private final IMapPoint iMapPoint;
 
 	private FragmentFoodsCategoryListBinding binding;
@@ -636,6 +638,7 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 			});
 
 			NavController navController = NavHostFragment.findNavController(this);
+
 			navController.navigate(FoodsMenuListFragmentDirections.actionFoodsMenuListFragmentToRestaurantListTabFragment(e.getCategoryName()));
 		}
 	}
