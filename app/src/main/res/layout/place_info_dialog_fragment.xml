@@ -6,32 +6,10 @@
         android:layout_height="match_parent">
 
 
-        <LinearLayout
+        <androidx.fragment.app.FragmentContainerView
+            android:id="@+id/fragment_container"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
-
-            <com.google.android.material.progressindicator.LinearProgressIndicator
-                android:id="@+id/progress_indicator"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:indeterminate="true" />
-
-            <WebView
-                android:id="@+id/webview"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
-        </LinearLayout>
-
-        <ImageView
-            android:id="@+id/dismiss_dialog_button"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:layout_margin="16dp"
-            android:background="@drawable/round_white_button"
-            android:scaleType="centerInside"
-            android:src="@drawable/close_icon" />
-
+            android:layout_height="match_parent" />
 
     </FrameLayout>
 </layout>

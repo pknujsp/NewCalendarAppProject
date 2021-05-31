@@ -12,9 +12,6 @@ public class FoodCriteriaLocationSearchHistoryDTO {
 	@PrimaryKey(autoGenerate = true)
 	private int id;
 
-	@ColumnInfo(name = "calendar_id")
-	private Integer calendarId;
-
 	@ColumnInfo(name = "event_id")
 	private Long eventId;
 
@@ -46,14 +43,6 @@ public class FoodCriteriaLocationSearchHistoryDTO {
 
 	public void setId(int id) {
 		this.id = id;
-	}
-
-	public Integer getCalendarId() {
-		return calendarId;
-	}
-
-	public void setCalendarId(Integer calendarId) {
-		this.calendarId = calendarId;
 	}
 
 	public Long getEventId() {

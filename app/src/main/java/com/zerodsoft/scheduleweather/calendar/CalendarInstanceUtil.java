@@ -37,9 +37,14 @@ public class CalendarInstanceUtil {
 
 			}
 		});
-		foodCriteriaLocationHistoryViewModel.deleteByEventId(CALENDAR_ID, EVENT_ID, new CarrierMessagingService.ResultCallback<Boolean>() {
+		foodCriteriaLocationHistoryViewModel.deleteByEventId(EVENT_ID, new DbQueryCallback<Boolean>() {
 			@Override
-			public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException {
+			public void onResultSuccessful(Boolean result) {
+				
+			}
+
+			@Override
+			public void onResultNoData() {
 
 			}
 		});

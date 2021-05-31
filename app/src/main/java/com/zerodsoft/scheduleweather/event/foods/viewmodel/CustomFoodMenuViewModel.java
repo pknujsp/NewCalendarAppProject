@@ -22,7 +22,7 @@ public class CustomFoodMenuViewModel extends AndroidViewModel implements CustomF
 	}
 
 	@Override
-	public void insert(String menuName, CarrierMessagingService.ResultCallback<CustomFoodMenuDTO> callback) {
+	public void insert(String menuName, DbQueryCallback<CustomFoodMenuDTO> callback) {
 		repository.insert(menuName, callback);
 	}
 

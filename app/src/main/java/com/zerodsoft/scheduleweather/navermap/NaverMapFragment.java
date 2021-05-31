@@ -93,7 +93,7 @@ import com.zerodsoft.scheduleweather.navermap.interfaces.OnCoordToAddressListene
 import com.zerodsoft.scheduleweather.navermap.interfaces.PlacesItemBottomSheetButtonOnClickListener;
 import com.zerodsoft.scheduleweather.navermap.interfaces.SearchFragmentController;
 import com.zerodsoft.scheduleweather.navermap.model.CoordToAddressUtil;
-import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoFragment;
+import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoWebDialogFragment;
 import com.zerodsoft.scheduleweather.navermap.util.LocalParameterUtil;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.sgis.address.ReverseGeoCodingParameter;
@@ -103,12 +103,10 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressre
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddressDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.address.reversegeocoding.ReverseGeoCodingResponse;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.auth.SgisAuthResponse;
 import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 import com.zerodsoft.scheduleweather.sgis.SgisAddress;
-import com.zerodsoft.scheduleweather.sgis.SgisAuth;
 import com.zerodsoft.scheduleweather.utility.NetworkStatus;
 
 import java.util.ArrayList;
@@ -1078,12 +1076,12 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 	public void onClickedPlaceBottomSheet(KakaoLocalDocument kakaoLocalDocument) {
 		//place or address
 		if (kakaoLocalDocument instanceof PlaceDocuments) {
-			PlaceInfoFragment placeInfoFragment = new PlaceInfoFragment();
+			PlaceInfoWebDialogFragment placeInfoWebDialogFragment = new PlaceInfoWebDialogFragment();
 			Bundle bundle = new Bundle();
 			bundle.putString("placeId", ((PlaceDocuments) kakaoLocalDocument).getId());
-			placeInfoFragment.setArguments(bundle);
+			placeInfoWebDialogFragment.setArguments(bundle);
 
-			placeInfoFragment.show(getChildFragmentManager(), PlaceInfoFragment.TAG);
+			placeInfoWebDialogFragment.show(getChildFragmentManager(), PlaceInfoWebDialogFragment.TAG);
 		} else {
 
 		}

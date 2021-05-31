@@ -21,7 +21,7 @@ import com.zerodsoft.scheduleweather.common.interfaces.OnProgressBarListener;
 import com.zerodsoft.scheduleweather.databinding.FragmentFavoriteRestaurantBinding;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedFavoriteButtonListener;
 import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
-import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoFragment;
+import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoWebDialogFragment;
 import com.zerodsoft.scheduleweather.navermap.util.LocalParameterUtil;
 import com.zerodsoft.scheduleweather.kakaoplace.retrofit.KakaoPlaceDownloader;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
@@ -190,12 +190,12 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
 	@Override
 	public void onClickedListItem(PlaceDocuments e, int position) {
 		if (e instanceof PlaceDocuments) {
-			PlaceInfoFragment placeInfoFragment = new PlaceInfoFragment();
+			PlaceInfoWebDialogFragment placeInfoWebDialogFragment = new PlaceInfoWebDialogFragment();
 			Bundle bundle = new Bundle();
 			bundle.putString("placeId", ((PlaceDocuments) e).getId());
-			placeInfoFragment.setArguments(bundle);
+			placeInfoWebDialogFragment.setArguments(bundle);
 
-			placeInfoFragment.show(getChildFragmentManager(), PlaceInfoFragment.TAG);
+			placeInfoWebDialogFragment.show(getChildFragmentManager(), PlaceInfoWebDialogFragment.TAG);
 		} else {
 
 		}

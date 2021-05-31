@@ -1,7 +1,6 @@
 package com.zerodsoft.scheduleweather.event.foods.repository;
 
 import android.content.Context;
-import android.service.carrier.CarrierMessagingService;
 
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
@@ -22,25 +21,25 @@ public class FoodCriteriaLocationHistoryRepository implements FoodCriteriaLocati
 	}
 
 	@Override
-	public void selectByEventId(int calendarId, long eventId, DbQueryCallback<List<FoodCriteriaLocationSearchHistoryDTO>> callback) {
+	public void selectByEventId(long eventId, DbQueryCallback<List<FoodCriteriaLocationSearchHistoryDTO>> callback) {
 		App.executorService.execute(new Runnable() {
 			@SneakyThrows
 			@Override
 			public void run() {
-				List<FoodCriteriaLocationSearchHistoryDTO> list = dao.selectByEventId(calendarId, eventId);
+				List<FoodCriteriaLocationSearchHistoryDTO> list = dao.selectByEventId(eventId);
 				callback.processResult(list);
 			}
 		});
 	}
 
 	@Override
-	public void selectByInstanceId(int calendarId, long instanceId, CarrierMessagingService.ResultCallback<List<FoodCriteriaLocationSearchHistoryDTO>> callback) {
+	public void selectByInstanceId(long instanceId, DbQueryCallback<List<FoodCriteriaLocationSearchHistoryDTO>> callback) {
 		App.executorService.execute(new Runnable() {
 			@SneakyThrows
 			@Override
 			public void run() {
-				List<FoodCriteriaLocationSearchHistoryDTO> list = dao.selectByInstanceId(calendarId, instanceId);
-				callback.onReceiveResult(list);
+				List<FoodCriteriaLocationSearchHistoryDTO> list = dao.selectByInstanceId(instanceId);
+				callback.processResult(list);
 			}
 		});
 	}
@@ -58,102 +57,102 @@ public class FoodCriteriaLocationHistoryRepository implements FoodCriteriaLocati
 	}
 
 	@Override
-	public void selectAll(CarrierMessagingService.ResultCallback<List<FoodCriteriaLocationSearchHistoryDTO>> callback) {
+	public void selectAll(DbQueryCallback<List<FoodCriteriaLocationSearchHistoryDTO>> callback) {
 		App.executorService.execute(new Runnable() {
 			@SneakyThrows
 			@Override
 			public void run() {
 				List<FoodCriteriaLocationSearchHistoryDTO> list = dao.selectAll();
-				callback.onReceiveResult(list);
-			}
-		});
-	}
-
-	@Override
-	public void insertByEventId(int calendarId, long eventId, String placeName, String addressName, String roadAddressName, String latitude, String longitude, Integer locationType, DbQueryCallback<List<FoodCriteriaLocationSearchHistoryDTO>> callback) {
-		App.executorService.execute(new Runnable() {
-			@SneakyThrows
-			@Override
-			public void run() {
-				dao.insertByEventId(calendarId, eventId, placeName, addressName, roadAddressName, latitude, longitude, locationType);
-				List<FoodCriteriaLocationSearchHistoryDTO> list = dao.selectByEventId(calendarId, eventId);
 				callback.processResult(list);
 			}
 		});
 	}
 
 	@Override
-	public void insertByInstanceId(int calendarId, long instanceId, String placeName, String addressName, String roadAddressName, String latitude, String longitude, Integer locationType, CarrierMessagingService.ResultCallback<List<FoodCriteriaLocationSearchHistoryDTO>> callback) {
+	public void insertByEventId(long eventId, String placeName, String addressName, String roadAddressName, String latitude, String longitude, Integer locationType, DbQueryCallback<List<FoodCriteriaLocationSearchHistoryDTO>> callback) {
 		App.executorService.execute(new Runnable() {
 			@SneakyThrows
 			@Override
 			public void run() {
-				dao.insertByInstanceId(calendarId, instanceId, placeName, addressName, roadAddressName, latitude, longitude, locationType);
-				List<FoodCriteriaLocationSearchHistoryDTO> list = dao.selectByInstanceId(calendarId, instanceId);
-				callback.onReceiveResult(list);
+				dao.insertByEventId(eventId, placeName, addressName, roadAddressName, latitude, longitude, locationType);
+				List<FoodCriteriaLocationSearchHistoryDTO> list = dao.selectByEventId(eventId);
+				callback.processResult(list);
 			}
 		});
 	}
 
 	@Override
-	public void updateByEventId(int calendarId, long eventId, String placeName, String addressName, String roadAddressName, String latitude, String longitude, Integer locationType, CarrierMessagingService.ResultCallback<List<FoodCriteriaLocationSearchHistoryDTO>> callback) {
+	public void insertByInstanceId(long instanceId, String placeName, String addressName, String roadAddressName, String latitude, String longitude, Integer locationType, DbQueryCallback<List<FoodCriteriaLocationSearchHistoryDTO>> callback) {
 		App.executorService.execute(new Runnable() {
 			@SneakyThrows
 			@Override
 			public void run() {
-				dao.updateByEventId(calendarId, eventId, placeName, addressName, roadAddressName, latitude, longitude, locationType);
-				List<FoodCriteriaLocationSearchHistoryDTO> list = dao.selectByEventId(calendarId, eventId);
-				callback.onReceiveResult(list);
+				dao.insertByInstanceId(instanceId, placeName, addressName, roadAddressName, latitude, longitude, locationType);
+				List<FoodCriteriaLocationSearchHistoryDTO> list = dao.selectByInstanceId(instanceId);
+				callback.processResult(list);
 			}
 		});
 	}
 
 	@Override
-	public void updateByInstanceId(int calendarId, long instanceId, String placeName, String addressName, String roadAddressName, String latitude, String longitude, Integer locationType, CarrierMessagingService.ResultCallback<List<FoodCriteriaLocationSearchHistoryDTO>> callback) {
+	public void updateByEventId(long eventId, String placeName, String addressName, String roadAddressName, String latitude, String longitude, Integer locationType, DbQueryCallback<List<FoodCriteriaLocationSearchHistoryDTO>> callback) {
 		App.executorService.execute(new Runnable() {
 			@SneakyThrows
 			@Override
 			public void run() {
-				dao.updateByInstanceId(calendarId, instanceId, placeName, addressName, roadAddressName, latitude, longitude, locationType);
-				List<FoodCriteriaLocationSearchHistoryDTO> list = dao.selectByInstanceId(calendarId, instanceId);
-				callback.onReceiveResult(list);
+				dao.updateByEventId(eventId, placeName, addressName, roadAddressName, latitude, longitude, locationType);
+				List<FoodCriteriaLocationSearchHistoryDTO> list = dao.selectByEventId(eventId);
+				callback.processResult(list);
 			}
 		});
 	}
 
 	@Override
-	public void update(int id, String placeName, String addressName, String roadAddressName, String latitude, String longitude, Integer locationType, CarrierMessagingService.ResultCallback<FoodCriteriaLocationSearchHistoryDTO> callback) {
+	public void updateByInstanceId(long instanceId, String placeName, String addressName, String roadAddressName, String latitude, String longitude, Integer locationType, DbQueryCallback<List<FoodCriteriaLocationSearchHistoryDTO>> callback) {
+		App.executorService.execute(new Runnable() {
+			@SneakyThrows
+			@Override
+			public void run() {
+				dao.updateByInstanceId(instanceId, placeName, addressName, roadAddressName, latitude, longitude, locationType);
+				List<FoodCriteriaLocationSearchHistoryDTO> list = dao.selectByInstanceId(instanceId);
+				callback.processResult(list);
+			}
+		});
+	}
+
+	@Override
+	public void update(int id, String placeName, String addressName, String roadAddressName, String latitude, String longitude, Integer locationType, DbQueryCallback<FoodCriteriaLocationSearchHistoryDTO> callback) {
 		App.executorService.execute(new Runnable() {
 			@SneakyThrows
 			@Override
 			public void run() {
 				dao.update(id, placeName, addressName, roadAddressName, latitude, longitude, locationType);
 				FoodCriteriaLocationSearchHistoryDTO result = dao.select(id);
-				callback.onReceiveResult(result);
+				callback.processResult(result);
 			}
 		});
 	}
 
 	@Override
-	public void deleteByEventId(int calendarId, long eventId, CarrierMessagingService.ResultCallback<Boolean> callback) {
+	public void deleteByEventId(long eventId, DbQueryCallback<Boolean> callback) {
 		App.executorService.execute(new Runnable() {
 			@SneakyThrows
 			@Override
 			public void run() {
-				dao.deleteByEventId(calendarId, eventId);
-				callback.onReceiveResult(true);
+				dao.deleteByEventId(eventId);
+				callback.processResult(true);
 			}
 		});
 	}
 
 	@Override
-	public void deleteByInstanceId(int calendarId, long instanceId, CarrierMessagingService.ResultCallback<Boolean> callback) {
+	public void deleteByInstanceId(long instanceId, DbQueryCallback<Boolean> callback) {
 		App.executorService.execute(new Runnable() {
 			@SneakyThrows
 			@Override
 			public void run() {
-				dao.deleteByInstanceId(calendarId, instanceId);
-				callback.onReceiveResult(true);
+				dao.deleteByInstanceId(instanceId);
+				callback.processResult(true);
 			}
 		});
 	}
@@ -171,13 +170,13 @@ public class FoodCriteriaLocationHistoryRepository implements FoodCriteriaLocati
 	}
 
 	@Override
-	public void deleteAll(CarrierMessagingService.ResultCallback<Boolean> callback) {
+	public void deleteAll(DbQueryCallback<Boolean> callback) {
 		App.executorService.execute(new Runnable() {
 			@SneakyThrows
 			@Override
 			public void run() {
 				dao.deleteAll();
-				callback.onReceiveResult(true);
+				callback.processResult(true);
 			}
 		});
 	}

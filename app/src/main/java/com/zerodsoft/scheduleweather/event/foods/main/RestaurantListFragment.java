@@ -7,6 +7,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.paging.PagedList;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -27,7 +28,10 @@ import com.zerodsoft.scheduleweather.event.foods.adapter.RestaurantListAdapter;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedFavoriteButtonListener;
 import com.zerodsoft.scheduleweather.event.foods.share.CriteriaLocationCloud;
 import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
-import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoFragment;
+import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoWebDialogFragment;
+import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoWebFragment;
+import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoWebFragmentArgs;
+import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoWebFragmentDirections;
 import com.zerodsoft.scheduleweather.navermap.util.LocalParameterUtil;
 import com.zerodsoft.scheduleweather.navermap.viewmodel.PlacesViewModel;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
@@ -137,13 +141,9 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 
 	@Override
 	public void onClickedListItem(PlaceDocuments e, int position) {
-		if (e instanceof PlaceDocuments) {
-			PlaceInfoFragment placeInfoFragment = new PlaceInfoFragment();
-			Bundle bundle = new Bundle();
-			bundle.putString("placeId", ((PlaceDocuments) e).getId());
-			placeInfoFragment.setArguments(bundle);
-
-			placeInfoFragment.show(getChildFragmentManager(), PlaceInfoFragment.TAG);
+		if (e != null) {
+			NavHostFragment.findNavController(RestaurantListFragment.this)
+					.navigate(RestaurantListTabFragmentDirections.actionRestaurantListTabFragmentToPlaceInfoWebFragment(((PlaceDocuments) e).getId()));
 		} else {
 
 		}

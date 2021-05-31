@@ -35,6 +35,7 @@ import android.widget.Toast;
 
 import com.naver.maps.geometry.LatLng;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.activity.preferences.customfoodmenu.fragment.CustomFoodMenuSettingsFragmentDirections;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
@@ -142,9 +143,7 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 			@Override
 			public void onClick(View view) {
 				NavController navController = NavHostFragment.findNavController(FoodsMenuListFragment.this);
-				FoodsMenuListFragmentDirections.ActionFoodsMenuListFragmentToRestaurantCriteriaLocationSettingsFragment action
-						= FoodsMenuListFragmentDirections.actionFoodsMenuListFragmentToRestaurantCriteriaLocationSettingsFragment(eventId);
-				navController.navigate(action);
+				navController.navigate(FoodsMenuListFragmentDirections.actionFoodsMenuListFragmentToRestaurantCriteriaLocationSettingsFragment(eventId));
 			}
 		});
 	}
@@ -619,10 +618,11 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 
 	@Override
 	public void onClickedListItem(FoodCategoryItem e, int position) {
+		NavController navController = NavHostFragment.findNavController(this);
+
 		if (!e.isDefault() && e.getCategoryName().equals(getString(R.string.add_custom_food_menu))) {
-			customFoodSettingsActivityResultLauncher.launch(new Intent(getActivity(), CustomFoodMenuSettingsActivity.class));
+			navController.navigate(R.id.customFoodMenuSettingsFragment);
 		} else {
-			NavController navController = NavHostFragment.findNavController(this);
 			navController.navigate(FoodsMenuListFragmentDirections.actionFoodsMenuListFragmentToRestaurantListTabFragment(e.getCategoryName(), eventId, foodMenuChipsViewController, favoriteLocationsListener));
 		}
 	}

@@ -1,6 +1,5 @@
 package com.zerodsoft.scheduleweather.event.foods.repository;
 
-import android.app.Application;
 import android.content.Context;
 import android.service.carrier.CarrierMessagingService;
 
@@ -23,14 +22,14 @@ public class CustomFoodMenuRepository implements CustomFoodMenuQuery {
 	}
 
 	@Override
-	public void insert(String menuName, CarrierMessagingService.ResultCallback<CustomFoodMenuDTO> callback) {
+	public void insert(String menuName, DbQueryCallback<CustomFoodMenuDTO> callback) {
 		App.executorService.execute(new Runnable() {
 			@SneakyThrows
 			@Override
 			public void run() {
 				categoryDAO.insert(menuName);
 				CustomFoodMenuDTO categoryDTO = categoryDAO.select(menuName);
-				callback.onReceiveResult(categoryDTO);
+				callback.processResult(categoryDTO);
 			}
 		});
 	}

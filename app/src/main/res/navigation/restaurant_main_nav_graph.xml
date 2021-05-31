@@ -29,6 +29,9 @@
         <action
             android:id="@+id/action_foodsMenuListFragment_to_restaurantCriteriaLocationSettingsFragment"
             app:destination="@id/restaurantCriteriaLocationSettingsFragment" />
+        <action
+            android:id="@+id/action_foodsMenuListFragment_to_customFoodMenuSettingsFragment"
+            app:destination="@id/customFoodMenuSettingsFragment" />
 
     </fragment>
 
@@ -54,17 +57,43 @@
         <argument
             android:name="favoriteLocationsListener"
             app:argType="com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener" />
+        <action
+            android:id="@+id/action_restaurantListTabFragment_to_placeInfoWebFragment"
+            app:destination="@id/placeInfoWebFragment" />
     </fragment>
+
     <fragment
         android:id="@+id/restaurantCriteriaLocationSettingsFragment"
         android:name="com.zerodsoft.scheduleweather.event.foods.criterialocation.RestaurantCriteriaLocationSettingsFragment"
-        android:label="RestaurantCriteriaLocationSettingsFragment">
+        android:label="RestaurantCriteriaLocationSettingsFragment"
+        tools:layout="@layout/fragment_restaurant_criteria_location_settings">
         <argument
             android:name="eventId"
             app:argType="long" />
         <action
             android:id="@+id/action_restaurantCriteriaLocationSettingsFragment_to_foodsMenuListFragment"
             app:destination="@id/foodsMenuListFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/customFoodMenuSettingsFragment"
+        android:name="com.zerodsoft.scheduleweather.activity.preferences.customfoodmenu.fragment.CustomFoodMenuSettingsFragment"
+        android:label="CustomFoodMenuSettingsFragment"
+        tools:layout="@layout/fragment_custom_food_menu_settings">
+        <action
+            android:id="@+id/action_customFoodMenuSettingsFragment_to_foodsMenuListFragment"
+            app:destination="@id/foodsMenuListFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/placeInfoWebFragment"
+        android:name="com.zerodsoft.scheduleweather.navermap.place.PlaceInfoWebFragment"
+        android:label="PlaceInfoWebFragment"
+        tools:layout="@layout/fragment_place_info_web">
+        <action
+            android:id="@+id/action_placeInfoWebFragment_to_restaurantListTabFragment"
+            app:destination="@id/restaurantListTabFragment" />
+        <argument
+            android:name="placeId"
+            app:argType="string" />
     </fragment>
 
 

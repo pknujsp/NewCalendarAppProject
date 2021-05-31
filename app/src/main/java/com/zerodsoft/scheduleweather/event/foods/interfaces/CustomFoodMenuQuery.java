@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface CustomFoodMenuQuery
 {
-    void insert(String menuName, CarrierMessagingService.ResultCallback<CustomFoodMenuDTO> callback);
+    void insert(String menuName, DbQueryCallback<CustomFoodMenuDTO> callback);
 
     void select(DbQueryCallback<List<CustomFoodMenuDTO>> callback);
 
