@@ -5,7 +5,6 @@
     android:id="@+id/restaurant_nav_graph"
     app:startDestination="@id/restaurant_main_nav_graph">
 
-
     <include app:graph="@navigation/restaurant_main_nav_graph" />
     <include app:graph="@navigation/restaurant_favorites_nav_graph" />
     <include app:graph="@navigation/restaurant_search_nav_graph" />

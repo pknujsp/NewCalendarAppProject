@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/restaurant_main_nav_graph"
     app:startDestination="@id/foodsMenuListFragment">
-    
+
     <fragment
         android:id="@+id/foodsMenuListFragment"
         android:name="com.zerodsoft.scheduleweather.event.foods.main.FoodsMenuListFragment"
@@ -23,7 +23,12 @@
         <argument
             android:name="foodMenuChipsViewController"
             app:argType="com.zerodsoft.scheduleweather.event.foods.interfaces.FoodMenuChipsViewController" />
-
+        <argument
+            android:name="eventId"
+            app:argType="long" />
+        <action
+            android:id="@+id/action_foodsMenuListFragment_to_restaurantCriteriaLocationSettingsFragment"
+            app:destination="@id/restaurantCriteriaLocationSettingsFragment" />
 
     </fragment>
 
@@ -39,6 +44,26 @@
             app:nullable="false" />
         <action
             android:id="@+id/action_restaurantListTabFragment_to_foodsMenuListFragment"
+            app:destination="@id/foodsMenuListFragment" />
+        <argument
+            android:name="eventId"
+            app:argType="long" />
+        <argument
+            android:name="FoodMenuChipsViewController"
+            app:argType="com.zerodsoft.scheduleweather.event.foods.interfaces.FoodMenuChipsViewController" />
+        <argument
+            android:name="favoriteLocationsListener"
+            app:argType="com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener" />
+    </fragment>
+    <fragment
+        android:id="@+id/restaurantCriteriaLocationSettingsFragment"
+        android:name="com.zerodsoft.scheduleweather.event.foods.criterialocation.RestaurantCriteriaLocationSettingsFragment"
+        android:label="RestaurantCriteriaLocationSettingsFragment">
+        <argument
+            android:name="eventId"
+            app:argType="long" />
+        <action
+            android:id="@+id/action_restaurantCriteriaLocationSettingsFragment_to_foodsMenuListFragment"
             app:destination="@id/foodsMenuListFragment" />
     </fragment>
 

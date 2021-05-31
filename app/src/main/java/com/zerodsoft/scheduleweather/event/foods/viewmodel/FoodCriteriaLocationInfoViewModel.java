@@ -20,43 +20,43 @@ public class FoodCriteriaLocationInfoViewModel extends AndroidViewModel implemen
 	}
 
 	@Override
-	public void selectByEventId(Integer calendarId, Long eventId, DbQueryCallback<FoodCriteriaLocationInfoDTO> callback) {
-		repository.selectByEventId(calendarId, eventId, callback);
+	public void selectByEventId(Long eventId, DbQueryCallback<FoodCriteriaLocationInfoDTO> callback) {
+		repository.selectByEventId(eventId, callback);
 	}
 
 	@Override
-	public void selectByInstanceId(Integer calendarId, Long instanceId, CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO> callback) {
-		repository.selectByInstanceId(calendarId, instanceId, callback);
+	public void selectByInstanceId(Long instanceId, CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO> callback) {
+		repository.selectByInstanceId(instanceId, callback);
 	}
 
 	@Override
-	public void insertByEventId(Integer calendarId, Long eventId, Integer usingType, Integer historyLocationId, CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO> callback) {
-		repository.insertByEventId(calendarId, eventId, usingType, historyLocationId, callback);
+	public void insertByEventId(Long eventId, Integer usingType, Integer historyLocationId, DbQueryCallback<FoodCriteriaLocationInfoDTO> callback) {
+		repository.insertByEventId(eventId, usingType, historyLocationId, callback);
 	}
 
 	@Override
-	public void insertByInstanceId(Integer calendarId, Long instanceId, Integer usingType, Integer historyLocationId, CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO> callback) {
-		repository.insertByInstanceId(calendarId, instanceId, usingType, historyLocationId, callback);
+	public void insertByInstanceId(Long instanceId, Integer usingType, Integer historyLocationId, CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO> callback) {
+		repository.insertByInstanceId(instanceId, usingType, historyLocationId, callback);
 	}
 
 	@Override
-	public void updateByEventId(Integer calendarId, Long eventId, Integer usingType, Integer historyLocationId, DbQueryCallback<FoodCriteriaLocationInfoDTO> callback) {
-		repository.updateByEventId(calendarId, eventId, usingType, historyLocationId, callback);
+	public void updateByEventId(Long eventId, Integer usingType, Integer historyLocationId, DbQueryCallback<FoodCriteriaLocationInfoDTO> callback) {
+		repository.updateByEventId(eventId, usingType, historyLocationId, callback);
 	}
 
 	@Override
-	public void updateByInstanceId(Integer calendarId, Long instanceId, Integer usingType, Integer historyLocationId, CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO> callback) {
-		repository.updateByInstanceId(calendarId, instanceId, usingType, historyLocationId, callback);
+	public void updateByInstanceId(Long instanceId, Integer usingType, Integer historyLocationId, CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO> callback) {
+		repository.updateByInstanceId(instanceId, usingType, historyLocationId, callback);
 	}
 
 	@Override
-	public void deleteByEventId(Integer calendarId, Long eventId, CarrierMessagingService.ResultCallback<Boolean> callback) {
-		repository.deleteByEventId(calendarId, eventId, callback);
+	public void deleteByEventId(Long eventId, CarrierMessagingService.ResultCallback<Boolean> callback) {
+		repository.deleteByEventId(eventId, callback);
 	}
 
 	@Override
-	public void deleteByInstanceId(Integer calendarId, Long instanceId, CarrierMessagingService.ResultCallback<Boolean> callback) {
-		repository.deleteByInstanceId(calendarId, instanceId, callback);
+	public void deleteByInstanceId(Long instanceId, CarrierMessagingService.ResultCallback<Boolean> callback) {
+		repository.deleteByInstanceId(instanceId, callback);
 	}
 
 	@Override

@@ -24,13 +24,9 @@ import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListen
 public class FavoritesMainFragment extends Fragment {
 	public static final String TAG = "FavoritesMainFragment";
 	private FragmentFavoritesMainBinding binding;
-	private final BottomSheetController bottomSheetController;
-	private final FavoriteLocationsListener favoriteLocationsListener;
+	private BottomSheetController bottomSheetController;
+	private FavoriteLocationsListener favoriteLocationsListener;
 
-	public FavoritesMainFragment(BottomSheetController bottomSheetController, FavoriteLocationsListener favoriteLocationsListener) {
-		this.bottomSheetController = bottomSheetController;
-		this.favoriteLocationsListener = favoriteLocationsListener;
-	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {

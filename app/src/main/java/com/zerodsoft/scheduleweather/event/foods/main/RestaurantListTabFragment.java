@@ -24,6 +24,7 @@ import com.zerodsoft.scheduleweather.databinding.FragmentFoodCategoryTabBinding;
 import com.zerodsoft.scheduleweather.event.foods.adapter.FoodCategoryFragmentListAdapter;
 import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteLocationViewModel;
 import com.zerodsoft.scheduleweather.event.foods.RestaurantDialogFragment;
+import com.zerodsoft.scheduleweather.event.foods.interfaces.FoodMenuChipsViewController;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.CustomFoodMenuViewModel;
 import com.zerodsoft.scheduleweather.event.main.NewInstanceMainFragment;
 import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
@@ -42,41 +43,33 @@ import lombok.SneakyThrows;
 public class RestaurantListTabFragment extends Fragment implements NewInstanceMainFragment.RestaurantsGetter, OnExtraListDataListener<String>, OnHiddenFragmentListener {
 	public static final String TAG = "RestaurantListTabFragment";
 	private FragmentFoodCategoryTabBinding binding;
+	private FoodMenuChipsViewController foodMenuChipsViewController;
+	private FavoriteLocationsListener favoriteLocationsListener;
 
 	private CustomFoodMenuViewModel customFoodCategoryViewModel;
 	private FavoriteLocationViewModel favoriteRestaurantViewModel;
 
 	private List<String> categoryList;
 	private FoodCategoryFragmentListAdapter adapter;
-	private final String selectedCategoryName;
-	private final RestaurantDialogFragment.FoodMenuChipsViewController foodMenuChipsViewController;
-	private final BottomSheetController bottomSheetController;
-	private final FavoriteLocationsListener favoriteLocationsListener;
-	private final OnPopBackStackFragmentCallback onPopBackStackFragmentCallback;
+	private String firstSelectedFoodMenuName;
+	private Long eventId;
 
 	private int lastFoodMenuIndex;
-
-	public RestaurantListTabFragment(String selectedCategoryName,
-	                                 RestaurantDialogFragment.FoodMenuChipsViewController foodMenuChipsViewController,
-	                                 BottomSheetController bottomSheetController, FavoriteLocationsListener favoriteLocationsListener,
-	                                 OnPopBackStackFragmentCallback onPopBackStackFragmentCallback) {
-		this.selectedCategoryName = selectedCategoryName;
-		this.foodMenuChipsViewController = foodMenuChipsViewController;
-		this.bottomSheetController = bottomSheetController;
-		this.favoriteLocationsListener = favoriteLocationsListener;
-		this.onPopBackStackFragmentCallback = onPopBackStackFragmentCallback;
-	}
 
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		RestaurantListTabFragmentArgs args = RestaurantListTabFragmentArgs.fromBundle(getArguments());
+		firstSelectedFoodMenuName = args.getFoodMenuName();
+		eventId = args.getEventId();
+		favoriteLocationsListener = args.getFavoriteLocationsListener();
+		foodMenuChipsViewController = args.getFoodMenuChipsViewController();
 	}
 
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		onPopBackStackFragmentCallback.pop();
 		foodMenuChipsViewController.removeRestaurantListView();
 	}
 
@@ -96,7 +89,6 @@ public class RestaurantListTabFragment extends Fragment implements NewInstanceMa
 			public void onClick(View v) {
 				lastFoodMenuIndex = binding.viewpager.getCurrentItem();
 				foodMenuChipsViewController.setCurrentFoodMenuName(categoryList.get(binding.viewpager.getCurrentItem()));
-				bottomSheetController.setStateOfBottomSheet(BottomSheetType.RESTAURANT, BottomSheetBehavior.STATE_COLLAPSED);
 				getParentFragmentManager().beginTransaction().hide(RestaurantListTabFragment.this).commit();
 			}
 		});
@@ -123,7 +115,7 @@ public class RestaurantListTabFragment extends Fragment implements NewInstanceMa
 							}
 						}
 
-						int selectedIndex = categoryList.indexOf(selectedCategoryName);
+						int selectedIndex = categoryList.indexOf(firstSelectedFoodMenuName);
 
 						adapter = new FoodCategoryFragmentListAdapter(RestaurantListTabFragment.this);
 						adapter.init(favoriteRestaurantViewModel, favoriteLocationsListener, categoryList);

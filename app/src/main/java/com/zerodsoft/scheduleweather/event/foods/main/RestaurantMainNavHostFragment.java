@@ -21,12 +21,6 @@ import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListen
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint;
 
 public class RestaurantMainNavHostFragment extends Fragment {
-	public static final String TAG = "RestaurantMainNavHostFragment";
-	private FoodMenuChipsViewController foodMenuChipsViewController;
-	private FavoriteLocationsListener favoriteLocationsListener;
-	private IGetEventValue iGetEventValue;
-	private IMapPoint iMapPoint;
-
 	private FragmentRestaurantMainNavHostBinding binding;
 
 	@Override
@@ -42,29 +36,7 @@ public class RestaurantMainNavHostFragment extends Fragment {
 	}
 
 	@Override
-	public void onHiddenChanged(boolean hidden) {
-		super.onHiddenChanged(hidden);
-		if (!hidden) {
-			FragmentManager fragmentManager = getChildFragmentManager();
-			Fragment primaryNavigationFragment = fragmentManager.getPrimaryNavigationFragment();
-
-			if (primaryNavigationFragment instanceof RestaurantListTabFragment) {
-				((RestaurantListTabFragment) primaryNavigationFragment).onHiddenChanged(false);
-			}
-		}
-	}
-
-	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
-
-		FoodsMenuListFragment foodsMenuListFragment = new FoodsMenuListFragment(iGetEventValue, foodMenuChipsViewController,
-				bottomSheetController, favoriteLocationsListener, iMapPoint);
-		foodsMenuListFragment.setArguments(getArguments());
-
-		getChildFragmentManager().beginTransaction().add(binding.foodsMainFragmentContainer.getId(), foodsMenuListFragment, FoodsMenuListFragment.TAG)
-				.setPrimaryNavigationFragment(foodsMenuListFragment)
-				.commitNow();
 	}
-	
 }

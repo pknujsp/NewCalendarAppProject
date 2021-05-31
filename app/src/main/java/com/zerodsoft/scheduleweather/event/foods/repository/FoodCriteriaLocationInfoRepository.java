@@ -20,100 +20,100 @@ public class FoodCriteriaLocationInfoRepository implements FoodCriteriaLocationI
 	}
 
 	@Override
-	public void selectByEventId(Integer calendarId, Long eventId, DbQueryCallback<FoodCriteriaLocationInfoDTO> callback) {
+	public void selectByEventId(Long eventId, DbQueryCallback<FoodCriteriaLocationInfoDTO> callback) {
 		App.executorService.execute(new Runnable() {
 			@SneakyThrows
 			@Override
 			public void run() {
-				FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO = dao.selectByEventId(calendarId, eventId);
+				FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO = dao.selectByEventId(eventId);
 				callback.processResult(foodCriteriaLocationInfoDTO);
 			}
 		});
 	}
 
 	@Override
-	public void selectByInstanceId(Integer calendarId, Long instanceId, CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO> callback) {
+	public void selectByInstanceId(Long instanceId, CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO> callback) {
 		App.executorService.execute(new Runnable() {
 			@SneakyThrows
 			@Override
 			public void run() {
-				FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO = dao.selectByInstanceId(calendarId, instanceId);
+				FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO = dao.selectByInstanceId(instanceId);
 				callback.onReceiveResult(foodCriteriaLocationInfoDTO);
 			}
 		});
 	}
 
 	@Override
-	public void insertByEventId(Integer calendarId, Long eventId, Integer usingType, Integer historyLocationId, CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO> callback) {
+	public void insertByEventId(Long eventId, Integer usingType, Integer historyLocationId, DbQueryCallback<FoodCriteriaLocationInfoDTO> callback) {
 		App.executorService.execute(new Runnable() {
 			@SneakyThrows
 			@Override
 			public void run() {
-				dao.insertByEventId(calendarId, eventId, usingType, historyLocationId);
-				FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO = dao.selectByEventId(calendarId, eventId);
-				callback.onReceiveResult(foodCriteriaLocationInfoDTO);
-			}
-		});
-	}
-
-	@Override
-	public void insertByInstanceId(Integer calendarId, Long instanceId, Integer usingType, Integer historyLocationId, CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO> callback) {
-		App.executorService.execute(new Runnable() {
-			@SneakyThrows
-			@Override
-			public void run() {
-				dao.insertByInstanceId(calendarId, instanceId, usingType, historyLocationId);
-				FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO = dao.selectByInstanceId(calendarId, instanceId);
-				callback.onReceiveResult(foodCriteriaLocationInfoDTO);
-			}
-		});
-	}
-
-	@Override
-	public void updateByEventId(Integer calendarId, Long eventId, Integer usingType, Integer historyLocationId, DbQueryCallback<FoodCriteriaLocationInfoDTO> callback) {
-		App.executorService.execute(new Runnable() {
-			@SneakyThrows
-			@Override
-			public void run() {
-				dao.updateByEventId(calendarId, eventId, usingType, historyLocationId);
-				FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO = dao.selectByEventId(calendarId, eventId);
+				dao.insertByEventId(eventId, usingType, historyLocationId);
+				FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO = dao.selectByEventId(eventId);
 				callback.processResult(foodCriteriaLocationInfoDTO);
 			}
 		});
 	}
 
 	@Override
-	public void updateByInstanceId(Integer calendarId, Long instanceId, Integer usingType, Integer historyLocationId, CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO> callback) {
+	public void insertByInstanceId(Long instanceId, Integer usingType, Integer historyLocationId, CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO> callback) {
 		App.executorService.execute(new Runnable() {
 			@SneakyThrows
 			@Override
 			public void run() {
-				dao.updateByInstanceId(calendarId, instanceId, usingType, historyLocationId);
-				FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO = dao.selectByInstanceId(calendarId, instanceId);
+				dao.insertByInstanceId(instanceId, usingType, historyLocationId);
+				FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO = dao.selectByInstanceId(instanceId);
 				callback.onReceiveResult(foodCriteriaLocationInfoDTO);
 			}
 		});
 	}
 
 	@Override
-	public void deleteByEventId(Integer calendarId, Long eventId, CarrierMessagingService.ResultCallback<Boolean> callback) {
+	public void updateByEventId(Long eventId, Integer usingType, Integer historyLocationId, DbQueryCallback<FoodCriteriaLocationInfoDTO> callback) {
 		App.executorService.execute(new Runnable() {
 			@SneakyThrows
 			@Override
 			public void run() {
-				dao.deleteByEventId(calendarId, eventId);
+				dao.updateByEventId(eventId, usingType, historyLocationId);
+				FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO = dao.selectByEventId(eventId);
+				callback.processResult(foodCriteriaLocationInfoDTO);
+			}
+		});
+	}
+
+	@Override
+	public void updateByInstanceId(Long instanceId, Integer usingType, Integer historyLocationId, CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO> callback) {
+		App.executorService.execute(new Runnable() {
+			@SneakyThrows
+			@Override
+			public void run() {
+				dao.updateByInstanceId(instanceId, usingType, historyLocationId);
+				FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO = dao.selectByInstanceId(instanceId);
+				callback.onReceiveResult(foodCriteriaLocationInfoDTO);
+			}
+		});
+	}
+
+	@Override
+	public void deleteByEventId(Long eventId, CarrierMessagingService.ResultCallback<Boolean> callback) {
+		App.executorService.execute(new Runnable() {
+			@SneakyThrows
+			@Override
+			public void run() {
+				dao.deleteByEventId(eventId);
 				callback.onReceiveResult(true);
 			}
 		});
 	}
 
 	@Override
-	public void deleteByInstanceId(Integer calendarId, Long instanceId, CarrierMessagingService.ResultCallback<Boolean> callback) {
+	public void deleteByInstanceId(Long instanceId, CarrierMessagingService.ResultCallback<Boolean> callback) {
 		App.executorService.execute(new Runnable() {
 			@SneakyThrows
 			@Override
 			public void run() {
-				dao.deleteByInstanceId(calendarId, instanceId);
+				dao.deleteByInstanceId(instanceId);
 				callback.onReceiveResult(true);
 			}
 		});

@@ -12,6 +12,7 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.navigation.NavArgs;
 import androidx.navigation.NavController;
 import androidx.navigation.NavDestination;
+import androidx.navigation.NavHost;
 import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
@@ -67,6 +68,8 @@ public class RestaurantDialogFragment extends BottomSheetDialogFragment implemen
 	private final FavoriteLocationsListener favoriteLocationsListener;
 	private final IMapPoint iMapPoint;
 
+	private NavHostFragment navHostFragment;
+
 	private BottomSheetBehavior bottomSheetBehavior;
 
 	public RestaurantDialogFragment(IMapPoint iMapPoint
@@ -85,24 +88,20 @@ public class RestaurantDialogFragment extends BottomSheetDialogFragment implemen
 	@Override
 	public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
 		Dialog dialog = super.onCreateDialog(savedInstanceState);
-		/*
+
 		dialog.setOnKeyListener(new DialogInterface.OnKeyListener() {
 			@Override
 			public boolean onKey(DialogInterface dialogInterface, int keyCode, KeyEvent event) {
 				if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_UP) {
-					Fragment primaryNavigationFragment = getChildFragmentManager().getPrimaryNavigationFragment();
-					FragmentManager childFragmentManagerInPrimaryNavigationFragment = primaryNavigationFragment.getChildFragmentManager();
-
-					if (childFragmentManagerInPrimaryNavigationFragment.getBackStackEntryCount() == 0) {
+					NavController navController = navHostFragment.getNavController();
+					if (!navController.popBackStack()) {
 						dismiss();
-					} else {
-						childFragmentManagerInPrimaryNavigationFragment.popBackStack();
 					}
 				}
 				return true;
 			}
 		});
-		 */
+
 		bottomSheetBehavior = ((BottomSheetDialog) dialog).getBehavior();
 		bottomSheetBehavior.setDraggable(false);
 		bottomSheetBehavior.setPeekHeight(0);
@@ -114,6 +113,7 @@ public class RestaurantDialogFragment extends BottomSheetDialogFragment implemen
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
 	}
 
 	@Override
@@ -130,40 +130,41 @@ public class RestaurantDialogFragment extends BottomSheetDialogFragment implemen
 		View bottomSheet = getDialog().findViewById(R.id.design_bottom_sheet);
 		bottomSheet.getLayoutParams().height = VIEW_HEIGHT;
 
-		NavHostFragment navHostFragment = (NavHostFragment) getChildFragmentManager().findFragmentById(binding.navHostFragment.getId());
+		navHostFragment = (NavHostFragment) getChildFragmentManager().findFragmentById(binding.navHostFragment.getId());
 		NavController navController = navHostFragment.getNavController();
+
+		FoodsMenuListFragmentArgs navArgs = new FoodsMenuListFragmentArgs.Builder(iMapPoint,
+				favoriteLocationsListener, foodMenuChipsViewController, EVENT_ID).build();
+		Bundle bundle = navArgs.toBundle();
+
+		navController.setGraph(R.navigation.restaurant_root_nav_graph, bundle);
 		NavigationUI.setupWithNavController(binding.bottomNavigation, navController);
+
 		navController.addOnDestinationChangedListener(new NavController.OnDestinationChangedListener() {
 			@Override
-			public void onDestinationChanged(@NonNull @NotNull NavController controller, @NonNull @NotNull NavDestination destination
-					, @Nullable @org.jetbrains.annotations.Nullable Bundle arguments) {
-				NavArgs navArgs = null;
-				switch (destination.getId()) {
-					case R.id.restaurant_main_nav_graph:
-						navArgs = new FoodsMenuListFragmentArgs.Builder(iMapPoint,
-								favoriteLocationsListener, foodMenuChipsViewController).build();
-						arguments = ((FoodsMenuListFragmentArgs) navArgs).toBundle();
-						break;
+			public void onDestinationChanged(@NonNull @NotNull NavController controller, @NonNull @NotNull NavDestination destination, @Nullable @org.jetbrains.annotations.Nullable Bundle arguments) {
+				//bottom navigation btn을 누르면 호출되고 이후 프래그먼트 뷰가 초기화 된다
+				//id값으로는 startDestination id가 온다
 
-					case R.id.restaurant_favorites_nav_graph:
-						navArgs = new FavoritesMainFragmentArgs.Builder(iMapPoint,
-								foodMenuChipsViewController, favoriteLocationsListener).build();
-						arguments = ((FavoritesMainFragmentArgs) navArgs).toBundle();
+				int id = destination.getId();
+				String result = null;
+				switch (id) {
+					case R.navigation.restaurant_main_nav_graph:
+						result = "1";
 						break;
+					case R.navigation.restaurant_favorites_nav_graph:
+						result = "2";
+						break;
+					case R.navigation.restaurant_search_nav_graph:
+						result = "3";
+						break;
+					case R.navigation.restaurant_settings_nav_graph:
+						result = "4";
+						break;
+				}
 
-					case R.id.restaurant_search_nav_graph:
-						navArgs = new SearchRestaurantFragmentArgs.Builder(iMapPoint,
-								foodMenuChipsViewController, favoriteLocationsListener).build();
-						arguments = ((SearchRestaurantFragmentArgs) navArgs).toBundle();
-						break;
+				if (result == null) {
 
-					case R.id.restaurant_settings_nav_graph:
-						navArgs = new FoodsSettingsFragmentArgs.Builder(iMapPoint,
-								foodMenuChipsViewController, favoriteLocationsListener).build();
-						arguments = ((FoodsSettingsFragmentArgs) navArgs).toBundle();
-						break;
-					default:
-						assert (false) : "Unknown";
 				}
 			}
 		});

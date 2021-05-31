@@ -31,7 +31,7 @@ public class CalendarInstanceUtil {
 
 			}
 		});
-		foodCriteriaLocationInfoViewModel.deleteByEventId(CALENDAR_ID, EVENT_ID, new CarrierMessagingService.ResultCallback<Boolean>() {
+		foodCriteriaLocationInfoViewModel.deleteByEventId(EVENT_ID, new CarrierMessagingService.ResultCallback<Boolean>() {
 			@Override
 			public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException {
 
