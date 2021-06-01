@@ -5,14 +5,12 @@
     android:id="@+id/restaurant_search_nav_graph"
     app:startDestination="@id/searchRestaurantFragment">
 
+
     <fragment
         android:id="@+id/searchRestaurantFragment"
         android:name="com.zerodsoft.scheduleweather.event.foods.search.search.fragment.SearchRestaurantFragment"
         android:label="SearchRestaurantFragment"
         tools:layout="@layout/fragment_search_restaurant">
-        <action
-            android:id="@+id/action_searchRestaurantFragment_to_foodRestaurantSearchResultFragment"
-            app:destination="@id/foodRestaurantSearchResultFragment" />
         <argument
             android:name="iMapPoint"
             app:argType="com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint" />
@@ -22,7 +20,9 @@
         <argument
             android:name="favoriteLocationsListener"
             app:argType="com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener" />
-
+        <action
+            android:id="@+id/action_searchRestaurantFragment_to_foodRestaurantSearchResultFragment3"
+            app:destination="@id/foodRestaurantSearchResultFragment" />
 
     </fragment>
 
@@ -37,22 +37,24 @@
             app:argType="string"
             app:nullable="false" />
         <action
-            android:id="@+id/action_foodRestaurantSearchResultFragment_to_searchRestaurantFragment"
-            app:destination="@id/searchRestaurantFragment" />
-        <action
             android:id="@+id/action_foodRestaurantSearchResultFragment_to_placeInfoWebFragment2"
             app:destination="@id/placeInfoWebFragment" />
+        <action
+            android:id="@+id/action_foodRestaurantSearchResultFragment_to_searchRestaurantFragment3"
+            app:destination="@id/searchRestaurantFragment" />
     </fragment>
+
     <fragment
         android:id="@+id/placeInfoWebFragment"
         android:name="com.zerodsoft.scheduleweather.navermap.place.PlaceInfoWebFragment"
         android:label="PlaceInfoWebFragment"
         tools:layout="@layout/fragment_place_info_web">
-        <action
-            android:id="@+id/action_placeInfoWebFragment_to_foodRestaurantSearchResultFragment"
-            app:destination="@id/foodRestaurantSearchResultFragment" />
         <argument
             android:name="placeId"
             app:argType="string" />
+        <action
+            android:id="@+id/action_placeInfoWebFragment_to_foodRestaurantSearchResultFragment2"
+            app:destination="@id/foodRestaurantSearchResultFragment" />
+
     </fragment>
 </navigation>

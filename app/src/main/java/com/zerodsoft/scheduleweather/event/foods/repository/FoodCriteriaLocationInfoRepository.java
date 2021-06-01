@@ -3,6 +3,8 @@ package com.zerodsoft.scheduleweather.event.foods.repository;
 import android.app.Application;
 import android.service.carrier.CarrierMessagingService;
 
+import androidx.lifecycle.MutableLiveData;
+
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.FoodCriteriaLocationInfoQuery;
@@ -14,9 +16,24 @@ import lombok.SneakyThrows;
 
 public class FoodCriteriaLocationInfoRepository implements FoodCriteriaLocationInfoQuery {
 	private FoodCriteriaLocationInfoDAO dao;
+	private MutableLiveData<FoodCriteriaLocationInfoDTO> foodCriteriaLocationInfo = new MutableLiveData(new FoodCriteriaLocationInfoDTO());
 
 	public FoodCriteriaLocationInfoRepository(Application application) {
 		dao = AppDb.getInstance(application.getApplicationContext()).foodCriteriaLocationInfoDAO();
+	}
+
+	public void getInfoById(Long eventId) {
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO = dao.selectByEventId(eventId);
+				foodCriteriaLocationInfo.postValue(foodCriteriaLocationInfoDTO);
+			}
+		}).start();
+	}
+
+	public MutableLiveData<FoodCriteriaLocationInfoDTO> getFoodCriteriaLocationInfo() {
+		return foodCriteriaLocationInfo;
 	}
 
 	@Override

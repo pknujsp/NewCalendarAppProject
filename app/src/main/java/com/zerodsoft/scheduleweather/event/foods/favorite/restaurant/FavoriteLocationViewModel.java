@@ -5,6 +5,8 @@ import android.service.carrier.CarrierMessagingService;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 
 import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
 import com.zerodsoft.scheduleweather.room.interfaces.FavoriteLocationQuery;
@@ -13,10 +15,21 @@ import java.util.List;
 
 public class FavoriteLocationViewModel extends AndroidViewModel implements FavoriteLocationQuery {
 	private FavoriteLocationRepository restaurantRepository;
+	private MutableLiveData<FavoriteLocationDTO> favoriteLocationDTOMutableLiveData;
 
 	public FavoriteLocationViewModel(@NonNull Application application) {
 		super(application);
-		restaurantRepository = new FavoriteLocationRepository(application);
+		restaurantRepository = new FavoriteLocationRepository(application.getApplicationContext());
+		favoriteLocationDTOMutableLiveData = restaurantRepository.getFavoriteLocationDTOMutableLiveData();
+	}
+
+	public LiveData<FavoriteLocationDTO> getFavoriteLocationDTOMutableLiveData() {
+		return favoriteLocationDTOMutableLiveData;
+	}
+
+	@Override
+	public void addFavoriteLocation(FavoriteLocationDTO favoriteLocationDTO) {
+		restaurantRepository.addFavoriteLocation(favoriteLocationDTO);
 	}
 
 	@Override

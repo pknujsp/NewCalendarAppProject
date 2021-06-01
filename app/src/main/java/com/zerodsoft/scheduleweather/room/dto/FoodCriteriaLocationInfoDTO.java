@@ -7,7 +7,6 @@ import androidx.room.PrimaryKey;
 
 @Entity(tableName = "food_criteria_location_info_table")
 public class FoodCriteriaLocationInfoDTO {
-
 	@ColumnInfo(name = "id")
 	@PrimaryKey(autoGenerate = true)
 	private int id;

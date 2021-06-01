@@ -93,7 +93,7 @@ public class RestaurantListTabFragment extends Fragment implements NewInstanceMa
 			}
 		});
 
-		favoriteRestaurantViewModel = new ViewModelProvider(this).get(FavoriteLocationViewModel.class);
+		favoriteRestaurantViewModel = new ViewModelProvider(requireActivity()).get(FavoriteLocationViewModel.class);
 		customFoodCategoryViewModel = new ViewModelProvider(this).get(CustomFoodMenuViewModel.class);
 		customFoodCategoryViewModel.select(new DbQueryCallback<List<CustomFoodMenuDTO>>() {
 			@Override

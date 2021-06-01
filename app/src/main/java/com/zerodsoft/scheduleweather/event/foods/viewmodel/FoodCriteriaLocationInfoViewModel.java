@@ -5,6 +5,8 @@ import android.service.carrier.CarrierMessagingService;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.FoodCriteriaLocationInfoQuery;
@@ -13,10 +15,20 @@ import com.zerodsoft.scheduleweather.room.dto.FoodCriteriaLocationInfoDTO;
 
 public class FoodCriteriaLocationInfoViewModel extends AndroidViewModel implements FoodCriteriaLocationInfoQuery {
 	private FoodCriteriaLocationInfoRepository repository;
+	private MutableLiveData<FoodCriteriaLocationInfoDTO> foodCriteriaLocationInfo;
 
 	public FoodCriteriaLocationInfoViewModel(@NonNull Application application) {
 		super(application);
 		repository = new FoodCriteriaLocationInfoRepository(application);
+		foodCriteriaLocationInfo = repository.getFoodCriteriaLocationInfo();
+	}
+
+	public LiveData<FoodCriteriaLocationInfoDTO> getFoodCriteriaLocationInfo() {
+		return foodCriteriaLocationInfo;
+	}
+
+	public void getInfoById(Long eventId) {
+		repository.getInfoById(eventId);
 	}
 
 	@Override

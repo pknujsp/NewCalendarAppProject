@@ -5,7 +5,10 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
 
 import android.os.RemoteException;
@@ -16,6 +19,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ExpandableListView;
 
+import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.common.interfaces.OnProgressBarListener;
@@ -68,7 +72,6 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		favoriteRestaurantViewModel = new ViewModelProvider(this).get(FavoriteLocationViewModel.class);
 	}
 
 	@Override
@@ -81,6 +84,7 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
+		favoriteRestaurantViewModel = new ViewModelProvider(requireActivity()).get(FavoriteLocationViewModel.class);
 
 		FavoriteRestaurantFragmentArgs arg = FavoriteRestaurantFragmentArgs.fromBundle(getArguments());
 		favoriteLocationsListener = arg.getFavoriteLocationsListener();
