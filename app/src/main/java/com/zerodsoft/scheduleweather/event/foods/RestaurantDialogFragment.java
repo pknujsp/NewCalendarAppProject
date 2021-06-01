@@ -109,6 +109,10 @@ public class RestaurantDialogFragment extends BottomSheetDialogFragment implemen
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 
+		FavoriteLocationViewModel favoriteRestaurantViewModel =
+				new ViewModelProvider(requireActivity()).get(FavoriteLocationViewModel.class);
+		favoriteRestaurantViewModel.setFavoriteLocationsListener(favoriteLocationsListener);
+
 		View bottomSheet = getDialog().findViewById(R.id.design_bottom_sheet);
 		bottomSheet.getLayoutParams().height = VIEW_HEIGHT;
 
@@ -140,8 +144,7 @@ public class RestaurantDialogFragment extends BottomSheetDialogFragment implemen
 						bundle.putAll(new FavoriteRestaurantFragmentArgs.Builder(favoriteLocationsListener).build().toBundle());
 						break;
 					case R.id.restaurant_search_nav_graph:
-						bundle.putAll(new SearchRestaurantFragmentArgs.Builder(iMapPoint, foodMenuChipsViewController,
-								favoriteLocationsListener).build().toBundle());
+						bundle.putAll(new SearchRestaurantFragmentArgs.Builder(favoriteLocationsListener).build().toBundle());
 						break;
 					case R.id.restaurant_settings_nav_graph:
 						break;

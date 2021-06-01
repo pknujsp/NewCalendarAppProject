@@ -44,9 +44,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/search_history_text_label"
+            android:layout_marginLeft="8dp"
             android:orientation="horizontal"
             tools:itemCount="10"
-            android:layout_marginLeft="8dp"
             tools:listitem="@layout/search_history_horizontal_item_view" />
 
 

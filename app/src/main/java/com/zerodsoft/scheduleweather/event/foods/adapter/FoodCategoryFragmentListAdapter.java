@@ -1,5 +1,7 @@
 package com.zerodsoft.scheduleweather.event.foods.adapter;
 
+import android.os.Bundle;
+
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
@@ -32,7 +34,11 @@ public class FoodCategoryFragmentListAdapter extends FragmentStateAdapter implem
 		this.fragments = new ArrayList<>();
 
 		for (String categoryName : categoryList) {
-			fragments.add(new RestaurantListFragment(favoriteLocationQuery, favoriteLocationsListener, categoryName));
+			RestaurantListFragment fragment = new RestaurantListFragment();
+			Bundle bundle = new Bundle();
+			bundle.putString("query", categoryName);
+			fragment.setArguments(bundle);
+			fragments.add(fragment);
 		}
 	}
 

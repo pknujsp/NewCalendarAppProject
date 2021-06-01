@@ -12,37 +12,14 @@
         android:label="SearchRestaurantFragment"
         tools:layout="@layout/fragment_search_restaurant">
         <argument
-            android:name="iMapPoint"
-            app:argType="com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint" />
-        <argument
-            android:name="foodMenuChipsViewController"
-            app:argType="com.zerodsoft.scheduleweather.event.foods.interfaces.FoodMenuChipsViewController" />
-        <argument
             android:name="favoriteLocationsListener"
             app:argType="com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener" />
         <action
-            android:id="@+id/action_searchRestaurantFragment_to_foodRestaurantSearchResultFragment3"
-            app:destination="@id/foodRestaurantSearchResultFragment" />
+            android:id="@+id/action_searchRestaurantFragment_to_searchResultRestaurantFragment"
+            app:destination="@id/searchResultRestaurantFragment" />
 
     </fragment>
 
-    <fragment
-        android:id="@+id/foodRestaurantSearchResultFragment"
-        android:name="com.zerodsoft.scheduleweather.event.foods.search.searchresult.fragment.FoodRestaurantSearchResultFragment"
-        android:label="fragment_search_result_restaurant"
-        tools:layout="@layout/fragment_restaurant_list">
-
-        <argument
-            android:name="foodMenuName"
-            app:argType="string"
-            app:nullable="false" />
-        <action
-            android:id="@+id/action_foodRestaurantSearchResultFragment_to_placeInfoWebFragment2"
-            app:destination="@id/placeInfoWebFragment" />
-        <action
-            android:id="@+id/action_foodRestaurantSearchResultFragment_to_searchRestaurantFragment3"
-            app:destination="@id/searchRestaurantFragment" />
-    </fragment>
 
     <fragment
         android:id="@+id/placeInfoWebFragment"
@@ -53,8 +30,25 @@
             android:name="placeId"
             app:argType="string" />
         <action
-            android:id="@+id/action_placeInfoWebFragment_to_foodRestaurantSearchResultFragment2"
-            app:destination="@id/foodRestaurantSearchResultFragment" />
+            android:id="@+id/action_placeInfoWebFragment_to_searchResultRestaurantFragment"
+            app:destination="@id/searchResultRestaurantFragment" />
 
+
+    </fragment>
+    <fragment
+        android:id="@+id/searchResultRestaurantFragment"
+        android:name="com.zerodsoft.scheduleweather.event.foods.search.searchresult.fragment.SearchResultRestaurantFragment"
+        android:label="SearchResultRestaurantFragment"
+        tools:layout="@layout/fragment_search_restaurant">
+        <argument
+            android:name="query"
+            app:argType="string"
+            app:nullable="false" />
+        <action
+            android:id="@+id/action_searchResultRestaurantFragment_to_placeInfoWebFragment"
+            app:destination="@id/placeInfoWebFragment" />
+        <action
+            android:id="@+id/action_searchResultRestaurantFragment_to_searchRestaurantFragment"
+            app:destination="@id/searchRestaurantFragment" />
     </fragment>
 </navigation>

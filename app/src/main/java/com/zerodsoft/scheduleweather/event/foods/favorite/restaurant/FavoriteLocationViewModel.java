@@ -8,6 +8,7 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
 import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
 import com.zerodsoft.scheduleweather.room.interfaces.FavoriteLocationQuery;
 
@@ -15,12 +16,21 @@ import java.util.List;
 
 public class FavoriteLocationViewModel extends AndroidViewModel implements FavoriteLocationQuery {
 	private FavoriteLocationRepository restaurantRepository;
+	private FavoriteLocationsListener favoriteLocationsListener;
 	private MutableLiveData<FavoriteLocationDTO> favoriteLocationDTOMutableLiveData;
 
 	public FavoriteLocationViewModel(@NonNull Application application) {
 		super(application);
 		restaurantRepository = new FavoriteLocationRepository(application.getApplicationContext());
 		favoriteLocationDTOMutableLiveData = restaurantRepository.getFavoriteLocationDTOMutableLiveData();
+	}
+
+	public void setFavoriteLocationsListener(FavoriteLocationsListener favoriteLocationsListener) {
+		this.favoriteLocationsListener = favoriteLocationsListener;
+	}
+
+	public FavoriteLocationsListener getFavoriteLocationsListener() {
+		return favoriteLocationsListener;
 	}
 
 	public LiveData<FavoriteLocationDTO> getFavoriteLocationDTOMutableLiveData() {

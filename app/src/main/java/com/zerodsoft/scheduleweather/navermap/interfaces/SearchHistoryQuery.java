@@ -2,6 +2,7 @@ package com.zerodsoft.scheduleweather.navermap.interfaces;
 
 import android.service.carrier.CarrierMessagingService;
 
+import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.room.dto.SearchHistoryDTO;
 
 import java.util.List;
@@ -20,5 +21,5 @@ public interface SearchHistoryQuery
 
     void deleteAll(Integer type, CarrierMessagingService.ResultCallback<Boolean> callback);
 
-    void contains(Integer type, String value, CarrierMessagingService.ResultCallback<Boolean> callback);
+    void contains(Integer type, String value, DbQueryCallback<Boolean> callback);
 }

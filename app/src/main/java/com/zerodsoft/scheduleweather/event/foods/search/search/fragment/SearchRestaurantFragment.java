@@ -2,47 +2,36 @@ package com.zerodsoft.scheduleweather.event.foods.search.search.fragment;
 
 import android.os.Bundle;
 
-import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelStoreOwner;
 import androidx.navigation.fragment.NavHostFragment;
 
-import android.os.RemoteException;
-import android.service.carrier.CarrierMessagingService;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
+import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
-import com.zerodsoft.scheduleweather.common.interfaces.OnPopBackStackFragmentCallback;
 import com.zerodsoft.scheduleweather.databinding.FragmentSearchRestaurantBinding;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedRestaurantItem;
-import com.zerodsoft.scheduleweather.event.foods.search.searchresult.fragment.FoodRestaurantSearchResultFragment;
-import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
-import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
 import com.zerodsoft.scheduleweather.navermap.viewmodel.SearchHistoryViewModel;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.SearchHistoryDTO;
 
-public class SearchRestaurantFragment extends Fragment implements OnClickedListItem<SearchHistoryDTO>, FoodRestaurantSearchResultFragment.OnDeleteSearchView,
+public class SearchRestaurantFragment extends Fragment implements OnClickedListItem<SearchHistoryDTO>,
 		OnClickedRestaurantItem {
 	public static final String TAG = "SearchRestaurantFragment";
 	private FragmentSearchRestaurantBinding binding;
 	private FoodRestaurantSearchHistoryFragment foodRestaurantSearchHistoryFragment;
-	private FoodRestaurantSearchResultFragment searchResultFragment;
 	private SearchHistoryViewModel searchHistoryViewModel;
 	private FavoriteLocationsListener favoriteLocationsListener;
-
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -66,97 +55,55 @@ public class SearchRestaurantFragment extends Fragment implements OnClickedListI
 		searchHistoryViewModel = new ViewModelProvider(owner).get(SearchHistoryViewModel.class);
 		//검색 기록 프래그먼트 표시
 		foodRestaurantSearchHistoryFragment = new FoodRestaurantSearchHistoryFragment(this);
-		getChildFragmentManager().beginTransaction().add(binding.searchFoodRestaurantFragmentContainer.getId(),
+		getChildFragmentManager().beginTransaction().add(binding.fragmentContainer.getId(),
 				foodRestaurantSearchHistoryFragment, FoodRestaurantSearchHistoryFragment.TAG).commitNow();
 
-		binding.editTextSearch.setOnKeyListener(new View.OnKeyListener() {
+		binding.searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
 			@Override
-			public boolean onKey(View view, int keyCode, KeyEvent keyEvent) {
-				if (keyCode == KeyEvent.KEYCODE_ENTER && keyEvent.getAction() == KeyEvent.ACTION_DOWN) {
-					//검색
-					binding.searchButton.callOnClick();
-					return true;
+			public boolean onQueryTextSubmit(String query) {
+				if (!query.isEmpty()) {
+					searchHistoryViewModel.contains(SearchHistoryDTO.FOOD_RESTAURANT_SEARCH, query,
+							new DbQueryCallback<Boolean>() {
+								@Override
+								public void onResultSuccessful(Boolean isDuplicate) {
+									requireActivity().runOnUiThread(new Runnable() {
+										@Override
+										public void run() {
+											if (isDuplicate) {
+												Toast.makeText(getContext(), R.string.duplicate_value, Toast.LENGTH_SHORT).show();
+											} else {
+												search(query);
+												foodRestaurantSearchHistoryFragment.insertHistory(query);
+											}
+										}
+									});
+								}
+
+								@Override
+								public void onResultNoData() {
+
+								}
+							});
 				}
+				return false;
+			}
+
+			@Override
+			public boolean onQueryTextChange(String newText) {
 				return false;
 			}
 		});
 
-		binding.searchButton.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				String value = binding.editTextSearch.getText().toString();
-				searchHistoryViewModel.contains(SearchHistoryDTO.FOOD_RESTAURANT_SEARCH, value, new CarrierMessagingService.ResultCallback<Boolean>() {
-					@Override
-					public void onReceiveResult(@NonNull Boolean isDuplicate) throws RemoteException {
-						requireActivity().runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								if (isDuplicate) {
-									Toast.makeText(getContext(), R.string.duplicate_value, Toast.LENGTH_SHORT).show();
-								} else {
-									search(binding.editTextSearch.getText().toString());
-									foodRestaurantSearchHistoryFragment.insertHistory(value);
-								}
-							}
-						});
-
-					}
-				});
-
-			}
-		});
-
-		binding.deleteQueryButton.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				getChildFragmentManager().popBackStack();
-			}
-		});
-
-		binding.deleteQueryButton.setVisibility(View.GONE);
-		binding.searchButton.setVisibility(View.VISIBLE);
 	}
 
-	@Override
-	public void onHiddenChanged(boolean hidden) {
-		super.onHiddenChanged(hidden);
 
-		if (hidden) {
-		} else {
-			FoodRestaurantSearchResultFragment foodRestaurantSearchResultFragment =
-					(FoodRestaurantSearchResultFragment) getChildFragmentManager().findFragmentByTag(FoodRestaurantSearchResultFragment.TAG);
-			if (foodRestaurantSearchResultFragment != null) {
-				foodRestaurantSearchResultFragment.refreshFavorites();
-			}
-		}
-	}
-
-	private void search(String value) {
-		binding.deleteQueryButton.setVisibility(View.VISIBLE);
-		binding.searchButton.setVisibility(View.GONE);
-
-		if (getChildFragmentManager().findFragmentByTag(FoodRestaurantSearchResultFragment.TAG) == null) {
-			searchResultFragment = new FoodRestaurantSearchResultFragment(value, favoriteLocationsListener, this, new OnPopBackStackFragmentCallback() {
-				@Override
-				public void onPopped() {
-					binding.deleteQueryButton.setVisibility(View.GONE);
-					binding.searchButton.setVisibility(View.VISIBLE);
-					deleteQuery();
-				}
-			});
-
-			getChildFragmentManager().beginTransaction().hide(foodRestaurantSearchHistoryFragment)
-					.add(binding.searchFoodRestaurantFragmentContainer.getId(),
-							searchResultFragment, FoodRestaurantSearchResultFragment.TAG)
-					.addToBackStack(FoodRestaurantSearchResultFragment.TAG).commit();
-		} else {
-			searchResultFragment.search(value);
-		}
+	private void search(String query) {
+		NavHostFragment.findNavController(this).navigate(SearchRestaurantFragmentDirections.actionSearchRestaurantFragmentToSearchResultRestaurantFragment(query));
 	}
 
 	@Override
 	public void onClickedListItem(SearchHistoryDTO e, int position) {
-		binding.editTextSearch.setText(e.getValue());
+		binding.searchView.setQuery(e.getValue(), false);
 		search(e.getValue());
 	}
 
@@ -165,10 +112,6 @@ public class SearchRestaurantFragment extends Fragment implements OnClickedListI
 
 	}
 
-	@Override
-	public void deleteQuery() {
-		binding.editTextSearch.setText("");
-	}
 
 	@Override
 	public void onClickedRestaurantItem(PlaceDocuments placeDocuments) {

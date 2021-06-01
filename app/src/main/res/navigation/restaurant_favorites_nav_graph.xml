@@ -12,8 +12,7 @@
         tools:layout="@layout/fragment_favorite_restaurant">
         <action
             android:id="@+id/action_favoriteRestaurantFragment_to_placeInfoWebFragment2"
-            app:destination="@id/favoritePlaceInfoWebFragment"
-            app:popUpTo="com.android.tools.property.panel.api.EnumValue$Companion$LOADING$1@4fd61870" />
+            app:destination="@id/favoritePlaceInfoWebFragment" />
         <argument
             android:name="favoriteLocationsListener"
             app:argType="com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener" />

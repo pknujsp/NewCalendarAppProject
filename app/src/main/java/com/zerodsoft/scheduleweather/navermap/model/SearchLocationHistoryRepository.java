@@ -6,6 +6,7 @@ import android.service.carrier.CarrierMessagingService;
 import androidx.annotation.NonNull;
 
 import com.zerodsoft.scheduleweather.activity.App;
+import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.navermap.interfaces.SearchHistoryQuery;
 import com.zerodsoft.scheduleweather.room.AppDb;
 import com.zerodsoft.scheduleweather.room.dao.SearchHistoryDAO;
@@ -117,7 +118,7 @@ public class SearchLocationHistoryRepository implements SearchHistoryQuery
     }
 
     @Override
-    public void contains(Integer type, String value, CarrierMessagingService.ResultCallback<Boolean> callback)
+    public void contains(Integer type, String value, DbQueryCallback<Boolean> callback)
     {
         App.executorService.execute(new Runnable()
         {
@@ -126,7 +127,7 @@ public class SearchLocationHistoryRepository implements SearchHistoryQuery
             public void run()
             {
                 int result = dao.contains(type, value);
-                callback.onReceiveResult(result == 1);
+                callback.processResult(result == 1);
             }
         });
     }

@@ -6,6 +6,7 @@ import android.service.carrier.CarrierMessagingService;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 
+import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.navermap.interfaces.SearchHistoryQuery;
 import com.zerodsoft.scheduleweather.navermap.model.SearchLocationHistoryRepository;
 import com.zerodsoft.scheduleweather.room.dto.SearchHistoryDTO;
@@ -60,7 +61,7 @@ public class SearchHistoryViewModel extends AndroidViewModel implements SearchHi
     }
 
     @Override
-    public void contains(Integer type, String value, CarrierMessagingService.ResultCallback<Boolean> callback)
+    public void contains(Integer type, String value, DbQueryCallback<Boolean> callback)
     {
         repository.contains(type, value, callback);
     }

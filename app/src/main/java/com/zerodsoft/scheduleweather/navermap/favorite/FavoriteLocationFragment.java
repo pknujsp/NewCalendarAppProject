@@ -440,6 +440,11 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
 	}
 
 	@Override
+	public void addFavoriteLocation(FavoriteLocationDTO favoriteLocationDTO) {
+		
+	}
+
+	@Override
 	public void select(Integer type, CarrierMessagingService.ResultCallback<List<FavoriteLocationDTO>> callback) {
 		favoriteLocationViewModel.select(type, new CarrierMessagingService.ResultCallback<List<FavoriteLocationDTO>>() {
 			@Override

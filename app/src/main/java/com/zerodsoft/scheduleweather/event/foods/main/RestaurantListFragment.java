@@ -25,42 +25,26 @@ import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.common.interfaces.OnProgressBarListener;
 import com.zerodsoft.scheduleweather.databinding.FragmentRestaurantListBinding;
 import com.zerodsoft.scheduleweather.event.foods.adapter.RestaurantListAdapter;
+import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteLocationViewModel;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedFavoriteButtonListener;
 import com.zerodsoft.scheduleweather.event.foods.share.CriteriaLocationCloud;
 import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
-import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoWebDialogFragment;
-import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoWebFragment;
-import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoWebFragmentArgs;
-import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoWebFragmentDirections;
 import com.zerodsoft.scheduleweather.navermap.util.LocalParameterUtil;
 import com.zerodsoft.scheduleweather.navermap.viewmodel.PlacesViewModel;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalDocument;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
-import com.zerodsoft.scheduleweather.room.interfaces.FavoriteLocationQuery;
 
 public class RestaurantListFragment extends Fragment implements OnClickedListItem<PlaceDocuments>, OnClickedFavoriteButtonListener
 		, RestaurantListTabFragment.RefreshFavoriteState, RestaurantListAdapter.OnContainsRestaurantListener {
-	protected FavoriteLocationQuery favoriteRestaurantDbQuery;
 	protected FragmentRestaurantListBinding binding;
-	protected String CATEGORY_NAME;
+	protected String query;
 	protected PlacesViewModel placesViewModel;
 	protected RestaurantListAdapter adapter;
-	protected final FavoriteLocationsListener favoriteLocationsListener;
-
 	protected RecyclerView.AdapterDataObserver adapterDataObserver;
-
-	public RestaurantListFragment(String CATEGORY_NAME, FavoriteLocationsListener favoriteLocationsListener) {
-		this.favoriteLocationsListener = favoriteLocationsListener;
-		this.CATEGORY_NAME = CATEGORY_NAME;
-	}
-
-	public RestaurantListFragment(FavoriteLocationQuery favoriteRestaurantDbQuery, FavoriteLocationsListener favoriteLocationsListener, String CATEGORY_NAME) {
-		this.favoriteRestaurantDbQuery = favoriteRestaurantDbQuery;
-		this.favoriteLocationsListener = favoriteLocationsListener;
-		this.CATEGORY_NAME = CATEGORY_NAME;
-	}
+	protected FavoriteLocationViewModel favoriteRestaurantViewModel;
+	protected FavoriteLocationsListener favoriteLocationsListener;
 
 	public void setAdapterDataObserver(RecyclerView.AdapterDataObserver adapterDataObserver) {
 		this.adapterDataObserver = adapterDataObserver;
@@ -69,6 +53,8 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		Bundle bundle = getArguments();
+		query = bundle.getString("query");
 	}
 
 	@Override
@@ -83,13 +69,16 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 		super.onViewCreated(view, savedInstanceState);
 		placesViewModel = new ViewModelProvider(this).get(PlacesViewModel.class);
 
+		favoriteRestaurantViewModel = new ViewModelProvider(requireActivity()).get(FavoriteLocationViewModel.class);
+		favoriteLocationsListener = favoriteRestaurantViewModel.getFavoriteLocationsListener();
+
 		binding.recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext(), RecyclerView.VERTICAL, false));
 		binding.recyclerView.addItemDecoration(new DividerItemDecoration(view.getContext(), DividerItemDecoration.VERTICAL));
 
 		adapter = new RestaurantListAdapter(getContext(), RestaurantListFragment.this, RestaurantListFragment.this, RestaurantListFragment.this);
 		binding.recyclerView.setAdapter(adapter);
 
-		requestRestaurantList(CATEGORY_NAME);
+		requestRestaurantList(query);
 		binding.errorText.setVisibility(View.GONE);
 	}
 
@@ -166,12 +155,12 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 
 	@Override
 	public void onClickedFavoriteButton(KakaoLocalDocument kakaoLocalDocument, FavoriteLocationDTO favoriteLocationDTO, int position) {
-		favoriteRestaurantDbQuery.contains(((PlaceDocuments) kakaoLocalDocument).getId()
+		favoriteRestaurantViewModel.contains(((PlaceDocuments) kakaoLocalDocument).getId()
 				, null, null, null, new CarrierMessagingService.ResultCallback<FavoriteLocationDTO>() {
 					@Override
 					public void onReceiveResult(@NonNull FavoriteLocationDTO favoriteLocationDTO) throws RemoteException {
 						if (favoriteLocationDTO != null) {
-							favoriteRestaurantDbQuery.delete(favoriteLocationDTO.getId(),
+							favoriteRestaurantViewModel.delete(favoriteLocationDTO.getId(),
 									new CarrierMessagingService.ResultCallback<Boolean>() {
 										@Override
 										public void onReceiveResult(@NonNull Boolean isDeleted) throws RemoteException {
@@ -196,7 +185,7 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 							newFavoriteLocationDTO.setAddress(placeDocuments.getAddressName());
 							newFavoriteLocationDTO.setAddedDateTime(String.valueOf(System.currentTimeMillis()));
 
-							favoriteRestaurantDbQuery.insert(newFavoriteLocationDTO, new CarrierMessagingService.ResultCallback<FavoriteLocationDTO>() {
+							favoriteRestaurantViewModel.insert(newFavoriteLocationDTO, new CarrierMessagingService.ResultCallback<FavoriteLocationDTO>() {
 								@Override
 								public void onReceiveResult(@NonNull FavoriteLocationDTO insertedFavoriteLocationDTO) throws RemoteException {
 									requireActivity().runOnUiThread(new Runnable() {
@@ -222,7 +211,7 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 
 	@Override
 	public void contains(String placeId, DbQueryCallback<FavoriteLocationDTO> callback) {
-		favoriteRestaurantDbQuery.contains(placeId, null, null
+		favoriteRestaurantViewModel.contains(placeId, null, null
 				, null, new CarrierMessagingService.ResultCallback<FavoriteLocationDTO>() {
 					@Override
 					public void onReceiveResult(@NonNull FavoriteLocationDTO favoriteLocationDTO) throws RemoteException {

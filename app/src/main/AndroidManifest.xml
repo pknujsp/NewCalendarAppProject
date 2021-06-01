@@ -34,7 +34,7 @@
         <activity android:name=".event.foods.settings.CustomFoodMenuSettingsActivity" />
         <activity
             android:name=".navermap.NaverMapActivity"
-            android:windowSoftInputMode="adjustNothing" />
+            android:windowSoftInputMode="stateAlwaysHidden" />
         <activity
             android:name=".event.common.SelectionDetailLocationActivity"
             android:theme="@style/AppTheme"
