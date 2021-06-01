@@ -37,23 +37,18 @@ import com.zerodsoft.scheduleweather.room.dto.SearchHistoryDTO;
 public class SearchRestaurantFragment extends Fragment implements OnClickedListItem<SearchHistoryDTO>, FoodRestaurantSearchResultFragment.OnDeleteSearchView,
 		OnClickedRestaurantItem {
 	public static final String TAG = "SearchRestaurantFragment";
-	private final BottomSheetController bottomSheetController;
 	private FragmentSearchRestaurantBinding binding;
 	private FoodRestaurantSearchHistoryFragment foodRestaurantSearchHistoryFragment;
 	private FoodRestaurantSearchResultFragment searchResultFragment;
 	private SearchHistoryViewModel searchHistoryViewModel;
-	private final FavoriteLocationsListener favoriteLocationsListener;
-
-	public SearchRestaurantFragment(BottomSheetController bottomSheetController, FavoriteLocationsListener favoriteLocationsListener) {
-		this.bottomSheetController = bottomSheetController;
-		this.favoriteLocationsListener = favoriteLocationsListener;
-	}
+	private FavoriteLocationsListener favoriteLocationsListener;
 
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
+		SearchRestaurantFragmentArgs args = SearchRestaurantFragmentArgs.fromBundle(getArguments());
+		favoriteLocationsListener = args.getFavoriteLocationsListener();
 	}
 
 	@Override

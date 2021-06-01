@@ -39,5 +39,20 @@
         <action
             android:id="@+id/action_foodRestaurantSearchResultFragment_to_searchRestaurantFragment"
             app:destination="@id/searchRestaurantFragment" />
+        <action
+            android:id="@+id/action_foodRestaurantSearchResultFragment_to_placeInfoWebFragment2"
+            app:destination="@id/placeInfoWebFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/placeInfoWebFragment"
+        android:name="com.zerodsoft.scheduleweather.navermap.place.PlaceInfoWebFragment"
+        android:label="PlaceInfoWebFragment"
+        tools:layout="@layout/fragment_place_info_web">
+        <action
+            android:id="@+id/action_placeInfoWebFragment_to_foodRestaurantSearchResultFragment"
+            app:destination="@id/foodRestaurantSearchResultFragment" />
+        <argument
+            android:name="placeId"
+            app:argType="string" />
     </fragment>
 </navigation>

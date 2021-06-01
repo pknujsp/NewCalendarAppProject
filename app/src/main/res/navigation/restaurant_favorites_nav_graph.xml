@@ -3,23 +3,31 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/restaurant_favorites_nav_graph"
-    app:startDestination="@id/favoritesMainFragment">
+    app:startDestination="@id/favoriteRestaurantFragment">
 
     <fragment
-        android:id="@+id/favoritesMainFragment"
-        android:name="com.zerodsoft.scheduleweather.event.foods.favorite.FavoritesMainFragment"
-        android:label="FavoritesMainFragment"
-        tools:layout="@layout/fragment_favorites_main">
-        <argument
-            android:name="iMapPoint"
-            app:argType="com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint" />
-        <argument
-            android:name="foodMenuChipsViewController"
-            app:argType="com.zerodsoft.scheduleweather.event.foods.interfaces.FoodMenuChipsViewController" />
+        android:id="@+id/favoriteRestaurantFragment"
+        android:name="com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteRestaurantFragment"
+        android:label="FavoriteRestaurantFragment"
+        tools:layout="@layout/fragment_favorite_restaurant">
+        <action
+            android:id="@+id/action_favoriteRestaurantFragment_to_placeInfoWebFragment2"
+            app:destination="@id/favoritePlaceInfoWebFragment"
+            app:popUpTo="com.android.tools.property.panel.api.EnumValue$Companion$LOADING$1@4fd61870" />
         <argument
             android:name="favoriteLocationsListener"
             app:argType="com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener" />
-
-
+    </fragment>
+    <fragment
+        android:id="@+id/favoritePlaceInfoWebFragment"
+        android:name="com.zerodsoft.scheduleweather.navermap.place.PlaceInfoWebFragment"
+        android:label="FavoritePlaceInfoWebFragment"
+        tools:layout="@layout/fragment_place_info_web">
+        <action
+            android:id="@+id/action_placeInfoWebFragment2_to_favoriteRestaurantFragment"
+            app:destination="@id/favoriteRestaurantFragment" />
+        <argument
+            android:name="placeId"
+            app:argType="string" />
     </fragment>
 </navigation>

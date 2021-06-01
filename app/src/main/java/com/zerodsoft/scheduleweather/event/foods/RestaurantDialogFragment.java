@@ -6,14 +6,8 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.navigation.NavArgs;
 import androidx.navigation.NavController;
 import androidx.navigation.NavDestination;
-import androidx.navigation.NavHost;
-import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
 
@@ -28,31 +22,17 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.common.interfaces.OnHiddenFragmentListener;
 import com.zerodsoft.scheduleweather.databinding.FragmentRestaurantMainTransactionBinding;
-import com.zerodsoft.scheduleweather.event.foods.favorite.FavoritesMainFragment;
-import com.zerodsoft.scheduleweather.event.foods.favorite.FavoritesMainFragmentArgs;
+import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteRestaurantFragmentArgs;
+import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteRestaurantFragmentDirections;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.FoodMenuChipsViewController;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.IGetEventValue;
 import com.zerodsoft.scheduleweather.event.foods.main.FoodsMenuListFragmentArgs;
-import com.zerodsoft.scheduleweather.event.foods.main.FoodsMenuListFragmentDirections;
-import com.zerodsoft.scheduleweather.event.foods.main.RestaurantMainNavHostFragment;
-import com.zerodsoft.scheduleweather.event.foods.search.search.fragment.SearchRestaurantFragment;
 import com.zerodsoft.scheduleweather.event.foods.search.search.fragment.SearchRestaurantFragmentArgs;
-import com.zerodsoft.scheduleweather.event.foods.settings.FoodsSettingsFragment;
-import com.zerodsoft.scheduleweather.event.foods.settings.FoodsSettingsFragmentArgs;
-import com.zerodsoft.scheduleweather.event.main.NewInstanceMainFragment;
-import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint;
-import com.zerodsoft.scheduleweather.navermap.interfaces.OnExtraListDataListener;
 
 import org.jetbrains.annotations.NotNull;
-
-import java.io.Serializable;
-import java.util.List;
-
-import lombok.val;
 
 
 public class RestaurantDialogFragment extends BottomSheetDialogFragment implements IGetEventValue {
@@ -139,35 +119,47 @@ public class RestaurantDialogFragment extends BottomSheetDialogFragment implemen
 
 		navController.setGraph(R.navigation.restaurant_root_nav_graph, bundle);
 		NavigationUI.setupWithNavController(binding.bottomNavigation, navController);
+		binding.bottomNavigation.setOnNavigationItemReselectedListener(new BottomNavigationView.OnNavigationItemReselectedListener() {
+			@Override
+			public void onNavigationItemReselected(@NonNull @NotNull MenuItem item) {
 
+			}
+		});
+		binding.bottomNavigation.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+			@Override
+			public boolean onNavigationItemSelected(@NonNull @NotNull MenuItem item) {
+				final int id = item.getItemId();
+				bundle.clear();
+
+				switch (id) {
+					case R.id.restaurant_main_nav_graph:
+						break;
+					case R.id.restaurant_favorites_nav_graph:
+						bundle.putAll(new FavoriteRestaurantFragmentArgs.Builder(favoriteLocationsListener).build().toBundle());
+						break;
+					case R.id.restaurant_search_nav_graph:
+						bundle.putAll(new SearchRestaurantFragmentArgs.Builder(iMapPoint, foodMenuChipsViewController,
+								favoriteLocationsListener).build().toBundle());
+						break;
+					case R.id.restaurant_settings_nav_graph:
+						break;
+				}
+				navController.navigate(id, bundle);
+				return true;
+			}
+		});
+
+		/*
 		navController.addOnDestinationChangedListener(new NavController.OnDestinationChangedListener() {
 			@Override
 			public void onDestinationChanged(@NonNull @NotNull NavController controller, @NonNull @NotNull NavDestination destination, @Nullable @org.jetbrains.annotations.Nullable Bundle arguments) {
 				//bottom navigation btn을 누르면 호출되고 이후 프래그먼트 뷰가 초기화 된다
 				//id값으로는 startDestination id가 온다
-
-				int id = destination.getId();
-				String result = null;
-				switch (id) {
-					case R.navigation.restaurant_main_nav_graph:
-						result = "1";
-						break;
-					case R.navigation.restaurant_favorites_nav_graph:
-						result = "2";
-						break;
-					case R.navigation.restaurant_search_nav_graph:
-						result = "3";
-						break;
-					case R.navigation.restaurant_settings_nav_graph:
-						result = "4";
-						break;
-				}
-
-				if (result == null) {
-
-				}
+				final int id = destination.getId();
 			}
 		});
+
+		 */
 
 	}
 

@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.fragment.NavHostFragment;
 
 import android.os.RemoteException;
 import android.service.carrier.CarrierMessagingService;
@@ -41,15 +42,16 @@ import java.util.Set;
 public class FavoriteRestaurantFragment extends Fragment implements OnClickedListItem<PlaceDocuments>, OnProgressBarListener, OnClickedFavoriteButtonListener {
 	public static final String TAG = "FavoriteRestaurantFragment";
 	private FragmentFavoriteRestaurantBinding binding;
+	private FavoriteLocationsListener favoriteLocationsListener;
+
 	private FavoriteLocationViewModel favoriteRestaurantViewModel;
 	private FavoriteRestaurantListAdapter adapter;
-	private final FavoriteLocationsListener favoriteLocationsListener;
 
 	private ArrayMap<String, List<PlaceDocuments>> restaurantListMap = new ArrayMap<>();
 	private List<FavoriteLocationDTO> favoriteLocationDTOList = new ArrayList<>();
 	private Map<String, FavoriteLocationDTO> favoriteRestaurantDTOMap = new HashMap<>();
 
-	private final KakaoPlaceDownloader kakaoPlaceDownloader = new KakaoPlaceDownloader(this::setProgressBarVisibility) {
+	private final KakaoPlaceDownloader kakaoPlaceDownloader = new KakaoPlaceDownloader(this) {
 
 		@Override
 		public void onResponseSuccessful(KakaoLocalResponse result) {
@@ -63,13 +65,10 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
 
 	};
 
-	public FavoriteRestaurantFragment(FavoriteLocationsListener favoriteLocationsListener) {
-		this.favoriteLocationsListener = favoriteLocationsListener;
-	}
-
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		favoriteRestaurantViewModel = new ViewModelProvider(this).get(FavoriteLocationViewModel.class);
 	}
 
 	@Override
@@ -83,7 +82,8 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 
-		favoriteRestaurantViewModel = new ViewModelProvider(this).get(FavoriteLocationViewModel.class);
+		FavoriteRestaurantFragmentArgs arg = FavoriteRestaurantFragmentArgs.fromBundle(getArguments());
+		favoriteLocationsListener = arg.getFavoriteLocationsListener();
 
 		binding.favoriteRestaurantList.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener() {
 			@Override
@@ -106,6 +106,7 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
 			public void onReceiveResult(@NonNull List<FavoriteLocationDTO> list) throws RemoteException {
 				favoriteRestaurantDTOMap.clear();
 				favoriteLocationDTOList.clear();
+
 				if (!restaurantListMap.isEmpty()) {
 					restaurantListMap.clear();
 					requireActivity().runOnUiThread(new Runnable() {
@@ -189,13 +190,9 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
 
 	@Override
 	public void onClickedListItem(PlaceDocuments e, int position) {
-		if (e instanceof PlaceDocuments) {
-			PlaceInfoWebDialogFragment placeInfoWebDialogFragment = new PlaceInfoWebDialogFragment();
-			Bundle bundle = new Bundle();
-			bundle.putString("placeId", ((PlaceDocuments) e).getId());
-			placeInfoWebDialogFragment.setArguments(bundle);
-
-			placeInfoWebDialogFragment.show(getChildFragmentManager(), PlaceInfoWebDialogFragment.TAG);
+		if (e != null) {
+			NavHostFragment.findNavController(FavoriteRestaurantFragment.this)
+					.navigate(FavoriteRestaurantFragmentDirections.actionFavoriteRestaurantFragmentToPlaceInfoWebFragment2(((PlaceDocuments) e).getId()));
 		} else {
 
 		}
@@ -353,11 +350,11 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
 											restaurantListMap.remove(key);
 										}
 
-										adapter.notifyDataSetChanged();
 										if (restaurantListMap.size() >= 1 && !restaurantListMap.containsKey(key)) {
 											binding.favoriteRestaurantList.collapseGroup(groupPosition);
 										}
 										favoriteLocationsListener.removeFavoriteLocationsPoiItem(favoriteLocationDTO);
+										adapter.notifyDataSetChanged();
 									}
 								});
 
