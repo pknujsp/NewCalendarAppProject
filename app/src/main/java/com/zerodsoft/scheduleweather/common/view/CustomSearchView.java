@@ -47,19 +47,21 @@ public class CustomSearchView extends LinearLayout {
 		init(attrs);
 	}
 
+	public CustomSearchView(Context context) {
+		super(context);
+	}
+
 	private void init(AttributeSet attrs) {
 		int backBtnVisibility = 0;
 		String hint = null;
 
 		TypedArray a = getContext().getTheme().obtainStyledAttributes(attrs, R.styleable.CustomSearchView, 0, 0);
 		try {
-			backBtnVisibility = a.getInteger(R.styleable.CustomSearchView_backBtnVisibility, View.VISIBLE);
+			backBtnVisibility = a.getInt(R.styleable.CustomSearchView_backBtnVisibility, View.VISIBLE);
 			hint = a.getString(R.styleable.CustomSearchView_hint);
-
 		} finally {
 			a.recycle();
 		}
-
 
 		final int paddingLR = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 12f, getResources().getDisplayMetrics());
 		final int paddingTB = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4f, getResources().getDisplayMetrics());
@@ -84,9 +86,7 @@ public class CustomSearchView extends LinearLayout {
 
 		searchEditText = new CustomEditText(getContext());
 		searchEditText.setHint(hint);
-		searchEditText.setInputType(InputType.TYPE_CLASS_TEXT);
 		searchEditText.setBackground(null);
-		searchEditText.setSingleLine(true);
 		searchEditText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
 
 		final int btnSize = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, getResources().getDisplayMetrics());

@@ -139,6 +139,8 @@ public class RestaurantDialogFragment extends BottomSheetDialogFragment implemen
 
 				switch (id) {
 					case R.id.restaurant_main_nav_graph:
+						bundle.putAll(new FoodsMenuListFragmentArgs.Builder(iMapPoint,
+								favoriteLocationsListener, foodMenuChipsViewController, EVENT_ID).build().toBundle());
 						break;
 					case R.id.restaurant_favorites_nav_graph:
 						bundle.putAll(new FavoriteRestaurantFragmentArgs.Builder(favoriteLocationsListener).build().toBundle());

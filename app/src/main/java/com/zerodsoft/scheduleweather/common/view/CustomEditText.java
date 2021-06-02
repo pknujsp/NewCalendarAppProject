@@ -1,8 +1,10 @@
 package com.zerodsoft.scheduleweather.common.view;
 
 import android.content.Context;
+import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -12,6 +14,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatEditText;
 import androidx.core.content.ContextCompat;
+import androidx.core.graphics.drawable.DrawableCompat;
 
 import com.zerodsoft.scheduleweather.R;
 
@@ -32,13 +35,15 @@ public class CustomEditText extends AppCompatEditText implements TextWatcher, Vi
 	}
 
 	public CustomEditText(@NonNull @NotNull Context context, @Nullable @org.jetbrains.annotations.Nullable AttributeSet attrs, int defStyleAttr) {
-		super(context, attrs, defStyleAttr);
+		super(context, attrs, android.R.attr.editTextStyle);
 		init();
 	}
 
 	private void init() {
+		setInputType(InputType.TYPE_CLASS_TEXT);
 		closeDrawable = ContextCompat.getDrawable(getContext(), R.drawable.close_icon);
 		closeDrawable.setBounds(0, 0, closeDrawable.getIntrinsicWidth(), closeDrawable.getIntrinsicHeight());
+		DrawableCompat.setTintList(closeDrawable, getHintTextColors());
 		setClearBtnVisibility(false);
 
 		addTextChangedListener(this);
@@ -80,6 +85,11 @@ public class CustomEditText extends AppCompatEditText implements TextWatcher, Vi
 			setText(null);
 			setError(null);
 		}
-		return true;
+		return false;
+	}
+
+	@Override
+	protected void onDraw(Canvas canvas) {
+		super.onDraw(canvas);
 	}
 }

@@ -83,8 +83,10 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 	}
 
 
-	protected void requestRestaurantList(String categoryName) {
-		final LocalApiPlaceParameter placeParameter = LocalParameterUtil.getPlaceParameter(categoryName,
+	public void requestRestaurantList(String query) {
+		this.query = query;
+
+		final LocalApiPlaceParameter placeParameter = LocalParameterUtil.getPlaceParameter(query,
 				CriteriaLocationCloud.getLatitude(), CriteriaLocationCloud.getLongitude(),
 				LocalApiPlaceParameter.DEFAULT_SIZE, LocalApiPlaceParameter.DEFAULT_PAGE,
 				LocalApiPlaceParameter.SEARCH_CRITERIA_SORT_TYPE_ACCURACY);

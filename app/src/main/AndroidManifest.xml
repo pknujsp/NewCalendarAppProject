@@ -30,11 +30,11 @@
         android:usesCleartextTraffic="true">
         <activity
             android:name=".event.main.NewInstanceMainActivity"
-            android:windowSoftInputMode="adjustNothing" />
+            android:windowSoftInputMode="stateAlwaysHidden|adjustNothing" />
         <activity android:name=".event.foods.settings.CustomFoodMenuSettingsActivity" />
         <activity
             android:name=".navermap.NaverMapActivity"
-            android:windowSoftInputMode="stateAlwaysHidden" />
+            android:windowSoftInputMode="stateAlwaysHidden|adjustNothing" />
         <activity
             android:name=".event.common.SelectionDetailLocationActivity"
             android:theme="@style/AppTheme"
