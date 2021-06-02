@@ -6,12 +6,17 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.NavDestination;
+import androidx.navigation.NavHostController;
+import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
 
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -36,8 +41,10 @@ import com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
 
-public class RestaurantDialogFragment extends BottomSheetDialogFragment implements IGetEventValue {
+
+public class RestaurantDialogFragment extends BottomSheetDialogFragment {
 	public static final String TAG = "RestaurantDialogFragment";
 	private FragmentRestaurantMainTransactionBinding binding;
 
@@ -76,6 +83,10 @@ public class RestaurantDialogFragment extends BottomSheetDialogFragment implemen
 			public boolean onKey(DialogInterface dialogInterface, int keyCode, KeyEvent event) {
 				if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_UP) {
 					NavController navController = navHostFragment.getNavController();
+					NavDestination currentDestination = navController.getCurrentDestination();
+					currentDestination.
+					int viewId = 0;
+					navController = Navigation.findNavController(requireActivity(), viewId);
 					if (!navController.popBackStack()) {
 						dismiss();
 					}
@@ -149,7 +160,7 @@ public class RestaurantDialogFragment extends BottomSheetDialogFragment implemen
 						bundle.putAll(new SearchRestaurantFragmentArgs.Builder(favoriteLocationsListener).build().toBundle());
 						break;
 					case R.id.restaurant_settings_nav_graph:
-						break;
+						return false;
 				}
 				navController.navigate(id, bundle);
 				return true;
@@ -174,17 +185,4 @@ public class RestaurantDialogFragment extends BottomSheetDialogFragment implemen
 	public void onDestroy() {
 		super.onDestroy();
 	}
-
-
-	@Override
-	public long getEventId() {
-		return EVENT_ID;
-	}
-
-	@Override
-	public int getCalendarId() {
-		return CALENDAR_ID;
-	}
-
-
 }

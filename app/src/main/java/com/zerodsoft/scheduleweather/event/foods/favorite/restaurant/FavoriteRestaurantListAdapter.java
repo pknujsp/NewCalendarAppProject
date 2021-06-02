@@ -22,7 +22,7 @@ import java.util.List;
 
 class FavoriteRestaurantListAdapter extends BaseExpandableListAdapter {
 	private Context context;
-	private ArrayMap<String, List<PlaceDocuments>> restaurantListMap;
+	private ArrayMap<String, List<PlaceDocuments>> restaurantListMap = new ArrayMap<>();
 	private LayoutInflater layoutInflater;
 
 	private GroupViewHolder groupViewHolder;
