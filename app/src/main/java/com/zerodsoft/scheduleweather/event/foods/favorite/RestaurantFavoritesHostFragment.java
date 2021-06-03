@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.event.foods.search;
+package com.zerodsoft.scheduleweather.event.foods.favorite;
 
 import android.os.Bundle;
 
@@ -10,10 +10,11 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.databinding.FragmentRestaurantSearchNavHostBinding;
+import com.zerodsoft.scheduleweather.databinding.FragmentRestaurantFavoritesHostBinding;
 
-public class RestaurantSearchNavHostFragment extends Fragment {
-	private FragmentRestaurantSearchNavHostBinding binding;
+
+public class RestaurantFavoritesHostFragment extends Fragment {
+	private FragmentRestaurantFavoritesHostBinding binding;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -23,7 +24,7 @@ public class RestaurantSearchNavHostFragment extends Fragment {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 	                         Bundle savedInstanceState) {
-		binding = FragmentRestaurantSearchNavHostBinding.inflate(inflater);
+		binding = FragmentRestaurantFavoritesHostBinding.inflate(inflater);
 		return binding.getRoot();
 	}
 }

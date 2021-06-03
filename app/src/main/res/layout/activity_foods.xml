@@ -20,7 +20,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
-            app:menu="@menu/foods_main_bottomnav_menu" />
+            app:menu="@menu/restaurant_main_bottom_nav_menu" />
 
     </RelativeLayout>
 </layout>

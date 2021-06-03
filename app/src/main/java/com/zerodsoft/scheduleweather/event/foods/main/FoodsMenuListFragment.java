@@ -35,7 +35,6 @@ import android.widget.Toast;
 
 import com.naver.maps.geometry.LatLng;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.activity.preferences.customfoodmenu.fragment.CustomFoodMenuSettingsFragmentDirections;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
@@ -55,6 +54,7 @@ import com.zerodsoft.scheduleweather.event.foods.share.CriteriaLocationCloud;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.CustomFoodMenuViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationInfoViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationHistoryViewModel;
+import com.zerodsoft.scheduleweather.event.foods.viewmodel.RestaurantSharedViewModel;
 import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint;
 import com.zerodsoft.scheduleweather.navermap.model.CoordToAddressUtil;
@@ -77,20 +77,18 @@ import static androidx.core.content.ContextCompat.checkSelfPermission;
 public class FoodsMenuListFragment extends Fragment implements OnClickedCategoryItem, OnClickedListItem<FoodCategoryItem>,
 		IRefreshView {
 	public static final String TAG = "FoodsMenuListFragment";
-
-	private FoodMenuChipsViewController foodMenuChipsViewController;
-	private FavoriteLocationsListener favoriteLocationsListener;
-	private IMapPoint iMapPoint;
-	private Long eventId;
 	private final int COLUMN_COUNT = 4;
+	private Long eventId;
 
 	private FragmentFoodsCategoryListBinding binding;
+	private IMapPoint iMapPoint;
 
 	private CustomFoodMenuViewModel customFoodCategoryViewModel;
 	private LocationViewModel locationViewModel;
 	private CalendarViewModel calendarViewModel;
 	private FoodCriteriaLocationInfoViewModel foodCriteriaLocationInfoViewModel;
 	private FoodCriteriaLocationHistoryViewModel foodCriteriaLocationSearchHistoryViewModel;
+	private RestaurantSharedViewModel sharedViewModel;
 
 	private LocationManager locationManager;
 	private LocationDTO selectedLocationDTO;
@@ -104,19 +102,17 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		Bundle bundle = getArguments();
-		FoodsMenuListFragmentArgs args = FoodsMenuListFragmentArgs.fromBundle(bundle);
-		this.favoriteLocationsListener = args.getFavoriteLocationsListener();
-		this.foodMenuChipsViewController = args.getFoodMenuChipsViewController();
-		this.iMapPoint = args.getIMapPoint();
-		this.eventId = args.getEventId();
 
 		locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
+		sharedViewModel = new ViewModelProvider(requireActivity()).get(RestaurantSharedViewModel.class);
 		calendarViewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
 		locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
 		foodCriteriaLocationInfoViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationInfoViewModel.class);
 		foodCriteriaLocationSearchHistoryViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationHistoryViewModel.class);
 		customFoodCategoryViewModel = new ViewModelProvider(this).get(CustomFoodMenuViewModel.class);
+
+		eventId = sharedViewModel.getEventId();
+		iMapPoint = sharedViewModel.getiMapPoint();
 	}
 
 	@Override
