@@ -27,6 +27,7 @@ import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.common.interfaces.OnProgressBarListener;
 import com.zerodsoft.scheduleweather.databinding.FragmentRestaurantListBinding;
 import com.zerodsoft.scheduleweather.event.foods.adapter.RestaurantListAdapter;
+import com.zerodsoft.scheduleweather.event.foods.favorite.RestaurantFavoritesHostFragment;
 import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteLocationViewModel;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedFavoriteButtonListener;
 import com.zerodsoft.scheduleweather.event.foods.share.CriteriaLocationCloud;
@@ -62,6 +63,55 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 
 		favoriteRestaurantViewModel = new ViewModelProvider(requireActivity()).get(FavoriteLocationViewModel.class);
 		sharedViewModel = new ViewModelProvider(requireActivity()).get(RestaurantSharedViewModel.class);
+
+
+		favoriteRestaurantViewModel.getAddedFavoriteLocationMutableLiveData().observe(this,
+				new Observer<FavoriteLocationDTO>() {
+					@Override
+					public void onChanged(FavoriteLocationDTO favoriteLocationDTO) {
+						try {
+							Fragment primaryNavFragment = getParentFragment().getParentFragment().getParentFragmentManager().getPrimaryNavigationFragment();
+
+							if (!(primaryNavFragment instanceof RestaurantMainHostFragment)) {
+								if (getActivity() != null) {
+									requireActivity().runOnUiThread(new Runnable() {
+										@Override
+										public void run() {
+											adapter.notifyDataSetChanged();
+										}
+									});
+								}
+							}
+						} catch (Exception e) {
+
+						}
+
+
+					}
+				});
+
+		favoriteRestaurantViewModel.getRemovedFavoriteLocationMutableLiveData().observe(this, new Observer<Integer>() {
+			@Override
+			public void onChanged(Integer integer) {
+				try {
+					Fragment primaryNavFragment = getParentFragment().getParentFragment().getParentFragmentManager().getPrimaryNavigationFragment();
+
+					if (!(primaryNavFragment instanceof RestaurantMainHostFragment)) {
+						if (getActivity() != null) {
+							requireActivity().runOnUiThread(new Runnable() {
+								@Override
+								public void run() {
+									adapter.notifyDataSetChanged();
+								}
+							});
+						}
+					}
+				} catch (Exception e) {
+
+				}
+
+			}
+		});
 	}
 
 	@Override
@@ -75,52 +125,6 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 		placesViewModel = new ViewModelProvider(this).get(PlacesViewModel.class);
-
-		Fragment parentFragment = getParentFragment();
-
-		favoriteRestaurantViewModel.getAddedFavoriteLocationMutableLiveData().observe(parentFragment.getViewLifecycleOwner(),
-				new Observer<FavoriteLocationDTO>() {
-					@Override
-					public void onChanged(FavoriteLocationDTO favoriteLocationDTO) {
-						try {
-							if (getActivity() != null) {
-								requireActivity().runOnUiThread(new Runnable() {
-									@Override
-									public void run() {
-										if (parentFragment.isHidden()) {
-											adapter.notifyDataSetChanged();
-										}
-									}
-								});
-							}
-						} catch (Exception e) {
-
-						}
-
-
-					}
-				});
-
-		favoriteRestaurantViewModel.getRemovedFavoriteLocationMutableLiveData().observe(parentFragment.getViewLifecycleOwner(), new Observer<Integer>() {
-			@Override
-			public void onChanged(Integer integer) {
-				try {
-					if (getActivity() != null) {
-						requireActivity().runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								if (parentFragment.isHidden()) {
-									adapter.notifyDataSetChanged();
-								}
-							}
-						});
-					}
-				} catch (Exception e) {
-
-				}
-
-			}
-		});
 
 		binding.recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext(), RecyclerView.VERTICAL, false));
 		binding.recyclerView.addItemDecoration(new DividerItemDecoration(view.getContext(), DividerItemDecoration.VERTICAL));

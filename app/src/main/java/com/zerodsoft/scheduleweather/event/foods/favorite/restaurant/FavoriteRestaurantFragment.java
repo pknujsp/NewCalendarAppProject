@@ -25,6 +25,7 @@ import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.common.interfaces.OnProgressBarListener;
 import com.zerodsoft.scheduleweather.databinding.FragmentFavoriteRestaurantBinding;
+import com.zerodsoft.scheduleweather.event.foods.favorite.RestaurantFavoritesHostFragment;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedFavoriteButtonListener;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.RestaurantSharedViewModel;
 import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
@@ -66,6 +67,45 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
 		super.onCreate(savedInstanceState);
 		favoriteRestaurantViewModel = new ViewModelProvider(requireActivity()).get(FavoriteLocationViewModel.class);
 		restaurantSharedViewModel = new ViewModelProvider(requireActivity()).get(RestaurantSharedViewModel.class);
+
+		favoriteRestaurantViewModel.getAddedFavoriteLocationMutableLiveData().observe(this, new Observer<FavoriteLocationDTO>() {
+			@Override
+			public void onChanged(FavoriteLocationDTO favoriteLocationDTO) {
+				Fragment primaryNavFragment = getParentFragment().getParentFragmentManager().getPrimaryNavigationFragment();
+
+				if (!(primaryNavFragment instanceof RestaurantFavoritesHostFragment)) {
+					try {
+						requireActivity().runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								refreshList();
+							}
+						});
+					} catch (Exception e) {
+					}
+
+				}
+			}
+		});
+
+		favoriteRestaurantViewModel.getRemovedFavoriteLocationMutableLiveData().observe(this, new Observer<Integer>() {
+			@Override
+			public void onChanged(Integer integer) {
+				Fragment primaryNavFragment = getParentFragment().getParentFragmentManager().getPrimaryNavigationFragment();
+
+				if (!(primaryNavFragment instanceof RestaurantFavoritesHostFragment)) {
+					try {
+						requireActivity().runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								refreshList();
+							}
+						});
+					} catch (Exception e) {
+					}
+				}
+			}
+		});
 	}
 
 	@Override
@@ -86,40 +126,6 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
 			}
 		});
 
-		favoriteRestaurantViewModel.getAddedFavoriteLocationMutableLiveData().observe(getViewLifecycleOwner(), new Observer<FavoriteLocationDTO>() {
-			@Override
-			public void onChanged(FavoriteLocationDTO favoriteLocationDTO) {
-				if (isHidden()) {
-					try {
-						requireActivity().runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								refreshList();
-							}
-						});
-					} catch (Exception e) {
-					}
-
-				}
-			}
-		});
-
-		favoriteRestaurantViewModel.getRemovedFavoriteLocationMutableLiveData().observe(getViewLifecycleOwner(), new Observer<Integer>() {
-			@Override
-			public void onChanged(Integer integer) {
-				if (isHidden()) {
-					try {
-						requireActivity().runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								refreshList();
-							}
-						});
-					} catch (Exception e) {
-					}
-				}
-			}
-		});
 
 		adapter = new FavoriteRestaurantListAdapter(getContext(), this, this, restaurantListMap);
 		binding.favoriteRestaurantList.setAdapter(adapter);
