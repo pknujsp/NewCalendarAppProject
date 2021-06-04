@@ -21,6 +21,7 @@ import android.widget.ExpandableListView;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
+import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.common.interfaces.OnProgressBarListener;
 import com.zerodsoft.scheduleweather.databinding.FragmentFavoriteRestaurantBinding;
@@ -37,6 +38,7 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalRespon
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceKakaoLocalResponse;
 import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
+import com.zerodsoft.scheduleweather.weather.common.ViewProgress;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -45,31 +47,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class FavoriteRestaurantFragment extends Fragment implements OnClickedListItem<PlaceDocuments>, OnProgressBarListener, OnClickedFavoriteButtonListener {
+public class FavoriteRestaurantFragment extends Fragment implements OnClickedListItem<PlaceDocuments>, OnClickedFavoriteButtonListener {
 	private FragmentFavoriteRestaurantBinding binding;
 	private FavoriteLocationsListener favoriteLocationsListener;
 
 	private FavoriteLocationViewModel favoriteRestaurantViewModel;
 	private RestaurantSharedViewModel restaurantSharedViewModel;
 	private FavoriteRestaurantListAdapter adapter;
+	private ViewProgress viewProgress;
 
 	private ArrayMap<String, List<PlaceDocuments>> restaurantListMap = new ArrayMap<>();
 	private List<FavoriteLocationDTO> favoriteLocationDTOList = new ArrayList<>();
 	private Map<String, FavoriteLocationDTO> favoriteRestaurantDTOMap = new HashMap<>();
 
-	private final KakaoPlaceDownloader kakaoPlaceDownloader = new KakaoPlaceDownloader(this) {
-
-		@Override
-		public void onResponseSuccessful(KakaoLocalResponse result) {
-
-		}
-
-		@Override
-		public void onResponseFailed(Exception e) {
-
-		}
-
-	};
+	private KakaoPlaceDownloader kakaoPlaceDownloader = new KakaoPlaceDownloader();
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -100,15 +91,19 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
 		adapter = new FavoriteRestaurantListAdapter(getContext(), this, this, restaurantListMap);
 		binding.favoriteRestaurantList.setAdapter(adapter);
 
+		viewProgress = new ViewProgress(binding.favoriteRestaurantList, binding.dataProgressView.progressBar,
+				binding.dataProgressView.errorTextview, binding.dataProgressView.getRoot());
+		viewProgress.onStartedProcessingData();
+
 		downloadPlaceDocuments();
 	}
 
 	private void downloadPlaceDocuments() {
-		favoriteRestaurantViewModel.select(FavoriteLocationDTO.RESTAURANT, new CarrierMessagingService.ResultCallback<List<FavoriteLocationDTO>>() {
+		favoriteRestaurantViewModel.select(FavoriteLocationDTO.RESTAURANT, new DbQueryCallback<List<FavoriteLocationDTO>>() {
 			int responseCount;
 
 			@Override
-			public void onReceiveResult(@NonNull List<FavoriteLocationDTO> list) throws RemoteException {
+			public void onResultSuccessful(List<FavoriteLocationDTO> favoriteLocationResultDtos) {
 				favoriteRestaurantDTOMap.clear();
 				favoriteLocationDTOList.clear();
 
@@ -122,16 +117,16 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
 					});
 				}
 
-				favoriteLocationDTOList.addAll(list);
+				favoriteLocationDTOList.addAll(favoriteLocationResultDtos);
 
 				for (FavoriteLocationDTO favoriteLocationDTO : favoriteLocationDTOList) {
 					favoriteRestaurantDTOMap.put(favoriteLocationDTO.getPlaceId(), favoriteLocationDTO);
 				}
 
-				final int requestCount = list.size();
+				final int requestCount = favoriteLocationResultDtos.size();
 				responseCount = 0;
 
-				for (FavoriteLocationDTO favoriteRestaurant : list) {
+				for (FavoriteLocationDTO favoriteRestaurant : favoriteLocationResultDtos) {
 					LocalApiPlaceParameter placeParameter = LocalParameterUtil.getPlaceParameterForSpecific(favoriteRestaurant.getPlaceName()
 							, favoriteRestaurant.getLatitude(), favoriteRestaurant.getLongitude());
 
@@ -169,6 +164,16 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
 					});
 				}
 			}
+
+			@Override
+			public void onResultNoData() {
+				requireActivity().runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						viewProgress.onCompletedProcessingData(false, getString(R.string.not_data));
+					}
+				});
+			}
 		});
 	}
 
@@ -189,7 +194,7 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
 
 
 	private void createListView() {
-		setProgressBarVisibility(View.GONE);
+		viewProgress.onCompletedProcessingData(true);
 		adapter.notifyDataSetChanged();
 	}
 
@@ -201,9 +206,11 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
 			bundle.putString("placeId", ((PlaceDocuments) e).getId());
 			placeInfoWebFragment.setArguments(bundle);
 
+			String tag = "favoritePlaceInfoWebFragment";
+
 			getParentFragmentManager().beginTransaction().hide(this)
-					.add(placeInfoWebFragment, getString(R.string.tag_place_info_web_fragment))
-					.addToBackStack(getString(R.string.tag_place_info_web_fragment))
+					.add(R.id.fragment_container, placeInfoWebFragment, tag)
+					.addToBackStack(tag)
 					.commit();
 		} else {
 
@@ -212,31 +219,32 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
 
 	@Override
 	public void deleteListItem(PlaceDocuments e, int position) {
-
 	}
 
-	@Override
-	public void setProgressBarVisibility(int visibility) {
-		getActivity().runOnUiThread(new Runnable() {
-			@Override
-			public void run() {
-				binding.progressBar.setVisibility(visibility);
-			}
-		});
-	}
 
 	public void refreshList() {
 		//restaurantId비교
 		//바뀐 부분만 수정
-		setProgressBarVisibility(View.VISIBLE);
-
-		favoriteRestaurantViewModel.select(FavoriteLocationDTO.RESTAURANT, new CarrierMessagingService.ResultCallback<List<FavoriteLocationDTO>>() {
+		viewProgress.onStartedProcessingData();
+		favoriteRestaurantViewModel.select(FavoriteLocationDTO.RESTAURANT, new DbQueryCallback<List<FavoriteLocationDTO>>() {
 			int responseCount;
 
 			@Override
-			public void onReceiveResult(@NonNull List<FavoriteLocationDTO> favoriteLocationDTOS) throws RemoteException {
+			public void onResultSuccessful(List<FavoriteLocationDTO> favoriteLocationResultDtos) {
+				if (favoriteLocationResultDtos.isEmpty()) {
+					requireActivity().runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							adapter.getRestaurantListMap().clear();
+							adapter.notifyDataSetChanged();
+							viewProgress.onCompletedProcessingData(false, getString(R.string.not_data));
+						}
+					});
+					return;
+				}
+
 				Set<String> restaurantIdSetInDb = new HashSet<>();
-				for (FavoriteLocationDTO favoriteLocationDTO : favoriteLocationDTOS) {
+				for (FavoriteLocationDTO favoriteLocationDTO : favoriteLocationResultDtos) {
 					restaurantIdSetInDb.add(favoriteLocationDTO.getPlaceId());
 				}
 				Set<String> restaurantIdSetInList = new HashSet<>();
@@ -255,7 +263,18 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
 				addedSet.removeAll(restaurantIdSetInList);
 
 				if (removedSet.isEmpty() && addedSet.isEmpty()) {
-					setProgressBarVisibility(View.GONE);
+					requireActivity().runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							if (adapter.getRestaurantListMap().isEmpty()) {
+								viewProgress.onCompletedProcessingData(false, getString(R.string.not_data));
+							} else {
+								viewProgress.onCompletedProcessingData(true);
+							}
+						}
+					});
+					return;
+
 				} else {
 					if (!removedSet.isEmpty()) {
 						for (String id : removedSet) {
@@ -274,21 +293,25 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
 							}
 						}
 
-						requireActivity().runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								adapter.notifyDataSetChanged();
-								setProgressBarVisibility(View.GONE);
-							}
-						});
+						if (addedSet.isEmpty()) {
+							requireActivity().runOnUiThread(new Runnable() {
+								@Override
+								public void run() {
+									adapter.notifyDataSetChanged();
+									if (adapter.getRestaurantListMap().isEmpty()) {
+										viewProgress.onCompletedProcessingData(false, getString(R.string.not_data));
+									} else {
+										viewProgress.onCompletedProcessingData(true);
 
+									}
+								}
+							});
+						}
 					}
 
 					if (!addedSet.isEmpty()) {
-						setProgressBarVisibility(View.VISIBLE);
-
 						Set<FavoriteLocationDTO> restaurantDTOSet = new HashSet<>();
-						for (FavoriteLocationDTO favoriteLocationDTO : favoriteLocationDTOS) {
+						for (FavoriteLocationDTO favoriteLocationDTO : favoriteLocationResultDtos) {
 							if (addedSet.contains(favoriteLocationDTO.getPlaceId())) {
 								restaurantDTOSet.add(favoriteLocationDTO);
 							}
@@ -335,14 +358,22 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
 							});
 						}
 					}
+
+
 				}
+			}
+
+			@Override
+			public void onResultNoData() {
+
 			}
 		});
 
 	}
 
 	@Override
-	public void onClickedFavoriteButton(KakaoLocalDocument kakaoLocalDocument, FavoriteLocationDTO favoriteLocationDTO, int groupPosition, int childPosition) {
+	public void onClickedFavoriteButton(KakaoLocalDocument kakaoLocalDocument, FavoriteLocationDTO favoriteLocationDTO,
+	                                    int groupPosition, int childPosition) {
 		final String placeId = ((PlaceDocuments) kakaoLocalDocument).getId();
 
 		favoriteRestaurantViewModel.contains(placeId, null, null, null, new CarrierMessagingService.ResultCallback<FavoriteLocationDTO>() {

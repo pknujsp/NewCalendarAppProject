@@ -56,8 +56,7 @@ public class SearchResultRestaurantFragment extends Fragment {
 		binding.searchView.setOnBackClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				NavHostFragment.findNavController(SearchResultRestaurantFragment.this)
-						.popBackStack();
+				getParentFragmentManager().popBackStackImmediate();
 			}
 		});
 		binding.searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {

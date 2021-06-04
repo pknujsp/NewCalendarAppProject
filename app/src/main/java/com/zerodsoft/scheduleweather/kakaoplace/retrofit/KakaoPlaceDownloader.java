@@ -27,83 +27,58 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public abstract class KakaoPlaceDownloader extends JsonDownloader<KakaoLocalResponse>
-{
-    private final OnProgressBarListener onProgressBarListener;
+public class KakaoPlaceDownloader {
+	public void getPlaces(LocalApiPlaceParameter parameter) {
+		/*
+		Querys querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.KAKAO);
+		Map<String, String> queryMap = parameter.getParameterMap();
+		Call<PlaceKakaoLocalResponse> call = null;
 
-    public KakaoPlaceDownloader(OnProgressBarListener onProgressBarListener)
-    {
-        this.onProgressBarListener = onProgressBarListener;
-    }
+		if (parameter.getQuery() == null) {
+			call = querys.getPlaceCategory(queryMap);
+		} else {
+			call = querys.getPlaceKeyword(queryMap);
+		}
 
-    public void getPlaces(LocalApiPlaceParameter parameter)
-    {
-        onProgressBarListener.setProgressBarVisibility(View.VISIBLE);
+		call.enqueue(new Callback<PlaceKakaoLocalResponse>() {
+			@Override
+			public void onResponse(Call<PlaceKakaoLocalResponse> call, Response<PlaceKakaoLocalResponse> response) {
+				processResult(response);
+			}
 
-        Querys querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.KAKAO);
-        Map<String, String> queryMap = parameter.getParameterMap();
-        Call<PlaceKakaoLocalResponse> call = null;
+			@Override
+			public void onFailure(Call<PlaceKakaoLocalResponse> call, Throwable t) {
+				processResult(t);
+			}
+		});
 
-        if (parameter.getQuery() == null)
-        {
-            call = querys.getPlaceCategory(queryMap);
-        } else
-        {
-            call = querys.getPlaceKeyword(queryMap);
-        }
+		 */
+	}
 
-        call.enqueue(new Callback<PlaceKakaoLocalResponse>()
-        {
-            @Override
-            public void onResponse(Call<PlaceKakaoLocalResponse> call, Response<PlaceKakaoLocalResponse> response)
-            {
-                processResult(response);
-                onProgressBarListener.setProgressBarVisibility(View.GONE);
-            }
+	public void getPlacesForSpecific(LocalApiPlaceParameter parameter, JsonDownloader<PlaceKakaoLocalResponse> jsonDownloaderCallback) {
+		Querys querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.KAKAO);
+		Map<String, String> queryMap = parameter.getParameterMap();
+		Call<PlaceKakaoLocalResponse> call = null;
 
-            @Override
-            public void onFailure(Call<PlaceKakaoLocalResponse> call, Throwable t)
-            {
-                processResult(t);
-                onProgressBarListener.setProgressBarVisibility(View.GONE);
-            }
-        });
-    }
+		if (parameter.getQuery() == null) {
+			call = querys.getPlaceCategory(queryMap);
+		} else {
+			call = querys.getPlaceKeyword(queryMap);
+		}
 
-    public void getPlacesForSpecific(LocalApiPlaceParameter parameter, JsonDownloader<PlaceKakaoLocalResponse> jsonDownloaderCallback)
-    {
-        onProgressBarListener.setProgressBarVisibility(View.VISIBLE);
+		call.enqueue(new Callback<PlaceKakaoLocalResponse>() {
+			@SneakyThrows
+			@Override
+			public void onResponse(Call<PlaceKakaoLocalResponse> call, Response<PlaceKakaoLocalResponse> response) {
+				jsonDownloaderCallback.processResult(response);
+			}
 
-        Querys querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.KAKAO);
-        Map<String, String> queryMap = parameter.getParameterMap();
-        Call<PlaceKakaoLocalResponse> call = null;
-
-        if (parameter.getQuery() == null)
-        {
-            call = querys.getPlaceCategory(queryMap);
-        } else
-        {
-            call = querys.getPlaceKeyword(queryMap);
-        }
-
-        call.enqueue(new Callback<PlaceKakaoLocalResponse>()
-        {
-            @SneakyThrows
-            @Override
-            public void onResponse(Call<PlaceKakaoLocalResponse> call, Response<PlaceKakaoLocalResponse> response)
-            {
-                jsonDownloaderCallback.processResult(response);
-                onProgressBarListener.setProgressBarVisibility(View.GONE);
-            }
-
-            @SneakyThrows
-            @Override
-            public void onFailure(Call<PlaceKakaoLocalResponse> call, Throwable t)
-            {
-                jsonDownloaderCallback.processResult(t);
-                onProgressBarListener.setProgressBarVisibility(View.GONE);
-            }
-        });
-    }
+			@SneakyThrows
+			@Override
+			public void onFailure(Call<PlaceKakaoLocalResponse> call, Throwable t) {
+				jsonDownloaderCallback.processResult(t);
+			}
+		});
+	}
 
 }

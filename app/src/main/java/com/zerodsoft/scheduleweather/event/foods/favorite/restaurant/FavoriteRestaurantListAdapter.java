@@ -43,6 +43,10 @@ class FavoriteRestaurantListAdapter extends BaseExpandableListAdapter {
 		this.restaurantListMap = restaurantListMap;
 	}
 
+	public ArrayMap<String, List<PlaceDocuments>> getRestaurantListMap() {
+		return restaurantListMap;
+	}
+
 	@Override
 	public int getGroupCount() {
 		return restaurantListMap.size();

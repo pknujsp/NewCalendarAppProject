@@ -83,7 +83,7 @@ public class RestaurantDialogFragment extends BottomSheetDialogFragment {
 			@Override
 			public boolean onKey(DialogInterface dialogInterface, int keyCode, KeyEvent event) {
 				if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_UP) {
-					FragmentManager fragmentManager = getChildFragmentManager();
+					FragmentManager fragmentManager = getChildFragmentManager().getPrimaryNavigationFragment().getChildFragmentManager();
 					if (!fragmentManager.popBackStackImmediate()) {
 						dismiss();
 					}
@@ -125,59 +125,59 @@ public class RestaurantDialogFragment extends BottomSheetDialogFragment {
 
 		View bottomSheet = getDialog().findViewById(R.id.design_bottom_sheet);
 		bottomSheet.getLayoutParams().height = VIEW_HEIGHT;
-
+		
+		binding.bottomNavigation.setOnNavigationItemSelectedListener(onNavigationItemSelectedListener);
 		binding.bottomNavigation.setOnNavigationItemReselectedListener(new BottomNavigationView.OnNavigationItemReselectedListener() {
 			@Override
 			public void onNavigationItemReselected(@NonNull @NotNull MenuItem item) {
 
 			}
 		});
-
-		binding.bottomNavigation.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
-			@SuppressLint("NonConstantResourceId")
-			@Override
-			public boolean onNavigationItemSelected(@NonNull @NotNull MenuItem item) {
-				FragmentManager fragmentManager = getChildFragmentManager();
-				FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-
-				Fragment foregroundFragment = fragmentManager.getPrimaryNavigationFragment();
-				if (foregroundFragment != null) {
-					fragmentTransaction.hide(foregroundFragment);
-				}
-
-				final String tag = item.getTitle().toString();
-				Fragment destinationFragment = fragmentManager.findFragmentByTag(tag);
-
-				if (destinationFragment == null) {
-					switch (item.getItemId()) {
-						case R.id.main:
-							destinationFragment = new RestaurantMainHostFragment();
-							break;
-						case R.id.favorites:
-							destinationFragment = new RestaurantFavoritesHostFragment();
-							break;
-						case R.id.search:
-							destinationFragment = new RestaurantSearchHostFragment();
-							break;
-						case R.id.settings:
-							destinationFragment = new RestaurantSettingsHostFragment();
-							fragmentTransaction = null;
-							return false;
-
-					}
-
-					fragmentTransaction.add(binding.fragmentContainer.getId(), destinationFragment, tag);
-				} else {
-					fragmentTransaction.show(destinationFragment);
-				}
-
-				fragmentTransaction.setPrimaryNavigationFragment(destinationFragment).commit();
-				return true;
-			}
-		});
-
-		binding.bottomNavigation.setSelectedItemId(R.id.main);
+		onNavigationItemSelectedListener.onNavigationItemSelected(binding.bottomNavigation.getMenu().getItem(0));
 	}
+
+	private final BottomNavigationView.OnNavigationItemSelectedListener onNavigationItemSelectedListener = new BottomNavigationView.OnNavigationItemSelectedListener() {
+		@SuppressLint("NonConstantResourceId")
+		@Override
+		public boolean onNavigationItemSelected(@NonNull @NotNull MenuItem item) {
+			FragmentManager fragmentManager = getChildFragmentManager();
+			FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+			Fragment foregroundFragment = fragmentManager.getPrimaryNavigationFragment();
+			if (foregroundFragment != null) {
+				fragmentTransaction.hide(foregroundFragment);
+			}
+
+			final String tag = item.getTitle().toString();
+			Fragment destinationFragment = fragmentManager.findFragmentByTag(tag);
+
+			if (destinationFragment == null) {
+				switch (item.getItemId()) {
+					case R.id.main:
+						destinationFragment = new RestaurantMainHostFragment();
+						break;
+					case R.id.favorites:
+						destinationFragment = new RestaurantFavoritesHostFragment();
+						break;
+					case R.id.search:
+						destinationFragment = new RestaurantSearchHostFragment();
+						break;
+					case R.id.settings:
+						destinationFragment = new RestaurantSettingsHostFragment();
+						fragmentTransaction = null;
+						return false;
+				}
+
+				fragmentTransaction.add(binding.fragmentContainer.getId(), destinationFragment, tag);
+			} else {
+				fragmentTransaction.show(destinationFragment);
+			}
+
+			fragmentTransaction.setPrimaryNavigationFragment(destinationFragment).commit();
+			return true;
+
+		}
+	};
 
 	@Override
 	public void onDestroy() {

@@ -5,6 +5,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
@@ -143,9 +144,16 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 			bundle.putString("placeId", ((PlaceDocuments) e).getId());
 			placeInfoWebFragment.setArguments(bundle);
 
-			getParentFragmentManager().beginTransaction().hide(this)
-					.add(placeInfoWebFragment, getString(R.string.tag_place_info_web_fragment))
-					.addToBackStack(getString(R.string.tag_place_info_web_fragment)).commit();
+			String tag = getString(R.string.tag_place_info_web_fragment);
+
+			FragmentManager fragmentManager = getParentFragmentManager();
+
+			// restaurant list tab fragment
+			Fragment parentFragment = getParentFragment();
+
+			fragmentManager.beginTransaction().hide(parentFragment)
+					.add(placeInfoWebFragment, tag)
+					.addToBackStack(tag).commit();
 		} else {
 
 		}

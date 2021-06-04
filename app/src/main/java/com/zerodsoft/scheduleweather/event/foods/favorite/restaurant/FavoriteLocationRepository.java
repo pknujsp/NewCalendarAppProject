@@ -1,11 +1,11 @@
 package com.zerodsoft.scheduleweather.event.foods.favorite.restaurant;
 
-import android.app.Application;
 import android.content.Context;
 import android.service.carrier.CarrierMessagingService;
 
 import androidx.lifecycle.MutableLiveData;
 
+import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.room.AppDb;
 import com.zerodsoft.scheduleweather.room.dao.FavoriteLocationDAO;
 import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
@@ -56,25 +56,25 @@ class FavoriteLocationRepository implements FavoriteLocationQuery {
 	}
 
 	@Override
-	public void select(Integer type, CarrierMessagingService.ResultCallback<List<FavoriteLocationDTO>> callback) {
+	public void select(Integer type, DbQueryCallback<List<FavoriteLocationDTO>> callback) {
 		new Thread(new Runnable() {
 			@SneakyThrows
 			@Override
 			public void run() {
 				List<FavoriteLocationDTO> list = dao.select(type);
-				callback.onReceiveResult(list);
+				callback.processResult(list);
 			}
 		}).start();
 	}
 
 	@Override
-	public void select(Integer type, Integer id, CarrierMessagingService.ResultCallback<FavoriteLocationDTO> callback) {
+	public void select(Integer type, Integer id, DbQueryCallback<FavoriteLocationDTO> callback) {
 		new Thread(new Runnable() {
 			@SneakyThrows
 			@Override
 			public void run() {
 				FavoriteLocationDTO favoriteLocationDTO = dao.select(type, id);
-				callback.onReceiveResult(favoriteLocationDTO);
+				callback.processResult(favoriteLocationDTO);
 			}
 		}).start();
 	}

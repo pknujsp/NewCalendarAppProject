@@ -55,7 +55,6 @@ public class PlaceInfoWebDialogFragment extends DialogFragment {
 
 		placeInfoWebFragment = new PlaceInfoWebFragment();
 		fragmentManager.beginTransaction().add(binding.fragmentContainer.getId(), placeInfoWebFragment, "PlaceInfoWebFragment").commit();
-		placeInfoWebFragment.setArguments(new PlaceInfoWebFragmentArgs.Builder(placeId).build().toBundle());
 
 		getDialog().setOnKeyListener(new DialogInterface.OnKeyListener() {
 			@Override

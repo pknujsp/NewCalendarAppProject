@@ -24,18 +24,15 @@
             <ExpandableListView
                 android:id="@+id/favorite_restaurant_list"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 tools:listitem="@layout/expandablelist_group_view" />
+
+            <include
+                android:id="@+id/data_progress_view"
+                layout="@layout/data_progress_view" />
 
         </LinearLayout>
 
-        <ProgressBar
-            android:id="@+id/progress_bar"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:indeterminate="true"
-            android:visibility="visible" />
 
     </FrameLayout>
 </layout>

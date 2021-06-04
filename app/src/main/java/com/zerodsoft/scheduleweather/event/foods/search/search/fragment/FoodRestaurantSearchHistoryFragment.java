@@ -122,8 +122,7 @@ public class FoodRestaurantSearchHistoryFragment extends Fragment implements OnC
 
 		binding.searchHistoryRecyclerView.setAdapter(adapter);
 
-		ViewModelStoreOwner owner = NavHostFragment.findNavController(this).getViewModelStoreOwner(R.id.restaurant_search_nav_graph);
-		viewModel = new ViewModelProvider(owner).get(SearchHistoryViewModel.class);
+		viewModel = new ViewModelProvider(this).get(SearchHistoryViewModel.class);
 		viewModel.select(SearchHistoryDTO.FOOD_RESTAURANT_SEARCH, new CarrierMessagingService.ResultCallback<List<SearchHistoryDTO>>() {
 			@Override
 			public void onReceiveResult(@NonNull List<SearchHistoryDTO> searchHistoryDTOS) throws RemoteException {

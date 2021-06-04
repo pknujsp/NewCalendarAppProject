@@ -2,6 +2,7 @@ package com.zerodsoft.scheduleweather.room.interfaces;
 
 import android.service.carrier.CarrierMessagingService;
 
+import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
 
 import java.util.List;
@@ -11,9 +12,9 @@ public interface FavoriteLocationQuery {
 
 	void addFavoriteLocation(FavoriteLocationDTO favoriteLocationDTO);
 
-	void select(Integer type, CarrierMessagingService.ResultCallback<List<FavoriteLocationDTO>> callback);
+	void select(Integer type, DbQueryCallback<List<FavoriteLocationDTO>> callback);
 
-	void select(Integer type, Integer id, CarrierMessagingService.ResultCallback<FavoriteLocationDTO> callback);
+	void select(Integer type, Integer id, DbQueryCallback<FavoriteLocationDTO> callback);
 
 	void delete(Integer id, CarrierMessagingService.ResultCallback<Boolean> callback);
 

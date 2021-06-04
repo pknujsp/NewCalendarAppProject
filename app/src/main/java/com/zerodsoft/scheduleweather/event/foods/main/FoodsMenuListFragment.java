@@ -150,7 +150,6 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 
 	@Override
 	public void onDestroy() {
-		customFoodSettingsActivityResultLauncher.unregister();
 		gpsOnResultLauncher.unregister();
 		locationSettingsActivityResultLauncher.unregister();
 		permissionsResultLauncher.unregister();
@@ -643,26 +642,6 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 	public void deleteListItem(FoodCategoryItem e, int position) {
 
 	}
-
-	@Override
-	public void onHiddenChanged(boolean hidden) {
-		super.onHiddenChanged(hidden);
-		if (hidden) {
-
-		} else {
-
-		}
-	}
-
-	private final ActivityResultLauncher<Intent> customFoodSettingsActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
-			new ActivityResultCallback<ActivityResult>() {
-				@Override
-				public void onActivityResult(ActivityResult result) {
-					if (result.getResultCode() == RESULT_OK) {
-						setCategories();
-					}
-				}
-			});
 
 	private final FragmentManager.OnBackStackChangedListener onBackStackChangedListener = new FragmentManager.OnBackStackChangedListener() {
 		@Override

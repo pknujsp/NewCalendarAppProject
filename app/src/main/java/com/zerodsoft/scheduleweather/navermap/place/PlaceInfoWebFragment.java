@@ -36,7 +36,6 @@ public class PlaceInfoWebFragment extends Fragment {
 				if (binding.webview.canGoBack()) {
 					binding.webview.goBack();
 				} else {
-					binding.webview.setOnKeyListener(null);
 					return false;
 				}
 			}
@@ -54,7 +53,7 @@ public class PlaceInfoWebFragment extends Fragment {
 	@Nullable
 	@Override
 	public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-		binding = FragmentPlaceInfoWebBinding.inflate(inflater);
+		binding = FragmentPlaceInfoWebBinding.inflate(inflater, container, false);
 		return binding.getRoot();
 	}
 
@@ -108,7 +107,4 @@ public class PlaceInfoWebFragment extends Fragment {
 		binding.webview.loadUrl(KakaoPlace.WEB_URL + placeId);
 	}
 
-	public FragmentPlaceInfoWebBinding getBinding() {
-		return binding;
-	}
 }

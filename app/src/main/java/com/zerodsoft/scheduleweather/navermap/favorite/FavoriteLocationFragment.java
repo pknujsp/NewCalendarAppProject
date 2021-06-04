@@ -34,6 +34,7 @@ import com.naver.maps.geometry.LatLng;
 import com.naver.maps.map.overlay.Marker;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
+import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
 import com.zerodsoft.scheduleweather.databinding.FragmentFavoriteLocationBinding;
 import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteLocationViewModel;
@@ -245,9 +246,9 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
 	}
 
 	private void setFavoriteLocationList() {
-		favoriteLocationViewModel.select(FavoriteLocationDTO.ONLY_FOR_MAP, new CarrierMessagingService.ResultCallback<List<FavoriteLocationDTO>>() {
+		favoriteLocationViewModel.select(FavoriteLocationDTO.ONLY_FOR_MAP, new DbQueryCallback<List<FavoriteLocationDTO>>() {
 			@Override
-			public void onReceiveResult(@NonNull List<FavoriteLocationDTO> list) throws RemoteException {
+			public void onResultSuccessful(List<FavoriteLocationDTO> list) {
 				calcDistance(list);
 				sort(list);
 				favoriteLocationAdapter.setList(list);
@@ -266,6 +267,11 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
 					}
 				});
 			}
+
+			@Override
+			public void onResultNoData() {
+
+			}
 		});
 	}
 
@@ -282,9 +288,9 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
 
 	public void refresh() {
 		//추가,삭제 된 경우만 동작시킨다
-		favoriteLocationViewModel.select(FavoriteLocationDTO.ONLY_FOR_MAP, new CarrierMessagingService.ResultCallback<List<FavoriteLocationDTO>>() {
+		favoriteLocationViewModel.select(FavoriteLocationDTO.ONLY_FOR_MAP, new DbQueryCallback<List<FavoriteLocationDTO>>() {
 			@Override
-			public void onReceiveResult(@NonNull List<FavoriteLocationDTO> newList) throws RemoteException {
+			public void onResultSuccessful(List<FavoriteLocationDTO> newList) {
 				Set<FavoriteLocationDTO> currentSet = new HashSet<>(favoriteLocationAdapter.getList());
 				Set<FavoriteLocationDTO> newSet = new HashSet<>(newList);
 
@@ -327,6 +333,11 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
 						}
 					});
 				}
+			}
+
+			@Override
+			public void onResultNoData() {
+
 			}
 		});
 	}
@@ -441,46 +452,55 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
 
 	@Override
 	public void addFavoriteLocation(FavoriteLocationDTO favoriteLocationDTO) {
-		
+
 	}
 
 	@Override
-	public void select(Integer type, CarrierMessagingService.ResultCallback<List<FavoriteLocationDTO>> callback) {
-		favoriteLocationViewModel.select(type, new CarrierMessagingService.ResultCallback<List<FavoriteLocationDTO>>() {
+	public void select(Integer type, DbQueryCallback<List<FavoriteLocationDTO>> callback) {
+		favoriteLocationViewModel.select(type, new DbQueryCallback<List<FavoriteLocationDTO>>() {
 			@Override
-			public void onReceiveResult(@NonNull List<FavoriteLocationDTO> favoriteLocationDTOS) throws RemoteException {
+			public void onResultSuccessful(List<FavoriteLocationDTO> result) {
 				requireActivity().runOnUiThread(new Runnable() {
 					@SneakyThrows
 					@Override
 					public void run() {
-						callback.onReceiveResult(favoriteLocationDTOS);
+						callback.processResult(result);
 					}
 				});
+			}
+
+			@Override
+			public void onResultNoData() {
+
 			}
 		});
 	}
 
 	@Override
-	public void select(Integer type, Integer id, CarrierMessagingService.ResultCallback<FavoriteLocationDTO> callback) {
-		favoriteLocationViewModel.select(type, id, new CarrierMessagingService.ResultCallback<FavoriteLocationDTO>() {
+	public void select(Integer type, Integer id, DbQueryCallback<FavoriteLocationDTO> callback) {
+		favoriteLocationViewModel.select(type, id, new DbQueryCallback<FavoriteLocationDTO>() {
 			@Override
-			public void onReceiveResult(@NonNull FavoriteLocationDTO favoriteLocationDTO) throws RemoteException {
+			public void onResultSuccessful(FavoriteLocationDTO result) {
 				requireActivity().runOnUiThread(new Runnable() {
-					@SneakyThrows
 					@Override
 					public void run() {
-						callback.onReceiveResult(favoriteLocationDTO);
+						callback.processResult(result);
 					}
 				});
+			}
+
+			@Override
+			public void onResultNoData() {
+
 			}
 		});
 	}
 
 	@Override
 	public void delete(Integer id, CarrierMessagingService.ResultCallback<Boolean> callback) {
-		favoriteLocationViewModel.select(null, id, new CarrierMessagingService.ResultCallback<FavoriteLocationDTO>() {
+		favoriteLocationViewModel.select(null, id, new DbQueryCallback<FavoriteLocationDTO>() {
 			@Override
-			public void onReceiveResult(@NonNull FavoriteLocationDTO favoriteLocationDTO) throws RemoteException {
+			public void onResultSuccessful(FavoriteLocationDTO result) {
 				favoriteLocationViewModel.delete(id, new CarrierMessagingService.ResultCallback<Boolean>() {
 					@Override
 					public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException {
@@ -489,11 +509,16 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
 							@Override
 							public void run() {
 								callback.onReceiveResult(aBoolean);
-								favoriteLocationsListener.removeFavoriteLocationsPoiItem(favoriteLocationDTO);
+								favoriteLocationsListener.removeFavoriteLocationsPoiItem(result);
 							}
 						});
 					}
 				});
+			}
+
+			@Override
+			public void onResultNoData() {
+
 			}
 		});
 

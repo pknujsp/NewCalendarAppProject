@@ -106,7 +106,7 @@ public class SearchRestaurantFragment extends Fragment implements OnClickedListI
 		searchResultRestaurantFragment.setArguments(bundle);
 
 		getParentFragmentManager().beginTransaction().hide(this)
-				.add(searchResultRestaurantFragment, getString(R.string.tag_search_result_restaurant_fragment))
+				.add(R.id.fragment_container, searchResultRestaurantFragment, getString(R.string.tag_search_result_restaurant_fragment))
 				.addToBackStack(getString(R.string.tag_search_result_restaurant_fragment))
 				.commit();
 	}

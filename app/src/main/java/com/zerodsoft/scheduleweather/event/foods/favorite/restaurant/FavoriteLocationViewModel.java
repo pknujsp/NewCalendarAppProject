@@ -8,9 +8,7 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import com.zerodsoft.scheduleweather.event.foods.interfaces.FoodMenuChipsViewController;
-import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
-import com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint;
+import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
 import com.zerodsoft.scheduleweather.room.interfaces.FavoriteLocationQuery;
 
@@ -41,12 +39,12 @@ public class FavoriteLocationViewModel extends AndroidViewModel implements Favor
 	}
 
 	@Override
-	public void select(Integer type, CarrierMessagingService.ResultCallback<List<FavoriteLocationDTO>> callback) {
+	public void select(Integer type, DbQueryCallback<List<FavoriteLocationDTO>> callback) {
 		restaurantRepository.select(type, callback);
 	}
 
 	@Override
-	public void select(Integer type, Integer id, CarrierMessagingService.ResultCallback<FavoriteLocationDTO> callback) {
+	public void select(Integer type, Integer id, DbQueryCallback<FavoriteLocationDTO> callback) {
 		restaurantRepository.select(type, id, callback);
 	}
 
