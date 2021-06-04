@@ -49,7 +49,6 @@ import java.util.Set;
 
 public class FavoriteRestaurantFragment extends Fragment implements OnClickedListItem<PlaceDocuments>, OnClickedFavoriteButtonListener {
 	private FragmentFavoriteRestaurantBinding binding;
-	private FavoriteLocationsListener favoriteLocationsListener;
 
 	private FavoriteLocationViewModel favoriteRestaurantViewModel;
 	private RestaurantSharedViewModel restaurantSharedViewModel;
@@ -67,7 +66,6 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
 		super.onCreate(savedInstanceState);
 		favoriteRestaurantViewModel = new ViewModelProvider(requireActivity()).get(FavoriteLocationViewModel.class);
 		restaurantSharedViewModel = new ViewModelProvider(requireActivity()).get(RestaurantSharedViewModel.class);
-		favoriteLocationsListener = restaurantSharedViewModel.getFavoriteLocationsListener();
 	}
 
 	@Override
@@ -85,6 +83,41 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
 			@Override
 			public boolean onGroupClick(ExpandableListView expandableListView, View view, int i, long l) {
 				return false;
+			}
+		});
+
+		favoriteRestaurantViewModel.getAddedFavoriteLocationMutableLiveData().observe(getViewLifecycleOwner(), new Observer<FavoriteLocationDTO>() {
+			@Override
+			public void onChanged(FavoriteLocationDTO favoriteLocationDTO) {
+				if (isHidden()) {
+					try {
+						requireActivity().runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								refreshList();
+							}
+						});
+					} catch (Exception e) {
+					}
+
+				}
+			}
+		});
+
+		favoriteRestaurantViewModel.getRemovedFavoriteLocationMutableLiveData().observe(getViewLifecycleOwner(), new Observer<Integer>() {
+			@Override
+			public void onChanged(Integer integer) {
+				if (isHidden()) {
+					try {
+						requireActivity().runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								refreshList();
+							}
+						});
+					} catch (Exception e) {
+					}
+				}
 			}
 		});
 
@@ -113,6 +146,13 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
 						@Override
 						public void run() {
 							adapter.notifyDataSetChanged();
+						}
+					});
+				} else {
+					requireActivity().runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							viewProgress.onCompletedProcessingData(false, getString(R.string.not_data));
 						}
 					});
 				}
@@ -372,14 +412,19 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
 	}
 
 	@Override
+	public void onHiddenChanged(boolean hidden) {
+		super.onHiddenChanged(hidden);
+	}
+
+	@Override
 	public void onClickedFavoriteButton(KakaoLocalDocument kakaoLocalDocument, FavoriteLocationDTO favoriteLocationDTO,
 	                                    int groupPosition, int childPosition) {
 		final String placeId = ((PlaceDocuments) kakaoLocalDocument).getId();
 
-		favoriteRestaurantViewModel.contains(placeId, null, null, null, new CarrierMessagingService.ResultCallback<FavoriteLocationDTO>() {
+		favoriteRestaurantViewModel.contains(placeId, null, null, null, new DbQueryCallback<FavoriteLocationDTO>() {
 			@Override
-			public void onReceiveResult(@NonNull FavoriteLocationDTO favoriteLocationDTO) throws RemoteException {
-				favoriteRestaurantViewModel.delete(favoriteLocationDTO.getId(),
+			public void onResultSuccessful(FavoriteLocationDTO result) {
+				favoriteRestaurantViewModel.delete(result.getId(),
 						new CarrierMessagingService.ResultCallback<Boolean>() {
 							@Override
 							public void onReceiveResult(@NonNull Boolean isDeleted) throws RemoteException {
@@ -396,13 +441,17 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
 										if (restaurantListMap.size() >= 1 && !restaurantListMap.containsKey(key)) {
 											binding.favoriteRestaurantList.collapseGroup(groupPosition);
 										}
-										favoriteLocationsListener.removeFavoriteLocationsPoiItem(favoriteLocationDTO);
 										adapter.notifyDataSetChanged();
 									}
 								});
 
 							}
 						});
+			}
+
+			@Override
+			public void onResultNoData() {
+
 			}
 		});
 

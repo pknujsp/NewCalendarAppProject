@@ -360,7 +360,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements FoodMen
 
 				RestaurantDialogFragment restaurantDialogFragment =
 						new RestaurantDialogFragment(NewInstanceMainFragment.this, NewInstanceMainFragment.this
-								, NewInstanceMainFragment.this, CALENDAR_ID, INSTANCE_ID, EVENT_ID, DEFAULT_HEIGHT_OF_BOTTOMSHEET);
+								, CALENDAR_ID, INSTANCE_ID, EVENT_ID, DEFAULT_HEIGHT_OF_BOTTOMSHEET);
 				restaurantDialogFragment.show(getParentFragmentManager(), RestaurantDialogFragment.TAG);
 			}
 		});

@@ -164,7 +164,7 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
 			}
 		});
 
-		favoriteLocationViewModel = new ViewModelProvider(this).get(FavoriteLocationViewModel.class);
+		favoriteLocationViewModel = new ViewModelProvider(requireActivity()).get(FavoriteLocationViewModel.class);
 		binding.favoriteLocationRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false));
 		binding.favoriteLocationRecyclerView.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
 
@@ -547,17 +547,21 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
 	}
 
 	@Override
-	public void contains(String placeId, String address, String latitude, String longitude, CarrierMessagingService.ResultCallback<FavoriteLocationDTO> callback) {
-		favoriteLocationViewModel.contains(placeId, address, latitude, longitude, new CarrierMessagingService.ResultCallback<FavoriteLocationDTO>() {
+	public void contains(String placeId, String address, String latitude, String longitude, DbQueryCallback<FavoriteLocationDTO> callback) {
+		favoriteLocationViewModel.contains(placeId, address, latitude, longitude, new DbQueryCallback<FavoriteLocationDTO>() {
 			@Override
-			public void onReceiveResult(@NonNull FavoriteLocationDTO favoriteLocationDTO) throws RemoteException {
+			public void onResultSuccessful(FavoriteLocationDTO result) {
 				requireActivity().runOnUiThread(new Runnable() {
-					@SneakyThrows
 					@Override
 					public void run() {
-						callback.onReceiveResult(favoriteLocationDTO);
+						callback.processResult(result);
 					}
 				});
+			}
+
+			@Override
+			public void onResultNoData() {
+
 			}
 		});
 	}

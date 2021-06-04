@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.FragmentRestaurantMainHostBinding;
 import com.zerodsoft.scheduleweather.event.foods.RestaurantDialogFragment;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.FoodMenuChipsViewController;
@@ -40,5 +41,14 @@ public class RestaurantMainHostFragment extends Fragment {
 		super.onViewCreated(view, savedInstanceState);
 		getChildFragmentManager().beginTransaction().add(binding.fragmentContainer.getId(), new FoodsMenuListFragment(),
 				FoodsMenuListFragment.TAG).commit();
+	}
+
+	@Override
+	public void onHiddenChanged(boolean hidden) {
+		super.onHiddenChanged(hidden);
+		FragmentManager fragmentManager = getChildFragmentManager();
+		if (fragmentManager.findFragmentByTag(getString(R.string.tag_restaurant_list_tab_fragment)) != null) {
+			fragmentManager.findFragmentByTag(getString(R.string.tag_restaurant_list_tab_fragment)).onHiddenChanged(hidden);
+		}
 	}
 }

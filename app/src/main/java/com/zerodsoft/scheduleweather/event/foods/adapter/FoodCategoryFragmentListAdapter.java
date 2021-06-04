@@ -14,11 +14,8 @@ import com.zerodsoft.scheduleweather.room.interfaces.FavoriteLocationQuery;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FoodCategoryFragmentListAdapter extends FragmentStateAdapter implements RestaurantListTabFragment.RefreshFavoriteState {
-	private List<RestaurantListFragment> fragments;
-	private List<String> categoryList;
-	private FavoriteLocationQuery favoriteLocationQuery;
-	private FavoriteLocationsListener favoriteLocationsListener;
+public class FoodCategoryFragmentListAdapter extends FragmentStateAdapter {
+	private List<RestaurantListFragment> fragments = new ArrayList<>();
 
 	public FoodCategoryFragmentListAdapter(@NonNull Fragment fragment) {
 		super(fragment);
@@ -28,18 +25,16 @@ public class FoodCategoryFragmentListAdapter extends FragmentStateAdapter implem
 		return fragments;
 	}
 
-	public void init(FavoriteLocationQuery favoriteLocationQuery, FavoriteLocationsListener favoriteLocationsListener, List<String> categoryList) {
-		this.favoriteLocationQuery = favoriteLocationQuery;
-		this.categoryList = categoryList;
-		this.fragments = new ArrayList<>();
-
+	public void init(List<String> categoryList) {
 		for (String categoryName : categoryList) {
 			RestaurantListFragment fragment = new RestaurantListFragment();
 			Bundle bundle = new Bundle();
 			bundle.putString("query", categoryName);
+
 			fragment.setArguments(bundle);
 			fragments.add(fragment);
 		}
+
 	}
 
 	@NonNull
@@ -51,13 +46,6 @@ public class FoodCategoryFragmentListAdapter extends FragmentStateAdapter implem
 	@Override
 	public int getItemCount() {
 		return fragments.size();
-	}
-
-	@Override
-	public void refreshFavorites() {
-		for (RestaurantListFragment fragment : fragments) {
-			fragment.refreshFavorites();
-		}
 	}
 
 }

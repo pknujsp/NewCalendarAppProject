@@ -17,14 +17,19 @@ import lombok.SneakyThrows;
 
 class FavoriteLocationRepository implements FavoriteLocationQuery {
 	private final FavoriteLocationDAO dao;
-	private MutableLiveData<FavoriteLocationDTO> favoriteLocationDTOMutableLiveData = new MutableLiveData<>(new FavoriteLocationDTO());
+	private MutableLiveData<FavoriteLocationDTO> addedFavoriteLocationMutableLiveData = new MutableLiveData<>();
+	private MutableLiveData<Integer> removedFavoriteLocationMutableLiveData = new MutableLiveData<>();
 
 	public FavoriteLocationRepository(Context context) {
 		dao = AppDb.getInstance(context).favoriteRestaurantDAO();
 	}
 
-	public MutableLiveData<FavoriteLocationDTO> getFavoriteLocationDTOMutableLiveData() {
-		return favoriteLocationDTOMutableLiveData;
+	public MutableLiveData<FavoriteLocationDTO> getAddedFavoriteLocationMutableLiveData() {
+		return addedFavoriteLocationMutableLiveData;
+	}
+
+	public MutableLiveData<Integer> getRemovedFavoriteLocationMutableLiveData() {
+		return removedFavoriteLocationMutableLiveData;
 	}
 
 	@Override
@@ -37,22 +42,14 @@ class FavoriteLocationRepository implements FavoriteLocationQuery {
 				int type = favoriteLocationDTO.getType();
 				FavoriteLocationDTO favoriteLocationDTO = dao.select(type, (int) id);
 				callback.onReceiveResult(favoriteLocationDTO);
+				addedFavoriteLocationMutableLiveData.postValue(favoriteLocationDTO);
 			}
 		}).start();
 	}
 
 	@Override
 	public void addFavoriteLocation(FavoriteLocationDTO favoriteLocationDTO) {
-		new Thread(new Runnable() {
-			@SneakyThrows
-			@Override
-			public void run() {
-				long id = dao.insert(favoriteLocationDTO);
-				int type = favoriteLocationDTO.getType();
-				FavoriteLocationDTO addedFavoriteLocation = dao.select(type, (int) id);
-				favoriteLocationDTOMutableLiveData.postValue(addedFavoriteLocation);
-			}
-		}).start();
+
 	}
 
 	@Override
@@ -87,6 +84,7 @@ class FavoriteLocationRepository implements FavoriteLocationQuery {
 			public void run() {
 				dao.delete(id);
 				callback.onReceiveResult(true);
+				removedFavoriteLocationMutableLiveData.postValue(id);
 			}
 		}).start();
 	}
@@ -116,13 +114,13 @@ class FavoriteLocationRepository implements FavoriteLocationQuery {
 	}
 
 	@Override
-	public void contains(String placeId, String address, String latitude, String longitude, CarrierMessagingService.ResultCallback<FavoriteLocationDTO> callback) {
+	public void contains(String placeId, String address, String latitude, String longitude, DbQueryCallback<FavoriteLocationDTO> callback) {
 		new Thread(new Runnable() {
 			@SneakyThrows
 			@Override
 			public void run() {
 				FavoriteLocationDTO favoriteLocationDTO = dao.contains(placeId, address, latitude, longitude);
-				callback.onReceiveResult(favoriteLocationDTO);
+				callback.processResult(favoriteLocationDTO);
 			}
 		}).start();
 	}

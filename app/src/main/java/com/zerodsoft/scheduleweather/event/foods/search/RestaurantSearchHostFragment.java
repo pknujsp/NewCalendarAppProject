@@ -39,4 +39,9 @@ public class RestaurantSearchHostFragment extends Fragment {
 				.add(binding.fragmentContainer.getId(), new SearchRestaurantFragment(), getString(R.string.tag_search_restaurant_fragment))
 				.commit();
 	}
+
+	@Override
+	public void onHiddenChanged(boolean hidden) {
+		super.onHiddenChanged(hidden);
+	}
 }

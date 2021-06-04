@@ -631,8 +631,7 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 			bundle.putString("foodMenuName", e.getCategoryName());
 			restaurantListTabFragment.setArguments(bundle);
 
-			tag = RestaurantListTabFragment.TAG;
-			fragmentTransaction.replace(R.id.fragment_container, restaurantListTabFragment, tag);
+			fragmentTransaction.replace(R.id.fragment_container, restaurantListTabFragment, getString(R.string.tag_restaurant_list_tab_fragment));
 		}
 
 		fragmentTransaction.addToBackStack(tag).commit();

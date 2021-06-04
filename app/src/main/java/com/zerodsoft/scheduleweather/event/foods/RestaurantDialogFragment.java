@@ -57,17 +57,15 @@ public class RestaurantDialogFragment extends BottomSheetDialogFragment {
 	private final int VIEW_HEIGHT;
 
 	private final FoodMenuChipsViewController foodMenuChipsViewController;
-	private final FavoriteLocationsListener favoriteLocationsListener;
 	private final IMapPoint iMapPoint;
 
 	private BottomSheetBehavior bottomSheetBehavior;
 
 	public RestaurantDialogFragment(IMapPoint iMapPoint
 			, FoodMenuChipsViewController foodMenuChipsViewController
-			, FavoriteLocationsListener favoriteLocationsListener, int CALENDAR_ID, long INSTANCE_ID, long EVENT_ID, int VIEW_HEIGHT) {
+			, int CALENDAR_ID, long INSTANCE_ID, long EVENT_ID, int VIEW_HEIGHT) {
 		this.iMapPoint = iMapPoint;
 		this.foodMenuChipsViewController = foodMenuChipsViewController;
-		this.favoriteLocationsListener = favoriteLocationsListener;
 		this.CALENDAR_ID = CALENDAR_ID;
 		this.INSTANCE_ID = INSTANCE_ID;
 		this.EVENT_ID = EVENT_ID;
@@ -106,7 +104,6 @@ public class RestaurantDialogFragment extends BottomSheetDialogFragment {
 
 		RestaurantSharedViewModel restaurantSharedViewModel =
 				new ViewModelProvider(requireActivity()).get(RestaurantSharedViewModel.class);
-		restaurantSharedViewModel.setFavoriteLocationsListener(favoriteLocationsListener);
 		restaurantSharedViewModel.setFoodMenuChipsViewController(foodMenuChipsViewController);
 		restaurantSharedViewModel.setiMapPoint(iMapPoint);
 		restaurantSharedViewModel.setEventId(EVENT_ID);
@@ -125,7 +122,7 @@ public class RestaurantDialogFragment extends BottomSheetDialogFragment {
 
 		View bottomSheet = getDialog().findViewById(R.id.design_bottom_sheet);
 		bottomSheet.getLayoutParams().height = VIEW_HEIGHT;
-		
+
 		binding.bottomNavigation.setOnNavigationItemSelectedListener(onNavigationItemSelectedListener);
 		binding.bottomNavigation.setOnNavigationItemReselectedListener(new BottomNavigationView.OnNavigationItemReselectedListener() {
 			@Override

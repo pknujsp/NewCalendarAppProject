@@ -557,4 +557,5 @@
     <string name="tag_favorite_restaurant_fragment">tag_favorite_restaurant_fragment</string>
     <string name="tag_search_restaurant_fragment">tag_search_restaurant_fragment</string>
     <string name="tag_search_result_restaurant_fragment">tag_search_result_restaurant_fragment</string>
+    <string name="tag_restaurant_list_tab_fragment">tag_restaurant_list_tab_fragment</string>
 </resources>

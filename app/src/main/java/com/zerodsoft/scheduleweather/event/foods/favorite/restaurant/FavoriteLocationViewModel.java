@@ -16,16 +16,23 @@ import java.util.List;
 
 public class FavoriteLocationViewModel extends AndroidViewModel implements FavoriteLocationQuery {
 	private FavoriteLocationRepository restaurantRepository;
-	private MutableLiveData<FavoriteLocationDTO> favoriteLocationDTOMutableLiveData;
+	private MutableLiveData<FavoriteLocationDTO> addedFavoriteLocationMutableLiveData;
+	private MutableLiveData<Integer> removedFavoriteLocationMutableLiveData;
 
 	public FavoriteLocationViewModel(@NonNull Application application) {
 		super(application);
 		restaurantRepository = new FavoriteLocationRepository(application.getApplicationContext());
-		favoriteLocationDTOMutableLiveData = restaurantRepository.getFavoriteLocationDTOMutableLiveData();
+
+		addedFavoriteLocationMutableLiveData = restaurantRepository.getAddedFavoriteLocationMutableLiveData();
+		removedFavoriteLocationMutableLiveData = restaurantRepository.getRemovedFavoriteLocationMutableLiveData();
 	}
 
-	public LiveData<FavoriteLocationDTO> getFavoriteLocationDTOMutableLiveData() {
-		return favoriteLocationDTOMutableLiveData;
+	public LiveData<FavoriteLocationDTO> getAddedFavoriteLocationMutableLiveData() {
+		return addedFavoriteLocationMutableLiveData;
+	}
+
+	public MutableLiveData<Integer> getRemovedFavoriteLocationMutableLiveData() {
+		return removedFavoriteLocationMutableLiveData;
 	}
 
 	@Override
@@ -64,7 +71,7 @@ public class FavoriteLocationViewModel extends AndroidViewModel implements Favor
 	}
 
 	@Override
-	public void contains(String placeId, String address, String latitude, String longitude, CarrierMessagingService.ResultCallback<FavoriteLocationDTO> callback) {
+	public void contains(String placeId, String address, String latitude, String longitude, DbQueryCallback<FavoriteLocationDTO> callback) {
 		restaurantRepository.contains(placeId, address, latitude, longitude, callback);
 	}
 }

@@ -34,13 +34,11 @@ public class SearchRestaurantFragment extends Fragment implements OnClickedListI
 	private RestaurantSharedViewModel restaurantSharedViewModel;
 	private FoodRestaurantSearchHistoryFragment foodRestaurantSearchHistoryFragment;
 	private SearchHistoryViewModel searchHistoryViewModel;
-	private FavoriteLocationsListener favoriteLocationsListener;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		restaurantSharedViewModel = new ViewModelProvider(requireActivity()).get(RestaurantSharedViewModel.class);
-		favoriteLocationsListener = restaurantSharedViewModel.getFavoriteLocationsListener();
 	}
 
 	@Override

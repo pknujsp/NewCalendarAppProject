@@ -26,4 +26,9 @@ public class RestaurantSettingsHostFragment extends Fragment {
 		binding = FragmentRestaurantSettingsHostBinding.inflate(inflater);
 		return binding.getRoot();
 	}
+
+	@Override
+	public void onHiddenChanged(boolean hidden) {
+		super.onHiddenChanged(hidden);
+	}
 }

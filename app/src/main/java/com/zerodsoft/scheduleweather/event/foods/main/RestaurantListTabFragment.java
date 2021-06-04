@@ -5,6 +5,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -18,6 +19,7 @@ import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
+import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.common.interfaces.OnHiddenFragmentListener;
 import com.zerodsoft.scheduleweather.common.interfaces.OnPopBackStackFragmentCallback;
 import com.zerodsoft.scheduleweather.databinding.FragmentFoodCategoryTabBinding;
@@ -32,6 +34,7 @@ import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
 import com.zerodsoft.scheduleweather.navermap.interfaces.OnExtraListDataListener;
+import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoWebFragment;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.CustomFoodMenuDTO;
 
@@ -41,11 +44,10 @@ import java.util.List;
 
 import lombok.SneakyThrows;
 
-public class RestaurantListTabFragment extends Fragment implements NewInstanceMainFragment.RestaurantsGetter, OnExtraListDataListener<String>, OnHiddenFragmentListener {
-	public static final String TAG = "RestaurantListTabFragment";
+public class RestaurantListTabFragment extends Fragment implements NewInstanceMainFragment.RestaurantsGetter, OnExtraListDataListener<String>, OnHiddenFragmentListener
+		, OnClickedListItem<PlaceDocuments> {
 	private FragmentFoodCategoryTabBinding binding;
 	private FoodMenuChipsViewController foodMenuChipsViewController;
-	private FavoriteLocationsListener favoriteLocationsListener;
 
 	private CustomFoodMenuViewModel customFoodCategoryViewModel;
 	private FavoriteLocationViewModel favoriteRestaurantViewModel;
@@ -56,9 +58,6 @@ public class RestaurantListTabFragment extends Fragment implements NewInstanceMa
 	private String firstSelectedFoodMenuName;
 	private Long eventId;
 
-	private int lastFoodMenuIndex;
-
-
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -67,7 +66,6 @@ public class RestaurantListTabFragment extends Fragment implements NewInstanceMa
 
 		restaurantSharedViewModel = new ViewModelProvider(requireActivity()).get(RestaurantSharedViewModel.class);
 		eventId = restaurantSharedViewModel.getEventId();
-		favoriteLocationsListener = restaurantSharedViewModel.getFavoriteLocationsListener();
 		foodMenuChipsViewController = restaurantSharedViewModel.getFoodMenuChipsViewController();
 	}
 
@@ -91,7 +89,6 @@ public class RestaurantListTabFragment extends Fragment implements NewInstanceMa
 		binding.openMapToShowRestaurants.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				lastFoodMenuIndex = binding.viewpager.getCurrentItem();
 				foodMenuChipsViewController.setCurrentFoodMenuName(categoryList.get(binding.viewpager.getCurrentItem()));
 				getParentFragmentManager().beginTransaction().hide(RestaurantListTabFragment.this).commit();
 			}
@@ -122,7 +119,7 @@ public class RestaurantListTabFragment extends Fragment implements NewInstanceMa
 						int selectedIndex = categoryList.indexOf(firstSelectedFoodMenuName);
 
 						adapter = new FoodCategoryFragmentListAdapter(RestaurantListTabFragment.this);
-						adapter.init(favoriteRestaurantViewModel, favoriteLocationsListener, categoryList);
+						adapter.init(categoryList);
 						binding.viewpager.setAdapter(adapter);
 
 						new TabLayoutMediator(binding.tabs, binding.viewpager,
@@ -150,20 +147,12 @@ public class RestaurantListTabFragment extends Fragment implements NewInstanceMa
 
 	}
 
-	@Override
-	public void onHiddenChanged(boolean hidden) {
-		super.onHiddenChanged(hidden);
-		if (hidden) {
-			//음식점 즐겨찾기 갱신
-		} else {
-			adapter.refreshFavorites();
-		}
-	}
 
 	@Override
 	public void getRestaurants(String foodName, CarrierMessagingService.ResultCallback<List<PlaceDocuments>> callback) {
 		final int index = categoryList.indexOf(foodName);
 		RestaurantListFragment fragment = adapter.getFragments().get(index);
+
 		if (fragment.adapter == null) {
 			fragment.setAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
 				@Override
@@ -221,9 +210,34 @@ public class RestaurantListTabFragment extends Fragment implements NewInstanceMa
 		}
 	}
 
-	public interface RefreshFavoriteState {
-		void refreshFavorites();
+	@Override
+	public void onHiddenChanged(boolean hidden) {
+		super.onHiddenChanged(hidden);
 	}
 
+	@Override
+	public void onClickedListItem(PlaceDocuments e, int position) {
+		if (e != null) {
+			PlaceInfoWebFragment placeInfoWebFragment = new PlaceInfoWebFragment();
+			Bundle bundle = new Bundle();
+			bundle.putString("placeId", ((PlaceDocuments) e).getId());
+			placeInfoWebFragment.setArguments(bundle);
+
+			String tag = getString(R.string.tag_place_info_web_fragment);
+
+			FragmentManager fragmentManager = getParentFragmentManager();
+			// restaurant list tab fragment
+			fragmentManager.beginTransaction().hide(this)
+					.add(R.id.fragment_container, placeInfoWebFragment, tag)
+					.addToBackStack(tag).commit();
+		} else {
+
+		}
+	}
+
+	@Override
+	public void deleteListItem(PlaceDocuments e, int position) {
+
+	}
 
 }

@@ -16,44 +16,31 @@ import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
 
-public class FoodsSettingsFragment extends Fragment
-{
-    public static final String TAG = "FoodsSettingsFragment";
-    private FragmentFoodsSettingsBinding binding;
-    private final BottomSheetController bottomSheetController;
-    private final FavoriteLocationsListener favoriteLocationsListener;
+public class FoodsSettingsFragment extends Fragment {
+	public static final String TAG = "FoodsSettingsFragment";
+	private FragmentFoodsSettingsBinding binding;
 
-    public FoodsSettingsFragment(BottomSheetController bottomSheetController, FavoriteLocationsListener favoriteLocationsListener)
-    {
-        this.bottomSheetController = bottomSheetController;
-        this.favoriteLocationsListener = favoriteLocationsListener;
-    }
 
-    @Override
-    public void onCreate(Bundle savedInstanceState)
-    {
-        super.onCreate(savedInstanceState);
-    }
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+	}
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState)
-    {
-        binding = FragmentFoodsSettingsBinding.inflate(inflater);
-        return binding.getRoot();
-    }
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+	                         Bundle savedInstanceState) {
+		binding = FragmentFoodsSettingsBinding.inflate(inflater);
+		return binding.getRoot();
+	}
 
-    @Override
-    public void onHiddenChanged(boolean hidden)
-    {
-        super.onHiddenChanged(hidden);
-        if (hidden)
-        {
+	@Override
+	public void onHiddenChanged(boolean hidden) {
+		super.onHiddenChanged(hidden);
+		if (hidden) {
 
-        } else
-        {
+		} else {
 
-        }
-    }
+		}
+	}
 
 }

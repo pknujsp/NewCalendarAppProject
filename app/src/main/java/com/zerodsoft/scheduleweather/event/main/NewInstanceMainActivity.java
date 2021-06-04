@@ -2,6 +2,7 @@ package com.zerodsoft.scheduleweather.event.main;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.DataBindingUtil;
+import androidx.lifecycle.ViewModelProvider;
 
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -11,6 +12,7 @@ import android.view.View;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.ActivityNewInstanceMainBinding;
+import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteLocationViewModel;
 
 public class NewInstanceMainActivity extends AppCompatActivity {
 	private ActivityNewInstanceMainBinding binding;
@@ -40,6 +42,9 @@ public class NewInstanceMainActivity extends AppCompatActivity {
 			begin = bundle.getLong(CalendarContract.Instances.BEGIN);
 			end = bundle.getLong(CalendarContract.Instances.END);
 		}
+
+		new ViewModelProvider(this).get(FavoriteLocationViewModel.class);
+
 		NewInstanceMainFragment newInstanceMainFragment = new NewInstanceMainFragment(calendarId, eventId, instanceId, begin, end);
 		newInstanceMainFragment.setPlaceBottomSheetSelectBtnVisibility(View.GONE);
 		newInstanceMainFragment.setPlaceBottomSheetUnSelectBtnVisibility(View.GONE);
