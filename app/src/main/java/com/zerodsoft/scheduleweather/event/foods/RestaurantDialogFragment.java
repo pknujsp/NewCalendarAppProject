@@ -163,7 +163,7 @@ public class RestaurantDialogFragment extends BottomSheetDialogFragment {
 							destinationFragment = new RestaurantSettingsHostFragment();
 							fragmentTransaction = null;
 							return false;
-		
+
 					}
 
 					fragmentTransaction.add(binding.fragmentContainer.getId(), destinationFragment, tag);
