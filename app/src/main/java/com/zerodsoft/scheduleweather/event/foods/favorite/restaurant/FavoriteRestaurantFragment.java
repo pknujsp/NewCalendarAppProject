@@ -25,8 +25,10 @@ import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.common.interfaces.OnProgressBarListener;
 import com.zerodsoft.scheduleweather.databinding.FragmentFavoriteRestaurantBinding;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedFavoriteButtonListener;
+import com.zerodsoft.scheduleweather.event.foods.viewmodel.RestaurantSharedViewModel;
 import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
 import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoWebDialogFragment;
+import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoWebFragment;
 import com.zerodsoft.scheduleweather.navermap.util.LocalParameterUtil;
 import com.zerodsoft.scheduleweather.kakaoplace.retrofit.KakaoPlaceDownloader;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
@@ -44,11 +46,11 @@ import java.util.Map;
 import java.util.Set;
 
 public class FavoriteRestaurantFragment extends Fragment implements OnClickedListItem<PlaceDocuments>, OnProgressBarListener, OnClickedFavoriteButtonListener {
-	public static final String TAG = "FavoriteRestaurantFragment";
 	private FragmentFavoriteRestaurantBinding binding;
 	private FavoriteLocationsListener favoriteLocationsListener;
 
 	private FavoriteLocationViewModel favoriteRestaurantViewModel;
+	private RestaurantSharedViewModel restaurantSharedViewModel;
 	private FavoriteRestaurantListAdapter adapter;
 
 	private ArrayMap<String, List<PlaceDocuments>> restaurantListMap = new ArrayMap<>();
@@ -72,6 +74,9 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		favoriteRestaurantViewModel = new ViewModelProvider(requireActivity()).get(FavoriteLocationViewModel.class);
+		restaurantSharedViewModel = new ViewModelProvider(requireActivity()).get(RestaurantSharedViewModel.class);
+		favoriteLocationsListener = restaurantSharedViewModel.getFavoriteLocationsListener();
 	}
 
 	@Override
@@ -84,10 +89,6 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
-		favoriteRestaurantViewModel = new ViewModelProvider(requireActivity()).get(FavoriteLocationViewModel.class);
-
-		FavoriteRestaurantFragmentArgs arg = FavoriteRestaurantFragmentArgs.fromBundle(getArguments());
-		favoriteLocationsListener = arg.getFavoriteLocationsListener();
 
 		binding.favoriteRestaurantList.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener() {
 			@Override
@@ -195,8 +196,15 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
 	@Override
 	public void onClickedListItem(PlaceDocuments e, int position) {
 		if (e != null) {
-			NavHostFragment.findNavController(FavoriteRestaurantFragment.this)
-					.navigate(FavoriteRestaurantFragmentDirections.actionFavoriteRestaurantFragmentToPlaceInfoWebFragment2(((PlaceDocuments) e).getId()));
+			PlaceInfoWebFragment placeInfoWebFragment = new PlaceInfoWebFragment();
+			Bundle bundle = new Bundle();
+			bundle.putString("placeId", ((PlaceDocuments) e).getId());
+			placeInfoWebFragment.setArguments(bundle);
+
+			getParentFragmentManager().beginTransaction().hide(this)
+					.add(placeInfoWebFragment, getString(R.string.tag_place_info_web_fragment))
+					.addToBackStack(getString(R.string.tag_place_info_web_fragment))
+					.commit();
 		} else {
 
 		}

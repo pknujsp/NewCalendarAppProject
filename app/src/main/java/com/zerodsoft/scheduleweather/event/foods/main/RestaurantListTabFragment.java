@@ -26,6 +26,7 @@ import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteLoc
 import com.zerodsoft.scheduleweather.event.foods.RestaurantDialogFragment;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.FoodMenuChipsViewController;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.CustomFoodMenuViewModel;
+import com.zerodsoft.scheduleweather.event.foods.viewmodel.RestaurantSharedViewModel;
 import com.zerodsoft.scheduleweather.event.main.NewInstanceMainFragment;
 import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
@@ -48,6 +49,7 @@ public class RestaurantListTabFragment extends Fragment implements NewInstanceMa
 
 	private CustomFoodMenuViewModel customFoodCategoryViewModel;
 	private FavoriteLocationViewModel favoriteRestaurantViewModel;
+	private RestaurantSharedViewModel restaurantSharedViewModel;
 
 	private List<String> categoryList;
 	private FoodCategoryFragmentListAdapter adapter;
@@ -60,11 +62,13 @@ public class RestaurantListTabFragment extends Fragment implements NewInstanceMa
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		RestaurantListTabFragmentArgs args = RestaurantListTabFragmentArgs.fromBundle(getArguments());
-		firstSelectedFoodMenuName = args.getFoodMenuName();
-		eventId = args.getEventId();
-		favoriteLocationsListener = args.getFavoriteLocationsListener();
-		foodMenuChipsViewController = args.getFoodMenuChipsViewController();
+		Bundle bundle = getArguments();
+		firstSelectedFoodMenuName = bundle.getString("foodMenuName");
+
+		restaurantSharedViewModel = new ViewModelProvider(requireActivity()).get(RestaurantSharedViewModel.class);
+		eventId = restaurantSharedViewModel.getEventId();
+		favoriteLocationsListener = restaurantSharedViewModel.getFavoriteLocationsListener();
+		foodMenuChipsViewController = restaurantSharedViewModel.getFoodMenuChipsViewController();
 	}
 
 	@Override
@@ -213,8 +217,7 @@ public class RestaurantListTabFragment extends Fragment implements NewInstanceMa
 		if (hidden) {
 
 		} else {
-			getParentFragmentManager().beginTransaction().show(RestaurantListTabFragment.this).commit();
-			adapter.refreshFavorites();
+
 		}
 	}
 

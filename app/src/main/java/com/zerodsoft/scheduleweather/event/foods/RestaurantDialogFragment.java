@@ -161,7 +161,9 @@ public class RestaurantDialogFragment extends BottomSheetDialogFragment {
 							break;
 						case R.id.settings:
 							destinationFragment = new RestaurantSettingsHostFragment();
-							break;
+							fragmentTransaction = null;
+							return false;
+		
 					}
 
 					fragmentTransaction.add(binding.fragmentContainer.getId(), destinationFragment, tag);

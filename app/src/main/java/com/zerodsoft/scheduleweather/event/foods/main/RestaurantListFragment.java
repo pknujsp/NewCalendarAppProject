@@ -19,6 +19,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
@@ -28,7 +29,9 @@ import com.zerodsoft.scheduleweather.event.foods.adapter.RestaurantListAdapter;
 import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteLocationViewModel;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedFavoriteButtonListener;
 import com.zerodsoft.scheduleweather.event.foods.share.CriteriaLocationCloud;
+import com.zerodsoft.scheduleweather.event.foods.viewmodel.RestaurantSharedViewModel;
 import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
+import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoWebFragment;
 import com.zerodsoft.scheduleweather.navermap.util.LocalParameterUtil;
 import com.zerodsoft.scheduleweather.navermap.viewmodel.PlacesViewModel;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
@@ -45,6 +48,7 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 	protected RecyclerView.AdapterDataObserver adapterDataObserver;
 	protected FavoriteLocationViewModel favoriteRestaurantViewModel;
 	protected FavoriteLocationsListener favoriteLocationsListener;
+	protected RestaurantSharedViewModel sharedViewModel;
 
 	public void setAdapterDataObserver(RecyclerView.AdapterDataObserver adapterDataObserver) {
 		this.adapterDataObserver = adapterDataObserver;
@@ -70,7 +74,8 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 		placesViewModel = new ViewModelProvider(this).get(PlacesViewModel.class);
 
 		favoriteRestaurantViewModel = new ViewModelProvider(requireActivity()).get(FavoriteLocationViewModel.class);
-		favoriteLocationsListener = favoriteRestaurantViewModel.getFavoriteLocationsListener();
+		sharedViewModel = new ViewModelProvider(requireActivity()).get(RestaurantSharedViewModel.class);
+		favoriteLocationsListener = sharedViewModel.getFavoriteLocationsListener();
 
 		binding.recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext(), RecyclerView.VERTICAL, false));
 		binding.recyclerView.addItemDecoration(new DividerItemDecoration(view.getContext(), DividerItemDecoration.VERTICAL));
@@ -133,8 +138,14 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 	@Override
 	public void onClickedListItem(PlaceDocuments e, int position) {
 		if (e != null) {
-			NavHostFragment.findNavController(RestaurantListFragment.this)
-					.navigate(RestaurantListTabFragmentDirections.actionRestaurantListTabFragmentToPlaceInfoWebFragment(((PlaceDocuments) e).getId()));
+			PlaceInfoWebFragment placeInfoWebFragment = new PlaceInfoWebFragment();
+			Bundle bundle = new Bundle();
+			bundle.putString("placeId", ((PlaceDocuments) e).getId());
+			placeInfoWebFragment.setArguments(bundle);
+
+			getParentFragmentManager().beginTransaction().hide(this)
+					.add(placeInfoWebFragment, getString(R.string.tag_place_info_web_fragment))
+					.addToBackStack(getString(R.string.tag_place_info_web_fragment)).commit();
 		} else {
 
 		}

@@ -550,4 +550,11 @@
         가져옵니다</string>
     <string name="map_center_point">지도 중심 좌표</string>
     <string name="not_selected_criteria_location">검색 기준 위치가 선택되지 않았습니다</string>
+
+
+    <!-- fragmentTags -->
+    <string name="tag_place_info_web_fragment">tag_place_info_web_fragment</string>
+    <string name="tag_favorite_restaurant_fragment">tag_favorite_restaurant_fragment</string>
+    <string name="tag_search_restaurant_fragment">tag_search_restaurant_fragment</string>
+    <string name="tag_search_result_restaurant_fragment">tag_search_result_restaurant_fragment</string>
 </resources>

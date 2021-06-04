@@ -20,6 +20,8 @@ import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.databinding.FragmentSearchRestaurantBinding;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedRestaurantItem;
+import com.zerodsoft.scheduleweather.event.foods.search.searchresult.fragment.SearchResultRestaurantFragment;
+import com.zerodsoft.scheduleweather.event.foods.viewmodel.RestaurantSharedViewModel;
 import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
 import com.zerodsoft.scheduleweather.navermap.viewmodel.SearchHistoryViewModel;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
@@ -29,6 +31,7 @@ public class SearchRestaurantFragment extends Fragment implements OnClickedListI
 		OnClickedRestaurantItem {
 	public static final String TAG = "SearchRestaurantFragment";
 	private FragmentSearchRestaurantBinding binding;
+	private RestaurantSharedViewModel restaurantSharedViewModel;
 	private FoodRestaurantSearchHistoryFragment foodRestaurantSearchHistoryFragment;
 	private SearchHistoryViewModel searchHistoryViewModel;
 	private FavoriteLocationsListener favoriteLocationsListener;
@@ -36,8 +39,8 @@ public class SearchRestaurantFragment extends Fragment implements OnClickedListI
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		SearchRestaurantFragmentArgs args = SearchRestaurantFragmentArgs.fromBundle(getArguments());
-		favoriteLocationsListener = args.getFavoriteLocationsListener();
+		restaurantSharedViewModel = new ViewModelProvider(requireActivity()).get(RestaurantSharedViewModel.class);
+		favoriteLocationsListener = restaurantSharedViewModel.getFavoriteLocationsListener();
 	}
 
 	@Override
@@ -50,9 +53,8 @@ public class SearchRestaurantFragment extends Fragment implements OnClickedListI
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
+		searchHistoryViewModel = new ViewModelProvider(this).get(SearchHistoryViewModel.class);
 
-		ViewModelStoreOwner owner = NavHostFragment.findNavController(this).getViewModelStoreOwner(R.id.restaurant_search_nav_graph);
-		searchHistoryViewModel = new ViewModelProvider(owner).get(SearchHistoryViewModel.class);
 		//검색 기록 프래그먼트 표시
 		foodRestaurantSearchHistoryFragment = new FoodRestaurantSearchHistoryFragment(this);
 		getChildFragmentManager().beginTransaction().add(binding.fragmentContainer.getId(),
@@ -98,7 +100,15 @@ public class SearchRestaurantFragment extends Fragment implements OnClickedListI
 
 
 	private void search(String query) {
-		NavHostFragment.findNavController(this).navigate(SearchRestaurantFragmentDirections.actionSearchRestaurantFragmentToSearchResultRestaurantFragment(query));
+		SearchResultRestaurantFragment searchResultRestaurantFragment = new SearchResultRestaurantFragment();
+		Bundle bundle = new Bundle();
+		bundle.putString("query", query);
+		searchResultRestaurantFragment.setArguments(bundle);
+
+		getParentFragmentManager().beginTransaction().hide(this)
+				.add(searchResultRestaurantFragment, getString(R.string.tag_search_result_restaurant_fragment))
+				.addToBackStack(getString(R.string.tag_search_result_restaurant_fragment))
+				.commit();
 	}
 
 	@Override

@@ -20,6 +20,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
@@ -35,6 +36,7 @@ import android.widget.Toast;
 
 import com.naver.maps.geometry.LatLng;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.activity.preferences.customfoodmenu.fragment.CustomFoodMenuSettingsFragment;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
@@ -45,6 +47,7 @@ import com.zerodsoft.scheduleweather.etc.AppPermission;
 import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.foods.adapter.FoodCategoryAdapter;
+import com.zerodsoft.scheduleweather.event.foods.criterialocation.RestaurantCriteriaLocationSettingsFragment;
 import com.zerodsoft.scheduleweather.event.foods.dto.FoodCategoryItem;
 import com.zerodsoft.scheduleweather.event.foods.enums.CriteriaLocationType;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.FoodMenuChipsViewController;
@@ -138,8 +141,9 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 		binding.criteriaLocation.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				NavController navController = NavHostFragment.findNavController(FoodsMenuListFragment.this);
-				navController.navigate(FoodsMenuListFragmentDirections.actionFoodsMenuListFragmentToRestaurantCriteriaLocationSettingsFragment(eventId));
+				getParentFragmentManager().beginTransaction()
+						.replace(R.id.fragment_container, new RestaurantCriteriaLocationSettingsFragment(), RestaurantCriteriaLocationSettingsFragment.TAG)
+						.addToBackStack(RestaurantCriteriaLocationSettingsFragment.TAG).commit();
 			}
 		});
 	}
@@ -614,13 +618,25 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 
 	@Override
 	public void onClickedListItem(FoodCategoryItem e, int position) {
-		NavController navController = NavHostFragment.findNavController(this);
+		FragmentTransaction fragmentTransaction = getParentFragmentManager().beginTransaction();
+		String tag = null;
 
 		if (!e.isDefault() && e.getCategoryName().equals(getString(R.string.add_custom_food_menu))) {
-			navController.navigate(R.id.customFoodMenuSettingsFragment);
+			CustomFoodMenuSettingsFragment customFoodMenuSettingsFragment = new CustomFoodMenuSettingsFragment();
+			tag = CustomFoodMenuSettingsFragment.TAG;
+
+			fragmentTransaction.replace(R.id.fragment_container, customFoodMenuSettingsFragment, tag);
 		} else {
-			navController.navigate(FoodsMenuListFragmentDirections.actionFoodsMenuListFragmentToRestaurantListTabFragment(e.getCategoryName(), eventId, foodMenuChipsViewController, favoriteLocationsListener));
+			RestaurantListTabFragment restaurantListTabFragment = new RestaurantListTabFragment();
+			Bundle bundle = new Bundle();
+			bundle.putString("foodMenuName", e.getCategoryName());
+			restaurantListTabFragment.setArguments(bundle);
+
+			tag = RestaurantListTabFragment.TAG;
+			fragmentTransaction.replace(R.id.fragment_container, restaurantListTabFragment, tag);
 		}
+
+		fragmentTransaction.addToBackStack(tag).commit();
 	}
 
 	@Override

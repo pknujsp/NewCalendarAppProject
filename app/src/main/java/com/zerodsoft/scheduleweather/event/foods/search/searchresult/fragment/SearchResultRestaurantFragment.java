@@ -19,7 +19,6 @@ import com.zerodsoft.scheduleweather.databinding.FragmentSearchRestaurantBinding
 import com.zerodsoft.scheduleweather.databinding.FragmentSearchResultRestaurantBinding;
 import com.zerodsoft.scheduleweather.event.foods.main.RestaurantListFragment;
 import com.zerodsoft.scheduleweather.event.foods.search.search.fragment.SearchRestaurantFragment;
-import com.zerodsoft.scheduleweather.event.foods.search.search.fragment.SearchRestaurantFragmentArgs;
 import com.zerodsoft.scheduleweather.room.dto.SearchHistoryDTO;
 
 import org.jetbrains.annotations.NotNull;
@@ -32,8 +31,8 @@ public class SearchResultRestaurantFragment extends Fragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		SearchResultRestaurantFragmentArgs args = SearchResultRestaurantFragmentArgs.fromBundle(getArguments());
-		query = args.getQuery();
+		Bundle bundle = getArguments();
+		query = bundle.getString("query");
 	}
 
 	@Override

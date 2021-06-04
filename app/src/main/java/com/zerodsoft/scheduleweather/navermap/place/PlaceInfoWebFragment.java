@@ -35,8 +35,10 @@ public class PlaceInfoWebFragment extends Fragment {
 			if (keyCode == KeyEvent.KEYCODE_BACK && keyEvent.getAction() == KeyEvent.ACTION_DOWN) {
 				if (binding.webview.canGoBack()) {
 					binding.webview.goBack();
+				} else {
+					binding.webview.setOnKeyListener(null);
+					return false;
 				}
-				return true;
 			}
 			return true;
 		}
@@ -45,8 +47,8 @@ public class PlaceInfoWebFragment extends Fragment {
 	@Override
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		PlaceInfoWebFragmentArgs args = PlaceInfoWebFragmentArgs.fromBundle(getArguments());
-		placeId = args.getPlaceId();
+		Bundle bundle = getArguments();
+		placeId = bundle.getString("placeId");
 	}
 
 	@Nullable
