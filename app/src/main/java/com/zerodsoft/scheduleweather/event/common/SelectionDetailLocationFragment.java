@@ -106,7 +106,7 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 					@Override
 					public void onGlobalLayout() {
 						binding.naverMapFragmentRootLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-						binding.naverMapHeaderBar.getRoot().performClick();
+						searchHeaderBar.callOnClick();
 
 						binding.locationSearchBottomSheet.searchFragmentContainer.getViewTreeObserver()
 								.addOnGlobalLayoutListener(searchBottomSheetFragmentOnGlobalLayoutListener);

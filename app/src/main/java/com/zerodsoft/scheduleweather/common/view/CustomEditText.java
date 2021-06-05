@@ -55,6 +55,11 @@ public class CustomEditText extends AppCompatEditText implements TextWatcher, Vi
 		this.onTouchListener = l;
 	}
 
+	@Override
+	public void setOnKeyListener(OnKeyListener l) {
+		super.setOnKeyListener(l);
+	}
+
 	private void setClearBtnVisibility(boolean visible) {
 		closeDrawable.setVisible(visible, false);
 		setCompoundDrawables(null, null, visible ? closeDrawable : null, null);

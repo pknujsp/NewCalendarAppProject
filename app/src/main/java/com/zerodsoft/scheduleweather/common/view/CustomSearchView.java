@@ -53,11 +53,19 @@ public class CustomSearchView extends LinearLayout {
 
 	private void init(AttributeSet attrs) {
 		int backBtnVisibility = 0;
+		int searchBtnVisibility = 0;
+		boolean clickable = false;
+		boolean enabled = false;
+		boolean focusable = false;
 		String hint = null;
 
 		TypedArray a = getContext().getTheme().obtainStyledAttributes(attrs, R.styleable.CustomSearchView, 0, 0);
 		try {
 			backBtnVisibility = a.getInt(R.styleable.CustomSearchView_backBtnVisibility, View.VISIBLE);
+			searchBtnVisibility = a.getInt(R.styleable.CustomSearchView_searchBtnVisibility, View.VISIBLE);
+			clickable = a.getBoolean(R.styleable.CustomSearchView_clickable, true);
+			focusable = a.getBoolean(R.styleable.CustomSearchView_focusable, true);
+			enabled = a.getBoolean(R.styleable.CustomSearchView_enabled, true);
 			hint = a.getString(R.styleable.CustomSearchView_hint);
 		} finally {
 			a.recycle();
@@ -75,17 +83,25 @@ public class CustomSearchView extends LinearLayout {
 		TypedValue backgroundValue = new TypedValue();
 		getContext().getTheme().resolveAttribute(android.R.attr.selectableItemBackground, backgroundValue, true);
 
-		backBtn.setClickable(true);
+		backBtn.setClickable(clickable);
+		backBtn.setEnabled(enabled);
+		backBtn.setFocusable(focusable);
 		backBtn.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.arrow_back_icon));
 		backBtn.setBackgroundResource(backgroundValue.resourceId);
 		backBtn.setVisibility(backBtnVisibility);
 
-		searchBtn.setClickable(true);
+		searchBtn.setClickable(clickable);
+		searchBtn.setEnabled(enabled);
+		searchBtn.setFocusable(focusable);
+		searchBtn.setVisibility(searchBtnVisibility);
 		searchBtn.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.search_icon));
 		searchBtn.setBackgroundResource(backgroundValue.resourceId);
 
 		searchEditText = new CustomEditText(getContext());
 		searchEditText.setHint(hint);
+		searchEditText.setClickable(clickable);
+		searchEditText.setEnabled(enabled);
+		searchEditText.setFocusable(focusable);
 		searchEditText.setBackground(null);
 		searchEditText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
 
@@ -120,6 +136,11 @@ public class CustomSearchView extends LinearLayout {
 		super.onMeasure(widthMeasureSpec, (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 36f, getResources().getDisplayMetrics()));
 	}
 
+	@Override
+	public void setOnTouchListener(OnTouchListener l) {
+		super.setOnTouchListener(l);
+	}
+
 	public void setOnQueryTextListener(SearchView.OnQueryTextListener onQueryTextListener) {
 		this.onQueryTextListener = onQueryTextListener;
 	}
@@ -133,6 +154,14 @@ public class CustomSearchView extends LinearLayout {
 		if (submit) {
 			searchBtn.callOnClick();
 		}
+	}
+
+	public String getQuery() {
+		return searchEditText.getText().length() > 0 ? searchEditText.getText().toString() : "";
+	}
+
+	public void setEditTextOnKeyListener(OnKeyListener l) {
+		searchEditText.setOnKeyListener(l);
 	}
 
 	/*

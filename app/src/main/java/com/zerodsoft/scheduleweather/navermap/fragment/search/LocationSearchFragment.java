@@ -41,227 +41,188 @@ import com.zerodsoft.scheduleweather.room.dto.SearchHistoryDTO;
 import java.util.List;
 
 public class LocationSearchFragment extends Fragment implements OnSelectedMapCategory, OnClickedListItem<SearchHistoryDTO>, SearchHistoryDataController<SearchHistoryDTO>,
-        OnBackPressedCallbackController
-{
-    public static final String TAG = "LocationSearchFragment";
-    private FragmentSearchBinding binding;
+		OnBackPressedCallbackController {
+	public static final String TAG = "LocationSearchFragment";
+	private FragmentSearchBinding binding;
 
-    private PlaceCategoriesAdapter categoriesAdapter;
-    private SearchLocationHistoryAdapter searchLocationHistoryAdapter;
-    private SearchHistoryViewModel searchHistoryViewModel;
+	private PlaceCategoriesAdapter categoriesAdapter;
+	private SearchLocationHistoryAdapter searchLocationHistoryAdapter;
+	private SearchHistoryViewModel searchHistoryViewModel;
 
-    private IMapPoint iMapPoint;
-    private IMapData iMapData;
-    private FragmentStateCallback fragmentStateCallback;
-    private PoiItemOnClickListener poiItemOnClickListener;
-    private SearchBarController searchBarController;
-    private SearchFragmentController searchFragmentController;
+	private IMapPoint iMapPoint;
+	private IMapData iMapData;
+	private FragmentStateCallback fragmentStateCallback;
+	private PoiItemOnClickListener poiItemOnClickListener;
+	private SearchBarController searchBarController;
+	private SearchFragmentController searchFragmentController;
 
-    private final OnBackPressedCallbackController mainFragmentOnBackPressedCallbackController;
-    private final BottomSheetController bottomSheetController;
+	private final OnBackPressedCallbackController mainFragmentOnBackPressedCallbackController;
+	private final BottomSheetController bottomSheetController;
 
-    public OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
-    {
-        @Override
-        public void handleOnBackPressed()
-        {
-            getParentFragmentManager().popBackStack();
-            searchFragmentController.closeSearchFragments(LocationSearchFragment.TAG);
-        }
-    };
+	public OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
+		@Override
+		public void handleOnBackPressed() {
+			getParentFragmentManager().popBackStack();
+			searchFragmentController.closeSearchFragments(LocationSearchFragment.TAG);
+		}
+	};
 
-    @Override
-    public void onHiddenChanged(boolean hidden)
-    {
-        super.onHiddenChanged(hidden);
+	@Override
+	public void onHiddenChanged(boolean hidden) {
+		super.onHiddenChanged(hidden);
 
-        if (hidden)
-        {
-            removeOnBackPressedCallback();
-            if (getParentFragmentManager().findFragmentByTag(LocationSearchResultFragment.TAG) == null)
-            {
-                if (getParentFragmentManager().getBackStackEntryCount() == 0)
-                {
-                    mainFragmentOnBackPressedCallbackController.addOnBackPressedCallback();
-                }
-                bottomSheetController.setStateOfBottomSheet(BottomSheetType.SEARCH_LOCATION, BottomSheetBehavior.STATE_COLLAPSED);
-            }
-        } else
-        {
-            addOnBackPressedCallback();
-            if (getParentFragmentManager().findFragmentByTag(LocationSearchResultFragment.TAG) == null)
-            {
-                if (getParentFragmentManager().getBackStackEntryCount() == 0)
-                {
-                    mainFragmentOnBackPressedCallbackController.removeOnBackPressedCallback();
-                }
-                bottomSheetController.setStateOfBottomSheet(BottomSheetType.SEARCH_LOCATION, BottomSheetBehavior.STATE_EXPANDED);
-            }
-        }
-    }
+		if (hidden) {
+			removeOnBackPressedCallback();
+			if (getParentFragmentManager().findFragmentByTag(LocationSearchResultFragment.TAG) == null) {
+				if (getParentFragmentManager().getBackStackEntryCount() == 0) {
+					mainFragmentOnBackPressedCallbackController.addOnBackPressedCallback();
+				}
+				bottomSheetController.setStateOfBottomSheet(BottomSheetType.SEARCH_LOCATION, BottomSheetBehavior.STATE_COLLAPSED);
+			}
+		} else {
+			addOnBackPressedCallback();
+			if (getParentFragmentManager().findFragmentByTag(LocationSearchResultFragment.TAG) == null) {
+				if (getParentFragmentManager().getBackStackEntryCount() == 0) {
+					mainFragmentOnBackPressedCallbackController.removeOnBackPressedCallback();
+				}
+				bottomSheetController.setStateOfBottomSheet(BottomSheetType.SEARCH_LOCATION, BottomSheetBehavior.STATE_EXPANDED);
+			}
+		}
+	}
 
-    public LocationSearchFragment(Fragment mapFragment, OnBackPressedCallbackController onBackPressedCallbackController
-            , BottomSheetController bottomSheetController
-            , FragmentStateCallback fragmentStateCallback)
-    {
-        this.iMapPoint = (IMapPoint) mapFragment;
-        this.mainFragmentOnBackPressedCallbackController = onBackPressedCallbackController;
-        this.bottomSheetController = bottomSheetController;
-        this.iMapData = (IMapData) mapFragment;
-        this.poiItemOnClickListener = (PoiItemOnClickListener) mapFragment;
-        this.fragmentStateCallback = fragmentStateCallback;
-        this.searchFragmentController = (SearchFragmentController) mapFragment;
-    }
+	public LocationSearchFragment(Fragment mapFragment, OnBackPressedCallbackController onBackPressedCallbackController
+			, BottomSheetController bottomSheetController
+			, FragmentStateCallback fragmentStateCallback) {
+		this.iMapPoint = (IMapPoint) mapFragment;
+		this.mainFragmentOnBackPressedCallbackController = onBackPressedCallbackController;
+		this.bottomSheetController = bottomSheetController;
+		this.iMapData = (IMapData) mapFragment;
+		this.poiItemOnClickListener = (PoiItemOnClickListener) mapFragment;
+		this.fragmentStateCallback = fragmentStateCallback;
+		this.searchFragmentController = (SearchFragmentController) mapFragment;
+	}
 
-    public void setSearchBarController(SearchBarController searchBarController)
-    {
-        this.searchBarController = searchBarController;
-    }
+	public void setSearchBarController(SearchBarController searchBarController) {
+		this.searchBarController = searchBarController;
+	}
 
 
-    @Override
-    public void onCreate(Bundle savedInstanceState)
-    {
-        super.onCreate(savedInstanceState);
-    }
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+	}
 
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState)
-    {
-        binding = FragmentSearchBinding.inflate(inflater);
-        return binding.getRoot();
-    }
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+	                         Bundle savedInstanceState) {
+		binding = FragmentSearchBinding.inflate(inflater);
+		return binding.getRoot();
+	}
 
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
-    {
-        super.onViewCreated(view, savedInstanceState);
+	@Override
+	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
 
-        binding.searchHistoryRecyclerview.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false));
-        binding.searchHistoryRecyclerview.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
+		binding.searchHistoryRecyclerview.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false));
+		binding.searchHistoryRecyclerview.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
 
-        searchHistoryViewModel = new ViewModelProvider(this).get(SearchHistoryViewModel.class);
-        searchHistoryViewModel.select(SearchHistoryDTO.LOCATION_SEARCH, new CarrierMessagingService.ResultCallback<List<SearchHistoryDTO>>()
-        {
-            @Override
-            public void onReceiveResult(@NonNull List<SearchHistoryDTO> result) throws RemoteException
-            {
-                getActivity().runOnUiThread(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        searchLocationHistoryAdapter = new SearchLocationHistoryAdapter(LocationSearchFragment.this);
-                        searchLocationHistoryAdapter.setHistoryList(result);
+		searchHistoryViewModel = new ViewModelProvider(this).get(SearchHistoryViewModel.class);
+		searchHistoryViewModel.select(SearchHistoryDTO.LOCATION_SEARCH, new CarrierMessagingService.ResultCallback<List<SearchHistoryDTO>>() {
+			@Override
+			public void onReceiveResult(@NonNull List<SearchHistoryDTO> result) throws RemoteException {
+				getActivity().runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						searchLocationHistoryAdapter = new SearchLocationHistoryAdapter(LocationSearchFragment.this);
+						searchLocationHistoryAdapter.setHistoryList(result);
 
-                        binding.searchHistoryRecyclerview.setAdapter(searchLocationHistoryAdapter);
-                    }
-                });
-            }
-        });
+						binding.searchHistoryRecyclerview.setAdapter(searchLocationHistoryAdapter);
+					}
+				});
+			}
+		});
 
-        categoriesAdapter = new PlaceCategoriesAdapter(this);
-        binding.categoriesRecyclerview.setLayoutManager(new LinearLayoutManager(getActivity(), RecyclerView.HORIZONTAL, false));
-        binding.categoriesRecyclerview.setAdapter(categoriesAdapter);
-    }
+		categoriesAdapter = new PlaceCategoriesAdapter(this);
+		binding.categoriesRecyclerview.setLayoutManager(new LinearLayoutManager(getActivity(), RecyclerView.HORIZONTAL, false));
+		binding.categoriesRecyclerview.setAdapter(categoriesAdapter);
+	}
 
 
-    @Override
-    public void onSelectedMapCategory(PlaceCategoryDTO category)
-    {
-        searchBarController.setQuery(category.getCode(), true);
-        searchBarController.changeViewTypeImg(SearchBarController.MAP);
-    }
+	@Override
+	public void onSelectedMapCategory(PlaceCategoryDTO category) {
+		searchBarController.setQuery(category.getCode(), true);
+		searchBarController.changeViewTypeImg(SearchBarController.MAP);
+	}
 
 
-    @Override
-    public void updateSearchHistoryList()
-    {
-        searchHistoryViewModel.select(SearchHistoryDTO.LOCATION_SEARCH, new CarrierMessagingService.ResultCallback<List<SearchHistoryDTO>>()
-        {
-            @Override
-            public void onReceiveResult(@NonNull List<SearchHistoryDTO> result) throws RemoteException
-            {
-                getActivity().runOnUiThread(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        //최신 리스트의 크기와 어댑터내 리스트의 크기가 다르면 갱신
-                        if (searchLocationHistoryAdapter.getItemCount() != result.size())
-                        {
-                            searchLocationHistoryAdapter.setHistoryList(result);
-                            searchLocationHistoryAdapter.notifyDataSetChanged();
-                        }
-                    }
-                });
-            }
-        });
-    }
+	@Override
+	public void updateSearchHistoryList() {
+		searchHistoryViewModel.select(SearchHistoryDTO.LOCATION_SEARCH, new CarrierMessagingService.ResultCallback<List<SearchHistoryDTO>>() {
+			@Override
+			public void onReceiveResult(@NonNull List<SearchHistoryDTO> result) throws RemoteException {
+				getActivity().runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						//최신 리스트의 크기와 어댑터내 리스트의 크기가 다르면 갱신
+						if (searchLocationHistoryAdapter.getItemCount() != result.size()) {
+							searchLocationHistoryAdapter.setHistoryList(result);
+							searchLocationHistoryAdapter.notifyDataSetChanged();
+						}
+					}
+				});
+			}
+		});
+	}
 
 
-    @Override
-    public void onClickedListItem(SearchHistoryDTO e, int position)
-    {
-        searchBarController.setQuery(e.getValue(), true);
-    }
+	@Override
+	public void onClickedListItem(SearchHistoryDTO e, int position) {
+		searchBarController.setQuery(e.getValue(), true);
+	}
 
-    @Override
-    public void deleteListItem(SearchHistoryDTO e, int position)
-    {
-        searchHistoryViewModel.delete(e.getId(), new CarrierMessagingService.ResultCallback<Boolean>()
-        {
-            @Override
-            public void onReceiveResult(@NonNull Boolean result) throws RemoteException
-            {
-                getActivity().runOnUiThread(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        searchLocationHistoryAdapter.getHistoryList().remove(position);
-                        searchLocationHistoryAdapter.notifyItemRemoved(position);
-                    }
-                });
+	@Override
+	public void deleteListItem(SearchHistoryDTO e, int position) {
+		searchHistoryViewModel.delete(e.getId(), new CarrierMessagingService.ResultCallback<Boolean>() {
+			@Override
+			public void onReceiveResult(@NonNull Boolean result) throws RemoteException {
+				requireActivity().runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						searchLocationHistoryAdapter.getHistoryList().remove(position);
+						searchLocationHistoryAdapter.notifyItemRemoved(position);
+					}
+				});
 
-            }
-        });
+			}
+		});
 
-    }
+	}
 
-    @Override
-    public void insertValueToHistory(String value)
-    {
-        searchHistoryViewModel.insert(SearchHistoryDTO.LOCATION_SEARCH, value, new CarrierMessagingService.ResultCallback<SearchHistoryDTO>()
-        {
-            @Override
-            public void onReceiveResult(@NonNull SearchHistoryDTO result) throws RemoteException
-            {
-                getActivity().runOnUiThread(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        //list 갱신
-                        searchLocationHistoryAdapter.getHistoryList().add(result);
-                        searchLocationHistoryAdapter.notifyItemInserted(searchLocationHistoryAdapter.getItemCount() - 1);
-                    }
-                });
-            }
-        });
-    }
+	@Override
+	public void insertValueToHistory(String value) {
+		searchHistoryViewModel.insert(SearchHistoryDTO.LOCATION_SEARCH, value, new CarrierMessagingService.ResultCallback<SearchHistoryDTO>() {
+			@Override
+			public void onReceiveResult(@NonNull SearchHistoryDTO result) throws RemoteException {
+				getActivity().runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						//list 갱신
+						searchLocationHistoryAdapter.getHistoryList().add(result);
+						searchLocationHistoryAdapter.notifyItemInserted(searchLocationHistoryAdapter.getItemCount() - 1);
+					}
+				});
+			}
+		});
+	}
 
-    @Override
-    public void addOnBackPressedCallback()
-    {
-        getActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
-    }
+	@Override
+	public void addOnBackPressedCallback() {
+		getActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
+	}
 
-    @Override
-    public void removeOnBackPressedCallback()
-    {
-        onBackPressedCallback.remove();
-    }
+	@Override
+	public void removeOnBackPressedCallback() {
+		onBackPressedCallback.remove();
+	}
 }

@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.SearchView;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
@@ -25,181 +26,159 @@ import com.zerodsoft.scheduleweather.navermap.interfaces.SearchFragmentControlle
 import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
 import com.zerodsoft.scheduleweather.room.dto.SearchHistoryDTO;
 
-public class MapHeaderSearchFragment extends Fragment implements SearchBarController
-{
-    public static final String TAG = "MapHeaderSearchFragment";
-    private FragmentLocationSearchBarBinding binding;
+public class MapHeaderSearchFragment extends Fragment implements SearchBarController {
+	public static final String TAG = "MapHeaderSearchFragment";
+	private FragmentLocationSearchBarBinding binding;
 
-    private final LocationSearchListener locationSearchListener;
-    private final SearchFragmentController searchFragmentController;
-    private final IMapData iMapData;
-    private final BottomSheetController bottomSheetController;
-    private SearchHistoryDataController<SearchHistoryDTO> searchHistoryDataController;
+	private final LocationSearchListener locationSearchListener;
+	private final SearchFragmentController searchFragmentController;
+	private final IMapData iMapData;
+	private final BottomSheetController bottomSheetController;
+	private SearchHistoryDataController<SearchHistoryDTO> searchHistoryDataController;
 
-    private Drawable mapDrawable;
-    private Drawable listDrawable;
+	private Drawable mapDrawable;
+	private Drawable listDrawable;
 
-    public MapHeaderSearchFragment(Fragment fragment)
-    {
-        this.locationSearchListener = (LocationSearchListener) fragment;
-        this.searchFragmentController = (SearchFragmentController) fragment;
-        this.bottomSheetController = (BottomSheetController) fragment;
-        this.iMapData = (IMapData) fragment;
-    }
+	public MapHeaderSearchFragment(Fragment fragment) {
+		this.locationSearchListener = (LocationSearchListener) fragment;
+		this.searchFragmentController = (SearchFragmentController) fragment;
+		this.bottomSheetController = (BottomSheetController) fragment;
+		this.iMapData = (IMapData) fragment;
+	}
 
-    public void setSearchHistoryDataController(SearchHistoryDataController<SearchHistoryDTO> searchHistoryDataController)
-    {
-        this.searchHistoryDataController = searchHistoryDataController;
-    }
+	public void setSearchHistoryDataController(SearchHistoryDataController<SearchHistoryDTO> searchHistoryDataController) {
+		this.searchHistoryDataController = searchHistoryDataController;
+	}
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState)
-    {
-        super.onCreate(savedInstanceState);
-    }
+	@Override
+	public void onCreate(@Nullable Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+	}
 
-    @Nullable
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
-    {
-        binding = FragmentLocationSearchBarBinding.inflate(inflater);
-        return binding.getRoot();
-    }
+	@Nullable
+	@Override
+	public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+		binding = FragmentLocationSearchBarBinding.inflate(inflater);
+		return binding.getRoot();
+	}
 
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
-    {
-        super.onViewCreated(view, savedInstanceState);
+	@Override
+	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
 
-        binding.closeButton.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                searchFragmentController.closeSearchFragments();
-            }
-        });
+		binding.searchView.setOnBackClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				requireActivity().getOnBackPressedDispatcher().onBackPressed();
+			}
+		});
 
-        binding.viewTypeButton.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                changeStateOfBottomSheet();
-            }
-        });
+		binding.viewTypeButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				changeStateOfBottomSheet();
+			}
+		});
 
 
-        binding.edittext.setOnKeyListener(new View.OnKeyListener()
-        {
-            @Override
-            public boolean onKey(View view, int keyCode, KeyEvent keyEvent)
-            {
-                if (keyCode == KeyEvent.KEYCODE_ENTER && keyEvent.getAction() == KeyEvent.ACTION_DOWN)
-                {
-                    //검색
-                    binding.viewTypeButton.setVisibility(View.VISIBLE);
-                    locationSearchListener.searchLocation(binding.edittext.getText().toString());
-                    searchHistoryDataController.insertValueToHistory(binding.edittext.getText().toString());
-                    return true;
-                }
-                return false;
-            }
-        });
+		binding.searchView.setEditTextOnKeyListener(new View.OnKeyListener() {
+			@Override
+			public boolean onKey(View view, int keyCode, KeyEvent keyEvent) {
+				if (keyCode == KeyEvent.KEYCODE_ENTER && keyEvent.getAction() == KeyEvent.ACTION_DOWN) {
+					//검색
+					binding.viewTypeButton.setVisibility(View.VISIBLE);
 
-        binding.viewTypeButton.setVisibility(View.GONE);
+					String query = binding.searchView.getQuery();
+					locationSearchListener.searchLocation(query);
+					searchHistoryDataController.insertValueToHistory(query);
+					return true;
+				}
+				return false;
+			}
+		});
 
-        mapDrawable = ContextCompat.getDrawable(getContext(), R.drawable.map_icon);
-        listDrawable = ContextCompat.getDrawable(getContext(), R.drawable.list_icon);
-    }
+		binding.searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+			@Override
+			public boolean onQueryTextSubmit(String query) {
+				if (!query.isEmpty()) {
+					setQuery(query, true);
+					return true;
+				}
+				return false;
+			}
 
-    public FragmentLocationSearchBarBinding getBinding()
-    {
-        return binding;
-    }
+			@Override
+			public boolean onQueryTextChange(String newText) {
+				return false;
+			}
+		});
 
+		binding.viewTypeButton.setVisibility(View.GONE);
 
-    public void setQuery(String query, boolean submit)
-    {
-        if (KakaoLocalApiCategoryUtil.isCategory(query))
-        {
-            binding.edittext.setText(KakaoLocalApiCategoryUtil.getDefaultDescription(query));
-        } else
-        {
-            binding.edittext.setText(query);
-        }
+		mapDrawable = ContextCompat.getDrawable(getContext(), R.drawable.map_icon);
+		listDrawable = ContextCompat.getDrawable(getContext(), R.drawable.list_icon);
+	}
 
-        if (submit)
-        {
-            locationSearchListener.searchLocation(query);
-        } else
-        {
-
-        }
-    }
-
-    @Override
-    public void changeViewTypeImg(int type)
-    {
-        if (type == SearchBarController.MAP)
-        {
-            binding.viewTypeButton.setImageDrawable(mapDrawable);
-        } else if (type == SearchBarController.LIST)
-        {
-            binding.viewTypeButton.setImageDrawable(listDrawable);
-        }
-    }
-
-    public void changeStateOfBottomSheet()
-    {
-        final boolean bottomSheetStateIsExpanded = bottomSheetController.getStateOfBottomSheet(BottomSheetType.SEARCH_LOCATION)
-                == BottomSheetBehavior.STATE_EXPANDED;
-        changeViewTypeImg(bottomSheetStateIsExpanded ? SearchBarController.LIST : SearchBarController.MAP);
-        bottomSheetController.setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_COLLAPSED);
-
-        if (bottomSheetStateIsExpanded)
-        {
-            // to map
-            // 버튼 이미지, 프래그먼트 숨김/보이기 설정
-            iMapData.showPoiItems(MarkerType.SEARCH_RESULT);
-            bottomSheetController.setStateOfBottomSheet(BottomSheetType.SEARCH_LOCATION, BottomSheetBehavior.STATE_COLLAPSED);
-        } else
-        {
-            // to list
-            bottomSheetController.setStateOfBottomSheet(BottomSheetType.SEARCH_LOCATION, BottomSheetBehavior.STATE_EXPANDED);
-        }
-    }
-
-    @Override
-    public void onHiddenChanged(boolean hidden)
-    {
-        super.onHiddenChanged(hidden);
-        if (hidden)
-        {
-
-        } else
-        {
-
-        }
-    }
-
-    public void resetState()
-    {
-        setViewTypeVisibility(View.GONE);
-        changeViewTypeImg(SearchBarController.MAP);
-        setQuery("", false);
-    }
-
-    @Override
-    public void setViewTypeVisibility(int visibility)
-    {
-        binding.viewTypeButton.setVisibility(visibility);
-    }
+	public FragmentLocationSearchBarBinding getBinding() {
+		return binding;
+	}
 
 
-    public interface LocationSearchListener
-    {
-        void searchLocation(String query);
-    }
+	public void setQuery(String query, boolean submit) {
+		if (KakaoLocalApiCategoryUtil.isCategory(query)) {
+			binding.searchView.setQuery(KakaoLocalApiCategoryUtil.getDefaultDescription(query), false);
+		} else {
+			binding.searchView.setQuery(query, false);
+		}
+
+		if (submit) {
+			locationSearchListener.searchLocation(query);
+		} else {
+
+		}
+	}
+
+	@Override
+	public void changeViewTypeImg(int type) {
+		if (type == SearchBarController.MAP) {
+			binding.viewTypeButton.setImageDrawable(mapDrawable);
+		} else if (type == SearchBarController.LIST) {
+			binding.viewTypeButton.setImageDrawable(listDrawable);
+		}
+	}
+
+	public void changeStateOfBottomSheet() {
+		final boolean bottomSheetStateIsExpanded = bottomSheetController.getStateOfBottomSheet(BottomSheetType.SEARCH_LOCATION)
+				== BottomSheetBehavior.STATE_EXPANDED;
+		changeViewTypeImg(bottomSheetStateIsExpanded ? SearchBarController.LIST : SearchBarController.MAP);
+		bottomSheetController.setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_COLLAPSED);
+
+		if (bottomSheetStateIsExpanded) {
+			// to map
+			// 버튼 이미지, 프래그먼트 숨김/보이기 설정
+			iMapData.showPoiItems(MarkerType.SEARCH_RESULT);
+			bottomSheetController.setStateOfBottomSheet(BottomSheetType.SEARCH_LOCATION, BottomSheetBehavior.STATE_COLLAPSED);
+		} else {
+			// to list
+			bottomSheetController.setStateOfBottomSheet(BottomSheetType.SEARCH_LOCATION, BottomSheetBehavior.STATE_EXPANDED);
+		}
+	}
+
+
+	public void resetState() {
+		setViewTypeVisibility(View.GONE);
+		changeViewTypeImg(SearchBarController.MAP);
+		setQuery("", false);
+	}
+
+	@Override
+	public void setViewTypeVisibility(int visibility) {
+		binding.viewTypeButton.setVisibility(visibility);
+	}
+
+
+	public interface LocationSearchListener {
+		void searchLocation(String query);
+	}
 
 }

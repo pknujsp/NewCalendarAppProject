@@ -35,6 +35,7 @@ import android.provider.Settings;
 import android.util.SparseArray;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -67,6 +68,7 @@ import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
 import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
 import com.zerodsoft.scheduleweather.common.interfaces.OnHiddenFragmentListener;
+import com.zerodsoft.scheduleweather.databinding.FragmentLocationHeaderBarBinding;
 import com.zerodsoft.scheduleweather.databinding.FragmentNaverMapBinding;
 import com.zerodsoft.scheduleweather.etc.FragmentStateCallback;
 import com.zerodsoft.scheduleweather.etc.LocationType;
@@ -78,7 +80,6 @@ import com.zerodsoft.scheduleweather.navermap.building.fragment.BuildingFragment
 import com.zerodsoft.scheduleweather.navermap.building.fragment.BuildingListFragment;
 import com.zerodsoft.scheduleweather.navermap.favorite.FavoriteLocationFragment;
 import com.zerodsoft.scheduleweather.navermap.fragment.search.LocationSearchFragment;
-import com.zerodsoft.scheduleweather.navermap.fragment.searchheader.MapHeaderMainFragment;
 import com.zerodsoft.scheduleweather.navermap.fragment.searchheader.MapHeaderSearchFragment;
 import com.zerodsoft.scheduleweather.navermap.fragment.searchresult.LocationSearchResultFragment;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
@@ -148,6 +149,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 	public ImageButton gpsButton;
 	public ImageButton buildingButton;
 	public ImageButton favoriteLocationsButton;
+	public View searchHeaderBar;
 
 	public int selectedPoiItemIndex;
 
@@ -246,6 +248,9 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		markerWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, getResources().getDisplayMetrics());
 		markerHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32f, getResources().getDisplayMetrics());
 		favoriteMarkerSize = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, getResources().getDisplayMetrics());
+
+		locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
+		locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
 	}
 
 
@@ -270,9 +275,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		gpsButton = binding.naverMapButtonsLayout.gpsButton;
 		buildingButton = binding.naverMapButtonsLayout.buildingButton;
 		favoriteLocationsButton = binding.naverMapButtonsLayout.favoriteLocationsButton;
-
-		locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
-		locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
 
 		binding.naverMapFragmentRootLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
 			@Override
@@ -324,7 +326,8 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 			}
 		});
 
-		binding.naverMapHeaderBar.getRoot().setOnClickListener(new View.OnClickListener() {
+		searchHeaderBar = binding.headerFragmentContainer;
+		searchHeaderBar.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				//expand search location bottomsheet
@@ -472,8 +475,8 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		locationSearchFragment.setSearchBarController(mapHeaderSearchFragment);
 
 		getChildFragmentManager().beginTransaction()
-				.add(binding.naverMapHeaderBar.headerFragmentContainer.getId(), new MapHeaderMainFragment(), MapHeaderMainFragment.TAG)
-				.add(binding.naverMapHeaderBar.headerFragmentContainer.getId(), mapHeaderSearchFragment, MapHeaderSearchFragment.TAG)
+				.add(binding.headerFragmentContainer.getId(), new MapHeaderMainFragment(), MapHeaderMainFragment.TAG)
+				.add(binding.headerFragmentContainer.getId(), mapHeaderSearchFragment, MapHeaderSearchFragment.TAG)
 				.add(binding.locationSearchBottomSheet.searchFragmentContainer.getId(), locationSearchFragment, LocationSearchFragment.TAG)
 				.hide(mapHeaderSearchFragment)
 				.hide(locationSearchFragment)
@@ -693,7 +696,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
 		//바텀 시트의 상태에 따라서 카메라를 이동시킬 Y값
 		final int bottomSheetTopY = binding.naverMapViewLayout.getHeight() - bottomSheetViewMap.get(BottomSheetType.BUILDING).getHeight();
-		final int mapHeaderBarBottomY = binding.naverMapHeaderBar.getRoot().getBottom();
+		final int mapHeaderBarBottomY = binding.headerFragmentContainer.getRootView().getBottom();
 		final int SIZE_BETWEEN_HEADER_BAR_BOTTOM_AND_BOTTOM_SHEET_TOP = bottomSheetTopY - mapHeaderBarBottomY;
 
 		Projection projection = naverMap.getProjection();
@@ -1142,7 +1145,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 				bottomSheetBehaviorMap.get(BottomSheetType.SEARCH_LOCATION).setState(BottomSheetBehavior.STATE_COLLAPSED);
 			}
 
-			binding.naverMapHeaderBar.getRoot().setClickable(true);
+			binding.headerFragmentContainer.setClickable(true);
 		} else if (currentFragmentTag.equals(LocationSearchResultFragment.TAG)) {
 			removePoiItems(MarkerType.SEARCH_RESULT);
 			mapHeaderSearchFragment.resetState();
@@ -1536,4 +1539,27 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		}
 	}
 
+
+	public static class MapHeaderMainFragment extends Fragment {
+		public static final String TAG = "MapHeaderMainFragment";
+		private FragmentLocationHeaderBarBinding binding;
+
+		@Override
+		public void onCreate(@Nullable Bundle savedInstanceState) {
+			super.onCreate(savedInstanceState);
+		}
+
+		@Nullable
+		@Override
+		public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+			binding = FragmentLocationHeaderBarBinding.inflate(inflater);
+			return binding.getRoot();
+		}
+
+		@Override
+		public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+			super.onViewCreated(view, savedInstanceState);
+		}
+
+	}
 }

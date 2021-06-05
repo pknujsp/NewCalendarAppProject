@@ -8,46 +8,55 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <RelativeLayout
+        <FrameLayout
             android:id="@+id/naver_map_view_layout"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <include
-                android:id="@+id/naver_map_header_bar"
-                layout="@layout/view_map_search_bar"
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/map_header_bar_height"
-                android:layout_alignParentTop="true"
-                android:layout_marginLeft="32dp"
-                android:layout_marginTop="@dimen/map_header_bar_top_margin"
-                android:layout_marginRight="32dp" />
 
             <fragment
                 android:id="@+id/naver_map_fragment"
                 android:name="com.naver.maps.map.MapFragment"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_alignParentTop="true"
-                android:layout_alignParentBottom="true"
                 app:navermap_latitude="37.6076585"
                 app:navermap_longitude="127.0965492"
                 app:navermap_mapType="Basic"
-                app:navermap_zoom="15" />
+                app:navermap_zoom="10" />
+
+            <LinearLayout
+                android:id="@+id/header_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top"
+                android:layout_marginTop="@dimen/map_header_bar_top_margin"
+                android:orientation="vertical">
+
+                <androidx.fragment.app.FragmentContainerView
+                    android:id="@+id/header_fragment_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/map_header_bar_height"
+                    android:layout_marginLeft="28dp"
+                    android:layout_marginRight="28dp"
+                    android:background="@drawable/map_view_background"
+                    android:clickable="true"
+                    android:elevation="3dp"
+                    android:focusable="true" />
+
+            </LinearLayout>
 
             <include
                 android:id="@+id/naver_map_buttons_layout"
                 layout="@layout/map_buttons_view"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_alignParentBottom="true"
                 android:layout_gravity="bottom"
                 android:layout_marginLeft="28dp"
                 android:layout_marginRight="28dp"
                 android:layout_marginBottom="32dp" />
 
 
-        </RelativeLayout>
+        </FrameLayout>
 
         <include
             android:id="@+id/location_search_bottom_sheet"

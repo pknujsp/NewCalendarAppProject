@@ -459,6 +459,7 @@
     <string name="current_location">현재 위치(GPS)</string>
     <string name="search">검색</string>
     <string name="hint_request_input_address_or_place">검색할 주소 또는 장소를 입력</string>
+    <string name="hint_search_place_or_address">주소 또는 장소 검색</string>
     <string name="finding_current_location">현재 위치 파악중</string>
     <string name="not_menuinfo">메뉴 정보 없음</string>
     <string name="hint_request_input_menu_restaurant_name">메뉴, 식당명 입력</string>

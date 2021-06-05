@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 
 import androidx.activity.result.ActivityResult;
@@ -13,6 +14,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.cardview.widget.CardView;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
@@ -31,6 +33,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.CompoundButton;
+import android.widget.GridLayout;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -38,6 +41,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.naver.maps.geometry.LatLng;
@@ -87,16 +91,15 @@ public class NewInstanceMainFragment extends NaverMapFragment implements FoodMen
 	private final long INSTANCE_ID;
 	private final long ORIGINAL_BEGIN;
 	private final long ORIGINAL_END;
-	private Integer DEFAULT_HEIGHT_OF_BOTTOMSHEET;
 
+	private Integer DEFAULT_HEIGHT_OF_BOTTOMSHEET;
 	private CalendarViewModel calendarViewModel;
-	private LocationViewModel locationViewModel;
 
 	private ContentValues instance;
 	private LocationDTO selectedLocationDtoInEvent;
-	private TextView[] functionButtons;
+	private View[] functionButtons;
 	private ImageView functionButton;
-	LinearLayout functionBtnsRootLayout;
+	private LinearLayout functionBtnsRootLayout;
 	private Marker selectedLocationInEventMarker;
 	private InfoWindow selectedLocationInEventInfoWindow;
 
@@ -135,7 +138,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements FoodMen
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		calendarViewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
-		locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
 	}
 
 	@Override
@@ -158,11 +160,10 @@ public class NewInstanceMainFragment extends NaverMapFragment implements FoodMen
 		chipsLayout = new LinearLayout(getContext());
 		chipsLayout.setOrientation(LinearLayout.VERTICAL);
 
-		RelativeLayout.LayoutParams chipLayoutsParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-		chipLayoutsParams.addRule(RelativeLayout.BELOW, binding.naverMapHeaderBar.getRoot().getId());
+		LinearLayout.LayoutParams chipLayoutsParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+				ViewGroup.LayoutParams.WRAP_CONTENT);
 		chipLayoutsParams.topMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, getResources().getDisplayMetrics());
-
-		binding.naverMapViewLayout.addView(chipsLayout, chipLayoutsParams);
+		binding.headerLayout.addView(chipsLayout, chipLayoutsParams);
 
 		//place category
 		Object[] placeCategoryResult = createBottomSheet(R.id.place_category_fragment_container);
@@ -285,8 +286,11 @@ public class NewInstanceMainFragment extends NaverMapFragment implements FoodMen
 		});
 
 		//기능 세부 버튼
-		functionButtons = new TextView[3];
+		functionButtons = new View[3];
 		String[] functionNameList = {getString(R.string.instance_info), getString(R.string.weather), getString(R.string.restaurant)};
+		Drawable[] functionImgList = {ContextCompat.getDrawable(getContext(), R.drawable.event_icon)
+				, ContextCompat.getDrawable(getContext(), R.drawable.sunny_day_svg)
+				, ContextCompat.getDrawable(getContext(), R.drawable.restaurant_icon)};
 
 		functionBtnsRootLayout = new LinearLayout(getContext());
 		functionBtnsRootLayout.setOrientation(LinearLayout.VERTICAL);
@@ -294,15 +298,12 @@ public class NewInstanceMainFragment extends NaverMapFragment implements FoodMen
 		final int functionBtnBottomMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 12f,
 				getResources().getDisplayMetrics());
 
+		LayoutInflater layoutInflater = getLayoutInflater();
+
 		for (int i = 0; i < functionButtons.length; i++) {
-			functionButtons[i] = new TextView(getContext());
-			functionButtons[i].setBackground(ContextCompat.getDrawable(getContext(), R.drawable.map_button_rect));
-			functionButtons[i].setText(functionNameList[i]);
-			functionButtons[i].setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f);
-			functionButtons[i].setTextColor(Color.BLACK);
-			functionButtons[i].setElevation(3f);
-			functionButtons[i].setClickable(true);
-			functionButtons[i].setPadding(padding, padding, padding, padding);
+			functionButtons[i] = layoutInflater.inflate(R.layout.function_view_for_event, null, false);
+			((TextView) functionButtons[i].findViewById(R.id.function_name)).setText(functionNameList[i]);
+			((ImageView) functionButtons[i].findViewById(R.id.function_image)).setImageDrawable(functionImgList[i]);
 
 			LinearLayout.LayoutParams functionBtnsLayout = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
 					ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -531,14 +532,24 @@ public class NewInstanceMainFragment extends NaverMapFragment implements FoodMen
 		return new Object[]{bottomSheetView, bottomSheetBehavior};
 	}
 
-
 	public void createPlaceCategoryListChips() {
 		//-----------chip group
+		LinearLayout linearLayout = new LinearLayout(getContext());
+		LinearLayout.LayoutParams linearLayoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+				ViewGroup.LayoutParams.WRAP_CONTENT);
+
+		//chip title
+		TextView titleTextView = new TextView(getContext());
+		titleTextView.setText(R.string.place);
+		titleTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f);
+
+		//scrollview
 		HorizontalScrollView chipScrollView = new HorizontalScrollView(getContext());
 		chipScrollView.setHorizontalScrollBarEnabled(false);
 		chipScrollView.setId(R.id.place_category_chips_scroll_layout);
-
 		LinearLayout.LayoutParams chipLayoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+
+
 		chipsLayout.addView(chipScrollView, chipLayoutParams);
 
 		placeCategoryChipGroup = new ChipGroup(getContext(), null, R.style.Widget_MaterialComponents_ChipGroup);
