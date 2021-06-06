@@ -36,7 +36,7 @@ public class RestaurantSearchHostFragment extends Fragment {
 	public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 		getChildFragmentManager().beginTransaction()
-				.add(binding.fragmentContainer.getId(), new SearchRestaurantFragment(), getString(R.string.tag_search_restaurant_fragment))
+				.add(binding.contentFragmentContainer.getId(), new SearchRestaurantFragment(), getString(R.string.tag_search_restaurant_fragment))
 				.commit();
 	}
 

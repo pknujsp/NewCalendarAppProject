@@ -13,8 +13,7 @@
             android:id="@+id/view_type_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignTop="@id/search_view"
-            android:layout_alignBottom="@id/search_view"
+            android:layout_centerVertical="true"
             android:layout_marginRight="8dp"
             android:background="@color/transparent"
             android:src="@drawable/map_icon" />
@@ -23,6 +22,7 @@
             android:id="@+id/search_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_centerVertical="true"
             android:layout_toRightOf="@id/view_type_button"
             app:backBtnVisibility="visible"
             app:hint="@string/hint_request_input_address_or_place" />

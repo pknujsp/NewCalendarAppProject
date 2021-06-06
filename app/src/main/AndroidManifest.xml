@@ -31,7 +31,6 @@
         <activity
             android:name=".event.main.NewInstanceMainActivity"
             android:windowSoftInputMode="stateAlwaysHidden|adjustNothing" />
-        <activity android:name=".event.foods.settings.CustomFoodMenuSettingsActivity" />
         <activity
             android:name=".navermap.NaverMapActivity"
             android:windowSoftInputMode="stateAlwaysHidden|adjustNothing" />

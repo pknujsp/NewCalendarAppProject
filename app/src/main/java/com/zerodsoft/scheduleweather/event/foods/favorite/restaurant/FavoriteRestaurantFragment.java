@@ -54,7 +54,6 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
 	private FavoriteLocationViewModel favoriteRestaurantViewModel;
 	private RestaurantSharedViewModel restaurantSharedViewModel;
 	private FavoriteRestaurantListAdapter adapter;
-	private ViewProgress viewProgress;
 
 	private ArrayMap<String, List<PlaceDocuments>> restaurantListMap = new ArrayMap<>();
 	private List<FavoriteLocationDTO> favoriteLocationDTOList = new ArrayList<>();
@@ -126,13 +125,11 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
 			}
 		});
 
-
 		adapter = new FavoriteRestaurantListAdapter(getContext(), this, this, restaurantListMap);
 		binding.favoriteRestaurantList.setAdapter(adapter);
 
-		viewProgress = new ViewProgress(binding.favoriteRestaurantList, binding.dataProgressView.progressBar,
-				binding.dataProgressView.errorTextview, binding.dataProgressView.getRoot());
-		viewProgress.onStartedProcessingData();
+		binding.customProgressView.setContentView(binding.favoriteRestaurantList);
+		binding.customProgressView.onStartedProcessingData();
 
 		downloadPlaceDocuments();
 	}
@@ -158,7 +155,7 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
 					requireActivity().runOnUiThread(new Runnable() {
 						@Override
 						public void run() {
-							viewProgress.onCompletedProcessingData(false, getString(R.string.not_data));
+							binding.customProgressView.onFailedProcessingData(getString(R.string.not_data));
 						}
 					});
 				}
@@ -216,7 +213,7 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
 				requireActivity().runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						viewProgress.onCompletedProcessingData(false, getString(R.string.not_data));
+						binding.customProgressView.onFailedProcessingData(getString(R.string.not_data));
 					}
 				});
 			}
@@ -240,7 +237,7 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
 
 
 	private void createListView() {
-		viewProgress.onCompletedProcessingData(true);
+		binding.customProgressView.onSuccessfulProcessingData();
 		adapter.notifyDataSetChanged();
 	}
 
@@ -271,7 +268,7 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
 	public void refreshList() {
 		//restaurantId비교
 		//바뀐 부분만 수정
-		viewProgress.onStartedProcessingData();
+		binding.customProgressView.onStartedProcessingData();
 		favoriteRestaurantViewModel.select(FavoriteLocationDTO.RESTAURANT, new DbQueryCallback<List<FavoriteLocationDTO>>() {
 			int responseCount;
 
@@ -283,7 +280,7 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
 						public void run() {
 							adapter.getRestaurantListMap().clear();
 							adapter.notifyDataSetChanged();
-							viewProgress.onCompletedProcessingData(false, getString(R.string.not_data));
+							binding.customProgressView.onFailedProcessingData(getString(R.string.not_data));
 						}
 					});
 					return;
@@ -313,9 +310,9 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
 						@Override
 						public void run() {
 							if (adapter.getRestaurantListMap().isEmpty()) {
-								viewProgress.onCompletedProcessingData(false, getString(R.string.not_data));
+								binding.customProgressView.onFailedProcessingData(getString(R.string.not_data));
 							} else {
-								viewProgress.onCompletedProcessingData(true);
+								binding.customProgressView.onSuccessfulProcessingData();
 							}
 						}
 					});
@@ -345,9 +342,9 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
 								public void run() {
 									adapter.notifyDataSetChanged();
 									if (adapter.getRestaurantListMap().isEmpty()) {
-										viewProgress.onCompletedProcessingData(false, getString(R.string.not_data));
+										binding.customProgressView.onFailedProcessingData(getString(R.string.not_data));
 									} else {
-										viewProgress.onCompletedProcessingData(true);
+										binding.customProgressView.onSuccessfulProcessingData();
 
 									}
 								}

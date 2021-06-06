@@ -1,7 +1,5 @@
 package com.zerodsoft.scheduleweather.event.foods.interfaces;
 
-import android.service.carrier.CarrierMessagingService;
-
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.room.dto.CustomFoodMenuDTO;
 
@@ -13,11 +11,9 @@ public interface CustomFoodMenuQuery
 
     void select(DbQueryCallback<List<CustomFoodMenuDTO>> callback);
 
-    void update(String previousMenuName, String newMenuName, CarrierMessagingService.ResultCallback<CustomFoodMenuDTO> callback);
+    void delete(Integer id, DbQueryCallback<Boolean> callback);
 
-    void delete(String menuName, CarrierMessagingService.ResultCallback<Boolean> callback);
+    void deleteAll(DbQueryCallback<Boolean> callback);
 
-    void deleteAll(CarrierMessagingService.ResultCallback<Boolean> callback);
-
-    void containsMenu(String menuName, CarrierMessagingService.ResultCallback<Boolean> callback);
+    void containsMenu(String menuName, DbQueryCallback<Boolean> callback);
 }

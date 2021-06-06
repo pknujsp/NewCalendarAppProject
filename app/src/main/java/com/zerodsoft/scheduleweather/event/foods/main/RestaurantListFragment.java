@@ -198,7 +198,7 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 			FragmentManager fragmentManager = parentFragment.getParentFragmentManager();
 			// restaurant list tab fragment
 			fragmentManager.beginTransaction().hide(parentFragment)
-					.add(R.id.fragment_container, placeInfoWebFragment, tag)
+					.add(R.id.content_fragment_container, placeInfoWebFragment, tag)
 					.addToBackStack(tag).commit();
 		} else {
 

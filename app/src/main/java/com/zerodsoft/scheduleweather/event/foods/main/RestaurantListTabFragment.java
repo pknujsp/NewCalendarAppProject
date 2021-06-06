@@ -13,26 +13,25 @@ import android.service.carrier.CarrierMessagingService;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 
-import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.bumptech.glide.Glide;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.common.interfaces.DataProcessingCallback;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.common.interfaces.OnHiddenFragmentListener;
-import com.zerodsoft.scheduleweather.common.interfaces.OnPopBackStackFragmentCallback;
 import com.zerodsoft.scheduleweather.databinding.FragmentFoodCategoryTabBinding;
 import com.zerodsoft.scheduleweather.event.foods.adapter.FoodCategoryFragmentListAdapter;
+import com.zerodsoft.scheduleweather.event.foods.dto.FoodCategoryItem;
 import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteLocationViewModel;
-import com.zerodsoft.scheduleweather.event.foods.RestaurantDialogFragment;
+import com.zerodsoft.scheduleweather.event.foods.header.HeaderRestaurantListFragment;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.FoodMenuChipsViewController;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.CustomFoodMenuViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.RestaurantSharedViewModel;
 import com.zerodsoft.scheduleweather.event.main.NewInstanceMainFragment;
-import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
-import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
-import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
 import com.zerodsoft.scheduleweather.navermap.interfaces.OnExtraListDataListener;
 import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoWebFragment;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
@@ -45,7 +44,7 @@ import java.util.List;
 import lombok.SneakyThrows;
 
 public class RestaurantListTabFragment extends Fragment implements NewInstanceMainFragment.RestaurantsGetter, OnExtraListDataListener<String>, OnHiddenFragmentListener
-		, OnClickedListItem<PlaceDocuments> {
+		, OnClickedListItem<FoodCategoryItem> {
 	private FragmentFoodCategoryTabBinding binding;
 	private FoodMenuChipsViewController foodMenuChipsViewController;
 
@@ -58,6 +57,8 @@ public class RestaurantListTabFragment extends Fragment implements NewInstanceMa
 	private String firstSelectedFoodMenuName;
 	private Long eventId;
 
+	private HeaderRestaurantListFragment headerRestaurantListFragment;
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -67,12 +68,14 @@ public class RestaurantListTabFragment extends Fragment implements NewInstanceMa
 		restaurantSharedViewModel = new ViewModelProvider(requireActivity()).get(RestaurantSharedViewModel.class);
 		eventId = restaurantSharedViewModel.getEventId();
 		foodMenuChipsViewController = restaurantSharedViewModel.getFoodMenuChipsViewController();
+
+		favoriteRestaurantViewModel = new ViewModelProvider(requireActivity()).get(FavoriteLocationViewModel.class);
+		customFoodCategoryViewModel = new ViewModelProvider(requireActivity()).get(CustomFoodMenuViewModel.class);
 	}
 
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		foodMenuChipsViewController.removeRestaurantListView();
 	}
 
 	@Override
@@ -86,56 +89,20 @@ public class RestaurantListTabFragment extends Fragment implements NewInstanceMa
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 
-		binding.openMapToShowRestaurants.setOnClickListener(new View.OnClickListener() {
+		headerRestaurantListFragment = new HeaderRestaurantListFragment();
+		headerRestaurantListFragment.setViewPager2(binding.viewpager);
+		headerRestaurantListFragment.setFoodMenuListDataProcessingCallback(new DataProcessingCallback<List<FoodCategoryItem>>() {
 			@Override
-			public void onClick(View v) {
-				foodMenuChipsViewController.setCurrentFoodMenuName(categoryList.get(binding.viewpager.getCurrentItem()));
-				getParentFragmentManager().beginTransaction().hide(RestaurantListTabFragment.this).commit();
-			}
-		});
-
-		favoriteRestaurantViewModel = new ViewModelProvider(requireActivity()).get(FavoriteLocationViewModel.class);
-		customFoodCategoryViewModel = new ViewModelProvider(this).get(CustomFoodMenuViewModel.class);
-		customFoodCategoryViewModel.select(new DbQueryCallback<List<CustomFoodMenuDTO>>() {
-			@Override
-			public void onResultSuccessful(List<CustomFoodMenuDTO> resultList) {
+			public void onResultSuccessful(List<FoodCategoryItem> result) {
 				requireActivity().runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						categoryList = new ArrayList<>();
-
-						final String[] DEFAULT_FOOD_MENU_NAME_ARR = getResources().getStringArray(R.array.food_menu_list);
-						List<String> foodMenuNameList = new ArrayList<>();
-						foodMenuNameList.addAll(Arrays.asList(DEFAULT_FOOD_MENU_NAME_ARR));
-						categoryList.addAll(foodMenuNameList);
-
-						if (!resultList.isEmpty()) {
-							for (CustomFoodMenuDTO customFoodCategory : resultList) {
-								foodMenuNameList.add(customFoodCategory.getMenuName());
-								categoryList.add(customFoodCategory.getMenuName());
-							}
-						}
-
-						int selectedIndex = categoryList.indexOf(firstSelectedFoodMenuName);
-
 						adapter = new FoodCategoryFragmentListAdapter(RestaurantListTabFragment.this);
-						adapter.init(categoryList);
+						adapter.init(result);
 						binding.viewpager.setAdapter(adapter);
-
-						new TabLayoutMediator(binding.tabs, binding.viewpager,
-								new TabLayoutMediator.TabConfigurationStrategy() {
-									@Override
-									public void onConfigureTab(@NonNull TabLayout.Tab tab, int position) {
-										tab.setText(categoryList.get(position));
-									}
-								}
-						).attach();
-
-						foodMenuChipsViewController.createRestaurantListView(foodMenuNameList, RestaurantListTabFragment.this
-								, RestaurantListTabFragment.this, RestaurantListTabFragment.this);
-						binding.tabs.selectTab(binding.tabs.getTabAt(selectedIndex));
 					}
 				});
+
 			}
 
 			@Override
@@ -143,8 +110,12 @@ public class RestaurantListTabFragment extends Fragment implements NewInstanceMa
 
 			}
 		});
+		Bundle bundle = new Bundle();
+		bundle.putSerializable("OnClickedListItem", (OnClickedListItem<FoodCategoryItem>) this);
+		bundle.putInt("firstSelectedFoodMenuIndex", 0);
+		headerRestaurantListFragment.setArguments(bundle);
 
-
+		getChildFragmentManager().beginTransaction().add(binding.headerFragmentContainer.getId(), headerRestaurantListFragment).commitNow();
 	}
 
 
@@ -215,29 +186,14 @@ public class RestaurantListTabFragment extends Fragment implements NewInstanceMa
 		super.onHiddenChanged(hidden);
 	}
 
+
 	@Override
-	public void onClickedListItem(PlaceDocuments e, int position) {
-		if (e != null) {
-			PlaceInfoWebFragment placeInfoWebFragment = new PlaceInfoWebFragment();
-			Bundle bundle = new Bundle();
-			bundle.putString("placeId", ((PlaceDocuments) e).getId());
-			placeInfoWebFragment.setArguments(bundle);
+	public void onClickedListItem(FoodCategoryItem e, int position) {
 
-			String tag = getString(R.string.tag_place_info_web_fragment);
-
-			FragmentManager fragmentManager = getParentFragmentManager();
-			// restaurant list tab fragment
-			fragmentManager.beginTransaction().hide(this)
-					.add(R.id.fragment_container, placeInfoWebFragment, tag)
-					.addToBackStack(tag).commit();
-		} else {
-
-		}
 	}
 
 	@Override
-	public void deleteListItem(PlaceDocuments e, int position) {
+	public void deleteListItem(FoodCategoryItem e, int position) {
 
 	}
-
 }

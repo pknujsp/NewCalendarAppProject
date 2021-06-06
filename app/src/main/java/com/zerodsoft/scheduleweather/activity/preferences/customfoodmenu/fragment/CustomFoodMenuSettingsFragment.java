@@ -37,6 +37,8 @@ public class CustomFoodMenuSettingsFragment extends Fragment implements OnClicke
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		viewModel = new ViewModelProvider(requireActivity()).get(CustomFoodMenuViewModel.class);
+
 	}
 
 	@Override
@@ -88,7 +90,6 @@ public class CustomFoodMenuSettingsFragment extends Fragment implements OnClicke
 		});
 		binding.customFoodMenuRecyclerview.setAdapter(adapter);
 
-		viewModel = new ViewModelProvider(this).get(CustomFoodMenuViewModel.class);
 		viewModel.select(new DbQueryCallback<List<CustomFoodMenuDTO>>() {
 			@Override
 			public void onResultSuccessful(List<CustomFoodMenuDTO> customFoodMenuResultDto) {
@@ -113,9 +114,9 @@ public class CustomFoodMenuSettingsFragment extends Fragment implements OnClicke
 				if (binding.edittextCustomFoodmenu.getText().length() > 0) {
 					String value = binding.edittextCustomFoodmenu.getText().toString();
 					//중복검사
-					viewModel.containsMenu(value, new CarrierMessagingService.ResultCallback<Boolean>() {
+					viewModel.containsMenu(value, new DbQueryCallback<Boolean>() {
 						@Override
-						public void onReceiveResult(@NonNull Boolean isDuplicate) throws RemoteException {
+						public void onResultSuccessful(Boolean isDuplicate) {
 							if (isDuplicate) {
 								Toast.makeText(getContext(), R.string.duplicate_value, Toast.LENGTH_SHORT).show();
 							} else {
@@ -140,6 +141,11 @@ public class CustomFoodMenuSettingsFragment extends Fragment implements OnClicke
 								});
 							}
 						}
+
+						@Override
+						public void onResultNoData() {
+
+						}
 					});
 
 
@@ -157,9 +163,9 @@ public class CustomFoodMenuSettingsFragment extends Fragment implements OnClicke
 
 	@Override
 	public void deleteListItem(CustomFoodMenuDTO e, int position) {
-		viewModel.delete(e.getMenuName(), new CarrierMessagingService.ResultCallback<Boolean>() {
+		viewModel.delete(e.getId(), new DbQueryCallback<Boolean>() {
 			@Override
-			public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException {
+			public void onResultSuccessful(Boolean result) {
 				getActivity().runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
@@ -168,6 +174,11 @@ public class CustomFoodMenuSettingsFragment extends Fragment implements OnClicke
 						adapter.notifyItemRemoved(position);
 					}
 				});
+			}
+
+			@Override
+			public void onResultNoData() {
+
 			}
 		});
 	}

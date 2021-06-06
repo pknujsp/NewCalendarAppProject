@@ -1,25 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <FrameLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="24dp">
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp">
 
         <TextView
-            android:id="@+id/error_textview"
+            android:id="@+id/progress_status_textview"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
+            android:layout_centerInParent="true"
             android:gravity="center"
-            android:text="@string/error" />
+            android:text="진행 상태"
+            android:textSize="13sp" />
 
         <com.google.android.material.progressindicator.CircularProgressIndicator
             android:id="@+id/progress_bar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
+            android:layout_marginRight="4dp"
+            android:layout_toLeftOf="@id/progress_status_textview"
             android:indeterminate="true" />
 
-    </FrameLayout>
+    </RelativeLayout>
 </layout>

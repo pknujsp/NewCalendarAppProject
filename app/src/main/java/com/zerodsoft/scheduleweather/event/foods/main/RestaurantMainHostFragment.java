@@ -6,7 +6,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
-import androidx.navigation.fragment.NavHostFragment;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,12 +13,8 @@ import android.view.ViewGroup;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.FragmentRestaurantMainHostBinding;
-import com.zerodsoft.scheduleweather.event.foods.RestaurantDialogFragment;
-import com.zerodsoft.scheduleweather.event.foods.interfaces.FoodMenuChipsViewController;
-import com.zerodsoft.scheduleweather.event.foods.interfaces.IGetEventValue;
-import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
-import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
-import com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint;
+import com.zerodsoft.scheduleweather.event.foods.criterialocation.RestaurantCriteriaLocationSettingsFragment;
+import com.zerodsoft.scheduleweather.event.foods.header.HeaderCriteriaLocationFragment;
 
 public class RestaurantMainHostFragment extends Fragment {
 	private FragmentRestaurantMainHostBinding binding;
@@ -39,8 +34,8 @@ public class RestaurantMainHostFragment extends Fragment {
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
-		getChildFragmentManager().beginTransaction().add(binding.fragmentContainer.getId(), new FoodsMenuListFragment(),
-				FoodsMenuListFragment.TAG).commit();
+		getChildFragmentManager().beginTransaction().add(binding.contentFragmentContainer.getId(), new FoodsMenuListFragment(),
+				getString(R.string.tag_food_menus_fragment)).commitNow();
 	}
 
 	@Override

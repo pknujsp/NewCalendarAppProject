@@ -62,7 +62,7 @@ public class MidFcstFragment extends Fragment {
 
 		midFcstProcessing = new MidFcstProcessing(getContext(), weatherAreaCode.getY(), weatherAreaCode.getX(), weatherAreaCode);
 		viewProgress = new ViewProgress(binding.midFcstLayout, binding.weatherProgressLayout.progressBar,
-				binding.weatherProgressLayout.errorTextview, binding.weatherProgressLayout.getRoot());
+				binding.weatherProgressLayout.progressStatusTextview, binding.weatherProgressLayout.getRoot());
 		viewProgress.onStartedProcessingData();
 
 		midFcstProcessing.getWeatherData(new WeatherDataCallback<MidFcstResult>() {

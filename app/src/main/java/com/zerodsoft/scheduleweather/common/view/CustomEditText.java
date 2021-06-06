@@ -7,6 +7,7 @@ import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -42,8 +43,10 @@ public class CustomEditText extends AppCompatEditText implements TextWatcher, Vi
 	private void init() {
 		setInputType(InputType.TYPE_CLASS_TEXT);
 		closeDrawable = ContextCompat.getDrawable(getContext(), R.drawable.close_icon);
-		closeDrawable.setBounds(0, 0, closeDrawable.getIntrinsicWidth(), closeDrawable.getIntrinsicHeight());
 		DrawableCompat.setTintList(closeDrawable, getHintTextColors());
+
+		final int btnSize = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 18f, getResources().getDisplayMetrics());
+		closeDrawable.setBounds(0, 0, btnSize, btnSize);
 		setClearBtnVisibility(false);
 
 		addTextChangedListener(this);
@@ -93,8 +96,4 @@ public class CustomEditText extends AppCompatEditText implements TextWatcher, Vi
 		return false;
 	}
 
-	@Override
-	protected void onDraw(Canvas canvas) {
-		super.onDraw(canvas);
-	}
 }

@@ -59,7 +59,7 @@ public class AirConditionDialogFragment extends DialogFragment {
 		super.onViewCreated(view, savedInstanceState);
 
 		viewProgress = new ViewProgress(binding.valueLayout, binding.weatherProgressLayout.progressBar,
-				binding.weatherProgressLayout.errorTextview, binding.weatherProgressLayout.getRoot());
+				binding.weatherProgressLayout.progressStatusTextview, binding.weatherProgressLayout.getRoot());
 		viewProgress.onStartedProcessingData();
 
 		binding.stationName.setText("");

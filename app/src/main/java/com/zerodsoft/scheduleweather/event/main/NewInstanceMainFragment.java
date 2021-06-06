@@ -14,7 +14,6 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.cardview.widget.CardView;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
@@ -33,7 +32,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.CompoundButton;
-import android.widget.GridLayout;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -58,9 +56,8 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.common.interfaces.OnHiddenFragmentListener;
 import com.zerodsoft.scheduleweather.etc.LocationType;
-import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.event.fragments.EventFragment;
-import com.zerodsoft.scheduleweather.event.foods.RestaurantDialogFragment;
+import com.zerodsoft.scheduleweather.event.foods.RestaurantFragment;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.FoodMenuChipsViewController;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PlaceItemsGetter;
 import com.zerodsoft.scheduleweather.event.places.map.PlacesOfSelectedCategoriesFragment;
@@ -97,9 +94,8 @@ public class NewInstanceMainFragment extends NaverMapFragment implements FoodMen
 
 	private ContentValues instance;
 	private LocationDTO selectedLocationDtoInEvent;
-	private View[] functionButtons;
+	private MaterialCardView[] functionButtons;
 	private ImageView functionButton;
-	private LinearLayout functionBtnsRootLayout;
 	private Marker selectedLocationInEventMarker;
 	private InfoWindow selectedLocationInEventInfoWindow;
 
@@ -119,6 +115,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements FoodMen
 	private PlaceCategoryDTO selectedPlaceCategory;
 
 	private LinearLayout chipsLayout;
+	private ViewGroup functionItemsView;
 
 	@Override
 	public void onAttach(@NonNull Context context) {
@@ -202,8 +199,8 @@ public class NewInstanceMainFragment extends NaverMapFragment implements FoodMen
 			public void onStateChanged(@NonNull View bottomSheet, int newState) {
 				switch (newState) {
 					case BottomSheetBehavior.STATE_EXPANDED:
-						RestaurantDialogFragment restaurantDialogFragment = (RestaurantDialogFragment) getChildFragmentManager().findFragmentByTag(RestaurantDialogFragment.TAG);
-						getChildFragmentManager().beginTransaction().show(restaurantDialogFragment).addToBackStack(RestaurantDialogFragment.TAG).commit();
+						RestaurantFragment restaurantFragment = (RestaurantFragment) getChildFragmentManager().findFragmentByTag(RestaurantFragment.TAG);
+						getChildFragmentManager().beginTransaction().show(restaurantFragment).addToBackStack(RestaurantFragment.TAG).commit();
 						break;
 					case BottomSheetBehavior.STATE_COLLAPSED:
 						break;
@@ -255,7 +252,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements FoodMen
 		functionButton.setId(R.id.function_btn_in_instance_main_fragment);
 
 		final int btnPadding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4f, getResources().getDisplayMetrics());
-		final int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, getResources().getDisplayMetrics());
 		functionButton.setPadding(btnPadding, btnPadding, btnPadding, btnPadding);
 
 		RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -286,41 +282,17 @@ public class NewInstanceMainFragment extends NaverMapFragment implements FoodMen
 		});
 
 		//기능 세부 버튼
-		functionButtons = new View[3];
-		String[] functionNameList = {getString(R.string.instance_info), getString(R.string.weather), getString(R.string.restaurant)};
-		Drawable[] functionImgList = {ContextCompat.getDrawable(getContext(), R.drawable.event_icon)
-				, ContextCompat.getDrawable(getContext(), R.drawable.sunny_day_svg)
-				, ContextCompat.getDrawable(getContext(), R.drawable.restaurant_icon)};
+		functionItemsView = (LinearLayout) getLayoutInflater().inflate(R.layout.event_function_items_view,
+				binding.naverMapButtonsLayout.getRoot(), false);
 
-		functionBtnsRootLayout = new LinearLayout(getContext());
-		functionBtnsRootLayout.setOrientation(LinearLayout.VERTICAL);
+		functionButtons = new MaterialCardView[]{functionItemsView.findViewById(R.id.function_event_info)
+				, functionItemsView.findViewById(R.id.function_weather)
+				, functionItemsView.findViewById(R.id.function_restaurant)};
 
-		final int functionBtnBottomMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 12f,
-				getResources().getDisplayMetrics());
-
-		LayoutInflater layoutInflater = getLayoutInflater();
-
-		for (int i = 0; i < functionButtons.length; i++) {
-			functionButtons[i] = layoutInflater.inflate(R.layout.function_view_for_event, null, false);
-			((TextView) functionButtons[i].findViewById(R.id.function_name)).setText(functionNameList[i]);
-			((ImageView) functionButtons[i].findViewById(R.id.function_image)).setImageDrawable(functionImgList[i]);
-
-			LinearLayout.LayoutParams functionBtnsLayout = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-					ViewGroup.LayoutParams.WRAP_CONTENT);
-			functionBtnsLayout.setMargins(0, 0, 0, functionBtnBottomMargin);
-
-			functionButtons[i].setLayoutParams(functionBtnsLayout);
-			functionBtnsRootLayout.addView(functionButtons[i]);
-		}
-
-		RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-		params.addRule(RelativeLayout.ABOVE, functionButton.getId());
-		params.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
-		params.bottomMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4f, getResources().getDisplayMetrics());
-		params.leftMargin = marginLeft;
-
-		functionBtnsRootLayout.setLayoutParams(params);
-		binding.naverMapButtonsLayout.getRoot().addView(functionBtnsRootLayout);
+		RelativeLayout.LayoutParams functionItemsViewLayoutParams = (RelativeLayout.LayoutParams) functionItemsView.getLayoutParams();
+		functionItemsViewLayoutParams.addRule(RelativeLayout.ABOVE, functionButton.getId());
+		functionItemsViewLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+		binding.naverMapButtonsLayout.getRoot().addView(functionItemsView, functionItemsViewLayoutParams);
 
 		functionButtons[0].setOnClickListener(new View.OnClickListener() {
 			@Override
@@ -359,21 +331,22 @@ public class NewInstanceMainFragment extends NaverMapFragment implements FoodMen
 				//음식점
 				functionButton.callOnClick();
 
-				RestaurantDialogFragment restaurantDialogFragment =
-						new RestaurantDialogFragment(NewInstanceMainFragment.this, NewInstanceMainFragment.this
-								, CALENDAR_ID, INSTANCE_ID, EVENT_ID, DEFAULT_HEIGHT_OF_BOTTOMSHEET);
-				restaurantDialogFragment.show(getParentFragmentManager(), RestaurantDialogFragment.TAG);
+				RestaurantFragment restaurantFragment =
+						new RestaurantFragment(NewInstanceMainFragment.this, NewInstanceMainFragment.this
+								, CALENDAR_ID, INSTANCE_ID, EVENT_ID);
+				getChildFragmentManager().beginTransaction().add(binding.fragmentContainer.getId(), restaurantFragment
+						, getString(R.string.tag_restaurant_fragment)).addToBackStack(getString(R.string.tag_restaurant_fragment)).commit();
 			}
 		});
 	}
 
 	private void collapseFunctions() {
-		functionBtnsRootLayout.setVisibility(View.GONE);
+		functionItemsView.setVisibility(View.GONE);
 	}
 
 
 	private void expandFunctions() {
-		functionBtnsRootLayout.setVisibility(View.VISIBLE);
+		functionItemsView.setVisibility(View.VISIBLE);
 	}
 
 	private void setInitInstanceData() {

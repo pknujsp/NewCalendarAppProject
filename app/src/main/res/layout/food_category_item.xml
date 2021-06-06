@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="100dp"
-    android:layout_height="100dp"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
     android:background="?attr/selectableItemBackground"
     android:orientation="vertical"
     android:padding="8dp">
@@ -13,7 +13,7 @@
         android:layout_gravity="center"
         android:layout_weight="1"
         android:scaleType="centerInside"
-        android:src="@drawable/cloud_night_icon" />
+        android:src="@android:drawable/sym_def_app_icon" />
 
     <TextView
         android:id="@+id/food_category_name"

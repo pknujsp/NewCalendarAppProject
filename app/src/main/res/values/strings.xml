@@ -559,4 +559,8 @@
     <string name="tag_search_restaurant_fragment">tag_search_restaurant_fragment</string>
     <string name="tag_search_result_restaurant_fragment">tag_search_result_restaurant_fragment</string>
     <string name="tag_restaurant_list_tab_fragment">tag_restaurant_list_tab_fragment</string>
+    <string name="tag_restaurant_header_criteria_location_fragment">tag_restaurant_header_criteria_location_fragment</string>
+    <string name="tag_food_menus_fragment">tag_food_menus_fragment</string>
+    <string name="tag_restaurant_fragment">tag_restaurant_fragment</string>
+    <string name="tag_custom_food_menu_settings_fragment">tag_custom_food_menu_settings_fragment</string>
 </resources>

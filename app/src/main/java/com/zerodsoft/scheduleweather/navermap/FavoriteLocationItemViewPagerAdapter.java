@@ -82,7 +82,7 @@ public class FavoriteLocationItemViewPagerAdapter extends LocationItemViewPagerA
 		public FavoriteLocationItemInMapViewHolder(@NonNull View view) {
 			super(view);
 			viewProgress = new ViewProgress(binding.placeItemCardviewInBottomsheet, binding.locationItemProgressLayout.progressBar
-					, binding.locationItemProgressLayout.errorTextview, binding.locationItemProgressLayout.getRoot());
+					, binding.locationItemProgressLayout.progressStatusTextview, binding.locationItemProgressLayout.getRoot());
 
 			viewProgress.onStartedProcessingData();
 		}

@@ -1,8 +1,10 @@
 package com.zerodsoft.scheduleweather.event.foods.repository;
 
 import android.app.Application;
+import android.content.Context;
 import android.service.carrier.CarrierMessagingService;
 
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.zerodsoft.scheduleweather.activity.App;
@@ -17,9 +19,11 @@ import lombok.SneakyThrows;
 public class FoodCriteriaLocationInfoRepository implements FoodCriteriaLocationInfoQuery {
 	private FoodCriteriaLocationInfoDAO dao;
 	private MutableLiveData<FoodCriteriaLocationInfoDTO> foodCriteriaLocationInfo = new MutableLiveData(new FoodCriteriaLocationInfoDTO());
+	private MutableLiveData<FoodCriteriaLocationInfoDTO> onChangedCriteriaLocationLiveData = new MutableLiveData<>();
 
-	public FoodCriteriaLocationInfoRepository(Application application) {
-		dao = AppDb.getInstance(application.getApplicationContext()).foodCriteriaLocationInfoDAO();
+
+	public FoodCriteriaLocationInfoRepository(Context context) {
+		dao = AppDb.getInstance(context).foodCriteriaLocationInfoDAO();
 	}
 
 	public void getInfoById(Long eventId) {
@@ -30,6 +34,10 @@ public class FoodCriteriaLocationInfoRepository implements FoodCriteriaLocationI
 				foodCriteriaLocationInfo.postValue(foodCriteriaLocationInfoDTO);
 			}
 		}).start();
+	}
+
+	public MutableLiveData<FoodCriteriaLocationInfoDTO> getOnChangedCriteriaLocationLiveData() {
+		return onChangedCriteriaLocationLiveData;
 	}
 
 	public MutableLiveData<FoodCriteriaLocationInfoDTO> getFoodCriteriaLocationInfo() {
@@ -95,6 +103,7 @@ public class FoodCriteriaLocationInfoRepository implements FoodCriteriaLocationI
 				dao.updateByEventId(eventId, usingType, historyLocationId);
 				FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO = dao.selectByEventId(eventId);
 				callback.processResult(foodCriteriaLocationInfoDTO);
+				onChangedCriteriaLocationLiveData.postValue(foodCriteriaLocationInfoDTO);
 			}
 		});
 	}

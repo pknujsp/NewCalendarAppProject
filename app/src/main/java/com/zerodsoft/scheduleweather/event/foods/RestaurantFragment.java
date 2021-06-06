@@ -2,9 +2,11 @@ package com.zerodsoft.scheduleweather.event.foods;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -38,6 +40,9 @@ import com.zerodsoft.scheduleweather.event.foods.interfaces.IGetEventValue;
 import com.zerodsoft.scheduleweather.event.foods.main.RestaurantMainHostFragment;
 import com.zerodsoft.scheduleweather.event.foods.search.RestaurantSearchHostFragment;
 import com.zerodsoft.scheduleweather.event.foods.settings.RestaurantSettingsHostFragment;
+import com.zerodsoft.scheduleweather.event.foods.viewmodel.CustomFoodMenuViewModel;
+import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationHistoryViewModel;
+import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationInfoViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.RestaurantSharedViewModel;
 import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint;
@@ -47,55 +52,45 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
 
-public class RestaurantDialogFragment extends BottomSheetDialogFragment {
-	public static final String TAG = "RestaurantDialogFragment";
+public class RestaurantFragment extends Fragment {
+	public static final String TAG = "RestaurantFragment";
 	private FragmentRestaurantMainTransactionBinding binding;
 
 	private final int CALENDAR_ID;
 	private final long INSTANCE_ID;
 	private final long EVENT_ID;
-	private final int VIEW_HEIGHT;
 
 	private final FoodMenuChipsViewController foodMenuChipsViewController;
 	private final IMapPoint iMapPoint;
 
-	private BottomSheetBehavior bottomSheetBehavior;
+	private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
+		@Override
+		public void handleOnBackPressed() {
+			FragmentManager fragmentManager = getChildFragmentManager().getPrimaryNavigationFragment().getChildFragmentManager();
+			if (!fragmentManager.popBackStackImmediate()) {
+				getParentFragmentManager().popBackStack();
+			}
+		}
+	};
 
-	public RestaurantDialogFragment(IMapPoint iMapPoint
+	public RestaurantFragment(IMapPoint iMapPoint
 			, FoodMenuChipsViewController foodMenuChipsViewController
-			, int CALENDAR_ID, long INSTANCE_ID, long EVENT_ID, int VIEW_HEIGHT) {
+			, int CALENDAR_ID, long INSTANCE_ID, long EVENT_ID) {
 		this.iMapPoint = iMapPoint;
 		this.foodMenuChipsViewController = foodMenuChipsViewController;
 		this.CALENDAR_ID = CALENDAR_ID;
 		this.INSTANCE_ID = INSTANCE_ID;
 		this.EVENT_ID = EVENT_ID;
-		this.VIEW_HEIGHT = VIEW_HEIGHT;
 	}
 
-	@NonNull
+	public FragmentRestaurantMainTransactionBinding getBinding() {
+		return binding;
+	}
+
 	@Override
-	public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
-		Dialog dialog = super.onCreateDialog(savedInstanceState);
-
-		dialog.setOnKeyListener(new DialogInterface.OnKeyListener() {
-			@Override
-			public boolean onKey(DialogInterface dialogInterface, int keyCode, KeyEvent event) {
-				if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_UP) {
-					FragmentManager fragmentManager = getChildFragmentManager().getPrimaryNavigationFragment().getChildFragmentManager();
-					if (!fragmentManager.popBackStackImmediate()) {
-						dismiss();
-					}
-				}
-				return true;
-			}
-		});
-
-		bottomSheetBehavior = ((BottomSheetDialog) dialog).getBehavior();
-		bottomSheetBehavior.setDraggable(false);
-		bottomSheetBehavior.setPeekHeight(0);
-		bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-
-		return dialog;
+	public void onAttach(@NonNull @NotNull Context context) {
+		super.onAttach(context);
+		requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
 	}
 
 	@Override
@@ -107,6 +102,10 @@ public class RestaurantDialogFragment extends BottomSheetDialogFragment {
 		restaurantSharedViewModel.setFoodMenuChipsViewController(foodMenuChipsViewController);
 		restaurantSharedViewModel.setiMapPoint(iMapPoint);
 		restaurantSharedViewModel.setEventId(EVENT_ID);
+		new ViewModelProvider(requireActivity()).get(FoodCriteriaLocationInfoViewModel.class);
+		new ViewModelProvider(requireActivity()).get(FoodCriteriaLocationHistoryViewModel.class);
+		new ViewModelProvider(requireActivity()).get(CustomFoodMenuViewModel.class);
+
 	}
 
 	@Override
@@ -119,9 +118,6 @@ public class RestaurantDialogFragment extends BottomSheetDialogFragment {
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
-
-		View bottomSheet = getDialog().findViewById(R.id.design_bottom_sheet);
-		bottomSheet.getLayoutParams().height = VIEW_HEIGHT;
 
 		binding.bottomNavigation.setOnNavigationItemSelectedListener(onNavigationItemSelectedListener);
 		binding.bottomNavigation.setOnNavigationItemReselectedListener(new BottomNavigationView.OnNavigationItemReselectedListener() {
@@ -165,12 +161,12 @@ public class RestaurantDialogFragment extends BottomSheetDialogFragment {
 						return false;
 				}
 
-				fragmentTransaction.add(binding.fragmentContainer.getId(), destinationFragment, tag);
+				fragmentTransaction.add(binding.contentFragmentContainer.getId(), destinationFragment, tag);
 			} else {
 				fragmentTransaction.show(destinationFragment);
 			}
 
-			fragmentTransaction.setPrimaryNavigationFragment(destinationFragment).commit();
+			fragmentTransaction.setPrimaryNavigationFragment(destinationFragment).commitNow();
 			return true;
 
 		}
@@ -179,5 +175,6 @@ public class RestaurantDialogFragment extends BottomSheetDialogFragment {
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
+		onBackPressedCallback.remove();
 	}
 }

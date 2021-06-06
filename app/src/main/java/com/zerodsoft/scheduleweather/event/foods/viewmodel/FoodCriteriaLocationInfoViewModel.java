@@ -16,11 +16,17 @@ import com.zerodsoft.scheduleweather.room.dto.FoodCriteriaLocationInfoDTO;
 public class FoodCriteriaLocationInfoViewModel extends AndroidViewModel implements FoodCriteriaLocationInfoQuery {
 	private FoodCriteriaLocationInfoRepository repository;
 	private MutableLiveData<FoodCriteriaLocationInfoDTO> foodCriteriaLocationInfo;
+	private MutableLiveData<FoodCriteriaLocationInfoDTO> onChangedCriteriaLocationLiveData;
 
 	public FoodCriteriaLocationInfoViewModel(@NonNull Application application) {
 		super(application);
-		repository = new FoodCriteriaLocationInfoRepository(application);
+		repository = new FoodCriteriaLocationInfoRepository(application.getApplicationContext());
 		foodCriteriaLocationInfo = repository.getFoodCriteriaLocationInfo();
+		onChangedCriteriaLocationLiveData = repository.getOnChangedCriteriaLocationLiveData();
+	}
+
+	public LiveData<FoodCriteriaLocationInfoDTO> getOnChangedCriteriaLocationLiveData() {
+		return onChangedCriteriaLocationLiveData;
 	}
 
 	public LiveData<FoodCriteriaLocationInfoDTO> getFoodCriteriaLocationInfo() {

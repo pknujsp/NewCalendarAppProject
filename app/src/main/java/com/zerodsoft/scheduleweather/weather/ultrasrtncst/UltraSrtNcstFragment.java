@@ -64,7 +64,7 @@ public class UltraSrtNcstFragment extends Fragment {
 
 		ultraSrtNcstProcessing = new UltraSrtNcstProcessing(getContext(), weatherAreaCode.getY(), weatherAreaCode.getX());
 		viewProgress = new ViewProgress(binding.ultraSrtNcstLayout, binding.weatherProgressLayout.progressBar,
-				binding.weatherProgressLayout.errorTextview, binding.weatherProgressLayout.getRoot());
+				binding.weatherProgressLayout.progressStatusTextview, binding.weatherProgressLayout.getRoot());
 		viewProgress.onStartedProcessingData();
 
 		ultraSrtNcstProcessing.getWeatherData(new WeatherDataCallback<UltraSrtNcstResult>() {

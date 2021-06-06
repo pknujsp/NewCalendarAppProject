@@ -64,8 +64,8 @@ public class RestaurantCriteriaLocationSettingsFragment extends Fragment impleme
 		eventId = sharedViewModel.getEventId();
 
 		locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
-		foodCriteriaLocationInfoViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationInfoViewModel.class);
-		foodCriteriaLocationSearchHistoryViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationHistoryViewModel.class);
+		foodCriteriaLocationInfoViewModel = new ViewModelProvider(requireActivity()).get(FoodCriteriaLocationInfoViewModel.class);
+		foodCriteriaLocationSearchHistoryViewModel = new ViewModelProvider(requireActivity()).get(FoodCriteriaLocationHistoryViewModel.class);
 	}
 
 	@Override
@@ -273,6 +273,12 @@ public class RestaurantCriteriaLocationSettingsFragment extends Fragment impleme
 		@Override
 		public void onResultSuccessful(FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoResultDto) {
 			finalFoodCriteriaLocationInfoDTO = foodCriteriaLocationInfoResultDto;
+			requireActivity().runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
+					requireActivity().getOnBackPressedDispatcher().onBackPressed();
+				}
+			});
 		}
 
 		@Override

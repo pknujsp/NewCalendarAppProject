@@ -3,6 +3,8 @@ package com.zerodsoft.scheduleweather.event.foods.repository;
 import android.content.Context;
 import android.service.carrier.CarrierMessagingService;
 
+import androidx.lifecycle.MutableLiveData;
+
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.CustomFoodMenuQuery;
@@ -16,20 +18,31 @@ import lombok.SneakyThrows;
 
 public class CustomFoodMenuRepository implements CustomFoodMenuQuery {
 	private CustomFoodMenuDAO categoryDAO;
+	private MutableLiveData<CustomFoodMenuDTO> onAddedCustomFoodMenuLiveData = new MutableLiveData<>();
+	private MutableLiveData<Integer> onRemovedCustomFoodMenuLiveData = new MutableLiveData<>();
+
 
 	public CustomFoodMenuRepository(Context context) {
 		categoryDAO = AppDb.getInstance(context).customFoodCategoryDAO();
 	}
 
+	public MutableLiveData<CustomFoodMenuDTO> getOnAddedCustomFoodMenuLiveData() {
+		return onAddedCustomFoodMenuLiveData;
+	}
+
+	public MutableLiveData<Integer> getOnRemovedCustomFoodMenuLiveData() {
+		return onRemovedCustomFoodMenuLiveData;
+	}
+
 	@Override
 	public void insert(String menuName, DbQueryCallback<CustomFoodMenuDTO> callback) {
 		App.executorService.execute(new Runnable() {
-			@SneakyThrows
 			@Override
 			public void run() {
 				categoryDAO.insert(menuName);
 				CustomFoodMenuDTO categoryDTO = categoryDAO.select(menuName);
 				callback.processResult(categoryDTO);
+				onAddedCustomFoodMenuLiveData.postValue(categoryDTO);
 			}
 		});
 	}
@@ -37,7 +50,6 @@ public class CustomFoodMenuRepository implements CustomFoodMenuQuery {
 	@Override
 	public void select(DbQueryCallback<List<CustomFoodMenuDTO>> callback) {
 		App.executorService.execute(new Runnable() {
-			@SneakyThrows
 			@Override
 			public void run() {
 				List<CustomFoodMenuDTO> list = categoryDAO.select();
@@ -47,50 +59,35 @@ public class CustomFoodMenuRepository implements CustomFoodMenuQuery {
 	}
 
 	@Override
-	public void update(String previousMenuName, String newMenuName, CarrierMessagingService.ResultCallback<CustomFoodMenuDTO> callback) {
+	public void delete(Integer id, DbQueryCallback<Boolean> callback) {
 		App.executorService.execute(new Runnable() {
-			@SneakyThrows
 			@Override
 			public void run() {
-				categoryDAO.update(previousMenuName, newMenuName);
-				CustomFoodMenuDTO categoryDTO = categoryDAO.select(newMenuName);
-				callback.onReceiveResult(categoryDTO);
+				categoryDAO.delete(id);
+				callback.processResult(true);
+				onRemovedCustomFoodMenuLiveData.postValue(id);
 			}
 		});
 	}
 
 	@Override
-	public void delete(String menuName, CarrierMessagingService.ResultCallback<Boolean> callback) {
+	public void deleteAll(DbQueryCallback<Boolean> callback) {
 		App.executorService.execute(new Runnable() {
-			@SneakyThrows
-			@Override
-			public void run() {
-				categoryDAO.delete(menuName);
-				callback.onReceiveResult(true);
-			}
-		});
-	}
-
-	@Override
-	public void deleteAll(CarrierMessagingService.ResultCallback<Boolean> callback) {
-		App.executorService.execute(new Runnable() {
-			@SneakyThrows
 			@Override
 			public void run() {
 				categoryDAO.deleteAll();
-				callback.onReceiveResult(true);
+				callback.processResult(true);
 			}
 		});
 	}
 
 	@Override
-	public void containsMenu(String menuName, CarrierMessagingService.ResultCallback<Boolean> callback) {
+	public void containsMenu(String menuName, DbQueryCallback<Boolean> callback) {
 		App.executorService.execute(new Runnable() {
-			@SneakyThrows
 			@Override
 			public void run() {
 				int result = categoryDAO.containsMenu(menuName);
-				callback.onReceiveResult(result == 1);
+				callback.processResult(result == 1);
 			}
 		});
 	}

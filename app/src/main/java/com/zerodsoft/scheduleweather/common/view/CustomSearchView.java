@@ -114,6 +114,7 @@ public class CustomSearchView extends LinearLayout {
 
 		LinearLayout.LayoutParams editTextParams = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT);
 		editTextParams.weight = 1;
+		editTextParams.gravity = Gravity.CENTER_VERTICAL;
 		addView(searchEditText, editTextParams);
 
 		LinearLayout.LayoutParams searchBtnParams = new LinearLayout.LayoutParams(btnSize, btnSize);

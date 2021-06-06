@@ -69,7 +69,7 @@ public class VilageFcstFragment extends Fragment {
 		clearViews();
 		vilageFcstProcessing = new VilageFcstProcessing(getContext(), weatherAreaCode.getY(), weatherAreaCode.getX());
 		viewProgress = new ViewProgress(binding.vilageFcstLayout, binding.weatherProgressLayout.progressBar,
-				binding.weatherProgressLayout.errorTextview, binding.weatherProgressLayout.getRoot());
+				binding.weatherProgressLayout.progressStatusTextview, binding.weatherProgressLayout.getRoot());
 		viewProgress.onStartedProcessingData();
 
 		vilageFcstProcessing.getWeatherData(new WeatherDataCallback<VilageFcstResult>() {

@@ -9,24 +9,24 @@ import com.zerodsoft.scheduleweather.R;
 public class ViewProgress {
 	private View dataView;
 	private ProgressBar progressBar;
-	private TextView errorTextView;
+	private TextView progressStatusTextview;
 	private View errorView;
 
-	public ViewProgress(View dataView, ProgressBar progressBar, TextView errorTextView, View errorView) {
+	public ViewProgress(View dataView, ProgressBar progressBar, TextView progressStatusTextview, View errorView) {
 		this.dataView = dataView;
 		this.progressBar = progressBar;
-		this.errorTextView = errorTextView;
+		this.progressStatusTextview = progressStatusTextview;
 		this.errorView = errorView;
 	}
 
 	public void onCompletedProcessingData(boolean isSuccessful) {
 		if (isSuccessful) {
-			errorTextView.setVisibility(View.GONE);
+			progressStatusTextview.setVisibility(View.GONE);
 			progressBar.setVisibility(View.GONE);
 			dataView.setVisibility(View.VISIBLE);
 			errorView.setVisibility(View.GONE);
 		} else {
-			errorTextView.setVisibility(View.VISIBLE);
+			progressStatusTextview.setVisibility(View.VISIBLE);
 			progressBar.setVisibility(View.GONE);
 			dataView.setVisibility(View.GONE);
 			errorView.setVisibility(View.VISIBLE);
@@ -38,15 +38,15 @@ public class ViewProgress {
 
 		if (!isSuccessful) {
 			if (text != null) {
-				errorTextView.setText(text);
+				progressStatusTextview.setText(text);
 			} else {
-				errorTextView.setText(R.string.error);
+				progressStatusTextview.setText(R.string.error);
 			}
 		}
 	}
 
 	public void onStartedProcessingData() {
-		errorTextView.setVisibility(View.GONE);
+		progressStatusTextview.setVisibility(View.GONE);
 		dataView.setVisibility(View.GONE);
 		progressBar.setVisibility(View.VISIBLE);
 		errorView.setVisibility(View.VISIBLE);
@@ -60,8 +60,8 @@ public class ViewProgress {
 		return dataView;
 	}
 
-	public TextView getErrorTextView() {
-		return errorTextView;
+	public TextView getprogressStatusTextview() {
+		return progressStatusTextview;
 	}
 
 	public View getErrorView() {

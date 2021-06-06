@@ -32,10 +32,11 @@ public class PlaceInfoWebFragment extends Fragment {
 	private View.OnKeyListener onKeyListener = new View.OnKeyListener() {
 		@Override
 		public boolean onKey(View view, int keyCode, KeyEvent keyEvent) {
-			if (keyCode == KeyEvent.KEYCODE_BACK && keyEvent.getAction() == KeyEvent.ACTION_DOWN) {
+			if (keyCode == KeyEvent.KEYCODE_BACK && keyEvent.getAction() == KeyEvent.ACTION_UP) {
 				if (binding.webview.canGoBack()) {
 					binding.webview.goBack();
 				} else {
+					requireActivity().getOnBackPressedDispatcher().onBackPressed();
 					return false;
 				}
 			}

@@ -59,7 +59,7 @@ public class AirConditionFragment extends Fragment implements OnUpdateListener {
 		binding.showDetailDialogButton.setOnClickListener(onClickListener);
 
 		viewProgress = new ViewProgress(binding.airConditionLayout, binding.weatherProgressLayout.progressBar,
-				binding.weatherProgressLayout.errorTextview, binding.weatherProgressLayout.getRoot());
+				binding.weatherProgressLayout.progressStatusTextview, binding.weatherProgressLayout.getRoot());
 
 		init();
 	}
