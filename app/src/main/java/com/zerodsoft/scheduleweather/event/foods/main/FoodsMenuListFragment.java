@@ -27,6 +27,7 @@ import com.zerodsoft.scheduleweather.event.foods.adapter.FoodCategoryAdapter;
 import com.zerodsoft.scheduleweather.event.foods.dto.FoodCategoryItem;
 import com.zerodsoft.scheduleweather.event.foods.header.HeaderCriteriaLocationFragment;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedCategoryItem;
+import com.zerodsoft.scheduleweather.event.foods.interfaces.OnSetViewVisibility;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.CustomFoodMenuViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.RestaurantSharedViewModel;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint;
@@ -49,6 +50,10 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 	private RestaurantSharedViewModel sharedViewModel;
 	private HeaderCriteriaLocationFragment headerCriteriaLocationFragment;
 
+	private FoodCategoryAdapter foodCategoryAdapter;
+
+	private OnSetViewVisibility onSetViewVisibility;
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -56,6 +61,7 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 		sharedViewModel = new ViewModelProvider(requireActivity()).get(RestaurantSharedViewModel.class);
 		customFoodCategoryViewModel = new ViewModelProvider(requireActivity()).get(CustomFoodMenuViewModel.class);
 
+		onSetViewVisibility = sharedViewModel.getOnSetViewVisibility();
 		eventId = sharedViewModel.getEventId();
 		iMapPoint = sharedViewModel.getiMapPoint();
 
@@ -98,14 +104,13 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 
-		getChildFragmentManager().beginTransaction().add(binding.headerFragmentContainer.getId(), headerCriteriaLocationFragment).commitNow();
+		getParentFragment().getParentFragmentManager().beginTransaction()
+				.add(R.id.header_fragment_container, headerCriteriaLocationFragment).commit();
 
 		GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(), COLUMN_COUNT);
 		binding.categoryGridview.setLayoutManager(gridLayoutManager);
-
-		getParentFragmentManager().addOnBackStackChangedListener(onBackStackChangedListener);
-
-
+		foodCategoryAdapter = new FoodCategoryAdapter(FoodsMenuListFragment.this, COLUMN_COUNT);
+		binding.categoryGridview.setAdapter(foodCategoryAdapter);
 	}
 
 	@Override
@@ -114,8 +119,13 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 	}
 
 	@Override
+	public void onResume() {
+		super.onResume();
+
+	}
+
+	@Override
 	public void onDestroy() {
-		getParentFragmentManager().removeOnBackStackChangedListener(onBackStackChangedListener);
 		super.onDestroy();
 	}
 
@@ -124,7 +134,6 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 		customFoodCategoryViewModel.select(new DbQueryCallback<List<CustomFoodMenuDTO>>() {
 			@Override
 			public void onResultSuccessful(List<CustomFoodMenuDTO> resultList) {
-				FoodCategoryAdapter foodCategoryAdapter = new FoodCategoryAdapter(FoodsMenuListFragment.this, COLUMN_COUNT);
 
 				final String[] DEFAULT_FOOD_MENU_NAME_ARR = getResources().getStringArray(R.array.food_menu_list);
 				List<FoodCategoryItem> itemsList = new ArrayList<>();
@@ -144,10 +153,10 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 				itemsList.add(new FoodCategoryItem(getString(R.string.add_custom_food_menu), null, false));
 				foodCategoryAdapter.setItems(itemsList);
 
-				getActivity().runOnUiThread(new Runnable() {
+				requireActivity().runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						binding.categoryGridview.setAdapter(foodCategoryAdapter);
+						foodCategoryAdapter.notifyDataSetChanged();
 					}
 				});
 			}
@@ -200,11 +209,4 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 	public void refreshView() {
 
 	}
-
-	private FragmentManager.OnBackStackChangedListener onBackStackChangedListener = new FragmentManager.OnBackStackChangedListener() {
-		@Override
-		public void onBackStackChanged() {
-
-		}
-	};
 }

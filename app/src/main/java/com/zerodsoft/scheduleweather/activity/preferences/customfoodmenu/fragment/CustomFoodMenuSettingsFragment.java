@@ -22,7 +22,9 @@ import com.zerodsoft.scheduleweather.activity.preferences.customfoodmenu.adapter
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.databinding.FragmentCustomFoodMenuSettingsBinding;
+import com.zerodsoft.scheduleweather.event.foods.interfaces.OnSetViewVisibility;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.CustomFoodMenuViewModel;
+import com.zerodsoft.scheduleweather.event.foods.viewmodel.RestaurantSharedViewModel;
 import com.zerodsoft.scheduleweather.room.dto.CustomFoodMenuDTO;
 
 import java.util.List;
@@ -32,13 +34,18 @@ public class CustomFoodMenuSettingsFragment extends Fragment implements OnClicke
 	private FragmentCustomFoodMenuSettingsBinding binding;
 	private CustomFoodMenuAdapter adapter;
 	private CustomFoodMenuViewModel viewModel;
+	private OnSetViewVisibility onSetViewVisibility;
+	private RestaurantSharedViewModel restaurantSharedViewModel;
 	private boolean isEdited = false;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		viewModel = new ViewModelProvider(requireActivity()).get(CustomFoodMenuViewModel.class);
+		restaurantSharedViewModel = new ViewModelProvider(requireActivity()).get(RestaurantSharedViewModel.class);
 
+		onSetViewVisibility = restaurantSharedViewModel.getOnSetViewVisibility();
+		onSetViewVisibility.setVisibility(OnSetViewVisibility.ViewType.HEADER, View.GONE);
 	}
 
 	@Override
@@ -166,7 +173,7 @@ public class CustomFoodMenuSettingsFragment extends Fragment implements OnClicke
 		viewModel.delete(e.getId(), new DbQueryCallback<Boolean>() {
 			@Override
 			public void onResultSuccessful(Boolean result) {
-				getActivity().runOnUiThread(new Runnable() {
+				requireActivity().runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
 						isEdited = true;
@@ -181,6 +188,13 @@ public class CustomFoodMenuSettingsFragment extends Fragment implements OnClicke
 
 			}
 		});
+	}
+
+
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		onSetViewVisibility.setVisibility(OnSetViewVisibility.ViewType.HEADER, View.VISIBLE);
 	}
 
 	public boolean isEdited() {

@@ -52,10 +52,11 @@ public class RestaurantListTabFragment extends Fragment implements NewInstanceMa
 	private FavoriteLocationViewModel favoriteRestaurantViewModel;
 	private RestaurantSharedViewModel restaurantSharedViewModel;
 
-	private List<String> categoryList;
 	private FoodCategoryFragmentListAdapter adapter;
 	private String firstSelectedFoodMenuName;
 	private Long eventId;
+
+	private List<String> categoryList;
 
 	private HeaderRestaurantListFragment headerRestaurantListFragment;
 
@@ -89,6 +90,9 @@ public class RestaurantListTabFragment extends Fragment implements NewInstanceMa
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 
+		adapter = new FoodCategoryFragmentListAdapter(RestaurantListTabFragment.this);
+		binding.viewpager.setAdapter(adapter);
+
 		headerRestaurantListFragment = new HeaderRestaurantListFragment();
 		headerRestaurantListFragment.setViewPager2(binding.viewpager);
 		headerRestaurantListFragment.setFoodMenuListDataProcessingCallback(new DataProcessingCallback<List<FoodCategoryItem>>() {
@@ -97,9 +101,8 @@ public class RestaurantListTabFragment extends Fragment implements NewInstanceMa
 				requireActivity().runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						adapter = new FoodCategoryFragmentListAdapter(RestaurantListTabFragment.this);
 						adapter.init(result);
-						binding.viewpager.setAdapter(adapter);
+						adapter.notifyDataSetChanged();
 					}
 				});
 
@@ -110,12 +113,13 @@ public class RestaurantListTabFragment extends Fragment implements NewInstanceMa
 
 			}
 		});
+
 		Bundle bundle = new Bundle();
 		bundle.putSerializable("OnClickedListItem", (OnClickedListItem<FoodCategoryItem>) this);
 		bundle.putInt("firstSelectedFoodMenuIndex", 0);
 		headerRestaurantListFragment.setArguments(bundle);
 
-		getChildFragmentManager().beginTransaction().add(binding.headerFragmentContainer.getId(), headerRestaurantListFragment).commitNow();
+		getParentFragment().getParentFragmentManager().beginTransaction().add(R.id.header_fragment_container, headerRestaurantListFragment).commitNow();
 	}
 
 

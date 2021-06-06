@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 
 import com.zerodsoft.scheduleweather.event.foods.interfaces.FoodMenuChipsViewController;
+import com.zerodsoft.scheduleweather.event.foods.interfaces.OnSetViewVisibility;
 import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint;
 
@@ -14,6 +15,7 @@ import org.jetbrains.annotations.NotNull;
 public class RestaurantSharedViewModel extends AndroidViewModel {
 	private FavoriteLocationsListener favoriteLocationsListener;
 	private FoodMenuChipsViewController foodMenuChipsViewController;
+	private OnSetViewVisibility onSetViewVisibility;
 	private IMapPoint iMapPoint;
 	private Long eventId;
 
@@ -27,6 +29,14 @@ public class RestaurantSharedViewModel extends AndroidViewModel {
 
 	public void setFavoriteLocationsListener(FavoriteLocationsListener favoriteLocationsListener) {
 		this.favoriteLocationsListener = favoriteLocationsListener;
+	}
+
+	public void setOnSetViewVisibility(OnSetViewVisibility onSetViewVisibility) {
+		this.onSetViewVisibility = onSetViewVisibility;
+	}
+
+	public OnSetViewVisibility getOnSetViewVisibility() {
+		return onSetViewVisibility;
 	}
 
 	public FoodMenuChipsViewController getFoodMenuChipsViewController() {

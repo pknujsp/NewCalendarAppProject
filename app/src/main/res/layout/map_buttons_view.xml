@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/buttons_root_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/transparent"
@@ -11,24 +13,27 @@
         android:id="@+id/favorite_locations_button"
         android:layout_width="@dimen/map_button_size"
         android:layout_height="@dimen/map_button_size"
-        android:layout_alignParentRight="true"
-        android:layout_margin="4dp"
+
+        android:layout_marginBottom="8dp"
         android:background="@drawable/map_button_rect"
         android:elevation="3dp"
         android:scaleType="centerInside"
+        app:layout_constraintBottom_toTopOf="@+id/building_button"
+        app:layout_constraintEnd_toEndOf="parent"
         app:srcCompat="@drawable/more_icon" />
 
     <ImageButton
         android:id="@+id/building_button"
         android:layout_width="@dimen/map_button_size"
         android:layout_height="@dimen/map_button_size"
-        android:layout_below="@id/favorite_locations_button"
-        android:layout_alignLeft="@id/favorite_locations_button"
-        android:layout_marginTop="4dp"
+
+        android:layout_marginBottom="32dp"
         android:background="@drawable/map_button_rect"
         android:elevation="3dp"
         android:padding="6dp"
         android:scaleType="centerInside"
+        app:layout_constraintBottom_toTopOf="@+id/zoom_in_button"
+        app:layout_constraintEnd_toEndOf="parent"
         app:srcCompat="@drawable/building_black" />
 
 
@@ -36,44 +41,40 @@
         android:id="@+id/zoom_in_button"
         android:layout_width="@dimen/map_button_size"
         android:layout_height="@dimen/map_button_size"
-        android:layout_below="@id/building_button"
-        android:layout_alignLeft="@id/building_button"
-        android:layout_marginTop="28dp"
+
+        android:layout_marginBottom="8dp"
         android:background="@drawable/map_button_rect"
         android:elevation="3dp"
-        android:src="@drawable/zoom_in_icon" />
+        android:src="@drawable/zoom_in_icon"
+        app:layout_constraintBottom_toTopOf="@+id/zoom_out_button"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <ImageButton
         android:id="@+id/zoom_out_button"
         android:layout_width="@dimen/map_button_size"
         android:layout_height="@dimen/map_button_size"
-        android:layout_below="@id/zoom_in_button"
-        android:layout_alignLeft="@id/zoom_in_button"
-        android:layout_marginTop="4dp"
+        android:layout_marginBottom="32dp"
         android:background="@drawable/map_button_rect"
         android:elevation="3dp"
-        android:src="@drawable/zoom_out_icon" />
+        android:src="@drawable/zoom_out_icon"
+        app:layout_constraintBottom_toTopOf="@+id/gps_button"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <ImageButton
         android:id="@+id/gps_button"
         android:layout_width="@dimen/map_button_size"
         android:layout_height="@dimen/map_button_size"
-        android:layout_below="@id/zoom_out_button"
-        android:layout_alignLeft="@id/zoom_in_button"
-        android:layout_marginTop="48dp"
-        android:layout_marginBottom="4dp"
         android:background="@drawable/map_button_rect"
         android:elevation="3dp"
-        android:src="@drawable/gps_not_fixed_icon" />
+        android:src="@drawable/gps_not_fixed_icon"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
 
     <TextView
         android:id="@+id/current_address"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBottom="@id/gps_button"
-        android:layout_alignParentLeft="true"
-        android:layout_marginLeft="4dp"
         android:background="@drawable/map_view_background"
         android:elevation="3dp"
         android:maxLines="1"
@@ -82,9 +83,11 @@
         android:paddingTop="4dp"
         android:paddingRight="6dp"
         android:paddingBottom="4dp"
-        android:text="address"
+        android:text="addressName"
         android:textColor="@color/black"
-        android:textSize="13sp" />
+        android:textSize="13sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent" />
 
 
-</RelativeLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

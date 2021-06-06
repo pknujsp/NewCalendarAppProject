@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 
 import android.view.KeyEvent;
@@ -24,10 +25,14 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.FragmentPlaceInfoWebBinding;
 import com.zerodsoft.scheduleweather.databinding.PlaceInfoDialogFragmentBinding;
 import com.zerodsoft.scheduleweather.databinding.PlaceInfoViewBinding;
+import com.zerodsoft.scheduleweather.event.foods.interfaces.OnSetViewVisibility;
+import com.zerodsoft.scheduleweather.event.foods.viewmodel.RestaurantSharedViewModel;
 
 public class PlaceInfoWebFragment extends Fragment {
 	private FragmentPlaceInfoWebBinding binding;
 	private String placeId;
+	private RestaurantSharedViewModel restaurantSharedViewModel;
+	private OnSetViewVisibility onSetViewVisibility;
 
 	private View.OnKeyListener onKeyListener = new View.OnKeyListener() {
 		@Override
@@ -49,6 +54,10 @@ public class PlaceInfoWebFragment extends Fragment {
 		super.onCreate(savedInstanceState);
 		Bundle bundle = getArguments();
 		placeId = bundle.getString("placeId");
+
+		restaurantSharedViewModel = new ViewModelProvider(requireActivity()).get(RestaurantSharedViewModel.class);
+		onSetViewVisibility = restaurantSharedViewModel.getOnSetViewVisibility();
+		onSetViewVisibility.setVisibility(OnSetViewVisibility.ViewType.HEADER, View.GONE);
 	}
 
 	@Nullable
@@ -68,6 +77,7 @@ public class PlaceInfoWebFragment extends Fragment {
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
+		onSetViewVisibility.setVisibility(OnSetViewVisibility.ViewType.HEADER, View.VISIBLE);
 	}
 
 	public boolean webCanGoBack() {

@@ -14,6 +14,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
@@ -254,16 +255,15 @@ public class NewInstanceMainFragment extends NaverMapFragment implements FoodMen
 		final int btnPadding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4f, getResources().getDisplayMetrics());
 		functionButton.setPadding(btnPadding, btnPadding, btnPadding, btnPadding);
 
-		RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-		layoutParams.addRule(RelativeLayout.ABOVE, binding.naverMapButtonsLayout.currentAddress.getId());
-		layoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+		ConstraintLayout.LayoutParams functionBtnLayoutParams = new ConstraintLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+				ViewGroup.LayoutParams.WRAP_CONTENT);
+		functionBtnLayoutParams.bottomToTop = binding.naverMapButtonsLayout.currentAddress.getId();
+		functionBtnLayoutParams.leftToLeft = binding.naverMapButtonsLayout.getRoot().getId();
 
-		final int marginBottom = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 48f, getResources().getDisplayMetrics());
-		final int marginLeft = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4f, getResources().getDisplayMetrics());
-		layoutParams.bottomMargin = marginBottom;
-		layoutParams.leftMargin = marginLeft;
+		final int marginBottom = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32f, getResources().getDisplayMetrics());
+		functionBtnLayoutParams.bottomMargin = marginBottom;
 
-		binding.naverMapButtonsLayout.getRoot().addView(functionButton, layoutParams);
+		binding.naverMapButtonsLayout.getRoot().addView(functionButton, functionBtnLayoutParams);
 		functionButton.setOnClickListener(new View.OnClickListener() {
 			boolean isExpanded = true;
 
@@ -289,9 +289,18 @@ public class NewInstanceMainFragment extends NaverMapFragment implements FoodMen
 				, functionItemsView.findViewById(R.id.function_weather)
 				, functionItemsView.findViewById(R.id.function_restaurant)};
 
-		RelativeLayout.LayoutParams functionItemsViewLayoutParams = (RelativeLayout.LayoutParams) functionItemsView.getLayoutParams();
-		functionItemsViewLayoutParams.addRule(RelativeLayout.ABOVE, functionButton.getId());
-		functionItemsViewLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+		ConstraintLayout.LayoutParams functionItemsViewLayoutParams = new ConstraintLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+				ViewGroup.LayoutParams.WRAP_CONTENT);
+		final int marginBottomFunctionBtnsLayout = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f,
+				getResources().getDisplayMetrics());
+
+		functionItemsViewLayoutParams.bottomMargin = marginBottomFunctionBtnsLayout;
+		functionItemsViewLayoutParams.bottomToTop = functionButton.getId();
+		functionItemsViewLayoutParams.leftToLeft = binding.naverMapButtonsLayout.getRoot().getId();
+				/*
+				    app:layout_constraintBottom_toTopOf="@+id/gps_button"
+        app:layout_constraintEnd_toEndOf="parent"
+				 */
 		binding.naverMapButtonsLayout.getRoot().addView(functionItemsView, functionItemsViewLayoutParams);
 
 		functionButtons[0].setOnClickListener(new View.OnClickListener() {

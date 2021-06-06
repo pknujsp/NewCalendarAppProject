@@ -50,7 +50,6 @@
                 layout="@layout/map_buttons_view"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_gravity="bottom"
                 android:layout_marginLeft="28dp"
                 android:layout_marginRight="28dp"
                 android:layout_marginBottom="32dp" />

@@ -28,9 +28,11 @@ import com.zerodsoft.scheduleweather.event.foods.RestaurantFragment;
 import com.zerodsoft.scheduleweather.event.foods.adapter.FoodCategoryAdapter;
 import com.zerodsoft.scheduleweather.event.foods.adapter.FoodCategoryFragmentListAdapter;
 import com.zerodsoft.scheduleweather.event.foods.dto.FoodCategoryItem;
+import com.zerodsoft.scheduleweather.event.foods.interfaces.OnSetViewVisibility;
 import com.zerodsoft.scheduleweather.event.foods.main.FoodsMenuListFragment;
 import com.zerodsoft.scheduleweather.event.foods.main.RestaurantListTabFragment;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.CustomFoodMenuViewModel;
+import com.zerodsoft.scheduleweather.event.foods.viewmodel.RestaurantSharedViewModel;
 import com.zerodsoft.scheduleweather.room.dto.CustomFoodMenuDTO;
 
 import org.jetbrains.annotations.NotNull;
@@ -43,6 +45,8 @@ import java.util.List;
 public class HeaderRestaurantListFragment extends Fragment {
 	private FragmentHeaderRestaurantListBinding binding;
 	private CustomFoodMenuViewModel customFoodCategoryViewModel;
+	private RestaurantSharedViewModel restaurantSharedViewModel;
+	private OnSetViewVisibility onSetViewVisibility;
 	private OnClickedListItem<FoodCategoryItem> onClickedListItem;
 	private ViewPager2 viewPager2;
 	private Integer firstSelectedFoodMenuIndex;
@@ -52,6 +56,10 @@ public class HeaderRestaurantListFragment extends Fragment {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		customFoodCategoryViewModel = new ViewModelProvider(requireActivity()).get(CustomFoodMenuViewModel.class);
+		restaurantSharedViewModel = new ViewModelProvider(requireActivity()).get(RestaurantSharedViewModel.class);
+
+		onSetViewVisibility = restaurantSharedViewModel.getOnSetViewVisibility();
+		onSetViewVisibility.setHeaderHeight((int) getResources().getDimension(R.dimen.restaurant_list_header_height));
 		Bundle bundle = getArguments();
 
 		onClickedListItem = (OnClickedListItem<FoodCategoryItem>) bundle.getSerializable("OnClickedListItem");
@@ -80,7 +88,7 @@ public class HeaderRestaurantListFragment extends Fragment {
 		binding.viewChangeBtn.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-	
+
 			}
 		});
 
@@ -132,6 +140,12 @@ public class HeaderRestaurantListFragment extends Fragment {
 			}
 		});
 
+	}
+
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		onSetViewVisibility.setHeaderHeight((int) getResources().getDimension(R.dimen.restaurant_header_height));
 	}
 
 	private void setupTabCustomView(List<FoodCategoryItem> foodCategoryItemList) {

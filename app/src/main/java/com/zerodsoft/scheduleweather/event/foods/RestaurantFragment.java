@@ -37,6 +37,7 @@ import com.zerodsoft.scheduleweather.event.foods.favorite.RestaurantFavoritesHos
 import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteLocationViewModel;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.FoodMenuChipsViewController;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.IGetEventValue;
+import com.zerodsoft.scheduleweather.event.foods.interfaces.OnSetViewVisibility;
 import com.zerodsoft.scheduleweather.event.foods.main.RestaurantMainHostFragment;
 import com.zerodsoft.scheduleweather.event.foods.search.RestaurantSearchHostFragment;
 import com.zerodsoft.scheduleweather.event.foods.settings.RestaurantSettingsHostFragment;
@@ -63,6 +64,8 @@ public class RestaurantFragment extends Fragment {
 	private final FoodMenuChipsViewController foodMenuChipsViewController;
 	private final IMapPoint iMapPoint;
 
+	private RestaurantSharedViewModel restaurantSharedViewModel;
+
 	private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
 		@Override
 		public void handleOnBackPressed() {
@@ -72,6 +75,8 @@ public class RestaurantFragment extends Fragment {
 			}
 		}
 	};
+
+	private OnSetViewVisibility onSetViewVisibility;
 
 	public RestaurantFragment(IMapPoint iMapPoint
 			, FoodMenuChipsViewController foodMenuChipsViewController
@@ -97,11 +102,12 @@ public class RestaurantFragment extends Fragment {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		RestaurantSharedViewModel restaurantSharedViewModel =
+		restaurantSharedViewModel =
 				new ViewModelProvider(requireActivity()).get(RestaurantSharedViewModel.class);
 		restaurantSharedViewModel.setFoodMenuChipsViewController(foodMenuChipsViewController);
 		restaurantSharedViewModel.setiMapPoint(iMapPoint);
 		restaurantSharedViewModel.setEventId(EVENT_ID);
+
 		new ViewModelProvider(requireActivity()).get(FoodCriteriaLocationInfoViewModel.class);
 		new ViewModelProvider(requireActivity()).get(FoodCriteriaLocationHistoryViewModel.class);
 		new ViewModelProvider(requireActivity()).get(CustomFoodMenuViewModel.class);
@@ -118,6 +124,10 @@ public class RestaurantFragment extends Fragment {
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
+
+		onSetViewVisibility = new OnSetViewVisibility(binding.headerFragmentContainer, binding.contentFragmentContainer,
+				binding.bottomNavigation);
+		restaurantSharedViewModel.setOnSetViewVisibility(onSetViewVisibility);
 
 		binding.bottomNavigation.setOnNavigationItemSelectedListener(onNavigationItemSelectedListener);
 		binding.bottomNavigation.setOnNavigationItemReselectedListener(new BottomNavigationView.OnNavigationItemReselectedListener() {
@@ -168,7 +178,6 @@ public class RestaurantFragment extends Fragment {
 
 			fragmentTransaction.setPrimaryNavigationFragment(destinationFragment).commitNow();
 			return true;
-
 		}
 	};
 

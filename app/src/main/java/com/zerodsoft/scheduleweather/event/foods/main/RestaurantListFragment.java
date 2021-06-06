@@ -195,7 +195,7 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 			String tag = getString(R.string.tag_place_info_web_fragment);
 
 			Fragment parentFragment = getParentFragment();
-			FragmentManager fragmentManager = parentFragment.getParentFragmentManager();
+			FragmentManager fragmentManager = parentFragment.getParentFragment().getParentFragmentManager();
 			// restaurant list tab fragment
 			fragmentManager.beginTransaction().hide(parentFragment)
 					.add(R.id.content_fragment_container, placeInfoWebFragment, tag)
