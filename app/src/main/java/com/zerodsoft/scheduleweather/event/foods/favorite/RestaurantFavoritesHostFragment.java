@@ -40,7 +40,7 @@ public class RestaurantFavoritesHostFragment extends Fragment {
 		getChildFragmentManager().beginTransaction()
 				.add(binding.fragmentContainer.getId(), new FavoriteRestaurantFragment()
 						, getString(R.string.tag_favorite_restaurant_fragment))
-				.commitNow();
+				.commit();
 	}
 
 	@Override

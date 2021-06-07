@@ -5,6 +5,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
@@ -27,6 +28,7 @@ import com.zerodsoft.scheduleweather.common.interfaces.OnProgressBarListener;
 import com.zerodsoft.scheduleweather.databinding.FragmentFavoriteRestaurantBinding;
 import com.zerodsoft.scheduleweather.event.foods.favorite.RestaurantFavoritesHostFragment;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedFavoriteButtonListener;
+import com.zerodsoft.scheduleweather.event.foods.interfaces.OnSetViewVisibility;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.RestaurantSharedViewModel;
 import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
 import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoWebDialogFragment;
@@ -40,6 +42,8 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.Pl
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceKakaoLocalResponse;
 import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
 import com.zerodsoft.scheduleweather.weather.common.ViewProgress;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -58,14 +62,38 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
 	private ArrayMap<String, List<PlaceDocuments>> restaurantListMap = new ArrayMap<>();
 	private List<FavoriteLocationDTO> favoriteLocationDTOList = new ArrayList<>();
 	private Map<String, FavoriteLocationDTO> favoriteRestaurantDTOMap = new HashMap<>();
+	private OnSetViewVisibility onSetViewVisibility;
 
 	private KakaoPlaceDownloader kakaoPlaceDownloader = new KakaoPlaceDownloader();
+
+	private final FragmentManager.FragmentLifecycleCallbacks fragmentLifecycleCallbacks =
+			new FragmentManager.FragmentLifecycleCallbacks() {
+				@Override
+				public void onFragmentCreated(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
+					super.onFragmentCreated(fm, f, savedInstanceState);
+					if (f instanceof PlaceInfoWebFragment) {
+						onSetViewVisibility.setVisibility(OnSetViewVisibility.ViewType.HEADER, View.GONE);
+					}
+				}
+
+				@Override
+				public void onFragmentDestroyed(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f) {
+					super.onFragmentDestroyed(fm, f);
+					if (f instanceof PlaceInfoWebFragment) {
+						onSetViewVisibility.setVisibility(OnSetViewVisibility.ViewType.HEADER, View.GONE);
+					}
+				}
+			};
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		getParentFragmentManager().registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, true);
+
 		favoriteRestaurantViewModel = new ViewModelProvider(requireActivity()).get(FavoriteLocationViewModel.class);
 		restaurantSharedViewModel = new ViewModelProvider(requireActivity()).get(RestaurantSharedViewModel.class);
+		onSetViewVisibility = restaurantSharedViewModel.getOnSetViewVisibility();
+		onSetViewVisibility.setVisibility(OnSetViewVisibility.ViewType.HEADER, View.GONE);
 
 		favoriteRestaurantViewModel.getAddedFavoriteLocationMutableLiveData().observe(this, new Observer<FavoriteLocationDTO>() {
 			@Override
@@ -132,6 +160,12 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
 		binding.customProgressView.onStartedProcessingData();
 
 		downloadPlaceDocuments();
+	}
+
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		getParentFragmentManager().unregisterFragmentLifecycleCallbacks(fragmentLifecycleCallbacks);
 	}
 
 	private void downloadPlaceDocuments() {
@@ -249,7 +283,7 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
 			bundle.putString("placeId", ((PlaceDocuments) e).getId());
 			placeInfoWebFragment.setArguments(bundle);
 
-			String tag = "favoritePlaceInfoWebFragment";
+			String tag = getString(R.string.tag_place_info_web_fragment);
 
 			getParentFragmentManager().beginTransaction().hide(this)
 					.add(R.id.fragment_container, placeInfoWebFragment, tag)

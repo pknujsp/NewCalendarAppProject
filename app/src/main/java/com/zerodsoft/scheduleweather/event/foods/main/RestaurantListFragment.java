@@ -30,6 +30,7 @@ import com.zerodsoft.scheduleweather.event.foods.adapter.RestaurantListAdapter;
 import com.zerodsoft.scheduleweather.event.foods.favorite.RestaurantFavoritesHostFragment;
 import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteLocationViewModel;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedFavoriteButtonListener;
+import com.zerodsoft.scheduleweather.event.foods.interfaces.OnSetViewVisibility;
 import com.zerodsoft.scheduleweather.event.foods.share.CriteriaLocationCloud;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.RestaurantSharedViewModel;
 import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
@@ -50,6 +51,7 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 	protected RecyclerView.AdapterDataObserver adapterDataObserver;
 	protected FavoriteLocationViewModel favoriteRestaurantViewModel;
 	protected RestaurantSharedViewModel sharedViewModel;
+	protected OnSetViewVisibility onSetViewVisibility;
 
 	public void setAdapterDataObserver(RecyclerView.AdapterDataObserver adapterDataObserver) {
 		this.adapterDataObserver = adapterDataObserver;
@@ -58,12 +60,14 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
+
 		Bundle bundle = getArguments();
 		query = bundle.getString("query");
 
 		favoriteRestaurantViewModel = new ViewModelProvider(requireActivity()).get(FavoriteLocationViewModel.class);
 		sharedViewModel = new ViewModelProvider(requireActivity()).get(RestaurantSharedViewModel.class);
-
+		onSetViewVisibility = sharedViewModel.getOnSetViewVisibility();
 
 		favoriteRestaurantViewModel.getAddedFavoriteLocationMutableLiveData().observe(this,
 				new Observer<FavoriteLocationDTO>() {
@@ -195,10 +199,11 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 			String tag = getString(R.string.tag_place_info_web_fragment);
 
 			Fragment parentFragment = getParentFragment();
-			FragmentManager fragmentManager = parentFragment.getParentFragment().getParentFragmentManager();
+			FragmentManager fragmentManager = parentFragment.getParentFragmentManager();
 			// restaurant list tab fragment
+
 			fragmentManager.beginTransaction().hide(parentFragment)
-					.add(R.id.content_fragment_container, placeInfoWebFragment, tag)
+					.add(R.id.fragment_container, placeInfoWebFragment, tag)
 					.addToBackStack(tag).commit();
 		} else {
 

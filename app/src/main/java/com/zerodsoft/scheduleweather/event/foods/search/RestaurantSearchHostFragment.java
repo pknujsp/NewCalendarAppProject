@@ -5,6 +5,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.navigation.fragment.NavHostFragment;
 
 import android.view.LayoutInflater;
@@ -43,5 +44,21 @@ public class RestaurantSearchHostFragment extends Fragment {
 	@Override
 	public void onHiddenChanged(boolean hidden) {
 		super.onHiddenChanged(hidden);
+		if (!hidden) {
+			FragmentManager fragmentManager = getChildFragmentManager();
+			if (fragmentManager.getBackStackEntryCount() > 0) {
+				FragmentManager.BackStackEntry backStackEntry =
+						fragmentManager.getBackStackEntryAt(fragmentManager.getBackStackEntryCount() - 1);
+
+				String topTag = backStackEntry.getName();
+
+				if (topTag.equals(getString(R.string.tag_search_restaurant_fragment))) {
+
+				} else if (topTag.equals(getString(R.string.tag_search_result_restaurant_fragment))) {
+
+				}
+
+			}
+		}
 	}
 }

@@ -35,7 +35,7 @@ public class RestaurantMainHostFragment extends Fragment {
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 		getChildFragmentManager().beginTransaction().add(binding.fragmentContainer.getId(), new FoodsMenuListFragment(),
-				getString(R.string.tag_food_menus_fragment)).commitNow();
+				getString(R.string.tag_food_menus_fragment)).commit();
 	}
 
 	@Override

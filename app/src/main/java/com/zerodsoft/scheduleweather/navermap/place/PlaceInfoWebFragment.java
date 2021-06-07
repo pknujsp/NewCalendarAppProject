@@ -31,8 +31,6 @@ import com.zerodsoft.scheduleweather.event.foods.viewmodel.RestaurantSharedViewM
 public class PlaceInfoWebFragment extends Fragment {
 	private FragmentPlaceInfoWebBinding binding;
 	private String placeId;
-	private RestaurantSharedViewModel restaurantSharedViewModel;
-	private OnSetViewVisibility onSetViewVisibility;
 
 	private View.OnKeyListener onKeyListener = new View.OnKeyListener() {
 		@Override
@@ -54,10 +52,6 @@ public class PlaceInfoWebFragment extends Fragment {
 		super.onCreate(savedInstanceState);
 		Bundle bundle = getArguments();
 		placeId = bundle.getString("placeId");
-
-		restaurantSharedViewModel = new ViewModelProvider(requireActivity()).get(RestaurantSharedViewModel.class);
-		onSetViewVisibility = restaurantSharedViewModel.getOnSetViewVisibility();
-		onSetViewVisibility.setVisibility(OnSetViewVisibility.ViewType.HEADER, View.GONE);
 	}
 
 	@Nullable
@@ -77,7 +71,6 @@ public class PlaceInfoWebFragment extends Fragment {
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		onSetViewVisibility.setVisibility(OnSetViewVisibility.ViewType.HEADER, View.VISIBLE);
 	}
 
 	public boolean webCanGoBack() {

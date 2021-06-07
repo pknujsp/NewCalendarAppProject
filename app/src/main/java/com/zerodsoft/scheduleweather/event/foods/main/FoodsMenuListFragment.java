@@ -65,6 +65,8 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 		eventId = sharedViewModel.getEventId();
 		iMapPoint = sharedViewModel.getiMapPoint();
 
+		onSetViewVisibility.setVisibility(OnSetViewVisibility.ViewType.HEADER, View.VISIBLE);
+
 		headerCriteriaLocationFragment = new HeaderCriteriaLocationFragment();
 		headerCriteriaLocationFragment.setFoodCriteriaLocationCallback(new DataProcessingCallback<LocationDTO>() {
 			@Override
@@ -105,7 +107,7 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 		super.onViewCreated(view, savedInstanceState);
 
 		getParentFragment().getParentFragmentManager().beginTransaction()
-				.add(R.id.header_fragment_container, headerCriteriaLocationFragment).commit();
+				.replace(R.id.header_fragment_container, headerCriteriaLocationFragment, getString(R.string.tag_restaurant_header_criteria_location_fragment)).commit();
 
 		GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(), COLUMN_COUNT);
 		binding.categoryGridview.setLayoutManager(gridLayoutManager);
@@ -121,7 +123,6 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 	@Override
 	public void onResume() {
 		super.onResume();
-
 	}
 
 	@Override
@@ -185,7 +186,7 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 			CustomFoodMenuSettingsFragment customFoodMenuSettingsFragment = new CustomFoodMenuSettingsFragment();
 			tag = getString(R.string.tag_custom_food_menu_settings_fragment);
 
-			fragmentTransaction.add(R.id.content_fragment_container, customFoodMenuSettingsFragment, tag);
+			fragmentTransaction.add(R.id.fragment_container, customFoodMenuSettingsFragment, tag);
 		} else {
 			tag = getString(R.string.tag_restaurant_list_tab_fragment);
 
@@ -194,7 +195,10 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 			bundle.putString("foodMenuName", e.getCategoryName());
 			restaurantListTabFragment.setArguments(bundle);
 
-			fragmentTransaction.add(R.id.content_fragment_container, restaurantListTabFragment, tag);
+			fragmentTransaction.add(R.id.fragment_container, restaurantListTabFragment, tag);
+
+			getParentFragment().getParentFragmentManager().beginTransaction()
+					.hide(headerCriteriaLocationFragment).commit();
 		}
 
 		fragmentTransaction.addToBackStack(tag).commit();

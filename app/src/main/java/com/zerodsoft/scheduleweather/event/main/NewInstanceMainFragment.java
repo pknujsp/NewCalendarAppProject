@@ -95,7 +95,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements FoodMen
 
 	private ContentValues instance;
 	private LocationDTO selectedLocationDtoInEvent;
-	private MaterialCardView[] functionButtons;
+	private EventFunctionItemView[] functionButtons;
 	private ImageView functionButton;
 	private Marker selectedLocationInEventMarker;
 	private InfoWindow selectedLocationInEventInfoWindow;
@@ -285,7 +285,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements FoodMen
 		functionItemsView = (LinearLayout) getLayoutInflater().inflate(R.layout.event_function_items_view,
 				binding.naverMapButtonsLayout.getRoot(), false);
 
-		functionButtons = new MaterialCardView[]{functionItemsView.findViewById(R.id.function_event_info)
+		functionButtons = new EventFunctionItemView[]{functionItemsView.findViewById(R.id.function_event_info)
 				, functionItemsView.findViewById(R.id.function_weather)
 				, functionItemsView.findViewById(R.id.function_restaurant)};
 

@@ -25,6 +25,7 @@ public class OnSetViewVisibility {
 		switch (viewType) {
 			case HEADER:
 				header.setVisibility(visibility);
+				break;
 			case CONTENT:
 				content.setVisibility(visibility);
 				break;

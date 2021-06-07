@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelStoreOwner;
 import androidx.navigation.fragment.NavHostFragment;
@@ -18,8 +19,11 @@ import android.widget.Toast;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
+import com.zerodsoft.scheduleweather.common.interfaces.OnHiddenFragmentListener;
 import com.zerodsoft.scheduleweather.databinding.FragmentSearchRestaurantBinding;
+import com.zerodsoft.scheduleweather.event.foods.header.HeaderCriteriaLocationFragment;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedRestaurantItem;
+import com.zerodsoft.scheduleweather.event.foods.interfaces.OnSetViewVisibility;
 import com.zerodsoft.scheduleweather.event.foods.search.searchresult.fragment.SearchResultRestaurantFragment;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.RestaurantSharedViewModel;
 import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
@@ -27,18 +31,47 @@ import com.zerodsoft.scheduleweather.navermap.viewmodel.SearchHistoryViewModel;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.SearchHistoryDTO;
 
+import org.jetbrains.annotations.NotNull;
+
 public class SearchRestaurantFragment extends Fragment implements OnClickedListItem<SearchHistoryDTO>,
-		OnClickedRestaurantItem {
+		OnClickedRestaurantItem, OnHiddenFragmentListener {
 	public static final String TAG = "SearchRestaurantFragment";
 	private FragmentSearchRestaurantBinding binding;
 	private RestaurantSharedViewModel restaurantSharedViewModel;
 	private FoodRestaurantSearchHistoryFragment foodRestaurantSearchHistoryFragment;
 	private SearchHistoryViewModel searchHistoryViewModel;
+	private OnSetViewVisibility onSetViewVisibility;
+
+	private HeaderCriteriaLocationFragment headerCriteriaLocationFragment;
+
+	private final FragmentManager.FragmentLifecycleCallbacks fragmentLifecycleCallbacks =
+			new FragmentManager.FragmentLifecycleCallbacks() {
+				@Override
+				public void onFragmentCreated(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
+					super.onFragmentCreated(fm, f, savedInstanceState);
+					if (f instanceof SearchResultRestaurantFragment) {
+						onSetViewVisibility.setVisibility(OnSetViewVisibility.ViewType.HEADER, View.GONE);
+					}
+				}
+
+				@Override
+				public void onFragmentDestroyed(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f) {
+					super.onFragmentDestroyed(fm, f);
+					if (f instanceof SearchResultRestaurantFragment) {
+						onSetViewVisibility.setVisibility(OnSetViewVisibility.ViewType.HEADER, View.VISIBLE);
+					}
+				}
+			};
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		getParentFragmentManager().registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, true);
 		restaurantSharedViewModel = new ViewModelProvider(requireActivity()).get(RestaurantSharedViewModel.class);
+		searchHistoryViewModel = new ViewModelProvider(this).get(SearchHistoryViewModel.class);
+
+		onSetViewVisibility = restaurantSharedViewModel.getOnSetViewVisibility();
+		onSetViewVisibility.setVisibility(OnSetViewVisibility.ViewType.HEADER, View.VISIBLE);
 	}
 
 	@Override
@@ -51,12 +84,14 @@ public class SearchRestaurantFragment extends Fragment implements OnClickedListI
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
-		searchHistoryViewModel = new ViewModelProvider(this).get(SearchHistoryViewModel.class);
-
 		//검색 기록 프래그먼트 표시
 		foodRestaurantSearchHistoryFragment = new FoodRestaurantSearchHistoryFragment(this);
 		getChildFragmentManager().beginTransaction().add(binding.fragmentContainer.getId(),
-				foodRestaurantSearchHistoryFragment, FoodRestaurantSearchHistoryFragment.TAG).commitNow();
+				foodRestaurantSearchHistoryFragment, FoodRestaurantSearchHistoryFragment.TAG).commit();
+
+		headerCriteriaLocationFragment = new HeaderCriteriaLocationFragment();
+		getParentFragment().getParentFragmentManager().beginTransaction()
+				.replace(R.id.header_fragment_container, headerCriteriaLocationFragment).commit();
 
 		binding.searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
 			@Override
@@ -96,6 +131,11 @@ public class SearchRestaurantFragment extends Fragment implements OnClickedListI
 
 	}
 
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		getParentFragmentManager().unregisterFragmentLifecycleCallbacks(fragmentLifecycleCallbacks);
+	}
 
 	private void search(String query) {
 		SearchResultRestaurantFragment searchResultRestaurantFragment = new SearchResultRestaurantFragment();
@@ -124,5 +164,10 @@ public class SearchRestaurantFragment extends Fragment implements OnClickedListI
 	@Override
 	public void onClickedRestaurantItem(PlaceDocuments placeDocuments) {
 
+	}
+
+	@Override
+	public void onHiddenChangedFragment(boolean hidden) {
+		
 	}
 }

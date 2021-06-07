@@ -8,11 +8,6 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <androidx.fragment.app.FragmentContainerView
-            android:id="@+id/header_fragment_container"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/restaurant_list_header_height" />
-
         <androidx.viewpager2.widget.ViewPager2
             android:id="@+id/viewpager"
             android:layout_width="match_parent"
