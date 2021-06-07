@@ -7,7 +7,7 @@ public interface IOnSetView {
 		BOTTOM_NAV
 	}
 
-	void setVisibility(ViewType viewType, int visibility);
+	void setFragmentContainerVisibility(ViewType viewType, int visibility);
 
-	void setHeaderHeight(int heightDP);
+	void setFragmentContainerHeight(int height);
 }

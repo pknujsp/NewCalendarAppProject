@@ -43,7 +43,7 @@ public class CustomFoodMenuSettingsFragment extends Fragment implements OnClicke
 		restaurantSharedViewModel = new ViewModelProvider(requireActivity()).get(RestaurantSharedViewModel.class);
 
 		iOnSetView = (IOnSetView) getParentFragment();
-		iOnSetView.setVisibility(IOnSetView.ViewType.HEADER, View.GONE);
+		iOnSetView.setFragmentContainerVisibility(IOnSetView.ViewType.HEADER, View.GONE);
 
 	}
 
@@ -193,7 +193,7 @@ public class CustomFoodMenuSettingsFragment extends Fragment implements OnClicke
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		iOnSetView.setVisibility(IOnSetView.ViewType.HEADER, View.VISIBLE);
+		iOnSetView.setFragmentContainerVisibility(IOnSetView.ViewType.HEADER, View.VISIBLE);
 	}
 
 	public boolean isEdited() {

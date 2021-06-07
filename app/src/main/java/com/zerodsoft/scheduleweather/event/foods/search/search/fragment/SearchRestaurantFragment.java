@@ -47,7 +47,7 @@ public class SearchRestaurantFragment extends Fragment implements OnClickedListI
 				public void onFragmentCreated(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
 					super.onFragmentCreated(fm, f, savedInstanceState);
 					if (f instanceof SearchResultRestaurantFragment) {
-						iOnSetView.setVisibility(IOnSetView.ViewType.HEADER, View.GONE);
+						iOnSetView.setFragmentContainerVisibility(IOnSetView.ViewType.HEADER, View.GONE);
 					}
 				}
 
@@ -55,7 +55,7 @@ public class SearchRestaurantFragment extends Fragment implements OnClickedListI
 				public void onFragmentDestroyed(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f) {
 					super.onFragmentDestroyed(fm, f);
 					if (f instanceof SearchResultRestaurantFragment) {
-						iOnSetView.setVisibility(IOnSetView.ViewType.HEADER, View.VISIBLE);
+						iOnSetView.setFragmentContainerVisibility(IOnSetView.ViewType.HEADER, View.VISIBLE);
 					}
 				}
 			};
@@ -68,7 +68,7 @@ public class SearchRestaurantFragment extends Fragment implements OnClickedListI
 		searchHistoryViewModel = new ViewModelProvider(this).get(SearchHistoryViewModel.class);
 
 		iOnSetView = (IOnSetView) getParentFragment();
-		iOnSetView.setVisibility(IOnSetView.ViewType.HEADER, View.VISIBLE);
+		iOnSetView.setFragmentContainerVisibility(IOnSetView.ViewType.HEADER, View.VISIBLE);
 	}
 
 	@Override

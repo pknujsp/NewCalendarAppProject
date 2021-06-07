@@ -64,7 +64,7 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
 				public void onFragmentCreated(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
 					super.onFragmentCreated(fm, f, savedInstanceState);
 					if (f instanceof PlaceInfoWebFragment) {
-						iOnSetView.setVisibility(IOnSetView.ViewType.HEADER, View.GONE);
+						iOnSetView.setFragmentContainerVisibility(IOnSetView.ViewType.HEADER, View.GONE);
 					}
 				}
 
@@ -72,7 +72,7 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
 				public void onFragmentDestroyed(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f) {
 					super.onFragmentDestroyed(fm, f);
 					if (f instanceof PlaceInfoWebFragment) {
-						iOnSetView.setVisibility(IOnSetView.ViewType.HEADER, View.GONE);
+						iOnSetView.setFragmentContainerVisibility(IOnSetView.ViewType.HEADER, View.GONE);
 					}
 				}
 			};
@@ -85,7 +85,7 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
 		favoriteRestaurantViewModel = new ViewModelProvider(requireActivity()).get(FavoriteLocationViewModel.class);
 		restaurantSharedViewModel = new ViewModelProvider(requireActivity()).get(RestaurantSharedViewModel.class);
 		iOnSetView = (IOnSetView) getParentFragment();
-		iOnSetView.setVisibility(IOnSetView.ViewType.HEADER, View.GONE);
+		iOnSetView.setFragmentContainerVisibility(IOnSetView.ViewType.HEADER, View.GONE);
 
 		favoriteRestaurantViewModel.getAddedFavoriteLocationMutableLiveData().observe(this, new Observer<FavoriteLocationDTO>() {
 			@Override

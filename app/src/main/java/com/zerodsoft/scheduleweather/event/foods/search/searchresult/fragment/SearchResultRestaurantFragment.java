@@ -34,7 +34,7 @@ public class SearchResultRestaurantFragment extends Fragment {
 				public void onFragmentCreated(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
 					super.onFragmentCreated(fm, f, savedInstanceState);
 					if (f instanceof PlaceInfoWebFragment) {
-						iOnSetView.setVisibility(IOnSetView.ViewType.HEADER, View.GONE);
+						iOnSetView.setFragmentContainerVisibility(IOnSetView.ViewType.HEADER, View.GONE);
 					}
 				}
 
@@ -42,7 +42,7 @@ public class SearchResultRestaurantFragment extends Fragment {
 				public void onFragmentDestroyed(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f) {
 					super.onFragmentDestroyed(fm, f);
 					if (f instanceof PlaceInfoWebFragment) {
-						iOnSetView.setVisibility(IOnSetView.ViewType.HEADER, View.GONE);
+						iOnSetView.setFragmentContainerVisibility(IOnSetView.ViewType.HEADER, View.GONE);
 					}
 				}
 			};
@@ -58,7 +58,7 @@ public class SearchResultRestaurantFragment extends Fragment {
 
 		restaurantSharedViewModel = new ViewModelProvider(requireActivity()).get(RestaurantSharedViewModel.class);
 		iOnSetView = (IOnSetView) getParentFragment();
-		iOnSetView.setVisibility(IOnSetView.ViewType.HEADER, View.GONE);
+		iOnSetView.setFragmentContainerVisibility(IOnSetView.ViewType.HEADER, View.GONE);
 	}
 
 	@Override

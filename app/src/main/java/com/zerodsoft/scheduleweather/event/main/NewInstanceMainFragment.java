@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 
 import androidx.activity.result.ActivityResult;
@@ -18,13 +17,13 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentContainerView;
+import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.os.RemoteException;
 import android.provider.CalendarContract;
-import android.service.carrier.CarrierMessagingService;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.util.Xml;
@@ -36,11 +35,9 @@ import android.widget.CompoundButton;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
-import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.naver.maps.geometry.LatLng;
@@ -55,11 +52,10 @@ import com.zerodsoft.scheduleweather.activity.placecategory.activity.PlaceCatego
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
-import com.zerodsoft.scheduleweather.common.interfaces.OnHiddenFragmentListener;
 import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.event.fragments.EventFragment;
 import com.zerodsoft.scheduleweather.event.foods.RestaurantFragment;
-import com.zerodsoft.scheduleweather.event.foods.interfaces.FoodMenuChipsViewController;
+import com.zerodsoft.scheduleweather.event.foods.interfaces.ISetFoodMenuPoiItems;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PlaceItemsGetter;
 import com.zerodsoft.scheduleweather.event.places.map.PlacesOfSelectedCategoriesFragment;
 import com.zerodsoft.scheduleweather.event.weather.fragment.WeatherMainFragment;
@@ -73,13 +69,14 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.Pl
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 
+import org.jetbrains.annotations.NotNull;
 import org.xmlpull.v1.XmlPullParser;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class NewInstanceMainFragment extends NaverMapFragment implements FoodMenuChipsViewController,
+public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoodMenuPoiItems,
 		PlacesOfSelectedCategoriesFragment.PlaceCategoryChipsViewController, DialogInterface.OnDismissListener
 		, IRefreshView {
 	public static final String TAG = "NewInstanceMainFragment";
@@ -100,12 +97,8 @@ public class NewInstanceMainFragment extends NaverMapFragment implements FoodMen
 	private Marker selectedLocationInEventMarker;
 	private InfoWindow selectedLocationInEventInfoWindow;
 
-	private ChipGroup foodMenuChipGroup;
-	private Map<String, Chip> foodMenuChipMap = new HashMap<>();
-	private Chip foodMenuListChip;
-	private String selectedFoodMenuName;
 	private RestaurantsGetter restaurantItemGetter;
-	private OnExtraListDataListener<String> restaurantOnExtraListDataListener;
+	private OnExtraListDataListener<Integer> restaurantOnExtraListDataListener;
 
 	private PlaceItemsGetter placeItemsGetter;
 
@@ -118,11 +111,29 @@ public class NewInstanceMainFragment extends NaverMapFragment implements FoodMen
 	private LinearLayout chipsLayout;
 	private ViewGroup functionItemsView;
 
-	@Override
-	public void onAttach(@NonNull Context context) {
-		super.onAttach(context);
-		addOnBackPressedCallback();
-	}
+	private FragmentManager.FragmentLifecycleCallbacks fragmentLifecycleCallbacks = new FragmentManager.FragmentLifecycleCallbacks() {
+		@Override
+		public void onFragmentCreated(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
+			super.onFragmentCreated(fm, f, savedInstanceState);
+			if (f instanceof RestaurantFragment) {
+				binding.headerLayout.setVisibility(View.GONE);
+				binding.naverMapButtonsLayout.buildingButton.setVisibility(View.GONE);
+				binding.naverMapButtonsLayout.favoriteLocationsButton.setVisibility(View.GONE);
+				functionButton.setVisibility(View.GONE);
+			}
+		}
+
+		@Override
+		public void onFragmentDestroyed(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f) {
+			super.onFragmentDestroyed(fm, f);
+			if (f instanceof RestaurantFragment) {
+				binding.headerLayout.setVisibility(View.VISIBLE);
+				binding.naverMapButtonsLayout.buildingButton.setVisibility(View.VISIBLE);
+				binding.naverMapButtonsLayout.favoriteLocationsButton.setVisibility(View.VISIBLE);
+				functionButton.setVisibility(View.VISIBLE);
+			}
+		}
+	};
 
 	public NewInstanceMainFragment(int CALENDAR_ID, long EVENT_ID, long INSTANCE_ID, long ORIGINAL_BEGIN, long ORIGINAL_END) {
 		this.CALENDAR_ID = CALENDAR_ID;
@@ -132,16 +143,31 @@ public class NewInstanceMainFragment extends NaverMapFragment implements FoodMen
 		this.ORIGINAL_END = ORIGINAL_END;
 	}
 
+
+	@Override
+	public void onAttach(@NonNull Context context) {
+		super.onAttach(context);
+		addOnBackPressedCallback();
+	}
+
+
 	@Override
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		calendarViewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
+		getChildFragmentManager().registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, true);
 	}
 
 	@Override
 	public void onDetach() {
 		super.onDetach();
 		removeOnBackPressedCallback();
+	}
+
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		getChildFragmentManager().unregisterFragmentLifecycleCallbacks(fragmentLifecycleCallbacks);
 	}
 
 	@Override
@@ -698,144 +724,47 @@ public class NewInstanceMainFragment extends NaverMapFragment implements FoodMen
 	}
 
 	@Override
-	public void createRestaurantListView(List<String> foodMenuList, RestaurantsGetter restaurantsGetter, OnExtraListDataListener<String> onExtraListDataListener, OnHiddenFragmentListener onHiddenFragmentListener) {
+	public void createRestaurantPoiItems(RestaurantsGetter restaurantsGetter,
+	                                     OnExtraListDataListener<Integer> onExtraListDataListener) {
 		this.restaurantItemGetter = restaurantsGetter;
 		this.restaurantOnExtraListDataListener = onExtraListDataListener;
-		hiddenFragmentListenerMap.remove(BottomSheetType.RESTAURANT);
-		hiddenFragmentListenerMap.put(BottomSheetType.RESTAURANT, onHiddenFragmentListener);
-
-		createFoodMenuChips();
-		addFoodMenuListChip();
-		setFoodMenuChips(foodMenuList);
 	}
 
 	@Override
-	public void removeRestaurantListView() {
-		selectedFoodMenuName = null;
-		foodMenuChipMap.clear();
-
-		HorizontalScrollView scrollView = chipsLayout.findViewById(R.id.food_menu_chips_scroll_layout);
-		foodMenuChipGroup.removeAllViews();
-		scrollView.removeAllViews();
-		chipsLayout.removeView(scrollView);
-
-		foodMenuChipGroup = null;
-		foodMenuListChip = null;
+	public void removeRestaurantPoiItems() {
+		restaurantItemGetter = null;
+		restaurantOnExtraListDataListener = null;
+		viewPagerAdapterMap.remove(MarkerType.RESTAURANT);
 		removePoiItems(MarkerType.RESTAURANT);
 	}
 
 	@Override
-	public void createFoodMenuChips() {
-		//-----------chip group
-		HorizontalScrollView chipScrollView = new HorizontalScrollView(getContext());
-		chipScrollView.setId(R.id.food_menu_chips_scroll_layout);
-		chipScrollView.setHorizontalScrollBarEnabled(false);
+	public void onChangeFoodMenu() {
+		LocationItemViewPagerAdapter locationItemViewPagerAdapter = new LocationItemViewPagerAdapter(getContext(), MarkerType.RESTAURANT);
+		setLocationItemViewPagerAdapter(locationItemViewPagerAdapter, MarkerType.RESTAURANT);
 
-		LinearLayout.LayoutParams chipLayoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-		chipsLayout.addView(chipScrollView, chipLayoutParams);
+		setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_COLLAPSED);
 
-		foodMenuChipGroup = new ChipGroup(getContext(), null, R.style.Widget_MaterialComponents_ChipGroup);
-		foodMenuChipGroup.setSingleSelection(true);
-		foodMenuChipGroup.setSingleLine(true);
-		foodMenuChipGroup.setId(R.id.chip_group);
-		foodMenuChipGroup.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-
-		chipScrollView.addView(foodMenuChipGroup);
-	}
-
-	@Override
-	public void setFoodMenuChips(List<String> foodMenuList) {
-		if (foodMenuChipGroup.getChildCount() >= 2) {
-			foodMenuChipGroup.removeViews(1, foodMenuChipGroup.getChildCount() - 1);
-		}
-		foodMenuChipMap.clear();
-
-		//카테고리를 chip으로 표시
-		int index = 0;
-
-		for (String menu : foodMenuList) {
-			Chip chip = new Chip(getContext(), null, R.style.Widget_MaterialComponents_Chip_Filter);
-			chip.setChecked(false);
-			chip.setText(menu);
-			chip.setClickable(true);
-			chip.setCheckable(true);
-			chip.setVisibility(View.VISIBLE);
-			chip.setOnCheckedChangeListener(foodMenuOnCheckedChangeListener);
-
-			final FoodChipViewHolder foodChipViewHolder = new FoodChipViewHolder(menu, index++);
-			chip.setTag(foodChipViewHolder);
-
-			foodMenuChipMap.put(menu, chip);
-			foodMenuChipGroup.addView(chip, new ChipGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-		}
-	}
-
-
-	private final CompoundButton.OnCheckedChangeListener foodMenuOnCheckedChangeListener = new CompoundButton.OnCheckedChangeListener() {
-		@Override
-		public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-            /*
-           - chip이 이미 선택되어 있는 경우
-           같은 chip인 경우 : 선택해제, poiitem모두 삭제하고 bottomsheet를 숨긴다
-           다른 chip인 경우 : 새로운 chip이 선택되고 난 뒤에 기존 chip이 선택해제 된다
-           poiitem이 선택된 경우 해제하고, poiitem을 새로 생성한 뒤 poiitem전체가 보이도록 설정
-             */
-			if (isChecked) {
-				LocationItemViewPagerAdapter locationItemViewPagerAdapter = new LocationItemViewPagerAdapter(getContext(), MarkerType.RESTAURANT);
-				setLocationItemViewPagerAdapter(locationItemViewPagerAdapter, MarkerType.RESTAURANT);
-
-				selectedFoodMenuName = ((FoodChipViewHolder) compoundButton.getTag()).foodMenuName;
-				restaurantItemGetter.getRestaurants(selectedFoodMenuName, new CarrierMessagingService.ResultCallback<List<PlaceDocuments>>() {
+		restaurantItemGetter.getRestaurants(new DbQueryCallback<List<PlaceDocuments>>() {
+			@Override
+			public void onResultSuccessful(List<PlaceDocuments> placeDocuments) {
+				requireActivity().runOnUiThread(new Runnable() {
 					@Override
-					public void onReceiveResult(@NonNull List<PlaceDocuments> placeDocuments) throws RemoteException {
-						requireActivity().runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								createPoiItems(placeDocuments, MarkerType.RESTAURANT);
-								showPoiItems(MarkerType.RESTAURANT);
-							}
-						});
-
+					public void run() {
+						createPoiItems(placeDocuments, MarkerType.RESTAURANT);
+						showPoiItems(MarkerType.RESTAURANT);
 					}
 				});
-			} else if (foodMenuChipGroup.getCheckedChipIds().isEmpty()) {
-				removePoiItems(MarkerType.RESTAURANT);
-				selectedFoodMenuName = null;
-				viewPagerAdapterMap.remove(MarkerType.RESTAURANT);
-			}
-			setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_COLLAPSED);
-		}
-	};
 
-	@Override
-	public void addFoodMenuListChip() {
-		foodMenuListChip = new Chip(getContext());
-		foodMenuListChip.setChecked(false);
-		foodMenuListChip.setText(R.string.open_list);
-		foodMenuListChip.setClickable(true);
-		foodMenuListChip.setCheckable(false);
-		foodMenuListChip.setTextColor(Color.BLACK);
-		foodMenuListChip.setOnClickListener(new View.OnClickListener() {
+			}
+
 			@Override
-			public void onClick(View view) {
-				hiddenFragmentListenerMap.get(BottomSheetType.RESTAURANT).onHiddenChangedFragment(false);
-				setStateOfBottomSheet(BottomSheetType.RESTAURANT, BottomSheetBehavior.STATE_EXPANDED);
+			public void onResultNoData() {
+				
 			}
 		});
-
-		foodMenuChipGroup.addView(foodMenuListChip, 0);
 	}
 
-	/**
-	 * 음식점 리스트 탭에서 지도 열기 클릭시에 동작
-	 *
-	 * @param foodMenuName
-	 */
-	@Override
-	public void setCurrentFoodMenuName(String foodMenuName) {
-		this.selectedFoodMenuName = foodMenuName;
-		foodMenuChipMap.get(selectedFoodMenuName).setChecked(true);
-	}
 
 	@Override
 	public void onPageSelectedLocationItemBottomSheetViewPager(int position, MarkerType markerType) {
@@ -860,25 +789,27 @@ public class NewInstanceMainFragment extends NaverMapFragment implements FoodMen
 			}
 
 			case RESTAURANT: {
-				if (foodMenuChipGroup.getCheckedChipIds().size() >= 1) {
-					restaurantOnExtraListDataListener.loadExtraListData(selectedFoodMenuName, new RecyclerView.AdapterDataObserver() {
-						@Override
-						public void onItemRangeInserted(int positionStart, int itemCount) {
-							restaurantItemGetter.getRestaurants(selectedFoodMenuName, new CarrierMessagingService.ResultCallback<List<PlaceDocuments>>() {
-								@Override
-								public void onReceiveResult(@NonNull List<PlaceDocuments> placeDocuments) throws RemoteException {
-									requireActivity().runOnUiThread(new Runnable() {
-										@Override
-										public void run() {
-											addPoiItems(placeDocuments, markerType);
-										}
-									});
-								}
-							});
-						}
-					});
-					return;
-				}
+				restaurantOnExtraListDataListener.loadExtraListData(null, new RecyclerView.AdapterDataObserver() {
+					@Override
+					public void onItemRangeInserted(int positionStart, int itemCount) {
+						restaurantItemGetter.getRestaurants(new DbQueryCallback<List<PlaceDocuments>>() {
+							@Override
+							public void onResultSuccessful(List<PlaceDocuments> placeDocuments) {
+								requireActivity().runOnUiThread(new Runnable() {
+									@Override
+									public void run() {
+										addPoiItems(placeDocuments, markerType);
+									}
+								});
+							}
+
+							@Override
+							public void onResultNoData() {
+
+							}
+						});
+					}
+				});
 				break;
 			}
 		}
@@ -922,6 +853,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements FoodMen
 	}
 
 	public interface RestaurantsGetter {
-		void getRestaurants(String foodName, CarrierMessagingService.ResultCallback<List<PlaceDocuments>> callback);
+		void getRestaurants(DbQueryCallback<List<PlaceDocuments>> callback);
 	}
 }

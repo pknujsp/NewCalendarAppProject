@@ -1,6 +1,5 @@
 package com.zerodsoft.scheduleweather.event.foods.criterialocation;
 
-import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -8,7 +7,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
@@ -25,7 +23,6 @@ import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.foods.adapter.FoodCriteriaLocationHistoryAdapter;
 import com.zerodsoft.scheduleweather.event.foods.enums.CriteriaLocationType;
-import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteLocationViewModel;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.IOnSetView;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.LocationHistoryController;
 import com.zerodsoft.scheduleweather.event.foods.searchlocation.fragment.LocationSearchDialogFragment;
@@ -64,7 +61,7 @@ public class RestaurantCriteriaLocationSettingsFragment extends Fragment impleme
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		iOnSetView = (IOnSetView) getParentFragment();
-		iOnSetView.setVisibility(IOnSetView.ViewType.HEADER, View.GONE);
+		iOnSetView.setFragmentContainerVisibility(IOnSetView.ViewType.HEADER, View.GONE);
 
 		sharedViewModel = new ViewModelProvider(requireActivity()).get(RestaurantSharedViewModel.class);
 		eventId = sharedViewModel.getEventId();
@@ -155,7 +152,7 @@ public class RestaurantCriteriaLocationSettingsFragment extends Fragment impleme
 					});
 		}
 		super.onDestroy();
-		iOnSetView.setVisibility(IOnSetView.ViewType.HEADER, View.VISIBLE);
+		iOnSetView.setFragmentContainerVisibility(IOnSetView.ViewType.HEADER, View.VISIBLE);
 	}
 
 	private void initData() {

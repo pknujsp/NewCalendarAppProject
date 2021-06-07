@@ -64,7 +64,7 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 		iMapPoint = sharedViewModel.getiMapPoint();
 
 		iOnSetView = (IOnSetView) getParentFragment();
-		iOnSetView.setVisibility(IOnSetView.ViewType.HEADER, View.VISIBLE);
+		iOnSetView.setFragmentContainerVisibility(IOnSetView.ViewType.HEADER, View.VISIBLE);
 
 		headerCriteriaLocationFragment = new HeaderCriteriaLocationFragment();
 		headerCriteriaLocationFragment.setFoodCriteriaLocationCallback(new DataProcessingCallback<LocationDTO>() {
@@ -175,7 +175,7 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 
 			RestaurantListTabFragment restaurantListTabFragment = new RestaurantListTabFragment();
 			Bundle bundle = new Bundle();
-			bundle.putString("foodMenuName", e.getCategoryName());
+			bundle.putInt("firstSelectedFoodMenuIndex", position);
 			restaurantListTabFragment.setArguments(bundle);
 
 			fragmentTransaction.add(R.id.content_fragment_container, restaurantListTabFragment, tag);

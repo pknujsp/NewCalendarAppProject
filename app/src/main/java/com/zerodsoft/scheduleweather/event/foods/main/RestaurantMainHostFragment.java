@@ -42,21 +42,23 @@ public class RestaurantMainHostFragment extends Fragment implements IOnSetView {
 	}
 
 	@Override
-	public void setVisibility(ViewType viewType, int visibility) {
+	public void setFragmentContainerVisibility(ViewType viewType, int visibility) {
 		switch (viewType) {
 			case HEADER:
 				binding.headerFragmentContainer.setVisibility(visibility);
 				break;
 			case CONTENT:
 				binding.contentFragmentContainer.setVisibility(visibility);
+				((IOnSetView)getParentFragment()).setFragmentContainerVisibility(viewType, visibility);
 				break;
 		}
 	}
 
 	@Override
-	public void setHeaderHeight(int heightDP) {
-		binding.headerFragmentContainer.getLayoutParams().height = heightDP;
+	public void setFragmentContainerHeight(int height) {
+		binding.headerFragmentContainer.getLayoutParams().height = height;
 		binding.headerFragmentContainer.requestLayout();
 		binding.headerFragmentContainer.invalidate();
 	}
+
 }

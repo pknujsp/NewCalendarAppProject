@@ -16,12 +16,14 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RelativeLayout;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.FragmentRestaurantMainTransactionBinding;
 import com.zerodsoft.scheduleweather.event.foods.favorite.RestaurantFavoritesHostFragment;
-import com.zerodsoft.scheduleweather.event.foods.interfaces.FoodMenuChipsViewController;
+import com.zerodsoft.scheduleweather.event.foods.interfaces.ISetFoodMenuPoiItems;
+import com.zerodsoft.scheduleweather.event.foods.interfaces.IOnSetView;
 import com.zerodsoft.scheduleweather.event.foods.main.RestaurantMainHostFragment;
 import com.zerodsoft.scheduleweather.event.foods.search.RestaurantSearchHostFragment;
 import com.zerodsoft.scheduleweather.event.foods.settings.RestaurantSettingsHostFragment;
@@ -34,7 +36,7 @@ import com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint;
 import org.jetbrains.annotations.NotNull;
 
 
-public class RestaurantFragment extends Fragment {
+public class RestaurantFragment extends Fragment implements IOnSetView {
 	public static final String TAG = "RestaurantFragment";
 	private FragmentRestaurantMainTransactionBinding binding;
 
@@ -42,7 +44,7 @@ public class RestaurantFragment extends Fragment {
 	private final long INSTANCE_ID;
 	private final long EVENT_ID;
 
-	private final FoodMenuChipsViewController foodMenuChipsViewController;
+	private final ISetFoodMenuPoiItems ISetFoodMenuPoiItems;
 	private final IMapPoint iMapPoint;
 
 	private RestaurantSharedViewModel restaurantSharedViewModel;
@@ -59,10 +61,10 @@ public class RestaurantFragment extends Fragment {
 
 
 	public RestaurantFragment(IMapPoint iMapPoint
-			, FoodMenuChipsViewController foodMenuChipsViewController
+			, ISetFoodMenuPoiItems ISetFoodMenuPoiItems
 			, int CALENDAR_ID, long INSTANCE_ID, long EVENT_ID) {
 		this.iMapPoint = iMapPoint;
-		this.foodMenuChipsViewController = foodMenuChipsViewController;
+		this.ISetFoodMenuPoiItems = ISetFoodMenuPoiItems;
 		this.CALENDAR_ID = CALENDAR_ID;
 		this.INSTANCE_ID = INSTANCE_ID;
 		this.EVENT_ID = EVENT_ID;
@@ -84,14 +86,13 @@ public class RestaurantFragment extends Fragment {
 
 		restaurantSharedViewModel =
 				new ViewModelProvider(requireActivity()).get(RestaurantSharedViewModel.class);
-		restaurantSharedViewModel.setFoodMenuChipsViewController(foodMenuChipsViewController);
+		restaurantSharedViewModel.setISetFoodMenuPoiItems(ISetFoodMenuPoiItems);
 		restaurantSharedViewModel.setiMapPoint(iMapPoint);
 		restaurantSharedViewModel.setEventId(EVENT_ID);
 
 		new ViewModelProvider(requireActivity()).get(FoodCriteriaLocationInfoViewModel.class);
 		new ViewModelProvider(requireActivity()).get(FoodCriteriaLocationHistoryViewModel.class);
 		new ViewModelProvider(requireActivity()).get(CustomFoodMenuViewModel.class);
-
 	}
 
 	@Override
@@ -162,4 +163,29 @@ public class RestaurantFragment extends Fragment {
 		super.onDestroy();
 		onBackPressedCallback.remove();
 	}
+
+
+	@Override
+	public void setFragmentContainerVisibility(ViewType viewType, int visibility) {
+		switch (viewType) {
+			case CONTENT:
+				binding.bottomNavigation.setVisibility(visibility);
+				RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) binding.fragmentContainer.getLayoutParams();
+
+				if (visibility == View.VISIBLE) {
+					layoutParams.height = 0;
+					layoutParams.addRule(RelativeLayout.ABOVE, binding.bottomNavigation.getId());
+				} else {
+					layoutParams.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+					layoutParams.removeRule(RelativeLayout.ABOVE);
+				}
+				break;
+		}
+	}
+
+	@Override
+	public void setFragmentContainerHeight(int height) {
+
+	}
+
 }

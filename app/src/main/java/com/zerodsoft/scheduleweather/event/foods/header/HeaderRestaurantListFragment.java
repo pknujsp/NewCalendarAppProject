@@ -22,10 +22,11 @@ import com.google.android.material.tabs.TabLayoutMediator;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.interfaces.DataProcessingCallback;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
-import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.databinding.FragmentHeaderRestaurantListBinding;
 import com.zerodsoft.scheduleweather.event.foods.dto.FoodCategoryItem;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.IOnSetView;
+import com.zerodsoft.scheduleweather.event.foods.interfaces.ISetFoodMenuPoiItems;
+import com.zerodsoft.scheduleweather.event.foods.main.RestaurantListTabFragment;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.CustomFoodMenuViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.RestaurantSharedViewModel;
 import com.zerodsoft.scheduleweather.room.dto.CustomFoodMenuDTO;
@@ -39,11 +40,11 @@ public class HeaderRestaurantListFragment extends Fragment {
 	private FragmentHeaderRestaurantListBinding binding;
 	private CustomFoodMenuViewModel customFoodCategoryViewModel;
 	private RestaurantSharedViewModel restaurantSharedViewModel;
-	private OnClickedListItem<FoodCategoryItem> onClickedListItem;
 	private ViewPager2 viewPager2;
 	private Integer firstSelectedFoodMenuIndex;
 	private IOnSetView iOnSetView;
 	private DataProcessingCallback<List<FoodCategoryItem>> foodMenuListDataProcessingCallback;
+	private ISetFoodMenuPoiItems iSetFoodMenuPoiItems;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -51,11 +52,11 @@ public class HeaderRestaurantListFragment extends Fragment {
 		customFoodCategoryViewModel = new ViewModelProvider(requireActivity()).get(CustomFoodMenuViewModel.class);
 		restaurantSharedViewModel = new ViewModelProvider(requireActivity()).get(RestaurantSharedViewModel.class);
 
+		iSetFoodMenuPoiItems = restaurantSharedViewModel.getISetFoodMenuPoiItems();
 		iOnSetView = (IOnSetView) getParentFragment();
-		iOnSetView.setHeaderHeight((int) getResources().getDimension(R.dimen.restaurant_list_header_height));
+		iOnSetView.setFragmentContainerHeight((int) getResources().getDimension(R.dimen.restaurant_list_header_height));
 		Bundle bundle = getArguments();
 
-		onClickedListItem = (OnClickedListItem<FoodCategoryItem>) bundle.getSerializable("OnClickedListItem");
 		firstSelectedFoodMenuIndex = bundle.getInt("firstSelectedFoodMenuIndex");
 	}
 
@@ -64,6 +65,10 @@ public class HeaderRestaurantListFragment extends Fragment {
 	                         Bundle savedInstanceState) {
 		binding = FragmentHeaderRestaurantListBinding.inflate(inflater);
 		return binding.getRoot();
+	}
+
+	public int getSelectedTabPosition() {
+		return binding.tabLayout.getSelectedTabPosition();
 	}
 
 	public void setViewPager2(ViewPager2 viewPager2) {
@@ -78,10 +83,38 @@ public class HeaderRestaurantListFragment extends Fragment {
 	public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 
+		RestaurantListTabFragment listTabFragment =
+				(RestaurantListTabFragment) getParentFragmentManager().findFragmentByTag(getString(R.string.tag_restaurant_list_tab_fragment));
+		iSetFoodMenuPoiItems.createRestaurantPoiItems(listTabFragment, listTabFragment);
+
+		binding.tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+			@Override
+			public void onTabSelected(TabLayout.Tab tab) {
+				iSetFoodMenuPoiItems.onChangeFoodMenu();
+			}
+
+			@Override
+			public void onTabUnselected(TabLayout.Tab tab) {
+
+			}
+
+			@Override
+			public void onTabReselected(TabLayout.Tab tab) {
+
+			}
+		});
+
 		binding.viewChangeBtn.setOnClickListener(new View.OnClickListener() {
+			int visibility = View.VISIBLE;
+
 			@Override
 			public void onClick(View view) {
+				visibility = (visibility == View.VISIBLE) ? View.GONE : View.VISIBLE;
+				iOnSetView.setFragmentContainerVisibility(IOnSetView.ViewType.CONTENT, visibility);
 
+				if (visibility == View.GONE) {
+					iSetFoodMenuPoiItems.onChangeFoodMenu();
+				}
 			}
 		});
 
@@ -138,7 +171,8 @@ public class HeaderRestaurantListFragment extends Fragment {
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		iOnSetView.setHeaderHeight((int) getResources().getDimension(R.dimen.restaurant_header_height));
+		iOnSetView.setFragmentContainerHeight((int) getResources().getDimension(R.dimen.restaurant_header_height));
+		iSetFoodMenuPoiItems.removeRestaurantPoiItems();
 	}
 
 	private void setupTabCustomView(List<FoodCategoryItem> foodCategoryItemList) {
