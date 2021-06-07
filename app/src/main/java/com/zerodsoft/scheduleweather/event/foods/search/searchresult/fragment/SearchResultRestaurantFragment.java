@@ -8,23 +8,16 @@ import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.fragment.NavHostFragment;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
-import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
-import com.zerodsoft.scheduleweather.databinding.FragmentSearchRestaurantBinding;
 import com.zerodsoft.scheduleweather.databinding.FragmentSearchResultRestaurantBinding;
-import com.zerodsoft.scheduleweather.event.foods.interfaces.OnSetViewVisibility;
+import com.zerodsoft.scheduleweather.event.foods.interfaces.IOnSetView;
 import com.zerodsoft.scheduleweather.event.foods.main.RestaurantListFragment;
-import com.zerodsoft.scheduleweather.event.foods.search.search.fragment.SearchRestaurantFragment;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.RestaurantSharedViewModel;
 import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoWebFragment;
-import com.zerodsoft.scheduleweather.room.dto.SearchHistoryDTO;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -33,7 +26,7 @@ public class SearchResultRestaurantFragment extends Fragment {
 	private String query;
 	private FragmentSearchResultRestaurantBinding binding;
 	private RestaurantSharedViewModel restaurantSharedViewModel;
-	private OnSetViewVisibility onSetViewVisibility;
+	private IOnSetView iOnSetView;
 
 	private final FragmentManager.FragmentLifecycleCallbacks fragmentLifecycleCallbacks =
 			new FragmentManager.FragmentLifecycleCallbacks() {
@@ -41,7 +34,7 @@ public class SearchResultRestaurantFragment extends Fragment {
 				public void onFragmentCreated(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
 					super.onFragmentCreated(fm, f, savedInstanceState);
 					if (f instanceof PlaceInfoWebFragment) {
-						onSetViewVisibility.setVisibility(OnSetViewVisibility.ViewType.HEADER, View.GONE);
+						iOnSetView.setVisibility(IOnSetView.ViewType.HEADER, View.GONE);
 					}
 				}
 
@@ -49,7 +42,7 @@ public class SearchResultRestaurantFragment extends Fragment {
 				public void onFragmentDestroyed(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f) {
 					super.onFragmentDestroyed(fm, f);
 					if (f instanceof PlaceInfoWebFragment) {
-						onSetViewVisibility.setVisibility(OnSetViewVisibility.ViewType.HEADER, View.GONE);
+						iOnSetView.setVisibility(IOnSetView.ViewType.HEADER, View.GONE);
 					}
 				}
 			};
@@ -64,8 +57,8 @@ public class SearchResultRestaurantFragment extends Fragment {
 		query = bundle.getString("query");
 
 		restaurantSharedViewModel = new ViewModelProvider(requireActivity()).get(RestaurantSharedViewModel.class);
-		onSetViewVisibility = restaurantSharedViewModel.getOnSetViewVisibility();
-		onSetViewVisibility.setVisibility(OnSetViewVisibility.ViewType.HEADER, View.GONE);
+		iOnSetView = (IOnSetView) getParentFragment();
+		iOnSetView.setVisibility(IOnSetView.ViewType.HEADER, View.GONE);
 	}
 
 	@Override

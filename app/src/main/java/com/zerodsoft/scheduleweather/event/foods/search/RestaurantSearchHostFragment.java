@@ -5,8 +5,6 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.navigation.fragment.NavHostFragment;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,11 +12,12 @@ import android.view.ViewGroup;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.FragmentRestaurantSearchHostBinding;
+import com.zerodsoft.scheduleweather.event.foods.interfaces.IOnSetView;
 import com.zerodsoft.scheduleweather.event.foods.search.search.fragment.SearchRestaurantFragment;
 
 import org.jetbrains.annotations.NotNull;
 
-public class RestaurantSearchHostFragment extends Fragment {
+public class RestaurantSearchHostFragment extends Fragment implements IOnSetView {
 	private FragmentRestaurantSearchHostBinding binding;
 
 	@Override
@@ -44,21 +43,24 @@ public class RestaurantSearchHostFragment extends Fragment {
 	@Override
 	public void onHiddenChanged(boolean hidden) {
 		super.onHiddenChanged(hidden);
-		if (!hidden) {
-			FragmentManager fragmentManager = getChildFragmentManager();
-			if (fragmentManager.getBackStackEntryCount() > 0) {
-				FragmentManager.BackStackEntry backStackEntry =
-						fragmentManager.getBackStackEntryAt(fragmentManager.getBackStackEntryCount() - 1);
+	}
 
-				String topTag = backStackEntry.getName();
-
-				if (topTag.equals(getString(R.string.tag_search_restaurant_fragment))) {
-
-				} else if (topTag.equals(getString(R.string.tag_search_result_restaurant_fragment))) {
-
-				}
-
-			}
+	@Override
+	public void setVisibility(IOnSetView.ViewType viewType, int visibility) {
+		switch (viewType) {
+			case HEADER:
+				binding.headerFragmentContainer.setVisibility(visibility);
+				break;
+			case CONTENT:
+				binding.contentFragmentContainer.setVisibility(visibility);
+				break;
 		}
+	}
+
+	@Override
+	public void setHeaderHeight(int heightDP) {
+		binding.headerFragmentContainer.getLayoutParams().height = heightDP;
+		binding.headerFragmentContainer.requestLayout();
+		binding.headerFragmentContainer.invalidate();
 	}
 }

@@ -18,6 +18,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -29,7 +30,6 @@ import android.widget.Toast;
 
 import com.naver.maps.geometry.LatLng;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
 import com.zerodsoft.scheduleweather.common.interfaces.DataProcessingCallback;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
@@ -39,9 +39,7 @@ import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.foods.criterialocation.RestaurantCriteriaLocationSettingsFragment;
 import com.zerodsoft.scheduleweather.event.foods.enums.CriteriaLocationType;
-import com.zerodsoft.scheduleweather.event.foods.main.RestaurantMainHostFragment;
 import com.zerodsoft.scheduleweather.event.foods.share.CriteriaLocationCloud;
-import com.zerodsoft.scheduleweather.event.foods.viewmodel.CustomFoodMenuViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationHistoryViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationInfoViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.RestaurantSharedViewModel;
@@ -51,7 +49,6 @@ import com.zerodsoft.scheduleweather.navermap.util.LocalParameterUtil;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddress;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddressDocuments;
-import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.FoodCriteriaLocationInfoDTO;
 import com.zerodsoft.scheduleweather.room.dto.FoodCriteriaLocationSearchHistoryDTO;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
@@ -122,21 +119,19 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 	public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 
-		binding.customProgressView.onStartedProcessingData();
+		binding.customProgressView.onStartedProcessingData(getString(R.string.loading_criteria_location));
 		binding.criteriaLocation.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				Fragment parentFragment = getParentFragment();
-				Fragment hostFragment = parentFragment.getParentFragment();
+				FragmentManager parentFragmentManager = getParentFragmentManager();
+				Fragment contentFragment = parentFragmentManager.findFragmentById(R.id.content_fragment_container);
 
-				hostFragment.getChildFragmentManager().beginTransaction().hide(parentFragment)
-						.add(R.id.content_fragment_container, new RestaurantCriteriaLocationSettingsFragment(),
-								RestaurantCriteriaLocationSettingsFragment.TAG)
-						.addToBackStack(RestaurantCriteriaLocationSettingsFragment.TAG).commit();
+				String tag = getString(R.string.tag_restaurant_criteria_location_settings_fragment);
+				parentFragmentManager.beginTransaction().hide(contentFragment)
+						.add(R.id.content_fragment_container, new RestaurantCriteriaLocationSettingsFragment(), tag)
+						.addToBackStack(tag).commit();
 			}
-
 		});
-
 
 		loadSelectedDetailLocation();
 	}
@@ -339,6 +334,28 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 
 			case TYPE_CUSTOM_SELECTED_LOCATION: {
 				//지정 위치 파악
+				if (foodCriteriaLocationInfoDTO.getHistoryLocationId() == null) {
+					foodCriteriaLocationInfoViewModel.updateByEventId(eventId
+							, CriteriaLocationType.TYPE_MAP_CENTER_POINT.value(), null,
+							new DbQueryCallback<FoodCriteriaLocationInfoDTO>() {
+								@Override
+								public void onResultSuccessful(FoodCriteriaLocationInfoDTO result) {
+									requireActivity().runOnUiThread(new Runnable() {
+										@Override
+										public void run() {
+											setCriteria(CriteriaLocationType.TYPE_MAP_CENTER_POINT);
+										}
+									});
+								}
+
+								@Override
+								public void onResultNoData() {
+
+								}
+							});
+					return;
+				}
+
 				foodCriteriaLocationSearchHistoryViewModel.select(foodCriteriaLocationInfoDTO.getHistoryLocationId(), new DbQueryCallback<FoodCriteriaLocationSearchHistoryDTO>() {
 					@Override
 					public void onResultSuccessful(FoodCriteriaLocationSearchHistoryDTO foodCriteriaLocationSearchHistoryResultDto) {

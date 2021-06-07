@@ -8,9 +8,6 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
-import androidx.navigation.fragment.NavHostFragment;
 
 import android.os.RemoteException;
 import android.service.carrier.CarrierMessagingService;
@@ -24,24 +21,19 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
-import com.zerodsoft.scheduleweather.common.interfaces.OnProgressBarListener;
 import com.zerodsoft.scheduleweather.databinding.FragmentFavoriteRestaurantBinding;
 import com.zerodsoft.scheduleweather.event.foods.favorite.RestaurantFavoritesHostFragment;
+import com.zerodsoft.scheduleweather.event.foods.interfaces.IOnSetView;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedFavoriteButtonListener;
-import com.zerodsoft.scheduleweather.event.foods.interfaces.OnSetViewVisibility;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.RestaurantSharedViewModel;
-import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
-import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoWebDialogFragment;
 import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoWebFragment;
 import com.zerodsoft.scheduleweather.navermap.util.LocalParameterUtil;
 import com.zerodsoft.scheduleweather.kakaoplace.retrofit.KakaoPlaceDownloader;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalDocument;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceKakaoLocalResponse;
 import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
-import com.zerodsoft.scheduleweather.weather.common.ViewProgress;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -62,7 +54,7 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
 	private ArrayMap<String, List<PlaceDocuments>> restaurantListMap = new ArrayMap<>();
 	private List<FavoriteLocationDTO> favoriteLocationDTOList = new ArrayList<>();
 	private Map<String, FavoriteLocationDTO> favoriteRestaurantDTOMap = new HashMap<>();
-	private OnSetViewVisibility onSetViewVisibility;
+	private IOnSetView iOnSetView;
 
 	private KakaoPlaceDownloader kakaoPlaceDownloader = new KakaoPlaceDownloader();
 
@@ -72,7 +64,7 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
 				public void onFragmentCreated(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
 					super.onFragmentCreated(fm, f, savedInstanceState);
 					if (f instanceof PlaceInfoWebFragment) {
-						onSetViewVisibility.setVisibility(OnSetViewVisibility.ViewType.HEADER, View.GONE);
+						iOnSetView.setVisibility(IOnSetView.ViewType.HEADER, View.GONE);
 					}
 				}
 
@@ -80,7 +72,7 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
 				public void onFragmentDestroyed(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f) {
 					super.onFragmentDestroyed(fm, f);
 					if (f instanceof PlaceInfoWebFragment) {
-						onSetViewVisibility.setVisibility(OnSetViewVisibility.ViewType.HEADER, View.GONE);
+						iOnSetView.setVisibility(IOnSetView.ViewType.HEADER, View.GONE);
 					}
 				}
 			};
@@ -92,8 +84,8 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
 
 		favoriteRestaurantViewModel = new ViewModelProvider(requireActivity()).get(FavoriteLocationViewModel.class);
 		restaurantSharedViewModel = new ViewModelProvider(requireActivity()).get(RestaurantSharedViewModel.class);
-		onSetViewVisibility = restaurantSharedViewModel.getOnSetViewVisibility();
-		onSetViewVisibility.setVisibility(OnSetViewVisibility.ViewType.HEADER, View.GONE);
+		iOnSetView = (IOnSetView) getParentFragment();
+		iOnSetView.setVisibility(IOnSetView.ViewType.HEADER, View.GONE);
 
 		favoriteRestaurantViewModel.getAddedFavoriteLocationMutableLiveData().observe(this, new Observer<FavoriteLocationDTO>() {
 			@Override
@@ -157,7 +149,7 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
 		binding.favoriteRestaurantList.setAdapter(adapter);
 
 		binding.customProgressView.setContentView(binding.favoriteRestaurantList);
-		binding.customProgressView.onStartedProcessingData();
+		binding.customProgressView.onStartedProcessingData(null);
 
 		downloadPlaceDocuments();
 	}
@@ -286,7 +278,7 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
 			String tag = getString(R.string.tag_place_info_web_fragment);
 
 			getParentFragmentManager().beginTransaction().hide(this)
-					.add(R.id.fragment_container, placeInfoWebFragment, tag)
+					.add(R.id.content_fragment_container, placeInfoWebFragment, tag)
 					.addToBackStack(tag)
 					.commit();
 		} else {
@@ -302,7 +294,7 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
 	public void refreshList() {
 		//restaurantId비교
 		//바뀐 부분만 수정
-		binding.customProgressView.onStartedProcessingData();
+		binding.customProgressView.onStartedProcessingData(null);
 		favoriteRestaurantViewModel.select(FavoriteLocationDTO.RESTAURANT, new DbQueryCallback<List<FavoriteLocationDTO>>() {
 			int responseCount;
 

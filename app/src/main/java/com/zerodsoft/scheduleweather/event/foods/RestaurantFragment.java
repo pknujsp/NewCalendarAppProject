@@ -1,9 +1,7 @@
 package com.zerodsoft.scheduleweather.event.foods;
 
 import android.annotation.SuppressLint;
-import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.os.Bundle;
 
 import androidx.activity.OnBackPressedCallback;
@@ -13,31 +11,17 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.NavController;
-import androidx.navigation.NavDestination;
-import androidx.navigation.NavHostController;
-import androidx.navigation.Navigation;
-import androidx.navigation.fragment.NavHostFragment;
-import androidx.navigation.ui.NavigationUI;
 
-import android.util.Log;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.android.material.bottomsheet.BottomSheetBehavior;
-import com.google.android.material.bottomsheet.BottomSheetDialog;
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.FragmentRestaurantMainTransactionBinding;
 import com.zerodsoft.scheduleweather.event.foods.favorite.RestaurantFavoritesHostFragment;
-import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteLocationViewModel;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.FoodMenuChipsViewController;
-import com.zerodsoft.scheduleweather.event.foods.interfaces.IGetEventValue;
-import com.zerodsoft.scheduleweather.event.foods.interfaces.OnSetViewVisibility;
 import com.zerodsoft.scheduleweather.event.foods.main.RestaurantMainHostFragment;
 import com.zerodsoft.scheduleweather.event.foods.search.RestaurantSearchHostFragment;
 import com.zerodsoft.scheduleweather.event.foods.settings.RestaurantSettingsHostFragment;
@@ -45,12 +29,9 @@ import com.zerodsoft.scheduleweather.event.foods.viewmodel.CustomFoodMenuViewMod
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationHistoryViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationInfoViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.RestaurantSharedViewModel;
-import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint;
 
 import org.jetbrains.annotations.NotNull;
-
-import java.util.List;
 
 
 public class RestaurantFragment extends Fragment {
@@ -76,7 +57,6 @@ public class RestaurantFragment extends Fragment {
 		}
 	};
 
-	private OnSetViewVisibility onSetViewVisibility;
 
 	public RestaurantFragment(IMapPoint iMapPoint
 			, FoodMenuChipsViewController foodMenuChipsViewController
@@ -125,10 +105,6 @@ public class RestaurantFragment extends Fragment {
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 
-		onSetViewVisibility = new OnSetViewVisibility(binding.headerFragmentContainer, binding.contentFragmentContainer,
-				binding.bottomNavigation);
-		restaurantSharedViewModel.setOnSetViewVisibility(onSetViewVisibility);
-
 		binding.bottomNavigation.setOnNavigationItemSelectedListener(onNavigationItemSelectedListener);
 		binding.bottomNavigation.setOnNavigationItemReselectedListener(new BottomNavigationView.OnNavigationItemReselectedListener() {
 			@Override
@@ -171,7 +147,7 @@ public class RestaurantFragment extends Fragment {
 						return false;
 				}
 
-				fragmentTransaction.add(binding.contentFragmentContainer.getId(), destinationFragment, tag);
+				fragmentTransaction.add(binding.fragmentContainer.getId(), destinationFragment, tag);
 			} else {
 				fragmentTransaction.show(destinationFragment);
 			}

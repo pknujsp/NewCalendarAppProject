@@ -13,14 +13,9 @@ import android.service.carrier.CarrierMessagingService;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 
-import com.bumptech.glide.Glide;
-import com.google.android.material.tabs.TabLayout;
-import com.google.android.material.tabs.TabLayoutMediator;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.interfaces.DataProcessingCallback;
-import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.common.interfaces.OnHiddenFragmentListener;
 import com.zerodsoft.scheduleweather.databinding.FragmentFoodCategoryTabBinding;
@@ -29,19 +24,16 @@ import com.zerodsoft.scheduleweather.event.foods.dto.FoodCategoryItem;
 import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteLocationViewModel;
 import com.zerodsoft.scheduleweather.event.foods.header.HeaderRestaurantListFragment;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.FoodMenuChipsViewController;
-import com.zerodsoft.scheduleweather.event.foods.interfaces.OnSetViewVisibility;
+import com.zerodsoft.scheduleweather.event.foods.interfaces.IOnSetView;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.CustomFoodMenuViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.RestaurantSharedViewModel;
 import com.zerodsoft.scheduleweather.event.main.NewInstanceMainFragment;
 import com.zerodsoft.scheduleweather.navermap.interfaces.OnExtraListDataListener;
 import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoWebFragment;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
-import com.zerodsoft.scheduleweather.room.dto.CustomFoodMenuDTO;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import lombok.SneakyThrows;
@@ -59,7 +51,7 @@ public class RestaurantListTabFragment extends Fragment implements NewInstanceMa
 	private String firstSelectedFoodMenuName;
 	private Long eventId;
 
-	private OnSetViewVisibility onSetViewVisibility;
+	private IOnSetView iOnSetView;
 
 	private List<String> categoryList;
 
@@ -70,7 +62,7 @@ public class RestaurantListTabFragment extends Fragment implements NewInstanceMa
 		public void onFragmentCreated(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
 			super.onFragmentCreated(fm, f, savedInstanceState);
 			if (f instanceof PlaceInfoWebFragment) {
-				onSetViewVisibility.setVisibility(OnSetViewVisibility.ViewType.HEADER, View.GONE);
+				iOnSetView.setVisibility(IOnSetView.ViewType.HEADER, View.GONE);
 			}
 		}
 
@@ -78,7 +70,7 @@ public class RestaurantListTabFragment extends Fragment implements NewInstanceMa
 		public void onFragmentDestroyed(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f) {
 			super.onFragmentDestroyed(fm, f);
 			if (f instanceof PlaceInfoWebFragment) {
-				onSetViewVisibility.setVisibility(OnSetViewVisibility.ViewType.HEADER, View.VISIBLE);
+				iOnSetView.setVisibility(IOnSetView.ViewType.HEADER, View.VISIBLE);
 			}
 		}
 	};
@@ -86,6 +78,8 @@ public class RestaurantListTabFragment extends Fragment implements NewInstanceMa
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
+		iOnSetView = (IOnSetView) getParentFragment();
 
 		getParentFragmentManager().registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, true);
 
@@ -99,15 +93,14 @@ public class RestaurantListTabFragment extends Fragment implements NewInstanceMa
 		favoriteRestaurantViewModel = new ViewModelProvider(requireActivity()).get(FavoriteLocationViewModel.class);
 		customFoodCategoryViewModel = new ViewModelProvider(requireActivity()).get(CustomFoodMenuViewModel.class);
 
-		onSetViewVisibility = restaurantSharedViewModel.getOnSetViewVisibility();
-		onSetViewVisibility.setVisibility(OnSetViewVisibility.ViewType.HEADER, View.VISIBLE);
+		iOnSetView.setVisibility(IOnSetView.ViewType.HEADER, View.VISIBLE);
 	}
 
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		onSetViewVisibility.setVisibility(OnSetViewVisibility.ViewType.HEADER, View.VISIBLE);
-		FragmentManager fragmentManager = getParentFragment().getParentFragmentManager();
+		iOnSetView.setVisibility(IOnSetView.ViewType.HEADER, View.VISIBLE);
+		FragmentManager fragmentManager = getParentFragmentManager();
 
 		Fragment criteriaHeaderFragment =
 				fragmentManager.findFragmentByTag(getString(R.string.tag_restaurant_header_criteria_location_fragment));
@@ -157,7 +150,7 @@ public class RestaurantListTabFragment extends Fragment implements NewInstanceMa
 		bundle.putInt("firstSelectedFoodMenuIndex", 0);
 		headerRestaurantListFragment.setArguments(bundle);
 
-		getParentFragment().getParentFragmentManager().beginTransaction()
+		getParentFragmentManager().beginTransaction()
 				.add(R.id.header_fragment_container, headerRestaurantListFragment).commit();
 	}
 

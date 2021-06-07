@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -50,13 +50,12 @@
 
         </RadioGroup>
 
-        <androidx.appcompat.widget.SearchView
+        <com.zerodsoft.scheduleweather.common.view.CustomSearchView
             android:id="@+id/search_view"
-            app:defaultQueryHint="@string/hint_request_input_address_or_place"
-            app:iconifiedByDefault="false"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:elevation="4dp" />
+            app:backBtnVisibility="gone"
+            app:hint="@string/hint_request_input_address_or_place" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/address_history_recyclerview"

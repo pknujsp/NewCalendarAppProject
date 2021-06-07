@@ -8,7 +8,6 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.fragment.NavHostFragment;
 import androidx.paging.PagedList;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -27,13 +26,11 @@ import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.common.interfaces.OnProgressBarListener;
 import com.zerodsoft.scheduleweather.databinding.FragmentRestaurantListBinding;
 import com.zerodsoft.scheduleweather.event.foods.adapter.RestaurantListAdapter;
-import com.zerodsoft.scheduleweather.event.foods.favorite.RestaurantFavoritesHostFragment;
 import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteLocationViewModel;
+import com.zerodsoft.scheduleweather.event.foods.interfaces.IOnSetView;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedFavoriteButtonListener;
-import com.zerodsoft.scheduleweather.event.foods.interfaces.OnSetViewVisibility;
 import com.zerodsoft.scheduleweather.event.foods.share.CriteriaLocationCloud;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.RestaurantSharedViewModel;
-import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
 import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoWebFragment;
 import com.zerodsoft.scheduleweather.navermap.util.LocalParameterUtil;
 import com.zerodsoft.scheduleweather.navermap.viewmodel.PlacesViewModel;
@@ -51,7 +48,7 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 	protected RecyclerView.AdapterDataObserver adapterDataObserver;
 	protected FavoriteLocationViewModel favoriteRestaurantViewModel;
 	protected RestaurantSharedViewModel sharedViewModel;
-	protected OnSetViewVisibility onSetViewVisibility;
+	protected IOnSetView iOnSetView;
 
 	public void setAdapterDataObserver(RecyclerView.AdapterDataObserver adapterDataObserver) {
 		this.adapterDataObserver = adapterDataObserver;
@@ -60,14 +57,13 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
+		iOnSetView = (IOnSetView) getParentFragment().getParentFragment();
 
 		Bundle bundle = getArguments();
 		query = bundle.getString("query");
 
 		favoriteRestaurantViewModel = new ViewModelProvider(requireActivity()).get(FavoriteLocationViewModel.class);
 		sharedViewModel = new ViewModelProvider(requireActivity()).get(RestaurantSharedViewModel.class);
-		onSetViewVisibility = sharedViewModel.getOnSetViewVisibility();
 
 		favoriteRestaurantViewModel.getAddedFavoriteLocationMutableLiveData().observe(this,
 				new Observer<FavoriteLocationDTO>() {
@@ -203,7 +199,7 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 			// restaurant list tab fragment
 
 			fragmentManager.beginTransaction().hide(parentFragment)
-					.add(R.id.fragment_container, placeInfoWebFragment, tag)
+					.add(R.id.content_fragment_container, placeInfoWebFragment, tag)
 					.addToBackStack(tag).commit();
 		} else {
 

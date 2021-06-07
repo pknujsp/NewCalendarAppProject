@@ -8,8 +8,6 @@ import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.lifecycle.ViewModelStoreOwner;
-import androidx.navigation.fragment.NavHostFragment;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,11 +20,10 @@ import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.common.interfaces.OnHiddenFragmentListener;
 import com.zerodsoft.scheduleweather.databinding.FragmentSearchRestaurantBinding;
 import com.zerodsoft.scheduleweather.event.foods.header.HeaderCriteriaLocationFragment;
+import com.zerodsoft.scheduleweather.event.foods.interfaces.IOnSetView;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedRestaurantItem;
-import com.zerodsoft.scheduleweather.event.foods.interfaces.OnSetViewVisibility;
 import com.zerodsoft.scheduleweather.event.foods.search.searchresult.fragment.SearchResultRestaurantFragment;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.RestaurantSharedViewModel;
-import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
 import com.zerodsoft.scheduleweather.navermap.viewmodel.SearchHistoryViewModel;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.SearchHistoryDTO;
@@ -40,7 +37,7 @@ public class SearchRestaurantFragment extends Fragment implements OnClickedListI
 	private RestaurantSharedViewModel restaurantSharedViewModel;
 	private FoodRestaurantSearchHistoryFragment foodRestaurantSearchHistoryFragment;
 	private SearchHistoryViewModel searchHistoryViewModel;
-	private OnSetViewVisibility onSetViewVisibility;
+	private IOnSetView iOnSetView;
 
 	private HeaderCriteriaLocationFragment headerCriteriaLocationFragment;
 
@@ -50,7 +47,7 @@ public class SearchRestaurantFragment extends Fragment implements OnClickedListI
 				public void onFragmentCreated(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
 					super.onFragmentCreated(fm, f, savedInstanceState);
 					if (f instanceof SearchResultRestaurantFragment) {
-						onSetViewVisibility.setVisibility(OnSetViewVisibility.ViewType.HEADER, View.GONE);
+						iOnSetView.setVisibility(IOnSetView.ViewType.HEADER, View.GONE);
 					}
 				}
 
@@ -58,7 +55,7 @@ public class SearchRestaurantFragment extends Fragment implements OnClickedListI
 				public void onFragmentDestroyed(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f) {
 					super.onFragmentDestroyed(fm, f);
 					if (f instanceof SearchResultRestaurantFragment) {
-						onSetViewVisibility.setVisibility(OnSetViewVisibility.ViewType.HEADER, View.VISIBLE);
+						iOnSetView.setVisibility(IOnSetView.ViewType.HEADER, View.VISIBLE);
 					}
 				}
 			};
@@ -70,8 +67,8 @@ public class SearchRestaurantFragment extends Fragment implements OnClickedListI
 		restaurantSharedViewModel = new ViewModelProvider(requireActivity()).get(RestaurantSharedViewModel.class);
 		searchHistoryViewModel = new ViewModelProvider(this).get(SearchHistoryViewModel.class);
 
-		onSetViewVisibility = restaurantSharedViewModel.getOnSetViewVisibility();
-		onSetViewVisibility.setVisibility(OnSetViewVisibility.ViewType.HEADER, View.VISIBLE);
+		iOnSetView = (IOnSetView) getParentFragment();
+		iOnSetView.setVisibility(IOnSetView.ViewType.HEADER, View.VISIBLE);
 	}
 
 	@Override
@@ -90,8 +87,8 @@ public class SearchRestaurantFragment extends Fragment implements OnClickedListI
 				foodRestaurantSearchHistoryFragment, FoodRestaurantSearchHistoryFragment.TAG).commit();
 
 		headerCriteriaLocationFragment = new HeaderCriteriaLocationFragment();
-		getParentFragment().getParentFragmentManager().beginTransaction()
-				.replace(R.id.header_fragment_container, headerCriteriaLocationFragment).commit();
+		getParentFragmentManager().beginTransaction()
+				.add(R.id.header_fragment_container, headerCriteriaLocationFragment).commit();
 
 		binding.searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
 			@Override
@@ -168,6 +165,6 @@ public class SearchRestaurantFragment extends Fragment implements OnClickedListI
 
 	@Override
 	public void onHiddenChangedFragment(boolean hidden) {
-		
+
 	}
 }

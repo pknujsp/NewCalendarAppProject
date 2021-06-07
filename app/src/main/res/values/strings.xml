@@ -551,7 +551,9 @@
         가져옵니다</string>
     <string name="map_center_point">지도 중심 좌표</string>
     <string name="not_selected_criteria_location">검색 기준 위치가 선택되지 않았습니다</string>
+    <string name="selected_map_center_point_because_not_selected_custom_criteria_location">검색 기준 위치가 선택되지 않아, 지도 중심 좌표로 기준 설정 됩니다</string>
 
+    <string name="loading_criteria_location">기준 주소 로딩</string>
 
     <!-- fragmentTags -->
     <string name="tag_place_info_web_fragment">tag_place_info_web_fragment</string>
@@ -563,4 +565,5 @@
     <string name="tag_food_menus_fragment">tag_food_menus_fragment</string>
     <string name="tag_restaurant_fragment">tag_restaurant_fragment</string>
     <string name="tag_custom_food_menu_settings_fragment">tag_custom_food_menu_settings_fragment</string>
+    <string name="tag_restaurant_criteria_location_settings_fragment">tag_restaurant_criteria_location_settings_fragment</string>
 </resources>

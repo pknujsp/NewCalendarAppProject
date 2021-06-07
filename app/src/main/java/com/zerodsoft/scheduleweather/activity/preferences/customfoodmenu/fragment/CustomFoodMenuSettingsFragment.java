@@ -10,8 +10,6 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.os.RemoteException;
-import android.service.carrier.CarrierMessagingService;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,7 +20,7 @@ import com.zerodsoft.scheduleweather.activity.preferences.customfoodmenu.adapter
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.databinding.FragmentCustomFoodMenuSettingsBinding;
-import com.zerodsoft.scheduleweather.event.foods.interfaces.OnSetViewVisibility;
+import com.zerodsoft.scheduleweather.event.foods.interfaces.IOnSetView;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.CustomFoodMenuViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.RestaurantSharedViewModel;
 import com.zerodsoft.scheduleweather.room.dto.CustomFoodMenuDTO;
@@ -34,7 +32,7 @@ public class CustomFoodMenuSettingsFragment extends Fragment implements OnClicke
 	private FragmentCustomFoodMenuSettingsBinding binding;
 	private CustomFoodMenuAdapter adapter;
 	private CustomFoodMenuViewModel viewModel;
-	private OnSetViewVisibility onSetViewVisibility;
+	private IOnSetView iOnSetView;
 	private RestaurantSharedViewModel restaurantSharedViewModel;
 	private boolean isEdited = false;
 
@@ -44,8 +42,9 @@ public class CustomFoodMenuSettingsFragment extends Fragment implements OnClicke
 		viewModel = new ViewModelProvider(requireActivity()).get(CustomFoodMenuViewModel.class);
 		restaurantSharedViewModel = new ViewModelProvider(requireActivity()).get(RestaurantSharedViewModel.class);
 
-		onSetViewVisibility = restaurantSharedViewModel.getOnSetViewVisibility();
-		onSetViewVisibility.setVisibility(OnSetViewVisibility.ViewType.HEADER, View.GONE);
+		iOnSetView = (IOnSetView) getParentFragment();
+		iOnSetView.setVisibility(IOnSetView.ViewType.HEADER, View.GONE);
+
 	}
 
 	@Override
@@ -194,7 +193,7 @@ public class CustomFoodMenuSettingsFragment extends Fragment implements OnClicke
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		onSetViewVisibility.setVisibility(OnSetViewVisibility.ViewType.HEADER, View.VISIBLE);
+		iOnSetView.setVisibility(IOnSetView.ViewType.HEADER, View.VISIBLE);
 	}
 
 	public boolean isEdited() {

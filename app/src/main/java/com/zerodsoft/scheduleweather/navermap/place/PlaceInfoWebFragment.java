@@ -1,32 +1,21 @@
 package com.zerodsoft.scheduleweather.navermap.place;
 
-import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 
-import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.fragment.NavHostFragment;
 
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.FragmentPlaceInfoWebBinding;
-import com.zerodsoft.scheduleweather.databinding.PlaceInfoDialogFragmentBinding;
-import com.zerodsoft.scheduleweather.databinding.PlaceInfoViewBinding;
-import com.zerodsoft.scheduleweather.event.foods.interfaces.OnSetViewVisibility;
-import com.zerodsoft.scheduleweather.event.foods.viewmodel.RestaurantSharedViewModel;
 
 public class PlaceInfoWebFragment extends Fragment {
 	private FragmentPlaceInfoWebBinding binding;

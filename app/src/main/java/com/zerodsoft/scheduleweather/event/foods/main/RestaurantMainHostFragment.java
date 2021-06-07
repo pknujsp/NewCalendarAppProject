@@ -5,7 +5,6 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,10 +12,9 @@ import android.view.ViewGroup;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.FragmentRestaurantMainHostBinding;
-import com.zerodsoft.scheduleweather.event.foods.criterialocation.RestaurantCriteriaLocationSettingsFragment;
-import com.zerodsoft.scheduleweather.event.foods.header.HeaderCriteriaLocationFragment;
+import com.zerodsoft.scheduleweather.event.foods.interfaces.IOnSetView;
 
-public class RestaurantMainHostFragment extends Fragment {
+public class RestaurantMainHostFragment extends Fragment implements IOnSetView {
 	private FragmentRestaurantMainHostBinding binding;
 
 	@Override
@@ -34,16 +32,31 @@ public class RestaurantMainHostFragment extends Fragment {
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
-		getChildFragmentManager().beginTransaction().add(binding.fragmentContainer.getId(), new FoodsMenuListFragment(),
+		getChildFragmentManager().beginTransaction().add(binding.contentFragmentContainer.getId(), new FoodsMenuListFragment(),
 				getString(R.string.tag_food_menus_fragment)).commit();
 	}
 
 	@Override
 	public void onHiddenChanged(boolean hidden) {
 		super.onHiddenChanged(hidden);
-		FragmentManager fragmentManager = getChildFragmentManager();
-		if (fragmentManager.findFragmentByTag(getString(R.string.tag_restaurant_list_tab_fragment)) != null) {
-			fragmentManager.findFragmentByTag(getString(R.string.tag_restaurant_list_tab_fragment)).onHiddenChanged(hidden);
+	}
+
+	@Override
+	public void setVisibility(ViewType viewType, int visibility) {
+		switch (viewType) {
+			case HEADER:
+				binding.headerFragmentContainer.setVisibility(visibility);
+				break;
+			case CONTENT:
+				binding.contentFragmentContainer.setVisibility(visibility);
+				break;
 		}
+	}
+
+	@Override
+	public void setHeaderHeight(int heightDP) {
+		binding.headerFragmentContainer.getLayoutParams().height = heightDP;
+		binding.headerFragmentContainer.requestLayout();
+		binding.headerFragmentContainer.invalidate();
 	}
 }

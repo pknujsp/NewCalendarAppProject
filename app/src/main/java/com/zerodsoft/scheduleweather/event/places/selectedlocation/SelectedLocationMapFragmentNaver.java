@@ -10,6 +10,7 @@ import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.naver.maps.geometry.LatLng;
 import com.naver.maps.map.CameraUpdate;
@@ -54,30 +55,10 @@ public class SelectedLocationMapFragmentNaver extends NaverMapFragment {
 		});
 
 		binding.headerLayout.setVisibility(View.GONE);
-		binding.naverMapButtonsLayout.gpsButton.setVisibility(View.INVISIBLE);
-		binding.naverMapButtonsLayout.currentAddress.setVisibility(View.INVISIBLE);
-		binding.naverMapButtonsLayout.buildingButton.setVisibility(View.INVISIBLE);
-
-		RelativeLayout.LayoutParams mapButtonsLayout = (RelativeLayout.LayoutParams) binding.naverMapButtonsLayout.getRoot().getLayoutParams();
-		final int margin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 12f, getResources().getDisplayMetrics());
-		mapButtonsLayout.rightMargin = margin;
-		mapButtonsLayout.bottomMargin = margin;
-
-		binding.naverMapButtonsLayout.getRoot().setLayoutParams(mapButtonsLayout);
-
-		RelativeLayout.LayoutParams zoomInLayoutParams = (RelativeLayout.LayoutParams) binding.naverMapButtonsLayout.zoomInButton.getLayoutParams();
-		RelativeLayout.LayoutParams zoomOutLayoutParams = (RelativeLayout.LayoutParams) binding.naverMapButtonsLayout.zoomOutButton.getLayoutParams();
-
-		final int size = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, getResources().getDisplayMetrics());
-		final int bottomMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4f, getResources().getDisplayMetrics());
-		zoomInLayoutParams.width = size;
-		zoomInLayoutParams.height = size;
-		zoomOutLayoutParams.width = size;
-		zoomOutLayoutParams.height = size;
-		zoomOutLayoutParams.bottomMargin = bottomMargin;
-
-		binding.naverMapButtonsLayout.zoomInButton.setLayoutParams(zoomInLayoutParams);
-		binding.naverMapButtonsLayout.zoomOutButton.setLayoutParams(zoomOutLayoutParams);
+		binding.naverMapButtonsLayout.gpsButton.setVisibility(View.GONE);
+		binding.naverMapButtonsLayout.currentAddress.setVisibility(View.GONE);
+		binding.naverMapButtonsLayout.buildingButton.setVisibility(View.GONE);
+		binding.naverMapButtonsLayout.favoriteLocationsButton.setVisibility(View.GONE);
 	}
 
 	@Override

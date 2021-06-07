@@ -51,6 +51,9 @@ public class LocationSearchDialogFragment extends DialogFragment implements Indi
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setStyle(STYLE_NO_TITLE, R.style.AppTheme_FullScreenDialog);
+
+		Bundle bundle = getArguments();
+		searchWord = bundle.getString("searchWord");
 	}
 
 	@Override
@@ -69,25 +72,7 @@ public class LocationSearchDialogFragment extends DialogFragment implements Indi
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
-
-		Bundle bundle = getArguments();
-		searchWord = bundle.getString("searchWord");
-
-		setSearchView();
-	}
-
-	@Override
-	public void onStart() {
-		super.onStart();
-	}
-
-	@Override
-	public void onDetach() {
-		super.onDetach();
-	}
-
-	private void setSearchView() {
-		binding.searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+		binding.searchView.setOnQueryTextListener(new androidx.appcompat.widget.SearchView.OnQueryTextListener() {
 			@Override
 			public boolean onQueryTextSubmit(String query) {
 				if (!query.isEmpty()) {
@@ -99,13 +84,13 @@ public class LocationSearchDialogFragment extends DialogFragment implements Indi
 			}
 
 			@Override
-			public boolean onQueryTextChange(String query) {
+			public boolean onQueryTextChange(String newText) {
 				return false;
 			}
 		});
-
 		binding.searchView.setQuery(searchWord, true);
 	}
+
 
 	private void search(String searchWord) {
 		final LocalApiPlaceParameter addressParameter = LocalParameterUtil.getAddressParameter(searchWord, LocalApiPlaceParameter.DEFAULT_SIZE
@@ -186,7 +171,6 @@ public class LocationSearchDialogFragment extends DialogFragment implements Indi
 		dismiss();
 		onSelectedNewLocation.onSelectedNewLocation(locationDTO);
 	}
-
 
 	class OnPageCallback extends ViewPager2.OnPageChangeCallback {
 		public int lastPosition;

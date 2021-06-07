@@ -53,7 +53,7 @@ public class CustomProgressView extends RelativeLayout {
 
 		RelativeLayout.LayoutParams progressViewLayoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
 				ViewGroup.LayoutParams.WRAP_CONTENT);
-		progressViewLayoutParams.rightMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4f,
+		progressViewLayoutParams.rightMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f,
 				getResources().getDisplayMetrics());
 		progressViewLayoutParams.addRule(LEFT_OF, progressStatusTextView.getId());
 
@@ -80,6 +80,7 @@ public class CustomProgressView extends RelativeLayout {
 	public void onFailedProcessingData(String text) {
 		progressStatusTextView.setVisibility(View.VISIBLE);
 		progressView.setVisibility(View.GONE);
+
 		if (contentView != null) {
 			contentView.setVisibility(View.GONE);
 		}
@@ -92,13 +93,20 @@ public class CustomProgressView extends RelativeLayout {
 		}
 	}
 
-	public void onStartedProcessingData() {
-		progressStatusTextView.setVisibility(View.GONE);
+	public void onStartedProcessingData(String statusText) {
+		progressStatusTextView.setVisibility(View.VISIBLE);
+
 		if (contentView != null) {
 			contentView.setVisibility(View.GONE);
 		}
 		progressView.setVisibility(View.VISIBLE);
 		setVisibility(View.VISIBLE);
+
+		if (statusText != null) {
+			progressStatusTextView.setText(statusText);
+		} else {
+			progressStatusTextView.setText("");
+		}
 	}
 
 	/*
