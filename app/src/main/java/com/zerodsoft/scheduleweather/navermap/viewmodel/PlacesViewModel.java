@@ -15,40 +15,36 @@ import com.zerodsoft.scheduleweather.navermap.model.datasourcefactory.PlaceItemD
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-public class PlacesViewModel extends ViewModel
-{
-    private LiveData<PagedList<PlaceDocuments>> pagedListLiveData;
-    private PlaceItemDataSourceFactory dataSourceFactory;
-    private MutableLiveData<PlaceItemDataSource> dataSourceMutableLiveData;
-    private Executor executor;
-    private PagedList.Config config;
+public class PlacesViewModel extends ViewModel {
+	private LiveData<PagedList<PlaceDocuments>> pagedListLiveData;
+	private PlaceItemDataSourceFactory dataSourceFactory;
+	private MutableLiveData<PlaceItemDataSource> dataSourceMutableLiveData;
+	private Executor executor;
+	private PagedList.Config config;
 
-    public PlacesViewModel()
-    {
-        executor = Executors.newSingleThreadExecutor();
-        pagedListLiveData = new MutableLiveData<>();
-    }
+	public PlacesViewModel() {
+		executor = Executors.newSingleThreadExecutor();
+		pagedListLiveData = new MutableLiveData<>();
+	}
 
-    public void init(LocalApiPlaceParameter placeParameter, OnProgressBarListener onProgressBarListener)
-    {
-        dataSourceFactory = new PlaceItemDataSourceFactory(placeParameter, onProgressBarListener);
-        dataSourceMutableLiveData = dataSourceFactory.getLiveData();
+	public void init(LocalApiPlaceParameter placeParameter, OnProgressBarListener onProgressBarListener) {
+		dataSourceFactory = new PlaceItemDataSourceFactory(placeParameter, onProgressBarListener);
+		dataSourceMutableLiveData = dataSourceFactory.getLiveData();
 
-        config = (new PagedList.Config.Builder())
-                .setEnablePlaceholders(false)
-                .setInitialLoadSizeHint(Integer.parseInt(LocalApiPlaceParameter.DEFAULT_SIZE) * 2)
-                .setPageSize(15)
-                .setPrefetchDistance(4)
-                .build();
+		config = (new PagedList.Config.Builder())
+				.setEnablePlaceholders(false)
+				.setInitialLoadSizeHint(Integer.parseInt(LocalApiPlaceParameter.DEFAULT_SIZE) * 2)
+				.setPageSize(15)
+				.setPrefetchDistance(4)
+				.build();
 
-        pagedListLiveData = new LivePagedListBuilder<Integer, PlaceDocuments>(dataSourceFactory, config)
-                .setFetchExecutor(executor)
-                .build();
-    }
+		pagedListLiveData = new LivePagedListBuilder<Integer, PlaceDocuments>(dataSourceFactory, config)
+				.setFetchExecutor(executor)
+				.build();
+	}
 
-    public LiveData<PagedList<PlaceDocuments>> getPagedListMutableLiveData()
-    {
-        return pagedListLiveData;
-    }
+	public LiveData<PagedList<PlaceDocuments>> getPagedListMutableLiveData() {
+		return pagedListLiveData;
+	}
 
 }

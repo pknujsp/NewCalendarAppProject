@@ -124,6 +124,9 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
+		binding.customProgressView.setContentView(binding.recyclerView);
+		binding.customProgressView.onSuccessfulProcessingData();
+
 		placesViewModel = new ViewModelProvider(this).get(PlacesViewModel.class);
 
 		binding.recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext(), RecyclerView.VERTICAL, false));
@@ -133,7 +136,6 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 		binding.recyclerView.setAdapter(adapter);
 
 		requestRestaurantList(query);
-		binding.errorText.setVisibility(View.GONE);
 	}
 
 
@@ -166,7 +168,6 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 						@Override
 						public void onItemRangeInserted(int positionStart, int itemCount) {
 							super.onItemRangeInserted(positionStart, itemCount);
-							binding.errorText.setVisibility(View.GONE);
 
 							if (adapterDataObserver != null) {
 								adapterDataObserver.onItemRangeInserted(0, itemCount);
@@ -175,7 +176,7 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 					});
 				} else {
 					if (adapter.getCurrentList().snapshot().isEmpty()) {
-						binding.errorText.setVisibility(View.VISIBLE);
+
 					}
 				}
 			}

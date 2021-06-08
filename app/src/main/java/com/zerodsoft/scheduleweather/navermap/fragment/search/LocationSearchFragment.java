@@ -201,19 +201,7 @@ public class LocationSearchFragment extends Fragment implements OnSelectedMapCat
 
 	@Override
 	public void insertValueToHistory(String value) {
-		searchHistoryViewModel.insert(SearchHistoryDTO.LOCATION_SEARCH, value, new CarrierMessagingService.ResultCallback<SearchHistoryDTO>() {
-			@Override
-			public void onReceiveResult(@NonNull SearchHistoryDTO result) throws RemoteException {
-				getActivity().runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						//list 갱신
-						searchLocationHistoryAdapter.getHistoryList().add(result);
-						searchLocationHistoryAdapter.notifyItemInserted(searchLocationHistoryAdapter.getItemCount() - 1);
-					}
-				});
-			}
-		});
+		searchHistoryViewModel.insert(SearchHistoryDTO.LOCATION_SEARCH, value);
 	}
 
 	@Override

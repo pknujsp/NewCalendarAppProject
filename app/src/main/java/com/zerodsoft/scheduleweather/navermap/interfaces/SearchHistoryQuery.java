@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface SearchHistoryQuery
 {
-    void insert(Integer type, String value, CarrierMessagingService.ResultCallback<SearchHistoryDTO> callback);
+    void insert(Integer type, String value);
 
     void select(Integer type, CarrierMessagingService.ResultCallback<List<SearchHistoryDTO>> callback);
 

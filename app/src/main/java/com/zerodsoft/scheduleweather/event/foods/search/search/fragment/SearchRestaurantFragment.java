@@ -12,7 +12,6 @@ import androidx.lifecycle.ViewModelProvider;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
@@ -65,7 +64,7 @@ public class SearchRestaurantFragment extends Fragment implements OnClickedListI
 		super.onCreate(savedInstanceState);
 		getParentFragmentManager().registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, true);
 		restaurantSharedViewModel = new ViewModelProvider(requireActivity()).get(RestaurantSharedViewModel.class);
-		searchHistoryViewModel = new ViewModelProvider(this).get(SearchHistoryViewModel.class);
+		searchHistoryViewModel = new ViewModelProvider(getParentFragment()).get(SearchHistoryViewModel.class);
 
 		iOnSetView = (IOnSetView) getParentFragment();
 		iOnSetView.setFragmentContainerVisibility(IOnSetView.ViewType.HEADER, View.VISIBLE);
@@ -81,14 +80,15 @@ public class SearchRestaurantFragment extends Fragment implements OnClickedListI
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
-		//검색 기록 프래그먼트 표시
-		foodRestaurantSearchHistoryFragment = new FoodRestaurantSearchHistoryFragment(this);
-		getChildFragmentManager().beginTransaction().add(binding.fragmentContainer.getId(),
-				foodRestaurantSearchHistoryFragment, FoodRestaurantSearchHistoryFragment.TAG).commit();
 
 		headerCriteriaLocationFragment = new HeaderCriteriaLocationFragment();
 		getParentFragmentManager().beginTransaction()
 				.add(R.id.header_fragment_container, headerCriteriaLocationFragment).commit();
+		//검색 기록 프래그먼트 표시
+
+		foodRestaurantSearchHistoryFragment = new FoodRestaurantSearchHistoryFragment(this);
+		getChildFragmentManager().beginTransaction().add(binding.fragmentContainer.getId(),
+				foodRestaurantSearchHistoryFragment, getString(R.string.tag_restaurant_search_history_fragment)).commit();
 
 		binding.searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
 			@Override
@@ -101,12 +101,10 @@ public class SearchRestaurantFragment extends Fragment implements OnClickedListI
 									requireActivity().runOnUiThread(new Runnable() {
 										@Override
 										public void run() {
-											if (isDuplicate) {
-												Toast.makeText(getContext(), R.string.duplicate_value, Toast.LENGTH_SHORT).show();
-											} else {
-												search(query);
-												foodRestaurantSearchHistoryFragment.insertHistory(query);
+											if (!isDuplicate) {
+												searchHistoryViewModel.insert(SearchHistoryDTO.FOOD_RESTAURANT_SEARCH, query);
 											}
+											search(query);
 										}
 									});
 								}

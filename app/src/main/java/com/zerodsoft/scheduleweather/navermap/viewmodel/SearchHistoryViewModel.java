@@ -5,6 +5,8 @@ import android.service.carrier.CarrierMessagingService;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.navermap.interfaces.SearchHistoryQuery;
@@ -13,56 +15,52 @@ import com.zerodsoft.scheduleweather.room.dto.SearchHistoryDTO;
 
 import java.util.List;
 
-public class SearchHistoryViewModel extends AndroidViewModel implements SearchHistoryQuery
-{
-    private SearchLocationHistoryRepository repository;
+public class SearchHistoryViewModel extends AndroidViewModel implements SearchHistoryQuery {
+	private SearchLocationHistoryRepository repository;
+	private MutableLiveData<SearchHistoryDTO> onAddedHistoryDTOMutableLiveData;
 
-    public SearchHistoryViewModel(@NonNull Application application)
-    {
-        super(application);
-        this.repository = new SearchLocationHistoryRepository(application);
-    }
+	public SearchHistoryViewModel(@NonNull Application application) {
+		super(application);
+		this.repository = new SearchLocationHistoryRepository(application.getApplicationContext());
+		onAddedHistoryDTOMutableLiveData = repository.getOnAddedHistoryDTOMutableLiveData();
+	}
 
+	public LiveData<SearchHistoryDTO> getOnAddedHistoryDTOMutableLiveData() {
+		return onAddedHistoryDTOMutableLiveData;
+	}
 
-    @Override
-    public void insert(Integer type, String value, CarrierMessagingService.ResultCallback<SearchHistoryDTO> callback)
-    {
-        repository.insert(type, value, callback);
-    }
+	@Override
+	public void insert(Integer type, String value) {
+		repository.insert(type, value);
+	}
 
-    @Override
-    public void select(Integer type, CarrierMessagingService.ResultCallback<List<SearchHistoryDTO>> callback)
-    {
-        repository.select(type, callback);
-    }
+	@Override
+	public void select(Integer type, CarrierMessagingService.ResultCallback<List<SearchHistoryDTO>> callback) {
+		repository.select(type, callback);
+	}
 
-    @Override
-    public void select(Integer type, String value, CarrierMessagingService.ResultCallback<SearchHistoryDTO> callback)
-    {
-        repository.select(type, value, callback);
-    }
+	@Override
+	public void select(Integer type, String value, CarrierMessagingService.ResultCallback<SearchHistoryDTO> callback) {
+		repository.select(type, value, callback);
+	}
 
-    @Override
-    public void delete(int id, CarrierMessagingService.ResultCallback<Boolean> callback)
-    {
-        repository.delete(id, callback);
-    }
+	@Override
+	public void delete(int id, CarrierMessagingService.ResultCallback<Boolean> callback) {
+		repository.delete(id, callback);
+	}
 
-    @Override
-    public void delete(Integer type, String value, CarrierMessagingService.ResultCallback<Boolean> callback)
-    {
-        repository.delete(type, value, callback);
-    }
+	@Override
+	public void delete(Integer type, String value, CarrierMessagingService.ResultCallback<Boolean> callback) {
+		repository.delete(type, value, callback);
+	}
 
-    @Override
-    public void deleteAll(Integer type, CarrierMessagingService.ResultCallback<Boolean> callback)
-    {
-        repository.deleteAll(type, callback);
-    }
+	@Override
+	public void deleteAll(Integer type, CarrierMessagingService.ResultCallback<Boolean> callback) {
+		repository.deleteAll(type, callback);
+	}
 
-    @Override
-    public void contains(Integer type, String value, DbQueryCallback<Boolean> callback)
-    {
-        repository.contains(type, value, callback);
-    }
+	@Override
+	public void contains(Integer type, String value, DbQueryCallback<Boolean> callback) {
+		repository.contains(type, value, callback);
+	}
 }

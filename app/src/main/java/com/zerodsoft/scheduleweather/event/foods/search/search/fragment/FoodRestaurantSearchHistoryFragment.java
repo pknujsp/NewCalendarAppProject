@@ -5,9 +5,8 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.lifecycle.ViewModelStoreOwner;
-import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -18,7 +17,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.databinding.FragmentFoodRestaurantSearchHistoryBinding;
 import com.zerodsoft.scheduleweather.etc.CustomRecyclerViewItemDecoration;
@@ -29,12 +27,10 @@ import com.zerodsoft.scheduleweather.room.dto.SearchHistoryDTO;
 import java.util.List;
 
 public class FoodRestaurantSearchHistoryFragment extends Fragment implements OnClickedListItem<SearchHistoryDTO> {
-	public static final String TAG = "FoodRestaurantSearchHistoryFragment";
 	private FragmentFoodRestaurantSearchHistoryBinding binding;
 	private OnClickedListItem<SearchHistoryDTO> onClickedListItem;
-	private SearchHistoryViewModel viewModel;
+	private SearchHistoryViewModel searchHistoryViewModel;
 	private FoodRestaurantSearchHistoryAdapter adapter;
-
 
 	public FoodRestaurantSearchHistoryFragment(OnClickedListItem<SearchHistoryDTO> onClickedListItem) {
 		this.onClickedListItem = onClickedListItem;
@@ -44,6 +40,20 @@ public class FoodRestaurantSearchHistoryFragment extends Fragment implements OnC
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		searchHistoryViewModel = new ViewModelProvider(getParentFragment().getParentFragment()).get(SearchHistoryViewModel.class);
+
+		searchHistoryViewModel.getOnAddedHistoryDTOMutableLiveData().observe(this, new Observer<SearchHistoryDTO>() {
+			@Override
+			public void onChanged(SearchHistoryDTO addedSearchHistoryDTO) {
+				requireActivity().runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						adapter.getHistoryList().add(addedSearchHistoryDTO);
+						adapter.notifyItemInserted(adapter.getItemCount());
+					}
+				});
+			}
+		});
 	}
 
 	@Override
@@ -56,7 +66,6 @@ public class FoodRestaurantSearchHistoryFragment extends Fragment implements OnC
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
-
 		binding.notHistory.setVisibility(View.GONE);
 
 		binding.searchHistoryRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
@@ -67,7 +76,7 @@ public class FoodRestaurantSearchHistoryFragment extends Fragment implements OnC
 			@Override
 			public void onClick(View view) {
 				if (adapter.getItemCount() > 0) {
-					viewModel.deleteAll(SearchHistoryDTO.FOOD_RESTAURANT_SEARCH, new CarrierMessagingService.ResultCallback<Boolean>() {
+					searchHistoryViewModel.deleteAll(SearchHistoryDTO.FOOD_RESTAURANT_SEARCH, new CarrierMessagingService.ResultCallback<Boolean>() {
 						@Override
 						public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException {
 							getActivity().runOnUiThread(new Runnable() {
@@ -122,8 +131,7 @@ public class FoodRestaurantSearchHistoryFragment extends Fragment implements OnC
 
 		binding.searchHistoryRecyclerView.setAdapter(adapter);
 
-		viewModel = new ViewModelProvider(this).get(SearchHistoryViewModel.class);
-		viewModel.select(SearchHistoryDTO.FOOD_RESTAURANT_SEARCH, new CarrierMessagingService.ResultCallback<List<SearchHistoryDTO>>() {
+		searchHistoryViewModel.select(SearchHistoryDTO.FOOD_RESTAURANT_SEARCH, new CarrierMessagingService.ResultCallback<List<SearchHistoryDTO>>() {
 			@Override
 			public void onReceiveResult(@NonNull List<SearchHistoryDTO> searchHistoryDTOS) throws RemoteException {
 				getActivity().runOnUiThread(new Runnable() {
@@ -144,22 +152,6 @@ public class FoodRestaurantSearchHistoryFragment extends Fragment implements OnC
 		super.onDestroy();
 	}
 
-	public void insertHistory(String value) {
-		viewModel.insert(SearchHistoryDTO.FOOD_RESTAURANT_SEARCH, value, new CarrierMessagingService.ResultCallback<SearchHistoryDTO>() {
-			@Override
-			public void onReceiveResult(@NonNull SearchHistoryDTO searchHistoryDTO) throws RemoteException {
-				requireActivity().runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						adapter.getHistoryList().add(searchHistoryDTO);
-						adapter.notifyItemInserted(adapter.getItemCount());
-					}
-				});
-			}
-		});
-
-	}
-
 
 	@Override
 	public void onClickedListItem(SearchHistoryDTO e, int position) {
@@ -168,7 +160,7 @@ public class FoodRestaurantSearchHistoryFragment extends Fragment implements OnC
 
 	@Override
 	public void deleteListItem(SearchHistoryDTO e, int position) {
-		viewModel.delete(e.getId(), new CarrierMessagingService.ResultCallback<Boolean>() {
+		searchHistoryViewModel.delete(e.getId(), new CarrierMessagingService.ResultCallback<Boolean>() {
 			@Override
 			public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException {
 				getActivity().runOnUiThread(new Runnable() {

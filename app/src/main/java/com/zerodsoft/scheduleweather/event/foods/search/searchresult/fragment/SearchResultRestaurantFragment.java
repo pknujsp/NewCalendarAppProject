@@ -13,11 +13,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.databinding.FragmentSearchResultRestaurantBinding;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.IOnSetView;
 import com.zerodsoft.scheduleweather.event.foods.main.RestaurantListFragment;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.RestaurantSharedViewModel;
 import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoWebFragment;
+import com.zerodsoft.scheduleweather.navermap.viewmodel.SearchHistoryViewModel;
+import com.zerodsoft.scheduleweather.room.dto.SearchHistoryDTO;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -26,6 +30,7 @@ public class SearchResultRestaurantFragment extends Fragment {
 	private String query;
 	private FragmentSearchResultRestaurantBinding binding;
 	private RestaurantSharedViewModel restaurantSharedViewModel;
+	private SearchHistoryViewModel searchHistoryViewModel;
 	private IOnSetView iOnSetView;
 
 	private final FragmentManager.FragmentLifecycleCallbacks fragmentLifecycleCallbacks =
@@ -51,14 +56,14 @@ public class SearchResultRestaurantFragment extends Fragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
 		getParentFragmentManager().registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, true);
-		Bundle bundle = getArguments();
-		query = bundle.getString("query");
-
 		restaurantSharedViewModel = new ViewModelProvider(requireActivity()).get(RestaurantSharedViewModel.class);
+		searchHistoryViewModel = new ViewModelProvider(getParentFragment()).get(SearchHistoryViewModel.class);
 		iOnSetView = (IOnSetView) getParentFragment();
 		iOnSetView.setFragmentContainerVisibility(IOnSetView.ViewType.HEADER, View.GONE);
+
+		Bundle bundle = getArguments();
+		query = bundle.getString("query");
 	}
 
 	@Override
@@ -76,7 +81,8 @@ public class SearchResultRestaurantFragment extends Fragment {
 		Bundle bundle = new Bundle();
 		bundle.putString("query", query);
 		restaurantListFragment.setArguments(bundle);
-		getChildFragmentManager().beginTransaction().add(binding.fragmentContainer.getId(), restaurantListFragment, "").commit();
+		getChildFragmentManager().beginTransaction().add(binding.fragmentContainer.getId(), restaurantListFragment,
+				getString(R.string.tag_place_info_web_fragment)).commit();
 
 		binding.searchView.setQuery(query, false);
 		binding.searchView.setOnBackClickListener(new View.OnClickListener() {
@@ -89,6 +95,19 @@ public class SearchResultRestaurantFragment extends Fragment {
 			@Override
 			public boolean onQueryTextSubmit(String query) {
 				if (!query.isEmpty()) {
+					searchHistoryViewModel.contains(SearchHistoryDTO.FOOD_RESTAURANT_SEARCH, query, new DbQueryCallback<Boolean>() {
+						@Override
+						public void onResultSuccessful(Boolean isDuplicated) {
+							if (!isDuplicated) {
+								searchHistoryViewModel.insert(SearchHistoryDTO.FOOD_RESTAURANT_SEARCH, query);
+							}
+						}
+
+						@Override
+						public void onResultNoData() {
+
+						}
+					});
 					restaurantListFragment.requestRestaurantList(query);
 				}
 				return false;
@@ -107,6 +126,5 @@ public class SearchResultRestaurantFragment extends Fragment {
 	public void onDestroy() {
 		super.onDestroy();
 		getParentFragmentManager().unregisterFragmentLifecycleCallbacks(fragmentLifecycleCallbacks);
-
 	}
 }

@@ -57,10 +57,6 @@ public class PlaceInfoWebFragment extends Fragment {
 		binding.webview.setOnKeyListener(onKeyListener);
 	}
 
-	@Override
-	public void onDestroy() {
-		super.onDestroy();
-	}
 
 	public boolean webCanGoBack() {
 		return binding.webview.canGoBack();
