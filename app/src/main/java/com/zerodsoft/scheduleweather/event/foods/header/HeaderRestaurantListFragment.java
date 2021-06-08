@@ -17,6 +17,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.zerodsoft.scheduleweather.R;
@@ -29,6 +30,9 @@ import com.zerodsoft.scheduleweather.event.foods.interfaces.ISetFoodMenuPoiItems
 import com.zerodsoft.scheduleweather.event.foods.main.RestaurantListTabFragment;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.CustomFoodMenuViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.RestaurantSharedViewModel;
+import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
+import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
+import com.zerodsoft.scheduleweather.navermap.viewmodel.MapSharedViewModel;
 import com.zerodsoft.scheduleweather.room.dto.CustomFoodMenuDTO;
 
 import org.jetbrains.annotations.NotNull;
@@ -45,6 +49,8 @@ public class HeaderRestaurantListFragment extends Fragment {
 	private IOnSetView iOnSetView;
 	private DataProcessingCallback<List<FoodCategoryItem>> foodMenuListDataProcessingCallback;
 	private ISetFoodMenuPoiItems iSetFoodMenuPoiItems;
+	private BottomSheetController bottomSheetController;
+	private MapSharedViewModel mapSharedViewModel;
 
 	private int viewPagerVisibility = View.VISIBLE;
 
@@ -53,7 +59,9 @@ public class HeaderRestaurantListFragment extends Fragment {
 		super.onCreate(savedInstanceState);
 		customFoodCategoryViewModel = new ViewModelProvider(requireActivity()).get(CustomFoodMenuViewModel.class);
 		restaurantSharedViewModel = new ViewModelProvider(requireActivity()).get(RestaurantSharedViewModel.class);
+		mapSharedViewModel = new ViewModelProvider(requireActivity()).get(MapSharedViewModel.class);
 
+		bottomSheetController = mapSharedViewModel.getBottomSheetController();
 		iSetFoodMenuPoiItems = restaurantSharedViewModel.getISetFoodMenuPoiItems();
 		iOnSetView = (IOnSetView) getParentFragment();
 		iOnSetView.setFragmentContainerHeight((int) getResources().getDimension(R.dimen.restaurant_list_header_height));
@@ -111,10 +119,13 @@ public class HeaderRestaurantListFragment extends Fragment {
 			@Override
 			public void onClick(View view) {
 				viewPagerVisibility = (viewPagerVisibility == View.VISIBLE) ? View.GONE : View.VISIBLE;
+				binding.viewChangeBtn.setText(viewPagerVisibility == View.GONE ? R.string.open_list : R.string.open_map);
 				iOnSetView.setFragmentContainerVisibility(IOnSetView.ViewType.CONTENT, viewPagerVisibility);
 
 				if (viewPagerVisibility == View.GONE) {
 					iSetFoodMenuPoiItems.onChangeFoodMenu();
+				} else {
+					bottomSheetController.setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_COLLAPSED);
 				}
 			}
 		});

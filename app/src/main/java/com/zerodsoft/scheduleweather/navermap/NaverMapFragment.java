@@ -15,6 +15,7 @@ import android.net.Network;
 import android.os.Bundle;
 
 import androidx.activity.OnBackPressedCallback;
+import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -65,6 +66,7 @@ import com.naver.maps.map.overlay.OverlayImage;
 import com.naver.maps.map.util.FusedLocationSource;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
+import com.zerodsoft.scheduleweather.common.classes.AppPermission;
 import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
 import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
 import com.zerodsoft.scheduleweather.common.interfaces.OnHiddenFragmentListener;
@@ -379,17 +381,17 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 					boolean isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
 					boolean isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
 
-					ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION);
-					ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION);
-
-					if (isGpsEnabled && isNetworkEnabled) {
-						naverMap.setLocationSource(fusedLocationSource);
-						naverMap.setLocationTrackingMode(LocationTrackingMode.NoFollow);
-					} else if (!isGpsEnabled) {
-						showRequestGpsDialog();
+					if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+						if (isGpsEnabled) {
+							naverMap.setLocationSource(fusedLocationSource);
+							naverMap.setLocationTrackingMode(LocationTrackingMode.NoFollow);
+						} else {
+							showRequestGpsDialog();
+						}
+					} else {
+						naverMap.setLocationSource(null);
+						requestLocationPermission.launch(Manifest.permission.ACCESS_FINE_LOCATION);
 					}
-				} else {
-					naverMap.setLocationSource(null);
 				}
 			}
 		});
@@ -647,7 +649,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 						DialogInterface.OnClickListener() {
 							@Override
 							public void onClick(DialogInterface paramDialogInterface, int paramInt) {
-								startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+								requestOnGpsLauncher.launch(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
 							}
 						})
 				.setNegativeButton(getString(R.string.no), new DialogInterface.OnClickListener() {
@@ -689,14 +691,26 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
 	}
 
-	private final ActivityResultLauncher<String[]> requestLocationUpdates = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(),
-			new ActivityResultCallback<Map<String, Boolean>>() {
+	private final ActivityResultLauncher<Intent> requestOnGpsLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
+			new ActivityResultCallback<ActivityResult>() {
 				@Override
-				public void onActivityResult(Map<String, Boolean> result) {
+				public void onActivityResult(ActivityResult result) {
+					if (AppPermission.grantedPermissions(getContext(), Manifest.permission.ACCESS_FINE_LOCATION)) {
+						gpsButton.callOnClick();
+					} else {
 
-					if (result.size() > 0) {
-						fusedLocationSource.onRequestPermissionsResult(REQUEST_CODE_LOCATION, null,
-								new int[]{PackageManager.PERMISSION_GRANTED, PackageManager.PERMISSION_GRANTED});
+					}
+				}
+			});
+
+
+	private final ActivityResultLauncher<String> requestLocationPermission = registerForActivityResult(new ActivityResultContracts.RequestPermission(),
+			new ActivityResultCallback<Boolean>() {
+				@Override
+				public void onActivityResult(Boolean isGranted) {
+					if (isGranted) {
+						fusedLocationSource.onRequestPermissionsResult(REQUEST_CODE_LOCATION, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+								new int[]{PackageManager.PERMISSION_GRANTED});
 						naverMap.setLocationSource(fusedLocationSource);
 						naverMap.setLocationTrackingMode(LocationTrackingMode.NoFollow);
 					} else {
@@ -1509,7 +1523,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 			}
 		});
 	}
-
 
 
 	static class BuildingBottomSheetHeightViewHolder {

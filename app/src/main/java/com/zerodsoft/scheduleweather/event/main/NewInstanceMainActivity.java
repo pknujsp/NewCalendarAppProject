@@ -13,6 +13,7 @@ import android.view.View;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.ActivityNewInstanceMainBinding;
 import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteLocationViewModel;
+import com.zerodsoft.scheduleweather.navermap.viewmodel.MapSharedViewModel;
 
 public class NewInstanceMainActivity extends AppCompatActivity {
 	private ActivityNewInstanceMainBinding binding;
@@ -44,6 +45,7 @@ public class NewInstanceMainActivity extends AppCompatActivity {
 		}
 
 		new ViewModelProvider(this).get(FavoriteLocationViewModel.class);
+		new ViewModelProvider(this).get(MapSharedViewModel.class);
 
 		NewInstanceMainFragment newInstanceMainFragment = new NewInstanceMainFragment(calendarId, eventId, instanceId, begin, end);
 		newInstanceMainFragment.setPlaceBottomSheetSelectBtnVisibility(View.GONE);

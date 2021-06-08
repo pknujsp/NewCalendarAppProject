@@ -65,6 +65,7 @@ import com.zerodsoft.scheduleweather.navermap.NaverMapFragment;
 import com.zerodsoft.scheduleweather.navermap.MarkerType;
 import com.zerodsoft.scheduleweather.navermap.fragment.searchheader.MapHeaderSearchFragment;
 import com.zerodsoft.scheduleweather.navermap.interfaces.OnExtraListDataListener;
+import com.zerodsoft.scheduleweather.navermap.viewmodel.MapSharedViewModel;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
@@ -96,6 +97,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 	private ImageView functionButton;
 	private Marker selectedLocationInEventMarker;
 	private InfoWindow selectedLocationInEventInfoWindow;
+	private MapSharedViewModel mapSharedViewModel;
 
 	private RestaurantsGetter restaurantItemGetter;
 	private OnExtraListDataListener<Integer> restaurantOnExtraListDataListener;
@@ -155,6 +157,8 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		calendarViewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
+		mapSharedViewModel = new ViewModelProvider(requireActivity()).get(MapSharedViewModel.class);
+		mapSharedViewModel.setBottomSheetController(this);
 		getChildFragmentManager().registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, true);
 	}
 
@@ -736,13 +740,13 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 		restaurantOnExtraListDataListener = null;
 		viewPagerAdapterMap.remove(MarkerType.RESTAURANT);
 		removePoiItems(MarkerType.RESTAURANT);
+		setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_COLLAPSED);
 	}
 
 	@Override
 	public void onChangeFoodMenu() {
 		LocationItemViewPagerAdapter locationItemViewPagerAdapter = new LocationItemViewPagerAdapter(getContext(), MarkerType.RESTAURANT);
 		setLocationItemViewPagerAdapter(locationItemViewPagerAdapter, MarkerType.RESTAURANT);
-
 		setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_COLLAPSED);
 
 		restaurantItemGetter.getRestaurants(new DbQueryCallback<List<PlaceDocuments>>() {
@@ -760,7 +764,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 
 			@Override
 			public void onResultNoData() {
-				
+
 			}
 		});
 	}
@@ -831,16 +835,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 
 	}
 
-
-	static final class FoodChipViewHolder {
-		String foodMenuName;
-		int index;
-
-		public FoodChipViewHolder(String foodMenuName, int index) {
-			this.foodMenuName = foodMenuName;
-			this.index = index;
-		}
-	}
 
 	static final class PlaceCategoryChipViewHolder {
 		PlaceCategoryDTO placeCategory;
