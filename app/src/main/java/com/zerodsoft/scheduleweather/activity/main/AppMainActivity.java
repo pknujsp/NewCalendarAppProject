@@ -33,7 +33,7 @@ import com.zerodsoft.scheduleweather.common.enums.CalendarViewType;
 import com.zerodsoft.scheduleweather.databinding.ActivityAppMainBinding;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendar.dto.AccountDto;
-import com.zerodsoft.scheduleweather.etc.AppPermission;
+import com.zerodsoft.scheduleweather.common.classes.AppPermission;
 import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
 import com.zerodsoft.scheduleweather.weather.dataprocessing.WeatherDataConverter;
 

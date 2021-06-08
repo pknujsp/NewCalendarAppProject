@@ -20,6 +20,7 @@ public class FoodCriteriaLocationInfoRepository implements FoodCriteriaLocationI
 	private FoodCriteriaLocationInfoDAO dao;
 	private MutableLiveData<FoodCriteriaLocationInfoDTO> foodCriteriaLocationInfo = new MutableLiveData(new FoodCriteriaLocationInfoDTO());
 	private MutableLiveData<FoodCriteriaLocationInfoDTO> onChangedCriteriaLocationLiveData = new MutableLiveData<>();
+	private MutableLiveData<FoodCriteriaLocationInfoDTO> onRefreshCriteriaLocationLiveData = new MutableLiveData<>();
 
 
 	public FoodCriteriaLocationInfoRepository(Context context) {
@@ -42,6 +43,10 @@ public class FoodCriteriaLocationInfoRepository implements FoodCriteriaLocationI
 
 	public MutableLiveData<FoodCriteriaLocationInfoDTO> getFoodCriteriaLocationInfo() {
 		return foodCriteriaLocationInfo;
+	}
+
+	public MutableLiveData<FoodCriteriaLocationInfoDTO> getOnRefreshCriteriaLocationLiveData() {
+		return onRefreshCriteriaLocationLiveData;
 	}
 
 	@Override
@@ -153,5 +158,17 @@ public class FoodCriteriaLocationInfoRepository implements FoodCriteriaLocationI
 				callback.processResult(dao.contains(eventId));
 			}
 		}).start();
+	}
+
+	@Override
+	public void refresh(Long eventId) {
+		App.executorService.execute(new Runnable() {
+			@SneakyThrows
+			@Override
+			public void run() {
+				FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO = dao.selectByEventId(eventId);
+				onRefreshCriteriaLocationLiveData.postValue(foodCriteriaLocationInfoDTO);
+			}
+		});
 	}
 }

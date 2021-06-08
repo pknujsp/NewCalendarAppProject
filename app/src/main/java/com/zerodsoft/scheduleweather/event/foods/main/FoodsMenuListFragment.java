@@ -6,6 +6,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
@@ -105,9 +106,11 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 
-		getParentFragmentManager().beginTransaction()
-				.replace(R.id.header_fragment_container, headerCriteriaLocationFragment, getString(R.string.tag_restaurant_header_criteria_location_fragment)).commit();
-
+		FragmentManager parentFragmentManager = getParentFragmentManager();
+		if (parentFragmentManager.findFragmentByTag(getString(R.string.tag_restaurant_header_criteria_location_fragment)) == null) {
+			parentFragmentManager.beginTransaction()
+					.replace(R.id.header_fragment_container, headerCriteriaLocationFragment, getString(R.string.tag_restaurant_header_criteria_location_fragment)).commit();
+		}
 		GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(), COLUMN_COUNT);
 		binding.categoryGridview.setLayoutManager(gridLayoutManager);
 		foodCategoryAdapter = new FoodCategoryAdapter(FoodsMenuListFragment.this, COLUMN_COUNT);

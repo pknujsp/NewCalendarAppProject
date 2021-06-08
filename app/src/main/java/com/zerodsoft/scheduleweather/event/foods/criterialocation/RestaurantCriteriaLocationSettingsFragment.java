@@ -419,6 +419,9 @@ public class RestaurantCriteriaLocationSettingsFragment extends Fragment impleme
 
 	public boolean checkChangeBeforeClose() {
 		if (finalFoodCriteriaLocationInfoDTO == null) {
+			if (CriteriaLocationType.enumOf(foodCriteriaLocationInfoDTO.getUsingType()) == CriteriaLocationType.TYPE_CURRENT_LOCATION_GPS) {
+				foodCriteriaLocationInfoViewModel.refresh(eventId);
+			}
 			return true;
 		}
 

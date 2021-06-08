@@ -46,6 +46,8 @@ public class HeaderRestaurantListFragment extends Fragment {
 	private DataProcessingCallback<List<FoodCategoryItem>> foodMenuListDataProcessingCallback;
 	private ISetFoodMenuPoiItems iSetFoodMenuPoiItems;
 
+	private int viewPagerVisibility = View.VISIBLE;
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -105,14 +107,13 @@ public class HeaderRestaurantListFragment extends Fragment {
 		});
 
 		binding.viewChangeBtn.setOnClickListener(new View.OnClickListener() {
-			int visibility = View.VISIBLE;
 
 			@Override
 			public void onClick(View view) {
-				visibility = (visibility == View.VISIBLE) ? View.GONE : View.VISIBLE;
-				iOnSetView.setFragmentContainerVisibility(IOnSetView.ViewType.CONTENT, visibility);
+				viewPagerVisibility = (viewPagerVisibility == View.VISIBLE) ? View.GONE : View.VISIBLE;
+				iOnSetView.setFragmentContainerVisibility(IOnSetView.ViewType.CONTENT, viewPagerVisibility);
 
-				if (visibility == View.GONE) {
+				if (viewPagerVisibility == View.GONE) {
 					iSetFoodMenuPoiItems.onChangeFoodMenu();
 				}
 			}
@@ -173,6 +174,10 @@ public class HeaderRestaurantListFragment extends Fragment {
 		super.onDestroy();
 		iOnSetView.setFragmentContainerHeight((int) getResources().getDimension(R.dimen.restaurant_header_height));
 		iSetFoodMenuPoiItems.removeRestaurantPoiItems();
+
+		if (viewPagerVisibility == View.GONE) {
+			iOnSetView.setFragmentContainerVisibility(IOnSetView.ViewType.CONTENT, View.VISIBLE);
+		}
 	}
 
 	private void setupTabCustomView(List<FoodCategoryItem> foodCategoryItemList) {

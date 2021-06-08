@@ -129,11 +129,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
 	private static final String TAG = "NaverMapFragment";
 
-	private static final String[] PERMISSIONS = {
-			Manifest.permission.ACCESS_FINE_LOCATION,
-			Manifest.permission.ACCESS_COARSE_LOCATION
-	};
-
 	private FusedLocationSource fusedLocationSource;
 	private LocationManager locationManager;
 	private CircleOverlay buildingRangeCircleOverlay;
@@ -379,19 +374,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		gpsButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-                /*
-                if (!AppPermission.grantedPermissions(
-                        getContext(), Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION))
-                {
-                    requestLocationUpdates.launch(PERMISSIONS);
-                } else
-                {
-                    naverMap.setLocationSource(fusedLocationSource);
-                    naverMap.setLocationTrackingMode(LocationTrackingMode.NoFollow);
-                }
-
-                 */
-
 				if (naverMap.getLocationTrackingMode() == LocationTrackingMode.None) {
 					//권한 확인
 					boolean isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
@@ -400,13 +382,11 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 					ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION);
 					ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION);
 
-					if (networkAvailable()) {
-						if (isGpsEnabled || isNetworkEnabled) {
-							naverMap.setLocationSource(fusedLocationSource);
-							naverMap.setLocationTrackingMode(LocationTrackingMode.NoFollow);
-						} else if (!isGpsEnabled) {
-							showRequestGpsDialog();
-						}
+					if (isGpsEnabled && isNetworkEnabled) {
+						naverMap.setLocationSource(fusedLocationSource);
+						naverMap.setLocationTrackingMode(LocationTrackingMode.NoFollow);
+					} else if (!isGpsEnabled) {
+						showRequestGpsDialog();
 					}
 				} else {
 					naverMap.setLocationSource(null);
@@ -714,8 +694,9 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 				@Override
 				public void onActivityResult(Map<String, Boolean> result) {
 
-					if (result.size() > 0 && result.get(PERMISSIONS[0])) {
-						fusedLocationSource.onRequestPermissionsResult(REQUEST_CODE_LOCATION, PERMISSIONS, new int[]{PackageManager.PERMISSION_GRANTED, PackageManager.PERMISSION_GRANTED});
+					if (result.size() > 0) {
+						fusedLocationSource.onRequestPermissionsResult(REQUEST_CODE_LOCATION, null,
+								new int[]{PackageManager.PERMISSION_GRANTED, PackageManager.PERMISSION_GRANTED});
 						naverMap.setLocationSource(fusedLocationSource);
 						naverMap.setLocationTrackingMode(LocationTrackingMode.NoFollow);
 					} else {
@@ -1528,6 +1509,8 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 			}
 		});
 	}
+
+
 
 	static class BuildingBottomSheetHeightViewHolder {
 		final int listHeight;

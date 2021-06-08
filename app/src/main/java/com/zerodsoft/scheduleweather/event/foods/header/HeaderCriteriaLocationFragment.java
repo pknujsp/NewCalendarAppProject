@@ -2,11 +2,8 @@ package com.zerodsoft.scheduleweather.event.foods.header;
 
 import android.Manifest;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 
@@ -16,13 +13,11 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
-import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,11 +25,12 @@ import android.widget.Toast;
 
 import com.naver.maps.geometry.LatLng;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.common.classes.Gps;
 import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
 import com.zerodsoft.scheduleweather.common.interfaces.DataProcessingCallback;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.databinding.FragmentHeaderCriteriaLocationBinding;
-import com.zerodsoft.scheduleweather.etc.AppPermission;
+import com.zerodsoft.scheduleweather.common.classes.AppPermission;
 import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.foods.criterialocation.RestaurantCriteriaLocationSettingsFragment;
@@ -55,10 +51,6 @@ import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Map;
-
-import static androidx.core.content.ContextCompat.checkSelfPermission;
-
 public class HeaderCriteriaLocationFragment extends Fragment {
 	private FragmentHeaderCriteriaLocationBinding binding;
 
@@ -67,22 +59,35 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 	private FoodCriteriaLocationHistoryViewModel foodCriteriaLocationSearchHistoryViewModel;
 	private RestaurantSharedViewModel sharedViewModel;
 
-	private LocationManager locationManager;
-	private LocationDTO selectedLocationDTO;
 	private FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO;
 
 	private LocationDTO criteriaLocationDTO;
-	private boolean clickedGps = false;
 	private Long eventId;
 	private IMapPoint iMapPoint;
 
 	private DataProcessingCallback<LocationDTO> foodCriteriaLocationCallback;
 
+	private Gps gps = new Gps();
+
+	private FragmentManager.FragmentLifecycleCallbacks fragmentLifecycleCallbacks = new FragmentManager.FragmentLifecycleCallbacks() {
+		@Override
+		public void onFragmentCreated(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
+			super.onFragmentCreated(fm, f, savedInstanceState);
+		}
+
+
+		@Override
+		public void onFragmentDestroyed(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f) {
+			super.onFragmentDestroyed(fm, f);
+		}
+	};
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
+		getParentFragmentManager().registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, true);
+
 		sharedViewModel = new ViewModelProvider(requireActivity()).get(RestaurantSharedViewModel.class);
 		locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
 
@@ -92,7 +97,7 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 		eventId = sharedViewModel.getEventId();
 		iMapPoint = sharedViewModel.getiMapPoint();
 
-		foodCriteriaLocationInfoViewModel.getOnChangedCriteriaLocationLiveData().observe(this,
+		foodCriteriaLocationInfoViewModel.getOnRefreshCriteriaLocationLiveData().observe(this,
 				new Observer<FoodCriteriaLocationInfoDTO>() {
 					@Override
 					public void onChanged(FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO) {
@@ -100,7 +105,7 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 							requireActivity().runOnUiThread(new Runnable() {
 								@Override
 								public void run() {
-									loadSelectedDetailLocation();
+									loadCriteriaLocation();
 								}
 							});
 						}
@@ -119,7 +124,7 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 	public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 
-		binding.customProgressView.onStartedProcessingData(getString(R.string.loading_criteria_location));
+		binding.customProgressView.setContentView(binding.criteriaLocationLayout);
 		binding.criteriaLocation.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
@@ -127,13 +132,14 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 				Fragment contentFragment = parentFragmentManager.findFragmentById(R.id.content_fragment_container);
 
 				String tag = getString(R.string.tag_restaurant_criteria_location_settings_fragment);
-				parentFragmentManager.beginTransaction().hide(contentFragment)
+				parentFragmentManager.beginTransaction()
+						.hide(contentFragment)
 						.add(R.id.content_fragment_container, new RestaurantCriteriaLocationSettingsFragment(), tag)
 						.addToBackStack(tag).commit();
 			}
 		});
 
-		loadSelectedDetailLocation();
+		loadCriteriaLocation();
 	}
 
 	public void setFoodCriteriaLocationCallback(DataProcessingCallback<LocationDTO> foodCriteriaLocationCallback) {
@@ -143,28 +149,14 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		gpsOnResultLauncher.unregister();
-		permissionsResultLauncher.unregister();
-	}
-
-	public void loadSelectedDetailLocation() {
-		//지정한 위치정보를 가져온다
-		locationViewModel.getLocation(
-				eventId, new DbQueryCallback<LocationDTO>() {
-					@Override
-					public void onResultSuccessful(LocationDTO locationResultDto) {
-						selectedLocationDTO = locationResultDto;
-						loadCriteriaLocation();
-					}
-
-					@Override
-					public void onResultNoData() {
-						setCriteriaIfHavntLocation();
-					}
-				});
+		getParentFragmentManager().unregisterFragmentLifecycleCallbacks(fragmentLifecycleCallbacks);
+		requestOnGpsLauncher.unregister();
+		requestLocationPermissionLauncher.unregister();
 	}
 
 	private void loadCriteriaLocation() {
+		binding.customProgressView.onStartedProcessingData(getString(R.string.loading_criteria_location));
+
 		foodCriteriaLocationInfoViewModel.selectByEventId(eventId
 				, new DbQueryCallback<FoodCriteriaLocationInfoDTO>() {
 					@Override
@@ -181,37 +173,17 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 
 					@Override
 					public void onResultNoData() {
-						setCriteriaIfHavntCriteria();
-					}
-				});
-	}
-
-	private void setCriteriaIfHavntLocation() {
-		//기본/상세 위치가 지정되어 있지 않으면, 맵의 중심 좌표를 기준으로 하도록 설정해준다
-		foodCriteriaLocationInfoViewModel.contains(eventId
-				, new DbQueryCallback<FoodCriteriaLocationInfoDTO>() {
-					@Override
-					public void onResultSuccessful(FoodCriteriaLocationInfoDTO result) {
-						requireActivity().runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								foodCriteriaLocationInfoDTO = result;
-								setCriteria(CriteriaLocationType.enumOf(result.getUsingType()));
-							}
-						});
-					}
-
-					@Override
-					public void onResultNoData() {
 						foodCriteriaLocationInfoViewModel.insertByEventId(eventId
 								, CriteriaLocationType.TYPE_MAP_CENTER_POINT.value(), null,
 								new DbQueryCallback<FoodCriteriaLocationInfoDTO>() {
 									@Override
 									public void onResultSuccessful(FoodCriteriaLocationInfoDTO result) {
+										foodCriteriaLocationInfoDTO = result;
+
 										requireActivity().runOnUiThread(new Runnable() {
 											@Override
 											public void run() {
-												setCriteria(CriteriaLocationType.TYPE_MAP_CENTER_POINT);
+												setCriteria(CriteriaLocationType.enumOf(result.getUsingType()));
 											}
 										});
 									}
@@ -223,66 +195,38 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 								});
 					}
 				});
-
-	}
-
-	private void setCriteriaIfHavntCriteria() {
-		//기준 정보가 지정되어 있지 않으면, 지정한 장소/주소를 기준으로 하도록 설정해준다
-		foodCriteriaLocationInfoViewModel.contains(eventId, new DbQueryCallback<FoodCriteriaLocationInfoDTO>() {
-			@Override
-			public void onResultSuccessful(FoodCriteriaLocationInfoDTO result) {
-				requireActivity().runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						setCriteria(CriteriaLocationType.enumOf(result.getUsingType()));
-					}
-				});
-			}
-
-			@Override
-			public void onResultNoData() {
-				foodCriteriaLocationInfoViewModel.insertByEventId(eventId
-						, CriteriaLocationType.TYPE_SELECTED_LOCATION.value(), null,
-						new DbQueryCallback<FoodCriteriaLocationInfoDTO>() {
-							@Override
-							public void onResultSuccessful(FoodCriteriaLocationInfoDTO result) {
-								requireActivity().runOnUiThread(new Runnable() {
-									@Override
-									public void run() {
-										setCriteria(CriteriaLocationType.TYPE_SELECTED_LOCATION);
-									}
-								});
-							}
-
-							@Override
-							public void onResultNoData() {
-
-							}
-						});
-			}
-		});
-
 	}
 
 
 	private void setCriteria(CriteriaLocationType criteriaLocationType) {
 		switch (criteriaLocationType) {
 			case TYPE_SELECTED_LOCATION: {
-				criteriaLocationDTO = selectedLocationDTO;
-				CriteriaLocationCloud.setCoordinate(criteriaLocationDTO.getLatitude(), criteriaLocationDTO.getLongitude());
-
-				requireActivity().runOnUiThread(new Runnable() {
+				locationViewModel.getLocation(eventId, new DbQueryCallback<LocationDTO>() {
 					@Override
-					public void run() {
-						if (criteriaLocationDTO.getLocationType() == LocationType.PLACE) {
-							binding.criteriaLocation.setText(criteriaLocationDTO.getPlaceName());
-						} else {
-							binding.criteriaLocation.setText(criteriaLocationDTO.getAddressName());
-						}
-						binding.customProgressView.onSuccessfulProcessingData();
-						if (foodCriteriaLocationCallback != null) {
-							foodCriteriaLocationCallback.processResult(criteriaLocationDTO);
-						}
+					public void onResultSuccessful(LocationDTO result) {
+						criteriaLocationDTO = result;
+						CriteriaLocationCloud.setCoordinate(criteriaLocationDTO.getLatitude(), criteriaLocationDTO.getLongitude());
+
+						requireActivity().runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								if (criteriaLocationDTO.getLocationType() == LocationType.PLACE) {
+									binding.criteriaLocation.setText(criteriaLocationDTO.getPlaceName());
+								} else {
+									binding.criteriaLocation.setText(criteriaLocationDTO.getAddressName());
+								}
+								binding.customProgressView.onSuccessfulProcessingData();
+								if (foodCriteriaLocationCallback != null) {
+									foodCriteriaLocationCallback.processResult(criteriaLocationDTO);
+								}
+							}
+						});
+
+					}
+
+					@Override
+					public void onResultNoData() {
+
 					}
 				});
 
@@ -294,6 +238,7 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 				LatLng mapCenterPoint = iMapPoint.getMapCenterPoint();
 				LocalApiPlaceParameter localApiPlaceParameter = LocalParameterUtil.getCoordToAddressParameter(mapCenterPoint.latitude,
 						mapCenterPoint.longitude);
+
 				CoordToAddressUtil.coordToAddress(localApiPlaceParameter, new JsonDownloader<CoordToAddress>() {
 					@Override
 					public void onResponseSuccessful(CoordToAddress result) {
@@ -311,6 +256,7 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 							@Override
 							public void run() {
 								binding.criteriaLocation.setText(criteriaLocationDTO.getAddressName());
+
 								binding.customProgressView.onSuccessfulProcessingData();
 								if (foodCriteriaLocationCallback != null) {
 									foodCriteriaLocationCallback.processResult(criteriaLocationDTO);
@@ -397,101 +343,25 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 	}
 
 	private void gps() {
-		binding.criteriaLocation.setText(getString(R.string.finding_current_location));
-		clickedGps = true;
-
-		//권한 확인
-		boolean isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-		boolean isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-
-		if (checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
-				checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-			if (isGpsEnabled) {
-				locationManager.requestSingleUpdate(LocationManager.GPS_PROVIDER, new LocationListener() {
-					@Override
-					public void onLocationChanged(Location location) {
-						locationManager.removeUpdates(this);
-
-						if (clickedGps) {
-							clickedGps = false;
-							onCatchedGps(location);
-						}
-					}
-
-					@Override
-					public void onStatusChanged(String s, int i, Bundle bundle) {
-
-					}
-
-					@Override
-					public void onProviderEnabled(String s) {
-
-					}
-
-					@Override
-					public void onProviderDisabled(String s) {
-
-					}
-				}, null);
-
-				locationManager.requestSingleUpdate(LocationManager.NETWORK_PROVIDER, new LocationListener() {
-					@Override
-					public void onLocationChanged(Location location) {
-						locationManager.removeUpdates(this);
-
-						if (clickedGps) {
-							clickedGps = false;
-							onCatchedGps(location);
-						}
-					}
-
-					@Override
-					public void onStatusChanged(String s, int i, Bundle bundle) {
-
-					}
-
-					@Override
-					public void onProviderEnabled(String s) {
-
-					}
-
-					@Override
-					public void onProviderDisabled(String s) {
-
-					}
-				}, null);
-			} else {
-				showRequestGpsDialog();
+		gps.runGps(requireActivity(), new DataProcessingCallback<Location>() {
+			@Override
+			public void onResultSuccessful(Location result) {
+				onCatchedGps(result);
 			}
-		}
+
+			@Override
+			public void onResultNoData() {
+				binding.criteriaLocation.callOnClick();
+			}
+		}, requestOnGpsLauncher, requestLocationPermissionLauncher);
 
 	}
 
-	private void showRequestGpsDialog() {
-		new AlertDialog.Builder(getActivity())
-				.setMessage(getString(R.string.request_to_make_gps_on))
-				.setPositiveButton(getString(R.string.check), new
-						DialogInterface.OnClickListener() {
-							@Override
-							public void onClick(DialogInterface paramDialogInterface, int paramInt) {
-								gpsOnResultLauncher.launch(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
-							}
-						})
-				.setNegativeButton(getString(R.string.no), new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialogInterface, int i) {
-						binding.criteriaLocation.callOnClick();
-					}
-				})
-				.setCancelable(false)
-				.show();
-	}
-
-	private final ActivityResultLauncher<Intent> gpsOnResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
+	private final ActivityResultLauncher<Intent> requestOnGpsLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
 			new ActivityResultCallback<ActivityResult>() {
 				@Override
 				public void onActivityResult(ActivityResult result) {
-					if (AppPermission.grantedPermissions(getContext(), Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)) {
+					if (AppPermission.grantedPermissions(getContext(), Manifest.permission.ACCESS_FINE_LOCATION)) {
 						gps();
 					} else {
 						binding.criteriaLocation.callOnClick();
@@ -499,37 +369,6 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 				}
 			});
 
-	private final ActivityResultLauncher<String[]> permissionsResultLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(),
-			new ActivityResultCallback<Map<String, Boolean>>() {
-				@Override
-				public void onActivityResult(Map<String, Boolean> result) {
-					if (result.get(Manifest.permission.ACCESS_COARSE_LOCATION) &&
-							result.get(Manifest.permission.ACCESS_FINE_LOCATION)) {
-						// 권한 허용됨
-						gps();
-					} else {
-						// 권한 거부됨
-						Toast.makeText(getContext(), R.string.message_needs_location_permission, Toast.LENGTH_SHORT).show();
-						foodCriteriaLocationInfoViewModel.updateByEventId(eventId
-								, CriteriaLocationType.TYPE_SELECTED_LOCATION.value(), null, new DbQueryCallback<FoodCriteriaLocationInfoDTO>() {
-									@Override
-									public void onResultSuccessful(FoodCriteriaLocationInfoDTO result) {
-										requireActivity().runOnUiThread(new Runnable() {
-											@Override
-											public void run() {
-												loadCriteriaLocation();
-											}
-										});
-									}
-
-									@Override
-									public void onResultNoData() {
-
-									}
-								});
-					}
-				}
-			});
 
 	private void onCatchedGps(Location location) {
 		LocationDTO locationDtoByGps = new LocationDTO();
@@ -537,12 +376,12 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 		setCurrentLocationData(locationDtoByGps);
 	}
 
-
 	private void setCurrentLocationData(LocationDTO locationDtoByGps) {
 		//주소 reverse geocoding
 		LocalApiPlaceParameter localApiPlaceParameter =
 				LocalParameterUtil.getCoordToAddressParameter(Double.parseDouble(locationDtoByGps.getLatitude()),
 						Double.parseDouble(locationDtoByGps.getLongitude()));
+
 		CoordToAddressUtil.coordToAddress(localApiPlaceParameter, new JsonDownloader<CoordToAddress>() {
 			@Override
 			public void onResponseSuccessful(CoordToAddress result) {
@@ -561,6 +400,7 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 					public void run() {
 						binding.criteriaLocation.setText(criteriaLocationDTO.getAddressName());
 						binding.customProgressView.onSuccessfulProcessingData();
+
 						if (foodCriteriaLocationCallback != null) {
 							foodCriteriaLocationCallback.processResult(criteriaLocationDTO);
 						}
@@ -574,4 +414,35 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 			}
 		});
 	}
+
+	private ActivityResultLauncher<String> requestLocationPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission()
+			, new ActivityResultCallback<Boolean>() {
+				@Override
+				public void onActivityResult(Boolean isGranted) {
+					if (isGranted) {
+						// 권한 허용됨
+						gps();
+					} else {
+						// 권한 거부됨
+						Toast.makeText(getContext(), R.string.message_needs_location_permission, Toast.LENGTH_SHORT).show();
+						foodCriteriaLocationInfoViewModel.updateByEventId(eventId
+								, CriteriaLocationType.TYPE_MAP_CENTER_POINT.value(), null, new DbQueryCallback<FoodCriteriaLocationInfoDTO>() {
+									@Override
+									public void onResultSuccessful(FoodCriteriaLocationInfoDTO result) {
+										requireActivity().runOnUiThread(new Runnable() {
+											@Override
+											public void run() {
+												loadCriteriaLocation();
+											}
+										});
+									}
+
+									@Override
+									public void onResultNoData() {
+
+									}
+								});
+					}
+				}
+			});
 }

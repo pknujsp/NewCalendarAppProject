@@ -17,12 +17,15 @@ public class FoodCriteriaLocationInfoViewModel extends AndroidViewModel implemen
 	private FoodCriteriaLocationInfoRepository repository;
 	private MutableLiveData<FoodCriteriaLocationInfoDTO> foodCriteriaLocationInfo;
 	private MutableLiveData<FoodCriteriaLocationInfoDTO> onChangedCriteriaLocationLiveData;
+	private MutableLiveData<FoodCriteriaLocationInfoDTO> onRefreshCriteriaLocationLiveData = new MutableLiveData<>();
+
 
 	public FoodCriteriaLocationInfoViewModel(@NonNull Application application) {
 		super(application);
 		repository = new FoodCriteriaLocationInfoRepository(application.getApplicationContext());
 		foodCriteriaLocationInfo = repository.getFoodCriteriaLocationInfo();
 		onChangedCriteriaLocationLiveData = repository.getOnChangedCriteriaLocationLiveData();
+		onRefreshCriteriaLocationLiveData = repository.getOnRefreshCriteriaLocationLiveData();
 	}
 
 	public LiveData<FoodCriteriaLocationInfoDTO> getOnChangedCriteriaLocationLiveData() {
@@ -31,6 +34,10 @@ public class FoodCriteriaLocationInfoViewModel extends AndroidViewModel implemen
 
 	public LiveData<FoodCriteriaLocationInfoDTO> getFoodCriteriaLocationInfo() {
 		return foodCriteriaLocationInfo;
+	}
+
+	public LiveData<FoodCriteriaLocationInfoDTO> getOnRefreshCriteriaLocationLiveData() {
+		return onRefreshCriteriaLocationLiveData;
 	}
 
 	public void getInfoById(Long eventId) {
@@ -80,5 +87,10 @@ public class FoodCriteriaLocationInfoViewModel extends AndroidViewModel implemen
 	@Override
 	public void contains(Long eventId, DbQueryCallback<FoodCriteriaLocationInfoDTO> callback) {
 		repository.contains(eventId, callback);
+	}
+
+	@Override
+	public void refresh(Long eventId) {
+		repository.refresh(eventId);
 	}
 }
