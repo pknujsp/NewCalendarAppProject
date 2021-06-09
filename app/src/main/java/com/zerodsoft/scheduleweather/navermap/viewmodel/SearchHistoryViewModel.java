@@ -18,15 +18,21 @@ import java.util.List;
 public class SearchHistoryViewModel extends AndroidViewModel implements SearchHistoryQuery {
 	private SearchLocationHistoryRepository repository;
 	private MutableLiveData<SearchHistoryDTO> onAddedHistoryDTOMutableLiveData;
+	private MutableLiveData<Integer> onRemovedHistoryDTOMutableLiveData;
 
 	public SearchHistoryViewModel(@NonNull Application application) {
 		super(application);
 		this.repository = new SearchLocationHistoryRepository(application.getApplicationContext());
 		onAddedHistoryDTOMutableLiveData = repository.getOnAddedHistoryDTOMutableLiveData();
+		onRemovedHistoryDTOMutableLiveData = repository.getOnRemovedHistoryDTOMutableLiveData();
 	}
 
 	public LiveData<SearchHistoryDTO> getOnAddedHistoryDTOMutableLiveData() {
 		return onAddedHistoryDTOMutableLiveData;
+	}
+
+	public LiveData<Integer> getOnRemovedHistoryDTOMutableLiveData() {
+		return onRemovedHistoryDTOMutableLiveData;
 	}
 
 	@Override

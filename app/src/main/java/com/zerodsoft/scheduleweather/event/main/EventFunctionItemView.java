@@ -49,7 +49,8 @@ public class EventFunctionItemView extends MaterialCardView {
 
 		setClickable(true);
 		setRadius(getResources().getDimension(R.dimen.corner_radius));
-		setCardElevation(8f);
+		setCardElevation((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 18f, getResources().getDisplayMetrics()));
+		setUseCompatPadding(true);
 
 		LinearLayout linearLayout = new LinearLayout(getContext());
 		linearLayout.setOrientation(LinearLayout.VERTICAL);
@@ -61,7 +62,7 @@ public class EventFunctionItemView extends MaterialCardView {
 		titleView.setPadding(titleTextViewPadding, titleTextViewPadding, titleTextViewPadding, titleTextViewPadding);
 		titleView.setText(title);
 		titleView.setTextColor(Color.GRAY);
-		titleView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f);
+		titleView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
 
 		linearLayout.addView(titleView);
 

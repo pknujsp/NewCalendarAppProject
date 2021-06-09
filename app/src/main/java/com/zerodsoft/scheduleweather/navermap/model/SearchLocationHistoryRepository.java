@@ -19,6 +19,7 @@ import lombok.SneakyThrows;
 public class SearchLocationHistoryRepository implements SearchHistoryQuery {
 	private SearchHistoryDAO dao;
 	private MutableLiveData<SearchHistoryDTO> onAddedHistoryDTOMutableLiveData = new MutableLiveData<>();
+	private MutableLiveData<Integer> onRemovedHistoryDTOMutableLiveData = new MutableLiveData<>();
 
 	public SearchLocationHistoryRepository(Context context) {
 		dao = AppDb.getInstance(context).searchHistoryDAO();
@@ -26,6 +27,10 @@ public class SearchLocationHistoryRepository implements SearchHistoryQuery {
 
 	public MutableLiveData<SearchHistoryDTO> getOnAddedHistoryDTOMutableLiveData() {
 		return onAddedHistoryDTOMutableLiveData;
+	}
+
+	public MutableLiveData<Integer> getOnRemovedHistoryDTOMutableLiveData() {
+		return onRemovedHistoryDTOMutableLiveData;
 	}
 
 	@Override
@@ -72,6 +77,7 @@ public class SearchLocationHistoryRepository implements SearchHistoryQuery {
 			public void run() {
 				dao.delete(id);
 				callback.onReceiveResult(true);
+				onRemovedHistoryDTOMutableLiveData.postValue(id);
 			}
 		});
 	}

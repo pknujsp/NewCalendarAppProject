@@ -97,7 +97,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 	private ImageView functionButton;
 	private Marker selectedLocationInEventMarker;
 	private InfoWindow selectedLocationInEventInfoWindow;
-	private MapSharedViewModel mapSharedViewModel;
 
 	private RestaurantsGetter restaurantItemGetter;
 	private OnExtraListDataListener<Integer> restaurantOnExtraListDataListener;
@@ -157,8 +156,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		calendarViewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
-		mapSharedViewModel = new ViewModelProvider(requireActivity()).get(MapSharedViewModel.class);
-		mapSharedViewModel.setBottomSheetController(this);
 		getChildFragmentManager().registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, true);
 	}
 

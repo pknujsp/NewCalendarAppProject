@@ -15,13 +15,11 @@ import androidx.fragment.app.Fragment;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.common.interfaces.SearchHistoryDataController;
 import com.zerodsoft.scheduleweather.databinding.FragmentLocationSearchBarBinding;
 import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.MarkerType;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapData;
-import com.zerodsoft.scheduleweather.navermap.interfaces.SearchBarController;
 import com.zerodsoft.scheduleweather.navermap.interfaces.SearchFragmentController;
 import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
 import com.zerodsoft.scheduleweather.room.dto.SearchHistoryDTO;
@@ -44,10 +42,6 @@ public class MapHeaderSearchFragment extends Fragment implements SearchBarContro
 		this.searchFragmentController = (SearchFragmentController) fragment;
 		this.bottomSheetController = (BottomSheetController) fragment;
 		this.iMapData = (IMapData) fragment;
-	}
-
-	public void setSearchHistoryDataController(SearchHistoryDataController<SearchHistoryDTO> searchHistoryDataController) {
-		this.searchHistoryDataController = searchHistoryDataController;
 	}
 
 	@Override

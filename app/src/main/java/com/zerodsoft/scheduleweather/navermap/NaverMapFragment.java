@@ -71,7 +71,6 @@ import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackCont
 import com.zerodsoft.scheduleweather.common.interfaces.OnHiddenFragmentListener;
 import com.zerodsoft.scheduleweather.databinding.FragmentLocationHeaderBarBinding;
 import com.zerodsoft.scheduleweather.databinding.FragmentNaverMapBinding;
-import com.zerodsoft.scheduleweather.etc.FragmentStateCallback;
 import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedFavoriteButtonListener;
@@ -81,6 +80,7 @@ import com.zerodsoft.scheduleweather.navermap.building.fragment.BuildingFragment
 import com.zerodsoft.scheduleweather.navermap.building.fragment.BuildingListFragment;
 import com.zerodsoft.scheduleweather.navermap.favorite.FavoriteLocationFragment;
 import com.zerodsoft.scheduleweather.navermap.fragment.search.LocationSearchFragment;
+import com.zerodsoft.scheduleweather.navermap.fragment.searchheader.MapHeaderMainFragment;
 import com.zerodsoft.scheduleweather.navermap.fragment.searchheader.MapHeaderSearchFragment;
 import com.zerodsoft.scheduleweather.navermap.fragment.searchresult.LocationSearchResultFragment;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
@@ -97,6 +97,8 @@ import com.zerodsoft.scheduleweather.navermap.interfaces.SearchFragmentControlle
 import com.zerodsoft.scheduleweather.navermap.model.CoordToAddressUtil;
 import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoWebDialogFragment;
 import com.zerodsoft.scheduleweather.navermap.util.LocalParameterUtil;
+import com.zerodsoft.scheduleweather.navermap.viewmodel.MapSharedViewModel;
+import com.zerodsoft.scheduleweather.navermap.viewmodel.SearchHistoryViewModel;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.sgis.address.ReverseGeoCodingParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalDocument;
@@ -110,6 +112,8 @@ import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 import com.zerodsoft.scheduleweather.sgis.SgisAddress;
 import com.zerodsoft.scheduleweather.utility.NetworkStatus;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -139,6 +143,8 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 	public NaverMap naverMap;
 
 	public LocationViewModel locationViewModel;
+	public SearchHistoryViewModel searchHistoryViewModel;
+	public MapSharedViewModel mapSharedViewModel;
 
 	public ImageButton zoomInButton;
 	public ImageButton zoomOutButton;
@@ -170,6 +176,19 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 	final public Map<MarkerType, List<Marker>> markersMap = new HashMap<>();
 	final public Map<MarkerType, Marker> markerMap = new HashMap<>();
 	final public Map<MarkerType, LocationItemViewPagerAdapter> viewPagerAdapterMap = new HashMap<>();
+
+	protected final FragmentManager.FragmentLifecycleCallbacks fragmentLifecycleCallbacks = new FragmentManager.FragmentLifecycleCallbacks() {
+		@Override
+		public void onFragmentCreated(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
+			super.onFragmentCreated(fm, f, savedInstanceState);
+			if (f instanceof)
+		}
+
+		@Override
+		public void onFragmentDestroyed(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f) {
+			super.onFragmentDestroyed(fm, f);
+		}
+	};
 
 	private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
 		@Override
@@ -223,6 +242,13 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setHasOptionsMenu(true);
+		getChildFragmentManager().registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, false);
+
+		mapSharedViewModel = new ViewModelProvider(this).get(MapSharedViewModel.class);
+		mapSharedViewModel.setBottomSheetController(this);
+		mapSharedViewModel.setiMapData(this);
+		mapSharedViewModel.setiMapPoint(this);
+
 		networkStatus = new NetworkStatus(getContext(), new ConnectivityManager.NetworkCallback() {
 			@Override
 			public void onAvailable(@NonNull Network network) {
@@ -248,6 +274,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
 		locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
 		locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
+		searchHistoryViewModel = new ViewModelProvider(this).get(SearchHistoryViewModel.class);
 	}
 
 
@@ -331,16 +358,18 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 				FragmentManager fragmentManager = getChildFragmentManager();
 				BottomSheetBehavior locationSearchBottomSheetBehavior = bottomSheetBehaviorMap.get(BottomSheetType.SEARCH_LOCATION);
 
-				if (locationSearchBottomSheetBehavior.getState() == BottomSheetBehavior.STATE_COLLAPSED &&
+				if (locationSearchBottomSheetBehavior.getState() != BottomSheetBehavior.STATE_EXPANDED &&
 						fragmentManager.findFragmentByTag(LocationSearchResultFragment.TAG) == null) {
-					onCalledBottomSheet(BottomSheetBehavior.STATE_EXPANDED, locationSearchBottomSheetBehavior);
-					LocationSearchFragment locationSearchFragment = (LocationSearchFragment) bottomSheetFragmentMap.get(BottomSheetType.SEARCH_LOCATION);
+					LocationSearchFragment locationSearchFragment = new LocationSearchFragment(NaverMapFragment.this);
+					MapHeaderSearchFragment mapHeaderSearchFragment = new MapHeaderSearchFragment();
 
-					fragmentManager.beginTransaction().hide(fragmentManager.findFragmentByTag(MapHeaderMainFragment.TAG))
-							.show(fragmentManager.findFragmentByTag(MapHeaderSearchFragment.TAG))
-							.show(locationSearchFragment)
+					fragmentManager.beginTransaction().replace(binding.headerFragmentContainer.getId(), mapHeaderSearchFragment)
+							.add(binding.locationSearchBottomSheet.searchFragmentContainer.getId(), locationSearchFragment,
+									LocationSearchFragment.TAG)
 							.addToBackStack(LocationSearchFragment.TAG)
 							.commit();
+
+					setStateOfBottomSheet(BottomSheetType.SEARCH_LOCATION, BottomSheetBehavior.STATE_EXPANDED);
 				}
 			}
 		});
@@ -438,30 +467,11 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 			}
 		});
 
-		MapHeaderSearchFragment mapHeaderSearchFragment = new MapHeaderSearchFragment(NaverMapFragment.this);
-		LocationSearchFragment locationSearchFragment = new LocationSearchFragment(NaverMapFragment.this
-				, NaverMapFragment.this
-				, NaverMapFragment.this
-				, new FragmentStateCallback() {
-			@Override
-			public void onChangedState(int state) {
-
-			}
-		});
-
 		bottomSheetViewMap.put(BottomSheetType.SEARCH_LOCATION, locationSearchBottomSheet);
 		bottomSheetBehaviorMap.put(BottomSheetType.SEARCH_LOCATION, locationSearchBottomSheetBehavior);
-		bottomSheetFragmentMap.put(BottomSheetType.SEARCH_LOCATION, locationSearchFragment);
-
-		mapHeaderSearchFragment.setSearchHistoryDataController(locationSearchFragment);
-		locationSearchFragment.setSearchBarController(mapHeaderSearchFragment);
 
 		getChildFragmentManager().beginTransaction()
 				.add(binding.headerFragmentContainer.getId(), new MapHeaderMainFragment(), MapHeaderMainFragment.TAG)
-				.add(binding.headerFragmentContainer.getId(), mapHeaderSearchFragment, MapHeaderSearchFragment.TAG)
-				.add(binding.locationSearchBottomSheet.searchFragmentContainer.getId(), locationSearchFragment, LocationSearchFragment.TAG)
-				.hide(mapHeaderSearchFragment)
-				.hide(locationSearchFragment)
 				.commit();
 	}
 
@@ -724,6 +734,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 	public void onDestroy() {
 		super.onDestroy();
 		networkStatus.unregisterNetworkCallback();
+		getChildFragmentManager().unregisterFragmentLifecycleCallbacks(fragmentLifecycleCallbacks);
 	}
 
 	private final JsonDownloader<ReverseGeoCodingResponse> reverseGeoCodingResponseJsonDownloader =
@@ -775,24 +786,10 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 	}
 
 	@Override
-	public double getLatitude() {
-		return naverMap.getContentBounds().getCenter().latitude;
-	}
-
-	@Override
-	public double getLongitude() {
-		return naverMap.getContentBounds().getCenter().longitude;
-	}
-
-	@Override
 	public LatLng getMapCenterPoint() {
 		return naverMap.getContentBounds().getCenter();
 	}
 
-	@Override
-	public void setMapVisibility(int visibility) {
-		binding.naverMapViewLayout.setVisibility(visibility);
-	}
 
 	private void onClickedMarkerByTouch(MarkerType markerType, Marker marker) {
 		//poiitem을 직접 선택한 경우 호출
@@ -1325,25 +1322,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		return bottomSheetBehaviors;
 	}
 
-	public void collapseBottomSheet(BottomSheetBehavior currentBottomSheetBehavior) {
-		List<BottomSheetBehavior> bottomSheetBehaviors = getBottomSheetBehaviorOfExpanded(currentBottomSheetBehavior);
-		for (BottomSheetBehavior bottomSheetBehavior : bottomSheetBehaviors) {
-			bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-
-			if (bottomSheetBehavior.equals(bottomSheetBehaviorMap.get(BottomSheetType.BUILDING))) {
-				closeBuildingFragments();
-			}
-		}
-	}
-
-
-	public void onCalledBottomSheet(int newState, BottomSheetBehavior currentBottomSheetBehavior) {
-		if (newState == BottomSheetBehavior.STATE_EXPANDED) {
-			collapseBottomSheet(currentBottomSheetBehavior);
-		} else if (newState == BottomSheetBehavior.STATE_COLLAPSED) {
-
-		}
-	}
 
 	@Override
 	public void onBackStackChanged() {
@@ -1533,29 +1511,5 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 			this.listHeight = listHeight;
 			this.infoHeight = infoHeight;
 		}
-	}
-
-
-	public static class MapHeaderMainFragment extends Fragment {
-		public static final String TAG = "MapHeaderMainFragment";
-		private FragmentLocationHeaderBarBinding binding;
-
-		@Override
-		public void onCreate(@Nullable Bundle savedInstanceState) {
-			super.onCreate(savedInstanceState);
-		}
-
-		@Nullable
-		@Override
-		public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-			binding = FragmentLocationHeaderBarBinding.inflate(inflater);
-			return binding.getRoot();
-		}
-
-		@Override
-		public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-			super.onViewCreated(view, savedInstanceState);
-		}
-
 	}
 }

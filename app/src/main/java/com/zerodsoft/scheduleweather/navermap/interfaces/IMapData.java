@@ -6,25 +6,24 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalDocume
 
 import java.util.List;
 
-public interface IMapData
-{
-    void createPoiItems(List<? extends KakaoLocalDocument> kakaoLocalDocuments, MarkerType markerType);
+public interface IMapData {
+	void createPoiItems(List<? extends KakaoLocalDocument> kakaoLocalDocuments, MarkerType markerType);
 
-    void addPoiItems(List<? extends KakaoLocalDocument> kakaoLocalDocuments, MarkerType markerType);
+	void addPoiItems(List<? extends KakaoLocalDocument> kakaoLocalDocuments, MarkerType markerType);
 
-    void removePoiItems(MarkerType... markerTypes);
+	void removePoiItems(MarkerType... markerTypes);
 
-    void removePoiItem(MarkerType markerType, int index);
+	void removePoiItem(MarkerType markerType, int index);
 
-    void removeAllPoiItems();
+	void removeAllPoiItems();
 
-    void showPoiItems(MarkerType... markerTypes);
+	void showPoiItems(MarkerType... markerTypes);
 
-    void showPoiItems(MarkerType markerType, boolean isShow);
+	void showPoiItems(MarkerType markerType, boolean isShow);
 
-    void deselectPoiItem();
+	void deselectPoiItem();
 
-    int getPoiItemSize(MarkerType... markerTypes);
+	int getPoiItemSize(MarkerType... markerTypes);
 
-    void setLocationItemViewPagerAdapter(LocationItemViewPagerAdapter adapter, MarkerType markerType);
+	void setLocationItemViewPagerAdapter(LocationItemViewPagerAdapter adapter, MarkerType markerType);
 }

@@ -28,7 +28,6 @@ import com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint;
 import com.zerodsoft.scheduleweather.navermap.fragment.searchresult.adapter.SearchResultListAdapter;
 import com.zerodsoft.scheduleweather.navermap.fragment.searchresult.interfaces.IndicatorCreater;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.navermap.interfaces.SearchBarController;
 import com.zerodsoft.scheduleweather.navermap.interfaces.SearchFragmentController;
 import com.zerodsoft.scheduleweather.navermap.model.SearchResultChecker;
 import com.zerodsoft.scheduleweather.navermap.model.callback.CheckerCallback;
